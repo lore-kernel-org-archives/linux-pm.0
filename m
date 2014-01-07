@@ -1,75 +1,69 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
-Date: Tue, 7 Jan 2014 08:02:36 -0800
-Message-ID: <20140107160236.GA24018@roeck-us.net>
-References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au>
- <52CB0948.6030702@infradead.org>
- <20140106203209.GA21630@roeck-us.net>
- <52CB53DC.4030901@infradead.org>
- <52CB65DA.2010103@roeck-us.net>
- <20140107130401.23bffcd2@endymion.delvare>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
+Date: Tue, 7 Jan 2014 11:08:22 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401071057130.1296-100000@iolanthe.rowland.org>
+References: <52CC20A0.7060606@ubuntu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-next-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140107130401.23bffcd2@endymion.delvare>
-Sender: linux-next-owner@vger.kernel.org
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Frodo Looijaard <frodol@dds.nl>, lm-sensors@lm-sensors.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:55036 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751631AbaAGQIX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:08:23 -0500
+In-Reply-To: <52CC20A0.7060606@ubuntu.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phillip Susi <psusi@ubuntu.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Tue, Jan 07, 2014 at 01:04:01PM +0100, Jean Delvare wrote:
-> Hi Guenter, Randy,
-> 
-> On Mon, 06 Jan 2014 18:26:34 -0800, Guenter Roeck wrote:
-> > On 01/06/2014 05:09 PM, Randy Dunlap wrote:
-> > > From: Randy Dunlap <rdunlap@infradead.org>
-> > >
-> > > Fix SENSORS_LM75 dependencies to eliminate build errors:
-> > >
-> > > drivers/built-in.o: In function `lm75_remove':
-> > > lm75.c:(.text+0x12bd8c): undefined reference to `thermal_zone_of_sensor_unregister'
-> > > drivers/built-in.o: In function `lm75_probe':
-> > > lm75.c:(.text+0x12c123): undefined reference to `thermal_zone_of_sensor_register'
-> > >
-> > > Add depends on THERMAL_OF since that is what provides the
-> > > register/unregister functions above.
-> > >
-> > > Add depends on THERMAL since THERMAL is a tristate (while THERMAL_OF
-> > > is a bool) and SENSORS_LM75 (tristate) needs to be limited to modular
-> > > builds when THERMAL=m.
-> > >
-> > > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> > > ---
-> > >   drivers/hwmon/Kconfig |    2 ++
-> > >   1 file changed, 2 insertions(+)
-> > >
-> > > --- linux-next-20140106.orig/drivers/hwmon/Kconfig
-> > > +++ linux-next-20140106/drivers/hwmon/Kconfig
-> > > @@ -650,6 +650,8 @@ config SENSORS_LM73
-> > >   config SENSORS_LM75
-> > >   	tristate "National Semiconductor LM75 and compatibles"
-> > >   	depends on I2C
-> > > +	depends on THERMAL
-> > > +	depends on THERMAL_OF
-> > >   	help
-> > >   	  If you say yes here you get support for one common type of
-> > >   	  temperature sensor chip, with models including:
-> > >
-> > >
-> > NACK. The driver does not and must not depend on THERMAL.
-> 
-> Correct.
-> 
-> > This needs to be addressed
-> > in the thermal code, for example with dummy declarations if THERMAL=m but
-> > SENSORS_LM75=y. The functions are already declared as dummies if THERMAL_OF=n.
-> 
-> This won't fly I'm afraid, the number of hwmon drivers affected will
-> grow in the future and you certainly don't want to have to change the
-> generic thermal code every time a new driver is added/converted.
-> 
-That is not really necessary - see the patch fragment I sent as response to
-the other patch.
+On Tue, 7 Jan 2014, Phillip Susi wrote:
 
-Guenter
+> On 1/7/2014 10:25 AM, Alan Stern wrote:
+> > This doesn't seem like a good idea.  The way to speed up resumes is
+> > to allow sd's resume routine to return while the disk is still
+> > spinning up (i.e., make the spin-up asynchronous).  There already
+> > have been patches submitted to do this; I don't know what happened
+> > to them.
+> 
+> Sure, if that is your *only* goal.  I also want the disk to not spin
+> up *at all* if possible.  There's no sense spinning up all of your
+> disks every time you resume when you very rarely access some of them.
+
+Okay, that's a different matter.  There's a much simpler way to 
+accomplish this.  The patch below will avoid spinning up drives that 
+were already in runtime suspend when the system sleep started.  
+(If a drive wasn't in runtime suspend then presumably it was used 
+recently; therefore it's likely to be used again in the near future and 
+so it _should_ be spun up.)
+
+Warning: This patch is completely untested.  I didn't even try to
+compile it.  Still, it should give you a good idea as to what is really
+needed here.
+
+Alan Stern
+
+
+
+Index: usb-3.13/drivers/scsi/scsi_pm.c
+===================================================================
+--- usb-3.13.orig/drivers/scsi/scsi_pm.c
++++ usb-3.13/drivers/scsi/scsi_pm.c
+@@ -71,14 +71,11 @@ scsi_bus_resume_common(struct device *de
+ {
+ 	int err = 0;
+ 
++	if (pm_runtime_status_suspended(dev))
++		return err;
++
+ 	if (scsi_is_sdev_device(dev))
+ 		err = scsi_dev_type_resume(dev, cb);
+-
+-	if (err == 0) {
+-		pm_runtime_disable(dev);
+-		pm_runtime_set_active(dev);
+-		pm_runtime_enable(dev);
+-	}
+ 	return err;
+ }
+ 
+
