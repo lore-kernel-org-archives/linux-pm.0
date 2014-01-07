@@ -1,66 +1,46 @@
-From: Valentine <valentine.barshak@cogentembedded.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH 0/4] thermal: rcar: Add missing clock handling
-Date: Wed, 08 Jan 2014 01:52:14 +0400
-Message-ID: <52CC770E.1000004@cogentembedded.com>
+Date: Tue, 7 Jan 2014 23:13:25 +0100
+Message-ID: <CAMuHMdWBVZ6RNe8B5m3hh+6O=2Sg0NR7sGrAg-xDEKgsGrDnbw@mail.gmail.com>
 References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
+	<52CC770E.1000004@cogentembedded.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:65400 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752707AbaAGWN0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 17:13:26 -0500
+In-Reply-To: <52CC770E.1000004@cogentembedded.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Valentine <valentine.barshak@cogentembedded.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 01/07/2014 10:57 PM, Geert Uytterhoeven wrote:
->      Hi all,
+Hi Valentine,
 
-Hi Geert,
+On Tue, Jan 7, 2014 at 10:52 PM, Valentine
+<valentine.barshak@cogentembedded.com> wrote:
+> On 01/07/2014 10:57 PM, Geert Uytterhoeven wrote:
+>> This patch series fixes a problem when the thermal-rcar device is
+>> instantiated from the device tree on the r8a7791-based Koelsch development
+>> board. The driver fails during initialization with:
+>
+>
+> I think explicitly acquiring the clocks should not be needed.
+> Could you please try the patches from the following series instead?
+>
+> http://marc.info/?l=linux-sh&m=138823255807611&w=2
 
->
-> This patch series fixes a problem when the thermal-rcar device is
-> instantiated from the device tree on the r8a7791-based Koelsch development
-> board. The driver fails during initialization with:
+I already had these applied, and the problem persists.
 
-I think explicitly acquiring the clocks should not be needed.
-Could you please try the patches from the following series instead?
+Gr{oetje,eeting}s,
 
-http://marc.info/?l=linux-sh&m=138823255807611&w=2
+                        Geert
 
-Thanks,
-Val.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
->
->      rcar_thermal e61f0000.thermal: thermal sensor was broken
->
-> This does not happen when using legacy platform devices.
->
-> This series was tested using Koelsch reference (DT) and non-reference
-> (legacy) kernel configurations. It was not tested on r8a7790/Lager
-> (which is very similar).
->
->      [1/4] ARM: shmobile: r8a7791: Add thermal clock in device tree
->      [2/4] ARM: shmobile: r8a7790: Add thermal clock in device tree
->      [3/4] thermal: rcar: Add missing clock handling
->      [4/4] thermal: rcar: Spelling s/delaye/delay/g
->
-
-> Thanks for your comments!
->
-> Gr{oetje,eeting}s,
->
-> 						Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
