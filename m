@@ -1,60 +1,50 @@
-From: Gleb Natapov <gleb@kernel.org>
-Subject: Re: intel_pstate divide error with v3.13-rc4-256-gb7000ad
-Date: Tue, 7 Jan 2014 18:11:10 +0200
-Message-ID: <20140107161109.GM10961@minantech.com>
-References: <CA+5PVA6YpKc6kYK5UiTnGLZpB8uts=-QPtyhotAyZ2kuoG8PPQ@mail.gmail.com>
- <4794554.Hmd2RUNYDT@vostro.rjw.lan>
- <52C18A23.10703@redhat.com>
- <3710588.K8glfx1cYs@vostro.rjw.lan>
- <52C6F3B4.3050904@gmail.com>
- <20140103180435.GK10961@minantech.com>
- <52C716C1.6070704@gmail.com>
- <52C7345D.30603@redhat.com>
- <52CAE574.3010304@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: [0/11][REPOST] Energy-aware scheduling use-cases and scheduler issues
+Date: Tue,  7 Jan 2014 16:19:36 +0000
+Message-ID: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f41.google.com ([209.85.214.41]:63053 "EHLO
-	mail-bk0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbaAGQLQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:11:16 -0500
-Received: by mail-bk0-f41.google.com with SMTP id v15so302761bkz.28
-        for <linux-pm@vger.kernel.org>; Tue, 07 Jan 2014 08:11:15 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <52CAE574.3010304@gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:45252 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbaAGQTv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:19:51 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kashyap Chamarthy <kchamart@redhat.com>, Josh Boyer <jwboyer@fedoraproject.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, "Richard W.M. Jones" <rjones@redhat.com>
+To: peterz@infradead.org, mingo@kernel.org
+Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Jan 06, 2014 at 09:18:44AM -0800, Dirk Brandewie wrote:
-> On 01/03/2014 02:06 PM, Paolo Bonzini wrote:
-> >Il 03/01/2014 21:00, Dirk Brandewie ha scritto:
-> >>+    case MSR_IA32_MPERF:
-> >>+    case MSR_IA32_APERF:
-> >
-> OK I will spin the patch to only add MSR_PLATFORM_INFO.
-> 
-> >These should never be accessed.  A KVM VM will always have
-> >CPUID[06H].ECX = 0, and the Intel manual says that the MSRs are only
-> >present if CPUID returns that value with bit 0 set.
-> >
-> >I think the actual bug is that intel_pstate_init does not check the
-> >feature bits in CPUID (either manually or via x86_match_cpu).
-> 
-> I will add the feature check.
-> 
-> What are the differences between the first and the nested KVM's?
-There shouldn't be any. There is a bug in nested emulation probably.
+Reposting the series with LKML on cc as well.
 
-> At load time intel_pstate checks that APERF and MPERF are incrementing
-> and that PLATFORM_INFO has some value.  Somehow these checks pass
-> in the nested environment and we fall over when the CPU is being added
-> by cpufreq.
-> 
-KVM does not emulate either of those and inject #GP if one is accessed. Linux
-catches those #GPs and fixs up rdmsr to return zero. It would be interesting to
-see ftrace for nested kvm run.
+Original thread (with a few replies) can be found here:
+http://article.gmane.org/gmane.linux.power-management.general/41501
 
---
-			Gleb.
+Sorry for double-posting.
+
+Morten
+
+------------------------------------------------------------------------
+
+Hi,
+
+One of the requests from the scheduler maintainers at the Energy-aware
+Scheduling workshop at Kernel Summit this year was to provide plain text
+descriptions of use-cases (workloads) and system topologies. To get that
+moving I have written some short texts about some use-cases. In addition
+I described a list of issues that today prevent mainly the scheduler
+from achieving a good energy/performance balance in common use-cases.
+The follow-up emails are structured as follows:
+
+1-6:=09Current issues related to energy/performance balance.
+7-10:=09Use-cases (overall behaviour and energy/performance goals)
+11:=09DVFS example (for reference)
+
+I'm hoping that this provides some of the background for why I'm
+interested in improving energy-awareness in the scheduler. I'm aware
+that the use-cases and issues/wishlist don't cover everyone's area of
+interest. Input is needed to fix that.
+
+Comments and input are appreciated.
+
+Morten
+
