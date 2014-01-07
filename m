@@ -1,37 +1,75 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [8/11] use-case 2: Audio playback on Android
-Date: Tue, 7 Jan 2014 16:02:26 +0000
-Message-ID: <20140107160226.GC3000@e103034-lin>
-References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
- <1387557951-21750-9-git-send-email-morten.rasmussen@arm.com>
- <20140107121500.GR30183@twins.programming.kicks-ass.net>
- <20140107121600.GW3694@twins.programming.kicks-ass.net>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
+Date: Tue, 7 Jan 2014 08:02:36 -0800
+Message-ID: <20140107160236.GA24018@roeck-us.net>
+References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au>
+ <52CB0948.6030702@infradead.org>
+ <20140106203209.GA21630@roeck-us.net>
+ <52CB53DC.4030901@infradead.org>
+ <52CB65DA.2010103@roeck-us.net>
+ <20140107130401.23bffcd2@endymion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.austin.arm.com ([217.140.110.23]:55137 "EHLO
-	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751384AbaAGQCZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:02:25 -0500
+Return-path: <linux-next-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140107121600.GW3694@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20140107130401.23bffcd2@endymion.delvare>
+Sender: linux-next-owner@vger.kernel.org
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Frodo Looijaard <frodol@dds.nl>, lm-sensors@lm-sensors.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Jan 07, 2014 at 12:16:00PM +0000, Peter Zijlstra wrote:
+On Tue, Jan 07, 2014 at 01:04:01PM +0100, Jean Delvare wrote:
+> Hi Guenter, Randy,
 > 
+> On Mon, 06 Jan 2014 18:26:34 -0800, Guenter Roeck wrote:
+> > On 01/06/2014 05:09 PM, Randy Dunlap wrote:
+> > > From: Randy Dunlap <rdunlap@infradead.org>
+> > >
+> > > Fix SENSORS_LM75 dependencies to eliminate build errors:
+> > >
+> > > drivers/built-in.o: In function `lm75_remove':
+> > > lm75.c:(.text+0x12bd8c): undefined reference to `thermal_zone_of_sensor_unregister'
+> > > drivers/built-in.o: In function `lm75_probe':
+> > > lm75.c:(.text+0x12c123): undefined reference to `thermal_zone_of_sensor_register'
+> > >
+> > > Add depends on THERMAL_OF since that is what provides the
+> > > register/unregister functions above.
+> > >
+> > > Add depends on THERMAL since THERMAL is a tristate (while THERMAL_OF
+> > > is a bool) and SENSORS_LM75 (tristate) needs to be limited to modular
+> > > builds when THERMAL=m.
+> > >
+> > > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> > > ---
+> > >   drivers/hwmon/Kconfig |    2 ++
+> > >   1 file changed, 2 insertions(+)
+> > >
+> > > --- linux-next-20140106.orig/drivers/hwmon/Kconfig
+> > > +++ linux-next-20140106/drivers/hwmon/Kconfig
+> > > @@ -650,6 +650,8 @@ config SENSORS_LM73
+> > >   config SENSORS_LM75
+> > >   	tristate "National Semiconductor LM75 and compatibles"
+> > >   	depends on I2C
+> > > +	depends on THERMAL
+> > > +	depends on THERMAL_OF
+> > >   	help
+> > >   	  If you say yes here you get support for one common type of
+> > >   	  temperature sensor chip, with models including:
+> > >
+> > >
+> > NACK. The driver does not and must not depend on THERMAL.
 > 
-> Oh, I just noticed, we're hiding this on the linux-pm list :-(
-
-It was requested at KS that we had these discussions at linux-pm. Some
-of the Intel people don't follow lkml.
-
-I should have added lkml too, sorry.
-
+> Correct.
 > 
-> I suppose I should stop reading for I might be tricked into replying
-> more..
+> > This needs to be addressed
+> > in the thermal code, for example with dummy declarations if THERMAL=m but
+> > SENSORS_LM75=y. The functions are already declared as dummies if THERMAL_OF=n.
+> 
+> This won't fly I'm afraid, the number of hwmon drivers affected will
+> grow in the future and you certainly don't want to have to change the
+> generic thermal code every time a new driver is added/converted.
+> 
+That is not really necessary - see the patch fragment I sent as response to
+the other patch.
 
-I can repost the series with lkml on cc.
+Guenter
