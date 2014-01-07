@@ -1,53 +1,46 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [9/11] use-case 3: Video playback on Android
-Date: Tue,  7 Jan 2014 16:19:45 +0000
-Message-ID: <1389111587-5923-10-git-send-email-morten.rasmussen@arm.com>
+Subject: [8/11] use-case 2: Audio playback on Android
+Date: Tue,  7 Jan 2014 16:19:44 +0000
+Message-ID: <1389111587-5923-9-git-send-email-morten.rasmussen@arm.com>
 References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:45557 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbaAGQTy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:19:54 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, morten.rasmussen@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Depending on the platform hardware video is a low to medium load
-periodic application. There may be some variation in the load depending
-on the video codec, content, and resolution. The load pattern is roughly
-synchronized to the video frame-rate (typically 30 FPS). Video playback
-also includes audio playback as part of the workload.
+Audio playback is a low load periodic application that has little/no
+variation in period and load over time. It consists of tasks involved in
+decoding the audio stream and communicating with audio frameworks and
+drivers.
 
 Performance Criteria
 
-Video decoding must be done in time to avoid dropped frames. Similarly,
-audio must be decoded in time to never let the audio buffer run empty.
+All tasks must have completed before the next request to fill the audio
+buffer. Most modern hardware should be able to deal with the load even
+at the lowest P-state.
 
 Task behaviour
 
-Based on video playback (720p and 1080p) on a modern ARM SoC, the cpu
-load is generally modest. Video resolution has only a minor impact on
-the overall cpu load. The load pattern is repeating every ~33 ms.
+The task load pattern period is dictated by the audio interrupt. On an
+example modern ARM based system this occurs every ~6 ms. The decoding
+work is triggered every fourth interrupt, i.e. a ~24 ms period. No tasks
+are scheduled at the intermediate interrupts. The tasks involved are:
 
-Rendering task: The main Android graphics rendering task accounts for
-about 18% of the total cpu load. It is active for about ~6-8 ms each
-period during which it is blocking a couple of times. It appears to run
-in sync with a handful of other tasks. Most of which are related to
-timed queues in Android and graphics.
+Main audio framework task (AudioOut): The first task to be scheduled
+after the interrupt and continues running until decoding has completed.
+That is ~5 ms. Runs at nice=3D-19.
 
-Timed events queue tasks: An Android TimedEventQueue task for each cpu
-is active during video playback. In total, they account for around 30%
-of the cpu load. They are all following the 33 ms period and run for
-250-700 us when scheduled (average).
+Audio framework task 2 (AudioTrack): Woken up by the main task ~250-300
+us after the main audio task is scheduled. Runs for ~300 us at nice=3D-16.
 
-Audio decoding task: Accounts for ~10% of the cpu load. Load pattern
-repeat every ~23 ms. Since this is different from the period of video
-rendering, this may run in parallel with video rendering form time to
-time. Audio decoding runs for about 2 ms when scheduled each period.
+Decoder task (mp3.decoder): Woken up by the audio task 2 when that
+finishes (serialized). Runs for ~1 ms until it wakes a third Android
+task on which it blocks and continues for another ~150 us afterwards
+(serialized). Runs at nice=3D-2.
 
-A lot of smaller tasks are involved in the periodic load pattern.
-
+Android task 3 (OMXCallbackDisp): Woken by decoder task. Runs for ~300
+us at nice=3D-2.
