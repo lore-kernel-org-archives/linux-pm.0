@@ -1,85 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: speedstep: remove unused speedstep_get_state
-Date: Mon, 06 Jan 2014 23:24:21 +0100
-Message-ID: <1756077.6t9Ofi9GiT@vostro.rjw.lan>
-References: <1389040212.2562.3.camel@x41>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
+Date: Mon, 06 Jan 2014 17:09:48 -0800
+Message-ID: <52CB53DC.4030901@infradead.org>
+References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au> <52CB0948.6030702@infradead.org> <20140106203209.GA21630@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62180 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755383AbaAFWKf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2014 17:10:35 -0500
-In-Reply-To: <1389040212.2562.3.camel@x41>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <20140106203209.GA21630@roeck-us.net>
+Sender: linux-next-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Frodo Looijaard <frodol@dds.nl>, lm-sensors@lm-sensors.org, "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, January 06, 2014 09:30:12 PM Paul Bolle wrote:
-> The only caller of speedstep_get_state() was removed in commit d4019f0a92ab
-> ("cpufreq: move freq change notifications to cpufreq core"). So building
-> speedstep-smi.o now triggers a GCC warning:
->     drivers/cpufreq/speedstep-smi.c:148:12: warning: 'speedstep_get_state' defined but not used [-Wunused-function]
+On 01/06/14 12:32, Guenter Roeck wrote:
+> On Mon, Jan 06, 2014 at 11:51:36AM -0800, Randy Dunlap wrote:
+>> On 01/06/14 01:40, Stephen Rothwell wrote:
+>>> Hi all,
+>>>
+>>> This tree fails (more than usual) the powerpc allyesconfig build.
+>>>
+>>> Changes since 20131224:
+>>>
+>>
+>>
+>> on i386:
+>>
+>> drivers/built-in.o: In function `lm75_remove':
+>> lm75.c:(.text+0x12bd8c): undefined reference to `thermal_zone_of_sensor_unregister'
+>> drivers/built-in.o: In function `lm75_probe':
+>> lm75.c:(.text+0x12c123): undefined reference to `thermal_zone_of_sensor_register'
+>>
 > 
-> Remove this unused function.
-> 
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> AFAICS that is a dependency problem in thermal code.
+> CONFIG_THERMAL=m defines the symbols, but CONFIG_SENSORS_LM75=y.
 
-Queued up for 3.14, thanks!
+CONFIG_THERMAL_OF defines the symbols.
 
-> ---
-> This seems to be a rather obvious fix. Hasn't it been submitted before?
-> 
->  drivers/cpufreq/speedstep-smi.c | 32 --------------------------------
->  1 file changed, 32 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-> index 0f5326d..998c17b 100644
-> --- a/drivers/cpufreq/speedstep-smi.c
-> +++ b/drivers/cpufreq/speedstep-smi.c
-> @@ -141,38 +141,6 @@ static int speedstep_smi_get_freqs(unsigned int *low, unsigned int *high)
->  }
->  
->  /**
-> - * speedstep_get_state - set the SpeedStep state
-> - * @state: processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
-> - *
-> - */
-> -static int speedstep_get_state(void)
-> -{
-> -	u32 function = GET_SPEEDSTEP_STATE;
-> -	u32 result, state, edi, command, dummy;
-> -
-> -	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
-> -
-> -	pr_debug("trying to determine current setting with command %x "
-> -		"at port %x\n", command, smi_port);
-> -
-> -	__asm__ __volatile__(
-> -		"push %%ebp\n"
-> -		"out %%al, (%%dx)\n"
-> -		"pop %%ebp\n"
-> -		: "=a" (result),
-> -		  "=b" (state), "=D" (edi),
-> -		  "=c" (dummy), "=d" (dummy), "=S" (dummy)
-> -		: "a" (command), "b" (function), "c" (0),
-> -		  "d" (smi_port), "S" (0), "D" (0)
-> -	);
-> -
-> -	pr_debug("state is %x, result is %x\n", state, result);
-> -
-> -	return state & 1;
-> -}
-> -
-> -
-> -/**
->   * speedstep_set_state - set the SpeedStep state
->   * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
->   *
-> 
+It looks to me like drivers/hwmon/Kconfig SENSORS_LM75 entry needs a
+	depends on THERMAL_OF
+line, but that won't fix this build error.
+The problem (once again, not the first time that I have seen this one) is that
+we have a tristate =m that depends on a bool =y.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Hm, I bet a "depends on THERMAL" for SENSORS_LM75 will fix this.
+[test]
+Yes, that restricts (limits) SENSORS_LM75 to n/m; y is not possible.
+
+Patch for your consideration is below.
+
+> 
+> Up to the thermal folks to fix; if the code ends up in mainline we'll have to
+> revert the patch introducing the calls to the lm75 driver (and the tmp102 driver
+> which has the same issue).
+> 
+> Another oddity is the help text to THERMAL_OF, which states that it supports
+> reading and parsing thermal data definitions out of dt but fails to mention
+> that it also provides the above API functions.
+
+---
+From: Randy Dunlap <rdunlap@infradead.org>
+
+Fix SENSORS_LM75 dependencies to eliminate build errors:
+
+drivers/built-in.o: In function `lm75_remove':
+lm75.c:(.text+0x12bd8c): undefined reference to `thermal_zone_of_sensor_unregister'
+drivers/built-in.o: In function `lm75_probe':
+lm75.c:(.text+0x12c123): undefined reference to `thermal_zone_of_sensor_register'
+
+Add depends on THERMAL_OF since that is what provides the
+register/unregister functions above.
+
+Add depends on THERMAL since THERMAL is a tristate (while THERMAL_OF
+is a bool) and SENSORS_LM75 (tristate) needs to be limited to modular
+builds when THERMAL=m.
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+---
+ drivers/hwmon/Kconfig |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- linux-next-20140106.orig/drivers/hwmon/Kconfig
++++ linux-next-20140106/drivers/hwmon/Kconfig
+@@ -650,6 +650,8 @@ config SENSORS_LM73
+ config SENSORS_LM75
+ 	tristate "National Semiconductor LM75 and compatibles"
+ 	depends on I2C
++	depends on THERMAL
++	depends on THERMAL_OF
+ 	help
+ 	  If you say yes here you get support for one common type of
+ 	  temperature sensor chip, with models including:
