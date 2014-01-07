@@ -1,40 +1,36 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
-Date: Tue, 7 Jan 2014 16:07:38 +0100
-Message-ID: <20140107160738.4a76a6d0@endymion.delvare>
-References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au>
-	<52CB0948.6030702@infradead.org>
-	<20140106203209.GA21630@roeck-us.net>
-	<52CB53DC.4030901@infradead.org>
-	<52CB65DA.2010103@roeck-us.net>
-	<20140107130401.23bffcd2@endymion.delvare>
-	<52CBF1CF.2000603@ti.com>
-	<744357E9AAD1214791ACBA4B0B909263011BC64C@SHSMSX101.ccr.corp.intel.com>
-	<52CC15F0.6020209@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
+Date: Tue, 7 Jan 2014 10:25:41 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401071021100.1296-100000@iolanthe.rowland.org>
+References: <52CBB188.2080707@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <52CC15F0.6020209@ti.com>
-Sender: linux-next-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, Guenter Roeck <linux@roeck-us.net>, Randy Dunlap <rdunlap@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-scsi-owner@vger.kernel.org>
+In-Reply-To: <52CBB188.2080707@intel.com>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Phillip Susi <psusi@ubuntu.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 7 Jan 2014 10:57:52 -0400, Eduardo Valentin wrote:
-> On 07-01-2014 10:05, Zhang, Rui wrote:
-> > BTW, I've been thinking of make CONFIG_THERMAL a bool since long time ago, the only thing that blocks me is that Thermal subsystem needs to register a hwmon device for each thermal zone and CONFIG_HWMON is a tristate.
+On Tue, 7 Jan 2014, Aaron Lu wrote:
+
+> From: Aaron Lu <aaron.lu@intel.com>
+> Date: Tue, 7 Jan 2014 15:02:13 +0800
+> Subject: [PATCH 1/2] SCSI: pm: make use of runtime PM for SCSI device
 > 
-> I agree with the move of having CONFIG_THERMAL as bool. Unless you have
-> use cases where users are dynamically loading and unloading thermal per
-> user demand, which I doubt.
+> To make system resume fast, modify SCSI PM callbacks so that if
+> CONFIG_PM_RUNTIME is set, during a system suspend transition, make the
+> disk device's status exactly the same as runtime suspended, i.e. drain
+> its request queue and set its request queue's status to RPM_SUSPENDED,
+> so that during system resume phase, instead of resuming the device
+> synchronously, we can relay the resume operation to runtime PM framework
+> by calling pm_request_resume to take advantage of the block layer
+> runtime PM.
 
-Modularity is not only about reloading modules (although this can be
-useful for developers in particular.) It's also about enabling many
-features in a generic distribution kernel and each feature only gets
-loaded/used on the hardware which needs it. This is why, as a
-distribution kernel maintainer, I keep complaining when I see boolean
-options which might easily be tristates.
+This doesn't seem like a good idea.  The way to speed up resumes is to
+allow sd's resume routine to return while the disk is still spinning up
+(i.e., make the spin-up asynchronous).  There already have been patches
+submitted to do this; I don't know what happened to them.
 
--- 
-Jean Delvare
+Alan Stern
+
