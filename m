@@ -1,69 +1,50 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Tue, 7 Jan 2014 11:08:22 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401071057130.1296-100000@iolanthe.rowland.org>
-References: <52CC20A0.7060606@ubuntu.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
+Date: Tue, 7 Jan 2014 08:10:18 -0800
+Message-ID: <20140107161018.GB24018@roeck-us.net>
+References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au>
+ <52CB0948.6030702@infradead.org>
+ <20140106203209.GA21630@roeck-us.net>
+ <52CB53DC.4030901@infradead.org>
+ <52CB65DA.2010103@roeck-us.net>
+ <20140107130401.23bffcd2@endymion.delvare>
+ <52CBF1CF.2000603@ti.com>
+ <744357E9AAD1214791ACBA4B0B909263011BC64C@SHSMSX101.ccr.corp.intel.com>
+ <52CC15F0.6020209@ti.com>
+ <20140107160738.4a76a6d0@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:55036 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751631AbaAGQIX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:08:23 -0500
-In-Reply-To: <52CC20A0.7060606@ubuntu.com>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:46300 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbaAGQKT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 11:10:19 -0500
+Content-Disposition: inline
+In-Reply-To: <20140107160738.4a76a6d0@endymion.delvare>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phillip Susi <psusi@ubuntu.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>, Randy Dunlap <rdunlap@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org
 
-On Tue, 7 Jan 2014, Phillip Susi wrote:
-
-> On 1/7/2014 10:25 AM, Alan Stern wrote:
-> > This doesn't seem like a good idea.  The way to speed up resumes is
-> > to allow sd's resume routine to return while the disk is still
-> > spinning up (i.e., make the spin-up asynchronous).  There already
-> > have been patches submitted to do this; I don't know what happened
-> > to them.
+On Tue, Jan 07, 2014 at 04:07:38PM +0100, Jean Delvare wrote:
+> On Tue, 7 Jan 2014 10:57:52 -0400, Eduardo Valentin wrote:
+> > On 07-01-2014 10:05, Zhang, Rui wrote:
+> > > BTW, I've been thinking of make CONFIG_THERMAL a bool since long time ago, the only thing that blocks me is that Thermal subsystem needs to register a hwmon device for each thermal zone and CONFIG_HWMON is a tristate.
+> > 
+> > I agree with the move of having CONFIG_THERMAL as bool. Unless you have
+> > use cases where users are dynamically loading and unloading thermal per
+> > user demand, which I doubt.
 > 
-> Sure, if that is your *only* goal.  I also want the disk to not spin
-> up *at all* if possible.  There's no sense spinning up all of your
-> disks every time you resume when you very rarely access some of them.
+> Modularity is not only about reloading modules (although this can be
+> useful for developers in particular.) It's also about enabling many
+> features in a generic distribution kernel and each feature only gets
+> loaded/used on the hardware which needs it. This is why, as a
+> distribution kernel maintainer, I keep complaining when I see boolean
+> options which might easily be tristates.
+> 
+Agreed. Problem is really that it is not easy to declare cross-module
+dependencies (eg THERMAL=m -> HWMON=m and THERMAL=y -> HWMON=y and
+vice versa) in Kconfig. Declaring everything as bool can not be
+the solution to that.
 
-Okay, that's a different matter.  There's a much simpler way to 
-accomplish this.  The patch below will avoid spinning up drives that 
-were already in runtime suspend when the system sleep started.  
-(If a drive wasn't in runtime suspend then presumably it was used 
-recently; therefore it's likely to be used again in the near future and 
-so it _should_ be spun up.)
-
-Warning: This patch is completely untested.  I didn't even try to
-compile it.  Still, it should give you a good idea as to what is really
-needed here.
-
-Alan Stern
-
-
-
-Index: usb-3.13/drivers/scsi/scsi_pm.c
-===================================================================
---- usb-3.13.orig/drivers/scsi/scsi_pm.c
-+++ usb-3.13/drivers/scsi/scsi_pm.c
-@@ -71,14 +71,11 @@ scsi_bus_resume_common(struct device *de
- {
- 	int err = 0;
- 
-+	if (pm_runtime_status_suspended(dev))
-+		return err;
-+
- 	if (scsi_is_sdev_device(dev))
- 		err = scsi_dev_type_resume(dev, cb);
--
--	if (err == 0) {
--		pm_runtime_disable(dev);
--		pm_runtime_set_active(dev);
--		pm_runtime_enable(dev);
--	}
- 	return err;
- }
- 
-
+Guenter
