@@ -1,60 +1,78 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Tue, 7 Jan 2014 13:05:17 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401071251330.1296-100000@iolanthe.rowland.org>
-References: <52CC2D5F.6030905@ubuntu.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH] hwmon/sensors: fix SENSORS_LM75 dependencies
+Date: Tue, 07 Jan 2014 10:06:47 -0800
+Message-ID: <52CC4237.5000704@infradead.org>
+References: <20140106204020.b47e53cc3ead8f90164ef5b7@canb.auug.org.au>	<52CB0948.6030702@infradead.org>	<20140106203209.GA21630@roeck-us.net>	<52CB53DC.4030901@infradead.org>	<52CB65DA.2010103@roeck-us.net>	<20140107130401.23bffcd2@endymion.delvare>	<52CBF1CF.2000603@ti.com> <20140107152148.36768345@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:56328 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753068AbaAGSFT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 13:05:19 -0500
-In-Reply-To: <52CC2D5F.6030905@ubuntu.com>
+Received: from merlin.infradead.org ([205.233.59.134]:38123 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752049AbaAGSG4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 13:06:56 -0500
+In-Reply-To: <20140107152148.36768345@endymion.delvare>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phillip Susi <psusi@ubuntu.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Jean Delvare <khali@linux-fr.org>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Frodo Looijaard <frodol@dds.nl>, lm-sensors@lm-sensors.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-On Tue, 7 Jan 2014, Phillip Susi wrote:
-
-> On 1/7/2014 11:08 AM, Alan Stern wrote:
-> > Okay, that's a different matter.  There's a much simpler way to 
-> > accomplish this.  The patch below will avoid spinning up drives
-> > that were already in runtime suspend when the system sleep started.
-> >  (If a drive wasn't in runtime suspend then presumably it was used
-> >  recently; therefore it's likely to be used again in the near
-> > future and so it _should_ be spun up.)
+On 01/07/14 06:21, Jean Delvare wrote:
+> Hi Eduardo,
 > 
-> This is a poor assumption.  You may not be using autosuspend at all,
-> or with a rather long timeout, so it is fairly normal to not be
-> runtime suspended at suspend time, and yet not likely to access the
-> disk for some time after resume.
 
-I disagree with your argument.  If you aren't using autosuspend at all 
-then you don't mind having your disks spin all the time.  Therefore you 
-don't mind if the disks spin up during system resume.
+> I suppose this works, however I believe there is value in allowing for
+> modular building of as much code as possible.
 
-If you're using a long timeout and you don't like the way the timer 
-gets reset by a system sleep, then you have set the timeout too long.
+ack, yes, please.
 
-Now, a more reasonable argument might be that for some disks, the
-kernel doesn't need to do an explicit spin-up or spin-down (for runtime
-suspend) at all; instead we can rely on the drive's internal power
-management.  In fact there already is a "manage_start_stop" attribute
-to control this.  (Well, almost -- if the attribute is set to 0 then
-the kernel won't issue a spin-down command even for system suspend.)
+> I have an alternative proposal, which lets thermal be built as module,
+> and hopefully also addresses the issue (I can't test...) The only
+> drawback is that the same dependency must be added for every other
+> hwmon driver which optionally uses THERMAL_OF.
+> 
+> From: Jean Delvare <khali@linux-fr.org>
+> 
+> Based on an earlier attempt by Randy Dunlap.
+> 
+> Fix SENSORS_LM75 dependencies to eliminate build errors:
+> 
+> drivers/built-in.o: In function `lm75_remove':
+> lm75.c:(.text+0x12bd8c): undefined reference to `thermal_zone_of_sensor_unregister'
+> drivers/built-in.o: In function `lm75_probe':
+> lm75.c:(.text+0x12c123): undefined reference to `thermal_zone_of_sensor_register'
+> 
+> Add depends on THERMAL since that is what provides the
+> register/unregister functions above, but only if THERMAL_OF was
+> selected as this is an optional feature of the driver.
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
 
->  It also still suffers from the issue
-> of claiming the device is runtime suspended while the disk has in
-> fact, spun up of its own accord.
+works for me.
 
-I don't understand.  Under what circumstances would this happen?  Are 
-you saying this would happen during system resume?  Why would the disk 
-spin up of its own accord at that time?
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
 
-And if it does spin up of its own accord, what makes you think the 
-kernel can do anything to prevent it from spinning up?
+Thanks.
 
-Alan Stern
+> ---
+>  drivers/hwmon/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-3.13-rc7.orig/drivers/hwmon/Kconfig	2014-01-07 09:01:24.812848091 +0100
+> +++ linux-3.13-rc7/drivers/hwmon/Kconfig	2014-01-07 15:19:11.039472329 +0100
+> @@ -650,6 +650,7 @@ config SENSORS_LM73
+>  config SENSORS_LM75
+>  	tristate "National Semiconductor LM75 and compatibles"
+>  	depends on I2C
+> +	depends on THERMAL || !THERMAL_OF
+>  	help
+>  	  If you say yes here you get support for one common type of
+>  	  temperature sensor chip, with models including:
+> 
+> 
 
+
+-- 
+~Randy
