@@ -1,99 +1,97 @@
-From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: Re: [PATCH 3/4] thermal: rcar: Add missing clock handling
-Date: Wed, 08 Jan 2014 12:23:42 +0000
-Message-ID: <52CD434E.6030906@codethink.co.uk>
-References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org> <1389121036-3555-4-git-send-email-geert@linux-m68k.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [5/11] issue 5: Frequency and uarch invariant task load
+Date: Wed, 8 Jan 2014 13:31:18 +0100
+Message-ID: <20140108123118.GS30183@twins.programming.kicks-ass.net>
+References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
+ <1389111587-5923-6-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1389121036-3555-4-git-send-email-geert@linux-m68k.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:56491 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755106AbaAHMbl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 07:31:41 -0500
+Content-Disposition: inline
+In-Reply-To: <1389111587-5923-6-git-send-email-morten.rasmussen@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@kernel.org, rjw@rjwysocki.net, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/01/14 18:57, Geert Uytterhoeven wrote:
-> From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
->
-> When using DT to instantiate the rcar-thermal device, it prints the
-> following error:
->
->      rcar_thermal e61f0000.thermal: thermal sensor was broken
->
-> Explicitly request and enable the thermal clock to fix this.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
-> ---
->   drivers/thermal/rcar_thermal.c |   40 +++++++++++++++++++++++++++++++++-------
->   1 file changed, 33 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 88f92e1a9944..a5629500723a 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -17,6 +17,7 @@
->    *  with this program; if not, write to the Free Software Foundation, Inc.,
->    *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
->    */
-> +#include <linux/clk.h>
->   #include <linux/delay.h>
->   #include <linux/err.h>
->   #include <linux/irq.h>
-> @@ -53,6 +54,7 @@ struct rcar_thermal_common {
->   	struct device *dev;
->   	struct list_head head;
->   	spinlock_t lock;
-> +	struct clk *clk;
->   };
->
->   struct rcar_thermal_priv {
-> @@ -378,23 +380,38 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->   	spin_lock_init(&common->lock);
->   	common->dev = dev;
->
-> +	common->clk = devm_clk_get(&pdev->dev, NULL);
-> +	if (IS_ERR(common->clk)) {
-> +		dev_err(&pdev->dev, "cannot get clock\n");
-> +		return PTR_ERR(common->clk);
-> +	}
-> +
-> +	ret = clk_prepare(common->clk);
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "unable to prepare clock\n");
-> +		return ret;
-> +	}
-> +
-> +	clk_enable(common->clk);
-> +
->   	pm_runtime_enable(dev);
->   	pm_runtime_get_sync(dev);
->
->   	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
->   	if (irq) {
-> -		int ret;
-> +		int ret2;
->
->   		/*
->   		 * platform has IRQ support.
->   		 * Then, drier use common register
->   		 */
->
-> -		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
-> -				       dev_name(dev), common);
-> -		if (ret) {
-> +		ret2 = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
-> +					dev_name(dev), common);
-> +		if (ret2) {
->   			dev_err(dev, "irq request failed\n ");
-> -			return ret;
-> +			ret = ret2;
-> +			goto error_unpm;
->   		}
+On Tue, Jan 07, 2014 at 04:19:41PM +0000, Morten Rasmussen wrote:
+> Potential solution: Frequency invariance has been proposed before [1]
+> where the task load is scaled by the cur/max freq ratio. Another
+> possibility is to use hardware counters if such are available on the
+> platform.
+> 
+> [1] https://lkml.org/lkml/2013/4/16/289
 
-I'd suggest not renaming ret2 and just use the original ret.
+Right, I just had a look at those patches.. they're not horrible but I
+think they're missing a few opportunities.
+
+My main objection to them is that I think the newly introduced
+max_capacity is exactly what the current cpu_power thing is -- then
+again, I still haven't let the entire thing sink in well enough.
+
+Not to mention we need to fix some of the cpu_power abuse -- like the
+correlation to capacity, which as stated in previous emails should be
+sorted using utilization.
+
+So DVFS certainly makes sense, and would indeed be required in order to
+make sensible decisions in the face of P states. Even in the face of
+funny hardware like Intel which pretty much ignores whatever you tell it
+and does it own merry thing.
 
 
--- 
-Ben Dooks				http://www.codethink.co.uk/
-Senior Engineer				Codethink - Providing Genius
+A few random thoughts:
+
+ - I think for SMP-nice we want to migrate from /max_capacity to
+   /curr_capacity; because SMP-nice cares about 100% utilization
+   regardless of the actual P state. If we're somehow forced into a
+   lower P state (thermal or otherwise) fairness is best served by
+   normalizing at the rate we're actually running at, not the potential
+   maximal.
+
+ - We need to re-think SMT and turbo-bins in general; I think we can
+   think of those two as the same effective thing. This does mean Intel
+   chips will have a dual layer of this goo, and we can currently barely
+   deal with the 1 SMT layer, let alone do something sensible with 2.
+
+   To clarify, a single SMT thread will generally go 'faster' on its own
+   since it doesn't need to compete with the other thread(s) for core
+   resources, but together they might better utilize the core resources
+   giving an over-all throughput win.
+
+   Similar for turbo bins, a single core can go faster on its own since
+   it doesn't have competition for energy and thermal constraints, but
+   together cores can probably achieve greater throughput.
+
+   So we need a better way to describe this capacity dependency and
+   variability.
+
+   I'm fairly sure ARM doesn't do SMT, but they certainly suffer from
+   thermal caps and can thus have effective turbo bins, even though
+   they're not explicit and magic like with Intel.
+
+   And of course the honorary mention goes to Power7 which has
+   asymmetric bins -- lets hope they fix it and nobody else things them
+   a great idea.
+
+ - For hardware without P state controls, or hardware that pretty much
+   ignores them, we need means of obtaining the max and curr capacity.
+
+   Intel has the APERF, MPERF registers which resp. count at actual
+   frequency and fixed frequency. Using them is a bit tricky since
+   APERF doesn't count when idle, but when filtering out the idle time
+   they do provide a current performance ratio.
+
+   From that we could obtain a max performance ratio by using a wide
+   window max on the current value or somesuch.
+
+   Again, SMT and turbo-bins will complicate matters..
+
+   Other CPUs that have magic P state control might not provide such
+   registers which would require PMU resources, which would completely
+   blow :/
+
+
