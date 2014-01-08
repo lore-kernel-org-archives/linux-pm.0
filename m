@@ -1,74 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend 1/4] cpufreq: stats: handle cpufreq_unregister_driver() and suspend/resume properly
-Date: Wed, 08 Jan 2014 01:14:11 +0100
-Message-ID: <2641423.LeSa8tdYgZ@vostro.rjw.lan>
-References: <b4c2b7c1f5e480e6ae6fcbc737ae52c1e0a88549.1389058746.git.viresh.kumar@linaro.org>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH -trivial 4/4] thermal: rcar: Spelling s/delaye/delay/g
+Date: Wed, 8 Jan 2014 09:12:28 +0900
+Message-ID: <20140108001228.GD5136@verge.net.au>
+References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
+ <1389121036-3555-5-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <b4c2b7c1f5e480e6ae6fcbc737ae52c1e0a88549.1389058746.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from kirsty.vergenet.net ([202.4.237.240]:54279 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754515AbaAHAMa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 19:12:30 -0500
+Content-Disposition: inline
+In-Reply-To: <1389121036-3555-5-git-send-email-geert@linux-m68k.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@linux-m68k.org>, Jiri Kosina <trivial@kernel.org>
 
-On Tuesday, January 07, 2014 07:10:10 AM Viresh Kumar wrote:
-> There are several problems cpufreq stats in the way it handles
-> cpufreq_unregister_driver() and suspend/resume..
+On Tue, Jan 07, 2014 at 07:57:16PM +0100, Geert Uytterhoeven wrote:
+> From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
 > 
-> - We must not loose data collected so far when suspend/resume happens and so
->   stats directories must not be removed/allocated during these operations, Which
->   is done currently.
-> 
-> - cpufreq_stat has registered notifiers with both cpufreq and hotplug. It adds
->   sysfs stats directory with a cpufreq notifier: CPUFREQ_NOTIFY and removes this
->   directory with a notifier from hotplug core.
-> 
->   In case cpufreq_unregister_driver() is called (on rmmod cpufreq driver), stats
->   directories per cpu aren't removed as CPUs are still online. The only call
->   cpufreq_stats gets is cpufreq_stats_update_policy_cpu for all CPUs except the
->   last of each policy. And pointer to stat information is stored in the entry
->   for last cpu in per-cpu cpufreq_stats_table. But policy structure would be
->   freed inside cpufreq core and so that will result in memory leak inside
->   cpufreq stats (as we are never freeing memory for stats).
-> 
->   Now if we again insert the module cpufreq_register_driver() will be called and
->   we will again allocate stats data and put it on for first cpu of every policy.
->   In case we only have a single cpu per policy we will return with a error from
->   cpufreq_stats_create_table() due to below code:
-> 
-> 	if (per_cpu(cpufreq_stats_table, cpu))
-> 		return -EBUSY;
-> 
->   And so probably cpufreq stats directory would show up anymore (as it was added
->   inside last policies->kobj which doesn't exist anymore). I haven't tested it
->   though. Also the values in stats files wouldn't be refreshed as we are using
->   the earlier stats structure.
-> 
-> - CPUFREQ_NOTIFY is called from cpufreq_set_policy() which is called for
->   scenarios where we don't really want cpufreq_stat_notifier_policy() to get
->   called. For example whenever we are changing anything related to a policy:
->   min/max/current freq, etc.. cpufreq_set_policy() is called and so cpufreq
->   stats is notified. Where we don't do any useful stuff other than simply
->   returning with -EBUSY from cpufreq_stats_create_table(). And so this isn't the
->   right notifier that cpufreq stats..
-> 
-> Due to all above reasons this patch does following changes:
-> - Add new notifiers CPUFREQ_CREATE_POLICY and CPUFREQ_REMOVE_POLICY, which are
->   only called when policy is created/destroyed. They aren't called for
->   suspend/resume paths..
-> - Use these notifiers in cpufreq_stat_notifier_policy() to create/destory stats
->   sysfs entries. And so cpufreq_unregister_driver() or suspend/resume shouldn't
->   be a problem for cpufreq_stats.
-> - Return early from cpufreq_stat_cpu_callback() for suspend/resume sequence, so
->   that we don't free stats structure.
-> 
-> Acked-and-tested-by: Nicolas Pitre <nico@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+> Cc: Jiri Kosina <trivial@kernel.org>
 
-The entire series applied to bleeding-edge, thanks!
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> ---
+>  drivers/thermal/rcar_thermal.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index a5629500723a..32d591087307 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -427,7 +427,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		/* enable temperature comparation */
+>  		rcar_thermal_common_write(common, ENR, 0x00030303);
+>  
+> -		idle = 0; /* polling delaye is not needed */
+> +		idle = 0; /* polling delay is not needed */
+>  	}
+>  
+>  	for (i = 0;; i++) {
+> -- 
+> 1.7.9.5
+> 
