@@ -1,47 +1,79 @@
-From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: Re: [PATCH 3/4] thermal: rcar: Add missing clock handling
-Date: Wed, 08 Jan 2014 12:20:00 +0000
-Message-ID: <52CD4270.3010907@codethink.co.uk>
-References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org> <1389121036-3555-4-git-send-email-geert@linux-m68k.org> <20140107205719.GL20094@book.gsilab.sittig.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH] hwmon: Fix SENSORS_TMP102 dependencies to eliminate build
+ errors
+Date: Wed, 8 Jan 2014 08:20:22 -0400
+Message-ID: <52CD4286.7080205@ti.com>
+References: <20140108080557.3439ec23@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20140107205719.GL20094@book.gsilab.sittig.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Gerhard Sittig <gsi@denx.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Geert Uytterhoeven <geert+renesas@linux-m68k.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="spM41cQEGqLnWsmiSlmq63kNQQcOJmUp4"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:51628 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755106AbaAHMWY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Jan 2014 07:22:24 -0500
+In-Reply-To: <20140108080557.3439ec23@endymion.delvare>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, LM Sensors <lm-sensors@lm-sensors.org>, linux-pm@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Guenter Roeck <linux@roeck-us.net>
 
-On 07/01/14 20:57, Gerhard Sittig wrote:
-> On Tue, Jan 07, 2014 at 19:57 +0100, Geert Uytterhoeven wrote:
->>
->> @@ -378,23 +380,38 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->>   	spin_lock_init(&common->lock);
->>   	common->dev = dev;
->>
->> +	common->clk = devm_clk_get(&pdev->dev, NULL);
->> +	if (IS_ERR(common->clk)) {
->> +		dev_err(&pdev->dev, "cannot get clock\n");
->> +		return PTR_ERR(common->clk);
->> +	}
->> +
->> +	ret = clk_prepare(common->clk);
->> +	if (ret < 0) {
->> +		dev_err(&pdev->dev, "unable to prepare clock\n");
->> +		return ret;
->> +	}
->> +
->> +	clk_enable(common->clk);
->> +
->>   	pm_runtime_enable(dev);
->>   	pm_runtime_get_sync(dev);
->
-> clk_enable() can fail, too, so you should check its return value
+--spM41cQEGqLnWsmiSlmq63kNQQcOJmUp4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Also, if you enable the pm-runtime then the device clock is actually
-handled by the common pm-clock framework.
+On 08-01-2014 03:05, Jean Delvare wrote:
+> Similar to what was done for the lm75 driver.
+>=20
+> Add depends on THERMAL since that is what provides the
+> register/unregister functions above, but only if THERMAL_OF was
+> selected as this is an optional feature of the driver.
+>=20
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
 
--- 
-Ben Dooks				http://www.codethink.co.uk/
-Senior Engineer				Codethink - Providing Genius
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
+> ---
+>  drivers/hwmon/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> --- linux-3.13-rc7.orig/drivers/hwmon/Kconfig	2014-01-08 08:00:58.58307=
+2658 +0100
+> +++ linux-3.13-rc7/drivers/hwmon/Kconfig	2014-01-08 08:01:36.928977997 =
++0100
+> @@ -1285,6 +1285,7 @@ config SENSORS_THMC50
+>  config SENSORS_TMP102
+>  	tristate "Texas Instruments TMP102"
+>  	depends on I2C
+> +	depends on THERMAL || !THERMAL_OF
+>  	help
+>  	  If you say yes here you get support for Texas Instruments TMP102
+>  	  sensor chips.
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--spM41cQEGqLnWsmiSlmq63kNQQcOJmUp4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlLNQqUACgkQCXcVR3XQvP0oogEAsY3m+U4S7bHPW4NVi5CxPorC
+LoFIvLhtTYffnB7BIUoA/32UzMHJrrAZXyzGybl2WwY+a4n7N5dwtCKezJhRD4TQ
+=DcRQ
+-----END PGP SIGNATURE-----
+
+--spM41cQEGqLnWsmiSlmq63kNQQcOJmUp4--
