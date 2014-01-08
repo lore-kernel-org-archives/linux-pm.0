@@ -1,81 +1,50 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 3/4] thermal: rcar: Add missing clock handling
-Date: Wed, 8 Jan 2014 13:58:22 +0100
-Message-ID: <CAMuHMdV+UAwYoFp=Ex=9jkL4D+mVZYfDGnJdRUsYZfOEm+RGCA@mail.gmail.com>
-References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
-	<1389121036-3555-4-git-send-email-geert@linux-m68k.org>
-	<52CD434E.6030906@codethink.co.uk>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] hwmon: Fix SENSORS_TMP102 dependencies to eliminate build
+ errors
+Date: Wed, 08 Jan 2014 05:49:56 -0800
+Message-ID: <52CD5784.4060804@roeck-us.net>
+References: <20140108080557.3439ec23@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <52CD434E.6030906@codethink.co.uk>
-Sender: linux-sh-owner@vger.kernel.org
-To: Ben Dooks <ben.dooks@codethink.co.uk>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.active-venture.com ([67.228.131.205]:57937 "EHLO
+	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755498AbaAHNt4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 08:49:56 -0500
+In-Reply-To: <20140108080557.3439ec23@endymion.delvare>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jean Delvare <khali@linux-fr.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>, linux-pm@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
 
-On Wed, Jan 8, 2014 at 1:23 PM, Ben Dooks <ben.dooks@codethink.co.uk> wrote:
->> @@ -378,23 +380,38 @@ static int rcar_thermal_probe(struct platform_device
->> *pdev)
->>         spin_lock_init(&common->lock);
->>         common->dev = dev;
->>
->> +       common->clk = devm_clk_get(&pdev->dev, NULL);
->> +       if (IS_ERR(common->clk)) {
->> +               dev_err(&pdev->dev, "cannot get clock\n");
->> +               return PTR_ERR(common->clk);
->> +       }
->> +
->> +       ret = clk_prepare(common->clk);
->> +       if (ret < 0) {
->> +               dev_err(&pdev->dev, "unable to prepare clock\n");
->> +               return ret;
->> +       }
->> +
->> +       clk_enable(common->clk);
->> +
->>         pm_runtime_enable(dev);
->>         pm_runtime_get_sync(dev);
->>
->>         irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
->>         if (irq) {
->> -               int ret;
->> +               int ret2;
->>
->>                 /*
->>                  * platform has IRQ support.
->>                  * Then, drier use common register
->>                  */
->>
->> -               ret = devm_request_irq(dev, irq->start, rcar_thermal_irq,
->> 0,
->> -                                      dev_name(dev), common);
->> -               if (ret) {
->> +               ret2 = devm_request_irq(dev, irq->start, rcar_thermal_irq,
->> 0,
->> +                                       dev_name(dev), common);
->> +               if (ret2) {
->>                         dev_err(dev, "irq request failed\n ");
->> -                       return ret;
->> +                       ret = ret2;
->> +                       goto error_unpm;
->>                 }
+On 01/07/2014 11:05 PM, Jean Delvare wrote:
+> Similar to what was done for the lm75 driver.
 >
-> I'd suggest not renaming ret2 and just use the original ret.
+> Add depends on THERMAL since that is what provides the
+> register/unregister functions above, but only if THERMAL_OF was
+> selected as this is an optional feature of the driver.
+>
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
 
-I did that because the for loop after that block depends on ret still being
--ENODEV. Upon closer look, I did break that myself by assigning it
-the return value of clk_prepare().
-So I'll use the original ret, and reset it to -ENODEV before the for loop
-(unless we manage to fix it in pm_runtime_*()).
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-Gr{oetje,eeting}s,
+> ---
+>   drivers/hwmon/Kconfig |    1 +
+>   1 file changed, 1 insertion(+)
+>
+> --- linux-3.13-rc7.orig/drivers/hwmon/Kconfig	2014-01-08 08:00:58.583072658 +0100
+> +++ linux-3.13-rc7/drivers/hwmon/Kconfig	2014-01-08 08:01:36.928977997 +0100
+> @@ -1285,6 +1285,7 @@ config SENSORS_THMC50
+>   config SENSORS_TMP102
+>   	tristate "Texas Instruments TMP102"
+>   	depends on I2C
+> +	depends on THERMAL || !THERMAL_OF
+>   	help
+>   	  If you say yes here you get support for Texas Instruments TMP102
+>   	  sensor chips.
+>
+>
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
