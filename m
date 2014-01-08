@@ -1,61 +1,113 @@
-From: Phillip Susi <psusi@ubuntu.com>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Wed, 08 Jan 2014 00:24:42 -0500
-Message-ID: <52CCE11A.3040609@ubuntu.com>
-References: <cover.1384030893.git.psusi@ubuntu.com> <1387236657-4852-1-git-send-email-psusi@ubuntu.com> <52CA1191.8060804@ubuntu.com> <52CA5CF4.2080708@codeaurora.org> <52CA744F.2080609@intel.com> <52CAC067.20601@ubuntu.com> <52CBB188.2080707@intel.com> <52CC1422.1020101@ubuntu.com> <52CCA3CF.5050308@intel.com> <52CCA6E3.2090400@ubuntu.com> <52CCAAA7.4070104@intel.com> <52CCAF8C.7040407@ubuntu.com> <52CCB3E8.5010101@intel.com> <52CCB5C4.7020206@ubuntu.com> <52CCB99A.4090201@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
+Date: Wed, 8 Jan 2014 11:21:00 +0530
+Message-ID: <CAKohpomEr_caoDGeUWWMeJ1_siEQguUTaPF6zgD62YqT=4F7og@mail.gmail.com>
+References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
+	<5562479.pVWRuDL0y6@vostro.rjw.lan>
+	<87zjne7f75.fsf@nemi.mork.no>
+	<2302938.b8tymqrMEz@vostro.rjw.lan>
+	<878uuxquxu.fsf@nemi.mork.no>
+	<871u0po0gx.fsf@nemi.mork.no>
+	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
+	<87wqihmg9a.fsf@nemi.mork.no>
+	<CAKohpo=3s6=gw8OJTrUdLH8o2ouA=8a8MhrgNRXwHmOf0si5Pw@mail.gmail.com>
+	<87iotx32mx.fsf@nemi.mork.no>
+	<CAKohpo=KgHqz0KYv7h0EYP3=8h7T3ZfPpFTMS6qVoEb6dXGnSQ@mail.gmail.com>
+	<87a9f92xnn.fsf@nemi.mork.no>
+	<CAKohpon7u_1h+9rKQeC8J4Pqd_6bSajn7Ag8=COqczhbSPEgMA@mail.gmail.com>
+	<8738l15pht.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <52CCB99A.4090201@intel.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>
-Cc: todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <8738l15pht.fsf@nemi.mork.no>
+Sender: cpufreq-owner@vger.kernel.org
+To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+On 6 January 2014 16:47, Bj=F8rn Mork <bjorn@mork.no> wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>
+>> On 6 January 2014 16:19, Bj=F8rn Mork <bjorn@mork.no> wrote:
+>>> I cancelled by pressing backspace while the image was being written=
+=2E
+>>
+>> I will answer other queries on next mail, but a quick question:
+>> Do you get these warnings even if you don't cancel hibernation?
+>
+> Yes.
 
-On 01/07/2014 09:36 PM, Aaron Lu wrote:
-> I think the host controller can decide not to power all its ports,
-> only when a specific reg in the port's memory range is set, it will
-> give power to that port and thus spin up the drive. Makes sense?
+Hmm.. I see. Now, I really don't believe that you wouldn't get these
+warnings on a suspend/resume but only on hibernation.
 
-The port doesn't supply power to the drive, it gets it straight from
-the system PSU.
+> I believe the photo shows that you are right: This warning happens wh=
+en
+> the failure path is entered, even if both the hibernation and followi=
+ng
+> resume is successful.  We see __cpufreq_add_dev calling
+> cpufreq_policy_put_kobj here as well.
 
-> Oh, of course, my stupid :-) Then I suddenly think my patches can
-> kind of work - let's say we have done the hdparm setting thing
-> before suspend and the disk will be spun up in standby mode next
-> time it is powered. Then during system resume phase, remove the
-> pm_request_resume call in both SCSI and ATA's system resume
-> callback, - if the disk is powered, it will be in standby mode and
-> its runtime status is RPM_SUSPENDED, match its real status(sort
-> of); - if the disk is not powered due to some host feature or
-> whatever, it will be in unpowered mode and its runtime status is
-> RPM_SUSPENDED, still match its real status.
+@Rafael: I need your expert opinion here, I am not so good with these
+concepts :)
 
-Right, but if the disk is a run of the mill ATA disk not configured
-for power up in standby, then you end up with runtime pm saying that
-it is suspended, when in fact, it spun up on its own and is sitting
-there waiting for commands.
+Here is my theory about these warnings:
+- Bjorn gets these only when CONFIG_PROVE_LOCKING=3Dy.
+- This feature enables the kernel to report locking related deadlocks
+before they actually occur. (lib/Kconfig.debug)
+- So, no locking issue has happened here but its just an warning that
+you might end up getting into such issue later.
+- Contention is between sysfs and cpu-hotplug lock.
+- While changing stuff from sysfs we do this:
+   sysfs-lock (by kernel)
+   cpu-hotplug lock (by cpufreq)
+- And while doing hibernation if add_dev fails then we do this
+   cpu-hotplug lock (by kernel while adding CPUs)
+   sysfs-lock (by cpufreq while removing sysfs directories)
 
-The PuiS setting isn't something we can or want to twiggle on our own
-during suspend, that's an admin decision that they set more or less
-permanently either with hdparm or the hardware jumper.  We just need
-to detect what the drive has done and update the runtime pm status to
-match.
+And kernel is recording all these sequences all the time. Because
+we first tried changing values from sysfs, kernel recorded that
+sequence. And as soon as it found another one it WARNed us?
 
+While on a suspend/resume, we will get into add-dev failure only
+in resume and probably by that time these recordings are refreshed?
+And that's why Bjorn isn't facing any issue there ? Just an wild guess.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+And if all above "virtual" theory is correct, then I don't know if we
+can/want to fix that..
 
-iQEcBAEBCgAGBQJSzOEaAAoJEI5FoCIzSKrwIVoH/1sszQsK1buyg9hDvemd84m6
-EMkMUsab4qYZlxGcQpnUUlJbQpGKnhDXjxBstjD8zfnC6WQfOCySTqkqBzZqEXzE
-QEt5IV7mWn43tGbu4pyYlw4SrEOmOmmYJxl5yh033MAPNsP/rhToXZoEPOTRCro4
-GdkZpxx0A9Y/rnzLN29RoFw41T5G4aG0O7FyTuZGPW/uWhhdUqxpUQt7ACCD+fdD
-GaHWf2WInU7vSrDcg6daxvarqQ8GJavc1rafM45EkGMCzGwRhvIR+PCBk8E9t1qA
-eB/1b9q8DiBJVCiMxcZVOLY8PY0bm1eBRRqhMef0l7Ppvl8N23f84o7tcN57lWY=
-=RCPv
------END PGP SIGNATURE-----
+> Thinking about this: This failure will always happen, regardless of
+> cancelling or not, won't it?
+
+Yeah.
+
+> But it happens *after* the freeze so it
+> doesn't matter if we resume from the frozen image.
+
+yeah..
+
+So, even tests like this should give you this warning:
+
+Documentation/power/basic-pm-debugging.txt
+core
+- test the freezing of processes, suspending of devices, platform globa=
+l
+  control methods(*), the disabling of nonboot CPUs and suspending of
+  platform/system devices
+
+> So you are probably right as usual:
+
+Really? Ask Rafael, he doesn't agree :)
+
+> This warning is related to the
+> acpi-cpufreq driver failing, and you cannot reproduce it without
+> simulating such a failure (or using that driver yourself).  Which mea=
+ns
+> that the warning disappears with my patch in
+> http://www.spinics.net/lists/cpufreq/msg08714.html
+> which explains why I don't normally see it.  I depend on being able t=
+o
+> cancel hibernation, so I use that patch most of the time. Except when
+> I'm testing one of your branches.
+
+Correct.
