@@ -1,37 +1,58 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 1/4] ARM: shmobile: r8a7791: Add thermal clock in device
- tree
-Date: Wed, 8 Jan 2014 09:52:51 +0900
-Message-ID: <20140108005250.GM5136@verge.net.au>
-References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
- <1389121036-3555-2-git-send-email-geert@linux-m68k.org>
- <1628481.pNd8Ov6MRK@avalon>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
+Date: Wed, 08 Jan 2014 09:03:11 +0800
+Message-ID: <52CCA3CF.5050308@intel.com>
+References: <cover.1384030893.git.psusi@ubuntu.com> <1387236657-4852-1-git-send-email-psusi@ubuntu.com> <52CA1191.8060804@ubuntu.com> <52CA5CF4.2080708@codeaurora.org> <52CA744F.2080609@intel.com> <52CAC067.20601@ubuntu.com> <52CBB188.2080707@intel.com> <52CC1422.1020101@ubuntu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:59054 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbaAHAwx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 19:52:53 -0500
-Content-Disposition: inline
-In-Reply-To: <1628481.pNd8Ov6MRK@avalon>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <52CC1422.1020101@ubuntu.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Phillip Susi <psusi@ubuntu.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>
+Cc: todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
 
-On Wed, Jan 08, 2014 at 01:20:09AM +0100, Laurent Pinchart wrote:
-> Hi Geert,
+On 01/07/2014 10:50 PM, Phillip Susi wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Thank you for the patch.
+> On 1/7/2014 2:49 AM, Aaron Lu wrote:
+>> We can modify the device's system resume callback. To better
+>> illustrate the idea, I just made two patches to do this and I did
+>> some quick tests and didn't find anything wrong.
 > 
-> On Tuesday 07 January 2014 19:57:13 Geert Uytterhoeven wrote:
-> > From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
-> > 
-> > Add the missing thermal MSTP clock to the thermal device node.
-> > 
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
-> 
-> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> That misses one key aspect I was trying to capture: it always leaves
+> the disk runtime suspended after a resume.  If the disk spins up on
 
-Thanks, I will queue this up.
+You mean you want to leave the disk runtime suspended after a system
+resume and in the meantime make sure the disk is indeed not spun up?
+
+-Aaron
+
+> its own, as most ata disks do, then the runtime status doesn't
+> correctly reflect the actual state of the disk.  This means that
+> applications that delay activities due to the runtime pm status to
+> avoid waking a disk won't run, and any runtime autosuspend won't kick
+> in to actually put the disk back to sleep.
+> 
+> To do that, you need to be able to issue a REQUEST SENSE and
+> conditionally resume the device.  Of course, you can't do that unless
+> you first get it into a transitional state, but you can't just request
+> a resume and then conditionally fail it.
+> 
+> 
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v2.0.17 (MingW32)
+> Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+> 
+> iQEcBAEBAgAGBQJSzBQiAAoJEI5FoCIzSKrwH9UH/3Z3TfKKKYhNsjr26YsKOge2
+> EQzbcFCg4H5irnKL/olR5fnRKpZYi1Er2ydV6zsHdcCJLFQoqvzVE4ZInl42STI0
+> IWQ65n5q+U1OaZY+ttGkOBjixi5VIlkb9izZVbzBTi4n5cLEDwyQsE4Rgd9STwjm
+> gPkNrmGNGPUoY+4O6bLHu0/WvwTX3L/OgxcSsQd1gsdCX3qZzB+UIzfM31W9/4Yl
+> 3sP/tN8mBYcpqR9jIpw2u7m0XEe9Wc71Nepdv2+6sT5uZJ5knTY6epH5Of4FJsyp
+> CxslFXf6Jb2FZaey8EJB1ocABnePYluQNHrpdRO4gjY+Au/mtzk15tJjoYx3WXg=
+> =VlKV
+> -----END PGP SIGNATURE-----
+> 
+
