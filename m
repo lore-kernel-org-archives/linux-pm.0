@@ -1,67 +1,51 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Allow runtime suspend during system resume
-Date: Wed, 8 Jan 2014 15:44:53 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401081522240.1659-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1401081318040.1659-100000@iolanthe.rowland.org>
+From: "Dr. Musa Hamed" <drmusahamed01@gmail.com>
+Subject: I have a very lucrative Business
+Date: Wed, 8 Jan 2014 21:47:31 +0100
+Message-ID: <CALS90i9nMs6jMoH2O5S68sPF=juYOV2sfMAwaBekL8ccz3eSOQ__49088.7265922085$1389215806$gmane$org@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:59256 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757026AbaAHUoy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 15:44:54 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1401081318040.1659-100000@iolanthe.rowland.org>
+Received: from mail-wg0-f65.google.com ([74.125.82.65]:44662 "EHLO
+	mail-wg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752511AbaAHVQh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 16:16:37 -0500
+Received: by mail-wg0-f65.google.com with SMTP id k14so447908wgh.8
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jan 2014 13:16:36 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phillip Susi <psusi@ubuntu.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Wed, 8 Jan 2014, Alan Stern wrote:
+ATTN: Dear,
 
-> On Wed, 8 Jan 2014, Alan Stern wrote:
-> 
-> > In essence, you want your disk's state to move directly from unpowered
-> > (system asleep) to runtime-suspended with no intermediate active -- but
-> > only if the disk doesn't spin up all by itself.
-> 
-> > In the end, it sounds like what you want can be done fairly easily.  
-> 
-> It turns out there is a snag.  The PM core is set up such that during
-> system sleep transitions, there's no way to tell whether or not
-> userspace has permitted runtime PM for a device.  (This is because the
-> core wants to prevent untimely runtime suspends from occurring in the
-> middle of a system sleep transition, and to do so it uses the same
-> mechanism as it does when userspace disallows runtime suspend.)
-> 
-> As a result, we must not go directly from unpowered to
-> runtime-suspended.  Not without some sort of change to the PM core.
+I am Dr. Musa Hamed Executive Director of the Bank of Africa
+Plc B.O.A,Cotonou Benin Rep. I have a very lucrative Business proposal
+worth of 21,500,000.00 USD.
 
-Rafael:
+An Iraqi named Hamadi Hashem a business man made a fixed deposit of
+21,500,000.00 USD . Upon maturity several notices was sent to him,
+even during the war,eleven years ago (2003) up till this date. Again
+after the war another notification was sent and still no response came
+from him. it has been found out that Hamadi Hashem and his family had
+been killed during the war in bomb blast that hit their home at
+Mukaradeeb where his personal oil well was. I am prepared to split the
+funds with you 50%:50%.By placing you as the NEXT OF KIN to his
+deposit.
 
-Right now the PM core does pm_runtime_get_noresume() during the prepare 
-phase of system sleep, and pm_runtime_put() during the complete phase.  
-Maybe we should cut down the range of coverage.
+Should you be interested in doing this deal with me, please send me
+the following information:
 
-For example, we could do the pm_runtime_put() during dpm_resume(), or 
-even earlier.  That way, the resume routine could do something like:
+(1) Your Name
+(2) Resident Address
+(3) Your Occupation
+(4) Your Phone Number
+(5) Date of Birth
+(6) Resident Country
 
-	if (!pm_runtime_in_use(dev)) {
-		pm_runtime_disable(dev);
-		pm_runtime_set_suspended(dev);
-		pm_runtime_enable(dev);
-		return 0;
-	}
+And I will prefer you to reach me privately and securely on my personal
+email address: dr.musahamed30@yahoo.fr
+Tel: +229-988-400-97
 
-where pm_runtime_in_use() would check the device's usage counters.  
-The device would come out of system sleep in a powered-down state, and
-could remain runtime-suspended with no need for an extra
-power-up/power-down cycle.  Isn't this the sort of thing the embedded
-people want to do?
+I will provide you with further information as soon as I hear
+positively from you.
 
-As it is, drivers have no way to safely put devices directly into 
-runtime suspend when coming out of system sleep.
-
-What do you think?
-
-Alan Stern
-
+Regards,
+Dr. Musa Hamed
