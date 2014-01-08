@@ -1,62 +1,55 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Allow runtime suspend during system resume
-Date: Wed, 8 Jan 2014 16:34:35 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401081627110.1659-100000@iolanthe.rowland.org>
-References: <52CDC069.6050703@ubuntu.com>
+From: Phillip Susi <psusi@ubuntu.com>
+Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
+Date: Wed, 08 Jan 2014 16:50:46 -0500
+Message-ID: <52CDC836.4000201@ubuntu.com>
+References: <Pine.LNX.4.44L0.1401081547490.1659-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:59289 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757599AbaAHVeg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 16:34:36 -0500
-In-Reply-To: <52CDC069.6050703@ubuntu.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1401081547490.1659-100000@iolanthe.rowland.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Phillip Susi <psusi@ubuntu.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Wed, 8 Jan 2014, Phillip Susi wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> On 1/8/2014 3:44 PM, Alan Stern wrote:
-> > Right now the PM core does pm_runtime_get_noresume() during the
-> > prepare phase of system sleep, and pm_runtime_put() during the
-> > complete phase. Maybe we should cut down the range of coverage.
-> > 
-> > For example, we could do the pm_runtime_put() during dpm_resume(),
-> > or even earlier.  That way, the resume routine could do something
-> > like:
-> > 
-> > if (!pm_runtime_in_use(dev)) { pm_runtime_disable(dev); 
-> > pm_runtime_set_suspended(dev); pm_runtime_enable(dev); return 0; }
-> > 
-> 
-> I'm a little unclear on the problem you are describing.  Is it just
-> with pm_runtime_in_use()?
+On 1/8/2014 4:21 PM, Alan Stern wrote:
+> I never saw your patches.  Where were they posted?
 
-Note that currently there is no pm_runtime_in_use().  One of the things
-I'm proposing is to add it.
+Higher up in this thread on linux-ide and linux-scsi.  Subject was Let
+sleeping disks lie.
 
-If it were already present and you used it properly, you would find
-that it always returned non-zero.  Therefore you would never execute
-the pm_runtime_set_suspended.  _That_'s the problem I'm trying to
-address here.
+> If you issue the REQUEST SENSE command in the usual way (going
+> through the SCSI and block layers), and the disk is already in
+> runtime suspend, it won't do what you want.  The block layer won't
+> deliver requests until the device leaves the RPM_SUSPENDED state.
+> In addition, when it receives the command the block layer will
+> submit a deferred runtime-resume request, which rather defeats the
+> whole purpose.
 
->  Because in one of my earlier patch
-> iterations, I had used the disable/set_suspended/enable to force the
-> device into suspend without checking runtime_in_use.
+Right, which is why I left the device in the active state and used the
+pre/post_suspend functions to change the queue into the RPM_SUSPENDING
+state, then either complete the transition to RPM_SUSPENDED, or bail
+out and go back to RPM_ACTIVE.
 
-That is not a valid thing to do.  The user may have disabled runtime 
-suspend for the disk; you must not override the user's policy.
+> What happens with non-ATA disks?
 
->  It worked, but
-> that allowed the port device to auto suspend since its use counter
-> dropped to zero, so I couldn't issue the REQUEST SENSE command
-> disable/set_active/enable to reverse the process ( since the port was
-> suspended ).
+Same thing: they return a sense status that either says they are
+suspended, stopped, or normal.
 
-That's a separate problem, to be discussed back in the earlier email 
-thread.
 
-Alan Stern
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.17 (MingW32)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
+iQEcBAEBAgAGBQJSzcg2AAoJEI5FoCIzSKrw7wcIAJLiliMYnoHLm/dGWHhhfcnb
+ELJLLAhhWsOIQmHiV1svdy0F7EuKi3KF9qJ9JwCaAspO0w8q24UGhvQW20uSH9Md
+JliKhn6eBY/NFTctaVP2tnOcc4vevCndJfEScBlWxI82MWMC1TV3lA7xPtcJ5ocX
+LMBLPXpr0qypisgmu/tAnwTPQVyU4WUkgMmG9us4w3BgCkvI/oXf4oDKFkCNgUye
+FX16NTZPR6iaIK+YJMG3uKCSD4CQjTnKJNXGR89XKJG+Z9v04jyQgWs7kgvqCov9
+F5j+yueyMVlveGPHmNwhElHEPT2UWSoyQbonuOrYQZ+Db+xJBOxzoY8Jgq9lWVI=
+=+vwf
+-----END PGP SIGNATURE-----
