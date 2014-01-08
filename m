@@ -1,82 +1,62 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Wed, 8 Jan 2014 16:21:37 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401081547490.1659-100000@iolanthe.rowland.org>
-References: <52CDB32A.6000702@ubuntu.com>
+Subject: Re: Allow runtime suspend during system resume
+Date: Wed, 8 Jan 2014 16:34:35 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401081627110.1659-100000@iolanthe.rowland.org>
+References: <52CDC069.6050703@ubuntu.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-scsi-owner@vger.kernel.org>
-In-Reply-To: <52CDB32A.6000702@ubuntu.com>
-Sender: linux-scsi-owner@vger.kernel.org
-To: Phillip Susi <psusi@ubuntu.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:59289 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757599AbaAHVeg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 16:34:36 -0500
+In-Reply-To: <52CDC069.6050703@ubuntu.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phillip Susi <psusi@ubuntu.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
 On Wed, 8 Jan 2014, Phillip Susi wrote:
 
-> > In essence, you want your disk's state to move directly from
-> > unpowered (system asleep) to runtime-suspended with no intermediate
-> > active -- but only if the disk doesn't spin up all by itself.
+> On 1/8/2014 3:44 PM, Alan Stern wrote:
+> > Right now the PM core does pm_runtime_get_noresume() during the
+> > prepare phase of system sleep, and pm_runtime_put() during the
+> > complete phase. Maybe we should cut down the range of coverage.
 > > 
-> > One problem: How can the kernel tell whether the disk has spun up
-> > by itself?  I don't think it can be done at the SCSI level.  Can it
-> > be done at the ATA level (and without using the SCSI stack, as that
-> > would require the disk to go out of runtime suspend and spin up
-> > anyway)?
+> > For example, we could do the pm_runtime_put() during dpm_resume(),
+> > or even earlier.  That way, the resume routine could do something
+> > like:
+> > 
+> > if (!pm_runtime_in_use(dev)) { pm_runtime_disable(dev); 
+> > pm_runtime_set_suspended(dev); pm_runtime_enable(dev); return 0; }
+> > 
 > 
-> You issue a REQUEST SENSE command and that returns status indicating
-> whether the drive is stopped, or in standby.  See my patches.  One of
+> I'm a little unclear on the problem you are describing.  Is it just
+> with pm_runtime_in_use()?
 
-I never saw your patches.  Where were they posted?
+Note that currently there is no pm_runtime_in_use().  One of the things
+I'm proposing is to add it.
 
-If you issue the REQUEST SENSE command in the usual way (going through
-the SCSI and block layers), and the disk is already in runtime suspend,
-it won't do what you want.  The block layer won't deliver requests
-until the device leaves the RPM_SUSPENDED state.  In addition, when it
-receives the command the block layer will submit a deferred
-runtime-resume request, which rather defeats the whole purpose.
+If it were already present and you used it properly, you would find
+that it always returned non-zero.  Therefore you would never execute
+the pm_runtime_set_suspended.  _That_'s the problem I'm trying to
+address here.
 
-(I guess you actually saw some of this happen, and that's what led to
-this email thread in the first place.)
+>  Because in one of my earlier patch
+> iterations, I had used the disable/set_suspended/enable to force the
+> device into suspend without checking runtime_in_use.
 
-It's a knotty situation.  The only way to find out whether the disk is
-spinning is to ask it, which requires doing I/O, which requires
-spinning up the disk.  Maybe we need to add a mechanism to the block
-layer's runtime PM implementation for addressing just this situation.
+That is not a valid thing to do.  The user may have disabled runtime 
+suspend for the disk; you must not override the user's policy.
 
-> them fixes the scsi-ata translation to issue the ATA CHECK power
-> command to see if the drive is suspended, as SAT-3 calls for.
+>  It worked, but
+> that allowed the port device to auto suspend since its use counter
+> dropped to zero, so I couldn't issue the REQUEST SENSE command
+> disable/set_active/enable to reverse the process ( since the port was
+> suspended ).
 
-What happens with non-ATA disks?
-
-
-> > Actually, it does have a reason.  Namely, you told it earlier to
-> > assume the disk will be needed again if it was used within the last
-> > 5 minutes.  At the time of the system resume, the disk was last
-> > used 3 minutes ago (not counting the time the system was asleep).
-> 
-> You're looking at it backwards.  You aren't telling it to assume the
-> disk will be needed again if it was used within the last 5 minutes;
-> you are telling it that it can assume it *won't* be needed again soon
-> if not used in the last 5 minutes, and therefore, it is ok to shut it
-> down.
-
-Okay, yes, the autosuspend timeout affects when devices should be
-powered down, not when they should be powered back up.
-
-> Also the act of suspending the system is a pretty clear breaking point
-> in general activity.  You normally stop your work and quiesce the
-> system before you suspend it.  If I finish my work and copy it to my
-> backup drive, then suspend the system, and my wife comes by an hour
-> later to browse the web, she's not going to be touching my backup disk.
-
-While that's true, it's also true that any userspace processes running 
-before the system suspend will continue running, with no perceptible 
-break, after the system wakes up.  If they were accessing the disk 
-before, they will most likely continue to access it afterward.
-
-But never mind all this; it's a pointless discussion.  The real 
-question is how to implement what you want.
+That's a separate problem, to be discussed back in the earlier email 
+thread.
 
 Alan Stern
 
