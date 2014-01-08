@@ -1,51 +1,57 @@
-From: "Dr. Musa Hamed" <drmusahamed01@gmail.com>
-Subject: I have a very lucrative Business
-Date: Wed, 8 Jan 2014 21:47:31 +0100
-Message-ID: <CALS90i9nMs6jMoH2O5S68sPF=juYOV2sfMAwaBekL8ccz3eSOQ__49088.7265922085$1389215806$gmane$org@mail.gmail.com>
+From: Phillip Susi <psusi@ubuntu.com>
+Subject: Re: Allow runtime suspend during system resume
+Date: Wed, 08 Jan 2014 16:17:29 -0500
+Message-ID: <52CDC069.6050703@ubuntu.com>
+References: <Pine.LNX.4.44L0.1401081522240.1659-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f65.google.com ([74.125.82.65]:44662 "EHLO
-	mail-wg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752511AbaAHVQh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 16:16:37 -0500
-Received: by mail-wg0-f65.google.com with SMTP id k14so447908wgh.8
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jan 2014 13:16:36 -0800 (PST)
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:43119 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756768AbaAHVRb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 16:17:31 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1401081522240.1659-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-ATTN: Dear,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I am Dr. Musa Hamed Executive Director of the Bank of Africa
-Plc B.O.A,Cotonou Benin Rep. I have a very lucrative Business proposal
-worth of 21,500,000.00 USD.
+On 1/8/2014 3:44 PM, Alan Stern wrote:
+> Right now the PM core does pm_runtime_get_noresume() during the
+> prepare phase of system sleep, and pm_runtime_put() during the
+> complete phase. Maybe we should cut down the range of coverage.
+> 
+> For example, we could do the pm_runtime_put() during dpm_resume(),
+> or even earlier.  That way, the resume routine could do something
+> like:
+> 
+> if (!pm_runtime_in_use(dev)) { pm_runtime_disable(dev); 
+> pm_runtime_set_suspended(dev); pm_runtime_enable(dev); return 0; }
+> 
 
-An Iraqi named Hamadi Hashem a business man made a fixed deposit of
-21,500,000.00 USD . Upon maturity several notices was sent to him,
-even during the war,eleven years ago (2003) up till this date. Again
-after the war another notification was sent and still no response came
-from him. it has been found out that Hamadi Hashem and his family had
-been killed during the war in bomb blast that hit their home at
-Mukaradeeb where his personal oil well was. I am prepared to split the
-funds with you 50%:50%.By placing you as the NEXT OF KIN to his
-deposit.
+I'm a little unclear on the problem you are describing.  Is it just
+with pm_runtime_in_use()?  Because in one of my earlier patch
+iterations, I had used the disable/set_suspended/enable to force the
+device into suspend without checking runtime_in_use.  It worked, but
+that allowed the port device to auto suspend since its use counter
+dropped to zero, so I couldn't issue the REQUEST SENSE command
+disable/set_active/enable to reverse the process ( since the port was
+suspended ).
 
-Should you be interested in doing this deal with me, please send me
-the following information:
 
-(1) Your Name
-(2) Resident Address
-(3) Your Occupation
-(4) Your Phone Number
-(5) Date of Birth
-(6) Resident Country
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.17 (MingW32)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-And I will prefer you to reach me privately and securely on my personal
-email address: dr.musahamed30@yahoo.fr
-Tel: +229-988-400-97
-
-I will provide you with further information as soon as I hear
-positively from you.
-
-Regards,
-Dr. Musa Hamed
+iQEcBAEBAgAGBQJSzcBnAAoJEI5FoCIzSKrw/LQH/A7voCeYxm8fU8k2Uxw2yTNO
+dZjgzTVoETQAif3iNtbMaXy8lF4GrqRVtGJIF683eK5jn5zUTSPggaxFXUqFGRAM
+sJHfxxNaJKThCRGBrZg6NEIoushNLlC/XdwY2XEt+ee2aVdNbSs2Up7IOdkuqrjc
+1uPThOoBbgb3GE/5FlLgfhouQhdIXYhh7r7xu1JaJ0DVhtwPMWdMFBLos2qdsMk4
+5uPBLNhrQyHt2mQvEQj4meVwqun+SsbzWtgiP3Nk5MSCCRa4LHVa0nfb2N6+ee8+
+Q3/kwoDDyghvJeoi4K7iWLFfFjynTchvxfzInItnYK5TKJiU1rf2En+qIT2g9BQ=
+=Fkc4
+-----END PGP SIGNATURE-----
