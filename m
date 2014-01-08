@@ -1,113 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: try to resume policies which failed on last resume
-Date: Wed, 8 Jan 2014 11:21:00 +0530
-Message-ID: <CAKohpomEr_caoDGeUWWMeJ1_siEQguUTaPF6zgD62YqT=4F7og@mail.gmail.com>
-References: <f9d7b0d5424e4443597d2ed39bec3fedd2b10d1e.1387848958.git.viresh.kumar@linaro.org>
-	<5562479.pVWRuDL0y6@vostro.rjw.lan>
-	<87zjne7f75.fsf@nemi.mork.no>
-	<2302938.b8tymqrMEz@vostro.rjw.lan>
-	<878uuxquxu.fsf@nemi.mork.no>
-	<871u0po0gx.fsf@nemi.mork.no>
-	<CAKohpo=9p8ArfWyyWkdQm_BWtyWbWe_dsg6VAUP60VUFcAjFSw@mail.gmail.com>
-	<87wqihmg9a.fsf@nemi.mork.no>
-	<CAKohpo=3s6=gw8OJTrUdLH8o2ouA=8a8MhrgNRXwHmOf0si5Pw@mail.gmail.com>
-	<87iotx32mx.fsf@nemi.mork.no>
-	<CAKohpo=KgHqz0KYv7h0EYP3=8h7T3ZfPpFTMS6qVoEb6dXGnSQ@mail.gmail.com>
-	<87a9f92xnn.fsf@nemi.mork.no>
-	<CAKohpon7u_1h+9rKQeC8J4Pqd_6bSajn7Ag8=COqczhbSPEgMA@mail.gmail.com>
-	<8738l15pht.fsf@nemi.mork.no>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
+Date: Wed, 08 Jan 2014 15:00:05 +0800
+Message-ID: <52CCF775.3010303@intel.com>
+References: <cover.1384030893.git.psusi@ubuntu.com> <1387236657-4852-1-git-send-email-psusi@ubuntu.com> <52CA1191.8060804@ubuntu.com> <52CA5CF4.2080708@codeaurora.org> <52CA744F.2080609@intel.com> <52CAC067.20601@ubuntu.com> <52CBB188.2080707@intel.com> <52CC1422.1020101@ubuntu.com> <52CCA3CF.5050308@intel.com> <52CCA6E3.2090400@ubuntu.com> <52CCAAA7.4070104@intel.com> <52CCAF8C.7040407@ubuntu.com> <52CCB3E8.5010101@intel.com> <52CCB5C4.7020206@ubuntu.com> <52CCB99A.4090201@intel.com> <52CCE11A.3040609@ubuntu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <8738l15pht.fsf@nemi.mork.no>
-Sender: cpufreq-owner@vger.kernel.org
-To: =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-scsi-owner@vger.kernel.org>
+In-Reply-To: <52CCE11A.3040609@ubuntu.com>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Phillip Susi <psusi@ubuntu.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>
+Cc: todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 6 January 2014 16:47, Bj=F8rn Mork <bjorn@mork.no> wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
->
->> On 6 January 2014 16:19, Bj=F8rn Mork <bjorn@mork.no> wrote:
->>> I cancelled by pressing backspace while the image was being written=
-=2E
->>
->> I will answer other queries on next mail, but a quick question:
->> Do you get these warnings even if you don't cancel hibernation?
->
-> Yes.
+On 01/08/2014 01:24 PM, Phillip Susi wrote:
+> On 01/07/2014 09:36 PM, Aaron Lu wrote:
+>> Oh, of course, my stupid :-) Then I suddenly think my patches can
+>> kind of work - let's say we have done the hdparm setting thing
+>> before suspend and the disk will be spun up in standby mode next
+>> time it is powered. Then during system resume phase, remove the
+>> pm_request_resume call in both SCSI and ATA's system resume
+>> callback, - if the disk is powered, it will be in standby mode and
+>> its runtime status is RPM_SUSPENDED, match its real status(sort
+>> of); - if the disk is not powered due to some host feature or
+>> whatever, it will be in unpowered mode and its runtime status is
+>> RPM_SUSPENDED, still match its real status.
+> 
+> Right, but if the disk is a run of the mill ATA disk not configured
+> for power up in standby, then you end up with runtime pm saying that
+> it is suspended, when in fact, it spun up on its own and is sitting
+> there waiting for commands.
+> 
+> The PuiS setting isn't something we can or want to twiggle on our own
+> during suspend, that's an admin decision that they set more or less
+> permanently either with hdparm or the hardware jumper.  We just need
 
-Hmm.. I see. Now, I really don't believe that you wouldn't get these
-warnings on a suspend/resume but only on hibernation.
+OK, I see.
 
-> I believe the photo shows that you are right: This warning happens wh=
-en
-> the failure path is entered, even if both the hibernation and followi=
-ng
-> resume is successful.  We see __cpufreq_add_dev calling
-> cpufreq_policy_put_kobj here as well.
+> to detect what the drive has done and update the runtime pm status to
+> match.
 
-@Rafael: I need your expert opinion here, I am not so good with these
-concepts :)
+Then I would say we just keep the pm_request_resume call in their system
+resume callback. For drives that have that cool feature turned on, it
+will be in runtime active state while it's actually in standby mode, not
+a big deal since it should go to runtime suspended state once the
+autosuspend timer is due(the runtime PM core will schedule an idle call
+for newly resumed device); For drives that don't have that feature turned
+on, it will be in runtime active state while it's actually spun up, no
+problem here.
 
-Here is my theory about these warnings:
-- Bjorn gets these only when CONFIG_PROVE_LOCKING=3Dy.
-- This feature enables the kernel to report locking related deadlocks
-before they actually occur. (lib/Kconfig.debug)
-- So, no locking issue has happened here but its just an warning that
-you might end up getting into such issue later.
-- Contention is between sysfs and cpu-hotplug lock.
-- While changing stuff from sysfs we do this:
-   sysfs-lock (by kernel)
-   cpu-hotplug lock (by cpufreq)
-- And while doing hibernation if add_dev fails then we do this
-   cpu-hotplug lock (by kernel while adding CPUs)
-   sysfs-lock (by cpufreq while removing sysfs directories)
-
-And kernel is recording all these sequences all the time. Because
-we first tried changing values from sysfs, kernel recorded that
-sequence. And as soon as it found another one it WARNed us?
-
-While on a suspend/resume, we will get into add-dev failure only
-in resume and probably by that time these recordings are refreshed?
-And that's why Bjorn isn't facing any issue there ? Just an wild guess.
-
-And if all above "virtual" theory is correct, then I don't know if we
-can/want to fix that..
-
-> Thinking about this: This failure will always happen, regardless of
-> cancelling or not, won't it?
-
-Yeah.
-
-> But it happens *after* the freeze so it
-> doesn't matter if we resume from the frozen image.
-
-yeah..
-
-So, even tests like this should give you this warning:
-
-Documentation/power/basic-pm-debugging.txt
-core
-- test the freezing of processes, suspending of devices, platform globa=
-l
-  control methods(*), the disabling of nonboot CPUs and suspending of
-  platform/system devices
-
-> So you are probably right as usual:
-
-Really? Ask Rafael, he doesn't agree :)
-
-> This warning is related to the
-> acpi-cpufreq driver failing, and you cannot reproduce it without
-> simulating such a failure (or using that driver yourself).  Which mea=
-ns
-> that the warning disappears with my patch in
-> http://www.spinics.net/lists/cpufreq/msg08714.html
-> which explains why I don't normally see it.  I depend on being able t=
-o
-> cancel hibernation, so I use that patch most of the time. Except when
-> I'm testing one of your branches.
-
-Correct.
+For the PuiS set drive, there is a time window the drive's power mode
+doesn't agree with its runtime status, the window is the length of the
+autosuspend time interval. Not a big deal I suppose, considering that
+time interval isn't eternal? And I wouldn't say the runtime status for
+the drive is wrong even in this case, since the runtime status is a
+reflection of whether the device is in use or not from kernel's view,
+instead of whether it is in a low power mode. But I agree we better
+align them.
