@@ -1,198 +1,45 @@
-From: Hu Yaohui <loki2441@gmail.com>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree
-	parser
-Date: Tue, 7 Jan 2014 22:24:56 -0500
-Message-ID: <CAHqbYQvchi3QSgcitUtguFyOJtXhFt5OjcoiSDZnPg9ZyiN4cg@mail.gmail.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
-	<1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
-	<52C299A8.4010108@nvidia.com> <52CB6AE2.2090002@nvidia.com>
-	<52CBE237.7010309@ti.com> <52CCC3CF.7000103@nvidia.com>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH] hwmon: Fix SENSORS_TMP102 dependencies to eliminate build
+ errors
+Date: Wed, 8 Jan 2014 08:05:57 +0100
+Message-ID: <20140108080557.3439ec23@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <lm-sensors-bounces@lm-sensors.org>
-In-Reply-To: <52CCC3CF.7000103@nvidia.com>
-List-Unsubscribe: <http://lists.lm-sensors.org/mailman/options/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=unsubscribe>
-List-Archive: <http://lists.lm-sensors.org/pipermail/lm-sensors/>
-List-Post: <mailto:lm-sensors@lm-sensors.org>
-List-Help: <mailto:lm-sensors-request@lm-sensors.org?subject=help>
-List-Subscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=subscribe>
-Sender: lm-sensors-bounces@lm-sensors.org
-Errors-To: lm-sensors-bounces@lm-sensors.org
-To: Wei Ni <wni@nvidia.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, Eduardo Valentin <eduardo.valentin@ti.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from zoneX.GCU-Squad.org ([194.213.125.0]:14007 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbaAHHGY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 02:06:24 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>, linux-pm@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, Guenter Roeck <linux@roeck-us.net>
 
-I am new here. How can I could not mail a new message to this mail list?
-TIA
+Similar to what was done for the lm75 driver.
+
+Add depends on THERMAL since that is what provides the
+register/unregister functions above, but only if THERMAL_OF was
+selected as this is an optional feature of the driver.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/hwmon/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-3.13-rc7.orig/drivers/hwmon/Kconfig	2014-01-08 08:00:58.583072658 +0100
++++ linux-3.13-rc7/drivers/hwmon/Kconfig	2014-01-08 08:01:36.928977997 +0100
+@@ -1285,6 +1285,7 @@ config SENSORS_THMC50
+ config SENSORS_TMP102
+ 	tristate "Texas Instruments TMP102"
+ 	depends on I2C
++	depends on THERMAL || !THERMAL_OF
+ 	help
+ 	  If you say yes here you get support for Texas Instruments TMP102
+ 	  sensor chips.
 
 
-On Tue, Jan 7, 2014 at 10:19 PM, Wei Ni <wni@nvidia.com> wrote:
-
-> On 01/07/2014 07:17 PM, Eduardo Valentin wrote:
-> > * PGP Signed by an unknown key
-> >
-> > On 06-01-2014 22:48, Wei Ni wrote:
-> >> Hi, Eduardo
-> >> Will you consider my comments :)
-> >
-> > By now Wei, it is better if you start a new thread, by sending a patch
-> > on top of it, as this thread has been already merged by Rui.
->
-> Ok, I will send it.
->
-> Thanks.
-> Wei.
-> >
-> >>
-> >> Thanks.
-> >> Wei.
-> >>
-> >> On 12/31/2013 06:17 PM, Wei Ni wrote:
-> >>> On 11/13/2013 03:46 AM, Eduardo Valentin wrote:
-> >>>> This patch introduces a device tree bindings for
-> >>>> describing the hardware thermal behavior and limits.
-> >>>> Also a parser to read and interpret the data and feed
-> >>>> it in the thermal framework is presented.
-> >>>>
-> >>>> This patch introduces a thermal data parser for device
-> >>>> tree. The parsed data is used to build thermal zones
-> >>>> and thermal binding parameters. The output data
-> >>>> can then be used to deploy thermal policies.
-> >>>>
-> >>>> This patch adds also documentation regarding this
-> >>>> API and how to define tree nodes to use
-> >>>> this infrastructure.
-> >>>>
-> >>>> Note that, in order to be able to have control
-> >>>> on the sensor registration on the DT thermal zone,
-> >>>> it was required to allow changing the thermal zone
-> >>>> .get_temp callback. For this reason, this patch
-> >>>> also removes the 'const' modifier from the .ops
-> >>>> field of thermal zone devices.
-> >>>>
-> >>>> ...
-> >>>> +
-> >>>> +static int of_thermal_get_trend(struct thermal_zone_device *tz, int
-> trip,
-> >>>> +                          enum thermal_trend *trend)
-> >>>> +{
-> >>>> +  struct __thermal_zone *data = tz->devdata;
-> >>>> +  long dev_trend;
-> >>>> +  int r;
-> >>>> +
-> >>>> +  if (!data->get_trend)
-> >>>> +          return -EINVAL;
-> >>>> +
-> >>>> +  r = data->get_trend(data->sensor_data, &dev_trend);
-> >>> I think the ->get_trend should be defined as:
-> >>> .get_trend(*dev, int, *long)
-> >>> so that the "trip" can be passed into it, otherwise the "trip" can't be
-> >>> used.
-> >>> And the dev_trend should be returned as THERMAL_TREND_XXX directly.
-> >>> because the THERM_TREND_xx is more than three states.
-> >>>
-> >>> The code may be something like:
-> >>> r = data->get_trend(data->sensor_data, trip, &dev_trend);
-> >>> if (r)
-> >>>     return r;
-> >>> *trend = dev_trend;
-> >>> return 0;
-> >>>> +  if (r)
-> >>>> +          return r;
-> >>>> +
-> >>>> +  /* TODO: These intervals might have some thresholds, but in core
-> code */
-> >>>> +  if (dev_trend > 0)
-> >>>> +          *trend = THERMAL_TREND_RAISING;
-> >>>> +  else if (dev_trend < 0)
-> >>>> +          *trend = THERMAL_TREND_DROPPING;
-> >>>> +  else
-> >>>> +          *trend = THERMAL_TREND_STABLE;
-> >>>> +
-> >>>> +  return 0;
-> >>>> +}
-> >>>> +
-> >>>> .....
-> >>>> +
-> >>>> +/***   sensor API   ***/
-> >>>> +
-> >>>> +static struct thermal_zone_device *
-> >>>> +thermal_zone_of_add_sensor(struct device_node *zone,
-> >>>> +                     struct device_node *sensor, void *data,
-> >>>> +                     int (*get_temp)(void *, long *),
-> >>>> +                     int (*get_trend)(void *, long *))
-> >>>> +{
-> >>>> +  struct thermal_zone_device *tzd;
-> >>>> +  struct __thermal_zone *tz;
-> >>>> +
-> >>>> +  tzd = thermal_zone_get_zone_by_name(zone->name);
-> >>> I think we could get the thermal zone by node,
-> >>> something like:
-> >>> thermal_zone_get_zone_by_node(zone);
-> >>> so that it can get unique zone.
-> >>>
-> >>> I think we can add a member "struct device_node *np" in the
-> >>> thermal_zone_device,
-> >>> and set it after you call thermal_zone_device_register successfully.
-> >>> Then add following codes:
-> >>> thermal_zone_get_zone_by_node(struct device_node *node)
-> >>> {
-> >>>         struct thermal_zone_device *pos = NULL, *ref =
-> ERR_PTR(-ENODEV);
-> >>>         bool found = false;
-> >>>
-> >>>         if (!node)
-> >>>                 return ERR_PTR(-EINVAL);
-> >>>
-> >>>         mutex_lock(&thermal_list_lock);
-> >>>         list_for_each_entry(pos, &thermal_tz_list, node)
-> >>>                 if (node == pos->np) {
-> >>>                         ref = pos;
-> >>>                         found = true;
-> >>>                         break;
-> >>>                 }
-> >>>         mutex_unlock(&thermal_list_lock);
-> >>>
-> >>>         return ref;
-> >>> }
-> >>>
-> >>> Thanks.
-> >>> Wei.
-> >>>> +  if (IS_ERR(tzd))
-> >>>> +          return ERR_PTR(-EPROBE_DEFER);
-> >>>> +
-> >>>> +  tz = tzd->devdata;
-> >>>> +
-> >>>> +  mutex_lock(&tzd->lock);
-> >>>> +  tz->get_temp = get_temp;
-> >>>> +  tz->get_trend = get_trend;
-> >>>> +  tz->sensor_data = data;
-> >>>> +
-> >>>> +  tzd->ops->get_temp = of_thermal_get_temp;
-> >>>> +  tzd->ops->get_trend = of_thermal_get_trend;
-> >>>> +  mutex_unlock(&tzd->lock);
-> >>>> +
-> >>>> +  return tzd;
-> >>>> +}
-> >>>> +
-> >>>>
-> >>>
-> >>
-> >>
-> >>
-> >
-> >
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-_______________________________________________
-lm-sensors mailing list
-lm-sensors@lm-sensors.org
-http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+-- 
+Jean Delvare
