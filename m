@@ -1,101 +1,67 @@
-From: Phillip Susi <psusi@ubuntu.com>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Wed, 08 Jan 2014 15:20:58 -0500
-Message-ID: <52CDB32A.6000702@ubuntu.com>
-References: <Pine.LNX.4.44L0.1401081220170.1659-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Allow runtime suspend during system resume
+Date: Wed, 8 Jan 2014 15:44:53 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401081522240.1659-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.1401081318040.1659-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-scsi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1401081220170.1659-100000@iolanthe.rowland.org>
-Sender: linux-scsi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:59256 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757026AbaAHUoy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 15:44:54 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1401081318040.1659-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phillip Susi <psusi@ubuntu.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, 8 Jan 2014, Alan Stern wrote:
 
-On 1/8/2014 12:46 PM, Alan Stern wrote:
-> I/O _was_ done.  To spin up the disk requires sending it a START 
-> command.  That's I/O.
-
-Yes, currently, but that's exactly what I'm trying to get rid of.
-
-> In essence, you want your disk's state to move directly from
-> unpowered (system asleep) to runtime-suspended with no intermediate
-> active -- but only if the disk doesn't spin up all by itself.
+> On Wed, 8 Jan 2014, Alan Stern wrote:
 > 
-> One problem: How can the kernel tell whether the disk has spun up
-> by itself?  I don't think it can be done at the SCSI level.  Can it
-> be done at the ATA level (and without using the SCSI stack, as that
-> would require the disk to go out of runtime suspend and spin up
-> anyway)?
+> > In essence, you want your disk's state to move directly from unpowered
+> > (system asleep) to runtime-suspended with no intermediate active -- but
+> > only if the disk doesn't spin up all by itself.
+> 
+> > In the end, it sounds like what you want can be done fairly easily.  
+> 
+> It turns out there is a snag.  The PM core is set up such that during
+> system sleep transitions, there's no way to tell whether or not
+> userspace has permitted runtime PM for a device.  (This is because the
+> core wants to prevent untimely runtime suspends from occurring in the
+> middle of a system sleep transition, and to do so it uses the same
+> mechanism as it does when userspace disallows runtime suspend.)
+> 
+> As a result, we must not go directly from unpowered to
+> runtime-suspended.  Not without some sort of change to the PM core.
 
-You issue a REQUEST SENSE command and that returns status indicating
-whether the drive is stopped, or in standby.  See my patches.  One of
-them fixes the scsi-ata translation to issue the ATA CHECK power
-command to see if the drive is suspended, as SAT-3 calls for.
+Rafael:
 
-> Actually, it does have a reason.  Namely, you told it earlier to
-> assume the disk will be needed again if it was used within the last
-> 5 minutes.  At the time of the system resume, the disk was last
-> used 3 minutes ago (not counting the time the system was asleep).
+Right now the PM core does pm_runtime_get_noresume() during the prepare 
+phase of system sleep, and pm_runtime_put() during the complete phase.  
+Maybe we should cut down the range of coverage.
 
-You're looking at it backwards.  You aren't telling it to assume the
-disk will be needed again if it was used within the last 5 minutes;
-you are telling it that it can assume it *won't* be needed again soon
-if not used in the last 5 minutes, and therefore, it is ok to shut it
-down.
+For example, we could do the pm_runtime_put() during dpm_resume(), or 
+even earlier.  That way, the resume routine could do something like:
 
-Also the act of suspending the system is a pretty clear breaking point
-in general activity.  You normally stop your work and quiesce the
-system before you suspend it.  If I finish my work and copy it to my
-backup drive, then suspend the system, and my wife comes by an hour
-later to browse the web, she's not going to be touching my backup disk.
+	if (!pm_runtime_in_use(dev)) {
+		pm_runtime_disable(dev);
+		pm_runtime_set_suspended(dev);
+		pm_runtime_enable(dev);
+		return 0;
+	}
 
-> Are you assuming these disks were all runtime-active before the
-> system sleep?  If so, the kernel is justified in assuming that you
-> will be touching them all soon.
+where pm_runtime_in_use() would check the device's usage counters.  
+The device would come out of system sleep in a powered-down state, and
+could remain runtime-suspended with no need for an extra
+power-up/power-down cycle.  Isn't this the sort of thing the embedded
+people want to do?
 
-No it isn't.  Absence of evidence is not evidence of absence.  I
-listed several use cases where the drive won't be runtime suspended
-before the system suspend, yet will not be accessed any time soon
-after resume.
+As it is, drivers have no way to safely put devices directly into 
+runtime suspend when coming out of system sleep.
 
-> Not the ones that crash when they receive it.  But this point is
-> moot since manage_start_stop doesn't do what you want anyway.
+What do you think?
 
-Any that crash when they get it either are already unusable or have a
-quirk registered to inhibit the command, which would still apply.
+Alan Stern
 
-> No, it doesn't.  They don't spin, so they can't be configured
-> either to spin up or not to spin up after power-on.
-
-Which means we shouldn't be setting the runtime status to suspended
-after system resume... that's the second case.
-
-> What is PuiS?
-
-Power up in Standby.
-
-> In the end, it sounds like what you want can be done fairly easily.
->  But only if the kernel has a reliable way to tell whether or not a
-> disk is spinning (or is spinning up).
-
-That's why my patches are attempting to do: use REQUEST SENSE to ask
-the disk if it is spinning up or not.
-
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (MingW32)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQEcBAEBAgAGBQJSzbMqAAoJEI5FoCIzSKrwCYwIAKMwlRovIdfO6rSgZL7pufFG
-LOV/9apHzqldPPLJ5BPk0A69Ok/TimrQax06HTPyGJ1/MmOrEcjJzb482mJ4ixpx
-b7DP3De+RCEUifrfIlI/U+fWLHpw4DOYToSy5ZjNZbF/cDz43k85arAwRK/Bkb++
-C2F+YfeQyLcR0KjToj8MK9evlGY6oKfEYx9QCjBEgiaXRjIHfu0AuLn7y7AATK6n
-pFBzgq4cNSalob9I4WdwejzJz/RzqQFujtknB+nAaKhESqLCoclJLSzwNQyuxcRz
-qT3DckTyTBF7vGmYayaeERnukqWnDEBAQOc8qtOxx2rbYpivNHiqIc8sfrRoaJc=
-=2kXd
------END PGP SIGNATURE-----
