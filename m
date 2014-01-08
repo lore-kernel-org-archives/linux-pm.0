@@ -1,109 +1,45 @@
-From: Phillip Susi <psusi@ubuntu.com>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Tue, 07 Jan 2014 18:47:57 -0500
-Message-ID: <52CC922D.9070208@ubuntu.com>
-References: <Pine.LNX.4.44L0.1401071352080.1296-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 Resend] cpufreq: create cpufreq_generic_get() routine
+Date: Wed, 08 Jan 2014 01:13:33 +0100
+Message-ID: <2696764.XiYMgf5S93@vostro.rjw.lan>
+References: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:42759 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753999AbaAGXsC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 18:48:02 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1401071352080.1296-100000@iolanthe.rowland.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63511 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754510AbaAGX7p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2014 18:59:45 -0500
+In-Reply-To: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+On Tuesday, January 07, 2014 07:24:32 AM Viresh Kumar wrote:
+> CPUFreq drivers that use clock frameworks interface,i.e. clk_get_rate(), to get
+> CPUs clk rate, has similar sort of code used for most of them.
+> 
+> This patch adds a generic ->get() which will do the same thing for them. All
+> those drivers are required to now is to set .get to cpufreq_generic_get() and
+> set their clk pointer in policy->clk during ->init().
+> 
+> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+> Acked-by: Stephen Warren <swarren@nvidia.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Rafael,
+> 
+> V2->V3: As asked by you earlier, I have merged all 23 patches here as they had
+> common log and were touching separate drivers. This is already acked by many
+> people.  Please see if looks okay for 3.14.
 
-On 01/07/2014 02:18 PM, Alan Stern wrote:
-> I don't know how you manually spin down your disk, but one
-> reasonable way to do it is to set the autosuspend timeout to 0.  If
-> you use this approach and apply my patch, the disk should remain
-> spun down when the system resumes.
+Applied to bleeding-edge, thanks!
 
-The traditional method before the recently added block pm feature was
-with hdparm -y.
-
-> Right.  If you hadn't put the whole system to sleep, the disk
-> would have gone into runtime suspend 2 minutes later (assuming you
-> didn't use it in the meantime).  Whereas since you did put the
-> whole system to sleep, the disk will go into runtime suspend 5
-> minutes after the system wakes up -- not 2 minutes later.  I.e.,
-> the timer has been reset from 2 minutes back to 5.
-
-What resets the timer?  It should only be reset when IO is done.  And
-yes, it is exactly that wakeup and turn around and suspend again that
-I'm trying to avoid; it puts unnecessary wear and tear on the disk.
-
-> How is the kernel supposed to know that you finished using the
-> disk before suspending the system?  After all, by setting the
-> autosuspend timeout to 5 minutes, you have already told the kernel
-> to keep the disk spun up if it has been used any time in the last 5
-> minutes, and you used it only 3 minutes ago.  As far as the kernel
-> can tell, you still want the disk to be spun up and ready for use.
-> That remains true at the time of the system resume.
-
-That's the whole point: it doesn't know.  What it does know is that
-the disk is spun down on resume, and it has no reason to believe that
-you will need it again soon.  This is especially true given that your
-typical single ATA disk system will spin up the drive on its own
-anyhow, so on systems with multiple scsi or ATA disks that explicitly
-have been set to power up in standby, it is at least an even bet that
-you won't be touching them all soon.
-
-> You're forgetting that the same sd driver manages other types of 
-> devices than disk drives.  Card readers and USB flash drives have
-> no heads to retract and no spinning platters.  They don't need
-> START STOP commands (in fact, some of them probably would crash if
-> they received such a command).
-
-They are irrelevant since they ignore the command anyhow.
-
-> Irrelevant, unless you are also claiming that all ATA disks always
-> get powered on whenever the system resumes, something which is not
-> at all evident to me.  Particularly if the disk was in runtime
-> suspend before the system went to sleep.
-
-I'm saying that most do.  It doesn't require 100% to be relevant.
-There will also be plenty of disks at least for some time that are
-still using the internal standby timer rather than runtime pm.
-
-> Now I'm really getting confused.  Here, you are saying that ATA
-> disks will always spin up, all by themselves, whenever the system
-> resumes, and there's nothing the kernel can do to prevent it.  But
-> earlier you wrote:
-
-No, I'm saying some ( most in fact ) do, and some do not.  Both cases
-need to be handled.  Runtime pm must not indicate the disk is
-suspended when it spins up on its own after power on, which ATA disks
-do by default.  Oddly, the SCSI standard says that SCSI disks can be
-configured behave this way as well rather than requiring an explicit
-start command, though it doesn't say how and I've not heard of a way
-to do this.  I suppose this also applies to the USB flash drives and
-SD card readers you mentioned that are managed by sd.
-
-> Isn't this a contradiction?  Or are you making a distinction
-> between ATA and non-ATA disks?
-
-What?  I have some disk drives that I rarely access.  I simply don't
-want them starting up and spinning back down every time I resume.  In
-my case they are ATA with PuiS enabled, but it applies to SCSI the
-same way.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQEcBAEBCgAGBQJSzJItAAoJEI5FoCIzSKrwhCQIAIclA7u+FJ1PSZRYWcvFQg0B
-n/WIupSCAXfiSo4uVZpC9m4W8TR9CawEorIPZGE+G/Hv+zRz3YKqA3OOuOQc1S5i
-5IK019yY4EsOHsUK8RlBsgKu1bW0SdFsa73COzqT65bxNqUb5PUK5ed/Z1Kg7cTn
-QM7jCMYz0wE7cqAQQ8eV56Y1Nolb6T3WmqKqoGl+qJj+IvebCuJ9vsYXf7MhSd9b
-yb2Iq/ThR81vm68c6+KOFQkOkL3zPZ6QWCh5Xj4mRkvXtsd7htNKpxTkM7OC6azF
-Z0I5xreArN9SQ8GLHtzB2Lrs+SzlMSvIE1HKQdieBcy//LImk8DajbddupJy7Bk=
-=dYPC
------END PGP SIGNATURE-----
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
