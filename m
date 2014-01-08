@@ -1,40 +1,45 @@
-From: Phillip Susi <psusi@ubuntu.com>
+From: Aaron Lu <aaron.lu@intel.com>
 Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Tue, 07 Jan 2014 20:16:19 -0500
-Message-ID: <52CCA6E3.2090400@ubuntu.com>
-References: <cover.1384030893.git.psusi@ubuntu.com> <1387236657-4852-1-git-send-email-psusi@ubuntu.com> <52CA1191.8060804@ubuntu.com> <52CA5CF4.2080708@codeaurora.org> <52CA744F.2080609@intel.com> <52CAC067.20601@ubuntu.com> <52CBB188.2080707@intel.com> <52CC1422.1020101@ubuntu.com> <52CCA3CF.5050308@intel.com>
+Date: Wed, 08 Jan 2014 09:32:23 +0800
+Message-ID: <52CCAAA7.4070104@intel.com>
+References: <cover.1384030893.git.psusi@ubuntu.com> <1387236657-4852-1-git-send-email-psusi@ubuntu.com> <52CA1191.8060804@ubuntu.com> <52CA5CF4.2080708@codeaurora.org> <52CA744F.2080609@intel.com> <52CAC067.20601@ubuntu.com> <52CBB188.2080707@intel.com> <52CC1422.1020101@ubuntu.com> <52CCA3CF.5050308@intel.com> <52CCA6E3.2090400@ubuntu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <52CCA3CF.5050308@intel.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>
-Cc: todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:12445 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753284AbaAHBcP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jan 2014 20:32:15 -0500
+In-Reply-To: <52CCA6E3.2090400@ubuntu.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phillip Susi <psusi@ubuntu.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>
+Cc: todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+On 01/08/2014 09:16 AM, Phillip Susi wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA512
+> 
+> On 01/07/2014 08:03 PM, Aaron Lu wrote:
+>> You mean you want to leave the disk runtime suspended after a
+>> system resume and in the meantime make sure the disk is indeed not
+>> spun up?
+> 
+> Yep.  If it is spun up, then the runtime status should be updated to
+> reflect that, otherwise it tricks user space programs into avoiding
+> doing IO to the disk for fear of waking it, and prevents the runtime
+> autosuspend timer from kicking in.
 
-On 01/07/2014 08:03 PM, Aaron Lu wrote:
-> You mean you want to leave the disk runtime suspended after a
-> system resume and in the meantime make sure the disk is indeed not
-> spun up?
+The ATA and SCSI devices are all resumed in my patches, notice there is
+a single pm_request_resume call in both ATA and SCSI's system resume
+callback, so the runtime status and the disk's state is synced.
+The pm_request_resume call is asynchronous to the system resume, so it
+doesn't block system resume.
 
-Yep.  If it is spun up, then the runtime status should be updated to
-reflect that, otherwise it tricks user space programs into avoiding
-doing IO to the disk for fear of waking it, and prevents the runtime
-autosuspend timer from kicking in.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQEcBAEBCgAGBQJSzKbjAAoJEI5FoCIzSKrwhEsH/3WXEJm2+uPR2zIeGVvZ/I2X
-yu0KpcMto0Ox/v2htII/SjQsmhAPbyphTcbJeZJTmbA5EZmNixZXrZAS1vy3vK06
-n2Azmywuf0mihfZV1ORg1GuwjgqSSW9MNRw+IuJ7NkxtOZWvWFRNvpcVdyfcig6d
-26CP0drDH/j9VL5L1UFWensESswAWV9l1Ht45FUemQw5QDQK6hwUpOAfhbnurz06
-OCOs4QRC+O/zWyxzMVKQtQnCEd5tRnKQq0K6d2ZmCKe368KNUrKZ+sk3SPabYtjI
-3CEv1+ytG8VajzxJ0cj4TuePK2O+lcd0TWddARJqxZg7o/JYWAyN4yMFoPsAUPo=
-=oDcD
------END PGP SIGNATURE-----
+But I see your point, my patch will not achieve that, it can only speed
+up S3 for a typical PC with a traditional disk. I can omit the
+pm_request_resume call in the system resume callback, but then if the
+disk is spun up by itself, then the runtime status indeed doesn't
+reflect the actual state. I suppose for SATA controllers that support
+Staggered Spin-up wouldn't do this?
