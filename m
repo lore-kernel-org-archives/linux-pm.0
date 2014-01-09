@@ -1,43 +1,35 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Thu, 9 Jan 2014 10:40:28 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401091032430.1493-100000@iolanthe.rowland.org>
-References: <52CDFB97.9080303@intel.com>
+Subject: Re: Allow runtime suspend during system resume
+Date: Thu, 9 Jan 2014 10:41:16 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401091040340.1493-100000@iolanthe.rowland.org>
+References: <CAPDyKFrnGvLOQRBKz-V5SsGPNMLXRjSS1iSBPxXj+KW9sMbrRA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49115 "HELO
+Received: from iolanthe.rowland.org ([192.131.102.54]:49124 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751541AbaAIPk3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 10:40:29 -0500
-In-Reply-To: <52CDFB97.9080303@intel.com>
+	with SMTP id S1751490AbaAIPlR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 10:41:17 -0500
+In-Reply-To: <CAPDyKFrnGvLOQRBKz-V5SsGPNMLXRjSS1iSBPxXj+KW9sMbrRA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Phillip Susi <psusi@ubuntu.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phillip Susi <psusi@ubuntu.com>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Thu, 9 Jan 2014, Aaron Lu wrote:
+On Thu, 9 Jan 2014, Ulf Hansson wrote:
 
-> > It's a knotty situation.  The only way to find out whether the disk is
-> > spinning is to ask it, which requires doing I/O, which requires
-> > spinning up the disk.  Maybe we need to add a mechanism to the block
-> > layer's runtime PM implementation for addressing just this situation.
-> 
-> I think it's knotty because the runtime PM status is a view from the
-> kernel/host side, i.e. it is runtime suspended if it is not being used,
-> no matter which power state it is in. The trigger for the PM state
-> transition are all based on this, if we want to do it the other way
-> around(update device's runtime PM status based on device's actual power
-> state), we are in a knotty situation.
+> Allowing userspace to disable/enable runtime PM, does in many cases
+> add complexity to subsystems and drivers when they handle system
+> suspend/resume. This seems to be the case for SCSI as well?
 
-No, that's not the problem.  The problem is that the block layer does
-not permit any requests to go through if the queue's rpm_status is
-RPM_SUSPENDED.
+No.
 
-We should change the code in the block layer.  blk_pm_peek_request 
-should allow requests with REQ_PM set to go through, no matter what the 
-rpm_status is.  Then the disk driver could query the disk (to see 
-whether it is spinning) while the disk remains in runtime suspend.
+> To simplify for these subsystems and drivers, what do you think about
+> inventing something like "pm_runtime_sysfs_forbid", which in principle
+> will prevent userspace from enable/disable runtime PM? Typically this
+> function will be called from ->probe.
+
+I think it is a very bad idea.
 
 Alan Stern
 
