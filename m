@@ -1,35 +1,52 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 Resend] cpufreq: create cpufreq_generic_get() routine
-Date: Thu, 9 Jan 2014 20:15:55 +0530
-Message-ID: <CAKohpokTfpQFZM-QzLVBKZGRe66NxXpHmGwBzQKD+O3_pS_nsg@mail.gmail.com>
-References: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org>
-	<CAOesGMgfFVoVJpOMXWtzVWj_F4pD-L9Osyv4u6=c8RUWOoLHFw@mail.gmail.com>
-	<CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
-	<1645387.93uAkEaqro@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:44234 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbaAIOp4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 09:45:56 -0500
-Received: by mail-oa0-f48.google.com with SMTP id k1so3469203oag.35
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jan 2014 06:45:55 -0800 (PST)
-In-Reply-To: <1645387.93uAkEaqro@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 1/2] ARM: SA1100: Create dummy clk_get_rate() to avoid build failures
+Date: Thu,  9 Jan 2014 20:38:42 +0530
+Message-ID: <aaadbfa341a881c8250f2d23bc77062228d2e70b.1389279793.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, olof@lixom.net, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Olof Johansson <olof@lixom.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Fengguang Wu <fengguang.wu@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 9 January 2014 17:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Well, if build is broken, it *always* is the fault of the commit that
-> introduced the breakage, even if that is a result of someone else doing
-> things incorrectly.  Why?  Because it potentially breaks bisection for
-> people and *that* is a big deal.
+There are some parts of common kernel which would be using routines like
+clk_get_rate() on some platforms. Currently these wouldn't be called for SA1100
+boards but we need these routines for successful builds of these boards.
 
-Agree :)
+So, this patch creates a dummy clk_get_rate() routine which is being used by
+cpufreq core. More dummy routines might be added later if there is a need for
+that.
 
-> So yes, I'm going to revert it.  Please resubmit after you've addressed the
-> build breakage.
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Arnd Bergmann <arnd.bergmann@linaro.org>
+Reported-by: <Olof Johansson> olof@lixom.net
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Hi Rafael,
 
-Will do that shortly.
+This is the only new part here. 2/2 is still the same. Its compiled for Assabet
+board. And the issue reported by Olof is resolved with it.
+
+ arch/arm/mach-sa1100/clock.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/mach-sa1100/clock.c b/arch/arm/mach-sa1100/clock.c
+index 172ebd0..9fa6a99 100644
+--- a/arch/arm/mach-sa1100/clock.c
++++ b/arch/arm/mach-sa1100/clock.c
+@@ -33,6 +33,13 @@ struct clk clk_##_name = {				\
+ 
+ static DEFINE_SPINLOCK(clocks_lock);
+ 
++/* Dummy clk routine to build generic kernel parts that may be using them */
++unsigned long clk_get_rate(struct clk *clk)
++{
++	return 0;
++}
++EXPORT_SYMBOL(clk_get_rate);
++
+ static void clk_gpio27_enable(struct clk *clk)
+ {
+ 	/*
+-- 
+1.7.12.rc2.18.g61b472e
+
