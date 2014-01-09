@@ -1,264 +1,312 @@
 From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH] thermal: use device node to get thermal zone
-Date: Thu, 9 Jan 2014 15:56:05 +0800
-Message-ID: <52CE5615.8040204@nvidia.com>
-References: <1389172011-32107-1-git-send-email-wni@nvidia.com>
- <4D68720C2E767A4AA6A8796D42C8EB59E09ED1@BGSMSX101.gar.corp.intel.com>
- <52CD452D.3080508@ti.com>
+Subject: Re: [PATCH] thermal: add interface to support tune governor in run-time
+Date: Thu, 9 Jan 2014 16:11:49 +0800
+Message-ID: <52CE59C5.3040708@nvidia.com>
+References: <1389172052-1484-1-git-send-email-wni@nvidia.com> <52CD48D6.2000906@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <52CD452D.3080508-l0cyMroinI0@public.gmane.org>
+In-Reply-To: <52CD48D6.2000906-l0cyMroinI0@public.gmane.org>
 Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, "R, Durgadoss" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Cc: "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/08/2014 08:31 PM, Eduardo Valentin wrote:
+On 01/08/2014 08:47 PM, Eduardo Valentin wrote:
 > * PGP Signed by an unknown key
 > 
-> On 08-01-2014 07:10, R, Durgadoss wrote:
->> Hi Wei,
->>
->>> -----Original Message-----
->>> From: linux-pm-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org [mailto:linux-pm-
->>> owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org] On Behalf Of Wei Ni
->>> Sent: Wednesday, January 08, 2014 2:37 PM
->>> To: eduardo.valentin-l0cyMroinI0@public.gmane.org; Zhang, Rui; mark.rutland-5wv7dgnIgG8@public.gmane.org
->>> Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org; swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org; linux-
->>> pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; Wei Ni
->>> Subject: [PATCH] thermal: use device node to get thermal zone
->>>
->>> If use name to get the thermal zone, sometimes it can't
->>> get the unique thermal zone, because the thermal fw support
->>> same name for different thermal zone.
->>> So we can change to use device node to get thermal zone.
+> On 08-01-2014 05:07, Wei Ni wrote:
+>> The governers are not static, so added a new function
+>> thermal_update_governor() to update a new one and throw away
+>> old ones in run-time. And added start/stop callback to tuning governor
+>> parameters at any time.
 > 
-> Please check the documentation for .*by_name function. There is an error
-> code for the case of multiple instances. In fact, it is designed to be
-> used by users who know that in the system there is going to exist only
-> one zone with that name.
-> 
-> I don't think it is correct to simply remove the existing API and
-> enforce DT usage. What if the system does not use DT?
-> 
->>
->> Eduardo introduced this API because we wanted to get the
->> tzd pointer by using the name. So, for your case, can you
->> introduce a new API *get_by_node instead of changing this
->> API ?
-> 
-> Agreed, if you need a search by DT node, then you need to provide the
-> use cases and propose a new one.
+> Please provide better explanation of why you need this. Providing use
+> cases is good start.
 
-Yes, you are right, I should not remove it simply, I will add a new API
-.*by_node.
+Ok I can add explanation in my next patch version.
 
-On the tegra board, it will use two or more sensors to estimate the skin
-temperature by reading temps from these sensors and calculate them.
-For example, we have two sensors: sensor1 and sensor2. We can register
-them to thermal framework by using DT, something like:
-thermal-zones {
-                sensor1: lm90-local {
-			...
-                        thermal-sensors = <&lm90 0>;
-                };
-
-                sensor2: lm90-remote {
-			...
-                        thermal-sensors = <&lm90 1>;
-                };
-}
-
-Then I will add a device node for my skin temperature driver, something
-like:
-skin_temp {
-	...
-	#thermal-sensor-cells = <0>;
-
-	sub-devs {
-		dev@0 {
-			dev = <&sensor1>;
-		};
-
-		dev@1 {
-			dev = <&sensor2>;
-		};
-	};
-};
-So I can parse the DT in the skin temperature driver to get the nodes of
-the sensor1 and sensor2, and can use .*get_by_node to get thermal zone
-device, then use .get_temp() and other callbacks to get temperature and
-other information. If use the *.get_by_name, it may not get the uniqu
-one, because I don't know if there has the same name thermal zone,
-because some other driver may not use DT to register thermal zone, it
-can define any name by itself.
+In the of-thermal driver, it register a thermal zone device without
+governor, since the governers are not static, we should update a new one
+in run-time, so I add a new fucntion thermal_update_governor().
 
 > 
 >>
->> Thanks,
->> Durga
+>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> ---
+>>  drivers/thermal/thermal_core.c |  103 ++++++++++++++++++++++++++++++++++++----
+>>  drivers/thermal/thermal_core.h |    1 +
+>>  include/linux/thermal.h        |   11 +++++
+>>  3 files changed, 106 insertions(+), 9 deletions(-)
 >>
->>>
->>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>> ---
->>>  drivers/thermal/of-thermal.c   |    6 ++++--
->>>  drivers/thermal/thermal_core.c |   37 ++++++++++++++++---------------------
->>>  include/linux/thermal.h        |    4 +++-
->>>  3 files changed, 23 insertions(+), 24 deletions(-)
->>>
->>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->>> index 04b1be7..97c12cf 100644
->>> --- a/drivers/thermal/of-thermal.c
->>> +++ b/drivers/thermal/of-thermal.c
->>> @@ -330,7 +330,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->>>  	struct thermal_zone_device *tzd;
->>>  	struct __thermal_zone *tz;
->>>
->>> -	tzd = thermal_zone_get_zone_by_name(zone->name);
->>> +	tzd = thermal_zone_get_zone_by_node(zone);
-> 
-> In DT, nodes have unique names. Are you seen a problem with the above code?
-
-this file is used for DT parse, I think it's better to use .*by_node
-instead.
-
-> 
->>>  	if (IS_ERR(tzd))
->>>  		return ERR_PTR(-EPROBE_DEFER);
->>>
->>> @@ -804,6 +804,8 @@ int __init of_parse_thermal_zones(void)
->>>  			of_thermal_free_zone(tz);
->>>  			/* attempting to build remaining zones still */
->>>  		}
->>> +
->>> +		zone->np = child;
->>>  	}
->>>
->>>  	return 0;
->>> @@ -837,7 +839,7 @@ void of_thermal_destroy_zones(void)
->>>  	for_each_child_of_node(np, child) {
->>>  		struct thermal_zone_device *zone;
->>>
->>> -		zone = thermal_zone_get_zone_by_name(child->name);
->>> +		zone = thermal_zone_get_zone_by_node(child);
->>>  		if (IS_ERR(zone))
->>>  			continue;
->>>
->>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->>> index 338a88b..89e0637 100644
->>> --- a/drivers/thermal/thermal_core.c
->>> +++ b/drivers/thermal/thermal_core.c
->>> @@ -1635,42 +1635,37 @@ void thermal_zone_device_unregister(struct
->>> thermal_zone_device *tz)
->>>  EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
->>>
->>>  /**
->>> - * thermal_zone_get_zone_by_name() - search for a zone and returns its ref
->>> - * @name: thermal zone name to fetch the temperature
->>> + * thermal_zone_get_zone_by_node() - search for a zone and returns its ref
->>> + * @node: device node of the thermal zone
->>>   *
->>> - * When only one zone is found with the passed name, returns a reference to it.
->>> + * When thermal zone is found with the passed device node, returns a
->>> reference
->>> + * to it.
->>>   *
->>>   * Return: On success returns a reference to an unique thermal zone with
->>> - * matching name equals to @name, an ERR_PTR otherwise (-EINVAL for invalid
->>> - * paramenters, -ENODEV for not found and -EEXIST for multiple matches).
->>> + * matching device node, an ERR_PTR otherwise (-EINVAL for invalid
->>> + * paramenters, -ENODEV for not found).
->>>   */
->>> -struct thermal_zone_device *thermal_zone_get_zone_by_name(const char
->>> *name)
->>> +struct thermal_zone_device *
->>> +thermal_zone_get_zone_by_node(struct device_node *node)
->>>  {
-> 
-> You are removing an API, are you checking that all existing users of
-> this API are changed accordingly? I don't think so.
-
-Sorry, it's my mistake, I will not remove it in my next pactch.
-
-> 
->>> -	struct thermal_zone_device *pos = NULL, *ref = ERR_PTR(-EINVAL);
->>> -	unsigned int found = 0;
->>> +	struct thermal_zone_device *pos = NULL, *ref = ERR_PTR(-ENODEV);
->>> +	bool found = false;
->>>
->>> -	if (!name)
->>> -		goto exit;
->>> +	if (!node)
->>> +		return ERR_PTR(-EINVAL);
->>>
->>>  	mutex_lock(&thermal_list_lock);
->>>  	list_for_each_entry(pos, &thermal_tz_list, node)
->>> -		if (!strnicmp(name, pos->type, THERMAL_NAME_LENGTH)) {
->>> -			found++;
->>> +		if (node == pos->np) {
->>>  			ref = pos;
->>> +			found = true;
->>> +			break;
->>>  		}
->>>  	mutex_unlock(&thermal_list_lock);
->>>
->>> -	/* nothing has been found, thus an error code for it */
->>> -	if (found == 0)
->>> -		ref = ERR_PTR(-ENODEV);
->>> -	else if (found > 1)
->>> -	/* Success only when an unique zone is found */
->>> -		ref = ERR_PTR(-EEXIST);
->>> -
->>> -exit:
->>>  	return ref;
->>>  }
->>> -EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
->>> +EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_node);
->>>
->>>  #ifdef CONFIG_NET
->>>  static const struct genl_multicast_group thermal_event_mcgrps[] = {
->>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->>> index f7e11c7..a94de8c 100644
->>> --- a/include/linux/thermal.h
->>> +++ b/include/linux/thermal.h
->>> @@ -162,6 +162,7 @@ struct thermal_zone_device {
->>>  	int id;
->>>  	char type[THERMAL_NAME_LENGTH];
->>>  	struct device device;
->>> +	struct device_node *np;
-> 
-> Please describe better if you want to add this node in here. Better to
-> add it in a separated patch.
-> 
->>>  	struct thermal_attr *trip_temp_attrs;
->>>  	struct thermal_attr *trip_type_attrs;
->>>  	struct thermal_attr *trip_hyst_attrs;
->>> @@ -285,7 +286,8 @@ struct thermal_cooling_device *
->>>  thermal_of_cooling_device_register(struct device_node *np, char *, void *,
->>>  				   const struct thermal_cooling_device_ops *);
->>>  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
->>> -struct thermal_zone_device *thermal_zone_get_zone_by_name(const char
->>> *name);
->>> +struct thermal_zone_device *
->>> +thermal_zone_get_zone_by_node(struct device_node *node);
->>>  int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long
->>> *temp);
->>>
->>>  int get_tz_trend(struct thermal_zone_device *, int);
->>> --
->>> 1.7.9.5
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->>> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 89e0637..be93f43 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -93,10 +93,17 @@ int thermal_register_governor(struct thermal_governor *governor)
+>>                       name = pos->tzp->governor_name;
+>>               else
+>>                       name = DEFAULT_THERMAL_GOVERNOR;
+>> -             if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
+>> +             if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
+>> +                     if (governor->start) {
+>> +                             err = governor->start(pos);
+>> +                             if (err < 0)
+>> +                                     goto exit;
+>> +                     }
+>>                       pos->governor = governor;
+>> +             }
+>>       }
 >>
+>> +exit:
+>>       mutex_unlock(&thermal_list_lock);
+>>       mutex_unlock(&thermal_governor_lock);
+>>
+>> @@ -119,8 +126,11 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+>>
+>>       list_for_each_entry(pos, &thermal_tz_list, node) {
+>>               if (!strnicmp(pos->governor->name, governor->name,
+>> -                                             THERMAL_NAME_LENGTH))
+>> +                                             THERMAL_NAME_LENGTH)) {
+>> +                     if (pos->governor->stop)
+>> +                             pos->governor->stop(pos);
+>>                       pos->governor = NULL;
+>> +             }
+>>       }
+>>
+>>       mutex_unlock(&thermal_list_lock);
+>> @@ -130,6 +140,49 @@ exit:
+>>       return;
+>>  }
+>>
+>> +/**
+>> + * thermal_update_governor() - update the thermal zone device's governor
+>> + * to a new one.
+>> + * @tzd: pointer of thermal zone device, which need to update governor.
+>> + * @name: thermal zone name to fetch the temperature
+>> + *
+>> + * Return: On success returns 0, an error code otherwise
+>> + */
+>> +int thermal_update_governor(struct thermal_zone_device *tzd,
+>> +                         const char *name)
+>> +{
+>> +     struct thermal_governor *old_gov, *new_gov;
+>> +     int ret = 0;
+>> +
+>> +     mutex_lock(&thermal_governor_lock);
+>> +
+>> +     new_gov = __find_governor(name);
+>> +     if (!new_gov) {
+>> +             ret = -EINVAL;
+>> +             goto exit;
+>> +     }
+>> +
+>> +     old_gov = tzd->governor;
+>> +
+>> +     if (old_gov && old_gov->stop)
+>> +             old_gov->stop(tzd);
+>> +
+>> +     if (new_gov->start) {
+>> +             ret = new_gov->start(tzd);
+>> +             if (ret < 0) {
+>> +                     if (old_gov && old_gov->start)
+>> +                             old_gov->start(tzd);
+>> +                     goto exit;
+>> +             }
+>> +     }
+>> +
+>> +     tzd->governor = new_gov;
+>> +
+>> +exit:
+>> +     mutex_unlock(&thermal_governor_lock);
+>> +     return ret;
+>> +}
+>> +
+>>  static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+>>  {
+>>       int ret;
+>> @@ -734,22 +787,17 @@ policy_store(struct device *dev, struct device_attribute *attr,
+>>  {
+>>       int ret = -EINVAL;
+>>       struct thermal_zone_device *tz = to_thermal_zone(dev);
+>> -     struct thermal_governor *gov;
+>>       char name[THERMAL_NAME_LENGTH];
+>>
+>>       snprintf(name, sizeof(name), "%s", buf);
+>>
+>> -     mutex_lock(&thermal_governor_lock);
+>> -
+>> -     gov = __find_governor(strim(name));
+>> -     if (!gov)
+>> +     ret = thermal_update_governor(tz, strim(name));
+>> +     if (ret < 0)
+>>               goto exit;
+>>
+>> -     tz->governor = gov;
+>>       ret = count;
+>>
+>>  exit:
+>> -     mutex_unlock(&thermal_governor_lock);
+>>       return ret;
+>>  }
+>>
+>> @@ -761,6 +809,24 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+>>       return sprintf(buf, "%s\n", tz->governor->name);
+>>  }
+>>
+>> +static ssize_t
+>> +available_policies_show(struct device *dev, struct device_attribute *devattr,
+>> +                     char *buf)
+>> +{
+>> +     struct thermal_governor *pos;
+>> +     ssize_t count = 0;
+>> +
+>> +     mutex_lock(&thermal_governor_lock);
+>> +
+>> +     list_for_each_entry(pos, &thermal_governor_list, governor_list)
+>> +             count += sprintf(buf + count, "%s ", pos->name);
+>> +     count += sprintf(buf + count, "\n");
+>> +
+>> +     mutex_unlock(&thermal_governor_lock);
+>> +
+>> +     return count;
+>> +}
+>> +
+> 
+> Adding an ABI requires documenting it under Documentation/
+> 
+> Besides, I believe this is a matter for a different patch than this one.
+
+Oh yes, I will do it.
+
+> 
+>>  #ifdef CONFIG_THERMAL_EMULATION
+>>  static ssize_t
+>>  emul_temp_store(struct device *dev, struct device_attribute *attr,
+>> @@ -794,6 +860,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+>>  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+>>  static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+>>  static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+>> +static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
+>>
+>>  /* sys I/F for cooling device */
+>>  #define to_cooling_device(_dev)      \
+>> @@ -1527,6 +1594,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>>       if (result)
+>>               goto unregister;
+>>
+>> +     /* Create available_policies attribute */
+>> +     result = device_create_file(&tz->device, &dev_attr_available_policies);
+>> +     if (result)
+>> +             goto unregister;
+>> +
+>>       /* Update 'this' zone's governor information */
+>>       mutex_lock(&thermal_governor_lock);
+>>
+>> @@ -1535,6 +1607,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>>       else
+>>               tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
+>>
+>> +     if (tz->governor->start) {
+>> +             result = tz->governor->start(tz);
+>> +             if (result < 0)
+>> +                     tz->governor = NULL;
+>> +     }
+>> +
+>>       mutex_unlock(&thermal_governor_lock);
+>>
+>>       if (!tz->tzp || !tz->tzp->no_hwmon) {
+>> @@ -1561,6 +1639,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>>               return tz;
+>>
+>>  unregister:
+>> +     if (tz->governor && tz->governor->stop)
+>> +             tz->governor->stop(tz);
+>> +     tz->governor = NULL;
+>>       release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+>>       device_unregister(&tz->device);
+>>       return ERR_PTR(result);
+>> @@ -1622,7 +1703,11 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+>>       if (tz->ops->get_mode)
+>>               device_remove_file(&tz->device, &dev_attr_mode);
+>>       device_remove_file(&tz->device, &dev_attr_policy);
+>> +     device_remove_file(&tz->device, &dev_attr_available_policies);
+>>       remove_trip_attrs(tz);
+>> +
+>> +     if (tz->governor && tz->governor->stop)
+>> +             tz->governor->stop(tz);
+>>       tz->governor = NULL;
+>>
+>>       thermal_remove_hwmon_sysfs(tz);
+>> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+>> index 3db339f..89bcfe7 100644
+>> --- a/drivers/thermal/thermal_core.h
+>> +++ b/drivers/thermal/thermal_core.h
+>> @@ -52,6 +52,7 @@ struct thermal_instance {
+>>
+>>  int thermal_register_governor(struct thermal_governor *);
+>>  void thermal_unregister_governor(struct thermal_governor *);
+>> +int thermal_update_governor(struct thermal_zone_device *, const char *);
+>>
+>>  #ifdef CONFIG_THERMAL_GOV_STEP_WISE
+>>  int thermal_gov_step_wise_register(void);
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index 37e4e03..ad9ab14 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -178,6 +178,7 @@ struct thermal_zone_device {
+>>       struct thermal_zone_device_ops *ops;
+>>       const struct thermal_zone_params *tzp;
+>>       struct thermal_governor *governor;
+>> +     void *governor_data;
+>>       struct list_head thermal_instances;
+>>       struct idr idr;
+>>       struct mutex lock; /* protect thermal_instances list */
+>> @@ -188,6 +189,15 @@ struct thermal_zone_device {
+>>  /* Structure that holds thermal governor information */
+>>  struct thermal_governor {
+>>       char name[THERMAL_NAME_LENGTH];
+>> +
+>> +     /*
+>> +      * The start and stop operations will be called when thermal zone is
+>> +      * registered and when change governor via sysfs or driver in running
+>> +      * time.
+>> +      */
+>> +     int (*start)(struct thermal_zone_device *tz);
+>> +     void (*stop)(struct thermal_zone_device *tz);
+>> +
+> 
+> But no explanation why a governor would need it is provided..
+
+I think in the future, the governor will be more complex, it may want to
+tune governor-specific parameters/configuration for different thermal
+zone at different run-time, so I add start/stop for the governor and add
+governor_data, so that the thermal driver can tune the governor
+parameters in run-time.
+
+> 
+> 
+>>       int (*throttle)(struct thermal_zone_device *tz, int trip);
+>>       struct list_head        governor_list;
+>>  };
+>> @@ -235,6 +245,7 @@ struct thermal_zone_params {
+>>        */
+>>       bool no_hwmon;
+>>
+>> +     void *governor_params;
+>>       int num_tbps;   /* Number of tbp entries */
+>>       struct thermal_bind_params *tbp;
+>>  };
 >>
 > 
+> 
+> --
+> You have got to be excited about what you are doing. (L. Lamport)
+> 
+> Eduardo Valentin
+> 
+> 
+> * Unknown Key
+> * 0x75D0BCFD
 > 
