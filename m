@@ -1,62 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] drivers/cpufreq: delete non-required instances of include <linux/init.h>
-Date: Thu, 9 Jan 2014 21:09:00 +0530
-Message-ID: <CAOh2x=nh5xB49toyWZOf_voEAeBjjNX5CfgyLpL+V5W+Jeo4bw@mail.gmail.com>
-References: <1389280207-11846-1-git-send-email-paul.gortmaker@windriver.com>
-	<CAOh2x=mfQ1qoWBW3=kwML0aLYu60v107svb4knYwTwsSXTzEaQ@mail.gmail.com>
-	<52CEBF9C.10604@windriver.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
+Date: Thu, 9 Jan 2014 10:40:28 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401091032430.1493-100000@iolanthe.rowland.org>
+References: <52CDFB97.9080303@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f44.google.com ([209.85.212.44]:58726 "EHLO
-	mail-vb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbaAIPjB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 10:39:01 -0500
-In-Reply-To: <52CEBF9C.10604@windriver.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:49115 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751541AbaAIPk3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 10:40:29 -0500
+In-Reply-To: <52CDFB97.9080303@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Phillip Susi <psusi@ubuntu.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Thu, Jan 9, 2014 at 8:56 PM, Paul Gortmaker
-<paul.gortmaker@windriver.com> wrote:
-> Yes I am sure.  I start with this:
->
-> -------------
-> #!/bin/bash
->
-> if [ "$1" = "" ]; then
->         echo must supply path name
->         exit 1
-> fi
->
-> for i in `git grep -l linux/init.h $1` ; do
->         grep -q '__ref\|__init\|__cpuinit\|__meminit\|__MEMINIT\|__CPUINIT\|__INIT\|__REF\|__HEAD' $i
+On Thu, 9 Jan 2014, Aaron Lu wrote:
 
-You missed all initcalls here.
+> > It's a knotty situation.  The only way to find out whether the disk is
+> > spinning is to ask it, which requires doing I/O, which requires
+> > spinning up the disk.  Maybe we need to add a mechanism to the block
+> > layer's runtime PM implementation for addressing just this situation.
+> 
+> I think it's knotty because the runtime PM status is a view from the
+> kernel/host side, i.e. it is runtime suspended if it is not being used,
+> no matter which power state it is in. The trigger for the PM state
+> transition are all based on this, if we want to do it the other way
+> around(update device's runtime PM status based on device's actual power
+> state), we are in a knotty situation.
 
->         if [ $? != 0 ] ; then
->                 echo $i
->                 sed -i '/linux\/init.h/d' $i
->         fi
-> done
-> --------------
->
-> which as you can see whitelists any real users, and then I
-> follow up with build testing to double check.
+No, that's not the problem.  The problem is that the block layer does
+not permit any requests to go through if the queue's rpm_status is
+RPM_SUSPENDED.
 
-That might have passed because init.h is still included indirectly.
+We should change the code in the block layer.  blk_pm_peek_request 
+should allow requests with REQ_PM set to go through, no matter what the 
+rpm_status is.  Then the disk driver could query the disk (to see 
+whether it is spinning) while the disk remains in runtime suspend.
 
-These are the usages which I can see easily, there might be
-others too..
+Alan Stern
 
- drivers/cpufreq/powernow-k8.c: late_initcall and module_exit
- drivers/cpufreq/s3c2412-cpufreq.c: arch_initcall
- drivers/cpufreq/s3c2440-cpufreq.c: subsys_initcall
- drivers/cpufreq/spear-cpufreq.c: late_initcall
-
-> I will note that
-> in this particular case, I couldn't find an ARM defconfig that
-> actually enabled any CONFIG_ARM_S3C24xx options though.
-
-Haven't looked into this for now :(
