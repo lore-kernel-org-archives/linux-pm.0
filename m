@@ -1,130 +1,50 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
-Date: Thu, 09 Jan 2014 08:19:55 +0100
-Message-ID: <20140109081955.6324e08e@amdc2363>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1387549495-809-1-git-send-email-l.majewski@samsung.com>
- <20140107075824.59a1ed3c@amdc2363> <9268964.f27SUq68sj@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <9268964.f27SUq68sj@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org, rjw@sisk.pl
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [PATCH 2/2] intel_idle: close avn_cstates array with correct marker
+Date: Thu,  9 Jan 2014 15:30:27 +0800
+Message-ID: <1389252628-1033-2-git-send-email-jiang.liu@linux.intel.com>
+References: <1389252628-1033-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:65026 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752572AbaAIH35 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 9 Jan 2014 02:29:57 -0500
+In-Reply-To: <1389252628-1033-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: " Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, " H. Peter Anvin" <hpa@linux.intel.com>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Rafael, Zhang,
+Close avn_cstates array with correct marker to avoid overflow
+in function intel_idle_cpu_init().
 
-> On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
-> > Hi Rafael,
-> 
-> Hi,
-> 
-> > > This patch series introduces support for CPU overclocking
-> > > technique called Boost.
-> > > 
-> > > It is a follow up of a LAB governor proposal. Boost is a LAB
-> > > component:
-> > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> > > 
-> > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> > > software oriented one (like the one done at Exynos).
-> > > For this reason cpufreq/freq_table code has been reorganized to
-> > > include common code.
-> > > 
-> > > Important design decisions:
-> > > - Boost related code is compiled-in unconditionally to cpufreq
-> > > core and disabled by default. The cpufreq_driver is responsibile
-> > > for setting boost_supported flag and providing set_boost
-> > > callback(if HW support is needed). For software managed boost,
-> > > special Kconfig flag - CONFIG_CPU_FREQ_BOOST_SW has been defined.
-> > > It will be selected only when a target platform has thermal
-> > > framework properly configured.
-> > > 
-> > > - struct cpufreq_driver has been extended with boost related
-> > > fields: -- boost_supported - when driver supports boosting
-> > >         -- boost_enabled - boost state
-> > >         -- set_boost - callback to function, which is necessary to
-> > >            enable/disable boost
-> > > 
-> > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
-> > > visible _only_ when cpufreq driver supports Boost.
-> > > 
-> > > - No special spin_lock for Boost was created. The one from cpufreq
-> > > core was reused.
-> > > 
-> > > - The Boost code doesn't rely on any policy. When boost state is
-> > > changed, then the policy list is iterated and proper adjustements
-> > > are done.
-> > > 
-> > > - To improve safety level, the thermal framework is also extended
-> > > to disable software boosting, when thermal trip point is reached.
-> > > After cooling down the boost can be enabled again. This emulates
-> > > behaviour similar to HW managed boost (like x86)
-> > > 
-> > > Tested at HW:
-> > >        Exynos 4412 3.13-rc4 Linux
-> > >        Intel Core i7-3770 3.13-rc4 Linux
-> > > 
-> > > Above patches were posted on top of kernel_pm/bleeding-edge
-> > > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
-> > > 
-> > > Lukasz Majewski (7):
-> > >   cpufreq: Add boost frequency support in core
-> > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
-> > > common boost solution
-> > >   cpufreq:boost:Kconfig: Provide support for software managed
-> > > BOOST cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-> > >     framework
-> > >   Documentation:cpufreq:boost: Update BOOST documentation
-> > >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
-> > >   thermal:exynos:boost: Automatic enable/disable of BOOST feature
-> > > (at Exynos4412)
-> > > 
-> > >  Documentation/cpu-freq/boost.txt          |   26 +++----
-> > >  drivers/cpufreq/Kconfig                   |    4 +
-> > >  drivers/cpufreq/Kconfig.arm               |   15 ++++
-> > >  drivers/cpufreq/acpi-cpufreq.c            |   86
-> > > +++++++-------------- drivers/cpufreq/cpufreq.c                 |
-> > > 118 ++++++++++++++++++++++++++++-
-> > > drivers/cpufreq/exynos-cpufreq.c          |    3 +
-> > > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
-> > > drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
-> > > drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
-> > > include/linux/cpufreq.h                   |   24 ++++++ 10 files
-> > > changed, 261 insertions(+), 85 deletions(-)
-> > > 
-> > 
-> > A gentle ping about BOOST patches.
-> > 
-> > Its been already acked by Viresh and Eduardo.
-> > 
-> > It applies on kernel_pm/bleeding_edge SHA1:
-> > 4836deb72c5e2a9af0cb2129c1149783a26d99ab
-> 
-> It looks like Rui is still looking into this.
-> 
-> Rui, are you fine with this series?
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: <stable@vger.kernel.org> # 3.13
+---
+ drivers/idle/intel_idle.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-I'd really appreciate Ack from Rui on this patch series.
-
-However, after Rui's comments on v9, I've completely removed the BOOST
-code from thermal core.
-
-Since the v10, I've only adjusted default data for Exynos SoC. This
-approach has been finally accepted by Eduardo (who is responsible for
-this part of the thermal subsystem) on the v12.
-
-
-> 
-> Rafael
-> 
-
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 6f456f0..797ed29 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -329,7 +329,7 @@ static struct cpuidle_state atom_cstates[] = {
+ 	{
+ 		.enter = NULL }
+ };
+-static struct cpuidle_state avn_cstates[] __initdata = {
++static struct cpuidle_state avn_cstates[] = {
+ 	{
+ 		.name = "C1-AVN",
+ 		.desc = "MWAIT 0x00",
+@@ -344,6 +344,8 @@ static struct cpuidle_state avn_cstates[] __initdata = {
+ 		.exit_latency = 15,
+ 		.target_residency = 45,
+ 		.enter = &intel_idle },
++	{
++		.enter = NULL }
+ };
+ 
+ /**
 -- 
-Best regards,
+1.7.10.4
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
