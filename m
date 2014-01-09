@@ -1,86 +1,62 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Allow runtime suspend during system resume
-Date: Thu, 9 Jan 2014 10:32:37 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401091015200.1493-100000@iolanthe.rowland.org>
-References: <3104675.qB4bqA84zs@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] drivers/cpufreq: delete non-required instances of include <linux/init.h>
+Date: Thu, 9 Jan 2014 21:09:00 +0530
+Message-ID: <CAOh2x=nh5xB49toyWZOf_voEAeBjjNX5CfgyLpL+V5W+Jeo4bw@mail.gmail.com>
+References: <1389280207-11846-1-git-send-email-paul.gortmaker@windriver.com>
+	<CAOh2x=mfQ1qoWBW3=kwML0aLYu60v107svb4knYwTwsSXTzEaQ@mail.gmail.com>
+	<52CEBF9C.10604@windriver.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49108 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753998AbaAIPci (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 10:32:38 -0500
-In-Reply-To: <3104675.qB4bqA84zs@vostro.rjw.lan>
+Received: from mail-vb0-f44.google.com ([209.85.212.44]:58726 "EHLO
+	mail-vb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbaAIPjB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 10:39:01 -0500
+In-Reply-To: <52CEBF9C.10604@windriver.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Phillip Susi <psusi@ubuntu.com>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, 9 Jan 2014, Rafael J. Wysocki wrote:
+On Thu, Jan 9, 2014 at 8:56 PM, Paul Gortmaker
+<paul.gortmaker@windriver.com> wrote:
+> Yes I am sure.  I start with this:
+>
+> -------------
+> #!/bin/bash
+>
+> if [ "$1" = "" ]; then
+>         echo must supply path name
+>         exit 1
+> fi
+>
+> for i in `git grep -l linux/init.h $1` ; do
+>         grep -q '__ref\|__init\|__cpuinit\|__meminit\|__MEMINIT\|__CPUINIT\|__INIT\|__REF\|__HEAD' $i
 
-> > The situation isn't quite so simple.
-> > 
-> > We're talking specifically about disk drives.  Depending on the drive,
-> > it may or may not spin up all by itself when the system wakes up.  If
-> > it does spin up, the final state should be RPM_ACTIVE (the way it is
-> > now).  If it doesn't, we want the final state to be RPM_SUSPENDED.
-> > This is true regardless of the runtime status before the system sleep.
-> 
-> OK
-> 
-> We can do all that in .resume_early() which runs with runtime PM disabled.
+You missed all initcalls here.
 
-Either the .resume_early or the .resume routine would be okay, as far
-as I'm concerned.  Is there any strong reason to prefer one over the
-other, besides the fact that in .resume_early the pm_runtime_disable
-and _enable calls wouldn't be needed?
+>         if [ $? != 0 ] ; then
+>                 echo $i
+>                 sed -i '/linux\/init.h/d' $i
+>         fi
+> done
+> --------------
+>
+> which as you can see whitelists any real users, and then I
+> follow up with build testing to double check.
 
-> > This means we can't skip the resume routine.  At the very least, the
-> > routine needs to ask the disk whether or not it is spinning.  Depending
-> > on the result, it would then set the RPM status appropriately.
-> 
-> Yes, .resume_early() can do that.  And it can set a (internal) flag for
-> a device telling the driver/bus type .resume() and .complete() to
-> leave the device alone.
+That might have passed because init.h is still included indirectly.
 
-I had in mind something more like this for the driver's .resume (or
-.resume_early) routine:
+These are the usages which I can see easily, there might be
+others too..
 
-	bool leave_suspended = false;
-	int rc = 0;
+ drivers/cpufreq/powernow-k8.c: late_initcall and module_exit
+ drivers/cpufreq/s3c2412-cpufreq.c: arch_initcall
+ drivers/cpufreq/s3c2440-cpufreq.c: subsys_initcall
+ drivers/cpufreq/spear-cpufreq.c: late_initcall
 
-	if (!pm_runtime_in_use(dev) && !disk_is_spinning(dev))
-		leave_suspended = true;
-	else
-		rc = spin_up_the_disk(dev);
+> I will note that
+> in this particular case, I couldn't find an ARM defconfig that
+> actually enabled any CONFIG_ARM_S3C24xx options though.
 
-	if (rc == 0) {
-		pm_runtime_disable(dev);
-		if (leave_suspended)
-			pm_runtime_set_suspended(dev);
-		else
-			pm_runtime_set_active(dev);
-		pm_runtime_enable(dev);
-	}
-	return rc;
-
-That wouldn't need any special support from the PM core, other than the
-new pm_runtime_in_use routine.
-
-> > In addition, we only want to end up in RPM_SUSPENDED if the usage
-> > counters are 0 (in particular, power/control = "auto").  Otherwise, we
-> > want the resume routine always to spin up the drive, if it hasn't spun
-> > up by itself.
-> 
-> That still can be done in .resume_early().  Or in .resume_noirq() if device
-> interrupts are not requisite for that.
-
-No, currently it cannot be done.
-
-In both resume_early and resume_noirq, the usage counter is _always_ >
-0.  This is because device_prepare calls pm_runtime_get_noresume, and
-the corresponding pm_runtime_put doesn't occur until device_complete.  
-That's the problem I need to fix.
-
-Alan Stern
-
+Haven't looked into this for now :(
