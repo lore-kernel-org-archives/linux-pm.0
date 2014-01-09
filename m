@@ -1,84 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 Resend] cpufreq: create cpufreq_generic_get() routine
-Date: Thu, 09 Jan 2014 13:11:15 +0100
-Message-ID: <1645387.93uAkEaqro@vostro.rjw.lan>
-References: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org> <CAOesGMgfFVoVJpOMXWtzVWj_F4pD-L9Osyv4u6=c8RUWOoLHFw@mail.gmail.com> <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
+Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
+Date: Thu, 09 Jan 2014 13:17:12 +0100
+Message-ID: <1800854.f96ZTXrYof@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1401081547490.1659-100000@iolanthe.rowland.org> <52CDFB97.9080303@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62523 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:49666 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751321AbaAIL5Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 06:57:25 -0500
-In-Reply-To: <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
+	with SMTP id S1750925AbaAIMDW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 07:03:22 -0500
+In-Reply-To: <52CDFB97.9080303@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Olof Johansson <olof@lixom.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Fengguang Wu <fengguang.wu@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Phillip Susi <psusi@ubuntu.com>, Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Thursday, January 09, 2014 02:56:28 PM Viresh Kumar wrote:
-> cc'ng Russell/LAKML/Fengguang..
+On Thursday, January 09, 2014 09:29:59 AM Aaron Lu wrote:
+> On 01/09/2014 05:21 AM, Alan Stern wrote:
+> > On Wed, 8 Jan 2014, Phillip Susi wrote:
+> >> You issue a REQUEST SENSE command and that returns status indicating
+> >> whether the drive is stopped, or in standby.  See my patches.  One of
+> > 
+> > I never saw your patches.  Where were they posted?
+> > 
+> > If you issue the REQUEST SENSE command in the usual way (going through
+> > the SCSI and block layers), and the disk is already in runtime suspend,
+> > it won't do what you want.  The block layer won't deliver requests
+> > until the device leaves the RPM_SUSPENDED state.  In addition, when it
+> > receives the command the block layer will submit a deferred
+> > runtime-resume request, which rather defeats the whole purpose.
+> > 
+> > (I guess you actually saw some of this happen, and that's what led to
+> > this email thread in the first place.)
+> > 
+> > It's a knotty situation.  The only way to find out whether the disk is
+> > spinning is to ask it, which requires doing I/O, which requires
+> > spinning up the disk.  Maybe we need to add a mechanism to the block
+> > layer's runtime PM implementation for addressing just this situation.
 > 
-> On 9 January 2014 14:08, Olof Johansson <olof@lixom.net> wrote:
-> > This patch breaks a bunch of ARM boards. In particular, the following
-> > defconfigs no longer build:
-> 
-> That's really bad, Rafael will scold me again :)
-> 
-> >           assabet_defconfig
-> >           badge4_defconfig
-> >           cerfcube_defconfig
-> >           collie_defconfig
-> >           h3600_defconfig
-> >           hackkit_defconfig
-> >           jornada720_defconfig
-> >           lart_defconfig
-> >           neponset_defconfig
-> >           pleb_defconfig
-> >           shannon_defconfig
-> >           simpad_defconfig
-> >
-> > Error is:
-> >
-> > drivers/built-in.o: In function `cpufreq_generic_get':
-> > drivers/cpufreq/cpufreq.c:189: undefined reference to `clk_get_rate'
-> >
-> > Seems like this needs to be guarded by HAVE_CLK?
-> 
-> Naah.. After some investigation I found this:
-> 
-> - We already have dummy implementations of clk routines in case
-> CONFIG_HAVE_CLK is not defined (I added them long back).
-> 
-> - There is one thing common among all above defconfigs, all
-> belong to SA1100 family :)
-> 
-> - And the problem is: SA1100 wanted to define its own clk routines
-> and selects CLKDEV_LOOKUP (which enables HAVE_CLK), but it
-> doesn't implement all clk routines. Which is *wrong*.
-> 
-> So, actually this patch brought an _existing_ bug in limelight. And
-> this should be fixed by adding dummy or meaningful implementation
-> of missing clk routines.
-> 
-> @Russell: If above looks correct then can you please communicate
-> what should we do here? I don't really know what exactly these
-> routines should have, simply a copy of dummy routines from clk.h
-> or some meaningful stuff. So, maybe you can write a patch, otherwise
-> let me know what to write and I will give it a try.
-> 
-> @Rafael: Please *don't* revert this patch, its not my fault this time :)
+> I think it's knotty because the runtime PM status is a view from the
+> kernel/host side, i.e. it is runtime suspended if it is not being used,
+> no matter which power state it is in. The trigger for the PM state
+> transition are all based on this, if we want to do it the other way
+> around(update device's runtime PM status based on device's actual power
+> state), we are in a knotty situation.
 
-Well, if build is broken, it *always* is the fault of the commit that
-introduced the breakage, even if that is a result of someone else doing
-things incorrectly.  Why?  Because it potentially breaks bisection for
-people and *that* is a big deal.
-
-So yes, I'm going to revert it.  Please resubmit after you've addressed the
-build breakage.
-
-Thanks!
+Agreed.
 
 -- 
 I speak only for myself.
