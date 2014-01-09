@@ -1,47 +1,56 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Thu, 09 Jan 2014 09:29:59 +0800
-Message-ID: <52CDFB97.9080303@intel.com>
-References: <Pine.LNX.4.44L0.1401081547490.1659-100000@iolanthe.rowland.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufrequency ondemand governor question
+Date: Thu, 9 Jan 2014 10:23:26 +0530
+Message-ID: <CAKohpokkWyHLfcK-6DWQd3MwDybaf6bKE1XRnp7Wg1=QOwLT2g@mail.gmail.com>
+References: <CAH9_wRPXO4gJJ1hvcmxu3c+Ja9VG5SBJMtnVHFwv_uHWudhA7A@mail.gmail.com>
+	<CANLsYkwCNrd-Js3tjeHRt=Zu3A-qwsAp9RwKhUSh4eeyd4QJiA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:34498 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbaAIB34 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 Jan 2014 20:29:56 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1401081547490.1659-100000@iolanthe.rowland.org>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:60674 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbaAIEx0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 23:53:26 -0500
+Received: by mail-ob0-f170.google.com with SMTP id uy5so788923obc.29
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jan 2014 20:53:26 -0800 (PST)
+In-Reply-To: <CANLsYkwCNrd-Js3tjeHRt=Zu3A-qwsAp9RwKhUSh4eeyd4QJiA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Phillip Susi <psusi@ubuntu.com>
-Cc: Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Mathieu Poirier <mathieu.poirier@linaro.org>
+Cc: Sriram V <vshrirama@gmail.com>, Lists linaro-dev <linaro-dev@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 01/09/2014 05:21 AM, Alan Stern wrote:
-> On Wed, 8 Jan 2014, Phillip Susi wrote:
->> You issue a REQUEST SENSE command and that returns status indicating
->> whether the drive is stopped, or in standby.  See my patches.  One of
-> 
-> I never saw your patches.  Where were they posted?
-> 
-> If you issue the REQUEST SENSE command in the usual way (going through
-> the SCSI and block layers), and the disk is already in runtime suspend,
-> it won't do what you want.  The block layer won't deliver requests
-> until the device leaves the RPM_SUSPENDED state.  In addition, when it
-> receives the command the block layer will submit a deferred
-> runtime-resume request, which rather defeats the whole purpose.
-> 
-> (I guess you actually saw some of this happen, and that's what led to
-> this email thread in the first place.)
-> 
-> It's a knotty situation.  The only way to find out whether the disk is
-> spinning is to ask it, which requires doing I/O, which requires
-> spinning up the disk.  Maybe we need to add a mechanism to the block
-> layer's runtime PM implementation for addressing just this situation.
+On 9 January 2014 02:30, Mathieu Poirier <mathieu.poirier@linaro.org> wrote:
+> On 8 January 2014 13:35, Sriram V <vshrirama@gmail.com> wrote:
+>> I am seeing a behaviour where the load variations are very frequency
+>> between 1ghz and 300mhz in a very short interval of time giving the
+>> ping-pong effect. \
+>> Is there a way of avoiding this Also, is it possible to find out which
+>> task is causing this behaviour.
+>>
+>> All this happens in a couple of sampling periods of ondemand.
 
-I think it's knotty because the runtime PM status is a view from the
-kernel/host side, i.e. it is runtime suspended if it is not being used,
-no matter which power state it is in. The trigger for the PM state
-transition are all based on this, if we want to do it the other way
-around(update device's runtime PM status based on device's actual power
-state), we are in a knotty situation.
+> I am not specifically familiar with the ondemand governor but have
+> amply dealt with governor matters.  On way to deal with the ping pong
+> effect is to increase the amount of time the frequency needs to stay
+> at a certain level before going back down.
+
+These are the tunables present with ondemand governor:
+
+struct od_dbs_tuners {
+unsigned int ignore_nice_load;
+unsigned int sampling_rate;
+unsigned int sampling_down_factor;
+unsigned int up_threshold;
+unsigned int powersave_bias;
+unsigned int io_is_busy;
+};
+
+And none of them tracks the time for which you should stay at a particular
+freq :)
+
+Though you can play with sampling_down_factor and up_threshold to
+achieve what you want. For their details, please refer:
+Documentation/cpu-freq/governors.txt
+
+Please give us values of these tunables from sysfs for your case, if you
+aren't able to make your system better by playing with above tunables.
