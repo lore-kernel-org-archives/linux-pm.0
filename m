@@ -1,81 +1,83 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH V3 Resend] cpufreq: create cpufreq_generic_get() routine
-Date: Thu, 9 Jan 2014 15:04:13 +0530
-Message-ID: <CAP245DV09bLe44yUPDtANa0PYR0Hxj-nLucgZaJpTo1ibNMYqQ@mail.gmail.com>
-References: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org>
-	<CAOesGMgfFVoVJpOMXWtzVWj_F4pD-L9Osyv4u6=c8RUWOoLHFw@mail.gmail.com>
-	<CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: Allow runtime suspend during system resume
+Date: Thu, 9 Jan 2014 11:14:56 +0100
+Message-ID: <CAPDyKFrnGvLOQRBKz-V5SsGPNMLXRjSS1iSBPxXj+KW9sMbrRA@mail.gmail.com>
+References: <52CDC069.6050703@ubuntu.com>
+	<Pine.LNX.4.44L0.1401081627110.1659-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Olof Johansson <olof@lixom.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Fengguang Wu <fengguang.wu@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f46.google.com ([209.85.216.46]:53486 "EHLO
+	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbaAIKO4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 05:14:56 -0500
+Received: by mail-qa0-f46.google.com with SMTP id j5so2676757qaq.19
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jan 2014 02:14:56 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1401081627110.1659-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Phillip Susi <psusi@ubuntu.com>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Thu, Jan 9, 2014 at 2:56 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> cc'ng Russell/LAKML/Fengguang..
+On 8 January 2014 22:34, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Wed, 8 Jan 2014, Phillip Susi wrote:
 >
-> On 9 January 2014 14:08, Olof Johansson <olof@lixom.net> wrote:
->> This patch breaks a bunch of ARM boards. In particular, the following
->> defconfigs no longer build:
->
-> That's really bad, Rafael will scold me again :)
->
->>           assabet_defconfig
->>           badge4_defconfig
->>           cerfcube_defconfig
->>           collie_defconfig
->>           h3600_defconfig
->>           hackkit_defconfig
->>           jornada720_defconfig
->>           lart_defconfig
->>           neponset_defconfig
->>           pleb_defconfig
->>           shannon_defconfig
->>           simpad_defconfig
+>> On 1/8/2014 3:44 PM, Alan Stern wrote:
+>> > Right now the PM core does pm_runtime_get_noresume() during the
+>> > prepare phase of system sleep, and pm_runtime_put() during the
+>> > complete phase. Maybe we should cut down the range of coverage.
+>> >
+>> > For example, we could do the pm_runtime_put() during dpm_resume(),
+>> > or even earlier.  That way, the resume routine could do something
+>> > like:
+>> >
+>> > if (!pm_runtime_in_use(dev)) { pm_runtime_disable(dev);
+>> > pm_runtime_set_suspended(dev); pm_runtime_enable(dev); return 0; }
+>> >
 >>
->> Error is:
->>
->> drivers/built-in.o: In function `cpufreq_generic_get':
->> drivers/cpufreq/cpufreq.c:189: undefined reference to `clk_get_rate'
->>
->> Seems like this needs to be guarded by HAVE_CLK?
+>> I'm a little unclear on the problem you are describing.  Is it just
+>> with pm_runtime_in_use()?
 >
-> Naah.. After some investigation I found this:
+> Note that currently there is no pm_runtime_in_use().  One of the things
+> I'm proposing is to add it.
 >
-> - We already have dummy implementations of clk routines in case
-> CONFIG_HAVE_CLK is not defined (I added them long back).
+> If it were already present and you used it properly, you would find
+> that it always returned non-zero.  Therefore you would never execute
+> the pm_runtime_set_suspended.  _That_'s the problem I'm trying to
+> address here.
 >
-> - There is one thing common among all above defconfigs, all
-> belong to SA1100 family :)
+>>  Because in one of my earlier patch
+>> iterations, I had used the disable/set_suspended/enable to force the
+>> device into suspend without checking runtime_in_use.
 >
-> - And the problem is: SA1100 wanted to define its own clk routines
-> and selects CLKDEV_LOOKUP (which enables HAVE_CLK), but it
-> doesn't implement all clk routines. Which is *wrong*.
->
-> So, actually this patch brought an _existing_ bug in limelight. And
-> this should be fixed by adding dummy or meaningful implementation
-> of missing clk routines.
->
-> @Russell: If above looks correct then can you please communicate
-> what should we do here? I don't really know what exactly these
-> routines should have, simply a copy of dummy routines from clk.h
-> or some meaningful stuff. So, maybe you can write a patch, otherwise
-> let me know what to write and I will give it a try.
->
-> @Rafael: Please *don't* revert this patch, its not my fault this time :)
->
-> @Fengguang: Would it make sense to add build tests for all ARM
-> defconfigs in your build system? I thought its already there :)
-> That way I can always be sure that my stuff (would be helpful for
-> others as well though) isn't breaking build (Atleast) for any platform.
+> That is not a valid thing to do.  The user may have disabled runtime
+> suspend for the disk; you must not override the user's policy.
 
-You can also talk to Kevin to give you "beta" access to our build
-infrastructure for your trees. It is still in the process of being
-scaled up but should atleast handle all ARM defconfigs but we don't
-have anywhere near Fengguang's capacity.
+Allowing userspace to disable/enable runtime PM, does in many cases
+add complexity to subsystems and drivers when they handle system
+suspend/resume. This seems to be the case for SCSI as well?
 
-Regards,
-Amit
+To simplify for these subsystems and drivers, what do you think about
+inventing something like "pm_runtime_sysfs_forbid", which in principle
+will prevent userspace from enable/disable runtime PM? Typically this
+function will be called from ->probe.
+
+Kind regards
+Ulf Hansson
+
+>
+>>  It worked, but
+>> that allowed the port device to auto suspend since its use counter
+>> dropped to zero, so I couldn't issue the REQUEST SENSE command
+>> disable/set_active/enable to reverse the process ( since the port was
+>> suspended ).
+>
+> That's a separate problem, to be discussed back in the earlier email
+> thread.
+>
+> Alan Stern
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
