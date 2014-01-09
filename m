@@ -1,45 +1,59 @@
-From: Phillip Susi <psusi@ubuntu.com>
-Subject: Re: REQ_PM vs REQ_TYPE_PM_RESUME
-Date: Thu, 09 Jan 2014 10:53:19 -0500
-Message-ID: <52CEC5EF.4030201@ubuntu.com>
-References: <Pine.LNX.4.44L0.1401091032430.1493-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Allow runtime suspend during system resume
+Date: Thu, 9 Jan 2014 11:08:30 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1401091057550.1493-100000@iolanthe.rowland.org>
+References: <52CEC556.7030405@ubuntu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1401091032430.1493-100000@iolanthe.rowland.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>
-Cc: Sujit Reddy Thumma <sthumma@codeaurora.org>, todd.e.brandt@linux.intel.com, tj@kernel.org, JBottomley@parallels.com, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:49178 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751497AbaAIQIb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 11:08:31 -0500
+In-Reply-To: <52CEC556.7030405@ubuntu.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phillip Susi <psusi@ubuntu.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Thu, 9 Jan 2014, Phillip Susi wrote:
 
-On 1/9/2014 10:40 AM, Alan Stern wrote:
-> We should change the code in the block layer.  blk_pm_peek_request
->  should allow requests with REQ_PM set to go through, no matter
-> what the rpm_status is.  Then the disk driver could query the disk
-> (to see whether it is spinning) while the disk remains in runtime
-> suspend.
+> On 1/9/2014 10:32 AM, Alan Stern wrote:
+> > I had in mind something more like this for the driver's .resume
+> > (or .resume_early) routine:
+> > 
+> > bool leave_suspended = false; int rc = 0;
+> > 
+> > if (!pm_runtime_in_use(dev) && !disk_is_spinning(dev)) 
+> > leave_suspended = true; else rc = spin_up_the_disk(dev);
+> > 
+> > if (rc == 0) { pm_runtime_disable(dev); if (leave_suspended) 
+> > pm_runtime_set_suspended(dev); else pm_runtime_set_active(dev); 
+> > pm_runtime_enable(dev); } return rc;
+> 
+> We also don't want to block the resume path while the REQUEST SENSE
+> runs, since it typically takes 10 seconds or so on normal ATA disks.
+> Thus, the resume or resume early needs to be able to return with the
+> device left in the transitioning state and complete or abort the
+> transition later.
 
-No, because if the disk is RPM_SUSPENDED, the port may be
-RPM_SUSPENDED, which likely means that you CAN'T send down requests to
-the device.
+The code will be restructured as part of the asynchronous spin-up 
+change.  The resume routine would then look more like this:
 
-We need to put the device into one of the transitioning states to
-block other IO, without allowing the port to suspend.
+	bool test_spinning = !pm_runtime_in_use(dev);
 
+	pm_runtime_disable(dev);
+	if (test_spinning)
+		pm_runtime_set_suspended(dev);
+	else
+		pm_runtime_set_active(dev);
+	pm_runtime_enable(dev);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (MingW32)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+	start_async_spin_up(dev, test_spinning);
+	return 0;
 
-iQEcBAEBAgAGBQJSzsXvAAoJEI5FoCIzSKrwg30H/A52cy6+GAzE372KVMkP/bI+
-LQe4FTTIjo8PDBuYeASzmjdiD8x51++w/QfUQEtSTEhr7qWhyXdMbb1B6eGuDlv/
-KqOBTTuhC7eiLArGLTGyLRiLOLEiQb7lHStw4ZCpQpZ88f9pNPdcLCslp8zrz4Of
-6pt2lLztdG8zexmKyu0Zq/oSe6ajKqVgrSqjoCO9jQL7NUecZNlBnOnsF4jri0MY
-GPk3HIb0gZjtVVfeWAiEE9s4MpRlMYHfx+dg8uxNJiAhJcMQeHJLCTKAKyEMKG68
-45Ehqp5XITJG8Mx/Mb6gOzA/mFDShzqRiA0i6MtKBcnr+zNeRnWKRV1UbDKcrxk=
-=B5lj
------END PGP SIGNATURE-----
+The asynchronous routine would skip the initial test if its second 
+argument is nonzero, and proceed directly to spin-up the disk.
+
+Alan Stern
+
