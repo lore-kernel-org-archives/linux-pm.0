@@ -1,56 +1,130 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufrequency ondemand governor question
-Date: Thu, 9 Jan 2014 10:23:26 +0530
-Message-ID: <CAKohpokkWyHLfcK-6DWQd3MwDybaf6bKE1XRnp7Wg1=QOwLT2g@mail.gmail.com>
-References: <CAH9_wRPXO4gJJ1hvcmxu3c+Ja9VG5SBJMtnVHFwv_uHWudhA7A@mail.gmail.com>
-	<CANLsYkwCNrd-Js3tjeHRt=Zu3A-qwsAp9RwKhUSh4eeyd4QJiA@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
+Date: Thu, 09 Jan 2014 08:19:55 +0100
+Message-ID: <20140109081955.6324e08e@amdc2363>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1387549495-809-1-git-send-email-l.majewski@samsung.com>
+ <20140107075824.59a1ed3c@amdc2363> <9268964.f27SUq68sj@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:60674 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbaAIEx0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2014 23:53:26 -0500
-Received: by mail-ob0-f170.google.com with SMTP id uy5so788923obc.29
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jan 2014 20:53:26 -0800 (PST)
-In-Reply-To: <CANLsYkwCNrd-Js3tjeHRt=Zu3A-qwsAp9RwKhUSh4eeyd4QJiA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <9268964.f27SUq68sj@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org, rjw@sisk.pl
 List-Id: linux-pm@vger.kernel.org
-To: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Sriram V <vshrirama@gmail.com>, Lists linaro-dev <linaro-dev@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 9 January 2014 02:30, Mathieu Poirier <mathieu.poirier@linaro.org> wrote:
-> On 8 January 2014 13:35, Sriram V <vshrirama@gmail.com> wrote:
->> I am seeing a behaviour where the load variations are very frequency
->> between 1ghz and 300mhz in a very short interval of time giving the
->> ping-pong effect. \
->> Is there a way of avoiding this Also, is it possible to find out which
->> task is causing this behaviour.
->>
->> All this happens in a couple of sampling periods of ondemand.
+Hi Rafael, Zhang,
 
-> I am not specifically familiar with the ondemand governor but have
-> amply dealt with governor matters.  On way to deal with the ping pong
-> effect is to increase the amount of time the frequency needs to stay
-> at a certain level before going back down.
+> On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
+> > Hi Rafael,
+> 
+> Hi,
+> 
+> > > This patch series introduces support for CPU overclocking
+> > > technique called Boost.
+> > > 
+> > > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > > component:
+> > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> > > 
+> > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> > > software oriented one (like the one done at Exynos).
+> > > For this reason cpufreq/freq_table code has been reorganized to
+> > > include common code.
+> > > 
+> > > Important design decisions:
+> > > - Boost related code is compiled-in unconditionally to cpufreq
+> > > core and disabled by default. The cpufreq_driver is responsibile
+> > > for setting boost_supported flag and providing set_boost
+> > > callback(if HW support is needed). For software managed boost,
+> > > special Kconfig flag - CONFIG_CPU_FREQ_BOOST_SW has been defined.
+> > > It will be selected only when a target platform has thermal
+> > > framework properly configured.
+> > > 
+> > > - struct cpufreq_driver has been extended with boost related
+> > > fields: -- boost_supported - when driver supports boosting
+> > >         -- boost_enabled - boost state
+> > >         -- set_boost - callback to function, which is necessary to
+> > >            enable/disable boost
+> > > 
+> > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
+> > > visible _only_ when cpufreq driver supports Boost.
+> > > 
+> > > - No special spin_lock for Boost was created. The one from cpufreq
+> > > core was reused.
+> > > 
+> > > - The Boost code doesn't rely on any policy. When boost state is
+> > > changed, then the policy list is iterated and proper adjustements
+> > > are done.
+> > > 
+> > > - To improve safety level, the thermal framework is also extended
+> > > to disable software boosting, when thermal trip point is reached.
+> > > After cooling down the boost can be enabled again. This emulates
+> > > behaviour similar to HW managed boost (like x86)
+> > > 
+> > > Tested at HW:
+> > >        Exynos 4412 3.13-rc4 Linux
+> > >        Intel Core i7-3770 3.13-rc4 Linux
+> > > 
+> > > Above patches were posted on top of kernel_pm/bleeding-edge
+> > > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
+> > > 
+> > > Lukasz Majewski (7):
+> > >   cpufreq: Add boost frequency support in core
+> > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
+> > > common boost solution
+> > >   cpufreq:boost:Kconfig: Provide support for software managed
+> > > BOOST cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+> > >     framework
+> > >   Documentation:cpufreq:boost: Update BOOST documentation
+> > >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+> > >   thermal:exynos:boost: Automatic enable/disable of BOOST feature
+> > > (at Exynos4412)
+> > > 
+> > >  Documentation/cpu-freq/boost.txt          |   26 +++----
+> > >  drivers/cpufreq/Kconfig                   |    4 +
+> > >  drivers/cpufreq/Kconfig.arm               |   15 ++++
+> > >  drivers/cpufreq/acpi-cpufreq.c            |   86
+> > > +++++++-------------- drivers/cpufreq/cpufreq.c                 |
+> > > 118 ++++++++++++++++++++++++++++-
+> > > drivers/cpufreq/exynos-cpufreq.c          |    3 +
+> > > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+> > > drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+> > > drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
+> > > include/linux/cpufreq.h                   |   24 ++++++ 10 files
+> > > changed, 261 insertions(+), 85 deletions(-)
+> > > 
+> > 
+> > A gentle ping about BOOST patches.
+> > 
+> > Its been already acked by Viresh and Eduardo.
+> > 
+> > It applies on kernel_pm/bleeding_edge SHA1:
+> > 4836deb72c5e2a9af0cb2129c1149783a26d99ab
+> 
+> It looks like Rui is still looking into this.
+> 
+> Rui, are you fine with this series?
 
-These are the tunables present with ondemand governor:
+I'd really appreciate Ack from Rui on this patch series.
 
-struct od_dbs_tuners {
-unsigned int ignore_nice_load;
-unsigned int sampling_rate;
-unsigned int sampling_down_factor;
-unsigned int up_threshold;
-unsigned int powersave_bias;
-unsigned int io_is_busy;
-};
+However, after Rui's comments on v9, I've completely removed the BOOST
+code from thermal core.
 
-And none of them tracks the time for which you should stay at a particular
-freq :)
+Since the v10, I've only adjusted default data for Exynos SoC. This
+approach has been finally accepted by Eduardo (who is responsible for
+this part of the thermal subsystem) on the v12.
 
-Though you can play with sampling_down_factor and up_threshold to
-achieve what you want. For their details, please refer:
-Documentation/cpu-freq/governors.txt
 
-Please give us values of these tunables from sysfs for your case, if you
-aren't able to make your system better by playing with above tunables.
+> 
+> Rafael
+> 
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
