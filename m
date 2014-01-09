@@ -1,50 +1,46 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v2 2/2] thermal: use device node to get thermal zone
-Date: Thu, 9 Jan 2014 18:37:59 +0800
-Message-ID: <1389263879-10483-3-git-send-email-wni@nvidia.com>
-References: <1389263879-10483-1-git-send-email-wni@nvidia.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH V3 Resend] cpufreq: create cpufreq_generic_get() routine
+Date: Thu, 9 Jan 2014 11:33:00 +0000
+Message-ID: <20140109113300.GA27432@n2100.arm.linux.org.uk>
+References: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org> <CAOesGMgfFVoVJpOMXWtzVWj_F4pD-L9Osyv4u6=c8RUWOoLHFw@mail.gmail.com> <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1389263879-10483-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: eduardo.valentin-l0cyMroinI0@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:60305 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750905AbaAILdT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 06:33:19 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Olof Johansson <olof@lixom.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Fengguang Wu <fengguang.wu@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-The thermal fw support same name for different thermal zones.
-If use name to get the thermal zone, sometimes it can't get
-the unique thermal zone. And the of-thermal driver is used
-to parse DT for thermal fw, so it's better to use device node
-to lookup and get thermal zone.
+On Thu, Jan 09, 2014 at 02:56:28PM +0530, Viresh Kumar wrote:
+> Naah.. After some investigation I found this:
+> 
+> - We already have dummy implementations of clk routines in case
+> CONFIG_HAVE_CLK is not defined (I added them long back).
+> 
+> - There is one thing common among all above defconfigs, all
+> belong to SA1100 family :)
+> 
+> - And the problem is: SA1100 wanted to define its own clk routines
+> and selects CLKDEV_LOOKUP (which enables HAVE_CLK), but it
+> doesn't implement all clk routines. Which is *wrong*.
 
-Change-Id: I6c690902a9535915b2f49f9921779fbcd5ecd88c
-Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
----
- drivers/thermal/of-thermal.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+No, it implements only what it's clk API implementation requires.
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 53f2d3a..97c12cf 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -330,7 +330,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- 	struct thermal_zone_device *tzd;
- 	struct __thermal_zone *tz;
- 
--	tzd = thermal_zone_get_zone_by_name(zone->name);
-+	tzd = thermal_zone_get_zone_by_node(zone);
- 	if (IS_ERR(tzd))
- 		return ERR_PTR(-EPROBE_DEFER);
- 
-@@ -839,7 +839,7 @@ void of_thermal_destroy_zones(void)
- 	for_each_child_of_node(np, child) {
- 		struct thermal_zone_device *zone;
- 
--		zone = thermal_zone_get_zone_by_name(child->name);
-+		zone = thermal_zone_get_zone_by_node(child);
- 		if (IS_ERR(zone))
- 			continue;
- 
+> @Russell: If above looks correct then can you please communicate
+> what should we do here? I don't really know what exactly these
+> routines should have, simply a copy of dummy routines from clk.h
+> or some meaningful stuff. So, maybe you can write a patch, otherwise
+> let me know what to write and I will give it a try.
+
+I've no idea at the moment, and I don't have time to look at this.
+
 -- 
-1.7.9.5
+FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
+in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
+Estimate before purchase was "up to 13.2Mbit".
