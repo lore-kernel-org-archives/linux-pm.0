@@ -1,35 +1,35 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Allow runtime suspend during system resume
-Date: Thu, 9 Jan 2014 10:41:16 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1401091040340.1493-100000@iolanthe.rowland.org>
-References: <CAPDyKFrnGvLOQRBKz-V5SsGPNMLXRjSS1iSBPxXj+KW9sMbrRA@mail.gmail.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] drivers/cpufreq: delete non-required instances of include
+ <linux/init.h>
+Date: Thu, 9 Jan 2014 10:42:31 -0500
+Message-ID: <52CEC367.3030609@windriver.com>
+References: <1389280207-11846-1-git-send-email-paul.gortmaker@windriver.com> <CAOh2x=mfQ1qoWBW3=kwML0aLYu60v107svb4knYwTwsSXTzEaQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49124 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751490AbaAIPlR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 10:41:17 -0500
-In-Reply-To: <CAPDyKFrnGvLOQRBKz-V5SsGPNMLXRjSS1iSBPxXj+KW9sMbrRA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=mfQ1qoWBW3=kwML0aLYu60v107svb4knYwTwsSXTzEaQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phillip Susi <psusi@ubuntu.com>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Thu, 9 Jan 2014, Ulf Hansson wrote:
+On 14-01-09 10:17 AM, Viresh Kumar wrote:
+> On Thu, Jan 9, 2014 at 8:40 PM, Paul Gortmaker
+> <paul.gortmaker@windriver.com> wrote:
+>> None of these files are actually using any __init type directives
+>> and hence don't need to include <linux/init.h>.  Most are just a
+>> left over from __devinit and __cpuinit removal, or simply due to
+>> code getting copied from one driver to the next.
+> 
+> Are you sure? Its not only about devinit or cpuinit but module_init()
+> and others as well. And they are pretty much used by most of them.
 
-> Allowing userspace to disable/enable runtime PM, does in many cases
-> add complexity to subsystems and drivers when they handle system
-> suspend/resume. This seems to be the case for SCSI as well?
+Actually, module_init is an interesting point; we are implicitly getting
+init.h in module.h -- but (1) that should be explicit, and (2) module_init
+should/could really be in module.h and not stuck in init.h
 
-No.
+I'll add that to my queue and do some testing.
 
-> To simplify for these subsystems and drivers, what do you think about
-> inventing something like "pm_runtime_sysfs_forbid", which in principle
-> will prevent userspace from enable/disable runtime PM? Typically this
-> function will be called from ->probe.
-
-I think it is a very bad idea.
-
-Alan Stern
-
+Thanks for the comments,
+Paul.
