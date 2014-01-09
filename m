@@ -1,34 +1,85 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH V3 Resend] cpufreq: create cpufreq_generic_get() routine
-Date: Thu, 9 Jan 2014 19:46:19 +0800
-Message-ID: <20140109114619.GA20423@localhost>
-References: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org>
- <CAOesGMgfFVoVJpOMXWtzVWj_F4pD-L9Osyv4u6=c8RUWOoLHFw@mail.gmail.com>
- <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
+Date: Thu, 09 Jan 2014 13:11:15 +0100
+Message-ID: <1645387.93uAkEaqro@vostro.rjw.lan>
+References: <d9239e0a5df99392647ff8343673342f89d09476.1389059568.git.viresh.kumar@linaro.org> <CAOesGMgfFVoVJpOMXWtzVWj_F4pD-L9Osyv4u6=c8RUWOoLHFw@mail.gmail.com> <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:48328 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbaAILqZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 9 Jan 2014 06:46:25 -0500
-Content-Disposition: inline
+Received: from v094114.home.net.pl ([79.96.170.134]:62523 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751321AbaAIL5Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2014 06:57:25 -0500
 In-Reply-To: <CAKohpo=EsaBPdF3wYsa2rEdjcpPagbhPcxWw1_PA=yVLDnjRiA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Olof Johansson <olof@lixom.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Olof Johansson <olof@lixom.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Fengguang Wu <fengguang.wu@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Viresh,
+On Thursday, January 09, 2014 02:56:28 PM Viresh Kumar wrote:
+> cc'ng Russell/LAKML/Fengguang..
+> 
+> On 9 January 2014 14:08, Olof Johansson <olof@lixom.net> wrote:
+> > This patch breaks a bunch of ARM boards. In particular, the following
+> > defconfigs no longer build:
+> 
+> That's really bad, Rafael will scold me again :)
+> 
+> >           assabet_defconfig
+> >           badge4_defconfig
+> >           cerfcube_defconfig
+> >           collie_defconfig
+> >           h3600_defconfig
+> >           hackkit_defconfig
+> >           jornada720_defconfig
+> >           lart_defconfig
+> >           neponset_defconfig
+> >           pleb_defconfig
+> >           shannon_defconfig
+> >           simpad_defconfig
+> >
+> > Error is:
+> >
+> > drivers/built-in.o: In function `cpufreq_generic_get':
+> > drivers/cpufreq/cpufreq.c:189: undefined reference to `clk_get_rate'
+> >
+> > Seems like this needs to be guarded by HAVE_CLK?
+> 
+> Naah.. After some investigation I found this:
+> 
+> - We already have dummy implementations of clk routines in case
+> CONFIG_HAVE_CLK is not defined (I added them long back).
+> 
+> - There is one thing common among all above defconfigs, all
+> belong to SA1100 family :)
+> 
+> - And the problem is: SA1100 wanted to define its own clk routines
+> and selects CLKDEV_LOOKUP (which enables HAVE_CLK), but it
+> doesn't implement all clk routines. Which is *wrong*.
+> 
+> So, actually this patch brought an _existing_ bug in limelight. And
+> this should be fixed by adding dummy or meaningful implementation
+> of missing clk routines.
+> 
+> @Russell: If above looks correct then can you please communicate
+> what should we do here? I don't really know what exactly these
+> routines should have, simply a copy of dummy routines from clk.h
+> or some meaningful stuff. So, maybe you can write a patch, otherwise
+> let me know what to write and I will give it a try.
+> 
+> @Rafael: Please *don't* revert this patch, its not my fault this time :)
 
-> @Fengguang: Would it make sense to add build tests for all ARM
-> defconfigs in your build system? I thought its already there :)
-> That way I can always be sure that my stuff (would be helpful for
-> others as well though) isn't breaking build (Atleast) for any platform.
+Well, if build is broken, it *always* is the fault of the commit that
+introduced the breakage, even if that is a result of someone else doing
+things incorrectly.  Why?  Because it potentially breaks bisection for
+people and *that* is a big deal.
 
-Sure. I just added build test workers for all defconfigs from all
-archs. Note that due to the large number of configs, they'll have
-longer delays, but should still finish in one day.
+So yes, I'm going to revert it.  Please resubmit after you've addressed the
+build breakage.
 
-Thanks,
-Fengguang
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
