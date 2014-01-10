@@ -1,40 +1,59 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: [GIT] APM
-Date: Fri, 10 Jan 2014 11:50:08 +0100 (CET)
-Message-ID: <alpine.LNX.2.00.1401101148220.9087@pobox.suse.cz>
+From: franklinbuthelezi1@yahoo.com
+Subject: =?UTF-8?Q?DiePresse.com_Mein_Freund,_der_Fahrradh=C3=A4ndler?=
+Date: Fri, 10 Jan 2014 13:29:50 +0100 (CET)
+Message-ID: <170813240.1389356990085.JavaMail.root@dpoportal4.diepresse.apa.net>
+Reply-To: franklinbuthelezi1@yahoo.com
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:42653 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032AbaAJKuL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jan 2014 05:50:11 -0500
+Received: from dpocron.diepresse.apa.net ([194.232.102.6]:41597 "EHLO
+	dpocron.diepresse.apa.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbaAJMjj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 07:39:39 -0500
+Received: from dpoportal4.diepresse.apa.net (dpoportal4.diepresse.local [192.168.0.20])
+	by dpocron.diepresse.apa.net (Postfix) with ESMTP id 1739543F84
+	for <linux-pm@vger.kernel.org>; Fri, 10 Jan 2014 13:29:50 +0100 (CET)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Rafael,
+=46olgender Artikel auf http://diepresse.com wird Ihnen von Franklin Bu=
+thelezi empfohlen:
 
-please consider pulling
+Mein Freund, der Fahrradh=C3=A4ndler
+Manche Dinge ver=C3=A4ndern sich =C3=BCber die langen Wintermonate hinw=
+eg.=20
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jikos/apm.git for-next
+http://diepresse.com/home/leben/mode/kolumnezumtag/548717/index.do
 
-into linux-pm.git, to receive:
+Notiz:
+Dear friend,
+=20
+I am the international operations manager of ABSA bank South Africa. My=
+ name is Franklin Buthelezi. I have a sensitive and private offer from =
+the top executive to seek your partnership in re-profiling some offshor=
+e investment funds worth 11.5M U.S.D (Eleven Million five hundred thous=
+and United States Dollars) I am constrained however to withhold most of=
+ the details for now. This is a legitimate transaction.=20
+=20
+If we agree on the terms you will be given 15% of the total funds, if y=
+ou are interested please write back via email providing me your persona=
+l details and phone number for further directives.
+=20
+If you are interested and willing to render your assistance please resp=
+ond via my private email address stated below.
+=20
+I look forward to your response.
+=20
+Best regards
+=46ranklin Buthelezi
+Email: franklinbuthelezi1@yahoo.com
 
 
-- addition of hibernation events to apm-emulation, from Bin Shi
+------------------------------------
+DiePresse.com =C3=BCbernimmt keine Haftung f=C3=BCr den Inhalt der pers=
+=C3=B6nlichen Nachricht.
 
+=C2=A9 DiePresse.com - http://diepresse.com
 
-Thanks.
-
-Bin Shi (1):
-      apm-emulation: add hibernation APM events to support suspend2disk
-
- drivers/char/apm-emulation.c  |   11 +++++++++--
- include/uapi/linux/apm_bios.h |    2 ++
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
--- 
-Jiri Kosina
-SUSE Labs
