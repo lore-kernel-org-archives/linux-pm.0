@@ -1,134 +1,59 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v12 7/7] thermal:exynos:boost: Automatic enable/disable
- of BOOST feature (at Exynos4412)
-Date: Fri, 10 Jan 2014 14:35:12 +0800
-Message-ID: <1389335712.2411.16.camel@rzhang1-mobl4>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	 <1387549495-809-1-git-send-email-l.majewski@samsung.com>
-	 <1387549495-809-8-git-send-email-l.majewski@samsung.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 1/2] Revert
+ "intel_idle: mark states tables with __initdata tag"
+Date: Fri, 10 Jan 2014 10:23:36 +0100
+Message-ID: <1540348.rFAN0gMFRZ@amdc1032>
+References: <1389252628-1033-1-git-send-email-jiang.liu@linux.intel.com>
+ <1987543.MckBKZrloE@amdc1032> <2380177.4Omy8JvF8m@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1387549495-809-8-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:12484 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751788AbaAJJYB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 04:24:01 -0500
+In-reply-to: <2380177.4Omy8JvF8m@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, " Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, " H. Peter Anvin" <hpa@linux.intel.com>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, 2013-12-20 at 15:24 +0100, Lukasz Majewski wrote:
-> This patch provides auto disable/enable operation for boost. It uses already
-> present thermal infrastructure to provide BOOST hysteresis.
-> The TMU data has been modified to work properly with or without BOOST.
-> Hence, the two first trip points with corresponding clip frequencies were
-> adjusted.
+On Thursday, January 09, 2014 02:38:14 PM Rafael J. Wysocki wrote:
+> Hi,
 > 
-> The first one was reduced from 85 to 70 degrees and clip frequency was
-> increased to 1.4 GHz from 800 MHz. This trip point is in fact responsible
-> for providing BOOST hysteresis. When temperature exceeds 70 deg, the maximal
-> non BOOST frequency for Exynos4412 is imposed.
+> On Thursday, January 09, 2014 02:20:22 PM Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > Hi,
+> > 
+> > On Thursday, January 09, 2014 03:30:26 PM Jiang Liu wrote:
+> > > This reverts commit 9d046ccb98085f1d437585f84748c783a04ba240.
+> > > 
+> > > Commit 9d046ccb98085 marks all state tables with __initdata, but
+> > > the state table may be accessed when doing CPU online, which then
+> > > causing system crash as below:
+> > 
+> > Uh, sorry for that - it most likely got missed since I tested it
+> > together with intel_idle_cpu_init() removal patches (they are in
+> > Rafael's PM tree now).
+> > 
+> > Anyway, better than reverting it altogether would be to fix it by
+> > backporting the following patch:
+> > 
+> > 	http://lkml.org/lkml/2013/12/20/372
+> > 
+> > Could you please try to solve the issue this way?
 > 
-> Since the first trigger level has been "stolen" for BOOST, the second one
-> needs to be a compromise for the previously used two for non BOOST
-> configuration. The 95 deg with modified clip freq (to 400 MHz) shall provide
-> a good balance between cooling down the overheated device and throughput on
-> an acceptable level.
+> No, it's too late for that as far as 3.13 is concerned.
 > 
-> Two last trigger levels were not modified since, they cause platform shutdown
-> on emergency overheat situation.
-> Third trip point passage results in SW managed shut down of the system.
-> If the last trip point is crossed, the PMU HW generates the power off
-> signal.
-> 
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> I have the patch above queued up for 3.14, though, so do you think that the
+> commit being reverted here can be safely re-applied on top of it?
 
-Reviewed-by: Zhang Rui <rui.zhang@intel.com>
+Yes, the reverted commit can be safely re-applied on top of this patch.
 
-thanks,
-rui
-> 
-> ---
-> Changes for v12:
->     - More verbose patch description to explain new TMU temperature assignment
->       for Exynos4412
-> 
-> Changes for v11:
->     - Use only one thermal data set
->     - Adjust Exynos4412 thermal data to work with or without BOOST
-> 
-> Changes for v10:
->     - Remove boost related code from thermal_core.c
->     - Use already present thermal infrastructure to provide thermal hysteresis
->     - Introduce special set of TMU data for BOOST
-> 
-> Changes for v9:
->     - None
-> 
-> Changes for v8:
->     - Move cpufreq_boost_* stub functions definition (needed when cpufreq
->       is not compiled in) to cpufreq.h at cpufreq core support commit
-> 
-> Changes for v7:
->     - None
-> 
-> Changes for v6:
->     - Disable boost only when supported and enabled
->     - Protect boost related thermal_zone_device struct fields with mutex
->     - Evaluate temperature trend during boost enable decision
->     - Create separate methods to handle boost enable/disable
->       (thermal_boost_{enable|disable}) operations
->     - Boost is disabled at any trip point passage (not only the non critical one)
->     - Add stub definitions for cpufreq boost functions used when
->       CONFIG_CPU_FREQ is NOT defined.
-> 
-> Changes for v5:
->     - Move boost disable code from cpu_cooling.c to thermal_core.c
->       (to handle_non_critical_trips)
->     - Extent struct thermal_zone_device by adding overheated bool flag
->     - Implement auto enable of boost after device cools down
->     - Introduce boost_polling flag, which indicates if thermal uses it's predefined
->       pool delay or has woken up thermal workqueue only to wait until device
->       cools down.
-> 
-> Changes for v4:
->     - New patch
-> 
->  drivers/thermal/samsung/exynos_tmu_data.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> index 073c292..476b768 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -131,8 +131,8 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
->  
->  #define EXYNOS4412_TMU_DATA \
->  	.threshold_falling = 10, \
-> -	.trigger_levels[0] = 85, \
-> -	.trigger_levels[1] = 103, \
-> +	.trigger_levels[0] = 70, \
-> +	.trigger_levels[1] = 95, \
->  	.trigger_levels[2] = 110, \
->  	.trigger_levels[3] = 120, \
->  	.trigger_enable[0] = true, \
-> @@ -155,12 +155,12 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
->  	.second_point_trim = 85, \
->  	.default_temp_offset = 50, \
->  	.freq_tab[0] = { \
-> -		.freq_clip_max = 800 * 1000, \
-> -		.temp_level = 85, \
-> +		.freq_clip_max = 1400 * 1000, \
-> +		.temp_level = 70, \
->  	}, \
->  	.freq_tab[1] = { \
-> -		.freq_clip_max = 200 * 1000, \
-> -		.temp_level = 103, \
-> +		.freq_clip_max = 400 * 1000, \
-> +		.temp_level = 95, \
->  	}, \
->  	.freq_tab_count = 2, \
->  	.registers = &exynos4412_tmu_registers, \
-
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
