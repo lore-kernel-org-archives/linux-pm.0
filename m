@@ -1,40 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Allow runtime suspend during system resume
-Date: Fri, 10 Jan 2014 14:35:11 +0100
-Message-ID: <2073478.g5B0SjSvHB@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1401091015200.1493-100000@iolanthe.rowland.org> <3652290.QccRAxIbQ5@vostro.rjw.lan> <52CF52FA.3030001@ubuntu.com>
+Subject: Re: [PATCH 1/2] ARM: SA1100: Create dummy clk_get_rate() to avoid build failures
+Date: Fri, 10 Jan 2014 14:36:26 +0100
+Message-ID: <9089839.yLLXKZ592H@vostro.rjw.lan>
+References: <aaadbfa341a881c8250f2d23bc77062228d2e70b.1389279793.git.viresh.kumar@linaro.org> <CAOesGMgQgOUxbj=0=AYx2pN4mh5HoDcW4p1W89+kvNtXpFmYxA@mail.gmail.com> <CAKohpo=kpyEatDfc8GZ=660sB60co4gSwxCp_brQbm5xhynmyQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55845 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:52480 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751303AbaAJNVU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 08:21:20 -0500
-In-Reply-To: <52CF52FA.3030001@ubuntu.com>
+	with SMTP id S1751388AbaAJNWf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 08:22:35 -0500
+In-Reply-To: <CAKohpo=kpyEatDfc8GZ=660sB60co4gSwxCp_brQbm5xhynmyQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phillip Susi <psusi@ubuntu.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Olof Johansson <olof@lixom.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Russell King <linux@arm.linux.org.uk>
 
-On Thursday, January 09, 2014 08:55:06 PM Phillip Susi wrote:
-> On 01/09/2014 08:25 PM, Rafael J. Wysocki wrote:
-> > That looks reasonable, but in .resume_early() you can do it like
-> > this I think:
+On Friday, January 10, 2014 07:14:16 AM Viresh Kumar wrote:
+> On 9 January 2014 21:56, Olof Johansson <olof@lixom.net> wrote:
+> > On Thu, Jan 9, 2014 at 7:08 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> There are some parts of common kernel which would be using routines like
+> >> clk_get_rate() on some platforms. Currently these wouldn't be called for SA1100
+> >> boards but we need these routines for successful builds of these boards.
+> >>
+> >> So, this patch creates a dummy clk_get_rate() routine which is being used by
+> >> cpufreq core. More dummy routines might be added later if there is a need for
+> >> that.
+> >>
+> >> Cc: Russell King <linux@arm.linux.org.uk>
+> >> Cc: Arnd Bergmann <arnd.bergmann@linaro.org>
+> >> Reported-by: <Olof Johansson> olof@lixom.net
 > >
-> > bool disk_spinning = disk_is_spinning(dev); int rc = 0;
-> >
-> > if (!pm_runtime_in_use(dev) && !disk_spinning) {
-> > pm_runtime_set_suspended(dev); } else {
-> > pm_runtime_set_active(dev); if (!disk_spinning) rc =
-> > spin_up_the_disk(dev); }
+> > That's not the right format.
 > 
-> You're not allowed to call pm_runtime_set_{suspended,active} without
-> disabling runtime pm.
+> So sorry for that..
+> @Rafael: Can you fix this up while applying? Or you want me to send
+> this again?
 
-Well, thanks for reminding me how my code works. ;-)
-
-.resume_early() runs with runtime PM disabled.
+I can (you owe me a beverage of my choice per instance).
 
 Thanks!
 
