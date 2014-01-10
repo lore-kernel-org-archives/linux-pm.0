@@ -1,44 +1,71 @@
-From: Phillip Susi <psusi@ubuntu.com>
-Subject: Re: Allow runtime suspend during system resume
-Date: Fri, 10 Jan 2014 09:46:14 -0500
-Message-ID: <52D007B6.5020805@ubuntu.com>
-References: <Pine.LNX.4.44L0.1401091015200.1493-100000@iolanthe.rowland.org> <3652290.QccRAxIbQ5@vostro.rjw.lan> <52CF52FA.3030001@ubuntu.com> <2073478.g5B0SjSvHB@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:43539 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbaAJOqP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 09:46:15 -0500
-In-Reply-To: <2073478.g5B0SjSvHB@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ben Dooks <ben.dooks@codethink.co.uk>
+Subject: [PATCH] power: fixup clock_ops
+Date: Fri, 10 Jan 2014 15:06:00 +0000
+Message-ID: <1389366360-7238-1-git-send-email-ben.dooks@codethink.co.uk>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@lists.codethink.co.uk
+Cc: Ben Dooks <ben.dooks@codethink.co.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+The drivers/base/power/clock_ops.c file is causing warnings from
+the clock driver (as shown below) due to failing to do a clk_prepare()
+call before enabling a clock. It also fails to check the balance of
+prepare/unprepare as __pm_clk_remove() do clk_disable_unprepare() call.
 
-On 1/10/2014 8:35 AM, Rafael J. Wysocki wrote:
-> Well, thanks for reminding me how my code works. ;-)
-> 
-> .resume_early() runs with runtime PM disabled.
+This bug has probably been in since commit b2476490e ("clk: introduce
+the common clock framework") as the warning was part of the original
+commit. It is strange that it has not been noticed (although this has
+also been coupled with a failure for certain SH builds to not build the
+necessary glue to use this method of controlling the clocks).
 
-Ahh, then in that case we're back to not wanting to block the resume
-path on disk_is_spinning().
+In summary, this is probably needed in several stable branches but need
+advice on which ones.
 
+On the Renesas Lager board, this causes numerous warnings of the following
+and even worse the clock system will not enable clocks, causing drivers
+that are in development to fail to work:
 
+WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:883 __clk_enable+0x2c/0xa0()
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (MingW32)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
+---
+ drivers/base/power/clock_ops.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-iQEcBAEBAgAGBQJS0Ae2AAoJEI5FoCIzSKrwiqcH/jaoQ9WtE124xT53OaD7XfZQ
-C45ftL7iZG/8iF/oW48RaEa8l87yoisThDjdokuMqo6SEkxsxAegg+l9yz98tSoX
-kTj3x7rE8wPAwC4JCq7+6Xu2XTiK9ujHmohwJNljsqIdhbuLo+Y4XWNrKUzag2WX
-8rJbX7bPTfg0ijtOkYUHfpJyap1OkG007MIeH4qQ/vZVd8Pem3Oy1jLdyLtpUMB5
-D5ebHo6IdJDJpxX2EDSyHsI5UKEDycH6VLkCz06RpeMBkL4jePzL76D//9qfw+Kc
-RpOyoOFhYM5q2XeXRSjtPX4vrUe5EqdLfqYriIYiYjNNDqrirhsBDUQ5SdXr7zE=
-=HLer
------END PGP SIGNATURE-----
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index 9d8fde7..b9dd8fa 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -43,6 +43,7 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+ 	if (IS_ERR(ce->clk)) {
+ 		ce->status = PCE_STATUS_ERROR;
+ 	} else {
++		clk_prepare(ce->clk);
+ 		ce->status = PCE_STATUS_ACQUIRED;
+ 		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
+ 	}
+@@ -99,10 +100,12 @@ static void __pm_clk_remove(struct pm_clock_entry *ce)
+ 
+ 	if (ce->status < PCE_STATUS_ERROR) {
+ 		if (ce->status == PCE_STATUS_ENABLED)
+-			clk_disable_unprepare(ce->clk);
++			clk_disable(ce->clk);
+ 
+-		if (ce->status >= PCE_STATUS_ACQUIRED)
++		if (ce->status >= PCE_STATUS_ACQUIRED) {
++			clk_unprepare(ce->clk);
+ 			clk_put(ce->clk);
++		}
+ 	}
+ 
+ 	kfree(ce->con_id);
+-- 
+1.8.5.2
