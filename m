@@ -1,59 +1,55 @@
-From: franklinbuthelezi1@yahoo.com
-Subject: =?UTF-8?Q?DiePresse.com_Mein_Freund,_der_Fahrradh=C3=A4ndler?=
-Date: Fri, 10 Jan 2014 13:29:50 +0100 (CET)
-Message-ID: <170813240.1389356990085.JavaMail.root@dpoportal4.diepresse.apa.net>
-Reply-To: franklinbuthelezi1@yahoo.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] intel_idle: close avn_cstates array with correct marker
+Date: Fri, 10 Jan 2014 14:32:36 +0100
+Message-ID: <1676949.y75c76bCzK@vostro.rjw.lan>
+References: <1389252628-1033-1-git-send-email-jiang.liu@linux.intel.com> <5913087.iUSSiA9xVP@vostro.rjw.lan> <52CF5402.70106@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from dpocron.diepresse.apa.net ([194.232.102.6]:41597 "EHLO
-	dpocron.diepresse.apa.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbaAJMjj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 07:39:39 -0500
-Received: from dpoportal4.diepresse.apa.net (dpoportal4.diepresse.local [192.168.0.20])
-	by dpocron.diepresse.apa.net (Postfix) with ESMTP id 1739543F84
-	for <linux-pm@vger.kernel.org>; Fri, 10 Jan 2014 13:29:50 +0100 (CET)
+Received: from v094114.home.net.pl ([79.96.170.134]:58900 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751303AbaAJNSq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 08:18:46 -0500
+In-Reply-To: <52CF5402.70106@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "H. Peter Anvin" <hpa@linux.intel.com>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-=46olgender Artikel auf http://diepresse.com wird Ihnen von Franklin Bu=
-thelezi empfohlen:
+On Friday, January 10, 2014 09:59:30 AM Jiang Liu wrote:
+> 
+> On 2014/1/9 21:31, Rafael J. Wysocki wrote:
+> > On Thursday, January 09, 2014 03:30:27 PM Jiang Liu wrote:
+> >> Close avn_cstates array with correct marker to avoid overflow
+> >> in function intel_idle_cpu_init().
+> >>
+> >> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+> >> Cc: <stable@vger.kernel.org> # 3.13
+> > 
+> > Why did you mark it for 3.13-stable?  3.13 hasn't been released yet, so this
+> > can be pushed for 3.13 still.
+> > 
+> > Is the problem present in 3.13-rc?  If so, has it been introduced by any
+> > recent commits or was it there before?  In which case, do we need this patch
+> > in stable as well?
+> > 
+> > Rafael
+> Hi Rafael,
+> 	This issue is introduced in 3.13-rc2, and I feel it's too late
+> to catch up with 3.13 window, so mark it for 3.13 speculatively.
+> 	After more thoughts, I feel this patch should be divided into
+> two patches.
+> 	One is to temporarily remove the __initdata marker. The other
+> is to correctly mark end of avn_cstates array. The second bug should
+> be introduced when merging "22e580d intel_idle: Fixed C6 state on
+> Avoton/Rangeley processors" with "eba682a intel_idle: shrink states tables".
+> 	Should I split it into two?
 
-Mein Freund, der Fahrradh=C3=A4ndler
-Manche Dinge ver=C3=A4ndern sich =C3=BCber die langen Wintermonate hinw=
-eg.=20
+No need.  I'm going to push your fixes to Linus shortly.
 
-http://diepresse.com/home/leben/mode/kolumnezumtag/548717/index.do
+Thanks!
 
-Notiz:
-Dear friend,
-=20
-I am the international operations manager of ABSA bank South Africa. My=
- name is Franklin Buthelezi. I have a sensitive and private offer from =
-the top executive to seek your partnership in re-profiling some offshor=
-e investment funds worth 11.5M U.S.D (Eleven Million five hundred thous=
-and United States Dollars) I am constrained however to withhold most of=
- the details for now. This is a legitimate transaction.=20
-=20
-If we agree on the terms you will be given 15% of the total funds, if y=
-ou are interested please write back via email providing me your persona=
-l details and phone number for further directives.
-=20
-If you are interested and willing to render your assistance please resp=
-ond via my private email address stated below.
-=20
-I look forward to your response.
-=20
-Best regards
-=46ranklin Buthelezi
-Email: franklinbuthelezi1@yahoo.com
-
-
-------------------------------------
-DiePresse.com =C3=BCbernimmt keine Haftung f=C3=BCr den Inhalt der pers=
-=C3=B6nlichen Nachricht.
-
-=C2=A9 DiePresse.com - http://diepresse.com
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
