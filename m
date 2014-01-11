@@ -1,45 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT] APM
-Date: Sat, 11 Jan 2014 01:30:52 +0100
-Message-ID: <4411503.NlcLOtbZPZ@vostro.rjw.lan>
-References: <alpine.LNX.2.00.1401101148220.9087@pobox.suse.cz>
+Subject: Re: [PATCH v2 0/9] cpuidle: rework device state count handling
+Date: Sat, 11 Jan 2014 01:37:29 +0100
+Message-ID: <2079155.EyEBRDoJjP@vostro.rjw.lan>
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53182 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:59804 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751263AbaAKARA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 19:17:00 -0500
-In-Reply-To: <alpine.LNX.2.00.1401101148220.9087@pobox.suse.cz>
+	with SMTP id S1751642AbaAKAXh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 19:23:37 -0500
+In-Reply-To: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: daniel.lezcano@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com
 
-On Friday, January 10, 2014 11:50:08 AM Jiri Kosina wrote:
-> Rafael,
+On Friday, December 20, 2013 07:47:22 PM Bartlomiej Zolnierkiewicz wrote:
+> Hi,
 > 
-> please consider pulling
+> Some cpuidle drivers assume that cpuidle core will handle cases where
+> device->state_count is smaller than driver->state_count, unfortunately
+> currently this is untrue (device->state_count is used only for handling
+> cpuidle state sysfs entries and driver->state_count is used for all
+> other cases) and will not be fixed in the future as device->state_count
+> is planned to be removed [1].
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jikos/apm.git for-next
+> This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
+> cpuidle driver), removes superflous device->state_count initialization
+> from drivers for which device->state_count equals driver->state_count
+> (POWERPC pseries cpuidle driver and intel_idle driver) and finally
+> removes state_count field from struct cpuidle_device.
 > 
-> into linux-pm.git, to receive:
+> Additionaly (while at it) this patchset fixes C1E promotion disable
+> quirk handling (in intel_idle driver) and converts cpuidle drivers code
+> to use the common cpuidle_[un]register() routines (in POWERPC pseries
+> cpuidle driver and intel_idle driver).
 > 
+> [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
 > 
-> - addition of hibernation events to apm-emulation, from Bin Shi
+> Reference to v1:
+> 	http://comments.gmane.org/gmane.linux.power-management.general/37390
 > 
-> 
-> Thanks.
-> 
-> Bin Shi (1):
->       apm-emulation: add hibernation APM events to support suspend2disk
-> 
->  drivers/char/apm-emulation.c  |   11 +++++++++--
->  include/uapi/linux/apm_bios.h |    2 ++
->  2 files changed, 11 insertions(+), 2 deletions(-)
+> Changes since v1:
+> - synced patch series with next-20131220
+> - added ACKs from Daniel Lezcano
 
-Pulled, thanks Jiri!
+This series breaks boot on one of my test machines with intel_idle, so I'm
+not sure how well it has been tested.
+
+I've dropped it entirely for now.  If I have the time, I will try to identify
+the root cause of the failure, but that may not happen before the merge window.
+Sorry about that.
+
+Thanks!
 
 -- 
 I speak only for myself.
