@@ -1,74 +1,58 @@
-From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: [PATCH 3/3] power: clock_ops.c: report clock errors from clk_enable()
-Date: Sat, 11 Jan 2014 13:05:40 +0000
-Message-ID: <1389445540-21426-3-git-send-email-ben.dooks@codethink.co.uk>
-References: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk>
-Sender: linux-sh-owner@vger.kernel.org
-To: linux-kernel@lists.codethink.co.uk
-Cc: Ben Dooks <ben.dooks@codethink.co.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: [PATCH RFC 07/10] ARM: s3c64xx: dt: Enable SoC-level power management
+Date: Sat, 11 Jan 2014 20:42:49 +0100
+Message-ID: <1389469372-17199-8-git-send-email-tomasz.figa@gmail.com>
+References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-If clk_enable() fails, then print a message so that the user can see
-what is happening instead of silently failing to enable the clock.
+This patch adds call to s3c64xx_pm_init() from init_machine() callback
+of mach-s3c64xx-dt to enable SoC-level power management features, such
+as power domain management and sleep support.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
-Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
+Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
 ---
- drivers/base/power/clock_ops.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+ arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 9bb95ab..b94b3ec 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -33,6 +33,21 @@ struct pm_clock_entry {
- };
+diff --git a/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c b/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c
+index 2fddf38..45a4ddc 100644
+--- a/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c
++++ b/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c
+@@ -15,6 +15,7 @@
+ #include <asm/system_misc.h>
  
- /**
-+ * pm_clk_enable - Enable a clock, reporting any errors
-+ * @dev: The device for the given clock
-+ * @clk: The clock being enabled.
-+ */
-+static inline int __pm_clk_enable(struct device *dev, struct clk *clk)
+ #include <plat/cpu.h>
++#include <plat/pm.h>
+ #include <plat/watchdog-reset.h>
+ 
+ #include <mach/map.h>
+@@ -49,9 +50,15 @@ static void __init s3c64xx_dt_map_io(void)
+ static void __init s3c64xx_dt_init_machine(void)
+ {
+ 	samsung_wdt_reset_of_init();
++	s3c64xx_pm_init();
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+ 
++static void __init s3c64xx_dt_init_late(void)
 +{
-+	int ret = clk_enable(clk);
-+	if (ret != 0)
-+		dev_err(dev, "%s: failed to enable clk %p, error %d\n",
-+			__func__, clk, ret);
-+
-+	return ret;
++	s3c64xx_pm_late_initcall();
 +}
 +
-+/**
-  * pm_clk_acquire - Acquire a device clock.
-  * @dev: Device whose clock is to be acquired.
-  * @ce: PM clock entry corresponding to the clock.
-@@ -263,7 +278,7 @@ int pm_clk_resume(struct device *dev)
- 
- 	list_for_each_entry(ce, &psd->clock_list, node) {
- 		if (ce->status < PCE_STATUS_ERROR) {
--			ret = clk_enable(ce->clk);
-+			ret = __pm_clk_enable(dev, ce->clk);
- 			if (ret == 0)
- 				ce->status = PCE_STATUS_ENABLED;
- 		}
-@@ -381,7 +396,7 @@ int pm_clk_resume(struct device *dev)
- 	spin_lock_irqsave(&psd->lock, flags);
- 
- 	list_for_each_entry(ce, &psd->clock_list, node)
--		clk_enable(ce->clk);
-+		__pm_clk_enable(dev, ce->clk);
- 
- 	spin_unlock_irqrestore(&psd->lock, flags);
- 
+ static void s3c64xx_dt_restart(enum reboot_mode mode, const char *cmd)
+ {
+ 	if (mode != REBOOT_SOFT)
+@@ -72,5 +79,6 @@ DT_MACHINE_START(S3C6400_DT, "Samsung S3C64xx (Flattened Device Tree)")
+ 	.dt_compat	= s3c64xx_dt_compat,
+ 	.map_io		= s3c64xx_dt_map_io,
+ 	.init_machine	= s3c64xx_dt_init_machine,
++	.init_late	= s3c64xx_dt_init_late,
+ 	.restart        = s3c64xx_dt_restart,
+ MACHINE_END
 -- 
 1.8.5.2
-
