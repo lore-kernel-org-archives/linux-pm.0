@@ -1,60 +1,79 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/9] cpuidle: rework device state count handling
-Date: Sat, 11 Jan 2014 01:37:29 +0100
-Message-ID: <2079155.EyEBRDoJjP@vostro.rjw.lan>
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] ACPI/SCAN: _STA status read
+Date: Sat, 11 Jan 2014 02:21:21 +0100
+Message-ID: <8334447.ggorZeCfj4@vostro.rjw.lan>
+References: <1389398405-1970-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59804 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751642AbaAKAXh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 19:23:37 -0500
-In-Reply-To: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1389398405-1970-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: daniel.lezcano@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com
 
-On Friday, December 20, 2013 07:47:22 PM Bartlomiej Zolnierkiewicz wrote:
-> Hi,
+On Friday, January 10, 2014 04:00:05 PM Srinivas Pandruvada wrote:
+> This patch adds a "status" attribute for an acpi device. This status
+> attribute shows the value of _STA object. The _STA object returns
+> current status of an ACPI device to show enabled, disabled or removed.
 > 
-> Some cpuidle drivers assume that cpuidle core will handle cases where
-> device->state_count is smaller than driver->state_count, unfortunately
-> currently this is untrue (device->state_count is used only for handling
-> cpuidle state sysfs entries and driver->state_count is used for all
-> other cases) and will not be fixed in the future as device->state_count
-> is planned to be removed [1].
-> 
-> This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
-> cpuidle driver), removes superflous device->state_count initialization
-> from drivers for which device->state_count equals driver->state_count
-> (POWERPC pseries cpuidle driver and intel_idle driver) and finally
-> removes state_count field from struct cpuidle_device.
-> 
-> Additionaly (while at it) this patchset fixes C1E promotion disable
-> quirk handling (in intel_idle driver) and converts cpuidle drivers code
-> to use the common cpuidle_[un]register() routines (in POWERPC pseries
-> cpuidle driver and intel_idle driver).
-> 
-> [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
-> 
-> Reference to v1:
-> 	http://comments.gmane.org/gmane.linux.power-management.general/37390
-> 
-> Changes since v1:
-> - synced patch series with next-20131220
-> - added ACKs from Daniel Lezcano
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-This series breaks boot on one of my test machines with intel_idle, so I'm
-not sure how well it has been tested.
+Queued up for 3.14, thanks!
 
-I've dropped it entirely for now.  If I have the time, I will try to identify
-the root cause of the failure, but that may not happen before the merge window.
-Sorry about that.
-
-Thanks!
+> ---
+>  drivers/acpi/scan.c | 22 ++++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+> 
+> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+> index fd39459..a5f4a60 100644
+> --- a/drivers/acpi/scan.c
+> +++ b/drivers/acpi/scan.c
+> @@ -567,6 +567,20 @@ acpi_device_sun_show(struct device *dev, struct device_attribute *attr,
+>  }
+>  static DEVICE_ATTR(sun, 0444, acpi_device_sun_show, NULL);
+>  
+> +static ssize_t status_show(struct device *dev, struct device_attribute *attr,
+> +				char *buf) {
+> +	struct acpi_device *acpi_dev = to_acpi_device(dev);
+> +	acpi_status status;
+> +	unsigned long long sta;
+> +
+> +	status = acpi_evaluate_integer(acpi_dev->handle, "_STA", NULL, &sta);
+> +	if (ACPI_FAILURE(status))
+> +		return -ENODEV;
+> +
+> +	return sprintf(buf, "%llu\n", sta);
+> +}
+> +static DEVICE_ATTR_RO(status);
+> +
+>  static int acpi_device_setup_files(struct acpi_device *dev)
+>  {
+>  	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
+> @@ -622,6 +636,12 @@ static int acpi_device_setup_files(struct acpi_device *dev)
+>  		dev->pnp.sun = (unsigned long)-1;
+>  	}
+>  
+> +	if (acpi_has_method(dev->handle, "_STA")) {
+> +		result = device_create_file(&dev->dev, &dev_attr_status);
+> +		if (result)
+> +			goto end;
+> +	}
+> +
+>          /*
+>           * If device has _EJ0, 'eject' file is created that is used to trigger
+>           * hot-removal function from userland.
+> @@ -677,6 +697,8 @@ static void acpi_device_remove_files(struct acpi_device *dev)
+>  		device_remove_file(&dev->dev, &dev_attr_adr);
+>  	device_remove_file(&dev->dev, &dev_attr_modalias);
+>  	device_remove_file(&dev->dev, &dev_attr_hid);
+> +	if (acpi_has_method(dev->handle, "_STA"))
+> +		device_remove_file(&dev->dev, &dev_attr_status);
+>  	if (dev->handle)
+>  		device_remove_file(&dev->dev, &dev_attr_path);
+>  }
+> 
 
 -- 
 I speak only for myself.
