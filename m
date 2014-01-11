@@ -1,56 +1,50 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH RFC 00/10] Generic Device Tree based power domain look-up
-Date: Sat, 11 Jan 2014 20:52:17 +0100
-Message-ID: <1743034.81eWccWixG@flatron>
-References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: No freezing of kernel threads (was: Re: [GIT PULL] libata
+ fixes for v3.13-rc5)
+Date: Sat, 11 Jan 2014 22:15:21 +0100
+Message-ID: <20140111211521.GA12064@amd.pavel.ucw.cz>
+References: <1667032.A7Knz5cBng@vostro.rjw.lan>
+ <Pine.LNX.4.44L0.1312252211550.15064-100000@netrider.rowland.org>
+ <20131226041856.GA16483@htj.dyndns.org>
+ <1963765.T2MGFJrVrL@vostro.rjw.lan>
+ <20131226160517.GB16483@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f169.google.com ([209.85.215.169]:36418 "EHLO
-	mail-ea0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbaAKTw0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jan 2014 14:52:26 -0500
-In-Reply-To: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20131226160517.GB16483@htj.dyndns.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Linus Torvalds <torvalds@linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>
 
-On Saturday 11 of January 2014 20:42:42 Tomasz Figa wrote:
-> Up till now there was no single generic method to bind devices to their
-> power domains using Device Tree. Each platform has been doing this using
-> its own way, example of which are Exynos power domain bindings [1] and
-> look-up code [2].
+Hi!
+
+> > Well, it looks like we don't really know why things are done the way they
+> > are done at least in some cases, so in my personal view it would be good to
+> > go through all of the kernel freezer users just for this reason alone.  We
+> > can't really say which of them are legitimate without that and how difficult
+> > it would be for them to switch over to using something more fine grained than
+> > the freezer.
 > 
-> This series is intended to change this and provide generic DT bindings for
-> power domain specification and generic code performing look-up of power
-> domains and binding them to devices.
-> 
-> Patches 1, 2, 3 are not directly related to this series, but they are
-> dependencies of further patches making mach-s3c64xx a user of introduced
-> code. Patch 4 is the most important part of this series, as it's the one
-> introducing $subject. Further patches are fixing and adding two users,
-> mach-exynos (removing the legacy code) and mach-s3c64xx (no DT support for
-> power domains before). Last two patches are adding display support for
-> Mini6410 board, including a node for display controller (FIMD) which is
-> a power domain consumer.
-> 
-> Successfully tested on S3C6410-based Mini6410 board.
-> 
+> I'm a bit worried about things which may not be explicit.
+> ie. something which is broken but sorta working because things like
+> writeback and jbd are frozen.  I think I worry about that because I
+> remember one argument for kernel freezer from way way back, that it's
+> too hard to implement proper suspend/resume for all drivers and by
+> freezing most kthreads things should mostly work, which sounded pretty
+> crazy to me even back then.  Hopefully, we don't have much left
+> depending on such magic.
 
-I left the references for the end of this cover letter and finally forgot
-about them. Please accept my apologies ;).
+Careful there. Hibernation depends on data on disk not changing after
+freeze.
 
-[1] Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-[2] arch/arm/mach-exynos/pm_domains.c
+So you definitely do _not_ want writeback/jbd running while uswsusp
+does its image writing.
 
-Also it might be good to mention that I was heavily inspired by
-implementation of clock providers in Common Clock Framework in case of
-provider registration and look-up and also by my Exynos power domain
-implementation (now removed by this series ;)) in case of code binding
-devices to power domains.
-
-Best regards,
-Tomasz
-
+(I wonder what happens if uswsusp needs to trigger writeback to free
+memory. But I'm too scared to check :-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
