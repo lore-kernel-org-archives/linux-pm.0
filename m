@@ -1,69 +1,46 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] ACPI/SCAN: _STA status read
-Date: Fri, 10 Jan 2014 16:00:05 -0800
-Message-ID: <1389398405-1970-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [GIT] APM
+Date: Sat, 11 Jan 2014 01:30:52 +0100
+Message-ID: <4411503.NlcLOtbZPZ@vostro.rjw.lan>
+References: <alpine.LNX.2.00.1401101148220.9087@pobox.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53182 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751263AbaAKARA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2014 19:17:00 -0500
+In-Reply-To: <alpine.LNX.2.00.1401101148220.9087@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch adds a "status" attribute for an acpi device. This status
-attribute shows the value of _STA object. The _STA object returns
-current status of an ACPI device to show enabled, disabled or removed.
+On Friday, January 10, 2014 11:50:08 AM Jiri Kosina wrote:
+> Rafael,
+> 
+> please consider pulling
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jikos/apm.git for-next
+> 
+> into linux-pm.git, to receive:
+> 
+> 
+> - addition of hibernation events to apm-emulation, from Bin Shi
+> 
+> 
+> Thanks.
+> 
+> Bin Shi (1):
+>       apm-emulation: add hibernation APM events to support suspend2disk
+> 
+>  drivers/char/apm-emulation.c  |   11 +++++++++--
+>  include/uapi/linux/apm_bios.h |    2 ++
+>  2 files changed, 11 insertions(+), 2 deletions(-)
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/acpi/scan.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+Pulled, thanks Jiri!
 
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index fd39459..a5f4a60 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -567,6 +567,20 @@ acpi_device_sun_show(struct device *dev, struct device_attribute *attr,
- }
- static DEVICE_ATTR(sun, 0444, acpi_device_sun_show, NULL);
- 
-+static ssize_t status_show(struct device *dev, struct device_attribute *attr,
-+				char *buf) {
-+	struct acpi_device *acpi_dev = to_acpi_device(dev);
-+	acpi_status status;
-+	unsigned long long sta;
-+
-+	status = acpi_evaluate_integer(acpi_dev->handle, "_STA", NULL, &sta);
-+	if (ACPI_FAILURE(status))
-+		return -ENODEV;
-+
-+	return sprintf(buf, "%llu\n", sta);
-+}
-+static DEVICE_ATTR_RO(status);
-+
- static int acpi_device_setup_files(struct acpi_device *dev)
- {
- 	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
-@@ -622,6 +636,12 @@ static int acpi_device_setup_files(struct acpi_device *dev)
- 		dev->pnp.sun = (unsigned long)-1;
- 	}
- 
-+	if (acpi_has_method(dev->handle, "_STA")) {
-+		result = device_create_file(&dev->dev, &dev_attr_status);
-+		if (result)
-+			goto end;
-+	}
-+
-         /*
-          * If device has _EJ0, 'eject' file is created that is used to trigger
-          * hot-removal function from userland.
-@@ -677,6 +697,8 @@ static void acpi_device_remove_files(struct acpi_device *dev)
- 		device_remove_file(&dev->dev, &dev_attr_adr);
- 	device_remove_file(&dev->dev, &dev_attr_modalias);
- 	device_remove_file(&dev->dev, &dev_attr_hid);
-+	if (acpi_has_method(dev->handle, "_STA"))
-+		device_remove_file(&dev->dev, &dev_attr_status);
- 	if (dev->handle)
- 		device_remove_file(&dev->dev, &dev_attr_path);
- }
 -- 
-1.8.3.1
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
