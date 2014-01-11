@@ -1,58 +1,51 @@
 From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: [PATCH RFC 07/10] ARM: s3c64xx: dt: Enable SoC-level power management
-Date: Sat, 11 Jan 2014 20:42:49 +0100
-Message-ID: <1389469372-17199-8-git-send-email-tomasz.figa@gmail.com>
+Subject: [PATCH RFC 08/10] ARM: dts: s3c64xx: Add nodes for power domains
+Date: Sat, 11 Jan 2014 20:42:50 +0100
+Message-ID: <1389469372-17199-9-git-send-email-tomasz.figa@gmail.com>
 References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f47.google.com ([74.125.83.47]:64500 "EHLO
+	mail-ee0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753372AbaAKTnZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jan 2014 14:43:25 -0500
 In-Reply-To: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch adds call to s3c64xx_pm_init() from init_machine() callback
-of mach-s3c64xx-dt to enable SoC-level power management features, such
-as power domain management and sleep support.
+This patch adds device tree nodes for power domains available on S3C64xx
+SoCs.
 
 Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
 ---
- arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/arm/boot/dts/s3c6400.dtsi | 1 +
+ arch/arm/boot/dts/s3c6410.dtsi | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c b/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c
-index 2fddf38..45a4ddc 100644
---- a/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c
-+++ b/arch/arm/mach-s3c64xx/mach-s3c64xx-dt.c
-@@ -15,6 +15,7 @@
- #include <asm/system_misc.h>
+diff --git a/arch/arm/boot/dts/s3c6400.dtsi b/arch/arm/boot/dts/s3c6400.dtsi
+index a7d1c8e..c1abdaf 100644
+--- a/arch/arm/boot/dts/s3c6400.dtsi
++++ b/arch/arm/boot/dts/s3c6400.dtsi
+@@ -37,5 +37,6 @@
+ 		compatible = "samsung,s3c6400-clock";
+ 		reg = <0x7e00f000 0x1000>;
+ 		#clock-cells = <1>;
++		#power-domain-cells = <1>;
+ 	};
+ };
+diff --git a/arch/arm/boot/dts/s3c6410.dtsi b/arch/arm/boot/dts/s3c6410.dtsi
+index eb4226b..7e48c86 100644
+--- a/arch/arm/boot/dts/s3c6410.dtsi
++++ b/arch/arm/boot/dts/s3c6410.dtsi
+@@ -41,6 +41,7 @@
+ 		compatible = "samsung,s3c6410-clock";
+ 		reg = <0x7e00f000 0x1000>;
+ 		#clock-cells = <1>;
++		#power-domain-cells = <1>;
+ 	};
  
- #include <plat/cpu.h>
-+#include <plat/pm.h>
- #include <plat/watchdog-reset.h>
- 
- #include <mach/map.h>
-@@ -49,9 +50,15 @@ static void __init s3c64xx_dt_map_io(void)
- static void __init s3c64xx_dt_init_machine(void)
- {
- 	samsung_wdt_reset_of_init();
-+	s3c64xx_pm_init();
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- }
- 
-+static void __init s3c64xx_dt_init_late(void)
-+{
-+	s3c64xx_pm_late_initcall();
-+}
-+
- static void s3c64xx_dt_restart(enum reboot_mode mode, const char *cmd)
- {
- 	if (mode != REBOOT_SOFT)
-@@ -72,5 +79,6 @@ DT_MACHINE_START(S3C6400_DT, "Samsung S3C64xx (Flattened Device Tree)")
- 	.dt_compat	= s3c64xx_dt_compat,
- 	.map_io		= s3c64xx_dt_map_io,
- 	.init_machine	= s3c64xx_dt_init_machine,
-+	.init_late	= s3c64xx_dt_init_late,
- 	.restart        = s3c64xx_dt_restart,
- MACHINE_END
+ 	i2c1: i2c@7f00f000 {
 -- 
 1.8.5.2
+
