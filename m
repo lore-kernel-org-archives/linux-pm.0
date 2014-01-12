@@ -1,176 +1,127 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCHv5 05/20] cpufreq: cpufreq-cpu0: add dt node parsing for
- cooling device properties
-Date: Sun, 12 Jan 2014 14:31:06 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B909263011C9A19@SHSMSX101.ccr.corp.intel.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
- <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [0/11] Energy-aware scheduling use-cases and scheduler issues
+Date: Sun, 12 Jan 2014 08:47:59 -0800
+Message-ID: <20140112164759.GB5008@mgross-Lenovo-Yoga-2-Pro>
+References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
+ <20131222162744.GB3250@mgross-Lenovo-Yoga-2-Pro>
+ <20131230121010.GA2936@e103034-lin>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1384285582-16933-6-git-send-email-eduardo.valentin@ti.com>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>
-Cc: "wni@nvidia.com" <wni@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f45.google.com ([209.85.160.45]:47463 "EHLO
+	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbaALQsB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Jan 2014 11:48:01 -0500
+Received: by mail-pb0-f45.google.com with SMTP id rp16so6409125pbb.32
+        for <linux-pm@vger.kernel.org>; Sun, 12 Jan 2014 08:48:00 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20131230121010.GA2936@e103034-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mark gross <markgross@thegnar.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On Mon, Dec 30, 2013 at 12:10:10PM +0000, Morten Rasmussen wrote:
+> On Sun, Dec 22, 2013 at 04:28:22PM +0000, mark gross wrote:
+> > On Fri, Dec 20, 2013 at 04:45:40PM +0000, Morten Rasmussen wrote:
+> > > Hi,
+> > > 
+> > > One of the requests from the scheduler maintainers at the Energy-aware
+> > > Scheduling workshop at Kernel Summit this year was to provide plain text
+> > > descriptions of use-cases (workloads) and system topologies. To get that
+> > > moving I have written some short texts about some use-cases. In addition
+> > > I described a list of issues that today prevent mainly the scheduler
+> > > from achieving a good energy/performance balance in common use-cases.
+> > > The follow-up emails are structured as follows:
+> > > 
+> > > 1-6:	Current issues related to energy/performance balance.
+> > We have seen some of these issues as well.  Still from my point of view (which
+> > may not be the most well informed) most of my issues are related to bad choices
+> > on task migrations.
+> 
+> Thanks for sharing your view. In my opinion, all of these issues relate
+> to task migration choices in one way or another. Lack of knowledge about
+> the power topology, frequency scaling, and different types of cores
+> (e.g. big.LITTLE) lead to bad migration choices.
+> 
+> > 
+> > > 7-10:	Use-cases (overall behaviour and energy/performance goals)
+> > I really like your break down of the use cases.  I like the Android focus as
+> > well.  However; can we get some similar workload break downs for representive
+> > data center workloads from other folks?
+> 
+> I don't have much insight into data center workloads, so I was hoping
+> for input from other folks.
+> 
+> > 
+> > > 11:	DVFS example (for reference)
+> > > 
+> > > I'm hoping that this provides some of the background for why I'm
+> > > interested in improving energy-awareness in the scheduler. I'm aware
+> > > that the use-cases and issues/wishlist don't cover everyone's area of
+> > > interest. Input is needed to fix that.
+> > > 
+> > > Comments and input are appreciated.
+> > What is missing is more data or modeling tying the SoC charactoristics to
+> > scheduling choices.  You have some (energy per instruction at different
+> > P-states) but there are a lot more topological differences that are important
+> > for proper scheduler choices.  Specifically shared L2's between some cores and
+> > not others, or shared power rails, or if the cores are hyper threaded, or if
+> > there are mutliple sockets.
+> 
+> Agree. This is the missing power topology information in the scheduler.
+> Power domain information (power rail sharing), including the cost of
+> waking up the first cpu and additional cpus in the domain, is required.
+> I guess multi-socket can be modelled that way too?
+> 
+> Most aspects of power management is implementation dependent on ARM, but
+> a typical big.LITTLE system looks like this:
+> 
+>       little  big
+> cpu   0   1   2   3
+> L1   |-| |-| |-| |-|
+> L2   |-----| |-----|
+> 
+> Two clusters (cpu groups), one little and one big. Cluster shared L2
+> cache. cpus have (depending on implementation) per cpu C-states and
+> deeper C-states apply to the entire cluster including the L2. P-states
+> often apply to the entire cluster (cpu 0-1 and 2-3 in this example).
+> Clusters may have 1-4 cpus each and doesn't have to be the same for all
+> clusters (e.g. ARM TC2 is 2+3).
+> 
+> Is that fundamentally different from the systems that you are working
+> on?
+This is not so different for the SoC's I've interacted with.  I'v seen a few
+more variants  (as does the ARM SoC's)
 
+One of the newer intel CPU's has a cache picture that looks like a cut and paste
+of yours (minus the little/big):
 
-> -----Original Message-----
-> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
-> Sent: Wednesday, November 13, 2013 3:46 AM
-> To: swarren@wwwdotorg.org; pawel.moll@arm.com; mark.rutland@arm.com;
-> ian.campbell@citrix.com; rob.herring@calxeda.com; linux@roeck-us.net;
-> Zhang, Rui
-> Cc: wni@nvidia.com; grant.likely@linaro.org; R, Durgadoss; linux-
-> pm@vger.kernel.org; devicetree@vger.kernel.org; lm-sensors@lm-
-> sensors.org; linux-kernel@vger.kernel.org; Eduardo Valentin; Rafael J.
-> Wysocki; Viresh Kumar; cpufreq@vger.kernel.org; devicetree-
-> discuss@lists.ozlabs.org
-> Subject: [PATCHv5 05/20] cpufreq: cpufreq-cpu0: add dt node parsing for
-> cooling device properties
-> Importance: High
-> 
-> This patch changes the cpufreq-cpu0 driver to consider if a cpu needs
-> cooling (with cpufreq). In case the cooling is needed, the cpu0 device
-> tree node needs to be properly configured with cooling device
-> properties.
-> 
-> In case these properties are present,, the driver will load a cpufreq
-> cooling device in the system. The cpufreq-cpu0 driver is not interested
-> in determining how the system should be using the cooling device. The
-> driver is responsible only of loading the cooling device.
-> 
-> Describing how the cooling device will be used can be accomplished by
-> setting up a thermal zone that references and is composed by the
-> cpufreq cooling device.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: devicetree-discuss@lists.ozlabs.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt         |  7 +++++++
->  drivers/cpufreq/Kconfig                                  |  2 +-
->  drivers/cpufreq/cpufreq-cpu0.c                           | 16
-> ++++++++++++++++
->  3 files changed, 24 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> index 051f764..f055515 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> @@ -15,6 +15,10 @@ Optional properties:
->  - clock-latency: Specify the possible maximum transition latency for
-> clock,
->    in unit of nanoseconds.
->  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-> +- #cooling-cells:
-> +- cooling-min-level:
-> +- cooling-max-level:
-> +     Please refer to
-> Documentation/devicetree/bindings/thermal/thermal.txt.
-> 
->  Examples:
-> 
-> @@ -33,6 +37,9 @@ cpus {
->  			198000  850000
->  		>;
->  		clock-latency = <61036>; /* two CLK32 periods */
-> +		#cooling-cells = <2>;
-> +		cooling-min-level = <0>;
-> +		cooling-max-level = <2>;
->  	};
-> 
->  	cpu@1 {
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig index
-> 534fcb8..fc1e9a5 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -186,7 +186,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
-> 
->  config GENERIC_CPUFREQ_CPU0
->  	tristate "Generic CPU0 cpufreq driver"
-> -	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
-> +	depends on HAVE_CLK && REGULATOR && PM_OPP && OF && THERMAL &&
-> +CPU_THERMAL
+ cpu   0   1   2   3
+ L1   |-| |-| |-| |-|
+ L2   |-----| |-----|
 
-config: make ARCH=arm multi_v7_defconfig
-All warnings:
-warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which 
-has unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && 
-HAVE_CLK && REGULATOR && PM_OPP && OF && THERMAL && CPU_THERMAL)
+An older CPU looks just like this but adds SMT to each CPU core.
 
-I think you need to select THERMAL and CPU_THERMAL instead, right?
+> I was hoping that we could come up with a fairly simplistic energy model
+> that could guide the scheduling decisions based on data provided by the
+> vendor. I would start we something very simple and see far we can get
+> and which data that is necessary.
+>
+I keep flip flopping in my mind over what is more important.  Energy modeling or
+latency performance measuring.
 
-Thanks,
-rui
->  	select CPU_FREQ_TABLE
->  	help
->  	  This adds a generic cpufreq driver for CPU0 frequency
-> management.
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-
-> cpu0.c index c522a95..568aaf3 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -13,7 +13,9 @@
-> 
->  #include <linux/clk.h>
->  #include <linux/cpu.h>
-> +#include <linux/cpu_cooling.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/cpumask.h>
->  #include <linux/err.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> @@ -21,6 +23,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/regulator/consumer.h>
->  #include <linux/slab.h>
-> +#include <linux/thermal.h>
-> 
->  static unsigned int transition_latency;  static unsigned int
-> voltage_tolerance; /* in percentage */ @@ -29,6 +32,7 @@ static struct
-> device *cpu_dev;  static struct clk *cpu_clk;  static struct regulator
-> *cpu_reg;  static struct cpufreq_frequency_table *freq_table;
-> +static struct thermal_cooling_device *cdev;
-> 
->  static int cpu0_verify_speed(struct cpufreq_policy *policy)  { @@ -
-> 260,6 +264,17 @@ static int cpu0_cpufreq_probe(struct platform_device
-> *pdev)
->  		goto out_free_table;
->  	}
-> 
-> +	/*
-> +	 * For now, just loading the cooling device;
-> +	 * thermal DT code takes care of matching them.
-> +	 */
-> +	if (of_find_property(np, "#cooling-cells", NULL)) {
-> +		cdev = of_cpufreq_cooling_register(np, cpu_present_mask);
-> +		if (IS_ERR(cdev))
-> +			pr_err("running cpufreq without cooling
-> device: %ld\n",
-> +			       PTR_ERR(cdev));
-> +	}
-> +
->  	of_node_put(np);
->  	return 0;
-> 
-> @@ -272,6 +287,7 @@ out_put_node:
-> 
->  static int cpu0_cpufreq_remove(struct platform_device *pdev)  {
-> +	cpufreq_cooling_unregister(cdev);
->  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
->  	opp_free_cpufreq_table(cpu_dev, &freq_table);
-> 
-> --
-> 1.8.2.1.342.gfa7285d
+I mean, one way to look at the world is given a workload with minimal latency
+and throughput expectations we need deliver those first and then optimize power.
 
+With poor load balancing we do not deliver on performance expectations typically
+in the areas of latencies.  Note, Linux does well on throughput IMO because that
+is easier to measure with kstats and other sampling.
+
+what sorts of missing thing are needed to measure and understand when wrong
+choices are getting made?  What basic information do we need to capture to know
+if we are doing a good job or not?
+
+--mark
+> Morten
