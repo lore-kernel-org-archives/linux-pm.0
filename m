@@ -1,42 +1,93 @@
-From: Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH RFC 06/10] ARM: s3c64xx: pm: Add device tree based power
- domain instantiation
-Date: Sun, 12 Jan 2014 20:34:10 +0100
-Message-ID: <52D2EE32.5060709@gmail.com>
-References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com> <1389469372-17199-7-git-send-email-tomasz.figa@gmail.com> <20140112192910.GW29039@sirena.org.uk>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH 1/3] power: clock_ops.c: fixup clk prepare/unprepare count
+Date: Sun, 12 Jan 2014 23:04:56 +0100
+Message-ID: <2133074.4EFCIDJZXE@avalon>
+References: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20140112192910.GW29039-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from perceval.ideasonboard.com ([95.142.166.194]:52774 "EHLO
+	perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbaALWEP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Jan 2014 17:04:15 -0500
+In-Reply-To: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ben Dooks <ben.dooks@codethink.co.uk>
+Cc: linux-kernel@lists.codethink.co.uk, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12.01.2014 20:29, Mark Brown wrote:
-> On Sat, Jan 11, 2014 at 08:42:48PM +0100, Tomasz Figa wrote:
+Hi Ben,
+
+Thank you for the patch.
+
+On Saturday 11 January 2014 13:05:38 Ben Dooks wrote:
+> The drivers/base/power/clock_ops.c file is causing warnings from
+> the clock driver (as shown below) due to failing to do a clk_prepare()
+> call before enabling a clock. It also fails to check the balance of
+> prepare/unprepare as __pm_clk_remove() do clk_disable_unprepare() call.
+> 
+> This bug has probably been in since commit b2476490e ("clk: introduce
+> the common clock framework") as the warning was part of the original
+> commit. It is strange that it has not been noticed (although this has
+> also been coupled with a failure for certain SH builds to not build the
+> necessary glue to use this method of controlling the clocks).
 >
->> This patch adds support for registering power domains of S3C64xx SoCs
->> and binding devices to them using device tree.
->
->> +#ifdef CONFIG_OF
->> +static struct of_device_id s3c64xx_pd_matches[] = {
->> +	{ .compatible = "samsung,s3c6400-clock", },
->> +	{ .compatible = "samsung,s3c6410-clock", },
->> +	{ },
->>   };
->
-> Looks like a rebasing issue?  Otherwise this looks nice.
+> In summary, this is probably needed in several stable branches but need
+> advice on which ones.
+> 
+> On the Renesas Lager board, this causes numerous warnings of the following
+> and even worse the clock system will not enable clocks, causing drivers
+> that are in development to fail to work:
+> 
+> WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:883 __clk_enable+0x2c/0xa0()
 
-Hmm, what's the problem here? Maybe I'm just blind, but I fail to see 
-anything wrong (except that the array should be const...).
+I've never noticed this on Lager, probably because Lager multiplatform doesn't 
+make use of clock_ops.c as drivers/sh/pm_runtime.c (which you addressed in 
+another patch that I've also replied to). I'm thus not sure we need to apply 
+this as a fix and backport it to stable branches.
 
-Thanks for reviewing this.
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+> Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
+> ---
+>  drivers/base/power/clock_ops.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index 9d8fde7..b9dd8fa 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -43,6 +43,7 @@ static void pm_clk_acquire(struct device *dev, struct
+> pm_clock_entry *ce) if (IS_ERR(ce->clk)) {
+>  		ce->status = PCE_STATUS_ERROR;
+>  	} else {
+> +		clk_prepare(ce->clk);
+>  		ce->status = PCE_STATUS_ACQUIRED;
+>  		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
+>  	}
+> @@ -99,10 +100,12 @@ static void __pm_clk_remove(struct pm_clock_entry *ce)
+> 
+>  	if (ce->status < PCE_STATUS_ERROR) {
+>  		if (ce->status == PCE_STATUS_ENABLED)
+> -			clk_disable_unprepare(ce->clk);
+> +			clk_disable(ce->clk);
+> 
+> -		if (ce->status >= PCE_STATUS_ACQUIRED)
+> +		if (ce->status >= PCE_STATUS_ACQUIRED) {
+> +			clk_unprepare(ce->clk);
+>  			clk_put(ce->clk);
+> +		}
+>  	}
+> 
+>  	kfree(ce->con_id);
+-- 
+Regards,
 
-Best regards,
-Tomasz
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Laurent Pinchart
+
