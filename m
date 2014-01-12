@@ -1,40 +1,64 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH RFC 01/10] ARM: s3c64xx: pm: Use name field of generic_pm_domain
-Date: Sun, 12 Jan 2014 20:03:50 +0100
-Message-ID: <52D2E716.8040403@gmail.com>
-References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com> <1389469372-17199-2-git-send-email-tomasz.figa@gmail.com> <20140112114717.GA31318@amd.pavel.ucw.cz> <52D287B1.3090106@gmail.com> <20140112185337.GA6810@amd.pavel.ucw.cz>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH RFC 01/10] ARM: s3c64xx: pm: Use name field of
+ generic_pm_domain
+Date: Sun, 12 Jan 2014 19:20:40 +0000
+Message-ID: <20140112192040.GU29039@sirena.org.uk>
+References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
+ <1389469372-17199-2-git-send-email-tomasz.figa@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20140112185337.GA6810@amd.pavel.ucw.cz>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZsW/usBbx2ObC9TW"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:53182 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179AbaALTVW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Jan 2014 14:21:22 -0500
+Content-Disposition: inline
+In-Reply-To: <1389469372-17199-2-git-send-email-tomasz.figa@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Pavel Machek <pavel@ucw.cz>, Kumar Gala <galak@codeaurora.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-arm-kernel@lists.infradead.org
 
-On 12.01.2014 19:53, Pavel Machek wrote:
-> Hi!
->
->>> Could we get some more descriptive names for the domains?
->>
->> They are listed like this in user's manual, e.g. DOMAIN_F, DOMAIN_I,
->> DOMAIN_G, etc.
->
-> I guessed so. So the manual sucks. Would it be feasible to get it more
-> descriptive (like "Domain_G (GPU)")?
 
-Does the name really matter that much? I changed original ones in this 
-patch simply to make it easier to grep for domain related messages in 
-kernel output (e.g. dmesg | grep domain). It was not the main part of 
-this patch.
+--ZsW/usBbx2ObC9TW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Also, there are multiple devices in most domains, so that would rather 
-end up being "Domain_I (JPEG, Cam I/F)", "Domain_P (2D, TV Enc., 
-Scaler)", "Domain_F (Rot, Post, LCD)".
+On Sat, Jan 11, 2014 at 08:42:43PM +0100, Tomasz Figa wrote:
 
-If you really insist, I can change this, but I fail to see what effect 
-it would really have.
+>  static struct s3c64xx_pm_domain s3c64xx_pm_irom = {
+> -	.name = "IROM",
+>  	.ena = S3C64XX_NORMALCFG_IROM_ON,
+>  	.pd = {
+> +		.name = "domain_irom",
 
-Best regards,
-Tomasz
+This is nitpicking a bit but are you sure this is actually a
+beautification of the name?  It's mainly the domain_ bit, mostly since
+I'd expect that if it's not obvious that this is a power domain the core
+logging would be changed rather than tweaking the name of every power
+domain user.
+
+--ZsW/usBbx2ObC9TW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJS0usFAAoJELSic+t+oim9J4cP/355BDK0edL3yVcbZhSZCCEs
+rokjY/iVA12n8zQ5Pd87VFRI0YoObmeoXp60jdWBO44pJ7jcvmuFkoCOsg4smiE9
+4AVf8qxNOlHB8NVAqqGQUqpL7fqOR4bgIBHZ861KdpByWuI5emxw/u2wOJ1+G9xg
+CdKhlfRZajTplGPycRxqvex0thQPts6BJrCQLEyUONSTeLCAghvEMTFWzV1quTOx
+Xntkti5D/qQtEb+9Lgi1efHPgDMGSJ9Wqzjgc1ycomWRmMDz+u0rgMjceR59xTzL
+1xr3k5Yy0FlrO+k7xv9S0SnLDPIm/S2tUTHwnmGuB3XaHgbKupu0MJmyTLJndgi4
+2ut0UMBv8kbxFHolLGad3pwtIR5cdUcShJiPCqs3QFjYMJ74AcGSPBfnrAw4gDsm
+nIW74owUC4FV3/iy5/yjtN9tpihUSevlEN+FF+WfDYM8/j+jmEV0cHcgYxURFkK2
+SPFdWEtKxXYNoC0UDYCvwEOrL6tObgCWQDMRMJQnJria6g950S8EmqULXQIZOeJo
+OGEN7VWZvloqJLQDYyzN35mnBKrc6YNfUDHfgyrrrW1W//4JrLLSHcuNmJCWC4D3
+0DCmL0go/BKLfAs6WacBOuYqMUJC3K9+hwsdntXtSl9+yHaVOFU+aRdsjwgpjkDz
+/TxCT1vEED226aREsQWF
+=P4l9
+-----END PGP SIGNATURE-----
+
+--ZsW/usBbx2ObC9TW--
