@@ -1,93 +1,99 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH 1/3] power: clock_ops.c: fixup clk prepare/unprepare count
-Date: Sun, 12 Jan 2014 23:04:56 +0100
-Message-ID: <2133074.4EFCIDJZXE@avalon>
-References: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v4 1/2] ARM: imx: add select on ARCH_MXC for cpufreq
+ support
+Date: Mon, 13 Jan 2014 11:20:45 +0800
+Message-ID: <20140113032043.GF23525@S2101-09.ap.freescale.net>
+References: <1389321592-33220-1-git-send-email-john.tobias.ph@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from perceval.ideasonboard.com ([95.142.166.194]:52774 "EHLO
-	perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbaALWEP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Jan 2014 17:04:15 -0500
-In-Reply-To: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1389321592-33220-1-git-send-email-john.tobias.ph@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: John Tobias <john.tobias.ph@gmail.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, festevam@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Ben Dooks <ben.dooks@codethink.co.uk>
-Cc: linux-kernel@lists.codethink.co.uk, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Ben,
+On Thu, Jan 09, 2014 at 06:39:51PM -0800, John Tobias wrote:
+> Moved ARCH_HAS_CPUFREQ, HAVE_IMX_ANATOP and PM_OPP on ARCH_MXC so that
+> the user can enable the cpufreq support for iMX6Q and/or iMX6SL.
 
-Thank you for the patch.
+All I was asking is to move the following:
 
-On Saturday 11 January 2014 13:05:38 Ben Dooks wrote:
-> The drivers/base/power/clock_ops.c file is causing warnings from
-> the clock driver (as shown below) due to failing to do a clk_prepare()
-> call before enabling a clock. It also fails to check the balance of
-> prepare/unprepare as __pm_clk_remove() do clk_disable_unprepare() call.
+	select ARCH_HAS_CPUFREQ
+	select ARCH_HAS_OPP
+	select PM_OPP if PM
+
+So leave HAVE_IMX_ANATOP out there, and only move the above ones please.
+
+Shawn
+
 > 
-> This bug has probably been in since commit b2476490e ("clk: introduce
-> the common clock framework") as the warning was part of the original
-> commit. It is strange that it has not been noticed (although this has
-> also been coupled with a failure for certain SH builds to not build the
-> necessary glue to use this method of controlling the clocks).
->
-> In summary, this is probably needed in several stable branches but need
-> advice on which ones.
-> 
-> On the Renesas Lager board, this causes numerous warnings of the following
-> and even worse the clock system will not enable clocks, causing drivers
-> that are in development to fail to work:
-> 
-> WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:883 __clk_enable+0x2c/0xa0()
-
-I've never noticed this on Lager, probably because Lager multiplatform doesn't 
-make use of clock_ops.c as drivers/sh/pm_runtime.c (which you addressed in 
-another patch that I've also replied to). I'm thus not sure we need to apply 
-this as a fix and backport it to stable branches.
-
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
-> Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
+> Signed-off-by: John Tobias <john.tobias.ph@gmail.com>
 > ---
->  drivers/base/power/clock_ops.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
+>  arch/arm/mach-imx/Kconfig | 13 ++++++-------
+>  1 file changed, 6 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 9d8fde7..b9dd8fa 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -43,6 +43,7 @@ static void pm_clk_acquire(struct device *dev, struct
-> pm_clock_entry *ce) if (IS_ERR(ce->clk)) {
->  		ce->status = PCE_STATUS_ERROR;
->  	} else {
-> +		clk_prepare(ce->clk);
->  		ce->status = PCE_STATUS_ACQUIRED;
->  		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
->  	}
-> @@ -99,10 +100,12 @@ static void __pm_clk_remove(struct pm_clock_entry *ce)
+> diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+> index 7a6e6f7..d6aa34d 100644
+> --- a/arch/arm/mach-imx/Kconfig
+> +++ b/arch/arm/mach-imx/Kconfig
+> @@ -1,5 +1,6 @@
+>  config ARCH_MXC
+>  	bool "Freescale i.MX family" if ARCH_MULTI_V4_V5 || ARCH_MULTI_V6_V7
+> +	select ARCH_HAS_CPUFREQ
+>  	select ARCH_REQUIRE_GPIOLIB
+>  	select ARM_CPU_SUSPEND if PM
+>  	select ARM_PATCH_PHYS_VIRT
+> @@ -9,8 +10,10 @@ config ARCH_MXC
+>  	select GENERIC_ALLOCATOR
+>  	select GENERIC_CLOCKEVENTS
+>  	select GENERIC_IRQ_CHIP
+> +	select HAVE_IMX_ANATOP if SOC_IMX6Q || SOC_IMX6SL
+>  	select MIGHT_HAVE_CACHE_L2X0 if ARCH_MULTI_V6_V7
+>  	select MULTI_IRQ_HANDLER
+> +	select PM_OPP if PM
+>  	select SOC_BUS
+>  	select SPARSE_IRQ
+>  	select USE_OF
+> @@ -779,16 +782,14 @@ config	SOC_IMX53
+>  
+>  config SOC_IMX6Q
+>  	bool "i.MX6 Quad/DualLite support"
+> -	select ARCH_HAS_CPUFREQ
+> -	select ARCH_HAS_OPP
+> +	select ARCH_HAS_OPP	
+>  	select ARM_ERRATA_754322
+>  	select ARM_ERRATA_764369 if SMP
+>  	select ARM_ERRATA_775420
+>  	select ARM_GIC
+>  	select CPU_V7
+>  	select HAVE_ARM_SCU if SMP
+> -	select HAVE_ARM_TWD if SMP
+> -	select HAVE_IMX_ANATOP
+> +	select HAVE_ARM_TWD if SMP	
+>  	select HAVE_IMX_GPC
+>  	select HAVE_IMX_MMDC
+>  	select HAVE_IMX_SRC
+> @@ -800,8 +801,7 @@ config SOC_IMX6Q
+>  	select PINCTRL_IMX6Q
+>  	select PL310_ERRATA_588369 if CACHE_PL310
+>  	select PL310_ERRATA_727915 if CACHE_PL310
+> -	select PL310_ERRATA_769419 if CACHE_PL310
+> -	select PM_OPP if PM
+> +	select PL310_ERRATA_769419 if CACHE_PL310	
+>  
+>  	help
+>  	  This enables support for Freescale i.MX6 Quad processor.
+> @@ -812,7 +812,6 @@ config SOC_IMX6SL
+>  	select ARM_ERRATA_775420
+>  	select ARM_GIC
+>  	select CPU_V7
+> -	select HAVE_IMX_ANATOP
+>  	select HAVE_IMX_GPC
+>  	select HAVE_IMX_MMDC
+>  	select HAVE_IMX_SRC
+> -- 
+> 1.8.3.2
 > 
->  	if (ce->status < PCE_STATUS_ERROR) {
->  		if (ce->status == PCE_STATUS_ENABLED)
-> -			clk_disable_unprepare(ce->clk);
-> +			clk_disable(ce->clk);
-> 
-> -		if (ce->status >= PCE_STATUS_ACQUIRED)
-> +		if (ce->status >= PCE_STATUS_ACQUIRED) {
-> +			clk_unprepare(ce->clk);
->  			clk_put(ce->clk);
-> +		}
->  	}
-> 
->  	kfree(ce->con_id);
--- 
-Regards,
-
-Laurent Pinchart
 
