@@ -1,62 +1,70 @@
-From: Matthew Longnecker <mlongnecker@nvidia.com>
-Subject: Re: [PATCH v2 0/2] Support to tune governor in run time
-Date: Mon, 13 Jan 2014 11:01:36 -0800
-Message-ID: <52D43810.6030801@nvidia.com>
-References: <1389611863-7812-1-git-send-email-wni@nvidia.com> <52D4095C.205@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/3] power: clock_ops.c: check return of clk_enable() in pm_clk_resume()
+Date: Mon, 13 Jan 2014 20:55:58 +0100
+Message-ID: <1438385.ppqm7XWTt3@vostro.rjw.lan>
+References: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk> <1389445540-21426-2-git-send-email-ben.dooks@codethink.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from plane.gmane.org ([80.91.229.3]:46009 "EHLO plane.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbaAMTBx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jan 2014 14:01:53 -0500
-Received: from list by plane.gmane.org with local (Exim 4.69)
-	(envelope-from <gll-linux-pm2@m.gmane.org>)
-	id 1W2mlj-0006ZG-Jk
-	for linux-pm@vger.kernel.org; Mon, 13 Jan 2014 20:01:51 +0100
-Received: from searspoint.nvidia.com ([216.228.112.21])
-        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2014 20:01:51 +0100
-Received: from mlongnecker by searspoint.nvidia.com with local (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Mon, 13 Jan 2014 20:01:51 +0100
-In-Reply-To: <52D4095C.205@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1389445540-21426-2-git-send-email-ben.dooks@codethink.co.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ben Dooks <ben.dooks@codethink.co.uk>
+Cc: linux-kernel@lists.codethink.co.uk, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org
 
-On 1/13/2014 7:42 AM, Eduardo Valentin wrote:
->> This serie can support to turn governor for thermal zone in
->> run time.
->
-> Can you please explain why this is needed? Are you facing troubles with
-> current way to switch governors? If yes, can you please report them?
->
+On Saturday, January 11, 2014 01:05:39 PM Ben Dooks wrote:
+> The clk_enable() call in the pm_clk_resume() call returns an error
+> that is not being checked. If clk_enable() fails then we should
+> not set the state of the clock to PCE_STATUS_ENABLED.
+> 
+> Note, the issue of warning the user if this fails has not been
+> addressed in this patch as this is not the only place the driver
+> calls clk_enable().
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+> Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
+> ---
+>  drivers/base/power/clock_ops.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index b9dd8fa..9bb95ab 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -252,6 +252,7 @@ int pm_clk_resume(struct device *dev)
+>  	struct pm_subsys_data *psd = dev_to_psd(dev);
+>  	struct pm_clock_entry *ce;
+>  	unsigned long flags;
+> +	int ret;
+>  
+>  	dev_dbg(dev, "%s()\n", __func__);
+>  
+> @@ -262,8 +263,9 @@ int pm_clk_resume(struct device *dev)
+>  
+>  	list_for_each_entry(ce, &psd->clock_list, node) {
+>  		if (ce->status < PCE_STATUS_ERROR) {
+> -			clk_enable(ce->clk);
+> -			ce->status = PCE_STATUS_ENABLED;
+> +			ret = clk_enable(ce->clk);
+> +			if (ret == 0)
 
-....
+Can you please use if (!ret) here?
 
->> Adds thermal_update_governor() function, so the thermal platform
->> driver can use it to update governor.
->
-> Here I cannot see why the platform driver would need to update a
-> governor, instead of a zone. Platform drivers are not supposed to be
-> aware of governors. For updating a zone we already have an API for that,
-> please check documentation.
->
+And analogously in patch [3/3]?
 
-I think we have a miscommunication. The purpose of 
-thermal_update_governor is to *switch* governors at runtime (from within 
-the kernel).
+> +				ce->status = PCE_STATUS_ENABLED;
+>  		}
+>  	}
+>  
+> 
 
-Wei has used the term "update" in the sense of switch rather than 
-"update" in the sense used by thermal_zone_device_update.
-
-Eduardo, what is your recommended technique for setting the governor of 
-a thermal zone device created via device tree?
-
-thanks,
-Matt
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
