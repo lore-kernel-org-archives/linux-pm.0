@@ -1,68 +1,64 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
-Date: Mon, 13 Jan 2014 11:37:13 -0400
-Message-ID: <52D40829.9030708@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com> <52C4D612.2090808@nvidia.com> <52C5A6CE.5060904@nvidia.com>
+From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v2 0/2] Support to tune governor in run time
+Date: Mon, 13 Jan 2014 11:42:20 -0400
+Message-ID: <52D4095C.205@ti.com>
+References: <1389611863-7812-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="qRRl9BSqdcGVBinNxfeT4c6Olt32DcQed"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52C5A6CE.5060904@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthew Longnecker <mlongnecker@nvidia.com>
-Cc: Wei Ni <wni@nvidia.com>, Eduardo Valentin <eduardo.valentin@ti.com>, swarren@wwwdotorg.org, pawel.moll@arm.com, mark.rutland@arm.com, ian.campbell@citrix.com, rob.herring@calxeda.com, linux@roeck-us.net, rui.zhang@intel.com, grant.likely@linaro.org, durgadoss.r@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+	boundary="PVWO1MH0n8kHd1qE7deXxfR7bauWjWMi5"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1389611863-7812-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: eduardo.valentin-l0cyMroinI0@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
---qRRl9BSqdcGVBinNxfeT4c6Olt32DcQed
+--PVWO1MH0n8kHd1qE7deXxfR7bauWjWMi5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 02-01-2014 13:50, Matthew Longnecker wrote:
->=20
->> I think the platform driver may set governor for the thermal zone,
->> so how about to add a property named as "governor",
->> and parse it to tzp->governor_name,
->> something like:
->>                  ret =3D of_property_read_string(child, "governor", &s=
-tr);
->>                  if (ret =3D=3D 0)
->>                          if (strlen(str) < THERMAL_NAME_LENGTH)
->>                                  strcpy(tzp->governor_name, str);
+Wei,
 
-The above is not applicable to DT. The very first version of my proposed
-series did include some sort of governor treatment too, fetching such
-data from DT.
+Thanks for your patches. Please help me out to properly understand your
+intentions here.
 
->>
->> Thanks.
->> Wei.
->=20
-> DT is supposed to describe the hardware, right? The governor isn't
-> hardware -- it's a software control policy. On the other hand, that
-> control policy must be tuned according to the behaviors of the platform=
+On 13-01-2014 07:17, Wei Ni wrote:
+> This serie can support to turn governor for thermal zone in
+> run time.
 
-> hardware otherwise the system will be unstable.
+Can you please explain why this is needed? Are you facing troubles with
+current way to switch governors? If yes, can you please report them?
 
-Yes, this is the correct understanding. We can describe hardware,
-including thermal constraints, as long as they do not include policy or
-OS specific implementation.
+> Adds avaiable_policies attribute, so the user can get available
+> governor policies and change te governor to a new one.
+
+OK. This one I understand the need and you are explaining its motivation.=
+
+
+> Adds thermal_update_governor() function, so the thermal platform
+> driver can use it to update governor.
+
+Here I cannot see why the platform driver would need to update a
+governor, instead of a zone. Platform drivers are not supposed to be
+aware of governors. For updating a zone we already have an API for that,
+please check documentation.
 
 >=20
-> Is it appropriate to be naming the governor in DT? If so, is it equally=
-
-> appropriate to describe any governor-specific parameters in DT (even
-> though they are pure software constructs)?
-
-No for both questions.
-
-However, for the parameters, as long as you can map the software
-parameter as a hardware descriptor, then we can discuss if that can be
-used as DT properties.
-
+> Changes from v1:
+> 1. split avaiable_policies part to the "patch 1/2", and add document
+> for it.
+> 2. add document for the thermal_update_governor.
 >=20
-> -Matt
+> Wei Ni (2):
+>   thermal: add available policies attribut
+>   thermal: add interface to support tune governor in run-time
 >=20
+>  Documentation/thermal/sysfs-api.txt |   11 ++++
+>  drivers/thermal/thermal_core.c      |  105 +++++++++++++++++++++++++++=
++++++---
+>  include/linux/thermal.h             |   12 ++++
+>  3 files changed, 119 insertions(+), 9 deletions(-)
 >=20
 
 
@@ -72,7 +68,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---qRRl9BSqdcGVBinNxfeT4c6Olt32DcQed
+--PVWO1MH0n8kHd1qE7deXxfR7bauWjWMi5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -81,9 +77,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlLUCCkACgkQCXcVR3XQvP10KwEApcUxeBGNeMLMrEnU9a4Q/Bh9
-i02tQi67DtB9B15nfcQA/3QfCydXrzf/etgKNFlnNOfq2Ryn38FxekhWUCqDIdXa
-=kpN1
+iF4EAREIAAYFAlLUCVwACgkQCXcVR3XQvP0f3QEA5ZJzBr65Eb43RpSwZZLlaMdD
+AevoI6rTPdUHFuNQEJMBAJ6D8N53hzmFJ6G/EN2SNwFddcn0Ynno7NU9+De1Sw+L
+=AdMO
 -----END PGP SIGNATURE-----
 
---qRRl9BSqdcGVBinNxfeT4c6Olt32DcQed--
+--PVWO1MH0n8kHd1qE7deXxfR7bauWjWMi5--
