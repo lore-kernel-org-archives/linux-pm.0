@@ -1,232 +1,122 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v2 2/2] thermal: add interface to support tune governor in run-time
-Date: Mon, 13 Jan 2014 19:17:43 +0800
-Message-ID: <1389611863-7812-3-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH v2 1/2] thermal: add available policies attribut
+Date: Mon, 13 Jan 2014 19:17:42 +0800
+Message-ID: <1389611863-7812-2-git-send-email-wni@nvidia.com>
 References: <1389611863-7812-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1389611863-7812-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: eduardo.valentin-l0cyMroinI0@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:17170 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbaAMLQy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2014 06:16:54 -0500
+In-Reply-To: <1389611863-7812-1-git-send-email-wni@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: eduardo.valentin@ti.com, rui.zhang@intel.com, mark.rutland@arm.com, durgadoss.r@intel.com
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-In the of-thermal driver, it register a thermal zone device
-without governor, since the governers are not static, we
-should be able to update to a new one in run-time, so I add
-a new fucntion thermal_update_governor() to do it.
+The Linux thermal framework support to change governor policy
+in run time, but it can't show what available policies supported.
 
-In the future, the governor will be more complex, it may want
-to tune governor-specific parameters/configuration for
-different thermal zone at different run-time, so I add
-start/stop for the governor and add governor_data as governor's
-parameters, so that the thermal platform driver can change
-the governor with start/stop, and tune the governor parameters
-in run-time.
+This patch adds available_policies attribut to the thermal
+framework, it can list the thermal governors which can be
+used for a particular zone. This attribut is read only.
 
-Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- Documentation/thermal/sysfs-api.txt |    5 +++
- drivers/thermal/thermal_core.c      |   80 +++++++++++++++++++++++++++++++----
- include/linux/thermal.h             |   12 ++++++
- 3 files changed, 88 insertions(+), 9 deletions(-)
+ Documentation/thermal/sysfs-api.txt |    6 ++++++
+ drivers/thermal/thermal_core.c      |   25 +++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
 
 diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 6a70b55c..7efd8e6 100644
+index 87519cb..6a70b55c 100644
 --- a/Documentation/thermal/sysfs-api.txt
 +++ b/Documentation/thermal/sysfs-api.txt
-@@ -405,3 +405,8 @@ platform data is provided, this uses the step_wise throttling policy.
- This function serves as an arbitrator to set the state of a cooling
- device. It sets the cooling device to the deepest cooling state if
- possible.
+@@ -172,6 +172,7 @@ Thermal zone device sys I/F, created once it's registered:
+     |---temp:			Current temperature
+     |---mode:			Working mode of the thermal zone
+     |---policy:			Thermal governor used for this zone
++    |---available_policies	Available governors for this zone
+     |---trip_point_[0-*]_temp:	Trip point temperature
+     |---trip_point_[0-*]_type:	Trip point type
+     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
+@@ -238,6 +239,10 @@ policy
+ 	One of the various thermal governors used for a particular zone.
+ 	RW, Required
+ 
++available_policies
++	Availabe thermal governors which can be used for a particular zone.
++	RO, Required
 +
-+5.5:thermal_update_governor:
-+This function update the thermal zone's governor to a new one and update
-+the governor data of the new governor for that thermal zone. Returns 0 if
-+success, an erro code otherwise.
+ trip_point_[0-*]_temp
+ 	The temperature above which trip point will be fired.
+ 	Unit: millidegree Celsius
+@@ -330,6 +335,7 @@ method, the sys I/F structure will be built like this:
+     |---temp:			37000
+     |---mode:			enabled
+     |---policy:			step_wise
++    |---available_policies:	step_wise fair_share
+     |---trip_point_0_temp:	100000
+     |---trip_point_0_type:	critical
+     |---trip_point_1_temp:	80000
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index aab1df8..d922baf 100644
+index 338a88b..aab1df8 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -93,10 +93,17 @@ int thermal_register_governor(struct thermal_governor *governor)
- 			name = pos->tzp->governor_name;
- 		else
- 			name = DEFAULT_THERMAL_GOVERNOR;
--		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
-+		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
-+			if (governor->start) {
-+				err = governor->start(pos);
-+				if (err < 0)
-+					goto exit;
-+			}
- 			pos->governor = governor;
-+		}
- 	}
- 
-+exit:
- 	mutex_unlock(&thermal_list_lock);
- 	mutex_unlock(&thermal_governor_lock);
- 
-@@ -119,8 +126,11 @@ void thermal_unregister_governor(struct thermal_governor *governor)
- 
- 	list_for_each_entry(pos, &thermal_tz_list, node) {
- 		if (!strnicmp(pos->governor->name, governor->name,
--						THERMAL_NAME_LENGTH))
-+						THERMAL_NAME_LENGTH)) {
-+			if (pos->governor->stop)
-+				pos->governor->stop(pos);
- 			pos->governor = NULL;
-+		}
- 	}
- 
- 	mutex_unlock(&thermal_list_lock);
-@@ -130,6 +140,51 @@ exit:
- 	return;
+@@ -761,6 +761,24 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+ 	return sprintf(buf, "%s\n", tz->governor->name);
  }
  
-+/**
-+ * thermal_update_governor() - update the thermal zone device's governor
-+ * to a new one.
-+ * @tzd: pointer of thermal zone device, which need to update governor.
-+ * @name: new governor name.
-+ * @gov_data: governor data for the new governor if needed.
-+ *
-+ * Return: On success returns 0, an error code otherwise
-+ */
-+int thermal_update_governor(struct thermal_zone_device *tzd,
-+			    const char *name, void *gov_data)
++static ssize_t
++available_policies_show(struct device *dev, struct device_attribute *devattr,
++			char *buf)
 +{
-+	struct thermal_governor *old_gov, *new_gov;
-+	int ret = 0;
++	struct thermal_governor *pos;
++	ssize_t count = 0;
 +
 +	mutex_lock(&thermal_governor_lock);
 +
-+	new_gov = __find_governor(name);
-+	if (!new_gov) {
-+		ret = -EINVAL;
-+		goto exit;
-+	}
++	list_for_each_entry(pos, &thermal_governor_list, governor_list)
++		count += sprintf(buf + count, "%s ", pos->name);
++	count += sprintf(buf + count, "\n");
 +
-+	old_gov = tzd->governor;
-+
-+	if (old_gov && old_gov->stop)
-+		old_gov->stop(tzd);
-+
-+	if (new_gov->start) {
-+		ret = new_gov->start(tzd);
-+		if (ret < 0) {
-+			if (old_gov && old_gov->start)
-+				old_gov->start(tzd);
-+			goto exit;
-+		}
-+	}
-+
-+	tzd->governor = new_gov;
-+	tzd->governor_data = gov_data;
-+
-+exit:
 +	mutex_unlock(&thermal_governor_lock);
-+	return ret;
++
++	return count;
 +}
 +
- static int get_idr(struct idr *idr, struct mutex *lock, int *id)
- {
- 	int ret;
-@@ -734,22 +789,17 @@ policy_store(struct device *dev, struct device_attribute *attr,
- {
- 	int ret = -EINVAL;
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	struct thermal_governor *gov;
- 	char name[THERMAL_NAME_LENGTH];
+ #ifdef CONFIG_THERMAL_EMULATION
+ static ssize_t
+ emul_temp_store(struct device *dev, struct device_attribute *attr,
+@@ -794,6 +812,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+ static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
++static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
  
- 	snprintf(name, sizeof(name), "%s", buf);
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+@@ -1527,6 +1546,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	if (result)
+ 		goto unregister;
  
--	mutex_lock(&thermal_governor_lock);
--
--	gov = __find_governor(strim(name));
--	if (!gov)
-+	ret = thermal_update_governor(tz, strim(name), NULL);
-+	if (ret < 0)
- 		goto exit;
- 
--	tz->governor = gov;
- 	ret = count;
- 
- exit:
--	mutex_unlock(&thermal_governor_lock);
- 	return ret;
- }
- 
-@@ -1559,6 +1609,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	else
- 		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
- 
-+	if (tz->governor->start) {
-+		result = tz->governor->start(tz);
-+		if (result < 0)
-+			tz->governor = NULL;
-+	}
++	/* Create available_policies attribute */
++	result = device_create_file(&tz->device, &dev_attr_available_policies);
++	if (result)
++		goto unregister;
 +
- 	mutex_unlock(&thermal_governor_lock);
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
  
- 	if (!tz->tzp || !tz->tzp->no_hwmon) {
-@@ -1585,6 +1641,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 		return tz;
- 
- unregister:
-+	if (tz->governor && tz->governor->stop)
-+		tz->governor->stop(tz);
-+	tz->governor = NULL;
- 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
- 	device_unregister(&tz->device);
- 	return ERR_PTR(result);
-@@ -1648,6 +1707,9 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+@@ -1622,6 +1646,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	if (tz->ops->get_mode)
+ 		device_remove_file(&tz->device, &dev_attr_mode);
  	device_remove_file(&tz->device, &dev_attr_policy);
- 	device_remove_file(&tz->device, &dev_attr_available_policies);
++	device_remove_file(&tz->device, &dev_attr_available_policies);
  	remove_trip_attrs(tz);
-+
-+	if (tz->governor && tz->governor->stop)
-+		tz->governor->stop(tz);
  	tz->governor = NULL;
  
- 	thermal_remove_hwmon_sysfs(tz);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index f7e11c7..a473736 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -177,6 +177,7 @@ struct thermal_zone_device {
- 	struct thermal_zone_device_ops *ops;
- 	const struct thermal_zone_params *tzp;
- 	struct thermal_governor *governor;
-+	void *governor_data;
- 	struct list_head thermal_instances;
- 	struct idr idr;
- 	struct mutex lock; /* protect thermal_instances list */
-@@ -187,6 +188,15 @@ struct thermal_zone_device {
- /* Structure that holds thermal governor information */
- struct thermal_governor {
- 	char name[THERMAL_NAME_LENGTH];
-+
-+	/*
-+	 * The start and stop operations will be called when thermal zone is
-+	 * registered and when change governor via sysfs or driver in running
-+	 * time.
-+	 */
-+	int (*start)(struct thermal_zone_device *tz);
-+	void (*stop)(struct thermal_zone_device *tz);
-+
- 	int (*throttle)(struct thermal_zone_device *tz, int trip);
- 	struct list_head	governor_list;
- };
-@@ -293,6 +303,8 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
- 		struct thermal_cooling_device *, int);
- void thermal_cdev_update(struct thermal_cooling_device *);
- void thermal_notify_framework(struct thermal_zone_device *, int);
-+int thermal_update_governor(struct thermal_zone_device *, const char *,
-+			    void *);
- 
- #ifdef CONFIG_NET
- extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
 -- 
 1.7.9.5
+
