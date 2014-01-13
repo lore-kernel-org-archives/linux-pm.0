@@ -1,113 +1,78 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
-Date: Mon, 13 Jan 2014 17:29:44 -0400
-Message-ID: <52D45AC8.1010607@ti.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com> <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com> <52C4D612.2090808@nvidia.com> <52C5A6CE.5060904@nvidia.com> <20140106135145.GD21906@e106331-lin.cambridge.arm.com> <52CAC3AF.9020401@ti.com> <52CB69FA.9080903@nvidia.com>
+Subject: Re: [PATCH v2 0/2] Support to tune governor in run time
+Date: Mon, 13 Jan 2014 17:33:43 -0400
+Message-ID: <52D45BB7.1090002@ti.com>
+References: <1389611863-7812-1-git-send-email-wni@nvidia.com> <52D4095C.205@ti.com> <52D43810.6030801@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="BcHIXGgKPN3KOsf4Pahsrt4VtRMfLhVLN"
+	boundary="NGQPhjewLxrQWEFwcMVF9Nm7aGjhrDgQX"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:54586 "EHLO comal.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:56035 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752094AbaAMVa5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jan 2014 16:30:57 -0500
-In-Reply-To: <52CB69FA.9080903@nvidia.com>
+	id S1752418AbaAMVdv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 Jan 2014 16:33:51 -0500
+In-Reply-To: <52D43810.6030801@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Mark Rutland <mark.rutland@arm.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Matthew Longnecker <mlongnecker@nvidia.com>
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, eduardo.valentin@ti.com
 
---BcHIXGgKPN3KOsf4Pahsrt4VtRMfLhVLN
+--NGQPhjewLxrQWEFwcMVF9Nm7aGjhrDgQX
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Wei,
-
-On 06-01-2014 22:44, Wei Ni wrote:
-> On 01/06/2014 10:54 PM, Eduardo Valentin wrote:
->> * PGP Signed by an unknown key
+On 13-01-2014 15:01, Matthew Longnecker wrote:
+> On 1/13/2014 7:42 AM, Eduardo Valentin wrote:
+>>> This serie can support to turn governor for thermal zone in
+>>> run time.
 >>
->> On 06-01-2014 09:51, Mark Rutland wrote:
->>> On Thu, Jan 02, 2014 at 05:50:06PM +0000, Matthew Longnecker wrote:
->>>>
->>>>> I think the platform driver may set governor for the thermal zone,
->>>>> so how about to add a property named as "governor",
->>>>> and parse it to tzp->governor_name,
->>>>> something like:
->>>>>                  ret =3D of_property_read_string(child, "governor",=
- &str);
->>>>>                  if (ret =3D=3D 0)
->>>>>                          if (strlen(str) < THERMAL_NAME_LENGTH)
->>>>>                                  strcpy(tzp->governor_name, str);
->>>>>
->>>>> Thanks.
->>>>> Wei.
->>>>
->>>> DT is supposed to describe the hardware, right? The governor isn't=20
->>>> hardware -- it's a software control policy. On the other hand, that =
+>> Can you please explain why this is needed? Are you facing troubles wit=
+h
+>> current way to switch governors? If yes, can you please report them?
 
->>>> control policy must be tuned according to the behaviors of the platf=
-orm=20
->>>> hardware otherwise the system will be unstable.
->>>>
->>>> Is it appropriate to be naming the governor in DT? If so, is it equa=
-lly=20
->>>> appropriate to describe any governor-specific parameters in DT (even=
-=20
->>>> though they are pure software constructs)?
->>>
->>> The dt should be relatively static -- if the hardware doesn't change =
-the
->>> dt shouldn't have to.
->>>
->>> The governers are not static. We can introduce new ones and throw awa=
-y
->>> old ones at any time. Tuning parameters can also change at any time.
->>>
->>> I'd prefer to not have governer details described in the dt, and the
->>> choice of governer and configuration of its tuning parameters should =
-be
->>> made at runtime somehow.
->>
->> Agreed.
->=20
-> Yes, I think so, but the of-thermal driver handle the
-> thermal_zone_device_register, and pass the "tzp" without governor_name,=
+Looks like there is a need to switch governors from within kernel code,
+but not explanation of use cases is provided.
 
-
-In fact, it will fall into the default governor, which is step_wise, by
-default config.
-
-> so the created thermal_zone's governor will be NULL, then it can't run
-> into the governor->throttle() if needed. And currently there have no
-
-Actually, no, the tz will be set to default governor, and its throttle
-call will be called.
-
-> interface to support updating governor and configuration at runtime.
-> I think it's better to initialize the governor_name when register the
-> thermal zone device in the of-thermal driver.
-
-Still, why would you need to change the governor from a in kernel
-decision? There is an ABI to change the thermal zone policy based on
-user(land) request. If you need to change the policy from within the
-kernel, which seams to be what you are trying to propose, you need to
-explain why you need it, say, by giving at least one user of this API or
-explaining its use case.
-
->=20
-> Thanks.
->=20
->>
->>>
->>> Thanks,
->>> Mark.
->>>
->>>
->>
 >>
 >=20
+> ....
+>=20
+>>> Adds thermal_update_governor() function, so the thermal platform
+>>> driver can use it to update governor.
+>>
+>> Here I cannot see why the platform driver would need to update a
+>> governor, instead of a zone. Platform drivers are not supposed to be
+>> aware of governors. For updating a zone we already have an API for tha=
+t,
+>> please check documentation.
+>>
+>=20
+> I think we have a miscommunication. The purpose of
+> thermal_update_governor is to *switch* governors at runtime (from withi=
+n
+> the kernel).
+>=20
+> Wei has used the term "update" in the sense of switch rather than
+> "update" in the sense used by thermal_zone_device_update.
+
+Fine, but why do you need it?
+
+>=20
+> Eduardo, what is your recommended technique for setting the governor of=
+
+> a thermal zone device created via device tree?
+
+So far the recommended (and existing) way is by user(land) decision.
+
+>=20
+> thanks,
+> Matt
+>=20
+> --=20
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >=20
 >=20
 
@@ -118,7 +83,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
---BcHIXGgKPN3KOsf4Pahsrt4VtRMfLhVLN
+--NGQPhjewLxrQWEFwcMVF9Nm7aGjhrDgQX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -127,9 +92,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlLUWsgACgkQCXcVR3XQvP1orAEAialtk3Aps/1oTiWfB2foDt96
-3h1Tq5XY7wTnht9Q61cBALCe0wBWAO3KHbJYKNgDeHcMid5INnBMshA76ABfWOtd
-=F2o/
+iF4EAREIAAYFAlLUW7cACgkQCXcVR3XQvP0C2wEA5zOlB2FcMGdMrzomdiLhbzJV
+eN/sVX/lf917NLoNiecBAMEyMTb0AFLXYPX1MigLi4Zl3q7z82438cQrazTa1O8P
+=rZAw
 -----END PGP SIGNATURE-----
 
---BcHIXGgKPN3KOsf4Pahsrt4VtRMfLhVLN--
+--NGQPhjewLxrQWEFwcMVF9Nm7aGjhrDgQX--
