@@ -1,72 +1,232 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH RFC 06/10] ARM: s3c64xx: pm: Add device tree based power
- domain instantiation
-Date: Mon, 13 Jan 2014 11:09:35 +0000
-Message-ID: <20140113110935.GB29039@sirena.org.uk>
-References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
- <1389469372-17199-7-git-send-email-tomasz.figa@gmail.com>
- <20140112192910.GW29039@sirena.org.uk>
- <52D2EE32.5060709@gmail.com>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v2 2/2] thermal: add interface to support tune governor in run-time
+Date: Mon, 13 Jan 2014 19:17:43 +0800
+Message-ID: <1389611863-7812-3-git-send-email-wni@nvidia.com>
+References: <1389611863-7812-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ERHfpFOxJvIsVBXy"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52D2EE32.5060709@gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Pavel Machek <pavel@ucw.cz>, Kumar Gala <galak@codeaurora.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1389611863-7812-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: eduardo.valentin-l0cyMroinI0@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+In the of-thermal driver, it register a thermal zone device
+without governor, since the governers are not static, we
+should be able to update to a new one in run-time, so I add
+a new fucntion thermal_update_governor() to do it.
 
---ERHfpFOxJvIsVBXy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+In the future, the governor will be more complex, it may want
+to tune governor-specific parameters/configuration for
+different thermal zone at different run-time, so I add
+start/stop for the governor and add governor_data as governor's
+parameters, so that the thermal platform driver can change
+the governor with start/stop, and tune the governor parameters
+in run-time.
 
-On Sun, Jan 12, 2014 at 08:34:10PM +0100, Tomasz Figa wrote:
-> On 12.01.2014 20:29, Mark Brown wrote:
-> >On Sat, Jan 11, 2014 at 08:42:48PM +0100, Tomasz Figa wrote:
+Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+---
+ Documentation/thermal/sysfs-api.txt |    5 +++
+ drivers/thermal/thermal_core.c      |   80 +++++++++++++++++++++++++++++++----
+ include/linux/thermal.h             |   12 ++++++
+ 3 files changed, 88 insertions(+), 9 deletions(-)
 
-> >>This patch adds support for registering power domains of S3C64xx SoCs
-> >>and binding devices to them using device tree.
-
-> >>+#ifdef CONFIG_OF
-> >>+static struct of_device_id s3c64xx_pd_matches[] = {
-> >>+	{ .compatible = "samsung,s3c6400-clock", },
-> >>+	{ .compatible = "samsung,s3c6410-clock", },
-> >>+	{ },
-> >>  };
-
-> >Looks like a rebasing issue?  Otherwise this looks nice.
-
-> Hmm, what's the problem here? Maybe I'm just blind, but I fail to
-> see anything wrong (except that the array should be const...).
-
-> Thanks for reviewing this.
-
-I wasn't expecting to see references to clocks come up in power domain
-code.
-
---ERHfpFOxJvIsVBXy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJS08lsAAoJELSic+t+oim9z3gP/3zuT0HAcaALVWqSI4PzqxhM
-YJAkiKO42G6jdgTNpVdzpNH5tymXRnUCWAcHi8srz8UNtnfuJjiCRDiLcoXlrVAv
-cBEPFW5ThOx8dvsMjS11n1j+R/rUKdiZ1pzIw7YOyYq67zj+k92JCT2vNATUhXuD
-6OO4BCAC0Ke38rlaXxh6w4G7mnD9NbMLiAVgIgohLMKnB4JIN4C9I+H3drgx6tgj
-uL8gL5XqDw9ACjOpcbDpzEP/6iNFJvyqTT1XYefRkMmEw7BJwiHHXJU0OhA1JBxj
-n2xhhfScZGHuhlwsGHnsXMywsS84m6UbCavEhyXd7XCS3RUjUJkwYJcvlNhavz9H
-CoqKfq9LuoGaYle/UCUZFkF8eCiaMghalZDg9WUP4ZKQtxbmkqs+/cbyh0nOyoPB
-1Wb93KKxrLj6cUmyeB+AeRzXs4MY+0b28AWThxSO827AIZrx6kT4DqUt4ARCKIMw
-sLGHMLTo/aAxIDPYY+slB1vu+PDNZmIH+hxwRKElvzH6VvNoOAKBMfZVsetUI1Vf
-u/QhTYD6dAolXkM3+oJX2mo3RCWeEZJ3qnS8SbAW0kn44IMN5qjJlDYbwcvZEQEF
-LgPjissE+hU9xjmh5NGJbkx8x5wHD4t5Wtc5+ATu24elCjzmSo2jPgS4nOy0av3B
-ErihFbYiIxBblajNYIp8
-=ltBf
------END PGP SIGNATURE-----
-
---ERHfpFOxJvIsVBXy--
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index 6a70b55c..7efd8e6 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -405,3 +405,8 @@ platform data is provided, this uses the step_wise throttling policy.
+ This function serves as an arbitrator to set the state of a cooling
+ device. It sets the cooling device to the deepest cooling state if
+ possible.
++
++5.5:thermal_update_governor:
++This function update the thermal zone's governor to a new one and update
++the governor data of the new governor for that thermal zone. Returns 0 if
++success, an erro code otherwise.
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index aab1df8..d922baf 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -93,10 +93,17 @@ int thermal_register_governor(struct thermal_governor *governor)
+ 			name = pos->tzp->governor_name;
+ 		else
+ 			name = DEFAULT_THERMAL_GOVERNOR;
+-		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
++		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
++			if (governor->start) {
++				err = governor->start(pos);
++				if (err < 0)
++					goto exit;
++			}
+ 			pos->governor = governor;
++		}
+ 	}
+ 
++exit:
+ 	mutex_unlock(&thermal_list_lock);
+ 	mutex_unlock(&thermal_governor_lock);
+ 
+@@ -119,8 +126,11 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+ 
+ 	list_for_each_entry(pos, &thermal_tz_list, node) {
+ 		if (!strnicmp(pos->governor->name, governor->name,
+-						THERMAL_NAME_LENGTH))
++						THERMAL_NAME_LENGTH)) {
++			if (pos->governor->stop)
++				pos->governor->stop(pos);
+ 			pos->governor = NULL;
++		}
+ 	}
+ 
+ 	mutex_unlock(&thermal_list_lock);
+@@ -130,6 +140,51 @@ exit:
+ 	return;
+ }
+ 
++/**
++ * thermal_update_governor() - update the thermal zone device's governor
++ * to a new one.
++ * @tzd: pointer of thermal zone device, which need to update governor.
++ * @name: new governor name.
++ * @gov_data: governor data for the new governor if needed.
++ *
++ * Return: On success returns 0, an error code otherwise
++ */
++int thermal_update_governor(struct thermal_zone_device *tzd,
++			    const char *name, void *gov_data)
++{
++	struct thermal_governor *old_gov, *new_gov;
++	int ret = 0;
++
++	mutex_lock(&thermal_governor_lock);
++
++	new_gov = __find_governor(name);
++	if (!new_gov) {
++		ret = -EINVAL;
++		goto exit;
++	}
++
++	old_gov = tzd->governor;
++
++	if (old_gov && old_gov->stop)
++		old_gov->stop(tzd);
++
++	if (new_gov->start) {
++		ret = new_gov->start(tzd);
++		if (ret < 0) {
++			if (old_gov && old_gov->start)
++				old_gov->start(tzd);
++			goto exit;
++		}
++	}
++
++	tzd->governor = new_gov;
++	tzd->governor_data = gov_data;
++
++exit:
++	mutex_unlock(&thermal_governor_lock);
++	return ret;
++}
++
+ static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+ {
+ 	int ret;
+@@ -734,22 +789,17 @@ policy_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	int ret = -EINVAL;
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	struct thermal_governor *gov;
+ 	char name[THERMAL_NAME_LENGTH];
+ 
+ 	snprintf(name, sizeof(name), "%s", buf);
+ 
+-	mutex_lock(&thermal_governor_lock);
+-
+-	gov = __find_governor(strim(name));
+-	if (!gov)
++	ret = thermal_update_governor(tz, strim(name), NULL);
++	if (ret < 0)
+ 		goto exit;
+ 
+-	tz->governor = gov;
+ 	ret = count;
+ 
+ exit:
+-	mutex_unlock(&thermal_governor_lock);
+ 	return ret;
+ }
+ 
+@@ -1559,6 +1609,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	else
+ 		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
+ 
++	if (tz->governor->start) {
++		result = tz->governor->start(tz);
++		if (result < 0)
++			tz->governor = NULL;
++	}
++
+ 	mutex_unlock(&thermal_governor_lock);
+ 
+ 	if (!tz->tzp || !tz->tzp->no_hwmon) {
+@@ -1585,6 +1641,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 		return tz;
+ 
+ unregister:
++	if (tz->governor && tz->governor->stop)
++		tz->governor->stop(tz);
++	tz->governor = NULL;
+ 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+ 	device_unregister(&tz->device);
+ 	return ERR_PTR(result);
+@@ -1648,6 +1707,9 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	device_remove_file(&tz->device, &dev_attr_policy);
+ 	device_remove_file(&tz->device, &dev_attr_available_policies);
+ 	remove_trip_attrs(tz);
++
++	if (tz->governor && tz->governor->stop)
++		tz->governor->stop(tz);
+ 	tz->governor = NULL;
+ 
+ 	thermal_remove_hwmon_sysfs(tz);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index f7e11c7..a473736 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -177,6 +177,7 @@ struct thermal_zone_device {
+ 	struct thermal_zone_device_ops *ops;
+ 	const struct thermal_zone_params *tzp;
+ 	struct thermal_governor *governor;
++	void *governor_data;
+ 	struct list_head thermal_instances;
+ 	struct idr idr;
+ 	struct mutex lock; /* protect thermal_instances list */
+@@ -187,6 +188,15 @@ struct thermal_zone_device {
+ /* Structure that holds thermal governor information */
+ struct thermal_governor {
+ 	char name[THERMAL_NAME_LENGTH];
++
++	/*
++	 * The start and stop operations will be called when thermal zone is
++	 * registered and when change governor via sysfs or driver in running
++	 * time.
++	 */
++	int (*start)(struct thermal_zone_device *tz);
++	void (*stop)(struct thermal_zone_device *tz);
++
+ 	int (*throttle)(struct thermal_zone_device *tz, int trip);
+ 	struct list_head	governor_list;
+ };
+@@ -293,6 +303,8 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+ 		struct thermal_cooling_device *, int);
+ void thermal_cdev_update(struct thermal_cooling_device *);
+ void thermal_notify_framework(struct thermal_zone_device *, int);
++int thermal_update_governor(struct thermal_zone_device *, const char *,
++			    void *);
+ 
+ #ifdef CONFIG_NET
+ extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+-- 
+1.7.9.5
