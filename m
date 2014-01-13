@@ -1,54 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [3/11] issue 3: No understanding of potential cpu capacity
-Date: Mon, 13 Jan 2014 22:07:12 +0100
-Message-ID: <3700155.hLuCBAXQoy@vostro.rjw.lan>
-References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com> <1389111587-5923-4-git-send-email-morten.rasmussen@arm.com>
+Subject: Re: [PATCH v2 0/9] cpuidle: rework device state count handling
+Date: Mon, 13 Jan 2014 22:20:27 +0100
+Message-ID: <1616617.RcagPEYAid@vostro.rjw.lan>
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com> <2079155.EyEBRDoJjP@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53686 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:59965 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752087AbaAMUxQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2014 15:53:16 -0500
-In-Reply-To: <1389111587-5923-4-git-send-email-morten.rasmussen@arm.com>
+	with SMTP id S1750962AbaAMVGb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2014 16:06:31 -0500
+In-Reply-To: <2079155.EyEBRDoJjP@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: peterz@infradead.org, mingo@kernel.org, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: daniel.lezcano@linaro.org, lenb@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kyungmin.park@samsung.com
 
-On Tuesday, January 07, 2014 04:19:39 PM Morten Rasmussen wrote:
-> To minimize energy it may sometimes be better to put waking tasks on
-> partially loaded cpus instead of powering up more cpus (particularly if
-> it implies powering up a new cluster/group of cpus with associated
-> caches). To make that call, information about the potential spare cycles
-> on the busy cpus is required.
-
-That generally is not the only thing that matters.  There's one more factor
-called "responsiveness" that used to be popular in the past.  It, roughly,
-is about how much time it takes for the system to respond to user actions,
-on the average.
-
-> Currently, the CFS scheduler has no knowledge about frequency scaling.
-> Frequency scaling governors generally try to match the frequency to
-> the load, which means that the idle time has no absolute meaning. The
-> potential spare cpu capacity may be much higher than indicated by the
-> idle time if the cpu is running at a low P-state.
+On Saturday, January 11, 2014 01:37:29 AM Rafael J. Wysocki wrote:
+> On Friday, December 20, 2013 07:47:22 PM Bartlomiej Zolnierkiewicz wrote:
+> > Hi,
+> > 
+> > Some cpuidle drivers assume that cpuidle core will handle cases where
+> > device->state_count is smaller than driver->state_count, unfortunately
+> > currently this is untrue (device->state_count is used only for handling
+> > cpuidle state sysfs entries and driver->state_count is used for all
+> > other cases) and will not be fixed in the future as device->state_count
+> > is planned to be removed [1].
+> > 
+> > This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
+> > cpuidle driver), removes superflous device->state_count initialization
+> > from drivers for which device->state_count equals driver->state_count
+> > (POWERPC pseries cpuidle driver and intel_idle driver) and finally
+> > removes state_count field from struct cpuidle_device.
+> > 
+> > Additionaly (while at it) this patchset fixes C1E promotion disable
+> > quirk handling (in intel_idle driver) and converts cpuidle drivers code
+> > to use the common cpuidle_[un]register() routines (in POWERPC pseries
+> > cpuidle driver and intel_idle driver).
+> > 
+> > [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
+> > 
+> > Reference to v1:
+> > 	http://comments.gmane.org/gmane.linux.power-management.general/37390
+> > 
+> > Changes since v1:
+> > - synced patch series with next-20131220
+> > - added ACKs from Daniel Lezcano
 > 
-> The energy trade-off may justify putting another task on a loaded cpu
-> even if it causes a change to a higher P-state to handle the extra load.
-> Related issues are frequency (and cpu micro architecture) invariant task
-> load and power topology information, which are both needed to enable the
-> scheduler for energy-aware task placement. This is covered in more
-> detail in issue 5.
+> This series breaks boot on one of my test machines with intel_idle, so I'm
+> not sure how well it has been tested.
 > 
-> The potential cpu capacity cannot be assumed to be constant as thermal
-> management may restrict the usage of high performance P-states
-> dynamically.
+> I've dropped it entirely for now.  If I have the time, I will try to identify
+> the root cause of the failure, but that may not happen before the merge window.
+> Sorry about that.
 
-That's correct.  Moreover, all of the above seems to assume that we can get
-exact power numbers for all of the involved C-states and P-states.  What if
-we can't?
+The breakage was introduced by patch [8/9], so I've re-applied patches [1-7/9]
+from this series.  Please refer to Fengguang's report [1] for the breakage
+details.
+
+Thanks!
+
+[1] http://marc.info/?l=linux-kernel&m=138964167909907&w=2
 
 -- 
 I speak only for myself.
