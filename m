@@ -1,124 +1,65 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH] PM: Enable asynchronous noirq resume threads to save the
- resuming time
-Date: Tue, 14 Jan 2014 15:18:08 +0800
-Message-ID: <1389683888.3650.78.camel@cliu38-desktop-build>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle/menu: Fail cpuidle_idle_call() if no idle state
+ is acceptable
+Date: Tue, 14 Jan 2014 13:07:32 +0530
+Message-ID: <52D4E93C.3050503@linux.vnet.ibm.com>
+References: <20140114060516.6109.14901.stgit@preeti.in.ibm.com>
+ <52D4E07E.204@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:9264 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbaANHMW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Jan 2014 02:12:22 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <52D4E07E.204@linux.vnet.ibm.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: deepthi@linux.vnet.ibm.com, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, zhuangzhi.li@intel.com
+
+On 01/14/2014 12:30 PM, Srivatsa S. Bhat wrote:
+> On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
+>> On PowerPC, in a particular test scenario, all the cpu idle states were disabled.
+>> Inspite of this it was observed that the idle state count of the shallowest
+>> idle state, snooze, was increasing.
+>>
+>> This is because the governor returns the idle state index as 0 even in
+>> scenarios when no idle state can be chosen. These scenarios could be when the
+>> latency requirement is 0 or as mentioned above when the user wants to disable
+>> certain cpu idle states at runtime. In the latter case, its possible that no
+>> cpu idle state is valid because the suitable states were disabled
+>> and the rest did not match the menu governor criteria to be chosen as the
+>> next idle state.
+>>
+>> This patch adds the code to indicate that a valid cpu idle state could not be
+>> chosen by the menu governor and reports back to arch so that it can take some
+>> default action.
+>>
+> 
+> That sounds fair enough. However, the "default" action of pseries idle loop
+> (pseries_lpar_idle()) surprises me. It enters Cede, which is _deeper_ than doing
+> a snooze! IOW, a user might "disable" cpuidle or set the PM_QOS_CPU_DMA_LATENCY
+> to 0 hoping to prevent the CPUs from going to deep idle states, but then the
+> machine would still end up going to Cede, even though that wont get reflected
+> in the idle state counts. IMHO that scenario needs some thought as well...
+> 
+
+I checked the git history and found that the default idle was changed (on purpose)
+to cede the processor, in order to speed up booting.. Hmm..
+
+commit 363edbe2614aa90df706c0f19ccfa2a6c06af0be
+Author: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date:   Fri Sep 6 00:25:06 2013 +0530
+
+    powerpc: Default arch idle could cede processor on pseries
 
 
-Currently, the dpm_resume_noirq() is done synchronously, and for PCI devices
-pci_pm_resume_noirq():
-
-pci_pm_resume_noirq()
- pci_pm_default_resume_early()
-  pci_power_up()
-   pci_raw_set_power_state()
-Which set the device from D3hot to D0 mostly, for every device, there will
-be one 10ms(pci_pm_d3_delay) to wait.
-
-Hence normally dpm_resume_noirq() will cost > 100ms, which is bigger for mobile
-platform.
-
-Here implementing it with asynchronous way which will reduce much.
-
-For example below, The 80% time is saved.
-With synchronous way:
-[ 1411.272218] PM: noirq resume of devices complete after 92.223 msecs
-With asynchronous way:
-[  110.616735] PM: noirq resume of devices complete after 10.544 msecs
-
-Signed-off-by: Liu, Chuansheng <chuansheng.liu@intel.com>
----
- drivers/base/power/main.c |   42 +++++++++++++++++++++++++++++++++---------
- 1 file changed, 33 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 1b41fca..1b9d774 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -505,6 +505,19 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
- 	return error;
- }
- 
-+static bool is_async(struct device *dev);
-+
-+static void async_resume_noirq(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	error = device_resume_noirq(dev, pm_transition);
-+	if (error)
-+		pm_dev_err(dev, pm_transition, " noirq", error);
-+	put_device(dev);
-+}
-+
- /**
-  * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
-  * @state: PM transition of the system being carried out.
-@@ -514,29 +527,40 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
-  */
- static void dpm_resume_noirq(pm_message_t state)
- {
-+	struct device *dev;
- 	ktime_t starttime = ktime_get();
-+	pm_transition = state;
-+
-+	list_for_each_entry(dev, &dpm_noirq_list, power.entry) {
-+		if (is_async(dev)) {
-+			get_device(dev);
-+			async_schedule(async_resume_noirq, dev);
-+		}
-+	}
- 
- 	mutex_lock(&dpm_list_mtx);
- 	while (!list_empty(&dpm_noirq_list)) {
--		struct device *dev = to_device(dpm_noirq_list.next);
--		int error;
-+		dev = to_device(dpm_noirq_list.next);
- 
- 		get_device(dev);
- 		list_move_tail(&dev->power.entry, &dpm_late_early_list);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		error = device_resume_noirq(dev, state);
--		if (error) {
--			suspend_stats.failed_resume_noirq++;
--			dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
--			dpm_save_failed_dev(dev_name(dev));
--			pm_dev_err(dev, state, " noirq", error);
-+		if (!is_async(dev)) {
-+			int error;
-+			error = device_resume_noirq(dev, state);
-+			if (error) {
-+				suspend_stats.failed_resume_noirq++;
-+				dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
-+				dpm_save_failed_dev(dev_name(dev));
-+				pm_dev_err(dev, state, " noirq", error);
-+			}
- 		}
--
- 		mutex_lock(&dpm_list_mtx);
- 		put_device(dev);
- 	}
- 	mutex_unlock(&dpm_list_mtx);
-+	async_synchronize_full();
- 	dpm_show_time(starttime, state, "noirq");
- 	resume_device_irqs();
- 	cpuidle_resume();
--- 
-1.7.9.5
-
-
-
+Regards,
+Srivatsa S. Bhat
