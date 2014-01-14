@@ -1,143 +1,124 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/menu: Fail cpuidle_idle_call() if no idle state
- is acceptable
-Date: Tue, 14 Jan 2014 12:30:14 +0530
-Message-ID: <52D4E07E.204@linux.vnet.ibm.com>
-References: <20140114060516.6109.14901.stgit@preeti.in.ibm.com>
+From: Chuansheng Liu <chuansheng.liu@intel.com>
+Subject: [PATCH] PM: Enable asynchronous noirq resume threads to save the
+ resuming time
+Date: Tue, 14 Jan 2014 15:18:08 +0800
+Message-ID: <1389683888.3650.78.camel@cliu38-desktop-build>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <20140114060516.6109.14901.stgit@preeti.in.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: deepthi@linux.vnet.ibm.com, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:9264 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751406AbaANHMW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Jan 2014 02:12:22 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, zhuangzhi.li@intel.com
 
-On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
-> On PowerPC, in a particular test scenario, all the cpu idle states were disabled.
-> Inspite of this it was observed that the idle state count of the shallowest
-> idle state, snooze, was increasing.
-> 
-> This is because the governor returns the idle state index as 0 even in
-> scenarios when no idle state can be chosen. These scenarios could be when the
-> latency requirement is 0 or as mentioned above when the user wants to disable
-> certain cpu idle states at runtime. In the latter case, its possible that no
-> cpu idle state is valid because the suitable states were disabled
-> and the rest did not match the menu governor criteria to be chosen as the
-> next idle state.
-> 
-> This patch adds the code to indicate that a valid cpu idle state could not be
-> chosen by the menu governor and reports back to arch so that it can take some
-> default action.
-> 
 
-That sounds fair enough. However, the "default" action of pseries idle loop
-(pseries_lpar_idle()) surprises me. It enters Cede, which is _deeper_ than doing
-a snooze! IOW, a user might "disable" cpuidle or set the PM_QOS_CPU_DMA_LATENCY
-to 0 hoping to prevent the CPUs from going to deep idle states, but then the
-machine would still end up going to Cede, even though that wont get reflected
-in the idle state counts. IMHO that scenario needs some thought as well...
+Currently, the dpm_resume_noirq() is done synchronously, and for PCI devices
+pci_pm_resume_noirq():
 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> 
->  drivers/cpuidle/cpuidle.c        |    6 +++++-
->  drivers/cpuidle/governors/menu.c |    7 ++++---
->  2 files changed, 9 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index a55e68f..5bf06bb 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
-> 
->  	/* ask the governor for the next state */
->  	next_state = cpuidle_curr_governor->select(drv, dev);
-> +
-> +	dev->last_residency = 0;
->  	if (need_resched()) {
-> -		dev->last_residency = 0;
->  		/* give the governor an opportunity to reflect on the outcome */
->  		if (cpuidle_curr_governor->reflect)
->  			cpuidle_curr_governor->reflect(dev, next_state);
+pci_pm_resume_noirq()
+ pci_pm_default_resume_early()
+  pci_power_up()
+   pci_raw_set_power_state()
+Which set the device from D3hot to D0 mostly, for every device, there will
+be one 10ms(pci_pm_d3_delay) to wait.
 
-The comments on top of the .reflect() routines of the governors say that the
-second parameter is the index of the actual state entered. But after this patch,
-next_state can be negative, indicating an invalid index. So those comments need
-to be updated accordingly.
+Hence normally dpm_resume_noirq() will cost > 100ms, which is bigger for mobile
+platform.
 
-> @@ -140,6 +141,9 @@ int cpuidle_idle_call(void)
->  		return 0;
->  	}
-> 
-> +	if (next_state < 0)
-> +		return -EINVAL;
+Here implementing it with asynchronous way which will reduce much.
 
-The exit path above (due to need_resched) returns with irqs enabled, but the new
-one you are adding (next_state < 0) returns with irqs disabled. This is correct,
-because in the latter case, "idle" is still in progress and the arch will choose
-a default handler to execute (unlike the former case where "idle" is over and
-hence its time to enable interrupts).
+For example below, The 80% time is saved.
+With synchronous way:
+[ 1411.272218] PM: noirq resume of devices complete after 92.223 msecs
+With asynchronous way:
+[  110.616735] PM: noirq resume of devices complete after 10.544 msecs
 
-IMHO it would be good to add comments around this code to explain this subtle
-difference. We can never be too careful with these things... ;-)
+Signed-off-by: Liu, Chuansheng <chuansheng.liu@intel.com>
+---
+ drivers/base/power/main.c |   42 +++++++++++++++++++++++++++++++++---------
+ 1 file changed, 33 insertions(+), 9 deletions(-)
 
-> +
->  	trace_cpu_idle_rcuidle(next_state, dev->cpu);
-> 
->  	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index cf7f2f0..6921543 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -283,6 +283,7 @@ again:
->   * menu_select - selects the next idle state to enter
->   * @drv: cpuidle driver containing state data
->   * @dev: the CPU
-> + * Returns -1 when no idle state is suitable
->   */
->  static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  {
-> @@ -292,17 +293,17 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  	int multiplier;
->  	struct timespec t;
-> 
-> -	if (data->needs_update) {
-> +	if (data->last_state_idx >= 0 && data->needs_update) {
-               ^^^^^
-Doesn't hurt, but actually unnecessary, since ->needs_update is set to 1
-only when index >= 0.
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 1b41fca..1b9d774 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -505,6 +505,19 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
+ 	return error;
+ }
+ 
++static bool is_async(struct device *dev);
++
++static void async_resume_noirq(void *data, async_cookie_t cookie)
++{
++	struct device *dev = (struct device *)data;
++	int error;
++
++	error = device_resume_noirq(dev, pm_transition);
++	if (error)
++		pm_dev_err(dev, pm_transition, " noirq", error);
++	put_device(dev);
++}
++
+ /**
+  * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
+  * @state: PM transition of the system being carried out.
+@@ -514,29 +527,40 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
+  */
+ static void dpm_resume_noirq(pm_message_t state)
+ {
++	struct device *dev;
+ 	ktime_t starttime = ktime_get();
++	pm_transition = state;
++
++	list_for_each_entry(dev, &dpm_noirq_list, power.entry) {
++		if (is_async(dev)) {
++			get_device(dev);
++			async_schedule(async_resume_noirq, dev);
++		}
++	}
+ 
+ 	mutex_lock(&dpm_list_mtx);
+ 	while (!list_empty(&dpm_noirq_list)) {
+-		struct device *dev = to_device(dpm_noirq_list.next);
+-		int error;
++		dev = to_device(dpm_noirq_list.next);
+ 
+ 		get_device(dev);
+ 		list_move_tail(&dev->power.entry, &dpm_late_early_list);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+-		error = device_resume_noirq(dev, state);
+-		if (error) {
+-			suspend_stats.failed_resume_noirq++;
+-			dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
+-			dpm_save_failed_dev(dev_name(dev));
+-			pm_dev_err(dev, state, " noirq", error);
++		if (!is_async(dev)) {
++			int error;
++			error = device_resume_noirq(dev, state);
++			if (error) {
++				suspend_stats.failed_resume_noirq++;
++				dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
++				dpm_save_failed_dev(dev_name(dev));
++				pm_dev_err(dev, state, " noirq", error);
++			}
+ 		}
+-
+ 		mutex_lock(&dpm_list_mtx);
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
++	async_synchronize_full();
+ 	dpm_show_time(starttime, state, "noirq");
+ 	resume_device_irqs();
+ 	cpuidle_resume();
+-- 
+1.7.9.5
 
->  		menu_update(drv, dev);
->  		data->needs_update = 0;
->  	}
-> 
-> -	data->last_state_idx = 0;
-> +	data->last_state_idx = -1;
->  	data->exit_us = 0;
-> 
->  	/* Special case when user has set very strict latency requirement */
->  	if (unlikely(latency_req == 0))
-> -		return 0;
-> +		return data->last_state_idx;
-> 
->  	/* determine the expected residency time, round up */
->  	t = ktime_to_timespec(tick_nohz_get_sleep_length());
-> 
 
-What about the ladder governor? I know its not used that much in practice,
-but I think it would be good to update that as well, just to keep it
-consistent.
 
-Regards,
-Srivatsa S. Bhat
