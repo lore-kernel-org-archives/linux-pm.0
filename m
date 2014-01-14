@@ -1,26 +1,27 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [PATCH] cpuidle/menu: Fail cpuidle_idle_call() if no idle state
  is acceptable
-Date: Tue, 14 Jan 2014 11:46:47 +0530
-Message-ID: <52D4D64F.7020000@linux.vnet.ibm.com>
+Date: Tue, 14 Jan 2014 12:30:14 +0530
+Message-ID: <52D4E07E.204@linux.vnet.ibm.com>
 References: <20140114060516.6109.14901.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:52246 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbaANGQi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 01:16:38 -0500
-Received: from /spool/local
-	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <deepthi@linux.vnet.ibm.com>;
-	Tue, 14 Jan 2014 16:16:35 +1000
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 In-Reply-To: <20140114060516.6109.14901.stgit@preeti.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, benh@kernel.crashing.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+Cc: deepthi@linux.vnet.ibm.com, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+List-Id: linux-pm@vger.kernel.org
 
 On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
 > On PowerPC, in a particular test scenario, all the cpu idle states were disabled.
@@ -39,11 +40,16 @@ On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
 > chosen by the menu governor and reports back to arch so that it can take some
 > default action.
 > 
+
+That sounds fair enough. However, the "default" action of pseries idle loop
+(pseries_lpar_idle()) surprises me. It enters Cede, which is _deeper_ than doing
+a snooze! IOW, a user might "disable" cpuidle or set the PM_QOS_CPU_DMA_LATENCY
+to 0 hoping to prevent the CPUs from going to deep idle states, but then the
+machine would still end up going to Cede, even though that wont get reflected
+in the idle state counts. IMHO that scenario needs some thought as well...
+
 > Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 > ---
-
-Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-
 > 
 >  drivers/cpuidle/cpuidle.c        |    6 +++++-
 >  drivers/cpuidle/governors/menu.c |    7 ++++---
@@ -64,12 +70,28 @@ Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 >  		/* give the governor an opportunity to reflect on the outcome */
 >  		if (cpuidle_curr_governor->reflect)
 >  			cpuidle_curr_governor->reflect(dev, next_state);
+
+The comments on top of the .reflect() routines of the governors say that the
+second parameter is the index of the actual state entered. But after this patch,
+next_state can be negative, indicating an invalid index. So those comments need
+to be updated accordingly.
+
 > @@ -140,6 +141,9 @@ int cpuidle_idle_call(void)
 >  		return 0;
 >  	}
 > 
 > +	if (next_state < 0)
 > +		return -EINVAL;
+
+The exit path above (due to need_resched) returns with irqs enabled, but the new
+one you are adding (next_state < 0) returns with irqs disabled. This is correct,
+because in the latter case, "idle" is still in progress and the arch will choose
+a default handler to execute (unlike the former case where "idle" is over and
+hence its time to enable interrupts).
+
+IMHO it would be good to add comments around this code to explain this subtle
+difference. We can never be too careful with these things... ;-)
+
 > +
 >  	trace_cpu_idle_rcuidle(next_state, dev->cpu);
 > 
@@ -92,6 +114,10 @@ Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 > 
 > -	if (data->needs_update) {
 > +	if (data->last_state_idx >= 0 && data->needs_update) {
+               ^^^^^
+Doesn't hurt, but actually unnecessary, since ->needs_update is set to 1
+only when index >= 0.
+
 >  		menu_update(drv, dev);
 >  		data->needs_update = 0;
 >  	}
@@ -109,3 +135,9 @@ Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 >  	t = ktime_to_timespec(tick_nohz_get_sleep_length());
 > 
 
+What about the ladder governor? I know its not used that much in practice,
+but I think it would be good to update that as well, just to keep it
+consistent.
+
+Regards,
+Srivatsa S. Bhat
