@@ -1,26 +1,28 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Subject: Re: [PATCH] cpuidle/menu: Fail cpuidle_idle_call() if no idle state
  is acceptable
-Date: Tue, 14 Jan 2014 13:30:19 +0530
-Message-ID: <52D4EE93.3090300@linux.vnet.ibm.com>
+Date: Tue, 14 Jan 2014 13:55:08 +0530
+Message-ID: <52D4F464.5070707@linux.vnet.ibm.com>
 References: <20140114060516.6109.14901.stgit@preeti.in.ibm.com> <52D4E07E.204@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:58787 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbaANIAH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 03:00:07 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53587 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbaANI2i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 03:28:38 -0500
 Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <deepthi@linux.vnet.ibm.com>;
-	Tue, 14 Jan 2014 13:30:05 +0530
+	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Tue, 14 Jan 2014 01:28:37 -0700
 In-Reply-To: <52D4E07E.204@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, benh@kernel.crashing.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+Cc: deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, benh@kernel.crashing.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+
+Hi Srivatsa,
 
 On 01/14/2014 12:30 PM, Srivatsa S. Bhat wrote:
 > On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
@@ -48,32 +50,13 @@ On 01/14/2014 12:30 PM, Srivatsa S. Bhat wrote:
 > machine would still end up going to Cede, even though that wont get reflected
 > in the idle state counts. IMHO that scenario needs some thought as well...
 
-It was the snooze loop earlier but later we changed it to cede in commit
-363edbe2614 powerpc: Default arch idle will cede the processor on
-pseries to address the following regressions:
+Yes I did see this, but since the patch intends to only communicate
+whether the cpuidle governor was successful in choosing an idle state on
+its part, I wished to address the default action of pseries idle loop
+separately. You are right we will need to understand the patch which
+introduced this action. I will take a look at it.
 
->>snippet from the patch.
-When adding cpuidle support to pSeries, we introduced two
-    regressions:
-
-      - The new cpuidle backend driver only works under hypervisors
-        supporting the "SLPLAR" option, which isn't the case of the
-        old POWER4 hypervisor and the HV "light" used on js2x blades
-
-      - The cpuidle driver registers fairly late, meaning that for
-        a significant portion of the boot process, we end up having
-        all threads spinning. This slows down the boot process and
-        increases the overall resource usage if the hypervisor has
-        shared processors.
-
-    This fixes both by implementing a "default" idle that will cede
-    to the hypervisor when possible, in a very simple way without
-    all the bells and whisles of cpuidle.
-
-Regards,
-Deepthi
-
-
+> 
 >> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 >> ---
 >>
@@ -101,6 +84,8 @@ Deepthi
 > second parameter is the index of the actual state entered. But after this patch,
 > next_state can be negative, indicating an invalid index. So those comments need
 > to be updated accordingly.
+
+Right, I will take care of the comment in the next post.
 > 
 >> @@ -140,6 +141,9 @@ int cpuidle_idle_call(void)
 >>  		return 0;
@@ -114,9 +99,13 @@ Deepthi
 > because in the latter case, "idle" is still in progress and the arch will choose
 > a default handler to execute (unlike the former case where "idle" is over and
 > hence its time to enable interrupts).
+
+Correct.
 > 
 > IMHO it would be good to add comments around this code to explain this subtle
 > difference. We can never be too careful with these things... ;-)
+
+Ok, will do so.
 > 
 >> +
 >>  	trace_cpu_idle_rcuidle(next_state, dev->cpu);
@@ -143,6 +132,12 @@ Deepthi
 >                ^^^^^
 > Doesn't hurt, but actually unnecessary, since ->needs_update is set to 1
 > only when index >= 0.
+
+Right we do not need this check. I was assuming that needs_update would
+be consistent with the index >= 0 only in the need_resched() case. But
+needs_update will get unset each time the governor is invoked to be set
+only if index >= 0 thereafter.
+
 > 
 >>  		menu_update(drv, dev);
 >>  		data->needs_update = 0;
@@ -164,6 +159,15 @@ Deepthi
 > What about the ladder governor? I know its not used that much in practice,
 > but I think it would be good to update that as well, just to keep it
 > consistent.
+
+Yes this needs to be updated as well. But the ladder governor has a few
+other details to take care of in addition to what is taken care of in
+the menu governor by this patch. Hence I will be posting that separately.
+
+Thanks
+
+Regards
+Preeti U Murthy
 > 
 > Regards,
 > Srivatsa S. Bhat
