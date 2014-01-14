@@ -1,129 +1,97 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
-Date: Tue, 14 Jan 2014 10:54:23 +0800
-Message-ID: <52D4A6DF.806@nvidia.com>
-References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
- <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
- <52C4D612.2090808@nvidia.com> <52C5A6CE.5060904@nvidia.com>
- <20140106135145.GD21906@e106331-lin.cambridge.arm.com>
- <52CAC3AF.9020401@ti.com> <52CB69FA.9080903@nvidia.com>
- <52D45AC8.1010607@ti.com>
+Subject: Re: [PATCH v2 0/2] Support to tune governor in run time
+Date: Tue, 14 Jan 2014 12:17:58 +0800
+Message-ID: <52D4BA76.4040003@nvidia.com>
+References: <1389611863-7812-1-git-send-email-wni@nvidia.com>
+ <52D4095C.205@ti.com> <52D43810.6030801@nvidia.com> <52D45BB7.1090002@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:19440 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbaANCyE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2014 21:54:04 -0500
-In-Reply-To: <52D45AC8.1010607@ti.com>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:17062 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbaANERb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2014 23:17:31 -0500
+In-Reply-To: <52D45BB7.1090002@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Eduardo Valentin <eduardo.valentin@ti.com>, Matthew Longnecker <MLongnecker@nvidia.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On 01/14/2014 05:29 AM, Eduardo Valentin wrote:
+On 01/14/2014 05:33 AM, Eduardo Valentin wrote:
 > * PGP Signed by an unknown key
 > 
-> Wei,
+> On 13-01-2014 15:01, Matthew Longnecker wrote:
+>> On 1/13/2014 7:42 AM, Eduardo Valentin wrote:
+>>>> This serie can support to turn governor for thermal zone in
+>>>> run time.
+>>>
+>>> Can you please explain why this is needed? Are you facing troubles with
+>>> current way to switch governors? If yes, can you please report them?
 > 
-> On 06-01-2014 22:44, Wei Ni wrote:
->> On 01/06/2014 10:54 PM, Eduardo Valentin wrote:
->>>> Old Signed by an unknown key
+> Looks like there is a need to switch governors from within kernel code,
+> but not explanation of use cases is provided.
+
+In fact, with the of-thermal framework, the driver can't initialize to
+any governor, even default governor, it may be a bug. As we discussed in
+other mail list, we should not set governor in DT, and I think the
+platform driver should be able to set to any governors which it want, so
+I this patch, the driver can call the thermal_update_governor() to
+switch to new governor in kernel space.
+For example, there have two thermal driver, using of-thermal to register
+thermal zone device. One want to set to step_wise governor, another want
+fair_share, how can we do? I think after they calling the
+thermal_zone_of_sensor_register(), they can call the
+thermal_update_governor() to set the governor which they want.
+
+> 
 >>>
->>> On 06-01-2014 09:51, Mark Rutland wrote:
->>>> On Thu, Jan 02, 2014 at 05:50:06PM +0000, Matthew Longnecker wrote:
->>>>>
->>>>>> I think the platform driver may set governor for the thermal zone,
->>>>>> so how about to add a property named as "governor",
->>>>>> and parse it to tzp->governor_name,
->>>>>> something like:
->>>>>>                  ret = of_property_read_string(child, "governor", &str);
->>>>>>                  if (ret == 0)
->>>>>>                          if (strlen(str) < THERMAL_NAME_LENGTH)
->>>>>>                                  strcpy(tzp->governor_name, str);
->>>>>>
->>>>>> Thanks.
->>>>>> Wei.
->>>>>
->>>>> DT is supposed to describe the hardware, right? The governor isn't 
->>>>> hardware -- it's a software control policy. On the other hand, that 
->>>>> control policy must be tuned according to the behaviors of the platform 
->>>>> hardware otherwise the system will be unstable.
->>>>>
->>>>> Is it appropriate to be naming the governor in DT? If so, is it equally 
->>>>> appropriate to describe any governor-specific parameters in DT (even 
->>>>> though they are pure software constructs)?
->>>>
->>>> The dt should be relatively static -- if the hardware doesn't change the
->>>> dt shouldn't have to.
->>>>
->>>> The governers are not static. We can introduce new ones and throw away
->>>> old ones at any time. Tuning parameters can also change at any time.
->>>>
->>>> I'd prefer to not have governer details described in the dt, and the
->>>> choice of governer and configuration of its tuning parameters should be
->>>> made at runtime somehow.
->>>
->>> Agreed.
 >>
->> Yes, I think so, but the of-thermal driver handle the
->> thermal_zone_device_register, and pass the "tzp" without governor_name,
+>> ....
+>>
+>>>> Adds thermal_update_governor() function, so the thermal platform
+>>>> driver can use it to update governor.
+>>>
+>>> Here I cannot see why the platform driver would need to update a
+>>> governor, instead of a zone. Platform drivers are not supposed to be
+>>> aware of governors. For updating a zone we already have an API for that,
+>>> please check documentation.
+>>>
+>>
+>> I think we have a miscommunication. The purpose of
+>> thermal_update_governor is to *switch* governors at runtime (from within
+>> the kernel).
+>>
+>> Wei has used the term "update" in the sense of switch rather than
+>> "update" in the sense used by thermal_zone_device_update.
 > 
-> In fact, it will fall into the default governor, which is step_wise, by
-> default config.
+> Fine, but why do you need it?
 
-In the thermal_zone_device_register(), it has following codes:
-    if (tz->tzp)
-            tz->governor = __find_governor(tz->tzp->governor_name);
-    else
-            tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
-
-It mean if the tz->tzp is not NULL, and the governor_name is NULL, then
-the __find_governor() will return NULL, so the tz->governor is NULL, it
-can't fall into the default governor. And in the of-thermal driver, it
-call the thermal_zone_device_register(), and pass the "tzp" without
-governor_name.
-I think if we want to change the governor in user space, we need to fix
-this first.
-
-> 
->> so the created thermal_zone's governor will be NULL, then it can't run
->> into the governor->throttle() if needed. And currently there have no
-> 
-> Actually, no, the tz will be set to default governor, and its throttle
-> call will be called.
-> 
->> interface to support updating governor and configuration at runtime.
->> I think it's better to initialize the governor_name when register the
->> thermal zone device in the of-thermal driver.
-> 
-> Still, why would you need to change the governor from a in kernel
-> decision? There is an ABI to change the thermal zone policy based on
-> user(land) request. If you need to change the policy from within the
-> kernel, which seams to be what you are trying to propose, you need to
-> explain why you need it, say, by giving at least one user of this API or
-> explaining its use case.
-
-The thermal_zone_device_register() support to set the governor which you
-want, but with the of-thermal framework, it only support to set to
-default governor, if fix above issue. I think the driver which use the
-of-thermal should be able to set to any governors which it want, in its
-initialization. So I add the function thermal_update_governor().
+Yes, I have consider to use "switch", but As my commit in the patch, in
+the future, the governor may be more complex, it may need governor
+parameter/configuration, and need to be tuned in run-time or in
+initialization.
+In fact we develop a new governor, based on PID logic. It will need some
+parameters, such as proportional, integral and derivative. these value
+will be initialized in different values for different thermal zone, so
+we want to use the thermal_zone_device_update() to switch governor or
+update the governor's parameters for different thermal zone.
 
 > 
 >>
->> Thanks.
+>> Eduardo, what is your recommended technique for setting the governor of
+>> a thermal zone device created via device tree?
+> 
+> So far the recommended (and existing) way is by user(land) decision.
+> 
 >>
->>>
->>>>
->>>> Thanks,
->>>> Mark.
->>>>
->>>>
->>>
->>>
+>> thanks,
+>> Matt
 >>
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >>
 >>
 > 
