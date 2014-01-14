@@ -1,47 +1,76 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [1/11] issue 1: Missing power topology information in scheduler
-Date: Tue, 14 Jan 2014 18:09:50 +0100
-Message-ID: <20140114170950.GK7572@laptop.programming.kicks-ass.net>
-References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
- <20131222151905.GA3250@mgross-Lenovo-Yoga-2-Pro>
- <20131230140024.GB2936@e103034-lin>
- <2069135.fZ7bEevDcs@vostro.rjw.lan>
- <20140114162114.GE3000@e103034-lin>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH] thermal: use device node to get thermal zone
+Date: Tue, 14 Jan 2014 10:33:44 -0700
+Message-ID: <52D574F8.7020100@wwwdotorg.org>
+References: <1389172011-32107-1-git-send-email-wni@nvidia.com> <4D68720C2E767A4AA6A8796D42C8EB59E09ED1@BGSMSX101.gar.corp.intel.com> <52CD452D.3080508@ti.com> <52CE5615.8040204@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:39276 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761AbaANRJ5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 12:09:57 -0500
-Content-Disposition: inline
-In-Reply-To: <20140114162114.GE3000@e103034-lin>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:54023 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbaANRdr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 12:33:47 -0500
+In-Reply-To: <52CE5615.8040204@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, mark gross <markgross@thegnar.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Wei Ni <wni@nvidia.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On Tue, Jan 14, 2014 at 04:21:15PM +0000, Morten Rasmussen wrote:
-> > This appears to be a property of the workload that the scheduler can't really
-> > learn by itself (it can't possibly know, unless told somehow, that t0 is going
-> > to go to sleep shortly after t1 has been started).
-> > 
-> > It looks like that might be covered by a new thread flag meaning "start my
-> > children on the same CPU".  Or a clone flag meaning "run this child on the same
-> > CPU".
+On 01/09/2014 12:56 AM, Wei Ni wrote:
+...
+> On the tegra board, it will use two or more sensors to estimate the skin
+> temperature by reading temps from these sensors and calculate them.
+> For example, we have two sensors: sensor1 and sensor2. We can register
+> them to thermal framework by using DT, something like:
+> thermal-zones {
+>                 sensor1: lm90-local {
+> 			...
+>                         thermal-sensors = <&lm90 0>;
+>                 };
 > 
-> It could work for multithreaded applications, but I'm not sure if it would
-> work for Android muddleware threads. Android audio playback as described
-> in another post exhibits a pattern similar to the above. It may not be
-> possible to have a parent/child setup for the Android audio subsystem
-> threads that gives the desired behaviour.
+>                 sensor2: lm90-remote {
+> 			...
+>                         thermal-sensors = <&lm90 1>;
+>                 };
+> }
+> 
+> Then I will add a device node for my skin temperature driver, something
+> like:
+> skin_temp {
+> 	...
+> 	#thermal-sensor-cells = <0>;
+> 
+> 	sub-devs {
+> 		dev@0 {
+> 			dev = <&sensor1>;
+> 		};
+> 
+> 		dev@1 {
+> 			dev = <&sensor2>;
+> 		};
+> 	};
+> };
 
-We used to have a guestimator at some point that would measure the
-overlap (the time we keep running after waking another task), which we
-used to auto select WF_SYNC.
+I haven't read the rest of the thread, but surely that last chunk of DT
+would be far simpler as:
 
-The fact that we no longer have this only says that we weren't smart
-enough to make it work reliable enough :-)
+skin_temp {
+	sub-devs = <&sensor1 &sensor2>;
+};
 
-ISTR there were also people poking at having special FUTEX flags to
-indicate such situations, but I can't remember whatever became of that.
+or:
+
+skin_temp {
+	sensors = <&sensor1 &sensor2>;
+	sensor-names = "local", "remote";
+};
+
+> So I can parse the DT in the skin temperature driver to get the nodes of
+> the sensor1 and sensor2, and can use .*get_by_node to get thermal zone
+> device, then use .get_temp() and other callbacks to get temperature and
+> other information. If use the *.get_by_name, it may not get the uniqu
+> one, because I don't know if there has the same name thermal zone,
+> because some other driver may not use DT to register thermal zone, it
+> can define any name by itself.
+
