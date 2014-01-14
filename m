@@ -1,58 +1,131 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 3/4] thermal: rcar: Add missing clock handling
-Date: Tue, 14 Jan 2014 10:27:05 +0900
-Message-ID: <20140114012705.GA11259@verge.net.au>
-References: <1389121036-3555-1-git-send-email-geert@linux-m68k.org>
- <1389121036-3555-4-git-send-email-geert@linux-m68k.org>
- <87ha9fxoua.wl%kuninori.morimoto.gx@gmail.com>
- <CAMuHMdW+1yP2PqvLTc0tjyrnhGssvn_iK8mCO6u-++pjGYR9KQ@mail.gmail.com>
- <CAMuHMdWVZhWKDS46GWo83z940B9+Z-yt1WrBKSuiS+zwYMqZQA@mail.gmail.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCHv9 02/20] thermal: introduce device tree parser
+Date: Tue, 14 Jan 2014 10:54:23 +0800
+Message-ID: <52D4A6DF.806@nvidia.com>
+References: <1384285582-16933-1-git-send-email-eduardo.valentin@ti.com>
+ <1384285582-16933-3-git-send-email-eduardo.valentin@ti.com>
+ <52C4D612.2090808@nvidia.com> <52C5A6CE.5060904@nvidia.com>
+ <20140106135145.GD21906@e106331-lin.cambridge.arm.com>
+ <52CAC3AF.9020401@ti.com> <52CB69FA.9080903@nvidia.com>
+ <52D45AC8.1010607@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWVZhWKDS46GWo83z940B9+Z-yt1WrBKSuiS+zwYMqZQA@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Magnus Damm <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:19440 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbaANCyE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2014 21:54:04 -0500
+In-Reply-To: <52D45AC8.1010607@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, Pawel Moll <Pawel.Moll@arm.com>, "ian.campbell@citrix.com" <ian.campbell@citrix.com>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "linux@roeck-us.net" <linux@roeck-us.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Jan 13, 2014 at 09:57:08AM +0100, Geert Uytterhoeven wrote:
-> Hi Morimoto-san,
+On 01/14/2014 05:29 AM, Eduardo Valentin wrote:
+> * PGP Signed by an unknown key
 > 
-> On Wed, Jan 8, 2014 at 11:23 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > On Wed, Jan 8, 2014 at 2:08 AM, Kuninori Morimoto
-> > <kuninori.morimoto.gx@gmail.com> wrote:
-> >>> +     common->clk = devm_clk_get(&pdev->dev, NULL);
-> >>> +     if (IS_ERR(common->clk)) {
-> >>> +             dev_err(&pdev->dev, "cannot get clock\n");
-> >>> +             return PTR_ERR(common->clk);
-> >>> +     }
-> >>> +
-> >>> +     ret = clk_prepare(common->clk);
-> >>> +     if (ret < 0) {
-> >>> +             dev_err(&pdev->dev, "unable to prepare clock\n");
-> >>> +             return ret;
-> >>> +     }
-> >>> +
-> >>> +     clk_enable(common->clk);
-> >>> +
-> >>>       pm_runtime_enable(dev);
-> >>>       pm_runtime_get_sync(dev);
-> >>
-> >> And this patch seems strange for me.
-> >> pm_runtime_xxx() is doing same things.
-> >> If it didn't work, wrong place is not driver, clock side ?
-> >
-> > That's an interesting observation...
+> Wei,
 > 
-> You were right. After applying both of "ARM: shmobile: compile drivers/sh
-> for CONFIG_ARCH_SHMOBILE_MULTI" and "power: clock_ops.c: fixup clk
-> prepare/unprepare count" from Ben Dooks the issue went away.
+> On 06-01-2014 22:44, Wei Ni wrote:
+>> On 01/06/2014 10:54 PM, Eduardo Valentin wrote:
+>>>> Old Signed by an unknown key
+>>>
+>>> On 06-01-2014 09:51, Mark Rutland wrote:
+>>>> On Thu, Jan 02, 2014 at 05:50:06PM +0000, Matthew Longnecker wrote:
+>>>>>
+>>>>>> I think the platform driver may set governor for the thermal zone,
+>>>>>> so how about to add a property named as "governor",
+>>>>>> and parse it to tzp->governor_name,
+>>>>>> something like:
+>>>>>>                  ret = of_property_read_string(child, "governor", &str);
+>>>>>>                  if (ret == 0)
+>>>>>>                          if (strlen(str) < THERMAL_NAME_LENGTH)
+>>>>>>                                  strcpy(tzp->governor_name, str);
+>>>>>>
+>>>>>> Thanks.
+>>>>>> Wei.
+>>>>>
+>>>>> DT is supposed to describe the hardware, right? The governor isn't 
+>>>>> hardware -- it's a software control policy. On the other hand, that 
+>>>>> control policy must be tuned according to the behaviors of the platform 
+>>>>> hardware otherwise the system will be unstable.
+>>>>>
+>>>>> Is it appropriate to be naming the governor in DT? If so, is it equally 
+>>>>> appropriate to describe any governor-specific parameters in DT (even 
+>>>>> though they are pure software constructs)?
+>>>>
+>>>> The dt should be relatively static -- if the hardware doesn't change the
+>>>> dt shouldn't have to.
+>>>>
+>>>> The governers are not static. We can introduce new ones and throw away
+>>>> old ones at any time. Tuning parameters can also change at any time.
+>>>>
+>>>> I'd prefer to not have governer details described in the dt, and the
+>>>> choice of governer and configuration of its tuning parameters should be
+>>>> made at runtime somehow.
+>>>
+>>> Agreed.
+>>
+>> Yes, I think so, but the of-thermal driver handle the
+>> thermal_zone_device_register, and pass the "tzp" without governor_name,
+> 
+> In fact, it will fall into the default governor, which is step_wise, by
+> default config.
 
-There seems to be some lively discussion around Ben's patch.
+In the thermal_zone_device_register(), it has following codes:
+    if (tz->tzp)
+            tz->governor = __find_governor(tz->tzp->governor_name);
+    else
+            tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
 
-> So my patch can be dropped.
+It mean if the tz->tzp is not NULL, and the governor_name is NULL, then
+the __find_governor() will return NULL, so the tz->governor is NULL, it
+can't fall into the default governor. And in the of-thermal driver, it
+call the thermal_zone_device_register(), and pass the "tzp" without
+governor_name.
+I think if we want to change the governor in user space, we need to fix
+this first.
 
-I have marked this patch as Rejected accordingly.
+> 
+>> so the created thermal_zone's governor will be NULL, then it can't run
+>> into the governor->throttle() if needed. And currently there have no
+> 
+> Actually, no, the tz will be set to default governor, and its throttle
+> call will be called.
+> 
+>> interface to support updating governor and configuration at runtime.
+>> I think it's better to initialize the governor_name when register the
+>> thermal zone device in the of-thermal driver.
+> 
+> Still, why would you need to change the governor from a in kernel
+> decision? There is an ABI to change the thermal zone policy based on
+> user(land) request. If you need to change the policy from within the
+> kernel, which seams to be what you are trying to propose, you need to
+> explain why you need it, say, by giving at least one user of this API or
+> explaining its use case.
+
+The thermal_zone_device_register() support to set the governor which you
+want, but with the of-thermal framework, it only support to set to
+default governor, if fix above issue. I think the driver which use the
+of-thermal should be able to set to any governors which it want, in its
+initialization. So I add the function thermal_update_governor().
+
+> 
+>>
+>> Thanks.
+>>
+>>>
+>>>>
+>>>> Thanks,
+>>>> Mark.
+>>>>
+>>>>
+>>>
+>>>
+>>
+>>
+>>
+> 
+> 
+
