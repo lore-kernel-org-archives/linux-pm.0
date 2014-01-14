@@ -1,175 +1,49 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/menu: Fail cpuidle_idle_call() if no idle state
- is acceptable
-Date: Tue, 14 Jan 2014 13:55:08 +0530
-Message-ID: <52D4F464.5070707@linux.vnet.ibm.com>
-References: <20140114060516.6109.14901.stgit@preeti.in.ibm.com> <52D4E07E.204@linux.vnet.ibm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [3/11] issue 3: No understanding of potential cpu capacity
+Date: Tue, 14 Jan 2014 11:27:53 +0100
+Message-ID: <20140114102753.GT7572@laptop.programming.kicks-ass.net>
+References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
+ <1389111587-5923-4-git-send-email-morten.rasmussen@arm.com>
+ <3700155.hLuCBAXQoy@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e36.co.us.ibm.com ([32.97.110.154]:53587 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962AbaANI2i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 03:28:38 -0500
-Received: from /spool/local
-	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 14 Jan 2014 01:28:37 -0700
-In-Reply-To: <52D4E07E.204@linux.vnet.ibm.com>
+Received: from merlin.infradead.org ([205.233.59.134]:56669 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbaANK2C (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 05:28:02 -0500
+Content-Disposition: inline
+In-Reply-To: <3700155.hLuCBAXQoy@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, benh@kernel.crashing.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, mingo@kernel.org, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Srivatsa,
-
-On 01/14/2014 12:30 PM, Srivatsa S. Bhat wrote:
-> On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
->> On PowerPC, in a particular test scenario, all the cpu idle states were disabled.
->> Inspite of this it was observed that the idle state count of the shallowest
->> idle state, snooze, was increasing.
->>
->> This is because the governor returns the idle state index as 0 even in
->> scenarios when no idle state can be chosen. These scenarios could be when the
->> latency requirement is 0 or as mentioned above when the user wants to disable
->> certain cpu idle states at runtime. In the latter case, its possible that no
->> cpu idle state is valid because the suitable states were disabled
->> and the rest did not match the menu governor criteria to be chosen as the
->> next idle state.
->>
->> This patch adds the code to indicate that a valid cpu idle state could not be
->> chosen by the menu governor and reports back to arch so that it can take some
->> default action.
->>
+On Mon, Jan 13, 2014 at 10:07:12PM +0100, Rafael J. Wysocki wrote:
+> > Currently, the CFS scheduler has no knowledge about frequency scaling.
+> > Frequency scaling governors generally try to match the frequency to
+> > the load, which means that the idle time has no absolute meaning. The
+> > potential spare cpu capacity may be much higher than indicated by the
+> > idle time if the cpu is running at a low P-state.
+> > 
+> > The energy trade-off may justify putting another task on a loaded cpu
+> > even if it causes a change to a higher P-state to handle the extra load.
+> > Related issues are frequency (and cpu micro architecture) invariant task
+> > load and power topology information, which are both needed to enable the
+> > scheduler for energy-aware task placement. This is covered in more
+> > detail in issue 5.
+> > 
+> > The potential cpu capacity cannot be assumed to be constant as thermal
+> > management may restrict the usage of high performance P-states
+> > dynamically.
 > 
-> That sounds fair enough. However, the "default" action of pseries idle loop
-> (pseries_lpar_idle()) surprises me. It enters Cede, which is _deeper_ than doing
-> a snooze! IOW, a user might "disable" cpuidle or set the PM_QOS_CPU_DMA_LATENCY
-> to 0 hoping to prevent the CPUs from going to deep idle states, but then the
-> machine would still end up going to Cede, even though that wont get reflected
-> in the idle state counts. IMHO that scenario needs some thought as well...
+> That's correct.  Moreover, all of the above seems to assume that we can get
+> exact power numbers for all of the involved C-states and P-states.  What if
+> we can't?
 
-Yes I did see this, but since the patch intends to only communicate
-whether the cpuidle governor was successful in choosing an idle state on
-its part, I wished to address the default action of pseries idle loop
-separately. You are right we will need to understand the patch which
-introduced this action. I will take a look at it.
+On average more or less correct should be fine; in which case the
+result will on average still be better.
 
-> 
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
->>
->>  drivers/cpuidle/cpuidle.c        |    6 +++++-
->>  drivers/cpuidle/governors/menu.c |    7 ++++---
->>  2 files changed, 9 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index a55e68f..5bf06bb 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
->>
->>  	/* ask the governor for the next state */
->>  	next_state = cpuidle_curr_governor->select(drv, dev);
->> +
->> +	dev->last_residency = 0;
->>  	if (need_resched()) {
->> -		dev->last_residency = 0;
->>  		/* give the governor an opportunity to reflect on the outcome */
->>  		if (cpuidle_curr_governor->reflect)
->>  			cpuidle_curr_governor->reflect(dev, next_state);
-> 
-> The comments on top of the .reflect() routines of the governors say that the
-> second parameter is the index of the actual state entered. But after this patch,
-> next_state can be negative, indicating an invalid index. So those comments need
-> to be updated accordingly.
-
-Right, I will take care of the comment in the next post.
-> 
->> @@ -140,6 +141,9 @@ int cpuidle_idle_call(void)
->>  		return 0;
->>  	}
->>
->> +	if (next_state < 0)
->> +		return -EINVAL;
-> 
-> The exit path above (due to need_resched) returns with irqs enabled, but the new
-> one you are adding (next_state < 0) returns with irqs disabled. This is correct,
-> because in the latter case, "idle" is still in progress and the arch will choose
-> a default handler to execute (unlike the former case where "idle" is over and
-> hence its time to enable interrupts).
-
-Correct.
-> 
-> IMHO it would be good to add comments around this code to explain this subtle
-> difference. We can never be too careful with these things... ;-)
-
-Ok, will do so.
-> 
->> +
->>  	trace_cpu_idle_rcuidle(next_state, dev->cpu);
->>
->>  	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
->> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
->> index cf7f2f0..6921543 100644
->> --- a/drivers/cpuidle/governors/menu.c
->> +++ b/drivers/cpuidle/governors/menu.c
->> @@ -283,6 +283,7 @@ again:
->>   * menu_select - selects the next idle state to enter
->>   * @drv: cpuidle driver containing state data
->>   * @dev: the CPU
->> + * Returns -1 when no idle state is suitable
->>   */
->>  static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->>  {
->> @@ -292,17 +293,17 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->>  	int multiplier;
->>  	struct timespec t;
->>
->> -	if (data->needs_update) {
->> +	if (data->last_state_idx >= 0 && data->needs_update) {
->                ^^^^^
-> Doesn't hurt, but actually unnecessary, since ->needs_update is set to 1
-> only when index >= 0.
-
-Right we do not need this check. I was assuming that needs_update would
-be consistent with the index >= 0 only in the need_resched() case. But
-needs_update will get unset each time the governor is invoked to be set
-only if index >= 0 thereafter.
-
-> 
->>  		menu_update(drv, dev);
->>  		data->needs_update = 0;
->>  	}
->>
->> -	data->last_state_idx = 0;
->> +	data->last_state_idx = -1;
->>  	data->exit_us = 0;
->>
->>  	/* Special case when user has set very strict latency requirement */
->>  	if (unlikely(latency_req == 0))
->> -		return 0;
->> +		return data->last_state_idx;
->>
->>  	/* determine the expected residency time, round up */
->>  	t = ktime_to_timespec(tick_nohz_get_sleep_length());
->>
-> 
-> What about the ladder governor? I know its not used that much in practice,
-> but I think it would be good to update that as well, just to keep it
-> consistent.
-
-Yes this needs to be updated as well. But the ladder governor has a few
-other details to take care of in addition to what is taken care of in
-the menu governor by this patch. Hence I will be posting that separately.
-
-Thanks
-
-Regards
-Preeti U Murthy
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
-
+Obviously the more reliable the input to the model the better the
+results, but as long as the input numbers are more or less in the right
+ballpark the model should still more or less do the right thing.
