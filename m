@@ -1,38 +1,59 @@
 From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: Re: [PATCH 2/3] power: clock_ops.c: check return of clk_enable()
- in pm_clk_resume()
-Date: Tue, 14 Jan 2014 12:02:41 +0000
-Message-ID: <52D52761.1000303@codethink.co.uk>
-References: <1389445540-21426-1-git-send-email-ben.dooks@codethink.co.uk> <1389445540-21426-2-git-send-email-ben.dooks@codethink.co.uk> <1438385.ppqm7XWTt3@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH 2/3] power: clock_ops.c: check return of clk_enable() in pm_clk_resume()
+Date: Tue, 14 Jan 2014 12:23:41 +0000
+Message-ID: <1389702222-17260-3-git-send-email-ben.dooks@codethink.co.uk>
+References: <1389702222-17260-1-git-send-email-ben.dooks@codethink.co.uk>
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1438385.ppqm7XWTt3@vostro.rjw.lan>
+In-Reply-To: <1389702222-17260-1-git-send-email-ben.dooks@codethink.co.uk>
 Sender: linux-sh-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@lists.codethink.co.uk, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@lists.codethink.co.uk, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Ben Dooks <ben.dooks@codethink.co.uk>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13/01/14 19:55, Rafael J. Wysocki wrote:
-> On Saturday, January 11, 2014 01:05:39 PM Ben Dooks wrote:
+The clk_enable() call in the pm_clk_resume() call returns an error
+that is not being checked. If clk_enable() fails then we should
+not set the state of the clock to PCE_STATUS_ENABLED.
 
->> @@ -262,8 +263,9 @@ int pm_clk_resume(struct device *dev)
->>
->>   	list_for_each_entry(ce, &psd->clock_list, node) {
->>   		if (ce->status < PCE_STATUS_ERROR) {
->> -			clk_enable(ce->clk);
->> -			ce->status = PCE_STATUS_ENABLED;
->> +			ret = clk_enable(ce->clk);
->> +			if (ret == 0)
->
-> Can you please use if (!ret) here?
->
-> And analogously in patch [3/3]?
+Note, the issue of warning the user if this fails has not been
+addressed in this patch as this is not the only place the driver
+calls clk_enable().
 
-I will fix and re-send today, thanks.
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
+---
+ drivers/base/power/clock_ops.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index b9dd8fa..cad7190 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -252,6 +252,7 @@ int pm_clk_resume(struct device *dev)
+ 	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 	unsigned long flags;
++	int ret;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+@@ -262,8 +263,9 @@ int pm_clk_resume(struct device *dev)
+ 
+ 	list_for_each_entry(ce, &psd->clock_list, node) {
+ 		if (ce->status < PCE_STATUS_ERROR) {
+-			clk_enable(ce->clk);
+-			ce->status = PCE_STATUS_ENABLED;
++			ret = clk_enable(ce->clk);
++			if (!ret)
++				ce->status = PCE_STATUS_ENABLED;
+ 		}
+ 	}
+ 
 -- 
-Ben Dooks				http://www.codethink.co.uk/
-Senior Engineer				Codethink - Providing Genius
+1.8.5.2
+
