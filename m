@@ -1,40 +1,169 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH RFC 04/10] base: power: Add generic OF-based power domain look-up
-Date: Tue, 14 Jan 2014 07:42:26 -0800
-Message-ID: <87r48a8t99.fsf@linaro.org>
-References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
-	<1389469372-17199-5-git-send-email-tomasz.figa@gmail.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [1/11] issue 1: Missing power topology information in scheduler
+Date: Tue, 14 Jan 2014 16:21:15 +0000
+Message-ID: <20140114162114.GE3000@e103034-lin>
+References: <1387557951-21750-1-git-send-email-morten.rasmussen@arm.com>
+ <20131222151905.GA3250@mgross-Lenovo-Yoga-2-Pro>
+ <20131230140024.GB2936@e103034-lin>
+ <2069135.fZ7bEevDcs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1389469372-17199-5-git-send-email-tomasz.figa@gmail.com> (Tomasz
-	Figa's message of "Sat, 11 Jan 2014 20:42:46 +0100")
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:52663 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751413AbaANQVL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 11:21:11 -0500
+Content-Disposition: inline
+In-Reply-To: <2069135.fZ7bEevDcs@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: mark gross <markgross@thegnar.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Tomasz Figa <tomasz.figa@gmail.com> writes:
+On Mon, Jan 13, 2014 at 08:23:32PM +0000, Rafael J. Wysocki wrote:
+> On Monday, December 30, 2013 02:00:25 PM Morten Rasmussen wrote:
+> > On Sun, Dec 22, 2013 at 03:19:05PM +0000, mark gross wrote:
+> > > On Fri, Dec 20, 2013 at 04:45:41PM +0000, Morten Rasmussen wrote:
+> > > > The current mainline scheduler has no power topology information
+> > > > available to enable it to make energy-aware decisions. The energy cost
+> > > > of running a cpu at different frequencies and the energy cost of waking
+> > > > up another cpu are needed.
+> > > > 
+> > > > One example where this could be useful is audio on Android. With the
+> > > > current mainline scheduler it would utilize three cpus when active. Due
+> > > > to the size of the tasks it is still possible to meet the performance
+> > > > criteria when execution is serialized on a single cpu. Depending on the
+> > > > power topology leaving two cpus idle and running one longer may lead to
+> > > > energy savings if the cpus can be power-gated individually.
+> > > > 
+> > > > The audio performance requirements can be satisfied by most cpus at the
+> > > > lowest frequency. Video is a more interesting use-case due to its higher
+> > > > performance requirements. Running all tasks on a single cpu is likely to
+> > > > require a higher frequency than if the tasks are spread out across
+> > > > more cpus.
+> > > > 
+> > > > Running Android video playback on an ARM Cortex-A7 platform with 1, 2,
+> > > > and 4 cpus online has lead to the following power measurements
+> > > > (normalized):
+> > > > 
+> > > > video 720p (Android)
+> > > > cpus	power
+> > > > 1	1.59
+> > > > 2	1.00
+> > > > 4	1.10
+> > > 
+> > > I wonder what 3 CPU's shows?  Also, is this "display-on" power measured from
+> > > the battery?  The variance seems too big for a display-on measurement.
+> > 
+> > These are cpus-only measurements excluding gpu, dram, and other
+> > peripherals. So yes, the relative total power saving is much smaller.
+> 
+> And that number is what actually matters, because that's what the battery life
+> depends on.
 
-> This patch introduces generic code to perform power domain look-up using
-> device tree and automatically bind devices to their power domains.
-> Generic device tree binding is introduced to specify power domains of
-> devices in their device tree nodes.
->
-> Backwards compatibility with legacy Samsung-specific power domain
-> bindings is provided, but for now the new code is not compiled when
-> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
-> will change as soon as Exynos power domain code gets converted to use
-> the generic framework in further patch.
->
-> Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
+Agreed. I can add that the above experiment didn't show any changes in
+GPU power consumption.
 
-I haven't read through this in detail yet, but wanted to make sure that
-the DT representation can handle nested power domains.  At least
-SH-mobile has a hierarchy of power domains and the genpd code can handle
-that, so wanted to make sure that the DT representation can handle it as
-well.
+> 
+> > I don't have numbers for 3 cpus, but I will see if I can get them. Based
+> > on the traces for 2 and 4 cpus my guess is that 3 cpus would be very
+> > close to 2 cpus if not slightly better. The available parallelism seems
+> > limited. The fourth cpu is hardly used and the third is only used for
+> > short periods. 
+> > 
+> > > 
+> > > Here we seem to have a workload consisting of about 2 threads and where if we
+> > > use more than 2 CPUs' we pay a penalty for task migration.  There is no tie to
+> > > cpu L2 or power rail topology in this example.  From this data alown the
+> > > scheduler simply needs to avoid using more CPU's until the workload truely has
+> > > more threads.
+> > 
+> > We have more threads in this workload (use-case 3), but rarely more than
+> > two of them running (or runnable) simultaneously. I agree, that the
+> > scheduler needs to avoid using more cpus than necessary.
+> > 
+> > The scheduler is particularly bad at this for thread patterns like the
+> > ones observed for audio and video playback. Both have chains of threads
+> > that wake up the next thread and then go to sleep. Since the current
+> > thread continues to run for a moment after the next one has been woken
+> > up, the wakee tends to be placed on a new cpu rather than waiting a few
+> > tens of microseconds for the current cpu to be vacant.
+> > 
+> >             t0                     t0
+> > cpu 0	===========            ===========
+> > 	         |             ^
+> >                  v   t1        |
+> > cpu 1	         ===========   |
+> >                           |    |
+> >                           v t2 |
+> > cpu 2                     =======
+> > 
+> 
+> This appears to be a property of the workload that the scheduler can't really
+> learn by itself (it can't possibly know, unless told somehow, that t0 is going
+> to go to sleep shortly after t1 has been started).
+> 
+> It looks like that might be covered by a new thread flag meaning "start my
+> children on the same CPU".  Or a clone flag meaning "run this child on the same
+> CPU".
 
-Thanks,
+It could work for multithreaded applications, but I'm not sure if it would
+work for Android muddleware threads. Android audio playback as described
+in another post exhibits a pattern similar to the above. It may not be
+possible to have a parent/child setup for the Android audio subsystem
+threads that gives the desired behaviour.
 
-Kevin
+> 
+> > > What data do you have on the actual video workload in terms of threads?  My
+> > > guess is we are looking an audio decode and video decode processing.  Is this
+> > > video playback measurement including any rendering power or is all CPU?
+> > 
+> > As said above, these are cpus-only power numbers, so any gpu rendering is
+> > excluded. The cpu workload includes both partial video decoding and
+> > audio decoding. I'm not sure how much is offloaded to the gpu. use-case
+> > 3 has a short description of the main threads.
+> > 
+> > What sort of data are you looking for?
+> > 
+> > > 
+> > > I guess what I'm calling out is it is not clear what the right thing for the
+> > > scheduer to do as there is no physical model coupling power to SoC topology and
+> > > workload charactoristics.
+> > > 
+> > > I'll see if the folks at work who are hands on with similar KPI measureing can
+> > > share similar data.  (they read this list too) It may be easier for them to
+> > > share if we can agree on a normalization of the power data.  Say 100 "lumps"
+> > > (of coal) measured from the battery or psu output rails as the power burned on
+> > > a workload if run by booting with MAXCPUS=1 kernel command line?  (or should it
+> > > be measured from the SoC power rails?) That way we don't need to worry as much
+> > > about exposing competitive sensitive data in physical units.  FWIW I would go
+> > > with display off measurements (in "airplane mode"?) from the battery or
+> > > equivelent.
+> > 
+> > Good question. System power (battery) seems right if you have your SoC
+> > on a board which is fairly similar to the end product. That is not always
+> > the case, so I tend to look at SoC power instead. How large is the
+> > difference if the display is off and in airplane mode? Would it work if
+> > we just state the measurement method when posting numbers?
+> 
+> Well, that's absolutely necessary in my opinion.
+> 
+> I guess the main point would be to distinguish "improvements" from "regressions",
+> so if there is a convenient way to measure things on a given system, it will be
+> fine as long as it is exactly reproducible (same kernel with the same hardware
+> setup should give the same result and if it doesn't, we need to know what the
+> distribution of the results is, at least roughly, and how it changes after a
+> given patch).
+> 
+> Now, if you see an "improvement" in an artificial measurement setup, there still
+> is a question how much of a real improvement will be seen by a user of a final
+> product.  That needs to be known as well, so that we can write off "improvements"
+> that won't really improve anything in practice.
+
+Agreed. The power measurements must include enough of the system that is
+possible to determine whether power is being shifted from one part to
+another without affecting the total power positively or it is a true
+reduction in total power consumption. As I said earlier, it may not make
+sense to do PSU level power measurements on development boards.
+
+Morten
