@@ -1,49 +1,192 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [3/11] issue 3: No understanding of potential cpu capacity
-Date: Tue, 14 Jan 2014 11:27:53 +0100
-Message-ID: <20140114102753.GT7572@laptop.programming.kicks-ass.net>
-References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
- <1389111587-5923-4-git-send-email-morten.rasmussen@arm.com>
- <3700155.hLuCBAXQoy@vostro.rjw.lan>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v2 1/2] thermal: introduce thermal_zone_get_zone_by_node
+ helper function
+Date: Tue, 14 Jan 2014 18:35:29 +0800
+Message-ID: <52D512F1.1090008@nvidia.com>
+References: <1389263879-10483-1-git-send-email-wni@nvidia.com>
+ <1389263879-10483-2-git-send-email-wni@nvidia.com> <52D40EC6.6050509@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:56669 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbaANK2C (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 05:28:02 -0500
-Content-Disposition: inline
-In-Reply-To: <3700155.hLuCBAXQoy@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <52D40EC6.6050509-l0cyMroinI0@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
+Cc: "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, mingo@kernel.org, markgross@thegnar.org, vincent.guittot@linaro.org, catalin.marinas@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Jan 13, 2014 at 10:07:12PM +0100, Rafael J. Wysocki wrote:
-> > Currently, the CFS scheduler has no knowledge about frequency scaling.
-> > Frequency scaling governors generally try to match the frequency to
-> > the load, which means that the idle time has no absolute meaning. The
-> > potential spare cpu capacity may be much higher than indicated by the
-> > idle time if the cpu is running at a low P-state.
-> > 
-> > The energy trade-off may justify putting another task on a loaded cpu
-> > even if it causes a change to a higher P-state to handle the extra load.
-> > Related issues are frequency (and cpu micro architecture) invariant task
-> > load and power topology information, which are both needed to enable the
-> > scheduler for energy-aware task placement. This is covered in more
-> > detail in issue 5.
-> > 
-> > The potential cpu capacity cannot be assumed to be constant as thermal
-> > management may restrict the usage of high performance P-states
-> > dynamically.
+On 01/14/2014 12:05 AM, Eduardo Valentin wrote:
+> * PGP Signed by an unknown key
 > 
-> That's correct.  Moreover, all of the above seems to assume that we can get
-> exact power numbers for all of the involved C-states and P-states.  What if
-> we can't?
+> On 09-01-2014 06:37, Wei Ni wrote:
+>> The thermal framework start to support device tree, this
+>> patch adds a helper function to get a reference of a
+>> thermal zone, based on the zone's device node.
+> 
+> I would prefer if you could provide a better justification why we need
+> this API. Think of the scope of this API: would it be used only by the
+> of-thermal code? only by the drivers/thermal code? or any driver?
 
-On average more or less correct should be fine; in which case the
-result will on average still be better.
+I have talked it in the previous patch "Re: [PATCH] thermal: use device
+node to get thermal zone".
+So let me copy to here again:
 
-Obviously the more reliable the input to the model the better the
-results, but as long as the input numbers are more or less in the right
-ballpark the model should still more or less do the right thing.
+On the tegra board, it will use two or more sensors to estimate the skin
+temperature by reading temps from these sensors and calculate them.
+For example, we have two sensors: sensor1 and sensor2. We can register
+them to thermal framework by using DT, something like:
+thermal-zones {
+                sensor1: lm90-local {
+			...
+                        thermal-sensors = <&lm90 0>;
+                };
+
+                sensor2: lm90-remote {
+			...
+                        thermal-sensors = <&lm90 1>;
+                };
+}
+
+Then I will add a device node for my skin temperature driver, something
+like:
+skin_temp {
+	...
+	#thermal-sensor-cells = <0>;
+
+	sub-devs {
+		dev@0 {
+			dev = <&sensor1>;
+		};
+
+		dev@1 {
+			dev = <&sensor2>;
+		};
+	};
+};
+So I can parse the DT in the skin temperature driver to get the nodes of
+the sensor1 and sensor2, and can use .*get_by_node to get thermal zone
+device, then use .get_temp() and other callbacks to get temperature and
+other information.
+
+> 
+> So far you have provided only one user, and that user can already work
+> with existing APIs. As I mention, DT does not support name duplications.
+
+If the system only have the DT, then there will not have name
+duplications. But some drivers will call the
+thermal_zone_device_register directly with any thermal zone type, and at
+same time, other drivers may use of-thermal to register, and set the
+same name in the DT. Then if use the *.get_by_name, it can't get the
+uniqu one.
+
+> 
+> Unless you enlighten  me with better uses of this API, I would prefer
+> not to have it.
+> 
+> 
+>>
+>> It will add a device_node *np member in the struct
+>> thermal_zone_device, and initialize it when create a thermal
+>> zone. This funciton perform a zone device node lookup and
+>> return a reference to a thermal zone device that matches
+>> the device node requested.
+>> In case the zone is not found or if the required parameters
+>> are invalid, it will return the corresponding error code (ERR_PTR).
+>>
+>> Change-Id: I4d65f849e84425dddd387f70886a9c7c4c2002f2
+> 
+> For your next patches, please done include gerrit change IDs. Linux
+> Kernel does not need to be linked to your inhouse development history
+> via gerrit IDs.
+
+It's so sorry, I forgot to remove it.
+
+> 
+>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> ---
+>>  drivers/thermal/of-thermal.c   |    2 ++
+>>  drivers/thermal/thermal_core.c |   33 +++++++++++++++++++++++++++++++++
+>>  include/linux/thermal.h        |    3 +++
+>>  3 files changed, 38 insertions(+)
+>>
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+>> index 04b1be7..53f2d3a 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -804,6 +804,8 @@ int __init of_parse_thermal_zones(void)
+>>  			of_thermal_free_zone(tz);
+>>  			/* attempting to build remaining zones still */
+>>  		}
+>> +
+>> +		zone->np = child;
+>>  	}
+>>  
+>>  	return 0;
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 338a88b..eeddb94 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -1672,6 +1672,39 @@ exit:
+>>  }
+>>  EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
+>>  
+>> +/**
+>> +* thermal_zone_get_zone_by_node() - search for a zone and returns its ref
+>> +* @node: device node of the thermal zone
+>> +*
+>> +* When thermal zone is found with the passed device node, returns a reference
+>> +* to it.
+>> +*
+>> +* Return: On success returns a reference to an unique thermal zone with
+>> +* matching device node, an ERR_PTR otherwise (-EINVAL for invalid
+>> +* paramenters, -ENODEV for not found).
+>> +*/
+>> +struct thermal_zone_device *
+>> +thermal_zone_get_zone_by_node(struct device_node *node)
+>> +{
+>> +	struct thermal_zone_device *pos = NULL, *ref = ERR_PTR(-ENODEV);
+>> +	bool found = false;
+>> +
+>> +	if (!node)
+>> +		return ERR_PTR(-EINVAL);
+>> +
+>> +	mutex_lock(&thermal_list_lock);
+>> +	list_for_each_entry(pos, &thermal_tz_list, node)
+>> +		if (node == pos->np) {
+>> +			ref = pos;
+>> +			found = true;
+>> +			break;
+>> +		}
+>> +	mutex_unlock(&thermal_list_lock);
+>> +
+>> +	return ref;
+>> +}
+>> +EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_node);
+>> +
+>>  #ifdef CONFIG_NET
+>>  static const struct genl_multicast_group thermal_event_mcgrps[] = {
+>>  	{ .name = THERMAL_GENL_MCAST_GROUP_NAME, },
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index f7e11c7..288d272 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -162,6 +162,7 @@ struct thermal_zone_device {
+>>  	int id;
+>>  	char type[THERMAL_NAME_LENGTH];
+>>  	struct device device;
+>> +	struct device_node *np;
+>>  	struct thermal_attr *trip_temp_attrs;
+>>  	struct thermal_attr *trip_type_attrs;
+>>  	struct thermal_attr *trip_hyst_attrs;
+>> @@ -286,6 +287,8 @@ thermal_of_cooling_device_register(struct device_node *np, char *, void *,
+>>  				   const struct thermal_cooling_device_ops *);
+>>  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+>>  struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
+>> +struct thermal_zone_device *
+>> +thermal_zone_get_zone_by_node(struct device_node *node);
+>>  int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp);
+>>  
+>>  int get_tz_trend(struct thermal_zone_device *, int);
+>>
+> 
+> 
