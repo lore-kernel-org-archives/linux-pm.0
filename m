@@ -1,158 +1,63 @@
-From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v2 0/2] Support to tune governor in run time
-Date: Tue, 14 Jan 2014 13:50:57 -0400
-Message-ID: <52D57901.5050300@ti.com>
-References: <1389611863-7812-1-git-send-email-wni@nvidia.com> <52D4095C.205@ti.com> <52D43810.6030801@nvidia.com> <52D45BB7.1090002@ti.com> <52D4BA76.4040003@nvidia.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 1/1] thermal: fix default governor assignment
+Date: Tue, 14 Jan 2014 14:45:37 -0400
+Message-ID: <1389725137-16147-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="diVRVM8daTl9el16N3QO2xAlR1wWq4rEj"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <52D4BA76.4040003-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:46924 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbaANSpy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2014 13:45:54 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Wei Ni <wni@nvidia.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
---diVRVM8daTl9el16N3QO2xAlR1wWq4rEj
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+When registering a thermal zone, passing an invalid
+.governor_name via struct thermal_zone_params may
+create a thermal zone without a governor, when it
+is supposed to be the default governor.
 
-On 14-01-2014 00:17, Wei Ni wrote:
-> On 01/14/2014 05:33 AM, Eduardo Valentin wrote:
->> * PGP Signed by an unknown key
->>
->> On 13-01-2014 15:01, Matthew Longnecker wrote:
->>> On 1/13/2014 7:42 AM, Eduardo Valentin wrote:
->>>>> This serie can support to turn governor for thermal zone in
->>>>> run time.
->>>>
->>>> Can you please explain why this is needed? Are you facing troubles w=
-ith
->>>> current way to switch governors? If yes, can you please report them?=
+This patch fixes this issue by assigning the
+default governor, whenever the zone has a governor
+set to NULL.
 
->>
->> Looks like there is a need to switch governors from within kernel code=
-,
->> but not explanation of use cases is provided.
->=20
-> In fact, with the of-thermal framework, the driver can't initialize to
-> any governor, even default governor, it may be a bug. As we discussed i=
-n
-> other mail list, we should not set governor in DT, and I think the
-> platform driver should be able to set to any governors which it want, s=
-o
-> I this patch, the driver can call the thermal_update_governor() to
-> switch to new governor in kernel space.
-> For example, there have two thermal driver, using of-thermal to registe=
-r
-> thermal zone device. One want to set to step_wise governor, another wan=
-t
-> fair_share, how can we do? I think after they calling the
-> thermal_zone_of_sensor_register(), they can call the
-> thermal_update_governor() to set the governor which they want.
->=20
->>
->>>>
->>>
->>> ....
->>>
->>>>> Adds thermal_update_governor() function, so the thermal platform
->>>>> driver can use it to update governor.
->>>>
->>>> Here I cannot see why the platform driver would need to update a
->>>> governor, instead of a zone. Platform drivers are not supposed to be=
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Reported-by: Wei Ni <wni@nvidia.com>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/thermal_core.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
->>>> aware of governors. For updating a zone we already have an API for t=
-hat,
->>>> please check documentation.
->>>>
->>>
->>> I think we have a miscommunication. The purpose of
->>> thermal_update_governor is to *switch* governors at runtime (from wit=
-hin
->>> the kernel).
->>>
->>> Wei has used the term "update" in the sense of switch rather than
->>> "update" in the sense used by thermal_zone_device_update.
->>
->> Fine, but why do you need it?
->=20
-> Yes, I have consider to use "switch", but As my commit in the patch, in=
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index a621e90..967d980 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -89,7 +89,7 @@ int thermal_register_governor(struct thermal_governor *governor)
+ 	list_for_each_entry(pos, &thermal_tz_list, node) {
+ 		if (pos->governor)
+ 			continue;
+-		if (pos->tzp)
++		if (pos->tzp && pos->tzp->governor_name)
+ 			name = pos->tzp->governor_name;
+ 		else
+ 			name = DEFAULT_THERMAL_GOVERNOR;
+@@ -1527,9 +1527,10 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
+ 
+-	if (tz->tzp)
++	if (tz->tzp && tz->tzp->governor_name)
+ 		tz->governor = __find_governor(tz->tzp->governor_name);
+-	else
++
++	if (!tz->governor)
+ 		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
+ 
+ 	mutex_unlock(&thermal_governor_lock);
+-- 
+1.8.2.1.342.gfa7285d
 
-> the future, the governor may be more complex, it may need governor
-> parameter/configuration, and need to be tuned in run-time or in
-> initialization.
-
-OK, I see you have a very complex governor coming. But you know,
-prediction is very difficult, especially if it's about the future. :-)
-
-It would be very constructive if you could share the governor together
-with the proposed change. It is not fair to introduce a new API for a
-non-existing user, don't you agree?
-
-> In fact we develop a new governor, based on PID logic. It will need som=
-e
-> parameters, such as proportional, integral and derivative. these value
-> will be initialized in different values for different thermal zone, so
-> we want to use the thermal_zone_device_update() to switch governor or
-> update the governor's parameters for different thermal zone.
-
-The parameters are a zone specific data right? Why should it be bound to
-governor switch? The governor should be able to fetch the zone data when
-needed.
-
-Again, if you share the user of the API you are proposing we can work
-together to make a better fit between API and users.
-
-For the existing governors, I don't see a need to have the stop and
-start callbacks.
-
->=20
->>
->>>
->>> Eduardo, what is your recommended technique for setting the governor =
-of
->>> a thermal zone device created via device tree?
->>
->> So far the recommended (and existing) way is by user(land) decision.
->>
->>>
->>> thanks,
->>> Matt
->>>
->>> --=20
->>> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
->>> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
->>>
->>
->>
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---diVRVM8daTl9el16N3QO2xAlR1wWq4rEj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlLVeQEACgkQCXcVR3XQvP3AqgD/aoN0sM4sfgN7wuMqfmTcrslp
-EbVfg+pYxW70MjnG0YYA/1THe+vHzgku4MapJXCKnJ7lnm6DVGh/fQXtaPhGfVlu
-=j0qu
------END PGP SIGNATURE-----
-
---diVRVM8daTl9el16N3QO2xAlR1wWq4rEj--
