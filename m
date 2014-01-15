@@ -1,161 +1,129 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH V5 8/8] cpuidle/powernv: Parse device tree to setup idle
- states
-Date: Wed, 15 Jan 2014 13:40:30 +0530
-Message-ID: <20140115081030.20446.2989.stgit@preeti.in.ibm.com>
-References: <20140115080555.20446.27238.stgit@preeti.in.ibm.com>
+From: Mike Galbraith <bitbucket@online.de>
+Subject: Re: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
+Date: Wed, 15 Jan 2014 10:28:51 +0100
+Message-ID: <1389778131.6223.4.camel@marge.simpson.net>
+References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
+	 <345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:44113 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbaAOIOJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 Jan 2014 03:14:09 -0500
-Received: from /spool/local
-	by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Wed, 15 Jan 2014 03:14:08 -0500
-In-Reply-To: <20140115080555.20446.27238.stgit@preeti.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Ian Malone <ibmalone@gmail.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, agraf@suse.de, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, galak@kernel.crashing.org, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-Add deep idle states such as nap and fast sleep to the cpuidle state table
-only if they are discovered from the device tree during cpuidle initialization.
+On Wed, 2014-01-15 at 00:37 -0500, Len Brown wrote: 
+> From: Len Brown <len.brown@intel.com>
+> 
+> In Linux-3.9 we removed the mwait_idle() loop:
+> 'x86 idle: remove mwait_idle() and "idle=mwait" cmdline param'
+> (69fb3676df3329a7142803bb3502fa59dc0db2e3)
+> 
+> The reasoning was that modern machines should be sufficiently
+> happy during the boot process using the default_idle() HALT loop,
+> until cpuidle loads and either acpi_idle or intel_idle
+> invoke the newer MWAIT-with-hints idle loop.
+> 
+> But two machines reported problems:
+> 1. Certain Core2-era machines support MWAIT-C1 and HALT only.
+>    MWAIT-C1 is preferred for optimal power and performance.
+>    But if they support just C1, cpuidle never loads and
+>    so they use the boot-time default idle loop forever.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+Q6600 box (allegedly) has a slightly greenish tinge again.
 
- drivers/cpuidle/cpuidle-powernv.c |   81 +++++++++++++++++++++++++++++--------
- 1 file changed, 64 insertions(+), 17 deletions(-)
+Tested-by: Mike Galbraith <bitbucket@online.de>
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index e3aa62f..b01987d 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -12,10 +12,17 @@
- #include <linux/cpu.h>
- #include <linux/notifier.h>
- #include <linux/clockchips.h>
-+#include <linux/of.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- 
-+/* Flags and constants used in PowerNV platform */
-+
-+#define MAX_POWERNV_IDLE_STATES	8
-+#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
-+#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
-+
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
- 	.owner            = THIS_MODULE,
-@@ -84,7 +91,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- /*
-  * States for dedicated partition case.
-  */
--static struct cpuidle_state powernv_states[] = {
-+static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
-@@ -92,20 +99,6 @@ static struct cpuidle_state powernv_states[] = {
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &snooze_loop },
--	{ /* NAP */
--		.name = "NAP",
--		.desc = "NAP",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &nap_loop },
--	 { /* Fastsleep */
--		.name = "fastsleep",
--		.desc = "fastsleep",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &fastsleep_loop },
- };
- 
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
-@@ -166,19 +159,73 @@ static int powernv_cpuidle_driver_init(void)
- 	return 0;
- }
- 
-+static int powernv_add_idle_states(void)
-+{
-+	struct device_node *power_mgt;
-+	struct property *prop;
-+	int nr_idle_states = 1; /* Snooze */
-+	int dt_idle_states;
-+	u32 *flags;
-+	int i;
-+
-+	/* Currently we have snooze statically defined */
-+
-+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-+	if (!power_mgt) {
-+		pr_warn("opal: PowerMgmt Node not found\n");
-+		return nr_idle_states;
-+	}
-+
-+	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
-+	if (!prop) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-+		return nr_idle_states;
-+	}
-+
-+	dt_idle_states = prop->length / sizeof(u32);
-+	flags = (u32 *) prop->value;
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+
-+		if (flags[i] & IDLE_USE_INST_NAP) {
-+			/* Add NAP state */
-+			strcpy(powernv_states[nr_idle_states].name, "Nap");
-+			strcpy(powernv_states[nr_idle_states].desc, "Nap");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 10;
-+			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].enter = &nap_loop;
-+			nr_idle_states++;
-+		}
-+
-+		if (flags[i] & IDLE_USE_INST_SLEEP) {
-+			/* Add FASTSLEEP state */
-+			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
-+			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 300;
-+			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+			nr_idle_states++;
-+		}
-+	}
-+
-+	return nr_idle_states;
-+}
-+
- /*
-  * powernv_idle_probe()
-  * Choose state table for shared versus dedicated partition
-  */
- static int powernv_idle_probe(void)
- {
--
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
- 
- 	if (firmware_has_feature(FW_FEATURE_OPALv3)) {
- 		cpuidle_state_table = powernv_states;
--		max_idle_state = ARRAY_SIZE(powernv_states);
-+		/* Device tree can indicate more idle states */
-+		max_idle_state = powernv_add_idle_states();
-  	} else
-  		return -ENODEV;
- 
-
+> 2. Some laptops will boot-hang if HALT is used,
+>    but will boot successfully if MWAIT is used.
+>    This appears to be a hidden assumption in BIOS SMI,
+>    that is presumably valid on the proprietary OS
+>    where the BIOS was validated.
+> 
+>    https://bugzilla.kernel.org/show_bug.cgi?id=60770
+> 
+> So here we effectively revert the patch above, restoring
+> the mwait_idle() loop.  However, we don't bother restoring
+> the idle=mwait cmdline parameter, since it appears to add
+> no value.
+> 
+> Maintainer notes:
+> For 3.9, simply revert 69fb3676df
+> for 3.10, patch -F3 applies, fuzz needed due to __cpuinit use in context
+> For 3.11, 3.12, 3.13, this patch applies cleanly
+> 
+> Cc: Mike Galbraith <bitbucket@online.de>
+> Cc: Ian Malone <ibmalone@gmail.com>
+> Cc: Josh Boyer <jwboyer@redhat.com>
+> Cc: <stable@vger.kernel.org> # 3.9, 3.10, 3.11, 3.12, 3.13
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/kernel/process.c | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 46 insertions(+)
+> 
+> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> index 3fb8d95..db471a8 100644
+> --- a/arch/x86/kernel/process.c
+> +++ b/arch/x86/kernel/process.c
+> @@ -398,6 +398,49 @@ static void amd_e400_idle(void)
+>  		default_idle();
+>  }
+>  
+> +/*
+> + * Intel Core2 and older machines prefer MWAIT over HALT for C1.
+> + * We can't rely on cpuidle installing MWAIT, because it will not load
+> + * on systems that support only C1 -- so the boot default must be MWAIT.
+> + *  
+> + * Some AMD machines are the opposite, they depend on using HALT.
+> + *
+> + * So for default C1, which is used during boot until cpuidle loads,
+> + * use MWAIT-C1 on Intel HW that has it, else use HALT.
+> + */
+> +static int prefer_mwait_c1_over_halt(const struct cpuinfo_x86 *c)
+> +{
+> +	if (c->x86_vendor != X86_VENDOR_INTEL)
+> +		return 0;
+> +
+> +	if (!cpu_has(c, X86_FEATURE_MWAIT))
+> +		return 0;
+> +
+> +	return 1;
+> +}
+> +
+> +/*
+> + * MONITOR/MWAIT with no hints, used for default default C1 state.
+> + * This invokes MWAIT with interrutps enabled and no flags,
+> + * which is backwards compatible with the original MWAIT implementation.
+> + */
+> +
+> +static void mwait_idle(void)
+> +{
+> +	if (!need_resched()) {
+> +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
+> +			clflush((void *)&current_thread_info()->flags);
+> +
+> +		__monitor((void *)&current_thread_info()->flags, 0, 0);
+> +		smp_mb();
+> +		if (!need_resched())
+> +			__sti_mwait(0, 0);
+> +		else
+> +			local_irq_enable();
+> +	} else
+> +		local_irq_enable();
+> +}
+> +
+>  void select_idle_routine(const struct cpuinfo_x86 *c)
+>  {
+>  #ifdef CONFIG_SMP
+> @@ -411,6 +454,9 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
+>  		/* E400: APIC timer interrupt does not wake up CPU from C1e */
+>  		pr_info("using AMD E400 aware idle routine\n");
+>  		x86_idle = amd_e400_idle;
+> +	} else if (prefer_mwait_c1_over_halt(c)) {
+> +		pr_info("using mwait in idle threads\n");
+> +		x86_idle = mwait_idle;
+>  	} else
+>  		x86_idle = default_idle;
+>  }
