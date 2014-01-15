@@ -1,55 +1,128 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH] PM: Enable asynchronous noirq resume threads to save
- the resuming time
-Date: Wed, 15 Jan 2014 00:35:16 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C02047@SHSMSX101.ccr.corp.intel.com>
-References: <1389683888.3650.78.camel@cliu38-desktop-build>
- <1746120.u7vbF1Vtmp@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
+Date: Wed, 15 Jan 2014 00:37:34 -0500
+Message-ID: <345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
+References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:34300 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbaAOAhi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Jan 2014 19:37:38 -0500
-In-Reply-To: <1746120.u7vbF1Vtmp@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-qa0-f41.google.com ([209.85.216.41]:51961 "EHLO
+	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbaAOFjm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jan 2014 00:39:42 -0500
+In-Reply-To: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
+To: x86@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Mike Galbraith <bitbucket@online.de>, Ian Malone <ibmalone@gmail.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org
 
-SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
-ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFdlZG5l
-c2RheSwgSmFudWFyeSAxNSwgMjAxNCA2OjU1IEFNDQo+IFRvOiBMaXUsIENodWFuc2hlbmcNCj4g
-Q2M6IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBCcm93biwgTGVuOyBwYXZlbEB1Y3cuY3o7
-DQo+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-ZzsgTGksIFpodWFuZ3poaQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBQTTogRW5hYmxlIGFzeW5j
-aHJvbm91cyBub2lycSByZXN1bWUgdGhyZWFkcyB0byBzYXZlDQo+IHRoZSByZXN1bWluZyB0aW1l
-DQo+IA0KPiBPbiBUdWVzZGF5LCBKYW51YXJ5IDE0LCAyMDE0IDAzOjE4OjA4IFBNIENodWFuc2hl
-bmcgTGl1IHdyb3RlOg0KPiA+DQo+ID4gQ3VycmVudGx5LCB0aGUgZHBtX3Jlc3VtZV9ub2lycSgp
-IGlzIGRvbmUgc3luY2hyb25vdXNseSwgYW5kIGZvciBQQ0kgZGV2aWNlcw0KPiA+IHBjaV9wbV9y
-ZXN1bWVfbm9pcnEoKToNCj4gPg0KPiA+IHBjaV9wbV9yZXN1bWVfbm9pcnEoKQ0KPiA+ICBwY2lf
-cG1fZGVmYXVsdF9yZXN1bWVfZWFybHkoKQ0KPiA+ICAgcGNpX3Bvd2VyX3VwKCkNCj4gPiAgICBw
-Y2lfcmF3X3NldF9wb3dlcl9zdGF0ZSgpDQo+ID4gV2hpY2ggc2V0IHRoZSBkZXZpY2UgZnJvbSBE
-M2hvdCB0byBEMCBtb3N0bHksIGZvciBldmVyeSBkZXZpY2UsIHRoZXJlIHdpbGwNCj4gPiBiZSBv
-bmUgMTBtcyhwY2lfcG1fZDNfZGVsYXkpIHRvIHdhaXQuDQo+ID4NCj4gPiBIZW5jZSBub3JtYWxs
-eSBkcG1fcmVzdW1lX25vaXJxKCkgd2lsbCBjb3N0ID4gMTAwbXMsIHdoaWNoIGlzIGJpZ2dlciBm
-b3INCj4gbW9iaWxlDQo+ID4gcGxhdGZvcm0uDQo+IA0KPiBwY2lfcG1fZDNfZGVsYXkgdXN1YWxs
-eSBpcyBub3QgMTAgbXMuICBXaGF0IGlzIDEwIG1zIGlzIGRldi0+ZDNfZGVsYXksIGJ1dA0KPiB0
-aGF0IGFsc28gaXMgbm90IG9uIGV2ZXJ5IHBsYXRmb3JtIG5vdy4NClllcywgaXQgaXMgZDNfZGVs
-YXkgZXhhY3RseSwgdGhhbmtzIHlvdXIgY29ycmVjdGlvbi4NCg0KPiANCj4gVGhhdCBzYWlkIHRo
-ZSBhcHByb2FjaCBoZXJlIG1ha2VzIHNlbnNlLCBidXQgSSBoYXZlIHR3byBxdWVzdGlvbnM6DQo+
-IA0KPiAxLiBPbiB3aGF0IHN5c3RlbXMgaGFzIGl0IGJlZW4gdGVzdGVkPw0KSSBoYXZlIGJlZW4g
-dGVzdGVkIG9uIEJheXRyYWlsIHBsYXRmb3JtLCBhbmQgYXQgdGhlIGJlZ2lubmluZyB0aGUgZDNf
-ZGVsYXkgaXMgc2V0IHRvIDAsDQpidXQgd2UgcmVhbGx5IG1lZXQgdGhlIEhBTkcgaXNzdWUgaWYg
-d2Ugb3BlcmF0ZSB0aGUgZGV2aWNlIGltbWVkaWF0ZWx5IHNvbWV0aW1lcywNCnNvIGN1cnJlbnRs
-eSBtb3N0IFBDSSBkZXZpY2VzIGluIEJheXRyYWlsIGhhcyB0aGUgMTBtcyBkZWxheS4NCkFuZCBp
-dCBjYXVzZWQgdGhlIHdob2xlIHJlc3VtZSB0aW1lIGJpZ2dlciB0aGFuIENsb3ZlcnRyYWlsIHBs
-YXRmb3JtOw0KDQo+IDIuIFdoYXQgYWJvdXQgc3VzcGVuZF9sYXRlL3Jlc3VtZV9lYXJseT8gIElm
-IHRoZSBfbm9pcnEgdGhpbmdzIGFyZSB0byBiZQ0KPiBleGVjdXRlZCBhc3luY2hyb25vdXNseSwg
-dGhvc2Ugc2hvdWxkIGJlIHRvby4NCkkgbm90aWNlZCBpdCBqdXN0IHRha2VuIGxpdHRsZSB0aW1l
-IG9mdGVuLCBhbmQgSSBjYW5ub3QgZmluZCBvdXQgc29tZSByZWFzb25zIGZvciBjaGFuZ2luZyB0
-aGVtDQppbiB0aGVvcnksIHNvIGlmIHlvdSBsaWtlIGl0LCBJIHdpbGwgdXBkYXRlIHRoZW0gaW50
-byBwYXRjaCBWMiBhbHNvOikNCg0K
+From: Len Brown <len.brown@intel.com>
+
+In Linux-3.9 we removed the mwait_idle() loop:
+'x86 idle: remove mwait_idle() and "idle=mwait" cmdline param'
+(69fb3676df3329a7142803bb3502fa59dc0db2e3)
+
+The reasoning was that modern machines should be sufficiently
+happy during the boot process using the default_idle() HALT loop,
+until cpuidle loads and either acpi_idle or intel_idle
+invoke the newer MWAIT-with-hints idle loop.
+
+But two machines reported problems:
+1. Certain Core2-era machines support MWAIT-C1 and HALT only.
+   MWAIT-C1 is preferred for optimal power and performance.
+   But if they support just C1, cpuidle never loads and
+   so they use the boot-time default idle loop forever.
+
+2. Some laptops will boot-hang if HALT is used,
+   but will boot successfully if MWAIT is used.
+   This appears to be a hidden assumption in BIOS SMI,
+   that is presumably valid on the proprietary OS
+   where the BIOS was validated.
+
+   https://bugzilla.kernel.org/show_bug.cgi?id=60770
+
+So here we effectively revert the patch above, restoring
+the mwait_idle() loop.  However, we don't bother restoring
+the idle=mwait cmdline parameter, since it appears to add
+no value.
+
+Maintainer notes:
+For 3.9, simply revert 69fb3676df
+for 3.10, patch -F3 applies, fuzz needed due to __cpuinit use in context
+For 3.11, 3.12, 3.13, this patch applies cleanly
+
+Cc: Mike Galbraith <bitbucket@online.de>
+Cc: Ian Malone <ibmalone@gmail.com>
+Cc: Josh Boyer <jwboyer@redhat.com>
+Cc: <stable@vger.kernel.org> # 3.9, 3.10, 3.11, 3.12, 3.13
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/kernel/process.c | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 3fb8d95..db471a8 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -398,6 +398,49 @@ static void amd_e400_idle(void)
+ 		default_idle();
+ }
+ 
++/*
++ * Intel Core2 and older machines prefer MWAIT over HALT for C1.
++ * We can't rely on cpuidle installing MWAIT, because it will not load
++ * on systems that support only C1 -- so the boot default must be MWAIT.
++ *  
++ * Some AMD machines are the opposite, they depend on using HALT.
++ *
++ * So for default C1, which is used during boot until cpuidle loads,
++ * use MWAIT-C1 on Intel HW that has it, else use HALT.
++ */
++static int prefer_mwait_c1_over_halt(const struct cpuinfo_x86 *c)
++{
++	if (c->x86_vendor != X86_VENDOR_INTEL)
++		return 0;
++
++	if (!cpu_has(c, X86_FEATURE_MWAIT))
++		return 0;
++
++	return 1;
++}
++
++/*
++ * MONITOR/MWAIT with no hints, used for default default C1 state.
++ * This invokes MWAIT with interrutps enabled and no flags,
++ * which is backwards compatible with the original MWAIT implementation.
++ */
++
++static void mwait_idle(void)
++{
++	if (!need_resched()) {
++		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
++			clflush((void *)&current_thread_info()->flags);
++
++		__monitor((void *)&current_thread_info()->flags, 0, 0);
++		smp_mb();
++		if (!need_resched())
++			__sti_mwait(0, 0);
++		else
++			local_irq_enable();
++	} else
++		local_irq_enable();
++}
++
+ void select_idle_routine(const struct cpuinfo_x86 *c)
+ {
+ #ifdef CONFIG_SMP
+@@ -411,6 +454,9 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
+ 		/* E400: APIC timer interrupt does not wake up CPU from C1e */
+ 		pr_info("using AMD E400 aware idle routine\n");
+ 		x86_idle = amd_e400_idle;
++	} else if (prefer_mwait_c1_over_halt(c)) {
++		pr_info("using mwait in idle threads\n");
++		x86_idle = mwait_idle;
+ 	} else
+ 		x86_idle = default_idle;
+ }
+-- 
+1.8.5.2.309.ga25014b
+
