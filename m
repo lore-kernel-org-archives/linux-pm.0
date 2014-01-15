@@ -1,167 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC][PATCH 1/3] PM / sleep: Flag to avoid executing suspend callbacks for devices
-Date: Wed, 15 Jan 2014 00:13:53 +0100
-Message-ID: <2057014.FtPLgvpVX8@vostro.rjw.lan>
-References: <5420830.W4laSGaAU9@vostro.rjw.lan>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH] PM: Enable asynchronous noirq resume threads to save
+ the resuming time
+Date: Wed, 15 Jan 2014 00:35:16 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C02047@SHSMSX101.ccr.corp.intel.com>
+References: <1389683888.3650.78.camel@cliu38-desktop-build>
+ <1746120.u7vbF1Vtmp@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5420830.W4laSGaAU9@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:34300 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750880AbaAOAhi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Jan 2014 19:37:38 -0500
+In-Reply-To: <1746120.u7vbF1Vtmp@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-resume all runtime-suspended devices during system suspend, mostly
-because those devices may need to be reprogrammed due to different
-wakeup settings for system sleep and runtime PM.  However, at least
-in some cases that isn't really necessary, because the wakeup
-settings aren't really different.
-
-The idea here is that subsystems should know whether or not it is
-necessary to reprogram a given device during system suspend and they
-should be able to tell the PM core about that.  For this reason,
-modify the PM core so that if the .prepare() callback returns a
-positive value for certain device, the core will set a new
-power.no_suspend flag for it.  Then, if that flag is set, the core
-will skip all of the subsequent suspend callbacks for that device.
-
-However, since parents may need to be resumed so that their children
-can be reprogrammed, make the PM core clear power.no_suspend for
-devices that don't have power.ignore_children set and whose
-children don't have power.no_suspend set.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |   38 ++++++++++++++++++++++++++------------
- include/linux/pm.h        |    1 +
- 2 files changed, 27 insertions(+), 12 deletions(-)
-
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -918,7 +918,7 @@ static int device_suspend_noirq(struct d
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.no_suspend)
- 		return 0;
- 
- 	if (dev->pm_domain) {
-@@ -1006,7 +1006,7 @@ static int device_suspend_late(struct de
- 
- 	__pm_runtime_disable(dev, false);
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.no_suspend)
- 		return 0;
- 
- 	if (dev->pm_domain) {
-@@ -1143,8 +1143,10 @@ static int __device_suspend(struct devic
- 	 * for it, this is equivalent to the device signaling wakeup, so the
- 	 * system suspend operation should be aborted.
- 	 */
--	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-+	if (pm_runtime_barrier(dev) && device_may_wakeup(dev)) {
- 		pm_wakeup_event(dev, 0);
-+		dev->power.no_suspend = false;
-+	}
- 
- 	if (pm_wakeup_pending()) {
- 		async_error = -EBUSY;
-@@ -1157,6 +1159,9 @@ static int __device_suspend(struct devic
- 	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
-+	if (dev->power.no_suspend)
-+		goto End;
-+
- 	if (dev->pm_domain) {
- 		info = "power domain ";
- 		callback = pm_op(&dev->pm_domain->ops, state);
-@@ -1205,9 +1210,13 @@ static int __device_suspend(struct devic
-  End:
- 	if (!error) {
- 		dev->power.is_suspended = true;
--		if (dev->power.wakeup_path
--		    && dev->parent && !dev->parent->power.ignore_children)
--			dev->parent->power.wakeup_path = true;
-+		if (dev->parent && !dev->parent->power.ignore_children) {
-+			if (dev->power.wakeup_path)
-+				dev->parent->power.wakeup_path = true;
-+
-+			if (!dev->power.no_suspend)
-+				dev->parent->power.no_suspend = false;
-+		}
- 	}
- 
- 	device_unlock(dev);
-@@ -1307,7 +1316,7 @@ static int device_prepare(struct device
- {
- 	int (*callback)(struct device *) = NULL;
- 	char *info = NULL;
--	int error = 0;
-+	int ret = 0;
- 
- 	if (dev->power.syscore)
- 		return 0;
-@@ -1323,6 +1332,7 @@ static int device_prepare(struct device
- 	device_lock(dev);
- 
- 	dev->power.wakeup_path = device_may_wakeup(dev);
-+	dev->power.no_suspend = false;
- 
- 	if (dev->pm_domain) {
- 		info = "preparing power domain ";
-@@ -1344,16 +1354,20 @@ static int device_prepare(struct device
- 	}
- 
- 	if (callback) {
--		error = callback(dev);
--		suspend_report_result(callback, error);
-+		ret = callback(dev);
-+		suspend_report_result(callback, ret);
- 	}
- 
- 	device_unlock(dev);
- 
--	if (error)
-+	if (ret < 0) {
- 		pm_runtime_put(dev);
-+	} else if (ret > 0) {
-+		dev->power.no_suspend = true;
-+		ret = 0;
-+	}
- 
--	return error;
-+	return ret;
- }
- 
- /**
-@@ -1422,7 +1436,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_start);
- 
- void __suspend_report_result(const char *function, void *fn, int ret)
- {
--	if (ret)
-+	if (ret < 0)
- 		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
- }
- EXPORT_SYMBOL_GPL(__suspend_report_result);
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -544,6 +544,7 @@ struct dev_pm_info {
- 	bool			is_suspended:1;	/* Ditto */
- 	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
-+	bool			no_suspend:1;
- 	spinlock_t		lock;
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
+SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
+ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFdlZG5l
+c2RheSwgSmFudWFyeSAxNSwgMjAxNCA2OjU1IEFNDQo+IFRvOiBMaXUsIENodWFuc2hlbmcNCj4g
+Q2M6IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBCcm93biwgTGVuOyBwYXZlbEB1Y3cuY3o7
+DQo+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
+ZzsgTGksIFpodWFuZ3poaQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBQTTogRW5hYmxlIGFzeW5j
+aHJvbm91cyBub2lycSByZXN1bWUgdGhyZWFkcyB0byBzYXZlDQo+IHRoZSByZXN1bWluZyB0aW1l
+DQo+IA0KPiBPbiBUdWVzZGF5LCBKYW51YXJ5IDE0LCAyMDE0IDAzOjE4OjA4IFBNIENodWFuc2hl
+bmcgTGl1IHdyb3RlOg0KPiA+DQo+ID4gQ3VycmVudGx5LCB0aGUgZHBtX3Jlc3VtZV9ub2lycSgp
+IGlzIGRvbmUgc3luY2hyb25vdXNseSwgYW5kIGZvciBQQ0kgZGV2aWNlcw0KPiA+IHBjaV9wbV9y
+ZXN1bWVfbm9pcnEoKToNCj4gPg0KPiA+IHBjaV9wbV9yZXN1bWVfbm9pcnEoKQ0KPiA+ICBwY2lf
+cG1fZGVmYXVsdF9yZXN1bWVfZWFybHkoKQ0KPiA+ICAgcGNpX3Bvd2VyX3VwKCkNCj4gPiAgICBw
+Y2lfcmF3X3NldF9wb3dlcl9zdGF0ZSgpDQo+ID4gV2hpY2ggc2V0IHRoZSBkZXZpY2UgZnJvbSBE
+M2hvdCB0byBEMCBtb3N0bHksIGZvciBldmVyeSBkZXZpY2UsIHRoZXJlIHdpbGwNCj4gPiBiZSBv
+bmUgMTBtcyhwY2lfcG1fZDNfZGVsYXkpIHRvIHdhaXQuDQo+ID4NCj4gPiBIZW5jZSBub3JtYWxs
+eSBkcG1fcmVzdW1lX25vaXJxKCkgd2lsbCBjb3N0ID4gMTAwbXMsIHdoaWNoIGlzIGJpZ2dlciBm
+b3INCj4gbW9iaWxlDQo+ID4gcGxhdGZvcm0uDQo+IA0KPiBwY2lfcG1fZDNfZGVsYXkgdXN1YWxs
+eSBpcyBub3QgMTAgbXMuICBXaGF0IGlzIDEwIG1zIGlzIGRldi0+ZDNfZGVsYXksIGJ1dA0KPiB0
+aGF0IGFsc28gaXMgbm90IG9uIGV2ZXJ5IHBsYXRmb3JtIG5vdy4NClllcywgaXQgaXMgZDNfZGVs
+YXkgZXhhY3RseSwgdGhhbmtzIHlvdXIgY29ycmVjdGlvbi4NCg0KPiANCj4gVGhhdCBzYWlkIHRo
+ZSBhcHByb2FjaCBoZXJlIG1ha2VzIHNlbnNlLCBidXQgSSBoYXZlIHR3byBxdWVzdGlvbnM6DQo+
+IA0KPiAxLiBPbiB3aGF0IHN5c3RlbXMgaGFzIGl0IGJlZW4gdGVzdGVkPw0KSSBoYXZlIGJlZW4g
+dGVzdGVkIG9uIEJheXRyYWlsIHBsYXRmb3JtLCBhbmQgYXQgdGhlIGJlZ2lubmluZyB0aGUgZDNf
+ZGVsYXkgaXMgc2V0IHRvIDAsDQpidXQgd2UgcmVhbGx5IG1lZXQgdGhlIEhBTkcgaXNzdWUgaWYg
+d2Ugb3BlcmF0ZSB0aGUgZGV2aWNlIGltbWVkaWF0ZWx5IHNvbWV0aW1lcywNCnNvIGN1cnJlbnRs
+eSBtb3N0IFBDSSBkZXZpY2VzIGluIEJheXRyYWlsIGhhcyB0aGUgMTBtcyBkZWxheS4NCkFuZCBp
+dCBjYXVzZWQgdGhlIHdob2xlIHJlc3VtZSB0aW1lIGJpZ2dlciB0aGFuIENsb3ZlcnRyYWlsIHBs
+YXRmb3JtOw0KDQo+IDIuIFdoYXQgYWJvdXQgc3VzcGVuZF9sYXRlL3Jlc3VtZV9lYXJseT8gIElm
+IHRoZSBfbm9pcnEgdGhpbmdzIGFyZSB0byBiZQ0KPiBleGVjdXRlZCBhc3luY2hyb25vdXNseSwg
+dGhvc2Ugc2hvdWxkIGJlIHRvby4NCkkgbm90aWNlZCBpdCBqdXN0IHRha2VuIGxpdHRsZSB0aW1l
+IG9mdGVuLCBhbmQgSSBjYW5ub3QgZmluZCBvdXQgc29tZSByZWFzb25zIGZvciBjaGFuZ2luZyB0
+aGVtDQppbiB0aGVvcnksIHNvIGlmIHlvdSBsaWtlIGl0LCBJIHdpbGwgdXBkYXRlIHRoZW0gaW50
+byBwYXRjaCBWMiBhbHNvOikNCg0K
