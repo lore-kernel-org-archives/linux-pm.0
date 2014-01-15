@@ -1,214 +1,124 @@
-From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v2 1/2] thermal: add available policies attribut
-Date: Wed, 15 Jan 2014 10:00:55 -0400
-Message-ID: <52D69497.1030903@ti.com>
-References: <1389611863-7812-1-git-send-email-wni@nvidia.com> <1389611863-7812-2-git-send-email-wni@nvidia.com> <52D40D36.9060702@ti.com> <52D67066.8010403@nvidia.com>
+From: Paul Burton <paul.burton@imgtec.com>
+Subject: [PATCH 08/10] MIPS: support use of cpuidle
+Date: Wed, 15 Jan 2014 13:55:35 +0000
+Message-ID: <1389794137-11361-9-git-send-email-paul.burton@imgtec.com>
+References: <1389794137-11361-1-git-send-email-paul.burton@imgtec.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="Emwgp4cxH6x8tGd0WmMV3FADlGWa7WOal"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <52D67066.8010403-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from multi.imgtec.com ([194.200.65.239]:38404 "EHLO multi.imgtec.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752010AbaAOOBe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Jan 2014 09:01:34 -0500
+In-Reply-To: <1389794137-11361-1-git-send-email-paul.burton@imgtec.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-mips@linux-mips.org
+Cc: Paul Burton <paul.burton@imgtec.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
---Emwgp4cxH6x8tGd0WmMV3FADlGWa7WOal
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch lays the groundwork for MIPS platforms to make use of the
+cpuidle framework. The arch_cpu_idle function simply calls cpuidle &
+falls back to the regular cpu_wait path if cpuidle should fail (eg. if
+it's not selected or no driver is registered). A generic cpuidle state
+for the wait instruction is introduced, intended to ease use of the wait
+instruction from cpuidle drivers and reduce code duplication.
 
-On 15-01-2014 07:26, Wei Ni wrote:
-> On 01/13/2014 11:58 PM, Eduardo Valentin wrote:
->> * PGP Signed by an unknown key
->>
->> On 13-01-2014 07:17, Wei Ni wrote:
->>> The Linux thermal framework support to change governor policy
->>> in run time, but it can't show what available policies supported.
->>>
->>> This patch adds available_policies attribut to the thermal
->>
->> s/attribut/attribute/g
->=20
-> oh, thanks, I will fix it.
->=20
->>
->>> framework, it can list the thermal governors which can be
->>> used for a particular zone. This attribut is read only.
->>>
->>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>> ---
->>>  Documentation/thermal/sysfs-api.txt |    6 ++++++
->>>  drivers/thermal/thermal_core.c      |   25 +++++++++++++++++++++++++=
+Signed-off-by: Paul Burton <paul.burton@imgtec.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+---
+ arch/mips/Kconfig            |  2 ++
+ arch/mips/include/asm/idle.h | 14 ++++++++++++++
+ arch/mips/kernel/idle.c      | 20 +++++++++++++++++++-
+ 3 files changed, 35 insertions(+), 1 deletion(-)
 
->>>  2 files changed, 31 insertions(+)
->>>
->>> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/ther=
-mal/sysfs-api.txt
->>> index 87519cb..6a70b55c 100644
->>> --- a/Documentation/thermal/sysfs-api.txt
->>> +++ b/Documentation/thermal/sysfs-api.txt
->>> @@ -172,6 +172,7 @@ Thermal zone device sys I/F, created once it's re=
-gistered:
->>>      |---temp:			Current temperature
->>>      |---mode:			Working mode of the thermal zone
->>>      |---policy:			Thermal governor used for this zone
->>> +    |---available_policies	Available governors for this zone
->>
->> I would prefer:
->> "Available thermal governors for this zone"
->=20
-> Ok.
->=20
->>
->>>      |---trip_point_[0-*]_temp:	Trip point temperature
->>>      |---trip_point_[0-*]_type:	Trip point type
->>>      |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
->>> @@ -238,6 +239,10 @@ policy
->>>  	One of the various thermal governors used for a particular zone.
->>>  	RW, Required
->>> =20
->>> +available_policies
->>> +	Availabe thermal governors which can be used for a particular zone.=
-
->>> +	RO, Required
->>> +
->>>  trip_point_[0-*]_temp
->>>  	The temperature above which trip point will be fired.
->>>  	Unit: millidegree Celsius
->>> @@ -330,6 +335,7 @@ method, the sys I/F structure will be built like =
-this:
->>>      |---temp:			37000
->>>      |---mode:			enabled
->>>      |---policy:			step_wise
->>> +    |---available_policies:	step_wise fair_share
->>>      |---trip_point_0_temp:	100000
->>>      |---trip_point_0_type:	critical
->>>      |---trip_point_1_temp:	80000
->>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal=
-_core.c
->>> index 338a88b..aab1df8 100644
->>> --- a/drivers/thermal/thermal_core.c
->>> +++ b/drivers/thermal/thermal_core.c
->>> @@ -761,6 +761,24 @@ policy_show(struct device *dev, struct device_at=
-tribute *devattr, char *buf)
->>>  	return sprintf(buf, "%s\n", tz->governor->name);
->>>  }
->>> =20
->>> +static ssize_t
->>> +available_policies_show(struct device *dev, struct device_attribute =
-*devattr,
->>> +			char *buf)
->>> +{
->>> +	struct thermal_governor *pos;
->>> +	ssize_t count =3D 0;
->>> +
->>> +	mutex_lock(&thermal_governor_lock);
->>> +
->>> +	list_for_each_entry(pos, &thermal_governor_list, governor_list)
->>> +		count +=3D sprintf(buf + count, "%s ", pos->name);
->>
->> I would prefer if you'd used scnprintf
->>
->>> +	count +=3D sprintf(buf + count, "\n");
->>
->> ditto.
->>
->>
->> It is unlikely, but What if count if greater than PAGE_SIZE?
->=20
-> hmm, I checked the sysfs driver, in funciton sysfs_kf_seq_show(), it
-> seems it can handle the count greater than PAGE_SIZE.
-> Or we can return error here directly.
-> What do you think about it?
-
-Just to be aware that it will truncate your buffer:
-	/*
-	 * The code works fine with PAGE_SIZE return but it's likely to
-	 * indicate truncated result or overflow in normal use cases.
-	 */
-	if (count >=3D (ssize_t)PAGE_SIZE) {
-		print_symbol("fill_read_buffer: %s returned bad count\n",
-			(unsigned long)ops->show);
-		/* Try to struggle along */
-		count =3D PAGE_SIZE - 1;
-	}
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 5bc27c0..95f2f11 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -1838,6 +1838,8 @@ config CPU_R4K_CACHE_TLB
+ 	bool
+ 	default y if !(CPU_R3000 || CPU_R8000 || CPU_SB1 || CPU_TX39XX || CPU_CAVIUM_OCTEON)
+ 
++source "drivers/cpuidle/Kconfig"
++
+ choice
+ 	prompt "MIPS MT options"
+ 
+diff --git a/arch/mips/include/asm/idle.h b/arch/mips/include/asm/idle.h
+index d192158..d9f932d 100644
+--- a/arch/mips/include/asm/idle.h
++++ b/arch/mips/include/asm/idle.h
+@@ -1,6 +1,7 @@
+ #ifndef __ASM_IDLE_H
+ #define __ASM_IDLE_H
+ 
++#include <linux/cpuidle.h>
+ #include <linux/linkage.h>
+ 
+ extern void (*cpu_wait)(void);
+@@ -20,4 +21,17 @@ static inline int address_is_in_r4k_wait_irqoff(unsigned long addr)
+ 	       addr < (unsigned long)__pastwait;
+ }
+ 
++extern int mips_cpuidle_wait_enter(struct cpuidle_device *dev,
++				   struct cpuidle_driver *drv, int index);
++
++#define MIPS_CPUIDLE_WAIT_STATE {\
++	.enter			= mips_cpuidle_wait_enter,\
++	.exit_latency		= 1,\
++	.target_residency	= 1,\
++	.power_usage		= UINT_MAX,\
++	.flags			= CPUIDLE_FLAG_TIME_VALID,\
++	.name			= "wait",\
++	.desc			= "MIPS wait",\
++}
++
+ #endif /* __ASM_IDLE_H  */
+diff --git a/arch/mips/kernel/idle.c b/arch/mips/kernel/idle.c
+index 3553243..64e91e4 100644
+--- a/arch/mips/kernel/idle.c
++++ b/arch/mips/kernel/idle.c
+@@ -11,6 +11,7 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
++#include <linux/cpuidle.h>
+ #include <linux/export.h>
+ #include <linux/init.h>
+ #include <linux/irqflags.h>
+@@ -239,7 +240,7 @@ static void smtc_idle_hook(void)
+ #endif
+ }
+ 
+-void arch_cpu_idle(void)
++static void mips_cpu_idle(void)
+ {
+ 	smtc_idle_hook();
+ 	if (cpu_wait)
+@@ -247,3 +248,20 @@ void arch_cpu_idle(void)
+ 	else
+ 		local_irq_enable();
+ }
++
++void arch_cpu_idle(void)
++{
++	if (cpuidle_idle_call())
++		mips_cpu_idle();
++}
++
++#ifdef CONFIG_CPU_IDLE
++
++int mips_cpuidle_wait_enter(struct cpuidle_device *dev,
++			    struct cpuidle_driver *drv, int index)
++{
++	mips_cpu_idle();
++	return index;
++}
++
++#endif
+-- 
+1.8.4.2
 
 
-So, you either truncate here or leave to sysfs_seq_show(). Leave at
-least a comment in case you leave to sysfs layer.
-
->=20
->>
->>> +
->>> +	mutex_unlock(&thermal_governor_lock);
->>> +
->>> +	return count;
->>> +}
->>> +
->>>  #ifdef CONFIG_THERMAL_EMULATION
->>>  static ssize_t
->>>  emul_temp_store(struct device *dev, struct device_attribute *attr,
->>> @@ -794,6 +812,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
->>>  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
->>>  static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive=
-_store);
->>>  static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_st=
-ore);
->>> +static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_s=
-how, NULL);
->>> =20
->>>  /* sys I/F for cooling device */
->>>  #define to_cooling_device(_dev)	\
->>> @@ -1527,6 +1546,11 @@ struct thermal_zone_device *thermal_zone_devic=
-e_register(const char *type,
->>>  	if (result)
->>>  		goto unregister;
->>> =20
->>> +	/* Create available_policies attribute */
->>> +	result =3D device_create_file(&tz->device, &dev_attr_available_poli=
-cies);
->>> +	if (result)
->>> +		goto unregister;
->>> +
->>>  	/* Update 'this' zone's governor information */
->>>  	mutex_lock(&thermal_governor_lock);
->>> =20
->>> @@ -1622,6 +1646,7 @@ void thermal_zone_device_unregister(struct ther=
-mal_zone_device *tz)
->>>  	if (tz->ops->get_mode)
->>>  		device_remove_file(&tz->device, &dev_attr_mode);
->>>  	device_remove_file(&tz->device, &dev_attr_policy);
->>> +	device_remove_file(&tz->device, &dev_attr_available_policies);
->>>  	remove_trip_attrs(tz);
->>>  	tz->governor =3D NULL;
->>> =20
->>>
->>
->>
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---Emwgp4cxH6x8tGd0WmMV3FADlGWa7WOal
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlLWlJcACgkQCXcVR3XQvP27EAEA/BtrYIJeTh6od2NAZ4nMgT8G
-qIat+4mDXACiGgGzUPkBAICVxhuBhLMLny3XF3nW6Au97zFvrIyjt/5Xa0DtVi9R
-=rirf
------END PGP SIGNATURE-----
-
---Emwgp4cxH6x8tGd0WmMV3FADlGWa7WOal--
