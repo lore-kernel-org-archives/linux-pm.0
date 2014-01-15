@@ -1,436 +1,203 @@
-From: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v2 1/2] thermal: introduce thermal_zone_get_zone_by_node
- helper function
-Date: Wed, 15 Jan 2014 10:09:00 -0400
-Message-ID: <52D6967C.9010305@ti.com>
-References: <1389263879-10483-1-git-send-email-wni@nvidia.com> <1389263879-10483-2-git-send-email-wni@nvidia.com> <52D40EC6.6050509@ti.com> <52D512F1.1090008@nvidia.com> <52D5582F.5000807@ti.com> <52D6766D.6080100@nvidia.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH V5 0/8] cpuidle/ppc: Enable deep idle states on PowerNV
+Date: Wed, 15 Jan 2014 10:29:53 -0500
+Message-ID: <52D6A971.4040301@windriver.com>
+References: <20140115080555.20446.27238.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="dEVk26m9C9IGfJWFv3iDjGxjxV4QOCvsI"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <52D6766D.6080100-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.windriver.com ([147.11.146.13]:65501 "EHLO
+	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbaAOPbl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jan 2014 10:31:41 -0500
+In-Reply-To: <20140115080555.20446.27238.stgit@preeti.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, agraf@suse.de, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, galak@kernel.crashing.org, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
---dEVk26m9C9IGfJWFv3iDjGxjxV4QOCvsI
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 14-01-15 03:07 AM, Preeti U Murthy wrote:
 
-On 15-01-2014 07:52, Wei Ni wrote:
-> On 01/14/2014 11:30 PM, Eduardo Valentin wrote:
->> * PGP Signed by an unknown key
->>
->> Hello Wei,
->>
->> On 14-01-2014 06:35, Wei Ni wrote:
->>> On 01/14/2014 12:05 AM, Eduardo Valentin wrote:
->>>>> Old Signed by an unknown key
->>>>
->>>> On 09-01-2014 06:37, Wei Ni wrote:
->>>>> The thermal framework start to support device tree, this
->>>>> patch adds a helper function to get a reference of a
->>>>> thermal zone, based on the zone's device node.
->>>>
->>>> I would prefer if you could provide a better justification why we ne=
-ed
->>>> this API. Think of the scope of this API: would it be used only by t=
-he
->>>> of-thermal code? only by the drivers/thermal code? or any driver?
->>>
->>
->>
->>> I have talked it in the previous patch "Re: [PATCH] thermal: use devi=
-ce
->>> node to get thermal zone".
->>
->> Thanks for putting me in the same page
->>
->>
->>> So let me copy to here again:
->>>
->>> On the tegra board, it will use two or more sensors to estimate the s=
-kin
->>> temperature by reading temps from these sensors and calculate them.
->>
->> OK. Have you read the Example (c) in the thermal binding document
->> (Documentation/devicetree/bindings/thermal)?
->>
->>> For example, we have two sensors: sensor1 and sensor2. We can registe=
-r
->>> them to thermal framework by using DT, something like:
->>> thermal-zones {
->>>                 sensor1: lm90-local {
->>>                       ...
->>>                         thermal-sensors =3D <&lm90 0>;
->>>                 };
->>>
->>>                 sensor2: lm90-remote {
->>>                       ...
->>>                         thermal-sensors =3D <&lm90 1>;
->>>                 };
->>> }
->>
->> where is the descriptor for lm90?
->=20
-> There has descriptior for lm90, I didn't post it.
->=20
->>
->> This is actually not how it is supposed to be described.
->>
->>>
->>> Then I will add a device node for my skin temperature driver, somethi=
-ng
->>> like:
->>> skin_temp {
->>>       ...
->>>       #thermal-sensor-cells =3D <0>;
->>>
->>>       sub-devs {
->>>               dev@0 {
->>>                       dev =3D <&sensor1>;
->>>               };
->>>
->>>               dev@1 {
->>>                       dev =3D <&sensor2>;
->>>               };
->>>       };
->>> };
->>
->> What is the above? A virtual device?
->=20
-> Yes, it is the node for the skin temperature estimator driver.
->=20
->>
->> I believe the above is not really part of the thermal bindings.
->>
->>> So I can parse the DT in the skin temperature driver to get the nodes=
- of
->>> the sensor1 and sensor2, and can use .*get_by_node to get thermal zon=
-e
->>> device, then use .get_temp() and other callbacks to get temperature a=
-nd
->>> other information.
->>>
->>
->> The above is a different binding and different API then of what has be=
-en
->> discussed last year for thermal bindings. I am copying here the existi=
-ng
->> example:
->>
->> #include <dt-bindings/thermal/thermal.h>
->>
->> &i2c1 {
->>         ...
->>         /*
->>          * A simple IC with a single temperature sensor.
->>          */
->>         adc: sensor@0x49 {
->>                 ...
->>                 #thermal-sensor-cells =3D <0>;
->>         };
->> };
->>
->> ocp {
->>         ...
->>         /*
->>          * A simple IC with a single bandgap temperature sensor.
->>          */
->>         bandgap0: bandgap@0x0000ED00 {
->>                 ...
->>                 #thermal-sensor-cells =3D <0>;
->>         };
->> };
->>
->> thermal-zones {
->>         cpu-thermal: cpu-thermal {
->>                 polling-delay-passive =3D <250>; /* milliseconds */
->>                 polling-delay =3D <1000>; /* milliseconds */
->>
->>                 thermal-sensors =3D <&bandgap0>,  /* cpu */
->>                                   <&adc>;       /* pcb north */
->>
->>                 /* hotspot =3D 100 * bandgap - 120 * adc + 484 */
->>                 coefficients =3D          <100    -120    484>;
->>
->>                 trips {
->>                         ...
->>                 };
->>
->>                 cooling-maps {
->>                         ...
->>                 };
->>         };
->> };
->>
->>
->>
->> The idea is to have a producer-> consumer description, in which the
->> thermal zone is the consumer and the sensors are the producers (for
->> temperature at least).
->>
->> What is the relation between the sensors you have?
->>
->> Why the above structure cannot cover for your case? Here is what you
->> would do to describe your case:
->=20
-> Yes, I noticed that you have this sample in the documents, but it seems=
+[...]
 
-> the of-thermal only support one sensor in the thermal-sensors list, and=
+> 
+> This patchset is based on mainline commit-id:8ae516aa8b8161254d3,  and the
 
-> didn't handle the coefficients yet.
-> And in my skin temperature estimator driver, it will have more complex
-> logic to estimate the temperature, it will consider the history
-> temperatures, and have coefficients for every history temp, it seems
-> can't use your coefficients easily.
+I figured I'd give this a quick sanity build test for a few
+configs, but v3.13-rc1-141-g8ae516aa8b81 seems too old; Ben's
+ppc next branch is at v3.13-rc1-160-gfac515db4520 and it fails:
 
-Is it possible to disclose what is the real equation you are using to
-populate your virtual sensor?  In this way we can either discuss how to
-implement it using the existing API or propose the correct improvements.
+-------
+$ git am ppc-idle
+Applying: powerpc: Free up the slot of PPC_MSG_CALL_FUNC_SINGLE IPI message
+Applying: powerpc: Implement tick broadcast IPI as a fixed IPI message
+Applying: cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
+error: patch failed: arch/powerpc/kernel/time.c:510
+error: arch/powerpc/kernel/time.c: patch does not apply
+Patch failed at 0003 cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
+The copy of the patch that failed is found in:
+   /home/paul/git/linux-head/.git/rebase-apply/patch
+When you have resolved this problem, run "git am --continue".
+If you prefer to skip this patch, run "git am --skip" instead.
+To restore the original branch and stop patching, run "git am --abort".
+$ dry-run
+patching file arch/powerpc/kernel/time.c
+Hunk #3 FAILED at 544.
+Hunk #4 FAILED at 554.
+Hunk #5 succeeded at 862 (offset 12 lines).
+2 out of 5 hunks FAILED -- saving rejects to file arch/powerpc/kernel/time.c.rej
+--------
 
-I am considering posting a series of statistical treatment for the
-thermal framework.
+It appears to conflict with:
 
->=20
->>
->> /*
->>  * You did not specify which type of sensors, so I am assuming
->>  * they are I2C sensors
->>  */
->> &i2c1 {
->>                  lm90: sensor@48 {
->>                         ...
->>                          #thermal-sensor-cells =3D <1>;
->>                  };
->> };
->>
->> thermal-zones {
->>         skin-hotspot: skin-hotspot {
->>                 polling-delay-passive =3D <2000>; /* put the right val=
- */
->>                 polling-delay =3D <1000>; /* put the right val */
->>
->>                 thermal-sensors =3D <&lm90 0>,    /* local */
->>                                   <&lm90 1>;    /* remote */
->>
->>                 /* hotspot ?
->>                  * What is the relation that describes your sensors?
->>                  * coefficients =3D  <A_0 A_1>; you have to fill the c=
-oef.
->>                  */
->>
->>                 trips {
->>                         ...
->>                 };
->>
->>                 cooling-maps {
->>                         ...
->>                 };
->>         };
->> };
->>
->> So, the idea is so that you define your sensor nodes and the respectiv=
-e
->> drivers, in the above example the i2c drivers, will probe them. When
->> creating thermal zones, you have to specify the list of sensors by
->> linking using phandles + sensor specifier, as documented in the therma=
-l
->> binding text.
->>
->>>>
->>>> So far you have provided only one user, and that user can already wo=
-rk
->>>> with existing APIs. As I mention, DT does not support name duplicati=
-ons.
->>>
->>> If the system only have the DT, then there will not have name
->>> duplications. But some drivers will call the
->>> thermal_zone_device_register directly with any thermal zone type, and=
- at
->>> same time, other drivers may use of-thermal to register, and set the
->>> same name in the DT. Then if use the *.get_by_name, it can't get the
->>> uniqu one.
->>
->> The above example is odd to me. Why would a driver be registering zone=
-s
->> from DT and from in kernel definition? The usual path is to have eithe=
-r
->> one or the other. Even if you are migrating your system to DT based
->> booting, you may have a mix of devices that are probed via DT and othe=
-rs
->> that are probed via board files, but one single driver probing both, I=
+commit 0215f7d8c53fb192cd4491ede0ece5cca6b5db57
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Tue Jan 14 17:11:39 2014 +1100
 
->> think this is unusual.
->>
->>>
->>>>
->>>> Unless you enlighten  me with better uses of this API, I would prefe=
-r
->>>> not to have it.
->>>>
->>>>
->>>>>
->>>>> It will add a device_node *np member in the struct
->>>>> thermal_zone_device, and initialize it when create a thermal
->>>>> zone. This funciton perform a zone device node lookup and
->>>>> return a reference to a thermal zone device that matches
->>>>> the device node requested.
->>>>> In case the zone is not found or if the required parameters
->>>>> are invalid, it will return the corresponding error code (ERR_PTR).=
-
->>>>>
->>>>> Change-Id: I4d65f849e84425dddd387f70886a9c7c4c2002f2
->>>>
->>>> For your next patches, please done include gerrit change IDs. Linux
->>>> Kernel does not need to be linked to your inhouse development histor=
-y
->>>> via gerrit IDs.
->>>
->>> It's so sorry, I forgot to remove it.
->>>
->>>>
->>>>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>>>> ---
->>>>>  drivers/thermal/of-thermal.c   |    2 ++
->>>>>  drivers/thermal/thermal_core.c |   33 ++++++++++++++++++++++++++++=
-+++++
->>>>>  include/linux/thermal.h        |    3 +++
->>>>>  3 files changed, 38 insertions(+)
->>>>>
->>>>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-ther=
-mal.c
->>>>> index 04b1be7..53f2d3a 100644
->>>>> --- a/drivers/thermal/of-thermal.c
->>>>> +++ b/drivers/thermal/of-thermal.c
->>>>> @@ -804,6 +804,8 @@ int __init of_parse_thermal_zones(void)
->>>>>                     of_thermal_free_zone(tz);
->>>>>                     /* attempting to build remaining zones still */=
-
->>>>>             }
->>>>> +
->>>>> +           zone->np =3D child;
->>>>>     }
->>>>>
->>>>>     return 0;
->>>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/therm=
-al_core.c
->>>>> index 338a88b..eeddb94 100644
->>>>> --- a/drivers/thermal/thermal_core.c
->>>>> +++ b/drivers/thermal/thermal_core.c
->>>>> @@ -1672,6 +1672,39 @@ exit:
->>>>>  }
->>>>>  EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
->>>>>
->>>>> +/**
->>>>> +* thermal_zone_get_zone_by_node() - search for a zone and returns =
-its ref
->>>>> +* @node: device node of the thermal zone
->>>>> +*
->>>>> +* When thermal zone is found with the passed device node, returns =
-a reference
->>>>> +* to it.
->>>>> +*
->>>>> +* Return: On success returns a reference to an unique thermal zone=
- with
->>>>> +* matching device node, an ERR_PTR otherwise (-EINVAL for invalid
->>>>> +* paramenters, -ENODEV for not found).
->>>>> +*/
->>>>> +struct thermal_zone_device *
->>>>> +thermal_zone_get_zone_by_node(struct device_node *node)
->>>>> +{
->>>>> +   struct thermal_zone_device *pos =3D NULL, *ref =3D ERR_PTR(-ENO=
-DEV);
->>>>> +   bool found =3D false;
->>>>> +
->>>>> +   if (!node)
->>>>> +           return ERR_PTR(-EINVAL);
->>>>> +
->>>>> +   mutex_lock(&thermal_list_lock);
->>>>> +   list_for_each_entry(pos, &thermal_tz_list, node)
->>>>> +           if (node =3D=3D pos->np) {
->>>>> +                   ref =3D pos;
->>>>> +                   found =3D true;
->>>>> +                   break;
->>>>> +           }
->>>>> +   mutex_unlock(&thermal_list_lock);
->>>>> +
->>>>> +   return ref;
->>>>> +}
->>>>> +EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_node);
->>>>> +
->>>>>  #ifdef CONFIG_NET
->>>>>  static const struct genl_multicast_group thermal_event_mcgrps[] =3D=
- {
->>>>>     { .name =3D THERMAL_GENL_MCAST_GROUP_NAME, },
->>>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->>>>> index f7e11c7..288d272 100644
->>>>> --- a/include/linux/thermal.h
->>>>> +++ b/include/linux/thermal.h
->>>>> @@ -162,6 +162,7 @@ struct thermal_zone_device {
->>>>>     int id;
->>>>>     char type[THERMAL_NAME_LENGTH];
->>>>>     struct device device;
->>>>> +   struct device_node *np;
->>>>>     struct thermal_attr *trip_temp_attrs;
->>>>>     struct thermal_attr *trip_type_attrs;
->>>>>     struct thermal_attr *trip_hyst_attrs;
->>>>> @@ -286,6 +287,8 @@ thermal_of_cooling_device_register(struct devic=
-e_node *np, char *, void *,
->>>>>                                const struct thermal_cooling_device_=
-ops *);
->>>>>  void thermal_cooling_device_unregister(struct thermal_cooling_devi=
-ce *);
->>>>>  struct thermal_zone_device *thermal_zone_get_zone_by_name(const ch=
-ar *name);
->>>>> +struct thermal_zone_device *
->>>>> +thermal_zone_get_zone_by_node(struct device_node *node);
->>>>>  int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned=
- long *temp);
->>>>>
->>>>>  int get_tz_trend(struct thermal_zone_device *, int);
->>>>>
->>>>
->>>>
->>>
->>>
->>>
->>
->>
->> --
->> You have got to be excited about what you are doing. (L. Lamport)
->>
->> Eduardo Valentin
->>
->>
->> * Unknown Key
->> * 0x75D0BCFD
->>
->=20
->=20
->=20
+    powerpc: Fix races with irq_work
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+Paul.
+--
 
-Eduardo Valentin
-
-
---dEVk26m9C9IGfJWFv3iDjGxjxV4QOCvsI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlLWlnwACgkQCXcVR3XQvP1JtwD+Mtcku+cCCvZF6xEMJ63N/jrS
-/W7w4Xr9n/Z2lfsrmskBAO/5+/F4vgU60sRZ7tTCTtrYS4uv9CO6kgkPqdqjzCOk
-=cYI/
------END PGP SIGNATURE-----
-
---dEVk26m9C9IGfJWFv3iDjGxjxV4QOCvsI--
+> cpuidle driver for powernv posted by Deepthi Dharwar:
+> https://lkml.org/lkml/2014/1/14/172
+> 
+> 
+> Changes in V5:
+> -------------
+> The primary change in this version is in Patch[6/8].
+> As per the discussions in V4 posting of this patchset, it was decided to
+> refine handling the wakeup of CPUs in fast-sleep by doing the following:
+> 
+> 1. In V4, a polling mechanism was used by the CPU handling broadcast to
+> find out the time of next wakeup of the CPUs in deep idle states. V5 avoids
+> polling by a way described under PATCH[6/8] in this patchset.
+> 
+> 2. The mechanism of broadcast handling of CPUs in deep idle in the absence of an
+> external wakeup device should be generic and not arch specific code. Hence in this
+> version this functionality has been integrated into the tick broadcast framework in
+> the kernel unlike before where it was handled in powerpc specific code.
+> 
+> 3. It was suggested that the "broadcast cpu" can be the time keeping cpu
+> itself. However this has challenges of its own:
+> 
+>  a. The time keeping cpu need not exist when all cpus are idle. Hence there
+> are phases in time when time keeping cpu is absent. But for the use case that
+> this patchset is trying to address we rely on the presence of a broadcast cpu
+> all the time.
+> 
+>  b. The nomination and un-assignment of the time keeping cpu is not protected
+> by a lock today and need not be as well since such is its use case in the
+> kernel. However we would need locks if we double up the time keeping cpu as the
+> broadcast cpu.
+> 
+> Hence the broadcast cpu is independent of the time-keeping cpu. However PATCH[6/8]
+> proposes a simpler solution to pick a broadcast cpu in this version.
+> 
+> 
+> 
+> Changes in V4:
+> -------------
+> https://lkml.org/lkml/2013/11/29/97
+> 
+> 1. Add Fast Sleep CPU idle state on PowerNV.
+> 
+> 2. Add the required context management for Fast Sleep and the call to OPAL
+> to synchronize time base after wakeup from fast sleep.
+> 
+> 4. Add parsing of CPU idle states from the device tree to populate the
+> cpuidle
+> state table.
+> 
+> 5. Rename ambiguous functions in the code around waking up of CPUs from fast
+> sleep.
+> 
+> 6. Fixed a bug in re-programming of the hrtimer that is queued to wakeup the
+> CPUs in fast sleep and modified Changelogs.
+> 
+> 7. Added the ARCH_HAS_TICK_BROADCAST option. This signifies that we have a
+> arch specific function to perform broadcast.
+> 
+> 
+> Changes in V3:
+> -------------
+> http://thread.gmane.org/gmane.linux.power-management.general/38113
+> 
+> 1. Fix the way in which a broadcast ipi is handled on the idling cpus. Timer
+> handling on a broadcast ipi is being done now without missing out any timer
+> stats generation.
+> 
+> 2. Fix a bug in the programming of the hrtimer meant to do broadcast. Program
+> it to trigger at the earlier of a "broadcast period", and the next wakeup
+> event. By introducing the "broadcast period" as the maximum period after
+> which the broadcast hrtimer can fire, we ensure that we do not miss
+> wakeups in corner cases.
+> 
+> 3. On hotplug of a broadcast cpu, trigger the hrtimer meant to do broadcast
+> to fire immediately on the new broadcast cpu. This will ensure we do not miss
+> doing a broadcast pending in the nearest future.
+> 
+> 4. Change the type of allocation from GFP_KERNEL to GFP_NOWAIT while
+> initializing bc_hrtimer since we are in an atomic context and cannot sleep.
+> 
+> 5. Use the broadcast ipi to wakeup the newly nominated broadcast cpu on
+> hotplug of the old instead of smp_call_function_single(). This is because we
+> are interrupt disabled at this point and should not be using
+> smp_call_function_single or its children in this context to send an ipi.
+> 
+> 6. Move GENERIC_CLOCKEVENTS_BROADCAST to arch/powerpc/Kconfig.
+> 
+> 7. Fix coding style issues.
+> 
+> 
+> Changes in V2:
+> -------------
+> https://lkml.org/lkml/2013/8/14/239
+> 
+> 1. Dynamically pick a broadcast CPU, instead of having a dedicated one.
+> 2. Remove the constraint of having to disable tickless idle on the broadcast
+> CPU by queueing a hrtimer dedicated to do broadcast.
+> 
+> 
+> 
+> V1 posting: https://lkml.org/lkml/2013/7/25/740.
+> 
+> 1. Added the infrastructure to wakeup CPUs in deep idle states in which the
+> local timers stop.
+> ---
+> 
+> Preeti U Murthy (4):
+>       cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
+>       time/cpuidle: Support in tick broadcast framework in the absence of external clock device
+>       cpuidle/powernv: Add "Fast-Sleep" CPU idle state
+>       cpuidle/powernv: Parse device tree to setup idle states
+> 
+> Srivatsa S. Bhat (2):
+>       powerpc: Free up the slot of PPC_MSG_CALL_FUNC_SINGLE IPI message
+>       powerpc: Implement tick broadcast IPI as a fixed IPI message
+> 
+> Vaidyanathan Srinivasan (2):
+>       powernv/cpuidle: Add context management for Fast Sleep
+>       powermgt: Add OPAL call to resync timebase on wakeup
+> 
+> 
+>  arch/powerpc/Kconfig                           |    2 
+>  arch/powerpc/include/asm/opal.h                |    2 
+>  arch/powerpc/include/asm/processor.h           |    1 
+>  arch/powerpc/include/asm/smp.h                 |    2 
+>  arch/powerpc/include/asm/time.h                |    1 
+>  arch/powerpc/kernel/exceptions-64s.S           |   10 +
+>  arch/powerpc/kernel/idle_power7.S              |   90 +++++++++--
+>  arch/powerpc/kernel/smp.c                      |   23 ++-
+>  arch/powerpc/kernel/time.c                     |   80 ++++++----
+>  arch/powerpc/platforms/cell/interrupt.c        |    2 
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |    1 
+>  arch/powerpc/platforms/ps3/smp.c               |    2 
+>  drivers/cpuidle/cpuidle-powernv.c              |  106 ++++++++++++-
+>  include/linux/clockchips.h                     |    4 -
+>  kernel/time/clockevents.c                      |    9 +
+>  kernel/time/tick-broadcast.c                   |  192 ++++++++++++++++++++++--
+>  kernel/time/tick-internal.h                    |    8 +
+>  17 files changed, 434 insertions(+), 101 deletions(-)
+> 
