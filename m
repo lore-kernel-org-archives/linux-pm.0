@@ -1,91 +1,169 @@
-From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCHv5 01/10] Thermal: Do kfree in _unregister functions
-Date: Fri, 17 Jan 2014 05:26:18 +0530
-Message-ID: <1389916587-2541-2-git-send-email-durgadoss.r@intel.com>
-References: <1389916587-2541-1-git-send-email-durgadoss.r@intel.com>
+From: dirk.brandewie@gmail.com
+Subject: [PATCH v2] intel_pstate: Add trace point to report internal state.
+Date: Thu, 16 Jan 2014 10:32:25 -0800
+Message-ID: <1389897145-3479-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:23616 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751665AbaAPS2d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 16 Jan 2014 13:28:33 -0500
-In-Reply-To: <1389916587-2541-1-git-send-email-durgadoss.r@intel.com>
+Received: from mail-pb0-f49.google.com ([209.85.160.49]:37849 "EHLO
+	mail-pb0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbaAPSce (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 13:32:34 -0500
+Received: by mail-pb0-f49.google.com with SMTP id up15so2470590pbc.22
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jan 2014 10:32:34 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hongbo.zhang@freescale.com, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Currently the thermal_release function does
-kfree for all devices when they call device_unregister.
-This makes code scattering i.e whenever we add new
-devices (to thermal class) we need to add its
-corresponding kfree in thermal_release function.
-And the if-else is also growing lengthy.
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Instead, do all kfree() of devices in their own
-_unregister functions. This makes the code look
-clean and easy to maintain.
+Add perf trace event "power:pstate_sample" to report driver state to
+aid in diagnosing issues reported against intel_pstate.
 
-Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/thermal/thermal_core.c |   17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 24 +++++++++++++++++++
+ include/trace/events/power.h   | 53 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 77 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 338a88b..165afc6 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1042,18 +1042,7 @@ EXPORT_SYMBOL_GPL(thermal_zone_unbind_cooling_device);
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index fe91dad..7e257b2 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -51,6 +51,8 @@ static inline int32_t div_fp(int32_t x, int32_t y)
+ 	return div_s64((int64_t)x << FRAC_BITS, (int64_t)y);
+ }
  
- static void thermal_release(struct device *dev)
++static u64 energy_divisor;
++
+ struct sample {
+ 	int32_t core_pct_busy;
+ 	u64 aperf;
+@@ -559,6 +561,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
++
+ 	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
+ 	cpu->samples[cpu->sample_ptr].aperf = aperf;
+ 	cpu->samples[cpu->sample_ptr].mperf = mperf;
+@@ -603,6 +606,7 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ 	ctl = pid_calc(pid, busy_scaled);
+ 
+ 	steps = abs(ctl);
++
+ 	if (ctl < 0)
+ 		intel_pstate_pstate_increase(cpu, steps);
+ 	else
+@@ -612,9 +616,24 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ static void intel_pstate_timer_func(unsigned long __data)
  {
--	struct thermal_zone_device *tz;
--	struct thermal_cooling_device *cdev;
--
--	if (!strncmp(dev_name(dev), "thermal_zone",
--		     sizeof("thermal_zone") - 1)) {
--		tz = to_thermal_zone(dev);
--		kfree(tz);
--	} else if(!strncmp(dev_name(dev), "cooling_device",
--			sizeof("cooling_device") - 1)){
--		cdev = to_cooling_device(dev);
--		kfree(cdev);
--	}
-+	/* No-op since kfree(dev) is done in _unregister functions */
+ 	struct cpudata *cpu = (struct cpudata *) __data;
++	struct sample *sample;
++	u64 energy;
+ 
+ 	intel_pstate_sample(cpu);
++
++	sample = &cpu->samples[cpu->sample_ptr];
++	rdmsrl(MSR_PKG_ENERGY_STATUS, energy);
++
+ 	intel_pstate_adjust_busy_pstate(cpu);
++
++	trace_pstate_sample(fp_toint(sample->core_pct_busy),
++			fp_toint(intel_pstate_get_scaled_busy(cpu)),
++			cpu->pstate.current_pstate,
++			sample->mperf,
++			sample->aperf,
++			div64_u64(energy, energy_divisor),
++			sample->freq);
++
+ 	intel_pstate_set_sample_time(cpu);
  }
  
- static struct class thermal_class = {
-@@ -1146,6 +1135,7 @@ __thermal_cooling_device_register(struct device_node *np,
- unregister:
- 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
- 	device_unregister(&cdev->device);
-+	kfree(cdev);
- 	return ERR_PTR(result);
- }
+@@ -894,6 +913,7 @@ static int __init intel_pstate_init(void)
+ 	int cpu, rc = 0;
+ 	const struct x86_cpu_id *id;
+ 	struct cpu_defaults *cpu_info;
++	u64 units;
  
-@@ -1250,6 +1240,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ 	if (no_load)
+ 		return -ENODEV;
+@@ -927,8 +947,12 @@ static int __init intel_pstate_init(void)
+ 	if (rc)
+ 		goto out;
  
- 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
- 	device_unregister(&cdev->device);
-+	kfree(cdev);
- 	return;
- }
- EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
-@@ -1563,6 +1554,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- unregister:
- 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
- 	device_unregister(&tz->device);
-+	kfree(tz);
- 	return ERR_PTR(result);
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_register);
-@@ -1630,6 +1622,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	idr_destroy(&tz->idr);
- 	mutex_destroy(&tz->lock);
- 	device_unregister(&tz->device);
-+	kfree(tz);
- 	return;
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
++	rdmsrl(MSR_RAPL_POWER_UNIT, units);
++	energy_divisor = 1 << ((units >> 8) & 0x1f); /* bits{12:8} */
++
+ 	intel_pstate_debug_expose_params();
+ 	intel_pstate_sysfs_expose_params();
++
+ 	return rc;
+ out:
+ 	get_online_cpus();
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index cda100d..9e9475c 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -35,6 +35,59 @@ DEFINE_EVENT(cpu, cpu_idle,
+ 	TP_ARGS(state, cpu_id)
+ );
+ 
++TRACE_EVENT(pstate_sample,
++
++	TP_PROTO(u32 core_busy,
++		u32 scaled_busy,
++		u32 state,
++		u64 mperf,
++		u64 aperf,
++		u32 energy,
++		u32 freq
++		),
++
++	TP_ARGS(core_busy,
++		scaled_busy,
++		state,
++		mperf,
++		aperf,
++		energy,
++		freq
++		),
++
++	TP_STRUCT__entry(
++		__field(u32, core_busy)
++		__field(u32, scaled_busy)
++		__field(u32, state)
++		__field(u64, mperf)
++		__field(u64, aperf)
++		__field(u32, energy)
++		__field(u32, freq)
++
++	),
++
++	TP_fast_assign(
++		__entry->core_busy = core_busy;
++		__entry->scaled_busy = scaled_busy;
++		__entry->state = state;
++		__entry->mperf = mperf;
++		__entry->aperf = aperf;
++		__entry->energy = energy;
++		__entry->freq = freq;
++		),
++
++	TP_printk("core_busy=%lu scaled=%lu state=%lu mperf=%llu aperf=%llu energy=%lu freq=%lu ",
++		(unsigned long)__entry->core_busy,
++		(unsigned long)__entry->scaled_busy,
++		(unsigned long)__entry->state,
++		(unsigned long long)__entry->mperf,
++		(unsigned long long)__entry->aperf,
++		(unsigned long)__entry->energy,
++		(unsigned long)__entry->freq
++		)
++
++);
++
+ /* This file can get included multiple times, TRACE_HEADER_MULTI_READ at top */
+ #ifndef _PWR_EVENT_AVOID_DOUBLE_DEFINING
+ #define _PWR_EVENT_AVOID_DOUBLE_DEFINING
 -- 
-1.7.9.5
+1.8.3.1
 
