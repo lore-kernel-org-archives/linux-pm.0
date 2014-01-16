@@ -1,81 +1,140 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] power: clock_ops.c: fixup clk prepare/unprepare count
-Date: Thu, 16 Jan 2014 02:08:51 +0100
-Message-ID: <5882532.MC6M7Hz6Wk@vostro.rjw.lan>
-References: <1389702222-17260-1-git-send-email-ben.dooks@codethink.co.uk> <1389702222-17260-2-git-send-email-ben.dooks@codethink.co.uk>
+Subject: Re: [PATCH 1/3] pm/qos: allow state control of qos class
+Date: Thu, 16 Jan 2014 02:17:01 +0100
+Message-ID: <4530703.p5VZzXUXfQ@vostro.rjw.lan>
+References: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com> <1385508011-26914-2-git-send-email-jacob.jun.pan@linux.intel.com> <52952E90.4000604@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1389702222-17260-2-git-send-email-ben.dooks@codethink.co.uk>
-Sender: linux-sh-owner@vger.kernel.org
-To: Ben Dooks <ben.dooks@codethink.co.uk>
-Cc: linux-kernel@lists.codethink.co.uk, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59231 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752191AbaAPBDB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jan 2014 20:03:01 -0500
+In-Reply-To: <52952E90.4000604@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Tuesday, January 14, 2014 12:23:40 PM Ben Dooks wrote:
-> The drivers/base/power/clock_ops.c file is causing warnings from
-> the clock driver (as shown below) due to failing to do a clk_prepare()
-> call before enabling a clock. It also fails to check the balance of
-> prepare/unprepare as __pm_clk_remove() do clk_disable_unprepare() call.
+On Wednesday, November 27, 2013 12:28:16 AM Rafael J. Wysocki wrote:
+> On 11/27/2013 12:20 AM, Jacob Pan wrote:
+> > When power capping or thermal control is needed, CPU QOS latency cannot
+> > be satisfied. This patch adds a state variable to indicate whether a QOS
+> > class (including all constraint requests) should be ignored.
+> >
+> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 > 
-> This bug has probably been in since commit b2476490e ("clk: introduce
-> the common clock framework") as the warning was part of the original
-> commit. It is strange that it has not been noticed (although this has
-> also been coupled with a failure for certain SH builds to not build the
-> necessary glue to use this method of controlling the clocks).
+> Honestly, I don't like this.  I know the motivation and what you're 
+> trying to achieve, but I don't like the approach.
 > 
-> In summary, this is probably needed in several stable branches but need
-> advice on which ones.
-> 
-> On the Renesas Lager board, this causes numerous warnings of the following
-> and even worse the clock system will not enable clocks, causing drivers
-> that are in development to fail to work:
-> 
-> WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:883 __clk_enable+0x2c/0xa0()
+> I need to think a bit more about that.
 
-All three queued up for 3.14, thanks!
+So the reason I don't like this patch is mainly because it affects all of the
+users of struct pm_qos_constraints and pm_qos_read_value(), which include
+device PM QoS among other things, but it only really needs to affect 
+PM_QOS_CPU_DMA_LATENCY.
 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
-> Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
-> ---
->  drivers/base/power/clock_ops.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
+I would add a special routine, say pm_qos_cpu_dma_latency(), for reading the
+current effective PM_QOS_CPU_DMA_LATENCY constraint and checking whether or
+not it should be ignored.  Then, I'd make cpuidle use that.
+
+Thanks!
+
+> > ---
+> >   include/linux/pm_qos.h | 10 +++++++++-
+> >   kernel/power/qos.c     | 24 ++++++++++++++++++++++++
+> >   2 files changed, 33 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> > index 5a95013..648b50b 100644
+> > --- a/include/linux/pm_qos.h
+> > +++ b/include/linux/pm_qos.h
+> > @@ -10,7 +10,7 @@
+> >   #include <linux/device.h>
+> >   #include <linux/workqueue.h>
+> >   
+> > -enum {
+> > +enum pm_qos_class {
+> >   	PM_QOS_RESERVED = 0,
+> >   	PM_QOS_CPU_DMA_LATENCY,
+> >   	PM_QOS_NETWORK_LATENCY,
+> > @@ -20,6 +20,11 @@ enum {
+> >   	PM_QOS_NUM_CLASSES,
+> >   };
+> >   
+> > +enum pm_qos_state {
+> > +	PM_QOS_CONSTRAINT_AVAILABLE,
+> > +	PM_QOS_CONSTRAINT_IGNORED,
+> > +};
+> > +
+> >   enum pm_qos_flags_status {
+> >   	PM_QOS_FLAGS_UNDEFINED = -1,
+> >   	PM_QOS_FLAGS_NONE,
+> > @@ -77,6 +82,7 @@ struct pm_qos_constraints {
+> >   	struct plist_head list;
+> >   	s32 target_value;	/* Do not change to 64 bit */
+> >   	s32 default_value;
+> > +	enum pm_qos_state state;
+> >   	enum pm_qos_type type;
+> >   	struct blocking_notifier_head *notifiers;
+> >   };
+> > @@ -123,6 +129,8 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+> >   int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+> >   int pm_qos_request_active(struct pm_qos_request *req);
+> >   s32 pm_qos_read_value(struct pm_qos_constraints *c);
+> > +void pm_qos_set_constraint_class_state(enum pm_qos_class class,
+> > +				enum pm_qos_state state);
+> >   
+> >   #ifdef CONFIG_PM
+> >   enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
+> > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> > index 8dff9b4..cf475b0 100644
+> > --- a/kernel/power/qos.c
+> > +++ b/kernel/power/qos.c
+> > @@ -146,6 +146,11 @@ static inline int pm_qos_get_value(struct pm_qos_constraints *c)
+> >   
+> >   s32 pm_qos_read_value(struct pm_qos_constraints *c)
+> >   {
+> > +	/* return invalid default value if constraints cannot be met, e.g.
+> > +	 * during idle injection.
+> > +	 */
+> > +	if (c->state == PM_QOS_CONSTRAINT_IGNORED)
+> > +		return PM_QOS_DEFAULT_VALUE;
+> >   	return c->target_value;
+> >   }
+> >   
+> > @@ -353,6 +358,25 @@ void pm_qos_add_request(struct pm_qos_request *req,
+> >   }
+> >   EXPORT_SYMBOL_GPL(pm_qos_add_request);
+> >   
+> > +void pm_qos_set_constraint_class_state(enum pm_qos_class class,
+> > +				enum pm_qos_state state)
+> > +{
+> > +	struct pm_qos_constraints *c = pm_qos_array[class]->constraints;
+> > +	unsigned long curr_value;
+> > +
+> > +	if (c->state == state)
+> > +		return;
+> > +	curr_value = (state == PM_QOS_CONSTRAINT_IGNORED) ?
+> > +		PM_QOS_DEFAULT_VALUE : c->target_value;
+> > +	c->state = state;
+> > +
+> > +	/* notify existing QOS requests change */
+> > +	blocking_notifier_call_chain(c->notifiers,
+> > +				curr_value,
+> > +				NULL);
+> > +}
+> > +EXPORT_SYMBOL_GPL(pm_qos_set_constraint_class_state);
+> > +
+> >   /**
+> >    * pm_qos_update_request - modifies an existing qos request
+> >    * @req : handle to list element holding a pm_qos request to use
 > 
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 9d8fde7..b9dd8fa 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -43,6 +43,7 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
->  	if (IS_ERR(ce->clk)) {
->  		ce->status = PCE_STATUS_ERROR;
->  	} else {
-> +		clk_prepare(ce->clk);
->  		ce->status = PCE_STATUS_ACQUIRED;
->  		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
->  	}
-> @@ -99,10 +100,12 @@ static void __pm_clk_remove(struct pm_clock_entry *ce)
->  
->  	if (ce->status < PCE_STATUS_ERROR) {
->  		if (ce->status == PCE_STATUS_ENABLED)
-> -			clk_disable_unprepare(ce->clk);
-> +			clk_disable(ce->clk);
->  
-> -		if (ce->status >= PCE_STATUS_ACQUIRED)
-> +		if (ce->status >= PCE_STATUS_ACQUIRED) {
-> +			clk_unprepare(ce->clk);
->  			clk_put(ce->clk);
-> +		}
->  	}
->  
->  	kfree(ce->con_id);
-> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
