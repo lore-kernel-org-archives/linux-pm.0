@@ -1,223 +1,466 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V5 0/8] cpuidle/ppc: Enable deep idle states on PowerNV
-Date: Thu, 16 Jan 2014 07:47:10 +0530
-Message-ID: <52D74126.6050602@linux.vnet.ibm.com>
-References: <20140115080555.20446.27238.stgit@preeti.in.ibm.com> <52D6A971.4040301@windriver.com>
+From: Chuansheng Liu <chuansheng.liu@intel.com>
+Subject: [PATCH V2] PM: Enable asynchronous threads for
+ suspend/resume_noirq/late/early phases
+Date: Thu, 16 Jan 2014 14:58:57 +0800
+Message-ID: <1389855537.8320.5.camel@cliu38-desktop-build>
+References: <1389683888.3650.78.camel@cliu38-desktop-build>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e32.co.us.ibm.com ([32.97.110.150]:38707 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbaAPCUv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jan 2014 21:20:51 -0500
-Received: from /spool/local
-	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Wed, 15 Jan 2014 19:20:50 -0700
-In-Reply-To: <52D6A971.4040301@windriver.com>
+Received: from mga09.intel.com ([134.134.136.24]:44722 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750957AbaAPGxA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 Jan 2014 01:53:00 -0500
+In-Reply-To: <1389683888.3650.78.camel@cliu38-desktop-build>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, agraf@suse.de, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, galak@kernel.crashing.org, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, zhuangzhi.li@intel.com, chuansheng.liu@intel.com
 
-Hi Paul,
 
-On 01/15/2014 08:59 PM, Paul Gortmaker wrote:
-> On 14-01-15 03:07 AM, Preeti U Murthy wrote:
-> 
-> [...]
-> 
->>
->> This patchset is based on mainline commit-id:8ae516aa8b8161254d3,  and the
-> 
-> I figured I'd give this a quick sanity build test for a few
-> configs, but v3.13-rc1-141-g8ae516aa8b81 seems too old; Ben's
-> ppc next branch is at v3.13-rc1-160-gfac515db4520 and it fails:
-> 
-> -------
-> $ git am ppc-idle
-> Applying: powerpc: Free up the slot of PPC_MSG_CALL_FUNC_SINGLE IPI message
-> Applying: powerpc: Implement tick broadcast IPI as a fixed IPI message
-> Applying: cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
-> error: patch failed: arch/powerpc/kernel/time.c:510
-> error: arch/powerpc/kernel/time.c: patch does not apply
-> Patch failed at 0003 cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
-> The copy of the patch that failed is found in:
->    /home/paul/git/linux-head/.git/rebase-apply/patch
-> When you have resolved this problem, run "git am --continue".
-> If you prefer to skip this patch, run "git am --skip" instead.
-> To restore the original branch and stop patching, run "git am --abort".
-> $ dry-run
-> patching file arch/powerpc/kernel/time.c
-> Hunk #3 FAILED at 544.
-> Hunk #4 FAILED at 554.
-> Hunk #5 succeeded at 862 (offset 12 lines).
-> 2 out of 5 hunks FAILED -- saving rejects to file arch/powerpc/kernel/time.c.rej
-> --------
-> 
-> It appears to conflict with:
-> 
-> commit 0215f7d8c53fb192cd4491ede0ece5cca6b5db57
-> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date:   Tue Jan 14 17:11:39 2014 +1100
-> 
->     powerpc: Fix races with irq_work
-> 
-> 
+Current code has implemented asynchronous threads for dpm_suspend()
+and dpm_resume(), which saved much time.
 
-Thanks for the build test.I will base it on the mainline at the latest
-commit as well as on Ben's tree and send out this patchset.
+As commit 5af84b82701a and 97df8c12995 said, the total time can be
+reduced significantly by running suspend and resume callbacks of
+device drivers in parallel with each other.
 
-Regards
-Preeti U Murthy
-> Paul.
-> --
-> 
->> cpuidle driver for powernv posted by Deepthi Dharwar:
->> https://lkml.org/lkml/2014/1/14/172
->>
->>
->> Changes in V5:
->> -------------
->> The primary change in this version is in Patch[6/8].
->> As per the discussions in V4 posting of this patchset, it was decided to
->> refine handling the wakeup of CPUs in fast-sleep by doing the following:
->>
->> 1. In V4, a polling mechanism was used by the CPU handling broadcast to
->> find out the time of next wakeup of the CPUs in deep idle states. V5 avoids
->> polling by a way described under PATCH[6/8] in this patchset.
->>
->> 2. The mechanism of broadcast handling of CPUs in deep idle in the absence of an
->> external wakeup device should be generic and not arch specific code. Hence in this
->> version this functionality has been integrated into the tick broadcast framework in
->> the kernel unlike before where it was handled in powerpc specific code.
->>
->> 3. It was suggested that the "broadcast cpu" can be the time keeping cpu
->> itself. However this has challenges of its own:
->>
->>  a. The time keeping cpu need not exist when all cpus are idle. Hence there
->> are phases in time when time keeping cpu is absent. But for the use case that
->> this patchset is trying to address we rely on the presence of a broadcast cpu
->> all the time.
->>
->>  b. The nomination and un-assignment of the time keeping cpu is not protected
->> by a lock today and need not be as well since such is its use case in the
->> kernel. However we would need locks if we double up the time keeping cpu as the
->> broadcast cpu.
->>
->> Hence the broadcast cpu is independent of the time-keeping cpu. However PATCH[6/8]
->> proposes a simpler solution to pick a broadcast cpu in this version.
->>
->>
->>
->> Changes in V4:
->> -------------
->> https://lkml.org/lkml/2013/11/29/97
->>
->> 1. Add Fast Sleep CPU idle state on PowerNV.
->>
->> 2. Add the required context management for Fast Sleep and the call to OPAL
->> to synchronize time base after wakeup from fast sleep.
->>
->> 4. Add parsing of CPU idle states from the device tree to populate the
->> cpuidle
->> state table.
->>
->> 5. Rename ambiguous functions in the code around waking up of CPUs from fast
->> sleep.
->>
->> 6. Fixed a bug in re-programming of the hrtimer that is queued to wakeup the
->> CPUs in fast sleep and modified Changelogs.
->>
->> 7. Added the ARCH_HAS_TICK_BROADCAST option. This signifies that we have a
->> arch specific function to perform broadcast.
->>
->>
->> Changes in V3:
->> -------------
->> http://thread.gmane.org/gmane.linux.power-management.general/38113
->>
->> 1. Fix the way in which a broadcast ipi is handled on the idling cpus. Timer
->> handling on a broadcast ipi is being done now without missing out any timer
->> stats generation.
->>
->> 2. Fix a bug in the programming of the hrtimer meant to do broadcast. Program
->> it to trigger at the earlier of a "broadcast period", and the next wakeup
->> event. By introducing the "broadcast period" as the maximum period after
->> which the broadcast hrtimer can fire, we ensure that we do not miss
->> wakeups in corner cases.
->>
->> 3. On hotplug of a broadcast cpu, trigger the hrtimer meant to do broadcast
->> to fire immediately on the new broadcast cpu. This will ensure we do not miss
->> doing a broadcast pending in the nearest future.
->>
->> 4. Change the type of allocation from GFP_KERNEL to GFP_NOWAIT while
->> initializing bc_hrtimer since we are in an atomic context and cannot sleep.
->>
->> 5. Use the broadcast ipi to wakeup the newly nominated broadcast cpu on
->> hotplug of the old instead of smp_call_function_single(). This is because we
->> are interrupt disabled at this point and should not be using
->> smp_call_function_single or its children in this context to send an ipi.
->>
->> 6. Move GENERIC_CLOCKEVENTS_BROADCAST to arch/powerpc/Kconfig.
->>
->> 7. Fix coding style issues.
->>
->>
->> Changes in V2:
->> -------------
->> https://lkml.org/lkml/2013/8/14/239
->>
->> 1. Dynamically pick a broadcast CPU, instead of having a dedicated one.
->> 2. Remove the constraint of having to disable tickless idle on the broadcast
->> CPU by queueing a hrtimer dedicated to do broadcast.
->>
->>
->>
->> V1 posting: https://lkml.org/lkml/2013/7/25/740.
->>
->> 1. Added the infrastructure to wakeup CPUs in deep idle states in which the
->> local timers stop.
->> ---
->>
->> Preeti U Murthy (4):
->>       cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
->>       time/cpuidle: Support in tick broadcast framework in the absence of external clock device
->>       cpuidle/powernv: Add "Fast-Sleep" CPU idle state
->>       cpuidle/powernv: Parse device tree to setup idle states
->>
->> Srivatsa S. Bhat (2):
->>       powerpc: Free up the slot of PPC_MSG_CALL_FUNC_SINGLE IPI message
->>       powerpc: Implement tick broadcast IPI as a fixed IPI message
->>
->> Vaidyanathan Srinivasan (2):
->>       powernv/cpuidle: Add context management for Fast Sleep
->>       powermgt: Add OPAL call to resync timebase on wakeup
->>
->>
->>  arch/powerpc/Kconfig                           |    2 
->>  arch/powerpc/include/asm/opal.h                |    2 
->>  arch/powerpc/include/asm/processor.h           |    1 
->>  arch/powerpc/include/asm/smp.h                 |    2 
->>  arch/powerpc/include/asm/time.h                |    1 
->>  arch/powerpc/kernel/exceptions-64s.S           |   10 +
->>  arch/powerpc/kernel/idle_power7.S              |   90 +++++++++--
->>  arch/powerpc/kernel/smp.c                      |   23 ++-
->>  arch/powerpc/kernel/time.c                     |   80 ++++++----
->>  arch/powerpc/platforms/cell/interrupt.c        |    2 
->>  arch/powerpc/platforms/powernv/opal-wrappers.S |    1 
->>  arch/powerpc/platforms/ps3/smp.c               |    2 
->>  drivers/cpuidle/cpuidle-powernv.c              |  106 ++++++++++++-
->>  include/linux/clockchips.h                     |    4 -
->>  kernel/time/clockevents.c                      |    9 +
->>  kernel/time/tick-broadcast.c                   |  192 ++++++++++++++++++++++--
->>  kernel/time/tick-internal.h                    |    8 +
->>  17 files changed, 434 insertions(+), 101 deletions(-)
->>
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+For the suspend_late/suspend_noirq/resume_noirq/resume_early phases,
+sometimes they often taken much time without asynchronous threads,
+following the idea of the above commits, implemented it with async
+threads too.
+
+One example below for my test platform:
+Without this patch:
+[ 1411.272218] PM: noirq resume of devices complete after 92.223 msecs
+with this patch:
+[  110.616735] PM: noirq resume of devices complete after 10.544 msecs
+
+Normally 80% time is saved, which is helpful for the user experience
+specially for mobile platform.
+
+Signed-off-by: Liu, Chuansheng <chuansheng.liu@intel.com>
+---
+ drivers/base/power/main.c |  189 +++++++++++++++++++++++++++++++++++++++------
+ include/linux/pm.h        |    2 +
+ 2 files changed, 166 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 6a33dd8..62648b2 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -72,6 +72,8 @@ void device_pm_sleep_init(struct device *dev)
+ {
+ 	dev->power.is_prepared = false;
+ 	dev->power.is_suspended = false;
++	dev->power.is_late_suspended = false;
++	dev->power.is_noirq_suspended = false;
+ 	init_completion(&dev->power.completion);
+ 	complete_all(&dev->power.completion);
+ 	dev->power.wakeup = NULL;
+@@ -452,7 +454,7 @@ static void dpm_wd_clear(struct dpm_watchdog *wd)
+  * The driver of @dev will not receive interrupts while this function is being
+  * executed.
+  */
+-static int device_resume_noirq(struct device *dev, pm_message_t state)
++static int __device_resume_noirq(struct device *dev, pm_message_t state)
+ {
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+@@ -464,6 +466,9 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
+ 	if (dev->power.syscore)
+ 		goto Out;
+ 
++	if (!dev->power.is_noirq_suspended)
++		goto Out;
++
+ 	if (dev->pm_domain) {
+ 		info = "noirq power domain ";
+ 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
+@@ -484,12 +489,41 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
+ 	}
+ 
+ 	error = dpm_run_callback(callback, dev, state, info);
++	dev->power.is_noirq_suspended = false;
+ 
+  Out:
+ 	TRACE_RESUME(error);
+ 	return error;
+ }
+ 
++static bool is_async(struct device *dev)
++{
++	return dev->power.async_suspend && pm_async_enabled
++		&& !pm_trace_is_enabled();
++}
++
++static void async_resume_noirq(void *data, async_cookie_t cookie)
++{
++	struct device *dev = (struct device *)data;
++	int error;
++
++	error = __device_resume_noirq(dev, pm_transition);
++	if (error)
++		pm_dev_err(dev, pm_transition, " noirq", error);
++	put_device(dev);
++}
++
++static int device_resume_noirq(struct device *dev)
++{
++	if (is_async(dev)) {
++		get_device(dev);
++		async_schedule(async_resume_noirq, dev);
++		return 0;
++	}
++
++	return __device_resume_noirq(dev, pm_transition);
++}
++
+ /**
+  * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
+  * @state: PM transition of the system being carried out.
+@@ -500,6 +534,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
+ static void dpm_resume_noirq(pm_message_t state)
+ {
+ 	ktime_t starttime = ktime_get();
++	pm_transition = state;
+ 
+ 	mutex_lock(&dpm_list_mtx);
+ 	while (!list_empty(&dpm_noirq_list)) {
+@@ -510,18 +545,18 @@ static void dpm_resume_noirq(pm_message_t state)
+ 		list_move_tail(&dev->power.entry, &dpm_late_early_list);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+-		error = device_resume_noirq(dev, state);
++		error = device_resume_noirq(dev);
+ 		if (error) {
+ 			suspend_stats.failed_resume_noirq++;
+ 			dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
+ 			dpm_save_failed_dev(dev_name(dev));
+ 			pm_dev_err(dev, state, " noirq", error);
+ 		}
+-
+ 		mutex_lock(&dpm_list_mtx);
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
++	async_synchronize_full();
+ 	dpm_show_time(starttime, state, "noirq");
+ 	resume_device_irqs();
+ 	cpuidle_resume();
+@@ -534,7 +569,7 @@ static void dpm_resume_noirq(pm_message_t state)
+  *
+  * Runtime PM is disabled for @dev while this function is being executed.
+  */
+-static int device_resume_early(struct device *dev, pm_message_t state)
++static int __device_resume_early(struct device *dev, pm_message_t state)
+ {
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+@@ -546,6 +581,9 @@ static int device_resume_early(struct device *dev, pm_message_t state)
+ 	if (dev->power.syscore)
+ 		goto Out;
+ 
++	if (!dev->power.is_late_suspended)
++		goto Out;
++
+ 	if (dev->pm_domain) {
+ 		info = "early power domain ";
+ 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
+@@ -566,7 +604,7 @@ static int device_resume_early(struct device *dev, pm_message_t state)
+ 	}
+ 
+ 	error = dpm_run_callback(callback, dev, state, info);
+-
++	dev->power.is_late_suspended = false;
+  Out:
+ 	TRACE_RESUME(error);
+ 
+@@ -574,6 +612,28 @@ static int device_resume_early(struct device *dev, pm_message_t state)
+ 	return error;
+ }
+ 
++static void async_resume_early(void *data, async_cookie_t cookie)
++{
++	struct device *dev = (struct device *)data;
++	int error;
++
++	error = __device_resume_early(dev, pm_transition);
++	if (error)
++		pm_dev_err(dev, pm_transition, " async", error);
++	put_device(dev);
++}
++
++static int device_resume_early(struct device *dev)
++{
++	if (is_async(dev)) {
++		get_device(dev);
++		async_schedule(async_resume_early, dev);
++		return 0;
++	}
++
++	return __device_resume_early(dev, pm_transition);
++}
++
+ /**
+  * dpm_resume_early - Execute "early resume" callbacks for all devices.
+  * @state: PM transition of the system being carried out.
+@@ -583,6 +643,8 @@ static void dpm_resume_early(pm_message_t state)
+ 	ktime_t starttime = ktime_get();
+ 
+ 	mutex_lock(&dpm_list_mtx);
++	pm_transition = state;
++
+ 	while (!list_empty(&dpm_late_early_list)) {
+ 		struct device *dev = to_device(dpm_late_early_list.next);
+ 		int error;
+@@ -591,7 +653,7 @@ static void dpm_resume_early(pm_message_t state)
+ 		list_move_tail(&dev->power.entry, &dpm_suspended_list);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+-		error = device_resume_early(dev, state);
++		error = device_resume_early(dev);
+ 		if (error) {
+ 			suspend_stats.failed_resume_early++;
+ 			dpm_save_failed_step(SUSPEND_RESUME_EARLY);
+@@ -603,6 +665,7 @@ static void dpm_resume_early(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
++	async_synchronize_full();
+ 	dpm_show_time(starttime, state, "early");
+ }
+ 
+@@ -717,12 +780,6 @@ static void async_resume(void *data, async_cookie_t cookie)
+ 	put_device(dev);
+ }
+ 
+-static bool is_async(struct device *dev)
+-{
+-	return dev->power.async_suspend && pm_async_enabled
+-		&& !pm_trace_is_enabled();
+-}
+-
+ /**
+  * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
+  * @state: PM transition of the system being carried out.
+@@ -898,10 +955,14 @@ static pm_message_t resume_event(pm_message_t sleep_state)
+  * The driver of @dev will not receive interrupts while this function is being
+  * executed.
+  */
+-static int device_suspend_noirq(struct device *dev, pm_message_t state)
++static int __device_suspend_noirq(struct device *dev, pm_message_t state)
+ {
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
++	int error;
++
++	if (async_error)
++		return 0;
+ 
+ 	if (dev->power.syscore)
+ 		return 0;
+@@ -925,9 +986,38 @@ static int device_suspend_noirq(struct device *dev, pm_message_t state)
+ 		callback = pm_noirq_op(dev->driver->pm, state);
+ 	}
+ 
+-	return dpm_run_callback(callback, dev, state, info);
++	error = dpm_run_callback(callback, dev, state, info);
++	if (error)
++		async_error = error;
++	else
++		dev->power.is_noirq_suspended = true;
++
++	return error;
++}
++
++static void async_suspend_noirq(void *data, async_cookie_t cookie)
++{
++	struct device *dev = (struct device *)data;
++	int error;
++
++	error = __device_suspend_noirq(dev, pm_transition);
++	if (error) {
++		dpm_save_failed_dev(dev_name(dev));
++		pm_dev_err(dev, pm_transition, " async", error);
++	}
++
++	put_device(dev);
+ }
+ 
++static int device_suspend_noirq(struct device *dev)
++{
++	if (pm_async_enabled && dev->power.async_suspend) {
++		get_device(dev);
++		async_schedule(async_suspend_noirq, dev);
++		return 0;
++	}
++	return __device_suspend_noirq(dev, pm_transition);
++}
+ /**
+  * dpm_suspend_noirq - Execute "noirq suspend" callbacks for all devices.
+  * @state: PM transition of the system being carried out.
+@@ -943,19 +1033,20 @@ static int dpm_suspend_noirq(pm_message_t state)
+ 	cpuidle_pause();
+ 	suspend_device_irqs();
+ 	mutex_lock(&dpm_list_mtx);
++	pm_transition = state;
++	async_error = 0;
++
+ 	while (!list_empty(&dpm_late_early_list)) {
+ 		struct device *dev = to_device(dpm_late_early_list.prev);
+ 
+ 		get_device(dev);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+-		error = device_suspend_noirq(dev, state);
++		error = device_suspend_noirq(dev);
+ 
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " noirq", error);
+-			suspend_stats.failed_suspend_noirq++;
+-			dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
+ 			dpm_save_failed_dev(dev_name(dev));
+ 			put_device(dev);
+ 			break;
+@@ -968,10 +1059,17 @@ static int dpm_suspend_noirq(pm_message_t state)
+ 			error = -EBUSY;
+ 			break;
+ 		}
++		if (async_error)
++			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	if (error)
++	if (!error)
++		error = async_error;
++	if (error) {
++		suspend_stats.failed_suspend_noirq++;
++		dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
+ 		dpm_resume_noirq(resume_event(state));
++	}
+ 	else
+ 		dpm_show_time(starttime, state, "noirq");
+ 	return error;
+@@ -984,13 +1082,17 @@ static int dpm_suspend_noirq(pm_message_t state)
+  *
+  * Runtime PM is disabled for @dev while this function is being executed.
+  */
+-static int device_suspend_late(struct device *dev, pm_message_t state)
++static int __device_suspend_late(struct device *dev, pm_message_t state)
+ {
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
++	int error = 0;
+ 
+ 	__pm_runtime_disable(dev, false);
+ 
++	if (async_error)
++		return 0;
++
+ 	if (dev->power.syscore)
+ 		return 0;
+ 
+@@ -1013,7 +1115,37 @@ static int device_suspend_late(struct device *dev, pm_message_t state)
+ 		callback = pm_late_early_op(dev->driver->pm, state);
+ 	}
+ 
+-	return dpm_run_callback(callback, dev, state, info);
++	error = dpm_run_callback(callback, dev, state, info);
++	if (error)
++		async_error = error;
++	else
++		dev->power.is_late_suspended = true;
++
++	return error;
++}
++
++static void async_suspend_late(void *data, async_cookie_t cookie)
++{
++	struct device *dev = (struct device *)data;
++	int error;
++
++	error = __device_suspend_late(dev, pm_transition);
++	if (error) {
++		dpm_save_failed_dev(dev_name(dev));
++		pm_dev_err(dev, pm_transition, " async", error);
++	}
++	put_device(dev);
++}
++
++static int device_suspend_late(struct device *dev)
++{
++	if (pm_async_enabled && dev->power.async_suspend) {
++		get_device(dev);
++		async_schedule(async_suspend_late, dev);
++		return 0;
++	}
++
++	return __device_suspend_late(dev, pm_transition);
+ }
+ 
+ /**
+@@ -1026,19 +1158,20 @@ static int dpm_suspend_late(pm_message_t state)
+ 	int error = 0;
+ 
+ 	mutex_lock(&dpm_list_mtx);
++	pm_transition = state;
++	async_error = 0;
++
+ 	while (!list_empty(&dpm_suspended_list)) {
+ 		struct device *dev = to_device(dpm_suspended_list.prev);
+ 
+ 		get_device(dev);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+-		error = device_suspend_late(dev, state);
++		error = device_suspend_late(dev);
+ 
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " late", error);
+-			suspend_stats.failed_suspend_late++;
+-			dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
+ 			dpm_save_failed_dev(dev_name(dev));
+ 			put_device(dev);
+ 			break;
+@@ -1051,11 +1184,17 @@ static int dpm_suspend_late(pm_message_t state)
+ 			error = -EBUSY;
+ 			break;
+ 		}
++		if (async_error)
++			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	if (error)
++	if (!error)
++		error = async_error;
++	if (error) {
++		suspend_stats.failed_suspend_late++;
++		dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
+ 		dpm_resume_early(resume_event(state));
+-	else
++	} else
+ 		dpm_show_time(starttime, state, "late");
+ 
+ 	return error;
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index a224c7f..a0a46ef 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -521,6 +521,8 @@ struct dev_pm_info {
+ 	unsigned int		async_suspend:1;
+ 	bool			is_prepared:1;	/* Owned by the PM core */
+ 	bool			is_suspended:1;	/* Ditto */
++	bool			is_late_suspended:1;
++	bool			is_noirq_suspended:1;
+ 	bool			ignore_children:1;
+ 	bool			early_init:1;	/* Owned by the PM core */
+ 	spinlock_t		lock;
+-- 
+1.7.9.5
+
+
 
