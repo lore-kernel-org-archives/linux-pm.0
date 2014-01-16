@@ -1,466 +1,125 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH V2] PM: Enable asynchronous threads for
- suspend/resume_noirq/late/early phases
-Date: Thu, 16 Jan 2014 14:58:57 +0800
-Message-ID: <1389855537.8320.5.camel@cliu38-desktop-build>
-References: <1389683888.3650.78.camel@cliu38-desktop-build>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH v3 1/2] thermal: add available policies attribute
+Date: Thu, 16 Jan 2014 17:31:45 +0800
+Message-ID: <1389864705-17790-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:44722 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbaAPGxA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 16 Jan 2014 01:53:00 -0500
-In-Reply-To: <1389683888.3650.78.camel@cliu38-desktop-build>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:12931 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbaAPJbM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 04:31:12 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, zhuangzhi.li@intel.com, chuansheng.liu@intel.com
+To: eduardo.valentin@ti.com, rui.zhang@intel.com
+Cc: mark.rutland@arm.com, durgadoss.r@intel.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
+The Linux thermal framework support to change thermal governor
+policy in userspace, but it can't show what available policies
+supported.
 
-Current code has implemented asynchronous threads for dpm_suspend()
-and dpm_resume(), which saved much time.
+This patch adds available_policies attribute to the thermal
+framework, it can list the thermal governors which can be
+used for a particular zone. This attribute is read only.
 
-As commit 5af84b82701a and 97df8c12995 said, the total time can be
-reduced significantly by running suspend and resume callbacks of
-device drivers in parallel with each other.
-
-For the suspend_late/suspend_noirq/resume_noirq/resume_early phases,
-sometimes they often taken much time without asynchronous threads,
-following the idea of the above commits, implemented it with async
-threads too.
-
-One example below for my test platform:
-Without this patch:
-[ 1411.272218] PM: noirq resume of devices complete after 92.223 msecs
-with this patch:
-[  110.616735] PM: noirq resume of devices complete after 10.544 msecs
-
-Normally 80% time is saved, which is helpful for the user experience
-specially for mobile platform.
-
-Signed-off-by: Liu, Chuansheng <chuansheng.liu@intel.com>
+Change-Id: I63c25d0dba38ad8357265afceea59bbf336cde13
+Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- drivers/base/power/main.c |  189 +++++++++++++++++++++++++++++++++++++++------
- include/linux/pm.h        |    2 +
- 2 files changed, 166 insertions(+), 25 deletions(-)
+ Documentation/thermal/sysfs-api.txt |    6 ++++++
+ drivers/thermal/thermal_core.c      |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 6a33dd8..62648b2 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -72,6 +72,8 @@ void device_pm_sleep_init(struct device *dev)
- {
- 	dev->power.is_prepared = false;
- 	dev->power.is_suspended = false;
-+	dev->power.is_late_suspended = false;
-+	dev->power.is_noirq_suspended = false;
- 	init_completion(&dev->power.completion);
- 	complete_all(&dev->power.completion);
- 	dev->power.wakeup = NULL;
-@@ -452,7 +454,7 @@ static void dpm_wd_clear(struct dpm_watchdog *wd)
-  * The driver of @dev will not receive interrupts while this function is being
-  * executed.
-  */
--static int device_resume_noirq(struct device *dev, pm_message_t state)
-+static int __device_resume_noirq(struct device *dev, pm_message_t state)
- {
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
-@@ -464,6 +466,9 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
- 	if (dev->power.syscore)
- 		goto Out;
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index 87519cb..fe69bce 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -172,6 +172,7 @@ Thermal zone device sys I/F, created once it's registered:
+     |---temp:			Current temperature
+     |---mode:			Working mode of the thermal zone
+     |---policy:			Thermal governor used for this zone
++    |---available_policies	Available thermal governors for this zone
+     |---trip_point_[0-*]_temp:	Trip point temperature
+     |---trip_point_[0-*]_type:	Trip point type
+     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
+@@ -238,6 +239,10 @@ policy
+ 	One of the various thermal governors used for a particular zone.
+ 	RW, Required
  
-+	if (!dev->power.is_noirq_suspended)
-+		goto Out;
++available_policies
++	Availabe thermal governors which can be used for a particular zone.
++	RO, Required
 +
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
- 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
-@@ -484,12 +489,41 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
- 	}
- 
- 	error = dpm_run_callback(callback, dev, state, info);
-+	dev->power.is_noirq_suspended = false;
- 
-  Out:
- 	TRACE_RESUME(error);
- 	return error;
+ trip_point_[0-*]_temp
+ 	The temperature above which trip point will be fired.
+ 	Unit: millidegree Celsius
+@@ -330,6 +335,7 @@ method, the sys I/F structure will be built like this:
+     |---temp:			37000
+     |---mode:			enabled
+     |---policy:			step_wise
++    |---available_policies:	step_wise fair_share
+     |---trip_point_0_temp:	100000
+     |---trip_point_0_type:	critical
+     |---trip_point_1_temp:	80000
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 338a88b..fc9b2ae 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -761,6 +761,27 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+ 	return sprintf(buf, "%s\n", tz->governor->name);
  }
  
-+static bool is_async(struct device *dev)
++static ssize_t
++available_policies_show(struct device *dev, struct device_attribute *devattr,
++			char *buf)
 +{
-+	return dev->power.async_suspend && pm_async_enabled
-+		&& !pm_trace_is_enabled();
-+}
++	struct thermal_governor *pos;
++	ssize_t count = 0;
++	ssize_t size;
 +
-+static void async_resume_noirq(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
++	mutex_lock(&thermal_governor_lock);
 +
-+	error = __device_resume_noirq(dev, pm_transition);
-+	if (error)
-+		pm_dev_err(dev, pm_transition, " noirq", error);
-+	put_device(dev);
-+}
-+
-+static int device_resume_noirq(struct device *dev)
-+{
-+	if (is_async(dev)) {
-+		get_device(dev);
-+		async_schedule(async_resume_noirq, dev);
-+		return 0;
++	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
++		size = PAGE_SIZE - count;
++		count += scnprintf(buf + count, size, "%s ", pos->name);
 +	}
++	count += scnprintf(buf + count, size, "\n");
 +
-+	return __device_resume_noirq(dev, pm_transition);
++	mutex_unlock(&thermal_governor_lock);
++
++	return count;
 +}
 +
- /**
-  * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
-  * @state: PM transition of the system being carried out.
-@@ -500,6 +534,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
- static void dpm_resume_noirq(pm_message_t state)
- {
- 	ktime_t starttime = ktime_get();
-+	pm_transition = state;
+ #ifdef CONFIG_THERMAL_EMULATION
+ static ssize_t
+ emul_temp_store(struct device *dev, struct device_attribute *attr,
+@@ -794,6 +815,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+ static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
++static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
  
- 	mutex_lock(&dpm_list_mtx);
- 	while (!list_empty(&dpm_noirq_list)) {
-@@ -510,18 +545,18 @@ static void dpm_resume_noirq(pm_message_t state)
- 		list_move_tail(&dev->power.entry, &dpm_late_early_list);
- 		mutex_unlock(&dpm_list_mtx);
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+@@ -1527,6 +1549,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	if (result)
+ 		goto unregister;
  
--		error = device_resume_noirq(dev, state);
-+		error = device_resume_noirq(dev);
- 		if (error) {
- 			suspend_stats.failed_resume_noirq++;
- 			dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
- 			dpm_save_failed_dev(dev_name(dev));
- 			pm_dev_err(dev, state, " noirq", error);
- 		}
--
- 		mutex_lock(&dpm_list_mtx);
- 		put_device(dev);
- 	}
- 	mutex_unlock(&dpm_list_mtx);
-+	async_synchronize_full();
- 	dpm_show_time(starttime, state, "noirq");
- 	resume_device_irqs();
- 	cpuidle_resume();
-@@ -534,7 +569,7 @@ static void dpm_resume_noirq(pm_message_t state)
-  *
-  * Runtime PM is disabled for @dev while this function is being executed.
-  */
--static int device_resume_early(struct device *dev, pm_message_t state)
-+static int __device_resume_early(struct device *dev, pm_message_t state)
- {
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
-@@ -546,6 +581,9 @@ static int device_resume_early(struct device *dev, pm_message_t state)
- 	if (dev->power.syscore)
- 		goto Out;
- 
-+	if (!dev->power.is_late_suspended)
-+		goto Out;
++	/* Create available_policies attribute */
++	result = device_create_file(&tz->device, &dev_attr_available_policies);
++	if (result)
++		goto unregister;
 +
- 	if (dev->pm_domain) {
- 		info = "early power domain ";
- 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
-@@ -566,7 +604,7 @@ static int device_resume_early(struct device *dev, pm_message_t state)
- 	}
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
  
- 	error = dpm_run_callback(callback, dev, state, info);
--
-+	dev->power.is_late_suspended = false;
-  Out:
- 	TRACE_RESUME(error);
+@@ -1622,6 +1649,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	if (tz->ops->get_mode)
+ 		device_remove_file(&tz->device, &dev_attr_mode);
+ 	device_remove_file(&tz->device, &dev_attr_policy);
++	device_remove_file(&tz->device, &dev_attr_available_policies);
+ 	remove_trip_attrs(tz);
+ 	tz->governor = NULL;
  
-@@ -574,6 +612,28 @@ static int device_resume_early(struct device *dev, pm_message_t state)
- 	return error;
- }
- 
-+static void async_resume_early(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	error = __device_resume_early(dev, pm_transition);
-+	if (error)
-+		pm_dev_err(dev, pm_transition, " async", error);
-+	put_device(dev);
-+}
-+
-+static int device_resume_early(struct device *dev)
-+{
-+	if (is_async(dev)) {
-+		get_device(dev);
-+		async_schedule(async_resume_early, dev);
-+		return 0;
-+	}
-+
-+	return __device_resume_early(dev, pm_transition);
-+}
-+
- /**
-  * dpm_resume_early - Execute "early resume" callbacks for all devices.
-  * @state: PM transition of the system being carried out.
-@@ -583,6 +643,8 @@ static void dpm_resume_early(pm_message_t state)
- 	ktime_t starttime = ktime_get();
- 
- 	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
-+
- 	while (!list_empty(&dpm_late_early_list)) {
- 		struct device *dev = to_device(dpm_late_early_list.next);
- 		int error;
-@@ -591,7 +653,7 @@ static void dpm_resume_early(pm_message_t state)
- 		list_move_tail(&dev->power.entry, &dpm_suspended_list);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		error = device_resume_early(dev, state);
-+		error = device_resume_early(dev);
- 		if (error) {
- 			suspend_stats.failed_resume_early++;
- 			dpm_save_failed_step(SUSPEND_RESUME_EARLY);
-@@ -603,6 +665,7 @@ static void dpm_resume_early(pm_message_t state)
- 		put_device(dev);
- 	}
- 	mutex_unlock(&dpm_list_mtx);
-+	async_synchronize_full();
- 	dpm_show_time(starttime, state, "early");
- }
- 
-@@ -717,12 +780,6 @@ static void async_resume(void *data, async_cookie_t cookie)
- 	put_device(dev);
- }
- 
--static bool is_async(struct device *dev)
--{
--	return dev->power.async_suspend && pm_async_enabled
--		&& !pm_trace_is_enabled();
--}
--
- /**
-  * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
-  * @state: PM transition of the system being carried out.
-@@ -898,10 +955,14 @@ static pm_message_t resume_event(pm_message_t sleep_state)
-  * The driver of @dev will not receive interrupts while this function is being
-  * executed.
-  */
--static int device_suspend_noirq(struct device *dev, pm_message_t state)
-+static int __device_suspend_noirq(struct device *dev, pm_message_t state)
- {
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
-+	int error;
-+
-+	if (async_error)
-+		return 0;
- 
- 	if (dev->power.syscore)
- 		return 0;
-@@ -925,9 +986,38 @@ static int device_suspend_noirq(struct device *dev, pm_message_t state)
- 		callback = pm_noirq_op(dev->driver->pm, state);
- 	}
- 
--	return dpm_run_callback(callback, dev, state, info);
-+	error = dpm_run_callback(callback, dev, state, info);
-+	if (error)
-+		async_error = error;
-+	else
-+		dev->power.is_noirq_suspended = true;
-+
-+	return error;
-+}
-+
-+static void async_suspend_noirq(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	error = __device_suspend_noirq(dev, pm_transition);
-+	if (error) {
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, pm_transition, " async", error);
-+	}
-+
-+	put_device(dev);
- }
- 
-+static int device_suspend_noirq(struct device *dev)
-+{
-+	if (pm_async_enabled && dev->power.async_suspend) {
-+		get_device(dev);
-+		async_schedule(async_suspend_noirq, dev);
-+		return 0;
-+	}
-+	return __device_suspend_noirq(dev, pm_transition);
-+}
- /**
-  * dpm_suspend_noirq - Execute "noirq suspend" callbacks for all devices.
-  * @state: PM transition of the system being carried out.
-@@ -943,19 +1033,20 @@ static int dpm_suspend_noirq(pm_message_t state)
- 	cpuidle_pause();
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
-+	async_error = 0;
-+
- 	while (!list_empty(&dpm_late_early_list)) {
- 		struct device *dev = to_device(dpm_late_early_list.prev);
- 
- 		get_device(dev);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		error = device_suspend_noirq(dev, state);
-+		error = device_suspend_noirq(dev);
- 
- 		mutex_lock(&dpm_list_mtx);
- 		if (error) {
- 			pm_dev_err(dev, state, " noirq", error);
--			suspend_stats.failed_suspend_noirq++;
--			dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
- 			dpm_save_failed_dev(dev_name(dev));
- 			put_device(dev);
- 			break;
-@@ -968,10 +1059,17 @@ static int dpm_suspend_noirq(pm_message_t state)
- 			error = -EBUSY;
- 			break;
- 		}
-+		if (async_error)
-+			break;
- 	}
- 	mutex_unlock(&dpm_list_mtx);
--	if (error)
-+	if (!error)
-+		error = async_error;
-+	if (error) {
-+		suspend_stats.failed_suspend_noirq++;
-+		dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
- 		dpm_resume_noirq(resume_event(state));
-+	}
- 	else
- 		dpm_show_time(starttime, state, "noirq");
- 	return error;
-@@ -984,13 +1082,17 @@ static int dpm_suspend_noirq(pm_message_t state)
-  *
-  * Runtime PM is disabled for @dev while this function is being executed.
-  */
--static int device_suspend_late(struct device *dev, pm_message_t state)
-+static int __device_suspend_late(struct device *dev, pm_message_t state)
- {
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
-+	int error = 0;
- 
- 	__pm_runtime_disable(dev, false);
- 
-+	if (async_error)
-+		return 0;
-+
- 	if (dev->power.syscore)
- 		return 0;
- 
-@@ -1013,7 +1115,37 @@ static int device_suspend_late(struct device *dev, pm_message_t state)
- 		callback = pm_late_early_op(dev->driver->pm, state);
- 	}
- 
--	return dpm_run_callback(callback, dev, state, info);
-+	error = dpm_run_callback(callback, dev, state, info);
-+	if (error)
-+		async_error = error;
-+	else
-+		dev->power.is_late_suspended = true;
-+
-+	return error;
-+}
-+
-+static void async_suspend_late(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	error = __device_suspend_late(dev, pm_transition);
-+	if (error) {
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, pm_transition, " async", error);
-+	}
-+	put_device(dev);
-+}
-+
-+static int device_suspend_late(struct device *dev)
-+{
-+	if (pm_async_enabled && dev->power.async_suspend) {
-+		get_device(dev);
-+		async_schedule(async_suspend_late, dev);
-+		return 0;
-+	}
-+
-+	return __device_suspend_late(dev, pm_transition);
- }
- 
- /**
-@@ -1026,19 +1158,20 @@ static int dpm_suspend_late(pm_message_t state)
- 	int error = 0;
- 
- 	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
-+	async_error = 0;
-+
- 	while (!list_empty(&dpm_suspended_list)) {
- 		struct device *dev = to_device(dpm_suspended_list.prev);
- 
- 		get_device(dev);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		error = device_suspend_late(dev, state);
-+		error = device_suspend_late(dev);
- 
- 		mutex_lock(&dpm_list_mtx);
- 		if (error) {
- 			pm_dev_err(dev, state, " late", error);
--			suspend_stats.failed_suspend_late++;
--			dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
- 			dpm_save_failed_dev(dev_name(dev));
- 			put_device(dev);
- 			break;
-@@ -1051,11 +1184,17 @@ static int dpm_suspend_late(pm_message_t state)
- 			error = -EBUSY;
- 			break;
- 		}
-+		if (async_error)
-+			break;
- 	}
- 	mutex_unlock(&dpm_list_mtx);
--	if (error)
-+	if (!error)
-+		error = async_error;
-+	if (error) {
-+		suspend_stats.failed_suspend_late++;
-+		dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
- 		dpm_resume_early(resume_event(state));
--	else
-+	} else
- 		dpm_show_time(starttime, state, "late");
- 
- 	return error;
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index a224c7f..a0a46ef 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -521,6 +521,8 @@ struct dev_pm_info {
- 	unsigned int		async_suspend:1;
- 	bool			is_prepared:1;	/* Owned by the PM core */
- 	bool			is_suspended:1;	/* Ditto */
-+	bool			is_late_suspended:1;
-+	bool			is_noirq_suspended:1;
- 	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
- 	spinlock_t		lock;
 -- 
 1.7.9.5
-
-
 
