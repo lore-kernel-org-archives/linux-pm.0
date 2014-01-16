@@ -1,169 +1,135 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH v2] intel_pstate: Add trace point to report internal state.
-Date: Thu, 16 Jan 2014 10:32:25 -0800
-Message-ID: <1389897145-3479-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f49.google.com ([209.85.160.49]:37849 "EHLO
-	mail-pb0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065AbaAPSce (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 13:32:34 -0500
-Received: by mail-pb0-f49.google.com with SMTP id up15so2470590pbc.22
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jan 2014 10:32:34 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH REGRESSION FIX] x86 idle: restore mwait_idle()
+Date: Thu, 16 Jan 2014 14:00:26 -0800
+Message-ID: <52D8567A.8090308@mit.edu>
+References: <1ae2a8af42281d6b9888ac8c76bab7bd2f431d44.1389763084.git.len.brown@intel.com> <345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <345254a551eb5a6a866e048d7ab570fd2193aca4.1389763084.git.len.brown@intel.com>
+Sender: stable-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>, x86@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Mike Galbraith <bitbucket@online.de>, Ian Malone <ibmalone@gmail.com>, Josh Boyer <jwboyer@redhat.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 01/14/2014 09:37 PM, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> 
+> In Linux-3.9 we removed the mwait_idle() loop:
+> 'x86 idle: remove mwait_idle() and "idle=mwait" cmdline param'
+> (69fb3676df3329a7142803bb3502fa59dc0db2e3)
+> 
+> The reasoning was that modern machines should be sufficiently
+> happy during the boot process using the default_idle() HALT loop,
+> until cpuidle loads and either acpi_idle or intel_idle
+> invoke the newer MWAIT-with-hints idle loop.
+> 
+> But two machines reported problems:
+> 1. Certain Core2-era machines support MWAIT-C1 and HALT only.
+>    MWAIT-C1 is preferred for optimal power and performance.
+>    But if they support just C1, cpuidle never loads and
+>    so they use the boot-time default idle loop forever.
+> 
+> 2. Some laptops will boot-hang if HALT is used,
+>    but will boot successfully if MWAIT is used.
+>    This appears to be a hidden assumption in BIOS SMI,
+>    that is presumably valid on the proprietary OS
+>    where the BIOS was validated.
+> 
+>    https://bugzilla.kernel.org/show_bug.cgi?id=60770
+> 
+> So here we effectively revert the patch above, restoring
+> the mwait_idle() loop.  However, we don't bother restoring
+> the idle=mwait cmdline parameter, since it appears to add
+> no value.
+> 
+> Maintainer notes:
+> For 3.9, simply revert 69fb3676df
+> for 3.10, patch -F3 applies, fuzz needed due to __cpuinit use in context
+> For 3.11, 3.12, 3.13, this patch applies cleanly
+> 
+> Cc: Mike Galbraith <bitbucket@online.de>
+> Cc: Ian Malone <ibmalone@gmail.com>
+> Cc: Josh Boyer <jwboyer@redhat.com>
+> Cc: <stable@vger.kernel.org> # 3.9, 3.10, 3.11, 3.12, 3.13
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/kernel/process.c | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 46 insertions(+)
+> 
+> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> index 3fb8d95..db471a8 100644
+> --- a/arch/x86/kernel/process.c
+> +++ b/arch/x86/kernel/process.c
+> @@ -398,6 +398,49 @@ static void amd_e400_idle(void)
+>  		default_idle();
+>  }
+>  
+> +/*
+> + * Intel Core2 and older machines prefer MWAIT over HALT for C1.
+> + * We can't rely on cpuidle installing MWAIT, because it will not load
+> + * on systems that support only C1 -- so the boot default must be MWAIT.
+> + *  
+> + * Some AMD machines are the opposite, they depend on using HALT.
+> + *
+> + * So for default C1, which is used during boot until cpuidle loads,
+> + * use MWAIT-C1 on Intel HW that has it, else use HALT.
+> + */
+> +static int prefer_mwait_c1_over_halt(const struct cpuinfo_x86 *c)
+> +{
+> +	if (c->x86_vendor != X86_VENDOR_INTEL)
+> +		return 0;
+> +
+> +	if (!cpu_has(c, X86_FEATURE_MWAIT))
+> +		return 0;
+> +
+> +	return 1;
+> +}
+> +
+> +/*
+> + * MONITOR/MWAIT with no hints, used for default default C1 state.
+> + * This invokes MWAIT with interrutps enabled and no flags,
+> + * which is backwards compatible with the original MWAIT implementation.
+> + */
+> +
+> +static void mwait_idle(void)
+> +{
+> +	if (!need_resched()) {
+> +		if (this_cpu_has(X86_FEATURE_CLFLUSH_MONITOR))
+> +			clflush((void *)&current_thread_info()->flags);
+> +
+> +		__monitor((void *)&current_thread_info()->flags, 0, 0);
+> +		smp_mb();
+> +		if (!need_resched())
+> +			__sti_mwait(0, 0);
+> +		else
+> +			local_irq_enable();
+> +	} else
+> +		local_irq_enable();
+> +}
 
-Add perf trace event "power:pstate_sample" to report driver state to
-aid in diagnosing issues reported against intel_pstate.
+Admittedly, there may be relatively few users left, but SMP users on
+C1-only Core 2 machines can, in principle, benefit from the monitor
+functionality of mwait to avoid rescheduling IPIs.  This stuff changed
+recently so it now works with the cpuidle drivers (it used to be
+terminally broken).  Should something be twiddling TS_POLLING
+differently so that HLT gets the IPIs but mwait doesn't?
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 24 +++++++++++++++++++
- include/trace/events/power.h   | 53 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 77 insertions(+)
+--Andy
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index fe91dad..7e257b2 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -51,6 +51,8 @@ static inline int32_t div_fp(int32_t x, int32_t y)
- 	return div_s64((int64_t)x << FRAC_BITS, (int64_t)y);
- }
- 
-+static u64 energy_divisor;
-+
- struct sample {
- 	int32_t core_pct_busy;
- 	u64 aperf;
-@@ -559,6 +561,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
-+
- 	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
- 	cpu->samples[cpu->sample_ptr].aperf = aperf;
- 	cpu->samples[cpu->sample_ptr].mperf = mperf;
-@@ -603,6 +606,7 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- 	ctl = pid_calc(pid, busy_scaled);
- 
- 	steps = abs(ctl);
-+
- 	if (ctl < 0)
- 		intel_pstate_pstate_increase(cpu, steps);
- 	else
-@@ -612,9 +616,24 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- static void intel_pstate_timer_func(unsigned long __data)
- {
- 	struct cpudata *cpu = (struct cpudata *) __data;
-+	struct sample *sample;
-+	u64 energy;
- 
- 	intel_pstate_sample(cpu);
-+
-+	sample = &cpu->samples[cpu->sample_ptr];
-+	rdmsrl(MSR_PKG_ENERGY_STATUS, energy);
-+
- 	intel_pstate_adjust_busy_pstate(cpu);
-+
-+	trace_pstate_sample(fp_toint(sample->core_pct_busy),
-+			fp_toint(intel_pstate_get_scaled_busy(cpu)),
-+			cpu->pstate.current_pstate,
-+			sample->mperf,
-+			sample->aperf,
-+			div64_u64(energy, energy_divisor),
-+			sample->freq);
-+
- 	intel_pstate_set_sample_time(cpu);
- }
- 
-@@ -894,6 +913,7 @@ static int __init intel_pstate_init(void)
- 	int cpu, rc = 0;
- 	const struct x86_cpu_id *id;
- 	struct cpu_defaults *cpu_info;
-+	u64 units;
- 
- 	if (no_load)
- 		return -ENODEV;
-@@ -927,8 +947,12 @@ static int __init intel_pstate_init(void)
- 	if (rc)
- 		goto out;
- 
-+	rdmsrl(MSR_RAPL_POWER_UNIT, units);
-+	energy_divisor = 1 << ((units >> 8) & 0x1f); /* bits{12:8} */
-+
- 	intel_pstate_debug_expose_params();
- 	intel_pstate_sysfs_expose_params();
-+
- 	return rc;
- out:
- 	get_online_cpus();
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index cda100d..9e9475c 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -35,6 +35,59 @@ DEFINE_EVENT(cpu, cpu_idle,
- 	TP_ARGS(state, cpu_id)
- );
- 
-+TRACE_EVENT(pstate_sample,
-+
-+	TP_PROTO(u32 core_busy,
-+		u32 scaled_busy,
-+		u32 state,
-+		u64 mperf,
-+		u64 aperf,
-+		u32 energy,
-+		u32 freq
-+		),
-+
-+	TP_ARGS(core_busy,
-+		scaled_busy,
-+		state,
-+		mperf,
-+		aperf,
-+		energy,
-+		freq
-+		),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, core_busy)
-+		__field(u32, scaled_busy)
-+		__field(u32, state)
-+		__field(u64, mperf)
-+		__field(u64, aperf)
-+		__field(u32, energy)
-+		__field(u32, freq)
-+
-+	),
-+
-+	TP_fast_assign(
-+		__entry->core_busy = core_busy;
-+		__entry->scaled_busy = scaled_busy;
-+		__entry->state = state;
-+		__entry->mperf = mperf;
-+		__entry->aperf = aperf;
-+		__entry->energy = energy;
-+		__entry->freq = freq;
-+		),
-+
-+	TP_printk("core_busy=%lu scaled=%lu state=%lu mperf=%llu aperf=%llu energy=%lu freq=%lu ",
-+		(unsigned long)__entry->core_busy,
-+		(unsigned long)__entry->scaled_busy,
-+		(unsigned long)__entry->state,
-+		(unsigned long long)__entry->mperf,
-+		(unsigned long long)__entry->aperf,
-+		(unsigned long)__entry->energy,
-+		(unsigned long)__entry->freq
-+		)
-+
-+);
-+
- /* This file can get included multiple times, TRACE_HEADER_MULTI_READ at top */
- #ifndef _PWR_EVENT_AVOID_DOUBLE_DEFINING
- #define _PWR_EVENT_AVOID_DOUBLE_DEFINING
--- 
-1.8.3.1
-
+> +
+>  void select_idle_routine(const struct cpuinfo_x86 *c)
+>  {
+>  #ifdef CONFIG_SMP
+> @@ -411,6 +454,9 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
+>  		/* E400: APIC timer interrupt does not wake up CPU from C1e */
+>  		pr_info("using AMD E400 aware idle routine\n");
+>  		x86_idle = amd_e400_idle;
+> +	} else if (prefer_mwait_c1_over_halt(c)) {
+> +		pr_info("using mwait in idle threads\n");
+> +		x86_idle = mwait_idle;
+>  	} else
+>  		x86_idle = default_idle;
+>  }
+> 
