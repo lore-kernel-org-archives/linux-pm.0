@@ -1,76 +1,82 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH] PM: Enable asynchronous noirq resume threads to save
- the resuming time
-Date: Thu, 16 Jan 2014 00:50:16 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C04905@SHSMSX101.ccr.corp.intel.com>
-References: <1389683888.3650.78.camel@cliu38-desktop-build>
- <1746120.u7vbF1Vtmp@vostro.rjw.lan>
- <27240C0AC20F114CBF8149A2696CBE4A01C02047@SHSMSX101.ccr.corp.intel.com>
- <5903751.zQEEgRvxSH@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/3] power: clock_ops.c: fixup clk prepare/unprepare count
+Date: Thu, 16 Jan 2014 02:08:51 +0100
+Message-ID: <5882532.MC6M7Hz6Wk@vostro.rjw.lan>
+References: <1389702222-17260-1-git-send-email-ben.dooks@codethink.co.uk> <1389702222-17260-2-git-send-email-ben.dooks@codethink.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:54598 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750856AbaAPAum (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 Jan 2014 19:50:42 -0500
-In-Reply-To: <5903751.zQEEgRvxSH@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1389702222-17260-2-git-send-email-ben.dooks@codethink.co.uk>
+Sender: linux-sh-owner@vger.kernel.org
+To: Ben Dooks <ben.dooks@codethink.co.uk>
+Cc: linux-kernel@lists.codethink.co.uk, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
-a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogV2VkbmVzZGF5LCBKYW51YXJ5
-IDE1LCAyMDE0IDk6MjggUE0NCj4gVG86IExpdSwgQ2h1YW5zaGVuZw0KPiBDYzogZ3JlZ2toQGxp
-bnV4Zm91bmRhdGlvbi5vcmc7IEJyb3duLCBMZW47IHBhdmVsQHVjdy5jejsNCj4gbGludXgtcG1A
-dmdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBMaSwgWmh1YW5n
-emhpDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIFBNOiBFbmFibGUgYXN5bmNocm9ub3VzIG5vaXJx
-IHJlc3VtZSB0aHJlYWRzIHRvIHNhdmUNCj4gdGhlIHJlc3VtaW5nIHRpbWUNCj4gDQo+IE9uIFdl
-ZG5lc2RheSwgSmFudWFyeSAxNSwgMjAxNCAxMjozNToxNiBBTSBMaXUsIENodWFuc2hlbmcgd3Jv
-dGU6DQo+ID4gSGVsbG8gUmFmYWVsLA0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
-LS0tLQ0KPiA+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tp
-Lm5ldF0NCj4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgSmFudWFyeSAxNSwgMjAxNCA2OjU1IEFNDQo+
-ID4gPiBUbzogTGl1LCBDaHVhbnNoZW5nDQo+ID4gPiBDYzogZ3JlZ2toQGxpbnV4Zm91bmRhdGlv
-bi5vcmc7IEJyb3duLCBMZW47IHBhdmVsQHVjdy5jejsNCj4gPiA+IGxpbnV4LXBtQHZnZXIua2Vy
-bmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTGksIFpodWFuZ3poaQ0KPiA+
-ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gUE06IEVuYWJsZSBhc3luY2hyb25vdXMgbm9pcnEgcmVz
-dW1lIHRocmVhZHMgdG8NCj4gc2F2ZQ0KPiA+ID4gdGhlIHJlc3VtaW5nIHRpbWUNCj4gPiA+DQo+
-ID4gPiBPbiBUdWVzZGF5LCBKYW51YXJ5IDE0LCAyMDE0IDAzOjE4OjA4IFBNIENodWFuc2hlbmcg
-TGl1IHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPiBDdXJyZW50bHksIHRoZSBkcG1fcmVzdW1lX25v
-aXJxKCkgaXMgZG9uZSBzeW5jaHJvbm91c2x5LCBhbmQgZm9yIFBDSQ0KPiBkZXZpY2VzDQo+ID4g
-PiA+IHBjaV9wbV9yZXN1bWVfbm9pcnEoKToNCj4gPiA+ID4NCj4gPiA+ID4gcGNpX3BtX3Jlc3Vt
-ZV9ub2lycSgpDQo+ID4gPiA+ICBwY2lfcG1fZGVmYXVsdF9yZXN1bWVfZWFybHkoKQ0KPiA+ID4g
-PiAgIHBjaV9wb3dlcl91cCgpDQo+ID4gPiA+ICAgIHBjaV9yYXdfc2V0X3Bvd2VyX3N0YXRlKCkN
-Cj4gPiA+ID4gV2hpY2ggc2V0IHRoZSBkZXZpY2UgZnJvbSBEM2hvdCB0byBEMCBtb3N0bHksIGZv
-ciBldmVyeSBkZXZpY2UsIHRoZXJlIHdpbGwNCj4gPiA+ID4gYmUgb25lIDEwbXMocGNpX3BtX2Qz
-X2RlbGF5KSB0byB3YWl0Lg0KPiA+ID4gPg0KPiA+ID4gPiBIZW5jZSBub3JtYWxseSBkcG1fcmVz
-dW1lX25vaXJxKCkgd2lsbCBjb3N0ID4gMTAwbXMsIHdoaWNoIGlzIGJpZ2dlcg0KPiBmb3INCj4g
-PiA+IG1vYmlsZQ0KPiA+ID4gPiBwbGF0Zm9ybS4NCj4gPiA+DQo+ID4gPiBwY2lfcG1fZDNfZGVs
-YXkgdXN1YWxseSBpcyBub3QgMTAgbXMuICBXaGF0IGlzIDEwIG1zIGlzIGRldi0+ZDNfZGVsYXks
-DQo+IGJ1dA0KPiA+ID4gdGhhdCBhbHNvIGlzIG5vdCBvbiBldmVyeSBwbGF0Zm9ybSBub3cuDQo+
-ID4gWWVzLCBpdCBpcyBkM19kZWxheSBleGFjdGx5LCB0aGFua3MgeW91ciBjb3JyZWN0aW9uLg0K
-PiA+DQo+ID4gPg0KPiA+ID4gVGhhdCBzYWlkIHRoZSBhcHByb2FjaCBoZXJlIG1ha2VzIHNlbnNl
-LCBidXQgSSBoYXZlIHR3byBxdWVzdGlvbnM6DQo+ID4gPg0KPiA+ID4gMS4gT24gd2hhdCBzeXN0
-ZW1zIGhhcyBpdCBiZWVuIHRlc3RlZD8NCj4gPiBJIGhhdmUgYmVlbiB0ZXN0ZWQgb24gQmF5dHJh
-aWwgcGxhdGZvcm0sIGFuZCBhdCB0aGUgYmVnaW5uaW5nIHRoZSBkM19kZWxheSBpcw0KPiBzZXQg
-dG8gMCwNCj4gPiBidXQgd2UgcmVhbGx5IG1lZXQgdGhlIEhBTkcgaXNzdWUgaWYgd2Ugb3BlcmF0
-ZSB0aGUgZGV2aWNlIGltbWVkaWF0ZWx5DQo+IHNvbWV0aW1lcywNCj4gPiBzbyBjdXJyZW50bHkg
-bW9zdCBQQ0kgZGV2aWNlcyBpbiBCYXl0cmFpbCBoYXMgdGhlIDEwbXMgZGVsYXkuDQo+ID4gQW5k
-IGl0IGNhdXNlZCB0aGUgd2hvbGUgcmVzdW1lIHRpbWUgYmlnZ2VyIHRoYW4gQ2xvdmVydHJhaWwg
-cGxhdGZvcm07DQo+IA0KPiBEb2VzIHNldHRpbmcgZDNfZGVsYXkgdG8gc29tZXRoaW5nIHNtYWxs
-ZXIgdGhhdCAxMCBtcyB3b3JrIG9uIEJheVRyYWlsPw0KPiANCj4gWW91IGNhbiB0cnkgdG8gc2V0
-IDUgbXMgYW5kIHRoZW4gMi41IG1zIGlmIHRoYXQgd29ya3MgYW5kIHNvIG9uLiAgVGhhdCBzdGls
-bA0KPiB3b3VsZCBiZSBhbiBpbXByb3ZlbWVudCBmcm9tIHRoZSAxMCBtcy4NClllcywgZm9yIG1v
-c3QgZGV2aWNlcyBpbiBCYXl0cmFpbCBwbGF0Zm9ybSwgd2UgYWxyZWFkeSBzZXQgdGhlIGRlZmF1
-bHQgdmFsdWUgdG8gM21zLCBpdCB3b3JrcyB3ZWxsIG5vdywNCmJ1dCBmb3IgcmFyZSBkZXZpY2Us
-IHdlIHNldCB0aGUgZDNfZGVsYXkgdG8gMTBtcy4NClNvIHdpdGggdGhpcyBwYXRjaCwgdGhlIG5v
-aXJxIGV4ZWN1dGlvbiB0aW1lIGlzIDEwbXM7DQoNCj4gDQo+ID4gPiAyLiBXaGF0IGFib3V0IHN1
-c3BlbmRfbGF0ZS9yZXN1bWVfZWFybHk/ICBJZiB0aGUgX25vaXJxIHRoaW5ncyBhcmUgdG8gYmUN
-Cj4gPiA+IGV4ZWN1dGVkIGFzeW5jaHJvbm91c2x5LCB0aG9zZSBzaG91bGQgYmUgdG9vLg0KPiA+
-IEkgbm90aWNlZCBpdCBqdXN0IHRha2VuIGxpdHRsZSB0aW1lIG9mdGVuLCBhbmQgSSBjYW5ub3Qg
-ZmluZCBvdXQgc29tZSByZWFzb25zIGZvcg0KPiBjaGFuZ2luZyB0aGVtDQo+ID4gaW4gdGhlb3J5
-LCBzbyBpZiB5b3UgbGlrZSBpdCwgSSB3aWxsIHVwZGF0ZSB0aGVtIGludG8gcGF0Y2ggVjIgYWxz
-bzopDQo+IA0KPiBZZXMsIHBsZWFzZSBkbyB0aGF0Lg0KV2lsbCBkbyBpdCwgdGhhbmtzLg0KDQo=
+On Tuesday, January 14, 2014 12:23:40 PM Ben Dooks wrote:
+> The drivers/base/power/clock_ops.c file is causing warnings from
+> the clock driver (as shown below) due to failing to do a clk_prepare()
+> call before enabling a clock. It also fails to check the balance of
+> prepare/unprepare as __pm_clk_remove() do clk_disable_unprepare() call.
+> 
+> This bug has probably been in since commit b2476490e ("clk: introduce
+> the common clock framework") as the warning was part of the original
+> commit. It is strange that it has not been noticed (although this has
+> also been coupled with a failure for certain SH builds to not build the
+> necessary glue to use this method of controlling the clocks).
+> 
+> In summary, this is probably needed in several stable branches but need
+> advice on which ones.
+> 
+> On the Renesas Lager board, this causes numerous warnings of the following
+> and even worse the clock system will not enable clocks, causing drivers
+> that are in development to fail to work:
+> 
+> WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:883 __clk_enable+0x2c/0xa0()
+
+All three queued up for 3.14, thanks!
+
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+> Reviewed-by: Ian Molton <ian.molton@codethink.co.uk>
+> ---
+>  drivers/base/power/clock_ops.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index 9d8fde7..b9dd8fa 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -43,6 +43,7 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+>  	if (IS_ERR(ce->clk)) {
+>  		ce->status = PCE_STATUS_ERROR;
+>  	} else {
+> +		clk_prepare(ce->clk);
+>  		ce->status = PCE_STATUS_ACQUIRED;
+>  		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
+>  	}
+> @@ -99,10 +100,12 @@ static void __pm_clk_remove(struct pm_clock_entry *ce)
+>  
+>  	if (ce->status < PCE_STATUS_ERROR) {
+>  		if (ce->status == PCE_STATUS_ENABLED)
+> -			clk_disable_unprepare(ce->clk);
+> +			clk_disable(ce->clk);
+>  
+> -		if (ce->status >= PCE_STATUS_ACQUIRED)
+> +		if (ce->status >= PCE_STATUS_ACQUIRED) {
+> +			clk_unprepare(ce->clk);
+>  			clk_put(ce->clk);
+> +		}
+>  	}
+>  
+>  	kfree(ce->con_id);
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
