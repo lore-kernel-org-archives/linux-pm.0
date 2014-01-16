@@ -1,145 +1,47 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [5/11] issue 5: Frequency and uarch invariant task load
-Date: Thu, 16 Jan 2014 11:16:34 +0000
-Message-ID: <20140116111634.GA19029@e103034-lin>
-References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
- <1389111587-5923-6-git-send-email-morten.rasmussen@arm.com>
- <20140108123118.GS30183@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Alex Shi <alex.shi@linaro.org>
+Subject: [RFC PATCH] cpuidle: reduce unnecessary loop in c-state selection
+Date: Thu, 16 Jan 2014 20:45:16 +0800
+Message-ID: <1389876316-27161-1-git-send-email-alex.shi@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.austin.arm.com ([217.140.110.23]:48936 "EHLO
-	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752471AbaAPLQh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 06:16:37 -0500
-Content-Disposition: inline
-In-Reply-To: <20140108123118.GS30183@twins.programming.kicks-ass.net>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:52684 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbaAPMph (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 07:45:37 -0500
+Received: by mail-pa0-f46.google.com with SMTP id rd3so2634761pab.33
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jan 2014 04:45:36 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, Alex Shi <alex.shi@linaro.org>
 
-On Wed, Jan 08, 2014 at 12:31:18PM +0000, Peter Zijlstra wrote:
-> On Tue, Jan 07, 2014 at 04:19:41PM +0000, Morten Rasmussen wrote:
-> > Potential solution: Frequency invariance has been proposed before [1]
-> > where the task load is scaled by the cur/max freq ratio. Another
-> > possibility is to use hardware counters if such are available on the
-> > platform.
-> > 
-> > [1] https://lkml.org/lkml/2013/4/16/289
-> 
-> Right, I just had a look at those patches.. they're not horrible but I
-> think they're missing a few opportunities.
-> 
-> My main objection to them is that I think the newly introduced
-> max_capacity is exactly what the current cpu_power thing is -- then
-> again, I still haven't let the entire thing sink in well enough.
+All deeper c-state have the longer target_residency and exit_latency
+So, if the one can not meet our prediction, neither any later.
+So, just break out the for loop to save few checking instructions.
 
-Yes, you can view it that way. The basic idea is to introduce a
-potential compute capacity (max_capacity) and a current compute capacity
-(curr_capacity). By scaling the load_contrib of a task by the
-current/potential capacity ratio you get a frequency invariant task
-load. The invariant task load enables more sensible comparison of load
-between task loads of tasks running on different cpus in different
-frequency domains.
+Signed-off-by: Alex Shi <alex.shi@linaro.org>
+---
+ drivers/cpuidle/governors/menu.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I would have said that max_capacity is equivalent to cpu_power if wasn't
-used for so many other things as you point out below.
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index cf7f2f0..48ed3fb 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -352,11 +352,11 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		if (s->disabled || su->disable)
+ 			continue;
+ 		if (s->target_residency > data->predicted_us)
+-			continue;
++			break;
+ 		if (s->exit_latency > latency_req)
+-			continue;
++			break;
+ 		if (s->exit_latency * multiplier > data->predicted_us)
+-			continue;
++			break;
+ 
+ 		data->last_state_idx = i;
+ 		data->exit_us = s->exit_latency;
+-- 
+1.8.1.2
 
-> 
-> Not to mention we need to fix some of the cpu_power abuse -- like the
-> correlation to capacity, which as stated in previous emails should be
-> sorted using utilization.
-
-Agreed.
-
-> 
-> So DVFS certainly makes sense, and would indeed be required in order to
-> make sensible decisions in the face of P states. Even in the face of
-> funny hardware like Intel which pretty much ignores whatever you tell it
-> and does it own merry thing.
-> 
-> 
-> A few random thoughts:
-> 
->  - I think for SMP-nice we want to migrate from /max_capacity to
->    /curr_capacity; because SMP-nice cares about 100% utilization
->    regardless of the actual P state. If we're somehow forced into a
->    lower P state (thermal or otherwise) fairness is best served by
->    normalizing at the rate we're actually running at, not the potential
->    maximal.
-
-I see your point, but normalizing to /curr_capacity would break ability
-to compare tasks from different runqueues. When we pull tasks during
-load-balance we have no idea what the load of the pulled tasks will be
-on the new cpu. The source and target cpus may be at different P-states.
-
-It would probably be better to adjust the max_capacity if we are forced
-into a lower P-state for some reason.
-
-> 
->  - We need to re-think SMT and turbo-bins in general; I think we can
->    think of those two as the same effective thing. This does mean Intel
->    chips will have a dual layer of this goo, and we can currently barely
->    deal with the 1 SMT layer, let alone do something sensible with 2.
-> 
->    To clarify, a single SMT thread will generally go 'faster' on its own
->    since it doesn't need to compete with the other thread(s) for core
->    resources, but together they might better utilize the core resources
->    giving an over-all throughput win.
-> 
->    Similar for turbo bins, a single core can go faster on its own since
->    it doesn't have competition for energy and thermal constraints, but
->    together cores can probably achieve greater throughput.
-> 
->    So we need a better way to describe this capacity dependency and
->    variability.
-
-Agreed. It is my impression that SMT works fairly well using cpu_power,
-but I don't see how we can further abuse cpu_power to optimize for turbo
-boost.
-
-We might as well add heterogeneous systems (big.LITTLE) to the list of
-things that need better capacity management. Scheduling for performance
-on big.LITTLE you want to utilze the big cpus first and then use the
-little cpus. As pointed out in issue 6, cpu_power in its current form
-can not do this.
-
-> 
->    I'm fairly sure ARM doesn't do SMT, but they certainly suffer from
->    thermal caps and can thus have effective turbo bins, even though
->    they're not explicit and magic like with Intel.
-
-Thermal management is indeed important. It is up to the SoC implementor
-how they deal with it, but I think most ARM systems expose all P-states,
-including those that may only be used for shorter periods of time in
-small form factor devices.
-
-> 
->    And of course the honorary mention goes to Power7 which has
->    asymmetric bins -- lets hope they fix it and nobody else things them
->    a great idea.
-> 
->  - For hardware without P state controls, or hardware that pretty much
->    ignores them, we need means of obtaining the max and curr capacity.
-> 
->    Intel has the APERF, MPERF registers which resp. count at actual
->    frequency and fixed frequency. Using them is a bit tricky since
->    APERF doesn't count when idle, but when filtering out the idle time
->    they do provide a current performance ratio.
-> 
->    From that we could obtain a max performance ratio by using a wide
->    window max on the current value or somesuch.
-> 
->    Again, SMT and turbo-bins will complicate matters..
-
-+ heterogeneous systems (big.LITTLE)...
-
-> 
->    Other CPUs that have magic P state control might not provide such
->    registers which would require PMU resources, which would completely
->    blow :/
-
-For systems with multiple performance counters that are cheap to access
-it may be worth it to dedicate a counter or two for use by the scheduler
-if it can give significant improvements. But that has yet to be shown.
