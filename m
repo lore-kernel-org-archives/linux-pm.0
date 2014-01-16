@@ -1,134 +1,144 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][RFC][PATCH 2/3] PM / runtime: Routine for checking device status during system suspend
-Date: Thu, 16 Jan 2014 17:07:07 +0100
-Message-ID: <2673469.H8s3UchFPJ@vostro.rjw.lan>
-References: <5420830.W4laSGaAU9@vostro.rjw.lan> <2472996.a5CGlmW4AP@vostro.rjw.lan> <20140116133251.GC2494@intel.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
+Date: Thu, 16 Jan 2014 16:56:02 +0100
+Message-ID: <20140116165602.5d991e74@amdc2363>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1389335623.2411.15.camel@rzhang1-mobl4> <20140116104008.15b77a1f@amdc2363>
+ <63197714.M09EiGrl9g@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53231 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751767AbaAPPxH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 10:53:07 -0500
-In-Reply-To: <20140116133251.GC2494@intel.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:21935 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbaAPP4Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 10:56:16 -0500
+In-reply-to: <63197714.M09EiGrl9g@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
 
-On Thursday, January 16, 2014 03:32:51 PM Mika Westerberg wrote:
-> On Wed, Jan 15, 2014 at 12:14:46AM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Rafael,
+
+> On Thursday, January 16, 2014 10:40:08 AM Lukasz Majewski wrote:
+> > Hi Rafael,
 > > 
-> > Add a new helper routine, pm_runtime_enabled_and_suspended(), to
-> > allow subsystems (or PM domains) to check the runtime PM status of
-> > devices during system suspend (possibly to avoid resuming those
-> > devices upfront at that time).
+> > > On Wed, 2014-01-08 at 01:35 +0100, Rafael J. Wysocki wrote:
+> > > > On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
+> > > > > Hi Rafael,
+> > > > 
+> > > > Hi,
+> > > > 
+> > > > > > This patch series introduces support for CPU overclocking
+> > > > > > technique called Boost.
+> > > > > > 
+> > > > > > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > > > > > component:
+> > > > > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> > > > > > 
+> > > > > > Boost unifies hardware based solution (e.g. Intel Nehalem)
+> > > > > > with software oriented one (like the one done at Exynos).
+> > > > > > For this reason cpufreq/freq_table code has been
+> > > > > > reorganized to include common code.
+> > > > > > 
+> > > > > > Important design decisions:
+> > > > > > - Boost related code is compiled-in unconditionally to
+> > > > > > cpufreq core and disabled by default. The cpufreq_driver is
+> > > > > > responsibile for setting boost_supported flag and providing
+> > > > > > set_boost callback(if HW support is needed). For software
+> > > > > > managed boost, special Kconfig flag -
+> > > > > > CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be
+> > > > > > selected only when a target platform has thermal framework
+> > > > > > properly configured.
+> > > > > > 
+> > > > > > - struct cpufreq_driver has been extended with boost related
+> > > > > > fields: -- boost_supported - when driver supports boosting
+> > > > > >         -- boost_enabled - boost state
+> > > > > >         -- set_boost - callback to function, which is
+> > > > > > necessary to enable/disable boost
+> > > > > > 
+> > > > > > - Boost sysfs attribute
+> > > > > > (/sys/devices/system/cpu/cpufreq/boost) is visible _only_
+> > > > > > when cpufreq driver supports Boost.
+> > > > > > 
+> > > > > > - No special spin_lock for Boost was created. The one from
+> > > > > > cpufreq core was reused.
+> > > > > > 
+> > > > > > - The Boost code doesn't rely on any policy. When boost
+> > > > > > state is changed, then the policy list is iterated and
+> > > > > > proper adjustements are done.
+> > > > > > 
+> > > > > > - To improve safety level, the thermal framework is also
+> > > > > > extended to disable software boosting, when thermal trip
+> > > > > > point is reached. After cooling down the boost can be
+> > > > > > enabled again. This emulates behaviour similar to HW
+> > > > > > managed boost (like x86)
+> > > > > > 
+> > > > > > Tested at HW:
+> > > > > >        Exynos 4412 3.13-rc4 Linux
+> > > > > >        Intel Core i7-3770 3.13-rc4 Linux
+> > > > > > 
+> > > > > > Above patches were posted on top of kernel_pm/bleeding-edge
+> > > > > > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
+> > > > > > 
+> > > > > > Lukasz Majewski (7):
+> > > > > >   cpufreq: Add boost frequency support in core
+> > > > > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work
+> > > > > > with common boost solution
+> > > > > >   cpufreq:boost:Kconfig: Provide support for software
+> > > > > > managed BOOST cpufreq:exynos:Extend Exynos cpufreq driver
+> > > > > > to support boost framework
+> > > > > >   Documentation:cpufreq:boost: Update BOOST documentation
+> > > > > >   cpufreq:exynos4x12: Change L0 driver data to
+> > > > > > CPUFREQ_BOOST_FREQ thermal:exynos:boost: Automatic
+> > > > > > enable/disable of BOOST feature (at Exynos4412)
+> > > > > > 
+> > > > > >  Documentation/cpu-freq/boost.txt          |   26 +++----
+> > > > > >  drivers/cpufreq/Kconfig                   |    4 +
+> > > > > >  drivers/cpufreq/Kconfig.arm               |   15 ++++
+> > > > > >  drivers/cpufreq/acpi-cpufreq.c            |   86
+> > > > > > +++++++-------------- drivers/cpufreq/cpufreq.c
+> > > > > > | 118 ++++++++++++++++++++++++++++-
+> > > > > > drivers/cpufreq/exynos-cpufreq.c          |    3 +
+> > > > > > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+> > > > > > drivers/cpufreq/freq_table.c              |   56
+> > > > > > ++++++++++++-- drivers/thermal/samsung/exynos_tmu_data.c
+> > > > > > |   12 +-- include/linux/cpufreq.h                   |   24
+> > > > > > ++++++ 10 files changed, 261 insertions(+), 85 deletions(-)
+> > > > > > 
+> > > > > 
+> > > > > A gentle ping about BOOST patches.
+> > > > > 
+> > > > > Its been already acked by Viresh and Eduardo.
+> > > > > 
+> > > > > It applies on kernel_pm/bleeding_edge SHA1:
+> > > > > 4836deb72c5e2a9af0cb2129c1149783a26d99ab
+> > > > 
+> > > > It looks like Rui is still looking into this.
+> > > > 
+> > > > Rui, are you fine with this series?
+> > > > 
+> > > Yes, I'm okay with the thermal related parts of this patch set.
+> > > 
 > > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/base/power/runtime.c |   28 ++++++++++++++++++++++++++++
-> >  include/linux/pm_runtime.h   |    2 ++
-> >  2 files changed, 30 insertions(+)
-> > 
-> > Index: linux-pm/include/linux/pm_runtime.h
-> > ===================================================================
-> > --- linux-pm.orig/include/linux/pm_runtime.h
-> > +++ linux-pm/include/linux/pm_runtime.h
-> > @@ -53,6 +53,7 @@ extern unsigned long pm_runtime_autosusp
-> >  extern void pm_runtime_update_max_time_suspended(struct device *dev,
-> >  						 s64 delta_ns);
-> >  extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
-> > +extern bool pm_runtime_enabled_and_suspended(struct device *dev);
-> >  
-> >  static inline bool pm_children_suspended(struct device *dev)
-> >  {
-> > @@ -161,6 +162,7 @@ static inline unsigned long pm_runtime_a
-> >  				struct device *dev) { return 0; }
-> >  static inline void pm_runtime_set_memalloc_noio(struct device *dev,
-> >  						bool enable){}
-> > +static inline bool pm_runtime_enabled_and_suspended(struct device *dev) { return false };
+> > Rafael, gentle reminder about BOOST patches ... :-)
 > 
-> The above probably doesn't compile if !CONFIG_PM_RUNTIME because of the
-> misplaced semicolon.
+> I'm about to take them for 3.14.
+> 
 
-Of well, indeed, thanks!
+Thanks :-)
 
-Update follows.
+> Thanks!
+> 
+> [PS: Please don't use the rjw@sisk.pl address, that domain is gone.]
+> 
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: PM / runtime: Routine for checking device status during system suspend
+Ok, I will not use it.
 
-Add a new helper routine, pm_runtime_enabled_and_suspended(), to
-allow subsystems (or PM domains) to check the runtime PM status of
-devices during system suspend (possibly to avoid resuming those
-devices upfront at that time).
+-- 
+Best regards,
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/runtime.c |   28 ++++++++++++++++++++++++++++
- include/linux/pm_runtime.h   |    2 ++
- 2 files changed, 30 insertions(+)
+Lukasz Majewski
 
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -53,6 +53,7 @@ extern unsigned long pm_runtime_autosusp
- extern void pm_runtime_update_max_time_suspended(struct device *dev,
- 						 s64 delta_ns);
- extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
-+extern bool pm_runtime_enabled_and_suspended(struct device *dev);
- 
- static inline bool pm_children_suspended(struct device *dev)
- {
-@@ -161,6 +162,7 @@ static inline unsigned long pm_runtime_a
- 				struct device *dev) { return 0; }
- static inline void pm_runtime_set_memalloc_noio(struct device *dev,
- 						bool enable){}
-+static inline bool pm_runtime_enabled_and_suspended(struct device *dev) { return false; }
- 
- #endif /* !CONFIG_PM_RUNTIME */
- 
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -1194,6 +1194,34 @@ void pm_runtime_enable(struct device *de
- EXPORT_SYMBOL_GPL(pm_runtime_enable);
- 
- /**
-+ * pm_runtime_enabled_and_suspended - Check runtime PM status of a device.
-+ * @dev: Device to handle.
-+ *
-+ * This routine is to be executed during system suspend only, after
-+ * device_prepare() has been executed for @dev.
-+ *
-+ * Return false if runtime PM is disabled for the device.  Otherwise, wait
-+ * for pending transitions to complete and check the runtime PM status of the
-+ * device after that.  Return true if it is RPM_SUSPENDED.
-+ */
-+bool pm_runtime_enabled_and_suspended(struct device *dev)
-+{
-+	unsigned long flags;
-+	bool ret;
-+
-+	spin_lock_irqsave(&dev->power.lock, flags);
-+	if (dev->power.disable_depth) {
-+		ret = false;
-+	} else {
-+		__pm_runtime_barrier(dev);
-+		ret = pm_runtime_status_suspended(dev);
-+	}
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_enabled_and_suspended);
-+
-+/**
-  * pm_runtime_forbid - Block runtime PM of a device.
-  * @dev: Device to handle.
-  *
-
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
