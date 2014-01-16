@@ -1,55 +1,134 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] cpuidle: reduce unnecessary loop in c-state selection
-Date: Thu, 16 Jan 2014 16:53:17 +0100
-Message-ID: <13647359.XRIaiKjIK6@vostro.rjw.lan>
-References: <1389876316-27161-1-git-send-email-alex.shi@linaro.org>
+Subject: [Update][RFC][PATCH 2/3] PM / runtime: Routine for checking device status during system suspend
+Date: Thu, 16 Jan 2014 17:07:07 +0100
+Message-ID: <2673469.H8s3UchFPJ@vostro.rjw.lan>
+References: <5420830.W4laSGaAU9@vostro.rjw.lan> <2472996.a5CGlmW4AP@vostro.rjw.lan> <20140116133251.GC2494@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54047 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:53231 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751991AbaAPPjR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 10:39:17 -0500
-In-Reply-To: <1389876316-27161-1-git-send-email-alex.shi@linaro.org>
+	with SMTP id S1751767AbaAPPxH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2014 10:53:07 -0500
+In-Reply-To: <20140116133251.GC2494@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <len.brown@intel.com>
-Cc: Alex Shi <alex.shi@linaro.org>, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hi Len, what do you think?
+On Thursday, January 16, 2014 03:32:51 PM Mika Westerberg wrote:
+> On Wed, Jan 15, 2014 at 12:14:46AM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Add a new helper routine, pm_runtime_enabled_and_suspended(), to
+> > allow subsystems (or PM domains) to check the runtime PM status of
+> > devices during system suspend (possibly to avoid resuming those
+> > devices upfront at that time).
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/base/power/runtime.c |   28 ++++++++++++++++++++++++++++
+> >  include/linux/pm_runtime.h   |    2 ++
+> >  2 files changed, 30 insertions(+)
+> > 
+> > Index: linux-pm/include/linux/pm_runtime.h
+> > ===================================================================
+> > --- linux-pm.orig/include/linux/pm_runtime.h
+> > +++ linux-pm/include/linux/pm_runtime.h
+> > @@ -53,6 +53,7 @@ extern unsigned long pm_runtime_autosusp
+> >  extern void pm_runtime_update_max_time_suspended(struct device *dev,
+> >  						 s64 delta_ns);
+> >  extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
+> > +extern bool pm_runtime_enabled_and_suspended(struct device *dev);
+> >  
+> >  static inline bool pm_children_suspended(struct device *dev)
+> >  {
+> > @@ -161,6 +162,7 @@ static inline unsigned long pm_runtime_a
+> >  				struct device *dev) { return 0; }
+> >  static inline void pm_runtime_set_memalloc_noio(struct device *dev,
+> >  						bool enable){}
+> > +static inline bool pm_runtime_enabled_and_suspended(struct device *dev) { return false };
+> 
+> The above probably doesn't compile if !CONFIG_PM_RUNTIME because of the
+> misplaced semicolon.
 
-On Thursday, January 16, 2014 08:45:16 PM Alex Shi wrote:
-> All deeper c-state have the longer target_residency and exit_latency
-> So, if the one can not meet our prediction, neither any later.
-> So, just break out the for loop to save few checking instructions.
-> 
-> Signed-off-by: Alex Shi <alex.shi@linaro.org>
-> ---
->  drivers/cpuidle/governors/menu.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index cf7f2f0..48ed3fb 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -352,11 +352,11 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  		if (s->disabled || su->disable)
->  			continue;
->  		if (s->target_residency > data->predicted_us)
-> -			continue;
-> +			break;
->  		if (s->exit_latency > latency_req)
-> -			continue;
-> +			break;
->  		if (s->exit_latency * multiplier > data->predicted_us)
-> -			continue;
-> +			break;
->  
->  		data->last_state_idx = i;
->  		data->exit_us = s->exit_latency;
-> 
+Of well, indeed, thanks!
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Update follows.
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: PM / runtime: Routine for checking device status during system suspend
+
+Add a new helper routine, pm_runtime_enabled_and_suspended(), to
+allow subsystems (or PM domains) to check the runtime PM status of
+devices during system suspend (possibly to avoid resuming those
+devices upfront at that time).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/runtime.c |   28 ++++++++++++++++++++++++++++
+ include/linux/pm_runtime.h   |    2 ++
+ 2 files changed, 30 insertions(+)
+
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -53,6 +53,7 @@ extern unsigned long pm_runtime_autosusp
+ extern void pm_runtime_update_max_time_suspended(struct device *dev,
+ 						 s64 delta_ns);
+ extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
++extern bool pm_runtime_enabled_and_suspended(struct device *dev);
+ 
+ static inline bool pm_children_suspended(struct device *dev)
+ {
+@@ -161,6 +162,7 @@ static inline unsigned long pm_runtime_a
+ 				struct device *dev) { return 0; }
+ static inline void pm_runtime_set_memalloc_noio(struct device *dev,
+ 						bool enable){}
++static inline bool pm_runtime_enabled_and_suspended(struct device *dev) { return false; }
+ 
+ #endif /* !CONFIG_PM_RUNTIME */
+ 
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -1194,6 +1194,34 @@ void pm_runtime_enable(struct device *de
+ EXPORT_SYMBOL_GPL(pm_runtime_enable);
+ 
+ /**
++ * pm_runtime_enabled_and_suspended - Check runtime PM status of a device.
++ * @dev: Device to handle.
++ *
++ * This routine is to be executed during system suspend only, after
++ * device_prepare() has been executed for @dev.
++ *
++ * Return false if runtime PM is disabled for the device.  Otherwise, wait
++ * for pending transitions to complete and check the runtime PM status of the
++ * device after that.  Return true if it is RPM_SUSPENDED.
++ */
++bool pm_runtime_enabled_and_suspended(struct device *dev)
++{
++	unsigned long flags;
++	bool ret;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++	if (dev->power.disable_depth) {
++		ret = false;
++	} else {
++		__pm_runtime_barrier(dev);
++		ret = pm_runtime_status_suspended(dev);
++	}
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_runtime_enabled_and_suspended);
++
++/**
+  * pm_runtime_forbid - Block runtime PM of a device.
+  * @dev: Device to handle.
+  *
+
