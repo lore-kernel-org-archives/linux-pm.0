@@ -1,174 +1,124 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v3 1/2] thermal: add available policies attribute
-Date: Thu, 16 Jan 2014 09:47:23 -0400
-Message-ID: <52D7E2EB.5090908@ti.com>
-References: <1389864705-17790-1-git-send-email-wni@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v12 0/7] cpufreq:boost: CPU Boost mode support
+Date: Thu, 16 Jan 2014 16:51:20 +0100
+Message-ID: <63197714.M09EiGrl9g@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1389335623.2411.15.camel@rzhang1-mobl4> <20140116104008.15b77a1f@amdc2363>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="uLVRpJ1Oiao62QOMbGwG0vsvw3RQemL4I"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:36471 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbaAPNrg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 16 Jan 2014 08:47:36 -0500
-In-Reply-To: <1389864705-17790-1-git-send-email-wni@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140116104008.15b77a1f@amdc2363>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: eduardo.valentin@ti.com, rui.zhang@intel.com, mark.rutland@arm.com, durgadoss.r@intel.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, linux-pm@vger.kernel.org
 
---uLVRpJ1Oiao62QOMbGwG0vsvw3RQemL4I
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thursday, January 16, 2014 10:40:08 AM Lukasz Majewski wrote:
+> Hi Rafael,
+> 
+> > On Wed, 2014-01-08 at 01:35 +0100, Rafael J. Wysocki wrote:
+> > > On Tuesday, January 07, 2014 07:58:24 AM Lukasz Majewski wrote:
+> > > > Hi Rafael,
+> > > 
+> > > Hi,
+> > > 
+> > > > > This patch series introduces support for CPU overclocking
+> > > > > technique called Boost.
+> > > > > 
+> > > > > It is a follow up of a LAB governor proposal. Boost is a LAB
+> > > > > component:
+> > > > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+> > > > > 
+> > > > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> > > > > software oriented one (like the one done at Exynos).
+> > > > > For this reason cpufreq/freq_table code has been reorganized to
+> > > > > include common code.
+> > > > > 
+> > > > > Important design decisions:
+> > > > > - Boost related code is compiled-in unconditionally to cpufreq
+> > > > > core and disabled by default. The cpufreq_driver is
+> > > > > responsibile for setting boost_supported flag and providing
+> > > > > set_boost callback(if HW support is needed). For software
+> > > > > managed boost, special Kconfig flag - CONFIG_CPU_FREQ_BOOST_SW
+> > > > > has been defined. It will be selected only when a target
+> > > > > platform has thermal framework properly configured.
+> > > > > 
+> > > > > - struct cpufreq_driver has been extended with boost related
+> > > > > fields: -- boost_supported - when driver supports boosting
+> > > > >         -- boost_enabled - boost state
+> > > > >         -- set_boost - callback to function, which is necessary
+> > > > > to enable/disable boost
+> > > > > 
+> > > > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost)
+> > > > > is visible _only_ when cpufreq driver supports Boost.
+> > > > > 
+> > > > > - No special spin_lock for Boost was created. The one from
+> > > > > cpufreq core was reused.
+> > > > > 
+> > > > > - The Boost code doesn't rely on any policy. When boost state is
+> > > > > changed, then the policy list is iterated and proper
+> > > > > adjustements are done.
+> > > > > 
+> > > > > - To improve safety level, the thermal framework is also
+> > > > > extended to disable software boosting, when thermal trip point
+> > > > > is reached. After cooling down the boost can be enabled again.
+> > > > > This emulates behaviour similar to HW managed boost (like x86)
+> > > > > 
+> > > > > Tested at HW:
+> > > > >        Exynos 4412 3.13-rc4 Linux
+> > > > >        Intel Core i7-3770 3.13-rc4 Linux
+> > > > > 
+> > > > > Above patches were posted on top of kernel_pm/bleeding-edge
+> > > > > (SHA1: bd0f3a5d9dce48a917ce1f1047534d79c725149)
+> > > > > 
+> > > > > Lukasz Majewski (7):
+> > > > >   cpufreq: Add boost frequency support in core
+> > > > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
+> > > > > common boost solution
+> > > > >   cpufreq:boost:Kconfig: Provide support for software managed
+> > > > > BOOST cpufreq:exynos:Extend Exynos cpufreq driver to support
+> > > > > boost framework
+> > > > >   Documentation:cpufreq:boost: Update BOOST documentation
+> > > > >   cpufreq:exynos4x12: Change L0 driver data to
+> > > > > CPUFREQ_BOOST_FREQ thermal:exynos:boost: Automatic
+> > > > > enable/disable of BOOST feature (at Exynos4412)
+> > > > > 
+> > > > >  Documentation/cpu-freq/boost.txt          |   26 +++----
+> > > > >  drivers/cpufreq/Kconfig                   |    4 +
+> > > > >  drivers/cpufreq/Kconfig.arm               |   15 ++++
+> > > > >  drivers/cpufreq/acpi-cpufreq.c            |   86
+> > > > > +++++++-------------- drivers/cpufreq/cpufreq.c
+> > > > > | 118 ++++++++++++++++++++++++++++-
+> > > > > drivers/cpufreq/exynos-cpufreq.c          |    3 +
+> > > > > drivers/cpufreq/exynos4x12-cpufreq.c      |    2 +-
+> > > > > drivers/cpufreq/freq_table.c              |   56 ++++++++++++--
+> > > > > drivers/thermal/samsung/exynos_tmu_data.c |   12 +--
+> > > > > include/linux/cpufreq.h                   |   24 ++++++ 10 files
+> > > > > changed, 261 insertions(+), 85 deletions(-)
+> > > > > 
+> > > > 
+> > > > A gentle ping about BOOST patches.
+> > > > 
+> > > > Its been already acked by Viresh and Eduardo.
+> > > > 
+> > > > It applies on kernel_pm/bleeding_edge SHA1:
+> > > > 4836deb72c5e2a9af0cb2129c1149783a26d99ab
+> > > 
+> > > It looks like Rui is still looking into this.
+> > > 
+> > > Rui, are you fine with this series?
+> > > 
+> > Yes, I'm okay with the thermal related parts of this patch set.
+> > 
+> 
+> Rafael, gentle reminder about BOOST patches ... :-)
 
-On 16-01-2014 05:31, Wei Ni wrote:
-> The Linux thermal framework support to change thermal governor
-> policy in userspace, but it can't show what available policies
-> supported.
->=20
-> This patch adds available_policies attribute to the thermal
-> framework, it can list the thermal governors which can be
-> used for a particular zone. This attribute is read only.
->=20
-> Change-Id: I63c25d0dba38ad8357265afceea59bbf336cde13
+I'm about to take them for 3.14.
 
-Remove gerrit IDs.
+Thanks!
 
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  Documentation/thermal/sysfs-api.txt |    6 ++++++
->  drivers/thermal/thermal_core.c      |   28 +++++++++++++++++++++++++++=
-+
->  2 files changed, 34 insertions(+)
->=20
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/therma=
-l/sysfs-api.txt
-> index 87519cb..fe69bce 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -172,6 +172,7 @@ Thermal zone device sys I/F, created once it's regi=
-stered:
->      |---temp:			Current temperature
->      |---mode:			Working mode of the thermal zone
->      |---policy:			Thermal governor used for this zone
-> +    |---available_policies	Available thermal governors for this zone
->      |---trip_point_[0-*]_temp:	Trip point temperature
->      |---trip_point_[0-*]_type:	Trip point type
->      |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-> @@ -238,6 +239,10 @@ policy
->  	One of the various thermal governors used for a particular zone.
->  	RW, Required
-> =20
-> +available_policies
-> +	Availabe thermal governors which can be used for a particular zone.
+[PS: Please don't use the rjw@sisk.pl address, that domain is gone.]
 
-s/Availabe/Available/g
-
-> +	RO, Required
-> +
->  trip_point_[0-*]_temp
->  	The temperature above which trip point will be fired.
->  	Unit: millidegree Celsius
-> @@ -330,6 +335,7 @@ method, the sys I/F structure will be built like th=
-is:
->      |---temp:			37000
->      |---mode:			enabled
->      |---policy:			step_wise
-> +    |---available_policies:	step_wise fair_share
->      |---trip_point_0_temp:	100000
->      |---trip_point_0_type:	critical
->      |---trip_point_1_temp:	80000
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_c=
-ore.c
-> index 338a88b..fc9b2ae 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -761,6 +761,27 @@ policy_show(struct device *dev, struct device_attr=
-ibute *devattr, char *buf)
->  	return sprintf(buf, "%s\n", tz->governor->name);
->  }
-> =20
-> +static ssize_t
-> +available_policies_show(struct device *dev, struct device_attribute *d=
-evattr,
-> +			char *buf)
-> +{
-> +	struct thermal_governor *pos;
-> +	ssize_t count =3D 0;
-> +	ssize_t size;
-> +
-> +	mutex_lock(&thermal_governor_lock);
-> +
-> +	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-> +		size =3D PAGE_SIZE - count;
-> +		count +=3D scnprintf(buf + count, size, "%s ", pos->name);
-> +	}
-> +	count +=3D scnprintf(buf + count, size, "\n");
-> +
-> +	mutex_unlock(&thermal_governor_lock);
-> +
-> +	return count;
-> +}
-> +
->  #ifdef CONFIG_THERMAL_EMULATION
->  static ssize_t
->  emul_temp_store(struct device *dev, struct device_attribute *attr,
-> @@ -794,6 +815,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
->  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
->  static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_s=
-tore);
->  static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_stor=
-e);
-> +static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_sho=
-w, NULL);
-> =20
->  /* sys I/F for cooling device */
->  #define to_cooling_device(_dev)	\
-> @@ -1527,6 +1549,11 @@ struct thermal_zone_device *thermal_zone_device_=
-register(const char *type,
->  	if (result)
->  		goto unregister;
-> =20
-> +	/* Create available_policies attribute */
-> +	result =3D device_create_file(&tz->device, &dev_attr_available_polici=
-es);
-> +	if (result)
-> +		goto unregister;
-> +
->  	/* Update 'this' zone's governor information */
->  	mutex_lock(&thermal_governor_lock);
-> =20
-> @@ -1622,6 +1649,7 @@ void thermal_zone_device_unregister(struct therma=
-l_zone_device *tz)
->  	if (tz->ops->get_mode)
->  		device_remove_file(&tz->device, &dev_attr_mode);
->  	device_remove_file(&tz->device, &dev_attr_policy);
-> +	device_remove_file(&tz->device, &dev_attr_available_policies);
->  	remove_trip_attrs(tz);
->  	tz->governor =3D NULL;
-> =20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---uLVRpJ1Oiao62QOMbGwG0vsvw3RQemL4I
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlLX4usACgkQCXcVR3XQvP2+fwD/elejCFAsWX5KypyjaZnzULMb
-03Ue04jxA6DPCDx1XjABAIGmxZgqJfTA/Rw7nNQGQ+97E8hfaOTraMbBGsER4Z/y
-=mZEl
------END PGP SIGNATURE-----
-
---uLVRpJ1Oiao62QOMbGwG0vsvw3RQemL4I--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
