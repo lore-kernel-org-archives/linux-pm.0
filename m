@@ -1,139 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH 4/5] ACPI / LPSS: Support for device latency tolerance PM QoS
-Date: Fri, 17 Jan 2014 15:46:40 +0100
-Message-ID: <12327024.lrSi2qfq01@vostro.rjw.lan>
-References: <5434847.aCyiWHNRe7@vostro.rjw.lan>
+Subject: [RFC/RFT][PATCH 0/5] PM / QoS: Introduce latency tolerance device PM QoS type
+Date: Fri, 17 Jan 2014 15:42:13 +0100
+Message-ID: <5434847.aCyiWHNRe7@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <5434847.aCyiWHNRe7@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Add a new routine, acpi_lpss_set_ltr(), for setting latency tolerance
-values for LPSS devices having LTR (Latency Tolerance Reporting)
-registers.  Modify acpi_lpss_platform_notify() to set the LPSS
-devices' power.set_latency_tolerance callback pointers to
-acpi_lpss_set_ltr() during device addition.
+On some platforms hardware may switch to an energy-saving mode on the fly
+on the basis of certain utilization metrics used by it.  That usually is
+desirable from the energy conservation standpoint, but it generally causes
+latencies to increase which may adversely affect some operations.  For this
+reason, the platforms in question usually provide some interfaces for software
+to indicate its latency tolerance and possibly to prevent the energy-saving
+modes from being selected too aggressively.
 
-That will cause the device latency tolerance PM QoS to work for
-the devices in question as documented.
+The following series of patches introduces a device PM QoS type allowing
+those interfaces to be used by kernel code and user space.  It is designed
+in analogy with the existing resume latency device PM QoS type, which allows
+some pieces of the existing device PM QoS code to be re-used and makes the
+new user space interface fit into the existing framework.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/acpi_lpss.c |   66 ++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 62 insertions(+), 4 deletions(-)
+Patch [1/5] modifies the names of symbols, variables, functions and structure
+fields associated with the existing resume latency device PM QoS type to
+avoid any confusion with the new one introduced by the subsequent patches.
 
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -33,6 +33,12 @@ ACPI_MODULE_NAME("acpi_lpss");
- #define LPSS_GENERAL_UART_RTS_OVRD	BIT(3)
- #define LPSS_SW_LTR			0x10
- #define LPSS_AUTO_LTR			0x14
-+#define LPSS_LTR_SNOOP_REQ		BIT(15)
-+#define LPSS_LTR_SNOOP_MASK		0x0000FFFF
-+#define LPSS_LTR_SNOOP_LAT_1US		0x800
-+#define LPSS_LTR_SNOOP_LAT_32US		0xC00
-+#define LPSS_LTR_SNOOP_LAT_SHIFT	5
-+#define LPSS_LTR_MAX_VAL		0x3FF
- #define LPSS_TX_INT			0x20
- #define LPSS_TX_INT_MASK		BIT(1)
- 
-@@ -316,6 +322,17 @@ static int acpi_lpss_create_device(struc
- 	return ret;
- }
- 
-+static u32 __lpss_reg_read(struct lpss_private_data *pdata, unsigned int reg)
-+{
-+	return readl(pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
-+}
-+
-+static void __lpss_reg_write(u32 val, struct lpss_private_data *pdata,
-+			     unsigned int reg)
-+{
-+	writel(val, pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
-+}
-+
- static int lpss_reg_read(struct device *dev, unsigned int reg, u32 *val)
- {
- 	struct acpi_device *adev;
-@@ -337,7 +354,7 @@ static int lpss_reg_read(struct device *
- 		ret = -ENODEV;
- 		goto out;
- 	}
--	*val = readl(pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
-+	*val = __lpss_reg_read(pdata, reg);
- 
-  out:
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
-@@ -390,6 +407,46 @@ static struct attribute_group lpss_attr_
- 	.name = "lpss_ltr",
- };
- 
-+static void acpi_lpss_set_ltr(struct device *dev, s32 val)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	struct lpss_private_data *pdata;
-+	u32 ltr_mode, ltr_val;
-+
-+	if (WARN_ON(!adev))
-+		return;
-+
-+	pdata = acpi_driver_data(adev);
-+	if (WARN_ON(!pdata || !pdata->mmio_base))
-+		return;
-+
-+	ltr_mode = __lpss_reg_read(pdata, LPSS_GENERAL);
-+	if (val < 0) {
-+		if (ltr_mode & LPSS_GENERAL_LTR_MODE_SW) {
-+			ltr_mode &= ~LPSS_GENERAL_LTR_MODE_SW;
-+			__lpss_reg_write(ltr_mode, pdata, LPSS_GENERAL);
-+		}
-+		return;
-+	}
-+	ltr_val = __lpss_reg_read(pdata, LPSS_SW_LTR) & ~LPSS_LTR_SNOOP_MASK;
-+	if (val > LPSS_LTR_MAX_VAL) {
-+		ltr_val |= LPSS_LTR_SNOOP_LAT_32US | LPSS_LTR_SNOOP_REQ;
-+		val >>= LPSS_LTR_SNOOP_LAT_SHIFT;
-+		if (val > LPSS_LTR_MAX_VAL)
-+			val = LPSS_LTR_MAX_VAL;
-+	} else {
-+		ltr_val |= LPSS_LTR_SNOOP_LAT_1US;
-+		if (val > 0)
-+			ltr_val |= LPSS_LTR_SNOOP_REQ;
-+	}
-+	ltr_val |= val;
-+	__lpss_reg_write(ltr_val, pdata, LPSS_SW_LTR);
-+	if (!(ltr_mode & LPSS_GENERAL_LTR_MODE_SW)) {
-+		ltr_mode |= LPSS_GENERAL_LTR_MODE_SW;
-+		__lpss_reg_write(ltr_mode, pdata, LPSS_GENERAL);
-+	}
-+}
-+
- static int acpi_lpss_platform_notify(struct notifier_block *nb,
- 				     unsigned long action, void *data)
- {
-@@ -415,11 +472,12 @@ static int acpi_lpss_platform_notify(str
- 		return 0;
- 	}
- 
--	if (action == BUS_NOTIFY_ADD_DEVICE)
-+	if (action == BUS_NOTIFY_ADD_DEVICE) {
- 		ret = sysfs_create_group(&pdev->dev.kobj, &lpss_attr_group);
--	else if (action == BUS_NOTIFY_DEL_DEVICE)
-+		pdev->dev.power.set_latency_tolerance = acpi_lpss_set_ltr;
-+	} else if (action == BUS_NOTIFY_DEL_DEVICE) {
- 		sysfs_remove_group(&pdev->dev.kobj, &lpss_attr_group);
--
-+	}
- 	return ret;
- }
- 
+Patch [2/5] introduces a new field in struct pm_qos_constraints for specifying
+a special value to be returned as the effective requirement when the given list
+of PM QoS requirements is empty.  That field is necessary for the new latency
+tolerance device PM QoS type.
 
+Patch [3/5] introduces the latency tolerance device PM QoS type along with
+documentation.
+
+Patch [4/5] modifies the ACPI LPSS (Low-Power Subsystem) driver to hook up
+LPSS devices to the new latency tolerance device PM QoS interface.
+
+Patch [5/5] modifies the dev_pm_qos_add_ancestor_request() routine so that it
+can be used by drivers of devices without hardware latency tolerance support
+for specifying their requirements via the ancestors of those devies.
+
+Comments welcome!
+
+Thanks,
+Rafael
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
