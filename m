@@ -1,195 +1,249 @@
-From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCHv5 RESEND 09/10] Thermal: Add ABI Documentation for sysfs interfaces
-Date: Fri, 17 Jan 2014 18:57:02 +0530
-Message-ID: <1389965222-2537-3-git-send-email-durgadoss.r@intel.com>
-References: <1389965222-2537-1-git-send-email-durgadoss.r@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:42490 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752091AbaAQH7A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 Jan 2014 02:59:00 -0500
-In-Reply-To: <1389965222-2537-1-git-send-email-durgadoss.r@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 2/2] thermal: add interface to support tune governor
+ in run-time
+Date: Fri, 17 Jan 2014 16:22:50 +0800
+Message-ID: <1389946970.5918.46.camel@rzhang1-mobl4>
+References: <1389611863-7812-1-git-send-email-wni@nvidia.com>
+	 <1389611863-7812-3-git-send-email-wni@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1389611863-7812-3-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: eduardo.valentin-l0cyMroinI0@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hongbo.zhang@freescale.com, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
 
-This patch adds Documentation for ABI's introduced
-for thermal subsystem (under /sys/class/thermal/).
+On Mon, 2014-01-13 at 19:17 +0800, Wei Ni wrote:
+> In the of-thermal driver, it register a thermal zone device
+> without governor, since the governers are not static, we
+> should be able to update to a new one in run-time, so I add
+> a new fucntion thermal_update_governor() to do it.
+> 
+> In the future, the governor will be more complex, it may want
+> to tune governor-specific parameters/configuration for
+> different thermal zone at different run-time, so I add
+> start/stop for the governor and add governor_data as governor's
+> parameters, so that the thermal platform driver can change
+> the governor with start/stop, and tune the governor parameters
+> in run-time.
 
-Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
----
- Documentation/ABI/testing/sysfs-class-thermal |  161 +++++++++++++++++++++++++
- 1 file changed, 161 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
+are you going to introduce a new governor with .start/.stop implemented
+or are you going to introduce .start/.stop callbacks for the current
+governors?
 
-diff --git a/Documentation/ABI/testing/sysfs-class-thermal b/Documentation/ABI/testing/sysfs-class-thermal
-new file mode 100644
-index 0000000..144efc1
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-thermal
-@@ -0,0 +1,161 @@
-+What:		/sys/class/thermal/sensorX/temp
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Exposes 'temperature' of a thermal sensor in mC
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/sensorX/name
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Name of the thermal sensor
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/sensorX/thresholdY
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Programmable threshold (in terms of mC). On reaching
-+		this, the thermal governors may take action to control
-+		temperature.
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/cdevX/type
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Type of the cooling device
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/cdevX/cur_state
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Current throttle state the cooling device is in
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/cdevX/max_state
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Maximum number of throttle states the cooling device supports
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/zone_name
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Name of the thermal zone.
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Symlink to a sensor associated with this zone.
-+Users:		User space thermal governors or applications
-+
-+What:		/sys/class/thermal/zoneX/cooling_deviceY
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Symlink to a cooling device associated with this zone.
-+Users:		User space thermal governors or applications
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_activeM
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Active Trip point temperature in mC for sensorY in
-+		thermal zoneX.
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_passiveN
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Passive Trip point temperature in mC for sensorY in
-+		thermal zoneX.
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_hot
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Hot trip point for 'sensorY' in 'zoneX' (in mC).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_critical
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Critical trip point for 'sensorY' in 'zoneX' (in mC).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/mapY_trip_type
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Mapping information between a sensor and a cooling device
-+		in 'zoneX'. This interface provides the trip_type for a
-+		particular map(Y).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/mapY_sensor_name
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Mapping information between a sensor and a cooling device
-+		in 'zoneX'. This interface provides the name of the sensor
-+		used in this map(Y).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/mapY_cdev_name
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Mapping information between a sensor and a cooling device
-+		in 'zoneX'. This interface provides the name of the cooling
-+		device used in this map(Y).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/mapY_trip_mask
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Mapping information between a sensor and a cooling device
-+		in 'zoneX'. This interface provides the trip point mask,
-+		which defines whether or not to throttle a particular
-+		cooling device. See Documentation/thermal/sysfs-api2.txt
-+		for more information on this interface.
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/mapY_weightN
-+Date:		January 2014
-+KernelVersion:	3.13
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Mapping information between a sensor and a cooling device
-+		in 'zoneX'. This interface provides the weights that can
-+		be used to throttle a cooling device, on thermal violations.
-+		See Documentation/thermal/sysfs-api2.txt for more details on
-+		this interface.
-+Users:		Kernel/User space thermal governors
--- 
-1.7.9.5
+I'd like to see if there is any real request for this.
+> 
+> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  Documentation/thermal/sysfs-api.txt |    5 +++
+>  drivers/thermal/thermal_core.c      |   80 +++++++++++++++++++++++++++++++----
+>  include/linux/thermal.h             |   12 ++++++
+>  3 files changed, 88 insertions(+), 9 deletions(-)
+> 
+> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> index 6a70b55c..7efd8e6 100644
+> --- a/Documentation/thermal/sysfs-api.txt
+> +++ b/Documentation/thermal/sysfs-api.txt
+> @@ -405,3 +405,8 @@ platform data is provided, this uses the step_wise throttling policy.
+>  This function serves as an arbitrator to set the state of a cooling
+>  device. It sets the cooling device to the deepest cooling state if
+>  possible.
+> +
+> +5.5:thermal_update_governor:
+> +This function update the thermal zone's governor to a new one and update
+> +the governor data of the new governor for that thermal zone. Returns 0 if
+> +success, an erro code otherwise.
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index aab1df8..d922baf 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -93,10 +93,17 @@ int thermal_register_governor(struct thermal_governor *governor)
+>  			name = pos->tzp->governor_name;
+>  		else
+>  			name = DEFAULT_THERMAL_GOVERNOR;
+> -		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
+> +		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
+> +			if (governor->start) {
+> +				err = governor->start(pos);
+> +				if (err < 0)
+> +					goto exit;
+> +			}
+>  			pos->governor = governor;
+> +		}
+>  	}
+>  
+> +exit:
+>  	mutex_unlock(&thermal_list_lock);
+>  	mutex_unlock(&thermal_governor_lock);
+>  
+> @@ -119,8 +126,11 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+>  
+>  	list_for_each_entry(pos, &thermal_tz_list, node) {
+>  		if (!strnicmp(pos->governor->name, governor->name,
+> -						THERMAL_NAME_LENGTH))
+> +						THERMAL_NAME_LENGTH)) {
+> +			if (pos->governor->stop)
+> +				pos->governor->stop(pos);
+>  			pos->governor = NULL;
+> +		}
+>  	}
+>  
+>  	mutex_unlock(&thermal_list_lock);
+> @@ -130,6 +140,51 @@ exit:
+>  	return;
+>  }
+>  
+> +/**
+> + * thermal_update_governor() - update the thermal zone device's governor
+> + * to a new one.
+> + * @tzd: pointer of thermal zone device, which need to update governor.
+> + * @name: new governor name.
+> + * @gov_data: governor data for the new governor if needed.
+> + *
+> + * Return: On success returns 0, an error code otherwise
+> + */
+> +int thermal_update_governor(struct thermal_zone_device *tzd,
+> +			    const char *name, void *gov_data)
+> +{
+> +	struct thermal_governor *old_gov, *new_gov;
+> +	int ret = 0;
+> +
+> +	mutex_lock(&thermal_governor_lock);
+> +
+> +	new_gov = __find_governor(name);
+> +	if (!new_gov) {
+> +		ret = -EINVAL;
+> +		goto exit;
+> +	}
+> +
+> +	old_gov = tzd->governor;
+> +
+> +	if (old_gov && old_gov->stop)
+> +		old_gov->stop(tzd);
+> +
+> +	if (new_gov->start) {
+> +		ret = new_gov->start(tzd);
+> +		if (ret < 0) {
+> +			if (old_gov && old_gov->start)
+> +				old_gov->start(tzd);
+> +			goto exit;
+> +		}
+> +	}
+> +
+> +	tzd->governor = new_gov;
+> +	tzd->governor_data = gov_data;
+> +
+> +exit:
+> +	mutex_unlock(&thermal_governor_lock);
+> +	return ret;
+> +}
+> +
+>  static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+>  {
+>  	int ret;
+> @@ -734,22 +789,17 @@ policy_store(struct device *dev, struct device_attribute *attr,
+>  {
+>  	int ret = -EINVAL;
+>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+> -	struct thermal_governor *gov;
+>  	char name[THERMAL_NAME_LENGTH];
+>  
+>  	snprintf(name, sizeof(name), "%s", buf);
+>  
+> -	mutex_lock(&thermal_governor_lock);
+> -
+> -	gov = __find_governor(strim(name));
+> -	if (!gov)
+> +	ret = thermal_update_governor(tz, strim(name), NULL);
+> +	if (ret < 0)
+>  		goto exit;
+>  
+> -	tz->governor = gov;
+>  	ret = count;
+>  
+>  exit:
+> -	mutex_unlock(&thermal_governor_lock);
+>  	return ret;
+>  }
+>  
+> @@ -1559,6 +1609,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  	else
+>  		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
+>  
+> +	if (tz->governor->start) {
 
+Note that tz->governor may be NULL at this time.
+although this seems like a bug to me.
+
+> +		result = tz->governor->start(tz);
+> +		if (result < 0)
+> +			tz->governor = NULL;
+> +	}
+> +
+why not invoke thermal_update_governor() directly here?
+
+thanks,
+rui
+>  	mutex_unlock(&thermal_governor_lock);
+>  
+>  	if (!tz->tzp || !tz->tzp->no_hwmon) {
+> @@ -1585,6 +1641,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  		return tz;
+>  
+>  unregister:
+> +	if (tz->governor && tz->governor->stop)
+> +		tz->governor->stop(tz);
+> +	tz->governor = NULL;
+>  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+>  	device_unregister(&tz->device);
+>  	return ERR_PTR(result);
+> @@ -1648,6 +1707,9 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+>  	device_remove_file(&tz->device, &dev_attr_policy);
+>  	device_remove_file(&tz->device, &dev_attr_available_policies);
+>  	remove_trip_attrs(tz);
+> +
+> +	if (tz->governor && tz->governor->stop)
+> +		tz->governor->stop(tz);
+>  	tz->governor = NULL;
+>  
+
+>  	thermal_remove_hwmon_sysfs(tz);
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index f7e11c7..a473736 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -177,6 +177,7 @@ struct thermal_zone_device {
+>  	struct thermal_zone_device_ops *ops;
+>  	const struct thermal_zone_params *tzp;
+>  	struct thermal_governor *governor;
+> +	void *governor_data;
+>  	struct list_head thermal_instances;
+>  	struct idr idr;
+>  	struct mutex lock; /* protect thermal_instances list */
+> @@ -187,6 +188,15 @@ struct thermal_zone_device {
+>  /* Structure that holds thermal governor information */
+>  struct thermal_governor {
+>  	char name[THERMAL_NAME_LENGTH];
+> +
+> +	/*
+> +	 * The start and stop operations will be called when thermal zone is
+> +	 * registered and when change governor via sysfs or driver in running
+> +	 * time.
+> +	 */
+> +	int (*start)(struct thermal_zone_device *tz);
+> +	void (*stop)(struct thermal_zone_device *tz);
+> +
+>  	int (*throttle)(struct thermal_zone_device *tz, int trip);
+>  	struct list_head	governor_list;
+>  };
+> @@ -293,6 +303,8 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+>  		struct thermal_cooling_device *, int);
+>  void thermal_cdev_update(struct thermal_cooling_device *);
+>  void thermal_notify_framework(struct thermal_zone_device *, int);
+> +int thermal_update_governor(struct thermal_zone_device *, const char *,
+> +			    void *);
+>  
+>  #ifdef CONFIG_NET
+>  extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
