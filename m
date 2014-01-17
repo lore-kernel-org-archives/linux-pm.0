@@ -1,405 +1,322 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v2 1/2] thermal: introduce thermal_zone_get_zone_by_node
- helper function
-Date: Fri, 17 Jan 2014 15:38:51 +0800
-Message-ID: <52D8DE0B.5070307@nvidia.com>
-References: <1389263879-10483-1-git-send-email-wni@nvidia.com>
- <1389263879-10483-2-git-send-email-wni@nvidia.com> <52D40EC6.6050509@ti.com>
- <52D512F1.1090008@nvidia.com> <52D5582F.5000807@ti.com>
- <52D6766D.6080100@nvidia.com> <52D6967C.9010305@ti.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCHv5 03/10] Thermal: Add cooling device APIs
+Date: Fri, 17 Jan 2014 07:57:26 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59E2060E@BGSMSX101.gar.corp.intel.com>
+References: <1389916587-2541-1-git-send-email-durgadoss.r@intel.com>
+ <1389916587-2541-4-git-send-email-durgadoss.r@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <52D6967C.9010305-l0cyMroinI0@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <eduardo.valentin-l0cyMroinI0@public.gmane.org>
-Cc: "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:12862 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbaAQH5a convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2014 02:57:30 -0500
+In-Reply-To: <1389916587-2541-4-git-send-email-durgadoss.r@intel.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "hongbo.zhang@freescale.com" <hongbo.zhang@freescale.com>, "wni@nvidia.com" <wni@nvidia.com>
 
-On 01/15/2014 10:09 PM, Eduardo Valentin wrote:
-> * PGP Signed by an unknown key
+> -----Original Message-----
+> From: R, Durgadoss
+> Sent: Friday, January 17, 2014 5:26 AM
+> To: Zhang, Rui; eduardo.valentin@ti.com; linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org; hongbo.zhang@freescale.com;
+> wni@nvidia.com; R, Durgadoss
+> Subject: [PATCHv5 03/10] Thermal: Add cooling device APIs
 > 
-> On 15-01-2014 07:52, Wei Ni wrote:
->> On 01/14/2014 11:30 PM, Eduardo Valentin wrote:
->>>> Old Signed by an unknown key
->>>
->>> Hello Wei,
->>>
->>> On 14-01-2014 06:35, Wei Ni wrote:
->>>> On 01/14/2014 12:05 AM, Eduardo Valentin wrote:
->>>>>> Old Signed by an unknown key
->>>>>
->>>>> On 09-01-2014 06:37, Wei Ni wrote:
->>>>>> The thermal framework start to support device tree, this
->>>>>> patch adds a helper function to get a reference of a
->>>>>> thermal zone, based on the zone's device node.
->>>>>
->>>>> I would prefer if you could provide a better justification why we need
->>>>> this API. Think of the scope of this API: would it be used only by the
->>>>> of-thermal code? only by the drivers/thermal code? or any driver?
->>>>
->>>
->>>
->>>> I have talked it in the previous patch "Re: [PATCH] thermal: use device
->>>> node to get thermal zone".
->>>
->>> Thanks for putting me in the same page
->>>
->>>
->>>> So let me copy to here again:
->>>>
->>>> On the tegra board, it will use two or more sensors to estimate the skin
->>>> temperature by reading temps from these sensors and calculate them.
->>>
->>> OK. Have you read the Example (c) in the thermal binding document
->>> (Documentation/devicetree/bindings/thermal)?
->>>
->>>> For example, we have two sensors: sensor1 and sensor2. We can register
->>>> them to thermal framework by using DT, something like:
->>>> thermal-zones {
->>>>                 sensor1: lm90-local {
->>>>                       ...
->>>>                         thermal-sensors = <&lm90 0>;
->>>>                 };
->>>>
->>>>                 sensor2: lm90-remote {
->>>>                       ...
->>>>                         thermal-sensors = <&lm90 1>;
->>>>                 };
->>>> }
->>>
->>> where is the descriptor for lm90?
->>
->> There has descriptior for lm90, I didn't post it.
->>
->>>
->>> This is actually not how it is supposed to be described.
->>>
->>>>
->>>> Then I will add a device node for my skin temperature driver, something
->>>> like:
->>>> skin_temp {
->>>>       ...
->>>>       #thermal-sensor-cells = <0>;
->>>>
->>>>       sub-devs {
->>>>               dev@0 {
->>>>                       dev = <&sensor1>;
->>>>               };
->>>>
->>>>               dev@1 {
->>>>                       dev = <&sensor2>;
->>>>               };
->>>>       };
->>>> };
->>>
->>> What is the above? A virtual device?
->>
->> Yes, it is the node for the skin temperature estimator driver.
->>
->>>
->>> I believe the above is not really part of the thermal bindings.
->>>
->>>> So I can parse the DT in the skin temperature driver to get the nodes of
->>>> the sensor1 and sensor2, and can use .*get_by_node to get thermal zone
->>>> device, then use .get_temp() and other callbacks to get temperature and
->>>> other information.
->>>>
->>>
->>> The above is a different binding and different API then of what has been
->>> discussed last year for thermal bindings. I am copying here the existing
->>> example:
->>>
->>> #include <dt-bindings/thermal/thermal.h>
->>>
->>> &i2c1 {
->>>         ...
->>>         /*
->>>          * A simple IC with a single temperature sensor.
->>>          */
->>>         adc: sensor@0x49 {
->>>                 ...
->>>                 #thermal-sensor-cells = <0>;
->>>         };
->>> };
->>>
->>> ocp {
->>>         ...
->>>         /*
->>>          * A simple IC with a single bandgap temperature sensor.
->>>          */
->>>         bandgap0: bandgap@0x0000ED00 {
->>>                 ...
->>>                 #thermal-sensor-cells = <0>;
->>>         };
->>> };
->>>
->>> thermal-zones {
->>>         cpu-thermal: cpu-thermal {
->>>                 polling-delay-passive = <250>; /* milliseconds */
->>>                 polling-delay = <1000>; /* milliseconds */
->>>
->>>                 thermal-sensors = <&bandgap0>,  /* cpu */
->>>                                   <&adc>;       /* pcb north */
->>>
->>>                 /* hotspot = 100 * bandgap - 120 * adc + 484 */
->>>                 coefficients =          <100    -120    484>;
->>>
->>>                 trips {
->>>                         ...
->>>                 };
->>>
->>>                 cooling-maps {
->>>                         ...
->>>                 };
->>>         };
->>> };
->>>
->>>
->>>
->>> The idea is to have a producer-> consumer description, in which the
->>> thermal zone is the consumer and the sensors are the producers (for
->>> temperature at least).
->>>
->>> What is the relation between the sensors you have?
->>>
->>> Why the above structure cannot cover for your case? Here is what you
->>> would do to describe your case:
->>
->> Yes, I noticed that you have this sample in the documents, but it seems
->> the of-thermal only support one sensor in the thermal-sensors list, and
->> didn't handle the coefficients yet.
->> And in my skin temperature estimator driver, it will have more complex
->> logic to estimate the temperature, it will consider the history
->> temperatures, and have coefficients for every history temp, it seems
->> can't use your coefficients easily.
-> 
-> Is it possible to disclose what is the real equation you are using to
-> populate your virtual sensor?  In this way we can either discuss how to
-> implement it using the existing API or propose the correct improvements.
+> This patch adds the cooling device APIs to the
+> new thermal framework. The register/unregister
+> APIs stay the same. Below are some minimal
+> changes:
+>  * Use DEVICE_ATTR_RO/RW macros
+>  * Add 'struct idr idr' to struct thermal_cooling_device
+>  * Tidy up the error handling paths in register API
+>  * Use thermal_cdev_register as API name, to keep
+>    THERMAL_V2 APIs along with the existing ones.
 
-To approximate skin we estimate skin temperature based on the two
-temperature sensors (eg. lm90's local/remote sensors). It will read
-temperature from them every about 1s, and record the history temps per
-sensor. It meant that it's just the weighted sum of the past N readings
-from a few physical temperature sensors. From platform to platform we
-may need to change the weights, in here the weights are something like
-the coefficients. The it also have a offset for the sum value. so the
-equation is something like:
-local_temp = coeffs[0]*temp[0] + ... + coeffs[n]*temp[n]
-remote_temp = coeffs[0]*temp[0] + ... + coeffs[n]*temp[n]
-skin-temp = proportional * (local_temp + remote_temp) + offset;
+This needs a fix for the ABI i.e the cooling device will be
+called cdevX instead of cooling_deviceX, so that it does
+not affect the existing ABI.
+
+Will resend this patch and add documentation for this in
+patches 08/09.
+
+Thanks,
+Durga
 
 > 
-> I am considering posting a series of statistical treatment for the
-> thermal framework.
-
-So, looking forward your patches :)
-If could please consider above issue.
-And I may be pending this series, wand wait your new series.
-
-Thanks.
-Wei.
-
+> Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+> ---
+>  drivers/thermal/thermal_core_new.c |  184
+> ++++++++++++++++++++++++++++++++++++
+>  include/linux/thermal.h            |   12 +++
+>  2 files changed, 196 insertions(+)
 > 
->>
->>>
->>> /*
->>>  * You did not specify which type of sensors, so I am assuming
->>>  * they are I2C sensors
->>>  */
->>> &i2c1 {
->>>                  lm90: sensor@48 {
->>>                         ...
->>>                          #thermal-sensor-cells = <1>;
->>>                  };
->>> };
->>>
->>> thermal-zones {
->>>         skin-hotspot: skin-hotspot {
->>>                 polling-delay-passive = <2000>; /* put the right val */
->>>                 polling-delay = <1000>; /* put the right val */
->>>
->>>                 thermal-sensors = <&lm90 0>,    /* local */
->>>                                   <&lm90 1>;    /* remote */
->>>
->>>                 /* hotspot ?
->>>                  * What is the relation that describes your sensors?
->>>                  * coefficients =  <A_0 A_1>; you have to fill the coef.
->>>                  */
->>>
->>>                 trips {
->>>                         ...
->>>                 };
->>>
->>>                 cooling-maps {
->>>                         ...
->>>                 };
->>>         };
->>> };
->>>
->>> So, the idea is so that you define your sensor nodes and the respective
->>> drivers, in the above example the i2c drivers, will probe them. When
->>> creating thermal zones, you have to specify the list of sensors by
->>> linking using phandles + sensor specifier, as documented in the thermal
->>> binding text.
->>>
->>>>>
->>>>> So far you have provided only one user, and that user can already work
->>>>> with existing APIs. As I mention, DT does not support name duplications.
->>>>
->>>> If the system only have the DT, then there will not have name
->>>> duplications. But some drivers will call the
->>>> thermal_zone_device_register directly with any thermal zone type, and at
->>>> same time, other drivers may use of-thermal to register, and set the
->>>> same name in the DT. Then if use the *.get_by_name, it can't get the
->>>> uniqu one.
->>>
->>> The above example is odd to me. Why would a driver be registering zones
->>> from DT and from in kernel definition? The usual path is to have either
->>> one or the other. Even if you are migrating your system to DT based
->>> booting, you may have a mix of devices that are probed via DT and others
->>> that are probed via board files, but one single driver probing both, I
->>> think this is unusual.
->>>
->>>>
->>>>>
->>>>> Unless you enlighten  me with better uses of this API, I would prefer
->>>>> not to have it.
->>>>>
->>>>>
->>>>>>
->>>>>> It will add a device_node *np member in the struct
->>>>>> thermal_zone_device, and initialize it when create a thermal
->>>>>> zone. This funciton perform a zone device node lookup and
->>>>>> return a reference to a thermal zone device that matches
->>>>>> the device node requested.
->>>>>> In case the zone is not found or if the required parameters
->>>>>> are invalid, it will return the corresponding error code (ERR_PTR).
->>>>>>
->>>>>> Change-Id: I4d65f849e84425dddd387f70886a9c7c4c2002f2
->>>>>
->>>>> For your next patches, please done include gerrit change IDs. Linux
->>>>> Kernel does not need to be linked to your inhouse development history
->>>>> via gerrit IDs.
->>>>
->>>> It's so sorry, I forgot to remove it.
->>>>
->>>>>
->>>>>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>>>>> ---
->>>>>>  drivers/thermal/of-thermal.c   |    2 ++
->>>>>>  drivers/thermal/thermal_core.c |   33 +++++++++++++++++++++++++++++++++
->>>>>>  include/linux/thermal.h        |    3 +++
->>>>>>  3 files changed, 38 insertions(+)
->>>>>>
->>>>>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->>>>>> index 04b1be7..53f2d3a 100644
->>>>>> --- a/drivers/thermal/of-thermal.c
->>>>>> +++ b/drivers/thermal/of-thermal.c
->>>>>> @@ -804,6 +804,8 @@ int __init of_parse_thermal_zones(void)
->>>>>>                     of_thermal_free_zone(tz);
->>>>>>                     /* attempting to build remaining zones still */
->>>>>>             }
->>>>>> +
->>>>>> +           zone->np = child;
->>>>>>     }
->>>>>>
->>>>>>     return 0;
->>>>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->>>>>> index 338a88b..eeddb94 100644
->>>>>> --- a/drivers/thermal/thermal_core.c
->>>>>> +++ b/drivers/thermal/thermal_core.c
->>>>>> @@ -1672,6 +1672,39 @@ exit:
->>>>>>  }
->>>>>>  EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
->>>>>>
->>>>>> +/**
->>>>>> +* thermal_zone_get_zone_by_node() - search for a zone and returns its ref
->>>>>> +* @node: device node of the thermal zone
->>>>>> +*
->>>>>> +* When thermal zone is found with the passed device node, returns a reference
->>>>>> +* to it.
->>>>>> +*
->>>>>> +* Return: On success returns a reference to an unique thermal zone with
->>>>>> +* matching device node, an ERR_PTR otherwise (-EINVAL for invalid
->>>>>> +* paramenters, -ENODEV for not found).
->>>>>> +*/
->>>>>> +struct thermal_zone_device *
->>>>>> +thermal_zone_get_zone_by_node(struct device_node *node)
->>>>>> +{
->>>>>> +   struct thermal_zone_device *pos = NULL, *ref = ERR_PTR(-ENODEV);
->>>>>> +   bool found = false;
->>>>>> +
->>>>>> +   if (!node)
->>>>>> +           return ERR_PTR(-EINVAL);
->>>>>> +
->>>>>> +   mutex_lock(&thermal_list_lock);
->>>>>> +   list_for_each_entry(pos, &thermal_tz_list, node)
->>>>>> +           if (node == pos->np) {
->>>>>> +                   ref = pos;
->>>>>> +                   found = true;
->>>>>> +                   break;
->>>>>> +           }
->>>>>> +   mutex_unlock(&thermal_list_lock);
->>>>>> +
->>>>>> +   return ref;
->>>>>> +}
->>>>>> +EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_node);
->>>>>> +
->>>>>>  #ifdef CONFIG_NET
->>>>>>  static const struct genl_multicast_group thermal_event_mcgrps[] = {
->>>>>>     { .name = THERMAL_GENL_MCAST_GROUP_NAME, },
->>>>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->>>>>> index f7e11c7..288d272 100644
->>>>>> --- a/include/linux/thermal.h
->>>>>> +++ b/include/linux/thermal.h
->>>>>> @@ -162,6 +162,7 @@ struct thermal_zone_device {
->>>>>>     int id;
->>>>>>     char type[THERMAL_NAME_LENGTH];
->>>>>>     struct device device;
->>>>>> +   struct device_node *np;
->>>>>>     struct thermal_attr *trip_temp_attrs;
->>>>>>     struct thermal_attr *trip_type_attrs;
->>>>>>     struct thermal_attr *trip_hyst_attrs;
->>>>>> @@ -286,6 +287,8 @@ thermal_of_cooling_device_register(struct device_node *np, char *, void *,
->>>>>>                                const struct thermal_cooling_device_ops *);
->>>>>>  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
->>>>>>  struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
->>>>>> +struct thermal_zone_device *
->>>>>> +thermal_zone_get_zone_by_node(struct device_node *node);
->>>>>>  int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp);
->>>>>>
->>>>>>  int get_tz_trend(struct thermal_zone_device *, int);
->>>>>>
->>>>>
->>>>>
->>>>
->>>>
->>>>
->>>
->>>
->>> --
->>> You have got to be excited about what you are doing. (L. Lamport)
->>>
->>> Eduardo Valentin
->>>
->>>
->>> * Unknown Key
->>> * 0x75D0BCFD
->>>
->>
->>
->>
+> diff --git a/drivers/thermal/thermal_core_new.c
+> b/drivers/thermal/thermal_core_new.c
+> index b369a6f..ba38438 100644
+> --- a/drivers/thermal/thermal_core_new.c
+> +++ b/drivers/thermal/thermal_core_new.c
+> @@ -39,15 +39,21 @@ MODULE_DESCRIPTION("Generic thermal management
+> sysfs support v2");
+>  MODULE_LICENSE("GPL v2");
 > 
+>  static DEFINE_IDR(thermal_sensor_idr);
+> +static DEFINE_IDR(thermal_cdev_idr);
 > 
+>  static LIST_HEAD(thermal_sensor_list);
+> +static LIST_HEAD(thermal_cdev_list);
+> 
+>  static DEFINE_MUTEX(thermal_idr_lock);
+>  static DEFINE_MUTEX(sensor_list_lock);
+> +static DEFINE_MUTEX(cdev_list_lock);
+> 
+>  #define to_thermal_sensor(_dev) \
+>  	container_of(_dev, struct thermal_sensor, device)
+> 
+> +#define to_cooling_device(_dev)	\
+> +	container_of(_dev, struct thermal_cooling_device, device)
+> +
+>  static int get_idr(struct idr *idr, int *id)
+>  {
+>  	int ret;
+> @@ -168,10 +174,69 @@ threshold_store(struct device *dev, struct
+> device_attribute *attr,
+>  	return ret ? ret : count;
+>  }
+> 
+> +static ssize_t
+> +type_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +	struct thermal_cooling_device *cdev = to_cooling_device(dev);
+> +
+> +	return sprintf(buf, "%s\n", cdev->type);
+> +}
+> +
+> +static ssize_t
+> +max_state_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +	struct thermal_cooling_device *cdev = to_cooling_device(dev);
+> +	unsigned long state;
+> +	int ret;
+> +
+> +	ret = cdev->ops->get_max_state(cdev, &state);
+> +	if (ret)
+> +		return ret;
+> +	return sprintf(buf, "%ld\n", state);
+> +}
+> +
+> +static ssize_t
+> +cur_state_show(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +	struct thermal_cooling_device *cdev = to_cooling_device(dev);
+> +	unsigned long state;
+> +	int ret;
+> +
+> +	ret = cdev->ops->get_cur_state(cdev, &state);
+> +	if (ret)
+> +		return ret;
+> +	return sprintf(buf, "%ld\n", state);
+> +}
+> +
+> +static ssize_t
+> +cur_state_store(struct device *dev, struct device_attribute *attr,
+> +		const char *buf, size_t count)
+> +{
+> +	struct thermal_cooling_device *cdev = to_cooling_device(dev);
+> +	unsigned long state;
+> +	int ret;
+> +
+> +	ret = sscanf(buf, "%ld\n", &state);
+> +	if (!ret)
+> +		return -EINVAL;
+> +
+> +	if ((long)state < 0)
+> +		return -EINVAL;
+> +
+> +	ret = cdev->ops->set_cur_state(cdev, state);
+> +
+> +	return ret ? ret : count;
+> +}
+> +
+>  /* Thermal sensor attributes */
+>  static DEVICE_ATTR_RO(name);
+>  static DEVICE_ATTR_RO(temp);
+> 
+> +/* Thermal cooling device attributes */
+> +static DEVICE_ATTR_RO(type);
+> +static DEVICE_ATTR_RO(max_state);
+> +static DEVICE_ATTR_RW(cur_state);
+> +
+>  /**
+>   * thermal_create_sensor_sysfs - create sysfs nodes for sensorX
+>   * @ts:		the thermal sensor
+> @@ -365,3 +430,122 @@ void thermal_sensor_unregister(struct thermal_sensor
+> *ts)
+>  	return;
+>  }
+>  EXPORT_SYMBOL_GPL(thermal_sensor_unregister);
+> +
+> +/**
+> + * thermal_cdev_register() - register a new thermal cooling device
+> + * @type:      the thermal cooling device type.
+> + * @devdata:   device private data.
+> + * @ops:       standard thermal cooling devices callbacks.
+> + *
+> + * This interface function adds a new thermal cooling device to
+> + * /sys/class/thermal/ folder as cooling_device[0-*].
+> + *
+> + * Return: a pointer to the created struct thermal_cooling_device or an
+> + * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
+> + */
+> +struct thermal_cooling_device *thermal_cdev_register(char *type, void
+> *devdata,
+> +				const struct thermal_cooling_device_ops *ops)
+> +{
+> +	struct thermal_cooling_device *cdev;
+> +	int result;
+> +
+> +	if (!type || (type && strlen(type) >= THERMAL_NAME_LENGTH))
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	if (!ops || !ops->get_max_state || !ops->get_cur_state ||
+> +	    !ops->set_cur_state)
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
+> +	if (!cdev)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	idr_init(&cdev->idr);
+> +	result = get_idr(&thermal_cdev_idr, &cdev->id);
+> +	if (result)
+> +		goto exit_free;
+> +
+> +	strlcpy(cdev->type, type ? : "", sizeof(cdev->type));
+> +	mutex_init(&cdev->lock);
+> +	cdev->ops = ops;
+> +	cdev->updated = true;
+> +	cdev->device.class = &thermal_class;
+> +	cdev->devdata = devdata;
+> +
+> +	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
+> +	result = device_register(&cdev->device);
+> +	if (result)
+> +		goto exit_idr;
+> +
+> +	result = device_create_file(&cdev->device, &dev_attr_type);
+> +	if (result)
+> +		goto exit_unregister;
+> +
+> +	result = device_create_file(&cdev->device, &dev_attr_max_state);
+> +	if (result)
+> +		goto exit_type;
+> +
+> +	result = device_create_file(&cdev->device, &dev_attr_cur_state);
+> +	if (result) {
+> +		device_remove_file(&cdev->device, &dev_attr_max_state);
+> +		goto exit_type;
+> +	}
+> +
+> +	/* Add 'this' new cdev to the global cdev list */
+> +	mutex_lock(&cdev_list_lock);
+> +	list_add(&cdev->node, &thermal_cdev_list);
+> +	mutex_unlock(&cdev_list_lock);
+> +
+> +	return cdev;
+> +
+> +exit_type:
+> +	device_remove_file(&cdev->device, &dev_attr_type);
+> +exit_unregister:
+> +	device_unregister(&cdev->device);
+> +exit_idr:
+> +	release_idr(&thermal_cdev_idr, cdev->id);
+> +	idr_destroy(&cdev->idr);
+> +exit_free:
+> +	kfree(cdev);
+> +	return ERR_PTR(result);
+> +}
+> +EXPORT_SYMBOL_GPL(thermal_cdev_register);
+> +
+> +/**
+> + * thermal_cdev_unregister - removes the registered thermal cooling device
+> + * @cdev:      the thermal cooling device to remove.
+> + *
+> + * thermal_cdev_unregister() must be called when the device is no
+> + * longer needed.
+> + */
+> +void thermal_cdev_unregister(struct thermal_cooling_device *cdev)
+> +{
+> +	struct thermal_cooling_device *pos, *next;
+> +	bool found = false;
+> +
+> +	if (!cdev)
+> +		return;
+> +
+> +	mutex_lock(&cdev_list_lock);
+> +	list_for_each_entry_safe(pos, next, &thermal_cdev_list, node) {
+> +		if (pos == cdev) {
+> +			list_del(&cdev->node);
+> +			found = true;
+> +			break;
+> +		}
+> +	}
+> +	mutex_unlock(&cdev_list_lock);
+> +	if (!found)
+> +		return;
+> +
+> +	device_remove_file(&cdev->device, &dev_attr_type);
+> +	device_remove_file(&cdev->device, &dev_attr_max_state);
+> +	device_remove_file(&cdev->device, &dev_attr_cur_state);
+> +
+> +	release_idr(&thermal_cdev_idr, cdev->id);
+> +	idr_destroy(&cdev->idr);
+> +	device_unregister(&cdev->device);
+> +	kfree(cdev);
+> +	return;
+> +}
+> +EXPORT_SYMBOL_GPL(thermal_cdev_unregister);
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index bb6b183..46d7dc3 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -158,6 +158,7 @@ struct thermal_cooling_device {
+>  	void *devdata;
+>  	const struct thermal_cooling_device_ops *ops;
+>  	bool updated; /* true if the cooling device does not need update */
+> +	struct idr idr;
+>  	struct mutex lock; /* protect thermal_instances list */
+>  	struct list_head thermal_instances;
+>  	struct list_head node;
+> @@ -334,6 +335,9 @@ static inline int thermal_generate_netlink_event(struct
+> thermal_zone_device *tz,
+>  struct thermal_sensor *thermal_sensor_register(const char *, int,
+>  				struct thermal_sensor_ops *, void *);
+>  void thermal_sensor_unregister(struct thermal_sensor *);
+> +struct thermal_cooling_device *thermal_cdev_register(char *, void *,
+> +				const struct thermal_cooling_device_ops *);
+> +void thermal_cdev_unregister(struct thermal_cooling_device *);
+>  #else
+>  static inline struct thermal_sensor *thermal_sensor_register(const char *name,
+>  		int count, struct thermal_sensor_ops *ops, void *devdata)
+> @@ -341,5 +345,13 @@ static inline struct thermal_sensor
+> *thermal_sensor_register(const char *name,
+>  	return ERR_PTR(-ENODEV);
+>  }
+>  static inline void thermal_sensor_unregister(struct thermal_sensor *ts) {}
+> +static inline struct thermal_cooling_device *thermal_cdev_register(
+> +				char *type, void *devdata,
+> +				const struct thermal_cooling_device_ops *ops)
+> +{
+> +	return ERR_PTR(-ENODEV);
+> +}
+> +static
+> +inline void thermal_cdev_unregister(struct thermal_cooling_device *cdev) {}
+>  #endif
+>  #endif /* __THERMAL_H__ */
 > --
-> You have got to be excited about what you are doing. (L. Lamport)
-> 
-> Eduardo Valentin
-> 
-> 
-> * Unknown Key
-> * 0x75D0BCFD
-> 
+> 1.7.9.5
+
