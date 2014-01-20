@@ -1,80 +1,93 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Catalin Marinas <catalin.marinas@arm.com>
 Subject: Re: [11/11] system 1: Saving energy using DVFS
-Date: Mon, 20 Jan 2014 19:12:08 +0100
-Message-ID: <20140120181208.GC25439@amd.pavel.ucw.cz>
+Date: Mon, 20 Jan 2014 18:16:47 +0000
+Message-ID: <20140120181647.GJ29971@arm.com>
 References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
  <1389111587-5923-12-git-send-email-morten.rasmussen@arm.com>
  <20140120164926.GB23051@amd.pavel.ucw.cz>
  <20140120171010.GB29971@arm.com>
+ <20140120175431.GB25439@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43764 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbaATSMJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jan 2014 13:12:09 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140120171010.GB29971@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
+In-Reply-To: <20140120175431.GB25439@amd.pavel.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-
-> > Sleeping CPU: 2mA
-> > Screen on: 230mA
-> > CPU loaded: 250mA
+On Mon, Jan 20, 2014 at 05:54:32PM +0000, Pavel Machek wrote:
+> On Mon 2014-01-20 17:10:29, Catalin Marinas wrote:
+> > On Mon, Jan 20, 2014 at 04:49:26PM +0000, Pavel Machek wrote:
+> > > > To save energy, the higher frequencies should be avoided and only used
+> > > > when the application performance requirements can not be satisfied
+> > > > otherwise (e.g. spread tasks across more cpus if possible).
+> > > 
+> > > I argue this is untrue for any task where user waits for its
+> > > completion with screen on. (And that's quite important subset).
+> > > 
+> > > Lets take Nokia n900 as an example. 
+> > > 
+> > > (source http://wiki.maemo.org/N900_Hardware_Power_Consumption)
+> > > 
+> > > Sleeping CPU: 2mA
+> > > Screen on: 230mA
+> > > CPU loaded: 250mA
+> > > 
+> > > Now, lets believe your numbers and pretend system can operate at 33%
+> > > of speed with 11% power consumption.
+> > > 
+> > > Lets take task that takes 10 seconds on max frequency:
+> > > 
+> > >       ~ 10s * 470mA     	     	    = 4700mAs
+> > > 
+> > > You suggest running at 33% speed, instead; that means 30 seconds on
+> > > low requency.
+> > > 
+> > > CPU on low: 25mA (assumed).
+> > > 
+> > >      ~ 30s * 255mA			    = 7650mAs
+> > > 
+> > > Hmm. So race to idle is good thing on Intel machines, and it is good
+> > > thing on ARM design I have access to.
 > > 
-> > Now, lets believe your numbers and pretend system can operate at 33%
-> > of speed with 11% power consumption.
-> > 
-> > Lets take task that takes 10 seconds on max frequency:
-> > 
-> >       ~ 10s * 470mA     	     	    = 4700mAs
-> > 
-> > You suggest running at 33% speed, instead; that means 30 seconds on
-> > low requency.
-> > 
-> > CPU on low: 25mA (assumed).
-> > 
-> >      ~ 30s * 255mA			    = 7650mAs
-> > 
-> > Hmm. So race to idle is good thing on Intel machines, and it is good
-> > thing on ARM design I have access to.
+> > Race to idle doesn't mean that the screen goes off as well. Let's say
+> > the screen stays on for 1 min and the CPU needs to be running for 10s
+> > over this minute, in the first case you have:
 > 
-> Race to idle doesn't mean that the screen goes off as well. Let's say
-> the screen stays on for 1 min and the CPU needs to be running for 10s
-> over this minute, in the first case you have:
+> No, it does not. I just assumed user is continuing to use his
+> machine. Obviously, waiting 60 seconds with screen on will make the
+> difference look smaller. But your solution still means user has to
+> wait longer _and_ you consume more battery doing so.
 > 
-> 	10s & 250mA + 60s * 230mA = 16300mAs
-> 
-> in the second case you have:
-> 
-> 	30s * 25mA + 60s * 230mA = 14550mAs
-> 
-> That's a 1750mAs difference. There are of course other parts drawing
-> current but simple things like the above really make a difference in the
-> mobile space, both in terms of battery and thermal budget.
+> And this is for any task where user waits for result with screen
+> on. Like rendering a webpage. Like opening settings screen. Like
+> installing application.
 
-Aha, I noticed the values are now the other way around. [And notice
-that if user _does_ lock/turn off the screen after the operation,
-difference between power consumptions is factor of two. People do turn
-off screens before putting phone back in pocket.]
+Page rendering should make very little difference to power since the
+reading (screen on) time is much larger than the rendering (CPU) time.
+But what I'm pointing at for 10s/60s ratios are thing like games or
+video playing where the CPU is running for 1/6 of the time and idle for
+the other 5/6. We get better energy figures by changing the run time to
+3/6 and idle at 3/6.
 
-You are right that as long as user does _not_ wait for the computation
-result, running at low frequency might make sense. That may be true on
-cellphone so fast that all the actions are "instant". I have yet to
-see such cellphone. That probably means that staying on low frequency
-normally and going to high after cpu is busy for 100msec or so is
-right thing: if cpu is busy for 100msec, it probably means user is
-waiting for the result.
+> There are not too many background tasks on a cellphone.
 
-But it depends on the numbers you did not tell us. I'm pretty sure
-N900 does _not_ have 11% power consuption at 33% performance; I just
-assumed so for sake of argument.
+For sleep time, screen off etc. there are some background tasks but here
+the run-time doesn't matter much, it's probably more expensive to take
+CPUs out of deep sleep states. What we want to optimise here is which
+CPU to wake (like a little vs big).
 
-So, really, details are needed.
-									Pavel
+> But hey, maybe you are right and running at lowest possible frequency
+> is right. Please provide concrete numbers like I did.
+
+They've been anonymised (for many reasons) and you have the right not to
+trust them. But do you really think we are making up the numbers? We
+have a great interest in the Linux scheduler working efficiently on the
+ARM platforms rather than optimising it for non-existent scenarios. If
+at some point this argument becomes a blocking factor, I'm sure we can
+share the real numbers with the relevant parties under an NDA.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Catalin
