@@ -1,7 +1,7 @@
 From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: [PATCH 2/5] PM: Enabling the asynchronous threads for resume_noirq
-Date: Mon, 20 Jan 2014 16:44:36 +0800
-Message-ID: <1390207479-26064-3-git-send-email-chuansheng.liu@intel.com>
+Subject: [PATCH 3/5] PM: Enabling the asyncronous threads for resume_early
+Date: Mon, 20 Jan 2014 16:44:37 +0800
+Message-ID: <1390207479-26064-4-git-send-email-chuansheng.liu@intel.com>
 References: <y>
  <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -14,61 +14,47 @@ List-Id: linux-pm@vger.kernel.org
 From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
 Just like commit 5af84b82701a and 97df8c12995, using the
-asynchronous threads can improve the overall resume_noirq
+asynchronous threads can improve the overall resume_early
 time significantly.
 
-One typical case is:
-In resume_noirq phase and for the PCI devices, the function
-pci_pm_resume_noirq() will be called, and there is one d3_delay
-(10ms) at least.
-
-With the way of asynchronous threads, we just need wait d3_delay
-time once in parallel for each calling, which save much time to
-resume quickly.
+This patch is for resume_early phase.
 
 Signed-off-by: Liu, Chuansheng <chuansheng.liu@intel.com>
 ---
- drivers/base/power/main.c |   59 +++++++++++++++++++++++++++++++++------------
- 1 file changed, 44 insertions(+), 15 deletions(-)
+ drivers/base/power/main.c |   48 +++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 38 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index bf71ddb..c8a00fc 100644
+index c8a00fc..1bad6bd 100644
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -496,6 +496,23 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
+@@ -619,35 +619,63 @@ static int device_resume_early(struct device *dev, pm_message_t state)
  	return error;
  }
  
-+static bool is_async(struct device *dev)
-+{
-+	return dev->power.async_suspend && pm_async_enabled
-+		&& !pm_trace_is_enabled();
-+}
-+
-+static void async_resume_noirq(void *data, async_cookie_t cookie)
++static void async_resume_early(void *data, async_cookie_t cookie)
 +{
 +	struct device *dev = (struct device *)data;
 +	int error;
 +
-+	error = device_resume_noirq(dev, pm_transition);
++	error = device_resume_early(dev, pm_transition);
 +	if (error)
 +		pm_dev_err(dev, pm_transition, " async", error);
 +	put_device(dev);
 +}
 +
  /**
-  * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
+  * dpm_resume_early - Execute "early resume" callbacks for all devices.
   * @state: PM transition of the system being carried out.
-@@ -505,29 +522,47 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
   */
- static void dpm_resume_noirq(pm_message_t state)
+ static void dpm_resume_early(pm_message_t state)
  {
 +	struct device *dev;
  	ktime_t starttime = ktime_get();
  
  	mutex_lock(&dpm_list_mtx);
--	while (!list_empty(&dpm_noirq_list)) {
--		struct device *dev = to_device(dpm_noirq_list.next);
+-	while (!list_empty(&dpm_late_early_list)) {
+-		struct device *dev = to_device(dpm_late_early_list.next);
 -		int error;
 +	pm_transition = state;
  
@@ -77,57 +63,44 @@ index bf71ddb..c8a00fc 100644
 +	 * in case the starting of async threads is
 +	 * delayed by non-async resuming devices.
 +	 */
-+	list_for_each_entry(dev, &dpm_noirq_list, power.entry) {
++	list_for_each_entry(dev, &dpm_late_early_list, power.entry) {
 +		if (is_async(dev)) {
 +			get_device(dev);
-+			async_schedule(async_resume_noirq, dev);
++			async_schedule(async_resume_early, dev);
 +		}
 +	}
 +
-+	while (!list_empty(&dpm_noirq_list)) {
-+		dev = to_device(dpm_noirq_list.next);
++	while (!list_empty(&dpm_late_early_list)) {
++		dev = to_device(dpm_late_early_list.next);
  		get_device(dev);
- 		list_move_tail(&dev->power.entry, &dpm_late_early_list);
+ 		list_move_tail(&dev->power.entry, &dpm_suspended_list);
  		mutex_unlock(&dpm_list_mtx);
  
--		error = device_resume_noirq(dev, state);
+-		error = device_resume_early(dev, state);
 -		if (error) {
--			suspend_stats.failed_resume_noirq++;
--			dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
+-			suspend_stats.failed_resume_early++;
+-			dpm_save_failed_step(SUSPEND_RESUME_EARLY);
 -			dpm_save_failed_dev(dev_name(dev));
--			pm_dev_err(dev, state, " noirq", error);
+-			pm_dev_err(dev, state, " early", error);
+-		}
 +		if (!is_async(dev)) {
 +			int error;
-+
-+			error = device_resume_noirq(dev, state);
-+			if (error) {
-+				suspend_stats.failed_resume_noirq++;
-+				dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
-+				dpm_save_failed_dev(dev_name(dev));
-+				pm_dev_err(dev, state, " noirq", error);
-+			}
- 		}
  
++			error = device_resume_early(dev, state);
++			if (error) {
++				suspend_stats.failed_resume_early++;
++				dpm_save_failed_step(SUSPEND_RESUME_EARLY);
++				dpm_save_failed_dev(dev_name(dev));
++				pm_dev_err(dev, state, " early", error);
++			}
++		}
  		mutex_lock(&dpm_list_mtx);
  		put_device(dev);
  	}
  	mutex_unlock(&dpm_list_mtx);
 +	async_synchronize_full();
- 	dpm_show_time(starttime, state, "noirq");
- 	resume_device_irqs();
- 	cpuidle_resume();
-@@ -727,12 +762,6 @@ static void async_resume(void *data, async_cookie_t cookie)
- 	put_device(dev);
+ 	dpm_show_time(starttime, state, "early");
  }
  
--static bool is_async(struct device *dev)
--{
--	return dev->power.async_suspend && pm_async_enabled
--		&& !pm_trace_is_enabled();
--}
--
- /**
-  * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
-  * @state: PM transition of the system being carried out.
 -- 
 1.7.9.5
