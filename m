@@ -1,126 +1,123 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH v4 1/2] thermal: add available policies attribute
-Date: Mon, 20 Jan 2014 17:55:31 +0800
-Message-ID: <1390211732-5853-2-git-send-email-wni@nvidia.com>
+Subject: [PATCH v4 2/2] thermal: add interface to support tune governor in run-time
+Date: Mon, 20 Jan 2014 17:55:32 +0800
+Message-ID: <1390211732-5853-3-git-send-email-wni@nvidia.com>
 References: <1390211732-5853-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:1726 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089AbaATJzt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jan 2014 04:55:49 -0500
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:2966 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbaATJzv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jan 2014 04:55:51 -0500
 In-Reply-To: <1390211732-5853-1-git-send-email-wni@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: eduardo.valentin@ti.com, rui.zhang@intel.com
 Cc: durgadoss.r@intel.com, MLongnecker@nvidia.com, linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-The Linux thermal framework support to change thermal governor
-policy in userspace, but it can't show what available policies
-supported.
+In the of-thermal driver, it register a thermal zone device
+without governor, since the governers are not static, we
+should be able to update to a new one in run-time, so I add
+a new fucntion thermal_update_governor() to do it.
 
-This patch adds available_policies attribute to the thermal
-framework, it can list the thermal governors which can be
-used for a particular zone. This attribute is read only.
-
+Change-Id: Ie4995d6404d6d4f16250958487f3e3b8f63fc4c6
 Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- Documentation/thermal/sysfs-api.txt |    6 ++++++
- drivers/thermal/thermal_core.c      |   28 ++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
+ Documentation/thermal/sysfs-api.txt |    4 ++++
+ drivers/thermal/thermal_core.c      |   38 ++++++++++++++++++++++++++++-------
+ include/linux/thermal.h             |    1 +
+ 3 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 87519cb..8459d45 100644
+index 8459d45..bcd50b5 100644
 --- a/Documentation/thermal/sysfs-api.txt
 +++ b/Documentation/thermal/sysfs-api.txt
-@@ -172,6 +172,7 @@ Thermal zone device sys I/F, created once it's registered:
-     |---temp:			Current temperature
-     |---mode:			Working mode of the thermal zone
-     |---policy:			Thermal governor used for this zone
-+    |---available_policies	Available thermal governors for this zone
-     |---trip_point_[0-*]_temp:	Trip point temperature
-     |---trip_point_[0-*]_type:	Trip point type
-     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-@@ -238,6 +239,10 @@ policy
- 	One of the various thermal governors used for a particular zone.
- 	RW, Required
- 
-+available_policies
-+	Available thermal governors which can be used for a particular zone.
-+	RO, Required
+@@ -405,3 +405,7 @@ platform data is provided, this uses the step_wise throttling policy.
+ This function serves as an arbitrator to set the state of a cooling
+ device. It sets the cooling device to the deepest cooling state if
+ possible.
 +
- trip_point_[0-*]_temp
- 	The temperature above which trip point will be fired.
- 	Unit: millidegree Celsius
-@@ -330,6 +335,7 @@ method, the sys I/F structure will be built like this:
-     |---temp:			37000
-     |---mode:			enabled
-     |---policy:			step_wise
-+    |---available_policies:	step_wise fair_share
-     |---trip_point_0_temp:	100000
-     |---trip_point_0_type:	critical
-     |---trip_point_1_temp:	80000
++5.5:thermal_update_governor:
++This function update the thermal zone's governor to a new one.
++Returns 0 if success, an erro code otherwise.
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 338a88b..a91684b 100644
+index a91684b..ef0fc40 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -761,6 +761,27 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
- 	return sprintf(buf, "%s\n", tz->governor->name);
+@@ -130,6 +130,35 @@ exit:
+ 	return;
  }
  
-+static ssize_t
-+available_policies_show(struct device *dev, struct device_attribute *devattr,
-+			char *buf)
++/**
++ * thermal_update_governor() - update the thermal zone device's governor
++ * to a new one.
++ * @tzd: pointer of thermal zone device, which need to update governor.
++ * @name: new governor name.
++ *
++ * Return: On success returns 0, an error code otherwise
++ */
++int thermal_update_governor(struct thermal_zone_device *tzd,
++			    const char *name)
 +{
-+	struct thermal_governor *pos;
-+	ssize_t count = 0;
-+	ssize_t size = 0;
++	struct thermal_governor *new_gov;
++	int ret = 0;
 +
 +	mutex_lock(&thermal_governor_lock);
 +
-+	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-+		size = PAGE_SIZE - count;
-+		count += scnprintf(buf + count, size, "%s ", pos->name);
++	new_gov = __find_governor(name);
++	if (!new_gov) {
++		ret = -EINVAL;
++		goto exit;
 +	}
-+	count += scnprintf(buf + count, size, "\n");
 +
++	tzd->governor = new_gov;
++
++exit:
 +	mutex_unlock(&thermal_governor_lock);
-+
-+	return count;
++	return ret;
 +}
 +
- #ifdef CONFIG_THERMAL_EMULATION
- static ssize_t
- emul_temp_store(struct device *dev, struct device_attribute *attr,
-@@ -794,6 +815,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
-+static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
+ static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+ {
+ 	int ret;
+@@ -734,22 +763,17 @@ policy_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	int ret = -EINVAL;
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	struct thermal_governor *gov;
+ 	char name[THERMAL_NAME_LENGTH];
  
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
-@@ -1527,6 +1549,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	if (result)
- 		goto unregister;
+ 	snprintf(name, sizeof(name), "%s", buf);
  
-+	/* Create available_policies attribute */
-+	result = device_create_file(&tz->device, &dev_attr_available_policies);
-+	if (result)
-+		goto unregister;
-+
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
+-	mutex_lock(&thermal_governor_lock);
+-
+-	gov = __find_governor(strim(name));
+-	if (!gov)
++	ret = thermal_update_governor(tz, strim(name));
++	if (ret < 0)
+ 		goto exit;
  
-@@ -1622,6 +1649,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	if (tz->ops->get_mode)
- 		device_remove_file(&tz->device, &dev_attr_mode);
- 	device_remove_file(&tz->device, &dev_attr_policy);
-+	device_remove_file(&tz->device, &dev_attr_available_policies);
- 	remove_trip_attrs(tz);
- 	tz->governor = NULL;
+-	tz->governor = gov;
+ 	ret = count;
  
+ exit:
+-	mutex_unlock(&thermal_governor_lock);
+ 	return ret;
+ }
+ 
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index f7e11c7..715b3cd 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -293,6 +293,7 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+ 		struct thermal_cooling_device *, int);
+ void thermal_cdev_update(struct thermal_cooling_device *);
+ void thermal_notify_framework(struct thermal_zone_device *, int);
++int thermal_update_governor(struct thermal_zone_device *, const char *);
+ 
+ #ifdef CONFIG_NET
+ extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
 -- 
 1.7.9.5
 
