@@ -1,106 +1,308 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / PM: Use ACPI_COMPANION() to get ACPI companions of devices
-Date: Sun, 19 Jan 2014 16:38:33 +0100
-Message-ID: <3698474.jasU9n7YCg@vostro.rjw.lan>
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 2/2] thermal: add interface to support tune governor
+ in run-time
+Date: Mon, 20 Jan 2014 09:41:33 +0800
+Message-ID: <1390182093.9611.6.camel@rzhang1-mobl4>
+References: <1389611863-7812-1-git-send-email-wni@nvidia.com>
+	 <1389611863-7812-3-git-send-email-wni@nvidia.com>
+	 <1389946970.5918.46.camel@rzhang1-mobl4> <52D8F8BD.1080700@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <52D8F8BD.1080700-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "eduardo.valentin-l0cyMroinI0@public.gmane.org" <eduardo.valentin-l0cyMroinI0@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, 2014-01-17 at 17:32 +0800, Wei Ni wrote:
+> On 01/17/2014 04:22 PM, Zhang Rui wrote:
+> > On Mon, 2014-01-13 at 19:17 +0800, Wei Ni wrote:
+> >> In the of-thermal driver, it register a thermal zone device
+> >> without governor, since the governers are not static, we
+> >> should be able to update to a new one in run-time, so I add
+> >> a new fucntion thermal_update_governor() to do it.
+> >>
+> >> In the future, the governor will be more complex, it may want
+> >> to tune governor-specific parameters/configuration for
+> >> different thermal zone at different run-time, so I add
+> >> start/stop for the governor and add governor_data as governor's
+> >> parameters, so that the thermal platform driver can change
+> >> the governor with start/stop, and tune the governor parameters
+> >> in run-time.
+> > 
+> > are you going to introduce a new governor with .start/.stop implemented
+> > or are you going to introduce .start/.stop callbacks for the current
+> > governors?
+> 
+> We developed a new governor, based on PID logic. It will need some
+> parameters, such as proportional, integral and derivative. These values
+> will be initialized in different values for different thermal zone.
+> When the thermal driver use the pid governor, the thermal framework will
+> call the pid governor's .start(thz), and in the .start(), it will
+> allocate structures for those parameters, which are in the thermal zone,
+> something like:
+> int pid_thermal_gov_start(struct thermal_zone_device *tz)
+> {
+> ...
+> gov = kzalloc(sizeof(struct pid_thermal_governor), GFP_KERNEL);
+> gov->parameter_1 = tz->governor_params->parameter_1;
+> gov->parameter_2 = tz->governor_params->parameter_2;
+> ...
+> tz->governor_data = gov;
+> 
+> /* and also will create ABI for the pid governor in this thermal zone */
+> }
+> So when run .throttle(), it can get those parameters from the
+> tz->governor_data to run.
+> And in the .stop, it will free those structures.
+> 
+> I'm preparing the patches for the pid governor, and need to be reviewed
+> internal first, and then I will try to upstream them :)
+> 
+sounds interesting.
 
-The ACPI device PM code in device_pm.c uses a special function,
-acpi_dev_pm_get_node(), to obtain an ACPI companion object of a given
-device.  However, that is not necessary any more after recent changes
-that introduced the ACPI_COMPANION() macro serving exactly the same
-purpose, but working in a much more straightforward way.  For this
-reason, drop acpi_dev_pm_get_node() and use ACPI_COMPANION() instead
-of it everywhere.
+but the problem is still that you're doing two things in this patch,
+one is to introduce runtime-governor tuning support,
+another is to introduce two new callbacks for thermal governor.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/device_pm.c |   24 ++++++------------------
- 1 file changed, 6 insertions(+), 18 deletions(-)
+For me, I'd like to take a patch that does the first thing ONLY, right
+now, and I'd also like to see a patch that does the second thing,
+together with the new governor patches.
 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -727,18 +727,6 @@ int acpi_pm_device_sleep_wake(struct dev
- #endif /* CONFIG_PM_SLEEP */
- 
- /**
-- * acpi_dev_pm_get_node - Get ACPI device node for the given physical device.
-- * @dev: Device to get the ACPI node for.
-- */
--struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
--{
--	acpi_handle handle = ACPI_HANDLE(dev);
--	struct acpi_device *adev;
--
--	return handle && !acpi_bus_get_device(handle, &adev) ? adev : NULL;
--}
--
--/**
-  * acpi_dev_pm_low_power - Put ACPI device into a low-power state.
-  * @dev: Device to put into a low-power state.
-  * @adev: ACPI device node corresponding to @dev.
-@@ -778,7 +766,7 @@ static int acpi_dev_pm_full_power(struct
-  */
- int acpi_dev_runtime_suspend(struct device *dev)
- {
--	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
- 	bool remote_wakeup;
- 	int error;
- 
-@@ -809,7 +797,7 @@ EXPORT_SYMBOL_GPL(acpi_dev_runtime_suspe
-  */
- int acpi_dev_runtime_resume(struct device *dev)
- {
--	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
- 	int error;
- 
- 	if (!adev)
-@@ -862,7 +850,7 @@ EXPORT_SYMBOL_GPL(acpi_subsys_runtime_re
-  */
- int acpi_dev_suspend_late(struct device *dev)
- {
--	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
- 	u32 target_state;
- 	bool wakeup;
- 	int error;
-@@ -894,7 +882,7 @@ EXPORT_SYMBOL_GPL(acpi_dev_suspend_late)
-  */
- int acpi_dev_resume_early(struct device *dev)
- {
--	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
- 	int error;
- 
- 	if (!adev)
-@@ -985,7 +973,7 @@ static struct dev_pm_domain acpi_general
-  */
- int acpi_dev_pm_attach(struct device *dev, bool power_on)
- {
--	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
- 
- 	if (!adev)
- 		return -ENODEV;
-@@ -1017,7 +1005,7 @@ EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
-  */
- void acpi_dev_pm_detach(struct device *dev, bool power_off)
- {
--	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
- 
- 	if (adev && dev->pm_domain == &acpi_general_pm_domain) {
- 		dev->pm_domain = NULL;
-
+thanks,
+rui
+> > 
+> > I'd like to see if there is any real request for this.
+> >>
+> >> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> >> ---
+> >>  Documentation/thermal/sysfs-api.txt |    5 +++
+> >>  drivers/thermal/thermal_core.c      |   80 +++++++++++++++++++++++++++++++----
+> >>  include/linux/thermal.h             |   12 ++++++
+> >>  3 files changed, 88 insertions(+), 9 deletions(-)
+> >>
+> >> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> >> index 6a70b55c..7efd8e6 100644
+> >> --- a/Documentation/thermal/sysfs-api.txt
+> >> +++ b/Documentation/thermal/sysfs-api.txt
+> >> @@ -405,3 +405,8 @@ platform data is provided, this uses the step_wise throttling policy.
+> >>  This function serves as an arbitrator to set the state of a cooling
+> >>  device. It sets the cooling device to the deepest cooling state if
+> >>  possible.
+> >> +
+> >> +5.5:thermal_update_governor:
+> >> +This function update the thermal zone's governor to a new one and update
+> >> +the governor data of the new governor for that thermal zone. Returns 0 if
+> >> +success, an erro code otherwise.
+> >> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> >> index aab1df8..d922baf 100644
+> >> --- a/drivers/thermal/thermal_core.c
+> >> +++ b/drivers/thermal/thermal_core.c
+> >> @@ -93,10 +93,17 @@ int thermal_register_governor(struct thermal_governor *governor)
+> >>  			name = pos->tzp->governor_name;
+> >>  		else
+> >>  			name = DEFAULT_THERMAL_GOVERNOR;
+> >> -		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
+> >> +		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
+> >> +			if (governor->start) {
+> >> +				err = governor->start(pos);
+> >> +				if (err < 0)
+> >> +					goto exit;
+> >> +			}
+> >>  			pos->governor = governor;
+> >> +		}
+> >>  	}
+> >>  
+> >> +exit:
+> >>  	mutex_unlock(&thermal_list_lock);
+> >>  	mutex_unlock(&thermal_governor_lock);
+> >>  
+> >> @@ -119,8 +126,11 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+> >>  
+> >>  	list_for_each_entry(pos, &thermal_tz_list, node) {
+> >>  		if (!strnicmp(pos->governor->name, governor->name,
+> >> -						THERMAL_NAME_LENGTH))
+> >> +						THERMAL_NAME_LENGTH)) {
+> >> +			if (pos->governor->stop)
+> >> +				pos->governor->stop(pos);
+> >>  			pos->governor = NULL;
+> >> +		}
+> >>  	}
+> >>  
+> >>  	mutex_unlock(&thermal_list_lock);
+> >> @@ -130,6 +140,51 @@ exit:
+> >>  	return;
+> >>  }
+> >>  
+> >> +/**
+> >> + * thermal_update_governor() - update the thermal zone device's governor
+> >> + * to a new one.
+> >> + * @tzd: pointer of thermal zone device, which need to update governor.
+> >> + * @name: new governor name.
+> >> + * @gov_data: governor data for the new governor if needed.
+> >> + *
+> >> + * Return: On success returns 0, an error code otherwise
+> >> + */
+> >> +int thermal_update_governor(struct thermal_zone_device *tzd,
+> >> +			    const char *name, void *gov_data)
+> >> +{
+> >> +	struct thermal_governor *old_gov, *new_gov;
+> >> +	int ret = 0;
+> >> +
+> >> +	mutex_lock(&thermal_governor_lock);
+> >> +
+> >> +	new_gov = __find_governor(name);
+> >> +	if (!new_gov) {
+> >> +		ret = -EINVAL;
+> >> +		goto exit;
+> >> +	}
+> >> +
+> >> +	old_gov = tzd->governor;
+> >> +
+> >> +	if (old_gov && old_gov->stop)
+> >> +		old_gov->stop(tzd);
+> >> +
+> >> +	if (new_gov->start) {
+> >> +		ret = new_gov->start(tzd);
+> >> +		if (ret < 0) {
+> >> +			if (old_gov && old_gov->start)
+> >> +				old_gov->start(tzd);
+> >> +			goto exit;
+> >> +		}
+> >> +	}
+> >> +
+> >> +	tzd->governor = new_gov;
+> >> +	tzd->governor_data = gov_data;
+> >> +
+> >> +exit:
+> >> +	mutex_unlock(&thermal_governor_lock);
+> >> +	return ret;
+> >> +}
+> >> +
+> >>  static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+> >>  {
+> >>  	int ret;
+> >> @@ -734,22 +789,17 @@ policy_store(struct device *dev, struct device_attribute *attr,
+> >>  {
+> >>  	int ret = -EINVAL;
+> >>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+> >> -	struct thermal_governor *gov;
+> >>  	char name[THERMAL_NAME_LENGTH];
+> >>  
+> >>  	snprintf(name, sizeof(name), "%s", buf);
+> >>  
+> >> -	mutex_lock(&thermal_governor_lock);
+> >> -
+> >> -	gov = __find_governor(strim(name));
+> >> -	if (!gov)
+> >> +	ret = thermal_update_governor(tz, strim(name), NULL);
+> >> +	if (ret < 0)
+> >>  		goto exit;
+> >>  
+> >> -	tz->governor = gov;
+> >>  	ret = count;
+> >>  
+> >>  exit:
+> >> -	mutex_unlock(&thermal_governor_lock);
+> >>  	return ret;
+> >>  }
+> >>  
+> >> @@ -1559,6 +1609,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+> >>  	else
+> >>  		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
+> >>  
+> >> +	if (tz->governor->start) {
+> > 
+> > Note that tz->governor may be NULL at this time.
+> > although this seems like a bug to me.
+> 
+> Yes, I have noticed this bug.
+> BTW, Eduardo have submitted a new patch to set the governor to default
+> governor [PATCH 1/1] thermal: fix default governor assignment .
+> 
+> Anyway, in here, I should fix it as:
+> if (tz->governor && tz->governor->start)
+> 
+> 
+> Thanks.
+> Wei.
+> 
+> > 
+> >> +		result = tz->governor->start(tz);
+> >> +		if (result < 0)
+> >> +			tz->governor = NULL;
+> >> +	}
+> >> +
+> > why not invoke thermal_update_governor() directly here?
+> 
+> Oh, yes, we can invoke it here.
+> 
+> > 
+> > thanks,
+> > rui
+> >>  	mutex_unlock(&thermal_governor_lock);
+> >>  
+> >>  	if (!tz->tzp || !tz->tzp->no_hwmon) {
+> >> @@ -1585,6 +1641,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+> >>  		return tz;
+> >>  
+> >>  unregister:
+> >> +	if (tz->governor && tz->governor->stop)
+> >> +		tz->governor->stop(tz);
+> >> +	tz->governor = NULL;
+> >>  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+> >>  	device_unregister(&tz->device);
+> >>  	return ERR_PTR(result);
+> >> @@ -1648,6 +1707,9 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+> >>  	device_remove_file(&tz->device, &dev_attr_policy);
+> >>  	device_remove_file(&tz->device, &dev_attr_available_policies);
+> >>  	remove_trip_attrs(tz);
+> >> +
+> >> +	if (tz->governor && tz->governor->stop)
+> >> +		tz->governor->stop(tz);
+> >>  	tz->governor = NULL;
+> >>  
+> > 
+> >>  	thermal_remove_hwmon_sysfs(tz);
+> >> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> >> index f7e11c7..a473736 100644
+> >> --- a/include/linux/thermal.h
+> >> +++ b/include/linux/thermal.h
+> >> @@ -177,6 +177,7 @@ struct thermal_zone_device {
+> >>  	struct thermal_zone_device_ops *ops;
+> >>  	const struct thermal_zone_params *tzp;
+> >>  	struct thermal_governor *governor;
+> >> +	void *governor_data;
+> >>  	struct list_head thermal_instances;
+> >>  	struct idr idr;
+> >>  	struct mutex lock; /* protect thermal_instances list */
+> >> @@ -187,6 +188,15 @@ struct thermal_zone_device {
+> >>  /* Structure that holds thermal governor information */
+> >>  struct thermal_governor {
+> >>  	char name[THERMAL_NAME_LENGTH];
+> >> +
+> >> +	/*
+> >> +	 * The start and stop operations will be called when thermal zone is
+> >> +	 * registered and when change governor via sysfs or driver in running
+> >> +	 * time.
+> >> +	 */
+> >> +	int (*start)(struct thermal_zone_device *tz);
+> >> +	void (*stop)(struct thermal_zone_device *tz);
+> >> +
+> >>  	int (*throttle)(struct thermal_zone_device *tz, int trip);
+> >>  	struct list_head	governor_list;
+> >>  };
+> >> @@ -293,6 +303,8 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+> >>  		struct thermal_cooling_device *, int);
+> >>  void thermal_cdev_update(struct thermal_cooling_device *);
+> >>  void thermal_notify_framework(struct thermal_zone_device *, int);
+> >> +int thermal_update_governor(struct thermal_zone_device *, const char *,
+> >> +			    void *);
+> >>  
+> >>  #ifdef CONFIG_NET
+> >>  extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+> > 
+> > 
+> 
