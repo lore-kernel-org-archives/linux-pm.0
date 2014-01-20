@@ -1,138 +1,45 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: [PATCH 5/5] PM: Enabling the asyncronous threads for suspend_late
-Date: Mon, 20 Jan 2014 16:44:39 +0800
-Message-ID: <1390207479-26064-6-git-send-email-chuansheng.liu@intel.com>
-References: <y>
- <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, pavel@ucw.cz, len.brown@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, zhuangzhi.li@intel.com
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH v4 0/2] Support to tune governor in run time
+Date: Mon, 20 Jan 2014 17:55:30 +0800
+Message-ID: <1390211732-5853-1-git-send-email-wni@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:1720 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179AbaATJzs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jan 2014 04:55:48 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: eduardo.valentin@ti.com, rui.zhang@intel.com
+Cc: durgadoss.r@intel.com, MLongnecker@nvidia.com, linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+This serie can support to turn governor for thermal zone in
+run time.
+Adds avaiable_policies attribute, so the user can get available
+governor policies and change te governor to a new one.
+Adds thermal_update_governor() function, so the thermal platform
+driver can use it to update governor.
 
-Just like commit 5af84b82701a and 97df8c12995, using the
-asynchronous threads can improve the overall suspend_late
-time significantly.
+Changes from v1:
+1. split avaiable_policies part to the "patch 1/2", and add document
+for it.
+2. add document for the thermal_update_governor.
+Changes from v2:
+1. fix the overflow issue in the avaiable_policies_show
+Changes from v3:
+1. remove the .start/.stop callback, because we doesn't have the real
+case to support it now.
 
-This patch is for suspend_late phase.
+Wei Ni (2):
+  thermal: add available policies attribute
+  thermal: add interface to support tune governor in run-time
 
-Signed-off-by: Liu, Chuansheng <chuansheng.liu@intel.com>
----
- drivers/base/power/main.c |   54 +++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 45 insertions(+), 9 deletions(-)
+ Documentation/thermal/sysfs-api.txt |   10 ++++++
+ drivers/thermal/thermal_core.c      |   66 +++++++++++++++++++++++++++++++----
+ include/linux/thermal.h             |    1 +
+ 3 files changed, 70 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index ec946aa..19f5195 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1094,7 +1094,7 @@ static int dpm_suspend_noirq(pm_message_t state)
-  *
-  * Runtime PM is disabled for @dev while this function is being executed.
-  */
--static int device_suspend_late(struct device *dev, pm_message_t state)
-+static int __device_suspend_late(struct device *dev, pm_message_t state)
- {
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
-@@ -1102,6 +1102,14 @@ static int device_suspend_late(struct device *dev, pm_message_t state)
- 
- 	__pm_runtime_disable(dev, false);
- 
-+	if (async_error)
-+		return 0;
-+
-+	if (pm_wakeup_pending()) {
-+		async_error = -EBUSY;
-+		return async_error;
-+	}
-+
- 	if (dev->power.syscore)
- 		return 0;
- 
-@@ -1127,9 +1135,35 @@ static int device_suspend_late(struct device *dev, pm_message_t state)
- 	error = dpm_run_callback(callback, dev, state, info);
- 	if (!error)
- 		dev->power.is_late_suspended = true;
-+	else
-+		async_error = error;
- 	return error;
- }
- 
-+static void async_suspend_late(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	error = __device_suspend_late(dev, pm_transition);
-+	if (error) {
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, pm_transition, " async", error);
-+	}
-+	put_device(dev);
-+}
-+
-+static int device_suspend_late(struct device *dev)
-+{
-+	if (pm_async_enabled && dev->power.async_suspend) {
-+		get_device(dev);
-+		async_schedule(async_suspend_late, dev);
-+		return 0;
-+	}
-+
-+	return __device_suspend_late(dev, pm_transition);
-+}
-+
- /**
-  * dpm_suspend_late - Execute "late suspend" callbacks for all devices.
-  * @state: PM transition of the system being carried out.
-@@ -1140,19 +1174,20 @@ static int dpm_suspend_late(pm_message_t state)
- 	int error = 0;
- 
- 	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
-+	async_error = 0;
-+
- 	while (!list_empty(&dpm_suspended_list)) {
- 		struct device *dev = to_device(dpm_suspended_list.prev);
- 
- 		get_device(dev);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		error = device_suspend_late(dev, state);
-+		error = device_suspend_late(dev);
- 
- 		mutex_lock(&dpm_list_mtx);
- 		if (error) {
- 			pm_dev_err(dev, state, " late", error);
--			suspend_stats.failed_suspend_late++;
--			dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
- 			dpm_save_failed_dev(dev_name(dev));
- 			put_device(dev);
- 			break;
-@@ -1161,15 +1196,16 @@ static int dpm_suspend_late(pm_message_t state)
- 			list_move(&dev->power.entry, &dpm_late_early_list);
- 		put_device(dev);
- 
--		if (pm_wakeup_pending()) {
--			error = -EBUSY;
-+		if (async_error)
- 			break;
--		}
- 	}
- 	mutex_unlock(&dpm_list_mtx);
--	if (error)
-+	async_synchronize_full();
-+	if (error) {
-+		suspend_stats.failed_suspend_late++;
-+		dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
- 		dpm_resume_early(resume_event(state));
--	else
-+	} else
- 		dpm_show_time(starttime, state, "late");
- 
- 	return error;
 -- 
 1.7.9.5
+
