@@ -1,93 +1,113 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
+From: Sebastian Reichel <sre@ring0.de>
 Subject: Re: [11/11] system 1: Saving energy using DVFS
-Date: Mon, 20 Jan 2014 18:16:47 +0000
-Message-ID: <20140120181647.GJ29971@arm.com>
+Date: Mon, 20 Jan 2014 19:25:33 +0100
+Message-ID: <20140120182532.GB25920@earth.universe>
 References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
  <1389111587-5923-12-git-send-email-morten.rasmussen@arm.com>
  <20140120164926.GB23051@amd.pavel.ucw.cz>
  <20140120171010.GB29971@arm.com>
  <20140120175431.GB25439@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="24zk1gE8NUlDmwG9"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ring0.de ([91.143.88.219]:39099 "EHLO smtp.ring0.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750743AbaATSZh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jan 2014 13:25:37 -0500
 Content-Disposition: inline
 In-Reply-To: <20140120175431.GB25439@amd.pavel.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Jan 20, 2014 at 05:54:32PM +0000, Pavel Machek wrote:
+
+--24zk1gE8NUlDmwG9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Jan 20, 2014 at 06:54:32PM +0100, Pavel Machek wrote:
 > On Mon 2014-01-20 17:10:29, Catalin Marinas wrote:
 > > On Mon, Jan 20, 2014 at 04:49:26PM +0000, Pavel Machek wrote:
-> > > > To save energy, the higher frequencies should be avoided and only used
+> > > > To save energy, the higher frequencies should be avoided and only u=
+sed
 > > > > when the application performance requirements can not be satisfied
 > > > > otherwise (e.g. spread tasks across more cpus if possible).
-> > > 
+> > >=20
 > > > I argue this is untrue for any task where user waits for its
 > > > completion with screen on. (And that's quite important subset).
-> > > 
-> > > Lets take Nokia n900 as an example. 
-> > > 
+> > >=20
+> > > Lets take Nokia n900 as an example.=20
+> > >=20
 > > > (source http://wiki.maemo.org/N900_Hardware_Power_Consumption)
-> > > 
+> > >=20
 > > > Sleeping CPU: 2mA
 > > > Screen on: 230mA
 > > > CPU loaded: 250mA
-> > > 
+> > >=20
 > > > Now, lets believe your numbers and pretend system can operate at 33%
 > > > of speed with 11% power consumption.
-> > > 
+> > >=20
 > > > Lets take task that takes 10 seconds on max frequency:
-> > > 
-> > >       ~ 10s * 470mA     	     	    = 4700mAs
-> > > 
+> > >=20
+> > >       ~ 10s * 470mA     	     	    =3D 4700mAs
+> > >=20
 > > > You suggest running at 33% speed, instead; that means 30 seconds on
 > > > low requency.
-> > > 
+> > >=20
 > > > CPU on low: 25mA (assumed).
-> > > 
-> > >      ~ 30s * 255mA			    = 7650mAs
-> > > 
+> > >=20
+> > >      ~ 30s * 255mA			    =3D 7650mAs
+> > >=20
 > > > Hmm. So race to idle is good thing on Intel machines, and it is good
 > > > thing on ARM design I have access to.
-> > 
+> >=20
 > > Race to idle doesn't mean that the screen goes off as well. Let's say
 > > the screen stays on for 1 min and the CPU needs to be running for 10s
 > > over this minute, in the first case you have:
-> 
+>=20
 > No, it does not. I just assumed user is continuing to use his
 > machine. Obviously, waiting 60 seconds with screen on will make the
 > difference look smaller. But your solution still means user has to
 > wait longer _and_ you consume more battery doing so.
-> 
+>=20
 > And this is for any task where user waits for result with screen
 > on. Like rendering a webpage. Like opening settings screen. Like
 > installing application.
-
-Page rendering should make very little difference to power since the
-reading (screen on) time is much larger than the rendering (CPU) time.
-But what I'm pointing at for 10s/60s ratios are thing like games or
-video playing where the CPU is running for 1/6 of the time and idle for
-the other 5/6. We get better energy figures by changing the run time to
-3/6 and idle at 3/6.
-
+>=20
 > There are not too many background tasks on a cellphone.
-
-For sleep time, screen off etc. there are some background tasks but here
-the run-time doesn't matter much, it's probably more expensive to take
-CPUs out of deep sleep states. What we want to optimise here is which
-CPU to wake (like a little vs big).
-
+>=20
 > But hey, maybe you are right and running at lowest possible frequency
 > is right. Please provide concrete numbers like I did.
 
-They've been anonymised (for many reasons) and you have the right not to
-trust them. But do you really think we are making up the numbers? We
-have a great interest in the Linux scheduler working efficiently on the
-ARM platforms rather than optimising it for non-existent scenarios. If
-at some point this argument becomes a blocking factor, I'm sure we can
-share the real numbers with the relevant parties under an NDA.
+So what about using the display status information for power
+management? Basically always using the lowest frequency should be ok
+on phones if the display is disabled?
 
--- 
-Catalin
+-- Sebastian
+
+--24zk1gE8NUlDmwG9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCAAGBQJS3WocAAoJENju1/PIO/qaxdgP+wT2BDChksSS/TwEq+Wkkmua
+ba0ateUXS9brlPY0Ng6Oi2CtD+1QVTRTPEu6PpVWiaktiNY/xEasXfLx+WSJvUi9
+xISylJstI0DC55vPDXD/9HtEsXUKennIFjcuosgEFtymtVfSmXvs05yAsCBlvvvx
+ExebyR+zMHjLVkk8C1Ogt5XgYENodx7MT2LlbHTEAw9HooO61jLoE4eZYoQwzZou
+ET/e8nu2F2YjtN2fPrRR8Og9lMX2CBljFdTwa98YGnNF0GaYxxWDjT+0LNp2SYKk
+OePRuhH3DejgXd5M0MnFLU6oAWEsd+LsiIYN8Z9cXUdCQeWnpmcf5jHX4jjnLDOd
+blyGCz97c6QcH0YstrZjsgc1YOhW0VXLe+jZUvQk4VJ7J5Su99tUs+H3KpX9UYZX
+8MhmEWqYPCLSTwqbP2hIkUyx11lJcvi6qjaXWnEyZBvlTfynhOtve0H7JXVwTid9
+1wbRS3U0AcWqWrhMdBDTG0qC9+zXrqSa55Jv4mFS6gQXfiordWhrDqP2zmC4aS04
+SB++ZWQ/pRjhn4W7plhTlzQAeiYsaZvnxMDhdmBZIoYa25h81F8M/48xL9D3pwZt
+9JfWuoT8DSsKVXk9hMinfHT2UNQFJhDnyspD5iACElkgU0YB55liQ7H2v+pHTG04
+/J4BJdIZ8mpeyfQ8J4wK
+=9fp1
+-----END PGP SIGNATURE-----
+
+--24zk1gE8NUlDmwG9--
