@@ -1,151 +1,112 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
-Date: Tue, 21 Jan 2014 12:16:46 +0100
-Message-ID: <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
-References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com> <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [11/11] system 1: Saving energy using DVFS
+Date: Tue, 21 Jan 2014 11:19:20 +0000
+Message-ID: <20140121111920.GB14830@arm.com>
+References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
+ <1389111587-5923-12-git-send-email-morten.rasmussen@arm.com>
+ <20140120164926.GB23051@amd.pavel.ucw.cz>
+ <20140120171010.GB29971@arm.com>
+ <20140120171752.GC29971@arm.com>
+ <20140120174745.GA25439@amd.pavel.ucw.cz>
+ <20140120180322.GI29971@arm.com>
+ <20140120191546.GA26780@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:49528 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754139AbaAULRH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 06:17:07 -0500
-Received: by mail-oa0-f53.google.com with SMTP id m1so7740026oag.40
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jan 2014 03:17:07 -0800 (PST)
-In-Reply-To: <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:15190 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754122AbaAULTy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 06:19:54 -0500
+Content-Disposition: inline
+In-Reply-To: <20140120191546.GA26780@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave Martin <dave.martin@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Grant Likely <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Lorenzo,
+On Mon, Jan 20, 2014 at 07:15:46PM +0000, Pavel Machek wrote:
+> On Mon 2014-01-20 18:03:22, Catalin Marinas wrote:
+> > On Mon, Jan 20, 2014 at 05:47:45PM +0000, Pavel Machek wrote:
+> > > On Mon 2014-01-20 17:17:52, Catalin Marinas wrote:
+> > > > On Mon, Jan 20, 2014 at 05:10:29PM +0000, Catalin Marinas wrote:
+> > > > > On Mon, Jan 20, 2014 at 04:49:26PM +0000, Pavel Machek wrote:
+> > > > > > > To save energy, the higher frequencies should be avoided and only used
+> > > > > > > when the application performance requirements can not be satisfied
+> > > > > > > otherwise (e.g. spread tasks across more cpus if possible).
+> > > > > > 
+> > > > > > I argue this is untrue for any task where user waits for its
+> > > > > > completion with screen on. (And that's quite important subset).
+> > > > > > 
+> > > > > > Lets take Nokia n900 as an example. 
+> > > > > > 
+> > > > > > (source http://wiki.maemo.org/N900_Hardware_Power_Consumption)
+> > > > > > 
+> > > > > > Sleeping CPU: 2mA
+> > > > > > Screen on: 230mA
+> > > > > > CPU loaded: 250mA
+> > > > > > 
+> > > > > > Now, lets believe your numbers and pretend system can operate at 33%
+> > > > > > of speed with 11% power consumption.
+> > > > > > 
+> > > > > > Lets take task that takes 10 seconds on max frequency:
+> > > > > > 
+> > > > > >       ~ 10s * 470mA     	     	    = 4700mAs
+> > > > > > 
+> > > > > > You suggest running at 33% speed, instead; that means 30 seconds on
+> > > > > > low requency.
+> > > > > > 
+> > > > > > CPU on low: 25mA (assumed).
+> > > > > > 
+> > > > > >      ~ 30s * 255mA			    = 7650mAs
+> > > > > > 
+> > > > > > Hmm. So race to idle is good thing on Intel machines, and it is good
+> > > > > > thing on ARM design I have access to.
+> > > > > 
+> > > > > Race to idle doesn't mean that the screen goes off as well. Let's say
+> > > > > the screen stays on for 1 min and the CPU needs to be running for 10s
+> > > > > over this minute, in the first case you have:
+> > > > > 
+> > > > > 	10s & 250mA + 60s * 230mA = 16300mAs
+> > > > > 
+> > > > > in the second case you have:
+> > > > > 
+> > > > > 	30s * 25mA + 60s * 230mA = 14550mAs
+> > > > > 
+> > > > > That's a 1750mAs difference. There are of course other parts drawing
+> > > > > current but simple things like the above really make a difference in the
+> > > > > mobile space, both in terms of battery and thermal budget.
+> > > > 
+> > > > BTW, the proper way to calculate this is to use the energy rather than
+> > > > current x time. This would be J = Ohm * A^2 * s = V^2 / Ohm * s (so the
+> > > > impact of the current is even bigger).
+> > > 
+> > > You are claiming that energy is proportional to current squared?
+> > > 
+> > > I stand by numbers. Energy is proportional to values I quoted,
+> > > provided constant voltage.
+> > 
+> > The big advantage of frequency scaling is that you can scale down the
+> > voltage, making the power proportional to the voltage squared (or
+> > current squared for a constant resistance).
+> 
+> I was talking battery voltage; so multiple my numbers by 3.6V and
+> you'll get Joules.
 
-On 20 January 2014 18:47, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> ARM based platforms implement a variety of power management schemes that
-> allow processors to enter at run-time low-power states, aka C-states
-> in ACPI jargon. The parameters defining these C-states vary on a per-platform
-> basis forcing the OS to hardcode the state parameters in platform
-> specific static tables whose size grows as the number of platforms supported
-> in the kernel increases and hampers device drivers standardization.
->
-> Therefore, this patch aims at standardizing C-state device tree bindings for
-> ARM platforms. Bindings define C-state parameters inclusive of entry methods
-> and state latencies, to allow operating systems to retrieve the
-> configuration entries from the device tree and initialize the related
-> power management drivers, paving the way for common code in the kernel
-> to deal with power states and removing the need for static data in current
-> and previous kernel versions.
->
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> ---
->  Documentation/devicetree/bindings/arm/c-states.txt | 774 +++++++++++++++++++++
->  Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
->  2 files changed, 784 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/c-states.txt
->
-> diff --git a/Documentation/devicetree/bindings/arm/c-states.txt b/Documentation/devicetree/bindings/arm/c-states.txt
-> new file mode 100644
-> index 0000000..0b5617b
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/c-states.txt
-> @@ -0,0 +1,774 @@
-> +==========================================
-> +ARM C-states binding description
-> +==========================================
-> +
-> +==========================================
-> +1 - Introduction
-> +==========================================
-> +
-> +ARM systems contain HW capable of managing power consumption dynamically,
-> +where cores can be put in different low-power states (ranging from simple
-> +wfi to power gating) according to OSPM policies. Borrowing concepts
-> +from the ACPI specification[1], the CPU states representing the range of
-> +dynamic states that a processor can enter at run-time, aka C-state, can be
-> +specified through device tree bindings representing the parameters required to
-> +enter/exit specific C-states on a given processor.
-> +
-> +The state an ARM CPU can be put into is loosely identified by one of the
-> +following operating modes:
-> +
-> +- Running:
-> +        # Processor core is executing instructions
-> +
-> +- Wait for Interrupt:
-> +       # An ARM processor enters wait for interrupt (WFI) low power
-> +         state by executing a wfi instruction. When a processor enters
-> +         wfi state it disables most of the clocks while keeping the processor
-> +         powered up. This state is standard on all ARM processors and it is
-> +         defined as C1 in the remainder of this document.
-> +
+That's where we were talking about different things. What I was
+referring to was the actual current used by the CPU which is different
+from the one drawn from battery for that CPU (because of voltage
+translation). But with a low-loss voltage regulator, we could pretend
+that the corresponding power used by the CPU is the same at the battery
+level.
 
-> +- Dormant:
-> +       # Dormant mode is entered by executing wfi instructions and by sending
-> +         platform specific commands to the platform power controller (coupled
-> +         with processor specific SW/HW control sequences).
-> +         In dormant mode, most of the processor control and debug logic is
-> +         powered up but cache RAM can be put in retention state, providing
+> Can you point out problem with my numbers or not?
 
-Base on your description, it's not clear for me what is on, what is
-lost and what is power down ?
-My understand of the dormant mode that you described above is : the
-cache is preserved (and especially the cache RAM) but the processor
-state is lost (registers ...). Do I understand correctly ?
+I agree with your equivalent battery current for the CPU (minor thing, I
+get about 12% power consumption at 33% performance from Morten's
+numbers, irrelevant).
 
-What about retention mode where the contents of processor and cache
-are preserved but the power consumption is reduced ? it can be seen as
-a special wfi mode which need specific SW/HW control sequences but i'm
-not sure to understand how to describe such state with your proposal.
+The other thing I didn't agree with was the screen on vs race to idle
+but I'll follow up separately.
 
-> +         additional power savings.
-> +
-> +- Sleep:
-> +       # Sleep mode is entered by executing the wfi instruction and by sending
-> +         platform specific commands to the platform power controller (coupled
-> +         with processor specific SW/HW control sequences). In sleep mode, a
-> +         processor and its caches are shutdown, the entire processor state is
-> +         lost.
-> +
-> +Building on top of the previous processor modes, ARM platforms implement power
-> +management schemes that allow an OS PM implementation to put the processor in
-> +different CPU states (C-states). C-states parameters (eg latency) are
-> +platform specific and need to be characterized with bindings that provide the
-> +required information to OSPM code so that it can build the required tables and
-> +use them at runtime.
-> +
-> +The device tree binding definition for ARM C-states is the subject of this
-> +document.
-> +
-
-[snip]
-
-> +
-> +       - psci-power-state
-> +               Usage: Required if entry-method property value is set to
-> +                      "psci".
-> +               Value type: <u32>
-> +               Definition: power_state parameter to pass to the PSCI
-> +                           suspend call to enter the C-state.
-
-Why psci has got a dedicated field and not vendor methods ? can't you
-make that more generic ?
-
-> +
-> +       - latency
-> +               Usage: Required
-> +               Value type: <prop-encoded-array>
-> +               Definition: List of u32 values representing worst case latency
-> +                           in microseconds required to enter and exit the
-> +                           C-state, one value per OPP [2]. The list should
-> +                           be specified in the same order as the operating
-> +                           points property list of the cpu this state is
-> +                           valid on.
-> +                           If no OPP bindings are present, the latency value
-> +                           is associated with the current OPP of CPUs in the
-> +                           system.
-> +
-
-[snip]
-
-Thanks
-Vincent
+-- 
+Catalin
