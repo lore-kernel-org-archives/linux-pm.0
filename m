@@ -1,109 +1,54 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 68/73] drivers/cpufreq: delete non-required instances of <linux/init.h>
-Date: Tue, 21 Jan 2014 16:23:11 -0500
-Message-ID: <1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 67/73] drivers/base: delete non-required instances of
+ include <linux/init.h>
+Date: Tue, 21 Jan 2014 21:33:59 +0000
+Message-ID: <20140121213359.GA17314@sirena.org.uk>
 References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
+ <1390339396-3479-68-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="lJ4sC/874/3I/gBU"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1390339396-3479-68-git-send-email-paul.gortmaker@windriver.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-None of these files are actually using any __init type directives
-and hence don't need to include <linux/init.h>.  Most are just a
-left over from __devinit and __cpuinit removal, or simply due to
-code getting copied from one driver to the next.
 
-Cc: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- drivers/cpufreq/omap-cpufreq.c    | 1 -
- drivers/cpufreq/powernow-k8.c     | 1 -
- drivers/cpufreq/s3c2412-cpufreq.c | 1 -
- drivers/cpufreq/s3c2440-cpufreq.c | 1 -
- drivers/cpufreq/spear-cpufreq.c   | 1 -
- drivers/cpufreq/speedstep-lib.c   | 1 -
- 6 files changed, 6 deletions(-)
+--lJ4sC/874/3I/gBU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index 590f5b6..6febc15 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -18,7 +18,6 @@
- #include <linux/sched.h>
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
--#include <linux/init.h>
- #include <linux/err.h>
- #include <linux/clk.h>
- #include <linux/io.h>
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index e10b646..386c4ad 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -30,7 +30,6 @@
- #include <linux/kernel.h>
- #include <linux/smp.h>
- #include <linux/module.h>
--#include <linux/init.h>
- #include <linux/cpufreq.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-diff --git a/drivers/cpufreq/s3c2412-cpufreq.c b/drivers/cpufreq/s3c2412-cpufreq.c
-index 4645b48..8f42bac 100644
---- a/drivers/cpufreq/s3c2412-cpufreq.c
-+++ b/drivers/cpufreq/s3c2412-cpufreq.c
-@@ -10,7 +10,6 @@
-  * published by the Free Software Foundation.
- */
- 
--#include <linux/init.h>
- #include <linux/module.h>
- #include <linux/interrupt.h>
- #include <linux/ioport.h>
-diff --git a/drivers/cpufreq/s3c2440-cpufreq.c b/drivers/cpufreq/s3c2440-cpufreq.c
-index f84ed10..1aade6d 100644
---- a/drivers/cpufreq/s3c2440-cpufreq.c
-+++ b/drivers/cpufreq/s3c2440-cpufreq.c
-@@ -11,7 +11,6 @@
-  * published by the Free Software Foundation.
- */
- 
--#include <linux/init.h>
- #include <linux/module.h>
- #include <linux/interrupt.h>
- #include <linux/ioport.h>
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 5c86e3f..f481597 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -16,7 +16,6 @@
- #include <linux/clk.h>
- #include <linux/cpufreq.h>
- #include <linux/err.h>
--#include <linux/init.h>
- #include <linux/module.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
-diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
-index 7047821..1ef6fb6 100644
---- a/drivers/cpufreq/speedstep-lib.c
-+++ b/drivers/cpufreq/speedstep-lib.c
-@@ -11,7 +11,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
--#include <linux/init.h>
- #include <linux/cpufreq.h>
- 
- #include <asm/msr.h>
--- 
-1.8.4.1
+On Tue, Jan 21, 2014 at 04:23:10PM -0500, Paul Gortmaker wrote:
+> None of these files are actually using any __init type directives
+> and hence don't need to include <linux/init.h>.  Most are just a
+> left over from __devinit and __cpuinit removal, or simply due to
+> code getting copied from one driver to the next.
 
+Acked-by: Mark Brown <broonie@linaro.org>
+
+--lJ4sC/874/3I/gBU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJS3ufEAAoJELSic+t+oim9EbUP/04oCqKsId3MbalwT055aJDW
+PMtVkQ5U76QjrGGRiNPuv4KSVr1pwNtNIK3ExIRinVtcfeIekzrnLfSJ+0WloLDb
+lCmZx4SwnrQP106qr255yjoL1veKCkjgdn7C01Wmv9MOSuwPFlqYsG2pSPQzIVsA
+nxmbhJpQ0GlmqIFCoZz+JCrlzodemqJ2j83iiObOWgPC76DPtpZegOQA+Bb+n84N
+TaDWJTaRN6wIyCSxQ8OnSqPvDF367hIkM8KiCu6pifNOOJZjZUNEmpHZSmEM3SUu
+Z97fFqDoUm9NE798ZKHzHgEpEufDMA8vIaEUS/BFbwkj2u3t+Iqf2JnE7OiPait2
+EpOG9TYFgwDQM1PNWQ6s0GH7tQg5DYPyXd4t7WgEXg1AnbmtLKHRa8TvMQy0cklW
+MNdSIB61wQJcjRAWg41+dsUoz6jokIQ8iJ2WqvfnBI/Yt/TIFjaHBOxBtNSL9Kl6
+q9kaOJfkQ6pD6B/FZmfulU6GU739sdRgVTXDuAKcJE1HQSwF+jdlGHlEeQEI4iuU
+txfsR6gbgIxr85Pu6wL+s2cMSskKDrJCc/BHWo2u2eM2JB1zMKbh8dj9ZFeO8Lcm
+VnySV6cvfBwXkR5pD+hJb61NvkGS3vDZRWqR8dP8Tadgru7xqNSOg3ex1ZFsCCAL
+Z0V+GL8LKsx21lVGHsYy
+=z0oX
+-----END PGP SIGNATURE-----
+
+--lJ4sC/874/3I/gBU--
