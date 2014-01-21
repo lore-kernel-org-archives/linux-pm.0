@@ -1,31 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Align all CPUs to the same frequency if using
- shared clock
-Date: Tue, 21 Jan 2014 13:42:01 +0530
-Message-ID: <CAKohpo=ng-B6kLdWxBn_cNsWNVsYaNAD-ZzQLLOfkbj+FDg_fg@mail.gmail.com>
-References: <1390273543-18032-1-git-send-email-zhuangzhi.li@intel.com>
-	<CAKohponL_R8M40BJa3X+++1yDtw5KRvk88w8kVfA+_D+poK08A@mail.gmail.com>
-	<630F9443351D2B4BB7EC6BAE6B6B08342549C5DC@SHSMSX104.ccr.corp.intel.com>
+From: "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
+Subject: RE: [PATCH 0/5] Enabling the asynchronous threads for other phases
+Date: Tue, 21 Jan 2014 08:57:27 +0000
+Message-ID: <630F9443351D2B4BB7EC6BAE6B6B08342549C6AB@SHSMSX104.ccr.corp.intel.com>
+References: <y> <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <630F9443351D2B4BB7EC6BAE6B6B08342549C5DC@SHSMSX104.ccr.corp.intel.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:5651 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750943AbaAUI5b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 03:57:31 -0500
+In-Reply-To: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 21 January 2014 12:56, Li, Zhuangzhi <zhuangzhi.li@intel.com> wrote:
-> Thanks for reviewing.
 
-Its my job :)
 
-> Sorry for make you misunderstanding, on our x86 platform, we want all the CPUs share one policy by setting CPUFREQ_SHARED_TYPE_ALL, not share one HW clock line.
+> -----Original Message-----
+> From: Liu, Chuansheng
+> Sent: Monday, January 20, 2014 4:45 PM
+> To: rjw@rjwysocki.net; gregkh@linuxfoundation.org; pavel@ucw.cz; Brown, Len
+> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Liu, Chuansheng;
+> Li, Zhuangzhi
+> Subject: [PATCH 0/5] Enabling the asynchronous threads for other phases
+> 
+> Hello,
+> 
+> This patch series are for enabling the asynchronous threads for the phases
+> resume_noirq, resume_early, suspend_noirq and suspend_late.
+> 
+> Just like commit 5af84b82701a and 97df8c12995, with async threads it will
+> reduce the system suspending and resuming time significantly.
+> 
+> With these patches, in my test platform, it saved 80% time in resume_noirq
+> phase.
+> 
+> Has done the suspend-resume stress test for a long time, please help to
+> review.
+> 
+> Best Regards,
+> 
+> [PATCH 1/5] PM: Adding two flags for async suspend_noirq and
+> [PATCH 2/5] PM: Enabling the asynchronous threads for resume_noirq
+> [PATCH 3/5] PM: Enabling the asyncronous threads for resume_early
+> [PATCH 4/5] PM: Enabling the asyncronous threads for suspend_noirq
+> [PATCH 5/5] PM: Enabling the asyncronous threads for suspend_late
 
-I see.. Then probably your patch makes sense. But it is
-obviously not required for every platform that exists today.
+After applied the above five patches, there was no issue observed during 1000 cycles suspend/resume stress test on Baytrail platform.
+Tested-by: lizhuangzhi <zhuangzhi.li@intel.com>
+> 
+>  drivers/base/power/main.c |  240
+> ++++++++++++++++++++++++++++++++++++---------
+>  include/linux/pm.h        |    2 +
+>  2 files changed, 197 insertions(+), 45 deletions(-)
 
-Please update it to do it only for drivers that have set
-CPUFREQ_SHARED_TYPE_ALL..
-
-@Rafael: I hope you agree?
