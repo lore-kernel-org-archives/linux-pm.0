@@ -1,34 +1,63 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] ACPI / PM: Use ACPI_COMPANION() to get ACPI companions
- of devices
-Date: Tue, 21 Jan 2014 11:45:13 +0200
-Message-ID: <20140121094513.GK18029@intel.com>
-References: <3698474.jasU9n7YCg@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH] charger-manager: Fix a bug in checking battery temperature.
+Date: Tue, 21 Jan 2014 18:48:52 +0900
+Message-ID: <1390297732-2708-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:51562 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753871AbaAUJiV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 Jan 2014 04:38:21 -0500
-Content-Disposition: inline
-In-Reply-To: <3698474.jasU9n7YCg@vostro.rjw.lan>
+Received: from mailout4.samsung.com ([203.254.224.34]:8220 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754248AbaAUJtL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 04:49:11 -0500
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MZQ00MD6WLY4A40@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 21 Jan 2014 18:49:10 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: anton@enomsg.org, dan.carpenter@oracle.com, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On Sun, Jan 19, 2014 at 04:38:33PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The ACPI device PM code in device_pm.c uses a special function,
-> acpi_dev_pm_get_node(), to obtain an ACPI companion object of a given
-> device.  However, that is not necessary any more after recent changes
-> that introduced the ACPI_COMPANION() macro serving exactly the same
-> purpose, but working in a much more straightforward way.  For this
-> reason, drop acpi_dev_pm_get_node() and use ACPI_COMPANION() instead
-> of it everywhere.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Removing faulty typecast which converts 'int *' to 'unsigned long *'.
+It would make unintended result for 64bit machine especially using Big-endian.
 
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ drivers/power/charger-manager.c |   17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index ec5c140..8f73790 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -560,15 +560,20 @@ static int cm_get_battery_temperature(struct charger_manager *cm,
+ 		return -ENODEV;
+ 
+ #ifdef CONFIG_THERMAL
+-	ret = thermal_zone_get_temp(cm->tzd_batt, (unsigned long *)temp);
+-	if (!ret)
+-		/* Calibrate temperature unit */
+-		*temp /= 100;
+-#else
++	if (cm->tzd_batt && !IS_ERR(cm->tzd_batt)) {
++		unsigned long _temp;
++		ret = thermal_zone_get_temp(cm->tzd_batt, &_temp);
++		if (!ret) {
++			/* Calibrate temperature unit */
++			_temp /= 100;
++			*temp = _temp;
++			return 0;
++		}
++	}
++#endif
+ 	ret = cm->fuel_gauge->get_property(cm->fuel_gauge,
+ 				POWER_SUPPLY_PROP_TEMP,
+ 				(union power_supply_propval *)temp);
+-#endif
+ 	return ret;
+ }
+ 
+-- 
+1.7.9.5
+
