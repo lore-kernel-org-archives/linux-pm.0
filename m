@@ -1,15 +1,15 @@
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 67/73] drivers/base: delete non-required instances of include <linux/init.h>
-Date: Tue, 21 Jan 2014 16:23:10 -0500
-Message-ID: <1390339396-3479-68-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 68/73] drivers/cpufreq: delete non-required instances of <linux/init.h>
+Date: Tue, 21 Jan 2014 16:23:11 -0500
+Message-ID: <1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
 References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 None of these files are actually using any __init type directives
@@ -17,145 +17,93 @@ and hence don't need to include <linux/init.h>.  Most are just a
 left over from __devinit and __cpuinit removal, or simply due to
 code getting copied from one driver to the next.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Mark Brown <broonie@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/base/attribute_container.c   | 1 -
- drivers/base/power/clock_ops.c       | 1 -
- drivers/base/power/common.c          | 1 -
- drivers/base/power/domain.c          | 1 -
- drivers/base/power/domain_governor.c | 1 -
- drivers/base/power/opp.c             | 1 -
- drivers/base/regmap/regmap-i2c.c     | 1 -
- drivers/base/regmap/regmap-mmio.c    | 1 -
- drivers/base/regmap/regmap-spi.c     | 1 -
- drivers/base/topology.c              | 1 -
- 10 files changed, 10 deletions(-)
+ drivers/cpufreq/omap-cpufreq.c    | 1 -
+ drivers/cpufreq/powernow-k8.c     | 1 -
+ drivers/cpufreq/s3c2412-cpufreq.c | 1 -
+ drivers/cpufreq/s3c2440-cpufreq.c | 1 -
+ drivers/cpufreq/spear-cpufreq.c   | 1 -
+ drivers/cpufreq/speedstep-lib.c   | 1 -
+ 6 files changed, 6 deletions(-)
 
-diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
-index ecc1929..b84ca8f 100644
---- a/drivers/base/attribute_container.c
-+++ b/drivers/base/attribute_container.c
-@@ -12,7 +12,6 @@
-  */
- 
- #include <linux/attribute_container.h>
--#include <linux/init.h>
- #include <linux/device.h>
- #include <linux/kernel.h>
- #include <linux/slab.h>
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index e870bbe..b99e6c0 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -6,7 +6,6 @@
-  * This file is released under the GPLv2.
-  */
- 
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/device.h>
- #include <linux/io.h>
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index 5da9140..df2e5ee 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -6,7 +6,6 @@
-  * This file is released under the GPLv2.
-  */
- 
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/device.h>
- #include <linux/export.h>
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index bfb8955..921b192 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -6,7 +6,6 @@
-  * This file is released under the GPLv2.
-  */
- 
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/io.h>
- #include <linux/pm_runtime.h>
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 28dee30..a089e3b 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -6,7 +6,6 @@
-  * This file is released under the GPLv2.
-  */
- 
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/pm_domain.h>
- #include <linux/pm_qos.h>
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index fa41874..2553867 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -14,7 +14,6 @@
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/err.h>
--#include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/cpufreq.h>
- #include <linux/device.h>
-diff --git a/drivers/base/regmap/regmap-i2c.c b/drivers/base/regmap/regmap-i2c.c
-index fa6bf52..ebd1895 100644
---- a/drivers/base/regmap/regmap-i2c.c
-+++ b/drivers/base/regmap/regmap-i2c.c
-@@ -13,7 +13,6 @@
- #include <linux/regmap.h>
- #include <linux/i2c.h>
- #include <linux/module.h>
--#include <linux/init.h>
- 
- static int regmap_i2c_write(void *context, const void *data, size_t count)
- {
-diff --git a/drivers/base/regmap/regmap-mmio.c b/drivers/base/regmap/regmap-mmio.c
-index 81f9775..4410cb2 100644
---- a/drivers/base/regmap/regmap-mmio.c
-+++ b/drivers/base/regmap/regmap-mmio.c
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index 590f5b6..6febc15 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
 @@ -18,7 +18,6 @@
- 
+ #include <linux/sched.h>
+ #include <linux/cpufreq.h>
+ #include <linux/delay.h>
+-#include <linux/init.h>
+ #include <linux/err.h>
  #include <linux/clk.h>
+ #include <linux/io.h>
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index e10b646..386c4ad 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -30,7 +30,6 @@
+ #include <linux/kernel.h>
+ #include <linux/smp.h>
+ #include <linux/module.h>
+-#include <linux/init.h>
+ #include <linux/cpufreq.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+diff --git a/drivers/cpufreq/s3c2412-cpufreq.c b/drivers/cpufreq/s3c2412-cpufreq.c
+index 4645b48..8f42bac 100644
+--- a/drivers/cpufreq/s3c2412-cpufreq.c
++++ b/drivers/cpufreq/s3c2412-cpufreq.c
+@@ -10,7 +10,6 @@
+  * published by the Free Software Foundation.
+ */
+ 
+-#include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ #include <linux/ioport.h>
+diff --git a/drivers/cpufreq/s3c2440-cpufreq.c b/drivers/cpufreq/s3c2440-cpufreq.c
+index f84ed10..1aade6d 100644
+--- a/drivers/cpufreq/s3c2440-cpufreq.c
++++ b/drivers/cpufreq/s3c2440-cpufreq.c
+@@ -11,7 +11,6 @@
+  * published by the Free Software Foundation.
+ */
+ 
+-#include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ #include <linux/ioport.h>
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 5c86e3f..f481597 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -16,7 +16,6 @@
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
  #include <linux/err.h>
 -#include <linux/init.h>
- #include <linux/io.h>
  #include <linux/module.h>
- #include <linux/regmap.h>
-diff --git a/drivers/base/regmap/regmap-spi.c b/drivers/base/regmap/regmap-spi.c
-index 37f12ae..0eb3097 100644
---- a/drivers/base/regmap/regmap-spi.c
-+++ b/drivers/base/regmap/regmap-spi.c
-@@ -12,7 +12,6 @@
- 
- #include <linux/regmap.h>
- #include <linux/spi/spi.h>
+ #include <linux/of_device.h>
+ #include <linux/slab.h>
+diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
+index 7047821..1ef6fb6 100644
+--- a/drivers/cpufreq/speedstep-lib.c
++++ b/drivers/cpufreq/speedstep-lib.c
+@@ -11,7 +11,6 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
 -#include <linux/init.h>
- #include <linux/module.h>
+ #include <linux/cpufreq.h>
  
- #include "internal.h"
-diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-index 94ffee3..ad9d177 100644
---- a/drivers/base/topology.c
-+++ b/drivers/base/topology.c
-@@ -23,7 +23,6 @@
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  *
-  */
--#include <linux/init.h>
- #include <linux/mm.h>
- #include <linux/cpu.h>
- #include <linux/module.h>
+ #include <asm/msr.h>
 -- 
 1.8.4.1
+
