@@ -1,191 +1,119 @@
-From: Dave Martin <Dave.Martin@arm.com>
-Subject: Re: [PATCH RFC v2 1/2] Documentation: arm: add cache DT bindings
-Date: Tue, 21 Jan 2014 11:49:01 +0000
-Message-ID: <20140121114845.GA2598@e103592.cambridge.arm.com>
-References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1390240079-6495-2-git-send-email-lorenzo.pieralisi@arm.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [11/11] system 1: Saving energy using DVFS
+Date: Tue, 21 Jan 2014 12:14:29 +0000
+Message-ID: <20140121121429.GB19029@e103034-lin>
+References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
+ <1389111587-5923-12-git-send-email-morten.rasmussen@arm.com>
+ <20140120163254.GA23051@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:27757 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754476AbaAUMO3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 07:14:29 -0500
 Content-Disposition: inline
-In-Reply-To: <1390240079-6495-2-git-send-email-lorenzo.pieralisi@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Antti Miettinen <ananaza@iki.fi>, Mark Hambleton <mark.hambleton@broadcom.com>, linux-pm@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, linux-arm-kernel@lists.infradead.org, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>
+In-Reply-To: <20140120163254.GA23051@amd.pavel.ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Jan 20, 2014 at 05:47:58PM +0000, Lorenzo Pieralisi wrote:
-> On ARM systems the cache topology cannot be probed at runtime, in
-> particular, it is impossible to probe which CPUs share a given cache
-> level. Power management software requires this knowledge to implement
-> optimized power down sequences, hence this patch adds a document that
-> defines the DT cache bindings for ARM systems. The bindings are compliant
-> with ePAPR (PowerPC bindings), even though most of the cache nodes
-> properties requirements are overriden, because caches geometry for
-> architected caches is probeable on ARM systems. This patch also adds
-> properties that are specific to ARM architected caches to the existing ones
-> defined in the ePAPR v1.1, as bindings extensions.
+Hi,
+
+On Mon, Jan 20, 2014 at 04:32:54PM +0000, Pavel Machek wrote:
+> On Tue 2014-01-07 16:19:47, Morten Rasmussen wrote:
+> > Most modern systems use DVFS to save power by slowing down computation
+> > throughput when less performance is necessary. The power/performance
+> > relation is platform specific. Some platforms may have better energy
+> > savings (energy per instruction) than others at low frequencies.
+> > 
+> > To have something to relate to, here is an anonymized example based on
+> > a modern ARM platform:
 > 
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> ---
->  Documentation/devicetree/bindings/arm/cache.txt | 187 ++++++++++++++++++++++++
->  1 file changed, 187 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/cache.txt
+> And here is anonymized example I pulled out of my hat:
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/cache.txt b/Documentation/devicetree/bindings/arm/cache.txt
-> new file mode 100644
-> index 0000000..b27cedf
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/cache.txt
-> @@ -0,0 +1,187 @@
-> +==========================================
-> +ARM processors cache binding description
-> +==========================================
-> +
-> +Device tree bindings for ARM processor caches adhere to the cache bindings
-> +described in [3], in section 3.8 for multi-level and shared caches.
-> +On ARM based systems most of the cache properties related to cache
-> +geometry are probeable in HW, hence, unless otherwise stated, the properties
-> +defined in ePAPR for multi-level and shared caches are to be considered
-> +optional by default.
+> Ammount of anonymization       	 Usefulness of information      	 
+> 0.0	   			 1.0
+> 0.5				 0.05
+> 1.0				 0.0
+> 
+> Come on, you can surely do better than "trust me, it is modern". Now
+> we can't verify those numbers. And they don't make sense.
+> 
+> > Performance	Energy/instruction
+> > 1.0		1.0
+> > 1.3		1.6
+> > 1.7		1.8
+> > 2.0		1.9
+> > 2.3		2.1
+> > 2.7		2.4
+> > 3.0		2.7
+> > 
+> > Performance is frequency (~instruction issue rate) and
+> > energy/instruction is the energy cost of executing one (or a fixed
+> > number of instructions) at that level of performance (frequency). For
+> > this example, it costs 2.7x more energy per instruction to increase the
+> > performance from 1.0 to 3.0 (3x). That is, the amount of work
+> > (instructions) that can be done on one battery charge is reduced by 2.7x
+> > (~63%) if you run as fast as possible (3.0) compared to running at
+> > slowest frequency (1.0).
+> 
+> This very heavily depends on what you count to the total energy,
+> right? And it is very hard to argue with you before you anonymized
+> your numbers.
 
-This point should be highlighted for discussion.
+Just to clarify, the numbers above are cpu only as already stated in the
+linux-pm thread referenced in the cover letter. We do of course need to
+consider the total energy (cpu, gpu and memory at least) when verifying
+whether any optimization does save energy or not.
 
-I do have a worry that because the kernel won't normally use this
-information, by default it will get pasted between .dts files, won't get
-tested and will be wrong rather often.  It also violates the DT principle
-that probeable information should not be present in the DT -- ePAPR
-obviously envisages systems where cache geometry information is not
-probeable, but that's not the case for architected caches on ARM, except
-in rare cases where the CLIDR is wrong.
+As already discussed, battery power is suitable for this purpose on end
+product form factor systems. However, for development hardware that
+might be quite different (extra onboard devices and such).
 
-But deviating needlessly from ePAPR is arguably a bad thing too.
+> 
+> Anyway, you assuming modern system, low frequency should be cca
+> 0.5GHz, with high cca 1.5GHz. Do you claim that operation on 1.5GHz
+> takes 9x the power of 0.5GHz operation?
 
+On this particular platform, increasing the frequency by 3x increases
+power by 8.1x.
 
-There is one good argument in favour of making these properties
-mandatory: it gives people a way to get (possibly wrong or unvalidated)
-information about cache geometry and topology into userspace without the
-kernel having to care.  This remains a contraversial issue though.
+> 
+> Do you count DRAM to the power consumption?
 
+As said above, the numbers are cpu only.
 
-If we decide to allow or mandate these properties, the kernel should
-validate them for consistency with the hardware and BUG() on boot if they
-are inconsistent.  This is the correct approach until/unless the kernel
-grows a proper mechanism for using this info from the DT.
+> 
+> > To save energy, the higher frequencies should be avoided and only used
+> > when the application performance requirements can not be satisfied
+> > otherwise (e.g. spread tasks across more cpus if possible).
+> 
+> This is in very steep contrast with race-to-idle on the PCs.
 
-> +
-> +On ARM, caches are either architected (directly controlled by the processor
-> +through coprocessor instructions and tightly coupled with the processor
-> +implementation) or unarchitected (controlled through a memory mapped
-> +interface, implemented as a stand-alone IP external to the processor
-> +implementation).
-> +
-> +This document provides the device tree bindings for ARM architected caches.
-> +
-> +- ARM architected cache node
-> +
-> +	Description: must be a direct child of the cpu node. A system
+I think Catalin already covered why race-to-idle isn't always the best
+idea elsewhere in this thread. Basically, it is wasting a lot of energy
+in use-cases like audio and video playback. I have provided descriptions
+of these use-cases as part of this set of emails.
 
+> 
+> > When considering the total system power it may save energy in some
+> > scenarios by running the cpu faster to allow other power hungry parts of
+> > the system to be shut down faster. However, this is highly platform and
+> > application dependent.
+> 
+> Aha. Devil is in the details. "I pulled random numbers out of the hat,
+> and they are wrong, but they are wrong in platform specific way. And I
+> anonymized them for you so that you can't verify them".
+> 
+> Can we talk specific machine, please? You are talking Android all the
+> time, so pick one cellphone you care about, and provide real numbers...
 
-For this paragraph as a whole:
+As Catalin already said, there is a number of reason why we can't share
+absolute numbers publicly. I think the numbers I posted give a pretty
+good picture of the trade-offs involved in frequency scaling on a modern
+ARM Soc. This posting was meant to a be a start of a discussion and I'm
+hoping add more information (in anonymized form) in the future.
 
-Can we break this paragraph up, and move the background information (e.g.
-description of the ARM Architecture) outside?
-
-It's long and hard to read at present.
-
-I think we only need the fundamental rules, which are basically that
-the next-level-cache properties must be consistent with the hardware
-cache topology.  We could try to be more precise, but ePAPR is pretty
-vague too.
-
-> +		     can contain multiple architected cache nodes per cpu node,
-> +		     linked through the next-level-cache phandle. The
-> +		     next-level-cache property in the cpu node points to
-> +		     the first level of architected cache for the CPU.
-> +		     The next-level-cache property in architected cache nodes
-> +		     points to the respective next level of caching in the
-> +		     hierarchy. An architected cache node with an empty or
-> +		     missing next-level-cache property represents the last
-> +		     architected cache level for the CPU.
-> +		     On ARM v7 and v8 architectures, the order in which cache
-> +		     nodes are linked through the next-level-cache phandle must
-> +		     follow the ordering specified in the processors CLIDR (v7)
-
-We shouldn't describe the ARM Architecture in the binding.  That's
-background information that could move outside.
-
-> +		     and CLIDR_EL1 (v8) registers, as described in [1][2],
-> +		     implying that a cache node pointed at by a
-> +		     next-level-cache phandle must correspond to a level
-> +		     defined in CLIDR (v7) and CLIDR_EL1 (v8) greater than the
-> +		     one the cache node containing the next-level-cache
-> +		     phandle corresponds to.
-> +
-> +	Since on ARM most of the cache properties are probeable in HW the
-> +	properties described in [3] - section 3.8 multi-level and shared
-> +	caches - shall be considered optional, with the following properties
-> +	updates, specific for the ARM architected cache node.
-> +
-> +	- compatible
-> +		Usage: Required
-> +		Value type: <string>
-> +		Definition: value shall be "arm,arch-cache".
-> +
-> +	- interrupts
-> +		Usage: Optional
-> +		Value type: See definition
-> +		Definition: standard device tree property [3] that defines
-> +			    the interrupt line associated with the cache.
-> +			    The property can be accompanied by an
-> +			    interrupt-names property, as described in [4].
-
-Do ARM Architectured caches ever have interrupts?  (Just my ignorance
-here.)
-
-> +
-> +	- power-domain
-> +		Usage: Optional
-> +		Value type: phandle
-> +		Definition: A phandle and power domain specifier as defined by
-> +			    bindings of power controller specified by the
-> +			    phandle [5].
-> +
-> +Example(dual-cluster big.LITTLE system 32-bit)
-> +
-> +	cpus {
-> +		#size-cells = <0>;
-> +		#address-cells = <1>;
-> +
-> +		cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a15";
-> +			reg = <0x0>;
-> +			next-level-cache = <&L1_0>;
-
-ePAPR puts the L1 cache properties in the cpu node directly;
-there's no "L1" node as such.  That geometry description is also
-mandated by ePAPR.
-
-The ARM Architecture does not force a CPU to have any non-shared
-first level(s) of cache, and ePAPR does not permit next-level-cache
-to point to a cpu node, so there are possible ARM Architecture
-implementations that cannot be described without violating ePAPR.
-However, for practical reasons, such systems are unlikely -- I don't
-know if any exist today.
-
-We should decide whether to deviate explicitly from ePAPR on this
-point (your examples provide on way), or whether to follow ePAPR and
-bodge things later for L1-less systems if they appear.
-
-Cheers
----Dave
+Morten
