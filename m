@@ -1,169 +1,98 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 67/73] drivers/base: delete non-required instances of include <linux/init.h>
-Date: Wed, 22 Jan 2014 00:18:03 +0100
-Message-ID: <20162122.WfrtF6Mixo@vostro.rjw.lan>
-References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com> <1390339396-3479-68-git-send-email-paul.gortmaker@windriver.com>
+Subject: [RFC/RFT][PATCH 4-1/5] ACPI / scan: Add bind/unbind callbacks to struct acpi_scan_handler
+Date: Wed, 22 Jan 2014 00:24:19 +0100
+Message-ID: <3008927.otxYIj8S9K@vostro.rjw.lan>
+References: <5434847.aCyiWHNRe7@vostro.rjw.lan> <1623216.7y3zYLQxqp@vostro.rjw.lan> <5380624.AVmYnxjkQF@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <1390339396-3479-68-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-arch-owner@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <5380624.AVmYnxjkQF@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 21, 2014 04:23:10 PM Paul Gortmaker wrote:
-> None of these files are actually using any __init type directives
-> and hence don't need to include <linux/init.h>.  Most are just a
-> left over from __devinit and __cpuinit removal, or simply due to
-> code getting copied from one driver to the next.
-> 
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+In some cases it may be necessary to perform certain setup/cleanup
+operations on a device object representing a physical device after
+it has been associated with an ACPI companion by acpi_bind_one() or
+before disassociating it from that companion by acpi_unbind_one(),
+respectively.  If there is a struct acpi_bus_type object for the
+given device's bus type, the .setup()/.cleanup() callbacks from there
+are executed for these purposes.  However, an analogous mechanism will
+be necessary for devices whose bus types don't have corresponding
+struct acpi_bus_type objects and that have specific ACPI scan handlers.
 
-> ---
->  drivers/base/attribute_container.c   | 1 -
->  drivers/base/power/clock_ops.c       | 1 -
->  drivers/base/power/common.c          | 1 -
->  drivers/base/power/domain.c          | 1 -
->  drivers/base/power/domain_governor.c | 1 -
->  drivers/base/power/opp.c             | 1 -
->  drivers/base/regmap/regmap-i2c.c     | 1 -
->  drivers/base/regmap/regmap-mmio.c    | 1 -
->  drivers/base/regmap/regmap-spi.c     | 1 -
->  drivers/base/topology.c              | 1 -
->  10 files changed, 10 deletions(-)
-> 
-> diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
-> index ecc1929..b84ca8f 100644
-> --- a/drivers/base/attribute_container.c
-> +++ b/drivers/base/attribute_container.c
-> @@ -12,7 +12,6 @@
->   */
->  
->  #include <linux/attribute_container.h>
-> -#include <linux/init.h>
->  #include <linux/device.h>
->  #include <linux/kernel.h>
->  #include <linux/slab.h>
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index e870bbe..b99e6c0 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -6,7 +6,6 @@
->   * This file is released under the GPLv2.
->   */
->  
-> -#include <linux/init.h>
->  #include <linux/kernel.h>
->  #include <linux/device.h>
->  #include <linux/io.h>
-> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-> index 5da9140..df2e5ee 100644
-> --- a/drivers/base/power/common.c
-> +++ b/drivers/base/power/common.c
-> @@ -6,7 +6,6 @@
->   * This file is released under the GPLv2.
->   */
->  
-> -#include <linux/init.h>
->  #include <linux/kernel.h>
->  #include <linux/device.h>
->  #include <linux/export.h>
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index bfb8955..921b192 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -6,7 +6,6 @@
->   * This file is released under the GPLv2.
->   */
->  
-> -#include <linux/init.h>
->  #include <linux/kernel.h>
->  #include <linux/io.h>
->  #include <linux/pm_runtime.h>
-> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-> index 28dee30..a089e3b 100644
-> --- a/drivers/base/power/domain_governor.c
-> +++ b/drivers/base/power/domain_governor.c
-> @@ -6,7 +6,6 @@
->   * This file is released under the GPLv2.
->   */
->  
-> -#include <linux/init.h>
->  #include <linux/kernel.h>
->  #include <linux/pm_domain.h>
->  #include <linux/pm_qos.h>
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index fa41874..2553867 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -14,7 +14,6 @@
->  #include <linux/kernel.h>
->  #include <linux/errno.h>
->  #include <linux/err.h>
-> -#include <linux/init.h>
->  #include <linux/slab.h>
->  #include <linux/cpufreq.h>
->  #include <linux/device.h>
-> diff --git a/drivers/base/regmap/regmap-i2c.c b/drivers/base/regmap/regmap-i2c.c
-> index fa6bf52..ebd1895 100644
-> --- a/drivers/base/regmap/regmap-i2c.c
-> +++ b/drivers/base/regmap/regmap-i2c.c
-> @@ -13,7 +13,6 @@
->  #include <linux/regmap.h>
->  #include <linux/i2c.h>
->  #include <linux/module.h>
-> -#include <linux/init.h>
->  
->  static int regmap_i2c_write(void *context, const void *data, size_t count)
->  {
-> diff --git a/drivers/base/regmap/regmap-mmio.c b/drivers/base/regmap/regmap-mmio.c
-> index 81f9775..4410cb2 100644
-> --- a/drivers/base/regmap/regmap-mmio.c
-> +++ b/drivers/base/regmap/regmap-mmio.c
-> @@ -18,7 +18,6 @@
->  
->  #include <linux/clk.h>
->  #include <linux/err.h>
-> -#include <linux/init.h>
->  #include <linux/io.h>
->  #include <linux/module.h>
->  #include <linux/regmap.h>
-> diff --git a/drivers/base/regmap/regmap-spi.c b/drivers/base/regmap/regmap-spi.c
-> index 37f12ae..0eb3097 100644
-> --- a/drivers/base/regmap/regmap-spi.c
-> +++ b/drivers/base/regmap/regmap-spi.c
-> @@ -12,7 +12,6 @@
->  
->  #include <linux/regmap.h>
->  #include <linux/spi/spi.h>
-> -#include <linux/init.h>
->  #include <linux/module.h>
->  
->  #include "internal.h"
-> diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-> index 94ffee3..ad9d177 100644
-> --- a/drivers/base/topology.c
-> +++ b/drivers/base/topology.c
-> @@ -23,7 +23,6 @@
->   * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
->   *
->   */
-> -#include <linux/init.h>
->  #include <linux/mm.h>
->  #include <linux/cpu.h>
->  #include <linux/module.h>
-> 
+For those devices, add new .bind() and .unbind() callbacks to struct
+acpi_scan_handler that will be executed by acpi_platform_notify()
+right after the given device has been associated with an ACPI
+comapnion and by acpi_platform_notify_remove() right before calling
+acpi_unbind_one() for that device, respectively.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/glue.c     |   12 ++++++++++++
+ include/acpi/acpi_bus.h |    2 ++
+ 2 files changed, 14 insertions(+)
+
+Index: linux-pm/drivers/acpi/glue.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/glue.c
++++ linux-pm/drivers/acpi/glue.c
+@@ -287,6 +287,7 @@ EXPORT_SYMBOL_GPL(acpi_unbind_one);
+ static int acpi_platform_notify(struct device *dev)
+ {
+ 	struct acpi_bus_type *type = acpi_get_bus_type(dev);
++	struct acpi_device *adev;
+ 	int ret;
+ 
+ 	ret = acpi_bind_one(dev, NULL);
+@@ -303,9 +304,14 @@ static int acpi_platform_notify(struct d
+ 		if (ret)
+ 			goto out;
+ 	}
++	adev = ACPI_COMPANION(dev);
++	if (!adev)
++		goto out;
+ 
+ 	if (type && type->setup)
+ 		type->setup(dev);
++	else if (adev->handler && adev->handler->bind)
++		adev->handler->bind(dev);
+ 
+  out:
+ #if ACPI_GLUE_DEBUG
+@@ -324,11 +330,17 @@ static int acpi_platform_notify(struct d
+ 
+ static int acpi_platform_notify_remove(struct device *dev)
+ {
++	struct acpi_device *adev = ACPI_COMPANION(dev);
+ 	struct acpi_bus_type *type;
+ 
++	if (!adev)
++		return 0;
++
+ 	type = acpi_get_bus_type(dev);
+ 	if (type && type->cleanup)
+ 		type->cleanup(dev);
++	else if (adev->handler && adev->handler->unbind)
++		adev->handler->unbind(dev);
+ 
+ 	acpi_unbind_one(dev);
+ 	return 0;
+Index: linux-pm/include/acpi/acpi_bus.h
+===================================================================
+--- linux-pm.orig/include/acpi/acpi_bus.h
++++ linux-pm/include/acpi/acpi_bus.h
+@@ -133,6 +133,8 @@ struct acpi_scan_handler {
+ 	struct list_head list_node;
+ 	int (*attach)(struct acpi_device *dev, const struct acpi_device_id *id);
+ 	void (*detach)(struct acpi_device *dev);
++	void (*bind)(struct device *phys_dev);
++	void (*unbind)(struct device *phys_dev);
+ 	struct acpi_hotplug_profile hotplug;
+ };
+ 
+
