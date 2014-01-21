@@ -1,98 +1,97 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [11/11] system 1: Saving energy using DVFS
-Date: Tue, 21 Jan 2014 13:31:20 +0100
-Message-ID: <20140121123120.GC11893@amd.pavel.ucw.cz>
-References: <1389111587-5923-1-git-send-email-morten.rasmussen@arm.com>
- <1389111587-5923-12-git-send-email-morten.rasmussen@arm.com>
- <20140120163254.GA23051@amd.pavel.ucw.cz>
- <20140121121429.GB19029@e103034-lin>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states
+ bindings
+Date: Tue, 21 Jan 2014 13:31:48 +0000
+Message-ID: <20140121133148.GB28801@e102568-lin.cambridge.arm.com>
+References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58457 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754518AbaAUMbW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 07:31:22 -0500
+Received: from service87.mimecast.com ([91.220.42.44]:48988 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754235AbaAUNbx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 08:31:53 -0500
+In-Reply-To: <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <20140121121429.GB19029@e103034-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "markgross@thegnar.org" <markgross@thegnar.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
 
-Hi!
+On Tue, Jan 21, 2014 at 11:16:46AM +0000, Vincent Guittot wrote:
 
-> > > Performance is frequency (~instruction issue rate) and
-> > > energy/instruction is the energy cost of executing one (or a fixed
-> > > number of instructions) at that level of performance (frequency). For
-> > > this example, it costs 2.7x more energy per instruction to increase the
-> > > performance from 1.0 to 3.0 (3x). That is, the amount of work
-> > > (instructions) that can be done on one battery charge is reduced by 2.7x
-> > > (~63%) if you run as fast as possible (3.0) compared to running at
-> > > slowest frequency (1.0).
-> > 
-> > This very heavily depends on what you count to the total energy,
-> > right? And it is very hard to argue with you before you anonymized
-> > your numbers.
+[...]
+
+> > +- Dormant:
+> > +       # Dormant mode is entered by executing wfi instructions and by sending
+> > +         platform specific commands to the platform power controller (coupled
+> > +         with processor specific SW/HW control sequences).
+> > +         In dormant mode, most of the processor control and debug logic is
+> > +         powered up but cache RAM can be put in retention state, providing
 > 
-> Just to clarify, the numbers above are cpu only as already stated in the
-> linux-pm thread referenced in the cover letter. We do of course need to
-> consider the total energy (cpu, gpu and memory at least) when verifying
-> whether any optimization does save energy or not.
+> Base on your description, it's not clear for me what is on, what is
+> lost and what is power down ?
+
+Sorry, typo, "powered down", not powered up.
+
+> My understand of the dormant mode that you described above is : the
+> cache is preserved (and especially the cache RAM) but the processor
+> state is lost (registers ...). Do I understand correctly ?
 
 Yes.
 
-> As already discussed, battery power is suitable for this purpose on end
-> product form factor systems. However, for development hardware that
-> might be quite different (extra onboard devices and such).
+> What about retention mode where the contents of processor and cache
+> are preserved but the power consumption is reduced ? it can be seen as
+> a special wfi mode which need specific SW/HW control sequences but i'm
+> not sure to understand how to describe such state with your proposal.
 
-Is the behavior of current production hardware significantly different
-from secret development boards you have? I don't think so. So can we
-get measurements on real production hardware?
+True, and I omitted that on purpose so that it can be debated and to
+keep it simple (well, so to speak) thanks for pointing that out.
 
-> > Anyway, you assuming modern system, low frequency should be cca
-> > 0.5GHz, with high cca 1.5GHz. Do you claim that operation on 1.5GHz
-> > takes 9x the power of 0.5GHz operation?
+The bindings allow a C-state to link to a power domain. Each device can
+link itself to a power domain. Hence at least now we know what devices
+are affected by a C-state (and by device I also mean arch timers, PMUs,
+GIC, etc).
+
+Now, retention vs. off. In theory we could link a device to a C-state
+and define what mode would be that device on C-state entry, but honestly
+it starts becoming looooots of data in the DT.
+
+For instance, we could define for every device the max C-state index allowed
+for the device context to be powered-up (or retained).
+
+Or, find a way to describe it through the power domain specifier:
+
+cache {
+	power-domain = <&foo 0 &foo 1>:
+	power-state = <1 0>;
+};
+
+which means that for the pair <&foo 0> cache is retained (1 == retained,
+0 == lost) and for power domain <&foo 1> cache is lost.
+
+I have no complete answer, certainly this adds complexity (but it is a very
+complex problem, so..) and it is a bit horrible, ideas welcome.
+
+[...]
+
+> > +       - psci-power-state
+> > +               Usage: Required if entry-method property value is set to
+> > +                      "psci".
+> > +               Value type: <u32>
+> > +               Definition: power_state parameter to pass to the PSCI
+> > +                           suspend call to enter the C-state.
 > 
-> On this particular platform, increasing the frequency by 3x increases
-> power by 8.1x.
+> Why psci has got a dedicated field and not vendor methods ? can't you
+> make that more generic ?
 
-Lets call your plaform TopSecret.
+If anyone provides me with an example usage why not, for now I know I
+need that parameter for PSCI, I can call it differently, define it for PSCI
+and leave it as optional for other methods.
 
-_CPU_ power. If your DRAM eats as much power as the CPU on that
-platform, and enters low-power mode when CPU does, race-to-idle is
-still a win.
+Thanks,
+Lorenzo
 
-> > > To save energy, the higher frequencies should be avoided and only used
-> > > when the application performance requirements can not be satisfied
-> > > otherwise (e.g. spread tasks across more cpus if possible).
-> > 
-> > This is in very steep contrast with race-to-idle on the PCs.
-> 
-> I think Catalin already covered why race-to-idle isn't always the best
-> idea elsewhere in this thread. Basically, it is wasting a lot of energy
-> in use-cases like audio and video playback. I have provided descriptions
-> of these use-cases as part of this set of emails.
-
-That's the problem. He demonstrated that on platform TopSecret
-race-to-idle is not good idea, assuming CPU and display are the only
-parts eating power. But that's not true even on TopSecret platform.
-
-So, at the very least, we need to know ammount of power taken by CPU
-idle/active and DRAM idle/active.
-
-> > Can we talk specific machine, please? You are talking Android all the
-> > time, so pick one cellphone you care about, and provide real numbers...
-> 
-> As Catalin already said, there is a number of reason why we can't share
-> absolute numbers publicly. I think the numbers I posted give a pretty
-> good picture of the trade-offs involved in frequency scaling on a modern
-> ARM Soc. 
-
-Unfortunately, as explained above, numbers for TopSecret are not
-useful. And that should be reason to re-do the measurements on some
-non-secret machine.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
