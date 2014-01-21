@@ -1,102 +1,161 @@
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 28/73] cpuidle: don't use modular platform register in
- non-modular ARM drivers
-Date: Tue, 21 Jan 2014 16:22:31 -0500
-Message-ID: <1390339396-3479-29-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 67/73] drivers/base: delete non-required instances of include <linux/init.h>
+Date: Tue, 21 Jan 2014 16:23:10 -0500
+Message-ID: <1390339396-3479-68-git-send-email-paul.gortmaker@windriver.com>
 References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-These two drivers are configured with Kconfig options that are
-both declared as bool.  Hence it is not possible for the code
-to be built as modular.  However the code is currently using the
-module_platform_driver() macro for driver registration.
+None of these files are actually using any __init type directives
+and hence don't need to include <linux/init.h>.  Most are just a
+left over from __devinit and __cpuinit removal, or simply due to
+code getting copied from one driver to the next.
 
-While this currently works, we really don't want to be including
-the module.h header in non-modular code, which we'll be forced
-to do, pending some upcoming code relocation from init.h into
-module.h.  So we fix it now by using the non-modular equivalent.
-
-With some macro detangulation, and a little help from cpp, we can
-see that module_platform_driver(calxeda_cpuidle_plat_driver) gets
-roughly translated into:
-
-  static int __init calxeda_cpuidle_plat_driver_init(void)
-  {
-        return platform_driver_register(&calxeda_cpuidle_plat_driver);
-  }
-  module_init(calxeda_cpuidle_plat_driver_init);
-
-  static void __exit calxeda_cpuidle_plat_driver_exit(void)
-  {
-        platform_driver_unregister(&calxeda_cpuidle_plat_driver);
-  }
-  module_exit(calxeda_cpuidle_plat_driver_exit);
-
-[and similarly for the other file, cpuidle-zynq.c]
-
-And since we've already established that the code is non-modular,
-we can completely drop any code relating to module_exit.  For non
-modular code, module_init beomes __initcall.  But direct use of
-__initcall is discouraged, vs. one of the priority categorized
-subgroups.  As __initcall gets mapped onto device_initcall, our
-use of device_initcall directly in this change means that the
-runtime impact is zero -- they will remain at level 6 in the
-initcall ordering.
-
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Michal Simek <michal.simek@xilinx.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Mark Brown <broonie@kernel.org>
 Cc: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/cpuidle/cpuidle-calxeda.c | 6 +++++-
- drivers/cpuidle/cpuidle-zynq.c    | 6 +++++-
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ drivers/base/attribute_container.c   | 1 -
+ drivers/base/power/clock_ops.c       | 1 -
+ drivers/base/power/common.c          | 1 -
+ drivers/base/power/domain.c          | 1 -
+ drivers/base/power/domain_governor.c | 1 -
+ drivers/base/power/opp.c             | 1 -
+ drivers/base/regmap/regmap-i2c.c     | 1 -
+ drivers/base/regmap/regmap-mmio.c    | 1 -
+ drivers/base/regmap/regmap-spi.c     | 1 -
+ drivers/base/topology.c              | 1 -
+ 10 files changed, 10 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
-index 6e51114..631e2cd 100644
---- a/drivers/cpuidle/cpuidle-calxeda.c
-+++ b/drivers/cpuidle/cpuidle-calxeda.c
-@@ -78,4 +78,8 @@ static struct platform_driver calxeda_cpuidle_plat_driver = {
-         .probe = calxeda_cpuidle_probe,
- };
+diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
+index ecc1929..b84ca8f 100644
+--- a/drivers/base/attribute_container.c
++++ b/drivers/base/attribute_container.c
+@@ -12,7 +12,6 @@
+  */
  
--module_platform_driver(calxeda_cpuidle_plat_driver);
-+static int __init calxeda_cpuidle_plat_driver_init(void)
-+{
-+	return platform_driver_register(&calxeda_cpuidle_plat_driver);
-+}
-+device_initcall(calxeda_cpuidle_plat_driver_init);
-diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
-index aded759..a1aae51 100644
---- a/drivers/cpuidle/cpuidle-zynq.c
-+++ b/drivers/cpuidle/cpuidle-zynq.c
-@@ -85,4 +85,8 @@ static struct platform_driver zynq_cpuidle_driver = {
- 	.probe = zynq_cpuidle_probe,
- };
+ #include <linux/attribute_container.h>
+-#include <linux/init.h>
+ #include <linux/device.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index e870bbe..b99e6c0 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -6,7 +6,6 @@
+  * This file is released under the GPLv2.
+  */
  
--module_platform_driver(zynq_cpuidle_driver);
-+static int __init zynq_cpuidle_driver_init(void)
-+{
-+	return platform_driver_register(&zynq_cpuidle_driver);
-+}
-+device_initcall(zynq_cpuidle_driver_init);
+-#include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/device.h>
+ #include <linux/io.h>
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index 5da9140..df2e5ee 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -6,7 +6,6 @@
+  * This file is released under the GPLv2.
+  */
+ 
+-#include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/device.h>
+ #include <linux/export.h>
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index bfb8955..921b192 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -6,7 +6,6 @@
+  * This file is released under the GPLv2.
+  */
+ 
+-#include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/pm_runtime.h>
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 28dee30..a089e3b 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -6,7 +6,6 @@
+  * This file is released under the GPLv2.
+  */
+ 
+-#include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/pm_domain.h>
+ #include <linux/pm_qos.h>
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index fa41874..2553867 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -14,7 +14,6 @@
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+-#include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/cpufreq.h>
+ #include <linux/device.h>
+diff --git a/drivers/base/regmap/regmap-i2c.c b/drivers/base/regmap/regmap-i2c.c
+index fa6bf52..ebd1895 100644
+--- a/drivers/base/regmap/regmap-i2c.c
++++ b/drivers/base/regmap/regmap-i2c.c
+@@ -13,7 +13,6 @@
+ #include <linux/regmap.h>
+ #include <linux/i2c.h>
+ #include <linux/module.h>
+-#include <linux/init.h>
+ 
+ static int regmap_i2c_write(void *context, const void *data, size_t count)
+ {
+diff --git a/drivers/base/regmap/regmap-mmio.c b/drivers/base/regmap/regmap-mmio.c
+index 81f9775..4410cb2 100644
+--- a/drivers/base/regmap/regmap-mmio.c
++++ b/drivers/base/regmap/regmap-mmio.c
+@@ -18,7 +18,6 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/err.h>
+-#include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+ #include <linux/regmap.h>
+diff --git a/drivers/base/regmap/regmap-spi.c b/drivers/base/regmap/regmap-spi.c
+index 37f12ae..0eb3097 100644
+--- a/drivers/base/regmap/regmap-spi.c
++++ b/drivers/base/regmap/regmap-spi.c
+@@ -12,7 +12,6 @@
+ 
+ #include <linux/regmap.h>
+ #include <linux/spi/spi.h>
+-#include <linux/init.h>
+ #include <linux/module.h>
+ 
+ #include "internal.h"
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index 94ffee3..ad9d177 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -23,7 +23,6 @@
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  *
+  */
+-#include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/cpu.h>
+ #include <linux/module.h>
 -- 
 1.8.4.1
