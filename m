@@ -1,77 +1,102 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCHv5 01/10] Thermal: Do kfree in _unregister functions
-Date: Tue, 21 Jan 2014 11:46:25 -0800
-Message-ID: <20140121194624.GA29615@core.coreip.homeip.net>
-References: <1389916587-2541-1-git-send-email-durgadoss.r@intel.com>
- <1389916587-2541-2-git-send-email-durgadoss.r@intel.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: [PATCH 28/73] cpuidle: don't use modular platform register in
+ non-modular ARM drivers
+Date: Tue, 21 Jan 2014 16:22:31 -0500
+Message-ID: <1390339396-3479-29-git-send-email-paul.gortmaker@windriver.com>
+References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:33256 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752835AbaAUTqb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2014 14:46:31 -0500
-Content-Disposition: inline
-In-Reply-To: <1389916587-2541-2-git-send-email-durgadoss.r@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hongbo.zhang@freescale.com, wni@nvidia.com
 
-Hi Durgadoss,
+These two drivers are configured with Kconfig options that are
+both declared as bool.  Hence it is not possible for the code
+to be built as modular.  However the code is currently using the
+module_platform_driver() macro for driver registration.
 
-On Fri, Jan 17, 2014 at 05:26:18AM +0530, Durgadoss R wrote:
-> Currently the thermal_release function does
-> kfree for all devices when they call device_unregister.
-> This makes code scattering i.e whenever we add new
-> devices (to thermal class) we need to add its
-> corresponding kfree in thermal_release function.
-> And the if-else is also growing lengthy.
-> 
-> Instead, do all kfree() of devices in their own
-> _unregister functions. This makes the code look
-> clean and easy to maintain.
-> 
-> Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
-> ---
->  drivers/thermal/thermal_core.c |   17 +++++------------
->  1 file changed, 5 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 338a88b..165afc6 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1042,18 +1042,7 @@ EXPORT_SYMBOL_GPL(thermal_zone_unbind_cooling_device);
->  
->  static void thermal_release(struct device *dev)
->  {
-> -	struct thermal_zone_device *tz;
-> -	struct thermal_cooling_device *cdev;
-> -
-> -	if (!strncmp(dev_name(dev), "thermal_zone",
-> -		     sizeof("thermal_zone") - 1)) {
-> -		tz = to_thermal_zone(dev);
-> -		kfree(tz);
-> -	} else if(!strncmp(dev_name(dev), "cooling_device",
-> -			sizeof("cooling_device") - 1)){
-> -		cdev = to_cooling_device(dev);
-> -		kfree(cdev);
-> -	}
-> +	/* No-op since kfree(dev) is done in _unregister functions */
->  }
->  
->  static struct class thermal_class = {
-> @@ -1146,6 +1135,7 @@ __thermal_cooling_device_register(struct device_node *np,
->  unregister:
->  	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
->  	device_unregister(&cdev->device);
-> +	kfree(cdev);
+While this currently works, we really don't want to be including
+the module.h header in non-modular code, which we'll be forced
+to do, pending some upcoming code relocation from init.h into
+module.h.  So we fix it now by using the non-modular equivalent.
 
-This is broken, you can not assume that you are holding the last
-reference. Please observe help text of DEBUG_KOBJECT_RELEASE config
-option, activate said option and try unregistering thermal device.
+With some macro detangulation, and a little help from cpp, we can
+see that module_platform_driver(calxeda_cpuidle_plat_driver) gets
+roughly translated into:
 
-Thanks.
+  static int __init calxeda_cpuidle_plat_driver_init(void)
+  {
+        return platform_driver_register(&calxeda_cpuidle_plat_driver);
+  }
+  module_init(calxeda_cpuidle_plat_driver_init);
 
+  static void __exit calxeda_cpuidle_plat_driver_exit(void)
+  {
+        platform_driver_unregister(&calxeda_cpuidle_plat_driver);
+  }
+  module_exit(calxeda_cpuidle_plat_driver_exit);
+
+[and similarly for the other file, cpuidle-zynq.c]
+
+And since we've already established that the code is non-modular,
+we can completely drop any code relating to module_exit.  For non
+modular code, module_init beomes __initcall.  But direct use of
+__initcall is discouraged, vs. one of the priority categorized
+subgroups.  As __initcall gets mapped onto device_initcall, our
+use of device_initcall directly in this change means that the
+runtime impact is zero -- they will remain at level 6 in the
+initcall ordering.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Michal Simek <michal.simek@xilinx.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ drivers/cpuidle/cpuidle-calxeda.c | 6 +++++-
+ drivers/cpuidle/cpuidle-zynq.c    | 6 +++++-
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+index 6e51114..631e2cd 100644
+--- a/drivers/cpuidle/cpuidle-calxeda.c
++++ b/drivers/cpuidle/cpuidle-calxeda.c
+@@ -78,4 +78,8 @@ static struct platform_driver calxeda_cpuidle_plat_driver = {
+         .probe = calxeda_cpuidle_probe,
+ };
+ 
+-module_platform_driver(calxeda_cpuidle_plat_driver);
++static int __init calxeda_cpuidle_plat_driver_init(void)
++{
++	return platform_driver_register(&calxeda_cpuidle_plat_driver);
++}
++device_initcall(calxeda_cpuidle_plat_driver_init);
+diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
+index aded759..a1aae51 100644
+--- a/drivers/cpuidle/cpuidle-zynq.c
++++ b/drivers/cpuidle/cpuidle-zynq.c
+@@ -85,4 +85,8 @@ static struct platform_driver zynq_cpuidle_driver = {
+ 	.probe = zynq_cpuidle_probe,
+ };
+ 
+-module_platform_driver(zynq_cpuidle_driver);
++static int __init zynq_cpuidle_driver_init(void)
++{
++	return platform_driver_register(&zynq_cpuidle_driver);
++}
++device_initcall(zynq_cpuidle_driver_init);
 -- 
-Dmitry
+1.8.4.1
