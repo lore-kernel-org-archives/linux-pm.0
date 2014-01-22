@@ -1,87 +1,192 @@
-From: Mark Brown <broonie@kernel.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states
  bindings
-Date: Wed, 22 Jan 2014 18:17:24 +0000
-Message-ID: <20140122181724.GR17314@sirena.org.uk>
+Date: Wed, 22 Jan 2014 19:20:42 +0000
+Message-ID: <20140122192041.GA3709@e102568-lin.cambridge.arm.com>
 References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
  <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
  <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
- <20140121133148.GB28801@e102568-lin.cambridge.arm.com>
- <CAP245DXdFS5FEkrDvSw07aDDuZDqFPZXF=CoBLPrBB4JuYE8cQ@mail.gmail.com>
- <20140121152358.GD28801@e102568-lin.cambridge.arm.com>
- <20140122115214.GG17314@sirena.org.uk>
- <20140122162313.GE24288@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="CWeaa2rMoVPmUX0K"
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:58226 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbaAVSRf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2014 13:17:35 -0500
+Received: from service87.mimecast.com ([91.220.42.44]:38165 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752358AbaAVTUu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2014 14:20:50 -0500
+In-Reply-To: <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <20140122162313.GE24288@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Nicolas Pitre <nico@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Antti Miettinen <ananaza@iki.fi>, Tomasz Figa <t.figa@samsung.com>, Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Hanjun Guo <hanjun.guo@linaro.org>, Mark Hambleton <mark.hambleton@broadcom.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Dave P Martin <Dave.Martin@arm.com>, Lists LAKML <linux-arm-kernel@lists.infradead.org>, Charles
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
 
+Hi Vincent,
 
---CWeaa2rMoVPmUX0K
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Tue, Jan 21, 2014 at 11:16:46AM +0000, Vincent Guittot wrote:
+> Hi Lorenzo,
+> 
+> On 20 January 2014 18:47, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+> > ARM based platforms implement a variety of power management schemes that
+> > allow processors to enter at run-time low-power states, aka C-states
+> > in ACPI jargon. The parameters defining these C-states vary on a per-platform
+> > basis forcing the OS to hardcode the state parameters in platform
+> > specific static tables whose size grows as the number of platforms supported
+> > in the kernel increases and hampers device drivers standardization.
+> >
+> > Therefore, this patch aims at standardizing C-state device tree bindings for
+> > ARM platforms. Bindings define C-state parameters inclusive of entry methods
+> > and state latencies, to allow operating systems to retrieve the
+> > configuration entries from the device tree and initialize the related
+> > power management drivers, paving the way for common code in the kernel
+> > to deal with power states and removing the need for static data in current
+> > and previous kernel versions.
+> >
+> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > ---
+> >  Documentation/devicetree/bindings/arm/c-states.txt | 774 +++++++++++++++++++++
+> >  Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
+> >  2 files changed, 784 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/arm/c-states.txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/arm/c-states.txt b/Documentation/devicetree/bindings/arm/c-states.txt
+> > new file mode 100644
+> > index 0000000..0b5617b
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/arm/c-states.txt
+> > @@ -0,0 +1,774 @@
+> > +==========================================
+> > +ARM C-states binding description
+> > +==========================================
+> > +
+> > +==========================================
+> > +1 - Introduction
+> > +==========================================
+> > +
+> > +ARM systems contain HW capable of managing power consumption dynamically,
+> > +where cores can be put in different low-power states (ranging from simple
+> > +wfi to power gating) according to OSPM policies. Borrowing concepts
+> > +from the ACPI specification[1], the CPU states representing the range of
+> > +dynamic states that a processor can enter at run-time, aka C-state, can be
+> > +specified through device tree bindings representing the parameters required to
+> > +enter/exit specific C-states on a given processor.
+> > +
+> > +The state an ARM CPU can be put into is loosely identified by one of the
+> > +following operating modes:
+> > +
+> > +- Running:
+> > +        # Processor core is executing instructions
+> > +
+> > +- Wait for Interrupt:
+> > +       # An ARM processor enters wait for interrupt (WFI) low power
+> > +         state by executing a wfi instruction. When a processor enters
+> > +         wfi state it disables most of the clocks while keeping the processor
+> > +         powered up. This state is standard on all ARM processors and it is
+> > +         defined as C1 in the remainder of this document.
+> > +
+> 
+> > +- Dormant:
+> > +       # Dormant mode is entered by executing wfi instructions and by sending
+> > +         platform specific commands to the platform power controller (coupled
+> > +         with processor specific SW/HW control sequences).
+> > +         In dormant mode, most of the processor control and debug logic is
+> > +         powered up but cache RAM can be put in retention state, providing
+> 
+> Base on your description, it's not clear for me what is on, what is
+> lost and what is power down ?
+> My understand of the dormant mode that you described above is : the
+> cache is preserved (and especially the cache RAM) but the processor
+> state is lost (registers ...). Do I understand correctly ?
+> 
+> What about retention mode where the contents of processor and cache
+> are preserved but the power consumption is reduced ? it can be seen as
+> a special wfi mode which need specific SW/HW control sequences but i'm
+> not sure to understand how to describe such state with your proposal.
 
-On Wed, Jan 22, 2014 at 04:23:14PM +0000, Lorenzo Pieralisi wrote:
-> On Wed, Jan 22, 2014 at 11:52:14AM +0000, Mark Brown wrote:
+I had an idea. To simplify things, I think that one possibility is to
+add a parameter to the power domain specifier (platform specific, see
+Tomasz bindings):
 
-> > Actually looking at the OPP binding I do wonder if it might not be
-> > better to have a v2/rich binding for them which is extensible - the fact
-> > that it's not possible to add additional information seems like an
-> > issue, this can't be the only thing anyone might want to add and lining
-> > up multiple tables is never fun.
+Documentation/devicetree/bindings/power/power_domain.txt
 
-> On one hand OPP bindings need improvement and that's on the cards. I am not
-> really following what you mean by "extensible", I only want to make sure
-> that the C-state bindings do not become too complex.
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-January/224928.html
 
-By extensible I guess I mostly mean not just a list of numbers we can't
-add additional information to without breaking compatibility.  Having to
-look through tables and make sure they all use the same indexes gets
-error prone and generally miserable.
+to represent, when that state is entered the behavior of the power
+controller (ie cache RAM retention or cache shutdown or in general any
+substate within a power domain). Since it is platform specific, and since
+we are able to link caches to the power domain, the power controller will
+actually define what happens to the cache when that state is entered
+(basically we use the power domain specifier additional parameter to define
+a "substate" in that power domain e.g.:
 
-> Do you mean extending OPP bindings to add eg C-state information there
-> (or whatever piece of information that is OPP dependent) ?
-> It seems a bit of a stretch but I can think about that.
+Example:
 
-> I think that C-state properties are better defined in the C-state bindings
-> that was the idea but I am open to suggestions.
+foo_power_controller {
+	[...]
+	/*
+	 * first cell is register index, second one is the state index
+	 * that in turn implies the state behavior - eg cache lost or
+	 * retained
+	 */
+	#power-domain-cells = <2>;
+};
 
-I think defining in these bindings makes total sense, it's just
-providing an extension to the OPP binding (which is already being looked
-at anyway).  The exensibility issue I see is that with the current OPP
-binding it's inelegant for another binding to add extra information
-about an operating point relevant to that binding.
+l1-cache {
+	[...]
+	/*
+	 * syntax: power-domains = list of power domain specifiers
+		<[&power_domain_phandle register-index state],[&power_domain_phandle register-index state]>;
+		The syntax is defined by the power controller du jour
+		as described by Tomasz bindings
+	*/
+	power-domains =<&foo_power_controller 0 0 &foo_power_controller 0 1>;
 
---CWeaa2rMoVPmUX0K
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+}:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+and then
 
-iQIcBAEBAgAGBQJS4AsxAAoJELSic+t+oim9KcwQAI+g3qxKQU3FzR0w1Rac0CCq
-ldeQd4jwdOP1Vw8HLPQFkXwpNb5XUScREX5h0mRusH3PY/7cWM3CIaOeRvzY0D7O
-XXnT5kIq87O2XDIVXMpQiD18GUMADsrT3/y66qZOzNMQ2JyGhRTrX3aTtqK5cw65
-O4Er8qUqIkmkPjDm1qzTY4Al5Gtfj6/uTt/eybSf1BAakPwemh5uyemrpjGcoOWV
-bU+ErH2KfnWAV1SQ0HEDASaPeq5d331f5kqe1gz4yuAa0QmR6bRpma8YSO3K/7VH
-b52ROTwOUT9nonfIuaUw0drnGaKwEEvyXWcQ5PQ5p/XE5qOAIU2RDE4Y9uQndgZs
-Y9kmiwOwRKHXSsZuCB4Ld6xqtLFQnQHHmddtK4zZczh6J5lswFEb8m8jsiHnbJCK
-YtY9viQajNsML045FZ/bhywIj3LG8Ank/BWtvJmK61d8YNqEcjIr9Cq7KktSbJ2k
-zMoOugCYdzJOdbJMRV/PoXLeKuj7wU0devzYJTlPagaoZlb0HGkjnoDxE3OIoRXs
-s+ixrV+8nchm4p+SrKnsPd3yigZjm1RqAf9QXY3MUd+HdkoHvZh7gF2AIzDJGHi8
-FsoJmviBieyVqY7dx7zG8GRQ1v7eVnXIwRL1ND6RfrQylGsmidQm6AO6FyfyAIU/
-Zra8sz61a3PJUW+FbfQI
-=DHTC
------END PGP SIGNATURE-----
+state0 {
+	index = <2>;
+	compatible = "arm,cpu-power-state";
+	latency = <...>;
+	/*
+	 * This means that when the state is entered, the power
+	 * controller should use register index 0 and state 0,
+	 * whose meaning is power controller specific. Since we
+	 * know all components affected (for every component
+	 * we declare its power domain(s) and states so we
+	 * know what components are affected by the state entry.
+	 * Given the cache node above and this phandle, the state
+	 * implies that the cache is retained, register index == 0 state == 0
+	 /*
+	power-domain =<&foo_power_controller 0 0>;
+};
 
---CWeaa2rMoVPmUX0K--
+state1 {
+	index = <3>;
+	compatible = "arm,cpu-power-state";
+	latency = <...>;
+	/*
+	 * This means that when the state is entered, the power
+	 * controller should use register index 0 and state 1,
+	 * whose meaning is power controller specific. Since we
+	 * know all components affected (for every component
+	 * we declare its power domain(s) and states so we
+	 * know what components are affected by the state entry.
+	 * Given the cache node above and this phandle, the state
+	 * implies that the cache is lost, register index == 0 state == 1
+	 /*
+	power-domain =<&foo_power_controller 0 1>;
+};
+
+It is complex but it is probably the cleanest way. And it leaves complexity
+to power controller implementations (if managed in the kernel....), which
+actually makes sense because it is up to power controller to define the
+behavior of certain states.
+
+All in all it is just an idea, feel free to scotch it, it is complex but
+we have to sort it out, one way or another.
+
+Vincent, Tomasz, anyone, thoughts ?
+Lorenzo
+
