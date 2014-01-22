@@ -1,56 +1,74 @@
-From: Paul Gortmaker <paul.gortmaker@gmail.com>
-Subject: Re: [PATCH 68/73] drivers/cpufreq: delete non-required instances of <linux/init.h>
-Date: Wed, 22 Jan 2014 04:17:59 -0500
-Message-ID: <CAP=VYLodPTc4Cum+bqwA927g11-BNOtSo=fs_UKt+jFEc3ABKw@mail.gmail.com>
-References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-	<1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
-	<CAKohpo=oWrX2SF5GWYoGzC+cuZeOx_wappTFfOy9vCpBush+BQ@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC 04/10] base: power: Add generic OF-based power domain
+ look-up
+Date: Wed, 22 Jan 2014 11:00:18 +0000
+Message-ID: <20140122110018.GB24288@e102568-lin.cambridge.arm.com>
+References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
+ <1389469372-17199-5-git-send-email-tomasz.figa@gmail.com>
+ <20140116163409.GD25540@e102568-lin.cambridge.arm.com>
+ <52DD5DC5.3000908@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=oWrX2SF5GWYoGzC+cuZeOx_wappTFfOy9vCpBush+BQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <52DD5DC5.3000908@samsung.com>
+Content-Disposition: inline
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <Mark.Rutland@arm.com>, Pawel Moll <Pawel.Moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 1/21/14, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22 January 2014 02:53, Paul Gortmaker <paul.gortmaker@windriver.com>
-> wrote:
->> None of these files are actually using any __init type directives
->> and hence don't need to include <linux/init.h>.  Most are just a
->> left over from __devinit and __cpuinit removal, or simply due to
->> code getting copied from one driver to the next.
->>
->> Cc: Kevin Hilman <khilman@deeprootsystems.com>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: cpufreq@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->> ---
->>  drivers/cpufreq/omap-cpufreq.c    | 1 -
->>  drivers/cpufreq/powernow-k8.c     | 1 -
->>  drivers/cpufreq/s3c2412-cpufreq.c | 1 -
->>  drivers/cpufreq/s3c2440-cpufreq.c | 1 -
->>  drivers/cpufreq/spear-cpufreq.c   | 1 -
->>  drivers/cpufreq/speedstep-lib.c   | 1 -
->>  6 files changed, 6 deletions(-)
->
-> We have discussed this in past where I pointed out this file is required
-> by stuff like module_init, what happened to that query ?
+On Mon, Jan 20, 2014 at 05:32:53PM +0000, Tomasz Figa wrote:
+> Hi Lorenzo,
+> 
+> On 16.01.2014 17:34, Lorenzo Pieralisi wrote:
+> > Hi Tomasz,
+> >
+> > thank you for posting this series. I would like to use the DT bindings
+> > for power domains in the bindings for C-states on ARM:
+> >
+> > http://comments.gmane.org/gmane.linux.power-management.general/41012
+> >
+> > and in particular link a given C-state to a given power domain so that the
+> > kernel will have a way to actually check what devices are lost upon C-state
+> > entry (and for devices I also mean CPU peripheral like PMUs, GIC CPU IF,
+> > caches and possibly cpus, all of them already represented with DT nodes).
+> >
+> > I have a remark:
+> >
+> > -  Can we group device nodes under a single power-domain-parent so that
+> >     all devices defined under that parent won't have to re-define a
+> >     power-domain property (a property like interrupt-parent, so to speak)
+> >
+> > What do you think ?
+> 
+> Hmm, I can see potential benefits of such construct on platforms with 
+> clear hierarchy of devices, but to make sure I'm getting it correctly, 
+> is the following what you have in mind?
+> 
+> soc-domain-x@12340000 {
+> 	compatible = "...";
+> 	reg = <...>;
+> 	power-domain-parent = <&power_domains DOMAIN_X>;
+> 
+> 	device@1000 {
+> 		compatible = "...";
+> 		// inherits power-domain = <&power_domains DOMAIN_X>
+> 	};
+> 
+> 	device@2000 {
+> 		compatible = "...";
+> 		// inherits power-domain = <&power_domains DOMAIN_X>
+> 	};
+> };
 
-Patch 31/73 relocates module_init and similar macros to
-module.h so that is no longer an implicit dependency.
+Yes, exactly, it could avoid duplicated data. I still have an issue
+with nodes that are per-cpu but define just one node (eg PMU), since
+a CPU might belong in a power-domain on its own (ie one power domain
+per-CPU) and basically this means that arch-timers, PMU & company should
+link to multiple power domains, ie one per CPU or we find a way to define
+a power domain as "banked".
 
-https://lkml.org/lkml/2014/1/21/488
+I need to think about this a bit more, thanks for your feedback.
 
-Thanks,
-Paul
---
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Lorenzo
