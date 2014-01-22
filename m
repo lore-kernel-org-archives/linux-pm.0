@@ -1,23 +1,16 @@
-From: y@samsung.com
-Subject: [PATCH] cpufreq: exynos: Fix build error of no type of module_init
-Date: Wed, 22 Jan 2014 15:18:29 +0100
-Message-ID: <1390400309-22806-1-git-send-email-y@samsung.com>
-References: <y@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH RESEND] cpufreq: exynos: Fix build error of no type of
+ module_init
+Date: Wed, 22 Jan 2014 15:21:16 +0100
+Message-ID: <1390400476-22951-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:11843 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754553AbaAVOSl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2014 09:18:41 -0500
-In-reply-to: <y@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-
-=46rom: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
 Add missing include to fix build error:
 drivers/cpufreq/exynos-cpufreq.c:292:1: warning: data definition has no=
