@@ -1,53 +1,61 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH RESEND] cpufreq: exynos: Fix build error of no type of
- module_init
-Date: Wed, 22 Jan 2014 17:10:07 +0100
-Message-ID: <1390407007.18340.13.camel@AMDC1943>
-References: <1390400476-22951-1-git-send-email-k.kozlowski@samsung.com>
- <CAKohpo=2wR+Sqwxj4koH0rvuk29BkNyAZgN0RR7bVH+3uqpB1Q@mail.gmail.com>
- <1390402760.18340.6.camel@AMDC1943> <1390405030.18340.11.camel@AMDC1943>
- <52DFE7D9.5050001@windriver.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states
+ bindings
+Date: Wed, 22 Jan 2014 16:23:14 +0000
+Message-ID: <20140122162313.GE24288@e102568-lin.cambridge.arm.com>
+References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
+ <20140121133148.GB28801@e102568-lin.cambridge.arm.com>
+ <CAP245DXdFS5FEkrDvSw07aDDuZDqFPZXF=CoBLPrBB4JuYE8cQ@mail.gmail.com>
+ <20140121152358.GD28801@e102568-lin.cambridge.arm.com>
+ <20140122115214.GG17314@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <52DFE7D9.5050001@windriver.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:35481 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752070AbaAVQXU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2014 11:23:20 -0500
+In-Reply-To: <20140122115214.GG17314@sirena.org.uk>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Nicolas Pitre <nico@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Antti Miettinen <ananaza@iki.fi>, Tomasz Figa <t.figa@samsung.com>, Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Hanjun Guo <hanjun.guo@linaro.org>, Mark Hambleton <mark.hambleton@broadcom.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Dave P Martin <Dave.Martin@arm.com>, Lists LAKML <linux-arm-kernel@lists.infradead.org>, Charles
 
-On Wed, 2014-01-22 at 10:46 -0500, Paul Gortmaker wrote:
-> On 14-01-22 10:37 AM, Krzysztof Kozlowski wrote:
-> > 
-> >>
-> >> Hi,
-> >>
-> >> A little more explanation from my side: the build error actually happens
-> >> only on next/master, not Linus' tree.
-> >>
-> >> Mentioned commit which changes the driver to platform driver is in
-> >> mainline since 3.12-rc2 so it seems this is not the cause of the build
-> >> error. I think I need to find first the real cause of this build error.
-> >>
-> >> Best regards,
-> >> Krzysztof
-> > 
-> > After bisecting, the real commit for build error is:
-> > caa7dcde7c424cdc81698a6e4e48072eb67ec67e
-> >     module: relocate module_init from init.h to module.h
-> 
-> Yep, even though I fixed a crap-tonne of implicit includes, and
-> built all the arm configs, some were bound to sneak through.
-> 
-> I'll push a fix shortly to the init cleanup queue:
-> 
->    http://git.kernel.org/cgit/linux/kernel/git/paulg/init.git/
-> 
-> so it will be fine for the next linux-next tree.
+Hi Mark,
 
-Thanks, the same issue applies to drivers/cpufreq/exynos-cpufreq.c.
+On Wed, Jan 22, 2014 at 11:52:14AM +0000, Mark Brown wrote:
+> On Tue, Jan 21, 2014 at 03:23:59PM +0000, Lorenzo Pieralisi wrote:
+> > On Tue, Jan 21, 2014 at 02:35:11PM +0000, Amit Kucheria wrote:
+> 
+> > > DT-newbie here. What would happen if a vendor does not characterise
+> > > the latency at each OPP? IOW, the table only contains latency values
+> > > for a subset of the OPPs.
+> 
+> > The bindings are explicit, so the kernel will barf. Adding a LUT to map
+> > latencies to OPPs make me cringe, so I would not change the current
+> > bindings.
+> 
+> Actually looking at the OPP binding I do wonder if it might not be
+> better to have a v2/rich binding for them which is extensible - the fact
+> that it's not possible to add additional information seems like an
+> issue, this can't be the only thing anyone might want to add and lining
+> up multiple tables is never fun.
 
-Best regards,
-Krzysztof
+On one hand OPP bindings need improvement and that's on the cards. I am not
+really following what you mean by "extensible", I only want to make sure
+that the C-state bindings do not become too complex.
+
+Do you mean extending OPP bindings to add eg C-state information there
+(or whatever piece of information that is OPP dependent) ?
+It seems a bit of a stretch but I can think about that.
+
+I think that C-state properties are better defined in the C-state bindings
+that was the idea but I am open to suggestions.
+
+Thank you !
+Lorenzo
 
