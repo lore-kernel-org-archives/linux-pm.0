@@ -1,74 +1,73 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC 04/10] base: power: Add generic OF-based power domain
- look-up
-Date: Wed, 22 Jan 2014 11:00:18 +0000
-Message-ID: <20140122110018.GB24288@e102568-lin.cambridge.arm.com>
-References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
- <1389469372-17199-5-git-send-email-tomasz.figa@gmail.com>
- <20140116163409.GD25540@e102568-lin.cambridge.arm.com>
- <52DD5DC5.3000908@samsung.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states
+ bindings
+Date: Wed, 22 Jan 2014 11:42:32 +0000
+Message-ID: <20140122114232.GB20247@sirena.org.uk>
+References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
+ <20140121133148.GB28801@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <52DD5DC5.3000908@samsung.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="z6Eq5LdranGa6ru8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:57944 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755367AbaAVLnP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2014 06:43:15 -0500
 Content-Disposition: inline
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <Mark.Rutland@arm.com>, Pawel Moll <Pawel.Moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>
+In-Reply-To: <20140121133148.GB28801@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Nicolas Pitre <nico@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Antti Miettinen <ananaza@iki.fi>, Amit Kucheria <amit.kucheria@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Hanjun Guo <hanjun.guo@linaro.org>, Mark Hambleton <mark.hambleton@broadcom.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Dave P Martin <Dave.Martin@arm.com>, LAK <linux-arm-kernel@lists.infradead.org>, Charl
 
-On Mon, Jan 20, 2014 at 05:32:53PM +0000, Tomasz Figa wrote:
-> Hi Lorenzo,
-> 
-> On 16.01.2014 17:34, Lorenzo Pieralisi wrote:
-> > Hi Tomasz,
-> >
-> > thank you for posting this series. I would like to use the DT bindings
-> > for power domains in the bindings for C-states on ARM:
-> >
-> > http://comments.gmane.org/gmane.linux.power-management.general/41012
-> >
-> > and in particular link a given C-state to a given power domain so that the
-> > kernel will have a way to actually check what devices are lost upon C-state
-> > entry (and for devices I also mean CPU peripheral like PMUs, GIC CPU IF,
-> > caches and possibly cpus, all of them already represented with DT nodes).
-> >
-> > I have a remark:
-> >
-> > -  Can we group device nodes under a single power-domain-parent so that
-> >     all devices defined under that parent won't have to re-define a
-> >     power-domain property (a property like interrupt-parent, so to speak)
-> >
-> > What do you think ?
-> 
-> Hmm, I can see potential benefits of such construct on platforms with 
-> clear hierarchy of devices, but to make sure I'm getting it correctly, 
-> is the following what you have in mind?
-> 
-> soc-domain-x@12340000 {
-> 	compatible = "...";
-> 	reg = <...>;
-> 	power-domain-parent = <&power_domains DOMAIN_X>;
-> 
-> 	device@1000 {
-> 		compatible = "...";
-> 		// inherits power-domain = <&power_domains DOMAIN_X>
-> 	};
-> 
-> 	device@2000 {
-> 		compatible = "...";
-> 		// inherits power-domain = <&power_domains DOMAIN_X>
-> 	};
-> };
 
-Yes, exactly, it could avoid duplicated data. I still have an issue
-with nodes that are per-cpu but define just one node (eg PMU), since
-a CPU might belong in a power-domain on its own (ie one power domain
-per-CPU) and basically this means that arch-timers, PMU & company should
-link to multiple power domains, ie one per CPU or we find a way to define
-a power domain as "banked".
+--z6Eq5LdranGa6ru8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I need to think about this a bit more, thanks for your feedback.
+On Tue, Jan 21, 2014 at 01:31:48PM +0000, Lorenzo Pieralisi wrote:
+> On Tue, Jan 21, 2014 at 11:16:46AM +0000, Vincent Guittot wrote:
 
-Lorenzo
+> > > +       - psci-power-state
+> > > +               Usage: Required if entry-method property value is set to
+> > > +                      "psci".
+> > > +               Value type: <u32>
+> > > +               Definition: power_state parameter to pass to the PSCI
+> > > +                           suspend call to enter the C-state.
+
+> > Why psci has got a dedicated field and not vendor methods ? can't you
+> > make that more generic ?
+
+> If anyone provides me with an example usage why not, for now I know I
+> need that parameter for PSCI, I can call it differently, define it for PSCI
+> and leave it as optional for other methods.
+
+Would it not be sensible to define a PSCI binding that extends this and
+other bindings - ISTR some other properties getting scattered into
+bindings for it?
+
+--z6Eq5LdranGa6ru8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJS366lAAoJELSic+t+oim96uMP/1hO0YCkYIwkhjx5IBzQ923D
+ecuKxfHm65yRSoCJvCXvXJ2iRpmuQGocSn5wn7saq8xpgrmPIsyNMlwubt4F4elD
+l7HKamgEpa83CP4EYKYn9zUJRgohVYgQPfa8Pyv5it8LrTKGtbP2Didhwo6aYhZ+
+rUzbIoYivy0pxPKA4+fIAAOPl4LuFoA5LZFmK0ng+vby+BMkTWSzMLddTXfueLuM
+zC2xvW0KeZV12rEqB+hPvgbirz0TlcZRJ6IyvtJDxeZnBKO4YvI0i0/FlRx8WnBy
+c4On+nNGsC1CIxrS4diVtfgh8a8s7RYXm16Pb9F23cIdNuyRmbWdjpPrqCNc9STT
+rVa2nRnSYBb2YvgZB6MC+n6OKn4s5Zud5RSzQi0bBGwLu3paeBlEOPEgmBrMftD0
+UcsTtw+hc+xd9fZP5NDR63HAjetZbVBDucCiN1xd3Npq3pj8xa4JlLUWbZXyPvGs
+Q0V8RjU7cPVptcMIYUJ/DGVbLXhm/JGBydOCHyGbxCkWO6UQ4YgKNkPAkabt0NPz
+1TJInawzq5XLqSynq21oq1177HGuc5M4ilE7VREivhXpgjVxPxn9K5IbpKj7cGKU
+owmWKKC3RuyL1F687osjc/r063qrsUT4NHlw1MpGHP4bxXBeLZXsYR14gpaeSXy2
+r2gmxNowV12TpxCW7M5+
+=GJe1
+-----END PGP SIGNATURE-----
+
+--z6Eq5LdranGa6ru8--
