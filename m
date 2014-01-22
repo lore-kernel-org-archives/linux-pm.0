@@ -1,38 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 68/73] drivers/cpufreq: delete non-required instances of <linux/init.h>
-Date: Wed, 22 Jan 2014 10:28:57 +0530
-Message-ID: <CAKohpo=oWrX2SF5GWYoGzC+cuZeOx_wappTFfOy9vCpBush+BQ@mail.gmail.com>
-References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-	<1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] cpufreq: Align all CPUs to the same frequency if using
+ shared clock
+Date: Wed, 22 Jan 2014 10:48:27 +0530
+Message-ID: <CAKohpokHi=yuGJm2Nf-TAMVhGQ8Do02j+s6z3eenKRzoW8pv7g@mail.gmail.com>
+References: <1390273543-18032-1-git-send-email-zhuangzhi.li@intel.com>
+	<CAKohponL_R8M40BJa3X+++1yDtw5KRvk88w8kVfA+_D+poK08A@mail.gmail.com>
+	<630F9443351D2B4BB7EC6BAE6B6B08342549C5DC@SHSMSX104.ccr.corp.intel.com>
+	<CAKohpo=ng-B6kLdWxBn_cNsWNVsYaNAD-ZzQLLOfkbj+FDg_fg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <CAKohpo=ng-B6kLdWxBn_cNsWNVsYaNAD-ZzQLLOfkbj+FDg_fg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 January 2014 02:53, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
-> None of these files are actually using any __init type directives
-> and hence don't need to include <linux/init.h>.  Most are just a
-> left over from __devinit and __cpuinit removal, or simply due to
-> code getting copied from one driver to the next.
+On 21 January 2014 13:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 21 January 2014 12:56, Li, Zhuangzhi <zhuangzhi.li@intel.com> wrote:
+>> Thanks for reviewing.
 >
-> Cc: Kevin Hilman <khilman@deeprootsystems.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
->  drivers/cpufreq/omap-cpufreq.c    | 1 -
->  drivers/cpufreq/powernow-k8.c     | 1 -
->  drivers/cpufreq/s3c2412-cpufreq.c | 1 -
->  drivers/cpufreq/s3c2440-cpufreq.c | 1 -
->  drivers/cpufreq/spear-cpufreq.c   | 1 -
->  drivers/cpufreq/speedstep-lib.c   | 1 -
->  6 files changed, 6 deletions(-)
+> Its my job :)
+>
+>> Sorry for make you misunderstanding, on our x86 platform, we want all the CPUs share one policy by setting CPUFREQ_SHARED_TYPE_ALL, not share one HW clock line.
+>
+> I see.. Then probably your patch makes sense. But it is
+> obviously not required for every platform that exists today.
+>
+> Please update it to do it only for drivers that have set
+> CPUFREQ_SHARED_TYPE_ALL..
 
-We have discussed this in past where I pointed out this file is required
-by stuff like module_init, what happened to that query ?
+One more thing, who has set different frequencies to these cores?
+I hope kernel hasn't ?
+
+In that case, probably you are fixing a bootloader bug in kernel?
+What about doing this in bootloader then?
+
+--
+virehs
