@@ -1,100 +1,38 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH 1/3] pm/qos: allow state control of qos class
-Date: Tue, 21 Jan 2014 15:47:01 -0800
-Message-ID: <20140121154701.42af2efd@ultegra>
-References: <1385508011-26914-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<4530703.p5VZzXUXfQ@vostro.rjw.lan>
-	<20140121141042.63cb5040@ultegra>
-	<7329787.rQFSuIRyzO@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 68/73] drivers/cpufreq: delete non-required instances of <linux/init.h>
+Date: Wed, 22 Jan 2014 10:28:57 +0530
+Message-ID: <CAKohpo=oWrX2SF5GWYoGzC+cuZeOx_wappTFfOy9vCpBush+BQ@mail.gmail.com>
+References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
+	<1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:49986 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750820AbaAUXrU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 Jan 2014 18:47:20 -0500
-In-Reply-To: <7329787.rQFSuIRyzO@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1390339396-3479-69-git-send-email-paul.gortmaker@windriver.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, 22 Jan 2014 00:15:44 +0100
-"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+On 22 January 2014 02:53, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+> None of these files are actually using any __init type directives
+> and hence don't need to include <linux/init.h>.  Most are just a
+> left over from __devinit and __cpuinit removal, or simply due to
+> code getting copied from one driver to the next.
+>
+> Cc: Kevin Hilman <khilman@deeprootsystems.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: cpufreq@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> ---
+>  drivers/cpufreq/omap-cpufreq.c    | 1 -
+>  drivers/cpufreq/powernow-k8.c     | 1 -
+>  drivers/cpufreq/s3c2412-cpufreq.c | 1 -
+>  drivers/cpufreq/s3c2440-cpufreq.c | 1 -
+>  drivers/cpufreq/spear-cpufreq.c   | 1 -
+>  drivers/cpufreq/speedstep-lib.c   | 1 -
+>  6 files changed, 6 deletions(-)
 
-> On Tuesday, January 21, 2014 02:10:42 PM Jacob Pan wrote:
-> > On Thu, 16 Jan 2014 02:17:01 +0100
-> > "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
-> > 
-> > > On Wednesday, November 27, 2013 12:28:16 AM Rafael J. Wysocki
-> > > wrote:
-> > > > On 11/27/2013 12:20 AM, Jacob Pan wrote:
-> > > > > When power capping or thermal control is needed, CPU QOS
-> > > > > latency cannot be satisfied. This patch adds a state variable
-> > > > > to indicate whether a QOS class (including all constraint
-> > > > > requests) should be ignored.
-> > > > >
-> > > > > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > > > 
-> > > > Honestly, I don't like this.  I know the motivation and what
-> > > > you're trying to achieve, but I don't like the approach.
-> > > > 
-> > > > I need to think a bit more about that.
-> > > 
-> > > So the reason I don't like this patch is mainly because it affects
-> > > all of the users of struct pm_qos_constraints and
-> > > pm_qos_read_value(), which include device PM QoS among other
-> > > things, but it only really needs to affect PM_QOS_CPU_DMA_LATENCY.
-> > > 
-> > > I would add a special routine, say pm_qos_cpu_dma_latency(), for
-> > > reading the current effective PM_QOS_CPU_DMA_LATENCY constraint
-> > > and checking whether or not it should be ignored.  Then, I'd make
-> > > cpuidle use that.
-> > > 
-> > Agreed, it was a little too broad. I will send an updated patch
-> > soon.
-> > 
-> > Alternatively, can we add a special check for ignored system wide
-> > QOS class in:
-> > int pm_qos_request(int pm_qos_class)
-> > 
-> > i.e.
-> > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> > index 8dff9b4..9342da4 100644
-> > --- a/kernel/power/qos.c
-> > +++ b/kernel/power/qos.c
-> > @@ -286,10 +286,28 @@ bool pm_qos_update_flags(struct pm_qos_flags
-> > *pqf, */
-> >  int pm_qos_request(int pm_qos_class)
-> >  {
-> > -       return
-> > pm_qos_read_value(pm_qos_array[pm_qos_class]->constraints);
-> > +       struct pm_qos_constraints *c;
-> > +
-> > +       c = pm_qos_array[pm_qos_class]->constraints;
-> > +       if (c->state == PM_QOS_CONSTRAINT_IGNORED)
-> > +               return PM_QOS_DEFAULT_VALUE;
-> > +       return pm_qos_read_value(c);
-> > 
-> > 
-> > Then we don't have to add a special routine just for CPU_DMA_LATENCY
-> > class. It does not affect other system wide QOS classes unless the
-> > state is set to be ignored.
-> 
-> Yes, but then the check has to be done regardless which is slightly
-> inefficient and I'm not sure if we need/want a mechanism to set
-> "ignored" for all classes.
-> 
-> It actually is specific to CPU in practice, so I'd prefer to make it
-> specific in the code as well.
-Actually, the idle consolidation patches went into the tip tree do not
-include common idle loop, it was different than the earlier patch with
-play_idle() which causes idle injection to go through pm qos.
-
-There is no need for this patchset for now. acpi_pad and powerclamp
-driver still can pick their own target c-states.
-
-Thanks,
-
-Jacob
+We have discussed this in past where I pointed out this file is required
+by stuff like module_init, what happened to that query ?
