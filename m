@@ -1,192 +1,144 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states
- bindings
-Date: Wed, 22 Jan 2014 19:20:42 +0000
-Message-ID: <20140122192041.GA3709@e102568-lin.cambridge.arm.com>
-References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
- <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
+From: David Cohen <david.a.cohen@linux.intel.com>
+Subject: Re: [RFC/PATCH 1/3] pm: make PM macros more smart
+Date: Wed, 22 Jan 2014 13:21:29 -0800
+Message-ID: <20140122212128.GD25171@psi-dev26.jf.intel.com>
+References: <1386911905-2366-1-git-send-email-david.a.cohen@linux.intel.com>
+ <1386911905-2366-2-git-send-email-david.a.cohen@linux.intel.com>
+ <20131215175112.GA23298@Nokia-N900>
+ <20131215192508.GA10514@psi-dev26.jf.intel.com>
+ <20131220195527.GA25927@amd.pavel.ucw.cz>
+ <20131220202336.GB14693@psi-dev26.jf.intel.com>
+ <20140114224211.GA9834@psi-dev26.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:38165 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752358AbaAVTUu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2014 14:20:50 -0500
-In-Reply-To: <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:20208 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752960AbaAVVQT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 Jan 2014 16:16:19 -0500
 Content-Disposition: inline
+In-Reply-To: <20140114224211.GA9834@psi-dev26.jf.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, sarah.a.sharp@linux.intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, santosh.shilimkar@ti.com
 
-Hi Vincent,
-
-On Tue, Jan 21, 2014 at 11:16:46AM +0000, Vincent Guittot wrote:
-> Hi Lorenzo,
+On Tue, Jan 14, 2014 at 02:42:11PM -0800, David Cohen wrote:
+> On Fri, Dec 20, 2013 at 12:23:36PM -0800, David Cohen wrote:
+> > On Fri, Dec 20, 2013 at 08:55:27PM +0100, Pavel Machek wrote:
+> > > On Sun 2013-12-15 11:25:08, David Cohen wrote:
+> > > > On Sun, Dec 15, 2013 at 06:51:12PM +0100, Pavel Machek wrote:
+> > > > > On Thu 2013-12-12 21:18:23, David Cohen wrote:
+> > > > > > This patch makes SET_SYSTEM_SLEEP_PM_OPS() and SET_RUNTIME_PM_OPS() more
+> > > > > > smart.
+> > > > > > 
+> > > > > > Despite those macros check for '#ifdef CONFIG_PM_SLEEP/RUNTIME' to avoid
+> > > > > > setting the callbacks when such #ifdef's aren't defined, they don't
+> > > > > > handle compiler to avoid messages like that:
+> > > > > > 
+> > > > > > drivers/usb/host/xhci-plat.c:200:12: warning: ???xhci_plat_suspend??? defined but not used [-Wunused-function]
+> > > > > > drivers/usb/host/xhci-plat.c:208:12: warning: ???xhci_plat_resume??? defined but not used [-Wunused-function]
+> > > > > > 
+> > > > > > As result, those macros get rid of #ifdef's when setting callbacks but
+> > > > > > not when implementing them.
+> > > > > > 
+> > > > > > With this patch, drivers using SET_*_PM_OPS() macros don't need to #ifdef
+> > > > > > the callbacks implementation as well.
+> > > > > 
+> > > > > Well... Interesting trickery, but it means that resulting kernel
+> > > > > will be bigge due to the dead functions no?
+> > > > 
+> > > > Actually, it doesn't get bigger. Before sending the patch I did this
+> > > > dummy test app:
+> > > > 
+> > > > --------------------------------------------------------------------------------
+> > > > #include <stdio.h>
+> > > > 
+> > > > #define USE_IT_OR_LOOSE_IT(fn)  ((void *)((unsigned long)(fn) - (unsigned long)(fn)))
+> > > > 
+> > > > #ifdef MAKE_ME_NULL
+> > > > static int func1(int a)
+> > > > {
+> > > >         printf("Hey!!\n");
+> > > >         return 0;
+> > > > }
+> > > > #endif
+> > > 
+> > > I thought that point of this patch series was getting rid of the
+> > > #ifdefs around the function...? Now I'm confused.
+> > 
+> > Maybe you're misinterpreting the test :)
+> > 
+> > This #ifdef is used to make this same test code to replicate both
+> > scenarios according to -DMAKE_ME_NULL (just pay attention to actual
+> > resulting code after #ifdef's are tested. the #ifdef here is nor related
+> > to actual #ifdef on kernel). Here are both scenarios:
+> > 
+> > (1) Not using my trickery (which needs the function to not be present).
+> > (2) Using my trickery (which needs to function to stay).
+> > 
+> > With -DMAKE_ME_NULL we replicate (2), then the function *is* there but
+> > gcc gets rid of it on resulting binary without warnings if used with -O2.
+> > 
+> > Without -DMAKE_ME_NULL we replicate (1). The #ifdef will fail and then
+> > remove the function which is an obvious scenario the function won't be
+> > part of resulting binary.
+> > 
+> > If we use -S option to have human readable resulting assembly code
+> > (which is kind of 1:1 for resulting binary), we can compare the result
+> > of (1) and (2) and check they are pretty similar.
+> > This proves gcc behaves as expected with my patch: do not need #ifdef
+> > and do not generate dead codes to resulting binary.
+> > 
+> > > 
+> > > > struct global_data {
+> > > >         int (*func)(int);
+> > > > };
+> > > > 
+> > > > static struct global_data gd = {
+> > > > #ifdef MAKE_ME_NULL
+> > > >         .func = USE_IT_OR_LOOSE_IT(func1),
+> > > 
+> > > If you have ifdef around the function, why do you need magic here? Why
+> > > not
+> > 
+> > This #ifdef is necessary to prevent the function to be used when it
+> > doesn't exist due to above #ifdef. But once again: don't misinterpret
+> > the #ifdefs in this test app with the ones in kernel. They are not
+> > related at all. If it's still confusing you just make 2 test apps
+> > without #ifdeds out of this one where one keeps the code inside #ifdefs
+> > and the other doesn't.
+> > 
+> > > 
+> > > 	.func = func1
+> > > 
+> > > ?
+> > > 
+> > > Basically the warning tells you that you want the ifdef around the
+> > > function, too... (Otherwise you waste space). That seems like good
+> > > warning.
+> > 
+> > Just check my first explanation.
 > 
-> On 20 January 2014 18:47, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> > ARM based platforms implement a variety of power management schemes that
-> > allow processors to enter at run-time low-power states, aka C-states
-> > in ACPI jargon. The parameters defining these C-states vary on a per-platform
-> > basis forcing the OS to hardcode the state parameters in platform
-> > specific static tables whose size grows as the number of platforms supported
-> > in the kernel increases and hampers device drivers standardization.
-> >
-> > Therefore, this patch aims at standardizing C-state device tree bindings for
-> > ARM platforms. Bindings define C-state parameters inclusive of entry methods
-> > and state latencies, to allow operating systems to retrieve the
-> > configuration entries from the device tree and initialize the related
-> > power management drivers, paving the way for common code in the kernel
-> > to deal with power states and removing the need for static data in current
-> > and previous kernel versions.
-> >
-> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > ---
-> >  Documentation/devicetree/bindings/arm/c-states.txt | 774 +++++++++++++++++++++
-> >  Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
-> >  2 files changed, 784 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/arm/c-states.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/arm/c-states.txt b/Documentation/devicetree/bindings/arm/c-states.txt
-> > new file mode 100644
-> > index 0000000..0b5617b
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/arm/c-states.txt
-> > @@ -0,0 +1,774 @@
-> > +==========================================
-> > +ARM C-states binding description
-> > +==========================================
-> > +
-> > +==========================================
-> > +1 - Introduction
-> > +==========================================
-> > +
-> > +ARM systems contain HW capable of managing power consumption dynamically,
-> > +where cores can be put in different low-power states (ranging from simple
-> > +wfi to power gating) according to OSPM policies. Borrowing concepts
-> > +from the ACPI specification[1], the CPU states representing the range of
-> > +dynamic states that a processor can enter at run-time, aka C-state, can be
-> > +specified through device tree bindings representing the parameters required to
-> > +enter/exit specific C-states on a given processor.
-> > +
-> > +The state an ARM CPU can be put into is loosely identified by one of the
-> > +following operating modes:
-> > +
-> > +- Running:
-> > +        # Processor core is executing instructions
-> > +
-> > +- Wait for Interrupt:
-> > +       # An ARM processor enters wait for interrupt (WFI) low power
-> > +         state by executing a wfi instruction. When a processor enters
-> > +         wfi state it disables most of the clocks while keeping the processor
-> > +         powered up. This state is standard on all ARM processors and it is
-> > +         defined as C1 in the remainder of this document.
-> > +
+> Ping :)
 > 
-> > +- Dormant:
-> > +       # Dormant mode is entered by executing wfi instructions and by sending
-> > +         platform specific commands to the platform power controller (coupled
-> > +         with processor specific SW/HW control sequences).
-> > +         In dormant mode, most of the processor control and debug logic is
-> > +         powered up but cache RAM can be put in retention state, providing
+> Comments here?
+
+I found few problems to be fixed prior to be possible this optimization.
+
+Many drivers are calling SET_*_PM_OPS() functions and passing
+non-defined symbols as argument. It's not triggering compilation issue
+currently because the drivers synchronize when the symbols are not
+defined with SET_*_PM_OPS() not using them. But IMHO it's a violation of
+scopes: all drivers calling SET_*_PM_OPS() should give valid symbols,
+since it creates an unwanted cross-dependence between those PM functions
+and their users (why SET_*_PM_OPS() can't use symbols given to them as
+argument?).
+
+I can work on fixing SET_*_PM_OPS() users beforehand in case my proposal
+here is accepted.
+
+Br, David Cohen
+
 > 
-> Base on your description, it's not clear for me what is on, what is
-> lost and what is power down ?
-> My understand of the dormant mode that you described above is : the
-> cache is preserved (and especially the cache RAM) but the processor
-> state is lost (registers ...). Do I understand correctly ?
-> 
-> What about retention mode where the contents of processor and cache
-> are preserved but the power consumption is reduced ? it can be seen as
-> a special wfi mode which need specific SW/HW control sequences but i'm
-> not sure to understand how to describe such state with your proposal.
-
-I had an idea. To simplify things, I think that one possibility is to
-add a parameter to the power domain specifier (platform specific, see
-Tomasz bindings):
-
-Documentation/devicetree/bindings/power/power_domain.txt
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-January/224928.html
-
-to represent, when that state is entered the behavior of the power
-controller (ie cache RAM retention or cache shutdown or in general any
-substate within a power domain). Since it is platform specific, and since
-we are able to link caches to the power domain, the power controller will
-actually define what happens to the cache when that state is entered
-(basically we use the power domain specifier additional parameter to define
-a "substate" in that power domain e.g.:
-
-Example:
-
-foo_power_controller {
-	[...]
-	/*
-	 * first cell is register index, second one is the state index
-	 * that in turn implies the state behavior - eg cache lost or
-	 * retained
-	 */
-	#power-domain-cells = <2>;
-};
-
-l1-cache {
-	[...]
-	/*
-	 * syntax: power-domains = list of power domain specifiers
-		<[&power_domain_phandle register-index state],[&power_domain_phandle register-index state]>;
-		The syntax is defined by the power controller du jour
-		as described by Tomasz bindings
-	*/
-	power-domains =<&foo_power_controller 0 0 &foo_power_controller 0 1>;
-
-}:
-
-and then
-
-state0 {
-	index = <2>;
-	compatible = "arm,cpu-power-state";
-	latency = <...>;
-	/*
-	 * This means that when the state is entered, the power
-	 * controller should use register index 0 and state 0,
-	 * whose meaning is power controller specific. Since we
-	 * know all components affected (for every component
-	 * we declare its power domain(s) and states so we
-	 * know what components are affected by the state entry.
-	 * Given the cache node above and this phandle, the state
-	 * implies that the cache is retained, register index == 0 state == 0
-	 /*
-	power-domain =<&foo_power_controller 0 0>;
-};
-
-state1 {
-	index = <3>;
-	compatible = "arm,cpu-power-state";
-	latency = <...>;
-	/*
-	 * This means that when the state is entered, the power
-	 * controller should use register index 0 and state 1,
-	 * whose meaning is power controller specific. Since we
-	 * know all components affected (for every component
-	 * we declare its power domain(s) and states so we
-	 * know what components are affected by the state entry.
-	 * Given the cache node above and this phandle, the state
-	 * implies that the cache is lost, register index == 0 state == 1
-	 /*
-	power-domain =<&foo_power_controller 0 1>;
-};
-
-It is complex but it is probably the cleanest way. And it leaves complexity
-to power controller implementations (if managed in the kernel....), which
-actually makes sense because it is up to power controller to define the
-behavior of certain states.
-
-All in all it is just an idea, feel free to scotch it, it is complex but
-we have to sort it out, one way or another.
-
-Vincent, Tomasz, anyone, thoughts ?
-Lorenzo
-
+> Br, David Cohen
