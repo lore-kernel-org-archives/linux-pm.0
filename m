@@ -1,144 +1,142 @@
-From: David Cohen <david.a.cohen@linux.intel.com>
-Subject: Re: [RFC/PATCH 1/3] pm: make PM macros more smart
-Date: Wed, 22 Jan 2014 13:21:29 -0800
-Message-ID: <20140122212128.GD25171@psi-dev26.jf.intel.com>
-References: <1386911905-2366-1-git-send-email-david.a.cohen@linux.intel.com>
- <1386911905-2366-2-git-send-email-david.a.cohen@linux.intel.com>
- <20131215175112.GA23298@Nokia-N900>
- <20131215192508.GA10514@psi-dev26.jf.intel.com>
- <20131220195527.GA25927@amd.pavel.ucw.cz>
- <20131220202336.GB14693@psi-dev26.jf.intel.com>
- <20140114224211.GA9834@psi-dev26.jf.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH RFC 04/10] base: power: Add generic OF-based power
+ domain look-up
+Date: Wed, 22 Jan 2014 16:18:02 -0800
+Message-ID: <20140123001802.GF13785@codeaurora.org>
+References: <1389469372-17199-1-git-send-email-tomasz.figa@gmail.com>
+ <1389469372-17199-5-git-send-email-tomasz.figa@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:20208 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752960AbaAVVQT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jan 2014 16:16:19 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140114224211.GA9834@psi-dev26.jf.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1389469372-17199-5-git-send-email-tomasz.figa@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Pavel Machek <pavel@ucw.cz>, Kumar Gala <galak@codeaurora.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, sarah.a.sharp@linux.intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, santosh.shilimkar@ti.com
 
-On Tue, Jan 14, 2014 at 02:42:11PM -0800, David Cohen wrote:
-> On Fri, Dec 20, 2013 at 12:23:36PM -0800, David Cohen wrote:
-> > On Fri, Dec 20, 2013 at 08:55:27PM +0100, Pavel Machek wrote:
-> > > On Sun 2013-12-15 11:25:08, David Cohen wrote:
-> > > > On Sun, Dec 15, 2013 at 06:51:12PM +0100, Pavel Machek wrote:
-> > > > > On Thu 2013-12-12 21:18:23, David Cohen wrote:
-> > > > > > This patch makes SET_SYSTEM_SLEEP_PM_OPS() and SET_RUNTIME_PM_OPS() more
-> > > > > > smart.
-> > > > > > 
-> > > > > > Despite those macros check for '#ifdef CONFIG_PM_SLEEP/RUNTIME' to avoid
-> > > > > > setting the callbacks when such #ifdef's aren't defined, they don't
-> > > > > > handle compiler to avoid messages like that:
-> > > > > > 
-> > > > > > drivers/usb/host/xhci-plat.c:200:12: warning: ???xhci_plat_suspend??? defined but not used [-Wunused-function]
-> > > > > > drivers/usb/host/xhci-plat.c:208:12: warning: ???xhci_plat_resume??? defined but not used [-Wunused-function]
-> > > > > > 
-> > > > > > As result, those macros get rid of #ifdef's when setting callbacks but
-> > > > > > not when implementing them.
-> > > > > > 
-> > > > > > With this patch, drivers using SET_*_PM_OPS() macros don't need to #ifdef
-> > > > > > the callbacks implementation as well.
-> > > > > 
-> > > > > Well... Interesting trickery, but it means that resulting kernel
-> > > > > will be bigge due to the dead functions no?
-> > > > 
-> > > > Actually, it doesn't get bigger. Before sending the patch I did this
-> > > > dummy test app:
-> > > > 
-> > > > --------------------------------------------------------------------------------
-> > > > #include <stdio.h>
-> > > > 
-> > > > #define USE_IT_OR_LOOSE_IT(fn)  ((void *)((unsigned long)(fn) - (unsigned long)(fn)))
-> > > > 
-> > > > #ifdef MAKE_ME_NULL
-> > > > static int func1(int a)
-> > > > {
-> > > >         printf("Hey!!\n");
-> > > >         return 0;
-> > > > }
-> > > > #endif
-> > > 
-> > > I thought that point of this patch series was getting rid of the
-> > > #ifdefs around the function...? Now I'm confused.
-> > 
-> > Maybe you're misinterpreting the test :)
-> > 
-> > This #ifdef is used to make this same test code to replicate both
-> > scenarios according to -DMAKE_ME_NULL (just pay attention to actual
-> > resulting code after #ifdef's are tested. the #ifdef here is nor related
-> > to actual #ifdef on kernel). Here are both scenarios:
-> > 
-> > (1) Not using my trickery (which needs the function to not be present).
-> > (2) Using my trickery (which needs to function to stay).
-> > 
-> > With -DMAKE_ME_NULL we replicate (2), then the function *is* there but
-> > gcc gets rid of it on resulting binary without warnings if used with -O2.
-> > 
-> > Without -DMAKE_ME_NULL we replicate (1). The #ifdef will fail and then
-> > remove the function which is an obvious scenario the function won't be
-> > part of resulting binary.
-> > 
-> > If we use -S option to have human readable resulting assembly code
-> > (which is kind of 1:1 for resulting binary), we can compare the result
-> > of (1) and (2) and check they are pretty similar.
-> > This proves gcc behaves as expected with my patch: do not need #ifdef
-> > and do not generate dead codes to resulting binary.
-> > 
-> > > 
-> > > > struct global_data {
-> > > >         int (*func)(int);
-> > > > };
-> > > > 
-> > > > static struct global_data gd = {
-> > > > #ifdef MAKE_ME_NULL
-> > > >         .func = USE_IT_OR_LOOSE_IT(func1),
-> > > 
-> > > If you have ifdef around the function, why do you need magic here? Why
-> > > not
-> > 
-> > This #ifdef is necessary to prevent the function to be used when it
-> > doesn't exist due to above #ifdef. But once again: don't misinterpret
-> > the #ifdefs in this test app with the ones in kernel. They are not
-> > related at all. If it's still confusing you just make 2 test apps
-> > without #ifdeds out of this one where one keeps the code inside #ifdefs
-> > and the other doesn't.
-> > 
-> > > 
-> > > 	.func = func1
-> > > 
-> > > ?
-> > > 
-> > > Basically the warning tells you that you want the ifdef around the
-> > > function, too... (Otherwise you waste space). That seems like good
-> > > warning.
-> > 
-> > Just check my first explanation.
-> 
-> Ping :)
-> 
-> Comments here?
+On 01/11, Tomasz Figa wrote:
+> +
+> +/**
+> + * of_genpd_lock() - Lock access to of_genpd_providers list
+> + */
+> +static void of_genpd_lock(void)
+> +{
+> +	mutex_lock(&of_genpd_mutex);
+> +}
+> +
+> +/**
+> + * of_genpd_unlock() - Unlock access to of_genpd_providers list
+> + */
+> +static void of_genpd_unlock(void)
+> +{
+> +	mutex_unlock(&of_genpd_mutex);
+> +}
 
-I found few problems to be fixed prior to be possible this optimization.
+Why do we need these functions? Can't we just call
+mutex_lock/unlock directly?
 
-Many drivers are calling SET_*_PM_OPS() functions and passing
-non-defined symbols as argument. It's not triggering compilation issue
-currently because the drivers synchronize when the symbols are not
-defined with SET_*_PM_OPS() not using them. But IMHO it's a violation of
-scopes: all drivers calling SET_*_PM_OPS() should give valid symbols,
-since it creates an unwanted cross-dependence between those PM functions
-and their users (why SET_*_PM_OPS() can't use symbols given to them as
-argument?).
+> +
+> +/**
+> + * of_genpd_add_provider() - Register a domain provider for a node
+> + * @np: Device node pointer associated with domain provider
+> + * @genpd_src_get: callback for decoding domain
+> + * @data: context pointer for @genpd_src_get callback.
 
-I can work on fixing SET_*_PM_OPS() users beforehand in case my proposal
-here is accepted.
+These look a little outdated.
 
-Br, David Cohen
+> + */
+> +int of_genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
+> +			  void *data)
+> +{
+> +	struct of_genpd_provider *cp;
+> +
+> +	cp = kzalloc(sizeof(struct of_genpd_provider), GFP_KERNEL);
 
-> 
-> Br, David Cohen
+Please use sizeof(*cp) instead.
+
+> +	if (!cp)
+> +		return -ENOMEM;
+> +
+> +	cp->node = of_node_get(np);
+> +	cp->data = data;
+> +	cp->xlate = xlate;
+> +
+> +	of_genpd_lock();
+> +	list_add(&cp->link, &of_genpd_providers);
+> +	of_genpd_unlock();
+> +	pr_debug("Added domain provider from %s\n", np->full_name);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_add_provider);
+> +
+[...]
+> +
+> +/* See of_genpd_get_from_provider(). */
+> +static struct generic_pm_domain *__of_genpd_get_from_provider(
+> +					struct of_phandle_args *genpdspec)
+> +{
+> +	struct of_genpd_provider *provider;
+> +	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
+
+Can this be -EPROBE_DEFER so that we can defer probe until a
+later time if the power domain provider hasn't registered yet?
+
+> +
+> +	/* Check if we have such a provider in our array */
+> +	list_for_each_entry(provider, &of_genpd_providers, link) {
+> +		if (provider->node == genpdspec->np)
+> +			genpd = provider->xlate(genpdspec, provider->data);
+> +		if (!IS_ERR(genpd))
+> +			break;
+> +	}
+> +
+> +	return genpd;
+> +}
+> +
+[...]
+> +static int of_genpd_notifier_call(struct notifier_block *nb,
+> +				  unsigned long event, void *data)
+> +{
+> +	struct device *dev = data;
+> +	int ret;
+> +
+> +	if (!dev->of_node)
+> +		return NOTIFY_DONE;
+> +
+> +	switch (event) {
+> +	case BUS_NOTIFY_BIND_DRIVER:
+> +		ret = of_genpd_add_to_domain(dev);
+> +		break;
+> +
+> +	case BUS_NOTIFY_UNBOUND_DRIVER:
+> +		ret = of_genpd_del_from_domain(dev);
+> +		break;
+> +
+> +	default:
+> +		return NOTIFY_DONE;
+> +	}
+> +
+> +	return notifier_from_errno(ret);
+> +}
+> +
+> +static struct notifier_block of_genpd_notifier_block = {
+> +	.notifier_call = of_genpd_notifier_call,
+> +};
+> +
+> +static int of_genpd_init(void)
+> +{
+> +	return bus_register_notifier(&platform_bus_type,
+> +					&of_genpd_notifier_block);
+> +}
+> +core_initcall(of_genpd_init);
+
+Would it be possible to call the of_genpd_add_to_domain() and
+of_genpd_del_from_domain() functions directly in the driver core,
+similar to how the pinctrl framework has a hook in there? That
+way we're not relying on any initcall ordering for this.
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
