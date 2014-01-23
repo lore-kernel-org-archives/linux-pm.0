@@ -1,134 +1,128 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH v2 6/6] PM / QoS: Add type to dev_pm_qos_add_ancestor_request() arguments
-Date: Thu, 23 Jan 2014 14:40:27 +0100
-Message-ID: <1440212.NuPsDCRgku@vostro.rjw.lan>
+Subject: [RFC/RFT][PATCH v2 4/6] ACPI / scan: Add bind/unbind callbacks to struct acpi_scan_handler
+Date: Thu, 23 Jan 2014 14:38:51 +0100
+Message-ID: <1549819.oukD9g3sD7@vostro.rjw.lan>
 References: <5434847.aCyiWHNRe7@vostro.rjw.lan> <1447517.8AFrWcAgld@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1447517.8AFrWcAgld@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Rework dev_pm_qos_add_ancestor_request() so that device PM QoS type
-is passed to it as the third argument and make it support the
-DEV_PM_QOS_LATENCY_TOLERANCE device PM QoS type (in addition to
-DEV_PM_QOS_RESUME_LATENCY).
+In some cases it may be necessary to perform certain setup/cleanup
+operations on a device object representing a physical device after
+it has been associated with an ACPI companion by acpi_bind_one() or
+before disassociating it from that companion by acpi_unbind_one(),
+respectively.  If there is a struct acpi_bus_type object for the
+given device's bus type, the .setup()/.cleanup() callbacks from there
+are executed for these purposes.  However, an analogous mechanism will
+be necessary for devices whose bus types don't have corresponding
+struct acpi_bus_type objects and that have specific ACPI scan handlers.
 
-That will allow the drivers of devices without latency tolerance
-hardware support to use their ancestors having it as proxies for
-their latency tolerance requirements.
+For those devices, add new .bind() and .unbind() callbacks to struct
+acpi_scan_handler that will be executed by acpi_platform_notify()
+right after the given device has been associated with an ACPI
+comapnion and by acpi_platform_notify_remove() right before calling
+acpi_unbind_one() for that device, respectively.
+
+To make that work for scan handlers registering new devices in their
+.attach() callbacks, modify acpi_scan_attach_handler() to set the
+ACPI device object's handler field before calling .attach() from the
+scan handler at hand.
+
+This changeset includes a fix from Mika Westerberg.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Documentation/power/pm_qos_interface.txt |    6 ++++--
- drivers/base/power/qos.c                 |   22 +++++++++++++++++-----
- drivers/input/touchscreen/st1232.c       |    3 ++-
- include/linux/pm_qos.h                   |    7 +++++--
- 4 files changed, 28 insertions(+), 10 deletions(-)
+ drivers/acpi/glue.c     |   12 ++++++++++++
+ drivers/acpi/scan.c     |    9 +++++----
+ include/acpi/acpi_bus.h |    2 ++
+ 3 files changed, 19 insertions(+), 4 deletions(-)
 
-Index: linux-pm/include/linux/pm_qos.h
+Index: linux-pm/drivers/acpi/glue.c
 ===================================================================
---- linux-pm.orig/include/linux/pm_qos.h
-+++ linux-pm/include/linux/pm_qos.h
-@@ -148,7 +148,8 @@ int dev_pm_qos_remove_global_notifier(st
- void dev_pm_qos_constraints_init(struct device *dev);
- void dev_pm_qos_constraints_destroy(struct device *dev);
- int dev_pm_qos_add_ancestor_request(struct device *dev,
--				    struct dev_pm_qos_request *req, s32 value);
-+				    struct dev_pm_qos_request *req,
-+				    enum dev_pm_qos_req_type type, s32 value);
- #else
- static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
- 							  s32 mask)
-@@ -191,7 +192,9 @@ static inline void dev_pm_qos_constraint
- 	dev->power.power_state = PMSG_INVALID;
- }
- static inline int dev_pm_qos_add_ancestor_request(struct device *dev,
--				    struct dev_pm_qos_request *req, s32 value)
-+						  struct dev_pm_qos_request *req,
-+						  enum dev_pm_qos_req_type type,
-+						  s32 value)
- 			{ return 0; }
- #endif
- 
-Index: linux-pm/drivers/base/power/qos.c
-===================================================================
---- linux-pm.orig/drivers/base/power/qos.c
-+++ linux-pm/drivers/base/power/qos.c
-@@ -565,20 +565,32 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_glob
-  * dev_pm_qos_add_ancestor_request - Add PM QoS request for device's ancestor.
-  * @dev: Device whose ancestor to add the request for.
-  * @req: Pointer to the preallocated handle.
-+ * @type: Type of the request.
-  * @value: Constraint latency value.
-  */
- int dev_pm_qos_add_ancestor_request(struct device *dev,
--				    struct dev_pm_qos_request *req, s32 value)
-+				    struct dev_pm_qos_request *req,
-+				    enum dev_pm_qos_req_type type, s32 value)
+--- linux-pm.orig/drivers/acpi/glue.c
++++ linux-pm/drivers/acpi/glue.c
+@@ -287,6 +287,7 @@ EXPORT_SYMBOL_GPL(acpi_unbind_one);
+ static int acpi_platform_notify(struct device *dev)
  {
- 	struct device *ancestor = dev->parent;
- 	int ret = -ENODEV;
+ 	struct acpi_bus_type *type = acpi_get_bus_type(dev);
++	struct acpi_device *adev;
+ 	int ret;
  
--	while (ancestor && !ancestor->power.ignore_children)
--		ancestor = ancestor->parent;
-+	switch (type) {
-+	case DEV_PM_QOS_RESUME_LATENCY:
-+		while (ancestor && !ancestor->power.ignore_children)
-+			ancestor = ancestor->parent;
- 
-+		break;
-+	case DEV_PM_QOS_LATENCY_TOLERANCE:
-+		while (ancestor && !ancestor->power.set_latency_tolerance)
-+			ancestor = ancestor->parent;
-+
-+		break;
-+	default:
-+		ancestor = NULL;
-+	}
- 	if (ancestor)
--		ret = dev_pm_qos_add_request(ancestor, req,
--					     DEV_PM_QOS_RESUME_LATENCY, value);
-+		ret = dev_pm_qos_add_request(ancestor, req, type, value);
- 
- 	if (ret < 0)
- 		req->dev = NULL;
-Index: linux-pm/Documentation/power/pm_qos_interface.txt
-===================================================================
---- linux-pm.orig/Documentation/power/pm_qos_interface.txt
-+++ linux-pm/Documentation/power/pm_qos_interface.txt
-@@ -134,9 +134,11 @@ The meaning of the return values is as f
- 	PM_QOS_FLAGS_UNDEFINED: The device's PM QoS structure has not been
- 			initialized or the list of requests is empty.
- 
--int dev_pm_qos_add_ancestor_request(dev, handle, value)
-+int dev_pm_qos_add_ancestor_request(dev, handle, type, value)
- Add a PM QoS request for the first direct ancestor of the given device whose
--power.ignore_children flag is unset.
-+power.ignore_children flag is unset (for DEV_PM_QOS_RESUME_LATENCY requests)
-+or whose power.set_latency_tolerance callback pointer is not NULL (for
-+DEV_PM_QOS_LATENCY_TOLERANCE requests).
- 
- int dev_pm_qos_expose_latency_limit(device, value)
- Add a request to the device's PM QoS list of resume latency constraints and
-Index: linux-pm/drivers/input/touchscreen/st1232.c
-===================================================================
---- linux-pm.orig/drivers/input/touchscreen/st1232.c
-+++ linux-pm/drivers/input/touchscreen/st1232.c
-@@ -134,7 +134,8 @@ static irqreturn_t st1232_ts_irq_handler
- 	} else if (!ts->low_latency_req.dev) {
- 		/* First contact, request 100 us latency. */
- 		dev_pm_qos_add_ancestor_request(&ts->client->dev,
--						&ts->low_latency_req, 100);
-+						&ts->low_latency_req,
-+						DEV_PM_QOS_RESUME_LATENCY, 100);
+ 	ret = acpi_bind_one(dev, NULL);
+@@ -303,9 +304,14 @@ static int acpi_platform_notify(struct d
+ 		if (ret)
+ 			goto out;
  	}
++	adev = ACPI_COMPANION(dev);
++	if (!adev)
++		goto out;
  
- 	/* SYN_REPORT */
-
+ 	if (type && type->setup)
+ 		type->setup(dev);
++	else if (adev->handler && adev->handler->bind)
++		adev->handler->bind(dev);
+ 
+  out:
+ #if ACPI_GLUE_DEBUG
+@@ -324,11 +330,17 @@ static int acpi_platform_notify(struct d
+ 
+ static int acpi_platform_notify_remove(struct device *dev)
+ {
++	struct acpi_device *adev = ACPI_COMPANION(dev);
+ 	struct acpi_bus_type *type;
+ 
++	if (!adev)
++		return 0;
++
+ 	type = acpi_get_bus_type(dev);
+ 	if (type && type->cleanup)
+ 		type->cleanup(dev);
++	else if (adev->handler && adev->handler->unbind)
++		adev->handler->unbind(dev);
+ 
+ 	acpi_unbind_one(dev);
+ 	return 0;
+Index: linux-pm/include/acpi/acpi_bus.h
+===================================================================
+--- linux-pm.orig/include/acpi/acpi_bus.h
++++ linux-pm/include/acpi/acpi_bus.h
+@@ -133,6 +133,8 @@ struct acpi_scan_handler {
+ 	struct list_head list_node;
+ 	int (*attach)(struct acpi_device *dev, const struct acpi_device_id *id);
+ 	void (*detach)(struct acpi_device *dev);
++	void (*bind)(struct device *phys_dev);
++	void (*unbind)(struct device *phys_dev);
+ 	struct acpi_hotplug_profile hotplug;
+ };
+ 
+Index: linux-pm/drivers/acpi/scan.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/scan.c
++++ linux-pm/drivers/acpi/scan.c
+@@ -1952,13 +1952,14 @@ static int acpi_scan_attach_handler(stru
+ 
+ 		handler = acpi_scan_match_handler(hwid->id, &devid);
+ 		if (handler) {
++			device->handler = handler;
+ 			ret = handler->attach(device, devid);
+-			if (ret > 0) {
+-				device->handler = handler;
++			if (ret > 0)
+ 				break;
+-			} else if (ret < 0) {
++
++			device->handler = NULL;
++			if (ret < 0)
+ 				break;
+-			}
+ 		}
+ 	}
+ 	return ret;
