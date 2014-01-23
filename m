@@ -1,46 +1,152 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: Re: [PATCH 1/1] PM / devfreq: Disable Exynos4 driver build on multiplatform
-Date: Thu, 23 Jan 2014 17:19:47 +0530
-Message-ID: <CAK9yfHzEf8zNamx7rQQsVSJcnrzpmsg6MoGWZKqs8mGCDfTUYg@mail.gmail.com>
-References: <20964708.133421390477693450.JavaMail.weblogic@epml17>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC/RFT][PATCH v2 5/6] ACPI / LPSS: Support for device latency tolerance PM QoS
+Date: Thu, 23 Jan 2014 14:39:40 +0100
+Message-ID: <4404835.S7CcAgDRpP@vostro.rjw.lan>
+References: <5434847.aCyiWHNRe7@vostro.rjw.lan> <1447517.8AFrWcAgld@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:38778 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbaAWLts (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jan 2014 06:49:48 -0500
-Received: by mail-ob0-f171.google.com with SMTP id wp4so1877444obc.2
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jan 2014 03:49:48 -0800 (PST)
-In-Reply-To: <20964708.133421390477693450.JavaMail.weblogic@epml17>
+Received: from v094114.home.net.pl ([79.96.170.134]:51525 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753747AbaAWN1V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jan 2014 08:27:21 -0500
+In-Reply-To: <1447517.8AFrWcAgld@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On 23 January 2014 17:18, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> On 23 January 2014 16:42, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> >> Exynos4 devfreq driver uses mach/map.h which is not available on
->> >> multiplatform. Hence disable build on multiplatform for now.
->> >> Without this patch we get the following build errors:
->> >> drivers/devfreq/exynos/exynos4_bus.h:15:22: fatal error: mach/map.h: No such file or directory
->> >>
->> >> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> >
->> > Isn't this also required to be sent to linux-stable?
->>
->> No. This will be needed in the upcoming cycle onwards.
->>
->> >
->> > Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
->>
->> Wouldn't you be queueing this in your tree?
->
-> yes, it's merged and in the tree as well. (will rebase before sending pull request)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK. Thanks.
+Add a new routine, acpi_lpss_set_ltr(), for setting latency tolerance
+values for LPSS devices having LTR (Latency Tolerance Reporting)
+registers.  Add .bind()/.unbind() callbacks to lpss_handler to set
+the LPSS devices' power.set_latency_tolerance callback pointers to
+acpi_lpss_set_ltr() during device addition and to clear them on
+device removal, respectively.
 
+That will cause the device latency tolerance PM QoS to work for
+the devices in question as documented.
 
--- 
-With warm regards,
-Sachin
+This changeset includes a fix from Mika Westerberg.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/acpi_lpss.c |   71 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 70 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/acpi/acpi_lpss.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/acpi_lpss.c
++++ linux-pm/drivers/acpi/acpi_lpss.c
+@@ -33,6 +33,12 @@ ACPI_MODULE_NAME("acpi_lpss");
+ #define LPSS_GENERAL_UART_RTS_OVRD	BIT(3)
+ #define LPSS_SW_LTR			0x10
+ #define LPSS_AUTO_LTR			0x14
++#define LPSS_LTR_SNOOP_REQ		BIT(15)
++#define LPSS_LTR_SNOOP_MASK		0x0000FFFF
++#define LPSS_LTR_SNOOP_LAT_1US		0x800
++#define LPSS_LTR_SNOOP_LAT_32US		0xC00
++#define LPSS_LTR_SNOOP_LAT_SHIFT	5
++#define LPSS_LTR_MAX_VAL		0x3FF
+ #define LPSS_TX_INT			0x20
+ #define LPSS_TX_INT_MASK		BIT(1)
+ 
+@@ -316,6 +322,17 @@ static int acpi_lpss_create_device(struc
+ 	return ret;
+ }
+ 
++static u32 __lpss_reg_read(struct lpss_private_data *pdata, unsigned int reg)
++{
++	return readl(pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
++}
++
++static void __lpss_reg_write(u32 val, struct lpss_private_data *pdata,
++			     unsigned int reg)
++{
++	writel(val, pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
++}
++
+ static int lpss_reg_read(struct device *dev, unsigned int reg, u32 *val)
+ {
+ 	struct acpi_device *adev;
+@@ -337,7 +354,7 @@ static int lpss_reg_read(struct device *
+ 		ret = -ENODEV;
+ 		goto out;
+ 	}
+-	*val = readl(pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
++	*val = __lpss_reg_read(pdata, reg);
+ 
+  out:
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+@@ -390,6 +407,38 @@ static struct attribute_group lpss_attr_
+ 	.name = "lpss_ltr",
+ };
+ 
++static void acpi_lpss_set_ltr(struct device *dev, s32 val)
++{
++	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
++	u32 ltr_mode, ltr_val;
++
++	ltr_mode = __lpss_reg_read(pdata, LPSS_GENERAL);
++	if (val < 0) {
++		if (ltr_mode & LPSS_GENERAL_LTR_MODE_SW) {
++			ltr_mode &= ~LPSS_GENERAL_LTR_MODE_SW;
++			__lpss_reg_write(ltr_mode, pdata, LPSS_GENERAL);
++		}
++		return;
++	}
++	ltr_val = __lpss_reg_read(pdata, LPSS_SW_LTR) & ~LPSS_LTR_SNOOP_MASK;
++	if (val > LPSS_LTR_MAX_VAL) {
++		ltr_val |= LPSS_LTR_SNOOP_LAT_32US | LPSS_LTR_SNOOP_REQ;
++		val >>= LPSS_LTR_SNOOP_LAT_SHIFT;
++		if (val > LPSS_LTR_MAX_VAL)
++			val = LPSS_LTR_MAX_VAL;
++	} else {
++		ltr_val |= LPSS_LTR_SNOOP_LAT_1US;
++		if (val > 0)
++			ltr_val |= LPSS_LTR_SNOOP_REQ;
++	}
++	ltr_val |= val;
++	__lpss_reg_write(ltr_val, pdata, LPSS_SW_LTR);
++	if (!(ltr_mode & LPSS_GENERAL_LTR_MODE_SW)) {
++		ltr_mode |= LPSS_GENERAL_LTR_MODE_SW;
++		__lpss_reg_write(ltr_mode, pdata, LPSS_GENERAL);
++	}
++}
++
+ static int acpi_lpss_platform_notify(struct notifier_block *nb,
+ 				     unsigned long action, void *data)
+ {
+@@ -427,9 +476,29 @@ static struct notifier_block acpi_lpss_n
+ 	.notifier_call = acpi_lpss_platform_notify,
+ };
+ 
++static void acpi_lpss_bind(struct device *dev)
++{
++	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
++
++	if (!pdata || !pdata->mmio_base)
++		return;
++
++	if (pdata->mmio_size >= pdata->dev_desc->prv_offset + LPSS_LTR_SIZE)
++		dev->power.set_latency_tolerance = acpi_lpss_set_ltr;
++	else
++		dev_err(dev, "MMIO size insufficient to access LTR\n");
++}
++
++static void acpi_lpss_unbind(struct device *dev)
++{
++	dev->power.set_latency_tolerance = NULL;
++}
++
+ static struct acpi_scan_handler lpss_handler = {
+ 	.ids = acpi_lpss_device_ids,
+ 	.attach = acpi_lpss_create_device,
++	.bind = acpi_lpss_bind,
++	.unbind = acpi_lpss_unbind,
+ };
+ 
+ void __init acpi_lpss_init(void)
+
