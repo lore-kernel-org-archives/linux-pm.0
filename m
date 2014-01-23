@@ -1,168 +1,49 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] suspend: make sync() on suspend-to-RAM optional
-Date: Thu, 23 Jan 2014 14:05:58 +0530
-Message-ID: <52E0D46E.6040208@linux.vnet.ibm.com>
-References: <e616943c3b6e35c6e9bf192d66bef96bc6cdf75c.1390464544.git.len.brown@intel.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 1/1] PM / devfreq: Disable Exynos4 driver build on
+ multiplatform
+Date: Thu, 23 Jan 2014 11:12:50 +0000 (GMT)
+Message-ID: <33543877.132991390475569978.JavaMail.weblogic@epml17>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:42905 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755943AbaAWIlZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jan 2014 03:41:25 -0500
-Received: from /spool/local
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 23 Jan 2014 18:41:22 +1000
-In-Reply-To: <e616943c3b6e35c6e9bf192d66bef96bc6cdf75c.1390464544.git.len.brown@intel.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:15090 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbaAWLMw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jan 2014 06:12:52 -0500
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MZU0038TPTET6B0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 23 Jan 2014 20:12:50 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Sachin Kamat <sachin.kamat@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "patches@linaro.org" <patches@linaro.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>
 
-On 01/23/2014 01:40 PM, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> 
-> Linux suspend-to-RAM was unreliable when first developed,
-> and so sys_sync() was invoked inside the kernel at the
-> start of every suspend flow.
-> 
-> Today, many devices invoke suspend with
-> high reliability and high frequency.
-> They may not want to be forced to pay
-> the performance cost of sync() on every suspend.
-> 
-> So here we make the file system sync() optional.
-> De-select CONFIG_SUSPEND_FS_SYNC to delete the call.
-> Keep CONFIG_SUSPEND_FS_SYNC keept the call, and also
-> includes the new sysfs attribte,
-> /sys/power/suspend_fs_sync
-> which can be cleared to disable the file-system sync.
-> 
-> As we have had this call for a long time,
-> the default remains to keep the call, and to
-> invoke it on every suspend.
-> 
-> Signed-off-by: Len Brown <len.brown@intel.com>
+PiBFeHlub3M0IGRldmZyZXEgZHJpdmVyIHVzZXMgbWFjaC9tYXAuaCB3aGljaCBpcyBub3QgYXZh
+aWxhYmxlIG9uDQo+IG11bHRpcGxhdGZvcm0uIEhlbmNlIGRpc2FibGUgYnVpbGQgb24gbXVsdGlw
+bGF0Zm9ybSBmb3Igbm93Lg0KPiBXaXRob3V0IHRoaXMgcGF0Y2ggd2UgZ2V0IHRoZSBmb2xsb3dp
+bmcgYnVpbGQgZXJyb3JzOg0KPiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLmg6
+MTU6MjI6IGZhdGFsIGVycm9yOiBtYWNoL21hcC5oOiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5
+DQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBTYWNoaW4gS2FtYXQgPHNhY2hpbi5rYW1hdEBsaW5hcm8u
+b3JnPg0KDQpJc24ndCB0aGlzIGFsc28gcmVxdWlyZWQgdG8gYmUgc2VudCB0byBsaW51eC1zdGFi
+bGU/DQoNCkFja2VkLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4N
+Cg0KPiAtLS0NCj4gIGRyaXZlcnMvZGV2ZnJlcS9LY29uZmlnIHwgICAgMiArLQ0KPiAgMSBmaWxl
+IGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+IA0KPiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy9kZXZmcmVxL0tjb25maWcgYi9kcml2ZXJzL2RldmZyZXEvS2NvbmZpZw0KPiBp
+bmRleCAzMWYzYWRiYTRjZjMuLjdkMmY0MzU1MDcwMCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9k
+ZXZmcmVxL0tjb25maWcNCj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL0tjb25maWcNCj4gQEAgLTY3
+LDcgKzY3LDcgQEAgY29tbWVudCAiREVWRlJFUSBEcml2ZXJzIg0KPiAgDQo+ICBjb25maWcgQVJN
+X0VYWU5PUzRfQlVTX0RFVkZSRVENCj4gIAlib29sICJBUk0gRXh5bm9zNDIxMC80MjEyLzQ0MTIg
+TWVtb3J5IEJ1cyBERVZGUkVRIERyaXZlciINCj4gLQlkZXBlbmRzIG9uIENQVV9FWFlOT1M0MjEw
+IHx8IFNPQ19FWFlOT1M0MjEyIHx8IFNPQ19FWFlOT1M0NDEyDQo+ICsJZGVwZW5kcyBvbiAoQ1BV
+X0VYWU5PUzQyMTAgfHwgU09DX0VYWU5PUzQyMTIgfHwgU09DX0VYWU5PUzQ0MTIpICYmICFBUkNI
+X01VTFRJUExBVEZPUk0NCj4gIAlzZWxlY3QgQVJDSF9IQVNfT1BQDQo+ICAJc2VsZWN0IERFVkZS
+RVFfR09WX1NJTVBMRV9PTkRFTUFORA0KPiAgCWhlbHANCj4gLS0gDQo+IDEuNy45LjUNCj4gDQo+
+IA0KPiANCg==
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-
-Regards,
-Srivatsa S. Bhat
-
-> ---
->  kernel/power/Kconfig   | 11 +++++++++++
->  kernel/power/main.c    | 33 +++++++++++++++++++++++++++++++++
->  kernel/power/power.h   |  1 +
->  kernel/power/suspend.c | 10 +++++++---
->  4 files changed, 52 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 2fac9cc..244c2d9 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -102,6 +102,17 @@ config PM_SLEEP_SMP
->  	depends on PM_SLEEP
->  	select HOTPLUG_CPU
-> 
-> +config SUSPEND_FS_SYNC
-> +	bool "Suspend to RAM includes file-system sync()"
-> +	default y
-> +	depends on SUSPEND
-> +	---help---
-> +	Include a file system sync() at the start of every suspend to RAM flow.
-> +	Disable this option to exclude that capability.
-> +
-> +	If included, the sync can still be skipped
-> +	by clearing /sys/power/suspend_fs_sync.
-> +
->  config PM_AUTOSLEEP
->  	bool "Opportunistic sleep"
->  	depends on PM_SLEEP
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 1d1bf63..bce7807 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -71,6 +71,36 @@ static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
-> 
->  power_attr(pm_async);
-> 
-> +#ifdef CONFIG_SUSPEND_FS_SYNC
-> +
-> +/* If set, sync file systems at start of suspend flow */
-> +int suspend_fs_sync_enabled = 1;
-> +
-> +static ssize_t suspend_fs_sync_show(struct kobject *kobj, struct kobj_attribute *attr,
-> +			     char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", suspend_fs_sync_enabled);
-> +}
-> +
-> +static ssize_t suspend_fs_sync_store(struct kobject *kobj, struct kobj_attribute *attr,
-> +			      const char *buf, size_t n)
-> +{
-> +	unsigned long val;
-> +
-> +	if (kstrtoul(buf, 10, &val))
-> +		return -EINVAL;
-> +
-> +	if (val > 1)
-> +		return -EINVAL;
-> +
-> +	suspend_fs_sync_enabled = val;
-> +	return n;
-> +}
-> +
-> +power_attr(suspend_fs_sync);
-> +
-> +#endif /* CONFIG_SUSPEND_FS_SYNC */
-> +
->  #ifdef CONFIG_PM_DEBUG
->  int pm_test_level = TEST_NONE;
-> 
-> @@ -592,6 +622,9 @@ static struct attribute * g[] = {
->  #ifdef CONFIG_PM_SLEEP
->  	&pm_async_attr.attr,
->  	&wakeup_count_attr.attr,
-> +#ifdef CONFIG_SUSPEND_FS_SYNC
-> +	&suspend_fs_sync_attr.attr,
-> +#endif
->  #ifdef CONFIG_PM_AUTOSLEEP
->  	&autosleep_attr.attr,
->  #endif
-> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> index 7d4b7ff..3d86f09 100644
-> --- a/kernel/power/power.h
-> +++ b/kernel/power/power.h
-> @@ -200,6 +200,7 @@ static inline void suspend_test_finish(const char *label) {}
->  #ifdef CONFIG_PM_SLEEP
->  /* kernel/power/main.c */
->  extern int pm_notifier_call_chain(unsigned long val);
-> +extern int suspend_fs_sync_enabled;
->  #endif
-> 
->  #ifdef CONFIG_HIGHMEM
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 62ee437..e7eb2ba 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -333,9 +333,13 @@ static int enter_state(suspend_state_t state)
->  	if (state == PM_SUSPEND_FREEZE)
->  		freeze_begin();
-> 
-> -	printk(KERN_INFO "PM: Syncing filesystems ... ");
-> -	sys_sync();
-> -	printk("done.\n");
-> +#ifdef CONFIG_SUSPEND_FS_SYNC
-> +	if (suspend_fs_sync_enabled) {
-> +		printk(KERN_INFO "PM: Syncing filesystems ... ");
-> +		sys_sync();
-> +		printk("done.\n");
-> +	}
-> +#endif /* CONFIG_SUSPEND_FS_SYNC */
-> 
->  	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
->  	error = suspend_prepare(state);
-> 
 
