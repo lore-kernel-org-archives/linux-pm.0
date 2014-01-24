@@ -1,303 +1,229 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH V2 2/2] tick/cpuidle: Initialize hrtimer mode of broadcast
-Date: Fri, 24 Jan 2014 12:28:29 +0530
-Message-ID: <20140124065820.17564.83076.stgit@preeti>
-References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
+Date: Fri, 24 Jan 2014 09:40:40 +0100
+Message-ID: <CAKfTPtDHTs67qvoA6++zo4SZdZJj4T_BV2gVECOu-76-2kLbuw@mail.gmail.com>
+References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com> <20140122192041.GA3709@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e39.co.us.ibm.com ([32.97.110.160]:33927 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751736AbaAXHCk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 02:02:40 -0500
-Received: from /spool/local
-	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 24 Jan 2014 00:02:40 -0700
-In-Reply-To: <20140124065501.17564.39363.stgit@preeti.in.ibm.com>
+Received: from mail-oa0-f53.google.com ([209.85.219.53]:35953 "EHLO
+	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbaAXIlB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 03:41:01 -0500
+Received: by mail-oa0-f53.google.com with SMTP id m1so3474493oag.12
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2014 00:41:00 -0800 (PST)
+In-Reply-To: <20140122192041.GA3709@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, galak@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, agraf@suse.de, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On 22 January 2014 20:20, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+> Hi Vincent,
+>
+> On Tue, Jan 21, 2014 at 11:16:46AM +0000, Vincent Guittot wrote:
+>> Hi Lorenzo,
+>>
+>> On 20 January 2014 18:47, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+>> > ARM based platforms implement a variety of power management schemes that
+>> > allow processors to enter at run-time low-power states, aka C-states
+>> > in ACPI jargon. The parameters defining these C-states vary on a per-platform
+>> > basis forcing the OS to hardcode the state parameters in platform
+>> > specific static tables whose size grows as the number of platforms supported
+>> > in the kernel increases and hampers device drivers standardization.
+>> >
+>> > Therefore, this patch aims at standardizing C-state device tree bindings for
+>> > ARM platforms. Bindings define C-state parameters inclusive of entry methods
+>> > and state latencies, to allow operating systems to retrieve the
+>> > configuration entries from the device tree and initialize the related
+>> > power management drivers, paving the way for common code in the kernel
+>> > to deal with power states and removing the need for static data in current
+>> > and previous kernel versions.
+>> >
+>> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> > ---
+>> >  Documentation/devicetree/bindings/arm/c-states.txt | 774 +++++++++++++++++++++
+>> >  Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
+>> >  2 files changed, 784 insertions(+)
+>> >  create mode 100644 Documentation/devicetree/bindings/arm/c-states.txt
+>> >
+>> > diff --git a/Documentation/devicetree/bindings/arm/c-states.txt b/Documentation/devicetree/bindings/arm/c-states.txt
+>> > new file mode 100644
+>> > index 0000000..0b5617b
+>> > --- /dev/null
+>> > +++ b/Documentation/devicetree/bindings/arm/c-states.txt
+>> > @@ -0,0 +1,774 @@
+>> > +==========================================
+>> > +ARM C-states binding description
+>> > +==========================================
+>> > +
+>> > +==========================================
+>> > +1 - Introduction
+>> > +==========================================
+>> > +
+>> > +ARM systems contain HW capable of managing power consumption dynamically,
+>> > +where cores can be put in different low-power states (ranging from simple
+>> > +wfi to power gating) according to OSPM policies. Borrowing concepts
+>> > +from the ACPI specification[1], the CPU states representing the range of
+>> > +dynamic states that a processor can enter at run-time, aka C-state, can be
+>> > +specified through device tree bindings representing the parameters required to
+>> > +enter/exit specific C-states on a given processor.
+>> > +
+>> > +The state an ARM CPU can be put into is loosely identified by one of the
+>> > +following operating modes:
+>> > +
+>> > +- Running:
+>> > +        # Processor core is executing instructions
+>> > +
+>> > +- Wait for Interrupt:
+>> > +       # An ARM processor enters wait for interrupt (WFI) low power
+>> > +         state by executing a wfi instruction. When a processor enters
+>> > +         wfi state it disables most of the clocks while keeping the processor
+>> > +         powered up. This state is standard on all ARM processors and it is
+>> > +         defined as C1 in the remainder of this document.
+>> > +
+>>
+>> > +- Dormant:
+>> > +       # Dormant mode is entered by executing wfi instructions and by sending
+>> > +         platform specific commands to the platform power controller (coupled
+>> > +         with processor specific SW/HW control sequences).
+>> > +         In dormant mode, most of the processor control and debug logic is
+>> > +         powered up but cache RAM can be put in retention state, providing
+>>
+>> Base on your description, it's not clear for me what is on, what is
+>> lost and what is power down ?
+>> My understand of the dormant mode that you described above is : the
+>> cache is preserved (and especially the cache RAM) but the processor
+>> state is lost (registers ...). Do I understand correctly ?
+>>
+>> What about retention mode where the contents of processor and cache
+>> are preserved but the power consumption is reduced ? it can be seen as
+>> a special wfi mode which need specific SW/HW control sequences but i'm
+>> not sure to understand how to describe such state with your proposal.
+>
 
-On some architectures, in certain CPU deep idle states the local timers stop.
-An external clock device is used to wakeup these CPUs. The kernel support for the
-wakeup of these CPUs is provided by the tick broadcast framework by using the
-external clock device as the wakeup source.
+Hi Lorenzo,
 
-However not all implementations of architectures provide such an external
-clock device. This patch includes support in the broadcast framework to handle
-the wakeup of the CPUs in deep idle states on such systems by queuing a hrtimer
-on one of the CPUs, which is meant to handle the wakeup of CPUs in deep idle states.
+Sorry for the late reply,
 
-This patchset introduces a pseudo clock device which can be registered by the
-archs as tick_broadcast_device in the absence of a real external clock
-device. Once registered, the broadcast framework will work as is for these
-architectures as long as the archs take care of the BROADCAST_ENTER
-notification failing for one of the CPUs. This CPU is made the stand by CPU to
-handle wakeup of the CPUs in deep idle and it *must not enter deep idle states*.
 
-The CPU with the earliest wakeup is chosen to be this CPU. Hence this way the
-stand by CPU dynamically moves around and so does the hrtimer which is queued
-to trigger at the next earliest wakeup time. This is consistent with the case where
-an external clock device is present. The smp affinity of this clock device is
-set to the CPU with the earliest wakeup. This patchset handles the hotplug of
-the stand by CPU as well by moving the hrtimer on to the CPU handling the CPU_DEAD
-notification.
+> I had an idea. To simplify things, I think that one possibility is to
+> add a parameter to the power domain specifier (platform specific, see
+> Tomasz bindings):
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-[Added Changelog and code to handle reprogramming of hrtimer]
----
+We can't use a simple boolean state (on/off) for defining the
+powerdomain state associated to a c-state so your proposal of being
+able to add a parameter that will define the power domain state is
+interesting.
 
- include/linux/clockchips.h           |    9 +++
- kernel/time/Makefile                 |    2 -
- kernel/time/tick-broadcast-hrtimer.c |  102 ++++++++++++++++++++++++++++++++++
- kernel/time/tick-broadcast.c         |   45 +++++++++++++++
- 4 files changed, 156 insertions(+), 2 deletions(-)
- create mode 100644 kernel/time/tick-broadcast-hrtimer.c
+>
+> Documentation/devicetree/bindings/power/power_domain.txt
+>
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-January/224928.html
+>
+> to represent, when that state is entered the behavior of the power
+> controller (ie cache RAM retention or cache shutdown or in general any
+> substate within a power domain). Since it is platform specific, and since
+> we are able to link caches to the power domain, the power controller will
+> actually define what happens to the cache when that state is entered
+> (basically we use the power domain specifier additional parameter to define
+> a "substate" in that power domain e.g.:
+>
+> Example:
+>
+> foo_power_controller {
+>         [...]
+>         /*
+>          * first cell is register index, second one is the state index
+>          * that in turn implies the state behavior - eg cache lost or
+>          * retained
+>          */
+>         #power-domain-cells = <2>;
+> };
+>
+> l1-cache {
+>         [...]
+>         /*
+>          * syntax: power-domains = list of power domain specifiers
+>                 <[&power_domain_phandle register-index state],[&power_domain_phandle register-index state]>;
+>                 The syntax is defined by the power controller du jour
+>                 as described by Tomasz bindings
+>         */
+>         power-domains =<&foo_power_controller 0 0 &foo_power_controller 0 1>;
 
-diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-index ac81b56..2293025 100644
---- a/include/linux/clockchips.h
-+++ b/include/linux/clockchips.h
-@@ -62,6 +62,11 @@ enum clock_event_mode {
- #define CLOCK_EVT_FEAT_DYNIRQ		0x000020
- #define CLOCK_EVT_FEAT_PERCPU		0x000040
- 
-+/*
-+ * Clockevent device is based on a hrtimer for broadcast
-+ */
-+#define CLOCK_EVT_FEAT_HRTIMER		0x000080
-+
- /**
-  * struct clock_event_device - clock event device descriptor
-  * @event_handler:	Assigned by the framework to be called by the low
-@@ -83,6 +88,7 @@ enum clock_event_mode {
-  * @name:		ptr to clock event name
-  * @rating:		variable to rate clock event devices
-  * @irq:		IRQ number (only for non CPU local devices)
-+ * @bound_on:		Bound on CPU
-  * @cpumask:		cpumask to indicate for which CPUs this device works
-  * @list:		list head for the management code
-  * @owner:		module reference
-@@ -113,6 +119,7 @@ struct clock_event_device {
- 	const char		*name;
- 	int			rating;
- 	int			irq;
-+	int			bound_on;
- 	const struct cpumask	*cpumask;
- 	struct list_head	list;
- 	struct module		*owner;
-@@ -180,9 +187,11 @@ extern int tick_receive_broadcast(void);
- #endif
- 
- #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
-+extern void tick_setup_hrtimer_broadcast(void);
- extern int tick_check_broadcast_expired(void);
- #else
- static inline int tick_check_broadcast_expired(void) { return 0; }
-+static void tick_setup_hrtimer_broadcast(void) {};
- #endif
- 
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
-diff --git a/kernel/time/Makefile b/kernel/time/Makefile
-index 9250130..06151ef 100644
---- a/kernel/time/Makefile
-+++ b/kernel/time/Makefile
-@@ -3,7 +3,7 @@ obj-y += timeconv.o posix-clock.o alarmtimer.o
- 
- obj-$(CONFIG_GENERIC_CLOCKEVENTS_BUILD)		+= clockevents.o
- obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+= tick-common.o
--obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+= tick-broadcast.o
-+obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+= tick-broadcast.o tick-broadcast-hrtimer.o
- obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+= sched_clock.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-sched.o
-diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
-new file mode 100644
-index 0000000..23f4925
---- /dev/null
-+++ b/kernel/time/tick-broadcast-hrtimer.c
-@@ -0,0 +1,102 @@
-+/*
-+ * linux/kernel/time/tick-broadcast-hrtimer.c
-+ * This file emulates a local clock event device
-+ * via a pseudo clock device.
-+ */
-+#include <linux/cpu.h>
-+#include <linux/err.h>
-+#include <linux/hrtimer.h>
-+#include <linux/interrupt.h>
-+#include <linux/percpu.h>
-+#include <linux/profile.h>
-+#include <linux/clockchips.h>
-+#include <linux/sched.h>
-+#include <linux/smp.h>
-+#include <linux/module.h>
-+
-+#include "tick-internal.h"
-+
-+static struct hrtimer bctimer;
-+
-+static void bc_set_mode(enum clock_event_mode mode,
-+			struct clock_event_device *bc)
-+{
-+	switch (mode) {
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		/*
-+		 * Note, we cannot cancel the timer here as we might
-+		 * run into the following live lock scenario:
-+		 *
-+		 * cpu 0		cpu1
-+		 * lock(broadcast_lock);
-+		 *			hrtimer_interrupt()
-+		 *			bc_handler()
-+		 *			   tick_handle_oneshot_broadcast();
-+		 *			    lock(broadcast_lock);
-+		 * hrtimer_cancel()
-+		 *  wait_for_callback()
-+		 */
-+		hrtimer_try_to_cancel(&bctimer);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+/*
-+ * This is called from the guts of the broadcast code when the cpu
-+ * which is about to enter idle has the earliest broadcast timer event.
-+ */
-+static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
-+{
-+	ktime_t now, interval;
-+	/*
-+	 * We try to cancel the timer first. If the callback is on
-+	 * flight on some other cpu then we let it handle it. If we
-+	 * were able to cancel the timer nothing can rearm it as we
-+	 * own broadcast_lock.
-+	 *
-+	 * However if we are called from the hrtimer interrupt handler
-+	 * itself, reprogram it.
-+	 */
-+	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
-+		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-+		/* Bind the "device" to the cpu */
-+		bc->bound_on = smp_processor_id();
-+	} else if (bc->bound_on == smp_processor_id()) {
-+		now = ktime_get();
-+		interval = ktime_sub(expires, now);
-+		hrtimer_forward_now(&bctimer, interval);
-+	}
-+	return 0;
-+}
-+
-+static struct clock_event_device ce_broadcast_hrtimer = {
-+	.set_mode		= bc_set_mode,
-+	.set_next_ktime		= bc_set_next,
-+	.features		= CLOCK_EVT_FEAT_ONESHOT |
-+				  CLOCK_EVT_FEAT_KTIME |
-+				  CLOCK_EVT_FEAT_HRTIMER,
-+	.rating			= 0,
-+	.bound_on		= -1,
-+	.min_delta_ns		= 1,
-+	.max_delta_ns		= KTIME_MAX,
-+	.min_delta_ticks	= 1,
-+	.max_delta_ticks	= KTIME_MAX,
-+	.mult			= 1,
-+	.shift			= 0,
-+	.cpumask		= cpu_all_mask,
-+};
-+
-+static enum hrtimer_restart bc_handler(struct hrtimer *t)
-+{
-+	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
-+	return HRTIMER_RESTART;
-+}
-+
-+void tick_setup_hrtimer_broadcast(void)
-+{
-+	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+	bctimer.function = bc_handler;
-+	clockevents_register_device(&ce_broadcast_hrtimer);
-+}
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index be00692..7ed7e69 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -630,6 +630,42 @@ again:
- 	raw_spin_unlock(&tick_broadcast_lock);
- }
- 
-+static int broadcast_needs_cpu(struct clock_event_device *bc, int cpu)
-+{
-+	if (!(bc->features & CLOCK_EVT_FEAT_HRTIMER))
-+		return 0;
-+	if (bc->next_event.tv64 == KTIME_MAX)
-+		return 0;
-+	return bc->bound_on == cpu ? -EBUSY : 0;
-+}
-+
-+static void broadcast_shutdown_local(struct clock_event_device *bc,
-+				     struct clock_event_device *dev)
-+{
-+	/*
-+	 * For hrtimer based broadcasting we cannot shutdown the cpu
-+	 * local device if our own event is the first one to expire or
-+	 * if we own the broadcast timer.
-+	 */
-+	if (bc->features & CLOCK_EVT_FEAT_HRTIMER) {
-+		if (broadcast_needs_cpu(bc, smp_processor_id()))
-+			return;
-+		if (dev->next_event.tv64 < bc->next_event.tv64)
-+			return;
-+	}
-+	clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+}
-+
-+static void broadcast_move_bc(int deadcpu)
-+{
-+	struct clock_event_device *bc = tick_broadcast_device.evtdev;
-+
-+	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
-+		return;
-+	/* This moves the broadcast assignment to this cpu */
-+	clockevents_program_event(bc, bc->next_event, 1);
-+}
-+
- /*
-  * Powerstate information: The system enters/leaves a state, where
-  * affected devices might stop
-@@ -667,7 +703,7 @@ int tick_broadcast_oneshot_control(unsigned long reason)
- 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
- 		if (!cpumask_test_and_set_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			WARN_ON_ONCE(cpumask_test_cpu(cpu, tick_broadcast_pending_mask));
--			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+			broadcast_shutdown_local(bc, dev);
- 			/*
- 			 * We only reprogram the broadcast timer if we
- 			 * did not mark ourself in the force mask and
-@@ -680,6 +716,11 @@ int tick_broadcast_oneshot_control(unsigned long reason)
- 			    dev->next_event.tv64 < bc->next_event.tv64)
- 				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
- 		}
-+		/*
-+		 * If the current CPU owns the hrtimer broadcast
-+		 * mechanism, it cannot go deep idle.
-+		 */
-+		ret = broadcast_needs_cpu(bc, cpu);
- 	} else {
- 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
-@@ -853,6 +894,8 @@ void tick_shutdown_broadcast_oneshot(unsigned int *cpup)
- 	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
- 	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
- 
-+	broadcast_move_bc(cpu);
-+
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
- 
+Normally, power-domains describes a list of power domain specifiers
+that are necessary for the l1-cache to at least retain its state so
+i'm not sure understand your example above
 
+If we take the example of system that support running, retention and
+powerdown state described as state 0, 1 and 2 for the power domain, i
+would have set the l1-cache like:
+       power-domains =<&foo_power_controller 0 1>;
+
+for saying that the state is retained up to state 1
+
+Please look below, i have modified the rest of your example accordingly
+
+>
+> }:
+>
+> and then
+>
+> state0 {
+>         index = <2>;
+>         compatible = "arm,cpu-power-state";
+>         latency = <...>;
+>         /*
+>          * This means that when the state is entered, the power
+>          * controller should use register index 0 and state 0,
+>          * whose meaning is power controller specific. Since we
+>          * know all components affected (for every component
+>          * we declare its power domain(s) and states so we
+>          * know what components are affected by the state entry.
+>          * Given the cache node above and this phandle, the state
+>          * implies that the cache is retained, register index == 0 state == 0
+>          /*
+>         power-domain =<&foo_power_controller 0 0>;
+
+for retention state we need to set the power domain in state 1
+        power-domain =<&foo_power_controller 0 1>;
+
+> };
+>
+> state1 {
+>         index = <3>;
+>         compatible = "arm,cpu-power-state";
+>         latency = <...>;
+>         /*
+>          * This means that when the state is entered, the power
+>          * controller should use register index 0 and state 1,
+>          * whose meaning is power controller specific. Since we
+>          * know all components affected (for every component
+>          * we declare its power domain(s) and states so we
+>          * know what components are affected by the state entry.
+>          * Given the cache node above and this phandle, the state
+>          * implies that the cache is lost, register index == 0 state == 1
+>          /*
+>         power-domain =<&foo_power_controller 0 1>;
+
+for power down mode, we need to set thge power domain in state 2
+        power-domain =<&foo_power_controller 0 2>;
+
+
+Vincent
+
+> };
+>
+> It is complex but it is probably the cleanest way. And it leaves complexity
+> to power controller implementations (if managed in the kernel....), which
+> actually makes sense because it is up to power controller to define the
+> behavior of certain states.
+>
+> All in all it is just an idea, feel free to scotch it, it is complex but
+> we have to sort it out, one way or another.
+>
+> Vincent, Tomasz, anyone, thoughts ?
+> Lorenzo
+>
