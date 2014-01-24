@@ -1,185 +1,314 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v3.14-rc1
-Date: Fri, 24 Jan 2014 11:36:08 +0800
-Message-ID: <1390534568.12771.58.camel@rzhang1-mobl4>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V5 6/8] time/cpuidle: Support in tick broadcast framework
+ in the absence of external clock device
+Date: Fri, 24 Jan 2014 12:23:50 +0530
+Message-ID: <52E20DFE.40209@linux.vnet.ibm.com>
+References: <20140115080555.20446.27238.stgit@preeti.in.ibm.com> <20140115080947.20446.30305.stgit@preeti.in.ibm.com> <alpine.DEB.2.02.1401221042130.4260@ionos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:11239 "EHLO mga01.intel.com"
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:54595 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbaAXDg2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 23 Jan 2014 22:36:28 -0500
+	id S1751999AbaAXG6M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 24 Jan 2014 01:58:12 -0500
+Received: from /spool/local
+	by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Fri, 24 Jan 2014 01:58:11 -0500
+In-Reply-To: <alpine.DEB.2.02.1401221042130.4260@ionos.tec.linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-devicetree <devicetree@vger.kernel.org>, linux-lmsensor <lm-sensors@lm-sensors.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, agraf@suse.de, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, galak@kernel.crashing.org, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-Hi Linus,
+Hi Thomas,
 
-Please pull from the git repository at
+The below patch works pretty much as is. I tried this out with deep idle
+states on our system. Looking through the code and analysing corner
+cases also did not bring out any issues to me. I will send out a patch
+V2 of this.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+Regards
+Preeti U Murthy
 
-to receive Thermal management updates for v3.14-rc1 with
-top-most commit c698a4492f01127ca90fc28cd5157f3d616fe4ff:
-
-  Merge branch 'misc' of .git into next (2014-01-06 22:48:19 +0800)
-
-
-on top of commit dea4f48a0a301b23c65af8e4fe8ccf360c272fbf:
-
-  Merge branch 'leds-fixes-for-3.13' of
-git://git.kernel.org/pub/scm/linux/kernel/git/cooloney/linux-leds
-(2013-12-02 12:08:01 -0800)
-
-This time, the biggest change is the work of representing hardware
-thermal properties in device tree infrastructure.
-This work includes the introduction of a device tree bindings for
-describing the hardware thermal behavior and limits, and also a parser
-to read and interpret the data, and build thermal zones and thermal
-binding parameters. It also contains three examples on how to use the
-new representation on sensor devices, using three different drivers to
-accomplish it. One driver is in thermal subsystem, the TI SoC thermal,
-and the other two drivers are in hwmon subsystem.
-Actually, this would be the first step of the complete work because we
-still need to check other potential drivers to be converted and then
-validate the proposed API. But the reason why I include it in this pull
-request is that, first, this change does not hurt any others without
-using this approach, second, the principle and concept of this change
-would not break after converting the remaining drivers. BTW, as you can
-see, there are several points in this change that do not belong to
-thermal subsystem. Because it has been suggested by Guenter R. that in
-such cases, it is recommended to send the complete series via one single
-subsystem.
-
-Specifics:
-
- - representing hardware thermal properties in device tree
-infrastructure.
-
- - fix a regression that the imx thermal driver breaks system suspend.
-
- - introduce ACPI INT3403 thermal driver to retrieve temperature data
-from the INT3403 ACPI device object present on some systems.
-
- - introduce debug statement for thermal core and step_wise governor.
-
- - assorted fixes and cleanups for thermal core, cpu cooling, exynos
-thrmal, intel powerclamp and imx thermal driver.
-
-thanks,
-rui
-
-----------------------------------------------------------------
-
-Aaron Lu (1):
-      thermal: debug: add debug statement for core and step_wise
-
-Anson Huang (2):
-      thermal: imx: correct suspend/resume flow
-      thermal: imx: add necessary clk operation
-
-Eduardo Valentin (22):
-      thermal: allow registering without .get_temp
-      thermal: introduce device tree parser
-      thermal: core: introduce thermal_of_cooling_device_register
-      thermal: cpu_cooling: introduce of_cpufreq_cooling_register
-      cpufreq: cpufreq-cpu0: add dt node parsing for cooling device
-properties
-      hwmon: lm75: expose to thermal fw via DT nodes
-      hwmon: tmp102: expose to thermal fw via DT nodes
-      thermal: ti-soc-thermal: use thermal DT infrastructure
-      arm: dts: add omap4 CPU thermal data
-      arm: dts: add omap4430 thermal data
-      arm: dts: add omap4460 thermal data
-      arm: dts: add cooling properties on omap4430 cpu node
-      arm: dts: add cooling properties on omap4460 cpu node
-      arm: dts: add omap5 GPU thermal data
-      arm: dts: add omap5 CORE thermal data
-      arm: dts: add omap5 thermal data
-      arm: dts: add cooling properties on omap5 cpu node
-      arm: dts: make OMAP443x bandgap node to belong to OCP
-      arm: dts: make OMAP4460 bandgap node to belong to OCP
-      MAINTAINERS: add thermal bindings entry in thermal domain
-      thermal: fix cpu_cooling max_level behavior
-      thermal: remove const flag from .ops of imx thermal
-
-Julia Lawall (1):
-      thermal: exynos: fix error return code
-
-Laurent Pinchart (1):
-      thermal: rcar-thermal: Enable driver compilation with COMPILE_TEST
-
-Naveen Krishna Chatradhi (1):
-      thermal:samsung: fix compilation warning
-
-Rashika (1):
-      drivers: thermal: Mark function as static in
-x86_pkg_temp_thermal.c
-
-Russell King (1):
-      thermal: imx_thermal: add module device table
-
-Srinivas Pandruvada (1):
-      Thermal: ACPI INT3403 thermal driver
-
-Yuxuan Shui (1):
-      intel_powerclamp: Fix cstate counter detection.
-
-Zhang Rui (5):
-      Merge branch 'next' of
-git://git.kernel.org/.../evalenti/linux-soc-thermal into soc-thermal
-      Thermal cpu cooling: return error if no valid cpu frequency entry
-      Merge branches 'misc', 'soc', 'soc-eduardo' and 'int3404-thermal'
-of .git into next
-      Merge branches 'misc' and 'soc' of .git into next
-      Merge branch 'misc' of .git into next
-
-lan,Tianyu (1):
-      Thermal: update thermal zone device after setting emul_temp
-
- .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    7 +
- .../devicetree/bindings/thermal/imx-thermal.txt    |    4 +
- .../devicetree/bindings/thermal/thermal.txt        |  595
-++++++++++++++
- MAINTAINERS                                        |    1 +
- arch/arm/boot/dts/omap4-cpu-thermal.dtsi           |   41 +
- arch/arm/boot/dts/omap443x.dtsi                    |   23 +-
- arch/arm/boot/dts/omap4460.dtsi                    |   29 +-
- arch/arm/boot/dts/omap5-core-thermal.dtsi          |   28 +
- arch/arm/boot/dts/omap5-gpu-thermal.dtsi           |   28 +
- arch/arm/boot/dts/omap5.dtsi                       |   14 +-
- drivers/cpufreq/Kconfig                            |    2 +-
- drivers/cpufreq/cpufreq-cpu0.c                     |   16 +
- drivers/hwmon/lm75.c                               |   35 +-
- drivers/hwmon/tmp102.c                             |   19 +
- drivers/thermal/Kconfig                            |   23 +-
- drivers/thermal/Makefile                           |    2 +
- drivers/thermal/cpu_cooling.c                      |   67 +-
- drivers/thermal/imx_thermal.c                      |   54 +-
- drivers/thermal/int3403_thermal.c                  |  237 ++++++
- drivers/thermal/intel_powerclamp.c                 |   11 +-
- drivers/thermal/of-thermal.c                       |  849
-++++++++++++++++++++
- drivers/thermal/samsung/exynos_thermal_common.c    |    2 +-
- drivers/thermal/samsung/exynos_tmu.c               |    1 +
- drivers/thermal/step_wise.c                        |    6 +
- drivers/thermal/thermal_core.c                     |   86 +-
- drivers/thermal/thermal_core.h                     |    9 +
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   77 +-
- drivers/thermal/x86_pkg_temp_thermal.c             |    2 +-
- include/dt-bindings/thermal/thermal.h              |   17 +
- include/linux/cpu_cooling.h                        |   25 +
- include/linux/thermal.h                            |   32 +-
- 31 files changed, 2271 insertions(+), 71 deletions(-)
- create mode 100644
-Documentation/devicetree/bindings/thermal/thermal.txt
- create mode 100644 arch/arm/boot/dts/omap4-cpu-thermal.dtsi
- create mode 100644 arch/arm/boot/dts/omap5-core-thermal.dtsi
- create mode 100644 arch/arm/boot/dts/omap5-gpu-thermal.dtsi
- create mode 100644 drivers/thermal/int3403_thermal.c
- create mode 100644 drivers/thermal/of-thermal.c
- create mode 100644 include/dt-bindings/thermal/thermal.h
-
+On 01/22/2014 06:57 PM, Thomas Gleixner wrote:
+> On Wed, 15 Jan 2014, Preeti U Murthy wrote:
+>> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+>> index 086ad60..d61404e 100644
+>> --- a/kernel/time/clockevents.c
+>> +++ b/kernel/time/clockevents.c
+>> @@ -524,12 +524,13 @@ void clockevents_resume(void)
+>>  #ifdef CONFIG_GENERIC_CLOCKEVENTS
+>>  /**
+>>   * clockevents_notify - notification about relevant events
+>> + * Returns non zero on error.
+>>   */
+>> -void clockevents_notify(unsigned long reason, void *arg)
+>> +int clockevents_notify(unsigned long reason, void *arg)
+>>  {
+> 
+> The interface change of clockevents_notify wants to be a separate
+> patch.
+> 
+>> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+>> index 9532690..1c23912 100644
+>> --- a/kernel/time/tick-broadcast.c
+>> +++ b/kernel/time/tick-broadcast.c
+>> @@ -20,6 +20,7 @@
+>>  #include <linux/sched.h>
+>>  #include <linux/smp.h>
+>>  #include <linux/module.h>
+>> +#include <linux/slab.h>
+>>  
+>>  #include "tick-internal.h"
+>>  
+>> @@ -35,6 +36,15 @@ static cpumask_var_t tmpmask;
+>>  static DEFINE_RAW_SPINLOCK(tick_broadcast_lock);
+>>  static int tick_broadcast_force;
+>>  
+>> +/*
+>> + * Helper variables for handling broadcast in the absence of a
+>> + * tick_broadcast_device.
+>> + * */
+>> +static struct hrtimer *bc_hrtimer;
+>> +static int bc_cpu = -1;
+>> +static ktime_t bc_next_wakeup;
+> 
+> Why do you need another variable to store the expiry time? The
+> broadcast code already knows it and the hrtimer expiry value gives you
+> the same information for free.
+> 
+>> +static int hrtimer_initialized = 0;
+> 
+> What's the point of this hrtimer_initialized dance? Why not simply
+> making the hrtimer static and avoid that all together. Also adding the
+> initialization into tick_broadcast_oneshot_available() is
+> braindamaged.  Why not adding this to tick_broadcast_init() which is
+> the proper place to do?
+> 
+> Aside of that you are making this hrtimer mode unconditional, which
+> might break existing systems which are not aware of the hrtimer
+> implications.
+> 
+> What you really want is a pseudo clock event device which has the
+> proper functions for handling the timer and you can register it from
+> your architecture code. The broadcast core code needs a few tweaks to
+> avoid the shutdown of the cpu local clock event device, but aside of
+> that the whole thing just falls into place. So architectures can use
+> this if they want and are sure that their low level idle code knows
+> about the deep idle preventing return value of
+> clockevents_notify(). Once that works you can register the hrtimer
+> based broadcast device and a real hardware broadcast device with a
+> higher rating. It just works.
+> 
+> Find an incomplete and nonfunctional concept patch below. It should be
+> simple to make it work for real.
+> 
+> Thanks,
+> 
+> 	tglx
+> ----
+> Index: linux-2.6/include/linux/clockchips.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/clockchips.h
+> +++ linux-2.6/include/linux/clockchips.h
+> @@ -62,6 +62,11 @@ enum clock_event_mode {
+>  #define CLOCK_EVT_FEAT_DYNIRQ		0x000020
+>  #define CLOCK_EVT_FEAT_PERCPU		0x000040
+> 
+> +/*
+> + * Clockevent device is based on a hrtimer for broadcast
+> + */
+> +#define CLOCK_EVT_FEAT_HRTIMER		0x000080
+> +
+>  /**
+>   * struct clock_event_device - clock event device descriptor
+>   * @event_handler:	Assigned by the framework to be called by the low
+> @@ -83,6 +88,7 @@ enum clock_event_mode {
+>   * @name:		ptr to clock event name
+>   * @rating:		variable to rate clock event devices
+>   * @irq:		IRQ number (only for non CPU local devices)
+> + * @bound_on:		Bound on CPU
+>   * @cpumask:		cpumask to indicate for which CPUs this device works
+>   * @list:		list head for the management code
+>   * @owner:		module reference
+> @@ -113,6 +119,7 @@ struct clock_event_device {
+>  	const char		*name;
+>  	int			rating;
+>  	int			irq;
+> +	int			bound_on;
+>  	const struct cpumask	*cpumask;
+>  	struct list_head	list;
+>  	struct module		*owner;
+> Index: linux-2.6/kernel/time/tick-broadcast-hrtimer.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/kernel/time/tick-broadcast-hrtimer.c
+> @@ -0,0 +1,77 @@
+> +
+> +static struct hrtimer bctimer;
+> +
+> +static void bc_set_mode(enum clock_event_mode mode,
+> +			struct clock_event_device *bc)
+> +{
+> +	switch (mode) {
+> +	case CLOCK_EVT_MODE_SHUTDOWN:
+> +		/*
+> +		 * Note, we cannot cancel the timer here as we might
+> +		 * run into the following live lock scenario:
+> +		 *
+> +		 * cpu 0		cpu1
+> +		 * lock(broadcast_lock);
+> +		 *			hrtimer_interrupt()
+> +		 *			bc_handler()
+> +		 *			   tick_handle_oneshot_broadcast();
+> +		 *			    lock(broadcast_lock);
+> +		 * hrtimer_cancel()
+> +		 *  wait_for_callback()
+> +		 */
+> +		hrtimer_try_to_cancel(&bctimer);
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +}
+> +
+> +/*
+> + * This is called from the guts of the broadcast code when the cpu
+> + * which is about to enter idle has the earliest broadcast timer event.
+> + */
+> +static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+> +{
+> +	/*
+> +	 * We try to cancel the timer first. If the callback is on
+> +	 * flight on some other cpu then we let it handle it. If we
+> +	 * were able to cancel the timer nothing can rearm it as we
+> +	 * own broadcast_lock.
+> +	 */
+> +	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
+> +		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
+> +		/* Bind the "device" to the cpu */
+> +		bc->bound_on = smp_processor_id();
+> +	}
+> +	return 0;
+> +}
+> +
+> +static struct clock_event_device ce_broadcast_hrtimer = {
+> +	.set_mode		= bc_set_mode,
+> +	.set_next_ktime		= bc_set_next,
+> +	.features		= CLOCK_EVT_FEAT_ONESHOT |
+> +				  CLOCK_EVT_FEAT_KTIME |
+> +				  CLOCK_EVT_FEAT_HRTIMER,
+> +	.rating			= 0,
+> +	.bound_on		= -1,
+> +	.min_delta_ns		= 1,
+> +	.max_delta_ns		= KTIME_MAX,
+> +	.min_delta_ticks	= 1,
+> +	.max_delta_ticks	= KTIME_MAX,
+> +	.mult			= 1,
+> +	.shift			= 0,
+> +	.cpumask		= cpu_all_mask,
+> +};
+> +
+> +static enum hrtimer_restart bc_handler(struct hrtimer *t)
+> +{
+> +	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
+> +	return HRTIMER_NORESTART;
+> +}
+> +
+> +void tick_setup_hrtimer_broadcast(void)
+> +{
+> +	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
+> +	bctimer.function = bc_handler;
+> +	clockevents_register(&ce_broadcast_hrtimer);
+> +}
+> Index: linux-2.6/kernel/time/tick-broadcast.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/time/tick-broadcast.c
+> +++ linux-2.6/kernel/time/tick-broadcast.c
+> @@ -630,6 +630,42 @@ again:
+>  	raw_spin_unlock(&tick_broadcast_lock);
+>  }
+> 
+> +static int broadcast_needs_cpu(struct clock_event_device *bc, int cpu)
+> +{
+> +	if (!(bc->features & CLOCK_EVT_FEAT_HRTIMER))
+> +		return 0;
+> +	if (bc->next_event.tv64 == KTIME_MAX)
+> +		return 0;
+> +	return bc->bound_on == cpu ? -EBUSY : 0;
+> +}
+> +
+> +static void broadcast_shutdown_local(struct clock_event_device *bc,
+> +				     struct clock_event_device *dev)
+> +{
+> +	/*
+> +	 * For hrtimer based broadcasting we cannot shutdown the cpu
+> +	 * local device if our own event is the first one to expire or
+> +	 * if we own the broadcast timer.
+> +	 */
+> +	if (bc->features & CLOCK_EVT_FEAT_HRTIMER) {
+> +		if (broadcast_needs_cpu(bc))
+> +			return;
+> +		if (dev->next_event.tv64 < bc->next_event.tv64)
+> +			return;
+> +	}
+> +	clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
+> +}
+> +
+> +static void broadcast_move_bc(int deadcpu)
+> +{
+> +	struct clock_event_device *bc = tick_broadcast_device.evtdev;
+> +
+> +	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
+> +		return;
+> +	/* This moves the broadcast assignment to this cpu */
+> +	clockevents_program_event(bc, bc->next_event, 1);
+> +}
+> +
+>  /*
+>   * Powerstate information: The system enters/leaves a state, where
+>   * affected devices might stop
+> @@ -639,8 +675,8 @@ void tick_broadcast_oneshot_control(unsi
+>  	struct clock_event_device *bc, *dev;
+>  	struct tick_device *td;
+>  	unsigned long flags;
+> +	int cpu, ret = 0;
+>  	ktime_t now;
+> -	int cpu;
+> 
+>  	/*
+>  	 * Periodic mode does not care about the enter/exit of power
+> @@ -666,7 +702,7 @@ void tick_broadcast_oneshot_control(unsi
+>  	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
+>  		if (!cpumask_test_and_set_cpu(cpu, tick_broadcast_oneshot_mask)) {
+>  			WARN_ON_ONCE(cpumask_test_cpu(cpu, tick_broadcast_pending_mask));
+> -			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
+> +			broadcast_shutdown_local(bc, dev);
+>  			/*
+>  			 * We only reprogram the broadcast timer if we
+>  			 * did not mark ourself in the force mask and
+> @@ -679,6 +715,11 @@ void tick_broadcast_oneshot_control(unsi
+>  			    dev->next_event.tv64 < bc->next_event.tv64)
+>  				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
+>  		}
+> +		/*
+> +		 * If the current CPU owns the hrtimer broadcast
+> +		 * mechanism, it cannot go deep idle.
+> +		 */
+> +		ret = broadcast_needs_cpu(bc, cpu);
+>  	} else {
+>  		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
+>  			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
+> @@ -851,6 +892,8 @@ void tick_shutdown_broadcast_oneshot(uns
+>  	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
+>  	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
+> 
+> +	broadcast_move_bc(cpu);
+> +
+>  	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
+>  }
+> 
+> 
 
