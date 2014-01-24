@@ -1,229 +1,444 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
-Date: Fri, 24 Jan 2014 09:40:40 +0100
-Message-ID: <CAKfTPtDHTs67qvoA6++zo4SZdZJj4T_BV2gVECOu-76-2kLbuw@mail.gmail.com>
-References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
- <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com> <20140122192041.GA3709@e102568-lin.cambridge.arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
+ states
+Date: Fri, 24 Jan 2014 10:08:26 +0100
+Message-ID: <52E22D8A.5000305@linaro.org>
+References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com> <52DF815D.50104@linaro.org> <52E0F9ED.2010506@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:35953 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbaAXIlB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 03:41:01 -0500
-Received: by mail-oa0-f53.google.com with SMTP id m1so3474493oag.12
-        for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2014 00:41:00 -0800 (PST)
-In-Reply-To: <20140122192041.GA3709@e102568-lin.cambridge.arm.com>
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:54267 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbaAXJIa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 04:08:30 -0500
+Received: by mail-wg0-f54.google.com with SMTP id x13so2625075wgg.33
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2014 01:08:27 -0800 (PST)
+In-Reply-To: <52E0F9ED.2010506@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: svaidy@linux.vnet.ibm.com, linux-pm@vger.kernel.org, benh@kernel.crashing.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
 
-On 22 January 2014 20:20, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> Hi Vincent,
+On 01/23/2014 12:15 PM, Preeti U Murthy wrote:
+> Hi Daniel,
 >
-> On Tue, Jan 21, 2014 at 11:16:46AM +0000, Vincent Guittot wrote:
->> Hi Lorenzo,
+> Thank you for the review.
+>
+> On 01/22/2014 01:59 PM, Daniel Lezcano wrote:
+>> On 01/17/2014 05:33 AM, Preeti U Murthy wrote:
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>>> index a55e68f..831b664 100644
+>>> --- a/drivers/cpuidle/cpuidle.c
+>>> +++ b/drivers/cpuidle/cpuidle.c
+>>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>>>
+>>>        /* ask the governor for the next state */
+>>>        next_state =3D cpuidle_curr_governor->select(drv, dev);
+>>> +
+>>> +    dev->last_residency =3D 0;
+>>>        if (need_resched()) {
+>>> -        dev->last_residency =3D 0;
 >>
->> On 20 January 2014 18:47, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
->> > ARM based platforms implement a variety of power management schemes that
->> > allow processors to enter at run-time low-power states, aka C-states
->> > in ACPI jargon. The parameters defining these C-states vary on a per-platform
->> > basis forcing the OS to hardcode the state parameters in platform
->> > specific static tables whose size grows as the number of platforms supported
->> > in the kernel increases and hampers device drivers standardization.
->> >
->> > Therefore, this patch aims at standardizing C-state device tree bindings for
->> > ARM platforms. Bindings define C-state parameters inclusive of entry methods
->> > and state latencies, to allow operating systems to retrieve the
->> > configuration entries from the device tree and initialize the related
->> > power management drivers, paving the way for common code in the kernel
->> > to deal with power states and removing the need for static data in current
->> > and previous kernel versions.
->> >
->> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->> > ---
->> >  Documentation/devicetree/bindings/arm/c-states.txt | 774 +++++++++++++++++++++
->> >  Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
->> >  2 files changed, 784 insertions(+)
->> >  create mode 100644 Documentation/devicetree/bindings/arm/c-states.txt
->> >
->> > diff --git a/Documentation/devicetree/bindings/arm/c-states.txt b/Documentation/devicetree/bindings/arm/c-states.txt
->> > new file mode 100644
->> > index 0000000..0b5617b
->> > --- /dev/null
->> > +++ b/Documentation/devicetree/bindings/arm/c-states.txt
->> > @@ -0,0 +1,774 @@
->> > +==========================================
->> > +ARM C-states binding description
->> > +==========================================
->> > +
->> > +==========================================
->> > +1 - Introduction
->> > +==========================================
->> > +
->> > +ARM systems contain HW capable of managing power consumption dynamically,
->> > +where cores can be put in different low-power states (ranging from simple
->> > +wfi to power gating) according to OSPM policies. Borrowing concepts
->> > +from the ACPI specification[1], the CPU states representing the range of
->> > +dynamic states that a processor can enter at run-time, aka C-state, can be
->> > +specified through device tree bindings representing the parameters required to
->> > +enter/exit specific C-states on a given processor.
->> > +
->> > +The state an ARM CPU can be put into is loosely identified by one of the
->> > +following operating modes:
->> > +
->> > +- Running:
->> > +        # Processor core is executing instructions
->> > +
->> > +- Wait for Interrupt:
->> > +       # An ARM processor enters wait for interrupt (WFI) low power
->> > +         state by executing a wfi instruction. When a processor enters
->> > +         wfi state it disables most of the clocks while keeping the processor
->> > +         powered up. This state is standard on all ARM processors and it is
->> > +         defined as C1 in the remainder of this document.
->> > +
+>> Why do you need to do this change ? ^^^^^
+>
+> So as to keep the last_residency consistent with the case that this p=
+atch
+> addresses: where no idle state could be selected due to strict latenc=
+y
+> requirements or disabled states and hence the cpu exits without enter=
+ing
+> idle. Else it would contain the stale value from the previous idle st=
+ate
+> entry.
+>
+> But coming to think of it dev->last_residency is not used when the la=
+st
+> entered idle state index is -1.
+>
+> So I have reverted this change as well in the revised patch below alo=
+ng
+> with mentioning the reason in the last paragraph of the changelog.
+>
 >>
->> > +- Dormant:
->> > +       # Dormant mode is entered by executing wfi instructions and by sending
->> > +         platform specific commands to the platform power controller (coupled
->> > +         with processor specific SW/HW control sequences).
->> > +         In dormant mode, most of the processor control and debug logic is
->> > +         powered up but cache RAM can be put in retention state, providing
+>>>            /* give the governor an opportunity to reflect on the
+>>> outcome */
+>>>            if (cpuidle_curr_governor->reflect)
+>>>                cpuidle_curr_governor->reflect(dev, next_state);
+>>> @@ -140,6 +141,18 @@ int cpuidle_idle_call(void)
+>>>            return 0;
+>>>        }
+>>>
+>>> +    /* Unlike in the need_resched() case, we return here because t=
+he
+>>> +     * governor did not find a suitable idle state. However idle i=
+s
+>>> still
+>>> +     * in progress as we are not asked to reschedule. Hence we ret=
+urn
+>>> +     * without enabling interrupts.
 >>
->> Base on your description, it's not clear for me what is on, what is
->> lost and what is power down ?
->> My understand of the dormant mode that you described above is : the
->> cache is preserved (and especially the cache RAM) but the processor
->> state is lost (registers ...). Do I understand correctly ?
+>> That will lead to a WARN.
 >>
->> What about retention mode where the contents of processor and cache
->> are preserved but the power consumption is reduced ? it can be seen as
->> a special wfi mode which need specific SW/HW control sequences but i'm
->> not sure to understand how to describe such state with your proposal.
+>>> +     * NOTE: The return code should still be success, since the
+>>> verdict of this
+>>> +     * call is "do not enter any idle state" and not a failed call
+>>> due to
+>>> +     * errors.
+>>> +     */
+>>> +    if (next_state < 0)
+>>> +        return 0;
+>>> +
+>>
+>> Returning from here breaks the symmetry of the trace.
+>
+> I have addressed the above concerns in the patch found below.
+> Does the rest of the patch look sound?
+>
+> Regards
+> Preeti U Murthy
+>
+> ---------------------------------------------------------------------=
+-
+>
+> cpuidle/governors: Fix logic in selection of idle states
+>
+> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>
+> The cpuidle governors today are not handling scenarios where no idle =
+state
+> can be chosen. Such scenarios coud arise if the user has disabled all=
+ the
+> idle states at runtime or the latency requirement from the cpus is ve=
+ry strict.
+>
+> The menu governor returns 0th index of the idle state table when no o=
+ther
+> idle state is suitable. This is even when the idle state correspondin=
+g to this
+> index is disabled or the latency requirement is strict and the exit_l=
+atency
+> of the lowest idle state is also not acceptable. Hence this patch
+> fixes this logic in the menu governor by defaulting to an idle state =
+index
+> of -1 unless any other state is suitable.
+>
+> The ladder governor needs a few more fixes in addition to that requir=
+ed in the
+> menu governor. When the ladder governor decides to demote the idle st=
+ate of a
+> CPU, it does not check if the lower idle states are enabled. Add this=
+ logic
+> in addition to the logic where it chooses an index of -1 if it can ne=
+ither
+> promote or demote the idle state of a cpu nor can it choose the curre=
+nt idle
+> state.
+>
+> The cpuidle_idle_call() will return back if the governor decides upon=
+ not
+> entering any idle state. However it cannot return an error code becau=
+se all
+> archs have the logic today that if the call to cpuidle_idle_call() fa=
+ils, it
+> means that the cpuidle driver failed to *function*; for instance due =
+to
+> errors during registration. As a result they end up deciding upon a
+> default idle state on their own, which could very well be a deep idle=
+ state.
+> This is incorrect in cases where no idle state is suitable.
+>
+> Besides for the scenario that this patch is addressing, the call actu=
+ally
+> succeeds. Its just that no idle state is thought to be suitable by th=
+e governors.
+> Under such a circumstance return success code without entering any id=
+le
+> state.
+>
+> The consequence of this patch additionally  on the menu governor is t=
+hat as
+> long as a valid idle state cannot be chosen, the cpuidle statistics t=
+hat this
+> governor uses to predict the next idle state remain untouched from th=
+e last
+> valid idle state. This is because an idle state is not even being pre=
+dicted
+> in this path, hence there is no point correcting the prediction eithe=
+r.
+>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>
+> Changes from V1:https://lkml.org/lkml/2014/1/14/26
+>
+> 1. Change the return code to success from -EINVAL due to the reason m=
+entioned
+> in the changelog.
+> 2. Add logic that the patch is addressing in the ladder governor as w=
+ell.
+> 3. Added relevant comments and removed redundant logic as suggested i=
+n the
+> above thread.
+> ---
+>   drivers/cpuidle/cpuidle.c          |   15 +++++
+>   drivers/cpuidle/governors/ladder.c |  101 +++++++++++++++++++++++++=
++----------
+>   drivers/cpuidle/governors/menu.c   |    7 +-
+>   3 files changed, 90 insertions(+), 33 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a55e68f..19d17e8 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>
+>   	/* ask the governor for the next state */
+>   	next_state =3D cpuidle_curr_governor->select(drv, dev);
+> +
+> +	dev->last_residency =3D 0;
+>   	if (need_resched()) {
+
+What about if (need_resched() || next_state < 0) ?
+
+> -		dev->last_residency =3D 0;
+>   		/* give the governor an opportunity to reflect on the outcome */
+>   		if (cpuidle_curr_governor->reflect)
+>   			cpuidle_curr_governor->reflect(dev, next_state);
+> @@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
+>   	}
+>
+>   	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> +	/*
+> +	 * NOTE: The return code should still be success, since the verdict=
+ of
+> +	 * this call is "do not enter any idle state". It is not a failed c=
+all
+> +	 * due to errors.
+> +	 */
+> +	if (next_state < 0) {
+> +		entered_state =3D next_state;
+> +		local_irq_enable();
+> +		goto out;
+> +	}
+>
+>   	broadcast =3D !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIME=
+R_STOP);
+>
+> @@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
+>   	if (broadcast)
+>   		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+>
+> -	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> +out:	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>
+>   	/* give the governor an opportunity to reflect on the outcome */
+>   	if (cpuidle_curr_governor->reflect)
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/gov=
+ernors/ladder.c
+> index 9f08e8c..7e93aaa 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -58,6 +58,36 @@ static inline void ladder_do_selection(struct ladd=
+er_device *ldev,
+>   	ldev->last_state_idx =3D new_idx;
+>   }
+>
+> +static int can_promote(struct ladder_device *ldev, int last_idx,
+> +				int last_residency)
+> +{
+> +	struct ladder_device_state *last_state;
+> +
+> +	last_state =3D &ldev->states[last_idx];
+> +	if (last_residency > last_state->threshold.promotion_time) {
+> +		last_state->stats.promotion_count++;
+> +		last_state->stats.demotion_count =3D 0;
+> +		if (last_state->stats.promotion_count >=3D last_state->threshold.p=
+romotion_count)
+> +			return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int can_demote(struct ladder_device *ldev, int last_idx,
+> +			int last_residency)
+> +{
+> +	struct ladder_device_state *last_state;
+> +
+> +	last_state =3D &ldev->states[last_idx];
+> +	if (last_residency < last_state->threshold.demotion_time) {
+> +		last_state->stats.demotion_count++;
+> +		last_state->stats.promotion_count =3D 0;
+> +		if (last_state->stats.demotion_count >=3D last_state->threshold.de=
+motion_count)
+> +			return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+>   /**
+>    * ladder_select_state - selects the next state to enter
+>    * @drv: cpuidle driver
+> @@ -73,29 +103,33 @@ static int ladder_select_state(struct cpuidle_dr=
+iver *drv,
+>
+>   	/* Special case when user has set very strict latency requirement =
+*/
+>   	if (unlikely(latency_req =3D=3D 0)) {
+> -		ladder_do_selection(ldev, last_idx, 0);
+> -		return 0;
+> +		if (last_idx >=3D 0)
+> +			ladder_do_selection(ldev, last_idx, -1);
+> +		goto out;
+>   	}
+>
+> -	last_state =3D &ldev->states[last_idx];
+> -
+> -	if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+> -		last_residency =3D cpuidle_get_last_residency(dev) - \
+> -					 drv->states[last_idx].exit_latency;
+> +	if (last_idx >=3D 0) {
+> +		if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+> +			last_residency =3D cpuidle_get_last_residency(dev) - \
+> +						 drv->states[last_idx].exit_latency;
+> +		} else {
+> +			last_state =3D &ldev->states[last_idx];
+> +			last_residency =3D last_state->threshold.promotion_time + 1;
+> +		}
+>   	}
+> -	else
+> -		last_residency =3D last_state->threshold.promotion_time + 1;
+>
+>   	/* consider promotion */
+>   	if (last_idx < drv->state_count - 1 &&
+>   	    !drv->states[last_idx + 1].disabled &&
+>   	    !dev->states_usage[last_idx + 1].disable &&
+> -	    last_residency > last_state->threshold.promotion_time &&
+>   	    drv->states[last_idx + 1].exit_latency <=3D latency_req) {
+> -		last_state->stats.promotion_count++;
+> -		last_state->stats.demotion_count =3D 0;
+> -		if (last_state->stats.promotion_count >=3D last_state->threshold.p=
+romotion_count) {
+> -			ladder_do_selection(ldev, last_idx, last_idx + 1);
+> +		if (last_idx >=3D 0) {
+> +			if (can_promote(ldev, last_idx, last_residency)) {
+> +				ladder_do_selection(ldev, last_idx, last_idx + 1);
+> +				return last_idx + 1;
+> +			}
+> +		} else {
+> +			ldev->last_state_idx =3D last_idx + 1;
+>   			return last_idx + 1;
+>   		}
+>   	}
+> @@ -107,26 +141,36 @@ static int ladder_select_state(struct cpuidle_d=
+river *drv,
+>   	    drv->states[last_idx].exit_latency > latency_req)) {
+>   		int i;
+>
+> -		for (i =3D last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
+> -			if (drv->states[i].exit_latency <=3D latency_req)
+> +		for (i =3D last_idx - 1; i >=3D CPUIDLE_DRIVER_STATE_START; i--) {
+> +			if (drv->states[i].exit_latency <=3D latency_req &&
+> +				!(drv->states[i].disabled || dev->states_usage[i].disable))
+>   				break;
+>   		}
+> -		ladder_do_selection(ldev, last_idx, i);
+> -		return i;
+> +		if (i >=3D 0) {
+> +			ladder_do_selection(ldev, last_idx, i);
+> +			return i;
+> +		}
+> +		goto out;
+>   	}
+>
+> -	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
+> -	    last_residency < last_state->threshold.demotion_time) {
+> -		last_state->stats.demotion_count++;
+> -		last_state->stats.promotion_count =3D 0;
+> -		if (last_state->stats.demotion_count >=3D last_state->threshold.de=
+motion_count) {
+> -			ladder_do_selection(ldev, last_idx, last_idx - 1);
+> -			return last_idx - 1;
+> +	if (last_idx > CPUIDLE_DRIVER_STATE_START) {
+> +		int i =3D last_idx - 1;
+> +
+> +		if (can_demote(ldev, last_idx, last_residency) &&
+> +			!(drv->states[i].disabled || dev->states_usage[i].disable)) {
+> +			ladder_do_selection(ldev, last_idx, i);
+> +			return i;
+>   		}
+> +		/* We come here when the last_idx is still a suitable idle state,
+> +		 * just that  promotion or demotion is not ideal.
+> +		 */
+> +		ldev->last_state_idx =3D last_idx;
+> +		return last_idx;
+>   	}
+>
+> -	/* otherwise remain at the current state */
+> -	return last_idx;
+> +	/* we come here if no idle state is suitable */
+> +out:	ldev->last_state_idx =3D -1;
+> +	return ldev->last_state_idx;
+>   }
+>
+>   /**
+> @@ -166,7 +210,8 @@ static int ladder_enable_device(struct cpuidle_dr=
+iver *drv,
+>   /**
+>    * ladder_reflect - update the correct last_state_idx
+>    * @dev: the CPU
+> - * @index: the index of actual state entered
+> + * @index: the index of actual state entered or -1 if no idle state =
+is
+> + * suitable.
+>    */
+>   static void ladder_reflect(struct cpuidle_device *dev, int index)
+>   {
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gover=
+nors/menu.c
+> index cf7f2f0..e9f17ce 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -297,12 +297,12 @@ static int menu_select(struct cpuidle_driver *d=
+rv, struct cpuidle_device *dev)
+>   		data->needs_update =3D 0;
+>   	}
+>
+> -	data->last_state_idx =3D 0;
+> +	data->last_state_idx =3D -1;
+>   	data->exit_us =3D 0;
+>
+>   	/* Special case when user has set very strict latency requirement =
+*/
+>   	if (unlikely(latency_req =3D=3D 0))
+> -		return 0;
+> +		return data->last_state_idx;
+>
+>   	/* determine the expected residency time, round up */
+>   	t =3D ktime_to_timespec(tick_nohz_get_sleep_length());
+> @@ -368,7 +368,8 @@ static int menu_select(struct cpuidle_driver *drv=
+, struct cpuidle_device *dev)
+>   /**
+>    * menu_reflect - records that data structures need update
+>    * @dev: the CPU
+> - * @index: the index of actual entered state
+> + * @index: the index of actual entered state or -1 if no idle state =
+is
+> + * suitable.
+>    *
+>    * NOTE: it's important to be fast here because this operation will=
+ add to
+>    *       the overall exit latency.
+>
 >
 
-Hi Lorenzo,
 
-Sorry for the late reply,
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-> I had an idea. To simplify things, I think that one possibility is to
-> add a parameter to the power domain specifier (platform specific, see
-> Tomasz bindings):
-
-We can't use a simple boolean state (on/off) for defining the
-powerdomain state associated to a c-state so your proposal of being
-able to add a parameter that will define the power domain state is
-interesting.
-
->
-> Documentation/devicetree/bindings/power/power_domain.txt
->
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-January/224928.html
->
-> to represent, when that state is entered the behavior of the power
-> controller (ie cache RAM retention or cache shutdown or in general any
-> substate within a power domain). Since it is platform specific, and since
-> we are able to link caches to the power domain, the power controller will
-> actually define what happens to the cache when that state is entered
-> (basically we use the power domain specifier additional parameter to define
-> a "substate" in that power domain e.g.:
->
-> Example:
->
-> foo_power_controller {
->         [...]
->         /*
->          * first cell is register index, second one is the state index
->          * that in turn implies the state behavior - eg cache lost or
->          * retained
->          */
->         #power-domain-cells = <2>;
-> };
->
-> l1-cache {
->         [...]
->         /*
->          * syntax: power-domains = list of power domain specifiers
->                 <[&power_domain_phandle register-index state],[&power_domain_phandle register-index state]>;
->                 The syntax is defined by the power controller du jour
->                 as described by Tomasz bindings
->         */
->         power-domains =<&foo_power_controller 0 0 &foo_power_controller 0 1>;
-
-Normally, power-domains describes a list of power domain specifiers
-that are necessary for the l1-cache to at least retain its state so
-i'm not sure understand your example above
-
-If we take the example of system that support running, retention and
-powerdown state described as state 0, 1 and 2 for the power domain, i
-would have set the l1-cache like:
-       power-domains =<&foo_power_controller 0 1>;
-
-for saying that the state is retained up to state 1
-
-Please look below, i have modified the rest of your example accordingly
-
->
-> }:
->
-> and then
->
-> state0 {
->         index = <2>;
->         compatible = "arm,cpu-power-state";
->         latency = <...>;
->         /*
->          * This means that when the state is entered, the power
->          * controller should use register index 0 and state 0,
->          * whose meaning is power controller specific. Since we
->          * know all components affected (for every component
->          * we declare its power domain(s) and states so we
->          * know what components are affected by the state entry.
->          * Given the cache node above and this phandle, the state
->          * implies that the cache is retained, register index == 0 state == 0
->          /*
->         power-domain =<&foo_power_controller 0 0>;
-
-for retention state we need to set the power domain in state 1
-        power-domain =<&foo_power_controller 0 1>;
-
-> };
->
-> state1 {
->         index = <3>;
->         compatible = "arm,cpu-power-state";
->         latency = <...>;
->         /*
->          * This means that when the state is entered, the power
->          * controller should use register index 0 and state 1,
->          * whose meaning is power controller specific. Since we
->          * know all components affected (for every component
->          * we declare its power domain(s) and states so we
->          * know what components are affected by the state entry.
->          * Given the cache node above and this phandle, the state
->          * implies that the cache is lost, register index == 0 state == 1
->          /*
->         power-domain =<&foo_power_controller 0 1>;
-
-for power down mode, we need to set thge power domain in state 2
-        power-domain =<&foo_power_controller 0 2>;
-
-
-Vincent
-
-> };
->
-> It is complex but it is probably the cleanest way. And it leaves complexity
-> to power controller implementations (if managed in the kernel....), which
-> actually makes sense because it is up to power controller to define the
-> behavior of certain states.
->
-> All in all it is just an idea, feel free to scotch it, it is complex but
-> we have to sort it out, one way or another.
->
-> Vincent, Tomasz, anyone, thoughts ?
-> Lorenzo
->
