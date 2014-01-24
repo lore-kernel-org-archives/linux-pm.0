@@ -1,86 +1,170 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: Preserving Sysfs file permissions on suspend/resume
-Date: Fri, 24 Jan 2014 17:20:38 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59E61F08@BGSMSX103.gar.corp.intel.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states
+ bindings
+Date: Fri, 24 Jan 2014 17:58:07 +0000
+Message-ID: <20140124175806.GC23274@e102568-lin.cambridge.arm.com>
+References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
+ <20140122192041.GA3709@e102568-lin.cambridge.arm.com>
+ <CAKfTPtDHTs67qvoA6++zo4SZdZJj4T_BV2gVECOu-76-2kLbuw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:3415 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbaAXRVM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 12:21:12 -0500
-Content-Language: en-US
+Received: from service87.mimecast.com ([91.220.42.44]:38189 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbaAXR6N convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 12:58:13 -0500
+In-Reply-To: <CAKfTPtDHTs67qvoA6++zo4SZdZJj4T_BV2gVECOu-76-2kLbuw@mail.gmail.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat (srivatsa.bhat@linux.vnet.ibm.com)" <srivatsa.bhat@linux.vnet.ibm.com>, "Viresh Kumar (viresh.kumar@linaro.org)" <viresh.kumar@linaro.org>
-Cc: "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
 
-Hi Srivatsa/Viresh,
+Hi Vincent,
 
-I am using a 3.10 kernel (on a 4-core machine)and trying out
-the Sysfs permission patches. I took the series of 7 patches
-from Srivatsa from here:
-https://lkml.org/lkml/2013/7/30/434
-They apply cleanly on top of the 3.10 kernel that I use; and the top
-commit that I have now is the 7th patch in this series i.e
-"perform light-weight init/teardown".
+On Fri, Jan 24, 2014 at 08:40:40AM +0000, Vincent Guittot wrote:
 
-But I observe a crash on resume (crash logs attached in the end of
-this mail).  Further looking at the patch history from linux-pm archives,
-I see the following patches might be required to fix this:
+[...]
 
-1) cb38ed5cf1c4fdb7454e4b48fb70c396f5acfb21
-[Prevent problems in update_policy_cpu() if last_cpu == new_cpu]
+> Hi Lorenzo,
+> 
+> Sorry for the late reply,
+> 
+> 
+> > I had an idea. To simplify things, I think that one possibility is to
+> > add a parameter to the power domain specifier (platform specific, see
+> > Tomasz bindings):
+> 
+> We can't use a simple boolean state (on/off) for defining the
+> powerdomain state associated to a c-state so your proposal of being
+> able to add a parameter that will define the power domain state is
+> interesting.
+> 
+> >
+> > Documentation/devicetree/bindings/power/power_domain.txt
+> >
+> > http://lists.infradead.org/pipermail/linux-arm-kernel/2014-January/224928.html
+> >
+> > to represent, when that state is entered the behavior of the power
+> > controller (ie cache RAM retention or cache shutdown or in general any
+> > substate within a power domain). Since it is platform specific, and since
+> > we are able to link caches to the power domain, the power controller will
+> > actually define what happens to the cache when that state is entered
+> > (basically we use the power domain specifier additional parameter to define
+> > a "substate" in that power domain e.g.:
+> >
+> > Example:
+> >
+> > foo_power_controller {
+> >         [...]
+> >         /*
+> >          * first cell is register index, second one is the state index
+> >          * that in turn implies the state behavior - eg cache lost or
+> >          * retained
+> >          */
+> >         #power-domain-cells = <2>;
+> > };
+> >
+> > l1-cache {
+> >         [...]
+> >         /*
+> >          * syntax: power-domains = list of power domain specifiers
+> >                 <[&power_domain_phandle register-index state],[&power_domain_phandle register-index state]>;
+> >                 The syntax is defined by the power controller du jour
+> >                 as described by Tomasz bindings
+> >         */
+> >         power-domains =<&foo_power_controller 0 0 &foo_power_controller 0 1>;
+> 
+> Normally, power-domains describes a list of power domain specifiers
+> that are necessary for the l1-cache to at least retain its state so
+> i'm not sure understand your example above
 
-2) 0d66b91ebff49841f607a3c079984c907c8a4199
-[Fix crash in cpufreq-stats during suspend/resume]
+> 
+> If we take the example of system that support running, retention and
+> powerdown state described as state 0, 1 and 2 for the power domain, i
+> would have set the l1-cache like:
+>        power-domains =<&foo_power_controller 0 1>;
+> 
+> for saying that the state is retained up to state 1
+> 
+> Please look below, i have modified the rest of your example accordingly
+> 
+> >
+> > }:
+> >
+> > and then
+> >
+> > state0 {
+> >         index = <2>;
+> >         compatible = "arm,cpu-power-state";
+> >         latency = <...>;
+> >         /*
+> >          * This means that when the state is entered, the power
+> >          * controller should use register index 0 and state 0,
+> >          * whose meaning is power controller specific. Since we
+> >          * know all components affected (for every component
+> >          * we declare its power domain(s) and states so we
+> >          * know what components are affected by the state entry.
+> >          * Given the cache node above and this phandle, the state
+> >          * implies that the cache is retained, register index == 0 state == 0
+> >          /*
+> >         power-domain =<&foo_power_controller 0 0>;
+> 
+> for retention state we need to set the power domain in state 1
+>         power-domain =<&foo_power_controller 0 1>;
+> 
+> > };
+> >
+> > state1 {
+> >         index = <3>;
+> >         compatible = "arm,cpu-power-state";
+> >         latency = <...>;
+> >         /*
+> >          * This means that when the state is entered, the power
+> >          * controller should use register index 0 and state 1,
+> >          * whose meaning is power controller specific. Since we
+> >          * know all components affected (for every component
+> >          * we declare its power domain(s) and states so we
+> >          * know what components are affected by the state entry.
+> >          * Given the cache node above and this phandle, the state
+> >          * implies that the cache is lost, register index == 0 state == 1
+> >          /*
+> >         power-domain =<&foo_power_controller 0 1>;
+> 
+> for power down mode, we need to set thge power domain in state 2
+>         power-domain =<&foo_power_controller 0 2>;
 
-I am neither a cpufreq expert, nor have the luxury of moving to
-the latest version of cpufreq (may be from stable 3.13),
-I would appreciate your advice here.
+Ok, what I meant was not what you got, but your approach looks sensible
+too. What I do not like is that the power-domain specifier is power
+controller specific (that was true even for my example). In theory
+we can achieve something identical by forcing every component in a power
+domain to specify the max C-state index that allows it to retain its
+state (through a specific property). Same logic to your example applies.
+Nice thing is that we do not change the power domain specifiers, bad thing
+is that it adds two properties to each device (c-state index and
+power-domain-specifier - but we can make it hierarchical so that device
+nodes can inherit the maximum operating C-state by inheriting the value
+from a parent node providing a common value).
 
-I also see some fixes for kobject related crashes from Viresh in the
-commit history, but the crash I see doesn't look like it is related to
-any of these. [again, from whatever I understand ;)]
+In my example the third parameter was just a number that the power
+controller would decode (eg 0 = cache retained, 1 = cache lost)
+according to its implementation, it was not a "state index". The
+power controller would know what to do with eg a cache component (that
+declares to be in that power domain) when a C-state with that power
+domain specifier was entered.
 
-Thanks,
-Durga
---crash logs--
-[  132.139372] smpboot: CPU 1 is now offline
-[  132.140472] BUG: unable to handle kernel NULL pointer dereference at   (null)
-[  132.140501] IP: [<c17dbb16>] cpufreq_stat_notifier_policy+0xa6/0xf0
-[  132.140516] *pdpt = 0000000000000000 *pde = f000f3b5f000f3b0 
-[  132.140532] Oops: 0002 [#1] PREEMPT SMP
-...
-[  132.140792] Call Trace:
-[  132.140814]  [<c124d442>] ? try_to_del_timer_sync+0x42/0x60
-[  132.140833]  [<c1a80c87>] notifier_call_chain+0x47/0x90
-[  132.140853]  [<c12652c1>] __blocking_notifier_call_chain+0x41/0x80
-[  132.140869]  [<c126531f>] blocking_notifier_call_chain+0x1f/0x30
-[  132.140886]  [<c17da115>] __cpufreq_remove_dev.isra.10+0x185/0x4a0
-[  132.140903]  [<c1a7d9d6>] ? _raw_spin_unlock_irqrestore+0x26/0x50
-[  132.140918]  [<c124d442>] ? try_to_del_timer_sync+0x42/0x60
-[  132.140938]  [<c1a6ed8f>] cpufreq_cpu_callback+0x4b/0x5e
-[  132.140952]  [<c1a80c87>] notifier_call_chain+0x47/0x90
-[  132.140969]  [<c12651ae>] __raw_notifier_call_chain+0x1e/0x30
-[  132.140985]  [<c1241024>] __cpu_notify+0x24/0x50
-[  132.141002]  [<c1a62484>] _cpu_down+0x74/0x260
-[  132.141021]  [<c124136c>] disable_nonboot_cpus+0x6c/0x100
-[  132.141038]  [<c1283445>] suspend_devices_and_enter+0x1f5/0x400
-[  132.141055]  [<c12838ca>] pm_suspend+0x27a/0x2a0
-[  132.141071]  [<c1284065>] try_to_suspend+0xa5/0xc0
-[  132.141086]  [<c1a7d98d>] ? _raw_spin_unlock_irq+0x1d/0x40
-[  132.141103]  [<c1259a0d>] process_one_work+0x11d/0x3e0
-[  132.141117]  [<c1a80edd>] ? add_preempt_count+0x7d/0xf0
-[  132.141130]  [<c1a80dd5>] ? sub_preempt_count+0x55/0xe0
-[  132.141147]  [<c125a0a6>] worker_thread+0xf6/0x310
-[  132.141162]  [<c1a7d9d6>] ? _raw_spin_unlock_irqrestore+0x26/0x50
-[  132.141178]  [<c1259fb0>] ? rescuer_thread+0x2b0/0x2b0
-[  132.141193]  [<c125fc64>] kthread+0x94/0xa0
-[  132.141207]  [<c1a80dd5>] ? sub_preempt_count+0x55/0xe0
-[  132.141228]  [<c1a84237>] ret_from_kernel_thread+0x1b/0x28
-[  132.141242]  [<c125fbd0>] ? kthread_create_on_node+0xc0/0xc0
-[  132.141466] EIP: [<c17dbb16>] cpufreq_stat_notifier_policy+0xa6/0xf0 SS:ESP 0068:f0fd3d08
-[  132.141471] CR2: 0000000000000000
-[  132.141486] ---[ end trace a047d761256e0391 ]---
+Not very different from what you are saying, let's get to the nub:
+
+- Either we define it in a platform specific way through the power
+  domain specifier
+- Or we force a max-c-state-supported property for every device,
+  possibly hierarchical
+
+Thoughts ?
+
+Thank you !
+Lorenzo
+
