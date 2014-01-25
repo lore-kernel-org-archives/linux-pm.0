@@ -1,166 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][RFC/RFT][PATCH v2 5/6] ACPI / LPSS: Support for device latency tolerance PM QoS
-Date: Fri, 24 Jan 2014 23:31:59 +0100
-Message-ID: <2474482.NNYSDJNOHI@vostro.rjw.lan>
-References: <5434847.aCyiWHNRe7@vostro.rjw.lan> <1447517.8AFrWcAgld@vostro.rjw.lan> <4404835.S7CcAgDRpP@vostro.rjw.lan>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] Thermal management updates for v3.14-rc1
+Date: Fri, 24 Jan 2014 18:00:15 -0800
+Message-ID: <CA+55aFyPGdJEP3fpZxVqQNp_BtJ3vqqq_0xst_3H8Pf9QV627Q@mail.gmail.com>
+References: <1390534568.12771.58.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4404835.S7CcAgDRpP@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vb0-f47.google.com ([209.85.212.47]:40978 "EHLO
+	mail-vb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbaAYCAQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 21:00:16 -0500
+In-Reply-To: <1390534568.12771.58.camel@rzhang1-mobl4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-devicetree <devicetree@vger.kernel.org>, linux-lmsensor <lm-sensors@lm-sensors.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: ACPI / LPSS: Support for device latency tolerance PM QoS
+On Thu, Jan 23, 2014 at 7:36 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> Please pull from the git repository at
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+>
+> to receive Thermal management updates for v3.14-rc1
 
-Add a new routine, acpi_lpss_set_ltr(), for setting latency tolerance
-values for LPSS devices having LTR (Latency Tolerance Reporting)
-registers.  Add .bind()/.unbind() callbacks to lpss_handler to set
-the LPSS devices' power.set_latency_tolerance callback pointers to
-acpi_lpss_set_ltr() during device addition and to clear them on
-device removal, respectively.
+This annoys me _enormously_:
 
-That will cause the device latency tolerance PM QoS to work for
-the devices in question as documented.
+  CONFIG_ACPI_INT3403_THERMAL:
 
-This changeset includes a fix from Mika Westerberg.
+  This driver uses ACPI INT3403 device objects. If present, it will
+  register each INT3403 thermal sensor as a thermal zone.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+This is the "help" text for the new ACPI thermal driver.
 
-This one needs to be update to handle PM_QOS_LATENCY_ANY to follow the [3/6]
-update I've just sent.
+WTF?
 
-Thanks,
-Rafael
+Really, whoever wrote that "help" text wasn't thinking of helping
+users. What the f*ck is an INT3403 device object? Is is common? Where?
+Is it a standard? Is it something normal people should expect?
 
----
- drivers/acpi/acpi_lpss.c |   73 ++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 72 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -18,6 +18,7 @@
- #include <linux/io.h>
- #include <linux/platform_device.h>
- #include <linux/platform_data/clk-lpss.h>
-+#include <linux/pm_qos.h>
- #include <linux/pm_runtime.h>
- 
- #include "internal.h"
-@@ -33,6 +34,12 @@ ACPI_MODULE_NAME("acpi_lpss");
- #define LPSS_GENERAL_UART_RTS_OVRD	BIT(3)
- #define LPSS_SW_LTR			0x10
- #define LPSS_AUTO_LTR			0x14
-+#define LPSS_LTR_SNOOP_REQ		BIT(15)
-+#define LPSS_LTR_SNOOP_MASK		0x0000FFFF
-+#define LPSS_LTR_SNOOP_LAT_1US		0x800
-+#define LPSS_LTR_SNOOP_LAT_32US		0xC00
-+#define LPSS_LTR_SNOOP_LAT_SHIFT	5
-+#define LPSS_LTR_MAX_VAL		0x3FF
- #define LPSS_TX_INT			0x20
- #define LPSS_TX_INT_MASK		BIT(1)
- 
-@@ -316,6 +323,17 @@ static int acpi_lpss_create_device(struc
- 	return ret;
- }
- 
-+static u32 __lpss_reg_read(struct lpss_private_data *pdata, unsigned int reg)
-+{
-+	return readl(pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
-+}
-+
-+static void __lpss_reg_write(u32 val, struct lpss_private_data *pdata,
-+			     unsigned int reg)
-+{
-+	writel(val, pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
-+}
-+
- static int lpss_reg_read(struct device *dev, unsigned int reg, u32 *val)
- {
- 	struct acpi_device *adev;
-@@ -337,7 +355,7 @@ static int lpss_reg_read(struct device *
- 		ret = -ENODEV;
- 		goto out;
- 	}
--	*val = readl(pdata->mmio_base + pdata->dev_desc->prv_offset + reg);
-+	*val = __lpss_reg_read(pdata, reg);
- 
-  out:
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
-@@ -390,6 +408,39 @@ static struct attribute_group lpss_attr_
- 	.name = "lpss_ltr",
- };
- 
-+static void acpi_lpss_set_ltr(struct device *dev, s32 val)
-+{
-+	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-+	u32 ltr_mode, ltr_val;
-+
-+	ltr_mode = __lpss_reg_read(pdata, LPSS_GENERAL);
-+	if (val < 0) {
-+		if (ltr_mode & LPSS_GENERAL_LTR_MODE_SW) {
-+			ltr_mode &= ~LPSS_GENERAL_LTR_MODE_SW;
-+			__lpss_reg_write(ltr_mode, pdata, LPSS_GENERAL);
-+		}
-+		return;
-+	}
-+	ltr_val = __lpss_reg_read(pdata, LPSS_SW_LTR) & ~LPSS_LTR_SNOOP_MASK;
-+	if (val == PM_QOS_LATENCY_ANY) {
-+		ltr_val |= LPSS_LTR_SNOOP_LAT_32US;
-+		val = LPSS_LTR_MAX_VAL;
-+	} else if (val > LPSS_LTR_MAX_VAL) {
-+		ltr_val |= LPSS_LTR_SNOOP_LAT_32US | LPSS_LTR_SNOOP_REQ;
-+		val >>= LPSS_LTR_SNOOP_LAT_SHIFT;
-+		if (val > LPSS_LTR_MAX_VAL)
-+			val = LPSS_LTR_MAX_VAL;
-+	} else {
-+		ltr_val |= LPSS_LTR_SNOOP_LAT_1US;
-+	}
-+	ltr_val |= val;
-+	__lpss_reg_write(ltr_val, pdata, LPSS_SW_LTR);
-+	if (!(ltr_mode & LPSS_GENERAL_LTR_MODE_SW)) {
-+		ltr_mode |= LPSS_GENERAL_LTR_MODE_SW;
-+		__lpss_reg_write(ltr_mode, pdata, LPSS_GENERAL);
-+	}
-+}
-+
- static int acpi_lpss_platform_notify(struct notifier_block *nb,
- 				     unsigned long action, void *data)
- {
-@@ -427,9 +478,29 @@ static struct notifier_block acpi_lpss_n
- 	.notifier_call = acpi_lpss_platform_notify,
- };
- 
-+static void acpi_lpss_bind(struct device *dev)
-+{
-+	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-+
-+	if (!pdata || !pdata->mmio_base)
-+		return;
-+
-+	if (pdata->mmio_size >= pdata->dev_desc->prv_offset + LPSS_LTR_SIZE)
-+		dev->power.set_latency_tolerance = acpi_lpss_set_ltr;
-+	else
-+		dev_err(dev, "MMIO size insufficient to access LTR\n");
-+}
-+
-+static void acpi_lpss_unbind(struct device *dev)
-+{
-+	dev->power.set_latency_tolerance = NULL;
-+}
-+
- static struct acpi_scan_handler lpss_handler = {
- 	.ids = acpi_lpss_device_ids,
- 	.attach = acpi_lpss_create_device,
-+	.bind = acpi_lpss_bind,
-+	.unbind = acpi_lpss_unbind,
- };
- 
- void __init acpi_lpss_init(void)
-
+              Linus
