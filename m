@@ -1,42 +1,46 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] Thermal management updates for v3.14-rc1
-Date: Fri, 24 Jan 2014 18:00:15 -0800
-Message-ID: <CA+55aFyPGdJEP3fpZxVqQNp_BtJ3vqqq_0xst_3H8Pf9QV627Q@mail.gmail.com>
-References: <1390534568.12771.58.camel@rzhang1-mobl4>
+From: Antti P Miettinen <ananaza@iki.fi>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
+Date: Sat, 25 Jan 2014 10:15:46 +0200 (EET)
+Message-ID: <20140125.101546.1134862463481697494.apm@brigitte.kvy.fi>
+References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+Reply-To: ananaza@iki.fi
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f47.google.com ([209.85.212.47]:40978 "EHLO
-	mail-vb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbaAYCAQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2014 21:00:16 -0500
-In-Reply-To: <1390534568.12771.58.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: lorenzo.pieralisi@arm.com
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, daniel.lezcano@linaro.org, vincent.guittot@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, pdeschrijver@nvidia.com, nico@linaro.org, sboyd@codeaurora.org, amit.kucheria@linaro.org, t.figa@samsung.com, robh+dt@kernel.org, santosh.shilimkar@ti.com, hanjun.guo@linaro.org, mark.hambleton@broadcom.com, sudeep.holla@arm.com, grant.likely@linaro.org, galak@codeaurora.org, dave.martin@arm.com, linux-arm-kernel@lists.infradead.org, Charles.Garcia-Tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-devicetree <devicetree@vger.kernel.org>, linux-lmsensor <lm-sensors@lm-sensors.org>
 
-On Thu, Jan 23, 2014 at 7:36 PM, Zhang Rui <rui.zhang@intel.com> wrote:
->
-> Please pull from the git repository at
->
->    git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
->
-> to receive Thermal management updates for v3.14-rc1
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
+Date: Mon, 20 Jan 2014 17:47:59 +0000
+> +	- latency
+> +		Usage: Required
+> +		Value type: <prop-encoded-array>
+> +		Definition: List of u32 values representing worst case latency
+> +			    in microseconds required to enter and exit the
+> +			    C-state, one value per OPP [2]. The list should
+> +			    be specified in the same order as the operating
+> +			    points property list of the cpu this state is
+> +			    valid on.
+> +			    If no OPP bindings are present, the latency value
+> +			    is associated with the current OPP of CPUs in the
+> +			    system.
 
-This annoys me _enormously_:
+I'm afraid the CPU OPP is not enough to capture the variance in
+latencies. Especially memory frequency affects some of the latencies
+very stronly.
 
-  CONFIG_ACPI_INT3403_THERMAL:
-
-  This driver uses ACPI INT3403 device objects. If present, it will
-  register each INT3403 thermal sensor as a thermal zone.
-
-This is the "help" text for the new ACPI thermal driver.
-
-WTF?
-
-Really, whoever wrote that "help" text wasn't thinking of helping
-users. What the f*ck is an INT3403 device object? Is is common? Where?
-Is it a standard? Is it something normal people should expect?
-
-              Linus
+	--Antti
