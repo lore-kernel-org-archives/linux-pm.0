@@ -1,17 +1,17 @@
 From: Abdul Nasser <abdulnas500@justin.ddo.jp>
 Subject: Kind Regards
-Date: Sun, 26 Jan 2014 21:52:15 +0000
-Message-ID: <SECEXCHANGEMFlF8HGm0000400e@mail.standardelectronics.com>
+Date: Sun, 26 Jan 2014 22:31:12 +0000
+Message-ID: <SECEXCHANGEaidlJYs70000629f__49934.9032099873$1390779783$gmane$org@mail.standardelectronics.com>
 Reply-To: s.abdulnasser@yahoo.com.hk
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.standardelectronics.com ([74.92.67.124]:55453 "EHLO
+Received: from mail.standardelectronics.com ([74.92.67.124]:55337 "EHLO
 	mail.standardelectronics.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753505AbaAZXjK convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1753392AbaAZXi7 convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 26 Jan 2014 18:39:10 -0500
+	Sun, 26 Jan 2014 18:38:59 -0500
 Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
