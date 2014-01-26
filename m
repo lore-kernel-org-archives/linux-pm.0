@@ -1,59 +1,97 @@
-From: "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
-Subject: RE: [PATCH] cpufreq: Align all CPUs to the same frequency if using
- shared clock
-Date: Sun, 26 Jan 2014 03:18:01 +0000
-Message-ID: <630F9443351D2B4BB7EC6BAE6B6B08342549EE97@SHSMSX104.ccr.corp.intel.com>
-References: <1390273543-18032-1-git-send-email-zhuangzhi.li@intel.com>
-	<CAKohponL_R8M40BJa3X+++1yDtw5KRvk88w8kVfA+_D+poK08A@mail.gmail.com>
-	<630F9443351D2B4BB7EC6BAE6B6B08342549C5DC@SHSMSX104.ccr.corp.intel.com>
-	<CAKohpo=ng-B6kLdWxBn_cNsWNVsYaNAD-ZzQLLOfkbj+FDg_fg@mail.gmail.com>
-	<CAKohpokHi=yuGJm2Nf-TAMVhGQ8Do02j+s6z3eenKRzoW8pv7g@mail.gmail.com>
-	<630F9443351D2B4BB7EC6BAE6B6B08342549CF6A@SHSMSX104.ccr.corp.intel.com>
- <CAKohpokMFwvY-SMcuJf_C_gASQT-8tT8wRrQ6=YX7QQ0YwcgNg@mail.gmail.com>
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: [PATCH powerpc] cpuidle: fix per cpu accessing of cpuidle_devices
+Date: Sun, 26 Jan 2014 13:09:02 +0800
+Message-ID: <1390712942.3911.8.camel@ThinkPad-T5421>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:47949 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbaAZDSE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jan 2014 22:18:04 -0500
-In-Reply-To: <CAKohpokMFwvY-SMcuJf_C_gASQT-8tT8wRrQ6=YX7QQ0YwcgNg@mail.gmail.com>
-Content-Language: en-US
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:41143 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbaAZFJQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 26 Jan 2014 00:09:16 -0500
+Received: from /spool/local
+	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <zhong@linux.vnet.ibm.com>;
+	Sun, 26 Jan 2014 15:09:13 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+	by d23dlp03.au.ibm.com (Postfix) with ESMTP id DA4593578055
+	for <linux-pm@vger.kernel.org>; Sun, 26 Jan 2014 16:09:08 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s0Q58tIK7406010
+	for <linux-pm@vger.kernel.org>; Sun, 26 Jan 2014 16:08:56 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s0Q597VT019797
+	for <linux-pm@vger.kernel.org>; Sun, 26 Jan 2014 16:09:08 +1100
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, kyungmin.park@samsung.com, daniel.lezcano@linaro.org, deepthi@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+
+The patch tries to fix following bad address accessing, seems caused by
+a typo in commit 7f74dc0f. cpuidle_devices is defined statically, so
+per_cpu should be used to access it. 
+
+[  204.774193] Unable to handle kernel paging request for data at address 0x00a7d000
+[  204.774215] Faulting instruction address: 0xc0000000006ee92c
+[  204.774225] Oops: Kernel access of bad area, sig: 11 [#1]
+[  204.774230] PREEMPT SMP NR_CPUS=16 DEBUG_PAGEALLOC NUMA pSeries
+[  204.774244] Modules linked in: binfmt_misc
+[  204.774254] CPU: 8 PID: 3590 Comm: bash Not tainted 3.13.0-08526-gb2e448e-dirty #2
+[  204.774262] task: c0000001faf40000 ti: c0000001fa904000 task.ti: c0000001fa904000
+[  204.774268] NIP: c0000000006ee92c LR: c0000000006ee920 CTR: c000000000064e94
+[  204.774275] REGS: c0000001fa907240 TRAP: 0300   Not tainted  (3.13.0-08526-gb2e448e-dirty)
+[  204.774281] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 22242424  XER: 20000000
+[  204.774303] CFAR: 0000000000009088 DAR: 0000000000a7d000 DSISR: 40000000 SOFTE: 1 
+GPR00: c0000000006ee920 c0000001fa9074c0 c000000000d764a8 c000000000c5d4c0 
+GPR04: 0000000000000010 0000000000000010 0000000000000000 0000000000000000 
+GPR08: ffffffffffffffff c0000000016564a8 ffffffffffffffff 0000000000000000 
+GPR12: 0000000000000002 c00000000f33e800 000000001012b3dc 0000000000000000 
+GPR16: 0000000000000000 0000000010129c58 0000000010129bf8 000000001012b948 
+GPR20: 0000000000000000 000000001012b3e4 000000001013ea90 0000000000000000 
+GPR24: c000000000c5d858 c0000000015f38e8 c000000000cb8b26 c000000000c664a8 
+GPR28: 0000000000000000 ffffffffffffffe5 0000000000a7d000 0000000000a7d000 
+[  204.774407] NIP [c0000000006ee92c] .cpuidle_disable_device+0x30/0xc4
+[  204.774413] LR [c0000000006ee920] .cpuidle_disable_device+0x24/0xc4
+[  204.774419] Call Trace:
+[  204.774424] [c0000001fa9074c0] [c0000000006ee920] .cpuidle_disable_device+0x24/0xc4 (unreliable)
+[  204.774435] [c0000001fa907540] [c0000000000652a4] .pseries_cpuidle_add_cpu_notifier+0xb8/0xe0
+[  204.774445] [c0000001fa9075c0] [c000000000855548] .notifier_call_chain+0x150/0x1c0
+[  204.774455] [c0000001fa907670] [c0000000000b3564] .__raw_notifier_call_chain+0x40/0x50
+[  204.774463] [c0000001fa907710] [c000000000079c40] .__cpu_notify+0x50/0x9c
+[  204.774472] [c0000001fa9077a0] [c00000000018a054] ._cpu_down+0x1ec/0x388
+[  204.774479] [c0000001fa9078b0] [c00000000018a234] .cpu_down+0x44/0x64
+[  204.774488] [c0000001fa907940] [c0000000005627bc] .cpu_subsys_offline+0x24/0x3c
+[  204.774497] [c0000001fa9079c0] [c00000000055b2a4] .device_offline+0xc8/0x120
+[  204.774504] [c0000001fa907a50] [c00000000055d000] .online_store+0x74/0xb0
+[  204.774512] [c0000001fa907b00] [c000000000559924] .dev_attr_store+0x60/0x78
+[  204.774520] [c0000001fa907ba0] [c00000000028cc78] .sysfs_kf_write+0x7c/0x9c
+[  204.774528] [c0000001fa907c30] [c000000000291ae8] .kernfs_fop_write+0x108/0x174
+[  204.774537] [c0000001fa907cd0] [c0000000001f8308] .vfs_write+0x110/0x21c
+[  204.774545] [c0000001fa907d70] [c0000000001f854c] .SyS_write+0x70/0xbc
+[  204.774553] [c0000001fa907e30] [c000000000009d88] syscall_exit+0x0/0x7c
+[  204.774560] Instruction dump:
+[  204.774565] 7c0802a6 f8010010 fbe1fff8 f821ff81 7c7f1b78 60000000 60000000 7fe3fb78 
+[  204.774582] 48000c89 60000000 2fbf0000 419e0084 <e81f0000> 780b17e1 41820078 2fa30000 
+[  204.774601] ---[ end trace edf1df93cf81e28d ]---
+
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/processor_idle.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+index 94134a5..197cadc 100644
+--- a/arch/powerpc/platforms/pseries/processor_idle.c
++++ b/arch/powerpc/platforms/pseries/processor_idle.c
+@@ -190,7 +190,7 @@ static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
+ {
+ 	int hotcpu = (unsigned long)hcpu;
+ 	struct cpuidle_device *dev =
+-			per_cpu_ptr(cpuidle_devices, hotcpu);
++			per_cpu(cpuidle_devices, hotcpu);
+ 
+ 	if (dev && cpuidle_get_driver()) {
+ 		switch (action) {
 
 
-
-> -----Original Message-----
-> From: Viresh Kumar [mailto:viresh.kumar@linaro.org]
-> Sent: Wednesday, January 22, 2014 2:43 PM
-> To: Li, Zhuangzhi
-> Cc: Rafael J. Wysocki; cpufreq@vger.kernel.org; linux-pm@vger.kernel.org;
-> Linux Kernel Mailing List; Liu, Chuansheng
-> Subject: Re: [PATCH] cpufreq: Align all CPUs to the same frequency if using
-> shared clock
-> 
-> On 22 January 2014 11:56, Li, Zhuangzhi <zhuangzhi.li@intel.com> wrote:
-> > I don't think it's a real bug in bootloader, the bootloader can set
-> > CPUs to different frequencies according to actually requirements(Power
-> > saving first or Performance first), the CPUs freq policy are initialized in kernel,
-> if the kernel want to share one CPU policy(using CPUFREQ_SHARED_TYPE_ALL
-> type), it should ensure all CPUs frequencies aligned first, don't depend on the
-> bootloader CPUs Pre-states, then the kernel can have better compatibility.
-> >
-> > If the kernel uses CPUFREQ_SHARED_TYPE_ALL policy, the patch can ensure
-> these:
-> > 1. If all CPUs are in the same P-state, it does nothing when cpufreq
-> > registering 2. If the CPUs are in different P-states, all the other CPUs are
-> aligned once to current frequency of CPU0 according to the present policy.
-> 
-> I thought, as you are asking kernel to keep same freq on all of them, then same
-> should be true for bootloaders.
-> 
-> Otherwise it was okay.
-Yes, but most of the platforms(ARM&x86) only enable one CPU Core in bootloader or Bios because of multiple threads(SMP) are not supported, 
-and the other Cores stay in default configuration for saving power in bootloader, kernel is responsible for booting up the other Cores from default frequencies for SMP.
-Cpufreq driver need to init them to required P-state before governor active when using CPUFREQ_SHARED_TYPE_ALL policy.
