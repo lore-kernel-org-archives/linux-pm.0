@@ -1,55 +1,33 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/9] setting the table for integration of cpuidle with
- the scheduler
-Date: Mon, 27 Jan 2014 13:47:31 +0100
-Message-ID: <20140127124731.GA4941@twins.programming.kicks-ass.net>
-References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
+From: Antti P Miettinen <ananaza@iki.fi>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states
+ bindings
+Date: Mon, 27 Jan 2014 14:48:15 +0200 (EET)
+Message-ID: <20140127.144815.1048814583962628826.apm@brigitte.kvy.fi>
+References: <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+	<20140125.101546.1134862463481697494.apm@brigitte.kvy.fi>
+	<20140127114125.GD16639@e102568-lin.cambridge.arm.com>
+Reply-To: ananaza@iki.fi
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx.kvy.fi ([83.143.60.202]:10385 "EHLO mx.kvy.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751431AbaA0MsV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jan 2014 07:48:21 -0500
+In-Reply-To: <20140127114125.GD16639@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: lorenzo.pieralisi@arm.com
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Dave.Martin@arm.com, Mark.Rutland@arm.com, Sudeep.Holla@arm.com, Charles.Garcia-Tobin@arm.com, nico@linaro.org, robh+dt@kernel.org, pdeschrijver@nvidia.com, grant.likely@linaro.org, galak@codeaurora.org, santosh.shilimkar@ti.com, mark.hambleton@broadcom.com, hanjun.guo@linaro.org, daniel.lezcano@linaro.org, amit.kucheria@linaro.org, vincent.guittot@linaro.org, sboyd@codeaurora.org, t.figa@samsung.com, khilman@linaro.org
 
-On Mon, Jan 27, 2014 at 01:08:15AM -0500, Nicolas Pitre wrote:
-> As everyone should know by now, we want to integrate the cpuidle
-> governor with the scheduler for a more efficient idling of CPUs.
-> In order to help the transition, this small patch series moves the
-> existing interaction with cpuidle from architecture code to generic
-> core code.  No functional change should have occurred yet.
-> 
-> The ARM, PPC, SH and X86 architectures are concerned.  Small cleanups
-> to ARM and ARM64 are also included. I don't know yet the best path for
-> those patches to get into mainline, but it is probably best if they
-> stay together. So ACKs from architecture maintainers would be greatly
-> appreciated.
-> 
-> 
->  arch/arm/kernel/process.c                       | 21 +++---------
->  arch/arm/kernel/setup.c                         |  7 ++++
->  arch/arm64/kernel/process.c                     |  5 ---
->  arch/arm64/kernel/setup.c                       |  7 ++++
->  arch/powerpc/platforms/pseries/processor_idle.c |  5 +++
->  arch/powerpc/platforms/pseries/setup.c          | 34 ++++++++-----------
->  arch/sh/kernel/idle.c                           |  4 +--
->  arch/x86/kernel/process.c                       |  5 +--
->  include/linux/cpu.h                             |  1 -
->  kernel/Makefile                                 |  1 -
->  kernel/cpu/Makefile                             |  1 -
->  kernel/sched/Makefile                           |  2 +-
->  kernel/{cpu => sched}/idle.c                    |  6 ++--
->  13 files changed, 44 insertions(+), 55 deletions(-)
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> That's why I defined the worst case. How did you implemented it in your
+> idle drivers ? That would help generalize it, after all these bindings
+> are there to simplify drivers upstreaming, feedback welcome.
 
-Thomas, any objections to this? It looks like a sensible thing to do.
+Currently we do not handle this well downstream either. The problem
+with worst case is that the absolute worst case can be really bad and
+probability of it might be very low. Sorry - no ready answer :-)
+
+	--Antti
