@@ -1,63 +1,53 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v2] thermal,rcar_thermal: Add dependency on HAS_IOMEM
-Date: Mon, 27 Jan 2014 12:32:04 +0100
-Message-ID: <2789122.Lrp2LJzQED@avalon>
-References: <1390812058-9002-1-git-send-email-richard@nod.at>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
+Date: Mon, 27 Jan 2014 11:41:26 +0000
+Message-ID: <20140127114125.GD16639@e102568-lin.cambridge.arm.com>
+References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140125.101546.1134862463481697494.apm@brigitte.kvy.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from perceval.ideasonboard.com ([95.142.166.194]:48858 "EHLO
-	perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbaA0LbR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jan 2014 06:31:17 -0500
-In-Reply-To: <1390812058-9002-1-git-send-email-richard@nod.at>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140125.101546.1134862463481697494.apm@brigitte.kvy.fi>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Antti P Miettinen <ananaza@iki.fi>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "pdeschrijver@nvidia.com" <pdeschrijver@nvidia.com>, "nico@linaro.org" <nico@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "t.figa@samsung.com" <t.figa@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "santosh.shilimkar@ti.com" <santosh.shilimkar@ti.com>, "hanjun.guo@linaro.org" <hanjun.guo@linaro.org>, "mark.hambleton@broadcom.com" <mark.hambleton@broadcom.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "galak@codeaurora.org" <galak@codeau>
 List-Id: linux-pm@vger.kernel.org
-To: Richard Weinberger <richard@nod.at>
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms@verge.net.au
 
-Hi Richard,
-
-Thank you for the patch.
-
-On Monday 27 January 2014 09:40:58 Richard Weinberger wrote:
-> Commit beeb5a1e (thermal: rcar-thermal: Enable driver compilation with
-> COMPILE_TEST) broke build on archs wihout io memory.
+On Sat, Jan 25, 2014 at 08:15:46AM +0000, Antti P Miettinen wrote:
+> From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Subject: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
+> Date: Mon, 20 Jan 2014 17:47:59 +0000
+> > +	- latency
+> > +		Usage: Required
+> > +		Value type: <prop-encoded-array>
+> > +		Definition: List of u32 values representing worst case latency
+> > +			    in microseconds required to enter and exit the
+> > +			    C-state, one value per OPP [2]. The list should
+> > +			    be specified in the same order as the operating
+> > +			    points property list of the cpu this state is
+> > +			    valid on.
+> > +			    If no OPP bindings are present, the latency value
+> > +			    is associated with the current OPP of CPUs in the
+> > +			    system.
 > 
-> On archs like S390 or um this driver cannot build nor work.
-> Make it depend on HAS_IOMEM to bypass build failures.
-> 
-> drivers/thermal/rcar_thermal.c:404: undefined reference to
-> `devm_ioremap_resource' drivers/thermal/rcar_thermal.c:426: undefined
-> reference to `devm_ioremap_resource'
-> 
-> Signed-off-by: Richard Weinberger <richard@nod.at>
+> I'm afraid the CPU OPP is not enough to capture the variance in
+> latencies. Especially memory frequency affects some of the latencies
+> very stronly.
 
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+That's why I defined the worst case. How did you implemented it in your
+idle drivers ? That would help generalize it, after all these bindings
+are there to simplify drivers upstreaming, feedback welcome.
 
-I'm not the driver maintainer so I won't take this patch in my tree. Could you 
-please keep an eye on it to make sure it gets picked by the maintainers ?
-
-> ---
->  drivers/thermal/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 35c0664..88efa8f 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -136,6 +136,7 @@ config SPEAR_THERMAL
->  config RCAR_THERMAL
->  	tristate "Renesas R-Car thermal driver"
->  	depends on ARCH_SHMOBILE || COMPILE_TEST
-> +	depends on HAS_IOMEM
->  	help
->  	  Enable this to plug the R-Car thermal sensor driver into the Linux
->  	  thermal framework.
-
--- 
-Regards,
-
-Laurent Pinchart
-
+Thanks,
+Lorenzo
