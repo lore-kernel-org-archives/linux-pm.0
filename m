@@ -1,66 +1,52 @@
-From: Barry Song <21cnbao@gmail.com>
-Subject: [PATCH] kernel/power/swap.c: print the speed of compressed image instead of uncompressed one
-Date: Mon, 27 Jan 2014 13:59:55 +0800
-Message-ID: <1390802395-2336-1-git-send-email-21cnbao@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:49835 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbaA0GAZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jan 2014 01:00:25 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: [PATCH 0/9] setting the table for integration of cpuidle with the
+ scheduler
+Date: Mon, 27 Jan 2014 01:08:15 -0500
+Message-ID: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, workgroup.linux@csr.com, Barry Song <Baohua.Song@csr.com>, Bin Shi <Bin.Shi@csr.com>
 
-From: Barry Song <Baohua.Song@csr.com>
+As everyone should know by now, we want to integrate the cpuidle
+governor with the scheduler for a more efficient idling of CPUs.
+In order to help the transition, this small patch series moves the
+existing interaction with cpuidle from architecture code to generic
+core code.  No functional change should have occurred yet.
 
-For users of hibernation, people care more about the size of the compressed
-image than uncompressed one. as embedded guys will try to improve the speed
-of SD, NAND and do the best to shrink memory to make the image as less as
-possible.
-so printing the speed of compressed image is more important and making more
-senses here.
+The ARM, PPC, SH and X86 architectures are concerned.  Small cleanups
+to ARM and ARM64 are also included. I don't know yet the best path for
+those patches to get into mainline, but it is probably best if they
+stay together. So ACKs from architecture maintainers would be greatly
+appreciated.
 
-Signed-off-by: Barry Song <Baohua.Song@csr.com>
-Signed-off-by: Bin Shi <Bin.Shi@csr.com>
----
- kernel/power/swap.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 7c33ed2..bcb5c51 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -587,6 +587,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
- 	unsigned char *page = NULL;
- 	struct cmp_data *data = NULL;
- 	struct crc_data *crc = NULL;
-+	unsigned int nr_cmp_written = 0;
- 
- 	/*
- 	 * We'll limit the number of threads for compression to limit memory
-@@ -747,6 +748,8 @@ static int save_image_lzo(struct swap_map_handle *handle,
- 			     off += PAGE_SIZE) {
- 				memcpy(page, data[thr].cmp + off, PAGE_SIZE);
- 
-+				nr_cmp_written++;
-+
- 				ret = swap_write_page(handle, page, &bio);
- 				if (ret)
- 					goto out_finish;
-@@ -764,7 +767,11 @@ out_finish:
- 		ret = err2;
- 	if (!ret)
- 		printk(KERN_INFO "PM: Image saving done.\n");
--	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
-+
-+	printk(KERN_INFO "PM: Saved %lu Kbytes (uncompressed Image)\n",
-+		nr_to_write * (PAGE_SIZE / 1024));
-+	swsusp_show_speed(&start, &stop, nr_cmp_written, "Wrote compressed");
-+
- out_clean:
- 	if (crc) {
- 		if (crc->thr)
--- 
-1.7.5.4
+ arch/arm/kernel/process.c                       | 21 +++---------
+ arch/arm/kernel/setup.c                         |  7 ++++
+ arch/arm64/kernel/process.c                     |  5 ---
+ arch/arm64/kernel/setup.c                       |  7 ++++
+ arch/powerpc/platforms/pseries/processor_idle.c |  5 +++
+ arch/powerpc/platforms/pseries/setup.c          | 34 ++++++++-----------
+ arch/sh/kernel/idle.c                           |  4 +--
+ arch/x86/kernel/process.c                       |  5 +--
+ include/linux/cpu.h                             |  1 -
+ kernel/Makefile                                 |  1 -
+ kernel/cpu/Makefile                             |  1 -
+ kernel/sched/Makefile                           |  2 +-
+ kernel/{cpu => sched}/idle.c                    |  6 ++--
+ 13 files changed, 44 insertions(+), 55 deletions(-)
 
+
+Nicolas
