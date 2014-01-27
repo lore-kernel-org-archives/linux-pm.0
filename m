@@ -1,53 +1,145 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
-Date: Mon, 27 Jan 2014 11:41:26 +0000
-Message-ID: <20140127114125.GD16639@e102568-lin.cambridge.arm.com>
-References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
- <20140125.101546.1134862463481697494.apm@brigitte.kvy.fi>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 6/9] PPC: remove redundant cpuidle_idle_call()
+Date: Mon, 27 Jan 2014 17:29:51 +0530
+Message-ID: <52E64A37.4090405@linux.vnet.ibm.com>
+References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org> <1390802904-28399-7-git-send-email-nicolas.pitre@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140125.101546.1134862463481697494.apm@brigitte.kvy.fi>
-Content-Disposition: inline
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Antti P Miettinen <ananaza@iki.fi>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "pdeschrijver@nvidia.com" <pdeschrijver@nvidia.com>, "nico@linaro.org" <nico@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "t.figa@samsung.com" <t.figa@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "santosh.shilimkar@ti.com" <santosh.shilimkar@ti.com>, "hanjun.guo@linaro.org" <hanjun.guo@linaro.org>, "mark.hambleton@broadcom.com" <mark.hambleton@broadcom.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "galak@codeaurora.org" <galak@codeau>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:41666 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751431AbaA0MDs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jan 2014 07:03:48 -0500
+Received: from /spool/local
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Mon, 27 Jan 2014 07:03:48 -0500
+In-Reply-To: <1390802904-28399-7-git-send-email-nicolas.pitre@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-On Sat, Jan 25, 2014 at 08:15:46AM +0000, Antti P Miettinen wrote:
-> From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Subject: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
-> Date: Mon, 20 Jan 2014 17:47:59 +0000
-> > +	- latency
-> > +		Usage: Required
-> > +		Value type: <prop-encoded-array>
-> > +		Definition: List of u32 values representing worst case latency
-> > +			    in microseconds required to enter and exit the
-> > +			    C-state, one value per OPP [2]. The list should
-> > +			    be specified in the same order as the operating
-> > +			    points property list of the cpu this state is
-> > +			    valid on.
-> > +			    If no OPP bindings are present, the latency value
-> > +			    is associated with the current OPP of CPUs in the
-> > +			    system.
+Hi Nicolas,
+
+On 01/27/2014 11:38 AM, Nicolas Pitre wrote:
+> The core idle loop now takes care of it.  However a few things need
+> checking:
 > 
-> I'm afraid the CPU OPP is not enough to capture the variance in
-> latencies. Especially memory frequency affects some of the latencies
-> very stronly.
+> - Invocation of cpuidle_idle_call() in pseries_lpar_idle() happened
+>   through arch_cpu_idle() and was therefore always preceded by a call
+>   to ppc64_runlatch_off().  To preserve this property now that
+>   cpuidle_idle_call() is invoked directly from core code, a call to
+>   ppc64_runlatch_off() has been added to idle_loop_prolog() in
+>   platforms/pseries/processor_idle.c.
+> 
+> - Similarly, cpuidle_idle_call() was followed by ppc64_runlatch_off()
+>   so a call to the later has been added to idle_loop_epilog().
+> 
+> - And since arch_cpu_idle() always made sure to re-enable IRQs if they
+>   were not enabled, this is now
+>   done in idle_loop_epilog() as well.
+> 
+> The above was made in order to keep the execution flow close to the
+> original.  I don't know if that was strictly necessary. Someone well
+> aquainted with the platform details might find some room for possible
+> optimizations.
+> 
+> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+> ---
+>  arch/powerpc/platforms/pseries/processor_idle.c |  5 ++++
+>  arch/powerpc/platforms/pseries/setup.c          | 34 ++++++++++---------------
+>  2 files changed, 19 insertions(+), 20 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+> index a166e38bd6..72ddfe3d2f 100644
+> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+> @@ -33,6 +33,7 @@ static struct cpuidle_state *cpuidle_state_table;
+> 
+>  static inline void idle_loop_prolog(unsigned long *in_purr)
+>  {
+> +	ppc64_runlatch_off();
+>  	*in_purr = mfspr(SPRN_PURR);
+>  	/*
+>  	 * Indicate to the HV that we are idle. Now would be
+> @@ -49,6 +50,10 @@ static inline void idle_loop_epilog(unsigned long in_purr)
+>  	wait_cycles += mfspr(SPRN_PURR) - in_purr;
+>  	get_lppaca()->wait_state_cycles = cpu_to_be64(wait_cycles);
+>  	get_lppaca()->idle = 0;
+> +
+> +	if (irqs_disabled())
+> +		local_irq_enable();
+> +	ppc64_runlatch_on();
+>  }
+> 
+>  static int snooze_loop(struct cpuidle_device *dev,
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index c1f1908587..7604c19d54 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -39,7 +39,6 @@
+>  #include <linux/irq.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/root_dev.h>
+> -#include <linux/cpuidle.h>
+>  #include <linux/of.h>
+>  #include <linux/kexec.h>
+> 
+> @@ -356,29 +355,24 @@ early_initcall(alloc_dispatch_log_kmem_cache);
+> 
+>  static void pseries_lpar_idle(void)
+>  {
+> -	/* This would call on the cpuidle framework, and the back-end pseries
+> -	 * driver to  go to idle states
+> +	/*
+> +	 * Default handler to go into low thread priority and possibly
+> +	 * low power mode by cedeing processor to hypervisor
+>  	 */
+> -	if (cpuidle_idle_call()) {
+> -		/* On error, execute default handler
+> -		 * to go into low thread priority and possibly
+> -		 * low power mode by cedeing processor to hypervisor
+> -		 */
+> 
+> -		/* Indicate to hypervisor that we are idle. */
+> -		get_lppaca()->idle = 1;
+> +	/* Indicate to hypervisor that we are idle. */
+> +	get_lppaca()->idle = 1;
+> 
+> -		/*
+> -		 * Yield the processor to the hypervisor.  We return if
+> -		 * an external interrupt occurs (which are driven prior
+> -		 * to returning here) or if a prod occurs from another
+> -		 * processor. When returning here, external interrupts
+> -		 * are enabled.
+> -		 */
+> -		cede_processor();
+> +	/*
+> +	 * Yield the processor to the hypervisor.  We return if
+> +	 * an external interrupt occurs (which are driven prior
+> +	 * to returning here) or if a prod occurs from another
+> +	 * processor. When returning here, external interrupts
+> +	 * are enabled.
+> +	 */
+> +	cede_processor();
+> 
+> -		get_lppaca()->idle = 0;
+> -	}
+> +	get_lppaca()->idle = 0;
+>  }
+> 
+>  /*
+> 
 
-That's why I defined the worst case. How did you implemented it in your
-idle drivers ? That would help generalize it, after all these bindings
-are there to simplify drivers upstreaming, feedback welcome.
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-Thanks,
-Lorenzo
+The consequence of this would be for other Power platforms like PowerNV,
+we will need to invoke ppc_runlatch_off() and ppc_runlatch_on() in each
+of the idle routines since the idle_loop_prologue() and
+idle_loop_epilogue() are not invoked by them, but we will take care of this.
+
+Regards
+Preeti U Murthy
+
