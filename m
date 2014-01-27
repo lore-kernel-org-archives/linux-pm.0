@@ -1,20 +1,20 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/9] ARM: get rid of arch_cpu_idle_prepare()
-Date: Mon, 27 Jan 2014 09:22:55 +0100
-Message-ID: <52E6175F.1050401@linaro.org>
-References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org> <1390802904-28399-2-git-send-email-nicolas.pitre@linaro.org>
+Subject: Re: [PATCH 2/9] ARM64: get rid of arch_cpu_idle_prepare()
+Date: Mon, 27 Jan 2014 09:23:47 +0100
+Message-ID: <52E61793.4020608@linaro.org>
+References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org> <1390802904-28399-3-git-send-email-nicolas.pitre@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f176.google.com ([74.125.82.176]:43598 "EHLO
-	mail-we0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbaA0IW4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jan 2014 03:22:56 -0500
-Received: by mail-we0-f176.google.com with SMTP id t61so4772432wes.21
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jan 2014 00:22:55 -0800 (PST)
-In-Reply-To: <1390802904-28399-2-git-send-email-nicolas.pitre@linaro.org>
+Received: from mail-we0-f177.google.com ([74.125.82.177]:55348 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752057AbaA0IXs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jan 2014 03:23:48 -0500
+Received: by mail-we0-f177.google.com with SMTP id x55so4819608wes.22
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jan 2014 00:23:46 -0800 (PST)
+In-Reply-To: <1390802904-28399-3-git-send-email-nicolas.pitre@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Nicolas Pitre <nicolas.pitre@linaro.org>, Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
@@ -36,40 +36,42 @@ ot
 r
 > at late_initcall time but this shouldn't make a difference in practic=
 e
-> i.e. when FIQs are actually used.
+> given that FIQs are not currently used on ARM64.
 >
 > Signed-off-by: Nicolas Pitre <nico@linaro.org>
 
 Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
->   arch/arm/kernel/process.c | 5 -----
->   arch/arm/kernel/setup.c   | 7 +++++++
+>   arch/arm64/kernel/process.c | 5 -----
+>   arch/arm64/kernel/setup.c   | 7 +++++++
 >   2 files changed, 7 insertions(+), 5 deletions(-)
 >
-> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-> index 92f7b15dd2..725b8c95e0 100644
-> --- a/arch/arm/kernel/process.c
-> +++ b/arch/arm/kernel/process.c
-> @@ -142,11 +142,6 @@ static void default_idle(void)
->   	local_irq_enable();
->   }
+> diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.=
+c
+> index de17c89985..f6c733da67 100644
+> --- a/arch/arm64/kernel/process.c
+> +++ b/arch/arm64/kernel/process.c
+> @@ -84,11 +84,6 @@ EXPORT_SYMBOL_GPL(pm_power_off);
+>   void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cm=
+d);
+>   EXPORT_SYMBOL_GPL(arm_pm_restart);
 >
 > -void arch_cpu_idle_prepare(void)
 > -{
 > -	local_fiq_enable();
 > -}
 > -
->   void arch_cpu_idle_enter(void)
->   {
->   	ledtrig_cpu(CPU_LED_IDLE_START);
-> diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-> index 987a7f5bce..d027b1a6fe 100644
-> --- a/arch/arm/kernel/setup.c
-> +++ b/arch/arm/kernel/setup.c
-> @@ -789,6 +789,13 @@ static int __init init_machine_late(void)
+>   /*
+>    * This is our default idle handler.
+>    */
+> diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+> index bd9bbd0e44..259557983a 100644
+> --- a/arch/arm64/kernel/setup.c
+> +++ b/arch/arm64/kernel/setup.c
+> @@ -255,6 +255,13 @@ static int __init arm64_device_init(void)
 >   }
->   late_initcall(init_machine_late);
+>   arch_initcall(arm64_device_init);
 >
 > +static int __init init_fiq_boot_cpu(void)
 > +{
@@ -78,9 +80,9 @@ Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > +}
 > +late_initcall(init_fiq_boot_cpu);
 > +
->   #ifdef CONFIG_KEXEC
->   static inline unsigned long long get_total_mem(void)
->   {
+>   static DEFINE_PER_CPU(struct cpu, cpu_data);
+>
+>   static int __init topology_init(void)
 >
 
 
