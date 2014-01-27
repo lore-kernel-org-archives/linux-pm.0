@@ -1,7 +1,7 @@
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: [PATCH 5/9] ARM: remove redundant cpuidle_idle_call()
-Date: Mon, 27 Jan 2014 01:08:20 -0500
-Message-ID: <1390802904-28399-6-git-send-email-nicolas.pitre@linaro.org>
+Subject: [PATCH 7/9] SH: remove redundant cpuidle_idle_call()
+Date: Mon, 27 Jan 2014 01:08:22 -0500
+Message-ID: <1390802904-28399-8-git-send-email-nicolas.pitre@linaro.org>
 References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,49 +25,30 @@ The core idle loop now takes care of it.
 
 Signed-off-by: Nicolas Pitre <nico@linaro.org>
 ---
- arch/arm/kernel/process.c | 16 +++++-----------
- 1 file changed, 5 insertions(+), 11 deletions(-)
+ arch/sh/kernel/idle.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-index 725b8c95e0..34a59b7614 100644
---- a/arch/arm/kernel/process.c
-+++ b/arch/arm/kernel/process.c
-@@ -30,7 +30,6 @@
- #include <linux/uaccess.h>
- #include <linux/random.h>
- #include <linux/hw_breakpoint.h>
+diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+index 2ea4483fd7..be616ee0cf 100644
+--- a/arch/sh/kernel/idle.c
++++ b/arch/sh/kernel/idle.c
+@@ -16,7 +16,6 @@
+ #include <linux/thread_info.h>
+ #include <linux/irqflags.h>
+ #include <linux/smp.h>
 -#include <linux/cpuidle.h>
- #include <linux/leds.h>
- #include <linux/reboot.h>
+ #include <linux/atomic.h>
+ #include <asm/pgalloc.h>
+ #include <asm/smp.h>
+@@ -40,8 +39,7 @@ void arch_cpu_idle_dead(void)
  
-@@ -133,7 +132,11 @@ EXPORT_SYMBOL_GPL(arm_pm_restart);
- 
- void (*arm_pm_idle)(void);
- 
--static void default_idle(void)
-+/*
-+ * Called from the core idle loop.
-+ */
-+
-+void arch_cpu_idle(void)
+ void arch_cpu_idle(void)
  {
- 	if (arm_pm_idle)
- 		arm_pm_idle();
-@@ -163,15 +166,6 @@ void arch_cpu_idle_dead(void)
- #endif
- 
- /*
-- * Called from the core idle loop.
-- */
--void arch_cpu_idle(void)
--{
 -	if (cpuidle_idle_call())
--		default_idle();
--}
--
--/*
-  * Called by kexec, immediately prior to machine_kexec().
-  *
-  * This must completely disable all secondary CPUs; simply causing those CPUs
+-		sh_idle();
++	sh_idle();
+ }
+ 
+ void __init select_idle_routine(void)
 -- 
 1.8.4.108.g55ea5f6
