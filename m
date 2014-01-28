@@ -1,66 +1,74 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
-Date: Tue, 28 Jan 2014 12:58:30 -0800
-Message-ID: <20140128205830.14275.80319@capellas-linux>
-References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
- <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
- <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
- <20131003214246.24540.99218@capellas-linux>
- <20131003234735.19051.84583@capellas-linux>
- <20131010175010.17870.58060@capellas-linux>
- <20131022175414.14753.58063@capellas-linux>
- <20140128185926.5312.36635@capellas-linux>
- <20140128125442.4bac748945b404179deb58ba@linux-foundation.org>
+From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: [PATCH] arm, pm, vmpressure: add missing slab.h includes
+Date: Tue, 28 Jan 2014 17:19:22 -0500
+Message-ID: <20140128221922.GC16060@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140128125442.4bac748945b404179deb58ba@linux-foundation.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Serge Hallyn <serge.hallyn@canonical.com>, linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@linaro.org, "Rafael J.  Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+Sender: cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Johannes Weiner <hannes-druUgvl0LCNAfugRpC6u6w@public.gmane.org>, Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>, Balbir Singh <bsingharora-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu-+CUm20s59erQFUHtdCDX3A@public.gmane.org>, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Andrew Morton (2014-01-28 12:54:42)
-> The problem is that kernel/power/hibernate.c:resume_store() is handed a
-> newline-terminated string, yes?  And if it blindly hands that string
-> over to name_to_dev_t(), name_to_dev_t() fails because the string is
-> wrong.
-> 
-> This is an oddity of the sysfs->kernel interface and altering
-> name_to_dev_t doesn't really seem appropriate for this problem - it
-> would be better to fix the caller to pass in the correct string.
-> 
-> Something like...
-> 
-> /*
->  * Clean up a string which may have leading and/or trailing whitespace (as
->  * defined by isspace()) by trimming off that whitespace.  Returns an address
->  * which the caller must kfree(), or NULL on error.
->  */
-> char *strim_copy(const char *s, gfp_t gfp)
-> {
->         char *ret = kstrdup(skip_spaces(s), gfp);
-> 
->         if (ret)
->                 strim(ret);
->         return ret;
-> }
-> EXPORT_SYMBOL(strim_copy);
+arch/arm/mach-tegra/pm.c, kernel/power/console.c and mm/vmpressure.c
+were somehow getting slab.h indirectly through cgroup.h which in turn
+was getting it indirectly through xattr.h.  A scheduled cgroup change
+drops xattr.h inclusion from cgroup.h and breaks compilation of these
+three files.  Add explicit slab.h includes to the three files.
 
-Hi Andrew,
+A pending cgroup patch depends on this change and it'd be great if
+this can be routed through cgroup/for-3.14-fixes branch.
 
-Thanks, this is similar, but tidier than my original patch.  I'll
-fix up and repost the patch with a fix like what you're proposing.
+Signed-off-by: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Johannes Weiner <hannes-druUgvl0LCNAfugRpC6u6w@public.gmane.org>
+Cc: Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>
+Cc: Balbir Singh <bsingharora-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu-+CUm20s59erQFUHtdCDX3A@public.gmane.org>
+Cc: cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+---
+If you guys are okay with this going through cgroup/for-3.14-fixes,
+can you please ack it?
 
 Thanks!
 
-Sebastian
+ arch/arm/mach-tegra/pm.c |    1 +
+ kernel/power/console.c   |    1 +
+ mm/vmpressure.c          |    1 +
+ 3 files changed, 3 insertions(+)
+
+--- a/arch/arm/mach-tegra/pm.c
++++ b/arch/arm/mach-tegra/pm.c
+@@ -24,6 +24,7 @@
+ #include <linux/cpu_pm.h>
+ #include <linux/suspend.h>
+ #include <linux/err.h>
++#include <linux/slab.h>
+ #include <linux/clk/tegra.h>
+ 
+ #include <asm/smp_plat.h>
+--- a/kernel/power/console.c
++++ b/kernel/power/console.c
+@@ -9,6 +9,7 @@
+ #include <linux/kbd_kern.h>
+ #include <linux/vt.h>
+ #include <linux/module.h>
++#include <linux/slab.h>
+ #include "power.h"
+ 
+ #define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
+--- a/mm/vmpressure.c
++++ b/mm/vmpressure.c
+@@ -19,6 +19,7 @@
+ #include <linux/mm.h>
+ #include <linux/vmstat.h>
+ #include <linux/eventfd.h>
++#include <linux/slab.h>
+ #include <linux/swap.h>
+ #include <linux/printk.h>
+ #include <linux/vmpressure.h>
