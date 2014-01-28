@@ -1,141 +1,96 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
- states
-Date: Tue, 28 Jan 2014 16:36:29 +0530
-Message-ID: <52E78F35.2090106@linux.vnet.ibm.com>
-References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com> <52DF815D.50104@linaro.org> <52E0F9ED.2010506@linux.vnet.ibm.com> <52E22D8A.5000305@linaro.org> <52E23EA0.7010803@linux.vnet.ibm.com> <52E76E6F.4000101@linaro.org>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
+Date: Tue, 28 Jan 2014 14:50:35 +0100
+Message-ID: <20140128135033.GC9172@localhost.localdomain>
+References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com>
+ <alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de>
+ <CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com>
+ <CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
+ <20140123133537.GA13345@localhost.localdomain>
+ <CAKohponoTb-SeRx8Za6HhmVNwrT0COxykhi=s=uOR8SGNvkgUA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:47090 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754927AbaA1LKD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Jan 2014 06:10:03 -0500
-Received: from /spool/local
-	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 28 Jan 2014 06:10:02 -0500
-In-Reply-To: <52E76E6F.4000101@linaro.org>
+Received: from mail-wg0-f44.google.com ([74.125.82.44]:52142 "EHLO
+	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754620AbaA1Nui (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jan 2014 08:50:38 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKohponoTb-SeRx8Za6HhmVNwrT0COxykhi=s=uOR8SGNvkgUA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lei Wen <adrian.wenl@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Hi Daniel,
+On Thu, Jan 23, 2014 at 07:50:40PM +0530, Viresh Kumar wrote:
+> On 23 January 2014 19:05, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > On Thu, Jan 23, 2014 at 11:22:32AM +0530, Viresh Kumar wrote:
+> >> I think below diff might get this fixed for you, though I am not sure if it
+> >> breaks something else. Probably Thomas/Frederic can answer here.
+> >> If this looks fine I will send it formally again:
+> >>
+> >> diff --git a/kernel/timer.c b/kernel/timer.c
+> >> index accfd24..3a2c7fa 100644
+> >> --- a/kernel/timer.c
+> >> +++ b/kernel/timer.c
+> >> @@ -940,7 +940,8 @@ void add_timer_on(struct timer_list *timer, int cpu)
+> >>          * makes sure that a CPU on the way to stop its tick can not
+> >>          * evaluate the timer wheel.
+> >>          */
+> >> -       wake_up_nohz_cpu(cpu);
+> >> +       if (!tbase_get_deferrable(timer->base))
+> >> +               wake_up_nohz_cpu(cpu);
+> 
+> Wait, I got the wrong code here. That's wasn't my initial intention.
+> I actually wanted to write something like this:
+> 
+>  -       wake_up_nohz_cpu(cpu);
+>  +       if (!tbase_get_deferrable(timer->base) || idle_cpu(cpu))
+>  +               wake_up_nohz_cpu(cpu);
+> 
+> Will that work?
 
-On 01/28/2014 02:16 PM, Daniel Lezcano wrote:
-> On 01/24/2014 11:21 AM, Preeti U Murthy wrote:
->> On 01/24/2014 02:38 PM, Daniel Lezcano wrote:
->>> On 01/23/2014 12:15 PM, Preeti U Murthy wrote:
->>>> Hi Daniel,
->>>>
->>>> Thank you for the review.
-> 
-> [ ... ]
-> 
->>>> ---
->>>>    drivers/cpuidle/cpuidle.c          |   15 +++++
->>>>    drivers/cpuidle/governors/ladder.c |  101
->>>> ++++++++++++++++++++++++++----------
->>>>    drivers/cpuidle/governors/menu.c   |    7 +-
->>>>    3 files changed, 90 insertions(+), 33 deletions(-)
->>>>
->>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->>>> index a55e68f..19d17e8 100644
->>>> --- a/drivers/cpuidle/cpuidle.c
->>>> +++ b/drivers/cpuidle/cpuidle.c
->>>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
->>>>
->>>>        /* ask the governor for the next state */
->>>>        next_state = cpuidle_curr_governor->select(drv, dev);
->>>> +
->>>> +    dev->last_residency = 0;
->>>>        if (need_resched()) {
->>>
->>> What about if (need_resched() || next_state < 0) ?
->>
->> Hmm.. I feel we need to distinguish between the need_resched() scenario
->> and the scenario when no idle state was suitable through the trace
->> points at-least.
-> 
-> Well, I don't think so as soon as we don't care about the return value
-> of cpuidle_idle_call in both cases.
-> 
-> The traces are following a specific format. That is if the state is -1
-> (PWR_EVENT_EXIT), it means exiting the current idle state.
-> 
-> The idlestat tool [1] is using this traces to open - close transitions.
-> 
-> IMO, if the cpu is not entering idle, it should just exit without any
-> idle traces.
+Well, this is going to wake up the target from its idle state, which is
+what we want to avoid if the timer is deferrable, right?
 
-Yes I see your point here.
-> 
-> This portion of code is a bit confusing because it is introduced by the
-> menu governor updates post-poned when entering the next idle state (not
-> exiting the current idle state with good reasons).
+The simplest thing we want is:
 
-I am sorry but I don't understand this part. Which is the portion of the
-code you refer to here? Also can you please elaborate on the above
-statement?
+           if (!tbase_get_deferrable(timer->base) || tick_nohz_full_cpu(cpu))
+               wake_up_nohz_cpu(cpu);
 
-Thanks
+This spares the IPI for the common case where the timer is deferrable and we run
+in periodic or dynticks-idle mode (which should be 99.99% of the existing workloads).
 
-Regards
-Preeti U Murthy
-> 
->   -- Daniel
-> 
-> [1] http://git.linaro.org/power/idlestat.git
-> 
->> This could help while debugging when we could find situations where
->> there are no tasks to run, yet the cpu is not entering any idle state.
->> The traces could help clearly point that no idle state was thought
->> suitable by the governor. Of course there are many other means to find
->> this out, but this seems rather straightforward. Hence having the
->> condition next_state < 0 between trace_cpu_idle*() would be apt IMHO.
->>
->> Regards
->> Preeti U Murthy
->>
->>>
->>>> -        dev->last_residency = 0;
->>>>            /* give the governor an opportunity to reflect on the
->>>> outcome */
->>>>            if (cpuidle_curr_governor->reflect)
->>>>                cpuidle_curr_governor->reflect(dev, next_state);
->>>> @@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
->>>>        }
->>>>
->>>>        trace_cpu_idle_rcuidle(next_state, dev->cpu);
->>>> +    /*
->>>> +     * NOTE: The return code should still be success, since the
->>>> verdict of
->>>> +     * this call is "do not enter any idle state". It is not a failed
->>>> call
->>>> +     * due to errors.
->>>> +     */
->>>> +    if (next_state < 0) {
->>>> +        entered_state = next_state;
->>>> +        local_irq_enable();
->>>> +        goto out;
->>>> +    }
->>>>
->>>>        broadcast = !!(drv->states[next_state].flags &
->>>> CPUIDLE_FLAG_TIMER_STOP);
->>>>
->>>> @@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
->>>>        if (broadcast)
->>>>            clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
->>>> &dev->cpu);
->>>>
->>>> -    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
->>>> +out:    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
->>>>
->>>>        /* give the governor an opportunity to reflect on the outcome */
->>>>        if (cpuidle_curr_governor->reflect)
->>
-> 
-> 
+Then we can later optimize that and spare the IPI on full dynticks CPUs when they run
+idle, but that require some special care about subtle races which can't be dealt
+with a simple test on "idle_cpu(target)". And power consumption in full dynticks
+is already very suboptimized anyway.
 
+So I suggest we start simple with the above test, and a big fat comment which explains
+what we are doing and what needs to be done in the future.
+
+Thanks!
+	
+
+> 
+> > So you simply rely on the next tick to see the new timer. This should work with
+> > CONFIG_NO_HZ_IDLE but not with CONFIG_NO_HZ_FULL since the target may be running
+> > without the tick.
+> >
+> > Basically, in the case of a deferrable timer you need to manage to call
+> > wake_up_full_nohz_cpu() but not wake_up_idle_cpu().
+> >
+> > It should be even possible to spare the IPI in a full dynticks CPU if it is
+> > running idle. But that's an optional bonus because it require some deep
+> > care on complicated races against the call to tick_nohz_idle_exit().
+> >
+> > I also realize than when we enqueue a timer on a full nohz CPU, we should set_need_resched()
+> > the target before sending the IPI if it is idle like does wake_up_idle_cpu(). Otherwise the
+> > IPI will be ignored without exiting the idle loop nor reevaluating the tick on irq exit.
+> > If you can fix that along the way, that will be much appreciated.
+> 
+> I haven't thought much about this currently as I have limited knowledge of
+> these routines. Though the problem we were facing wasn't related to
+> NO_HZ_FULL. It was just about waking up an idle cpu.
+
+Sure that's fine, I'll fix that along aside your change.
