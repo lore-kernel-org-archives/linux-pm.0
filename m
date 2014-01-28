@@ -1,96 +1,89 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
-Date: Tue, 28 Jan 2014 14:50:35 +0100
-Message-ID: <20140128135033.GC9172@localhost.localdomain>
-References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com>
- <alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de>
- <CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com>
- <CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
- <20140123133537.GA13345@localhost.localdomain>
- <CAKohponoTb-SeRx8Za6HhmVNwrT0COxykhi=s=uOR8SGNvkgUA@mail.gmail.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
+Date: Tue, 28 Jan 2014 10:59:26 -0800
+Message-ID: <20140128185926.5312.36635@capellas-linux>
+References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
+ <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
+ <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
+ <20131003214246.24540.99218@capellas-linux>
+ <20131003234735.19051.84583@capellas-linux>
+ <20131010175010.17870.58060@capellas-linux>
+ <20131022175414.14753.58063@capellas-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f44.google.com ([74.125.82.44]:52142 "EHLO
-	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754620AbaA1Nui (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jan 2014 08:50:38 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKohponoTb-SeRx8Za6HhmVNwrT0COxykhi=s=uOR8SGNvkgUA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20131022175414.14753.58063@capellas-linux>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J.  Wysocki" <rjw@rjwysocki.net>
+Cc: Jens Axboe <axboe@kernel.dk>, Serge Hallyn <serge.hallyn@canonical.com>, linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, patches@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-arm-kernel@lists.infradead.org, Al Viro <viro@zeniv.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lei Wen <adrian.wenl@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Thu, Jan 23, 2014 at 07:50:40PM +0530, Viresh Kumar wrote:
-> On 23 January 2014 19:05, Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > On Thu, Jan 23, 2014 at 11:22:32AM +0530, Viresh Kumar wrote:
-> >> I think below diff might get this fixed for you, though I am not sure if it
-> >> breaks something else. Probably Thomas/Frederic can answer here.
-> >> If this looks fine I will send it formally again:
-> >>
-> >> diff --git a/kernel/timer.c b/kernel/timer.c
-> >> index accfd24..3a2c7fa 100644
-> >> --- a/kernel/timer.c
-> >> +++ b/kernel/timer.c
-> >> @@ -940,7 +940,8 @@ void add_timer_on(struct timer_list *timer, int cpu)
-> >>          * makes sure that a CPU on the way to stop its tick can not
-> >>          * evaluate the timer wheel.
-> >>          */
-> >> -       wake_up_nohz_cpu(cpu);
-> >> +       if (!tbase_get_deferrable(timer->base))
-> >> +               wake_up_nohz_cpu(cpu);
+Quoting Sebastian Capella (2013-10-22 10:54:14)
+> Quoting Sebastian Capella (2013-10-10 10:50:10)
+> > Quoting Sebastian Capella (2013-10-03 16:47:35)
+> > > Quoting Sebastian Capella (2013-10-03 14:42:46)
+> > > I looked into removing the const from the store function, but I'm not sure
+> > > this is the right idea, so I'm going to shelf that for now.
+> > > 
+> > Below are the three options considered thus far.  Do
+> > you have any additional suggestions or preferences?
+> > 
+> > 1) copy buffer, remove \n.
+> >   - v1 patch did this
+> >   - alternatively could use an array on the stack or a preallocated global
+> >     Pros:
+> >      . cleanest change
+> >      . could use strim() proposed by Andrew
+> >     Cons:
+> >      . adds memcpy
+> > 2) make name_to_dev_t work with readonly buffer to ignore \n
+> >   - v2 and v3 patches do this
+> >     Pros:
+> >      . no memcpy, no big modifications to unrelated code
+> >     Cons:
+> >      . seems more appropriate to harden store functions to user input
+> >        than name_to_dev_t.
+> >      . a little complicated
+> > 3) remove const from buffer and modify contents in place to remove \n
+> >   - remove const from sysfs_ops.store, modify dependent definitions
+> >   - remove const from kobj_attribute.store, modify dependent definitions
+> >     Pros:
+> >      . no memcpy
+> >     Cons:
+> >      . a lot of modifications
+> >      . const contract to not modify the input buffer seems the right way.
 > 
-> Wait, I got the wrong code here. That's wasn't my initial intention.
-> I actually wanted to write something like this:
+> Hi Andrew,
 > 
->  -       wake_up_nohz_cpu(cpu);
->  +       if (!tbase_get_deferrable(timer->base) || idle_cpu(cpu))
->  +               wake_up_nohz_cpu(cpu);
+> Do you have any feedback for me on this?
 > 
-> Will that work?
+> I'm happy do make any changes you think are correct, but I'm unsure if
+> you're asking me for option #3 above.  It's quite an intrusive change,
+> and changes old, established code and I'd like confirmation that's what
+> you'd like before proceeding down that path.
+> 
+> I've submitted patches with both options #1 and #2 above.
+> 
+> Thanks,
+> 
+> Sebastian
 
-Well, this is going to wake up the target from its idle state, which is
-what we want to avoid if the timer is deferrable, right?
+Ping.
 
-The simplest thing we want is:
+Sorry for the lapse in attention to this.
 
-           if (!tbase_get_deferrable(timer->base) || tick_nohz_full_cpu(cpu))
-               wake_up_nohz_cpu(cpu);
-
-This spares the IPI for the common case where the timer is deferrable and we run
-in periodic or dynticks-idle mode (which should be 99.99% of the existing workloads).
-
-Then we can later optimize that and spare the IPI on full dynticks CPUs when they run
-idle, but that require some special care about subtle races which can't be dealt
-with a simple test on "idle_cpu(target)". And power consumption in full dynticks
-is already very suboptimized anyway.
-
-So I suggest we start simple with the above test, and a big fat comment which explains
-what we are doing and what needs to be done in the future.
+Could you please clarify what is needed for this to be acceptable?
+I'm a little confused about what is being asked of me.
 
 Thanks!
-	
 
-> 
-> > So you simply rely on the next tick to see the new timer. This should work with
-> > CONFIG_NO_HZ_IDLE but not with CONFIG_NO_HZ_FULL since the target may be running
-> > without the tick.
-> >
-> > Basically, in the case of a deferrable timer you need to manage to call
-> > wake_up_full_nohz_cpu() but not wake_up_idle_cpu().
-> >
-> > It should be even possible to spare the IPI in a full dynticks CPU if it is
-> > running idle. But that's an optional bonus because it require some deep
-> > care on complicated races against the call to tick_nohz_idle_exit().
-> >
-> > I also realize than when we enqueue a timer on a full nohz CPU, we should set_need_resched()
-> > the target before sending the IPI if it is idle like does wake_up_idle_cpu(). Otherwise the
-> > IPI will be ignored without exiting the idle loop nor reevaluating the tick on irq exit.
-> > If you can fix that along the way, that will be much appreciated.
-> 
-> I haven't thought much about this currently as I have limited knowledge of
-> these routines. Though the problem we were facing wasn't related to
-> NO_HZ_FULL. It was just about waking up an idle cpu.
-
-Sure that's fine, I'll fix that along aside your change.
+Sebastian
