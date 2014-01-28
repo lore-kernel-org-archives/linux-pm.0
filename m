@@ -1,186 +1,140 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH RFC v2 2/2] Documentation: arm: define DT C-states bindings
-Date: Tue, 28 Jan 2014 09:24:54 +0100
-Message-ID: <CAKfTPtAEekg_KHhLikJK=njC-b5F=MOmAmSP8P96+j_23-iu3Q@mail.gmail.com>
-References: <1390240079-6495-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1390240079-6495-3-git-send-email-lorenzo.pieralisi@arm.com>
- <CAKfTPtAbYXuis1bfyDLiHRaYwosre3RAG+iNQSz-y+cWfc3uQA@mail.gmail.com>
- <20140122192041.GA3709@e102568-lin.cambridge.arm.com> <CAKfTPtDHTs67qvoA6++zo4SZdZJj4T_BV2gVECOu-76-2kLbuw@mail.gmail.com>
- <20140124175806.GC23274@e102568-lin.cambridge.arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
+ states
+Date: Tue, 28 Jan 2014 09:46:39 +0100
+Message-ID: <52E76E6F.4000101@linaro.org>
+References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com> <52DF815D.50104@linaro.org> <52E0F9ED.2010506@linux.vnet.ibm.com> <52E22D8A.5000305@linaro.org> <52E23EA0.7010803@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:65190 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754662AbaA1IZQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jan 2014 03:25:16 -0500
-Received: by mail-ob0-f182.google.com with SMTP id wm4so66201obc.27
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jan 2014 00:25:15 -0800 (PST)
-In-Reply-To: <20140124175806.GC23274@e102568-lin.cambridge.arm.com>
+Received: from mail-wg0-f48.google.com ([74.125.82.48]:39855 "EHLO
+	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754840AbaA1Iqn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jan 2014 03:46:43 -0500
+Received: by mail-wg0-f48.google.com with SMTP id x13so176091wgg.27
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jan 2014 00:46:39 -0800 (PST)
+In-Reply-To: <52E23EA0.7010803@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave P Martin <Dave.Martin@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Hanjun Guo <hanjun.guo@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Kevin Hilman <khilman@linaro.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
 
-On 24 January 2014 18:58, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> Hi Vincent,
->
-> On Fri, Jan 24, 2014 at 08:40:40AM +0000, Vincent Guittot wrote:
->
-> [...]
->
->> Hi Lorenzo,
->>
->> Sorry for the late reply,
->>
->>
->> > I had an idea. To simplify things, I think that one possibility is to
->> > add a parameter to the power domain specifier (platform specific, see
->> > Tomasz bindings):
->>
->> We can't use a simple boolean state (on/off) for defining the
->> powerdomain state associated to a c-state so your proposal of being
->> able to add a parameter that will define the power domain state is
->> interesting.
->>
->> >
->> > Documentation/devicetree/bindings/power/power_domain.txt
->> >
->> > http://lists.infradead.org/pipermail/linux-arm-kernel/2014-January/224928.html
->> >
->> > to represent, when that state is entered the behavior of the power
->> > controller (ie cache RAM retention or cache shutdown or in general any
->> > substate within a power domain). Since it is platform specific, and since
->> > we are able to link caches to the power domain, the power controller will
->> > actually define what happens to the cache when that state is entered
->> > (basically we use the power domain specifier additional parameter to define
->> > a "substate" in that power domain e.g.:
->> >
->> > Example:
->> >
->> > foo_power_controller {
->> >         [...]
->> >         /*
->> >          * first cell is register index, second one is the state index
->> >          * that in turn implies the state behavior - eg cache lost or
->> >          * retained
->> >          */
->> >         #power-domain-cells = <2>;
->> > };
->> >
->> > l1-cache {
->> >         [...]
->> >         /*
->> >          * syntax: power-domains = list of power domain specifiers
->> >                 <[&power_domain_phandle register-index state],[&power_domain_phandle register-index state]>;
->> >                 The syntax is defined by the power controller du jour
->> >                 as described by Tomasz bindings
->> >         */
->> >         power-domains =<&foo_power_controller 0 0 &foo_power_controller 0 1>;
->>
->> Normally, power-domains describes a list of power domain specifiers
->> that are necessary for the l1-cache to at least retain its state so
->> i'm not sure understand your example above
->
->>
->> If we take the example of system that support running, retention and
->> powerdown state described as state 0, 1 and 2 for the power domain, i
->> would have set the l1-cache like:
->>        power-domains =<&foo_power_controller 0 1>;
->>
->> for saying that the state is retained up to state 1
->>
->> Please look below, i have modified the rest of your example accordingly
->>
->> >
->> > }:
->> >
->> > and then
->> >
->> > state0 {
->> >         index = <2>;
->> >         compatible = "arm,cpu-power-state";
->> >         latency = <...>;
->> >         /*
->> >          * This means that when the state is entered, the power
->> >          * controller should use register index 0 and state 0,
->> >          * whose meaning is power controller specific. Since we
->> >          * know all components affected (for every component
->> >          * we declare its power domain(s) and states so we
->> >          * know what components are affected by the state entry.
->> >          * Given the cache node above and this phandle, the state
->> >          * implies that the cache is retained, register index == 0 state == 0
->> >          /*
->> >         power-domain =<&foo_power_controller 0 0>;
->>
->> for retention state we need to set the power domain in state 1
->>         power-domain =<&foo_power_controller 0 1>;
->>
->> > };
->> >
->> > state1 {
->> >         index = <3>;
->> >         compatible = "arm,cpu-power-state";
->> >         latency = <...>;
->> >         /*
->> >          * This means that when the state is entered, the power
->> >          * controller should use register index 0 and state 1,
->> >          * whose meaning is power controller specific. Since we
->> >          * know all components affected (for every component
->> >          * we declare its power domain(s) and states so we
->> >          * know what components are affected by the state entry.
->> >          * Given the cache node above and this phandle, the state
->> >          * implies that the cache is lost, register index == 0 state == 1
->> >          /*
->> >         power-domain =<&foo_power_controller 0 1>;
->>
->> for power down mode, we need to set thge power domain in state 2
->>         power-domain =<&foo_power_controller 0 2>;
->
-> Ok, what I meant was not what you got, but your approach looks sensible
-> too. What I do not like is that the power-domain specifier is power
+On 01/24/2014 11:21 AM, Preeti U Murthy wrote:
+> On 01/24/2014 02:38 PM, Daniel Lezcano wrote:
+>> On 01/23/2014 12:15 PM, Preeti U Murthy wrote:
+>>> Hi Daniel,
+>>>
+>>> Thank you for the review.
 
-sorry for the misconception of your example
+[ ... ]
 
-> controller specific (that was true even for my example). In theory
-> we can achieve something identical by forcing every component in a power
-> domain to specify the max C-state index that allows it to retain its
+>>> ---
+>>>    drivers/cpuidle/cpuidle.c          |   15 +++++
+>>>    drivers/cpuidle/governors/ladder.c |  101
+>>> ++++++++++++++++++++++++++----------
+>>>    drivers/cpuidle/governors/menu.c   |    7 +-
+>>>    3 files changed, 90 insertions(+), 33 deletions(-)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>>> index a55e68f..19d17e8 100644
+>>> --- a/drivers/cpuidle/cpuidle.c
+>>> +++ b/drivers/cpuidle/cpuidle.c
+>>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>>>
+>>>        /* ask the governor for the next state */
+>>>        next_state =3D cpuidle_curr_governor->select(drv, dev);
+>>> +
+>>> +    dev->last_residency =3D 0;
+>>>        if (need_resched()) {
+>>
+>> What about if (need_resched() || next_state < 0) ?
+>
+> Hmm.. I feel we need to distinguish between the need_resched() scenar=
+io
+> and the scenario when no idle state was suitable through the trace
+> points at-least.
 
-I'm not sure that we should force a component to set an opaque (for
-the component) max c-state. The device should describe its power
-domain requirements and the correlation of the latter with the
-description of the c-state binding should be enough to deduct the max
-c-state.
+Well, I don't think so as soon as we don't care about the return value=20
+of cpuidle_idle_call in both cases.
 
-> state (through a specific property). Same logic to your example applies.
-> Nice thing is that we do not change the power domain specifiers, bad thing
-> is that it adds two properties to each device (c-state index and
-> power-domain-specifier - but we can make it hierarchical so that device
-> nodes can inherit the maximum operating C-state by inheriting the value
-> from a parent node providing a common value).
->
-> In my example the third parameter was just a number that the power
-> controller would decode (eg 0 = cache retained, 1 = cache lost)
-> according to its implementation, it was not a "state index". The
-> power controller would know what to do with eg a cache component (that
-> declares to be in that power domain) when a C-state with that power
-> domain specifier was entered.
->
-> Not very different from what you are saying, let's get to the nub:
->
-> - Either we define it in a platform specific way through the power
->   domain specifier
-> - Or we force a max-c-state-supported property for every device,
->   possibly hierarchical
+The traces are following a specific format. That is if the state is -1=20
+(PWR_EVENT_EXIT), it means exiting the current idle state.
 
-As explained above, adding a max-cstate property for a device that
-only know the power-domain is not a good thing IMHO.
+The idlestat tool [1] is using this traces to open - close transitions.
 
-Vincent
+IMO, if the cpu is not entering idle, it should just exit without any=20
+idle traces.
 
+This portion of code is a bit confusing because it is introduced by the=
+=20
+menu governor updates post-poned when entering the next idle state (not=
+=20
+exiting the current idle state with good reasons).
+
+   -- Daniel
+
+[1] http://git.linaro.org/power/idlestat.git
+
+> This could help while debugging when we could find situations where
+> there are no tasks to run, yet the cpu is not entering any idle state=
+=2E
+> The traces could help clearly point that no idle state was thought
+> suitable by the governor. Of course there are many other means to fin=
+d
+> this out, but this seems rather straightforward. Hence having the
+> condition next_state < 0 between trace_cpu_idle*() would be apt IMHO.
 >
-> Thoughts ?
+> Regards
+> Preeti U Murthy
 >
-> Thank you !
-> Lorenzo
+>>
+>>> -        dev->last_residency =3D 0;
+>>>            /* give the governor an opportunity to reflect on the
+>>> outcome */
+>>>            if (cpuidle_curr_governor->reflect)
+>>>                cpuidle_curr_governor->reflect(dev, next_state);
+>>> @@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
+>>>        }
+>>>
+>>>        trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>>> +    /*
+>>> +     * NOTE: The return code should still be success, since the
+>>> verdict of
+>>> +     * this call is "do not enter any idle state". It is not a fai=
+led
+>>> call
+>>> +     * due to errors.
+>>> +     */
+>>> +    if (next_state < 0) {
+>>> +        entered_state =3D next_state;
+>>> +        local_irq_enable();
+>>> +        goto out;
+>>> +    }
+>>>
+>>>        broadcast =3D !!(drv->states[next_state].flags &
+>>> CPUIDLE_FLAG_TIMER_STOP);
+>>>
+>>> @@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
+>>>        if (broadcast)
+>>>            clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev=
+->cpu);
+>>>
+>>> -    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>>> +out:    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>>>
+>>>        /* give the governor an opportunity to reflect on the outcom=
+e */
+>>>        if (cpuidle_curr_governor->reflect)
 >
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
