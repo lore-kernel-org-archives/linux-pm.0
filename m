@@ -1,146 +1,141 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 0/2] time/cpuidle: Support in tick broadcast framework
- in absence of external clock device
-Date: Tue, 28 Jan 2014 16:19:03 +0530
-Message-ID: <52E78B1F.80409@linux.vnet.ibm.com>
-References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com>
+Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
+ states
+Date: Tue, 28 Jan 2014 16:36:29 +0530
+Message-ID: <52E78F35.2090106@linux.vnet.ibm.com>
+References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com> <52DF815D.50104@linaro.org> <52E0F9ED.2010506@linux.vnet.ibm.com> <52E22D8A.5000305@linaro.org> <52E23EA0.7010803@linux.vnet.ibm.com> <52E76E6F.4000101@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e32.co.us.ibm.com ([32.97.110.150]:54034 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751569AbaA1Kwp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jan 2014 05:52:45 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:47090 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754927AbaA1LKD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 Jan 2014 06:10:03 -0500
 Received: from /spool/local
-	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 28 Jan 2014 03:52:44 -0700
-In-Reply-To: <20140124065501.17564.39363.stgit@preeti.in.ibm.com>
+	Tue, 28 Jan 2014 06:10:02 -0500
+In-Reply-To: <52E76E6F.4000101@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, galak@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, agraf@suse.de, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, tglx@linutronix.de, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
 
-Hi Thomas,
+Hi Daniel,
 
-I realized that the below patch is also required for this patchset.
+On 01/28/2014 02:16 PM, Daniel Lezcano wrote:
+> On 01/24/2014 11:21 AM, Preeti U Murthy wrote:
+>> On 01/24/2014 02:38 PM, Daniel Lezcano wrote:
+>>> On 01/23/2014 12:15 PM, Preeti U Murthy wrote:
+>>>> Hi Daniel,
+>>>>
+>>>> Thank you for the review.
+> 
+> [ ... ]
+> 
+>>>> ---
+>>>>    drivers/cpuidle/cpuidle.c          |   15 +++++
+>>>>    drivers/cpuidle/governors/ladder.c |  101
+>>>> ++++++++++++++++++++++++++----------
+>>>>    drivers/cpuidle/governors/menu.c   |    7 +-
+>>>>    3 files changed, 90 insertions(+), 33 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>>>> index a55e68f..19d17e8 100644
+>>>> --- a/drivers/cpuidle/cpuidle.c
+>>>> +++ b/drivers/cpuidle/cpuidle.c
+>>>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>>>>
+>>>>        /* ask the governor for the next state */
+>>>>        next_state = cpuidle_curr_governor->select(drv, dev);
+>>>> +
+>>>> +    dev->last_residency = 0;
+>>>>        if (need_resched()) {
+>>>
+>>> What about if (need_resched() || next_state < 0) ?
+>>
+>> Hmm.. I feel we need to distinguish between the need_resched() scenario
+>> and the scenario when no idle state was suitable through the trace
+>> points at-least.
+> 
+> Well, I don't think so as soon as we don't care about the return value
+> of cpuidle_idle_call in both cases.
+> 
+> The traces are following a specific format. That is if the state is -1
+> (PWR_EVENT_EXIT), it means exiting the current idle state.
+> 
+> The idlestat tool [1] is using this traces to open - close transitions.
+> 
+> IMO, if the cpu is not entering idle, it should just exit without any
+> idle traces.
 
-This patch apart, I noticed that there is also one corner case which we will
-need to handle. The BROADCAST_ON notifications in periodic mode
-(oneshot mode is a nop).
-  We will need to fail the BROADCAST_ON notification too in this case if the
-CPU in question is made the stand by CPU. 
+Yes I see your point here.
+> 
+> This portion of code is a bit confusing because it is introduced by the
+> menu governor updates post-poned when entering the next idle state (not
+> exiting the current idle state with good reasons).
+
+I am sorry but I don't understand this part. Which is the portion of the
+code you refer to here? Also can you please elaborate on the above
+statement?
 
 Thanks
 
 Regards
 Preeti U Murthy
-
----------------------------------------------------------------------------------
-
-time/cpuidle:Handle failed call to BROADCAST_ENTER on archs with CPUIDLE_FLAG_TIMER_STOP set
-
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-
-Some archs set the CPUIDLE_FLAG_TIMER_STOP flag for idle states in which the
-local timers stop. The cpuidle_idle_call() currently handles such idle states
-by calling into the broadcast framework so as to wakeup CPUs at their next
-wakeup event. With the hrtimer mode of broadcast, the BROADCAST_ENTER call
-into the broadcast frameowork can fail for archs that do not have an external
-clock device to handle wakeups and the CPU in question has to thus be made
-the stand by CPU. This patch handles such cases by failing the call into
-cpuidle so that the arch can take some default action. The arch will certainly
-not enter a similar idle state because a failed cpuidle call will also implicitly
-indicate that the broadcast framework has not registered this CPU to be woken up.
-Hence we are safe if we fail the cpuidle call.
-
-In the process move the functions that trace idle statistics just before and
-after the entry and exit into idle states respectively. In other
-scenarios where the call to cpuidle fails, we end up not tracing idle
-entry and exit since a decision on an idle state could not be taken. Similarly
-when the call to broadcast framework fails, we skip tracing idle statistics
-because we are in no further position to take a decision on an alternative
-idle state to enter into.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle.c |   38 +++++++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index a55e68f..8f42033 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -117,15 +117,19 @@ int cpuidle_idle_call(void)
- {
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv;
--	int next_state, entered_state;
--	bool broadcast;
-+	int next_state, entered_state, ret = 0;
-+	bool broadcast = false;
- 
--	if (off || !initialized)
--		return -ENODEV;
-+	if (off || !initialized) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
- 
- 	/* check if the device is ready */
--	if (!dev || !dev->enabled)
--		return -EBUSY;
-+	if (!dev || !dev->enabled) {
-+		ret = -EBUSY;
-+		goto out;
-+	}
- 
- 	drv = cpuidle_get_cpu_driver(dev);
- 
-@@ -137,15 +141,18 @@ int cpuidle_idle_call(void)
- 		if (cpuidle_curr_governor->reflect)
- 			cpuidle_curr_governor->reflect(dev, next_state);
- 		local_irq_enable();
--		return 0;
-+		goto out;
- 	}
- 
--	trace_cpu_idle_rcuidle(next_state, dev->cpu);
--
- 	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
- 
--	if (broadcast)
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
-+	if (broadcast) {
-+		ret = clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
-+		if (ret)
-+			goto out;
-+	}
-+
-+	trace_cpu_idle_rcuidle(next_state, dev->cpu);
- 
- 	if (cpuidle_state_is_coupled(dev, drv, next_state))
- 		entered_state = cpuidle_enter_state_coupled(dev, drv,
-@@ -153,16 +160,17 @@ int cpuidle_idle_call(void)
- 	else
- 		entered_state = cpuidle_enter_state(dev, drv, next_state);
- 
--	if (broadcast)
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
--
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
- 
- 	/* give the governor an opportunity to reflect on the outcome */
- 	if (cpuidle_curr_governor->reflect)
- 		cpuidle_curr_governor->reflect(dev, entered_state);
- 
--	return 0;
-+out:	if (broadcast)
-+		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-+
-+
-+	return ret;
- }
- 
- /**
+> 
+>   -- Daniel
+> 
+> [1] http://git.linaro.org/power/idlestat.git
+> 
+>> This could help while debugging when we could find situations where
+>> there are no tasks to run, yet the cpu is not entering any idle state.
+>> The traces could help clearly point that no idle state was thought
+>> suitable by the governor. Of course there are many other means to find
+>> this out, but this seems rather straightforward. Hence having the
+>> condition next_state < 0 between trace_cpu_idle*() would be apt IMHO.
+>>
+>> Regards
+>> Preeti U Murthy
+>>
+>>>
+>>>> -        dev->last_residency = 0;
+>>>>            /* give the governor an opportunity to reflect on the
+>>>> outcome */
+>>>>            if (cpuidle_curr_governor->reflect)
+>>>>                cpuidle_curr_governor->reflect(dev, next_state);
+>>>> @@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
+>>>>        }
+>>>>
+>>>>        trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>>>> +    /*
+>>>> +     * NOTE: The return code should still be success, since the
+>>>> verdict of
+>>>> +     * this call is "do not enter any idle state". It is not a failed
+>>>> call
+>>>> +     * due to errors.
+>>>> +     */
+>>>> +    if (next_state < 0) {
+>>>> +        entered_state = next_state;
+>>>> +        local_irq_enable();
+>>>> +        goto out;
+>>>> +    }
+>>>>
+>>>>        broadcast = !!(drv->states[next_state].flags &
+>>>> CPUIDLE_FLAG_TIMER_STOP);
+>>>>
+>>>> @@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
+>>>>        if (broadcast)
+>>>>            clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+>>>> &dev->cpu);
+>>>>
+>>>> -    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>>>> +out:    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>>>>
+>>>>        /* give the governor an opportunity to reflect on the outcome */
+>>>>        if (cpuidle_curr_governor->reflect)
+>>
+> 
+> 
 
