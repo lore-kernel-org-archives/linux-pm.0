@@ -1,77 +1,67 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
- idle loop
-Date: Wed, 29 Jan 2014 15:31:36 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Olof Johansson <olof@lixom.net>, Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v4 0/2] PM / Hibernate: sysfs resume
+Date: Wed, 29 Jan 2014 15:48:22 -0800
+Message-ID: <1391039304-3172-1-git-send-email-sebastian.capella@linaro.org>
+Return-path: <owner-linux-mm@kvack.org>
+Sender: owner-linux-mm@kvack.org
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 29 Jan 2014, Nicolas Pitre wrote:
+Patchset related to hibernation resume:
+  - enhancement to make the use of an existing resume file more general
+  - add kstrimdup function which trims and duplicates a string
 
-> In order to integrate cpuidle with the scheduler, we must have a better
-> proximity in the core code with what cpuidle is doing and not delegate
-> such interaction to arch code.
-> 
-> Architectures implementing arch_cpu_idle() should simply enter
-> a cheap idle mode in the absence of a proper cpuidle driver.
-> 
-> Signed-off-by: Nicolas Pitre <nico@linaro.org>
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+  Both patches are based on the 3.13 tag.  This was tested on a
+  Beaglebone black with partial hibernation support, and compiled for
+  x86_64.
 
-As mentioned in my reply to Olof's comment on patch #5/6, here's a new 
-version of this patch adding the safety local_irq_enable() to the core 
-code.
+[PATCH v4 1/2] mm: add kstrimdup function
+  include/linux/string.h |    1 +
+  mm/util.c              |   19 +++++++++++++++++++
+  2 files changed, 20 insertions(+)
 
------ >8
+  Adds the kstrimdup function to duplicate and trim whitespace
+  from a string.  This is useful for working with user input to
+  sysfs.
 
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: idle: move the cpuidle entry point to the generic idle loop
+[PATCH v4 2/2] PM / Hibernate: use name_to_dev_t to parse resume
+  kernel/power/hibernate.c |   33
+  +++++++++++++++++----------------
+  1 file changed, 17 insertions(+), 16 deletions(-)
 
-In order to integrate cpuidle with the scheduler, we must have a better
-proximity in the core code with what cpuidle is doing and not delegate
-such interaction to arch code.
+  Use name_to_dev_t to parse the /sys/power/resume file making the
+  syntax more flexible.  It supports the previous use syntax
+  and additionally can support other formats such as
+  /dev/devicenode and UUID= formats.
 
-Architectures implementing arch_cpu_idle() should simply enter
-a cheap idle mode in the absence of a proper cpuidle driver.
+  By changing /sys/debug/resume to accept the same syntax as
+  the resume=device parameter, we can parse the resume=device
+  in the initrd init script and use the resume device directly
+  from the kernel command line.
 
-In both cases i.e. whether it is a cpuidle driver or the default
-arch_cpu_idle(), the calling convention expects IRQs to be disabled
-on entry and enabled on exit. There is a warning in place already but
-let's add a forced IRQ enable here as well.  This will allow for
-removing the forced IRQ enable some implementations do locally and 
-allowing for the warning to trig.
+Changes in v4:
+--------------
+* Dropped name_to_dev_t rework in favor of adding kstrimdup
+* adjusted resume_store
 
-Signed-off-by: Nicolas Pitre <nico@linaro.org>
+Changes in v3:
+--------------
+* Dropped documentation patch as it went in through trivial
+* Added patch for name_to_dev_t to support directly parsing userspace
+  buffer
 
-diff --git a/kernel/cpu/idle.c b/kernel/cpu/idle.c
-index 988573a9a3..14ca43430a 100644
---- a/kernel/cpu/idle.c
-+++ b/kernel/cpu/idle.c
-@@ -3,6 +3,7 @@
-  */
- #include <linux/sched.h>
- #include <linux/cpu.h>
-+#include <linux/cpuidle.h>
- #include <linux/tick.h>
- #include <linux/mm.h>
- #include <linux/stackprotector.h>
-@@ -95,8 +96,10 @@ static void cpu_idle_loop(void)
- 				if (!current_clr_polling_and_test()) {
- 					stop_critical_timings();
- 					rcu_idle_enter();
--					arch_cpu_idle();
--					WARN_ON_ONCE(irqs_disabled());
-+					if (cpuidle_idle_call())
-+						arch_cpu_idle();
-+					if (WARN_ON_ONCE(irqs_disabled()))
-+						local_irq_enable();
- 					rcu_idle_exit();
- 					start_critical_timings();
- 				} else {
+Changes in v2:
+--------------
+* Added check for null return of kstrndup in hibernate.c
+
+
+Thanks,
+
+Sebastian
+
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
