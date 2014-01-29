@@ -1,77 +1,75 @@
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH v2 5/6] X86: remove redundant cpuidle_idle_call()
-Date: Wed, 29 Jan 2014 15:14:40 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1401291434120.1652@knanqh.ubzr>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-6-git-send-email-nicolas.pitre@linaro.org> <CAOesGMjvOkuxCopog91SAV1-gB9GaEYXpuXwhV1EJQor_pKjBA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
+ idle loop
+Date: Wed, 29 Jan 2014 15:31:36 -0500 (EST)
+Message-ID: <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f171.google.com ([209.85.216.171]:60889 "EHLO
-	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbaA2UOn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jan 2014 15:14:43 -0500
-Received: by mail-qc0-f171.google.com with SMTP id n7so3599128qcx.30
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jan 2014 12:14:43 -0800 (PST)
-In-Reply-To: <CAOesGMjvOkuxCopog91SAV1-gB9GaEYXpuXwhV1EJQor_pKjBA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Olof Johansson <olof@lixom.net>, Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Olof Johansson <olof@lixom.net>
-Cc: Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux-sh list <linux-sh@vger.kernel.org>, linux-pm@vger.kernel.org, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>
 
-On Wed, 29 Jan 2014, Olof Johansson wrote:
+On Wed, 29 Jan 2014, Nicolas Pitre wrote:
 
-> Hi,
+> In order to integrate cpuidle with the scheduler, we must have a better
+> proximity in the core code with what cpuidle is doing and not delegate
+> such interaction to arch code.
 > 
-> On Wed, Jan 29, 2014 at 9:45 AM, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-> > The core idle loop now takes care of it.
-> >
-> > Signed-off-by: Nicolas Pitre <nico@linaro.org>
-> > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > ---
-> >  arch/x86/kernel/process.c | 5 +----
-> >  1 file changed, 1 insertion(+), 4 deletions(-)
-> >
-> > diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-> > index 3fb8d95ab8..4505e2a950 100644
-> > --- a/arch/x86/kernel/process.c
-> > +++ b/arch/x86/kernel/process.c
-> > @@ -298,10 +298,7 @@ void arch_cpu_idle_dead(void)
-> >   */
-> >  void arch_cpu_idle(void)
-> >  {
-> > -       if (cpuidle_idle_call())
-> > -               x86_idle();
-> > -       else
-> > -               local_irq_enable();
-> > +       x86_idle();
+> Architectures implementing arch_cpu_idle() should simply enter
+> a cheap idle mode in the absence of a proper cpuidle driver.
 > 
-> You're taking out the local_irq_enable() here but I don't see the
-> equivalent of adding it back in the 1/6 patch that moves the
-> cpuidle_idle_call() up to common code. It seems that one of the call
-> paths through cpuidle_idle_call() don't re-enable it on its own.
+> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-When cpuidle_idle_call() returns non-zero, IRQs are left disabled.  When 
-it returns zero then IRQs should be disabled.  Same goes for cpuidle 
-drivers.  That's the theory at least.
+As mentioned in my reply to Olof's comment on patch #5/6, here's a new 
+version of this patch adding the safety local_irq_enable() to the core 
+code.
 
-Looking into some cpuidle drivers for x86 I found at least one that 
-doesn't respect this convention.  Damn.
+----- >8
 
-> Even if this is the right thing to do, why it's OK to do so should
-> probably be documented in the patch description.
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: idle: move the cpuidle entry point to the generic idle loop
 
-Better yet, I'm going to amend patch 1/6 with the below to make things 
-more reliable while still identifying misbehaving drivers.
+In order to integrate cpuidle with the scheduler, we must have a better
+proximity in the core code with what cpuidle is doing and not delegate
+such interaction to arch code.
+
+Architectures implementing arch_cpu_idle() should simply enter
+a cheap idle mode in the absence of a proper cpuidle driver.
+
+In both cases i.e. whether it is a cpuidle driver or the default
+arch_cpu_idle(), the calling convention expects IRQs to be disabled
+on entry and enabled on exit. There is a warning in place already but
+let's add a forced IRQ enable here as well.  This will allow for
+removing the forced IRQ enable some implementations do locally and 
+allowing for the warning to trig.
+
+Signed-off-by: Nicolas Pitre <nico@linaro.org>
 
 diff --git a/kernel/cpu/idle.c b/kernel/cpu/idle.c
-index ffcd3ee9af..14ca43430a 100644
+index 988573a9a3..14ca43430a 100644
 --- a/kernel/cpu/idle.c
 +++ b/kernel/cpu/idle.c
-@@ -98,7 +98,8 @@ static void cpu_idle_loop(void)
+@@ -3,6 +3,7 @@
+  */
+ #include <linux/sched.h>
+ #include <linux/cpu.h>
++#include <linux/cpuidle.h>
+ #include <linux/tick.h>
+ #include <linux/mm.h>
+ #include <linux/stackprotector.h>
+@@ -95,8 +96,10 @@ static void cpu_idle_loop(void)
+ 				if (!current_clr_polling_and_test()) {
+ 					stop_critical_timings();
  					rcu_idle_enter();
- 					if (cpuidle_idle_call())
- 						arch_cpu_idle();
+-					arch_cpu_idle();
 -					WARN_ON_ONCE(irqs_disabled());
++					if (cpuidle_idle_call())
++						arch_cpu_idle();
 +					if (WARN_ON_ONCE(irqs_disabled()))
 +						local_irq_enable();
  					rcu_idle_exit();
