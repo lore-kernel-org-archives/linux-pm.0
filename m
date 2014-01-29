@@ -1,123 +1,45 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: [PATCH v2 3/6] PPC: remove redundant cpuidle_idle_call()
-Date: Wed, 29 Jan 2014 12:45:10 -0500
-Message-ID: <1391017513-12995-4-git-send-email-nicolas.pitre@linaro.org>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v3 1/2] init/do_mounts.c: ignore final \n in name_to_dev_t
+Date: Wed, 29 Jan 2014 10:29:56 -0800
+Message-ID: <20140129182956.14275.72264@capellas-linux>
+References: <1380834638-24035-1-git-send-email-sebastian.capella@linaro.org>
+ <1380834638-24035-2-git-send-email-sebastian.capella@linaro.org>
+ <20131003141523.8b60ab988799af7e2b2c338b@linux-foundation.org>
+ <20131003214246.24540.99218@capellas-linux>
+ <20131003234735.19051.84583@capellas-linux>
+ <20131010175010.17870.58060@capellas-linux>
+ <20131022175414.14753.58063@capellas-linux>
+ <20140128185926.5312.36635@capellas-linux>
+ <20140128125442.4bac748945b404179deb58ba@linux-foundation.org>
+ <20140128205830.14275.80319@capellas-linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140128205830.14275.80319@capellas-linux>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Serge Hallyn <serge.hallyn@canonical.com>, linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@linaro.org, "Rafael J.  Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, Al Viro <viro@zeniv.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-The core idle loop now takes care of it.  However a few things need
-checking:
+Hi Andrew,
 
-- Invocation of cpuidle_idle_call() in pseries_lpar_idle() happened
-  through arch_cpu_idle() and was therefore always preceded by a call
-  to ppc64_runlatch_off().  To preserve this property now that
-  cpuidle_idle_call() is invoked directly from core code, a call to
-  ppc64_runlatch_off() has been added to idle_loop_prolog() in
-  platforms/pseries/processor_idle.c.
+By the way, I do see a call (sysfs_streq) in use for this purpose
+other places.  Sorry, I didn't find it while looking at the original
+problem.  I'm not sure if this is preferable, but it appears to have
+been added specifically for the strings coming through sysfs.
 
-- Similarly, cpuidle_idle_call() was followed by ppc64_runlatch_off()
-  so a call to the later has been added to idle_loop_epilog().
+My preference is copying the string and cleaning it up before passing
+it to internal functions, even though we incur an allocation.
 
-- And since arch_cpu_idle() always made sure to re-enable IRQs if they
-  were not enabled, this is now
-  done in idle_loop_epilog() as well.
+Thanks,
 
-The above was made in order to keep the execution flow close to the
-original.  I don't know if that was strictly necessary. Someone well
-aquainted with the platform details might find some room for possible
-optimizations.
-
-Signed-off-by: Nicolas Pitre <nico@linaro.org>
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/processor_idle.c |  5 ++++
- arch/powerpc/platforms/pseries/setup.c          | 34 ++++++++++---------------
- 2 files changed, 19 insertions(+), 20 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index a166e38bd6..72ddfe3d2f 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -33,6 +33,7 @@ static struct cpuidle_state *cpuidle_state_table;
- 
- static inline void idle_loop_prolog(unsigned long *in_purr)
- {
-+	ppc64_runlatch_off();
- 	*in_purr = mfspr(SPRN_PURR);
- 	/*
- 	 * Indicate to the HV that we are idle. Now would be
-@@ -49,6 +50,10 @@ static inline void idle_loop_epilog(unsigned long in_purr)
- 	wait_cycles += mfspr(SPRN_PURR) - in_purr;
- 	get_lppaca()->wait_state_cycles = cpu_to_be64(wait_cycles);
- 	get_lppaca()->idle = 0;
-+
-+	if (irqs_disabled())
-+		local_irq_enable();
-+	ppc64_runlatch_on();
- }
- 
- static int snooze_loop(struct cpuidle_device *dev,
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index c1f1908587..7604c19d54 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -39,7 +39,6 @@
- #include <linux/irq.h>
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
--#include <linux/cpuidle.h>
- #include <linux/of.h>
- #include <linux/kexec.h>
- 
-@@ -356,29 +355,24 @@ early_initcall(alloc_dispatch_log_kmem_cache);
- 
- static void pseries_lpar_idle(void)
- {
--	/* This would call on the cpuidle framework, and the back-end pseries
--	 * driver to  go to idle states
-+	/*
-+	 * Default handler to go into low thread priority and possibly
-+	 * low power mode by cedeing processor to hypervisor
- 	 */
--	if (cpuidle_idle_call()) {
--		/* On error, execute default handler
--		 * to go into low thread priority and possibly
--		 * low power mode by cedeing processor to hypervisor
--		 */
- 
--		/* Indicate to hypervisor that we are idle. */
--		get_lppaca()->idle = 1;
-+	/* Indicate to hypervisor that we are idle. */
-+	get_lppaca()->idle = 1;
- 
--		/*
--		 * Yield the processor to the hypervisor.  We return if
--		 * an external interrupt occurs (which are driven prior
--		 * to returning here) or if a prod occurs from another
--		 * processor. When returning here, external interrupts
--		 * are enabled.
--		 */
--		cede_processor();
-+	/*
-+	 * Yield the processor to the hypervisor.  We return if
-+	 * an external interrupt occurs (which are driven prior
-+	 * to returning here) or if a prod occurs from another
-+	 * processor. When returning here, external interrupts
-+	 * are enabled.
-+	 */
-+	cede_processor();
- 
--		get_lppaca()->idle = 0;
--	}
-+	get_lppaca()->idle = 0;
- }
- 
- /*
--- 
-1.8.4.108.g55ea5f6
+Sebastian
