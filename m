@@ -1,51 +1,46 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
-Date: Thu, 30 Jan 2014 17:35:01 +0100
-Message-ID: <20140130163501.GG5002@laptop.programming.kicks-ass.net>
-References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org>
- <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org>
- <20140130153150.GD5002@laptop.programming.kicks-ass.net>
- <52EA7D8A.6080604@linaro.org>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Date: Thu, 30 Jan 2014 08:41:16 -0800
+Message-ID: <1391100076.2422.56.camel@joe-AO722>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+	 <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
+	 <20140130152500.GB5002@laptop.programming.kicks-ass.net>
+	 <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+	 <20140130162753.GF5002@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52EA7D8A.6080604@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: nicolas.pitre@linaro.org, mingo@redhat.com, tglx@linutronix.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+Sender: linux-sh-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 30, 2014 at 05:27:54PM +0100, Daniel Lezcano wrote:
-> struct cpuidle_state *state = &drv->states[rq->index];
+On Thu, 2014-01-30 at 17:27 +0100, Peter Zijlstra wrote:
+> On Thu, Jan 30, 2014 at 11:03:31AM -0500, Nicolas Pitre wrote:
+> > > This is not a valid patch for PATCH(1). Please try again.
+> > 
+> > Don't you use git?  ;-)
 > 
-> And from the state, we have the following informations:
-> 
-> struct cpuidle_state {
-> 
-> 	[ ... ]
-> 
->         unsigned int    exit_latency; /* in US */
->         int             power_usage; /* in mW */
->         unsigned int    target_residency; /* in US */
->         bool            disabled; /* disabled on all CPUs */
-> 
-> 	[ ... ]
-> };
+> Nah, git and me don't get along well.
 
-Right, but can we say that a higher index will save more power and have
-a higher exit latency? Or is a driver free to have a random mapping from
-idle_index to state?
+Perhaps you could use a newer version of patch
 
-Also, we should probably create a pretty function to get that state,
-just like you did in patch 1.
+http://savannah.gnu.org/forum/forum.php?forum_id=7361
 
-> IIRC, Alex Shi sent a patchset to improve the choosing of the idlest cpu and
-> the exit_latency was needed.
+GNU patch version 2.7 released
 
-Right. However if we have a 'natural' order in the state array the index
-itself might often be sufficient to find the least idle state, in this
-specific case the absolute exit latency doesn't matter, all we want is
-the lowest one.
+Item posted by Andreas Gruenbacher <agruen> on Wed 12 Sep 2012 02:18:14
+PM UTC.
 
-Not dereferencing the state array saves hitting cold cachelines.
+I am pleased to announce that version 2.7 of GNU patch has been
+released. The following significant changes have happened since the last
+stable release in December 2009: 
+
+      * Support for most features of the "diff --git" format, including
+        renames and copies, permission changes, and symlink diffs.
+        Binary diffs are not supported yet; patch will complain and skip
+        them.
+
+
