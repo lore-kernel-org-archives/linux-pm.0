@@ -1,36 +1,85 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
-Date: Thu, 30 Jan 2014 17:52:58 +0100
-Message-ID: <20140130165258.GC2936@laptop.programming.kicks-ass.net>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
- <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
- <20140130152500.GB5002@laptop.programming.kicks-ass.net>
- <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
- <20140130162753.GF5002@laptop.programming.kicks-ass.net>
- <1391100076.2422.56.camel@joe-AO722>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
+ rq
+Date: Thu, 30 Jan 2014 18:25:27 +0100
+Message-ID: <52EA8B07.6020206@linaro.org>
+References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org> <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org> <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1391100076.2422.56.camel@joe-AO722>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Joe Perches <joe@perches.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140130163501.GG5002@laptop.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: nicolas.pitre@linaro.org, mingo@redhat.com, tglx@linutronix.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 30, 2014 at 08:41:16AM -0800, Joe Perches wrote:
-> Perhaps you could use a newer version of patch
-> 
-> GNU patch version 2.7 released
+On 01/30/2014 05:35 PM, Peter Zijlstra wrote:
+> On Thu, Jan 30, 2014 at 05:27:54PM +0100, Daniel Lezcano wrote:
+>> struct cpuidle_state *state =3D &drv->states[rq->index];
+>>
+>> And from the state, we have the following informations:
+>>
+>> struct cpuidle_state {
+>>
+>> 	[ ... ]
+>>
+>>          unsigned int    exit_latency; /* in US */
+>>          int             power_usage; /* in mW */
+>>          unsigned int    target_residency; /* in US */
+>>          bool            disabled; /* disabled on all CPUs */
+>>
+>> 	[ ... ]
+>> };
+>
+> Right, but can we say that a higher index will save more power and ha=
+ve
+> a higher exit latency? Or is a driver free to have a random mapping f=
+rom
+> idle_index to state?
 
-Yeah, I know about that, I'll wait until its common in all distros,
-updating all machines I use by hand is just painful.
+If the driver does its own random mapping that will break the governor=20
+logic. So yes, the states are ordered, the higher the index is, the mor=
+e=20
+you save power and the higher the exit latency is.
+
+> Also, we should probably create a pretty function to get that state,
+> just like you did in patch 1.
+
+Yes, right.
+
+>> IIRC, Alex Shi sent a patchset to improve the choosing of the idlest=
+ cpu and
+>> the exit_latency was needed.
+>
+> Right. However if we have a 'natural' order in the state array the in=
+dex
+> itself might often be sufficient to find the least idle state, in thi=
+s
+> specific case the absolute exit latency doesn't matter, all we want i=
+s
+> the lowest one.
+
+Indeed. It could be simple as that. I feel we may need more information=
+s=20
+in the future but comparing the indexes could be a nice simple and=20
+efficient solution.
+
+> Not dereferencing the state array saves hitting cold cachelines.
+
+Yeah, always good to remind that. Should keep in mind for later.
+
+Thanks for your comments.
+
+   -- Daniel
+
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
