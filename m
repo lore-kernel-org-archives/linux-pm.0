@@ -1,70 +1,96 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: (unknown)
-Date: Thu, 30 Jan 2014 13:11:56 -0800
-Message-ID: <1391116318-17253-1-git-send-email-sebastian.capella@linaro.org>
+Subject: [PATCH v5 1/2] mm: add kstrimdup function
+Date: Thu, 30 Jan 2014 13:11:57 -0800
+Message-ID: <1391116318-17253-2-git-send-email-sebastian.capella@linaro.org>
+References: <1391116318-17253-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <owner-linux-mm@kvack.org>
-Subject: 
+In-Reply-To: <1391116318-17253-1-git-send-email-sebastian.capella@linaro.org>
 Sender: owner-linux-mm@kvack.org
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, Mikulas Patocka <mpatocka@redhat.com>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-Patchset related to hibernation resume:
-  - enhancement to make the use of an existing resume file more general
-  - add kstrimdup function which trims and duplicates a string
+kstrimdup will duplicate and trim spaces from the passed in
+null terminated string.  This is useful for strings coming from
+sysfs that often include trailing whitespace due to user input.
 
-  Both patches are based on the 3.13 tag.  This was tested on a
-  Beaglebone black with partial hibernation support, and compiled for
-  x86_64.
+Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Rik van Riel <riel@redhat.com> (commit_signer:5/10=50%)
+Cc: Michel Lespinasse <walken@google.com>
+Cc: Shaohua Li <shli@kernel.org>
+Cc: Jerome Marchand <jmarchan@redhat.com>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+---
+ include/linux/string.h |    1 +
+ mm/util.c              |   30 ++++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
 
-[PATCH v5 1/2] mm: add kstrimdup function
-  include/linux/string.h |    1 +
-  mm/util.c              |   30 ++++++++++++++++++++++++++++++
-  2 files changed, 31 insertions(+)
-
-  Adds the kstrimdup function to duplicate and trim whitespace
-  from a string.  This is useful for working with user input to
-  sysfs.
-
-[PATCH v5 2/2] PM / Hibernate: use name_to_dev_t to parse resume
-  kernel/power/hibernate.c |   33
-  +++++++++++++++++----------------
-  1 file changed, 17 insertions(+), 16 deletions(-)
-
-  Use name_to_dev_t to parse the /sys/power/resume file making the
-  syntax more flexible.  It supports the previous use syntax
-  and additionally can support other formats such as
-  /dev/devicenode and UUID= formats.
-
-  By changing /sys/debug/resume to accept the same syntax as
-  the resume=device parameter, we can parse the resume=device
-  in the initrd init script and use the resume device directly
-  from the kernel command line.
-
-Changes in v5:
---------------
-* Change kstrimdup to minimize allocated memory.  Now allocates only
-  the memory needed for the string instead of using strim.
-
-Changes in v4:
---------------
-* Dropped name_to_dev_t rework in favor of adding kstrimdup
-* adjusted resume_store
-
-Changes in v3:
---------------
-* Dropped documentation patch as it went in through trivial
-* Added patch for name_to_dev_t to support directly parsing userspace
-  buffer
-
-Changes in v2:
---------------
-* Added check for null return of kstrndup in hibernate.c
-
-
-Thanks,
-
-Sebastian
-
+diff --git a/include/linux/string.h b/include/linux/string.h
+index ac889c5..f29f9a0 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -114,6 +114,7 @@ void *memchr_inv(const void *s, int c, size_t n);
+ 
+ extern char *kstrdup(const char *s, gfp_t gfp);
+ extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
++extern char *kstrimdup(const char *s, gfp_t gfp);
+ extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
+ 
+ extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+diff --git a/mm/util.c b/mm/util.c
+index 808f375..2066b33 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -1,6 +1,7 @@
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
++#include <linux/ctype.h>
+ #include <linux/export.h>
+ #include <linux/err.h>
+ #include <linux/sched.h>
+@@ -63,6 +64,35 @@ char *kstrndup(const char *s, size_t max, gfp_t gfp)
+ EXPORT_SYMBOL(kstrndup);
+ 
+ /**
++ * kstrimdup - Trim and copy a %NUL terminated string.
++ * @s: the string to trim and duplicate
++ * @gfp: the GFP mask used in the kmalloc() call when allocating memory
++ *
++ * Returns an address, which the caller must kfree, containing
++ * a duplicate of the passed string with leading and/or trailing
++ * whitespace (as defined by isspace) removed.
++ */
++char *kstrimdup(const char *s, gfp_t gfp)
++{
++	char *buf;
++	char *begin = skip_spaces(s);
++	size_t len = strlen(begin);
++
++	while (len > 1 && isspace(begin[len - 1]))
++		len--;
++
++	buf = kmalloc_track_caller(len + 1, gfp);
++	if (!buf)
++		return NULL;
++
++	memcpy(buf, begin, len);
++	buf[len] = '\0';
++
++	return buf;
++}
++EXPORT_SYMBOL(kstrimdup);
++
++/**
+  * kmemdup - duplicate region of memory
+  *
+  * @src: memory region to duplicate
+-- 
+1.7.9.5
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
