@@ -1,45 +1,66 @@
-From: David Rientjes <rientjes@google.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
 Subject: Re: [PATCH v5 1/2] mm: add kstrimdup function
-Date: Thu, 30 Jan 2014 13:44:45 -0800 (PST)
-Message-ID: <alpine.DEB.2.02.1401301343430.15271@chino.kir.corp.google.com>
-References: <1391116318-17253-1-git-send-email-sebastian.capella@linaro.org> <1391116318-17253-2-git-send-email-sebastian.capella@linaro.org> <20140130132251.4f662aeddc09d8410dee4490@linux-foundation.org>
+Date: Thu, 30 Jan 2014 13:45:45 -0800
+Message-ID: <20140130214545.18296.69349@capellas-linux>
+References: <1391116318-17253-1-git-send-email-sebastian.capella@linaro.org>
+ <1391116318-17253-2-git-send-email-sebastian.capella@linaro.org>
+ <20140130132251.4f662aeddc09d8410dee4490@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <owner-linux-mm@kvack.org>
 In-Reply-To: <20140130132251.4f662aeddc09d8410dee4490@linux-foundation.org>
 Sender: owner-linux-mm@kvack.org
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Joe Perches <joe@perches.com>, Mikulas Patocka <mpatocka@redhat.com>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Joe Perches <joe@perches.com>, Mikulas Patocka <mpatocka@redhat.com>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 30 Jan 2014, Andrew Morton wrote:
-
-> > @@ -63,6 +64,35 @@ char *kstrndup(const char *s, size_t max, gfp_t gfp)
-> >  EXPORT_SYMBOL(kstrndup);
-> >  
-> >  /**
-> > + * kstrimdup - Trim and copy a %NUL terminated string.
-> > + * @s: the string to trim and duplicate
-> > + * @gfp: the GFP mask used in the kmalloc() call when allocating memory
-> > + *
-> > + * Returns an address, which the caller must kfree, containing
-> > + * a duplicate of the passed string with leading and/or trailing
-> > + * whitespace (as defined by isspace) removed.
-> > + */
+Quoting Andrew Morton (2014-01-30 13:22:51)
+> On Thu, 30 Jan 2014 13:11:57 -0800 Sebastian Capella <sebastian.capella@l=
+inaro.org> wrote:
 > > +char *kstrimdup(const char *s, gfp_t gfp)
 > > +{
-> > +	char *buf;
-> > +	char *begin = skip_spaces(s);
-> > +	size_t len = strlen(begin);
+> > +     char *buf;
+> > +     char *begin =3D skip_spaces(s);
+> > +     size_t len =3D strlen(begin);
 > > +
-> > +	while (len > 1 && isspace(begin[len - 1]))
-> > +		len--;
-> 
-> That's off-by-one isn't it?  kstrimdup("   ") should return "", not " ".
-> 
+> > +     while (len > 1 && isspace(begin[len - 1]))
+> > +             len--;
+> =
 
-Yeah, this is an incorrect copy-and-paste of Joe Perches' suggested code 
-from http://marc.info/?l=linux-kernel&m=139104508317989.
+> That's off-by-one isn't it?  kstrimdup("   ") should return "", not " ".
+> =
+
+> > +     buf =3D kmalloc_track_caller(len + 1, gfp);
+> > +     if (!buf)
+> > +             return NULL;
+> > +
+> > +     memcpy(buf, begin, len);
+> > +     buf[len] =3D '\0';
+> > +
+> > +     return buf;
+> > +}
+
+Hi Andrew,
+
+I think this is a little tricky.
+
+For an empty string, the function relies on skip_spaces to point begin
+at the \0'.
+
+Alternately, if we don't have an empty string, we know we have at least 1
+non-space, non-null character at begin[0], and there's no need to check it,
+so the loop stops at [1].  If there's a space at 1, we just put the '\0'
+there.
+
+We could check at [0], but I think its already been checked by skip_spaces.
+
+I'll add a comment above the while for that
+
+Thanks,
+
+Sebastian
+
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
