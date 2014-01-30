@@ -1,81 +1,91 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v4 2/2] PM / Hibernate: use name_to_dev_t to parse resume
-Date: Wed, 29 Jan 2014 15:48:24 -0800
-Message-ID: <1391039304-3172-3-git-send-email-sebastian.capella@linaro.org>
-References: <1391039304-3172-1-git-send-email-sebastian.capella@linaro.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: Re: [PATCH v4 1/2] mm: add kstrimdup function
+Date: Wed, 29 Jan 2014 19:58:36 -0500 (EST)
+Message-ID: <alpine.LRH.2.02.1401291956510.8304@file01.intranet.prod.int.rdu2.redhat.com>
+References: <1391039304-3172-1-git-send-email-sebastian.capella@linaro.org> <1391039304-3172-2-git-send-email-sebastian.capella@linaro.org>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1391039304-3172-1-git-send-email-sebastian.capella@linaro.org>
+In-Reply-To: <1391039304-3172-2-git-send-email-sebastian.capella@linaro.org>
 Sender: owner-linux-mm@kvack.org
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Andrew Morton <akpm@linux-foundation.org>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use the name_to_dev_t call to parse the device name echo'd to
-to /sys/power/resume.  This imitates the method used in hibernate.c
-in software_resume, and allows the resume partition to be specified
-using other equivalent device formats as well.  By allowing
-/sys/debug/resume to accept the same syntax as the resume=device
-parameter, we can parse the resume=device in the init script and
-use the resume device directly from the kernel command line.
 
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
----
- kernel/power/hibernate.c |   33 +++++++++++++++++----------------
- 1 file changed, 17 insertions(+), 16 deletions(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 37170d4..b4a3e0b 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -973,26 +973,27 @@ static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
- static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			    const char *buf, size_t n)
- {
--	unsigned int maj, min;
- 	dev_t res;
--	int ret = -EINVAL;
-+	char *name = kstrimdup(buf, GFP_KERNEL);
- 
--	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
--		goto out;
-+	if (name == NULL)
-+		return -ENOMEM;
- 
--	res = MKDEV(maj,min);
--	if (maj != MAJOR(res) || min != MINOR(res))
--		goto out;
-+	res = name_to_dev_t(name);
- 
--	lock_system_sleep();
--	swsusp_resume_device = res;
--	unlock_system_sleep();
--	printk(KERN_INFO "PM: Starting manual resume from disk\n");
--	noresume = 0;
--	software_resume();
--	ret = n;
-- out:
--	return ret;
-+	if (res != 0) {
-+		lock_system_sleep();
-+		swsusp_resume_device = res;
-+		unlock_system_sleep();
-+		printk(KERN_INFO "PM: Starting manual resume from disk\n");
-+		noresume = 0;
-+		software_resume();
-+	} else {
-+		n = -EINVAL;
-+	}
-+
-+	kfree(name);
-+	return n;
- }
- 
- power_attr(resume);
--- 
-1.7.9.5
+On Wed, 29 Jan 2014, Sebastian Capella wrote:
+
+> kstrimdup will duplicate and trim spaces from the passed in
+> null terminated string.  This is useful for strings coming from
+> sysfs that often include trailing whitespace due to user input.
+> 
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Rik van Riel <riel@redhat.com> (commit_signer:5/10=50%)
+> Cc: Michel Lespinasse <walken@google.com>
+> Cc: Shaohua Li <shli@kernel.org>
+> Cc: Jerome Marchand <jmarchan@redhat.com>
+> Cc: Mikulas Patocka <mpatocka@redhat.com>
+> Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> ---
+>  include/linux/string.h |    1 +
+>  mm/util.c              |   19 +++++++++++++++++++
+>  2 files changed, 20 insertions(+)
+> 
+> diff --git a/include/linux/string.h b/include/linux/string.h
+> index ac889c5..f29f9a0 100644
+> --- a/include/linux/string.h
+> +++ b/include/linux/string.h
+> @@ -114,6 +114,7 @@ void *memchr_inv(const void *s, int c, size_t n);
+>  
+>  extern char *kstrdup(const char *s, gfp_t gfp);
+>  extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
+> +extern char *kstrimdup(const char *s, gfp_t gfp);
+>  extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
+>  
+>  extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+> diff --git a/mm/util.c b/mm/util.c
+> index a24aa22..da17de5 100644
+> --- a/mm/util.c
+> +++ b/mm/util.c
+> @@ -63,6 +63,25 @@ char *kstrndup(const char *s, size_t max, gfp_t gfp)
+>  EXPORT_SYMBOL(kstrndup);
+>  
+>  /**
+> + * kstrimdup - Trim and copy a %NUL terminated string.
+> + * @s: the string to trim and duplicate
+> + * @gfp: the GFP mask used in the kmalloc() call when allocating memory
+> + *
+> + * Returns an address, which the caller must kfree, containing
+> + * a duplicate of the passed string with leading and/or trailing
+> + * whitespace (as defined by isspace) removed.
+
+It doesn't remove leading whitespace. To remove them, you need to do
+
+char *p = strim(ret);
+memmove(ret, p, strlen(p) + 1);
+
+Mikulas
+
+> + */
+> +char *kstrimdup(const char *s, gfp_t gfp)
+> +{
+> +	char *ret = kstrdup(skip_spaces(s), gfp);
+> +
+> +	if (ret)
+> +		strim(ret);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(kstrimdup);
+> +
+> +/**
+>   * kmemdup - duplicate region of memory
+>   *
+>   * @src: memory region to duplicate
+> -- 
+> 1.7.9.5
+> 
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
