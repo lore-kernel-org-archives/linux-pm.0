@@ -1,184 +1,83 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
- idle loop
-Date: Thu, 30 Jan 2014 18:28:52 +0100
-Message-ID: <52EA8BD4.6020803@linaro.org>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org> <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr> <52E9C946.50704@linux.vnet.ibm.com> <alpine.LFD.2.11.1401300021530.1652@knanqh.ubzr> <52EA5720.8010000@linaro.org> <alpine.LFD.2.11.1401301056180.1652@knanqh.ubzr>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
+Date: Thu, 30 Jan 2014 17:50:24 +0000
+Message-ID: <20140130175024.GD8389@e102568-lin.cambridge.arm.com>
+References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org>
+ <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org>
+ <20140130153150.GD5002@laptop.programming.kicks-ass.net>
+ <52EA7D8A.6080604@linaro.org>
+ <20140130163501.GG5002@laptop.programming.kicks-ass.net>
+ <52EA8B07.6020206@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.11.1401301056180.1652@knanqh.ubzr>
-Sender: linux-sh-owner@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, Olof Johansson <olof@lixom.net>, Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:39425 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbaA3Ru3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jan 2014 12:50:29 -0500
+In-Reply-To: <52EA8B07.6020206@linaro.org>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "mingo@redhat.com" <mingo@redhat.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>
 
-On 01/30/2014 05:07 PM, Nicolas Pitre wrote:
-> On Thu, 30 Jan 2014, Daniel Lezcano wrote:
->
->> On 01/30/2014 06:28 AM, Nicolas Pitre wrote:
->>> On Thu, 30 Jan 2014, Preeti U Murthy wrote:
->>>
->>>> Hi Nicolas,
->>>>
->>>> On 01/30/2014 02:01 AM, Nicolas Pitre wrote:
->>>>> On Wed, 29 Jan 2014, Nicolas Pitre wrote:
->>>>>
->>>>>> In order to integrate cpuidle with the scheduler, we must have a
->>>>>> better
->>>>>> proximity in the core code with what cpuidle is doing and not de=
-legate
->>>>>> such interaction to arch code.
->>>>>>
->>>>>> Architectures implementing arch_cpu_idle() should simply enter
->>>>>> a cheap idle mode in the absence of a proper cpuidle driver.
->>>>>>
->>>>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
->>>>>> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>>>>
->>>>> As mentioned in my reply to Olof's comment on patch #5/6, here's =
-a new
->>>>> version of this patch adding the safety local_irq_enable() to the=
- core
->>>>> code.
->>>>>
->>>>> ----- >8
->>>>>
->>>>> From: Nicolas Pitre <nicolas.pitre@linaro.org>
->>>>> Subject: idle: move the cpuidle entry point to the generic idle l=
-oop
->>>>>
->>>>> In order to integrate cpuidle with the scheduler, we must have a =
-better
->>>>> proximity in the core code with what cpuidle is doing and not del=
-egate
->>>>> such interaction to arch code.
->>>>>
->>>>> Architectures implementing arch_cpu_idle() should simply enter
->>>>> a cheap idle mode in the absence of a proper cpuidle driver.
->>>>>
->>>>> In both cases i.e. whether it is a cpuidle driver or the default
->>>>> arch_cpu_idle(), the calling convention expects IRQs to be disabl=
-ed
->>>>> on entry and enabled on exit. There is a warning in place already=
- but
->>>>> let's add a forced IRQ enable here as well.  This will allow for
->>>>> removing the forced IRQ enable some implementations do locally an=
-d
->>>>
->>>> Why would this patch allow for removing the forced IRQ enable that=
- are
->>>> being done on some archs in arch_cpu_idle()? Isn't this patch expe=
-cting
->>>> the default arch_cpu_idle() to have re-enabled the interrupts afte=
-r
->>>> exiting from the default idle state? Its supposed to only catch fa=
-ulty
->>>> cpuidle drivers that haven't enabled IRQs on exit from idle state =
-but
->>>> are expected to have done so, isn't it?
->>>
->>> Exact.  However x86 currently does this:
->>>
->>>   if (cpuidle_idle_call())
->>>           x86_idle();
->>>   else
->>>           local_irq_enable();
->>>
->>> So whenever cpuidle_idle_call() is successful then IRQs are
->>> unconditionally enabled whether or not the underlying cpuidle drive=
-r has
->>> properly done it or not.  And the reason is that some of the x86 cp=
-uidle
->>> do fail to enable IRQs before returning.
->>>
->>> So the idea is to get rid of this unconditional IRQ enabling and le=
-t the
->>> core issue a warning instead (as well as enabling IRQs to allow the
->>> system to run).
->>
->> But what I don't get with your comment is the local_irq_enable is do=
-ne from
->> the cpuidle common framework in 'cpuidle_enter_state' it is not done=
- from the
->> arch specific backend cpuidle driver.
->
-> Oh well... This certainly means we'll have to clean this mess as some
-> drivers do it on their own while some others don't.  Some drivers als=
-o
-> loop on !need_resched() while some others simply return on the first
-> interrupt.
+On Thu, Jan 30, 2014 at 05:25:27PM +0000, Daniel Lezcano wrote:
+> On 01/30/2014 05:35 PM, Peter Zijlstra wrote:
+> > On Thu, Jan 30, 2014 at 05:27:54PM +0100, Daniel Lezcano wrote:
+> >> struct cpuidle_state *state = &drv->states[rq->index];
+> >>
+> >> And from the state, we have the following informations:
+> >>
+> >> struct cpuidle_state {
+> >>
+> >> 	[ ... ]
+> >>
+> >>          unsigned int    exit_latency; /* in US */
+> >>          int             power_usage; /* in mW */
+> >>          unsigned int    target_residency; /* in US */
+> >>          bool            disabled; /* disabled on all CPUs */
+> >>
+> >> 	[ ... ]
+> >> };
+> >
+> > Right, but can we say that a higher index will save more power and have
+> > a higher exit latency? Or is a driver free to have a random mapping from
+> > idle_index to state?
+> 
+> If the driver does its own random mapping that will break the governor 
+> logic. So yes, the states are ordered, the higher the index is, the more 
+> you save power and the higher the exit latency is.
+> 
+> > Also, we should probably create a pretty function to get that state,
+> > just like you did in patch 1.
+> 
+> Yes, right.
+> 
+> >> IIRC, Alex Shi sent a patchset to improve the choosing of the idlest cpu and
+> >> the exit_latency was needed.
+> >
+> > Right. However if we have a 'natural' order in the state array the index
+> > itself might often be sufficient to find the least idle state, in this
+> > specific case the absolute exit latency doesn't matter, all we want is
+> > the lowest one.
+> 
+> Indeed. It could be simple as that. I feel we may need more informations 
+> in the future but comparing the indexes could be a nice simple and 
+> efficient solution.
 
-Ok, I think the mess is coming from 'default_idle' which does not=20
-re-enable the local_irq but used from different places like=20
-amd_e400_idle and apm_cpu_idle.
+As long as we take into account that some states might require multiple
+CPUs to be idle in order to be entered, fine by me. But we should
+certainly avoid waking up a CPU in a cluster that is in eg C2 (all CPUs in
+C2, so cluster in C2) when there are CPUs in C3 in other clusters with
+some CPUs running in those clusters, because there C3 means "CPU in C3, not
+cluster in C3". Overall what I am saying is that what you are doing
+makes perfect sense but we have to take the above into account.
 
-void default_idle(void)
-{
-         trace_cpu_idle_rcuidle(1, smp_processor_id());
-         safe_halt();
-         trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
-}
+Some states have CPU and cluster (or we can call it package) components,
+and that's true on ARM and other architectures too, to the best of my
+knowledge.
 
-Considering the system configured without cpuidle because this one=20
-*always* enable the local irq, we have the different cases:
-
-x86_idle =3D default_idle();
-=3D=3D> local_irq_enable is missing
-
-x86_idle =3D amd_e400_idle();
-=3D=3D> it calls local_irq_disable(); but in the idle loop context wher=
-e the=20
-local irqs are already disabled.
-=3D=3D> if amd_e400_c1e_detected is true, the local_irq are enabled
-=3D=3D> otherwise no
-=3D=3D> default_idle is called from there and does not enable local_irq=
-s
-
-
->> So the code above could be:
->>
->> 	if (cpuidle_idle_call())
->> 		x86_idle();
->>
->> without the else section, this local_irq_enable is pointless. Or may=
- be I
->> missed something ?
->
-> A later patch removes it anyway.  But if it is really necessary to
-> enable interrupts then the core will do it but with a warning now.
-
-This WARN should disappear. It was there because it was up to the=20
-backend cpuidle driver to enable the irq. But in the meantime, that was=
-=20
-consolidated into a single place in the cpuidle framework so no need to=
-=20
-try to catch errors.
-
-What about (based on this patchset).
-
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 4505e2a..2d60cbb 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -299,6 +299,7 @@ void arch_cpu_idle_dead(void)
-  void arch_cpu_idle(void)
-  {
-         x86_idle();
-+       local_irq_enable();
-  }
-
-  /*
-
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Lorenzo
 
