@@ -1,72 +1,79 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v4 1/2] mm: add kstrimdup function
-Date: Wed, 29 Jan 2014 19:50:59 -0800
-Message-ID: <1391053859.2422.34.camel@joe-AO722>
-References: <1391039304-3172-1-git-send-email-sebastian.capella@linaro.org>
-	 <1391039304-3172-2-git-send-email-sebastian.capella@linaro.org>
-	 <alpine.LRH.2.02.1401291956510.8304@file01.intranet.prod.int.rdu2.redhat.com>
-	 <1391045068.2422.30.camel@joe-AO722>
-	 <20140130034137.2769.50210@capellas-linux>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
+ idle loop
+Date: Thu, 30 Jan 2014 00:28:04 -0500 (EST)
+Message-ID: <alpine.LFD.2.11.1401300021530.1652@knanqh.ubzr>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org> <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr> <52E9C946.50704@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20140130034137.2769.50210@capellas-linux>
-Sender: owner-linux-mm@kvack.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Andrew Morton <akpm@linux-foundation.org>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <52E9C946.50704@linux.vnet.ibm.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2014-01-29 at 19:41 -0800, Sebastian Capella wrote:
-> Quoting Joe Perches (2014-01-29 17:24:28)
-> > Why not minimize the malloc length too?
+On Thu, 30 Jan 2014, Preeti U Murthy wrote:
+
+> Hi Nicolas,
+> 
+> On 01/30/2014 02:01 AM, Nicolas Pitre wrote:
+> > On Wed, 29 Jan 2014, Nicolas Pitre wrote:
 > > 
-
-> I figured it would be mostly for small trimming, but it seems like
-> it could be and advantage and used more generally this way.
+> >> In order to integrate cpuidle with the scheduler, we must have a better
+> >> proximity in the core code with what cpuidle is doing and not delegate
+> >> such interaction to arch code.
+> >>
+> >> Architectures implementing arch_cpu_idle() should simply enter
+> >> a cheap idle mode in the absence of a proper cpuidle driver.
+> >>
+> >> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+> >> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > 
+> > As mentioned in my reply to Olof's comment on patch #5/6, here's a new 
+> > version of this patch adding the safety local_irq_enable() to the core 
+> > code.
+> > 
+> > ----- >8
+> > 
+> > From: Nicolas Pitre <nicolas.pitre@linaro.org>
+> > Subject: idle: move the cpuidle entry point to the generic idle loop
+> > 
+> > In order to integrate cpuidle with the scheduler, we must have a better
+> > proximity in the core code with what cpuidle is doing and not delegate
+> > such interaction to arch code.
+> > 
+> > Architectures implementing arch_cpu_idle() should simply enter
+> > a cheap idle mode in the absence of a proper cpuidle driver.
+> > 
+> > In both cases i.e. whether it is a cpuidle driver or the default
+> > arch_cpu_idle(), the calling convention expects IRQs to be disabled
+> > on entry and enabled on exit. There is a warning in place already but
+> > let's add a forced IRQ enable here as well.  This will allow for
+> > removing the forced IRQ enable some implementations do locally and 
 > 
-> I have a couple of small changes to return NULL in empty string/all ws
-> cases and fix a buffer underrun.
-> 
-> How does this look?
-[]
-> char *kstrimdup(const char *s, gfp_t gfp)
-> {                                                                                
->         char *buf;                                                               
->         const char *begin = skip_spaces(s);                                      
->         size_t len = strlen(begin);                                              
+> Why would this patch allow for removing the forced IRQ enable that are
+> being done on some archs in arch_cpu_idle()? Isn't this patch expecting
+> the default arch_cpu_idle() to have re-enabled the interrupts after
+> exiting from the default idle state? Its supposed to only catch faulty
+> cpuidle drivers that haven't enabled IRQs on exit from idle state but
+> are expected to have done so, isn't it?
 
-removing begin and just using s would work
+Exact.  However x86 currently does this:
 
->         if (len == 0)                                                            
->                 return NULL;                                                     
->                                                                                  
->         while (len > 1 && isspace(begin[len - 1]))                               
->                 len--;                                                           
->                                                                                  
->         buf = kmalloc_track_caller(len + 1, gfp);                                
->         if (!buf)                                                                
->                 return NULL;                                                     
->                                                                                  
->         memcpy(buf, begin, len);                                                 
->         buf[len] = '\0';                                                            
->                                                                                  
->         return buf;                                                              
-> }
+	if (cpuidle_idle_call())
+	        x86_idle();
+	else
+	        local_irq_enable();
 
-What should the return be to this string?
+So whenever cpuidle_idle_call() is successful then IRQs are 
+unconditionally enabled whether or not the underlying cpuidle driver has 
+properly done it or not.  And the reason is that some of the x86 cpuidle 
+do fail to enable IRQs before returning.
 
-" "
+So the idea is to get rid of this unconditional IRQ enabling and let the 
+core issue a warning instead (as well as enabling IRQs to allow the 
+system to run).
 
-Should it be "" or " " or NULL?
 
-I don't think it should be NULL.
-I don't think it should be " ".
-
-cheers, Joe
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Nicolas
