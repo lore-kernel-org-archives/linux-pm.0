@@ -1,127 +1,104 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v4 1/2] mm: add kstrimdup function
-Date: Wed, 29 Jan 2014 19:41:37 -0800
-Message-ID: <20140130034137.2769.50210@capellas-linux>
-References: <1391039304-3172-1-git-send-email-sebastian.capella@linaro.org>
- <1391039304-3172-2-git-send-email-sebastian.capella@linaro.org>
- <alpine.LRH.2.02.1401291956510.8304@file01.intranet.prod.int.rdu2.redhat.com>
- <1391045068.2422.30.camel@joe-AO722>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
+ idle loop
+Date: Thu, 30 Jan 2014 09:08:46 +0530
+Message-ID: <52E9C946.50704@linux.vnet.ibm.com>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org> <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1391045068.2422.30.camel@joe-AO722>
-Sender: owner-linux-mm@kvack.org
-To: Joe Perches <joe@perches.com>, Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Andrew Morton <akpm@linux-foundation.org>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:33850 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752566AbaA3DmX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 Jan 2014 22:42:23 -0500
+Received: from /spool/local
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Wed, 29 Jan 2014 22:42:22 -0500
+In-Reply-To: <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Olof Johansson <olof@lixom.net>, Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-Quoting Joe Perches (2014-01-29 17:24:28)
-> Why not minimize the malloc length too?
-> =
+Hi Nicolas,
 
-> maybe something like:
-> =
+On 01/30/2014 02:01 AM, Nicolas Pitre wrote:
+> On Wed, 29 Jan 2014, Nicolas Pitre wrote:
+> 
+>> In order to integrate cpuidle with the scheduler, we must have a better
+>> proximity in the core code with what cpuidle is doing and not delegate
+>> such interaction to arch code.
+>>
+>> Architectures implementing arch_cpu_idle() should simply enter
+>> a cheap idle mode in the absence of a proper cpuidle driver.
+>>
+>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+>> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> 
+> As mentioned in my reply to Olof's comment on patch #5/6, here's a new 
+> version of this patch adding the safety local_irq_enable() to the core 
+> code.
+> 
+> ----- >8
+> 
+> From: Nicolas Pitre <nicolas.pitre@linaro.org>
+> Subject: idle: move the cpuidle entry point to the generic idle loop
+> 
+> In order to integrate cpuidle with the scheduler, we must have a better
+> proximity in the core code with what cpuidle is doing and not delegate
+> such interaction to arch code.
+> 
+> Architectures implementing arch_cpu_idle() should simply enter
+> a cheap idle mode in the absence of a proper cpuidle driver.
+> 
+> In both cases i.e. whether it is a cpuidle driver or the default
+> arch_cpu_idle(), the calling convention expects IRQs to be disabled
+> on entry and enabled on exit. There is a warning in place already but
+> let's add a forced IRQ enable here as well.  This will allow for
+> removing the forced IRQ enable some implementations do locally and 
 
-> char *kstrimdup(const char *s, gfp_t gfp)
-> {
->         char *buf;
->         const char *begin =3D skip_spaces(s);
->         size_t len =3D strlen(begin);
-> =
+Why would this patch allow for removing the forced IRQ enable that are
+being done on some archs in arch_cpu_idle()? Isn't this patch expecting
+the default arch_cpu_idle() to have re-enabled the interrupts after
+exiting from the default idle state? Its supposed to only catch faulty
+cpuidle drivers that haven't enabled IRQs on exit from idle state but
+are expected to have done so, isn't it?
 
->         while (len && isspace(begin[len - 1]))
->                 len--;
-> =
+Thanks
 
->         buf =3D kmalloc_track_caller(len + 1, gfp);
->         if (!buf)
->                 return NULL;
-> =
+Regards
+Preeti U Murthy
 
->         memcpy(buf, begin, len);
->         buf[len] =3D 0;
-> =
+> allowing for the warning to trig.
+> 
+> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+> 
+> diff --git a/kernel/cpu/idle.c b/kernel/cpu/idle.c
+> index 988573a9a3..14ca43430a 100644
+> --- a/kernel/cpu/idle.c
+> +++ b/kernel/cpu/idle.c
+> @@ -3,6 +3,7 @@
+>   */
+>  #include <linux/sched.h>
+>  #include <linux/cpu.h>
+> +#include <linux/cpuidle.h>
+>  #include <linux/tick.h>
+>  #include <linux/mm.h>
+>  #include <linux/stackprotector.h>
+> @@ -95,8 +96,10 @@ static void cpu_idle_loop(void)
+>  				if (!current_clr_polling_and_test()) {
+>  					stop_critical_timings();
+>  					rcu_idle_enter();
+> -					arch_cpu_idle();
+> -					WARN_ON_ONCE(irqs_disabled());
+> +					if (cpuidle_idle_call())
+> +						arch_cpu_idle();
+> +					if (WARN_ON_ONCE(irqs_disabled()))
+> +						local_irq_enable();
+>  					rcu_idle_exit();
+>  					start_critical_timings();
+>  				} else {
+> 
 
->         return buf;
-> }
-
-I figured it would be mostly for small trimming, but it seems like
-it could be and advantage and used more generally this way.
-
-I have a couple of small changes to return NULL in empty string/all ws
-cases and fix a buffer underrun.
-
-How does this look?
-
-Thanks,
-
-Sebastian
-
-
-char *kstrimdup(const char *s, gfp_t gfp)
-{                                                                          =
-      =
-
-        char *buf;                                                         =
-      =
-
-        const char *begin =3D skip_spaces(s);                              =
-        =
-
-        size_t len =3D strlen(begin);                                      =
-        =
-
-
-        if (len =3D=3D 0)                                                  =
-          =
-
-                return NULL;                                               =
-      =
-
-                                                                           =
-      =
-
-        while (len > 1 && isspace(begin[len - 1]))                         =
-      =
-
-                len--;                                                     =
-      =
-
-                                                                           =
-      =
-
-        buf =3D kmalloc_track_caller(len + 1, gfp);                        =
-        =
-
-        if (!buf)                                                          =
-      =
-
-                return NULL;                                               =
-      =
-
-                                                                           =
-      =
-
-        memcpy(buf, begin, len);                                           =
-      =
-
-        buf[len] =3D '\0';                                                 =
-           =
-
-                                                                           =
-      =
-
-        return buf;                                                        =
-      =
-
-}        =
-
-
-
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
