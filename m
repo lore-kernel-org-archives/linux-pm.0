@@ -1,41 +1,101 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
-Date: Fri, 31 Jan 2014 11:24:55 +0100
-Message-ID: <20140131102455.GB8874@twins.programming.kicks-ass.net>
-References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org>
- <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org>
- <20140130153150.GD5002@laptop.programming.kicks-ass.net>
- <52EA7D8A.6080604@linaro.org>
- <20140130163501.GG5002@laptop.programming.kicks-ass.net>
- <52EA8B07.6020206@linaro.org>
- <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com>
- <20140131090230.GM5002@laptop.programming.kicks-ass.net>
- <52EB6F65.8050008@linux.vnet.ibm.com>
+From: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH v6 1/2] mm: add kstrimdup function
+Date: Fri, 31 Jan 2014 02:31:48 -0800 (PST)
+Message-ID: <alpine.DEB.2.02.1401310230310.7183@chino.kir.corp.google.com>
+References: <1391129654-12854-1-git-send-email-sebastian.capella@linaro.org> <1391129654-12854-2-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:42694 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbaAaKZE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jan 2014 05:25:04 -0500
-Content-Disposition: inline
-In-Reply-To: <52EB6F65.8050008@linux.vnet.ibm.com>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:61841 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753988AbaAaKbv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jan 2014 05:31:51 -0500
+Received: by mail-pa0-f49.google.com with SMTP id hz1so4228704pad.8
+        for <linux-pm@vger.kernel.org>; Fri, 31 Jan 2014 02:31:51 -0800 (PST)
+In-Reply-To: <1391129654-12854-2-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, nicolas.pitre@linaro.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, Mikulas Patocka <mpatocka@redhat.com>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
-On Fri, Jan 31, 2014 at 03:09:49PM +0530, Preeti U Murthy wrote:
-> > Alternatively, can we enforce sanity on the cpuidle infrastructure to
-> > make the index naturally ordered? If not, please explain why :-)
+On Thu, 30 Jan 2014, Sebastian Capella wrote:
+
+> kstrimdup creates a whitespace-trimmed duplicate of the passed
+> in null-terminated string.  This is useful for strings coming
+> from sysfs that often include trailing whitespace due to user
+> input.
 > 
-> The commit id 71abbbf856a0e70 says that there are SOCs which could have
-> their target_residency and exit_latency values change at runtime. This
-> commit thus removed the ordering of the idle states according to their
-> target_residency/exit_latency. Adding Len and Arjan to the CC.
+> Thanks to Joe Perches for this implementation.
+> 
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
 
-OK that changelog pretty much destroys the ordered index. In which case
-we need pretty accessors for useable numbers.
+Acked-by: David Rientjes <rientjes@google.com>
 
-It would be good to reduce the number of cachelines those touch, but I'm
-not at all familiar with the cpuidle state...
+> ---
+>  include/linux/string.h |    1 +
+>  mm/util.c              |   30 ++++++++++++++++++++++++++++++
+>  2 files changed, 31 insertions(+)
+> 
+> diff --git a/include/linux/string.h b/include/linux/string.h
+> index ac889c5..f29f9a0 100644
+> --- a/include/linux/string.h
+> +++ b/include/linux/string.h
+> @@ -114,6 +114,7 @@ void *memchr_inv(const void *s, int c, size_t n);
+>  
+>  extern char *kstrdup(const char *s, gfp_t gfp);
+>  extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
+> +extern char *kstrimdup(const char *s, gfp_t gfp);
+>  extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
+>  
+>  extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
+> diff --git a/mm/util.c b/mm/util.c
+> index 808f375..a8b731c 100644
+> --- a/mm/util.c
+> +++ b/mm/util.c
+> @@ -1,6 +1,7 @@
+>  #include <linux/mm.h>
+>  #include <linux/slab.h>
+>  #include <linux/string.h>
+> +#include <linux/ctype.h>
+>  #include <linux/export.h>
+>  #include <linux/err.h>
+>  #include <linux/sched.h>
+> @@ -63,6 +64,35 @@ char *kstrndup(const char *s, size_t max, gfp_t gfp)
+>  EXPORT_SYMBOL(kstrndup);
+>  
+>  /**
+> + * kstrimdup - Trim and copy a %NUL terminated string.
+> + * @s: the string to trim and duplicate
+> + * @gfp: the GFP mask used in the kmalloc() call when allocating memory
+> + *
+> + * Returns an address, which the caller must kfree, containing
+> + * a duplicate of the passed string with leading and/or trailing
+> + * whitespace (as defined by isspace) removed.
+> + */
+> +char *kstrimdup(const char *s, gfp_t gfp)
+> +{
+> +	char *buf;
+> +	char *begin = skip_spaces(s);
+
+This could be const.
+
+> +	size_t len = strlen(begin);
+> +
+> +	while (len && isspace(begin[len - 1]))
+> +		len--;
+> +
+> +	buf = kmalloc_track_caller(len + 1, gfp);
+> +	if (!buf)
+> +		return NULL;
+> +
+> +	memcpy(buf, begin, len);
+> +	buf[len] = '\0';
+> +
+> +	return buf;
+> +}
+> +EXPORT_SYMBOL(kstrimdup);
+> +
+> +/**
+>   * kmemdup - duplicate region of memory
+>   *
+>   * @src: memory region to duplicate
