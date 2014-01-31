@@ -1,64 +1,92 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
- rq
-Date: Fri, 31 Jan 2014 15:09:49 +0530
-Message-ID: <52EB6F65.8050008@linux.vnet.ibm.com>
-References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org> <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org> <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net> <52EA8B07.6020206@linaro.org> <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
+Date: Fri, 31 Jan 2014 10:46:54 +0100
+Message-ID: <CAKfTPtDA4bMhSH-TbCfjzyfsJXbge1CGd0o3yw+VtO8fgQQk+w@mail.gmail.com>
+References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org>
+ <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org>
+ <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org>
+ <20140130163501.GG5002@laptop.programming.kicks-ass.net> <52EA8B07.6020206@linaro.org>
+ <20140130175024.GD8389@e102568-lin.cambridge.arm.com> <alpine.LFD.2.11.1401301533390.1652@knanqh.ubzr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:43328 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbaAaJnp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 31 Jan 2014 04:43:45 -0500
-Received: from /spool/local
-	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 31 Jan 2014 04:43:44 -0500
-In-Reply-To: <20140131090230.GM5002@laptop.programming.kicks-ass.net>
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:45462 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751455AbaAaJrO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jan 2014 04:47:14 -0500
+Received: by mail-oa0-f43.google.com with SMTP id h16so4947846oag.2
+        for <linux-pm@vger.kernel.org>; Fri, 31 Jan 2014 01:47:14 -0800 (PST)
+In-Reply-To: <alpine.LFD.2.11.1401301533390.1652@knanqh.ubzr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Len Brown <len.brown@intel.com>
-Cc: Preeti Murthy <preeti.lkml@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, nicolas.pitre@linaro.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>
 
-Hi Peter,
-
-On 01/31/2014 02:32 PM, Peter Zijlstra wrote:
-> On Fri, Jan 31, 2014 at 02:15:47PM +0530, Preeti Murthy wrote:
->>>
->>> If the driver does its own random mapping that will break the governor
->>> logic. So yes, the states are ordered, the higher the index is, the more you
->>> save power and the higher the exit latency is.
+On 30 January 2014 22:02, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+> On Thu, 30 Jan 2014, Lorenzo Pieralisi wrote:
+>
+>> On Thu, Jan 30, 2014 at 05:25:27PM +0000, Daniel Lezcano wrote:
+>> > On 01/30/2014 05:35 PM, Peter Zijlstra wrote:
+>> > > On Thu, Jan 30, 2014 at 05:27:54PM +0100, Daniel Lezcano wrote:
+>> > >> IIRC, Alex Shi sent a patchset to improve the choosing of the idlest cpu and
+>> > >> the exit_latency was needed.
+>> > >
+>> > > Right. However if we have a 'natural' order in the state array the index
+>> > > itself might often be sufficient to find the least idle state, in this
+>> > > specific case the absolute exit latency doesn't matter, all we want is
+>> > > the lowest one.
+>> >
+>> > Indeed. It could be simple as that. I feel we may need more informations
+>> > in the future but comparing the indexes could be a nice simple and
+>> > efficient solution.
 >>
->> The above point holds true for only the ladder governor which sees the idle
->> states indexed in the increasing order of target_residency/exit_latency.
+>> As long as we take into account that some states might require multiple
+>> CPUs to be idle in order to be entered, fine by me. But we should
+>> certainly avoid waking up a CPU in a cluster that is in eg C2 (all CPUs in
+>> C2, so cluster in C2) when there are CPUs in C3 in other clusters with
+>> some CPUs running in those clusters, because there C3 means "CPU in C3, not
+>> cluster in C3". Overall what I am saying is that what you are doing
+>> makes perfect sense but we have to take the above into account.
 >>
->> However this is not true as far as I can see in the menu governor. It
->> acknowledges the dynamic ordering of idle states as can be seen in the
->> menu_select() function in the menu governor, where the idle state for the
->> CPU gets chosen.  You will notice that, even if it is found that the predicted
->> idle time of the CPU is smaller than the target residency of an idle state,
->> the governor continues to search for suitable idle states in the higher indexed
->> states although it should have halted if the idle states' were ordered according
->> to their target residency.. The same holds for exit_latency.
->>
->> Hence I think this patch would make sense only with additional information
->> like exit_latency or target_residency is present for the scheduler. The idle
->> state index alone will not be sufficient.
-> 
-> Alternatively, can we enforce sanity on the cpuidle infrastructure to
-> make the index naturally ordered? If not, please explain why :-)
+>> Some states have CPU and cluster (or we can call it package) components,
+>> and that's true on ARM and other architectures too, to the best of my
+>> knowledge.
+>
+> The notion of cluster or package maps pretty naturally onto scheduling
+> domains.  And the search for an idle CPU to wake up should avoid a
+> scheduling domain with a load of zero (which is obviously a prerequisite
+> for a power save mode to be applied to the cluster level) if there exist
+> idle CPUs in another domain already which load is not zero (all other
+> considerations being equal).  Hence your concern would be addressed
+> without any particular issue even if the individual CPU idle state index
+> is not exactly in sync with reality because of other hardware related
+> constraints.
 
-The commit id 71abbbf856a0e70 says that there are SOCs which could have
-their target_residency and exit_latency values change at runtime. This
-commit thus removed the ordering of the idle states according to their
-target_residency/exit_latency. Adding Len and Arjan to the CC.
+It's not only a problem of packing in one cluster but also to check
+the cost of waking up a CPU regarding the estimated load of the task.
+The main problem with only having the index is that the reality
+(latency and power consumption) can be different from the targeted
+c-state because the system wait that all the condition for entering
+this state has been reached. So you will have the wrong values when
+looking for the best core for a task.
 
-Thanks
+>
+> The other solution consists in making the index dynamic.  That means
+> letting backend idle drivers change it i.e. when the last man in a
+> cluster goes idle it could update the index for all the other CPUs in
+> the cluster.  There is no locking needed as the scheduler is only
+> consuming this info, and the scheduler getting it wrong on rare
+> occasions is not a big deal either.  But that looks pretty ugly as at
+> least 2 levels of abstractions would be breached in this case.
 
-Regards
-Preeti U Murthy
+but it 's the only way to get an good view of the current state of a core
 
-> 
+Vincent
 
+>
+>
+> Nicolas
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
