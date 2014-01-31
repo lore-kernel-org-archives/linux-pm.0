@@ -1,71 +1,81 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v6 0/2] hibernation related patches
-Date: Thu, 30 Jan 2014 16:54:12 -0800
-Message-ID: <1391129654-12854-1-git-send-email-sebastian.capella@linaro.org>
+Subject: [PATCH v6 2/2] PM / Hibernate: use name_to_dev_t to parse resume
+Date: Thu, 30 Jan 2014 16:54:14 -0800
+Message-ID: <1391129654-12854-3-git-send-email-sebastian.capella@linaro.org>
+References: <1391129654-12854-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1391129654-12854-1-git-send-email-sebastian.capella@linaro.org>
 Sender: owner-linux-mm@kvack.org
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-Patchset related to hibernation resume:
-  - enhancement to make the use of an existing resume file more general
-  - add kstrimdup function which trims and duplicates a string
+Use the name_to_dev_t call to parse the device name echo'd to
+to /sys/power/resume.  This imitates the method used in hibernate.c
+in software_resume, and allows the resume partition to be specified
+using other equivalent device formats as well.  By allowing
+/sys/debug/resume to accept the same syntax as the resume=device
+parameter, we can parse the resume=device in the init script and
+use the resume device directly from the kernel command line.
 
-  Both patches are based on the 3.13 tag.  This was tested on a
-  Beaglebone black with partial hibernation support, and compiled for
-  x86_64.
+Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+---
+ kernel/power/hibernate.c |   33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
-[PATCH v6 1/2] mm: add kstrimdup function
-  include/linux/string.h |    1 +
-  mm/util.c              |   30 ++++++++++++++++++++++++++++++
-  2 files changed, 31 insertions(+)
-
-  Adds the kstrimdup function to duplicate and trim whitespace
-  from a string.  This is useful for working with user input to
-  sysfs.
-
-[PATCH v6 2/2] PM / Hibernate: use name_to_dev_t to parse resume
-  kernel/power/hibernate.c |   33 +++++++++++++++++----------------
-  1 file changed, 17 insertions(+), 16 deletions(-)
-
-  Use name_to_dev_t to parse the /sys/power/resume file making the
-  syntax more flexible.  It supports the previous use syntax
-  and additionally can support other formats such as
-  /dev/devicenode and UUID= formats.
-
-  By changing /sys/debug/resume to accept the same syntax as
-  the resume=device parameter, we can parse the resume=device
-  in the initrd init script and use the resume device directly
-  from the kernel command line.
-
-Changes in v6:
---------------
-* Revert tricky / confusing while loop indexing
-
-Changes in v5:
---------------
-* Change kstrimdup to minimize allocated memory.  Now allocates only
-  the memory needed for the string instead of using strim.
-
-Changes in v4:
---------------
-* Dropped name_to_dev_t rework in favor of adding kstrimdup
-* adjusted resume_store
-
-Changes in v3:
---------------
-* Dropped documentation patch as it went in through trivial
-* Added patch for name_to_dev_t to support directly parsing userspace
-  buffer
-
-Changes in v2:
---------------
-* Added check for null return of kstrndup in hibernate.c
-
-
-Thanks,
-
-Sebastian
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 0121dab..49d7a37 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -972,26 +972,27 @@ static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
+ static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 			    const char *buf, size_t n)
+ {
+-	unsigned int maj, min;
+ 	dev_t res;
+-	int ret = -EINVAL;
++	char *name = kstrimdup(buf, GFP_KERNEL);
+ 
+-	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
+-		goto out;
++	if (name == NULL)
++		return -ENOMEM;
+ 
+-	res = MKDEV(maj,min);
+-	if (maj != MAJOR(res) || min != MINOR(res))
+-		goto out;
++	res = name_to_dev_t(name);
+ 
+-	lock_system_sleep();
+-	swsusp_resume_device = res;
+-	unlock_system_sleep();
+-	printk(KERN_INFO "PM: Starting manual resume from disk\n");
+-	noresume = 0;
+-	software_resume();
+-	ret = n;
+- out:
+-	return ret;
++	if (res != 0) {
++		lock_system_sleep();
++		swsusp_resume_device = res;
++		unlock_system_sleep();
++		printk(KERN_INFO "PM: Starting manual resume from disk\n");
++		noresume = 0;
++		software_resume();
++	} else {
++		n = -EINVAL;
++	}
++
++	kfree(name);
++	return n;
+ }
+ 
+ power_attr(resume);
+-- 
+1.7.9.5
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
