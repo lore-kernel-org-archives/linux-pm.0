@@ -1,85 +1,38 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
 Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
  rq
-Date: Fri, 31 Jan 2014 14:12:07 +0000
-Message-ID: <52EBAF37.90900@arm.com>
-References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org> <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org> <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net> <52EA8B07.6020206@linaro.org> <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net> <52EB6F65.8050008@linux.vnet.ibm.com> <52EBAD70.6040303@linaro.org>
+Date: Fri, 31 Jan 2014 07:07:15 -0800
+Message-ID: <52EBBC23.8020603@linux.intel.com>
+References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org> <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org> <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net> <52EA8B07.6020206@linaro.org> <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net> <52EB6F65.8050008@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:45684 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932460AbaAaOLe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jan 2014 09:11:34 -0500
-In-Reply-To: <52EBAD70.6040303@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52EB6F65.8050008@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>
+Cc: Preeti Murthy <preeti.lkml@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, nicolas.pitre@linaro.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Len Brown <len.brown@intel.com>
-Cc: Preeti Murthy <preeti.lkml@gmail.com>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 31/01/14 14:04, Daniel Lezcano wrote:
-> On 01/31/2014 10:39 AM, Preeti U Murthy wrote:
->> Hi Peter,
->>
->> On 01/31/2014 02:32 PM, Peter Zijlstra wrote:
->>> On Fri, Jan 31, 2014 at 02:15:47PM +0530, Preeti Murthy wrote:
->>>>>
->>>>> If the driver does its own random mapping that will break the governor
->>>>> logic. So yes, the states are ordered, the higher the index is, the more you
->>>>> save power and the higher the exit latency is.
->>>>
->>>> The above point holds true for only the ladder governor which sees the idle
->>>> states indexed in the increasing order of target_residency/exit_latency.
->>>>
->>>> However this is not true as far as I can see in the menu governor. It
->>>> acknowledges the dynamic ordering of idle states as can be seen in the
->>>> menu_select() function in the menu governor, where the idle state for the
->>>> CPU gets chosen.  You will notice that, even if it is found that the predicted
->>>> idle time of the CPU is smaller than the target residency of an idle state,
->>>> the governor continues to search for suitable idle states in the higher indexed
->>>> states although it should have halted if the idle states' were ordered according
->>>> to their target residency.. The same holds for exit_latency.
->>>>
->>>> Hence I think this patch would make sense only with additional information
->>>> like exit_latency or target_residency is present for the scheduler. The idle
->>>> state index alone will not be sufficient.
 >>>
->>> Alternatively, can we enforce sanity on the cpuidle infrastructure to
->>> make the index naturally ordered? If not, please explain why :-)
+>>> Hence I think this patch would make sense only with additional information
+>>> like exit_latency or target_residency is present for the scheduler. The idle
+>>> state index alone will not be sufficient.
 >>
->> The commit id 71abbbf856a0e70 says that there are SOCs which could have
->> their target_residency and exit_latency values change at runtime. This
->> commit thus removed the ordering of the idle states according to their
->> target_residency/exit_latency. Adding Len and Arjan to the CC.
-> 
-> This commit is outdated, AFAICT.
+>> Alternatively, can we enforce sanity on the cpuidle infrastructure to
+>> make the index naturally ordered? If not, please explain why :-)
+>
+> The commit id 71abbbf856a0e70 says that there are SOCs which could have
+> their target_residency and exit_latency values change at runtime. This
+> commit thus removed the ordering of the idle states according to their
+> target_residency/exit_latency. Adding Len and Arjan to the CC.
 
-Yes, this is also my impression. It's removed by
+the ARM folks wanted a dynamic exit latency, so.... it makes much more sense
+to me to store the thing you want to use (exit latency) than the number of the state.
 
-commit b25edc42bfb9602f0503474b2c94701d5536ce60
-Author: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date:   Fri Oct 28 16:20:24 2011 +0530
+more than that, you can order either by target residency OR by exit latency,
+if you sort by one, there is no guarantee that you're also sorted by the other
 
-    cpuidle: Remove CPUIDLE_FLAG_IGNORE and dev->prepare()
-
-So far, I'm under the impression that target_residency/exit_latency is
-static data and can be propagated towards the scheduler via topology
-information.
-
--- Dietmar
-
-> 
-> Indeed, there are dynamic idle states. Some idle states are added or 
-> removed when a laptop is going to battery or plugged in.
-> 
-> In ACPI, the power event leads the acpi cpuidle driver to disable the 
-> cpuidle framework, get the idle states which are ordered, and re-enable 
-> the cpuidle framework which in turn kicks all the cpus. So the index in 
-> the struct rq should be always ok.
-> 
-> 
-> 
-> 
-
-
+(for example, you can on a hardware level make a "fast exit" state, and burn power for this faster exit,
+which means your break even gets longer to recoup this extra power compared to the same state without
+the fast exit)
