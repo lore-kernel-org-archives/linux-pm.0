@@ -1,363 +1,101 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: [RFC/PATCH] base: platform: add generic clock handling for
- platform-bus
-Date: Fri, 31 Jan 2014 12:12:45 -0600
-Message-ID: <1391191965-31102-1-git-send-email-balbi@ti.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
+ rq
+Date: Fri, 31 Jan 2014 13:19:26 -0500 (EST)
+Message-ID: <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr>
+References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org> <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org> <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net>
+ <52EA8B07.6020206@linaro.org> <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net> <52EB6F65.8050008@linux.vnet.ibm.com> <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org>
+ <52EBC645.2040607@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Felipe Balbi <balbi@ti.com>, Tero Kristo <t-kristo@ti.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52EBC645.2040607@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Still TODO a commit log. Not for merging!!!!!
+On Fri, 31 Jan 2014, Arjan van de Ven wrote:
 
-NYET-Signed-off-by: Felipe Balbi <balbi@ti.com>
----
+> On 1/31/2014 7:37 AM, Daniel Lezcano wrote:
+> > On 01/31/2014 04:07 PM, Arjan van de Ven wrote:
+> > > > > >
+> > > > > > Hence I think this patch would make sense only with additional
+> > > > > > information
+> > > > > > like exit_latency or target_residency is present for the scheduler.
+> > > > > > The idle
+> > > > > > state index alone will not be sufficient.
+> > > > >
+> > > > > Alternatively, can we enforce sanity on the cpuidle infrastructure to
+> > > > > make the index naturally ordered? If not, please explain why :-)
+> > > >
+> > > > The commit id 71abbbf856a0e70 says that there are SOCs which could have
+> > > > their target_residency and exit_latency values change at runtime. This
+> > > > commit thus removed the ordering of the idle states according to their
+> > > > target_residency/exit_latency. Adding Len and Arjan to the CC.
+> > >
+> > > the ARM folks wanted a dynamic exit latency, so.... it makes much more
+> > > sense
+> > > to me to store the thing you want to use (exit latency) than the number
+> > > of the state.
+> > >
+> > > more than that, you can order either by target residency OR by exit
+> > > latency,
+> > > if you sort by one, there is no guarantee that you're also sorted by the
+> > > other
+> >
+> > IMO, it would be preferable to store the index for the moment as we are
+> > integrating cpuidle with the scheduler. The index allows to access more
+> > informations. Then when
+> > everything is fully integrated we can improve the result, no ?
+> 
+> more information, yes. but if the information isn't actually accurate (because
+> it keeps changing
+> in the datastructure away from what it was for the cpu)... are you really
+> achieving what you want?
 
-This patch is an idea I've had recently in order to combine several different
-PM implementations into the platform-bus.
+Right now (on ARM at least but I imagine this is pretty universal), the 
+biggest impact on information accuracy for a CPU depends on what the 
+other CPUs are doing.  The most obvious example is cluster power down.  
+For a cluster to be powered down, all the CPUs sharing this cluster must 
+also be powered down.  And all those CPUs must have agreed to a possible 
+cluster power down in advance as well.  But it is not because an idle 
+CPU has agreed to the extra latency imposed by a cluster power down that 
+the cluster has actually powered down since another CPU in that cluster 
+might still be running, in which case the recorded latency information 
+for that idle CPU would be higher than it would be in practice at that 
+moment.
 
-This patch is bare minimum for platforms which need to handle functional and
-interface clocks but the whole thing is made optional.
+A cluster should map naturally to a scheduling domain.  If we need to 
+wake up a CPU, it is quite obvious that we should prefer an idle CPU 
+from a scheduling domain which load is not zero.  If the load is not 
+zero then this means that any idle CPU in that domain, even if it 
+indicated it was ready for a cluster power down, will not require the 
+cluster power-up latency as some other CPUs must still be running.  But 
+we already know that of course even if the recorded latency might not 
+say so.
 
-Note that this patch makes sure that by the time a platform_driver's probe is
-called, we already have clocks enabled and pm_runtime_set_active() has been
-called, thus making sure that a device driver's pm_runtime_get_sync() will
-solely increase the pm usage counter.
+In other words, the hardware latency information is dynamic of course.  
+But we might not _need_ to have it reflected at the scheduler domain all 
+the time as in this case it can be inferred by the scheduling domain 
+load.
 
-I have *NOT* tested this anywhere *YET*, but I suppose it shouldn't cause any
-issues since the clock API has ref counting too.
+Within a scheduling domain it is OK to pick up the best idle CPU by 
+looking at the index as it is best to leave those CPUs ready for a 
+cluster power down set to that state and prefer one which is not.  And a 
+scheduling domain with a load of zero should be left alone if idle CPUs 
+are found in another domain which load is not zero, irrespective of 
+absolute latency information. So all the existing heuristics already in 
+place to optimize cache utilization and so on will make things just work 
+for idle as well.
 
-Would really like to get some review from several folks involved with ARM SoC
-PM so that's the reason for the wide audience. If I have missed anybody, please
-add them to Cc.
+All this to say that it is not justified at the moment to worry about 
+how to convey the full details to the scheduler and the complexity that 
+goes with it since in practice we might be able to achieve our goal just 
+as well using simpler hints like some arbitrary index.  Once this is in 
+place, then we could look at the actual benefits from having more 
+detailed information and weight that against the complexity that comes 
+with it.
 
-As mentioned above, this is *NOT* meant for merging, but serves as a starting
-point for discussing some convergence of several PM domain implementations on
-different arch/arm/mach-* directories.
 
-For OMAP, this has the added benefit of removing clock handling from
-omap_device/omap_hwmod and, thus, dropping the need for so many DT_CLK() tables
-under drivers/clk/ti/
-
- drivers/base/platform.c         | 169 ++++++++++++++++++++++++++++++++++++++--
- include/linux/platform_device.h |   9 +++
- 2 files changed, 173 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 3a94b79..86aeb5b 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -484,6 +484,21 @@ static int platform_drv_probe(struct device *_dev)
- 	if (ACPI_HANDLE(_dev))
- 		acpi_dev_pm_attach(_dev, true);
- 
-+	dev->fck = devm_clk_get(_dev, "fck");
-+	dev->ick = devm_clk_get(_dev, "ick");
-+
-+	if (!IS_ERR(dev->fck))
-+		clk_prepare_enable(dev->fck);
-+	else
-+		dev->fck = NULL;
-+
-+	if (!IS_ERR(dev->ick))
-+		clk_prepare_enable(dev->ick);
-+	else
-+		dev->ick = NULL;
-+
-+	pm_runtime_set_active(_dev);
-+
- 	ret = drv->probe(dev);
- 	if (ret && ACPI_HANDLE(_dev))
- 		acpi_dev_pm_detach(_dev, true);
-@@ -507,6 +522,14 @@ static int platform_drv_remove(struct device *_dev)
- 	struct platform_device *dev = to_platform_device(_dev);
- 	int ret;
- 
-+	if (!IS_ERR(dev->ick))
-+		clk_disable_unprepare(dev->ick);
-+
-+	if (!IS_ERR(dev->fck))
-+		clk_disable_unprepare(dev->fck);
-+
-+	pm_runtime_set_suspended(_dev);
-+
- 	ret = drv->remove(dev);
- 	if (ACPI_HANDLE(_dev))
- 		acpi_dev_pm_detach(_dev, true);
-@@ -780,6 +803,59 @@ static int platform_legacy_resume(struct device *dev)
- 
- #endif /* CONFIG_PM_SLEEP */
- 
-+#ifdef CONFIG_PM_RUNTIME
-+int platform_pm_runtime_suspend(struct device *dev)
-+{
-+	struct device_driver *drv = dev->driver;
-+	struct platform_driver *pdrv = to_platform_driver(drv);
-+	struct platform_device *pdev = to_platform_device(dev);
-+	int ret;
-+
-+	ret = pm_generic_runtime_suspend(dev);
-+	if (ret)
-+		return ret;
-+
-+	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_ICK, &pdrv->flags))
-+		clk_disable(pdev->ick);
-+
-+	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_FCK, &pdrv->flags))
-+		clk_disable(pdev->fck);
-+
-+	return ret;
-+}
-+
-+int platform_pm_runtime_resume(struct device *dev)
-+{
-+	struct device_driver *drv = dev->driver;
-+	struct platform_driver *pdrv = to_platform_driver(drv);
-+	struct platform_device *pdev = to_platform_device(dev);
-+	int ret;
-+
-+	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_ICK, &pdrv->flags)) {
-+		ret = clk_enable(pdev->ick);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_FCK, &pdrv->flags)) {
-+		ret = clk_enable(pdev->fck);
-+		if (ret) {
-+			clk_disable(pdev->ick);
-+			return ret;
-+		}
-+	}
-+
-+	ret = pm_generic_runtime_suspend(dev);
-+	if (ret) {
-+		clk_disable(pdev->ick);
-+		clk_disable(pdev->fck);
-+		return ret;
-+	}
-+
-+	return ret;
-+}
-+#endif
-+
- #ifdef CONFIG_SUSPEND
- 
- int platform_pm_suspend(struct device *dev)
-@@ -790,6 +866,9 @@ int platform_pm_suspend(struct device *dev)
- 	if (!drv)
- 		return 0;
- 
-+	if (pm_runtime_suspended(dev))
-+		return 0;
-+
- 	if (drv->pm) {
- 		if (drv->pm->suspend)
- 			ret = drv->pm->suspend(dev);
-@@ -802,12 +881,27 @@ int platform_pm_suspend(struct device *dev)
- 
- int platform_pm_resume(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
- 
- 	if (!drv)
- 		return 0;
- 
-+	ret = clk_enable(pdev->ick);
-+	if (ret)
-+		return ret;
-+
-+	ret = clk_enable(pdev->fck);
-+	if (ret) {
-+		clk_disable(pdev->ick);
-+		return ret;
-+	}
-+
-+	pm_runtime_disable(dev);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_enable(dev);
-+
- 	if (drv->pm) {
- 		if (drv->pm->resume)
- 			ret = drv->pm->resume(dev);
-@@ -815,7 +909,17 @@ int platform_pm_resume(struct device *dev)
- 		ret = platform_legacy_resume(dev);
- 	}
- 
--	return ret;
-+	if (ret) {
-+		clk_disable(pdev->ick);
-+		clk_disable(pdev->fck);
-+		pm_runtime_disable(dev);
-+		pm_runtime_set_suspended(dev);
-+		pm_runtime_enable(dev);
-+
-+		return ret;
-+	}
-+
-+	return 0;
- }
- 
- #endif /* CONFIG_SUSPEND */
-@@ -830,6 +934,9 @@ int platform_pm_freeze(struct device *dev)
- 	if (!drv)
- 		return 0;
- 
-+	if (pm_runtime_suspended(dev))
-+		return 0;
-+
- 	if (drv->pm) {
- 		if (drv->pm->freeze)
- 			ret = drv->pm->freeze(dev);
-@@ -848,6 +955,20 @@ int platform_pm_thaw(struct device *dev)
- 	if (!drv)
- 		return 0;
- 
-+	ret = clk_enable(pdev->ick);
-+	if (ret)
-+		return ret;
-+
-+	ret = clk_enable(pdev->fck);
-+	if (ret) {
-+		clk_disable(pdev->ick);
-+		return ret;
-+	}
-+
-+	pm_runtime_disable(dev);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_enable(dev);
-+
- 	if (drv->pm) {
- 		if (drv->pm->thaw)
- 			ret = drv->pm->thaw(dev);
-@@ -855,7 +976,17 @@ int platform_pm_thaw(struct device *dev)
- 		ret = platform_legacy_resume(dev);
- 	}
- 
--	return ret;
-+	if (ret) {
-+		clk_disable(pdev->ick);
-+		clk_disable(pdev->fck);
-+		pm_runtime_disable(dev);
-+		pm_runtime_set_suspended(dev);
-+		pm_runtime_enable(dev);
-+
-+		return ret;
-+	}
-+
-+	return 0;
- }
- 
- int platform_pm_poweroff(struct device *dev)
-@@ -866,6 +997,9 @@ int platform_pm_poweroff(struct device *dev)
- 	if (!drv)
- 		return 0;
- 
-+	if (pm_runtime_suspended(dev))
-+		return 0;
-+
- 	if (drv->pm) {
- 		if (drv->pm->poweroff)
- 			ret = drv->pm->poweroff(dev);
-@@ -884,6 +1018,20 @@ int platform_pm_restore(struct device *dev)
- 	if (!drv)
- 		return 0;
- 
-+	ret = clk_enable(pdev->ick);
-+	if (ret)
-+		return ret;
-+
-+	ret = clk_enable(pdev->fck);
-+	if (ret) {
-+		clk_disable(pdev->ick);
-+		return ret;
-+	}
-+
-+	pm_runtime_disable(dev);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_enable(dev);
-+
- 	if (drv->pm) {
- 		if (drv->pm->restore)
- 			ret = drv->pm->restore(dev);
-@@ -891,14 +1039,25 @@ int platform_pm_restore(struct device *dev)
- 		ret = platform_legacy_resume(dev);
- 	}
- 
--	return ret;
-+	if (ret) {
-+		clk_disable(pdev->ick);
-+		clk_disable(pdev->fck);
-+		pm_runtime_disable(dev);
-+		pm_runtime_set_suspended(dev);
-+		pm_runtime_enable(dev);
-+
-+		return ret;
-+	}
-+
-+	return 0;
- }
- 
- #endif /* CONFIG_HIBERNATE_CALLBACKS */
- 
- static const struct dev_pm_ops platform_dev_pm_ops = {
--	.runtime_suspend = pm_generic_runtime_suspend,
--	.runtime_resume = pm_generic_runtime_resume,
-+	SET_RUNTIME_PM_OPS(platform_pm_runtime_suspend,
-+			platform_pm_runtime_resume,
-+			NULL)
- 	USE_PLATFORM_PM_SLEEP_OPS
- };
- 
-diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-index 16f6654..91133f5 100644
---- a/include/linux/platform_device.h
-+++ b/include/linux/platform_device.h
-@@ -12,6 +12,7 @@
- #define _PLATFORM_DEVICE_H_
- 
- #include <linux/device.h>
-+#include <linux/clk.h>
- #include <linux/mod_devicetable.h>
- 
- #define PLATFORM_DEVID_NONE	(-1)
-@@ -21,6 +22,10 @@ struct mfd_cell;
- 
- struct platform_device {
- 	const char	*name;
-+
-+	struct clk	*fck;
-+	struct clk	*ick;
-+
- 	int		id;
- 	bool		id_auto;
- 	struct device	dev;
-@@ -179,8 +184,12 @@ struct platform_driver {
- 	struct device_driver driver;
- 	const struct platform_device_id *id_table;
- 	bool prevent_deferred_probe;
-+	unsigned long flags;
- };
- 
-+#define PLATFORM_PM_RUNTIME_KEEP_ICK	BIT(0)
-+#define PLATFORM_PM_RUNTIME_KEEP_FCK	BIT(1)
-+
- #define to_platform_driver(drv)	(container_of((drv), struct platform_driver, \
- 				 driver))
- 
--- 
-1.8.5.2
+Nicolas
