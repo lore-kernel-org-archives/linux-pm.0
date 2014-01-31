@@ -1,103 +1,149 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v6 1/2] mm: add kstrimdup function
-Date: Thu, 30 Jan 2014 16:54:13 -0800
-Message-ID: <1391129654-12854-2-git-send-email-sebastian.capella@linaro.org>
-References: <1391129654-12854-1-git-send-email-sebastian.capella@linaro.org>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1391129654-12854-1-git-send-email-sebastian.capella@linaro.org>
-Sender: owner-linux-mm@kvack.org
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, Mikulas Patocka <mpatocka@redhat.com>, David Rientjes <rientjes@google.com>, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>
+From: Preeti Murthy <preeti.lkml@gmail.com>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
+Date: Fri, 31 Jan 2014 14:15:47 +0530
+Message-ID: <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com>
+References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org>
+	<1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org>
+	<20140130153150.GD5002@laptop.programming.kicks-ass.net>
+	<52EA7D8A.6080604@linaro.org>
+	<20140130163501.GG5002@laptop.programming.kicks-ass.net>
+	<52EA8B07.6020206@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:58830 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753344AbaAaIps convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jan 2014 03:45:48 -0500
+In-Reply-To: <52EA8B07.6020206@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: nicolas.pitre@linaro.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-kstrimdup creates a whitespace-trimmed duplicate of the passed
-in null-terminated string.  This is useful for strings coming
-from sysfs that often include trailing whitespace due to user
-input.
+Hi,
 
-Thanks to Joe Perches for this implementation.
+On Thu, Jan 30, 2014 at 10:55 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> On 01/30/2014 05:35 PM, Peter Zijlstra wrote:
+>>
+>> On Thu, Jan 30, 2014 at 05:27:54PM +0100, Daniel Lezcano wrote:
+>>>
+>>> struct cpuidle_state *state =3D &drv->states[rq->index];
+>>>
+>>> And from the state, we have the following informations:
+>>>
+>>> struct cpuidle_state {
+>>>
+>>>         [ ... ]
+>>>
+>>>          unsigned int    exit_latency; /* in US */
+>>>          int             power_usage; /* in mW */
+>>>          unsigned int    target_residency; /* in US */
+>>>          bool            disabled; /* disabled on all CPUs */
+>>>
+>>>         [ ... ]
+>>> };
+>>
+>>
+>> Right, but can we say that a higher index will save more power and h=
+ave
+>> a higher exit latency? Or is a driver free to have a random mapping =
+from
+>> idle_index to state?
+>
+>
+> If the driver does its own random mapping that will break the governo=
+r
+> logic. So yes, the states are ordered, the higher the index is, the m=
+ore you
+> save power and the higher the exit latency is.
 
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joe Perches <joe@perches.com>
-Cc: Mikulas Patocka <mpatocka@redhat.com>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Rik van Riel <riel@redhat.com> (commit_signer:5/10=50%)
-Cc: Michel Lespinasse <walken@google.com>
-Cc: Shaohua Li <shli@kernel.org>
-Cc: Jerome Marchand <jmarchan@redhat.com>
-Cc: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
----
- include/linux/string.h |    1 +
- mm/util.c              |   30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+The above point holds true for only the ladder governor which sees the =
+idle
+states indexed in the increasing order of target_residency/exit_latency=
+=2E
 
-diff --git a/include/linux/string.h b/include/linux/string.h
-index ac889c5..f29f9a0 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -114,6 +114,7 @@ void *memchr_inv(const void *s, int c, size_t n);
- 
- extern char *kstrdup(const char *s, gfp_t gfp);
- extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
-+extern char *kstrimdup(const char *s, gfp_t gfp);
- extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
- 
- extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
-diff --git a/mm/util.c b/mm/util.c
-index 808f375..a8b731c 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -1,6 +1,7 @@
- #include <linux/mm.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-+#include <linux/ctype.h>
- #include <linux/export.h>
- #include <linux/err.h>
- #include <linux/sched.h>
-@@ -63,6 +64,35 @@ char *kstrndup(const char *s, size_t max, gfp_t gfp)
- EXPORT_SYMBOL(kstrndup);
- 
- /**
-+ * kstrimdup - Trim and copy a %NUL terminated string.
-+ * @s: the string to trim and duplicate
-+ * @gfp: the GFP mask used in the kmalloc() call when allocating memory
-+ *
-+ * Returns an address, which the caller must kfree, containing
-+ * a duplicate of the passed string with leading and/or trailing
-+ * whitespace (as defined by isspace) removed.
-+ */
-+char *kstrimdup(const char *s, gfp_t gfp)
-+{
-+	char *buf;
-+	char *begin = skip_spaces(s);
-+	size_t len = strlen(begin);
-+
-+	while (len && isspace(begin[len - 1]))
-+		len--;
-+
-+	buf = kmalloc_track_caller(len + 1, gfp);
-+	if (!buf)
-+		return NULL;
-+
-+	memcpy(buf, begin, len);
-+	buf[len] = '\0';
-+
-+	return buf;
-+}
-+EXPORT_SYMBOL(kstrimdup);
-+
-+/**
-  * kmemdup - duplicate region of memory
-  *
-  * @src: memory region to duplicate
--- 
-1.7.9.5
+However this is not true as far as I can see in the menu governor. It
+acknowledges the dynamic ordering of idle states as can be seen in the
+menu_select() function in the menu governor, where the idle state for t=
+he
+CPU gets chosen.  You will notice that, even if it is found that the pr=
+edicted
+idle time of the CPU is smaller than the target residency of an idle st=
+ate,
+the governor continues to search for suitable idle states in the higher=
+ indexed
+states although it should have halted if the idle states' were ordered =
+according
+to their target residency.. The same holds for exit_latency.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Hence I think this patch would make sense only with additional informat=
+ion
+like exit_latency or target_residency is present for the scheduler. The=
+ idle
+state index alone will not be sufficient.
+
+Thanks
+
+Regards
+Preeti U Murthy
+
+>
+>
+>> Also, we should probably create a pretty function to get that state,
+>> just like you did in patch 1.
+>
+>
+> Yes, right.
+>
+>
+>>> IIRC, Alex Shi sent a patchset to improve the choosing of the idles=
+t cpu
+>>> and
+>>> the exit_latency was needed.
+>>
+>>
+>> Right. However if we have a 'natural' order in the state array the i=
+ndex
+>> itself might often be sufficient to find the least idle state, in th=
+is
+>> specific case the absolute exit latency doesn't matter, all we want =
+is
+>> the lowest one.
+>
+>
+> Indeed. It could be simple as that. I feel we may need more informati=
+ons in
+> the future but comparing the indexes could be a nice simple and effic=
+ient
+> solution.
+>
+>
+>> Not dereferencing the state array saves hitting cold cachelines.
+>
+>
+> Yeah, always good to remind that. Should keep in mind for later.
+>
+> Thanks for your comments.
+>
+>   -- Daniel
+>
+>
+>
+>
+> --
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
+l" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
