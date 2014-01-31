@@ -1,156 +1,363 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: Extending OPP bindings
-Date: Fri, 31 Jan 2014 18:09:30 +0000
-Message-ID: <20140131180929.GH2616@e102568-lin.cambridge.arm.com>
-References: <52EA570A.8040501@arm.com>
- <52EAF1CA.3040702@ti.com>
- <20140131124620.GC2616@e102568-lin.cambridge.arm.com>
- <CAL_Jsq+Kq9C39xr9tY8gSX+6QFkNDqwmTyC+dBhLNcxKMweCpw@mail.gmail.com>
+From: Felipe Balbi <balbi@ti.com>
+Subject: [RFC/PATCH] base: platform: add generic clock handling for
+ platform-bus
+Date: Fri, 31 Jan 2014 12:12:45 -0600
+Message-ID: <1391191965-31102-1-git-send-email-balbi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:41901 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932462AbaAaSJh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jan 2014 13:09:37 -0500
-In-Reply-To: <CAL_Jsq+Kq9C39xr9tY8gSX+6QFkNDqwmTyC+dBhLNcxKMweCpw@mail.gmail.com>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Felipe Balbi <balbi@ti.com>, Tero Kristo <t-kristo@ti.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Shawn Guo <shawn.guo@linaro.org>, "mturquette@linaro.org" <mturquette@linaro.org>, Mark Brown <mark.brown@linaro.org>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-Hi Rob,
+Still TODO a commit log. Not for merging!!!!!
 
-thanks for having a look.
+NYET-Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
 
-On Fri, Jan 31, 2014 at 05:17:51PM +0000, Rob Herring wrote:
-> On Fri, Jan 31, 2014 at 6:46 AM, Lorenzo Pieralisi
-> <lorenzo.pieralisi@arm.com> wrote:
-> > Hi Nishanth,
-> >
-> > On Fri, Jan 31, 2014 at 12:43:54AM +0000, Nishanth Menon wrote:
-> >> Hi Sudeep,
-> >>
-> >> On 01/30/2014 07:43 AM, Sudeep Holla wrote:
-> >>
-> >> >
-> >> > I am looking into a couple shortcomings in the current OPP bindings and
-> >> > how to address them. Feel free to add to the list if you think of any more
-> >> > issues that needs to be addressed or if and how any problem mentioned below
-> >> > can be handled with the existing bindings.
-> >> >
-> >> > 1. indexing: currently there are no indices in the operating-points.
-> >> indexing is based on frequency which is why the accessors use
-> >> frequency to pull out the OPP data.
-> >>
-> >> indexing is a horrible idea - on platforms where OPP may be disabled
-> >> or enabled for various reasons(see arch/arm/mach-imx/mach-imx6q.c,
-> >> arch/arm/mach-omap2/board-omap3beagle.c etc) - the indexing you see in
-> >> dts is just a myth that may not exist once the nodes are loaded and
-> >> operated upon depending on SoC variations (example efuse describing
-> >> which OPPs can be used and which not).
-> >
-> > I do not understand why. As long as a mapping from DT to data structures
-> > in the kernel is done at boot, I can see how by indexing device nodes
-> > can refer to specific OPPs. If they are disabled, amen, as long as we
-> > can point at specific operating points that should be ok.
-> >
-> > Indexing does not mean that the index in the DT is the same as the one
-> > allocated by the OS. Indexing is there to point at specific OPPs from
-> > different DT nodes, a good example are clock bindings and that's exactly
-> > how they work.
-> 
-> That is not a good comparison. With clocks, you are describing which
-> physical signal coming out of a hardware block much like interrupts.
-> Granted the h/w is not typically documented that way for clocks
-> although the numbering could correspond to register bit locations as
-> interrupt numbers do. With OPP indexes, they are a totally made up
-> software construct.
+This patch is an idea I've had recently in order to combine several different
+PM implementations into the platform-bus.
 
-Well ok, it might be, what I know is that current OPPs do not allow
-other nodes to reference their properties properly, I am not sure that adding
-an index make things worse, actually they are already broken as they are.
+This patch is bare minimum for platforms which need to handle functional and
+interface clocks but the whole thing is made optional.
 
-> Perhaps OPPs should be nodes so new fields can be added easily and
-> then you have a phandle for each OPP.
+Note that this patch makes sure that by the time a platform_driver's probe is
+called, we already have clocks enabled and pm_runtime_set_active() has been
+called, thus making sure that a device driver's pm_runtime_get_sync() will
+solely increase the pm usage counter.
 
-Yeah, but the end result is the same, it has more to do with how to
-express dependencies with DT than the question on whether to use a phandle
-or an index. If we have to add phandles so be it, it is still just a way
-to reference properties for me.
+I have *NOT* tested this anywhere *YET*, but I suppose it shouldn't cause any
+issues since the clock API has ref counting too.
 
-> > Can you provide me with an example where the indexing would go wrong
-> > please ?
-> 
-> Putting s/w indexes into DT. Using cell-index for uarts to define
-> their tty number was one example.
+Would really like to get some review from several folks involved with ARM SoC
+PM so that's the reason for the wide audience. If I have missed anybody, please
+add them to Cc.
 
-The idea was not related to using that index in the kernel at all, but
-since you are all against using this mechanism, I think that's for a good
-reason so we will not do that. How to do it, it has to be seen though.
+As mentioned above, this is *NOT* meant for merging, but serves as a starting
+point for discussing some convergence of several PM domain implementations on
+different arch/arm/mach-* directories.
 
-> > Certainly relying on implicit ordering is not great either, actually I
-> > would say that it is broken.
-> >
-> >> That said, the original OPP[1][2] series discussion started by trying
-> >> to kill indexing precisely for the same reason.. once you have it - it
-> >> becomes just crazy to deal with.
-> >
-> > I could not find any "index killing" :) discussion in there, but I will
-> > keep reading.
-> >
-> >> >     It's assumed that the list is either in ascending or descending
-> >> >     order of frequency but not explicit in the binding document.
-> >> >     There are arch/arm/boot/dts/* files with opps in both styles.
-> >> it should not matter -> opp library should do an insertion sort and
-> >> organize it in ascending order once all the data is inserted. (line
-> >> 449ish in opp.c)
-> >
-> > That's OS details and they must not be mandated by the bindings.
-> > We cannot rely on word of mouth for things to work, I do not like
-> > implicit rules, so the bindings should speficy the ordering or better
-> > a way to reference OPPs.
-> >
-> >> if you see issues with the insertion sort not functioning, it is a bug
-> >> and should be easy to track down and fix.
-> >
-> > Problem is not the insertion sort, problem is that DT bindings do not
-> > define a way to refer to a specific OPP, unless we do that implicitly
-> > and again, I rest my case, that is broken.
-> >
-> >> >     Few other bindings like thermal defines bindings like
-> >> >     cooling-{min,max}-state assuming some order which is broken IMO.
-> >> Now that you bring it up, I missed it :(.. yeah, I might have
-> >> preferred it to be min frequency and max_frequency - I agree it is
-> >> probably broken. I'd let Eduardo comment more about it.
-> >>
-> >> >
-> >> >     One such use-case that came up recently[0] is the c-state latencies
-> >> >     which could be different for each OPP. It would be good if the
-> >> >     latencies are specified with the indices to OPP table to avoid
-> >> >     inconsistency between the bindings.
-> >>
-> >> You can define C states based on frequencies as well - which really
-> >> makes sense - since that sounds really like our constraint (say
-> >> valid-at-frequency "xyz"
-> >
-> > I do not think that's generic enough, I do not like the idea of looking
-> > up frequencies (eg a C-state target_residency does not depend on the
-> > frequency only - ie voltage and other factors play a role, it really
-> > depends on an operating point- looking it up by frequency is misleading IMO).
-> 
-> It seems we are trying to fit a square peg into a round hole here.
+For OMAP, this has the added benefit of removing clock handling from
+omap_device/omap_hwmod and, thus, dropping the need for so many DT_CLK() tables
+under drivers/clk/ti/
 
-Do you mean that this is something not worth describing ? That it has to
-be described differently ? Or that current DT semantics is not suitable for
-describing it ?
+ drivers/base/platform.c         | 169 ++++++++++++++++++++++++++++++++++++++--
+ include/linux/platform_device.h |   9 +++
+ 2 files changed, 173 insertions(+), 5 deletions(-)
 
-We have to find a solution and we are keen on reworking it, otherwise we just
-pretend there are no dependencies on the OPPs from other DT nodes, but I
-am afraid that's already the case now.
-
-Thank you,
-Lorenzo
-
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 3a94b79..86aeb5b 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -484,6 +484,21 @@ static int platform_drv_probe(struct device *_dev)
+ 	if (ACPI_HANDLE(_dev))
+ 		acpi_dev_pm_attach(_dev, true);
+ 
++	dev->fck = devm_clk_get(_dev, "fck");
++	dev->ick = devm_clk_get(_dev, "ick");
++
++	if (!IS_ERR(dev->fck))
++		clk_prepare_enable(dev->fck);
++	else
++		dev->fck = NULL;
++
++	if (!IS_ERR(dev->ick))
++		clk_prepare_enable(dev->ick);
++	else
++		dev->ick = NULL;
++
++	pm_runtime_set_active(_dev);
++
+ 	ret = drv->probe(dev);
+ 	if (ret && ACPI_HANDLE(_dev))
+ 		acpi_dev_pm_detach(_dev, true);
+@@ -507,6 +522,14 @@ static int platform_drv_remove(struct device *_dev)
+ 	struct platform_device *dev = to_platform_device(_dev);
+ 	int ret;
+ 
++	if (!IS_ERR(dev->ick))
++		clk_disable_unprepare(dev->ick);
++
++	if (!IS_ERR(dev->fck))
++		clk_disable_unprepare(dev->fck);
++
++	pm_runtime_set_suspended(_dev);
++
+ 	ret = drv->remove(dev);
+ 	if (ACPI_HANDLE(_dev))
+ 		acpi_dev_pm_detach(_dev, true);
+@@ -780,6 +803,59 @@ static int platform_legacy_resume(struct device *dev)
+ 
+ #endif /* CONFIG_PM_SLEEP */
+ 
++#ifdef CONFIG_PM_RUNTIME
++int platform_pm_runtime_suspend(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	struct platform_driver *pdrv = to_platform_driver(drv);
++	struct platform_device *pdev = to_platform_device(dev);
++	int ret;
++
++	ret = pm_generic_runtime_suspend(dev);
++	if (ret)
++		return ret;
++
++	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_ICK, &pdrv->flags))
++		clk_disable(pdev->ick);
++
++	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_FCK, &pdrv->flags))
++		clk_disable(pdev->fck);
++
++	return ret;
++}
++
++int platform_pm_runtime_resume(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	struct platform_driver *pdrv = to_platform_driver(drv);
++	struct platform_device *pdev = to_platform_device(dev);
++	int ret;
++
++	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_ICK, &pdrv->flags)) {
++		ret = clk_enable(pdev->ick);
++		if (ret)
++			return ret;
++	}
++
++	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_FCK, &pdrv->flags)) {
++		ret = clk_enable(pdev->fck);
++		if (ret) {
++			clk_disable(pdev->ick);
++			return ret;
++		}
++	}
++
++	ret = pm_generic_runtime_suspend(dev);
++	if (ret) {
++		clk_disable(pdev->ick);
++		clk_disable(pdev->fck);
++		return ret;
++	}
++
++	return ret;
++}
++#endif
++
+ #ifdef CONFIG_SUSPEND
+ 
+ int platform_pm_suspend(struct device *dev)
+@@ -790,6 +866,9 @@ int platform_pm_suspend(struct device *dev)
+ 	if (!drv)
+ 		return 0;
+ 
++	if (pm_runtime_suspended(dev))
++		return 0;
++
+ 	if (drv->pm) {
+ 		if (drv->pm->suspend)
+ 			ret = drv->pm->suspend(dev);
+@@ -802,12 +881,27 @@ int platform_pm_suspend(struct device *dev)
+ 
+ int platform_pm_resume(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+ 
+ 	if (!drv)
+ 		return 0;
+ 
++	ret = clk_enable(pdev->ick);
++	if (ret)
++		return ret;
++
++	ret = clk_enable(pdev->fck);
++	if (ret) {
++		clk_disable(pdev->ick);
++		return ret;
++	}
++
++	pm_runtime_disable(dev);
++	pm_runtime_set_active(dev);
++	pm_runtime_enable(dev);
++
+ 	if (drv->pm) {
+ 		if (drv->pm->resume)
+ 			ret = drv->pm->resume(dev);
+@@ -815,7 +909,17 @@ int platform_pm_resume(struct device *dev)
+ 		ret = platform_legacy_resume(dev);
+ 	}
+ 
+-	return ret;
++	if (ret) {
++		clk_disable(pdev->ick);
++		clk_disable(pdev->fck);
++		pm_runtime_disable(dev);
++		pm_runtime_set_suspended(dev);
++		pm_runtime_enable(dev);
++
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ #endif /* CONFIG_SUSPEND */
+@@ -830,6 +934,9 @@ int platform_pm_freeze(struct device *dev)
+ 	if (!drv)
+ 		return 0;
+ 
++	if (pm_runtime_suspended(dev))
++		return 0;
++
+ 	if (drv->pm) {
+ 		if (drv->pm->freeze)
+ 			ret = drv->pm->freeze(dev);
+@@ -848,6 +955,20 @@ int platform_pm_thaw(struct device *dev)
+ 	if (!drv)
+ 		return 0;
+ 
++	ret = clk_enable(pdev->ick);
++	if (ret)
++		return ret;
++
++	ret = clk_enable(pdev->fck);
++	if (ret) {
++		clk_disable(pdev->ick);
++		return ret;
++	}
++
++	pm_runtime_disable(dev);
++	pm_runtime_set_active(dev);
++	pm_runtime_enable(dev);
++
+ 	if (drv->pm) {
+ 		if (drv->pm->thaw)
+ 			ret = drv->pm->thaw(dev);
+@@ -855,7 +976,17 @@ int platform_pm_thaw(struct device *dev)
+ 		ret = platform_legacy_resume(dev);
+ 	}
+ 
+-	return ret;
++	if (ret) {
++		clk_disable(pdev->ick);
++		clk_disable(pdev->fck);
++		pm_runtime_disable(dev);
++		pm_runtime_set_suspended(dev);
++		pm_runtime_enable(dev);
++
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ int platform_pm_poweroff(struct device *dev)
+@@ -866,6 +997,9 @@ int platform_pm_poweroff(struct device *dev)
+ 	if (!drv)
+ 		return 0;
+ 
++	if (pm_runtime_suspended(dev))
++		return 0;
++
+ 	if (drv->pm) {
+ 		if (drv->pm->poweroff)
+ 			ret = drv->pm->poweroff(dev);
+@@ -884,6 +1018,20 @@ int platform_pm_restore(struct device *dev)
+ 	if (!drv)
+ 		return 0;
+ 
++	ret = clk_enable(pdev->ick);
++	if (ret)
++		return ret;
++
++	ret = clk_enable(pdev->fck);
++	if (ret) {
++		clk_disable(pdev->ick);
++		return ret;
++	}
++
++	pm_runtime_disable(dev);
++	pm_runtime_set_active(dev);
++	pm_runtime_enable(dev);
++
+ 	if (drv->pm) {
+ 		if (drv->pm->restore)
+ 			ret = drv->pm->restore(dev);
+@@ -891,14 +1039,25 @@ int platform_pm_restore(struct device *dev)
+ 		ret = platform_legacy_resume(dev);
+ 	}
+ 
+-	return ret;
++	if (ret) {
++		clk_disable(pdev->ick);
++		clk_disable(pdev->fck);
++		pm_runtime_disable(dev);
++		pm_runtime_set_suspended(dev);
++		pm_runtime_enable(dev);
++
++		return ret;
++	}
++
++	return 0;
+ }
+ 
+ #endif /* CONFIG_HIBERNATE_CALLBACKS */
+ 
+ static const struct dev_pm_ops platform_dev_pm_ops = {
+-	.runtime_suspend = pm_generic_runtime_suspend,
+-	.runtime_resume = pm_generic_runtime_resume,
++	SET_RUNTIME_PM_OPS(platform_pm_runtime_suspend,
++			platform_pm_runtime_resume,
++			NULL)
+ 	USE_PLATFORM_PM_SLEEP_OPS
+ };
+ 
+diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
+index 16f6654..91133f5 100644
+--- a/include/linux/platform_device.h
++++ b/include/linux/platform_device.h
+@@ -12,6 +12,7 @@
+ #define _PLATFORM_DEVICE_H_
+ 
+ #include <linux/device.h>
++#include <linux/clk.h>
+ #include <linux/mod_devicetable.h>
+ 
+ #define PLATFORM_DEVID_NONE	(-1)
+@@ -21,6 +22,10 @@ struct mfd_cell;
+ 
+ struct platform_device {
+ 	const char	*name;
++
++	struct clk	*fck;
++	struct clk	*ick;
++
+ 	int		id;
+ 	bool		id_auto;
+ 	struct device	dev;
+@@ -179,8 +184,12 @@ struct platform_driver {
+ 	struct device_driver driver;
+ 	const struct platform_device_id *id_table;
+ 	bool prevent_deferred_probe;
++	unsigned long flags;
+ };
+ 
++#define PLATFORM_PM_RUNTIME_KEEP_ICK	BIT(0)
++#define PLATFORM_PM_RUNTIME_KEEP_FCK	BIT(1)
++
+ #define to_platform_driver(drv)	(container_of((drv), struct platform_driver, \
+ 				 driver))
+ 
+-- 
+1.8.5.2
