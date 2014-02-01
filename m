@@ -1,57 +1,63 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: RE: [RFC PATCH 3/3] idle: store the idle state index in the struct
- rq
-Date: Sat, 1 Feb 2014 15:13:59 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1402011502070.2312@knanqh.ubzr>
-References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org> <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org> <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net>
- <52EA8B07.6020206@linaro.org> <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net> <52EB6F65.8050008@linux.vnet.ibm.com> <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org>
- <52EBC645.2040607@linux.intel.com> <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr> <1A7043D5F58CCB44A599DFD55ED4C948452D34DC@FMSMSX106.amr.corp.intel.com> <alpine.LFD.2.11.1402011028400.2312@knanqh.ubzr>
- <1A7043D5F58CCB44A599DFD55ED4C948452D3706@FMSMSX106.amr.corp.intel.com>
+From: Len Brown <lenb@kernel.org>
+Subject: [GIT PULL] turbostat update for Linux-3.14 merge
+Date: Sat, 1 Feb 2014 15:34:42 -0500
+Message-ID: <CAJvTdKnmHyA3RojM_QOrF=az=3-dKzU_BQV+RxN2=R8erzo5+Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f169.google.com ([209.85.216.169]:57585 "EHLO
-	mail-qc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932082AbaBAUOC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Feb 2014 15:14:02 -0500
-Received: by mail-qc0-f169.google.com with SMTP id w7so9114836qcr.14
-        for <linux-pm@vger.kernel.org>; Sat, 01 Feb 2014 12:14:01 -0800 (PST)
-In-Reply-To: <1A7043D5F58CCB44A599DFD55ED4C948452D3706@FMSMSX106.amr.corp.intel.com>
+Received: from mail-yk0-f175.google.com ([209.85.160.175]:41563 "EHLO
+	mail-yk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932140AbaBAUem (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Feb 2014 15:34:42 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Brown, Len" <len.brown@intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Sat, 1 Feb 2014, Brown, Len wrote:
+Hi Linus,
 
-> > And your point is?
-> 
-> It is a bad idea for an individual CPU to track the C-state
-> of another CPU, which can change the cycle after it was checked.
+Please pull these patches to update the turbostat utility.
 
-Absolutely.  And I'm far from advocating we do this either.
+thanks!
+Len Brown, Intel Open Source Technology Center
 
-> We know it is a bad idea because we used to do it,
-> until we realized code here can easily impact the
-> performance critical path.
-> 
-> In general, it is the OS's job to communicate constraints
-> to the HW, and the HW to act on them.  Not all HW is smart,
-> so sometimes the OS has to do more hand-holding -- but
-> less is more.
+The following changes since commit 7e22e91102c6b9df7c4ae2168910e19d2bb14cd6:
 
-Less is more indeed.  I'm certainly a big fan of that principle.
+  Linux 3.13-rc8 (2014-01-12 17:04:18 +0700)
 
-Just so you understand more about the context we need to care for on 
-ARM, I'd invite you to have a look at 
-Documentation/arm/cluster-pm-race-avoidance.txt.
+are available in the git repository at:
 
-I'm advocating we do _not_ track everything at the scheduler domain 
-simply because some cluster states are possible only if all the CPUs in 
-a cluster are idle, and that idleness is already tracked by the 
-scheduler at the scheduling domain level.  So the information we don't 
-update can already be inferred indirectly and cheaply with the 
-information in place today.
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git release
 
+for you to fetch changes up to 3b4d5c7fec0a0b1bbf56d3b8337770fa30f4d1ad:
 
-Nicolas
+  tools/power turbostat: introduce -s to dump counters (2014-02-01
+15:24:28 -0500)
+
+----------------------------------------------------------------
+Andy Shevchenko (2):
+      tools/power turbostat: remove unused command line option
+      tools/power turbostat: introduce -s to dump counters
+
+Dirk Brandewie (1):
+      turbostat: Add option to report joules consumed per sample
+
+Josh Triplett (8):
+      turbostat: Don't put unprocessed uapi headers in the include path
+      turbostat: Don't attempt to printf an off_t with %zx
+      turbostat: Use GCC's CPUID functions to support PIC
+      turbostat: Check return value of fscanf
+      turbostat: Add a helper to parse a single int out of a file
+      turbostat: Factor out common function to open file and exit on failure
+      turbostat: Clean up error handling; disambiguate error messages;
+use err and errx
+      turbostat: Add a .gitignore to ignore the compiled turbostat binary
+
+Len Brown (1):
+      turbostat: run on HSX
+
+ tools/power/x86/turbostat/.gitignore  |   1 +
+ tools/power/x86/turbostat/Makefile    |   2 +-
+ tools/power/x86/turbostat/turbostat.c | 441 +++++++++++++++++++---------------
+ 3 files changed, 244 insertions(+), 200 deletions(-)
+ create mode 100644 tools/power/x86/turbostat/.gitignore
