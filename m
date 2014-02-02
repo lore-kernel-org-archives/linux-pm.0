@@ -1,65 +1,148 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PULL] turbostat update for Linux-3.14 merge
-Date: Sat, 1 Feb 2014 15:39:14 -0500
-Message-ID: <CAJvTdKnw_gGO0r4T2kOvs2dMW9A32K+KTOfS1rqPn5U23jjp-g@mail.gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
+Date: Sun, 02 Feb 2014 21:30:17 +0530
+Message-ID: <52EE6B91.3080205@linux.vnet.ibm.com>
+References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com> <alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de> <CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com> <CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com> <CAM4v1pPnHuSKX9UAjnqzappThKS0a6_6-PEqpiiCPpjQ_3anQQ@mail.gmail.com> <20140131163034.GB21061@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f178.google.com ([209.85.160.178]:60032 "EHLO
-	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932417AbaBAUjP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Feb 2014 15:39:15 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:41898 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751789AbaBBQDx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Feb 2014 11:03:53 -0500
+Received: from /spool/local
+	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Sun, 2 Feb 2014 09:03:53 -0700
+In-Reply-To: <20140131163034.GB21061@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Preeti Murthy <preeti.lkml@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Lei Wen <adrian.wenl@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-(re-sent with correct from: address - gmail fun...)
+Hi Frederic,
 
-Hi Linus,
+On 01/31/2014 10:00 PM, Frederic Weisbecker wrote:
+> On Wed, Jan 29, 2014 at 10:57:59AM +0530, Preeti Murthy wrote:
+>> Hi,
+>>
+>> On Thu, Jan 23, 2014 at 11:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>
+>>> Hi Guys,
+>>>
+>>> So the first question is why cpufreq needs it and is it really stupid?
+>>> Yes, it is stupid but that's how its implemented since a long time. It does
+>>> so to get data about the load on CPUs, so that freq can be scaled up/down.
+>>>
+>>> Though there is a solution in discussion currently, which will take
+>>> inputs from scheduler and so these background timers would go away.
+>>> But we need to wait until that time.
+>>>
+>>> Now, why do we need that for every cpu, while that for a single cpu might
+>>> be enough? The answer is cpuidle here: What if the cpu responsible for
+>>> running timer goes to sleep? Who will evaluate the load then? And if we
+>>> make this timer run on one cpu in non-deferrable mode then that cpu
+>>> would be waken up again and again from idle. So, it was decided to have
+>>> a per-cpu deferrable timer. Though to improve efficiency, once it is fired
+>>> on any cpu, timer for all other CPUs are rescheduled, so that they don't
+>>> fire before 5ms (sampling time)..
+>>
+>> How about simplifying this design by doing the below?
+>>
+>> 1. Since anyway cpufreq governors monitor load on the cpu once every
+>> 5ms, *tie it with tick_sched_timer*, which also gets deferred when the cpu
+>> enters nohz_idle.
+>>
+>> 2. To overcome the problem of running this job of monitoring the load
+>> on every cpu, have the *time keeping* cpu do it for you.
+>>
+>> The time keeping cpu has the property that if it has to go to idle, it will do
+>> so and let the next cpu that runs the periodic timer become the time keeper.
+>> Hence no cpu is prevented from entering nohz_idle and the cpu that is busy
+>> and first executes periodic timer will take over as the time keeper.
+>>
+>> The result would be:
+>>
+>> 1. One cpu at any point in time will be monitoring cpu load, at every sched tick
+>> as long as its busy. If it goes to sleep, then it gives up this duty
+>> and enters idle.
+>> The next cpu that runs the periodic timer becomes the cpu to monitor the load
+>> and will continue to do so as long as its busy. Hence we do not miss monitoring
+>> the cpu load.
+> 
+> Well that's basically what an unbound deferrable timer does. It's deferrable so
+> it's doesn't prevent from entering dynticks idle mode and it's not affine to any
+> particular CPU so it's going to be tied to a buzy CPU according to the scheduler
+> (see get_nohz_timer_target()).
+> 
+>>
+>> 2. This will avoid an additional timer for cpufreq.
+> 
+> That doesn't look like a problem.
+> 
+>>
+>> 3. It avoids sending IPIs each time this timer gets modified since there is just
+>> one CPU doing the monitoring.
+> 
+> If we fix the initial issue properly, we shouldn't need to send an IPI anymore.
 
-Please pull these patches to update the turbostat utility.
+That's right. I am sorry I missed that we were completely avoiding IPIs
+in case of deferrable timers.
+> 
+>>
+>> 4. The downside to this could be that we are stretching the functions of the
+>>  periodic timer into the power management domain which does not seem like
+>> the right thing to do.
+> 
+> Indeed, that's what I'm worried about. The tick has grown into a Big Kernel Timer
+> where any subsystem can hook into for any kind of periodic event. This is why it
+> was not easy to implement full dynticks, and it's not even complete yet due
+> to the complicated dependencies involved.
 
-thanks!
-Len Brown, Intel Open Source Technology Center
+I see your point. Yes point 4 is a bad idea.
 
-The following changes since commit 7e22e91102c6b9df7c4ae2168910e19d2bb14cd6:
+> 
+>>
+>> Having said the above, the fix that Viresh has proposed along with the nohz_full
+>> condition that Frederick added looks to solve this problem.
+> 
+> In any case I believe we want Viresh patch since there are other users
+> of deferrable timers that can profit from this.
+> 
+> So I'm queueing it.
 
-  Linux 3.13-rc8 (2014-01-12 17:04:18 +0700)
+Yeah it solves the problem reported.
 
-are available in the git repository at:
+But on a different note, I was wondering if we could avoid running this
+timer on every CPU by having a model similar to the time-keeping CPU.
+Like the cpu-frequency tracking CPU which moves dynamically and serves
+its purpose at all points in time as long as there are busy CPUs. This
+will help avoid IPIs to busy CPUs indicating that they modify their
+timers to delay their respective updates of frequency, each time one of
+the CPUs does it on their behalf.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git release
+Viresh?
 
-for you to fetch changes up to 3b4d5c7fec0a0b1bbf56d3b8337770fa30f4d1ad:
+But your below point is very true, we will need to see if cpu frequency
+can use statistics about cpu load from the scheduler and avoid having to
+re-calculate it. Let me take a look at this.
+> 
+>>
+>> But just a thought on if there is scope to improve this part of the
+>> cpufreq code.
+>> What do you all think?
+> 
+> I fear I don't know the problem well enough to display any serious advice.
+> It depends what kind of measurement is needed. For example, isn't there some
+> loads statistics that are already available from the scheduler that you could reuse?
+> 
+> The scheduler alone takes gazillions of different loads and power statistics taken
+> in interesting path such as the tick or sched switches. Aren't there some read-only metrics
+> that could be interesting?
+> 
+Thanks
 
-  tools/power turbostat: introduce -s to dump counters (2014-02-01
-15:24:28 -0500)
+Regards
+Preeti U Murthy
 
-----------------------------------------------------------------
-Andy Shevchenko (2):
-      tools/power turbostat: remove unused command line option
-      tools/power turbostat: introduce -s to dump counters
-
-Dirk Brandewie (1):
-      turbostat: Add option to report joules consumed per sample
-
-Josh Triplett (8):
-      turbostat: Don't put unprocessed uapi headers in the include path
-      turbostat: Don't attempt to printf an off_t with %zx
-      turbostat: Use GCC's CPUID functions to support PIC
-      turbostat: Check return value of fscanf
-      turbostat: Add a helper to parse a single int out of a file
-      turbostat: Factor out common function to open file and exit on failure
-      turbostat: Clean up error handling; disambiguate error messages;
-use err and errx
-      turbostat: Add a .gitignore to ignore the compiled turbostat binary
-
-Len Brown (1):
-      turbostat: run on HSX
-
- tools/power/x86/turbostat/.gitignore  |   1 +
- tools/power/x86/turbostat/Makefile    |   2 +-
- tools/power/x86/turbostat/turbostat.c | 441 +++++++++++++++++++---------------
- 3 files changed, 244 insertions(+), 200 deletions(-)
- create mode 100644 tools/power/x86/turbostat/.gitignore
