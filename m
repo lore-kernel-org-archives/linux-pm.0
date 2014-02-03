@@ -1,123 +1,84 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
- rq
-Date: Mon, 03 Feb 2014 12:03:18 +0530
-Message-ID: <52EF382E.4020003@linux.vnet.ibm.com>
-References: <1391090962-15032-1-git-send-email-daniel.lezcano@linaro.org> <1391090962-15032-4-git-send-email-daniel.lezcano@linaro.org> <20140130153150.GD5002@laptop.programming.kicks-ass.net> <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net> <52EA8B07.6020206@linaro.org> <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <52EB77C3.20704@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
+Date: Mon, 3 Feb 2014 12:21:16 +0530
+Message-ID: <CAKohpok7obD9LqPwLLQMOPw9fTyKg4WpwiZ8EPAgqtHSsC0fxw@mail.gmail.com>
+References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com>
+	<alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de>
+	<CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com>
+	<CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
+	<20140123133537.GA13345@localhost.localdomain>
+	<CAKohponoTb-SeRx8Za6HhmVNwrT0COxykhi=s=uOR8SGNvkgUA@mail.gmail.com>
+	<20140128135033.GC9172@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e37.co.us.ibm.com ([32.97.110.158]:39594 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbaBCGhD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Feb 2014 01:37:03 -0500
-Received: from /spool/local
-	by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Sun, 2 Feb 2014 23:37:03 -0700
-In-Reply-To: <52EB77C3.20704@linaro.org>
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:46120 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbaBCGvQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Feb 2014 01:51:16 -0500
+Received: by mail-ob0-f173.google.com with SMTP id vb8so7491468obc.18
+        for <linux-pm@vger.kernel.org>; Sun, 02 Feb 2014 22:51:16 -0800 (PST)
+In-Reply-To: <20140128135033.GC9172@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>
-Cc: Preeti Murthy <preeti.lkml@gmail.com>, nicolas.pitre@linaro.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Lei Wen <adrian.wenl@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Hi Daniel,
+Sorry was away for short vacation.
 
-On 01/31/2014 03:45 PM, Daniel Lezcano wrote:
-> On 01/31/2014 09:45 AM, Preeti Murthy wrote:
->> Hi,
+On 28 January 2014 19:20, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> On Thu, Jan 23, 2014 at 07:50:40PM +0530, Viresh Kumar wrote:
+>> Wait, I got the wrong code here. That's wasn't my initial intention.
+>> I actually wanted to write something like this:
 >>
->> On Thu, Jan 30, 2014 at 10:55 PM, Daniel Lezcano
->> <daniel.lezcano@linaro.org> wrote:
->>> On 01/30/2014 05:35 PM, Peter Zijlstra wrote:
->>>>
->>>> On Thu, Jan 30, 2014 at 05:27:54PM +0100, Daniel Lezcano wrote:
->>>>>
->>>>> struct cpuidle_state *state = &drv->states[rq->index];
->>>>>
->>>>> And from the state, we have the following informations:
->>>>>
->>>>> struct cpuidle_state {
->>>>>
->>>>>          [ ... ]
->>>>>
->>>>>           unsigned int    exit_latency; /* in US */
->>>>>           int             power_usage; /* in mW */
->>>>>           unsigned int    target_residency; /* in US */
->>>>>           bool            disabled; /* disabled on all CPUs */
->>>>>
->>>>>          [ ... ]
->>>>> };
->>>>
->>>>
->>>> Right, but can we say that a higher index will save more power and have
->>>> a higher exit latency? Or is a driver free to have a random mapping
->>>> from
->>>> idle_index to state?
->>>
->>>
->>> If the driver does its own random mapping that will break the governor
->>> logic. So yes, the states are ordered, the higher the index is, the
->>> more you
->>> save power and the higher the exit latency is.
+>>  -       wake_up_nohz_cpu(cpu);
+>>  +       if (!tbase_get_deferrable(timer->base) || idle_cpu(cpu))
+>>  +               wake_up_nohz_cpu(cpu);
 >>
->> The above point holds true for only the ladder governor which sees the
->> idle
->> states indexed in the increasing order of target_residency/exit_latency.
-> 
-> The cpuidle framework has been modified for both governor, see commit
-> 8aef33a7.
-> 
-> The power field was initially used to do the selection, but no power
-> value was ever used to filled this field by any hardware. So the field
-> was arbitrarily filled with a decreasing value (-1, -2, -3 ...), and
-> used by the governor's select function. The patch above just removed
-> this field and the condition on power for 'select' assuming the idle
-> state are power ordered in the array.
+>> Will that work?
 
-Ok. Looking at commit id 71abbbf856a0, it looks like the primary
-motivation for it was the power_usage numbers of each idle state. But if
-that went unused, then it perhaps makes sense to revert that patch.
+Something is seriously wrong with me, again wrote rubbish code.
+Let me phrase what I wanted to write :)
 
-Commit 8aef33a7 pretty much did that. However I think it overlooked the
-menu_select() function where the the search iterates through all the
-idle states introduced by the above mentioned commit again. Since its
-purpose is outdated as per what you say, its best if we correct this now
-as per the below post that you have pointed to.
+"don't send IPI to a idle CPU for a deferrable timer."
 
-[RFC PATCH] cpuidle: reduce unnecessary loop in c-state selection
-> 
->> However this is not true as far as I can see in the menu governor. It
->> acknowledges the dynamic ordering of idle states as can be seen in the
->> menu_select() function in the menu governor, where the idle state for the
->> CPU gets chosen.  You will notice that, even if it is found that the
->> predicted
->> idle time of the CPU is smaller than the target residency of an idle
->> state,
->> the governor continues to search for suitable idle states in the
->> higher indexed
->> states although it should have halted if the idle states' were ordered
->> according
->> to their target residency.. The same holds for exit_latency.
-> 
-> I am not sure to get the point. Actually, this loop should be just
-> optimized to backward search the idle state like cpuidle_play_dead does
-> 
-> There is also a patch proposed by Alex Shi about this loop.
-> 
-> [RFC PATCH] cpuidle: reduce unnecessary loop in c-state selection
-> 
-> http://comments.gmane.org/gmane.linux.power-management.general/42124
+Probably I code it correctly this time atleast.
 
-But again if we are copying the exit_latency and target_residency
-numbers of the idle state entered, into the rq as soon as the idle state
-for the CPU is chosen, as per the discussion on this thread, then I
-guess the ordering of the idle states in the cpuidle state table does
-not matter.
+-       wake_up_nohz_cpu(cpu);
++       if (!(tbase_get_deferrable(timer->base) && idle_cpu(cpu)))
++               wake_up_nohz_cpu(cpu);
 
-Thanks
+> Well, this is going to wake up the target from its idle state, which is
+> what we want to avoid if the timer is deferrable, right?
 
-Regards
-Preeti U Murthy
+Yeah, sorry for doing it for second time :(
 
+> The simplest thing we want is:
+>
+>            if (!tbase_get_deferrable(timer->base) || tick_nohz_full_cpu(cpu))
+>                wake_up_nohz_cpu(cpu);
+>
+> This spares the IPI for the common case where the timer is deferrable and we run
+> in periodic or dynticks-idle mode (which should be 99.99% of the existing workloads).
+
+I wasn't looking at this problem with NO_HZ_FULL in mind. As I thought its
+only about if the CPU is idle or not. And so the solution I was
+talking about was:
+
+"don't send IPI to a idle CPU for a deferrable timer."
+
+But I see that still failing with the code you wrote. For normal cases where we
+don't enable NO_HZ_FULL, we will still end up waking up idle CPUs which
+is what Lei Wen reported initially.
+
+Also if a CPU is marked for NO_HZ_FULL and is not idle currently then we
+wouldn't send a IPI for a deferrable timer. But we actually need that, so that
+we can reevaluate the timers order again?
+
+> Then we can later optimize that and spare the IPI on full dynticks CPUs when they run
+> idle, but that require some special care about subtle races which can't be dealt
+> with a simple test on "idle_cpu(target)". And power consumption in full dynticks
+> is already very suboptimized anyway.
+>
+> So I suggest we start simple with the above test, and a big fat comment which explains
+> what we are doing and what needs to be done in the future.
