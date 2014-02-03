@@ -1,84 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
-Date: Mon, 3 Feb 2014 12:21:16 +0530
-Message-ID: <CAKohpok7obD9LqPwLLQMOPw9fTyKg4WpwiZ8EPAgqtHSsC0fxw@mail.gmail.com>
+Date: Mon, 3 Feb 2014 13:49:26 +0530
+Message-ID: <CAKohpo=qQJwgDpzJMtk-PN6PBB_1KsSXZ_tYrVLOz_9Qzs=gsA@mail.gmail.com>
 References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com>
 	<alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de>
 	<CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com>
 	<CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
-	<20140123133537.GA13345@localhost.localdomain>
-	<CAKohponoTb-SeRx8Za6HhmVNwrT0COxykhi=s=uOR8SGNvkgUA@mail.gmail.com>
-	<20140128135033.GC9172@localhost.localdomain>
+	<CAM4v1pPnHuSKX9UAjnqzappThKS0a6_6-PEqpiiCPpjQ_3anQQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:46120 "EHLO
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:59273 "EHLO
 	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbaBCGvQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Feb 2014 01:51:16 -0500
-Received: by mail-ob0-f173.google.com with SMTP id vb8so7491468obc.18
-        for <linux-pm@vger.kernel.org>; Sun, 02 Feb 2014 22:51:16 -0800 (PST)
-In-Reply-To: <20140128135033.GC9172@localhost.localdomain>
+	with ESMTP id S1750759AbaBCIT1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Feb 2014 03:19:27 -0500
+Received: by mail-ob0-f173.google.com with SMTP id vb8so7559496obc.18
+        for <linux-pm@vger.kernel.org>; Mon, 03 Feb 2014 00:19:26 -0800 (PST)
+In-Reply-To: <CAM4v1pPnHuSKX9UAjnqzappThKS0a6_6-PEqpiiCPpjQ_3anQQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Lei Wen <adrian.wenl@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Preeti Murthy <preeti.lkml@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>, Lei Wen <adrian.wenl@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-Sorry was away for short vacation.
-
-On 28 January 2014 19:20, Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> On Thu, Jan 23, 2014 at 07:50:40PM +0530, Viresh Kumar wrote:
->> Wait, I got the wrong code here. That's wasn't my initial intention.
->> I actually wanted to write something like this:
->>
->>  -       wake_up_nohz_cpu(cpu);
->>  +       if (!tbase_get_deferrable(timer->base) || idle_cpu(cpu))
->>  +               wake_up_nohz_cpu(cpu);
->>
->> Will that work?
-
-Something is seriously wrong with me, again wrote rubbish code.
-Let me phrase what I wanted to write :)
-
-"don't send IPI to a idle CPU for a deferrable timer."
-
-Probably I code it correctly this time atleast.
-
--       wake_up_nohz_cpu(cpu);
-+       if (!(tbase_get_deferrable(timer->base) && idle_cpu(cpu)))
-+               wake_up_nohz_cpu(cpu);
-
-> Well, this is going to wake up the target from its idle state, which is
-> what we want to avoid if the timer is deferrable, right?
-
-Yeah, sorry for doing it for second time :(
-
-> The simplest thing we want is:
+On 29 January 2014 10:57, Preeti Murthy <preeti.lkml@gmail.com> wrote:
+> How about simplifying this design by doing the below?
 >
->            if (!tbase_get_deferrable(timer->base) || tick_nohz_full_cpu(cpu))
->                wake_up_nohz_cpu(cpu);
+> 1. Since anyway cpufreq governors monitor load on the cpu once every
+> 5ms, *tie it with tick_sched_timer*, which also gets deferred when the cpu
+> enters nohz_idle.
+
+Its configurable. We can change sampling time to whatever we want. Some
+might be selecting it as 30 ms.
+
+> 2. To overcome the problem of running this job of monitoring the load
+> on every cpu, have the *time keeping* cpu do it for you.
 >
-> This spares the IPI for the common case where the timer is deferrable and we run
-> in periodic or dynticks-idle mode (which should be 99.99% of the existing workloads).
-
-I wasn't looking at this problem with NO_HZ_FULL in mind. As I thought its
-only about if the CPU is idle or not. And so the solution I was
-talking about was:
-
-"don't send IPI to a idle CPU for a deferrable timer."
-
-But I see that still failing with the code you wrote. For normal cases where we
-don't enable NO_HZ_FULL, we will still end up waking up idle CPUs which
-is what Lei Wen reported initially.
-
-Also if a CPU is marked for NO_HZ_FULL and is not idle currently then we
-wouldn't send a IPI for a deferrable timer. But we actually need that, so that
-we can reevaluate the timers order again?
-
-> Then we can later optimize that and spare the IPI on full dynticks CPUs when they run
-> idle, but that require some special care about subtle races which can't be dealt
-> with a simple test on "idle_cpu(target)". And power consumption in full dynticks
-> is already very suboptimized anyway.
+> The time keeping cpu has the property that if it has to go to idle, it will do
+> so and let the next cpu that runs the periodic timer become the time keeper.
+> Hence no cpu is prevented from entering nohz_idle and the cpu that is busy
+> and first executes periodic timer will take over as the time keeper.
 >
-> So I suggest we start simple with the above test, and a big fat comment which explains
-> what we are doing and what needs to be done in the future.
+> The result would be:
+>
+> 1. One cpu at any point in time will be monitoring cpu load, at every sched tick
+> as long as its busy. If it goes to sleep, then it gives up this duty
+> and enters idle.
+> The next cpu that runs the periodic timer becomes the cpu to monitor the load
+> and will continue to do so as long as its busy. Hence we do not miss monitoring
+> the cpu load.
+>
+> 2. This will avoid an additional timer for cpufreq.
+>
+> 3. It avoids sending IPIs each time this timer gets modified since there is just
+> one CPU doing the monitoring.
+>
+> 4. The downside to this could be that we are stretching the functions of the
+>  periodic timer into the power management domain which does not seem like
+> the right thing to do.
+
+Looks good, but AFAIK timerkeeper is still to be implemented? Also the best
+solution is to get rid of this timer completely by getting inputs from
+scheduler.
+Probably some ARM/Linaro folks are working on it.
