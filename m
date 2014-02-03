@@ -1,72 +1,87 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
-Date: Mon, 3 Feb 2014 15:56:05 +0100
-Message-ID: <20140203145605.GL8874@twins.programming.kicks-ass.net>
-References: <52EA8B07.6020206@linaro.org>
- <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com>
- <20140131090230.GM5002@laptop.programming.kicks-ass.net>
- <52EB6F65.8050008@linux.vnet.ibm.com>
- <52EBBC23.8020603@linux.intel.com>
- <52EBC33A.6080101@linaro.org>
- <52EBC645.2040607@linux.intel.com>
- <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr>
- <20140203125441.GD19029@e103034-lin>
- <52EFA9D3.1030601@linux.intel.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
+ rq
+Date: Mon, 3 Feb 2014 09:58:12 -0500 (EST)
+Message-ID: <alpine.LFD.2.11.1402030938440.2312@knanqh.ubzr>
+References: <52EA7D8A.6080604@linaro.org> <20140130163501.GG5002@laptop.programming.kicks-ass.net> <52EA8B07.6020206@linaro.org> <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net>
+ <52EB6F65.8050008@linux.vnet.ibm.com> <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org> <52EBC645.2040607@linux.intel.com> <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr> <20140203125441.GD19029@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:47316 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbaBCO4X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Feb 2014 09:56:23 -0500
-Content-Disposition: inline
-In-Reply-To: <52EFA9D3.1030601@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140203125441.GD19029@e103034-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
+On Mon, 3 Feb 2014, Morten Rasmussen wrote:
 
-Arjan, could you have a look at teaching your Thunderpants to wrap lines
-at ~80 chars please?
-
-On Mon, Feb 03, 2014 at 06:38:11AM -0800, Arjan van de Ven wrote:
-> On 2/3/2014 4:54 AM, Morten Rasmussen wrote:
+> On Fri, Jan 31, 2014 at 06:19:26PM +0000, Nicolas Pitre wrote:
+> > A cluster should map naturally to a scheduling domain.  If we need to 
+> > wake up a CPU, it is quite obvious that we should prefer an idle CPU 
+> > from a scheduling domain which load is not zero.  If the load is not 
+> > zero then this means that any idle CPU in that domain, even if it 
+> > indicated it was ready for a cluster power down, will not require the 
+> > cluster power-up latency as some other CPUs must still be running.  But 
+> > we already know that of course even if the recorded latency might not 
+> > say so.
+> > 
+> > In other words, the hardware latency information is dynamic of course.  
+> > But we might not _need_ to have it reflected at the scheduler domain all 
+> > the time as in this case it can be inferred by the scheduling domain 
+> > load.
 > 
-> >
-> >I'm therefore not convinced that idle state index is the right thing to
-> >give the scheduler. Using a cost metric would be better in my
-> >opinion.
+> I agree that the existing sched domain hierarchy should be used to
+> represent the power topology. But, it is not clear to me how much we can say
+> about the C-state of cpu without checking the load of the entire cluster
+> every time?
 > 
-> 
-> I totally agree with this, and we may need two separate cost metrics
-> 
-> 1) A latency driven one
-> 2) A performance impact on
-> 
-> first one is pretty much the exit latency related time, sort of a
-> "expected time to first instruction" (currently menuidle has the
-> 99.999% worst case number, which is not useful for this, but is a
-> first approximation). This is obviously the dominating number for
-> expected-short running tasks
-> 
-> second on is more of a "is there any cache/TLB left or is it flushed"
-> kind of metric. It's more tricky to compute, since what is the cost of
-> an empty cache (or even a cache migration) after all....  .... but I
-> suspect it's in part what the scheduler will care about more for
-> expected-long  running tasks.
+> We would need to know which C-states (index) that are per cpu and per
+> cluster and ignore the cluster states when the cluster load is non-zero.
 
-Yeah, so currently we 'assume' cache hotness based on runtime; see
-task_hot(). A hint that the CPU wiped its caches might help there.
+In any case i.e. whether the cluster load is zero or not, we want to 
+select the CPU to wake up with the shallowest C-state.  That should 
+correspond to the actual cluster C-state already without having to track 
+it explicitly.
 
-We also used to measure the entire cache migration cost between all
-topologies in the system. That got ripped out when CFS got introduced,
-but there's been a few people wanting to bring that back because the
-single migration cost thingy simply doesn't work too well for some
-workloads.
+> Current sched domain load is not maintained in the scheduler, it is only
+> produced when needed. But I guess you could derive the necessary
+> information from the idle cpu masks.
 
-The reason Ingo took it out was that these measured numbers would
-slightly vary from boot to boot making it hard to compare performance
-numbers across boots.
+Even better.
 
-There's something to be said for either case I suppose.
+> > Within a scheduling domain it is OK to pick up the best idle CPU by 
+> > looking at the index as it is best to leave those CPUs ready for a 
+> > cluster power down set to that state and prefer one which is not.  And a 
+> > scheduling domain with a load of zero should be left alone if idle CPUs 
+> > are found in another domain which load is not zero, irrespective of 
+> > absolute latency information. So all the existing heuristics already in 
+> > place to optimize cache utilization and so on will make things just work 
+> > for idle as well.
+> 
+> IIUC, you propose to only use the index when picking an idle cpu inside
+> an already busy sched domain and leave idle sched domains alone if
+> possible. It may work for homogeneous SMP systems, but I don't think it
+> will work for heterogeneous systems like big.LITTLE.
+
+Hence the caveat "everything else being equal" I said previously.
+
+> If the little cluster has zero load and the big has stuff running, it
+> doesn't mean that it is a good idea to wake up another big cpu. It may
+> be more power efficient to wake up the little cluster. Comparing idle
+> state index of a big and little cpu won't help us in making that choice
+> as the clusters may have different idle states and the costs associated
+> with each state are different.
+
+Agreed.  But let's evolve this in manageable steps.
+
+> I'm therefore not convinced that idle state index is the right thing to
+> give the scheduler. Using a cost metric would be better in my
+> opinion.
+
+That won't be difficult to move from the idle state index to some other 
+cost metric once we've proven the simple index on homogeneous systems 
+has benefits.
+
+
+Nicolas
