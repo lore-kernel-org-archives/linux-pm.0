@@ -1,254 +1,104 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 1/2] PM / OPP: Add support for 'boost' mode OPP
-Date: Tue, 4 Feb 2014 10:51:49 -0600
-Message-ID: <52F11AA5.6060200@ti.com>
-References: <1391506890-7335-1-git-send-email-thomas.ab@samsung.com>	<1391506890-7335-2-git-send-email-thomas.ab@samsung.com>	<52F10418.4040806@ti.com>
- <CAJuA9aimVcxwKEQnSNpsEhZ7Rf-74+r8FOz09EpAZcoVEdi6GA@mail.gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 2/2] tick/cpuidle: Initialize hrtimer mode of broadcast
+Date: Tue, 04 Feb 2014 22:39:34 +0530
+Message-ID: <52F11ECE.605@linux.vnet.ibm.com>
+References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com> <20140124065820.17564.83076.stgit@preeti> <alpine.DEB.2.02.1402041101330.24986@ionos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJuA9aimVcxwKEQnSNpsEhZ7Rf-74+r8FOz09EpAZcoVEdi6GA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, rjw@rjwysocki.net, Kukjin Kim <kgene.kim@samsung.com>, thomas.ab@samsung.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.02.1402041101330.24986@ionos.tec.linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, agraf@suse.de, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/04/2014 09:59 AM, Thomas Abraham wrote:
-> On Tue, Feb 4, 2014 at 8:45 PM, Nishanth Menon <nm@ti.com> wrote:
->> On 02/04/2014 03:41 AM, Thomas Abraham wrote:
->>> From: Thomas Abraham <thomas.ab@samsung.com>
->>>
->>> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
->>> support for CPU boost mode. This patch adds support for finding available
->>> boost OPPs from device tree and marking them as usable in boost mode.
->>>
->>> Cc: Nishanth Menon <nm@ti.com>
->>> Cc: Lukasz Majewski <l.majewski@samsung.com>
->>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->>> ---
->>
->> Why is a cpufreq feature being pushed on to OPP library? you can very
->> well have a property boot-frequencies = < a b c > and be done with the
->> job.
+Hi Thomas,
+
+On 02/04/2014 03:48 PM, Thomas Gleixner wrote:
+>> +++ b/kernel/time/tick-broadcast-hrtimer.c
+>> +/*
+>> + * This is called from the guts of the broadcast code when the cpu
+>> + * which is about to enter idle has the earliest broadcast timer event.
+>> + */
+>> +static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+>> +{
+>> +	ktime_t now, interval;
+>> +	/*
+>> +	 * We try to cancel the timer first. If the callback is on
+>> +	 * flight on some other cpu then we let it handle it. If we
+>> +	 * were able to cancel the timer nothing can rearm it as we
+>> +	 * own broadcast_lock.
+>> +	 *
+>> +	 * However if we are called from the hrtimer interrupt handler
+>> +	 * itself, reprogram it.
+>> +	 */
+>> +	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
+>> +		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
+>> +		/* Bind the "device" to the cpu */
+>> +		bc->bound_on = smp_processor_id();
+>> +	} else if (bc->bound_on == smp_processor_id()) {
 > 
-> The boost-opp was not limited to be a cpu/cpufreq only feature. Any
-> device (such as a bus) which has OPPs and if it can support optional
-> boost OPPs, can utilize this feature. The boost OPPs also require a
-> voltage to be associated with the frequency and hence the binding
-> boost-frequencies would not be suffice. The code changes in this patch
-> also do not have anything that is cpufreq specific.
-> 
-if we have
-operating-points = < Fa Va
-	Fb Vb
-	Fc Vc
-	Fd Vd
-	>;
-boost-frequencies = <Fc Fd>;
-you can easily pick up the voltages from the table.
+> This part really wants a proper comment. It took me a while to figure
+> out why this is correct and what the call chain is.
 
-The point being - there does not seem to be a need to modify the
-existing definitions to introduce new OPP definitions.
+How about:
 
-a way to flip this over is to consider iMX6(see
-arch/arm/mach-imx/mach-imx6q.) where OPP tuple <Fd Vd> can only be
-enabled *iff* efuse register x has bit y set.
-
-Would we want to introduce efuse offsets into OPP definitions? into
-something like additional field definition 'efuse_controlled'?
-
-
->>
->> I agree with Rob's comment that this is something we have to discuss
->> in wider "add features to an OPP" discussion[1].
-> 
-> Okay. I have read through the discussion in [1]. Thanks for the link.
-> Assuming that the current OPP tuple format will not change, I do not
-> feel the code changes in this patch will be hinder the outcome of the
-> discussion in [1].
-
-The context of that discussion is to consider what is the data form we
-consider OPP as? should we consider OPP as a data that is extensible
-(as in phandle with properties that we add on) OR should we consider
-key, value pair which provides a key (frequency) into another table
-for other data (like efuse bit map, boost set etc..).
-
-Both approaches I mentioned will work, and will take additional code
-to make it happen. But having custom properties like this limits
-extensibility - that is not scalable for other property definitions
-we'd like to make in the future.
+"However we can also be called from the event handler of
+ce_broadcast_hrtimer when bctimer expires. We cannot therefore restart
+the timer since it is on flight on the same CPU. But due to the same
+reason we can reset it."
+?
 
 > 
-> Regards,
-> Thomas.
 > 
->>
->>
->> [1] http://marc.info/?t=139108946400001&r=1&w=2
->>
->>>  drivers/base/power/opp.c |   69 +++++++++++++++++++++++++++++++++++++---------
->>>  1 file changed, 56 insertions(+), 13 deletions(-)
->>>
->>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
->>> index 2553867..de4d52d 100644
->>> --- a/drivers/base/power/opp.c
->>> +++ b/drivers/base/power/opp.c
->>> @@ -62,6 +62,7 @@ struct dev_pm_opp {
->>>       struct list_head node;
->>>
->>>       bool available;
->>> +     bool boost;
->>>       unsigned long rate;
->>>       unsigned long u_volt;
->>>
->>> @@ -380,10 +381,12 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
->>>  EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
->>>
->>>  /**
->>> - * dev_pm_opp_add()  - Add an OPP table from a table definitions
->>> + * dev_pm_opp_add_flags()  - Add an OPP to device OPP list with flags
->>>   * @dev:     device for which we do this operation
->>>   * @freq:    Frequency in Hz for this OPP
->>>   * @u_volt:  Voltage in uVolts for this OPP
->>> + * @available:       initial availability of the OPP with adding it to the list.
->>> + * @boost:   availability of this opp in controller's boost operating mode.
->>>   *
->>>   * This function adds an opp definition to the opp list and returns status.
->>>   * The opp is made available by default and it can be controlled using
->>> @@ -395,7 +398,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
->>>   * that this function is *NOT* called under RCU protection or in contexts where
->>>   * mutex cannot be locked.
->>>   */
->>> -int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->>> +static int dev_pm_opp_add_flags(struct device *dev, unsigned long freq,
->>> +                     unsigned long u_volt, bool available, bool boost)
->>>  {
->>>       struct device_opp *dev_opp = NULL;
->>>       struct dev_pm_opp *opp, *new_opp;
->>> @@ -441,7 +445,8 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->>>       new_opp->dev_opp = dev_opp;
->>>       new_opp->rate = freq;
->>>       new_opp->u_volt = u_volt;
->>> -     new_opp->available = true;
->>> +     new_opp->available = available;
->>> +     new_opp->boost = boost;
->>>
->>>       /* Insert new OPP in order of increasing frequency */
->>>       head = &dev_opp->opp_list;
->>> @@ -462,6 +467,27 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->>>       srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
->>>       return 0;
->>>  }
->>> +
->>> +/**
->>> + * dev_pm_opp_add()  - Add an OPP table from a table definitions
->>> + * @dev:     device for which we do this operation
->>> + * @freq:    Frequency in Hz for this OPP
->>> + * @u_volt:  Voltage in uVolts for this OPP
->>> + *
->>> + * This function adds an opp definition to the opp list and returns status.
->>> + * The opp is made available by default and it can be controlled using
->>> + * dev_pm_opp_enable/disable functions.
->>> + *
->>> + * Locking: The internal device_opp and opp structures are RCU protected.
->>> + * Hence this function internally uses RCU updater strategy with mutex locks
->>> + * to keep the integrity of the internal data structures. Callers should ensure
->>> + * that this function is *NOT* called under RCU protection or in contexts where
->>> + * mutex cannot be locked.
->>> + */
->>> +int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->>> +{
->>> +     return dev_pm_opp_add_flags(dev, freq, u_volt, true, false);
->>> +}
->>>  EXPORT_SYMBOL_GPL(dev_pm_opp_add);
->>>
->>>  /**
->>> @@ -651,7 +677,8 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
->>>
->>>       list_for_each_entry(opp, &dev_opp->opp_list, node) {
->>>               if (opp->available) {
->>> -                     freq_table[i].driver_data = i;
->>> +                     freq_table[i].driver_data =
->>> +                             opp->boost ? CPUFREQ_BOOST_FREQ : i;
->>>                       freq_table[i].frequency = opp->rate / 1000;
->>>                       i++;
->>>               }
->>> @@ -701,19 +728,14 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
->>>  }
->>>
->>>  #ifdef CONFIG_OF
->>> -/**
->>> - * of_init_opp_table() - Initialize opp table from device tree
->>> - * @dev:     device pointer used to lookup device OPPs.
->>> - *
->>> - * Register the initial OPP table with the OPP library for given device.
->>> - */
->>> -int of_init_opp_table(struct device *dev)
->>> +static int of_parse_opp_table(struct device *dev, const char *prop_name,
->>> +                                     bool boost)
->>>  {
->>>       const struct property *prop;
->>>       const __be32 *val;
->>>       int nr;
->>>
->>> -     prop = of_find_property(dev->of_node, "operating-points", NULL);
->>> +     prop = of_find_property(dev->of_node, prop_name, NULL);
->>>       if (!prop)
->>>               return -ENODEV;
->>>       if (!prop->value)
->>> @@ -734,7 +756,7 @@ int of_init_opp_table(struct device *dev)
->>>               unsigned long freq = be32_to_cpup(val++) * 1000;
->>>               unsigned long volt = be32_to_cpup(val++);
->>>
->>> -             if (dev_pm_opp_add(dev, freq, volt)) {
->>> +             if (dev_pm_opp_add_flags(dev, freq, volt, true, boost)) {
->>>                       dev_warn(dev, "%s: Failed to add OPP %ld\n",
->>>                                __func__, freq);
->>>                       continue;
->>> @@ -744,5 +766,26 @@ int of_init_opp_table(struct device *dev)
->>>
->>>       return 0;
->>>  }
->>> +
->>> +/**
->>> + * of_init_opp_table() - Initialize opp table from device tree
->>> + * @dev:     device pointer used to lookup device OPPs.
->>> + *
->>> + * Register the initial OPP table with the OPP library for given device.
->>> + * Additional "boost" operating points of the controller, if any, are
->>> + * specified with "boost-opp" property.
->>> + */
->>> +int of_init_opp_table(struct device *dev)
->>> +{
->>> +     int ret;
->>> +
->>> +     ret = of_parse_opp_table(dev, "operating-points", false);
->>> +     if (!ret) {
->>> +             ret = of_parse_opp_table(dev, "boost-opp", true);
->>> +             if (ret == -ENODEV)
->>> +                     ret = 0;
->>> +     }
->>> +     return ret;
->>> +}
->>>  EXPORT_SYMBOL_GPL(of_init_opp_table);
->>>  #endif
->>>
->>
->>
->> --
->> Regards,
->> Nishanth Menon
+>> +		now = ktime_get();
+>> +		interval = ktime_sub(expires, now);
+>> +		hrtimer_forward_now(&bctimer, interval);
+> 
+> We are in the event handler called from bc_handler() and expires is
+> absolute time. So what's wrong with calling
+> hrtimer_set_expires(&bctimer, expires)?
 
+You are right. There are so many interfaces doing nearly the same thing
+:( I overlooked that hrtimer_forward() and its variants were being used
+when the interval was pre-calculated and stored away. And
+hrtimer_set_expires() would be used when we knew the absolute expiry.
+And it looks safe to call it here too.
 
--- 
-Regards,
-Nishanth Menon
+> 
+>> +static enum hrtimer_restart bc_handler(struct hrtimer *t)
+>> +{
+>> +	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
+>> +	return HRTIMER_RESTART;
+> 
+> We probably want to check whether the timer needs to be restarted at
+> all.
+> 
+> 	if (ce_broadcast_timer.next_event.tv64 == KTIME_MAX)
+> 	   return HRTIMER_NORESTART;
+> 
+> 	return HRTIMER_RESTART;
+
+True this additional check would be useful.
+
+Do you want me to send out the next version with the above corrections
+including the patch added to this thread where we handle archs setting
+the CPUIDLE_FLAG_TIMER_STOP flag?
+
+> 
+> Hmm?
+> 
+> Thanks,
+> 
+> 	tglx
+
+Thanks
+
+Regards
+Preeti U Murthy
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
