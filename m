@@ -1,42 +1,198 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
- rq
-Date: Tue, 04 Feb 2014 06:56:07 -0800
-Message-ID: <52F0FF87.3040102@linux.intel.com>
-References: <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net> <52EB6F65.8050008@linux.vnet.ibm.com> <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org> <52EBC645.2040607@linux.intel.com> <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr> <20140203125441.GD19029@e103034-lin> <52EFA9D3.1030601@linux.intel.com> <20140203145605.GL8874@twins.programming.kicks-ass.net> <20140204091405.GB19156@gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 1/2] PM / OPP: Add support for 'boost' mode OPP
+Date: Tue, 4 Feb 2014 09:15:36 -0600
+Message-ID: <52F10418.4040806@ti.com>
+References: <1391506890-7335-1-git-send-email-thomas.ab@samsung.com>
+ <1391506890-7335-2-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:37416 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751214AbaBDO4J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Feb 2014 09:56:09 -0500
-In-Reply-To: <20140204091405.GB19156@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1391506890-7335-2-git-send-email-thomas.ab@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thomas Abraham <ta.omasab@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: l.majewski@samsung.com, kgene.kim@samsung.com, viresh.kumar@linaro.org, t.figa@samsung.com, rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, thomas.ab@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
->
-> Yeah, so we could put the parameters back by measuring it in
-> user-space via a nice utility in tools/, and by matching it to
-> relevant hardware signatures (CPU type and cache sizes), plus doing
-> some defaults for when we don't have any signature... possibly based
-> on a fuzzy search to find the 'closest' system in the table of
-> constants.
->
-> That would stabilize the boot-to-boot figures while still keeping most
-> of the system specific-ness, in a maintainable fashion.
->
-> The downside is that we'd have to continuously maintain a table of all
-> this info, with new entries added when new CPUs are introduced on the
-> market. That's an upside too, btw.
+On 02/04/2014 03:41 AM, Thomas Abraham wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
+> 
+> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
+> support for CPU boost mode. This patch adds support for finding available
+> boost OPPs from device tree and marking them as usable in boost mode.
+> 
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> ---
 
-one way out could be to define "buckets" of values this way, and on
-the machine round the calibration to the nearest bucket
+Why is a cpufreq feature being pushed on to OPP library? you can very
+well have a property boot-frequencies = < a b c > and be done with the
+job.
 
-(but in practice caches get flushed a LOT if the system is not 100%
-busy so not sure if this logic really matters outside of benchmarks)
+I agree with Rob's comment that this is something we have to discuss
+in wider "add features to an OPP" discussion[1].
 
 
+[1] http://marc.info/?t=139108946400001&r=1&w=2
+
+>  drivers/base/power/opp.c |   69 +++++++++++++++++++++++++++++++++++++---------
+>  1 file changed, 56 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 2553867..de4d52d 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -62,6 +62,7 @@ struct dev_pm_opp {
+>  	struct list_head node;
+>  
+>  	bool available;
+> +	bool boost;
+>  	unsigned long rate;
+>  	unsigned long u_volt;
+>  
+> @@ -380,10 +381,12 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+>  
+>  /**
+> - * dev_pm_opp_add()  - Add an OPP table from a table definitions
+> + * dev_pm_opp_add_flags()  - Add an OPP to device OPP list with flags
+>   * @dev:	device for which we do this operation
+>   * @freq:	Frequency in Hz for this OPP
+>   * @u_volt:	Voltage in uVolts for this OPP
+> + * @available:	initial availability of the OPP with adding it to the list.
+> + * @boost:	availability of this opp in controller's boost operating mode.
+>   *
+>   * This function adds an opp definition to the opp list and returns status.
+>   * The opp is made available by default and it can be controlled using
+> @@ -395,7 +398,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+>   * that this function is *NOT* called under RCU protection or in contexts where
+>   * mutex cannot be locked.
+>   */
+> -int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+> +static int dev_pm_opp_add_flags(struct device *dev, unsigned long freq,
+> +			unsigned long u_volt, bool available, bool boost)
+>  {
+>  	struct device_opp *dev_opp = NULL;
+>  	struct dev_pm_opp *opp, *new_opp;
+> @@ -441,7 +445,8 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>  	new_opp->dev_opp = dev_opp;
+>  	new_opp->rate = freq;
+>  	new_opp->u_volt = u_volt;
+> -	new_opp->available = true;
+> +	new_opp->available = available;
+> +	new_opp->boost = boost;
+>  
+>  	/* Insert new OPP in order of increasing frequency */
+>  	head = &dev_opp->opp_list;
+> @@ -462,6 +467,27 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>  	srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
+>  	return 0;
+>  }
+> +
+> +/**
+> + * dev_pm_opp_add()  - Add an OPP table from a table definitions
+> + * @dev:	device for which we do this operation
+> + * @freq:	Frequency in Hz for this OPP
+> + * @u_volt:	Voltage in uVolts for this OPP
+> + *
+> + * This function adds an opp definition to the opp list and returns status.
+> + * The opp is made available by default and it can be controlled using
+> + * dev_pm_opp_enable/disable functions.
+> + *
+> + * Locking: The internal device_opp and opp structures are RCU protected.
+> + * Hence this function internally uses RCU updater strategy with mutex locks
+> + * to keep the integrity of the internal data structures. Callers should ensure
+> + * that this function is *NOT* called under RCU protection or in contexts where
+> + * mutex cannot be locked.
+> + */
+> +int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+> +{
+> +	return dev_pm_opp_add_flags(dev, freq, u_volt, true, false);
+> +}
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_add);
+>  
+>  /**
+> @@ -651,7 +677,8 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>  
+>  	list_for_each_entry(opp, &dev_opp->opp_list, node) {
+>  		if (opp->available) {
+> -			freq_table[i].driver_data = i;
+> +			freq_table[i].driver_data =
+> +				opp->boost ? CPUFREQ_BOOST_FREQ : i;
+>  			freq_table[i].frequency = opp->rate / 1000;
+>  			i++;
+>  		}
+> @@ -701,19 +728,14 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
+>  }
+>  
+>  #ifdef CONFIG_OF
+> -/**
+> - * of_init_opp_table() - Initialize opp table from device tree
+> - * @dev:	device pointer used to lookup device OPPs.
+> - *
+> - * Register the initial OPP table with the OPP library for given device.
+> - */
+> -int of_init_opp_table(struct device *dev)
+> +static int of_parse_opp_table(struct device *dev, const char *prop_name,
+> +					bool boost)
+>  {
+>  	const struct property *prop;
+>  	const __be32 *val;
+>  	int nr;
+>  
+> -	prop = of_find_property(dev->of_node, "operating-points", NULL);
+> +	prop = of_find_property(dev->of_node, prop_name, NULL);
+>  	if (!prop)
+>  		return -ENODEV;
+>  	if (!prop->value)
+> @@ -734,7 +756,7 @@ int of_init_opp_table(struct device *dev)
+>  		unsigned long freq = be32_to_cpup(val++) * 1000;
+>  		unsigned long volt = be32_to_cpup(val++);
+>  
+> -		if (dev_pm_opp_add(dev, freq, volt)) {
+> +		if (dev_pm_opp_add_flags(dev, freq, volt, true, boost)) {
+>  			dev_warn(dev, "%s: Failed to add OPP %ld\n",
+>  				 __func__, freq);
+>  			continue;
+> @@ -744,5 +766,26 @@ int of_init_opp_table(struct device *dev)
+>  
+>  	return 0;
+>  }
+> +
+> +/**
+> + * of_init_opp_table() - Initialize opp table from device tree
+> + * @dev:	device pointer used to lookup device OPPs.
+> + *
+> + * Register the initial OPP table with the OPP library for given device.
+> + * Additional "boost" operating points of the controller, if any, are
+> + * specified with "boost-opp" property.
+> + */
+> +int of_init_opp_table(struct device *dev)
+> +{
+> +	int ret;
+> +
+> +	ret = of_parse_opp_table(dev, "operating-points", false);
+> +	if (!ret) {
+> +		ret = of_parse_opp_table(dev, "boost-opp", true);
+> +		if (ret == -ENODEV)
+> +			ret = 0;
+> +	}
+> +	return ret;
+> +}
+>  EXPORT_SYMBOL_GPL(of_init_opp_table);
+>  #endif
+> 
+
+
+-- 
+Regards,
+Nishanth Menon
