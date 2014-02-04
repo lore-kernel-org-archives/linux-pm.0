@@ -1,104 +1,48 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 2/2] tick/cpuidle: Initialize hrtimer mode of broadcast
-Date: Tue, 04 Feb 2014 22:39:34 +0530
-Message-ID: <52F11ECE.605@linux.vnet.ibm.com>
-References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com> <20140124065820.17564.83076.stgit@preeti> <alpine.DEB.2.02.1402041101330.24986@ionos.tec.linutronix.de>
+Subject: Re: [PATCH V2 1/2] time: Change the return type of clockevents_notify()
+ to integer
+Date: Tue, 04 Feb 2014 22:44:48 +0530
+Message-ID: <52F12008.4040103@linux.vnet.ibm.com>
+References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com> <20140124065739.17564.97259.stgit@preeti.in.ibm.com> <alpine.DEB.2.02.1402041100250.24986@ionos.tec.linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.02.1402041101330.24986@ionos.tec.linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, agraf@suse.de, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp03.in.ibm.com ([122.248.162.3]:50214 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752090AbaBDRS3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Feb 2014 12:18:29 -0500
+Received: from /spool/local
+	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Tue, 4 Feb 2014 22:48:27 +0530
+In-Reply-To: <alpine.DEB.2.02.1402041100250.24986@ionos.tec.linutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, galak@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, agraf@suse.de, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-Hi Thomas,
-
-On 02/04/2014 03:48 PM, Thomas Gleixner wrote:
->> +++ b/kernel/time/tick-broadcast-hrtimer.c
->> +/*
->> + * This is called from the guts of the broadcast code when the cpu
->> + * which is about to enter idle has the earliest broadcast timer event.
->> + */
->> +static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
->> +{
->> +	ktime_t now, interval;
->> +	/*
->> +	 * We try to cancel the timer first. If the callback is on
->> +	 * flight on some other cpu then we let it handle it. If we
->> +	 * were able to cancel the timer nothing can rearm it as we
->> +	 * own broadcast_lock.
->> +	 *
->> +	 * However if we are called from the hrtimer interrupt handler
->> +	 * itself, reprogram it.
->> +	 */
->> +	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
->> +		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
->> +		/* Bind the "device" to the cpu */
->> +		bc->bound_on = smp_processor_id();
->> +	} else if (bc->bound_on == smp_processor_id()) {
+On 02/04/2014 03:31 PM, Thomas Gleixner wrote:
+> On Fri, 24 Jan 2014, Preeti U Murthy wrote:
+>> -extern void tick_broadcast_oneshot_control(unsigned long reason);
+>> +extern int tick_broadcast_oneshot_control(unsigned long reason);
 > 
-> This part really wants a proper comment. It took me a while to figure
-> out why this is correct and what the call chain is.
-
-How about:
-
-"However we can also be called from the event handler of
-ce_broadcast_hrtimer when bctimer expires. We cannot therefore restart
-the timer since it is on flight on the same CPU. But due to the same
-reason we can reset it."
-?
-
+>> -static inline void tick_broadcast_oneshot_control(unsigned long reason) { }
+>> +static inline int tick_broadcast_oneshot_control(unsigned long reason) { }
 > 
+>> -static inline void tick_broadcast_oneshot_control(unsigned long reason) { }
+>> +static inline int tick_broadcast_oneshot_control(unsigned long reason) { }
 > 
->> +		now = ktime_get();
->> +		interval = ktime_sub(expires, now);
->> +		hrtimer_forward_now(&bctimer, interval);
-> 
-> We are in the event handler called from bc_handler() and expires is
-> absolute time. So what's wrong with calling
-> hrtimer_set_expires(&bctimer, expires)?
+> The inline stubs need to return 0.
 
-You are right. There are so many interfaces doing nearly the same thing
-:( I overlooked that hrtimer_forward() and its variants were being used
-when the interval was pre-calculated and stored away. And
-hrtimer_set_expires() would be used when we knew the absolute expiry.
-And it looks safe to call it here too.
-
-> 
->> +static enum hrtimer_restart bc_handler(struct hrtimer *t)
->> +{
->> +	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
->> +	return HRTIMER_RESTART;
-> 
-> We probably want to check whether the timer needs to be restarted at
-> all.
-> 
-> 	if (ce_broadcast_timer.next_event.tv64 == KTIME_MAX)
-> 	   return HRTIMER_NORESTART;
-> 
-> 	return HRTIMER_RESTART;
-
-True this additional check would be useful.
-
-Do you want me to send out the next version with the above corrections
-including the patch added to this thread where we handle archs setting
-the CPUIDLE_FLAG_TIMER_STOP flag?
-
-> 
-> Hmm?
+Oh right! Apologies!
+Thanks.
 > 
 > Thanks,
 > 
 > 	tglx
-
-Thanks
+> 
 
 Regards
 Preeti U Murthy
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+
