@@ -1,93 +1,28 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 2/3] trivial: PM / Hibernate: clean up checkpatch in
- hibernate.c
-Date: Tue, 04 Feb 2014 14:37:33 -0800
-Message-ID: <20140204223733.30015.23993@capellas-linux>
+Subject: Re: [PATCH v7 3/3] PM / Hibernate: use name_to_dev_t to parse resume
+Date: Tue, 04 Feb 2014 15:17:10 -0800
+Message-ID: <20140204231710.31169.6504@capellas-linux>
 References: <1391546631-7715-1-git-send-email-sebastian.capella@linaro.org>
- <1391546631-7715-3-git-send-email-sebastian.capella@linaro.org>
- <9487103.2jnJmCRm9n@vostro.rjw.lan>
+ <1391546631-7715-4-git-send-email-sebastian.capella@linaro.org>
+ <1498007.FMXxByppC2@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <9487103.2jnJmCRm9n@vostro.rjw.lan>
+In-Reply-To: <1498007.FMXxByppC2@vostro.rjw.lan>
 Sender: owner-linux-mm@kvack.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Rafael J. Wysocki (2014-02-04 13:36:29)
-> Well, this isn't a trivial patch.
+Quoting Rafael J. Wysocki (2014-02-04 13:39:43)
+> On Tuesday, February 04, 2014 12:43:51 PM Sebastian Capella wrote:
+> > +     if (name =3D=3D NULL)
+> What about "if (!name)"?
+> > +     if (res !=3D 0) {
+> What about "if (res)"?
 
-I'll remove the trivial, thanks!
-
-Quoting Rafael J. Wysocki (2014-02-04 13:36:29)
-> On Tuesday, February 04, 2014 12:43:50 PM Sebastian Capella wrote:
-> > +     while (1)
-> > +             ;
-> Please remove this change from the patch.  I don't care about checkpatch
-> complaining here.
-> > +     while (1)
-> > +             ;
-> Same here.
-
-Will do, thanks!
-
-> > @@ -765,7 +762,7 @@ static int software_resume(void)
-> >       if (isdigit(resume_file[0]) && resume_wait) {
-> >               int partno;
-> >               while (!get_gendisk(swsusp_resume_device, &partno))
-> > -                     msleep(10);
-> > +                     msleep(20);
-> =
-
-> That's the reason why it is not trivial.
-> =
-
-> First, the change being made doesn't belong in this patch.
-
-Thanks I'll separate it if it remains.
-
-> Second, what's the problem with the original value?
-
-The warning from checkpatch implies that it's misleading to
-msleep < 20ms since msleep is using msec_to_jiffies + 1 for
-the duration.  In any case, this is polling for devices discovery to
-complete.  It is used when resumewait is specified on the command
-line telling hibernate to wait for the resume device to appear.
-
-> > -static ssize_t image_size_show(struct kobject *kobj, struct kobj_attri=
-bute *attr,
-> > +static ssize_t image_size_show(struct kobject *kobj,
-> > +                            struct kobj_attribute *attr,
-> Why can't you leave the code as is here?
-> > -static ssize_t image_size_store(struct kobject *kobj, struct kobj_attr=
-ibute *attr,
-> > +static ssize_t image_size_store(struct kobject *kobj,
-> > +                             struct kobj_attribute *attr,
-> And here?
-
-Purely long line cleanup. (>80 colunms)
-
-> >  static int __init resumedelay_setup(char *str)
-> >  {
-> > -     resume_delay =3D simple_strtoul(str, NULL, 0);
-> > +     int ret =3D kstrtoint(str, 0, &resume_delay);
-> > +     /* mask must_check warn; on failure, leaves resume_delay unchange=
-d */
-> > +     (void)ret;
-> =
-
-> And that's not a trivial change surely?
-
-I'll include this and the msleep as a separate, non-trivial checkpatch
-cleanup patch if the changes remain after this discussion.
-
-> =
-
-> And why didn't you do (void)kstrtoint(str, 0, &resume_delay); instead?
-
-Better thanks!
+Changed, thanks!
 
 Sebastian
 
