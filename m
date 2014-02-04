@@ -1,23 +1,24 @@
 From: Arjan van de Ven <arjan@linux.intel.com>
 Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
  rq
-Date: Tue, 04 Feb 2014 06:53:41 -0800
-Message-ID: <52F0FEF5.1010908@linux.intel.com>
+Date: Tue, 04 Feb 2014 06:56:07 -0800
+Message-ID: <52F0FF87.3040102@linux.intel.com>
 References: <CAM4v1pPwmRUOtNeGh5sZmj+wAsC8RstofNA5Gx862SEECvW-Lg@mail.gmail.com> <20140131090230.GM5002@laptop.programming.kicks-ass.net> <52EB6F65.8050008@linux.vnet.ibm.com> <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org> <52EBC645.2040607@linux.intel.com> <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr> <20140203125441.GD19029@e103034-lin> <52EFA9D3.1030601@linux.intel.com> <20140203145605.GL8874@twins.programming.kicks-ass.net> <20140204091405.GB19156@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:31113 "EHLO mga14.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:37416 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbaBDOxn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Feb 2014 09:53:43 -0500
+	id S1751214AbaBDO4J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Feb 2014 09:56:09 -0500
 In-Reply-To: <20140204091405.GB19156@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
 Cc: Morten Rasmussen <morten.rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
+>
 > Yeah, so we could put the parameters back by measuring it in
 > user-space via a nice utility in tools/, and by matching it to
 > relevant hardware signatures (CPU type and cache sizes), plus doing
@@ -32,11 +33,10 @@ Cc: Morten Rasmussen <morten.rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@li
 > this info, with new entries added when new CPUs are introduced on the
 > market. That's an upside too, btw.
 
-for bigger systems this will also depend on the chipset and even motherboard
-since inter-CPU communication may go via a 3rd party chip and the speed of that
-will depend on how far they are apart...
+one way out could be to define "buckets" of values this way, and on
+the machine round the calibration to the nearest bucket
 
-like a 32 socket machine it'll be very different from a 2 socket machine,
-and from the 32 socket machine from another vendor
+(but in practice caches get flushed a LOT if the system is not 100%
+busy so not sure if this logic really matters outside of benchmarks)
 
 
