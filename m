@@ -1,72 +1,73 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH V2 2/2] tick/cpuidle: Initialize hrtimer mode of
- broadcast
-Date: Tue, 4 Feb 2014 11:18:02 +0100 (CET)
-Message-ID: <alpine.DEB.2.02.1402041101330.24986@ionos.tec.linutronix.de>
-References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com> <20140124065820.17564.83076.stgit@preeti>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH 2/2] Documentation: devicetree: Add boost-opp binding to
+ list boost mode OPPs
+Date: Tue, 4 Feb 2014 08:02:17 -0600
+Message-ID: <CAL_JsqKRYCEadfpEPGwjsxdSaC4o0BrwDNL5bXDZeX-23=QKTg@mail.gmail.com>
+References: <1391506890-7335-1-git-send-email-thomas.ab@samsung.com>
+ <1391506890-7335-3-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:45298 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbaBDKSQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Feb 2014 05:18:16 -0500
-In-Reply-To: <20140124065820.17564.83076.stgit@preeti>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1391506890-7335-3-git-send-email-thomas.ab@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, thomas.ab@samsung.com, Kumar Gala <galak@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com, galak@kernel.crashing.org, paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, agraf@suse.de, benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de, linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-> +++ b/kernel/time/tick-broadcast-hrtimer.c
-> +/*
-> + * This is called from the guts of the broadcast code when the cpu
-> + * which is about to enter idle has the earliest broadcast timer event.
-> + */
-> +static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
-> +{
-> +	ktime_t now, interval;
-> +	/*
-> +	 * We try to cancel the timer first. If the callback is on
-> +	 * flight on some other cpu then we let it handle it. If we
-> +	 * were able to cancel the timer nothing can rearm it as we
-> +	 * own broadcast_lock.
-> +	 *
-> +	 * However if we are called from the hrtimer interrupt handler
-> +	 * itself, reprogram it.
-> +	 */
-> +	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
-> +		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-> +		/* Bind the "device" to the cpu */
-> +		bc->bound_on = smp_processor_id();
-> +	} else if (bc->bound_on == smp_processor_id()) {
+On Tue, Feb 4, 2014 at 3:41 AM, Thomas Abraham <ta.omasab@gmail.com> wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
+>
+> Certain CPUs or devices can support optional boost operating modes. Add a new
+> binding to list OPPs to be additionally made available in boost operating modes.
+>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+> Cc: Kumar Gala <galak@codeaurora.org>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> ---
+>  Documentation/devicetree/bindings/power/opp.txt |    9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+> index 74499e5..4df5cca 100644
+> --- a/Documentation/devicetree/bindings/power/opp.txt
+> +++ b/Documentation/devicetree/bindings/power/opp.txt
+> @@ -10,6 +10,10 @@ Properties:
+>         freq: clock frequency in kHz
+>         vol: voltage in microvolt
+>
+> +Optional Properties:
+> +- boost-opp: Similar to "operating-points" property but usable only in
+> +  optional boost operating modes.
+> +
+>  Examples:
+>
+>  cpu@0 {
+> @@ -22,4 +26,9 @@ cpu@0 {
+>                 396000  950000
+>                 198000  850000
+>         >;
+> +       boost-opp = <
+> +               /* kHz     uV */
+> +               1500000 1350000
+> +               1400000 1285000
+> +       >;
 
-This part really wants a proper comment. It took me a while to figure
-out why this is correct and what the call chain is.
+This looks like an example of needing to add more properties to the
+OPP table. There are ongoing discussions on how to extend OPP table
+and map to C states. This should be part of that discussion.
 
-
-> +		now = ktime_get();
-> +		interval = ktime_sub(expires, now);
-> +		hrtimer_forward_now(&bctimer, interval);
-
-We are in the event handler called from bc_handler() and expires is
-absolute time. So what's wrong with calling
-hrtimer_set_expires(&bctimer, expires)?
-
-> +static enum hrtimer_restart bc_handler(struct hrtimer *t)
-> +{
-> +	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
-> +	return HRTIMER_RESTART;
-
-We probably want to check whether the timer needs to be restarted at
-all.
-
-	if (ce_broadcast_timer.next_event.tv64 == KTIME_MAX)
-	   return HRTIMER_NORESTART;
-
-	return HRTIMER_RESTART;
-
-Hmm?
-
-Thanks,
-
-	tglx
+Rob
