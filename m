@@ -1,51 +1,105 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: Extending OPP bindings
-Date: Tue, 4 Feb 2014 15:49:23 -0600
-Message-ID: <52F16063.6070804@ti.com>
-References: <52EA570A.8040501@arm.com> <52EAF1CA.3040702@ti.com> <20140131124620.GC2616@e102568-lin.cambridge.arm.com> <CAL_Jsq+Kq9C39xr9tY8gSX+6QFkNDqwmTyC+dBhLNcxKMweCpw@mail.gmail.com> <20140131180929.GH2616@e102568-lin.cambridge.arm.com> <52F12AE7.904@ti.com> <20140204182220.GQ22609@sirena.org.uk> <52F13F54.5060000@ti.com> <20140204201122.GB22609@sirena.org.uk>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v7 2/3] trivial: PM / Hibernate: clean up checkpatch in
+ hibernate.c
+Date: Tue, 04 Feb 2014 14:05:34 -0800
+Message-ID: <20140204220534.28287.21049@capellas-linux>
+References: <1391546631-7715-1-git-send-email-sebastian.capella@linaro.org>
+ <1391546631-7715-3-git-send-email-sebastian.capella@linaro.org>
+ <1391548862.2538.34.camel@joe-AO722>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:58884 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932169AbaBDVuJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Feb 2014 16:50:09 -0500
-In-Reply-To: <20140204201122.GB22609@sirena.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1391548862.2538.34.camel@joe-AO722>
+Sender: owner-linux-mm@kvack.org
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Rob Herring <robherring2@gmail.com>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "mturquette@linaro.org" <mturquette@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 
-On 02/04/2014 02:11 PM, Mark Brown wrote:
-> On Tue, Feb 04, 2014 at 01:28:20PM -0600, Nishanth Menon wrote:
->> On 02/04/2014 12:22 PM, Mark Brown wrote:
-> 
->>> You're assuming that the frequency is a unique key here.  That may not
->>> be the case, for example two OPPs might have the same CPU clock
->>> (assuming that's the frequency you're referring to) but different bus
->>> clocking and of course the CPUs or CPU clusters might be individually
->>> scalable (this is common in big.LITTLE designs I think).
-> 
->> Which is why OPPs are maintained per device, bus OPPs belong to bus
->> device (in TI terminology, we'd be talking of cross domain dependency
->> here for maintaining asynchronous bridge timing closure constraints -
->> but ofcourse, other SoCs may or maynot have such constraints). For
->> scaling bus frequency, we already have infrastructure in place - clock
->> notifiers - discussion of using that is much deeper topic of it's own.
-> 
->> for each processor that is uniquely transitioning, we'd have it's own
->> sets of OPPs - the correct representation of the device node is the
->> key there.
-> 
-> I've seen some SoCs characterised over the whole device rather than with
-> individual parts of the SoC done separately.
-> 
-Fair enough - however, the data characterized will imply individual
-processor/bus specific tuples/parameters - the specific parameters
-might be very unique for SoC, but we have ability to abstract it per
-SoC already.
+Quoting Joe Perches (2014-02-04 13:21:02)
+> On Tue, 2014-02-04 at 12:43 -0800, Sebastian Capella wrote:
+> > Checkpatch reports several warnings in hibernate.c
+> > printk use removed, long lines wrapped, whitespace cleanup,
+> > extend short msleeps, while loops on two lines.
+> []
+> > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> []
+> > @@ -765,7 +762,7 @@ static int software_resume(void)
+> >       if (isdigit(resume_file[0]) && resume_wait) {
+> >               int partno;
+> >               while (!get_gendisk(swsusp_resume_device, &partno))
+> > -                     msleep(10);
+> > +                     msleep(20);
+> =
 
--- 
-Regards,
-Nishanth Menon
+> What good is changing this from 10 to 20?
+> =
+
+> > @@ -776,8 +773,9 @@ static int software_resume(void)
+> >               wait_for_device_probe();
+> >  =
+
+> >               if (resume_wait) {
+> > -                     while ((swsusp_resume_device =3D name_to_dev_t(re=
+sume_file)) =3D=3D 0)
+> > -                             msleep(10);
+> > +                     while ((swsusp_resume_device =3D
+> > +                                     name_to_dev_t(resume_file)) =3D=
+=3D 0)
+> > +                             msleep(20);
+> =
+
+> here too.
+
+Thanks Joe!
+
+I'm happy to make whatever change is best.  I just ran into one
+checkpatch warning around a printk I indented and figured I'd try to get
+them all if I could.
+
+The delays in question didn't appear timing critical as both are looping
+waiting for device discovery to complete.  They're only enabled when using
+the resumewait command line parameter.
+
+Is this an incorrect checkpatch warning?  The message from checkpatch
+implies using msleep for smaller values can be misleading.
+
+WARNING: msleep < 20ms can sleep for up to 20ms; see
+Documentation/timers/timers-howto.txt
++  msleep(10);
+
+From=20Documentation/timers/timers-howto.txt
+
+SLEEPING FOR ~USECS OR SMALL MSECS ( 10us - 20ms):                       =
+
+  * Use usleep_range                                               =
+
+
+  - Why not msleep for (1ms - 20ms)?                               =
+
+    Explained originally here:                               =
+
+      http://lkml.org/lkml/2007/8/3/250                =
+
+    msleep(1~20) may not do what the caller intends, and     =
+
+    will often sleep longer (~20 ms actual sleep for any     =
+
+    value given in the 1~20ms range). In many cases this     =
+
+    is not the desired behavior. =
+
+
+When I look at kernel/timers.c in my current kernel, I see msleep is
+using msecs_to_jiffies + 1, and on my current platform this appears to
+be ~20msec as the jiffies are 10ms.
+
+Thanks,
+
+Sebastian
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
