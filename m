@@ -1,97 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v7 3/3] PM / Hibernate: use name_to_dev_t to parse resume
-Date: Tue, 04 Feb 2014 22:39:43 +0100
-Message-ID: <1498007.FMXxByppC2@vostro.rjw.lan>
-References: <1391546631-7715-1-git-send-email-sebastian.capella@linaro.org> <1391546631-7715-4-git-send-email-sebastian.capella@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: Extending OPP bindings
+Date: Tue, 4 Feb 2014 15:49:23 -0600
+Message-ID: <52F16063.6070804@ti.com>
+References: <52EA570A.8040501@arm.com> <52EAF1CA.3040702@ti.com> <20140131124620.GC2616@e102568-lin.cambridge.arm.com> <CAL_Jsq+Kq9C39xr9tY8gSX+6QFkNDqwmTyC+dBhLNcxKMweCpw@mail.gmail.com> <20140131180929.GH2616@e102568-lin.cambridge.arm.com> <52F12AE7.904@ti.com> <20140204182220.GQ22609@sirena.org.uk> <52F13F54.5060000@ti.com> <20140204201122.GB22609@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1391546631-7715-4-git-send-email-sebastian.capella@linaro.org>
-Sender: owner-linux-mm@kvack.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:58884 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932169AbaBDVuJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Feb 2014 16:50:09 -0500
+In-Reply-To: <20140204201122.GB22609@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Rob Herring <robherring2@gmail.com>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "mturquette@linaro.org" <mturquette@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 
-On Tuesday, February 04, 2014 12:43:51 PM Sebastian Capella wrote:
-> Use the name_to_dev_t call to parse the device name echo'd to
-> to /sys/power/resume.  This imitates the method used in hibernate.c
-> in software_resume, and allows the resume partition to be specified
-> using other equivalent device formats as well.  By allowing
-> /sys/debug/resume to accept the same syntax as the resume=device
-> parameter, we can parse the resume=device in the init script and
-> use the resume device directly from the kernel command line.
+On 02/04/2014 02:11 PM, Mark Brown wrote:
+> On Tue, Feb 04, 2014 at 01:28:20PM -0600, Nishanth Menon wrote:
+>> On 02/04/2014 12:22 PM, Mark Brown wrote:
 > 
-> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> ---
->  kernel/power/hibernate.c |   33 +++++++++++++++++----------------
->  1 file changed, 17 insertions(+), 16 deletions(-)
+>>> You're assuming that the frequency is a unique key here.  That may not
+>>> be the case, for example two OPPs might have the same CPU clock
+>>> (assuming that's the frequency you're referring to) but different bus
+>>> clocking and of course the CPUs or CPU clusters might be individually
+>>> scalable (this is common in big.LITTLE designs I think).
 > 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index cd1e30c..3abd192 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -970,26 +970,27 @@ static ssize_t resume_show(struct kobject *kobj, struct kobj_attribute *attr,
->  static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
->  			    const char *buf, size_t n)
->  {
-> -	unsigned int maj, min;
->  	dev_t res;
-> -	int ret = -EINVAL;
-> +	char *name = kstrdup_trimnl(buf, GFP_KERNEL);
->  
-> -	if (sscanf(buf, "%u:%u", &maj, &min) != 2)
-> -		goto out;
-> +	if (name == NULL)
-
-What about "if (!name)"?
-
-> +		return -ENOMEM;
->  
-> -	res = MKDEV(maj,min);
-> -	if (maj != MAJOR(res) || min != MINOR(res))
-> -		goto out;
-> +	res = name_to_dev_t(name);
->  
-> -	lock_system_sleep();
-> -	swsusp_resume_device = res;
-> -	unlock_system_sleep();
-> -	pr_info("PM: Starting manual resume from disk\n");
-> -	noresume = 0;
-> -	software_resume();
-> -	ret = n;
-> - out:
-> -	return ret;
-> +	if (res != 0) {
-
-What about "if (res)"?
-
-> +		lock_system_sleep();
-> +		swsusp_resume_device = res;
-> +		unlock_system_sleep();
-> +		pr_info("PM: Starting manual resume from disk\n");
-> +		noresume = 0;
-> +		software_resume();
-> +	} else {
-> +		n = -EINVAL;
-> +	}
-> +
-> +	kfree(name);
-> +	return n;
->  }
->  
->  power_attr(resume);
+>> Which is why OPPs are maintained per device, bus OPPs belong to bus
+>> device (in TI terminology, we'd be talking of cross domain dependency
+>> here for maintaining asynchronous bridge timing closure constraints -
+>> but ofcourse, other SoCs may or maynot have such constraints). For
+>> scaling bus frequency, we already have infrastructure in place - clock
+>> notifiers - discussion of using that is much deeper topic of it's own.
 > 
+>> for each processor that is uniquely transitioning, we'd have it's own
+>> sets of OPPs - the correct representation of the device node is the
+>> key there.
+> 
+> I've seen some SoCs characterised over the whole device rather than with
+> individual parts of the SoC done separately.
+> 
+Fair enough - however, the data characterized will imply individual
+processor/bus specific tuples/parameters - the specific parameters
+might be very unique for SoC, but we have ability to abstract it per
+SoC already.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Regards,
+Nishanth Menon
