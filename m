@@ -1,117 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Legacy pm ops to dev_pm_ops patches
-Date: Wed, 05 Feb 2014 12:10 +0100
-Message-ID: <4256100.IFHyQjSssQ@vostro.rjw.lan>
-References: <52F1B266.9080207@samsung.com>
+Subject: Re: [PATCH 0/5] Enabling the asynchronous threads for other phases
+Date: Wed, 05 Feb 2014 22:53:01 +0100
+Message-ID: <2360514.bLFmJYMItS@vostro.rjw.lan>
+References: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57271 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:59237 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751374AbaBEKza (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Feb 2014 05:55:30 -0500
-In-Reply-To: <52F1B266.9080207@samsung.com>
+	with SMTP id S1754314AbaBEVib (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Feb 2014 16:38:31 -0500
+In-Reply-To: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: shuah.kh@samsung.com
-Cc: "shuahkhan@gmail.com" <shuahkhan@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Cc: gregkh@linuxfoundation.org, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, zhuangzhi.li@intel.com
 
-On Tuesday, February 04, 2014 08:39:18 PM Shuah Khan wrote:
-> Hi Rafael,
+On Monday, January 20, 2014 04:44:34 PM Liu, Chuansheng wrote:
+> Hello,
+> 
+> This patch series are for enabling the asynchronous threads for the phases
+> resume_noirq, resume_early, suspend_noirq and suspend_late.
+> 
+> Just like commit 5af84b82701a and 97df8c12995, with async threads it will
+> reduce the system suspending and resuming time significantly.
+> 
+> With these patches, in my test platform, it saved 80% time in resume_noirq
+> phase.
+> 
+> Has done the suspend-resume stress test for a long time, please help to
+> review.
+> 
+> Best Regards,
+> 
+> [PATCH 1/5] PM: Adding two flags for async suspend_noirq and
+> [PATCH 2/5] PM: Enabling the asynchronous threads for resume_noirq
+> [PATCH 3/5] PM: Enabling the asyncronous threads for resume_early
+> [PATCH 4/5] PM: Enabling the asyncronous threads for suspend_noirq
+> [PATCH 5/5] PM: Enabling the asyncronous threads for suspend_late
 
-Hi,
+I've applied this to the bleeding-edge branch of the linux-pm.git tree, with
+minor changes related to coding style, white space etc.
 
-> I checked on the status of the legacy pm ops to dev_pm_ops conversion 
-> patches. Several went in. I have about 13 patches I would like to send. 
-> These patches are similar in nature. One of the issues I am having is 
-> being able to test these patches. Except for drivers/pcmcia/ds.c patch, 
-> others I am limited to compile testing only. Would it be okay to I send 
-> these as RFT patches cc'ing you and linux-pm and in addition to the 
-> maintainers for each of these patches?
-> 
-> Patch details below:
-> 
-> 5 mmc host driver patches:
-> 
-> drivers/mmc/host/au1xmmc.c
-> drivers/mmc/host/bfin_sdh.c
-> drivers/mmc/host/cb710-mmc.c
-> drivers/mmc/host/msm_sdcc.c
-> drivers/mmc/host/tmio_mmc.c
-> 
-> 3 arm platform driver patches:
-> 
-> arch/arm/common/locomo.c
-> arch/arm/common/sa1111.c
-> arch/arm/common/scoop.c
-> 
-> 1 macintosh driver patch:
-> drivers/macintosh/adb.c
-> 
-> 3 bus drivers patches:
-> drivers/base/isa.c
-> drivers/pcmcia/ds.c
-> drivers/s390/crypto/ap_bus.c
-> 
-> The nature if changes is very similar:
-> 1. Define dev_pm_ops as in the example below:
-> 
-> +static const struct dev_pm_ops pcmcia_bus_dev_pm_ops = {
-> +       .suspend = pcmcia_dev_suspend,
-> +       .resume = pcmcia_dev_resume,
-> +       /* Hibernate callbacks */
-> +       .freeze = pcmcia_dev_freeze,
-> +       .thaw = pcmcia_dev_resume,
-> +       .poweroff = pcmcia_dev_poweroff,
-> +       .restore = pcmcia_dev_resume,
-> +};
-> 
->   struct bus_type pcmcia_bus_type = {
->          .name = "pcmcia",
-> @@ -1405,8 +1432,7 @@ struct bus_type pcmcia_bus_type = {
->          .dev_groups = pcmcia_dev_groups,
->          .probe = pcmcia_device_probe,
->          .remove = pcmcia_device_remove,
-> -       .suspend = pcmcia_dev_suspend,
-> -       .resume = pcmcia_dev_resume,
-> +       .pm = &pcmcia_bus_dev_pm_ops,
->   };
-> 
-> 2. Define new interfaces for poweroff, freeze which in turn call 
-> existing suspend interface, as in the example below. thaw, resume, and 
-> restore are straight forward and just point to existing resume() hook
-> 
-> +static int pcmcia_dev_suspend(struct device *dev)
-> +{
-> +       __pcmcia_dev_suspend(dev, PMSG_SUSPEND);
-> +}
-> +
-> +static int pcmcia_dev_poweroff(struct device *dev)
-> +{
-> +       __pcmcia_dev_suspend(dev, PMSG_HIBERNATE);
-> +}
-> +
-> +static int pcmcia_dev_freeze(struct device *dev)
-> +{
-> +       __pcmcia_dev_suspend(dev, PMSG_FREEZE);
-> +}
-> +
-> +static int __pcmcia_dev_suspend(struct device *dev, pm_message_t state)
->   {
->          struct pcmcia_device *p_dev = to_pcmcia_dev(dev);
->          struct pcmcia_driver *p_drv = NULL;
-> @@ -1397,6 +1415,15 @@ static struct class_interface 
-> pcmcia_bus_interface __refdata = {
->          .remove_dev = &pcmcia_bus_remove_socket,
->   };
-> 
-
-OK
-
-Can you please send all of these patches in one series to me and linux-pm
-and CC the LKML and the maintainers of the subsystems in question (only the
-patches concerning them directly)?
+Can you please verify that the bleeding-edge branch works for you as expected?
 
 Rafael
 
