@@ -1,97 +1,68 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 38/51] intel-idle: Fix CPU hotplug callback registration
-Date: Thu, 06 Feb 2014 03:41:23 +0530
-Message-ID: <20140205221122.19080.64763.stgit@srivatsabhat.in.ibm.com>
-References: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v7 1/3] mm: add kstrdup_trimnl function
+Date: Wed, 05 Feb 2014 14:55:52 -0800
+Message-ID: <20140205225552.16730.1677@capellas-linux>
+References: <1391546631-7715-1-git-send-email-sebastian.capella@linaro.org>
+ <1391546631-7715-2-git-send-email-sebastian.capella@linaro.org>
+ <20140205135052.4066b67689cbf47c551d30a9@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
-Cc: mingo@kernel.org, paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20140205135052.4066b67689cbf47c551d30a9@linux-foundation.org>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Michel Lespinasse <walken@google.com>, Shaohua Li <shli@kernel.org>, Jerome Marchand <jmarchan@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Joe Perches <joe@perches.com>, David Rientjes <rientjes@google.com>, Alexey Dobriyan <adobriyan@gmail.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Subsystems that want to register CPU hotplug callbacks, as well as perform
-initialization for the CPUs that are already online, often do it as shown
-below:
+Quoting Andrew Morton (2014-02-05 13:50:52)
+> On Tue,  4 Feb 2014 12:43:49 -0800 Sebastian Capella <sebastian.capella@l=
+inaro.org> wrote:
+> =
 
-	get_online_cpus();
+> > kstrdup_trimnl creates a duplicate of the passed in
+> > null-terminated string.  If a trailing newline is found, it
+> > is removed before duplicating.  This is useful for strings
+> > coming from sysfs that often include trailing whitespace due to
+> > user input.
+> =
 
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
+> hm, why?  I doubt if any caller of this wants to retain leading and/or
+> trailing spaces and/or tabs.
 
-	register_cpu_notifier(&foobar_cpu_notifier);
+Hi Andrew,
 
-	put_online_cpus();
+I agree the common case doesn't usually need leading or trailing whitespace.
 
-This is wrong, since it is prone to ABBA deadlocks involving the
-cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-with CPU hotplug operations).
+Pavel and others pointed out that a valid filename could contain
+newlines/whitespace at any position.
 
-Instead, the correct and race-free way of performing the callback
-registration is:
+If we allow for this, then it would be incorrect to strip whitespace
+from the input.  Comments also went down the lines that it would be
+better for the kernel not to second guess what is being passed in.
 
-	cpu_maps_update_begin();
+I find stripping the trailing newline to be very useful, and there are
+many examples of kernel code doing this.  I think it would be a mistake
+to remove this now, and would be confusing for users.  A compromise
+is to strip the final newline only if it's present before the null.
 
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
+This allows the common case of echoing a simple string onto
+/sys/power/resume, and behaves as expected in that case.
 
-	/* Note the use of the double underscored version of the API */
-	__register_cpu_notifier(&foobar_cpu_notifier);
+A complex string without a trailing newline is also handled by quoting or
+dding a file onto /sys/power/resume.
 
-	cpu_maps_update_done();
+In the unlikely event a user has trailing newline as part of the input, then
+adding an additional newline to the end will cover that case.  This
+is not ideal, but it puts the additional burden onto the complex case
+rather than the common case.
 
+Thanks,
 
-Fix the intel-idle code by using this latter form of callback registration.
+Sebastian
 
-Cc: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-
- drivers/idle/intel_idle.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 8e1939f..716ee5a 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -681,14 +681,19 @@ static int __init intel_idle_init(void)
- 	if (intel_idle_cpuidle_devices == NULL)
- 		return -ENOMEM;
- 
-+	cpu_maps_update_begin();
-+
- 	for_each_online_cpu(i) {
- 		retval = intel_idle_cpu_init(i);
- 		if (retval) {
-+			cpu_maps_update_done();
- 			cpuidle_unregister_driver(&intel_idle_driver);
- 			return retval;
- 		}
- 	}
--	register_cpu_notifier(&cpu_hotplug_notifier);
-+	__register_cpu_notifier(&cpu_hotplug_notifier);
-+
-+	cpu_maps_update_done();
- 
- 	return 0;
- }
-@@ -698,10 +703,13 @@ static void __exit intel_idle_exit(void)
- 	intel_idle_cpuidle_devices_uninit();
- 	cpuidle_unregister_driver(&intel_idle_driver);
- 
-+	cpu_maps_update_begin();
- 
- 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
- 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
--	unregister_cpu_notifier(&cpu_hotplug_notifier);
-+	__unregister_cpu_notifier(&cpu_hotplug_notifier);
-+
-+	cpu_maps_update_done();
- 
- 	return;
- }
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
