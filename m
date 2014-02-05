@@ -1,45 +1,69 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3] cpuidle/governors: Fix logic in selection of idle
- states
-Date: Wed, 05 Feb 2014 09:30:51 +0530
-Message-ID: <52F1B773.6050901@linux.vnet.ibm.com>
-References: <20140204083531.24802.63370.stgit@preeti.in.ibm.com> <52F0FE9F.501@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v7 2/3] trivial: PM / Hibernate: clean up checkpatch in hibernate.c
+Date: Wed, 05 Feb 2014 12:07:33 +0100
+Message-ID: <4268996.47Qr0HBDfp@vostro.rjw.lan>
+References: <1391546631-7715-1-git-send-email-sebastian.capella@linaro.org> <2342041.V7doIJk0XQ@vostro.rjw.lan> <20140205002413.7648.33035@capellas-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52F0FE9F.501@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, len.brown@intel.com, benh@kernel.crashing.org, daniel.lezcano@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59602 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751182AbaBEKxD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Feb 2014 05:53:03 -0500
+In-Reply-To: <20140205002413.7648.33035@capellas-linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 
-Hi Arjan,
-
-On 02/04/2014 08:22 PM, Arjan van de Ven wrote:
-> On 2/4/2014 12:35 AM, Preeti U Murthy wrote:
->> The cpuidle governors today are not handling scenarios where no idle
->> state
->> can be chosen. Such scenarios coud arise if the user has disabled all the
->> idle states at runtime or the latency requirement from the cpus is
->> very strict.
->>
->> The menu governor returns 0th index of the idle state table when no other
->> idle state is suitable. This is even when the idle state corresponding
->> to this
->> index is disabled or the latency requirement is strict and the
->> exit_latency
->> of the lowest idle state is also not acceptable. Hence this patch
->> fixes this logic in the menu governor by defaulting to an idle state
->> index
->>  of -1 unless any other state is suitable.
+On Tuesday, February 04, 2014 04:24:13 PM Sebastian Capella wrote:
+> Quoting Rafael J. Wysocki (2014-02-04 16:28:13)
+> > On Tuesday, February 04, 2014 04:06:42 PM Sebastian Capella wrote:
+> > > Quoting Rafael J. Wysocki (2014-02-04 16:03:29)
+> > > > On Tuesday, February 04, 2014 03:22:22 PM Sebastian Capella wrote:
+> > > > > Quoting Sebastian Capella (2014-02-04 14:37:33)
+> > > > > > Quoting Rafael J. Wysocki (2014-02-04 13:36:29)
+> > > > > > > >  static int __init resumedelay_setup(char *str)
+> > > > > > > >  {
+> > > > > > > > -     resume_delay = simple_strtoul(str, NULL, 0);
+> > > > > > > > +     int ret = kstrtoint(str, 0, &resume_delay);
+> > > > > > > > +     /* mask must_check warn; on failure, leaves resume_delay unchanged */
+> > > > > > > > +     (void)ret;
+> > > > > 
+> > > > > One unintended consequence of this change is that it'll now accept a
+> > > > > negative integer parameter.
+> > > > 
+> > > > Well, what about using kstrtouint(), then?
+> > > I was thinking of doing something like:
+> > > 
+> > >       int delay, res;
+> > >       res = kstrtoint(str, 0, &delay);
+> > >       if (!res && delay >= 0)
+> > >               resume_delay = delay;
+> > >       return 1;
+> > 
+> > It uses simple_strtoul() for a reason.  You can change the type of resume_delay
+> > to match, but the basic question is:
+> > 
+> > Why exactly do you want to change that thing?
 > 
-> state 0 is defined as polling, and polling ALWAYS should be ok
-
-Hmm.. you are right. This is convincing. There is no need for this patch.
-
-Thanks
-
-Regards
-Preeti U Murthy
+> This entire patch is a result of a single checkpatch warning from a printk
+> that I indented.
 > 
+> I was hoping to be helpful by removing all of the warnings from this
+> file, since I was going to have a separate cleanup patch for the printk.
+> 
+> I can see this is not a good direction.
+> 
+> Would it be better also to leave the file's printks as they were and drop
+> the cleanup patch completely?
+
+Well, I had considered changing them to pr_something, but decided that it
+wasn't worth the effort.  Quite frankly, I'd leave the code as is. :-)
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
