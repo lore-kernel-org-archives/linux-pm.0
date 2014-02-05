@@ -1,76 +1,108 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 2/3] trivial: PM / Hibernate: clean up checkpatch in
- hibernate.c
-Date: Tue, 04 Feb 2014 16:24:13 -0800
-Message-ID: <20140205002413.7648.33035@capellas-linux>
-References: <1391546631-7715-1-git-send-email-sebastian.capella@linaro.org>
- <1593382.PUxxx0NMeh@vostro.rjw.lan> <20140205000642.6803.8182@capellas-linux>
- <2342041.V7doIJk0XQ@vostro.rjw.lan>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: Legacy pm ops to dev_pm_ops patches
+Date: Tue, 04 Feb 2014 20:39:18 -0700
+Message-ID: <52F1B266.9080207@samsung.com>
+Reply-To: shuah.kh@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <2342041.V7doIJk0XQ@vostro.rjw.lan>
-Sender: owner-linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Cc: Shuah Khan <shuah.kh@samsung.com>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Rafael J. Wysocki (2014-02-04 16:28:13)
-> On Tuesday, February 04, 2014 04:06:42 PM Sebastian Capella wrote:
-> > Quoting Rafael J. Wysocki (2014-02-04 16:03:29)
-> > > On Tuesday, February 04, 2014 03:22:22 PM Sebastian Capella wrote:
-> > > > Quoting Sebastian Capella (2014-02-04 14:37:33)
-> > > > > Quoting Rafael J. Wysocki (2014-02-04 13:36:29)
-> > > > > > >  static int __init resumedelay_setup(char *str)
-> > > > > > >  {
-> > > > > > > -     resume_delay =3D simple_strtoul(str, NULL, 0);
-> > > > > > > +     int ret =3D kstrtoint(str, 0, &resume_delay);
-> > > > > > > +     /* mask must_check warn; on failure, leaves resume_dela=
-y unchanged */
-> > > > > > > +     (void)ret;
-> > > > =
+Hi Rafael,
 
-> > > > One unintended consequence of this change is that it'll now accept a
-> > > > negative integer parameter.
-> > > =
+I checked on the status of the legacy pm ops to dev_pm_ops conversion 
+patches. Several went in. I have about 13 patches I would like to send. 
+These patches are similar in nature. One of the issues I am having is 
+being able to test these patches. Except for drivers/pcmcia/ds.c patch, 
+others I am limited to compile testing only. Would it be okay to I send 
+these as RFT patches cc'ing you and linux-pm and in addition to the 
+maintainers for each of these patches?
 
-> > > Well, what about using kstrtouint(), then?
-> > I was thinking of doing something like:
-> > =
+Patch details below:
 
-> >       int delay, res;
-> >       res =3D kstrtoint(str, 0, &delay);
-> >       if (!res && delay >=3D 0)
-> >               resume_delay =3D delay;
-> >       return 1;
-> =
+5 mmc host driver patches:
 
-> It uses simple_strtoul() for a reason.  You can change the type of resume=
-_delay
-> to match, but the basic question is:
-> =
+drivers/mmc/host/au1xmmc.c
+drivers/mmc/host/bfin_sdh.c
+drivers/mmc/host/cb710-mmc.c
+drivers/mmc/host/msm_sdcc.c
+drivers/mmc/host/tmio_mmc.c
 
-> Why exactly do you want to change that thing?
+3 arm platform driver patches:
 
-This entire patch is a result of a single checkpatch warning from a printk
-that I indented.
+arch/arm/common/locomo.c
+arch/arm/common/sa1111.c
+arch/arm/common/scoop.c
 
-I was hoping to be helpful by removing all of the warnings from this
-file, since I was going to have a separate cleanup patch for the printk.
+1 macintosh driver patch:
+drivers/macintosh/adb.c
 
-I can see this is not a good direction.
+3 bus drivers patches:
+drivers/base/isa.c
+drivers/pcmcia/ds.c
+drivers/s390/crypto/ap_bus.c
 
-Would it be better also to leave the file's printks as they were and drop
-the cleanup patch completely?
+The nature if changes is very similar:
+1. Define dev_pm_ops as in the example below:
 
-Thanks,
++static const struct dev_pm_ops pcmcia_bus_dev_pm_ops = {
++       .suspend = pcmcia_dev_suspend,
++       .resume = pcmcia_dev_resume,
++       /* Hibernate callbacks */
++       .freeze = pcmcia_dev_freeze,
++       .thaw = pcmcia_dev_resume,
++       .poweroff = pcmcia_dev_poweroff,
++       .restore = pcmcia_dev_resume,
++};
 
-Sebastian
+  struct bus_type pcmcia_bus_type = {
+         .name = "pcmcia",
+@@ -1405,8 +1432,7 @@ struct bus_type pcmcia_bus_type = {
+         .dev_groups = pcmcia_dev_groups,
+         .probe = pcmcia_device_probe,
+         .remove = pcmcia_device_remove,
+-       .suspend = pcmcia_dev_suspend,
+-       .resume = pcmcia_dev_resume,
++       .pm = &pcmcia_bus_dev_pm_ops,
+  };
 
+2. Define new interfaces for poweroff, freeze which in turn call 
+existing suspend interface, as in the example below. thaw, resume, and 
+restore are straight forward and just point to existing resume() hook
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
++static int pcmcia_dev_suspend(struct device *dev)
++{
++       __pcmcia_dev_suspend(dev, PMSG_SUSPEND);
++}
++
++static int pcmcia_dev_poweroff(struct device *dev)
++{
++       __pcmcia_dev_suspend(dev, PMSG_HIBERNATE);
++}
++
++static int pcmcia_dev_freeze(struct device *dev)
++{
++       __pcmcia_dev_suspend(dev, PMSG_FREEZE);
++}
++
++static int __pcmcia_dev_suspend(struct device *dev, pm_message_t state)
+  {
+         struct pcmcia_device *p_dev = to_pcmcia_dev(dev);
+         struct pcmcia_driver *p_drv = NULL;
+@@ -1397,6 +1415,15 @@ static struct class_interface 
+pcmcia_bus_interface __refdata = {
+         .remove_dev = &pcmcia_bus_remove_socket,
+  };
+
+thanks,
+-- Shuah
+
+-- 
+Shuah Khan
+Senior Linux Kernel Developer - Open Source Group
+Samsung Research America(Silicon Valley)
+shuah.kh@samsung.com | (970) 672-0658
