@@ -1,52 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v7 2/3] trivial: PM / Hibernate: clean up checkpatch in hibernate.c
-Date: Wed, 05 Feb 2014 01:03:29 +0100
-Message-ID: <1593382.PUxxx0NMeh@vostro.rjw.lan>
-References: <1391546631-7715-1-git-send-email-sebastian.capella@linaro.org> <20140204223733.30015.23993@capellas-linux> <20140204232222.31169.83206@capellas-linux>
+Subject: Re: [Patch v1] ACPI, x86: fix bug in associating hot-added CPUs with corresponding NUMA node
+Date: Wed, 05 Feb 2014 01:14:54 +0100
+Message-ID: <4676819.HL23G4Egmr@vostro.rjw.lan>
+References: <1390185115-26850-1-git-send-email-jiang.liu@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20140204232222.31169.83206@capellas-linux>
-Sender: owner-linux-mm@kvack.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1390185115-26850-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Toshi Kani <toshi.kani@hp.com>, Yinghai Lu <yinghai@kernel.org>, Yijing Wang <wangyijing@huawei.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-acpi@vger.kernel.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 04, 2014 03:22:22 PM Sebastian Capella wrote:
-> Quoting Sebastian Capella (2014-02-04 14:37:33)
-> > Quoting Rafael J. Wysocki (2014-02-04 13:36:29)
-> > > >  static int __init resumedelay_setup(char *str)
-> > > >  {
-> > > > -     resume_delay = simple_strtoul(str, NULL, 0);
-> > > > +     int ret = kstrtoint(str, 0, &resume_delay);
-> > > > +     /* mask must_check warn; on failure, leaves resume_delay unchanged */
-> > > > +     (void)ret;
+On Monday, January 20, 2014 10:31:54 AM Jiang Liu wrote:
+> Current ACPI cpu hotplug driver fails to associate hot-added CPUs with
+> corresponding NUMA node when doing socket online. The code path to
+> associate CPU with NUMA node is as below:
+> acpi_processor_add()
+>     ->acpi_processor_get_info()
+> 	->acpi_processor_hotadd_init()
+> 	    ->acpi_map_lsapic()
+> 		->_acpi_map_lsapic()
+> 		    ->acpi_map_cpu2node()
+> cpu_subsys_online()
+>     ->try_online_node()
+> 	->node_set_online()
 > 
-> One unintended consequence of this change is that it'll now accept a
-> negative integer parameter.
-
-Well, what about using kstrtouint(), then?
-
-> I'll rework this to have the same behavior as before.
+> When doing socket online, a new NUMA node is introduced in addition to
+> hot-added CPU and memory device. And the new NUMA node is marked as
+> online when onlining hot-added CPUs through sysfs interface
+> /sys/devices/system/cpu/cpuxx/online.
 > 
-> BTW, one question, is the __must_check really needed on kstrtoint?
-> Wouldn't it be acceptable to rely on kstrtoint to not update resume_delay
-> if it's unable to parse an integer out of the string?  Couldn't that be
-> a sufficient effect without requiring checking the return?
+> On the other hand, acpi_map_cpu2node() will only build the CPU to node
+> map if corresponding NUMA node is already online, so it always fails
+> to associate hot-added CPUs with corresponding NUMA node because the
+> NUMA node is still in offline state.
+> 
+> For the fix, we could safely remove the "node_online(node)" check in
+> function acpi_map_cpu2node() because it's only called for hot-added CPUs
+> by acpi_processor_hotadd_init().
+> 
+> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 
-Well, kstrtoint() is used in some security-sensitive places AFAICS, so it
-really is better to check its return value in general.  The __must_check
-reminds people about that.
+I wonder what the status here is?  Did this patch go anywhere?
 
-Thanks!
+> ---
+>  arch/x86/kernel/acpi/boot.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index 6c0b43b..7625de9 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -614,10 +614,10 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
+>  	int nid;
+>  
+>  	nid = acpi_get_node(handle);
+> -	if (nid == -1 || !node_online(nid))
+> -		return;
+> -	set_apicid_to_node(physid, nid);
+> -	numa_set_node(cpu, nid);
+> +	if (nid != -1) {
+> +		set_apicid_to_node(physid, nid);
+> +		numa_set_node(cpu, nid);
+> +	}
+>  #endif
+>  }
+>  
+> 
 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
