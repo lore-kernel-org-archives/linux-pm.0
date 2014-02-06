@@ -1,595 +1,133 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3 3/6] PM / QoS: Introcuce latency tolerance device PM QoS type
-Date: Thu, 06 Feb 2014 14:24:24 +0100
-Message-ID: <1676382.Rt8mQ8HeSe@vostro.rjw.lan>
+Subject: [PATCH v3 4/6] ACPI / scan: Add bind/unbind callbacks to struct acpi_scan_handler
+Date: Thu, 06 Feb 2014 14:25:04 +0100
+Message-ID: <2339303.KH28v2REcj@vostro.rjw.lan>
 References: <5434847.aCyiWHNRe7@vostro.rjw.lan> <1447517.8AFrWcAgld@vostro.rjw.lan> <1550670.IB7tE3uSq4@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53498 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756304AbaBFNOB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Feb 2014 08:14:01 -0500
 In-Reply-To: <1550670.IB7tE3uSq4@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Add a new latency tolerance device PM QoS type to be use for
-specifying active state (RPM_ACTIVE) memory access (DMA) latency
-tolerance requirements for devices.  It may be used to prevent
-hardware from choosing overly aggressive energy-saving operation
-modes (causing too much latency to appear) for the whole platform.
+In some cases it may be necessary to perform certain setup/cleanup
+operations on a device object representing a physical device after
+it has been associated with an ACPI companion by acpi_bind_one() or
+before disassociating it from that companion by acpi_unbind_one(),
+respectively.  If there is a struct acpi_bus_type object for the
+given device's bus type, the .setup()/.cleanup() callbacks from there
+are executed for these purposes.  However, an analogous mechanism will
+be necessary for devices whose bus types don't have corresponding
+struct acpi_bus_type objects and that have specific ACPI scan handlers.
 
-This feature reqiures hardware support, so it only will be
-available for devices having a new .set_latency_tolerance()
-callback in struct dev_pm_info populated, in which case the
-routine pointed to by it should implement whatever is necessary
-to transfer the effective requirement value to the hardware.
+For those devices, add new .bind() and .unbind() callbacks to struct
+acpi_scan_handler that will be executed by acpi_platform_notify()
+right after the given device has been associated with an ACPI
+comapnion and by acpi_platform_notify_remove() right before calling
+acpi_unbind_one() for that device, respectively.
 
-Whenever the effective latency tolerance changes for the device,
-its .set_latency_tolerance() callback will be executed and the
-effective value will be passed to it.  If that value is negative,
-which means that the list of latency tolerance requirements for
-the device is empty, the callback is expected to switch the
-underlying hardware latency tolerance control mechanism to an
-autonomous mode if available.  If that value is PM_QOS_LATENCY_ANY,
-in turn, and the hardware supports a special "no requirement"
-setting, the callback is expected to use it.  That allows software
-to prevent the hardware from automatically updating the device's
-latency tolerance in response to its power state changes (e.g. during
-transitions from D3cold to D0), which generally may be done in the
-autonomous latency tolerance control mode.
-
-If .set_latency_tolerance() is present for the device, a new
-pm_qos_latency_tolerance_us attribute will be present in the
-devivce's power directory in sysfs.  Then, user space can use
-that attribute to specify its latency tolerance requirement for
-the device, if any.  Writing "any" to it means "no requirement, but
-do not let the hardware control latency tolerance" and writing
-"auto" to it allows the hardware to be switched to the autonomous
-mode if there are no other requirements from the kernel side in the
-device's list.
+To make that work for scan handlers registering new devices in their
+.attach() callbacks, modify acpi_scan_attach_handler() to set the
+ACPI device object's handler field before calling .attach() from the
+scan handler at hand.
 
 This changeset includes a fix from Mika Westerberg.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Documentation/ABI/testing/sysfs-devices-power |   27 ++++
- Documentation/power/pm_qos_interface.txt      |   61 +++++++++--
- drivers/base/power/qos.c                      |  144 ++++++++++++++++++++++----
- drivers/base/power/sysfs.c                    |   65 ++++++++++-
- include/linux/pm.h                            |    1 
- include/linux/pm_qos.h                        |   12 ++
- kernel/power/qos.c                            |   13 +-
- 7 files changed, 278 insertions(+), 45 deletions(-)
+ drivers/acpi/glue.c     |   12 ++++++++++++
+ drivers/acpi/scan.c     |    9 +++++----
+ include/acpi/acpi_bus.h |    2 ++
+ 3 files changed, 19 insertions(+), 4 deletions(-)
 
-Index: linux-pm/include/linux/pm_qos.h
+Index: linux-pm/drivers/acpi/glue.c
 ===================================================================
---- linux-pm.orig/include/linux/pm_qos.h
-+++ linux-pm/include/linux/pm_qos.h
-@@ -33,6 +33,9 @@ enum pm_qos_flags_status {
- #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
-+#define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
-+#define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
-+#define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
- #define PM_QOS_FLAG_REMOTE_WAKEUP	(1 << 1)
-@@ -50,6 +53,7 @@ struct pm_qos_flags_request {
- 
- enum dev_pm_qos_req_type {
- 	DEV_PM_QOS_RESUME_LATENCY = 1,
-+	DEV_PM_QOS_LATENCY_TOLERANCE,
- 	DEV_PM_QOS_FLAGS,
- };
- 
-@@ -89,8 +93,10 @@ struct pm_qos_flags {
- 
- struct dev_pm_qos {
- 	struct pm_qos_constraints resume_latency;
-+	struct pm_qos_constraints latency_tolerance;
- 	struct pm_qos_flags flags;
- 	struct dev_pm_qos_request *resume_latency_req;
-+	struct dev_pm_qos_request *latency_tolerance_req;
- 	struct dev_pm_qos_request *flags_req;
- };
- 
-@@ -196,6 +202,8 @@ void dev_pm_qos_hide_latency_limit(struc
- int dev_pm_qos_expose_flags(struct device *dev, s32 value);
- void dev_pm_qos_hide_flags(struct device *dev);
- int dev_pm_qos_update_flags(struct device *dev, s32 mask, bool set);
-+s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev);
-+int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val);
- 
- static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev)
+--- linux-pm.orig/drivers/acpi/glue.c
++++ linux-pm/drivers/acpi/glue.c
+@@ -287,6 +287,7 @@ EXPORT_SYMBOL_GPL(acpi_unbind_one);
+ static int acpi_platform_notify(struct device *dev)
  {
-@@ -215,6 +223,10 @@ static inline int dev_pm_qos_expose_flag
- static inline void dev_pm_qos_hide_flags(struct device *dev) {}
- static inline int dev_pm_qos_update_flags(struct device *dev, s32 m, bool set)
- 			{ return 0; }
-+static inline s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev)
-+			{ return PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT; }
-+static inline int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
-+			{ return 0; }
+ 	struct acpi_bus_type *type = acpi_get_bus_type(dev);
++	struct acpi_device *adev;
+ 	int ret;
  
- static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev) { return 0; }
- static inline s32 dev_pm_qos_requested_flags(struct device *dev) { return 0; }
-Index: linux-pm/drivers/base/power/qos.c
-===================================================================
---- linux-pm.orig/drivers/base/power/qos.c
-+++ linux-pm/drivers/base/power/qos.c
-@@ -151,6 +151,14 @@ static int apply_constraint(struct dev_p
- 						     req);
- 		}
- 		break;
-+	case DEV_PM_QOS_LATENCY_TOLERANCE:
-+		ret = pm_qos_update_target(&qos->latency_tolerance,
-+					   &req->data.pnode, action, value);
-+		if (ret) {
-+			value = pm_qos_read_value(&qos->latency_tolerance);
-+			req->dev->power.set_latency_tolerance(req->dev, value);
-+		}
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
- 					  action, value);
-@@ -194,6 +202,13 @@ static int dev_pm_qos_constraints_alloca
- 	c->type = PM_QOS_MIN;
- 	c->notifiers = n;
- 
-+	c = &qos->latency_tolerance;
-+	plist_head_init(&c->list);
-+	c->target_value = PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE;
-+	c->default_value = PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE;
-+	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
-+	c->type = PM_QOS_MIN;
-+
- 	INIT_LIST_HEAD(&qos->flags.list);
- 
- 	spin_lock_irq(&dev->power.lock);
-@@ -247,6 +262,11 @@ void dev_pm_qos_constraints_destroy(stru
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
+ 	ret = acpi_bind_one(dev, NULL);
+@@ -303,9 +304,14 @@ static int acpi_platform_notify(struct d
+ 		if (ret)
+ 			goto out;
  	}
-+	c = &qos->latency_tolerance;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
- 	f = &qos->flags;
- 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-@@ -266,6 +286,40 @@ void dev_pm_qos_constraints_destroy(stru
- 	mutex_unlock(&dev_pm_qos_sysfs_mtx);
- }
++	adev = ACPI_COMPANION(dev);
++	if (!adev)
++		goto out;
  
-+static bool dev_pm_qos_invalid_request(struct device *dev,
-+				       struct dev_pm_qos_request *req)
-+{
-+	return !req || (req->type == DEV_PM_QOS_LATENCY_TOLERANCE
-+			&& !dev->power.set_latency_tolerance);
-+}
-+
-+static int __dev_pm_qos_add_request(struct device *dev,
-+				    struct dev_pm_qos_request *req,
-+				    enum dev_pm_qos_req_type type, s32 value)
-+{
-+	int ret = 0;
-+
-+	if (!dev || dev_pm_qos_invalid_request(dev, req))
-+		return -EINVAL;
-+
-+	if (WARN(dev_pm_qos_request_active(req),
-+		 "%s() called for already added request\n", __func__))
-+		return -EINVAL;
-+
-+	if (IS_ERR(dev->power.qos))
-+		ret = -ENODEV;
-+	else if (!dev->power.qos)
-+		ret = dev_pm_qos_constraints_allocate(dev);
-+
-+	trace_dev_pm_qos_add_request(dev_name(dev), type, value);
-+	if (!ret) {
-+		req->dev = dev;
-+		req->type = type;
-+		ret = apply_constraint(req, PM_QOS_ADD_REQ, value);
-+	}
-+	return ret;
-+}
-+
- /**
-  * dev_pm_qos_add_request - inserts new qos request into the list
-  * @dev: target device for the constraint
-@@ -291,31 +345,11 @@ void dev_pm_qos_constraints_destroy(stru
- int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
- 			   enum dev_pm_qos_req_type type, s32 value)
+ 	if (type && type->setup)
+ 		type->setup(dev);
++	else if (adev->handler && adev->handler->bind)
++		adev->handler->bind(dev);
+ 
+  out:
+ #if ACPI_GLUE_DEBUG
+@@ -324,11 +330,17 @@ static int acpi_platform_notify(struct d
+ 
+ static int acpi_platform_notify_remove(struct device *dev)
  {
--	int ret = 0;
--
--	if (!dev || !req) /*guard against callers passing in null */
--		return -EINVAL;
--
--	if (WARN(dev_pm_qos_request_active(req),
--		 "%s() called for already added request\n", __func__))
--		return -EINVAL;
-+	int ret;
++	struct acpi_device *adev = ACPI_COMPANION(dev);
+ 	struct acpi_bus_type *type;
  
- 	mutex_lock(&dev_pm_qos_mtx);
--
--	if (IS_ERR(dev->power.qos))
--		ret = -ENODEV;
--	else if (!dev->power.qos)
--		ret = dev_pm_qos_constraints_allocate(dev);
--
--	trace_dev_pm_qos_add_request(dev_name(dev), type, value);
--	if (!ret) {
--		req->dev = dev;
--		req->type = type;
--		ret = apply_constraint(req, PM_QOS_ADD_REQ, value);
--	}
--
-+	ret = __dev_pm_qos_add_request(dev, req, type, value);
- 	mutex_unlock(&dev_pm_qos_mtx);
--
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
-@@ -343,6 +377,7 @@ static int __dev_pm_qos_update_request(s
++	if (!adev)
++		return 0;
++
+ 	type = acpi_get_bus_type(dev);
+ 	if (type && type->cleanup)
+ 		type->cleanup(dev);
++	else if (adev->handler && adev->handler->unbind)
++		adev->handler->unbind(dev);
  
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
-+	case DEV_PM_QOS_LATENCY_TOLERANCE:
- 		curr_value = req->data.pnode.prio;
- 		break;
- 	case DEV_PM_QOS_FLAGS:
-@@ -563,6 +598,10 @@ static void __dev_pm_qos_drop_user_reque
- 		req = dev->power.qos->resume_latency_req;
- 		dev->power.qos->resume_latency_req = NULL;
- 		break;
-+	case DEV_PM_QOS_LATENCY_TOLERANCE:
-+		req = dev->power.qos->latency_tolerance_req;
-+		dev->power.qos->latency_tolerance_req = NULL;
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		req = dev->power.qos->flags_req;
- 		dev->power.qos->flags_req = NULL;
-@@ -768,6 +807,67 @@ int dev_pm_qos_update_flags(struct devic
- 	pm_runtime_put(dev);
- 	return ret;
- }
-+
-+/**
-+ * dev_pm_qos_get_user_latency_tolerance - Get user space latency tolerance.
-+ * @dev: Device to obtain the user space latency tolerance for.
-+ */
-+s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev)
-+{
-+	s32 ret;
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+	ret = IS_ERR_OR_NULL(dev->power.qos)
-+		|| !dev->power.qos->latency_tolerance_req ?
-+			PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT :
-+			dev->power.qos->latency_tolerance_req->data.pnode.prio;
-+	mutex_unlock(&dev_pm_qos_mtx);
-+	return ret;
-+}
-+
-+/**
-+ * dev_pm_qos_update_user_latency_tolerance - Update user space latency tolerance.
-+ * @dev: Device to update the user space latency tolerance for.
-+ * @val: New user space latency tolerance for @dev (negative values disable).
-+ */
-+int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
-+{
-+	int ret;
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	if (IS_ERR_OR_NULL(dev->power.qos)
-+	    || !dev->power.qos->latency_tolerance_req) {
-+		struct dev_pm_qos_request *req;
-+
-+		if (val < 0) {
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+		req = kzalloc(sizeof(*req), GFP_KERNEL);
-+		if (!req) {
-+			ret = -ENOMEM;
-+			goto out;
-+		}
-+		ret = __dev_pm_qos_add_request(dev, req, DEV_PM_QOS_LATENCY_TOLERANCE, val);
-+		if (ret < 0) {
-+			kfree(req);
-+			goto out;
-+		}
-+		dev->power.qos->latency_tolerance_req = req;
-+	} else {
-+		if (val < 0) {
-+			__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_LATENCY_TOLERANCE);
-+			ret = 0;
-+		} else {
-+			ret = __dev_pm_qos_update_request(dev->power.qos->latency_tolerance_req, val);
-+		}
-+	}
-+
-+ out:
-+	mutex_unlock(&dev_pm_qos_mtx);
-+	return ret;
-+}
- #else /* !CONFIG_PM_RUNTIME */
- static void __dev_pm_qos_hide_latency_limit(struct device *dev) {}
- static void __dev_pm_qos_hide_flags(struct device *dev) {}
-Index: linux-pm/drivers/base/power/sysfs.c
-===================================================================
---- linux-pm.orig/drivers/base/power/sysfs.c
-+++ linux-pm/drivers/base/power/sysfs.c
-@@ -246,6 +246,40 @@ static ssize_t pm_qos_resume_latency_sto
- static DEVICE_ATTR(pm_qos_resume_latency_us, 0644,
- 		   pm_qos_resume_latency_show, pm_qos_resume_latency_store);
- 
-+static ssize_t pm_qos_latency_tolerance_show(struct device *dev,
-+					     struct device_attribute *attr,
-+					     char *buf)
-+{
-+	s32 value = dev_pm_qos_get_user_latency_tolerance(dev);
-+
-+	if (value < 0)
-+		return sprintf(buf, "auto\n");
-+	else if (value == PM_QOS_LATENCY_ANY)
-+		return sprintf(buf, "any\n");
-+
-+	return sprintf(buf, "%d\n", value);
-+}
-+
-+static ssize_t pm_qos_latency_tolerance_store(struct device *dev,
-+					      struct device_attribute *attr,
-+					      const char *buf, size_t n)
-+{
-+	s32 value;
-+	int ret;
-+
-+	if (kstrtos32(buf, 0, &value)) {
-+		if (!strcmp(buf, "auto") || !strcmp(buf, "auto\n"))
-+			value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
-+		else if (!strcmp(buf, "any") || !strcmp(buf, "any\n"))
-+			value = PM_QOS_LATENCY_ANY;
-+	}
-+	ret = dev_pm_qos_update_user_latency_tolerance(dev, value);
-+	return ret < 0 ? ret : n;
-+}
-+
-+static DEVICE_ATTR(pm_qos_latency_tolerance_us, 0644,
-+		   pm_qos_latency_tolerance_show, pm_qos_latency_tolerance_store);
-+
- static ssize_t pm_qos_no_power_off_show(struct device *dev,
- 					struct device_attribute *attr,
- 					char *buf)
-@@ -631,6 +665,17 @@ static struct attribute_group pm_qos_res
- 	.attrs	= pm_qos_resume_latency_attrs,
- };
- 
-+static struct attribute *pm_qos_latency_tolerance_attrs[] = {
-+#ifdef CONFIG_PM_RUNTIME
-+	&dev_attr_pm_qos_latency_tolerance_us.attr,
-+#endif /* CONFIG_PM_RUNTIME */
-+	NULL,
-+};
-+static struct attribute_group pm_qos_latency_tolerance_attr_group = {
-+	.name	= power_group_name,
-+	.attrs	= pm_qos_latency_tolerance_attrs,
-+};
-+
- static struct attribute *pm_qos_flags_attrs[] = {
- #ifdef CONFIG_PM_RUNTIME
- 	&dev_attr_pm_qos_no_power_off.attr,
-@@ -656,18 +701,23 @@ int dpm_sysfs_add(struct device *dev)
- 		if (rc)
- 			goto err_out;
- 	}
--
- 	if (device_can_wakeup(dev)) {
- 		rc = sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
--		if (rc) {
--			if (pm_runtime_callbacks_present(dev))
--				sysfs_unmerge_group(&dev->kobj,
--						    &pm_runtime_attr_group);
--			goto err_out;
--		}
-+		if (rc)
-+			goto err_runtime;
-+	}
-+	if (dev->power.set_latency_tolerance) {
-+		rc = sysfs_merge_group(&dev->kobj,
-+				       &pm_qos_latency_tolerance_attr_group);
-+		if (rc)
-+			goto err_wakeup;
- 	}
+ 	acpi_unbind_one(dev);
  	return 0;
- 
-+ err_wakeup:
-+	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
-+ err_runtime:
-+	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
-  err_out:
- 	sysfs_remove_group(&dev->kobj, &pm_attr_group);
- 	return rc;
-@@ -710,6 +760,7 @@ void rpm_sysfs_remove(struct device *dev
- 
- void dpm_sysfs_remove(struct device *dev)
- {
-+	sysfs_unmerge_group(&dev->kobj, &pm_qos_latency_tolerance_attr_group);
- 	dev_pm_qos_constraints_destroy(dev);
- 	rpm_sysfs_remove(dev);
- 	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
-Index: linux-pm/include/linux/pm.h
+Index: linux-pm/include/acpi/acpi_bus.h
 ===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -582,6 +582,7 @@ struct dev_pm_info {
- 	unsigned long		accounting_timestamp;
- #endif
- 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
-+	void (*set_latency_tolerance)(struct device *, s32);
- 	struct dev_pm_qos	*qos;
+--- linux-pm.orig/include/acpi/acpi_bus.h
++++ linux-pm/include/acpi/acpi_bus.h
+@@ -133,6 +133,8 @@ struct acpi_scan_handler {
+ 	struct list_head list_node;
+ 	int (*attach)(struct acpi_device *dev, const struct acpi_device_id *id);
+ 	void (*detach)(struct acpi_device *dev);
++	void (*bind)(struct device *phys_dev);
++	void (*unbind)(struct device *phys_dev);
+ 	struct acpi_hotplug_profile hotplug;
  };
  
-Index: linux-pm/kernel/power/qos.c
+Index: linux-pm/drivers/acpi/scan.c
 ===================================================================
---- linux-pm.orig/kernel/power/qos.c
-+++ linux-pm/kernel/power/qos.c
-@@ -173,6 +173,7 @@ int pm_qos_update_target(struct pm_qos_c
- {
- 	unsigned long flags;
- 	int prev_value, curr_value, new_value;
-+	int ret;
+--- linux-pm.orig/drivers/acpi/scan.c
++++ linux-pm/drivers/acpi/scan.c
+@@ -2020,13 +2020,14 @@ static int acpi_scan_attach_handler(stru
  
- 	spin_lock_irqsave(&pm_qos_lock, flags);
- 	prev_value = pm_qos_get_value(c);
-@@ -208,13 +209,15 @@ int pm_qos_update_target(struct pm_qos_c
- 
- 	trace_pm_qos_update_target(action, prev_value, curr_value);
- 	if (prev_value != curr_value) {
--		blocking_notifier_call_chain(c->notifiers,
--					     (unsigned long)curr_value,
--					     NULL);
--		return 1;
-+		ret = 1;
-+		if (c->notifiers)
-+			blocking_notifier_call_chain(c->notifiers,
-+						     (unsigned long)curr_value,
-+						     NULL);
- 	} else {
--		return 0;
-+		ret = 0;
+ 		handler = acpi_scan_match_handler(hwid->id, &devid);
+ 		if (handler) {
++			device->handler = handler;
+ 			ret = handler->attach(device, devid);
+-			if (ret > 0) {
+-				device->handler = handler;
++			if (ret > 0)
+ 				break;
+-			} else if (ret < 0) {
++
++			device->handler = NULL;
++			if (ret < 0)
+ 				break;
+-			}
+ 		}
  	}
-+	return ret;
- }
- 
- /**
-Index: linux-pm/Documentation/power/pm_qos_interface.txt
-===================================================================
---- linux-pm.orig/Documentation/power/pm_qos_interface.txt
-+++ linux-pm/Documentation/power/pm_qos_interface.txt
-@@ -88,17 +88,19 @@ node.
- 
- 2. PM QoS per-device latency and flags framework
- 
--For each device, there are two lists of PM QoS requests. One is maintained
--along with the aggregated target of resume latency value and the other is for
--PM QoS flags. Values are updated in response to changes of the request list.
--
--Target resume latency value is simply the minimum of the request values held in
--the parameter list elements.  The PM QoS flags aggregate value is a gather
--(bitwise OR) of all list elements' values.  Two device PM QoS flags are defined
--currently: PM_QOS_FLAG_NO_POWER_OFF and PM_QOS_FLAG_REMOTE_WAKEUP.
-+For each device, there are three lists of PM QoS requests. Two of them are
-+maintained along with the aggregated targets of resume latency and active
-+state latency tolerance (in microseconds) and the third one is for PM QoS flags.
-+Values are updated in response to changes of the request list.
-+
-+The target values of resume latency and active state latency tolerance are
-+simply the minimum of the request values held in the parameter list elements.
-+The PM QoS flags aggregate value is a gather (bitwise OR) of all list elements'
-+values.  Two device PM QoS flags are defined currently: PM_QOS_FLAG_NO_POWER_OFF
-+and PM_QOS_FLAG_REMOTE_WAKEUP.
- 
--Note: the aggregated target value is implemented in such a way that reading the
--aggregated value does not require any locking mechanism.
-+Note: The aggregated target values are implemented in such a way that reading
-+the aggregated value does not require any locking mechanism.
- 
- 
- From kernel mode the use of this interface is the following:
-@@ -177,3 +179,42 @@ The callback is called when the aggregat
- int dev_pm_qos_remove_global_notifier(notifier):
- Removes the notification callback function from the global notification tree
- of the framework.
-+
-+
-+Active state latency tolerance
-+
-+This device PM QoS type is used to support systems in which hardware may switch
-+to energy-saving operation modes on the fly.  In those systems, if the operation
-+mode chosen by the hardware attempts to save energy in an overly aggressive way,
-+it may cause excess latencies to be visible to software, causing it to miss
-+certain protocol requirements or target frame or sample rates etc.
-+
-+If there is a latency tolerance control mechanism for a given device available
-+to software, the .set_latency_tolerance callback in that device's dev_pm_info
-+structure should be populated.  The routine pointed to by it is should implement
-+whatever is necessary to transfer the effective requirement value to the
-+hardware.
-+
-+Whenever the effective latency tolerance changes for the device, its
-+.set_latency_tolerance() callback will be executed and the effective value will
-+be passed to it.  If that value is negative, which means that the list of
-+latency tolerance requirements for the device is empty, the callback is expected
-+to switch the underlying hardware latency tolerance control mechanism to an
-+autonomous mode if available.  If that value is PM_QOS_LATENCY_ANY, in turn, and
-+the hardware supports a special "no requirement" setting, the callback is
-+expected to use it.  That allows software to prevent the hardware from
-+automatically updating the device's latency tolerance in response to its power
-+state changes (e.g. during transitions from D3cold to D0), which generally may
-+be done in the autonomous latency tolerance control mode.
-+
-+If .set_latency_tolerance() is present for the device, sysfs attribute
-+pm_qos_latency_tolerance_us will be present in the devivce's power directory.
-+Then, user space can use that attribute to specify its latency tolerance
-+requirement for the device, if any.  Writing "any" to it means "no requirement,
-+but do not let the hardware control latency tolerance" and writing "auto" to it
-+allows the hardware to be switched to the autonomous mode if there are no other
-+requirements from the kernel side in the device's list.
-+
-+Kernel code can use the functions described above along with the
-+DEV_PM_QOS_LATENCY_TOLERANCE device PM QoS type to add, remove and update
-+latency tolerance requirements for devices.
-Index: linux-pm/Documentation/ABI/testing/sysfs-devices-power
-===================================================================
---- linux-pm.orig/Documentation/ABI/testing/sysfs-devices-power
-+++ linux-pm/Documentation/ABI/testing/sysfs-devices-power
-@@ -187,7 +187,7 @@ Description:
- 		Not all drivers support this attribute.  If it isn't supported,
- 		attempts to read or write it will yield I/O errors.
- 
--What:		/sys/devices/.../power/pm_qos_latency_us
-+What:		/sys/devices/.../power/pm_qos_resume_latency_us
- Date:		March 2012
- Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
- Description:
-@@ -205,6 +205,31 @@ Description:
- 		This attribute has no effect on system-wide suspend/resume and
- 		hibernation.
- 
-+What:		/sys/devices/.../power/pm_qos_latency_tolerance_us
-+Date:		January 2014
-+Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
-+Description:
-+		The /sys/devices/.../power/pm_qos_latency_tolerance_us attribute
-+		contains the PM QoS active state latency tolerance limit for the
-+		given device in microseconds.  That is the maximum memory access
-+		latency the device can suffer without any visible adverse
-+		effects on user space functionality.  If that value is the
-+		string "any", the latency does not matter to user space at all,
-+		but hardware should not be allowed to set the latency tolerance
-+		for the device automatically.
-+
-+		Reading "auto" from this file means that the maximum memory
-+		access latency for the device may be determined automatically
-+		by the hardware as needed.  Writing "auto" to it allows the
-+		hardware to be switched to this mode if there are no other
-+		latency tolerance requirements from the kernel side.
-+
-+		This attribute is only present if the feature controlled by it
-+		is supported by the hardware.
-+
-+		This attribute has no effect on runtime suspend and resume of
-+		devices and on system-wide suspend/resume and hibernation.
-+
- What:		/sys/devices/.../power/pm_qos_no_power_off
- Date:		September 2012
- Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
+ 	return ret;
+
