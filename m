@@ -1,52 +1,58 @@
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: [PATCH 2/2] ARM64: powernv: remove redundant cpuidle_idle_call()
-Date: Thu, 06 Feb 2014 09:16:28 -0500
-Message-ID: <1391696188-14540-2-git-send-email-nicolas.pitre@linaro.org>
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
+Subject: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
+Date: Thu, 06 Feb 2014 09:16:27 -0500
+Message-ID: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
 Content-Transfer-Encoding: 7BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relais.videotron.ca ([24.201.245.36]:13196 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbaBFOQx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Feb 2014 09:16:53 -0500
-In-reply-to: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
+List-Id: linux-pm@vger.kernel.org
 
 The core idle loop now takes care of it.
 
 Signed-off-by: Nicolas Pitre <nico@linaro.org>
 ---
- arch/arm64/kernel/process.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
-index 1c0a9be2ff..9cce0098f4 100644
---- a/arch/arm64/kernel/process.c
-+++ b/arch/arm64/kernel/process.c
-@@ -33,7 +33,6 @@
- #include <linux/kallsyms.h>
- #include <linux/init.h>
- #include <linux/cpu.h>
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 21166f65c9..a932feb290 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -26,7 +26,6 @@
+ #include <linux/of_fdt.h>
+ #include <linux/interrupt.h>
+ #include <linux/bug.h>
 -#include <linux/cpuidle.h>
- #include <linux/elfcore.h>
- #include <linux/pm.h>
- #include <linux/tick.h>
-@@ -94,10 +93,8 @@ void arch_cpu_idle(void)
- 	 * This should do all the clock switching and wait for interrupt
- 	 * tricks
- 	 */
--	if (cpuidle_idle_call()) {
--		cpu_do_idle();
--		local_irq_enable();
--	}
-+	cpu_do_idle();
-+	local_irq_enable();
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+@@ -217,16 +216,6 @@ static int __init pnv_probe(void)
+ 	return 1;
  }
  
- #ifdef CONFIG_HOTPLUG_CPU
+-void powernv_idle(void)
+-{
+-	/* Hook to cpuidle framework if available, else
+-	 * call on default platform idle code
+-	 */
+-	if (cpuidle_idle_call()) {
+-		power7_idle();
+-	}
+-}
+-
+ define_machine(powernv) {
+ 	.name			= "PowerNV",
+ 	.probe			= pnv_probe,
+@@ -236,7 +225,7 @@ define_machine(powernv) {
+ 	.show_cpuinfo		= pnv_show_cpuinfo,
+ 	.progress		= pnv_progress,
+ 	.machine_shutdown	= pnv_shutdown,
+-	.power_save             = powernv_idle,
++	.power_save             = power7_idle,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ #ifdef CONFIG_KEXEC
+ 	.kexec_cpu_down		= pnv_kexec_cpu_down,
 -- 
 1.8.4.108.g55ea5f6
-
