@@ -1,41 +1,38 @@
-From: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend
- to RAM
-Date: Thu, 06 Feb 2014 14:33:53 +0100
-Message-ID: <52F38F41.4030607@gmail.com>
-References: <52F2CC7B.80406@gmail.com> <52F33BE7.2040607@gmail.com> <2240387.gpLEHJv4c1@vostro.rjw.lan>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Date: Thu, 6 Feb 2014 14:09:59 +0000 (GMT)
+Message-ID: <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org> <20140130152500.GB5002@laptop.programming.kicks-ass.net> <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+ <20140130162753.GF5002@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f53.google.com ([74.125.82.53]:58635 "EHLO
-	mail-wg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756394AbaBFNcz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Feb 2014 08:32:55 -0500
-In-Reply-To: <2240387.gpLEHJv4c1@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+Sender: linux-sh-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 02/06/2014 01:40 PM, Rafael J. Wysocki wrote:
-> On Thursday, February 06, 2014 08:38:15 AM Francis Moreau wrote:
->> Hi,
->>
->> On 02/06/2014 12:42 AM, Bastien Traverse wrote:
->>> Hello,
->>>
->>> I'm encountering the exact same problem (same model of machine, same
->>> controller, same OS) and was wondering where this bug was at.
->>
->> I'm still leaving with this issue since my initial posting unfortunately :(
->>
->> I'm wondering why PM support on this machine is so crapish (it initialy
->> oopsed when resuming due to a bug in rtsx driver).
+On Thu, 30 Jan 2014, Peter Zijlstra wrote:
+
+> On Thu, Jan 30, 2014 at 11:03:31AM -0500, Nicolas Pitre wrote:
+> > > This is not a valid patch for PATCH(1). Please try again.
+> > 
+> > Don't you use git?  ;-)
 > 
-> Is this a new problem in 3.12?
+> Nah, git and me don't get along well.
 > 
+> > Here's a plain patch:
+> 
+> Thanks!
 
-I don't know, sorry, maybe Bastien has an idea.
+Hi Peter,
+
+Did you merge those patches in your tree?  If so, is it published 
+somewhere?  That would be a good idea if that could appear in linux-next 
+so to prevent people from adding more calls to cpuidle_idle_call() from 
+architecture code.  I'm sending you 2 additional patches right away to 
+remove those that appeared in v3.14-rc1.
 
 
+Nicolas
