@@ -1,118 +1,42 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 35/51] acpi-cpufreq: Fix CPU hotplug callback registration
-Date: Thu, 06 Feb 2014 21:35:51 +0530
-Message-ID: <52F3B2DF.3070104@linux.vnet.ibm.com>
-References: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com> <20140205221052.19080.77507.stgit@srivatsabhat.in.ibm.com> <6272120.pzpJuaTe2d@vostro.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Date: Thu, 6 Feb 2014 17:43:36 +0100
+Message-ID: <20140206164336.GU2936@laptop.programming.kicks-ass.net>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
+ <20140130152500.GB5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+ <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:48383 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbaBFQLQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Feb 2014 11:11:16 -0500
-Received: from /spool/local
-	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 7 Feb 2014 02:11:15 +1000
-In-Reply-To: <6272120.pzpJuaTe2d@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
+Sender: linux-sh-owner@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, mingo@kernel.org, paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 02/06/2014 06:13 PM, Rafael J. Wysocki wrote:
-> On Thursday, February 06, 2014 03:40:53 AM Srivatsa S. Bhat wrote:
->> Subsystems that want to register CPU hotplug callbacks, as well as perform
->> initialization for the CPUs that are already online, often do it as shown
->> below:
->>
->> 	get_online_cpus();
->>
->> 	for_each_online_cpu(cpu)
->> 		init_cpu(cpu);
->>
->> 	register_cpu_notifier(&foobar_cpu_notifier);
->>
->> 	put_online_cpus();
->>
->> This is wrong, since it is prone to ABBA deadlocks involving the
->> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
->> with CPU hotplug operations).
->>
->> Instead, the correct and race-free way of performing the callback
->> registration is:
->>
->> 	cpu_maps_update_begin();
->>
->> 	for_each_online_cpu(cpu)
->> 		init_cpu(cpu);
->>
->> 	/* Note the use of the double underscored version of the API */
->> 	__register_cpu_notifier(&foobar_cpu_notifier);
->>
->> 	cpu_maps_update_done();
->>
->>
->> Fix the acpi-cpufreq code by using this latter form of callback registration.
->>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: cpufreq@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+On Thu, Feb 06, 2014 at 02:09:59PM +0000, Nicolas Pitre wrote:
+> Hi Peter,
 > 
-> Looks OK to me.  How does it depend on the rest of your series?
-> 
+> Did you merge those patches in your tree? 
 
-Thank you! Same here, every patch depends only on the first patch in
-the series. (Except the raid5 and the xen/balloon patches which don't
-have any dependency).
+tree, tree, what's in a word. Its in my patch stack yes. I should get
+some of that into tip I suppose, been side-tracked a bit this week.
+Sorry for the delay.
 
-But I'll be posting a v2 of this patchset soon with a rename of the
-API..
+> If so, is it published somewhere?  
 
-Regards,
-Srivatsa S. Bhat
+http://programming.kicks-ass.net/sekrit/patches.tar.bz2
 
->> ---
->>
->>  drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
->>  1 file changed, 4 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
->> index 18448a7..e2eb471 100644
->> --- a/drivers/cpufreq/acpi-cpufreq.c
->> +++ b/drivers/cpufreq/acpi-cpufreq.c
->> @@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
->>  
->>  		acpi_cpufreq_driver.boost_supported = true;
->>  		acpi_cpufreq_driver.boost_enabled = boost_state(0);
->> -		get_online_cpus();
->> +
->> +		cpu_maps_update_begin();
->>  
->>  		/* Force all MSRs to the same value */
->>  		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
->>  			       cpu_online_mask);
->>  
->> -		register_cpu_notifier(&boost_nb);
->> +		__register_cpu_notifier(&boost_nb);
->>  
->> -		put_online_cpus();
->> +		cpu_maps_update_done();
->>  	}
->>  }
->>  
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+It is of varying quality at best.
 
+> That would be a good idea if that could appear in linux-next 
+> so to prevent people from adding more calls to cpuidle_idle_call() from 
+> architecture code.  I'm sending you 2 additional patches right away to 
+> remove those that appeared in v3.14-rc1.
 
--- 
-Regards,
-Srivatsa S. Bhat
-
+Yeah, once they land in tip they'll end up in -next automagically. I'll
+try and get that sorted tomorrow somewhere.
