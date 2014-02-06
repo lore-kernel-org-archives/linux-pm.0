@@ -1,180 +1,58 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-Date: Thu, 6 Feb 2014 16:25:29 +0000
-Message-ID: <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V3 2/3] tick/cpuidle: Initialize hrtimer mode of
+ broadcast
+Date: Thu, 6 Feb 2014 21:52:35 +0100 (CET)
+Message-ID: <alpine.DEB.2.02.1402062151140.21991@ionos.tec.linutronix.de>
+References: <20140206054158.4595.17827.stgit@preeti> <20140206055012.4595.55692.stgit@preeti> <alpine.DEB.2.02.1402061655560.21991@ionos.tec.linutronix.de> <52F3C9BE.4050203@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1758117056640716630=="
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Linux ARM Kernel ML <linux-arm-kernel@lists.infradead.org>
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-2009438275-1391719956=:21991"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:37962 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756028AbaBFUwj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Feb 2014 15:52:39 -0500
+In-Reply-To: <52F3C9BE.4050203@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: deepthi@linux.vnet.ibm.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 
---===============1758117056640716630==
-Content-Type: multipart/alternative; boundary=089e01183fb857fdf004f1bf5202
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---089e01183fb857fdf004f1bf5202
-Content-Type: text/plain; charset=ISO-8859-1
+--8323329-2009438275-1391719956=:21991
+Content-Type: TEXT/PLAIN; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 
-Hi Nico,
+On Thu, 6 Feb 2014, Preeti U Murthy wrote:
+> On 02/06/2014 09:33 PM, Thomas Gleixner wrote:
+> > On Thu, 6 Feb 2014, Preeti U Murthy wrote:
+> > 
+> > Compiler warnings are not so important, right?
+> > 
+> > kernel/time/tick-broadcast.c: In function ‘tick_broadcast_oneshot_control’:
+> > kernel/time/tick-broadcast.c:700:3: warning: ‘return’ with no value, in function returning non-void [-Wreturn-type]
+> > kernel/time/tick-broadcast.c:711:3: warning: ‘return’ with no value, in function returning non-void [-Wreturn-type]
+> 
+> My apologies for this, will make sure this will not repeat. On compilation I
+> did not receive any warnings with the additional compile time flags too.I
+> compiled it on powerpc. Let me look into why the warnings did not show up.
+> Nevertheless I should have taken care of this even by simply looking at the
+> code.
 
+Huch, PPC seems to have an extra stupid version of gcc :)
+ 
+> The cpuidle patch then is below. The trace_cpu_idle_rcuidle() functions have
+> been moved around so that the broadcast CPU does not trace any idle event
+> and that the symmetry between the trace functions and the call to the
+> broadcast framework is  maintained. Wow, it does become very simple :)
 
-On 6 February 2014 14:16, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+Indeed :)
 
-> The core idle loop now takes care of it.
->
-> Signed-off-by: Nicolas Pitre <nico@linaro.org>
-> ---
->  arch/powerpc/platforms/powernv/setup.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/setup.c
-> b/arch/powerpc/platforms/powernv/setup.c
-> index 21166f65c9..a932feb290 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -26,7 +26,6 @@
->  #include <linux/of_fdt.h>
->  #include <linux/interrupt.h>
->  #include <linux/bug.h>
-> -#include <linux/cpuidle.h>
->
->  #include <asm/machdep.h>
->  #include <asm/firmware.h>
-> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
->         return 1;
->  }
->
-> -void powernv_idle(void)
-> -{
-> -       /* Hook to cpuidle framework if available, else
-> -        * call on default platform idle code
-> -        */
-> -       if (cpuidle_idle_call()) {
-> -               power7_idle();
-> -       }
->
+Care to resend the whole lot with all fixes applied and perhaps
+compile tested on x86 :)
+ 
+Thanks,
 
-The cpuidle_idle_call is called from arch_cpu_idle in
-arch/powerpc/kernel/idle.c between a ppc64_runlatch_off|on section.
-Shouldn't the cpuidle-powernv driver call these functions when entering
-idle ?
-
-  -- Daniel
-
-
-> -}
-> -
->  define_machine(powernv) {
->         .name                   = "PowerNV",
->         .probe                  = pnv_probe,
-> @@ -236,7 +225,7 @@ define_machine(powernv) {
->         .show_cpuinfo           = pnv_show_cpuinfo,
->         .progress               = pnv_progress,
->         .machine_shutdown       = pnv_shutdown,
-> -       .power_save             = powernv_idle,
-> +       .power_save             = power7_idle,
->         .calibrate_decr         = generic_calibrate_decr,
->  #ifdef CONFIG_KEXEC
->         .kexec_cpu_down         = pnv_kexec_cpu_down,
-> --
-> 1.8.4.108.g55ea5f6
->
->
-
---089e01183fb857fdf004f1bf5202
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_extra">Hi Nico,</div><div class=3D=
-"gmail_extra"><br></div><div class=3D"gmail_extra"><div class=3D"gmail_quot=
-e"><br></div><div class=3D"gmail_quote">On 6 February 2014 14:16, Nicolas P=
-itre <span dir=3D"ltr">&lt;<a href=3D"mailto:nicolas.pitre@linaro.org" targ=
-et=3D"_blank">nicolas.pitre@linaro.org</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-=
-left-width:1px;border-left-color:rgb(204,204,204);border-left-style:solid;p=
-adding-left:1ex">The core idle loop now takes care of it.<br>
-<br>
-Signed-off-by: Nicolas Pitre &lt;<a href=3D"mailto:nico@linaro.org">nico@li=
-naro.org</a>&gt;<br>
----<br>
-=A0arch/powerpc/platforms/powernv/setup.c | 13 +------------<br>
-=A01 file changed, 1 insertion(+), 12 deletions(-)<br>
-<br>
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platform=
-s/powernv/setup.c<br>
-index 21166f65c9..a932feb290 100644<br>
---- a/arch/powerpc/platforms/powernv/setup.c<br>
-+++ b/arch/powerpc/platforms/powernv/setup.c<br>
-@@ -26,7 +26,6 @@<br>
-=A0#include &lt;linux/of_fdt.h&gt;<br>
-=A0#include &lt;linux/interrupt.h&gt;<br>
-=A0#include &lt;linux/bug.h&gt;<br>
--#include &lt;linux/cpuidle.h&gt;<br>
-<br>
-=A0#include &lt;asm/machdep.h&gt;<br>
-=A0#include &lt;asm/firmware.h&gt;<br>
-@@ -217,16 +216,6 @@ static int __init pnv_probe(void)<br>
-=A0 =A0 =A0 =A0 return 1;<br>
-=A0}<br>
-<br>
--void powernv_idle(void)<br>
--{<br>
-- =A0 =A0 =A0 /* Hook to cpuidle framework if available, else<br>
-- =A0 =A0 =A0 =A0* call on default platform idle code<br>
-- =A0 =A0 =A0 =A0*/<br>
-- =A0 =A0 =A0 if (cpuidle_idle_call()) {<br>
-- =A0 =A0 =A0 =A0 =A0 =A0 =A0 power7_idle();<br>
-- =A0 =A0 =A0 }<br></blockquote><div><br></div><div>The cpuidle_idle_call i=
-s called from arch_cpu_idle in arch/powerpc/kernel/idle.c between a ppc64_r=
-unlatch_off|on section.</div><div>Shouldn&#39;t the cpuidle-powernv driver =
-call these functions when entering idle ?</div>
-<div><br></div><div>=A0 -- Daniel=A0</div><div>=A0</div><blockquote class=
-=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left-width:1px;bo=
-rder-left-color:rgb(204,204,204);border-left-style:solid;padding-left:1ex">
--}<br>
--<br>
-=A0define_machine(powernv) {<br>
-=A0 =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D &quot;PowerNV=
-&quot;,<br>
-=A0 =A0 =A0 =A0 .probe =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D pnv_probe,<br=
->
-@@ -236,7 +225,7 @@ define_machine(powernv) {<br>
-=A0 =A0 =A0 =A0 .show_cpuinfo =A0 =A0 =A0 =A0 =A0 =3D pnv_show_cpuinfo,<br>
-=A0 =A0 =A0 =A0 .progress =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D pnv_progress,<br>
-=A0 =A0 =A0 =A0 .machine_shutdown =A0 =A0 =A0 =3D pnv_shutdown,<br>
-- =A0 =A0 =A0 .power_save =A0 =A0 =A0 =A0 =A0 =A0 =3D powernv_idle,<br>
-+ =A0 =A0 =A0 .power_save =A0 =A0 =A0 =A0 =A0 =A0 =3D power7_idle,<br>
-=A0 =A0 =A0 =A0 .calibrate_decr =A0 =A0 =A0 =A0 =3D generic_calibrate_decr,=
-<br>
-=A0#ifdef CONFIG_KEXEC<br>
-=A0 =A0 =A0 =A0 .kexec_cpu_down =A0 =A0 =A0 =A0 =3D pnv_kexec_cpu_down,<br>
-<span class=3D""><font color=3D"#888888">--<br>
-1.8.4.108.g55ea5f6<br>
-<br>
-</font></span></blockquote></div><br></div></div>
-
---089e01183fb857fdf004f1bf5202--
-
---===============1758117056640716630==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@lists.ozlabs.org
-https://lists.ozlabs.org/listinfo/linuxppc-dev
---===============1758117056640716630==--
+	tglx
+--8323329-2009438275-1391719956=:21991--
