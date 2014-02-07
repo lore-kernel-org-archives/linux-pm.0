@@ -1,85 +1,62 @@
 From: Sudeep Holla <Sudeep.Holla@arm.com>
-Subject: Re: [PATCH v2 1/2] PM / OPP: Allow boost frequency to be looked up
- from device tree
-Date: Fri, 07 Feb 2014 16:01:10 +0000
-Message-ID: <52F50346.7040707@arm.com>
-References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com> <1391786342-11812-2-git-send-email-thomas.ab@samsung.com>
+Subject: Re: [PATCH v2 2/2] Documentation: devicetree: Add boost-frequency
+ binding to list boost mode frequency
+Date: Fri, 07 Feb 2014 16:15:20 +0000
+Message-ID: <52F50698.4060305@arm.com>
+References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com> <1391786342-11812-3-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1391786342-11812-2-git-send-email-thomas.ab@samsung.com>
+In-Reply-To: <1391786342-11812-3-git-send-email-thomas.ab@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Thomas Abraham <ta.omasab@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Sudeep.Holla@arm.com, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>
+Cc: Sudeep.Holla@arm.com, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 07/02/14 15:19, Thomas Abraham wrote:
 > From: Thomas Abraham <thomas.ab@samsung.com>
 > 
-> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
-> support for CPU boost mode. This patch adds support for finding available
-> boost frequencies from device tree and marking them as usable in boost mode.
+> Add a new optional boost-frequency binding for specifying the frequencies
+> usable in boost mode.
 > 
 > Cc: Nishanth Menon <nm@ti.com>
 > Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+> Cc: Kumar Gala <galak@codeaurora.org>
 > Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
 > ---
->  drivers/base/power/opp.c |   34 +++++++++++++++++++++++++++++++++-
->  1 file changed, 33 insertions(+), 1 deletion(-)
+>  Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt |   11 +++++++++++
+>  1 file changed, 11 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
 > 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index fa41874..b636826 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -628,7 +628,8 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
->  	struct device_opp *dev_opp;
->  	struct dev_pm_opp *opp;
->  	struct cpufreq_frequency_table *freq_table;
-> -	int i = 0;
-> +	int i = 0, j, len, ret;
-> +	u32 *boost_freqs = NULL;
->  
->  	/* Pretend as if I am an updater */
->  	mutex_lock(&dev_opp_list_lock);
-> @@ -650,10 +651,35 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
->  		return -ENOMEM;
->  	}
->  
-> +	if (of_find_property(dev->of_node, "boost-frequency", &len)) {
-> +		if (len == 0 || (len & (sizeof(u32) - 1)) != 0) {
-> +			dev_err(dev, "%s: invalid boost frequency\n", __func__);
-> +			ret = -EINVAL;
-> +			goto err_boost;
-> +		}
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+> new file mode 100644
+> index 0000000..d925e38
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+> @@ -0,0 +1,11 @@
+> +* Device tree binding for CPU boost frequency (aka over-clocking)
 > +
-> +		boost_freqs = kzalloc(len, GFP_KERNEL);
-> +		if (!boost_freqs) {
-> +			dev_warn(dev, "%s: no memory for boost freq table\n",
-> +					__func__);
-> +			ret = -ENOMEM;
-> +			goto err_boost;
-> +		}
-> +		of_property_read_u32_array(dev->of_node, "boost-frequency",
-> +			boost_freqs, len / sizeof(u32));
-> +	}
+> +Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
+> +overclocking) in which the CPU can operate in frequencies beyond the normal
+> +operating conditions.
 > +
->  	list_for_each_entry(opp, &dev_opp->opp_list, node) {
->  		if (opp->available) {
->  			freq_table[i].driver_data = i;
->  			freq_table[i].frequency = opp->rate / 1000;
-> +			for (j = 0; j < len / sizeof(u32) && boost_freqs; j++) {
-> +				if (boost_freqs[j] == freq_table[i].frequency) {
-> +					freq_table[i].driver_data =
-> +							CPUFREQ_BOOST_FREQ;
-> +					break;
-> +				}
-> +			}
->  			i++;
->  		}
->  	}
-IIRC you had mentioned that the boost-opp was not limited to be a cpufreq, but
-this change seems to be cpufreq only.
+> +Optional Properties:
+> +- boost-frequency: list of frequencies in KHz to be used only in boost mode.
+> +  This list should be a subset of frequencies listed in "operating-points"
+> +  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
+> +  details about "operating-points" property.
+> 
+
+Won't single entry for boost frequency suffice which would be the starting
+frequency in the boost range. IWO will there be OPP list with frequencies:
+A > B > C > D, but only B and C are boost frequency. That seems little odd,
+unless it's some configuration chosen purely on software basis rather than
+hardware. For me B marks the beginning of over-clocking.
 
 Regards,
 Sudeep
