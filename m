@@ -1,62 +1,42 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
-Date: Fri, 7 Feb 2014 13:32:38 +0100
-Message-ID: <20140207123238.GA9987@twins.programming.kicks-ass.net>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
- <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
- <20140130152500.GB5002@laptop.programming.kicks-ass.net>
- <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
- <20140130162753.GF5002@laptop.programming.kicks-ass.net>
- <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
- <20140206164336.GU2936@laptop.programming.kicks-ass.net>
- <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
+Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
+Date: Fri, 7 Feb 2014 13:41:40 +0100
+Message-ID: <20140207124140.GB9987@twins.programming.kicks-ass.net>
+References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
+ <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
+ <52F3BCFE.3010703@linux.vnet.ibm.com>
+ <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
+ <52F46EB3.5080403@linux.vnet.ibm.com>
+ <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
+ <52F4C666.4050308@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <52F4C666.4050308@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 07, 2014 at 11:09:23AM +0000, Nicolas Pitre wrote:
-> On Thu, 6 Feb 2014, Peter Zijlstra wrote:
-> > tree, tree, what's in a word.
+On Fri, Feb 07, 2014 at 05:11:26PM +0530, Preeti U Murthy wrote:
+> But observe the idle state "snooze" on powerpc. The power that this idle
+> state saves is through the lowering of the thread priority of the CPU.
+> After it lowers the thread priority, it is done. It cannot
+> "wait_for_interrupts". It will exit my_idle(). It is now upto the
+> generic idle loop to increase the thread priority if the need_resched
+> flag is set. Only an interrupt routine can increase the thread priority.
+> Else we will need to do it explicitly. And in such states which have a
+> polling nature, the cpu will not receive a reschedule IPI.
 > 
-> Something you may plant on a patch of grass?  "Merging" becomes a 
-> strange concept in that context though.  :-)
+> That is why in the snooze_loop() we poll on need_resched. If it is set
+> we up the priority of the thread using HMT_MEDIUM() and then exit the
+> my_idle() loop. In case of interrupts, the priority gets automatically
+> increased.
 
-I do know some farmers who splice trees thought :-)
+You can poll without setting TS_POLLING/TIF_POLLING_NRFLAGS just fine
+and get the IPI if that is what you want.
 
-> > Its in my patch stack yes. 
-> 
-> Quilt I suppose?? (yet another word.)
-
-Yes, I'm one of the refugee Quilt users. Comes in handy when cold too
-:-)
-
-> > I should get some of that into tip I suppose, been side-tracked a bit 
-> > this week. Sorry for the delay.
-> 
-> If you prefer we pile those patches (and future ones after revew) 
-> ourselves just let me know.  Future patches are likely to be more 
-> intimate with the scheduler so I just need to know who to upstream them 
-> through afterwards.
-
-Normally I get Ingo to pick up the queue 1-2 times a week so latency
-shouldn't be too bad. But we just had the merge window and then I got
-side-tracked rewriting all atomic implementations.
-
-So usually submit patches against tip/master unless you know there's
-other pending bits that conflict, in which case you can grab my queue on
-top of tip/master -- but I try to make sure that's usually not needed.
+Depending on how horribly unprovisioned the thread gets at the lowest
+priority, that might actually be faster than polling and raising the
+prio whenever it does get ran.
