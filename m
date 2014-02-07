@@ -1,42 +1,90 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-Date: Fri, 7 Feb 2014 13:41:40 +0100
-Message-ID: <20140207124140.GB9987@twins.programming.kicks-ass.net>
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
- <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
- <52F3BCFE.3010703@linux.vnet.ibm.com>
- <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
- <52F46EB3.5080403@linux.vnet.ibm.com>
- <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
- <52F4C666.4050308@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [Patch v1] ACPI, x86: fix bug in associating hot-added CPUs with corresponding NUMA node
+Date: Fri, 07 Feb 2014 13:03:06 +0100
+Message-ID: <1440384.cOMzyfyUzg@vostro.rjw.lan>
+References: <1390185115-26850-1-git-send-email-jiang.liu@linux.intel.com> <4676819.HL23G4Egmr@vostro.rjw.lan> <52F4A4B9.2060006@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52F4C666.4050308@linux.vnet.ibm.com>
+In-Reply-To: <52F4A4B9.2060006@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+To: Jiang Liu <jiang.liu@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Toshi Kani <toshi.kani@hp.com>, Yinghai Lu <yinghai@kernel.org>, Yijing Wang <wangyijing@huawei.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, linux-acpi@vger.kernel.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 07, 2014 at 05:11:26PM +0530, Preeti U Murthy wrote:
-> But observe the idle state "snooze" on powerpc. The power that this idle
-> state saves is through the lowering of the thread priority of the CPU.
-> After it lowers the thread priority, it is done. It cannot
-> "wait_for_interrupts". It will exit my_idle(). It is now upto the
-> generic idle loop to increase the thread priority if the need_resched
-> flag is set. Only an interrupt routine can increase the thread priority.
-> Else we will need to do it explicitly. And in such states which have a
-> polling nature, the cpu will not receive a reschedule IPI.
+On Friday, February 07, 2014 05:17:45 PM Jiang Liu wrote:
 > 
-> That is why in the snooze_loop() we poll on need_resched. If it is set
-> we up the priority of the thread using HMT_MEDIUM() and then exit the
-> my_idle() loop. In case of interrupts, the priority gets automatically
-> increased.
+> On 2014/2/5 8:14, Rafael J. Wysocki wrote:
+> > On Monday, January 20, 2014 10:31:54 AM Jiang Liu wrote:
+> >> Current ACPI cpu hotplug driver fails to associate hot-added CPUs with
+> >> corresponding NUMA node when doing socket online. The code path to
+> >> associate CPU with NUMA node is as below:
+> >> acpi_processor_add()
+> >>     ->acpi_processor_get_info()
+> >> 	->acpi_processor_hotadd_init()
+> >> 	    ->acpi_map_lsapic()
+> >> 		->_acpi_map_lsapic()
+> >> 		    ->acpi_map_cpu2node()
+> >> cpu_subsys_online()
+> >>     ->try_online_node()
+> >> 	->node_set_online()
+> >>
+> >> When doing socket online, a new NUMA node is introduced in addition to
+> >> hot-added CPU and memory device. And the new NUMA node is marked as
+> >> online when onlining hot-added CPUs through sysfs interface
+> >> /sys/devices/system/cpu/cpuxx/online.
+> >>
+> >> On the other hand, acpi_map_cpu2node() will only build the CPU to node
+> >> map if corresponding NUMA node is already online, so it always fails
+> >> to associate hot-added CPUs with corresponding NUMA node because the
+> >> NUMA node is still in offline state.
+> >>
+> >> For the fix, we could safely remove the "node_online(node)" check in
+> >> function acpi_map_cpu2node() because it's only called for hot-added CPUs
+> >> by acpi_processor_hotadd_init().
+> >>
+> >> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+> > 
+> > I wonder what the status here is?  Did this patch go anywhere?
+> Hi Rafael,
+> 	It's still in review stage, hasn't been accepted by any
+> maintainer yet.
 
-You can poll without setting TS_POLLING/TIF_POLLING_NRFLAGS just fine
-and get the IPI if that is what you want.
+OK
 
-Depending on how horribly unprovisioned the thread gets at the lowest
-priority, that might actually be faster than polling and raising the
-prio whenever it does get ran.
+Peter, are you fine with the patch below?
+
+Rafael
+
+
+> > 
+> >> ---
+> >>  arch/x86/kernel/acpi/boot.c |    8 ++++----
+> >>  1 file changed, 4 insertions(+), 4 deletions(-)
+> >>
+> >> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> >> index 6c0b43b..7625de9 100644
+> >> --- a/arch/x86/kernel/acpi/boot.c
+> >> +++ b/arch/x86/kernel/acpi/boot.c
+> >> @@ -614,10 +614,10 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
+> >>  	int nid;
+> >>  
+> >>  	nid = acpi_get_node(handle);
+> >> -	if (nid == -1 || !node_online(nid))
+> >> -		return;
+> >> -	set_apicid_to_node(physid, nid);
+> >> -	numa_set_node(cpu, nid);
+> >> +	if (nid != -1) {
+> >> +		set_apicid_to_node(physid, nid);
+> >> +		numa_set_node(cpu, nid);
+> >> +	}
+> >>  #endif
+> >>  }
+> >>  
+> >>
+> > 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
