@@ -1,114 +1,32 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-Date: Fri, 07 Feb 2014 12:31:45 +0530
-Message-ID: <52F484D9.6020604@linux.vnet.ibm.com>
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org> <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com> <52F3BCFE.3010703@linux.vnet.ibm.com> <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
+From: Francis Moreau <francis.moro@gmail.com>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend
+ to RAM
+Date: Fri, 07 Feb 2014 08:29:42 +0100
+Message-ID: <52F48B66.9070407@gmail.com>
+References: <52F2CC7B.80406@gmail.com> <52F33BE7.2040607@gmail.com> <2240387.gpLEHJv4c1@vostro.rjw.lan> <52F4179C.70400@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:45146 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750712AbaBGHFb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Feb 2014 02:05:31 -0500
-Received: from /spool/local
-	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 7 Feb 2014 17:05:29 +1000
-In-Reply-To: <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52F4179C.70400@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bastien Traverse <bastien.traverse@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Linux ARM Kernel ML <linux-arm-kernel@lists.infradead.org>
 
-Hi Nicolas,
-
-Find below the patch that will need to be squashed with this one.
-This patch is based on the mainline.Adding Deepthi, the author of
-the patch which introduced the powernv cpuidle driver. Deepthi,
-do you think the below patch looks right? We do not need to do an
-explicit local_irq_enable() since we are in the call path of
-cpuidle driver and that explicitly enables irqs on exit from
-idle states.
-
-On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
-> On Thu, 6 Feb 2014, Preeti U Murthy wrote:
+On 02/07/2014 12:15 AM, Bastien Traverse wrote:
 > 
->> Hi Daniel,
->>
->> On 02/06/2014 09:55 PM, Daniel Lezcano wrote:
->>> Hi Nico,
->>>
->>>
->>> On 6 February 2014 14:16, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
->>>
->>>> The core idle loop now takes care of it.
->>>>
->>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
->>>> ---
->>>>  arch/powerpc/platforms/powernv/setup.c | 13 +------------
->>>>  1 file changed, 1 insertion(+), 12 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/platforms/powernv/setup.c
->>>> b/arch/powerpc/platforms/powernv/setup.c
->>>> index 21166f65c9..a932feb290 100644
->>>> --- a/arch/powerpc/platforms/powernv/setup.c
->>>> +++ b/arch/powerpc/platforms/powernv/setup.c
->>>> @@ -26,7 +26,6 @@
->>>>  #include <linux/of_fdt.h>
->>>>  #include <linux/interrupt.h>
->>>>  #include <linux/bug.h>
->>>> -#include <linux/cpuidle.h>
->>>>
->>>>  #include <asm/machdep.h>
->>>>  #include <asm/firmware.h>
->>>> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
->>>>         return 1;
->>>>  }
->>>>
->>>> -void powernv_idle(void)
->>>> -{
->>>> -       /* Hook to cpuidle framework if available, else
->>>> -        * call on default platform idle code
->>>> -        */
->>>> -       if (cpuidle_idle_call()) {
->>>> -               power7_idle();
->>>> -       }
->>>>
+> I was also hit by the rtsx driver bug
+> (https://bugs.archlinux.org/task/37720) and was delighted with its fast
+> resolution. I was hoping that its fix would also address the
+> disappearing Ethernet bug.
 
- drivers/cpuidle/cpuidle-powernv.c |    4 ++++
- 1 file changed, 4 insertions(+)
+yeah, but calling this "fast resolution" is quite incorrect.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 78fd174..130f081 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -31,11 +31,13 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	set_thread_flag(TIF_POLLING_NRFLAG);
- 
- 	while (!need_resched()) {
-+		ppc64_runlatch_off();
- 		HMT_low();
- 		HMT_very_low();
- 	}
- 
- 	HMT_medium();
-+	ppc64_runlatch_on();
- 	clear_thread_flag(TIF_POLLING_NRFLAG);
- 	smp_mb();
- 	return index;
-@@ -45,7 +47,9 @@ static int nap_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
- {
-+	ppc64_runlatch_off();
- 	power7_idle();
-+	ppc64_runlatch_on();
- 	return index;
- }
- 
-Thanks
+I don't blame anyone for this and I'm quite happy that a workaround has
+been found at last but calling this "fast resolution" is a bit funny
+compare to the PITA it was to debug this.
 
-Regards
-Preeti U Murthy
+That's probably why I haven't tried to do a similar work for this bug.
 
+Thanks.
