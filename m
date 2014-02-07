@@ -1,95 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V4 3/3] time/cpuidle:Handle failed call to BROADCAST_ENTER on archs with CPUIDLE_FLAG_TIMER_STOP set
-Date: Fri, 07 Feb 2014 13:07:36 +0100
-Message-ID: <4923497.uFDEGdljgG@vostro.rjw.lan>
-References: <20140207075618.17187.20149.stgit@preeti.in.ibm.com> <20140207080652.17187.66344.stgit@preeti.in.ibm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Date: Fri, 7 Feb 2014 13:32:38 +0100
+Message-ID: <20140207123238.GA9987@twins.programming.kicks-ass.net>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
+ <20140130152500.GB5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+ <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
+ <20140206164336.GU2936@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50325 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753245AbaBGLxE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Feb 2014 06:53:04 -0500
-In-Reply-To: <20140207080652.17187.66344.stgit@preeti.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, peterz@infradead.org, benh@kernel.crashing.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, fweisbec@gmail.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
 
-On Friday, February 07, 2014 01:36:52 PM Preeti U Murthy wrote:
-> Some archs set the CPUIDLE_FLAG_TIMER_STOP flag for idle states in which the
-> local timers stop. The cpuidle_idle_call() currently handles such idle states
-> by calling into the broadcast framework so as to wakeup CPUs at their next
-> wakeup event. With the hrtimer mode of broadcast, the BROADCAST_ENTER call
-> into the broadcast frameowork can fail for archs that do not have an external
-> clock device to handle wakeups and the CPU in question has to thus be made
-> the stand by CPU. This patch handles such cases by failing the call into
-> cpuidle so that the arch can take some default action. The arch will certainly
-> not enter a similar idle state because a failed cpuidle call will also implicitly
-> indicate that the broadcast framework has not registered this CPU to be woken up.
-> Hence we are safe if we fail the cpuidle call.
+On Fri, Feb 07, 2014 at 11:09:23AM +0000, Nicolas Pitre wrote:
+> On Thu, 6 Feb 2014, Peter Zijlstra wrote:
+> > tree, tree, what's in a word.
 > 
-> In the process move the functions that trace idle statistics just before and
-> after the entry and exit into idle states respectively. In other
-> scenarios where the call to cpuidle fails, we end up not tracing idle
-> entry and exit since a decision on an idle state could not be taken. Similarly
-> when the call to broadcast framework fails, we skip tracing idle statistics
-> because we are in no further position to take a decision on an alternative
-> idle state to enter into.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> Something you may plant on a patch of grass?  "Merging" becomes a 
+> strange concept in that context though.  :-)
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+I do know some farmers who splice trees thought :-)
 
-> ---
+> > Its in my patch stack yes. 
 > 
->  drivers/cpuidle/cpuidle.c |   14 ++++++++------
->  1 file changed, 8 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index a55e68f..8beb0f02 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -140,12 +140,14 @@ int cpuidle_idle_call(void)
->  		return 0;
->  	}
->  
-> -	trace_cpu_idle_rcuidle(next_state, dev->cpu);
-> -
->  	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
->  
-> -	if (broadcast)
-> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
-> +	if (broadcast &&
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
-> +		return -EBUSY;
-> +
-> +
-> +	trace_cpu_idle_rcuidle(next_state, dev->cpu);
->  
->  	if (cpuidle_state_is_coupled(dev, drv, next_state))
->  		entered_state = cpuidle_enter_state_coupled(dev, drv,
-> @@ -153,11 +155,11 @@ int cpuidle_idle_call(void)
->  	else
->  		entered_state = cpuidle_enter_state(dev, drv, next_state);
->  
-> +	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-> +
->  	if (broadcast)
->  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
->  
-> -	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-> -
->  	/* give the governor an opportunity to reflect on the outcome */
->  	if (cpuidle_curr_governor->reflect)
->  		cpuidle_curr_governor->reflect(dev, entered_state);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Quilt I suppose?? (yet another word.)
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Yes, I'm one of the refugee Quilt users. Comes in handy when cold too
+:-)
+
+> > I should get some of that into tip I suppose, been side-tracked a bit 
+> > this week. Sorry for the delay.
+> 
+> If you prefer we pile those patches (and future ones after revew) 
+> ourselves just let me know.  Future patches are likely to be more 
+> intimate with the scheduler so I just need to know who to upstream them 
+> through afterwards.
+
+Normally I get Ingo to pick up the queue 1-2 times a week so latency
+shouldn't be too bad. But we just had the merge window and then I got
+side-tracked rewriting all atomic implementations.
+
+So usually submit patches against tip/master unless you know there's
+other pending bits that conflict, in which case you can grab my queue on
+top of tip/master -- but I try to make sure that's usually not needed.
