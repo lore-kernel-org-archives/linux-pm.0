@@ -1,116 +1,41 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-Date: Fri, 07 Feb 2014 16:30:44 +0530
-Message-ID: <52F4BCDC.2080005@linux.vnet.ibm.com>
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org> <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com> <52F3BCFE.3010703@linux.vnet.ibm.com> <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr> <52F484D9.6020604@linux.vnet.ibm.com> <52F4AB54.801@linux.vnet.ibm.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Date: Fri, 7 Feb 2014 11:09:23 +0000 (GMT)
+Message-ID: <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org> <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org> <20140130152500.GB5002@laptop.programming.kicks-ass.net> <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+ <20140130162753.GF5002@laptop.programming.kicks-ass.net> <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr> <20140206164336.GU2936@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:49988 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbaBGLEW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Feb 2014 06:04:22 -0500
-Received: from /spool/local
-	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 7 Feb 2014 16:34:17 +0530
-In-Reply-To: <52F4AB54.801@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20140206164336.GU2936@laptop.programming.kicks-ass.net>
+Sender: linux-sh-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Linux ARM Kernel ML <linux-arm-kernel@lists.infradead.org>
 
-Hi Deepthi,
+On Thu, 6 Feb 2014, Peter Zijlstra wrote:
 
-On 02/07/2014 03:15 PM, Deepthi Dharwar wrote:
-> Hi Preeti,
+> On Thu, Feb 06, 2014 at 02:09:59PM +0000, Nicolas Pitre wrote:
+> > Hi Peter,
+> > 
+> > Did you merge those patches in your tree? 
 > 
-> Thanks for the patch.
-> 
-> On 02/07/2014 12:31 PM, Preeti U Murthy wrote:
->> Hi Nicolas,
->>
->> Find below the patch that will need to be squashed with this one.
->> This patch is based on the mainline.Adding Deepthi, the author of
->> the patch which introduced the powernv cpuidle driver. Deepthi,
->> do you think the below patch looks right? We do not need to do an
->> explicit local_irq_enable() since we are in the call path of
->> cpuidle driver and that explicitly enables irqs on exit from
->> idle states.
-> 
-> Yes, We enable irqs explicitly while entering snooze loop and we always
-> have interrupts enabled in the snooze state.
-> For NAP state, we exit out of this state with interrupts enabled so we
-> do not need an explicit enable of irqs.
-> 
->> On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
->>> On Thu, 6 Feb 2014, Preeti U Murthy wrote:
->>>
->>>> Hi Daniel,
->>>>
->>>> On 02/06/2014 09:55 PM, Daniel Lezcano wrote:
->>>>> Hi Nico,
->>>>>
->>>>>
->>>>> On 6 February 2014 14:16, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
->>>>>
->>>>>> The core idle loop now takes care of it.
->>>>>>
->>>>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
->>>>>> ---
->>>>>>  arch/powerpc/platforms/powernv/setup.c | 13 +------------
->>>>>>  1 file changed, 1 insertion(+), 12 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/platforms/powernv/setup.c
->>>>>> b/arch/powerpc/platforms/powernv/setup.c
->>>>>> index 21166f65c9..a932feb290 100644
->>>>>> --- a/arch/powerpc/platforms/powernv/setup.c
->>>>>> +++ b/arch/powerpc/platforms/powernv/setup.c
->>>>>> @@ -26,7 +26,6 @@
->>>>>>  #include <linux/of_fdt.h>
->>>>>>  #include <linux/interrupt.h>
->>>>>>  #include <linux/bug.h>
->>>>>> -#include <linux/cpuidle.h>
->>>>>>
->>>>>>  #include <asm/machdep.h>
->>>>>>  #include <asm/firmware.h>
->>>>>> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
->>>>>>         return 1;
->>>>>>  }
->>>>>>
->>>>>> -void powernv_idle(void)
->>>>>> -{
->>>>>> -       /* Hook to cpuidle framework if available, else
->>>>>> -        * call on default platform idle code
->>>>>> -        */
->>>>>> -       if (cpuidle_idle_call()) {
->>>>>> -               power7_idle();
->>>>>> -       }
->>>>>>
->>
->>  drivers/cpuidle/cpuidle-powernv.c |    4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
->> index 78fd174..130f081 100644
->> --- a/drivers/cpuidle/cpuidle-powernv.c
->> +++ b/drivers/cpuidle/cpuidle-powernv.c
->> @@ -31,11 +31,13 @@ static int snooze_loop(struct cpuidle_device *dev,
->>  	set_thread_flag(TIF_POLLING_NRFLAG);
->>
->>  	while (!need_resched()) {
->> +		ppc64_runlatch_off();
->                 ^^^^^^^^^^^^^^^
-> We could move this before the while() loop.
-> It would ideal to turn off latch when we enter snooze and
-> turn it on when we are about to exit, rather than doing
-> it over and over in the while loop.
+> tree, tree, what's in a word.
 
-You are right, this can be moved out of the loop.
+Something you may plant on a patch of grass?  "Merging" becomes a 
+strange concept in that context though.  :-)
 
-Thanks
+> Its in my patch stack yes. 
 
-Regards
-Preeti U Murthy
+Quilt I suppose?? (yet another word.)
 
+> I should get some of that into tip I suppose, been side-tracked a bit 
+> this week. Sorry for the delay.
+
+If you prefer we pile those patches (and future ones after revew) 
+ourselves just let me know.  Future patches are likely to be more 
+intimate with the scheduler so I just need to know who to upstream them 
+through afterwards.
+
+
+Nicolas
