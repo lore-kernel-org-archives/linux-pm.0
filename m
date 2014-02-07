@@ -1,122 +1,95 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-Date: Fri, 07 Feb 2014 17:11:26 +0530
-Message-ID: <52F4C666.4050308@linux.vnet.ibm.com>
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org> <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com> <52F3BCFE.3010703@linux.vnet.ibm.com> <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr> <52F46EB3.5080403@linux.vnet.ibm.com> <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V4 3/3] time/cpuidle:Handle failed call to BROADCAST_ENTER on archs with CPUIDLE_FLAG_TIMER_STOP set
+Date: Fri, 07 Feb 2014 13:07:36 +0100
+Message-ID: <4923497.uFDEGdljgG@vostro.rjw.lan>
+References: <20140207075618.17187.20149.stgit@preeti.in.ibm.com> <20140207080652.17187.66344.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50325 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753245AbaBGLxE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Feb 2014 06:53:04 -0500
+In-Reply-To: <20140207080652.17187.66344.stgit@preeti.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, peterz@infradead.org, benh@kernel.crashing.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, fweisbec@gmail.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
 
-Hi Nicolas,
-
-On 02/07/2014 04:18 PM, Nicolas Pitre wrote:
-> On Fri, 7 Feb 2014, Preeti U Murthy wrote:
+On Friday, February 07, 2014 01:36:52 PM Preeti U Murthy wrote:
+> Some archs set the CPUIDLE_FLAG_TIMER_STOP flag for idle states in which the
+> local timers stop. The cpuidle_idle_call() currently handles such idle states
+> by calling into the broadcast framework so as to wakeup CPUs at their next
+> wakeup event. With the hrtimer mode of broadcast, the BROADCAST_ENTER call
+> into the broadcast frameowork can fail for archs that do not have an external
+> clock device to handle wakeups and the CPU in question has to thus be made
+> the stand by CPU. This patch handles such cases by failing the call into
+> cpuidle so that the arch can take some default action. The arch will certainly
+> not enter a similar idle state because a failed cpuidle call will also implicitly
+> indicate that the broadcast framework has not registered this CPU to be woken up.
+> Hence we are safe if we fail the cpuidle call.
 > 
->> Hi Nicolas,
->>
->> On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
->>>
->>> What about creating arch_cpu_idle_enter() and arch_cpu_idle_exit() in 
->>> arch/powerpc/kernel/idle.c and calling ppc64_runlatch_off() and 
->>> ppc64_runlatch_on() respectively from there instead?  Would that work?  
->>> That would make the idle consolidation much easier afterwards.
->>
->> I would not suggest doing this. The ppc64_runlatch_*() routines need to
->> be called when we are sure that the cpu is about to enter or has exit an
->> idle state. Moving the ppc64_runlatch_on() routine to
->> arch_cpu_idle_enter() for instance is not a good idea because there are
->> places where the cpu can decide not to enter any idle state before the
->> call to cpuidle_idle_call() itself. In that case communicating
->> prematurely that we are in an idle state would not be a good idea.
->>
->> So its best to add the ppc64_runlatch_* calls in the powernv cpuidle
->> driver IMO. We could however create idle_loop_prologue/epilogue()
->> variants inside it so that in addition to the runlatch routines we could
->> potentially add more such similar routines that are powernv specific.
->>   If there are cases where there is work to be done prior to and post an
->> entry into an idle state common to both pseries and powernv, we will
->> probably put them in arch_cpu_idle_enter/exit(). But the runlatch
->> routines are not suitable to be moved there as far as I can see.
+> In the process move the functions that trace idle statistics just before and
+> after the entry and exit into idle states respectively. In other
+> scenarios where the call to cpuidle fails, we end up not tracing idle
+> entry and exit since a decision on an idle state could not be taken. Similarly
+> when the call to broadcast framework fails, we skip tracing idle statistics
+> because we are in no further position to take a decision on an alternative
+> idle state to enter into.
 > 
-> OK.
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+> ---
 > 
-> However, one thing we need to do as much as possible is to remove those 
-> loops based on need_resched() from idle backend drivers.  A somewhat 
-> common pattern is:
+>  drivers/cpuidle/cpuidle.c |   14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 > 
-> my_idle()
-> {
-> 	/* interrupts disabled on entry */
-> 	while (!need_resched()) {
-> 		lowpower_wait_for_interrupts();
-> 		local_irq_enable();
-> 		/* IRQ serviced from here */
-> 		local_irq_disable();
-> 	}
-> 	local_irq_enable();
-> 	/* interrupts enabled on exit */
-> }
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a55e68f..8beb0f02 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -140,12 +140,14 @@ int cpuidle_idle_call(void)
+>  		return 0;
+>  	}
+>  
+> -	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> -
+>  	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
+>  
+> -	if (broadcast)
+> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
+> +	if (broadcast &&
+> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
+> +		return -EBUSY;
+> +
+> +
+> +	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>  
+>  	if (cpuidle_state_is_coupled(dev, drv, next_state))
+>  		entered_state = cpuidle_enter_state_coupled(dev, drv,
+> @@ -153,11 +155,11 @@ int cpuidle_idle_call(void)
+>  	else
+>  		entered_state = cpuidle_enter_state(dev, drv, next_state);
+>  
+> +	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> +
+>  	if (broadcast)
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+>  
+> -	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> -
+>  	/* give the governor an opportunity to reflect on the outcome */
+>  	if (cpuidle_curr_governor->reflect)
+>  		cpuidle_curr_governor->reflect(dev, entered_state);
 > 
-> To be able to keep statistics on the actual idleness of the CPU we'd 
-> need for all idle backends to always return to generic code on every 
-> interrupt similar to this:
-> 
-> my_idle()
-> {
-> 	/* interrupts disabled on entry */
-> 	lowpower_wait_for_interrupts();
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-You can do this for the idle states which do not have the polling
-nature. IOW, these idle states are capable of doing what you describe as
-"wait_for_interrupts". They do some kind of spinning at the hardware
-level with interrupts enabled. A reschedule IPI or any other interrupt
-will wake them up to enter the generic idle loop where they check for
-the cause of the interrupt.
-
-But observe the idle state "snooze" on powerpc. The power that this idle
-state saves is through the lowering of the thread priority of the CPU.
-After it lowers the thread priority, it is done. It cannot
-"wait_for_interrupts". It will exit my_idle(). It is now upto the
-generic idle loop to increase the thread priority if the need_resched
-flag is set. Only an interrupt routine can increase the thread priority.
-Else we will need to do it explicitly. And in such states which have a
-polling nature, the cpu will not receive a reschedule IPI.
-
-That is why in the snooze_loop() we poll on need_resched. If it is set
-we up the priority of the thread using HMT_MEDIUM() and then exit the
-my_idle() loop. In case of interrupts, the priority gets automatically
-increased.
-
-This might not be required to be done for similar idle routines on other
-archs but this is the consequence of applying this idea of simplified
-cpuidle backend driver on powerpc.
-
-I would say you could let the backend cpuidle drivers be in this regard,
-it could complicate the generic idle loop IMO depending on how the
-polling states are implemented in each architecture.
-
-
-> The generic code would be responsible for dealing with need_resched() 
-> and call back into the backend right away if necessary after updating 
-> some stats.
-> 
-> Do you see a problem with the runlatch calls happening around each 
-> interrrupt from such a simplified idle backend?
-
-The runlatch calls could be moved outside the loop.They do not need to
-be called each time.
-
-Thanks
-
-Regards
-Preeti U Murthy
-> 
-> 
-> Nicolas
-> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
