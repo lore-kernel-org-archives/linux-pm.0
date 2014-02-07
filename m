@@ -1,82 +1,141 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [Patch v1] ACPI, x86: fix bug in associating hot-added CPUs with
- corresponding NUMA node
-Date: Fri, 07 Feb 2014 17:17:45 +0800
-Message-ID: <52F4A4B9.2060006@linux.intel.com>
-References: <1390185115-26850-1-git-send-email-jiang.liu@linux.intel.com> <4676819.HL23G4Egmr@vostro.rjw.lan>
+From: Naveen Krishna Ch <naveenkrishna.ch-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH] thermal: exynos: handle gate clock for misplaced TRIMINFO register
+Date: Fri, 7 Feb 2014 15:03:18 +0530
+Message-ID: <CAHfPSqCftzo8ud=K9Lv4Y_q9+wW+23ZPnbTxXpwsBWOXHXLucg@mail.gmail.com>
+References: <1383828154-428-1-git-send-email-ch.naveen@samsung.com> <1388642820.3739.80.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4676819.HL23G4Egmr@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Toshi Kani <toshi.kani@hp.com>, Yinghai Lu <yinghai@kernel.org>, Yijing Wang <wangyijing@huawei.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-acpi@vger.kernel.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1388642820.3739.80.camel@rzhang1-mobl4>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Naveen Krishna Chatradhi <ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, eduardo.valentin-l0cyMroinI0@public.gmane.org, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, amit.daniel-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cpgs-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+Hello All,
 
-
-On 2014/2/5 8:14, Rafael J. Wysocki wrote:
-> On Monday, January 20, 2014 10:31:54 AM Jiang Liu wrote:
->> Current ACPI cpu hotplug driver fails to associate hot-added CPUs with
->> corresponding NUMA node when doing socket online. The code path to
->> associate CPU with NUMA node is as below:
->> acpi_processor_add()
->>     ->acpi_processor_get_info()
->> 	->acpi_processor_hotadd_init()
->> 	    ->acpi_map_lsapic()
->> 		->_acpi_map_lsapic()
->> 		    ->acpi_map_cpu2node()
->> cpu_subsys_online()
->>     ->try_online_node()
->> 	->node_set_online()
+On 2 January 2014 11:37, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> wrote:
+> On Thu, 2013-11-07 at 18:12 +0530, Naveen Krishna Chatradhi wrote:
+>> On Exynos5420 the TMU(4) for GPU has a seperate clock enable bit from
+>> the other TMU channels(0 ~ 3). Hence, accessing TRIMINFO for base_second
+>> should be acompanied by enabling the respective clock.
 >>
->> When doing socket online, a new NUMA node is introduced in addition to
->> hot-added CPU and memory device. And the new NUMA node is marked as
->> online when onlining hot-added CPUs through sysfs interface
->> /sys/devices/system/cpu/cpuxx/online.
+>> This patch which allow for a "clk_sec" clock to be specified in the
+>> device-tree which will be ungated when accessing the TRIMINFO register.
 >>
->> On the other hand, acpi_map_cpu2node() will only build the CPU to node
->> map if corresponding NUMA node is already online, so it always fails
->> to associate hot-added CPUs with corresponding NUMA node because the
->> NUMA node is still in offline state.
->>
->> For the fix, we could safely remove the "node_online(node)" check in
->> function acpi_map_cpu2node() because it's only called for hot-added CPUs
->> by acpi_processor_hotadd_init().
->>
->> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
-> 
-> I wonder what the status here is?  Did this patch go anywhere?
-Hi Rafael,
-	It's still in review stage, hasn't been accepted by any
-maintainer yet.
-Thanks!
-Gerry
-
-> 
+>> Signed-off-by: Andrew Bresticker <abrestic-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+>
+> Eduardo,
+>
+> what do you think of this patch?
+>
+> thanks,
+> rui
 >> ---
->>  arch/x86/kernel/acpi/boot.c |    8 ++++----
->>  1 file changed, 4 insertions(+), 4 deletions(-)
+>>  drivers/thermal/samsung/exynos_tmu.c |   24 +++++++++++++++++++++++-
+>>  1 file changed, 23 insertions(+), 1 deletion(-)
 >>
->> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
->> index 6c0b43b..7625de9 100644
->> --- a/arch/x86/kernel/acpi/boot.c
->> +++ b/arch/x86/kernel/acpi/boot.c
->> @@ -614,10 +614,10 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
->>  	int nid;
->>  
->>  	nid = acpi_get_node(handle);
->> -	if (nid == -1 || !node_online(nid))
->> -		return;
->> -	set_apicid_to_node(physid, nid);
->> -	numa_set_node(cpu, nid);
->> +	if (nid != -1) {
->> +		set_apicid_to_node(physid, nid);
->> +		numa_set_node(cpu, nid);
->> +	}
->>  #endif
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>> index b54825a..33edd1a 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> @@ -47,6 +47,7 @@
+>>   * @irq_work: pointer to the irq work structure.
+>>   * @lock: lock to implement synchronization.
+>>   * @clk: pointer to the clock structure.
+>> + * @clk_sec: pointer to the clock structure for accessing the base_second.
+>>   * @temp_error1: fused value of the first point trim.
+>>   * @temp_error2: fused value of the second point trim.
+>>   * @regulator: pointer to the TMU regulator structure.
+>> @@ -61,7 +62,7 @@ struct exynos_tmu_data {
+>>       enum soc_type soc;
+>>       struct work_struct irq_work;
+>>       struct mutex lock;
+>> -     struct clk *clk;
+>> +     struct clk *clk, *clk_sec;
+>>       u8 temp_error1, temp_error2;
+>>       struct regulator *regulator;
+>>       struct thermal_sensor_conf *reg_conf;
+>> @@ -152,6 +153,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>
+>>       mutex_lock(&data->lock);
+>>       clk_enable(data->clk);
+>> +     if (!IS_ERR(data->clk_sec))
+>> +             clk_enable(data->clk_sec);
+>>
+>>       if (TMU_SUPPORTS(pdata, READY_STATUS)) {
+>>               status = readb(data->base + reg->tmu_status);
+>> @@ -306,6 +309,8 @@ skip_calib_data:
+>>  out:
+>>       clk_disable(data->clk);
+>>       mutex_unlock(&data->lock);
+>> +     if (!IS_ERR(data->clk_sec))
+>> +             clk_disable(data->clk_sec);
+>>
+>>       return ret;
 >>  }
->>  
+>> @@ -457,12 +462,16 @@ static void exynos_tmu_work(struct work_struct *work)
+>>       const struct exynos_tmu_registers *reg = pdata->registers;
+>>       unsigned int val_irq, val_type;
 >>
-> 
+>> +     if (!IS_ERR(data->clk_sec))
+>> +             clk_enable(data->clk_sec);
+>>       /* Find which sensor generated this interrupt */
+>>       if (reg->tmu_irqstatus) {
+>>               val_type = readl(data->base_second + reg->tmu_irqstatus);
+>>               if (!((val_type >> data->id) & 0x1))
+>>                       goto out;
+>>       }
+>> +     if (!IS_ERR(data->clk_sec))
+>> +             clk_disable(data->clk_sec);
+>>
+>>       exynos_report_trigger(data->reg_conf);
+>>       mutex_lock(&data->lock);
+>> @@ -641,6 +650,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>       if (ret)
+>>               return ret;
+>>
+>> +     data->clk_sec = devm_clk_get(&pdev->dev, "tmu_apbif_sec");
+>> +     if (!IS_ERR(data->clk_sec)) {
+>> +             ret = clk_prepare(data->clk_sec);
+>> +             if (ret) {
+>> +                     dev_err(&pdev->dev, "Failed to get clock\n");
+>> +                     return  PTR_ERR(data->clk_sec);
+>> +             }
+>> +     }
+>> +
+>>       if (pdata->type == SOC_ARCH_EXYNOS4210 ||
+>>           pdata->type == SOC_ARCH_EXYNOS4412 ||
+>>           pdata->type == SOC_ARCH_EXYNOS5250 ||
+>> @@ -713,6 +731,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>       return 0;
+>>  err_clk:
+>>       clk_unprepare(data->clk);
+>> +     if (!IS_ERR(data->clk_sec))
+>> +             clk_unprepare(data->clk_sec);
+>>       return ret;
+>>  }
+>>
+>> @@ -725,6 +745,8 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+>>       exynos_unregister_thermal(data->reg_conf);
+>>
+>>       clk_unprepare(data->clk);
+>> +     if (!IS_ERR(data->clk_sec))
+>> +             clk_unprepare(data->clk_sec);
+>>
+>>       if (!IS_ERR(data->regulator))
+>>               regulator_disable(data->regulator);
+>
+>
+Ping.
+
+
+
+-- 
+Shine bright,
+(: Nav :)
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
