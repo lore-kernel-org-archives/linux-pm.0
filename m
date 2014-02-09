@@ -1,124 +1,123 @@
 From: Peter Wu <lekensteyn@gmail.com>
 Subject: Re: 3.12: ethernet controller missing after resuming from suspend to RAM
-Date: Sun, 09 Feb 2014 23:07:14 +0100
-Message-ID: <2182978.C0zdYi5cqX@al>
-References: <52F2CC7B.80406@gmail.com> <2087423.Qy7HQIx1X6@vostro.rjw.lan> <52F7CC8B.1020209@gmail.com>
+Date: Mon, 10 Feb 2014 00:18:16 +0100
+Message-ID: <1395731.XHixqRiN3E@al>
+References: <52F2CC7B.80406@gmail.com> <2773460.zRzOP7I6SW@al> <2150349.jTafhT0LGH@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f178.google.com ([209.85.215.178]:38645 "EHLO
-	mail-ea0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbaBIWHS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Feb 2014 17:07:18 -0500
-In-Reply-To: <52F7CC8B.1020209@gmail.com>
+Received: from mail-ea0-f173.google.com ([209.85.215.173]:64837 "EHLO
+	mail-ea0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbaBIXSU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Feb 2014 18:18:20 -0500
+In-Reply-To: <2150349.jTafhT0LGH@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bastien Traverse <bastien.traverse@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, linux-pm@vger.kernel.org
 
-On Sunday 09 February 2014 19:44:27 Bastien Traverse wrote:
-> You'll find them attached, but I got a strange error when I wanted to
-> run it as root:
-> $ sudo lspci -vv > lspci_vv_before
-> pcilib: sysfs_read_vpd: read failed: Connection timed out
-> $ sudo -i
-> # lspci -vv
-> pcilib: sysfs_read_vpd: read failed: Connection timed out
+On Sunday 09 February 2014 22:46:05 Rafael J. Wysocki wrote:
+> That most likely would single out one of the ACPIPHP commits without giving
+> us much clue about what's going on.
 > 
-> So I only got the unpriviledge output.
-
-This seems to be an issue of the rtsx driver / hardware, I also see it on
-a small Shuttle computer that runs at work. (off-topic lspci post:)
-02:00.0 Unassigned class [ff00]: Realtek Semiconductor Co., Ltd. Device [10ec:5289] (rev 01)
-        Subsystem: Realtek Semiconductor Co., Ltd. Device [10ec:5289]
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Interrupt: pin B routed to IRQ 43
-        Region 0: Memory at dfe00000 (32-bit, non-prefetchable) [size=64K]
-        Capabilities: [40] Power Management version 3
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [50] MSI: Enable+ Count=1/1 Maskable- 64bit+
-                Address: 00000000fee0f00c  Data: 41c1
-        Capabilities: [70] Express (v2) Endpoint, MSI 00
-                DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
-                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 unlimited, L1 <64us
-                        ClockPM+ Surprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
-                        ExtSynch- ClockPM+ AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported
-                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled
-                LnkCtl2: Target Link Speed: 2.5GT/s, EnterCompliance- SpeedDis-
-                         Transmit Margin: Normal Operating Range, EnterModifiedCompliance- ComplianceSOS-
-                         Compliance De-emphasis: -6dB
-                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
-                         EqualizationPhase2-, EqualizationPhase3-, LinkEqualizationRequest-
-        Capabilities: [b0] MSI-X: Enable- Count=1 Masked-
-                Vector table: BAR=0 offset=00000000
-                PBA: BAR=0 offset=00000000
-        Capabilities: [d0] Vital Product Data
-pcilib: sysfs_read_vpd: read failed: Connection timed out
-                Not readable
-        Capabilities: [100 v1] Advanced Error Reporting
-                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-                UESvrt: DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
-                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
-                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr+
-                AERCap: First Error Pointer: 00, GenCap+ CGenEn- ChkCap+ ChkEn-
-        Capabilities: [140 v1] Virtual Channel
-                Caps:   LPEVC=0 RefClk=100ns PATEntryBits=1
-                Arb:    Fixed- WRR32- WRR64- WRR128-
-                Ctrl:   ArbSelect=Fixed
-                Status: InProgress-
-                VC0:    Caps:   PATOffset=00 MaxTimeSlots=1 RejSnoopTrans-
-                        Arb:    Fixed- WRR32- WRR64- WRR128- TWRR128- WRR256-
-                        Ctrl:   Enable+ ID=0 ArbSelect=Fixed TC/VC=ff
-                        Status: NegoPending- InProgress-
-        Capabilities: [160 v1] Device Serial Number 00-00-00-00-00-00-00-00
-        Kernel driver in use: rtsx_pci
-        Kernel modules: rtsx_pci
-
-> Some complementary lines from my journal:
+> I fail to see what the connection between those changes and system resume
+> is, however.
 > 
-> kernel: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-> kernel: r8169 0000:03:00.2: can't disable ASPM; OS doesn't have ASPM control
-> kernel: pcieport 0000:00:1c.3: driver skip pci_set_master, fix it! kernel:
-> r8169 0000:03:00.2: irq 44 for MSI/MSI-X
-> kernel: r8169 0000:03:00.2 eth0: RTL8411 at 0xffffc90016ed4000,
-> 00:90:f5:d7:34:53, XID 08800800 IRQ 44
-> kernel: r8169 0000:03:00.2 eth0: jumbo features [frames: 9200 bytes, tx
-> checksumming: ko]
-> kernel: rtsx_pci 0000:03:00.0: irq 45 for MSI/MSI-X
-> kernel: rtsx_pci 0000:03:00.0: rtsx_pci_acquire_irq: pcr->msi_en = 1,
-> pci->irq = 45
-> ...
-> 
-> And one I thought of interest:
-> 
-> kernel: rtsx_pci 0000:03:00.0: vpd r/w failed.  This is likely a
-> firmware bug on this device.  Contact the card vendor for a firmware update.
+> Please replace all pr_debug() calls in hotplug_notify() with pr_info() and
+> see if you get any events from there.
 
-I think I have seen such an error before, but I cannot find it in the logs
-that were obtained a while ago. Failure to read VPD should not cause issues.
+I could not find a hotplug_notify function in the kernel tree, but I
+have dyndbg enabled. Booting with `pci_hotplug.debug=Y
+pci_hotplug.debug_acpi=Y pci_hotplug.dyndbg acpiphp.dyndbg` gives me
+only a few acpiphp_glue messages. After resume:
 
-> That came three times before suspend.
-> 
-> Only two lines about hotplug, none special.
+[   55.492261] CPU3 is up
+[   55.494710] ACPI: Waking up from system sleep state S3
+[   56.187298] ehci-pci 0000:00:1a.0: System wakeup disabled by ACPI
+[   56.213939] ehci-pci 0000:00:1d.0: System wakeup disabled by ACPI
+[   56.240614] xhci_hcd 0000:02:00.0: System wakeup disabled by ACPI
+[   56.294230] PM: noirq resume of devices complete after 133.375 msecs
+[   56.294507] PM: early resume of devices complete after 0.231 msecs
+[   56.294798] pcieport 0000:00:1c.1: System wakeup disabled by ACPI
+[   56.296628] iwlwifi 0000:05:00.0: RF_KILL bit toggled to enable radio.
+[   56.404258] snd_hda_intel 0000:00:1b.0: irq 48 for MSI/MSI-X
+[   56.627043] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[   56.627929] ata1.00: configured for UDMA/133
+[   56.628044] sd 0:0:0:0: [sda] Starting disk
+[   56.633730] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[   56.640403] ata5: SATA link down (SStatus 0 SControl 300)
+[   56.802771] ata2.00: configured for UDMA/100
+[   57.737542] PM: resume of devices complete after 1443.847 msecs
+[   57.737951] PM: Finishing wakeup.
+[   57.737957] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
+[   57.737960] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
+[   57.738080] iwlwifi 0000:05:00.0: no hotplug settings from platform
+[   57.737963] Restarting tasks ... done.
+[   57.740480] video LNXVIDEO:00: Restoring backlight state
+[   57.740487] video LNXVIDEO:01: Restoring backlight state
+[   58.203311] ACPI: \_SB_.AC__: ACPI_NOTIFY_BUS_CHECK event: unsupported
+[   58.204080] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP01
+[   58.204083] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP01
+[   58.204121] xhci_hcd 0000:02:00.0: no hotplug settings from platform
+[   58.204132] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP02
+[   58.204134] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP02
+[   58.209339] jme 0000:04:00.5: irq 50 for MSI/MSI-X
+[   58.233503] jme 0000:04:00.5 eth0: Link is down
+[   58.233578] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   58.235113] iwlwifi 0000:05:00.0: L1 Enabled; Disabling L0S
+[   58.242131] iwlwifi 0000:05:00.0: Radio type=0x1-0x3-0x1
+[   58.346311] IPv6: ADDRCONF(NETDEV_UP): wlan0: link is not ready
+[   58.392764] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
+[   58.392766] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
+[   58.392874] iwlwifi 0000:05:00.0: no hotplug settings from platform
 
-I think this is relevant. See also my test with 3.13.2 and different
-kernel configs[1]. A workaround that triggers a scan was also posted[2].
+RP02 is the ACPI Device for 00:1c.1 [1].
+
+Could the following commit have something to do with it?
+
+commit 4ebe34503baa0644c9352bcd76d4cf573bffe206
+Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Date:   Tue Jul 16 22:10:35 2013 +0200
+
+    ACPI / hotplug / PCI: Check for new devices on enabled slots
+    
+    The current implementation of acpiphp_check_bridge() is pretty dumb:
+     - It enables a slot if it's not enabled and the slot status is
+       ACPI_STA_ALL.
+     - It disables a slot if it's enabled and the slot status is not
+       ACPI_STA_ALL.
+    
+    This behavior is not sufficient to handle the Thunderbolt daisy
+    chaining case properly, however, because in that case the bus
+    behind the already enabled slot needs to be rescanned for new
+    devices.
+    
+    For this reason, modify acpiphp_check_bridge() so that slots are
+    disabled and stopped if they are not in the ACPI_STA_ALL state.
+    
+    For slots in the ACPI_STA_ALL state, devices behind them that don't
+    respond are trimmed using a new function, trim_stale_devices(),
+    introduced specifically for this purpose.  That function walks
+    the given bus and checks each device on it.  If the device doesn't
+    respond, it is assumed to be gone and is removed.
+    
+    Once all of the stale devices directy behind the slot have been
+    removed, acpiphp_check_bridge() will start looking for new devices
+    that might have appeared on the given bus.  It will do that even if
+    the slot is already enabled (SLOT_ENABLED is set for it).
+    
+    In addition to that, make the bus check notification ignore
+    SLOT_ENABLED and go for enable_device() directly if bridge is NULL,
+    so that devices behind the slot are re-enumerated in that case too.
+    
+    This change is based on earlier patches from Kirill A Shutemov
+    and Mika Westerberg.
+    
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+    Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
 Peter
 
- [1]: http://lkml.org/lkml/2014/2/8/264
- [2]: http://lkml.org/lkml/2014/2/7/809
+ [1]: https://github.com/Lekensteyn/acpi-stuff/blob/master/dsl/Clevo_B7130/DSDT.dsl#L8882
 
