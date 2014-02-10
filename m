@@ -1,32 +1,56 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Subject: What should cpuinfo_cur_freq mean?
-Date: Mon, 10 Feb 2014 12:47:12 -0800
-Message-ID: <CALCETrVncODPCEU9_a7npHZdK-MJXJ3s7g1xsBacOW4Frxp+jA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Naga Chumbalkar <nagananda.chumbalkar@hp.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 2/2] powercap/intel_rapl: spell out soc names
+Date: Mon, 10 Feb 2014 06:11:52 -0800
+Message-ID: <1392041512-15769-2-git-send-email-jacob.jun.pan@linux.intel.com>
+References: <1392041512-15769-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:37364 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752277AbaBJWLY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 10 Feb 2014 17:11:24 -0500
+In-Reply-To: <1392041512-15769-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: vince@deater.net, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-There are least three choices for what the "current frequency" is:
+Spell out names for supported SOCs.
 
- 1. The frequency that the cpufreq driver thinks it has requested.
-This shows up in scaling_cur_freq.
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- 2. The frequency that is actually programmed into the CPU.  This is
-what acpi_cpufreq's cpuinfo_cur_freq reports.
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 0e37fe1..61b51e1 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -834,7 +834,7 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
+ }
+ 
+ static const struct x86_cpu_id energy_unit_quirk_ids[] = {
+-	{ X86_VENDOR_INTEL, 6, 0x37},/* VLV */
++	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
+ 	{}
+ };
+ 
+@@ -947,11 +947,11 @@ static void package_power_limit_irq_restore(int package_id)
+ }
+ 
+ static const struct x86_cpu_id rapl_ids[] = {
+-	{ X86_VENDOR_INTEL, 6, 0x2a},/* SNB */
+-	{ X86_VENDOR_INTEL, 6, 0x2d},/* SNB EP */
+-	{ X86_VENDOR_INTEL, 6, 0x37},/* VLV */
+-	{ X86_VENDOR_INTEL, 6, 0x3a},/* IVB */
+-	{ X86_VENDOR_INTEL, 6, 0x45},/* HSW */
++	{ X86_VENDOR_INTEL, 6, 0x2a},/* Sandy Bridge */
++	{ X86_VENDOR_INTEL, 6, 0x2d},/* Sandy Bridge EP */
++	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
++	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
++	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell */
+ 	/* TODO: Add more CPU IDs after testing */
+ 	{}
+ };
+-- 
+1.8.1.2
 
- 3. A measurement of the number of cycles per unit time that are
-currently or recently happening.  This is what intel_pstate reports.
-
-The fact that acpi-cpufreq and intel_pstate behave differently here is
-unfortunate.  I have servers [1] with broken BIOS that occasionally
-screw up the requested P-state (i.e. MSR 0x199).  With acpi_cpufreq
-loaded, I can at least tell that there's a problem by reading
-cpuinfo_cur_freq.  With intel_pstate loaded, I get a rapidly
-fluctuating value that depends on Turbo's current mood.
-
-Can we separate out these concepts into separate sysfs files?
-
-[1] These are fully up-to-date, recent generation Dell servers.
