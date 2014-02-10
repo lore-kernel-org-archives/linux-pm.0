@@ -1,119 +1,85 @@
-From: Peter Wu <lekensteyn@gmail.com>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend to RAM
-Date: Mon, 10 Feb 2014 02:15:22 +0100
-Message-ID: <5195003.Lv4YMFRT0Y@al>
-References: <52F2CC7B.80406@gmail.com> <1395731.XHixqRiN3E@al> <1521445.Je1ql4ndX7@vostro.rjw.lan>
+From: poma <pomidorabelisima@gmail.com>
+Subject: WARNING: CPU: 1 PID: 0 at kernel/time/tick-broadcast.c:668 tick_broadcast_oneshot_control+0x17d/0x190()
+Date: Mon, 10 Feb 2014 04:42:19 +0100
+Message-ID: <52F84A9B.5020008@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1521445.Je1ql4ndX7@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f49.google.com ([74.125.83.49]:52542 "EHLO
+	mail-ee0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752387AbaBJDmY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Feb 2014 22:42:24 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, Olaf Hering <olaf@aepfle.de>, Dave Jones <davej@redhat.com>, "Justin M. Forbes" <jforbes@redhat.com>, Josh Boyer <jwboyer@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On Monday 10 February 2014 01:52:14 Rafael J. Wysocki wrote:
-> > Could the following commit have something to do with it?
-> >
-> > 
-> >
-> > commit 4ebe34503baa0644c9352bcd76d4cf573bffe206
-> > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Date:   Tue Jul 16 22:10:35 2013 +0200
-> >
-> > 
-> >     ACPI / hotplug / PCI: Check for new devices on enabled slots
-> 
-> This one, or another one in that series.  I rather suspect
-> 
-> ab1225901da2 Revert "ACPI / hotplug / PCI: Avoid doing too much for spurious
-> notifies"
-> 
-> from Mika, but it really doesn't matter.
-> 
-> Can you please check the patch below (it is on top of 3.14-rc1, but I think
-> it'll still apply to 3.13) and report back?
 
-I applied the following patch:
+Let's have one last round of Champions!
 
---- drivers/pci/hotplug/acpiphp_glue.c.orig	2014-02-10 01:46:59.678124018 +0100
-+++ drivers/pci/hotplug/acpiphp_glue.c	2014-02-10 01:48:59.634124004 +0100
-@@ -552,10 +552,10 @@
- 	struct pci_dev *dev;
- 	struct pci_bus *bus = slot->bus;
- 	struct acpiphp_func *func;
--	int max, pass;
-+	int nr_found, max, pass, bridges_scanned = 0;
- 	LIST_HEAD(add_list);
- 
--	acpiphp_rescan_slot(slot);
-+	nr_found = acpiphp_rescan_slot(slot);
- 	max = acpiphp_max_busnr(bus);
- 	for (pass = 0; pass < 2; pass++) {
- 		list_for_each_entry(dev, &bus->devices, bus_list) {
-@@ -571,9 +571,16 @@
- 					__pci_bus_size_bridges(dev->subordinate,
- 							       &add_list);
- 				}
-+				bridges_scanned++;
- 			}
- 		}
- 	}
-+	/* Nothing more to do here if there are no new devices on this bus. */
-+	if (!nr_found && !bridges_scanned && (slot->flags & SLOT_ENABLED)) {
-+		pr_debug("No more new devices on this bus.\n");
-+		return;
-+	}
-+
- 	__pci_bus_assign_resources(bus, &add_list, NULL);
- 
- 	acpiphp_sanitize_bus(bus);
 
-Unfortunately, the adapter still vanishes. dmesg is below this message.
+[   83.558497] ------------[ cut here ]------------
+[   83.558503] WARNING: CPU: 1 PID: 0 at
+kernel/time/tick-broadcast.c:668
+tick_broadcast_oneshot_control+0x17d/0x190()
+[   83.558527] Modules linked in: ipt_MASQUERADE iptable_nat nf_nat_ipv4
+nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack
+xt_CHECKSUM iptable_mangle fuse ip6table_filter ip6_tables ebtable_nat
+ebtables kvm_amd kvm ppdev microcode serio_raw nouveau mxm_wmi video
+i2c_algo_bit ttm edac_core edac_mce_amd drm_kms_helper k10temp drm
+parport_serial parport_pc parport wmi shpchp i2c_nforce2 i2c_core
+acpi_cpufreq nfsd auth_rpcgss nfs_acl lockd sunrpc binfmt_misc
+ata_generic pata_acpi pata_amd 8021q garp mrp tun bridge stp llc bonding
+[   83.558530] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G        W
+3.14.0-0.rc1.git5.1.fc21.1.x86_64 #1
+[   83.558530] Hardware name: Gigabyte Technology Co., Ltd.
+M720-US3/M720-US3, BIOS F7n 09/07/2010
+[   83.558533]  0000000000000000 184f2fadf588e594 ffff880128bb9dd0
+ffffffff817cf05d
+[   83.558535]  0000000000000000 ffff880128bb9e08 ffffffff810966cd
+0000000000000001
+[   83.558536]  0000000000000001 ffff88012a80df00 0000000000000092
+ffffffff81c28940
+[   83.558537] Call Trace:
+[   83.558541]  [<ffffffff817cf05d>] dump_stack+0x4d/0x66
+[   83.558544]  [<ffffffff810966cd>] warn_slowpath_common+0x7d/0xa0
+[   83.558545]  [<ffffffff810967fa>] warn_slowpath_null+0x1a/0x20
+[   83.558547]  [<ffffffff811243dd>]
+tick_broadcast_oneshot_control+0x17d/0x190
+[   83.558549]  [<ffffffff81122dd8>] clockevents_notify+0x178/0x1a0
+[   83.558551]  [<ffffffff81025b17>] amd_e400_idle+0x87/0x130
+[   83.558553]  [<ffffffff8102639e>] arch_cpu_idle+0x2e/0x40
+[   83.558555]  [<ffffffff8110d375>] cpu_startup_entry+0xf5/0x420
+[   83.558558]  [<ffffffff8104dc90>] start_secondary+0x240/0x300
+[   83.558559] ---[ end trace d6d150ba17d5207c ]---
 
-Peter
 
-[   44.558995] CPU3 is up
-[   44.561438] ACPI: Waking up from system sleep state S3
-[   45.254084] ehci-pci 0000:00:1a.0: System wakeup disabled by ACPI
-[   45.280727] ehci-pci 0000:00:1d.0: System wakeup disabled by ACPI
-[   45.307403] xhci_hcd 0000:02:00.0: System wakeup disabled by ACPI
-[   45.361012] PM: noirq resume of devices complete after 133.354 msecs
-[   45.361292] PM: early resume of devices complete after 0.233 msecs
-[   45.361680] iwlwifi 0000:05:00.0: RF_KILL bit toggled to enable radio.
-[   45.361731] pcieport 0000:00:1c.1: System wakeup disabled by ACPI
-[   45.470912] snd_hda_intel 0000:00:1b.0: irq 48 for MSI/MSI-X
-[   45.700502] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[   45.700533] ata5: SATA link down (SStatus 0 SControl 300)
-[   45.701385] ata1.00: configured for UDMA/133
-[   45.701503] sd 0:0:0:0: [sda] Starting disk
-[   45.707139] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-[   45.872011] ata2.00: configured for UDMA/100
-[   46.791141] PM: resume of devices complete after 1430.658 msecs
-[   46.791560] PM: Finishing wakeup.
-[   46.791565] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
-[   46.791568] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
-[   46.791642] acpiphp_glue: No more new devices on this bus.
-[   46.791571] Restarting tasks ... done.
-[   46.793204] video LNXVIDEO:00: Restoring backlight state
-[   46.793211] video LNXVIDEO:01: Restoring backlight state
-[   47.246425] ACPI: \_SB_.AC__: ACPI_NOTIFY_BUS_CHECK event: unsupported
-[   47.251540] jme 0000:04:00.5: irq 50 for MSI/MSI-X
-[   47.276949] jme 0000:04:00.5 eth0: Link is down
-[   47.276974] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
-[   47.278423] iwlwifi 0000:05:00.0: L1 Enabled; Disabling L0S
-[   47.285758] iwlwifi 0000:05:00.0: Radio type=0x1-0x3-0x1
-[   47.393492] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP01
-[   47.393495] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP01
-[   47.393517] acpiphp_glue: No more new devices on this bus.
-[   47.393525] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP02
-[   47.393527] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP02
-[   47.398977] IPv6: ADDRCONF(NETDEV_UP): wlan0: link is not ready
-[   47.463615] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
-[   47.463620] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
-[   47.463685] acpiphp_glue: No more new devices on this bus.
+https://bugzilla.redhat.com/attachment.cgi?id=861203
+https://bugzilla.redhat.com/show_bug.cgi?id=1063108
+Also,
+https://bugzilla.redhat.com/show_bug.cgi?id=1033310
+https://bugzilla.redhat.com/show_bug.cgi?id=1031296
+https://bugzilla.redhat.com/show_bug.cgi?id=996973
+https://bugzilla.redhat.com/show_bug.cgi?id=989718
 
-After the last message, NetworkManager loses the interface within a second.
-The next following messages follow two seconds later and are unrelated
-(those are about wireless connectivity).
+>From kernel-3.10 to 3.14,
+http://thread.gmane.org/gmane.linux.kernel/1529924
+http://thread.gmane.org/gmane.linux.power-management.general/37437
+
+
+poma
+
+
+At 600km above planet Earth the temperature
+fluctuates between +125 and -100 degrees Celsius
+
+There is nothing to carry sound
+No air pressure
+No oxygen
+
+Life in space is impossible
+
+LINUX KERNEL LIST
+
+
