@@ -1,85 +1,74 @@
-From: poma <pomidorabelisima@gmail.com>
-Subject: WARNING: CPU: 1 PID: 0 at kernel/time/tick-broadcast.c:668 tick_broadcast_oneshot_control+0x17d/0x190()
-Date: Mon, 10 Feb 2014 04:42:19 +0100
-Message-ID: <52F84A9B.5020008@gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
+Date: Mon, 10 Feb 2014 09:15:04 +0530
+Message-ID: <52F84B40.8090403@linux.vnet.ibm.com>
+References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org> <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com> <52F3BCFE.3010703@linux.vnet.ibm.com> <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr> <52F46EB3.5080403@linux.vnet.ibm.com> <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr> <52F4C666.4050308@linux.vnet.ibm.com> <20140207124140.GB9987@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f49.google.com ([74.125.83.49]:52542 "EHLO
-	mail-ee0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752387AbaBJDmY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Feb 2014 22:42:24 -0500
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:39105 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbaBJDsm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Feb 2014 22:48:42 -0500
+Received: from /spool/local
+	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Mon, 10 Feb 2014 09:18:38 +0530
+In-Reply-To: <20140207124140.GB9987@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: linux-pm@vger.kernel.org, Olaf Hering <olaf@aepfle.de>, Dave Jones <davej@redhat.com>, "Justin M. Forbes" <jforbes@redhat.com>, Josh Boyer <jwboyer@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 
+Hi Peter,
 
-Let's have one last round of Champions!
+On 02/07/2014 06:11 PM, Peter Zijlstra wrote:
+> On Fri, Feb 07, 2014 at 05:11:26PM +0530, Preeti U Murthy wrote:
+>> But observe the idle state "snooze" on powerpc. The power that this idle
+>> state saves is through the lowering of the thread priority of the CPU.
+>> After it lowers the thread priority, it is done. It cannot
+>> "wait_for_interrupts". It will exit my_idle(). It is now upto the
+>> generic idle loop to increase the thread priority if the need_resched
+>> flag is set. Only an interrupt routine can increase the thread priority.
+>> Else we will need to do it explicitly. And in such states which have a
+>> polling nature, the cpu will not receive a reschedule IPI.
+>>
+>> That is why in the snooze_loop() we poll on need_resched. If it is set
+>> we up the priority of the thread using HMT_MEDIUM() and then exit the
+>> my_idle() loop. In case of interrupts, the priority gets automatically
+>> increased.
+> 
+> You can poll without setting TS_POLLING/TIF_POLLING_NRFLAGS just fine
+> and get the IPI if that is what you want.
+> 
+> Depending on how horribly unprovisioned the thread gets at the lowest
+> priority, that might actually be faster than polling and raising the
+> prio whenever it does get ran.
 
+So I am assuming you mean something like the below:
 
-[   83.558497] ------------[ cut here ]------------
-[   83.558503] WARNING: CPU: 1 PID: 0 at
-kernel/time/tick-broadcast.c:668
-tick_broadcast_oneshot_control+0x17d/0x190()
-[   83.558527] Modules linked in: ipt_MASQUERADE iptable_nat nf_nat_ipv4
-nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_conntrack nf_conntrack
-xt_CHECKSUM iptable_mangle fuse ip6table_filter ip6_tables ebtable_nat
-ebtables kvm_amd kvm ppdev microcode serio_raw nouveau mxm_wmi video
-i2c_algo_bit ttm edac_core edac_mce_amd drm_kms_helper k10temp drm
-parport_serial parport_pc parport wmi shpchp i2c_nforce2 i2c_core
-acpi_cpufreq nfsd auth_rpcgss nfs_acl lockd sunrpc binfmt_misc
-ata_generic pata_acpi pata_amd 8021q garp mrp tun bridge stp llc bonding
-[   83.558530] CPU: 1 PID: 0 Comm: swapper/1 Tainted: G        W
-3.14.0-0.rc1.git5.1.fc21.1.x86_64 #1
-[   83.558530] Hardware name: Gigabyte Technology Co., Ltd.
-M720-US3/M720-US3, BIOS F7n 09/07/2010
-[   83.558533]  0000000000000000 184f2fadf588e594 ffff880128bb9dd0
-ffffffff817cf05d
-[   83.558535]  0000000000000000 ffff880128bb9e08 ffffffff810966cd
-0000000000000001
-[   83.558536]  0000000000000001 ffff88012a80df00 0000000000000092
-ffffffff81c28940
-[   83.558537] Call Trace:
-[   83.558541]  [<ffffffff817cf05d>] dump_stack+0x4d/0x66
-[   83.558544]  [<ffffffff810966cd>] warn_slowpath_common+0x7d/0xa0
-[   83.558545]  [<ffffffff810967fa>] warn_slowpath_null+0x1a/0x20
-[   83.558547]  [<ffffffff811243dd>]
-tick_broadcast_oneshot_control+0x17d/0x190
-[   83.558549]  [<ffffffff81122dd8>] clockevents_notify+0x178/0x1a0
-[   83.558551]  [<ffffffff81025b17>] amd_e400_idle+0x87/0x130
-[   83.558553]  [<ffffffff8102639e>] arch_cpu_idle+0x2e/0x40
-[   83.558555]  [<ffffffff8110d375>] cpu_startup_entry+0xf5/0x420
-[   83.558558]  [<ffffffff8104dc90>] start_secondary+0x240/0x300
-[   83.558559] ---[ end trace d6d150ba17d5207c ]---
+my_idle()
+{
+   local_irq_enable();
+   /* Remove the setting of the polling flag */
+   HMT_low();
+   return index;
+}
 
+And then exit into the generic idle loop. But the issue I see here is
+that the TS_POLLING/TIF_POLLING_NRFLAGS gets set immediately. So, if on
+testing need_resched() immediately after this returns that the
+TIF_NEED_RESCHED flag is set, the thread will exit at low priority right?
+ We could raise the priority of the thread in arch_cpu_idle_exit() soon
+after setting the polling flag but that would mean for cases where the
+TIF_NEED_RESCHED flag is not set we unnecessarily raise the priority of
+the thread.
 
-https://bugzilla.redhat.com/attachment.cgi?id=861203
-https://bugzilla.redhat.com/show_bug.cgi?id=1063108
-Also,
-https://bugzilla.redhat.com/show_bug.cgi?id=1033310
-https://bugzilla.redhat.com/show_bug.cgi?id=1031296
-https://bugzilla.redhat.com/show_bug.cgi?id=996973
-https://bugzilla.redhat.com/show_bug.cgi?id=989718
+Thanks
 
->From kernel-3.10 to 3.14,
-http://thread.gmane.org/gmane.linux.kernel/1529924
-http://thread.gmane.org/gmane.linux.power-management.general/37437
+Regards
+Preeti U Murthy
 
-
-poma
-
-
-At 600km above planet Earth the temperature
-fluctuates between +125 and -100 degrees Celsius
-
-There is nothing to carry sound
-No air pressure
-No oxygen
-
-Life in space is impossible
-
-LINUX KERNEL LIST
-
+> 
 
