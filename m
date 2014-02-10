@@ -1,161 +1,66 @@
-From: Naveen Krishna Ch <naveenkrishna.ch@gmail.com>
-Subject: Re: [PATCH] thermal: exynos: handle gate clock for misplaced TRIMINFO register
-Date: Mon, 10 Feb 2014 16:20:01 +0530
-Message-ID: <CAHfPSqANMKSW=dFKUXXM1pXAr3+rmFz8v3rpksbf4Bzc+XSNOw@mail.gmail.com>
-References: <1383828154-428-1-git-send-email-ch.naveen@samsung.com> <20140210103354.GT25314@e106331-lin.cambridge.arm.com>
+From: Sudeep Holla <Sudeep.Holla@arm.com>
+Subject: Re: [PATCH v2 2/2] Documentation: devicetree: Add boost-frequency
+ binding to list boost mode frequency
+Date: Mon, 10 Feb 2014 10:51:51 +0000
+Message-ID: <52F8AF47.3080508@arm.com>
+References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com> <1391786342-11812-3-git-send-email-thomas.ab@samsung.com> <52F50698.4060305@arm.com> <52F509BD.70903@arm.com> <CAGo_u6raZY0sKdDn4d92SKpi=eqUpf23vW8K_bEi-v62V2jdPA@mail.gmail.com> <52F51888.5010608@arm.com> <CAGo_u6ofC4NNPiTNcSnXUvT3RZJo54=XyjetR-ok5hCBrVZkKg@mail.gmail.com> <52F51FCD.5000009@arm.com> <CAJuA9agcpbKYocaQUBr2-VCXcXAo3r3urFF=+G_+ib2jCZqvwg@mail.gmail.com> <20140210083836.44b519bf@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20140210103354.GT25314@e106331-lin.cambridge.arm.com>
+In-Reply-To: <20140210083836.44b519bf@amdc2363>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Naveen Krishna Chatradhi <ch.naveen@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "cpgs@samsung.com" <cpgs@samsung.com>
+To: Lukasz Majewski <l.majewski@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>
+Cc: Sudeep.Holla@arm.com, Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Mark,
+On 10/02/14 07:38, Lukasz Majewski wrote:
+> Hi Thomas, Sudeep,
+> 
+>> On Fri, Feb 7, 2014 at 11:32 PM, Sudeep Holla <Sudeep.Holla@arm.com>
+>> wrote:
+>>> On 07/02/14 17:37, Nishanth Menon wrote:
+>>>> On Fri, Feb 7, 2014 at 11:31 AM, Sudeep Holla
+>>>> <Sudeep.Holla@arm.com> wrote:
+>>>
+>>> [...]
+>>>
+>>>>> Yes I think its counter-intuitive as it's visible to the
+>>>>> userspace(list of frequencies and the boost parameters are
+>>>>> exposed through sysfs)
+>>>>
+>>>> That will be a different problem -> as currently every single
+>>>> frequency in the cpufreq list has ability to be marked as boost
+>>>> frequency - if userspace does not maintain that, then, IMHO, fix
+>>>> the userspace :D
+>>>>
+>>>
+>>> /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
+>>> gives the list of frequencies based on the state of the boost
+>>> feature at anytime.
+>>
+>> The list of frequencies in
+>> /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
+>> does not change based in the state of the boost feature (enabled or
+>> disabled). But the scaling_max_frequency and scaling_min_frequency are
+>> updated based on the set of available + boost frequencies available.
+> 
+> With boost intended behavior is as follow:
+> 
+> /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies [1]
+> 
+> shows the non boost frequencies no matter if boost is enabled or not.
+> Those are the "normal" frequencies.
+> 
+> When boost is supported (by enabling the CONFIG_CPU_FREQ_BOOST_SW)
+> extra sysfs attribute shows up:
+> 
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_boost_frequencies [2]
+> in which are listed only the boost frequencies.
+> 
 
-On 10 February 2014 16:03, Mark Rutland <mark.rutland@arm.com> wrote:
-> On Thu, Nov 07, 2013 at 12:42:34PM +0000, Naveen Krishna Chatradhi wrote:
->> On Exynos5420 the TMU(4) for GPU has a seperate clock enable bit from
->> the other TMU channels(0 ~ 3). Hence, accessing TRIMINFO for base_second
->> should be acompanied by enabling the respective clock.
->>
->> This patch which allow for a "clk_sec" clock to be specified in the
->> device-tree which will be ungated when accessing the TRIMINFO register.
->
-> Missing binding document update? Or was "clk_sec" originally in the
-> binding but unused?
->
-> The code seems to expect "tmu_apbif_sec" as the clock name in the DT,
-> but this isn't mentioned in the commit message.
->
-> I grepped Documentation/devicetree in mainline, but found no reference
-> of either.
->
-> Thanks,
-> Mark.
-This CL is to be abandoned.
+Correct, sorry I misunderstood this to dynamic change in
+scaling_available_frequencies based on state of boot.
 
-As mentioned in the previous replies to this patch.
-The changes in this patched were merged with
-http://www.spinics.net/lists/devicetree/msg15165.html
-
-The latest patch set can be found at.
-1. http://www.spinics.net/lists/devicetree/msg15163.html
-2. http://www.spinics.net/lists/devicetree/msg15164.html
-3. http://www.spinics.net/lists/devicetree/msg15165.html
-4. http://www.spinics.net/lists/devicetree/msg15165.html
-
-Thanks for your time.
->
->>
->> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
->> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
->> ---
->>  drivers/thermal/samsung/exynos_tmu.c |   24 +++++++++++++++++++++++-
->>  1 file changed, 23 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index b54825a..33edd1a 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -47,6 +47,7 @@
->>   * @irq_work: pointer to the irq work structure.
->>   * @lock: lock to implement synchronization.
->>   * @clk: pointer to the clock structure.
->> + * @clk_sec: pointer to the clock structure for accessing the base_second.
->>   * @temp_error1: fused value of the first point trim.
->>   * @temp_error2: fused value of the second point trim.
->>   * @regulator: pointer to the TMU regulator structure.
->> @@ -61,7 +62,7 @@ struct exynos_tmu_data {
->>       enum soc_type soc;
->>       struct work_struct irq_work;
->>       struct mutex lock;
->> -     struct clk *clk;
->> +     struct clk *clk, *clk_sec;
->>       u8 temp_error1, temp_error2;
->>       struct regulator *regulator;
->>       struct thermal_sensor_conf *reg_conf;
->> @@ -152,6 +153,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->>
->>       mutex_lock(&data->lock);
->>       clk_enable(data->clk);
->> +     if (!IS_ERR(data->clk_sec))
->> +             clk_enable(data->clk_sec);
->>
->>       if (TMU_SUPPORTS(pdata, READY_STATUS)) {
->>               status = readb(data->base + reg->tmu_status);
->> @@ -306,6 +309,8 @@ skip_calib_data:
->>  out:
->>       clk_disable(data->clk);
->>       mutex_unlock(&data->lock);
->> +     if (!IS_ERR(data->clk_sec))
->> +             clk_disable(data->clk_sec);
->>
->>       return ret;
->>  }
->> @@ -457,12 +462,16 @@ static void exynos_tmu_work(struct work_struct *work)
->>       const struct exynos_tmu_registers *reg = pdata->registers;
->>       unsigned int val_irq, val_type;
->>
->> +     if (!IS_ERR(data->clk_sec))
->> +             clk_enable(data->clk_sec);
->>       /* Find which sensor generated this interrupt */
->>       if (reg->tmu_irqstatus) {
->>               val_type = readl(data->base_second + reg->tmu_irqstatus);
->>               if (!((val_type >> data->id) & 0x1))
->>                       goto out;
->>       }
->> +     if (!IS_ERR(data->clk_sec))
->> +             clk_disable(data->clk_sec);
->>
->>       exynos_report_trigger(data->reg_conf);
->>       mutex_lock(&data->lock);
->> @@ -641,6 +650,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>       if (ret)
->>               return ret;
->>
->> +     data->clk_sec = devm_clk_get(&pdev->dev, "tmu_apbif_sec");
->> +     if (!IS_ERR(data->clk_sec)) {
->> +             ret = clk_prepare(data->clk_sec);
->> +             if (ret) {
->> +                     dev_err(&pdev->dev, "Failed to get clock\n");
->> +                     return  PTR_ERR(data->clk_sec);
->> +             }
->> +     }
->> +
->>       if (pdata->type == SOC_ARCH_EXYNOS4210 ||
->>           pdata->type == SOC_ARCH_EXYNOS4412 ||
->>           pdata->type == SOC_ARCH_EXYNOS5250 ||
->> @@ -713,6 +731,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>       return 0;
->>  err_clk:
->>       clk_unprepare(data->clk);
->> +     if (!IS_ERR(data->clk_sec))
->> +             clk_unprepare(data->clk_sec);
->>       return ret;
->>  }
->>
->> @@ -725,6 +745,8 @@ static int exynos_tmu_remove(struct platform_device *pdev)
->>       exynos_unregister_thermal(data->reg_conf);
->>
->>       clk_unprepare(data->clk);
->> +     if (!IS_ERR(data->clk_sec))
->> +             clk_unprepare(data->clk_sec);
->>
->>       if (!IS_ERR(data->regulator))
->>               regulator_disable(data->regulator);
->> --
->> 1.7.10.4
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-
-
-
--- 
-Shine bright,
-(: Nav :)
+Regards,
+Sudeep
