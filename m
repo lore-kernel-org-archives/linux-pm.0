@@ -1,195 +1,99 @@
 From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [RFT][PATCH 02/12] arm: change sa1111 platform and bus power management to use dev_pm_ops
-Date: Mon, 10 Feb 2014 09:12:25 -0700
-Message-ID: <9946f14a5837560d5aa83bf3501685365a1aa759.1392040067.git.shuah.kh@samsung.com>
+Subject: [RFT][PATCH 09/12] mmc: change msm_sdcc platform power management to use dev_pm_ops
+Date: Mon, 10 Feb 2014 09:12:32 -0700
+Message-ID: <269a4afb048513de75cf39b228e94a4578bbacc7.1392040068.git.shuah.kh@samsung.com>
 References: <cover.1392040064.git.shuah.kh@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
 In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
 References: <cover.1392040064.git.shuah.kh@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, linux@arm.linux.org.uk
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, shuahkhan@gmail.com
+To: rjw@rjwysocki.net, davidb@codeaurora.org, dwalker@fifo99.com, bryanh@codeaurora.org, chris@printf.net
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-mmc@vger.kernel.org, shuahkhan@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Change sa1111 platform and bus drivers to register pm ops using dev_pm_ops
-instead of legacy pm_ops. .pm hooks call existing legacy suspend and resume
-interfaces by passing in the right pm state.
+Change msm_sdcc platform driver to register pm ops using dev_pm_ops instead of
+legacy pm_ops. .pm hooks call existing legacy suspend and resume interfaces
+by passing in the right pm state.
 
 Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
 ---
- arch/arm/common/sa1111.c |   88 +++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 72 insertions(+), 16 deletions(-)
+ drivers/mmc/host/msm_sdcc.c |   42 +++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 35 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/common/sa1111.c b/arch/arm/common/sa1111.c
-index e57d7e5..db017b2 100644
---- a/arch/arm/common/sa1111.c
-+++ b/arch/arm/common/sa1111.c
-@@ -872,7 +872,7 @@ struct sa1111_save_data {
+diff --git a/drivers/mmc/host/msm_sdcc.c b/drivers/mmc/host/msm_sdcc.c
+index 9405ecd..311e32a 100644
+--- a/drivers/mmc/host/msm_sdcc.c
++++ b/drivers/mmc/host/msm_sdcc.c
+@@ -1417,7 +1417,7 @@ ioremap_free:
  
  #ifdef CONFIG_PM
- 
--static int sa1111_suspend(struct platform_device *dev, pm_message_t state)
-+static int __sa1111_suspend(struct platform_device *dev, pm_message_t state)
+ static int
+-msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
++__msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
  {
- 	struct sa1111 *sachip = platform_get_drvdata(dev);
- 	struct sa1111_save_data *save;
-@@ -928,6 +928,21 @@ static int sa1111_suspend(struct platform_device *dev, pm_message_t state)
+ 	struct mmc_host *mmc = mmc_get_drvdata(dev);
+ 
+@@ -1434,8 +1434,23 @@ msmsdcc_suspend(struct platform_device *dev, pm_message_t state)
  	return 0;
  }
  
-+static int sa1111_suspend(struct device *dev)
++static int msmsdcc_suspend(struct device *dev)
 +{
-+	return __sa1111_suspend(to_platform_device(dev), PMSG_SUSPEND);
++	return __msmsdcc_suspend(to_platform_device(dev), PMSG_SUSPEND);
 +}
 +
-+static int sa1111_freeze(struct device *dev)
++static int msmsdcc_freeze(struct device *dev)
 +{
-+	return __sa1111_suspend(to_platform_device(dev), PMSG_FREEZE);
++	return __msmsdcc_suspend(to_platform_device(dev), PMSG_FREEZE);
 +}
 +
-+static int sa1111_poweroff(struct device *dev)
++static int msmsdcc_poweroff(struct device *dev)
 +{
-+	return __sa1111_suspend(to_platform_device(dev), PMSG_HIBERNATE);
++	return __msmsdcc_suspend(to_platform_device(dev), PMSG_HIBERNATE);
 +}
 +
- /*
-  *	sa1111_resume - Restore the SA1111 device state.
-  *	@dev: device to restore
-@@ -937,7 +952,7 @@ static int sa1111_suspend(struct platform_device *dev, pm_message_t state)
-  *	restored by their respective drivers, and must be called
-  *	via LDM after this function.
-  */
--static int sa1111_resume(struct platform_device *dev)
-+static int __sa1111_resume(struct platform_device *dev)
+ static int
+-msmsdcc_resume(struct platform_device *dev)
++__msmsdcc_resume(struct platform_device *dev)
  {
- 	struct sa1111 *sachip = platform_get_drvdata(dev);
- 	struct sa1111_save_data *save;
-@@ -1005,9 +1020,10 @@ static int sa1111_resume(struct platform_device *dev)
+ 	struct mmc_host *mmc = mmc_get_drvdata(dev);
+ 
+@@ -1454,17 +1469,30 @@ msmsdcc_resume(struct platform_device *dev)
+ 	}
  	return 0;
  }
- 
 -#else
--#define sa1111_suspend NULL
--#define sa1111_resume  NULL
-+static int sa1111_resume(struct device *dev)
+-#define msmsdcc_suspend	0
+-#define msmsdcc_resume 0
++
++static int msmsdcc_resume(struct device *dev)
 +{
-+	return __sa1111_resume(to_platform_device(dev));
++	return __msmsdcc_resume(to_platform_device(dev));
 +}
++
++static const struct dev_pm_ops msmsdcc_dev_pm_ops = {
++	.suspend = msmsdcc_suspend,
++	.resume = msmsdcc_resume,
++	/* Hibernate hooks */
++	.freeze = msmsdcc_freeze,
++	.thaw = msmsdcc_resume,
++	.poweroff = msmsdcc_poweroff,
++	.restore = msmsdcc_resume,
++};
  #endif
  
- static int sa1111_probe(struct platform_device *pdev)
-@@ -1041,6 +1057,18 @@ static int sa1111_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+static const struct dev_pm_ops sa1111_dev_pm_ops = {
-+	.suspend = sa1111_suspend,
-+	.resume = sa1111_resume,
-+	/* Hibernate hooks */
-+	.freeze = sa1111_freeze,
-+	.thaw = sa1111_resume,
-+	.poweroff = sa1111_poweroff,
-+	.restore = sa1111_resume,
-+};
-+#endif
-+
- /*
-  *	Not sure if this should be on the system bus or not yet.
-  *	We really want some way to register a system device at
-@@ -1053,11 +1081,12 @@ static int sa1111_remove(struct platform_device *pdev)
- static struct platform_driver sa1111_device_driver = {
- 	.probe		= sa1111_probe,
- 	.remove		= sa1111_remove,
--	.suspend	= sa1111_suspend,
--	.resume		= sa1111_resume,
+ static struct platform_driver msmsdcc_driver = {
+ 	.probe		= msmsdcc_probe,
+-	.suspend	= msmsdcc_suspend,
+-	.resume		= msmsdcc_resume,
  	.driver		= {
- 		.name	= "sa1111",
- 		.owner	= THIS_MODULE,
+ 		.name	= "msm_sdcc",
 +#ifdef CONFIG_PM
-+		.pm	= &sa1111_dev_pm_ops,
++		.pm	= &msmsdcc_dev_pm_ops,
 +#endif
  	},
  };
- 
-@@ -1297,26 +1326,44 @@ static int sa1111_match(struct device *_dev, struct device_driver *_drv)
- 	return dev->devid & drv->devid;
- }
- 
--static int sa1111_bus_suspend(struct device *dev, pm_message_t state)
-+static int __sa1111_bus_suspend(struct device *dev, pm_message_t state)
- {
- 	struct sa1111_dev *sadev = SA1111_DEV(dev);
- 	struct sa1111_driver *drv = SA1111_DRV(dev->driver);
--	int ret = 0;
-+
-+	if (drv && drv->drv.pm && drv->drv.pm->suspend)
-+		return  drv->drv.pm->suspend(dev);
- 
- 	if (drv && drv->suspend)
--		ret = drv->suspend(sadev, state);
--	return ret;
-+		return drv->suspend(sadev, state);
-+	return 0;
-+}
-+
-+static int sa1111_bus_suspend(struct device *dev)
-+{
-+	return __sa1111_bus_suspend(dev, PMSG_SUSPEND);
-+}
-+
-+static int sa1111_bus_freeze(struct device *dev)
-+{
-+	return __sa1111_bus_suspend(dev, PMSG_FREEZE);
-+}
-+
-+static int sa1111_bus_poweroff(struct device *dev)
-+{
-+	return __sa1111_bus_suspend(dev, PMSG_HIBERNATE);
- }
- 
- static int sa1111_bus_resume(struct device *dev)
- {
- 	struct sa1111_dev *sadev = SA1111_DEV(dev);
- 	struct sa1111_driver *drv = SA1111_DRV(dev->driver);
--	int ret = 0;
- 
-+	if (drv && drv->drv.pm && drv->drv.pm->resume)
-+		return  drv->drv.pm->resume(dev);
- 	if (drv && drv->resume)
--		ret = drv->resume(sadev);
--	return ret;
-+		return drv->resume(sadev);
-+	return 0;
- }
- 
- static void sa1111_bus_shutdown(struct device *dev)
-@@ -1349,14 +1396,23 @@ static int sa1111_bus_remove(struct device *dev)
- 	return ret;
- }
- 
-+static const struct dev_pm_ops sa1111_bus_dev_pm_ops = {
-+	.suspend = sa1111_bus_suspend,
-+	.resume = sa1111_bus_resume,
-+	/* Hibernate hooks */
-+	.freeze = sa1111_bus_freeze,
-+	.thaw = sa1111_bus_resume,
-+	.poweroff = sa1111_bus_poweroff,
-+	.restore = sa1111_bus_resume,
-+};
-+
- struct bus_type sa1111_bus_type = {
- 	.name		= "sa1111-rab",
- 	.match		= sa1111_match,
- 	.probe		= sa1111_bus_probe,
- 	.remove		= sa1111_bus_remove,
--	.suspend	= sa1111_bus_suspend,
--	.resume		= sa1111_bus_resume,
- 	.shutdown	= sa1111_bus_shutdown,
-+	.pm		= &sa1111_bus_dev_pm_ops,
- };
- EXPORT_SYMBOL(sa1111_bus_type);
  
 -- 
 1.7.10.4
