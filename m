@@ -1,90 +1,53 @@
-From: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend
- to RAM
-Date: Mon, 10 Feb 2014 09:17:08 +0100
-Message-ID: <52F88B04.2080309@gmail.com>
-References: <52F2CC7B.80406@gmail.com> <55671594.HynIX0trOC@vostro.rjw.lan> <52F41DB8.3080802@gmail.com> <2087423.Qy7HQIx1X6@vostro.rjw.lan> <52F7CC8B.1020209@gmail.com>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH 0/5] Enabling the asynchronous threads for other phases
+Date: Mon, 10 Feb 2014 08:36:57 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C1AF9E@SHSMSX101.ccr.corp.intel.com>
+References: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
+ <2360514.bLFmJYMItS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:49250 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbaBJIQI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 03:16:08 -0500
-In-Reply-To: <52F7CC8B.1020209@gmail.com>
+Received: from mga01.intel.com ([192.55.52.88]:17179 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751407AbaBJIhI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 10 Feb 2014 03:37:08 -0500
+In-Reply-To: <2360514.bLFmJYMItS@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bastien Traverse <bastien.traverse@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <lekensteyn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-On 02/09/2014 07:44 PM, Bastien Traverse wrote:
-> Le 07/02/2014 02:19, Rafael J. Wysocki a =C3=A9crit :
->> Please send the output of lspci -vv right before suspend and right a=
-fter
->> the subsequent resume as attachments.
->=20
-> You'll find them attached, but I got a strange error when I wanted to
-> run it as root:
-> $ sudo lspci -vv > lspci_vv_before
-> pcilib: sysfs_read_vpd: read failed: Connection timed out
-> $ sudo -i
-> # lspci -vv
-> pcilib: sysfs_read_vpd: read failed: Connection timed out
->=20
-> So I only got the unpriviledge output.
->=20
-> Some complementary lines from my journal:
->=20
-> kernel: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-> kernel: r8169 0000:03:00.2: can't disable ASPM; OS doesn't have ASPM =
-control
-> kernel: pcieport 0000:00:1c.3: driver skip pci_set_master, fix it!
-> kernel: r8169 0000:03:00.2: irq 44 for MSI/MSI-X
-> kernel: r8169 0000:03:00.2 eth0: RTL8411 at 0xffffc90016ed4000,
-> 00:90:f5:d7:34:53, XID 08800800 IRQ 44
-> kernel: r8169 0000:03:00.2 eth0: jumbo features [frames: 9200 bytes, =
-tx
-> checksumming: ko]
-> kernel: rtsx_pci 0000:03:00.0: irq 45 for MSI/MSI-X
-> kernel: rtsx_pci 0000:03:00.0: rtsx_pci_acquire_irq: pcr->msi_en =3D =
-1,
-> pci->irq =3D 45
-> ...
->=20
-> And one I thought of interest:
->=20
-> kernel: rtsx_pci 0000:03:00.0: vpd r/w failed.  This is likely a
-> firmware bug on this device.  Contact the card vendor for a firmware =
-update.
->=20
-> That came three times before suspend.
->=20
-> Only two lines about hotplug, none special.
->=20
-> Stripped journal attached for the suspend cycle.
->=20
->=20
-> Le 07/02/2014 08:29, Francis Moreau a =C3=A9crit :
->> yeah, but calling this "fast resolution" is quite incorrect.
->>
->> I don't blame anyone for this and I'm quite happy that a workaround =
-has
->> been found at last but calling this "fast resolution" is a bit funny
->> compare to the PITA it was to debug this.
->=20
-> Sorry, I didn't mean to underestimate the amount of work you put in t=
-hat
-> bug resolution (actually it was the first time I heard of kernel
-> bisection and was pretty impressed by how you led it).
-
-No problem Bastien and don't be impressed by this :). Bisection thing i=
-s
-a mechanical work but can be useful sometimes when we, users, are lost
-and have no clue on what's going on.
-
-The real PITA in that case was to reboot more than 10 times the system
-in order to test each suspicious commits on a live system.
-
-Anyways, good luck, all my hopes are on you now :)
-
+SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
+ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFRodXJz
+ZGF5LCBGZWJydWFyeSAwNiwgMjAxNCA1OjUzIEFNDQo+IFRvOiBMaXUsIENodWFuc2hlbmcNCj4g
+Q2M6IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBwYXZlbEB1Y3cuY3o7IEJyb3duLCBMZW47
+DQo+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
+ZzsgTGksIFpodWFuZ3poaQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvNV0gRW5hYmxpbmcgdGhl
+IGFzeW5jaHJvbm91cyB0aHJlYWRzIGZvciBvdGhlciBwaGFzZXMNCj4gDQo+IE9uIE1vbmRheSwg
+SmFudWFyeSAyMCwgMjAxNCAwNDo0NDozNCBQTSBMaXUsIENodWFuc2hlbmcgd3JvdGU6DQo+ID4g
+SGVsbG8sDQo+ID4NCj4gPiBUaGlzIHBhdGNoIHNlcmllcyBhcmUgZm9yIGVuYWJsaW5nIHRoZSBh
+c3luY2hyb25vdXMgdGhyZWFkcyBmb3IgdGhlIHBoYXNlcw0KPiA+IHJlc3VtZV9ub2lycSwgcmVz
+dW1lX2Vhcmx5LCBzdXNwZW5kX25vaXJxIGFuZCBzdXNwZW5kX2xhdGUuDQo+ID4NCj4gPiBKdXN0
+IGxpa2UgY29tbWl0IDVhZjg0YjgyNzAxYSBhbmQgOTdkZjhjMTI5OTUsIHdpdGggYXN5bmMgdGhy
+ZWFkcyBpdCB3aWxsDQo+ID4gcmVkdWNlIHRoZSBzeXN0ZW0gc3VzcGVuZGluZyBhbmQgcmVzdW1p
+bmcgdGltZSBzaWduaWZpY2FudGx5Lg0KPiA+DQo+ID4gV2l0aCB0aGVzZSBwYXRjaGVzLCBpbiBt
+eSB0ZXN0IHBsYXRmb3JtLCBpdCBzYXZlZCA4MCUgdGltZSBpbiByZXN1bWVfbm9pcnENCj4gPiBw
+aGFzZS4NCj4gPg0KPiA+IEhhcyBkb25lIHRoZSBzdXNwZW5kLXJlc3VtZSBzdHJlc3MgdGVzdCBm
+b3IgYSBsb25nIHRpbWUsIHBsZWFzZSBoZWxwIHRvDQo+ID4gcmV2aWV3Lg0KPiA+DQo+ID4gQmVz
+dCBSZWdhcmRzLA0KPiA+DQo+ID4gW1BBVENIIDEvNV0gUE06IEFkZGluZyB0d28gZmxhZ3MgZm9y
+IGFzeW5jIHN1c3BlbmRfbm9pcnEgYW5kDQo+ID4gW1BBVENIIDIvNV0gUE06IEVuYWJsaW5nIHRo
+ZSBhc3luY2hyb25vdXMgdGhyZWFkcyBmb3IgcmVzdW1lX25vaXJxDQo+ID4gW1BBVENIIDMvNV0g
+UE06IEVuYWJsaW5nIHRoZSBhc3luY3Jvbm91cyB0aHJlYWRzIGZvciByZXN1bWVfZWFybHkNCj4g
+PiBbUEFUQ0ggNC81XSBQTTogRW5hYmxpbmcgdGhlIGFzeW5jcm9ub3VzIHRocmVhZHMgZm9yIHN1
+c3BlbmRfbm9pcnENCj4gPiBbUEFUQ0ggNS81XSBQTTogRW5hYmxpbmcgdGhlIGFzeW5jcm9ub3Vz
+IHRocmVhZHMgZm9yIHN1c3BlbmRfbGF0ZQ0KPiANCj4gSSd2ZSBhcHBsaWVkIHRoaXMgdG8gdGhl
+IGJsZWVkaW5nLWVkZ2UgYnJhbmNoIG9mIHRoZSBsaW51eC1wbS5naXQgdHJlZSwgd2l0aA0KPiBt
+aW5vciBjaGFuZ2VzIHJlbGF0ZWQgdG8gY29kaW5nIHN0eWxlLCB3aGl0ZSBzcGFjZSBldGMuDQpU
+aGFua3MgeW91ciBoZWxwLg0KDQo+IA0KPiBDYW4geW91IHBsZWFzZSB2ZXJpZnkgdGhhdCB0aGUg
+YmxlZWRpbmctZWRnZSBicmFuY2ggd29ya3MgZm9yIHlvdSBhcw0KPiBleHBlY3RlZD8NCkkgaGF2
+ZSBwaWNrZWQgdGhlbSBmcm9tIHlvdXIgYmxlZWRpbmctZWRnZSBicmFuY2ggYW5kIGhhcyBkb25l
+IHRoZQ0Kc3VzcGVuZC1yZXN1bWUgc3RyZXNzIHRlc3QgZm9yIGFib3V0IDIwMCB0aW1lcyBhbmQg
+MyBob3VycywNCkl0IGlzIHN0aWxsIHdvcmtpbmcgd2VsbC4NCg0KQmVzdCBSZWdhcmRzDQpDaHVh
+bnNoZW5nIExpdQ0K
