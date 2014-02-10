@@ -1,145 +1,96 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] thermal: exynos: handle gate clock for misplaced
- TRIMINFO register
-Date: Mon, 10 Feb 2014 10:33:54 +0000
-Message-ID: <20140210103354.GT25314@e106331-lin.cambridge.arm.com>
-References: <1383828154-428-1-git-send-email-ch.naveen@samsung.com>
+From: Sudeep Holla <Sudeep.Holla@arm.com>
+Subject: Re: [PATCH v2 1/2] PM / OPP: Allow boost frequency to be looked up
+ from device tree
+Date: Mon, 10 Feb 2014 10:40:37 +0000
+Message-ID: <52F8ACA5.1080409@arm.com>
+References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com>	<1391786342-11812-2-git-send-email-thomas.ab@samsung.com>	<52F50346.7040707@arm.com> <CAJuA9agT4PC6YOmhCwKQ=58qaGEr1qSuhTpX57ro1pEuk++Miw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:53175 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752123AbaBJKeP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 05:34:15 -0500
-Content-Disposition: inline
-In-Reply-To: <1383828154-428-1-git-send-email-ch.naveen@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAJuA9agT4PC6YOmhCwKQ=58qaGEr1qSuhTpX57ro1pEuk++Miw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <ta.omasab@gmail.com>
+Cc: Sudeep.Holla@arm.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "naveenkrishna.ch@gmail.com" <naveenkrishna.ch@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "cpgs@samsung.com" <cpgs@samsung.com>
 
-On Thu, Nov 07, 2013 at 12:42:34PM +0000, Naveen Krishna Chatradhi wrote:
-> On Exynos5420 the TMU(4) for GPU has a seperate clock enable bit from
-> the other TMU channels(0 ~ 3). Hence, accessing TRIMINFO for base_second
-> should be acompanied by enabling the respective clock.
+On 08/02/14 05:10, Thomas Abraham wrote:
+> On Fri, Feb 7, 2014 at 9:31 PM, Sudeep Holla <Sudeep.Holla@arm.com> wrote:
+>> On 07/02/14 15:19, Thomas Abraham wrote:
+>>> From: Thomas Abraham <thomas.ab@samsung.com>
+>>>
+>>> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
+>>> support for CPU boost mode. This patch adds support for finding available
+>>> boost frequencies from device tree and marking them as usable in boost mode.
+>>>
+>>> Cc: Nishanth Menon <nm@ti.com>
+>>> Cc: Lukasz Majewski <l.majewski@samsung.com>
+>>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+>>> ---
+>>>  drivers/base/power/opp.c |   34 +++++++++++++++++++++++++++++++++-
+>>>  1 file changed, 33 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>>> index fa41874..b636826 100644
+>>> --- a/drivers/base/power/opp.c
+>>> +++ b/drivers/base/power/opp.c
+>>> @@ -628,7 +628,8 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>>>       struct device_opp *dev_opp;
+>>>       struct dev_pm_opp *opp;
+>>>       struct cpufreq_frequency_table *freq_table;
+>>> -     int i = 0;
+>>> +     int i = 0, j, len, ret;
+>>> +     u32 *boost_freqs = NULL;
+>>>
+>>>       /* Pretend as if I am an updater */
+>>>       mutex_lock(&dev_opp_list_lock);
+>>> @@ -650,10 +651,35 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>>>               return -ENOMEM;
+>>>       }
+>>>
+>>> +     if (of_find_property(dev->of_node, "boost-frequency", &len)) {
+>>> +             if (len == 0 || (len & (sizeof(u32) - 1)) != 0) {
+>>> +                     dev_err(dev, "%s: invalid boost frequency\n", __func__);
+>>> +                     ret = -EINVAL;
+>>> +                     goto err_boost;
+>>> +             }
+>>> +
+>>> +             boost_freqs = kzalloc(len, GFP_KERNEL);
+>>> +             if (!boost_freqs) {
+>>> +                     dev_warn(dev, "%s: no memory for boost freq table\n",
+>>> +                                     __func__);
+>>> +                     ret = -ENOMEM;
+>>> +                     goto err_boost;
+>>> +             }
+>>> +             of_property_read_u32_array(dev->of_node, "boost-frequency",
+>>> +                     boost_freqs, len / sizeof(u32));
+>>> +     }
+>>> +
+>>>       list_for_each_entry(opp, &dev_opp->opp_list, node) {
+>>>               if (opp->available) {
+>>>                       freq_table[i].driver_data = i;
+>>>                       freq_table[i].frequency = opp->rate / 1000;
+>>> +                     for (j = 0; j < len / sizeof(u32) && boost_freqs; j++) {
+>>> +                             if (boost_freqs[j] == freq_table[i].frequency) {
+>>> +                                     freq_table[i].driver_data =
+>>> +                                                     CPUFREQ_BOOST_FREQ;
+>>> +                                     break;
+>>> +                             }
+>>> +                     }
+>>>                       i++;
+>>>               }
+>>>       }
+>> IIRC you had mentioned that the boost-opp was not limited to be a cpufreq, but
+>> this change seems to be cpufreq only.
 > 
-> This patch which allow for a "clk_sec" clock to be specified in the
-> device-tree which will be ungated when accessing the TRIMINFO register.
-
-Missing binding document update? Or was "clk_sec" originally in the
-binding but unused? 
-
-The code seems to expect "tmu_apbif_sec" as the clock name in the DT,
-but this isn't mentioned in the commit message. 
-
-I grepped Documentation/devicetree in mainline, but found no reference
-of either.
-
-Thanks,
-Mark.
-
+> Yes, but as you have initiated the discussion on extending the OPP
+> binding, this has been limited to cpufreq only. If the new OPP library
+> has support for listing boost frequency, this can be migrated to the
+> new OPP libaray.
 > 
-> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
-> Signed-off-by: Naveen Krishna Chatradhi <ch.naveen@samsung.com>
-> ---
->  drivers/thermal/samsung/exynos_tmu.c |   24 +++++++++++++++++++++++-
->  1 file changed, 23 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index b54825a..33edd1a 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -47,6 +47,7 @@
->   * @irq_work: pointer to the irq work structure.
->   * @lock: lock to implement synchronization.
->   * @clk: pointer to the clock structure.
-> + * @clk_sec: pointer to the clock structure for accessing the base_second.
->   * @temp_error1: fused value of the first point trim.
->   * @temp_error2: fused value of the second point trim.
->   * @regulator: pointer to the TMU regulator structure.
-> @@ -61,7 +62,7 @@ struct exynos_tmu_data {
->  	enum soc_type soc;
->  	struct work_struct irq_work;
->  	struct mutex lock;
-> -	struct clk *clk;
-> +	struct clk *clk, *clk_sec;
->  	u8 temp_error1, temp_error2;
->  	struct regulator *regulator;
->  	struct thermal_sensor_conf *reg_conf;
-> @@ -152,6 +153,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->  
->  	mutex_lock(&data->lock);
->  	clk_enable(data->clk);
-> +	if (!IS_ERR(data->clk_sec))
-> +		clk_enable(data->clk_sec);
->  
->  	if (TMU_SUPPORTS(pdata, READY_STATUS)) {
->  		status = readb(data->base + reg->tmu_status);
-> @@ -306,6 +309,8 @@ skip_calib_data:
->  out:
->  	clk_disable(data->clk);
->  	mutex_unlock(&data->lock);
-> +	if (!IS_ERR(data->clk_sec))
-> +		clk_disable(data->clk_sec);
->  
->  	return ret;
->  }
-> @@ -457,12 +462,16 @@ static void exynos_tmu_work(struct work_struct *work)
->  	const struct exynos_tmu_registers *reg = pdata->registers;
->  	unsigned int val_irq, val_type;
->  
-> +	if (!IS_ERR(data->clk_sec))
-> +		clk_enable(data->clk_sec);
->  	/* Find which sensor generated this interrupt */
->  	if (reg->tmu_irqstatus) {
->  		val_type = readl(data->base_second + reg->tmu_irqstatus);
->  		if (!((val_type >> data->id) & 0x1))
->  			goto out;
->  	}
-> +	if (!IS_ERR(data->clk_sec))
-> +		clk_disable(data->clk_sec);
->  
->  	exynos_report_trigger(data->reg_conf);
->  	mutex_lock(&data->lock);
-> @@ -641,6 +650,15 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->  	if (ret)
->  		return ret;
->  
-> +	data->clk_sec = devm_clk_get(&pdev->dev, "tmu_apbif_sec");
-> +	if (!IS_ERR(data->clk_sec)) {
-> +		ret = clk_prepare(data->clk_sec);
-> +		if (ret) {
-> +			dev_err(&pdev->dev, "Failed to get clock\n");
-> +			return  PTR_ERR(data->clk_sec);
-> +		}
-> +	}
-> +
->  	if (pdata->type == SOC_ARCH_EXYNOS4210 ||
->  	    pdata->type == SOC_ARCH_EXYNOS4412 ||
->  	    pdata->type == SOC_ARCH_EXYNOS5250 ||
-> @@ -713,6 +731,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->  	return 0;
->  err_clk:
->  	clk_unprepare(data->clk);
-> +	if (!IS_ERR(data->clk_sec))
-> +		clk_unprepare(data->clk_sec);
->  	return ret;
->  }
->  
-> @@ -725,6 +745,8 @@ static int exynos_tmu_remove(struct platform_device *pdev)
->  	exynos_unregister_thermal(data->reg_conf);
->  
->  	clk_unprepare(data->clk);
-> +	if (!IS_ERR(data->clk_sec))
-> +		clk_unprepare(data->clk_sec);
->  
->  	if (!IS_ERR(data->regulator))
->  		regulator_disable(data->regulator);
-> -- 
-> 1.7.10.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+Fair enough, just wanted to check as I couldn't get the info following the
+thread. I might have missed it.
+
+Regards,
+Sudeep
