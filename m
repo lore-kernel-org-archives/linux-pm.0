@@ -1,96 +1,47 @@
 From: Sudeep Holla <Sudeep.Holla@arm.com>
-Subject: Re: [PATCH v2 1/2] PM / OPP: Allow boost frequency to be looked up
- from device tree
-Date: Mon, 10 Feb 2014 10:40:37 +0000
-Message-ID: <52F8ACA5.1080409@arm.com>
-References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com>	<1391786342-11812-2-git-send-email-thomas.ab@samsung.com>	<52F50346.7040707@arm.com> <CAJuA9agT4PC6YOmhCwKQ=58qaGEr1qSuhTpX57ro1pEuk++Miw@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] Documentation: devicetree: Add boost-frequency
+ binding to list boost mode frequency
+Date: Mon, 10 Feb 2014 10:46:45 +0000
+Message-ID: <52F8AE15.80301@arm.com>
+References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com>	<1391786342-11812-3-git-send-email-thomas.ab@samsung.com>	<52F50698.4060305@arm.com>	<52F509BD.70903@arm.com>	<CAGo_u6raZY0sKdDn4d92SKpi=eqUpf23vW8K_bEi-v62V2jdPA@mail.gmail.com>	<52F51888.5010608@arm.com>	<CAGo_u6ofC4NNPiTNcSnXUvT3RZJo54=XyjetR-ok5hCBrVZkKg@mail.gmail.com>	<52F51FCD.5000009@arm.com> <CAJuA9agcpbKYocaQUBr2-VCXcXAo3r3urFF=+G_+ib2jCZqvwg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJuA9agT4PC6YOmhCwKQ=58qaGEr1qSuhTpX57ro1pEuk++Miw@mail.gmail.com>
+In-Reply-To: <CAJuA9agcpbKYocaQUBr2-VCXcXAo3r3urFF=+G_+ib2jCZqvwg@mail.gmail.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: Sudeep.Holla@arm.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>
+Cc: Sudeep.Holla@arm.com, Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/02/14 05:10, Thomas Abraham wrote:
-> On Fri, Feb 7, 2014 at 9:31 PM, Sudeep Holla <Sudeep.Holla@arm.com> wrote:
->> On 07/02/14 15:19, Thomas Abraham wrote:
->>> From: Thomas Abraham <thomas.ab@samsung.com>
+On 08/02/14 06:47, Thomas Abraham wrote:
+> On Fri, Feb 7, 2014 at 11:32 PM, Sudeep Holla <Sudeep.Holla@arm.com> wrote:
+>> On 07/02/14 17:37, Nishanth Menon wrote:
+>>> On Fri, Feb 7, 2014 at 11:31 AM, Sudeep Holla <Sudeep.Holla@arm.com> wrote:
+>>
+>> [...]
+>>
+>>>> Yes I think its counter-intuitive as it's visible to the userspace(list of
+>>>> frequencies and the boost parameters are exposed through sysfs)
 >>>
->>> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
->>> support for CPU boost mode. This patch adds support for finding available
->>> boost frequencies from device tree and marking them as usable in boost mode.
+>>> That will be a different problem -> as currently every single
+>>> frequency in the cpufreq list has ability to be marked as boost
+>>> frequency - if userspace does not maintain that, then, IMHO, fix the
+>>> userspace :D
 >>>
->>> Cc: Nishanth Menon <nm@ti.com>
->>> Cc: Lukasz Majewski <l.majewski@samsung.com>
->>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->>> ---
->>>  drivers/base/power/opp.c |   34 +++++++++++++++++++++++++++++++++-
->>>  1 file changed, 33 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
->>> index fa41874..b636826 100644
->>> --- a/drivers/base/power/opp.c
->>> +++ b/drivers/base/power/opp.c
->>> @@ -628,7 +628,8 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
->>>       struct device_opp *dev_opp;
->>>       struct dev_pm_opp *opp;
->>>       struct cpufreq_frequency_table *freq_table;
->>> -     int i = 0;
->>> +     int i = 0, j, len, ret;
->>> +     u32 *boost_freqs = NULL;
->>>
->>>       /* Pretend as if I am an updater */
->>>       mutex_lock(&dev_opp_list_lock);
->>> @@ -650,10 +651,35 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
->>>               return -ENOMEM;
->>>       }
->>>
->>> +     if (of_find_property(dev->of_node, "boost-frequency", &len)) {
->>> +             if (len == 0 || (len & (sizeof(u32) - 1)) != 0) {
->>> +                     dev_err(dev, "%s: invalid boost frequency\n", __func__);
->>> +                     ret = -EINVAL;
->>> +                     goto err_boost;
->>> +             }
->>> +
->>> +             boost_freqs = kzalloc(len, GFP_KERNEL);
->>> +             if (!boost_freqs) {
->>> +                     dev_warn(dev, "%s: no memory for boost freq table\n",
->>> +                                     __func__);
->>> +                     ret = -ENOMEM;
->>> +                     goto err_boost;
->>> +             }
->>> +             of_property_read_u32_array(dev->of_node, "boost-frequency",
->>> +                     boost_freqs, len / sizeof(u32));
->>> +     }
->>> +
->>>       list_for_each_entry(opp, &dev_opp->opp_list, node) {
->>>               if (opp->available) {
->>>                       freq_table[i].driver_data = i;
->>>                       freq_table[i].frequency = opp->rate / 1000;
->>> +                     for (j = 0; j < len / sizeof(u32) && boost_freqs; j++) {
->>> +                             if (boost_freqs[j] == freq_table[i].frequency) {
->>> +                                     freq_table[i].driver_data =
->>> +                                                     CPUFREQ_BOOST_FREQ;
->>> +                                     break;
->>> +                             }
->>> +                     }
->>>                       i++;
->>>               }
->>>       }
->> IIRC you had mentioned that the boost-opp was not limited to be a cpufreq, but
->> this change seems to be cpufreq only.
+>>
+>> /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies gives
+>> the list of frequencies based on the state of the boost feature at anytime.
 > 
-> Yes, but as you have initiated the discussion on extending the OPP
-> binding, this has been limited to cpufreq only. If the new OPP library
-> has support for listing boost frequency, this can be migrated to the
-> new OPP libaray.
+> The list of frequencies in
+> /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
+> does not change based in the state of the boost feature (enabled or
+> disabled). But the scaling_max_frequency and scaling_min_frequency are
+> updated based on the set of available + boost frequencies available.
 > 
 
-Fair enough, just wanted to check as I couldn't get the info following the
-thread. I might have missed it.
+Ah ok, sorry just glanced the code and misunderstood it. It make sense to update
+only max_frequency.
 
 Regards,
 Sudeep
