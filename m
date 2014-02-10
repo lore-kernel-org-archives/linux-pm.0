@@ -1,121 +1,90 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v2 2/2] Documentation: devicetree: Add boost-frequency
- binding to list boost mode frequency
-Date: Mon, 10 Feb 2014 08:53:05 +0100
-Message-ID: <20140210085305.641e6de5@amdc2363>
-References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com>
- <1391786342-11812-3-git-send-email-thomas.ab@samsung.com>
- <52F50698.4060305@arm.com> <52F509BD.70903@arm.com>
- <CAGo_u6raZY0sKdDn4d92SKpi=eqUpf23vW8K_bEi-v62V2jdPA@mail.gmail.com>
- <52F51888.5010608@arm.com>
- <CAGo_u6ofC4NNPiTNcSnXUvT3RZJo54=XyjetR-ok5hCBrVZkKg@mail.gmail.com>
- <52F51FCD.5000009@arm.com>
- <CAGo_u6quxExJOyY8mvCw5sDSuz=_j0YqJ6FJW+FAdaxUeqzN9Q@mail.gmail.com>
- <CAJuA9aj-LsdBiS2msOVmNRSe6mNj9QJsys9KjHZAk=9hrZOLzA@mail.gmail.com>
+From: Francis Moreau <francis.moro@gmail.com>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend
+ to RAM
+Date: Mon, 10 Feb 2014 09:17:08 +0100
+Message-ID: <52F88B04.2080309@gmail.com>
+References: <52F2CC7B.80406@gmail.com> <55671594.HynIX0trOC@vostro.rjw.lan> <52F41DB8.3080802@gmail.com> <2087423.Qy7HQIx1X6@vostro.rjw.lan> <52F7CC8B.1020209@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:55028 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbaBJHxU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 02:53:20 -0500
-In-reply-to: <CAJuA9aj-LsdBiS2msOVmNRSe6mNj9QJsys9KjHZAk=9hrZOLzA@mail.gmail.com>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:49250 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751108AbaBJIQI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 03:16:08 -0500
+In-Reply-To: <52F7CC8B.1020209@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: Nishanth Menon <nm@ti.com>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "t.figa@samsung.com" <t.figa@samsung.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Kumar Gala <galak@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Bastien Traverse <bastien.traverse@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <lekensteyn@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Thomas, Sudeep,
+On 02/09/2014 07:44 PM, Bastien Traverse wrote:
+> Le 07/02/2014 02:19, Rafael J. Wysocki a =C3=A9crit :
+>> Please send the output of lspci -vv right before suspend and right a=
+fter
+>> the subsequent resume as attachments.
+>=20
+> You'll find them attached, but I got a strange error when I wanted to
+> run it as root:
+> $ sudo lspci -vv > lspci_vv_before
+> pcilib: sysfs_read_vpd: read failed: Connection timed out
+> $ sudo -i
+> # lspci -vv
+> pcilib: sysfs_read_vpd: read failed: Connection timed out
+>=20
+> So I only got the unpriviledge output.
+>=20
+> Some complementary lines from my journal:
+>=20
+> kernel: r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> kernel: r8169 0000:03:00.2: can't disable ASPM; OS doesn't have ASPM =
+control
+> kernel: pcieport 0000:00:1c.3: driver skip pci_set_master, fix it!
+> kernel: r8169 0000:03:00.2: irq 44 for MSI/MSI-X
+> kernel: r8169 0000:03:00.2 eth0: RTL8411 at 0xffffc90016ed4000,
+> 00:90:f5:d7:34:53, XID 08800800 IRQ 44
+> kernel: r8169 0000:03:00.2 eth0: jumbo features [frames: 9200 bytes, =
+tx
+> checksumming: ko]
+> kernel: rtsx_pci 0000:03:00.0: irq 45 for MSI/MSI-X
+> kernel: rtsx_pci 0000:03:00.0: rtsx_pci_acquire_irq: pcr->msi_en =3D =
+1,
+> pci->irq =3D 45
+> ...
+>=20
+> And one I thought of interest:
+>=20
+> kernel: rtsx_pci 0000:03:00.0: vpd r/w failed.  This is likely a
+> firmware bug on this device.  Contact the card vendor for a firmware =
+update.
+>=20
+> That came three times before suspend.
+>=20
+> Only two lines about hotplug, none special.
+>=20
+> Stripped journal attached for the suspend cycle.
+>=20
+>=20
+> Le 07/02/2014 08:29, Francis Moreau a =C3=A9crit :
+>> yeah, but calling this "fast resolution" is quite incorrect.
+>>
+>> I don't blame anyone for this and I'm quite happy that a workaround =
+has
+>> been found at last but calling this "fast resolution" is a bit funny
+>> compare to the PITA it was to debug this.
+>=20
+> Sorry, I didn't mean to underestimate the amount of work you put in t=
+hat
+> bug resolution (actually it was the first time I heard of kernel
+> bisection and was pretty impressed by how you led it).
 
-> On Sat, Feb 8, 2014 at 1:11 AM, Nishanth Menon <nm@ti.com> wrote:
-> > On Fri, Feb 7, 2014 at 12:02 PM, Sudeep Holla
-> > <Sudeep.Holla@arm.com> wrote:
-> >> On 07/02/14 17:37, Nishanth Menon wrote:
-> >>> On Fri, Feb 7, 2014 at 11:31 AM, Sudeep Holla
-> >>> <Sudeep.Holla@arm.com> wrote:
-> >>
-> >> [...]
-> >>
-> >>>> Yes I think its counter-intuitive as it's visible to the
-> >>>> userspace(list of frequencies and the boost parameters are
-> >>>> exposed through sysfs)
-> >>>
-> >>> That will be a different problem -> as currently every single
-> >>> frequency in the cpufreq list has ability to be marked as boost
-> >>> frequency - if userspace does not maintain that, then, IMHO, fix
-> >>> the userspace :D
-> >>>
-> >>
-> >> /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
-> >> gives the list of frequencies based on the state of the boost
-> >> feature at anytime.
-> >>
-> >> Intuitively the list without boost shouldn't have any frequency
-> >> above the range when it's enabled :), that's what I was referring
-> >> to. So I am not talking about any issue with user-space
-> >> maintenance.
-> > Fair enough - but i still think it has nothing to do with dt binding
-> > itself -> and i think the discussion we've had should be good for
-> > the binding provided in this patch.. I hope.. if documentation
-> > needs a bit of better explanation to prevent a repeat of the same
-> > discussion at a later point of time, now might be a good time to
-> > add it in.
-> 
-> The term boost and over-clocking have been described in the bindings
-> document as being the same. Since the term over-clocking refers to
-> running a CPU beyond normal operating frequencies, I tend to agree
-> with Sudeep that it is not intuitive if a normal operating frequency
-> is greater than a boost mode frequency.
-> 
-> Otherwise, when userspace does "echo 1 >
-> /sys/devices/system/cpu/cpufreq/boost", what is it supposed to mean. I
-> think the original intent of boost mode patches was to allow CPU to
-> operate at frequencies greater than the normal operating frequencies.
-> 
-> Lukasz, how would you want this to be handled?
+No problem Bastien and don't be impressed by this :). Bisection thing i=
+s
+a mechanical work but can be useful sometimes when we, users, are lost
+and have no clue on what's going on.
 
-Please consider an example:
+The real PITA in that case was to reboot more than 10 times the system
+in order to test each suspicious commits on a live system.
 
-normal-freqs: 1400000, 1200000, 1000000, 800000, 600000, 400000, 200000
-[1]
-boost-freqs: 1700000, 1600000, 1500000. [2]
+Anyways, good luck, all my hopes are on you now :)
 
-All those freqs shall be represented as OPPs freq and voltage tuple.
-
-Best would be to specify all the boost-freqs as:
-boost-freqs = <1700000 1600000 1500000> to be prepared for future
-quirks or problems (or special cases which might show up latter).
-If anybody can foresee any potential threads - like platform on which
-boost freqs are 1700000 and 1500000, but not 1600000, then please share
-this information.
-
-However, I think that it would be also acceptable to specify only:
-boost-freq = <1500000> and mark all freqs greater or equal to it as
-CPUFREQ_BOOST_FREQ.
-
-If there aren't any potential problems, then I think the second option
-would be a good solution (we would have only one BOOST attribute stored
-at CPUs DTS node).
-
-> 
-> Thanks,
-> Thomas.
-> 
-> >
-> > Regards,
-> > Nishanth Menon
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
