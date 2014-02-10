@@ -1,113 +1,209 @@
-From: Sudeep Holla <Sudeep.Holla@arm.com>
-Subject: Re: [PATCH v2 2/2] Documentation: devicetree: Add boost-frequency
- binding to list boost mode frequency
-Date: Mon, 10 Feb 2014 11:20:37 +0000
-Message-ID: <52F8B605.6020108@arm.com>
-References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com> <1391786342-11812-3-git-send-email-thomas.ab@samsung.com> <52F50698.4060305@arm.com> <52F509BD.70903@arm.com> <CAGo_u6raZY0sKdDn4d92SKpi=eqUpf23vW8K_bEi-v62V2jdPA@mail.gmail.com> <52F51888.5010608@arm.com> <CAGo_u6ofC4NNPiTNcSnXUvT3RZJo54=XyjetR-ok5hCBrVZkKg@mail.gmail.com> <52F51FCD.5000009@arm.com> <CAGo_u6quxExJOyY8mvCw5sDSuz=_j0YqJ6FJW+FAdaxUeqzN9Q@mail.gmail.com> <CAJuA9aj-LsdBiS2msOVmNRSe6mNj9QJsys9KjHZAk=9hrZOLzA@mail.gmail.com> <20140210085305.641e6de5@amdc2363>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend to RAM
+Date: Mon, 10 Feb 2014 13:10:19 +0100
+Message-ID: <1747020.MhBDqPO9oJ@vostro.rjw.lan>
+References: <52F2CC7B.80406@gmail.com> <1521445.Je1ql4ndX7@vostro.rjw.lan> <5195003.Lv4YMFRT0Y@al>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20140210085305.641e6de5@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>
-Cc: Sudeep.Holla@arm.com, Nishanth Menon <nm@ti.com>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "t.figa@samsung.com" <t.figa@samsung.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Kumar Gala <galak@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:54331 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752571AbaBJLzn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 06:55:43 -0500
+In-Reply-To: <5195003.Lv4YMFRT0Y@al>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Wu <lekensteyn@gmail.com>
+Cc: Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On 10/02/14 07:53, Lukasz Majewski wrote:
-> Hi Thomas, Sudeep,
+On Monday, February 10, 2014 02:15:22 AM Peter Wu wrote:
+> On Monday 10 February 2014 01:52:14 Rafael J. Wysocki wrote:
+> > > Could the following commit have something to do with it?
+> > >
+> > > 
+> > >
+> > > commit 4ebe34503baa0644c9352bcd76d4cf573bffe206
+> > > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > Date:   Tue Jul 16 22:10:35 2013 +0200
+> > >
+> > > 
+> > >     ACPI / hotplug / PCI: Check for new devices on enabled slots
+> > 
+> > This one, or another one in that series.  I rather suspect
+> > 
+> > ab1225901da2 Revert "ACPI / hotplug / PCI: Avoid doing too much for spurious
+> > notifies"
+> > 
+> > from Mika, but it really doesn't matter.
+> > 
+> > Can you please check the patch below (it is on top of 3.14-rc1, but I think
+> > it'll still apply to 3.13) and report back?
 > 
->> On Sat, Feb 8, 2014 at 1:11 AM, Nishanth Menon <nm@ti.com> wrote:
->>> On Fri, Feb 7, 2014 at 12:02 PM, Sudeep Holla
->>> <Sudeep.Holla@arm.com> wrote:
->>>> On 07/02/14 17:37, Nishanth Menon wrote:
->>>>> On Fri, Feb 7, 2014 at 11:31 AM, Sudeep Holla
->>>>> <Sudeep.Holla@arm.com> wrote:
->>>>
->>>> [...]
->>>>
->>>>>> Yes I think its counter-intuitive as it's visible to the
->>>>>> userspace(list of frequencies and the boost parameters are
->>>>>> exposed through sysfs)
->>>>>
->>>>> That will be a different problem -> as currently every single
->>>>> frequency in the cpufreq list has ability to be marked as boost
->>>>> frequency - if userspace does not maintain that, then, IMHO, fix
->>>>> the userspace :D
->>>>>
->>>>
->>>> /sys/devices/system/cpu/cpu*/cpufreq/scaling_available_frequencies
->>>> gives the list of frequencies based on the state of the boost
->>>> feature at anytime.
->>>>
->>>> Intuitively the list without boost shouldn't have any frequency
->>>> above the range when it's enabled :), that's what I was referring
->>>> to. So I am not talking about any issue with user-space
->>>> maintenance.
->>> Fair enough - but i still think it has nothing to do with dt binding
->>> itself -> and i think the discussion we've had should be good for
->>> the binding provided in this patch.. I hope.. if documentation
->>> needs a bit of better explanation to prevent a repeat of the same
->>> discussion at a later point of time, now might be a good time to
->>> add it in.
->>
-Nishanth, though I am not convinced that it should be list, since you have a
-valid point that this should not prevent in having this feature, I am fine with
-the list.
+> I applied the following patch:
+> 
+> --- drivers/pci/hotplug/acpiphp_glue.c.orig	2014-02-10 01:46:59.678124018 +0100
+> +++ drivers/pci/hotplug/acpiphp_glue.c	2014-02-10 01:48:59.634124004 +0100
+> @@ -552,10 +552,10 @@
+>  	struct pci_dev *dev;
+>  	struct pci_bus *bus = slot->bus;
+>  	struct acpiphp_func *func;
+> -	int max, pass;
+> +	int nr_found, max, pass, bridges_scanned = 0;
+>  	LIST_HEAD(add_list);
+>  
+> -	acpiphp_rescan_slot(slot);
+> +	nr_found = acpiphp_rescan_slot(slot);
+>  	max = acpiphp_max_busnr(bus);
+>  	for (pass = 0; pass < 2; pass++) {
+>  		list_for_each_entry(dev, &bus->devices, bus_list) {
+> @@ -571,9 +571,16 @@
+>  					__pci_bus_size_bridges(dev->subordinate,
+>  							       &add_list);
+>  				}
+> +				bridges_scanned++;
+>  			}
+>  		}
+>  	}
+> +	/* Nothing more to do here if there are no new devices on this bus. */
+> +	if (!nr_found && !bridges_scanned && (slot->flags & SLOT_ENABLED)) {
+> +		pr_debug("No more new devices on this bus.\n");
+> +		return;
+> +	}
+> +
+>  	__pci_bus_assign_resources(bus, &add_list, NULL);
+>  
+>  	acpiphp_sanitize_bus(bus);
+> 
+> Unfortunately, the adapter still vanishes. dmesg is below this message.
+> 
+> Peter
+> 
+> [   44.558995] CPU3 is up
+> [   44.561438] ACPI: Waking up from system sleep state S3
+> [   45.254084] ehci-pci 0000:00:1a.0: System wakeup disabled by ACPI
+> [   45.280727] ehci-pci 0000:00:1d.0: System wakeup disabled by ACPI
+> [   45.307403] xhci_hcd 0000:02:00.0: System wakeup disabled by ACPI
+> [   45.361012] PM: noirq resume of devices complete after 133.354 msecs
+> [   45.361292] PM: early resume of devices complete after 0.233 msecs
+> [   45.361680] iwlwifi 0000:05:00.0: RF_KILL bit toggled to enable radio.
+> [   45.361731] pcieport 0000:00:1c.1: System wakeup disabled by ACPI
+> [   45.470912] snd_hda_intel 0000:00:1b.0: irq 48 for MSI/MSI-X
+> [   45.700502] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> [   45.700533] ata5: SATA link down (SStatus 0 SControl 300)
+> [   45.701385] ata1.00: configured for UDMA/133
+> [   45.701503] sd 0:0:0:0: [sda] Starting disk
+> [   45.707139] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> [   45.872011] ata2.00: configured for UDMA/100
+> [   46.791141] PM: resume of devices complete after 1430.658 msecs
+> [   46.791560] PM: Finishing wakeup.
+> [   46.791565] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
+> [   46.791568] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
+> [   46.791642] acpiphp_glue: No more new devices on this bus.
+> [   46.791571] Restarting tasks ... done.
+> [   46.793204] video LNXVIDEO:00: Restoring backlight state
+> [   46.793211] video LNXVIDEO:01: Restoring backlight state
+> [   47.246425] ACPI: \_SB_.AC__: ACPI_NOTIFY_BUS_CHECK event: unsupported
+> [   47.251540] jme 0000:04:00.5: irq 50 for MSI/MSI-X
+> [   47.276949] jme 0000:04:00.5 eth0: Link is down
 
->> The term boost and over-clocking have been described in the bindings
->> document as being the same. Since the term over-clocking refers to
->> running a CPU beyond normal operating frequencies, I tend to agree
->> with Sudeep that it is not intuitive if a normal operating frequency
->> is greater than a boost mode frequency.
->>
->> Otherwise, when userspace does "echo 1 >
->> /sys/devices/system/cpu/cpufreq/boost", what is it supposed to mean. I
->> think the original intent of boost mode patches was to allow CPU to
->> operate at frequencies greater than the normal operating frequencies.
->>
->> Lukasz, how would you want this to be handled?
-> 
-> Please consider an example:
-> 
-> normal-freqs: 1400000, 1200000, 1000000, 800000, 600000, 400000, 200000
-> [1]
-> boost-freqs: 1700000, 1600000, 1500000. [2]
-> 
-> All those freqs shall be represented as OPPs freq and voltage tuple.
-> 
-> Best would be to specify all the boost-freqs as:
-> boost-freqs = <1700000 1600000 1500000> to be prepared for future
-> quirks or problems (or special cases which might show up latter).
-> If anybody can foresee any potential threads - like platform on which
-> boost freqs are 1700000 and 1500000, but not 1600000, then please share
-> this information.
-> 
-If that's the case then why should it be included in the list of OPPs.
-I know Nishanth had a valid point in other thread previously(like including
-SoC.dtsi having OPPs in platform files), but that's different problem.
+I'm wondering why these two messages are printed here.
 
-> However, I think that it would be also acceptable to specify only:
-> boost-freq = <1500000> and mark all freqs greater or equal to it as
-> CPUFREQ_BOOST_FREQ.
-> 
-> If there aren't any potential problems, then I think the second option
-> would be a good solution (we would have only one BOOST attribute stored
-> at CPUs DTS node).
-> 
+> [   47.276974] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+> [   47.278423] iwlwifi 0000:05:00.0: L1 Enabled; Disabling L0S
+> [   47.285758] iwlwifi 0000:05:00.0: Radio type=0x1-0x3-0x1
+> [   47.393492] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP01
+> [   47.393495] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP01
+> [   47.393517] acpiphp_glue: No more new devices on this bus.
+> [   47.393525] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP02
+> [   47.393527] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP02
 
-Yes I prefer this to keep it simple and as per the definition of overclocking
-or turbo boost in hardware terms if possible.
+Anyway, the message you've added to the patch is not printed for this bridge,
+so the condition is not satified for its bus.  We need to find out why it isn't
+satisfied and what exactly happens to the devices that appear to go away.
 
-Just another thought, not sure how much this is true for real platforms, sharing
-it anyway. IIUC these boost frequencies have certain constraints like thermal
-and can't be sustained all the processors for long time.
+Please apply the appended patch instead of the previous one and check the output.
 
-So does it make sense to specify normal max frequency instead of boost-frequency
-which by definition would be: "The maximum frequency that all processors are can
-sustain simultaneously without any thermal constraints".
-Ignore this if this is not the definition of boost on real platforms.
+Thanks,
+Rafael
 
+---
+ drivers/pci/hotplug/acpiphp_glue.c |   37 ++++++++++++++++++++++++++-----------
+ 1 file changed, 26 insertions(+), 11 deletions(-)
 
-Regards,
-Sudeep
+Index: linux-pm/drivers/pci/hotplug/acpiphp_glue.c
+===================================================================
+--- linux-pm.orig/drivers/pci/hotplug/acpiphp_glue.c
++++ linux-pm/drivers/pci/hotplug/acpiphp_glue.c
+@@ -555,10 +555,10 @@ static void __ref enable_slot(struct acp
+ 	struct pci_dev *dev;
+ 	struct pci_bus *bus = slot->bus;
+ 	struct acpiphp_func *func;
+-	int max, pass;
++	int nr_found, max, pass, bridges_scanned = 0;
+ 	LIST_HEAD(add_list);
+ 
+-	acpiphp_rescan_slot(slot);
++	nr_found = acpiphp_rescan_slot(slot);
+ 	max = acpiphp_max_busnr(bus);
+ 	for (pass = 0; pass < 2; pass++) {
+ 		list_for_each_entry(dev, &bus->devices, bus_list) {
+@@ -574,19 +574,29 @@ static void __ref enable_slot(struct acp
+ 					__pci_bus_size_bridges(dev->subordinate,
+ 							       &add_list);
+ 				}
++				bridges_scanned++;
+ 			}
+ 		}
+ 	}
+-	__pci_bus_assign_resources(bus, &add_list, NULL);
++	/* Nothing more to do here if there are no new devices on this bus. */
++	if (!nr_found && !bridges_scanned && (slot->flags & SLOT_ENABLED)) {
++		dev_info(&bus->dev, "No more new devices\n");
++		return;
++	}
++	if (bridges_scanned) {
++		dev_info(&bus->dev, "Assigning resources\n");
++		__pci_bus_assign_resources(bus, &add_list, NULL);
++	}
++	if (nr_found) {
++		acpiphp_sanitize_bus(bus);
++		acpiphp_set_hpp_values(bus);
++		acpiphp_set_acpi_region(slot);
+ 
+-	acpiphp_sanitize_bus(bus);
+-	acpiphp_set_hpp_values(bus);
+-	acpiphp_set_acpi_region(slot);
+-
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		/* Assume that newly added devices are powered on already. */
+-		if (!dev->is_added)
+-			dev->current_state = PCI_D0;
++		list_for_each_entry(dev, &bus->devices, bus_list) {
++			/* Assume that newly added devices are powered on already. */
++			if (!dev->is_added)
++				dev->current_state = PCI_D0;
++		}
+ 	}
+ 
+ 	pci_bus_add_devices(bus);
+@@ -734,6 +744,8 @@ static void trim_stale_devices(struct pc
+ 		alive = pci_bus_read_dev_vendor_id(dev->bus, dev->devfn, &v, 0);
+ 	}
+ 	if (!alive) {
++		dev_info(&dev->dev, "Removing in %s\n", __func__);
++
+ 		pci_stop_and_remove_bus_device(dev);
+ 		if (handle)
+ 			acpiphp_bus_trim(handle);
+@@ -812,6 +824,9 @@ static void acpiphp_sanitize_bus(struct
+ 					res->end) {
+ 				/* Could not assign a required resources
+ 				 * for this device, remove it */
++
++				dev_info(&dev->dev, "Removing in %s\n", __func__);
++
+ 				pci_stop_and_remove_bus_device(dev);
+ 				break;
+ 			}
+
