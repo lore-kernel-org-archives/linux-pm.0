@@ -1,91 +1,36 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [RFT][PATCH 07/12] isa: change isa bus power management to use dev_pm_ops
-Date: Mon, 10 Feb 2014 09:12:30 -0700
-Message-ID: <7ba97d2e7665008d0db89a7a36333394e5596a5e.1392040068.git.shuah.kh@samsung.com>
-References: <cover.1392040064.git.shuah.kh@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:39443 "EHLO
-	qmta08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752157AbaBJQVr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 11:21:47 -0500
-In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
-In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
-References: <cover.1392040064.git.shuah.kh@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: poma <pomidorabelisima-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: WARNING: CPU: 1 PID: 0 at kernel/time/tick-broadcast.c:668
+	tick_broadcast_oneshot_control+0x17d/0x190()
+Date: Mon, 10 Feb 2014 19:59:39 +0100
+Message-ID: <52F9219B.5020003@gmail.com>
+References: <52F84A9B.5020008@gmail.com>
+	<alpine.DEB.2.02.1402101056260.21991@ionos.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
+In-Reply-To: <alpine.DEB.2.02.1402101056260.21991-3cz04HxQygjZikZi3RtOZ1XZhhPuCNm+@public.gmane.org>
+List-Unsubscribe: <https://admin.fedoraproject.org/mailman/options/kernel>,
+	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.fedoraproject.org/pipermail/kernel/>
+List-Post: <mailto:kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
+List-Help: <mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=help>
+List-Subscribe: <https://admin.fedoraproject.org/mailman/listinfo/kernel>,
+	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=subscribe>
+Sender: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
+Errors-To: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
+To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Cc: Olaf Hering <olaf-QOLJcTWqO2uzQB+pC5nmwQ@public.gmane.org>, Stanislaw Gruszka <sgruszka-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Mailing-List fedora-kernel <kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Justin M. Forbes" <jforbes-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, gregkh@linuxfoundation.org
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Change isa bus driver to register pm ops using dev_pm_ops instead of
-legacy pm_ops. .pm hooks call existing legacy suspend and resume
-interfaces by passing in the right pm state.
-
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
- drivers/base/isa.c |   30 +++++++++++++++++++++++++++---
- 1 file changed, 27 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/base/isa.c b/drivers/base/isa.c
-index 91dba65..15b8825 100644
---- a/drivers/base/isa.c
-+++ b/drivers/base/isa.c
-@@ -63,7 +63,7 @@ static void isa_bus_shutdown(struct device *dev)
- 		isa_driver->shutdown(dev, to_isa_dev(dev)->id);
- }
- 
--static int isa_bus_suspend(struct device *dev, pm_message_t state)
-+static int __isa_bus_suspend(struct device *dev, pm_message_t state)
- {
- 	struct isa_driver *isa_driver = dev->platform_data;
- 
-@@ -73,6 +73,21 @@ static int isa_bus_suspend(struct device *dev, pm_message_t state)
- 	return 0;
- }
- 
-+static int isa_bus_suspend(struct device *dev)
-+{
-+	return __isa_bus_suspend(dev, PMSG_SUSPEND);
-+}
-+
-+static int isa_bus_freeze(struct device *dev)
-+{
-+	return __isa_bus_suspend(dev, PMSG_FREEZE);
-+}
-+
-+static int isa_bus_poweroff(struct device *dev)
-+{
-+	return __isa_bus_suspend(dev, PMSG_HIBERNATE);
-+}
-+
- static int isa_bus_resume(struct device *dev)
- {
- 	struct isa_driver *isa_driver = dev->platform_data;
-@@ -83,14 +98,23 @@ static int isa_bus_resume(struct device *dev)
- 	return 0;
- }
- 
-+static const struct dev_pm_ops isa_bus_dev_pm_ops = {
-+	.suspend = isa_bus_suspend,
-+	.resume = isa_bus_resume,
-+	/* Hibernate callbacks */
-+	.freeze = isa_bus_freeze,
-+	.thaw = isa_bus_resume,
-+	.poweroff = isa_bus_poweroff,
-+	.restore = isa_bus_resume,
-+};
-+
- static struct bus_type isa_bus_type = {
- 	.name		= "isa",
- 	.match		= isa_bus_match,
- 	.probe		= isa_bus_probe,
- 	.remove		= isa_bus_remove,
- 	.shutdown	= isa_bus_shutdown,
--	.suspend	= isa_bus_suspend,
--	.resume		= isa_bus_resume
-+	.pm		= &isa_bus_dev_pm_ops,
- };
- 
- static void isa_dev_release(struct device *dev)
--- 
-1.7.10.4
-
+T24gMTAuMDIuMjAxNCAxMTowNiwgVGhvbWFzIEdsZWl4bmVyIHdyb3RlOgo+IE9uIE1vbiwgMTAg
+RmViIDIwMTQsIHBvbWEgd3JvdGU6Cj4gCj4+IFsgICA4My41NTg1NTFdICBbPGZmZmZmZmZmODEw
+MjViMTc+XSBhbWRfZTQwMF9pZGxlKzB4ODcvMHgxMzAKPiAKPiBTbyB0aGlzIHNlZW1zIHRvIGhh
+cHBlbiBvbmx5IG9uIEFNRCBtYWNoaW5lcyB3aGljaCB1c2UgdGhhdCBlNDAwIGlkbGUKPiBtb2Rl
+LiBJIGhhdmUgbm8gaWRlYSBhdCB0aGUgbW9tZW50IHdoYXRzIHdyb25nIHRoZXJlLiBJJ2xsIGZp
+bmQgb25lIG9mCj4gdGhvc2UgbWFjaGluZXMgYW5kIHRyeSB0byByZXByb2R1Y2UuCj4gCj4gVGhh
+bmtzLAo+IAo+IAl0Z2x4CgpUaGFua3MgZm9yIHlvdXIgcmVzcG9uc2UhIDopCmh0dHBzOi8vYnVn
+emlsbGEucmVkaGF0LmNvbS9zaG93X2J1Zy5jZ2k/aWQ9MTAzMTI5NiNjMjQKCgpwb21hCgpfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwprZXJuZWwgbWFpbGlu
+ZyBsaXN0Cmtlcm5lbEBsaXN0cy5mZWRvcmFwcm9qZWN0Lm9yZwpodHRwczovL2FkbWluLmZlZG9y
+YXByb2plY3Qub3JnL21haWxtYW4vbGlzdGluZm8va2VybmVs
