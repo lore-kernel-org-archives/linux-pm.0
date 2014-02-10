@@ -1,82 +1,91 @@
 From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [RFT][PATCH 12/12] drivers/s390/crypto: change ap_bus driver power management to use dev_pm_ops
-Date: Mon, 10 Feb 2014 09:15:43 -0700
-Message-ID: <8c806d9343e9b28ee505908d6171e99032a5bf52.1392040068.git.shuah.kh@samsung.com>
+Subject: [RFT][PATCH 07/12] isa: change isa bus power management to use dev_pm_ops
+Date: Mon, 10 Feb 2014 09:12:30 -0700
+Message-ID: <7ba97d2e7665008d0db89a7a36333394e5596a5e.1392040068.git.shuah.kh@samsung.com>
 References: <cover.1392040064.git.shuah.kh@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:39443 "EHLO
+	qmta08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752157AbaBJQVr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 11:21:47 -0500
 In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, ingo.tuchscherer@de.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux390@de.ibm.com, linux-s390@vger.kernel.org, shuahkhan@gmail.com
+In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
+References: <cover.1392040064.git.shuah.kh@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, gregkh@linuxfoundation.org
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Change ap_bus driver to register pm ops using dev_pm_ops instead of legacy
-pm_ops. .pm hooks call existing legacy suspend and resume interfaces by
-passing in the right pm state.
+Change isa bus driver to register pm ops using dev_pm_ops instead of
+legacy pm_ops. .pm hooks call existing legacy suspend and resume
+interfaces by passing in the right pm state.
 
 Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
 ---
- drivers/s390/crypto/ap_bus.c |   30 +++++++++++++++++++++++++++---
+ drivers/base/isa.c |   30 +++++++++++++++++++++++++++---
  1 file changed, 27 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/s390/crypto/ap_bus.c b/drivers/s390/crypto/ap_bus.c
-index ab3baa7..c39c917 100644
---- a/drivers/s390/crypto/ap_bus.c
-+++ b/drivers/s390/crypto/ap_bus.c
-@@ -799,7 +799,7 @@ static int ap_uevent (struct device *dev, struct kobj_uevent_env *env)
- 	return retval;
+diff --git a/drivers/base/isa.c b/drivers/base/isa.c
+index 91dba65..15b8825 100644
+--- a/drivers/base/isa.c
++++ b/drivers/base/isa.c
+@@ -63,7 +63,7 @@ static void isa_bus_shutdown(struct device *dev)
+ 		isa_driver->shutdown(dev, to_isa_dev(dev)->id);
  }
  
--static int ap_bus_suspend(struct device *dev, pm_message_t state)
-+static int __ap_bus_suspend(struct device *dev, pm_message_t state)
+-static int isa_bus_suspend(struct device *dev, pm_message_t state)
++static int __isa_bus_suspend(struct device *dev, pm_message_t state)
  {
- 	struct ap_device *ap_dev = to_ap_dev(dev);
- 	unsigned long flags;
-@@ -833,6 +833,21 @@ static int ap_bus_suspend(struct device *dev, pm_message_t state)
+ 	struct isa_driver *isa_driver = dev->platform_data;
+ 
+@@ -73,6 +73,21 @@ static int isa_bus_suspend(struct device *dev, pm_message_t state)
  	return 0;
  }
  
-+static int ap_bus_suspend(struct device *dev)
++static int isa_bus_suspend(struct device *dev)
 +{
-+	return __ap_bus_suspend(dev, PMSG_SUSPEND);
++	return __isa_bus_suspend(dev, PMSG_SUSPEND);
 +}
 +
-+static int ap_bus_freeze(struct device *dev)
++static int isa_bus_freeze(struct device *dev)
 +{
-+	return __ap_bus_suspend(dev, PMSG_FREEZE);
++	return __isa_bus_suspend(dev, PMSG_FREEZE);
 +}
 +
-+static int ap_bus_poweroff(struct device *dev)
++static int isa_bus_poweroff(struct device *dev)
 +{
-+	return __ap_bus_suspend(dev, PMSG_HIBERNATE);
++	return __isa_bus_suspend(dev, PMSG_HIBERNATE);
 +}
 +
- static int ap_bus_resume(struct device *dev)
+ static int isa_bus_resume(struct device *dev)
  {
- 	struct ap_device *ap_dev = to_ap_dev(dev);
-@@ -886,12 +901,21 @@ static int ap_bus_resume(struct device *dev)
- 	return rc;
+ 	struct isa_driver *isa_driver = dev->platform_data;
+@@ -83,14 +98,23 @@ static int isa_bus_resume(struct device *dev)
+ 	return 0;
  }
  
-+static const struct dev_pm_ops ap_bus_dev_pm_ops = {
-+	.suspend = ap_bus_suspend,
-+	.resume = ap_bus_resume,
++static const struct dev_pm_ops isa_bus_dev_pm_ops = {
++	.suspend = isa_bus_suspend,
++	.resume = isa_bus_resume,
 +	/* Hibernate callbacks */
-+	.freeze = ap_bus_freeze,
-+	.thaw = ap_bus_resume,
-+	.poweroff = ap_bus_poweroff,
-+	.restore = ap_bus_resume,
++	.freeze = isa_bus_freeze,
++	.thaw = isa_bus_resume,
++	.poweroff = isa_bus_poweroff,
++	.restore = isa_bus_resume,
 +};
 +
- static struct bus_type ap_bus_type = {
- 	.name = "ap",
- 	.match = &ap_bus_match,
- 	.uevent = &ap_uevent,
--	.suspend = ap_bus_suspend,
--	.resume = ap_bus_resume
-+	.pm = &ap_bus_dev_pm_ops,
+ static struct bus_type isa_bus_type = {
+ 	.name		= "isa",
+ 	.match		= isa_bus_match,
+ 	.probe		= isa_bus_probe,
+ 	.remove		= isa_bus_remove,
+ 	.shutdown	= isa_bus_shutdown,
+-	.suspend	= isa_bus_suspend,
+-	.resume		= isa_bus_resume
++	.pm		= &isa_bus_dev_pm_ops,
  };
  
- static int ap_device_probe(struct device *dev)
+ static void isa_dev_release(struct device *dev)
 -- 
 1.7.10.4
+
