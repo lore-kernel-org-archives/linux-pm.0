@@ -1,74 +1,129 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-Date: Mon, 10 Feb 2014 09:15:04 +0530
-Message-ID: <52F84B40.8090403@linux.vnet.ibm.com>
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org> <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com> <52F3BCFE.3010703@linux.vnet.ibm.com> <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr> <52F46EB3.5080403@linux.vnet.ibm.com> <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr> <52F4C666.4050308@linux.vnet.ibm.com> <20140207124140.GB9987@twins.programming.kicks-ass.net>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 1/2] PM / OPP: Allow boost frequency to be looked up
+ from device tree
+Date: Mon, 10 Feb 2014 08:10:51 +0100
+Message-ID: <20140210081051.05da33bd@amdc2363>
+References: <1391786342-11812-1-git-send-email-thomas.ab@samsung.com>
+ <1391786342-11812-2-git-send-email-thomas.ab@samsung.com>
+ <52F50346.7040707@arm.com>
+ <CAJuA9agT4PC6YOmhCwKQ=58qaGEr1qSuhTpX57ro1pEuk++Miw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:39105 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbaBJDsm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Feb 2014 22:48:42 -0500
-Received: from /spool/local
-	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Mon, 10 Feb 2014 09:18:38 +0530
-In-Reply-To: <20140207124140.GB9987@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAJuA9agT4PC6YOmhCwKQ=58qaGEr1qSuhTpX57ro1pEuk++Miw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <ta.omasab@gmail.com>, Sudeep Holla <Sudeep.Holla@arm.com>
+Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "t.figa@samsung.com" <t.figa@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 
-Hi Peter,
+Hi Thomas, Sudeep
 
-On 02/07/2014 06:11 PM, Peter Zijlstra wrote:
-> On Fri, Feb 07, 2014 at 05:11:26PM +0530, Preeti U Murthy wrote:
->> But observe the idle state "snooze" on powerpc. The power that this idle
->> state saves is through the lowering of the thread priority of the CPU.
->> After it lowers the thread priority, it is done. It cannot
->> "wait_for_interrupts". It will exit my_idle(). It is now upto the
->> generic idle loop to increase the thread priority if the need_resched
->> flag is set. Only an interrupt routine can increase the thread priority.
->> Else we will need to do it explicitly. And in such states which have a
->> polling nature, the cpu will not receive a reschedule IPI.
->>
->> That is why in the snooze_loop() we poll on need_resched. If it is set
->> we up the priority of the thread using HMT_MEDIUM() and then exit the
->> my_idle() loop. In case of interrupts, the priority gets automatically
->> increased.
+> On Fri, Feb 7, 2014 at 9:31 PM, Sudeep Holla <Sudeep.Holla@arm.com>
+> wrote:
+> > On 07/02/14 15:19, Thomas Abraham wrote:
+> >> From: Thomas Abraham <thomas.ab@samsung.com>
+> >>
+> >> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core")
+> >> adds support for CPU boost mode. This patch adds support for
+> >> finding available boost frequencies from device tree and marking
+> >> them as usable in boost mode.
+> >>
+> >> Cc: Nishanth Menon <nm@ti.com>
+> >> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> >> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> >> ---
+> >>  drivers/base/power/opp.c |   34 +++++++++++++++++++++++++++++++++-
+> >>  1 file changed, 33 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> >> index fa41874..b636826 100644
+> >> --- a/drivers/base/power/opp.c
+> >> +++ b/drivers/base/power/opp.c
+> >> @@ -628,7 +628,8 @@ int dev_pm_opp_init_cpufreq_table(struct
+> >> device *dev, struct device_opp *dev_opp;
+> >>       struct dev_pm_opp *opp;
+> >>       struct cpufreq_frequency_table *freq_table;
+> >> -     int i = 0;
+> >> +     int i = 0, j, len, ret;
+> >> +     u32 *boost_freqs = NULL;
+> >>
+> >>       /* Pretend as if I am an updater */
+> >>       mutex_lock(&dev_opp_list_lock);
+> >> @@ -650,10 +651,35 @@ int dev_pm_opp_init_cpufreq_table(struct
+> >> device *dev, return -ENOMEM;
+> >>       }
+> >>
+> >> +     if (of_find_property(dev->of_node, "boost-frequency", &len))
+> >> {
+> >> +             if (len == 0 || (len & (sizeof(u32) - 1)) != 0) {
+> >> +                     dev_err(dev, "%s: invalid boost
+> >> frequency\n", __func__);
+> >> +                     ret = -EINVAL;
+> >> +                     goto err_boost;
+> >> +             }
+> >> +
+> >> +             boost_freqs = kzalloc(len, GFP_KERNEL);
+> >> +             if (!boost_freqs) {
+> >> +                     dev_warn(dev, "%s: no memory for boost freq
+> >> table\n",
+> >> +                                     __func__);
+> >> +                     ret = -ENOMEM;
+> >> +                     goto err_boost;
+> >> +             }
+> >> +             of_property_read_u32_array(dev->of_node,
+> >> "boost-frequency",
+> >> +                     boost_freqs, len / sizeof(u32));
+> >> +     }
+> >> +
+> >>       list_for_each_entry(opp, &dev_opp->opp_list, node) {
+> >>               if (opp->available) {
+> >>                       freq_table[i].driver_data = i;
+> >>                       freq_table[i].frequency = opp->rate / 1000;
+> >> +                     for (j = 0; j < len / sizeof(u32) &&
+> >> boost_freqs; j++) {
+> >> +                             if (boost_freqs[j] ==
+> >> freq_table[i].frequency) {
+> >> +                                     freq_table[i].driver_data =
+> >> +
+> >> CPUFREQ_BOOST_FREQ;
+> >> +                                     break;
+> >> +                             }
+> >> +                     }
+> >>                       i++;
+> >>               }
+> >>       }
+> > IIRC you had mentioned that the boost-opp was not limited to be a
+> > cpufreq, but this change seems to be cpufreq only.
 > 
-> You can poll without setting TS_POLLING/TIF_POLLING_NRFLAGS just fine
-> and get the IPI if that is what you want.
-> 
-> Depending on how horribly unprovisioned the thread gets at the lowest
-> priority, that might actually be faster than polling and raising the
-> prio whenever it does get ran.
+> Yes, but as you have initiated the discussion on extending the OPP
+> binding, this has been limited to cpufreq only. If the new OPP library
+> has support for listing boost frequency, this can be migrated to the
+> new OPP libaray.
 
-So I am assuming you mean something like the below:
-
-my_idle()
-{
-   local_irq_enable();
-   /* Remove the setting of the polling flag */
-   HMT_low();
-   return index;
-}
-
-And then exit into the generic idle loop. But the issue I see here is
-that the TS_POLLING/TIF_POLLING_NRFLAGS gets set immediately. So, if on
-testing need_resched() immediately after this returns that the
-TIF_NEED_RESCHED flag is set, the thread will exit at low priority right?
- We could raise the priority of the thread in arch_cpu_idle_exit() soon
-after setting the polling flag but that would mean for cases where the
-TIF_NEED_RESCHED flag is not set we unnecessarily raise the priority of
-the thread.
-
-Thanks
-
-Regards
-Preeti U Murthy
+I agree here with Thomas. Since we are fixing regression here, we shall
+use the existing OPP API. When agreement for the future OPPs format is
+in place, we will port the boost OPPs to it.
 
 > 
+> Thanks,
+> Thomas.
+> 
+> >
+> > Regards,
+> > Sudeep
+> >
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
