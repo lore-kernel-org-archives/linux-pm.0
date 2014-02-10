@@ -1,90 +1,191 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
-Date: Mon, 10 Feb 2014 16:35:34 +0100
-Message-ID: <20140210153530.GA21060@localhost.localdomain>
-References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com>
- <alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de>
- <CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com>
- <CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
- <20140123133537.GA13345@localhost.localdomain>
- <CAKohponoTb-SeRx8Za6HhmVNwrT0COxykhi=s=uOR8SGNvkgUA@mail.gmail.com>
- <20140128135033.GC9172@localhost.localdomain>
- <CAKohpok7obD9LqPwLLQMOPw9fTyKg4WpwiZ8EPAgqtHSsC0fxw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:41342 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbaBJPfi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Feb 2014 10:35:38 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKohpok7obD9LqPwLLQMOPw9fTyKg4WpwiZ8EPAgqtHSsC0fxw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [RFT][PATCH 01/12] arm: change locomo platform and bus power management to use dev_pm_ops
+Date: Mon, 10 Feb 2014 09:12:24 -0700
+Message-ID: <7483e110cf0e8938e4df73dbf7f9e8da1315e9af.1392040066.git.shuah.kh@samsung.com>
+References: <cover.1392040064.git.shuah.kh@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
+In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
+References: <cover.1392040064.git.shuah.kh@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, linux@arm.linux.org.uk
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, shuahkhan@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lei Wen <adrian.wenl@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Mon, Feb 03, 2014 at 12:21:16PM +0530, Viresh Kumar wrote:
-> Sorry was away for short vacation.
-> 
-> On 28 January 2014 19:20, Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > On Thu, Jan 23, 2014 at 07:50:40PM +0530, Viresh Kumar wrote:
-> >> Wait, I got the wrong code here. That's wasn't my initial intention.
-> >> I actually wanted to write something like this:
-> >>
-> >>  -       wake_up_nohz_cpu(cpu);
-> >>  +       if (!tbase_get_deferrable(timer->base) || idle_cpu(cpu))
-> >>  +               wake_up_nohz_cpu(cpu);
-> >>
-> >> Will that work?
-> 
-> Something is seriously wrong with me, again wrote rubbish code.
-> Let me phrase what I wanted to write :)
-> 
-> "don't send IPI to a idle CPU for a deferrable timer."
-> 
-> Probably I code it correctly this time atleast.
-> 
-> -       wake_up_nohz_cpu(cpu);
-> +       if (!(tbase_get_deferrable(timer->base) && idle_cpu(cpu)))
-> +               wake_up_nohz_cpu(cpu);
+Change locomo platform and bus drivers to register pm ops using dev_pm_ops
+instead of legacy pm_ops. .pm hooks call existing legacy suspend and resume
+interfaces by passing in the right pm state.
 
-Yeah but that's racy if the target is nohz full. We may be seeing it idle whereas
-it woke up lately and run in userspace tickless for a while.
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ arch/arm/common/locomo.c |   93 ++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 78 insertions(+), 15 deletions(-)
 
-> 
-> > Well, this is going to wake up the target from its idle state, which is
-> > what we want to avoid if the timer is deferrable, right?
-> 
-> Yeah, sorry for doing it for second time :(
-
-I'm certainly not blaming you for being confused, that would be the pot calling the kettle black ;)
-
-> 
-> > The simplest thing we want is:
-> >
-> >            if (!tbase_get_deferrable(timer->base) || tick_nohz_full_cpu(cpu))
-> >                wake_up_nohz_cpu(cpu);
-> >
-> > This spares the IPI for the common case where the timer is deferrable and we run
-> > in periodic or dynticks-idle mode (which should be 99.99% of the existing workloads).
-> 
-> I wasn't looking at this problem with NO_HZ_FULL in mind. As I thought its
-> only about if the CPU is idle or not. And so the solution I was
-> talking about was:
-> 
-> "don't send IPI to a idle CPU for a deferrable timer."
-> 
-> But I see that still failing with the code you wrote. For normal cases where we
-> don't enable NO_HZ_FULL, we will still end up waking up idle CPUs which
-> is what Lei Wen reported initially.
-
-Not with the small change I proposed above.
-I'm applying it.
-
-> 
-> Also if a CPU is marked for NO_HZ_FULL and is not idle currently then we
-> wouldn't send a IPI for a deferrable timer. But we actually need that, so that
-> we can reevaluate the timers order again?
-
-Right.
+diff --git a/arch/arm/common/locomo.c b/arch/arm/common/locomo.c
+index b55c362..a48effb 100644
+--- a/arch/arm/common/locomo.c
++++ b/arch/arm/common/locomo.c
+@@ -272,7 +272,7 @@ struct locomo_save_data {
+ 	u16	LCM_SPIMD;
+ };
+ 
+-static int locomo_suspend(struct platform_device *dev, pm_message_t state)
++static int __locomo_suspend(struct platform_device *dev, pm_message_t state)
+ {
+ 	struct locomo *lchip = platform_get_drvdata(dev);
+ 	struct locomo_save_data *save;
+@@ -316,7 +316,22 @@ static int locomo_suspend(struct platform_device *dev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-static int locomo_resume(struct platform_device *dev)
++static int locomo_suspend(struct device *dev)
++{
++	 return __locomo_suspend(to_platform_device(dev), PMSG_SUSPEND);
++}
++
++static int locomo_freeze(struct device *dev)
++{
++	 return __locomo_suspend(to_platform_device(dev), PMSG_FREEZE);
++}
++
++static int locomo_poweroff(struct device *dev)
++{
++	 return __locomo_suspend(to_platform_device(dev), PMSG_HIBERNATE);
++}
++
++static int __locomo_resume(struct platform_device *dev)
+ {
+ 	struct locomo *lchip = platform_get_drvdata(dev);
+ 	struct locomo_save_data *save;
+@@ -351,6 +366,11 @@ static int locomo_resume(struct platform_device *dev)
+ 
+ 	return 0;
+ }
++
++static int locomo_resume(struct device *dev)
++{
++	 return __locomo_resume(to_platform_device(dev));
++}
+ #endif
+ 
+ 
+@@ -510,6 +530,18 @@ static int locomo_remove(struct platform_device *dev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
++static const struct dev_pm_ops locomo_dev_pm_ops = {
++	.suspend = locomo_suspend,
++	.resume = locomo_resume,
++	/* Hibernate hooks */
++	.freeze = locomo_freeze,
++	.thaw = locomo_resume,
++	.poweroff = locomo_poweroff,
++	.restore = locomo_resume,
++};
++#endif
++
+ /*
+  *	Not sure if this should be on the system bus or not yet.
+  *	We really want some way to register a system device at
+@@ -519,12 +551,11 @@ static int locomo_remove(struct platform_device *dev)
+ static struct platform_driver locomo_device_driver = {
+ 	.probe		= locomo_probe,
+ 	.remove		= locomo_remove,
+-#ifdef CONFIG_PM
+-	.suspend	= locomo_suspend,
+-	.resume		= locomo_resume,
+-#endif
+ 	.driver		= {
+ 		.name	= "locomo",
++#ifdef CONFIG_PM
++		.pm	= &locomo_dev_pm_ops,
++#endif
+ 	},
+ };
+ 
+@@ -826,26 +857,45 @@ static int locomo_match(struct device *_dev, struct device_driver *_drv)
+ 	return dev->devid == drv->devid;
+ }
+ 
+-static int locomo_bus_suspend(struct device *dev, pm_message_t state)
++static int __locomo_bus_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct locomo_dev *ldev = LOCOMO_DEV(dev);
+ 	struct locomo_driver *drv = LOCOMO_DRV(dev->driver);
+-	int ret = 0;
++
++	if (drv && drv->drv.pm && drv->drv.pm->suspend)
++		return  drv->drv.pm->suspend(dev);
+ 
+ 	if (drv && drv->suspend)
+-		ret = drv->suspend(ldev, state);
+-	return ret;
++		return	drv->suspend(ldev, state);
++	return 0;
++}
++
++static int locomo_bus_suspend(struct device *dev)
++{
++	return	__locomo_bus_suspend(dev, PMSG_SUSPEND);
++}
++
++static int locomo_bus_freeze(struct device *dev)
++{
++	return	__locomo_bus_suspend(dev, PMSG_FREEZE);
++}
++
++static int locomo_bus_poweroff(struct device *dev)
++{
++	return	__locomo_bus_suspend(dev, PMSG_HIBERNATE);
+ }
+ 
+ static int locomo_bus_resume(struct device *dev)
+ {
+ 	struct locomo_dev *ldev = LOCOMO_DEV(dev);
+ 	struct locomo_driver *drv = LOCOMO_DRV(dev->driver);
+-	int ret = 0;
++
++	if (drv && drv->drv.pm && drv->drv.pm->resume)
++		return	drv->drv.pm->resume(dev);
+ 
+ 	if (drv && drv->resume)
+-		ret = drv->resume(ldev);
+-	return ret;
++		return	drv->resume(ldev);
++	return 0;
+ }
+ 
+ static int locomo_bus_probe(struct device *dev)
+@@ -870,13 +920,26 @@ static int locomo_bus_remove(struct device *dev)
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_PM
++static const struct dev_pm_ops locomo_bus_dev_pm_ops = {
++	.suspend = locomo_bus_suspend,
++	.resume = locomo_bus_resume,
++	/* Hibernate hooks */
++	.freeze = locomo_bus_freeze,
++	.thaw = locomo_bus_resume,
++	.poweroff = locomo_bus_poweroff,
++	.restore = locomo_bus_resume,
++};
++#endif
++
+ struct bus_type locomo_bus_type = {
+ 	.name		= "locomo-bus",
+ 	.match		= locomo_match,
+ 	.probe		= locomo_bus_probe,
+ 	.remove		= locomo_bus_remove,
+-	.suspend	= locomo_bus_suspend,
+-	.resume		= locomo_bus_resume,
++#ifdef CONFIG_PM
++	.pm		= &locomo_bus_dev_pm_ops,
++#endif
+ };
+ 
+ int locomo_driver_register(struct locomo_driver *driver)
+-- 
+1.7.10.4
