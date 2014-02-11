@@ -1,111 +1,57 @@
-From: Peter Wu <lekensteyn@gmail.com>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend to RAM
-Date: Tue, 11 Feb 2014 19:17:37 +0100
-Message-ID: <8701691.z6Q6jDD18v@al>
-References: <52F2CC7B.80406@gmail.com> <4302366.hs31VgE4VT@vostro.rjw.lan> <20140211104237.GE18029@intel.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
+Date: Tue, 11 Feb 2014 20:47:26 +0100
+Message-ID: <20140211194726.GA9987@twins.programming.kicks-ass.net>
+References: <52EBBC23.8020603@linux.intel.com>
+ <52EBC33A.6080101@linaro.org>
+ <52EBC645.2040607@linux.intel.com>
+ <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr>
+ <20140203125441.GD19029@e103034-lin>
+ <52EFA9D3.1030601@linux.intel.com>
+ <20140203145605.GL8874@twins.programming.kicks-ass.net>
+ <52EFC12B.50704@linux.intel.com>
+ <20140211164136.GT27965@twins.programming.kicks-ass.net>
+ <52FA59E2.1000802@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:59895 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbaBKSRm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2014 13:17:42 -0500
-In-Reply-To: <20140211104237.GE18029@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <52FA59E2.1000802@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, linux-pm@vger.kernel.org
 
-On Tuesday 11 February 2014 12:42:37 Mika Westerberg wrote:
-> On Mon, Feb 10, 2014 at 11:39:29PM +0100, Rafael J. Wysocki wrote:
-> > > _STA() returns 0x0A instead of 0x0F. Could there be something missing in
-> > > the ACPI hotplug code that overlooks this and removes the device on
-> > > resume?
-> > 
-> > That is possible.  Actually even quite likely, but let's wait for the
-> > response from Peter.
+On Tue, Feb 11, 2014 at 09:12:02AM -0800, Arjan van de Ven wrote:
+> On 2/11/2014 8:41 AM, Peter Zijlstra wrote:
+> >On Mon, Feb 03, 2014 at 08:17:47AM -0800, Arjan van de Ven wrote:
+> >>On 2/3/2014 6:56 AM, Peter Zijlstra wrote:
+> >>if there's a simple api like
+> >>
+> >>sched_cpu_cache_wiped(int llc)
+> >>
+> >>that would be very nice for this; the menuidle side knows this
+> >>for some cases and thus can just call it. This would be a very
+> >>small and minimal change
+> >>
+> >>* if you don't care about llc vs core local caches then that
+> >>   parameter can go away
+> >>
+> >>* I assume this is also called for the local cpu... if not then we
+> >>   need to add a cpu number argument
+> >>
+> >>* we can also call this from architecture code when wbinvd or the
+> >>   arm equivalent is called etc
+> >
+> >A little something like so?
+> >
 > 
-> Here's a hack that should take the 0xa return value into consideration. It
-> turned out that this case is even mentioned in the ACPI spec.
+> is there value also in doing a cpu level cache flush?
+> (cpu cache flush we know from the C state, for the llc cache flush we need to read an MSR
+> on x86. Not insane expensive but not zero either)
 
-Tested-by: Peter Wu <lekensteyn@gmail.com>
+L1 or L2? L1 is too small to really bother afaik and L2 is shared
+between logical cpus so we'd need a mask there, not sure the generic
+topology has that.
 
-This works, the devices are not lost anymore after resume. dmesg
-mentions the 04:00.* devices at resume compared to the unpatched kernel:
-
-[   42.650721] PM: Finishing wakeup.
-[   42.650768] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
-[   42.650772] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
-[   42.650874] iwlwifi 0000:05:00.0: no hotplug settings from platform
-[   42.650722] Restarting tasks ... done.
-[   42.650985] video LNXVIDEO:00: Restoring backlight state
-[   42.650988] video LNXVIDEO:01: Restoring backlight state
-[   43.124208] ACPI: \_SB_.AC__: ACPI_NOTIFY_BUS_CHECK event: unsupported
-[   43.128401] jme 0000:04:00.5: irq 50 for MSI/MSI-X
-[   43.153005] jme 0000:04:00.5 eth0: Link is down
-[   43.153030] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
-[   43.154364] iwlwifi 0000:05:00.0: L1 Enabled; Disabling L0S
-[   43.162307] iwlwifi 0000:05:00.0: Radio type=0x1-0x3-0x1
-[   43.276220] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP01
-[   43.276223] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP01
-[   43.276257] xhci_hcd 0000:02:00.0: no hotplug settings from platform
-[   43.276267] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP02
-[   43.276268] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP02
-[   43.276355] sdhci-pci 0000:04:00.0: no hotplug settings from platform
-[   43.276368] pci 0000:04:00.2: no hotplug settings from platform
-[   43.276381] jmb38x_ms 0000:04:00.3: no hotplug settings from platform
-[   43.276393] jme 0000:04:00.5: no hotplug settings from platform
-[   43.276398] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
-[   43.276399] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
-[   43.276491] iwlwifi 0000:05:00.0: no hotplug settings from platform
-[   43.277214] IPv6: ADDRCONF(NETDEV_UP): wlan0: link is not ready
-
-Rafael, do you want me to test the other patch as well?
-
-Peter
-
-> diff --git a/drivers/pci/hotplug/acpiphp_glue.c
-> b/drivers/pci/hotplug/acpiphp_glue.c index e2a783fdb98f..014381b42d86
-> 100644
-> --- a/drivers/pci/hotplug/acpiphp_glue.c
-> +++ b/drivers/pci/hotplug/acpiphp_glue.c
-> @@ -730,6 +730,17 @@ static unsigned int get_slot_status(struct acpiphp_slot
-> *slot) return (unsigned int)sta;
->  }
-> 
-> +static inline bool device_sta_valid(unsigned long long sta)
-> +{
-> +	/*
-> +	 * ACPI spec says that _STA may return bit 0 clear with bit 8 set
-> +	 * if the device is valid but does not require device driver to be
-> +	 * loaded (chapter 6.3.7).
-> +	 */
-> +	unsigned mask = ACPI_STA_DEVICE_ENABLED | ACPI_STA_DEVICE_FUNCTIONING;
-> +	return (sta & mask) == mask;
-> +}
-> +
->  /**
->   * trim_stale_devices - remove PCI devices that are not responding.
->   * @dev: PCI device to start walking the hierarchy from.
-> @@ -745,7 +756,7 @@ static void trim_stale_devices(struct pci_dev *dev)
->  		unsigned long long sta;
-> 
->  		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
-> -		alive = (ACPI_SUCCESS(status) && sta == ACPI_STA_ALL)
-> +		alive = (ACPI_SUCCESS(status) && device_sta_valid(sta))
-> 
->  			|| acpiphp_no_hotplug(handle);
-> 
->  	}
->  	if (!alive) {
-> @@ -792,7 +803,7 @@ static void acpiphp_check_bridge(struct acpiphp_bridge
-> *bridge) mutex_lock(&slot->crit_sect);
->  		if (slot_no_hotplug(slot)) {
->  			; /* do nothing */
-> -		} else if (get_slot_status(slot) == ACPI_STA_ALL) {
-> +		} else if (device_sta_valid(get_slot_status(slot))) {
->  			/* remove stale devices if any */
->  			list_for_each_entry_safe_reverse(dev, tmp,
->  							 &bus->devices, bus_list)
-
+I'll have a quick peek later.
