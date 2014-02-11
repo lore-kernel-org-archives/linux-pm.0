@@ -1,196 +1,111 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V4 2/3] tick/cpuidle: Initialize hrtimer mode of broadcast
-Date: Tue, 11 Feb 2014 23:05:23 +0100
-Message-ID: <52FA9EA3.6060008@linaro.org>
-References: <20140207075618.17187.20149.stgit@preeti.in.ibm.com> <20140207080632.17187.80532.stgit@preeti.in.ibm.com> <52F9F896.4020402@linaro.org> <52FA4B2E.4070709@linux.vnet.ibm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFT][PATCH v2] mmc: change cb710-mmc platform power management
+ to use dev_pm_ops
+Date: Tue, 11 Feb 2014 23:43:19 +0100
+Message-ID: <CAPDyKFr9RiaiVCdFX_DdNF+Rd-C3CEStPDd7+e0VJQuGfeq_fQ@mail.gmail.com>
+References: <1392149781-4991-1-git-send-email-shuah.kh@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:60391 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751994AbaBKWF1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2014 17:05:27 -0500
-Received: by mail-wi0-f182.google.com with SMTP id f8so5481562wiw.15
-        for <linux-pm@vger.kernel.org>; Tue, 11 Feb 2014 14:05:25 -0800 (PST)
-In-Reply-To: <52FA4B2E.4070709@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <1392149781-4991-1-git-send-email-shuah.kh@samsung.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, mirq-linux@rere.qmqm.pl, Chris Ball <chris@printf.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, shuahkhan@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, peterz@infradead.org, benh@kernel.crashing.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, deepthi@linux.vnet.ibm.com, fweisbec@gmail.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com
 
-On 02/11/2014 05:09 PM, Preeti U Murthy wrote:
-> Hi Daniel,
+On 11 February 2014 21:16, Shuah Khan <shuah.kh@samsung.com> wrote:
+> Change cb710-mmc platform driver to register pm ops using dev_pm_ops instead
+> of legacy pm_ops. The existing legacy suspend/resume routines are identical
+> and simply clear IRQ mask in the device in case it got undefined during sleep
+> state. Changed code to collapse suspend and resume into one .pm interface
+> for suspend and resume which gets installed for suspend, freeze, poweroff,
+> thaw, restore, and resume states.
 >
-> Thank you very much for the review.
+> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> ---
 >
-> On 02/11/2014 03:46 PM, Daniel Lezcano wrote:
->> On 02/07/2014 09:06 AM, Preeti U Murthy wrote:
->>> From: Thomas Gleixner <tglx@linutronix.de>
->>>
->>> On some architectures, in certain CPU deep idle states the local
->>> timers stop.
->>> An external clock device is used to wakeup these CPUs. The kernel
->>> support for the
->>> wakeup of these CPUs is provided by the tick broadcast framework by
->>> using the
->>> external clock device as the wakeup source.
->>>
->>> However not all implementations of architectures provide such an ex=
-ternal
->>> clock device. This patch includes support in the broadcast framewor=
-k
->>> to handle
->>> the wakeup of the CPUs in deep idle states on such systems by queui=
-ng
->>> a hrtimer
->>> on one of the CPUs, which is meant to handle the wakeup of CPUs in
->>> deep idle states.
->>>
->>> This patchset introduces a pseudo clock device which can be registe=
-red
->>> by the
->>> archs as tick_broadcast_device in the absence of a real external cl=
-ock
->>> device. Once registered, the broadcast framework will work as is fo=
-r
->>> these
->>> architectures as long as the archs take care of the BROADCAST_ENTER
->>> notification failing for one of the CPUs. This CPU is made the stan=
-d
->>> by CPU to
->>> handle wakeup of the CPUs in deep idle and it *must not enter deep
->>> idle states*.
->>>
->>> The CPU with the earliest wakeup is chosen to be this CPU. Hence th=
-is
->>> way the
->>> stand by CPU dynamically moves around and so does the hrtimer which=
- is
->>> queued
->>> to trigger at the next earliest wakeup time. This is consistent wit=
-h
->>> the case where
->>> an external clock device is present. The smp affinity of this clock
->>> device is
->>> set to the CPU with the earliest wakeup.
->>
->> Hi Preeti,
->>
->> jumping a bit late in the thread...
->>
->> Setting the smp affinity on the earliest timer should be handled
->> automatically with the CLOCK_EVT_FEAT_DYNIRQ flag. Did you look at u=
-sing
->> this flag ?
+> patch v2: Addresses review comments on patch v1
 >
-> This patch is not setting the smp affinity of the pseudo clock device=
- at
-> all. Its not required to for the reason that it does not exist.
+>  drivers/mmc/host/cb710-mmc.c |   42 ++++++++++++++++++++----------------------
+>  1 file changed, 20 insertions(+), 22 deletions(-)
 >
-> I mentioned this point because we assign a CPU with the earliest wake=
-up
-> as standby. I compared this logic to the one used by the tick broadca=
-st
-> framework for archs which have an external clock device to set the sm=
-p
-> affinity of the device.
+> diff --git a/drivers/mmc/host/cb710-mmc.c b/drivers/mmc/host/cb710-mmc.c
+> index 1087b4c..ccf7a75 100644
+> --- a/drivers/mmc/host/cb710-mmc.c
+> +++ b/drivers/mmc/host/cb710-mmc.c
+> @@ -662,26 +662,6 @@ static const struct mmc_host_ops cb710_mmc_host = {
+>         .get_cd = cb710_mmc_get_cd,
+>  };
 >
-> If these archs do not have the flag CLOCK_EVT_FEAT_DYNIRQ set for the
-> external clock device, the tick broadcast framework sets the smp
-> affinity of this device to the CPU with the earliest wakeup. We are
-> using the same logic in this patchset as well to assign the stand by =
-CPU.
+> -#ifdef CONFIG_PM
+> -
+> -static int cb710_mmc_suspend(struct platform_device *pdev, pm_message_t state)
+> -{
+> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
+> -
+> -       cb710_mmc_enable_irq(slot, 0, ~0);
+> -       return 0;
+> -}
+> -
+> -static int cb710_mmc_resume(struct platform_device *pdev)
+> -{
+> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
+> -
+> -       cb710_mmc_enable_irq(slot, 0, ~0);
+> -       return 0;
+> -}
+> -
+> -#endif /* CONFIG_PM */
+> -
+>  static int cb710_mmc_init(struct platform_device *pdev)
+>  {
+>         struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
+> @@ -762,13 +742,31 @@ static int cb710_mmc_exit(struct platform_device *pdev)
+>         return 0;
+>  }
 >
->>
->> Another comment is the overall approach. We enter the cpuidle idle
->> framework with a specific state to go to and it is the tick framewor=
-k
->> telling us we mustn't go to this state. IMO the logic is wrong, the
->> decision to not enter this state should be moved somewhere else.
->
-> Its not the tick framework which tells us that we cannot enter deep i=
-dle
-> state, its the *tick broadcast* framework specifically. The tick
-> broadcast framework was introduced with the primary intention of
-> handling wakeup of CPUs in deep idle states when the local timers bec=
-ome
-> non-functional. Therefore there is a co-operation between this tick
-> broadcast framework and cpuidle. This has always been the case.
->
-> That is why just before cpus go into deep idle, they call into the
-> broadcast framework. Till now it was assumed that the tick broadcast
-> framework would find no problems with the cpus entering deep idle.
-> Therefore cpuidle would simply assume that all is well and go ahead a=
-nd
-> enter deep idle state.
->    But today there is a scenario when there could be problems if all =
-cpus
-> enter deep idle states and the tick broadcast framework now notifies =
-the
-> cpuidle framework to hold back one cpu. This is just a simple extensi=
-on
-> of the current interaction between cpuidle and tick broadcast framewo=
-rk.
->
->>
->> Why don't you create a cpuidle driver with the shallow idle states
->> assigned to a cpu (let's say cpu0) and another one with all the deep=
-er
->> idle states for the rest of the cpus ? Using the multiple cpuidle dr=
-iver
->> support makes it possible. The timer won't be moving around and a cp=
-u
->> will be dedicated to act as the broadcast timer.
->>
->
-> Having a dedicated stand by cpu for broadcasting has some issues whic=
-h
-> were pointed to when I posted the initial versions of this patchset.
-> https://lkml.org/lkml/2013/7/27/14
->
-> 1. This could create power/thermal imbalance on the chip since only t=
-he
-> standby cpu cannot enter deep idle state at all times.
->
-> 2. If it is cpu0 it is fine, else with the logic that you suggest,
-> hot-plugging out the dedicated stand by cpu would mean moving the wor=
-k
-> of broadcasting to another cpu and modifying the cpuidle state table =
-for
-> it. Even with cpu0, if support to hotplug it out is enabled (maybe it=
- is
-> already), we will face the same issue and this gets very messy.
->
->> Wouldn't make sense and be less intrusive than the patchset you prop=
-osed ?
->
-> Actually this patchset brings in a solution that is as less intrusive=
- as
-> possible. It makes the problem nearly invisible except for a failed
-> return from a call into the broadcast framework. It simply asks the
-> archs which do not have an external clock device to register a pseudo
-> device with the broadcast framework and from then on everything just
-> falls in place to enable deep idle states for such archs.
+> +#ifdef CONFIG_PM
+> +static int cb710_mmc_suspend_resume(struct device *dev)
+> +{
+> +       struct cb710_slot *slot = cb710_pdev_to_slot(to_platform_device(dev));
+> +
+> +       cb710_mmc_enable_irq(slot, 0, ~0);
+> +       return 0;
+> +}
+> +
+> +static const struct dev_pm_ops cb710_mmc_dev_pm_ops = {
+> +       .suspend = cb710_mmc_suspend_resume,
+> +       .resume = cb710_mmc_suspend_resume,
+> +       /* Hibernate hooks */
+> +       .freeze = cb710_mmc_suspend_resume,
+> +       .thaw = cb710_mmc_suspend_resume,
+> +       .poweroff = cb710_mmc_suspend_resume,
+> +       .restore = cb710_mmc_suspend_resume,
+> +};
+> +#endif
+>  static struct platform_driver cb710_mmc_driver = {
+>         .driver.name = "cb710-mmc",
+>         .probe = cb710_mmc_init,
+>         .remove = cb710_mmc_exit,
+>  #ifdef CONFIG_PM
+> -       .suspend = cb710_mmc_suspend,
+> -       .resume = cb710_mmc_resume,
+> +       .driver.pm = &cb710_mmc_dev_pm_ops,
+>  #endif
+>  };
 
-Hi Preeti,
+I suggest you have a look at SIMPLE_DEV_PM_OPS macro. That would
+simplify this patch.
 
-thanks for the detailed explanation. I understand better now why you di=
-d=20
-it this way. Furthermore, as Thomas pointed me, what I missed is one cp=
-u=20
-can't setup a local timer for another cpu, so what I was talking about=20
-does not make sense.
+Kind regards
+Ulf Hansson
 
-   -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+>
+> --
+> 1.7.10.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
