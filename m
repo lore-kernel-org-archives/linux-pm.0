@@ -1,57 +1,52 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [RFT][PATCH 08/12] mmc: change cb710-mmc platform power management
- to use dev_pm_ops
-Date: Tue, 11 Feb 2014 08:38:39 -0700
-Message-ID: <52FA43FF.8030303@samsung.com>
-References: <cover.1392040064.git.shuah.kh@samsung.com>
- <5393e4bd34e5667b7d00fa09c9d5bee0f68d659f.1392040068.git.shuah.kh@samsung.com>
- <20140210234904.GA542@rere.qmqm.pl>
-Reply-To: shuah.kh@samsung.com
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V4 2/3] tick/cpuidle: Initialize hrtimer mode of
+ broadcast
+Date: Tue, 11 Feb 2014 16:58:45 +0100 (CET)
+Message-ID: <alpine.DEB.2.02.1402111654190.21991@ionos.tec.linutronix.de>
+References: <20140207075618.17187.20149.stgit@preeti.in.ibm.com> <20140207080632.17187.80532.stgit@preeti.in.ibm.com> <52F9F896.4020402@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-reply-to: <20140210234904.GA542@rere.qmqm.pl>
-Sender: linux-mmc-owner@vger.kernel.org
-To: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-Cc: rjw@rjwysocki.net, chris@printf.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, shuahkhan@gmail.com, Shuah Khan <shuah.kh@samsung.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:42940 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbaBKP6v (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2014 10:58:51 -0500
+In-Reply-To: <52F9F896.4020402@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, peterz@infradead.org, benh@kernel.crashing.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, fweisbec@gmail.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
 
-On 02/10/2014 04:49 PM, Micha=B3 Miros=B3aw wrote:
-> On Mon, Feb 10, 2014 at 09:12:31AM -0700, Shuah Khan wrote:
->> Change cb710-mmc platform driver to register pm ops using dev_pm_ops=
- instead
->> of legacy pm_ops. .pm hooks call existing legacy suspend and resume =
-interfaces
->> by passing in the right pm state.
-> [all the patch cut]
->
-> Aaah, a bit mechanical - this change, isn't it?
+On Tue, 11 Feb 2014, Daniel Lezcano wrote:
+> On 02/07/2014 09:06 AM, Preeti U Murthy wrote:
+> Setting the smp affinity on the earliest timer should be handled automatically
+> with the CLOCK_EVT_FEAT_DYNIRQ flag. Did you look at using this flag ?
 
-Yes :)
+How should this flag help? Not at all, because the hrtimer based
+broadcast device cannot assign affinities.
+ 
+> Another comment is the overall approach. We enter the cpuidle idle framework
+> with a specific state to go to and it is the tick framework telling us we
+> mustn't go to this state. IMO the logic is wrong, the decision to not enter
+> this state should be moved somewhere else.
+> 
+> Why don't you create a cpuidle driver with the shallow idle states assigned to
+> a cpu (let's say cpu0) and another one with all the deeper idle states for the
+> rest of the cpus ? Using the multiple cpuidle driver support makes it
+> possible. The timer won't be moving around and a cpu will be dedicated to act
+> as the broadcast timer.
+> 
+> Wouldn't make sense and be less intrusive than the patchset you proposed ?
 
->
-> The suspend/resume callbacks just clears IRQ mask in the device in ca=
-se it
-> got undefined during sleep state. So the proper change here is to squ=
-ash all
-> the functions in one, and point all of the hooks to it.
->
-> With the change you have my ack.
->
-> BTW, you could move cb710_mmc_suspend() (or whatever you'll call it) =
-to one
-> ifdef block with cb710_mmc_dev_pm_ops.
->
+How do you arm the broadcast timer on CPU0 from CPU1? You can't!
 
-It makes perfect sense to squash suspend and resume. Thanks for the=20
-review. Code looks lot simpler now. Will send v2 patch shortly.
+You cannot access the cpu local timer on a different cpu. So you would
+have to send an IPI over to CPU0 so that it can reevaluate and
+schedule the broadcast. That's even more backwards than telling the
+cpuidle code that the CPU is not in a state to go deep.
 
--- Shuah
+Thanks,
 
---=20
-Shuah Khan
-Senior Linux Kernel Developer - Open Source Group
-Samsung Research America(Silicon Valley)
-shuah.kh@samsung.com | (970) 672-0658
+	tglx
+
+
