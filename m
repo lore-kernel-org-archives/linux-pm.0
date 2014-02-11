@@ -1,42 +1,38 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
- rq
-Date: Tue, 11 Feb 2014 09:12:02 -0800
-Message-ID: <52FA59E2.1000802@linux.intel.com>
-References: <20140131090230.GM5002@laptop.programming.kicks-ass.net> <52EB6F65.8050008@linux.vnet.ibm.com> <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org> <52EBC645.2040607@linux.intel.com> <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr> <20140203125441.GD19029@e103034-lin> <52EFA9D3.1030601@linux.intel.com> <20140203145605.GL8874@twins.programming.kicks-ass.net> <52EFC12B.50704@linux.intel.com> <20140211164136.GT27965@twins.programming.kicks-ass.net>
+From: Bastien Traverse <bastien.traverse@gmail.com>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend
+ to RAM
+Date: Tue, 11 Feb 2014 19:14:25 +0100
+Message-ID: <52FA6881.4030602@gmail.com>
+References: <52F2CC7B.80406@gmail.com> <2087423.Qy7HQIx1X6@vostro.rjw.lan> <52F7CC8B.1020209@gmail.com> <2182978.C0zdYi5cqX@al>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140211164136.GT27965@twins.programming.kicks-ass.net>
+In-Reply-To: <2182978.C0zdYi5cqX@al>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Peter Wu <lekensteyn@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2/11/2014 8:41 AM, Peter Zijlstra wrote:
-> On Mon, Feb 03, 2014 at 08:17:47AM -0800, Arjan van de Ven wrote:
->> On 2/3/2014 6:56 AM, Peter Zijlstra wrote:
->> if there's a simple api like
->>
->> sched_cpu_cache_wiped(int llc)
->>
->> that would be very nice for this; the menuidle side knows this
->> for some cases and thus can just call it. This would be a very
->> small and minimal change
->>
->> * if you don't care about llc vs core local caches then that
->>    parameter can go away
->>
->> * I assume this is also called for the local cpu... if not then we
->>    need to add a cpu number argument
->>
->> * we can also call this from architecture code when wbinvd or the
->>    arm equivalent is called etc
->
-> A little something like so?
->
+Le 09/02/2014 23:07, Peter Wu a =E9crit :
+> I think this is relevant. See also my test with 3.13.2 and different
+> kernel configs[1]. A workaround that triggers a scan was also posted[=
+2].
+>=20
+> Peter
+>=20
+>  [1]: http://lkml.org/lkml/2014/2/8/264
+>  [2]: http://lkml.org/lkml/2014/2/7/809
 
-is there value also in doing a cpu level cache flush?
-(cpu cache flush we know from the C state, for the llc cache flush we need to read an MSR
-on x86. Not insane expensive but not zero either)
+Thanks, I can confirm that triggering a rescan by issuing
+
+  sudo tee /sys/devices/pci0000:00/0000:00:1c.1/rescan <<<1
+
+made the device reappear on my system (of course I had to adapt the
+command to match PCI Bridge number). That's a handy workaround, it
+avoids restarting each time.
+
+As I've never compiled a kernel so far I think I'll leave the
+configuration tweaks for another time :)
+
+Cheers
