@@ -1,92 +1,82 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [RFT][PATCH v2] mmc: change cb710-mmc platform power management to use dev_pm_ops
-Date: Tue, 11 Feb 2014 13:16:21 -0700
-Message-ID: <1392149781-4991-1-git-send-email-shuah.kh@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, mirq-linux@rere.qmqm.pl, chris@printf.net
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, shuahkhan@gmail.com
+From: poma <pomidorabelisima-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: WARNING: CPU: 1 PID: 0 at kernel/time/tick-broadcast.c:668
+	tick_broadcast_oneshot_control+0x17d/0x190()
+Date: Tue, 11 Feb 2014 21:44:44 +0100
+Message-ID: <52FA8BBC.5000405@gmail.com>
+References: <52F84A9B.5020008@gmail.com>
+	<alpine.DEB.2.02.1402101056260.21991@ionos.tec.linutronix.de>
+	<alpine.DEB.2.02.1402111434180.21991@ionos.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
+In-Reply-To: <alpine.DEB.2.02.1402111434180.21991-3cz04HxQygjZikZi3RtOZ1XZhhPuCNm+@public.gmane.org>
+List-Unsubscribe: <https://admin.fedoraproject.org/mailman/options/kernel>,
+	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.fedoraproject.org/pipermail/kernel/>
+List-Post: <mailto:kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
+List-Help: <mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=help>
+List-Subscribe: <https://admin.fedoraproject.org/mailman/listinfo/kernel>,
+	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=subscribe>
+Sender: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
+Errors-To: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
+To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Cc: Olaf Hering <olaf-QOLJcTWqO2uzQB+pC5nmwQ@public.gmane.org>, Stanislaw Gruszka <sgruszka-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Mailing-List fedora-kernel <kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Justin M. Forbes" <jforbes-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Change cb710-mmc platform driver to register pm ops using dev_pm_ops instead
-of legacy pm_ops. The existing legacy suspend/resume routines are identical
-and simply clear IRQ mask in the device in case it got undefined during sleep
-state. Changed code to collapse suspend and resume into one .pm interface
-for suspend and resume which gets installed for suspend, freeze, poweroff,
-thaw, restore, and resume states.
-
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
-
-patch v2: Addresses review comments on patch v1
-
- drivers/mmc/host/cb710-mmc.c |   42 ++++++++++++++++++++----------------------
- 1 file changed, 20 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/mmc/host/cb710-mmc.c b/drivers/mmc/host/cb710-mmc.c
-index 1087b4c..ccf7a75 100644
---- a/drivers/mmc/host/cb710-mmc.c
-+++ b/drivers/mmc/host/cb710-mmc.c
-@@ -662,26 +662,6 @@ static const struct mmc_host_ops cb710_mmc_host = {
- 	.get_cd = cb710_mmc_get_cd,
- };
- 
--#ifdef CONFIG_PM
--
--static int cb710_mmc_suspend(struct platform_device *pdev, pm_message_t state)
--{
--	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
--
--	cb710_mmc_enable_irq(slot, 0, ~0);
--	return 0;
--}
--
--static int cb710_mmc_resume(struct platform_device *pdev)
--{
--	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
--
--	cb710_mmc_enable_irq(slot, 0, ~0);
--	return 0;
--}
--
--#endif /* CONFIG_PM */
--
- static int cb710_mmc_init(struct platform_device *pdev)
- {
- 	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
-@@ -762,13 +742,31 @@ static int cb710_mmc_exit(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+static int cb710_mmc_suspend_resume(struct device *dev)
-+{
-+	struct cb710_slot *slot = cb710_pdev_to_slot(to_platform_device(dev));
-+
-+	cb710_mmc_enable_irq(slot, 0, ~0);
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops cb710_mmc_dev_pm_ops = {
-+	.suspend = cb710_mmc_suspend_resume,
-+	.resume = cb710_mmc_suspend_resume,
-+	/* Hibernate hooks */
-+	.freeze = cb710_mmc_suspend_resume,
-+	.thaw = cb710_mmc_suspend_resume,
-+	.poweroff = cb710_mmc_suspend_resume,
-+	.restore = cb710_mmc_suspend_resume,
-+};
-+#endif
- static struct platform_driver cb710_mmc_driver = {
- 	.driver.name = "cb710-mmc",
- 	.probe = cb710_mmc_init,
- 	.remove = cb710_mmc_exit,
- #ifdef CONFIG_PM
--	.suspend = cb710_mmc_suspend,
--	.resume = cb710_mmc_resume,
-+	.driver.pm = &cb710_mmc_dev_pm_ops,
- #endif
- };
- 
--- 
-1.7.10.4
+T24gMTEuMDIuMjAxNCAxNToyNSwgVGhvbWFzIEdsZWl4bmVyIHdyb3RlOgo+IE9uIE1vbiwgMTAg
+RmViIDIwMTQsIFRob21hcyBHbGVpeG5lciB3cm90ZToKPj4gT24gTW9uLCAxMCBGZWIgMjAxNCwg
+cG9tYSB3cm90ZToKPj4KPj4+IFsgICA4My41NTg1NTFdICBbPGZmZmZmZmZmODEwMjViMTc+XSBh
+bWRfZTQwMF9pZGxlKzB4ODcvMHgxMzAKPj4KPj4gU28gdGhpcyBzZWVtcyB0byBoYXBwZW4gb25s
+eSBvbiBBTUQgbWFjaGluZXMgd2hpY2ggdXNlIHRoYXQgZTQwMCBpZGxlCj4+IG1vZGUuIEkgaGF2
+ZSBubyBpZGVhIGF0IHRoZSBtb21lbnQgd2hhdHMgd3JvbmcgdGhlcmUuIEknbGwgZmluZCBvbmUg
+b2YKPj4gdGhvc2UgbWFjaGluZXMgYW5kIHRyeSB0byByZXByb2R1Y2UuCj4gCj4gRm91bmQgaXQu
+IFBhdGNoIGJlbG93Lgo+IAo+IFRoYW5rcywKPiAKPiAJdGdseAo+IC0tLS0KPiBTdWJqZWN0OiB0
+aWNrOiBDbGVhciBicm9hZGNhc3QgcGVuZGluZyBiaXQgd2hlbiBzd2l0Y2hpbmcgdG8gb25lc2hv
+dAo+IEZyb206IFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPgo+IERhdGU6IFR1
+ZSwgMTEgRmViIDIwMTQgMTQ6MzU6NDAgKzAxMDAKPiAKPiBBTUQgc3lzdGVtcyB3aGljaCB1c2Ug
+dGhlIEMxRSB3b3JrYXJvdW5kIGluIHRoZSBhbWRfZTQwMF9pZGxlIHJvdXRpbmUKPiB0cmlnZ2Vy
+IHRoZSBXQVJOX09OX09OQ0UgaW4gdGhlIGJyb2FkY2FzdCBjb2RlIHdoZW4gb25saW5pbmcgYSBD
+UFUuCj4gCj4gVGhlIHJlYXNvbiBpcyB0aGF0IHRoZSBpZGxlIHJvdXRpbmUgb2YgdGhvc2UgQU1E
+IHN5c3RlbXMgc3dpdGNoZXMgdGhlCj4gY3B1IGludG8gZm9yY2VkIGJyb2FkY2FzdCBtb2RlIGVh
+cmx5IG9uIGJlZm9yZSB0aGUgbmV3bHkgYnJvdWdodCB1cAo+IENQVSBjYW4gc3dpdGNoIG92ZXIg
+dG8gaGlnaCByZXNvbHV0aW9uIC8gTk9IWiBtb2RlLiBUaGUgdGltZXIgcmVsYXRlZAo+IENQVTEg
+YnJpbmd1cCBsb29rcyBsaWtlIHRoaXM6Cj4gCj4gICBjbG9ja2V2ZW50X3JlZ2lzdGVyX2Rldmlj
+ZShsb2NhbF9hcGljKTsKPiAgIHRpY2tfc2V0dXAobG9jYWxfYXBpYyk7Cj4gICAuLi4KPiAgIGlk
+bGUoKQo+IAl0aWNrX2Jyb2FkY2FzdF9vbl9vZmYoRk9SQ0UpOwo+IAl0aWNrX2Jyb2FkY2FzdF9v
+bmVzaG90X2NvbnRyb2woRU5URVIpCj4gCSAgY3B1bWFza19zZXQoY3B1LCBicm9hZGNhc3Rfb25l
+c2hvdF9tYXNrKTsKPiAJaGFsdCgpOwo+IAo+IE5vdyB0aGUgYnJvYWRjYXN0IGludGVycnVwdCBv
+biBDUFUwIHNldHMgQ1BVMSBpbiB0aGUKPiBicm9hZGNhc3RfcGVuZGluZ19tYXNrIGFuZCB3YWtl
+cyBDUFUxLiBTbyBDUFUxIGNvbnRpbnVlczoKPiAKPiAJbG9jYWxfYXBpY190aW1lcl9pbnRlcnJ1
+cHQoKQo+IAkgICB0aWNrX2hhbmRsZV9wZXJpb2RpYygpOwo+IAkgICBzb2Z0aXJxKCkKPiAJICAg
+ICB0aWNrX2luaXRfaGlnaHJlcygpOwo+IAkgICAgICAgY3B1bWFza19jbHIoY3B1LCBicm9hZGNh
+c3Rfb25lc2hvdF9tYXNrKTsKPiAJCj4gCXRpY2tfYnJvYWRjYXN0X29uZXNob3RfY29udHJvbChF
+TlRFUikKPiAJICAgV0FSTl9PTihjcHVtYXNrX3Rlc3QoY3B1LCBicm9hZGNhc3RfcGVuZGluZ19t
+YXNrKTsKPiAKPiBTbyB3aGlsZSB3ZSByZW1vdmUgQ1BVMSBmcm9tIHRoZSBicm9hZGNhc3Rfb25l
+c2hvdF9tYXNrIHdoZW4gd2Ugc3dpdGNoCj4gb3ZlciB0byBoaWdocmVzIG1vZGUsIHdlIGRvIG5v
+dCBjbGVhciB0aGUgcGVuZGluZyBiaXQsIHdoaWNoIHRoZW4KPiB0cmlnZ2VycyB0aGUgd2Fybmlu
+ZyB3aGVuIHdlIGdvIGJhY2sgdG8gaWRsZS4KPiAKPiBUaGUgcmVhc29uIHdoeSB0aGlzIGlzIG9u
+bHkgdmlzaWJsZSBvbiBDMUUgYWZmZWN0ZWQgQU1EIHN5c3RlbXMgaXMKPiB0aGF0IHRoZSBvdGhl
+ciBtYWNoaW5lcyBlbnRlciB0aGUgZGVlcCBzbGVlcCBzdGF0ZXMgdmlhCj4gYWNwaV9pZGxlL2lu
+dGVsX2lkbGUgYW5kIGV4aXQgdGhlIGJyb2FkY2FzdCBtb2RlIGJlZm9yZSBleGVjdXRpbmcgdGhl
+Cj4gcmVtb3RlIHRyaWdnZXJlZCBsb2NhbF9hcGljX3RpbWVyX2ludGVycnVwdC4gU28gdGhlIHBl
+bmRpbmcgYml0IGlzCj4gYWxyZWFkeSBjbGVhcmVkIHdoZW4gdGhlIHN3aXRjaCBvdmVyIHRvIGhp
+Z2hyZXMgbW9kZSBpcyBjbGVhcmluZyB0aGUKPiBvbmVzaG90IG1hc2suCj4gCj4gVGhlIHNvbHV0
+aW9uIGlzIHNpbXBsZTogQ2xlYXIgdGhlIHBlbmRpbmcgYml0IHRvZ2V0aGVyIHdpdGggdGhlIG1h
+c2sKPiBiaXQgd2hlbiB3ZSBzd2l0Y2ggb3ZlciB0byBoaWdocmVzIG1vZGUuCj4gCj4gUmVwb3J0
+ZWQtYnk6IHBvbWEgPHBvbWlkb3JhYmVsaXNpbWFAZ21haWwuY29tPgo+IENjOiBzdGFibGVAdmdl
+ci5rZXJuZWwub3JnICMgMy4xMCsKPiBTaWduZWQtb2ZmLWJ5OiBUaG9tYXMgR2xlaXhuZXIgPHRn
+bHhAbGludXRyb25peC5kZT4KPiAtLS0KPiAga2VybmVsL3RpbWUvdGljay1icm9hZGNhc3QuYyB8
+ICAgIDEgKwo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykKPiAKPiBJbmRleDogbGlu
+dXgtMi42L2tlcm5lbC90aW1lL3RpY2stYnJvYWRjYXN0LmMKPiA9PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gLS0tIGxp
+bnV4LTIuNi5vcmlnL2tlcm5lbC90aW1lL3RpY2stYnJvYWRjYXN0LmMKPiArKysgbGludXgtMi42
+L2tlcm5lbC90aW1lL3RpY2stYnJvYWRjYXN0LmMKPiBAQCAtNzU2LDYgKzc1Niw3IEBAIG91dDoK
+PiAgc3RhdGljIHZvaWQgdGlja19icm9hZGNhc3RfY2xlYXJfb25lc2hvdChpbnQgY3B1KQo+ICB7
+Cj4gIAljcHVtYXNrX2NsZWFyX2NwdShjcHUsIHRpY2tfYnJvYWRjYXN0X29uZXNob3RfbWFzayk7
+Cj4gKwljcHVtYXNrX2NsZWFyX2NwdShjcHUsIHRpY2tfYnJvYWRjYXN0X3BlbmRpbmdfbWFzayk7
+Cj4gIH0KPiAgCj4gIHN0YXRpYyB2b2lkIHRpY2tfYnJvYWRjYXN0X2luaXRfbmV4dF9ldmVudChz
+dHJ1Y3QgY3B1bWFzayAqbWFzaywKPiAKPiAKClRoYW5rcyEKCgpwb21hCgoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18Ka2VybmVsIG1haWxpbmcgbGlzdApr
+ZXJuZWxAbGlzdHMuZmVkb3JhcHJvamVjdC5vcmcKaHR0cHM6Ly9hZG1pbi5mZWRvcmFwcm9qZWN0
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2tlcm5lbA==
