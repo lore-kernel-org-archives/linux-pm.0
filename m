@@ -1,65 +1,128 @@
-From: Stanislaw Gruszka <sgruszka-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: WARNING: CPU: 1 PID: 0 at kernel/time/tick-broadcast.c:668
-	tick_broadcast_oneshot_control+0x17d/0x190()
-Date: Tue, 11 Feb 2014 09:23:08 +0100
-Message-ID: <20140211082306.GA1528@redhat.com>
-References: <52F84A9B.5020008@gmail.com>
-	<alpine.DEB.2.02.1402101056260.21991@ionos.tec.linutronix.de>
-	<52F9219B.5020003@gmail.com>
+From: Mohit Kumar <mohit.kumar-qxv4g6HH51o@public.gmane.org>
+Subject: [PATCH V6 00/12]PCI:Add SPEAr13xx PCie support
+Date: Tue, 11 Feb 2014 14:59:56 +0530
+Message-ID: <cover.1392109054.git.mohit.kumar@st.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <52F9219B.5020003-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Unsubscribe: <https://admin.fedoraproject.org/mailman/options/kernel>,
-	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.fedoraproject.org/pipermail/kernel/>
-List-Post: <mailto:kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
-List-Help: <mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=help>
-List-Subscribe: <https://admin.fedoraproject.org/mailman/listinfo/kernel>,
-	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=subscribe>
-Sender: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
-Errors-To: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
-To: poma <pomidorabelisima-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Olaf Hering <olaf-QOLJcTWqO2uzQB+pC5nmwQ@public.gmane.org>, Mailing-List fedora-kernel <kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux Kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Justin M. Forbes" <jforbes-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: arnd-r2nGTMty4D4@public.gmane.org
+Cc: Mohit Kumar <mohit.kumar-qxv4g6HH51o@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, spear-devel-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBGZWIgMTAsIDIwMTQgYXQgMDc6NTk6MzlQTSArMDEwMCwgcG9tYSB3cm90ZToKPiBP
-biAxMC4wMi4yMDE0IDExOjA2LCBUaG9tYXMgR2xlaXhuZXIgd3JvdGU6Cj4gPiBPbiBNb24sIDEw
-IEZlYiAyMDE0LCBwb21hIHdyb3RlOgo+ID4gCj4gPj4gWyAgIDgzLjU1ODU1MV0gIFs8ZmZmZmZm
-ZmY4MTAyNWIxNz5dIGFtZF9lNDAwX2lkbGUrMHg4Ny8weDEzMAo+ID4gCj4gPiBTbyB0aGlzIHNl
-ZW1zIHRvIGhhcHBlbiBvbmx5IG9uIEFNRCBtYWNoaW5lcyB3aGljaCB1c2UgdGhhdCBlNDAwIGlk
-bGUKPiA+IG1vZGUuIEkgaGF2ZSBubyBpZGVhIGF0IHRoZSBtb21lbnQgd2hhdHMgd3JvbmcgdGhl
-cmUuIEknbGwgZmluZCBvbmUgb2YKPiA+IHRob3NlIG1hY2hpbmVzIGFuZCB0cnkgdG8gcmVwcm9k
-dWNlLgoKSSB0cmllZCB0byBkZWJ1ZyB0aGF0IHdhcm4gYXMgd2VsbC4gRXZlbiBpZiBJIGZvdW5k
-IG1hY2hpbmUgd2l0aCBwcm9wZXIKZmFtaWx5IGFuZCBtb2RlbCBudW1iZXIsIEhXIEMxRSBidWcg
-ZG8gbm90IGhhcHBlbiB0aGVyZSwgaGVuY2UgSSBqdXN0CmhhY2sga2VybmVsIHRvIGFsd2F5cyB1
-c2UgYW1kX2U0MDBfaWRsZSAoYW5kIHJlbW92ZSBBTUQgcmRtc3Igc3BlY2lmaWMKaW5zdHJ1Y3Rp
-b25zIHRvIGRvIG5vdCBjcmFzaCkuIFRoYXQgbWFrZSBpc3N1ZSAxMDAlIHJlcHJvZHVjaWJsZSB3
-aGVuCnN1c3BlbmQvcmVzdW1lLgoKSXQgaGFwcGVucyB3aGVuIGNwdSBiZWNvbWUgaWRsZSwgY2Fs
-bCBDTE9DS19FVlRfTk9USUZZX0JST0FEQ0FTVF9FTlRFUiwKYnV0IGJlZm9yZSBDTE9DS19FVlRf
-Tk9USUZZX0JST0FEQ0FTVF9FWElULCBpbnRlcnJ1cHQgdHJpZ2dlciBvbiB0aGF0CmNwdS4gSVJR
-IGlzIGhhbmRsZWQgYnkgaHJ0aW1lciBjb2RlLCB3aGljaCB3YW50IHRvIHN3aXRjaCB0byBocmVz
-IGFuZApjYWxsOgoKdGlja19zd2l0Y2hfdG9fb25lc2hvdCgpIC0+IC4uLiAtPiB0aWNrX2Jyb2Fk
-Y2FzdF9zZXR1cF9vbmVzaG90KCkKClNpbmNlIHdlIGhhdmUgYWxyZWFkeSBwcm9wZXIgaGFuZGxl
-ciB0aGVyZSwgbGFzdCBwcm9jZWR1cmUgY2xlYXIKdGlja19icm9hZGNhc3Rfb25lc2hvdF9tYXNr
-LCBidXQgdGlja19icm9hZGNhc3RfcGVuZGluZ19tYXNrIHN0YXkKc2V0LiBXaGVuIGFtZF9lNDAw
-X2lkbGUgbmV4dCB0aW1lIGNhbGwgQ0xPQ0tfRVZUX05PVElGWV9CUk9BRENBU1RfRU5URVIsCnRo
-ZSB3YXJuaW5nIHdpbGwgaGFwcGVuLgoKSSBjYW1lIHdpdGggYSBiZWxvdyBwYXRjaCwgd2hpY2gg
-YWxzbyBjbGVhciBwZW5kaW5nIG1hc2ssIGJ1dCBwZXJoYXBzCm9uZXNob3RfbWFzayBzaG91bGQg
-bm90IGJlIGNsZWFyZWQgb24gdGlja19icm9hZGNhc3Rfc2V0dXBfb25lc2hvdCgpLApvciBzaG91
-bGQgYmUgY2xlYXJlZCBvbmx5IGNvbmRpdGlvbmFsbHksIG9yIHNvbWUgb3RoZXIgc29sdXRpb24g
-aXMKbmVlZGVkLiBBbnl3YXksIHBhdGNoIG1ha2UgdGhlIHdhcm5pbmcgZ29uZSBvbiBteSBoYWNr
-ZWQgc2V0dXAsIEkgd2FzCndhaXRpbmcgZm9yIHRlc3RpbmcgcmVzdWx0cyBvbiByZWFsIEMxRSBo
-YXJkd2FyZS4KClRoYW5rcwpTdGFuaXNsYXcKCmRpZmYgLS1naXQgYS9rZXJuZWwvdGltZS90aWNr
-LWJyb2FkY2FzdC5jIGIva2VybmVsL3RpbWUvdGljay1icm9hZGNhc3QuYwppbmRleCA0Mzc4MGFi
-Li45ODk3N2E1IDEwMDY0NAotLS0gYS9rZXJuZWwvdGltZS90aWNrLWJyb2FkY2FzdC5jCisrKyBi
-L2tlcm5lbC90aW1lL3RpY2stYnJvYWRjYXN0LmMKQEAgLTc1Niw2ICs3NTYsNyBAQCBvdXQ6CiBz
-dGF0aWMgdm9pZCB0aWNrX2Jyb2FkY2FzdF9jbGVhcl9vbmVzaG90KGludCBjcHUpCiB7CiAJY3B1
-bWFza19jbGVhcl9jcHUoY3B1LCB0aWNrX2Jyb2FkY2FzdF9vbmVzaG90X21hc2spOworCWNwdW1h
-c2tfY2xlYXJfY3B1KGNwdSwgdGlja19icm9hZGNhc3RfcGVuZGluZ19tYXNrKTsKIH0KIAogc3Rh
-dGljIHZvaWQgdGlja19icm9hZGNhc3RfaW5pdF9uZXh0X2V2ZW50KHN0cnVjdCBjcHVtYXNrICpt
-YXNrLApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwprZXJu
-ZWwgbWFpbGluZyBsaXN0Cmtlcm5lbEBsaXN0cy5mZWRvcmFwcm9qZWN0Lm9yZwpodHRwczovL2Fk
-bWluLmZlZG9yYXByb2plY3Qub3JnL21haWxtYW4vbGlzdGluZm8va2VybmVs
+Patch# 1 and 2: Improvement and fixes for SPEAr13xx support.
+Patch# 3,5 and 8: Add DT bindings for miphy40lp, misc and pcie node
+Patch# 4,6 and 7: Add miphy40lp skelten driver and support for spear1310/40 
+miphy wrapper.
+Patch# 9-11: Add SPEAr13xx PCIe driver and dt support.
+
+These pathes are tested with linux-3.14-rc1 with following patch on the top of
+it:
+Author: Balaji T K <balajitk-l0cyMroinI0@public.gmane.org>
+Date:   Mon Jan 20 16:41:27 2014 +0200
+
+    ata: ahci_platform: Manage SATA PHY
+
+Tested with SPEAr1310 evaluation board:
+	- INTEL PRO 100/100 EP card
+	- USB xhci gen2 card
+ 	- Above cards connected through LeCROY PTC switch
+
+Modifications for SATA are tested with SPEAr1340-evb board
+
+Changes since v5:
+- Split DT bindings for misc, miphy-40lp and pcie node into sepearte patches
+- Merge config options PCIE_SPEAR13XX and PCI_MSI into defconfig patch 
+- Incorporated other minor comments
+Changes since v4:
+- Uses per device function pointers passed from .data field to
+  the of_device_id instead of of_device_is_compatible.
+- Incorporated other minor comments from v4
+
+Changes since v3:
+- Phy driver renamed to phy-miphy40lp
+- ahci phy hook patch used as suggested by Arnd
+- Incorporated other minor comments from v3
+
+Changes since v2:
+- Incorporated comments to move SPEAr13xx PCIe and SATA phy specific routines to
+  the phy framework
+- Modify ahci driver to include phy hooks
+- phy-core driver modifications for subsys_initcall() 
+ 
+Changes since v1:
+- Few patches of the series are already accepted and applied to mainline e.g.
+ pcie designware driver improvements,fixes for IO translation bug, PCIe dw
+ driver maintainer. So dropped these from v2.
+- Incorporated comment to move the common/reset PCIe code to the seperate driver
+- PCIe and SATA share common PHY configuration registers, so move SATA
+ platform code to the system config driver
+Fourth patch is improves pcie designware driver and fixes the IO
+translation bug. IO translation bug fix leads to the working of PCIe EP devices
+connected to RC through switch.
+
+PCIe driver support for SPEAr1310/40 platform board is added.
+
+These patches are tested with SPEAr1310 evaluation board:
+	- INTEL PRO 100/100 EP card
+	- USB xhci gen2 card
+ 	- Above cards connected through LeCROY PTC switch
+
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: spear-devel-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+
+Mohit Kumar (2):
+  SPEAr13xx: defconfig: Update
+  MAINTAINERS: Add ST SPEAr13xx PCIe driver maintainer
+
+Pratyush Anand (10):
+  clk: SPEAr13XX: Fix pcie clock name
+  SPEAr13XX: Fix static mapping table
+  phy: st-miphy40lp: Add binding information
+  phy: st-miphy40lp: Add skeleton driver
+  SPEAr: misc: Add binding information
+  SPEAr13xx: Fixup: Move SPEAr1340 SATA platform code to phy driver
+  phy: st-miphy-40lp: Add SPEAr1310 and SPEAr1340 PCIe phy support
+  SPEAr13xx: Add binding information for PCIe controller
+  SPEAr13XX: dts: Add PCIe node information
+  pcie: SPEAr13xx: Add designware wrapper support
+
+ .../devicetree/bindings/arm/spear-misc.txt         |    9 +
+ .../devicetree/bindings/pci/spear13xx-pcie.txt     |   14 +
+ .../devicetree/bindings/phy/st-miphy40lp.txt       |   18 +
+ MAINTAINERS                                        |    6 +
+ arch/arm/boot/dts/spear1310-evb.dts                |    4 +
+ arch/arm/boot/dts/spear1310.dtsi                   |   93 ++++-
+ arch/arm/boot/dts/spear1340-evb.dts                |    4 +
+ arch/arm/boot/dts/spear1340.dtsi                   |   31 ++-
+ arch/arm/boot/dts/spear13xx.dtsi                   |    9 +-
+ arch/arm/configs/spear13xx_defconfig               |   16 +
+ arch/arm/mach-spear/Kconfig                        |    3 +
+ arch/arm/mach-spear/include/mach/spear.h           |    4 +-
+ arch/arm/mach-spear/spear1340.c                    |  127 +-----
+ arch/arm/mach-spear/spear13xx.c                    |    2 +-
+ drivers/clk/spear/spear1310_clock.c                |    6 +-
+ drivers/clk/spear/spear1340_clock.c                |    2 +-
+ drivers/pci/host/Kconfig                           |    8 +
+ drivers/pci/host/Makefile                          |    1 +
+ drivers/pci/host/pcie-spear13xx.c                  |  414 +++++++++++++++
+ drivers/phy/Kconfig                                |    7 +
+ drivers/phy/Makefile                               |    1 +
+ drivers/phy/phy-miphy40lp.c                        |  543 ++++++++++++++++++++
+ 22 files changed, 1183 insertions(+), 139 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/spear-misc.txt
+ create mode 100644 Documentation/devicetree/bindings/pci/spear13xx-pcie.txt
+ create mode 100644 Documentation/devicetree/bindings/phy/st-miphy40lp.txt
+ create mode 100644 drivers/pci/host/pcie-spear13xx.c
+ create mode 100644 drivers/phy/phy-miphy40lp.c
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
