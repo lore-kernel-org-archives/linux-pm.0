@@ -1,75 +1,38 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend to
- RAM
-Date: Tue, 11 Feb 2014 12:42:37 +0200
-Message-ID: <20140211104237.GE18029@intel.com>
-References: <52F2CC7B.80406@gmail.com>
- <1747020.MhBDqPO9oJ@vostro.rjw.lan>
- <20140210122035.GY18029@intel.com>
- <4302366.hs31VgE4VT@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:41035 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbaBKKfd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 11 Feb 2014 05:35:33 -0500
-Content-Disposition: inline
-In-Reply-To: <4302366.hs31VgE4VT@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH] MAINTAINERS: update Sudeep's email address
+Date: Tue, 11 Feb 2014 11:42:32 +0000
+Message-ID: <1392118952-10804-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: sudeep.holla@arm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Wu <lekensteyn@gmail.com>, Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, linux-pm@vger.kernel.org
 
-On Mon, Feb 10, 2014 at 11:39:29PM +0100, Rafael J. Wysocki wrote:
-> > _STA() returns 0x0A instead of 0x0F. Could there be something missing in
-> > the ACPI hotplug code that overlooks this and removes the device on resume?
-> 
-> That is possible.  Actually even quite likely, but let's wait for the response
-> from Peter.
+From: Sudeep Holla <sudeep.holla@arm.com>
 
-Here's a hack that should take the 0xa return value into consideration. It
-turned out that this case is even mentioned in the ACPI spec.
+Though my old email address continues to work as alias, updating
+to the new address as it's shorterm, easier and more appropriate.
 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index e2a783fdb98f..014381b42d86 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -730,6 +730,17 @@ static unsigned int get_slot_status(struct acpiphp_slot *slot)
- 	return (unsigned int)sta;
- }
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b2cf5cf..956f069 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2367,7 +2367,7 @@ F:	include/linux/cpufreq.h
  
-+static inline bool device_sta_valid(unsigned long long sta)
-+{
-+	/*
-+	 * ACPI spec says that _STA may return bit 0 clear with bit 8 set
-+	 * if the device is valid but does not require device driver to be
-+	 * loaded (chapter 6.3.7).
-+	 */
-+	unsigned mask = ACPI_STA_DEVICE_ENABLED | ACPI_STA_DEVICE_FUNCTIONING;
-+	return (sta & mask) == mask;
-+}
-+
- /**
-  * trim_stale_devices - remove PCI devices that are not responding.
-  * @dev: PCI device to start walking the hierarchy from.
-@@ -745,7 +756,7 @@ static void trim_stale_devices(struct pci_dev *dev)
- 		unsigned long long sta;
- 
- 		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
--		alive = (ACPI_SUCCESS(status) && sta == ACPI_STA_ALL)
-+		alive = (ACPI_SUCCESS(status) && device_sta_valid(sta))
- 			|| acpiphp_no_hotplug(handle);
- 	}
- 	if (!alive) {
-@@ -792,7 +803,7 @@ static void acpiphp_check_bridge(struct acpiphp_bridge *bridge)
- 		mutex_lock(&slot->crit_sect);
- 		if (slot_no_hotplug(slot)) {
- 			; /* do nothing */
--		} else if (get_slot_status(slot) == ACPI_STA_ALL) {
-+		} else if (device_sta_valid(get_slot_status(slot))) {
- 			/* remove stale devices if any */
- 			list_for_each_entry_safe_reverse(dev, tmp,
- 							 &bus->devices, bus_list)
-
+ CPU FREQUENCY DRIVERS - ARM BIG LITTLE
+ M:	Viresh Kumar <viresh.kumar@linaro.org>
+-M:	Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
++M:	Sudeep Holla <sudeep.holla@arm.com>
+ L:	cpufreq@vger.kernel.org
+ L:	linux-pm@vger.kernel.org
+ W:	http://www.arm.com/products/processors/technologies/biglittleprocessing.php
+-- 
+1.8.3.2
 
