@@ -1,52 +1,69 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH V4 2/3] tick/cpuidle: Initialize hrtimer mode of
- broadcast
-Date: Tue, 11 Feb 2014 16:58:45 +0100 (CET)
-Message-ID: <alpine.DEB.2.02.1402111654190.21991@ionos.tec.linutronix.de>
-References: <20140207075618.17187.20149.stgit@preeti.in.ibm.com> <20140207080632.17187.80532.stgit@preeti.in.ibm.com> <52F9F896.4020402@linaro.org>
+Subject: Re: WARNING: CPU: 1 PID: 0 at kernel/time/tick-broadcast.c:668
+ tick_broadcast_oneshot_control+0x17d/0x190()
+Date: Tue, 11 Feb 2014 17:07:53 +0100 (CET)
+Message-ID: <alpine.DEB.2.02.1402111702090.21991@ionos.tec.linutronix.de>
+References: <52F84A9B.5020008@gmail.com> <alpine.DEB.2.02.1402101056260.21991@ionos.tec.linutronix.de> <52F9219B.5020003@gmail.com> <20140211082306.GA1528@redhat.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:42940 "EHLO
+Received: from www.linutronix.de ([62.245.132.108]:43016 "EHLO
 	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbaBKP6v (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2014 10:58:51 -0500
-In-Reply-To: <52F9F896.4020402@linaro.org>
+	with ESMTP id S1751381AbaBKQHs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2014 11:07:48 -0500
+In-Reply-To: <20140211082306.GA1528@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, peterz@infradead.org, benh@kernel.crashing.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, fweisbec@gmail.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+Cc: poma <pomidorabelisima@gmail.com>, Linux Kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Olaf Hering <olaf@aepfle.de>, Dave Jones <davej@redhat.com>, "Justin M. Forbes" <jforbes@redhat.com>, Josh Boyer <jwboyer@redhat.com>, Mailing-List fedora-kernel <kernel@lists.fedoraproject.org>
 
-On Tue, 11 Feb 2014, Daniel Lezcano wrote:
-> On 02/07/2014 09:06 AM, Preeti U Murthy wrote:
-> Setting the smp affinity on the earliest timer should be handled automatically
-> with the CLOCK_EVT_FEAT_DYNIRQ flag. Did you look at using this flag ?
+On Tue, 11 Feb 2014, Stanislaw Gruszka wrote:
 
-How should this flag help? Not at all, because the hrtimer based
-broadcast device cannot assign affinities.
+> On Mon, Feb 10, 2014 at 07:59:39PM +0100, poma wrote:
+> > On 10.02.2014 11:06, Thomas Gleixner wrote:
+> > > On Mon, 10 Feb 2014, poma wrote:
+> > > 
+> > >> [   83.558551]  [<ffffffff81025b17>] amd_e400_idle+0x87/0x130
+> > > 
+> > > So this seems to happen only on AMD machines which use that e400 idle
+> > > mode. I have no idea at the moment whats wrong there. I'll find one of
+> > > those machines and try to reproduce.
+> 
+> I tried to debug that warn as well. Even if I found machine with proper
+> family and model number, HW C1E bug do not happen there, hence I just
+> hack kernel to always use amd_e400_idle (and remove AMD rdmsr specific
+> instructions to do not crash). That make issue 100% reproducible when
+> suspend/resume.
+
+It's also reproducible on cpu online/offline.
  
-> Another comment is the overall approach. We enter the cpuidle idle framework
-> with a specific state to go to and it is the tick framework telling us we
-> mustn't go to this state. IMO the logic is wrong, the decision to not enter
-> this state should be moved somewhere else.
+> It happens when cpu become idle, call CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+> but before CLOCK_EVT_NOTIFY_BROADCAST_EXIT, interrupt trigger on that
+> cpu. IRQ is handled by hrtimer code, which want to switch to hres and
+> call:
 > 
-> Why don't you create a cpuidle driver with the shallow idle states assigned to
-> a cpu (let's say cpu0) and another one with all the deeper idle states for the
-> rest of the cpus ? Using the multiple cpuidle driver support makes it
-> possible. The timer won't be moving around and a cpu will be dedicated to act
-> as the broadcast timer.
+> tick_switch_to_oneshot() -> ... -> tick_broadcast_setup_oneshot()
 > 
-> Wouldn't make sense and be less intrusive than the patchset you proposed ?
+> Since we have already proper handler there, last procedure clear
+> tick_broadcast_oneshot_mask, but tick_broadcast_pending_mask stay
+> set. When amd_e400_idle next time call CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+> the warning will happen.
+> 
+> I came with a below patch, which also clear pending mask, but perhaps
 
-How do you arm the broadcast timer on CPU0 from CPU1? You can't!
+Fun. I came up with the exact same solution independent of you and I
+tested it on real C1E contaminated hardware.
 
-You cannot access the cpu local timer on a different cpu. So you would
-have to send an IPI over to CPU0 so that it can reevaluate and
-schedule the broadcast. That's even more backwards than telling the
-cpuidle code that the CPU is not in a state to go deep.
+> oneshot_mask should not be cleared on tick_broadcast_setup_oneshot(),
+> or should be cleared only conditionally, or some other solution is
+
+We can do it unconditionally. It creates consistent state in all
+corner cases.
+
+There are other solutions to the problem, but that needs a major
+rework of the broadcast code. I so wish that this mess would have
+never been necessary at all ...
 
 Thanks,
 
 	tglx
-
-
