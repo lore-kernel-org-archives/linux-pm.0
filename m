@@ -1,111 +1,121 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFT][PATCH v2] mmc: change cb710-mmc platform power management
- to use dev_pm_ops
-Date: Tue, 11 Feb 2014 23:43:19 +0100
-Message-ID: <CAPDyKFr9RiaiVCdFX_DdNF+Rd-C3CEStPDd7+e0VJQuGfeq_fQ@mail.gmail.com>
-References: <1392149781-4991-1-git-send-email-shuah.kh@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend to RAM
+Date: Wed, 12 Feb 2014 00:58:07 +0100
+Message-ID: <1835578.EmLUpvTMQe@vostro.rjw.lan>
+References: <52F2CC7B.80406@gmail.com> <20140211104237.GE18029@intel.com> <8701691.z6Q6jDD18v@al>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <1392149781-4991-1-git-send-email-shuah.kh@samsung.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, mirq-linux@rere.qmqm.pl, Chris Ball <chris@printf.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, shuahkhan@gmail.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64158 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750978AbaBKXn2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2014 18:43:28 -0500
+In-Reply-To: <8701691.z6Q6jDD18v@al>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Wu <lekensteyn@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, francis.moro@gmail.com, linux-pm@vger.kernel.org
 
-On 11 February 2014 21:16, Shuah Khan <shuah.kh@samsung.com> wrote:
-> Change cb710-mmc platform driver to register pm ops using dev_pm_ops instead
-> of legacy pm_ops. The existing legacy suspend/resume routines are identical
-> and simply clear IRQ mask in the device in case it got undefined during sleep
-> state. Changed code to collapse suspend and resume into one .pm interface
-> for suspend and resume which gets installed for suspend, freeze, poweroff,
-> thaw, restore, and resume states.
->
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> ---
->
-> patch v2: Addresses review comments on patch v1
->
->  drivers/mmc/host/cb710-mmc.c |   42 ++++++++++++++++++++----------------------
->  1 file changed, 20 insertions(+), 22 deletions(-)
->
-> diff --git a/drivers/mmc/host/cb710-mmc.c b/drivers/mmc/host/cb710-mmc.c
-> index 1087b4c..ccf7a75 100644
-> --- a/drivers/mmc/host/cb710-mmc.c
-> +++ b/drivers/mmc/host/cb710-mmc.c
-> @@ -662,26 +662,6 @@ static const struct mmc_host_ops cb710_mmc_host = {
->         .get_cd = cb710_mmc_get_cd,
->  };
->
-> -#ifdef CONFIG_PM
-> -
-> -static int cb710_mmc_suspend(struct platform_device *pdev, pm_message_t state)
-> -{
-> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
-> -
-> -       cb710_mmc_enable_irq(slot, 0, ~0);
-> -       return 0;
-> -}
-> -
-> -static int cb710_mmc_resume(struct platform_device *pdev)
-> -{
-> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
-> -
-> -       cb710_mmc_enable_irq(slot, 0, ~0);
-> -       return 0;
-> -}
-> -
-> -#endif /* CONFIG_PM */
-> -
->  static int cb710_mmc_init(struct platform_device *pdev)
->  {
->         struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
-> @@ -762,13 +742,31 @@ static int cb710_mmc_exit(struct platform_device *pdev)
->         return 0;
->  }
->
-> +#ifdef CONFIG_PM
-> +static int cb710_mmc_suspend_resume(struct device *dev)
-> +{
-> +       struct cb710_slot *slot = cb710_pdev_to_slot(to_platform_device(dev));
-> +
-> +       cb710_mmc_enable_irq(slot, 0, ~0);
-> +       return 0;
-> +}
-> +
-> +static const struct dev_pm_ops cb710_mmc_dev_pm_ops = {
-> +       .suspend = cb710_mmc_suspend_resume,
-> +       .resume = cb710_mmc_suspend_resume,
-> +       /* Hibernate hooks */
-> +       .freeze = cb710_mmc_suspend_resume,
-> +       .thaw = cb710_mmc_suspend_resume,
-> +       .poweroff = cb710_mmc_suspend_resume,
-> +       .restore = cb710_mmc_suspend_resume,
-> +};
-> +#endif
->  static struct platform_driver cb710_mmc_driver = {
->         .driver.name = "cb710-mmc",
->         .probe = cb710_mmc_init,
->         .remove = cb710_mmc_exit,
->  #ifdef CONFIG_PM
-> -       .suspend = cb710_mmc_suspend,
-> -       .resume = cb710_mmc_resume,
-> +       .driver.pm = &cb710_mmc_dev_pm_ops,
->  #endif
->  };
+On Tuesday, February 11, 2014 07:17:37 PM Peter Wu wrote:
+> On Tuesday 11 February 2014 12:42:37 Mika Westerberg wrote:
+> > On Mon, Feb 10, 2014 at 11:39:29PM +0100, Rafael J. Wysocki wrote:
+> > > > _STA() returns 0x0A instead of 0x0F. Could there be something missing in
+> > > > the ACPI hotplug code that overlooks this and removes the device on
+> > > > resume?
+> > > 
+> > > That is possible.  Actually even quite likely, but let's wait for the
+> > > response from Peter.
+> > 
+> > Here's a hack that should take the 0xa return value into consideration. It
+> > turned out that this case is even mentioned in the ACPI spec.
+> 
+> Tested-by: Peter Wu <lekensteyn@gmail.com>
+> 
+> This works, the devices are not lost anymore after resume. dmesg
+> mentions the 04:00.* devices at resume compared to the unpatched kernel:
+> 
+> [   42.650721] PM: Finishing wakeup.
+> [   42.650768] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
+> [   42.650772] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
+> [   42.650874] iwlwifi 0000:05:00.0: no hotplug settings from platform
+> [   42.650722] Restarting tasks ... done.
+> [   42.650985] video LNXVIDEO:00: Restoring backlight state
+> [   42.650988] video LNXVIDEO:01: Restoring backlight state
+> [   43.124208] ACPI: \_SB_.AC__: ACPI_NOTIFY_BUS_CHECK event: unsupported
+> [   43.128401] jme 0000:04:00.5: irq 50 for MSI/MSI-X
+> [   43.153005] jme 0000:04:00.5 eth0: Link is down
+> [   43.153030] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+> [   43.154364] iwlwifi 0000:05:00.0: L1 Enabled; Disabling L0S
+> [   43.162307] iwlwifi 0000:05:00.0: Radio type=0x1-0x3-0x1
+> [   43.276220] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP01
+> [   43.276223] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP01
+> [   43.276257] xhci_hcd 0000:02:00.0: no hotplug settings from platform
+> [   43.276267] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP02
+> [   43.276268] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP02
+> [   43.276355] sdhci-pci 0000:04:00.0: no hotplug settings from platform
+> [   43.276368] pci 0000:04:00.2: no hotplug settings from platform
+> [   43.276381] jmb38x_ms 0000:04:00.3: no hotplug settings from platform
+> [   43.276393] jme 0000:04:00.5: no hotplug settings from platform
+> [   43.276398] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
+> [   43.276399] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
+> [   43.276491] iwlwifi 0000:05:00.0: no hotplug settings from platform
+> [   43.277214] IPv6: ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> 
+> Rafael, do you want me to test the other patch as well?
 
-I suggest you have a look at SIMPLE_DEV_PM_OPS macro. That would
-simplify this patch.
+No, thanks!
 
-Kind regards
-Ulf Hansson
+Mika, I'll add a changelog to your patch and queue it up as a fix for 3.14.
 
->
-> --
-> 1.7.10.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Thanks!
+
+
+> > diff --git a/drivers/pci/hotplug/acpiphp_glue.c
+> > b/drivers/pci/hotplug/acpiphp_glue.c index e2a783fdb98f..014381b42d86
+> > 100644
+> > --- a/drivers/pci/hotplug/acpiphp_glue.c
+> > +++ b/drivers/pci/hotplug/acpiphp_glue.c
+> > @@ -730,6 +730,17 @@ static unsigned int get_slot_status(struct acpiphp_slot
+> > *slot) return (unsigned int)sta;
+> >  }
+> > 
+> > +static inline bool device_sta_valid(unsigned long long sta)
+> > +{
+> > +	/*
+> > +	 * ACPI spec says that _STA may return bit 0 clear with bit 8 set
+> > +	 * if the device is valid but does not require device driver to be
+> > +	 * loaded (chapter 6.3.7).
+> > +	 */
+> > +	unsigned mask = ACPI_STA_DEVICE_ENABLED | ACPI_STA_DEVICE_FUNCTIONING;
+> > +	return (sta & mask) == mask;
+> > +}
+> > +
+> >  /**
+> >   * trim_stale_devices - remove PCI devices that are not responding.
+> >   * @dev: PCI device to start walking the hierarchy from.
+> > @@ -745,7 +756,7 @@ static void trim_stale_devices(struct pci_dev *dev)
+> >  		unsigned long long sta;
+> > 
+> >  		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
+> > -		alive = (ACPI_SUCCESS(status) && sta == ACPI_STA_ALL)
+> > +		alive = (ACPI_SUCCESS(status) && device_sta_valid(sta))
+> > 
+> >  			|| acpiphp_no_hotplug(handle);
+> > 
+> >  	}
+> >  	if (!alive) {
+> > @@ -792,7 +803,7 @@ static void acpiphp_check_bridge(struct acpiphp_bridge
+> > *bridge) mutex_lock(&slot->crit_sect);
+> >  		if (slot_no_hotplug(slot)) {
+> >  			; /* do nothing */
+> > -		} else if (get_slot_status(slot) == ACPI_STA_ALL) {
+> > +		} else if (device_sta_valid(get_slot_status(slot))) {
+> >  			/* remove stale devices if any */
+> >  			list_for_each_entry_safe_reverse(dev, tmp,
+> >  							 &bus->devices, bus_list)
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
