@@ -1,151 +1,65 @@
-From: Jan Kiszka <jan.kiszka@web.de>
-Subject: Re: [PATCH] intel_idle: Add CPU model 54 (Atom N2000 series)
-Date: Tue, 11 Feb 2014 06:43:42 +0100
-Message-ID: <52F9B88E.3090601@web.de>
-References: <52E42B86.1020701@web.de> <CAJvTdKnt=75AEQhsa8aAdEft7nnySvhxc57_1BHmOS7+tbLeNQ@mail.gmail.com>
+From: Stanislaw Gruszka <sgruszka-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: Re: WARNING: CPU: 1 PID: 0 at kernel/time/tick-broadcast.c:668
+	tick_broadcast_oneshot_control+0x17d/0x190()
+Date: Tue, 11 Feb 2014 09:23:08 +0100
+Message-ID: <20140211082306.GA1528@redhat.com>
+References: <52F84A9B.5020008@gmail.com>
+	<alpine.DEB.2.02.1402101056260.21991@ionos.tec.linutronix.de>
+	<52F9219B.5020003@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="RupKIdeTBeda7xoSPhNRoLgr7Rwv4N617"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.web.de ([212.227.17.11]:62111 "EHLO mout.web.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbaBKFnv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 11 Feb 2014 00:43:51 -0500
-Received: from mchn199C.mchp.siemens.de ([95.157.58.223]) by smtp.web.de
- (mrweb102) with ESMTPSA (Nemesis) id 0M8Qpi-1VIMqN0cc6-00vuhX for
- <linux-pm@vger.kernel.org>; Tue, 11 Feb 2014 06:43:49 +0100
-In-Reply-To: <CAJvTdKnt=75AEQhsa8aAdEft7nnySvhxc57_1BHmOS7+tbLeNQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <52F9219B.5020003-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+List-Unsubscribe: <https://admin.fedoraproject.org/mailman/options/kernel>,
+	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.fedoraproject.org/pipermail/kernel/>
+List-Post: <mailto:kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>
+List-Help: <mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=help>
+List-Subscribe: <https://admin.fedoraproject.org/mailman/listinfo/kernel>,
+	<mailto:kernel-request-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org?subject=subscribe>
+Sender: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
+Errors-To: kernel-bounces-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org
+To: poma <pomidorabelisima-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Olaf Hering <olaf-QOLJcTWqO2uzQB+pC5nmwQ@public.gmane.org>, Mailing-List fedora-kernel <kernel-TuqUDEhatI4ANWPb/1PvSmm0pvjS0E/A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux Kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Justin M. Forbes" <jforbes-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---RupKIdeTBeda7xoSPhNRoLgr7Rwv4N617
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 2014-02-11 01:01, Len Brown wrote:
-> Please send the output of these two command before and after the patch:=
-
->=20
-> dmesg | grep idle
-> grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
-
-Before:
-# dmesg | grep idle
-[    0.648783] cpuidle: using governor ladder
-[    0.648787] cpuidle: using governor menu
-[    1.053215] intel_idle: does not run on family 6 model 54
-[    3.285430] ACPI: acpi_idle registered with cpuidle
-# grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
-/sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL IDLE
-/sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
-/sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
-/sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
-/sys/devices/system/cpu/cpu0/cpuidle/state0/time:443
-/sys/devices/system/cpu/cpu0/cpuidle/state0/usage:5
-/sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI FFH INTEL MWAIT 0x0=
-
-/sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
-/sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
-/sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state1/time:420944
-/sys/devices/system/cpu/cpu0/cpuidle/state1/usage:1798
-/sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI FFH INTEL MWAIT 0x1=
-0
-/sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state2/latency:20
-/sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
-/sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state2/time:119479360
-/sys/devices/system/cpu/cpu0/cpuidle/state2/usage:32863
-/sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI FFH INTEL MWAIT 0x3=
-0
-/sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state3/latency:100
-/sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
-/sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state3/time:1673
-/sys/devices/system/cpu/cpu0/cpuidle/state3/usage:7
-/sys/devices/system/cpu/cpu0/cpuidle/state4/desc:ACPI FFH INTEL MWAIT 0x5=
-2
-/sys/devices/system/cpu/cpu0/cpuidle/state4/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state4/latency:140
-/sys/devices/system/cpu/cpu0/cpuidle/state4/name:C4
-/sys/devices/system/cpu/cpu0/cpuidle/state4/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state4/time:125622
-/sys/devices/system/cpu/cpu0/cpuidle/state4/usage:63
-
-After:
-# dmesg | grep idle
-[    0.244640] cpuidle: using governor ladder
-[    0.244645] cpuidle: using governor menu
-[    0.654351] intel_idle: MWAIT substates: 0x3020220
-[    0.654355] intel_idle: v0.4 model 0x36
-[    0.654359] intel_idle: lapic_timer_reliable_states 0xffffffff
-# grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
-/sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL IDLE
-/sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
-/sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
-/sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
-/sys/devices/system/cpu/cpu0/cpuidle/state0/time:572
-/sys/devices/system/cpu/cpu0/cpuidle/state0/usage:12
-/sys/devices/system/cpu/cpu0/cpuidle/state1/desc:MWAIT 0x00
-/sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state1/latency:10
-/sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1E-ATM
-/sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state1/time:722013
-/sys/devices/system/cpu/cpu0/cpuidle/state1/usage:3132
-/sys/devices/system/cpu/cpu0/cpuidle/state2/desc:MWAIT 0x10
-/sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state2/latency:20
-/sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2-ATM
-/sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state2/time:4512127
-/sys/devices/system/cpu/cpu0/cpuidle/state2/usage:9147
-/sys/devices/system/cpu/cpu0/cpuidle/state3/desc:MWAIT 0x30
-/sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state3/latency:100
-/sys/devices/system/cpu/cpu0/cpuidle/state3/name:C4-ATM
-/sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state3/time:1996954
-/sys/devices/system/cpu/cpu0/cpuidle/state3/usage:2696
-/sys/devices/system/cpu/cpu0/cpuidle/state4/desc:MWAIT 0x52
-/sys/devices/system/cpu/cpu0/cpuidle/state4/disable:0
-/sys/devices/system/cpu/cpu0/cpuidle/state4/latency:140
-/sys/devices/system/cpu/cpu0/cpuidle/state4/name:C6-ATM
-/sys/devices/system/cpu/cpu0/cpuidle/state4/power:0
-/sys/devices/system/cpu/cpu0/cpuidle/state4/time:266926331
-/sys/devices/system/cpu/cpu0/cpuidle/state4/usage:73695
-
->=20
-> How did you measure power on the the DN2800MT, and on what workload?
-
-I measured the input current of the board @12V. In both cases, the
-system was idle in single-user mode, practically no processes running.
-
-Jan
-
-
-
---RupKIdeTBeda7xoSPhNRoLgr7Rwv4N617
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlL5uJQACgkQitSsb3rl5xS6YwCeKw51D05WcUX2N5hKQ6Rr/ZJs
-HJgAn1Hii8qWwVMV2xbZUmt2It2MPaIi
-=r7P5
------END PGP SIGNATURE-----
-
---RupKIdeTBeda7xoSPhNRoLgr7Rwv4N617--
+T24gTW9uLCBGZWIgMTAsIDIwMTQgYXQgMDc6NTk6MzlQTSArMDEwMCwgcG9tYSB3cm90ZToKPiBP
+biAxMC4wMi4yMDE0IDExOjA2LCBUaG9tYXMgR2xlaXhuZXIgd3JvdGU6Cj4gPiBPbiBNb24sIDEw
+IEZlYiAyMDE0LCBwb21hIHdyb3RlOgo+ID4gCj4gPj4gWyAgIDgzLjU1ODU1MV0gIFs8ZmZmZmZm
+ZmY4MTAyNWIxNz5dIGFtZF9lNDAwX2lkbGUrMHg4Ny8weDEzMAo+ID4gCj4gPiBTbyB0aGlzIHNl
+ZW1zIHRvIGhhcHBlbiBvbmx5IG9uIEFNRCBtYWNoaW5lcyB3aGljaCB1c2UgdGhhdCBlNDAwIGlk
+bGUKPiA+IG1vZGUuIEkgaGF2ZSBubyBpZGVhIGF0IHRoZSBtb21lbnQgd2hhdHMgd3JvbmcgdGhl
+cmUuIEknbGwgZmluZCBvbmUgb2YKPiA+IHRob3NlIG1hY2hpbmVzIGFuZCB0cnkgdG8gcmVwcm9k
+dWNlLgoKSSB0cmllZCB0byBkZWJ1ZyB0aGF0IHdhcm4gYXMgd2VsbC4gRXZlbiBpZiBJIGZvdW5k
+IG1hY2hpbmUgd2l0aCBwcm9wZXIKZmFtaWx5IGFuZCBtb2RlbCBudW1iZXIsIEhXIEMxRSBidWcg
+ZG8gbm90IGhhcHBlbiB0aGVyZSwgaGVuY2UgSSBqdXN0CmhhY2sga2VybmVsIHRvIGFsd2F5cyB1
+c2UgYW1kX2U0MDBfaWRsZSAoYW5kIHJlbW92ZSBBTUQgcmRtc3Igc3BlY2lmaWMKaW5zdHJ1Y3Rp
+b25zIHRvIGRvIG5vdCBjcmFzaCkuIFRoYXQgbWFrZSBpc3N1ZSAxMDAlIHJlcHJvZHVjaWJsZSB3
+aGVuCnN1c3BlbmQvcmVzdW1lLgoKSXQgaGFwcGVucyB3aGVuIGNwdSBiZWNvbWUgaWRsZSwgY2Fs
+bCBDTE9DS19FVlRfTk9USUZZX0JST0FEQ0FTVF9FTlRFUiwKYnV0IGJlZm9yZSBDTE9DS19FVlRf
+Tk9USUZZX0JST0FEQ0FTVF9FWElULCBpbnRlcnJ1cHQgdHJpZ2dlciBvbiB0aGF0CmNwdS4gSVJR
+IGlzIGhhbmRsZWQgYnkgaHJ0aW1lciBjb2RlLCB3aGljaCB3YW50IHRvIHN3aXRjaCB0byBocmVz
+IGFuZApjYWxsOgoKdGlja19zd2l0Y2hfdG9fb25lc2hvdCgpIC0+IC4uLiAtPiB0aWNrX2Jyb2Fk
+Y2FzdF9zZXR1cF9vbmVzaG90KCkKClNpbmNlIHdlIGhhdmUgYWxyZWFkeSBwcm9wZXIgaGFuZGxl
+ciB0aGVyZSwgbGFzdCBwcm9jZWR1cmUgY2xlYXIKdGlja19icm9hZGNhc3Rfb25lc2hvdF9tYXNr
+LCBidXQgdGlja19icm9hZGNhc3RfcGVuZGluZ19tYXNrIHN0YXkKc2V0LiBXaGVuIGFtZF9lNDAw
+X2lkbGUgbmV4dCB0aW1lIGNhbGwgQ0xPQ0tfRVZUX05PVElGWV9CUk9BRENBU1RfRU5URVIsCnRo
+ZSB3YXJuaW5nIHdpbGwgaGFwcGVuLgoKSSBjYW1lIHdpdGggYSBiZWxvdyBwYXRjaCwgd2hpY2gg
+YWxzbyBjbGVhciBwZW5kaW5nIG1hc2ssIGJ1dCBwZXJoYXBzCm9uZXNob3RfbWFzayBzaG91bGQg
+bm90IGJlIGNsZWFyZWQgb24gdGlja19icm9hZGNhc3Rfc2V0dXBfb25lc2hvdCgpLApvciBzaG91
+bGQgYmUgY2xlYXJlZCBvbmx5IGNvbmRpdGlvbmFsbHksIG9yIHNvbWUgb3RoZXIgc29sdXRpb24g
+aXMKbmVlZGVkLiBBbnl3YXksIHBhdGNoIG1ha2UgdGhlIHdhcm5pbmcgZ29uZSBvbiBteSBoYWNr
+ZWQgc2V0dXAsIEkgd2FzCndhaXRpbmcgZm9yIHRlc3RpbmcgcmVzdWx0cyBvbiByZWFsIEMxRSBo
+YXJkd2FyZS4KClRoYW5rcwpTdGFuaXNsYXcKCmRpZmYgLS1naXQgYS9rZXJuZWwvdGltZS90aWNr
+LWJyb2FkY2FzdC5jIGIva2VybmVsL3RpbWUvdGljay1icm9hZGNhc3QuYwppbmRleCA0Mzc4MGFi
+Li45ODk3N2E1IDEwMDY0NAotLS0gYS9rZXJuZWwvdGltZS90aWNrLWJyb2FkY2FzdC5jCisrKyBi
+L2tlcm5lbC90aW1lL3RpY2stYnJvYWRjYXN0LmMKQEAgLTc1Niw2ICs3NTYsNyBAQCBvdXQ6CiBz
+dGF0aWMgdm9pZCB0aWNrX2Jyb2FkY2FzdF9jbGVhcl9vbmVzaG90KGludCBjcHUpCiB7CiAJY3B1
+bWFza19jbGVhcl9jcHUoY3B1LCB0aWNrX2Jyb2FkY2FzdF9vbmVzaG90X21hc2spOworCWNwdW1h
+c2tfY2xlYXJfY3B1KGNwdSwgdGlja19icm9hZGNhc3RfcGVuZGluZ19tYXNrKTsKIH0KIAogc3Rh
+dGljIHZvaWQgdGlja19icm9hZGNhc3RfaW5pdF9uZXh0X2V2ZW50KHN0cnVjdCBjcHVtYXNrICpt
+YXNrLApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwprZXJu
+ZWwgbWFpbGluZyBsaXN0Cmtlcm5lbEBsaXN0cy5mZWRvcmFwcm9qZWN0Lm9yZwpodHRwczovL2Fk
+bWluLmZlZG9yYXByb2plY3Qub3JnL21haWxtYW4vbGlzdGluZm8va2VybmVs
