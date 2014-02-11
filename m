@@ -1,128 +1,407 @@
-From: Mohit Kumar <mohit.kumar-qxv4g6HH51o@public.gmane.org>
-Subject: [PATCH V6 00/12]PCI:Add SPEAr13xx PCie support
-Date: Tue, 11 Feb 2014 14:59:56 +0530
-Message-ID: <cover.1392109054.git.mohit.kumar@st.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V4 2/3] tick/cpuidle: Initialize hrtimer mode of broadcast
+Date: Tue, 11 Feb 2014 11:16:54 +0100
+Message-ID: <52F9F896.4020402@linaro.org>
+References: <20140207075618.17187.20149.stgit@preeti.in.ibm.com> <20140207080632.17187.80532.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: arnd-r2nGTMty4D4@public.gmane.org
-Cc: Mohit Kumar <mohit.kumar-qxv4g6HH51o@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, spear-devel-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f170.google.com ([74.125.82.170]:51758 "EHLO
+	mail-we0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbaBKKQ6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2014 05:16:58 -0500
+Received: by mail-we0-f170.google.com with SMTP id w62so5379650wes.29
+        for <linux-pm@vger.kernel.org>; Tue, 11 Feb 2014 02:16:56 -0800 (PST)
+In-Reply-To: <20140207080632.17187.80532.stgit@preeti.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, peterz@infradead.org, benh@kernel.crashing.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Cc: deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, fweisbec@gmail.com, paulus@samba.org, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
 
-Patch# 1 and 2: Improvement and fixes for SPEAr13xx support.
-Patch# 3,5 and 8: Add DT bindings for miphy40lp, misc and pcie node
-Patch# 4,6 and 7: Add miphy40lp skelten driver and support for spear1310/40 
-miphy wrapper.
-Patch# 9-11: Add SPEAr13xx PCIe driver and dt support.
+On 02/07/2014 09:06 AM, Preeti U Murthy wrote:
+> From: Thomas Gleixner <tglx@linutronix.de>
+>
+> On some architectures, in certain CPU deep idle states the local time=
+rs stop.
+> An external clock device is used to wakeup these CPUs. The kernel sup=
+port for the
+> wakeup of these CPUs is provided by the tick broadcast framework by u=
+sing the
+> external clock device as the wakeup source.
+>
+> However not all implementations of architectures provide such an exte=
+rnal
+> clock device. This patch includes support in the broadcast framework =
+to handle
+> the wakeup of the CPUs in deep idle states on such systems by queuing=
+ a hrtimer
+> on one of the CPUs, which is meant to handle the wakeup of CPUs in de=
+ep idle states.
+>
+> This patchset introduces a pseudo clock device which can be registere=
+d by the
+> archs as tick_broadcast_device in the absence of a real external cloc=
+k
+> device. Once registered, the broadcast framework will work as is for =
+these
+> architectures as long as the archs take care of the BROADCAST_ENTER
+> notification failing for one of the CPUs. This CPU is made the stand =
+by CPU to
+> handle wakeup of the CPUs in deep idle and it *must not enter deep id=
+le states*.
+>
+> The CPU with the earliest wakeup is chosen to be this CPU. Hence this=
+ way the
+> stand by CPU dynamically moves around and so does the hrtimer which i=
+s queued
+> to trigger at the next earliest wakeup time. This is consistent with =
+the case where
+> an external clock device is present. The smp affinity of this clock d=
+evice is
+> set to the CPU with the earliest wakeup.
 
-These pathes are tested with linux-3.14-rc1 with following patch on the top of
-it:
-Author: Balaji T K <balajitk-l0cyMroinI0@public.gmane.org>
-Date:   Mon Jan 20 16:41:27 2014 +0200
+Hi Preeti,
 
-    ata: ahci_platform: Manage SATA PHY
+jumping a bit late in the thread...
 
-Tested with SPEAr1310 evaluation board:
-	- INTEL PRO 100/100 EP card
-	- USB xhci gen2 card
- 	- Above cards connected through LeCROY PTC switch
+Setting the smp affinity on the earliest timer should be handled=20
+automatically with the CLOCK_EVT_FEAT_DYNIRQ flag. Did you look at usin=
+g=20
+this flag ?
 
-Modifications for SATA are tested with SPEAr1340-evb board
+Another comment is the overall approach. We enter the cpuidle idle=20
+framework with a specific state to go to and it is the tick framework=20
+telling us we mustn't go to this state. IMO the logic is wrong, the=20
+decision to not enter this state should be moved somewhere else.
 
-Changes since v5:
-- Split DT bindings for misc, miphy-40lp and pcie node into sepearte patches
-- Merge config options PCIE_SPEAR13XX and PCI_MSI into defconfig patch 
-- Incorporated other minor comments
-Changes since v4:
-- Uses per device function pointers passed from .data field to
-  the of_device_id instead of of_device_is_compatible.
-- Incorporated other minor comments from v4
+Why don't you create a cpuidle driver with the shallow idle states=20
+assigned to a cpu (let's say cpu0) and another one with all the deeper=20
+idle states for the rest of the cpus ? Using the multiple cpuidle drive=
+r=20
+support makes it possible. The timer won't be moving around and a cpu=20
+will be dedicated to act as the broadcast timer.
 
-Changes since v3:
-- Phy driver renamed to phy-miphy40lp
-- ahci phy hook patch used as suggested by Arnd
-- Incorporated other minor comments from v3
+Wouldn't make sense and be less intrusive than the patchset you propose=
+d ?
 
-Changes since v2:
-- Incorporated comments to move SPEAr13xx PCIe and SATA phy specific routines to
-  the phy framework
-- Modify ahci driver to include phy hooks
-- phy-core driver modifications for subsys_initcall() 
- 
-Changes since v1:
-- Few patches of the series are already accepted and applied to mainline e.g.
- pcie designware driver improvements,fixes for IO translation bug, PCIe dw
- driver maintainer. So dropped these from v2.
-- Incorporated comment to move the common/reset PCIe code to the seperate driver
-- PCIe and SATA share common PHY configuration registers, so move SATA
- platform code to the system config driver
-Fourth patch is improves pcie designware driver and fixes the IO
-translation bug. IO translation bug fix leads to the working of PCIe EP devices
-connected to RC through switch.
 
-PCIe driver support for SPEAr1310/40 platform board is added.
+> This patchset handles the hotplug of
+> the stand by CPU as well by moving the hrtimer on to the CPU handling=
+ the CPU_DEAD
+> notification.
+>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> [Added Changelog and code to handle reprogramming of hrtimer]
+> ---
+>
+>   include/linux/clockchips.h           |    9 +++
+>   kernel/time/Makefile                 |    2 -
+>   kernel/time/tick-broadcast-hrtimer.c |  105 +++++++++++++++++++++++=
++++++++++++
+>   kernel/time/tick-broadcast.c         |   54 +++++++++++++++++
+>   4 files changed, 166 insertions(+), 4 deletions(-)
+>   create mode 100644 kernel/time/tick-broadcast-hrtimer.c
+>
+> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+> index e0c5a6c..dbe9e14 100644
+> --- a/include/linux/clockchips.h
+> +++ b/include/linux/clockchips.h
+> @@ -62,6 +62,11 @@ enum clock_event_mode {
+>   #define CLOCK_EVT_FEAT_DYNIRQ		0x000020
+>   #define CLOCK_EVT_FEAT_PERCPU		0x000040
+>
+> +/*
+> + * Clockevent device is based on a hrtimer for broadcast
+> + */
+> +#define CLOCK_EVT_FEAT_HRTIMER		0x000080
+> +
+>   /**
+>    * struct clock_event_device - clock event device descriptor
+>    * @event_handler:	Assigned by the framework to be called by the lo=
+w
+> @@ -83,6 +88,7 @@ enum clock_event_mode {
+>    * @name:		ptr to clock event name
+>    * @rating:		variable to rate clock event devices
+>    * @irq:		IRQ number (only for non CPU local devices)
+> + * @bound_on:		Bound on CPU
+>    * @cpumask:		cpumask to indicate for which CPUs this device works
+>    * @list:		list head for the management code
+>    * @owner:		module reference
+> @@ -113,6 +119,7 @@ struct clock_event_device {
+>   	const char		*name;
+>   	int			rating;
+>   	int			irq;
+> +	int			bound_on;
+>   	const struct cpumask	*cpumask;
+>   	struct list_head	list;
+>   	struct module		*owner;
+> @@ -180,9 +187,11 @@ extern int tick_receive_broadcast(void);
+>   #endif
+>
+>   #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG=
+_TICK_ONESHOT)
+> +extern void tick_setup_hrtimer_broadcast(void);
+>   extern int tick_check_broadcast_expired(void);
+>   #else
+>   static inline int tick_check_broadcast_expired(void) { return 0; }
+> +static void tick_setup_hrtimer_broadcast(void) {};
+>   #endif
+>
+>   #ifdef CONFIG_GENERIC_CLOCKEVENTS
+> diff --git a/kernel/time/Makefile b/kernel/time/Makefile
+> index 9250130..06151ef 100644
+> --- a/kernel/time/Makefile
+> +++ b/kernel/time/Makefile
+> @@ -3,7 +3,7 @@ obj-y +=3D timeconv.o posix-clock.o alarmtimer.o
+>
+>   obj-$(CONFIG_GENERIC_CLOCKEVENTS_BUILD)		+=3D clockevents.o
+>   obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+=3D tick-common.o
+> -obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+=3D tick-broadcast.o
+> +obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+=3D tick-broadcast.o ti=
+ck-broadcast-hrtimer.o
+>   obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+=3D sched_clock.o
+>   obj-$(CONFIG_TICK_ONESHOT)			+=3D tick-oneshot.o
+>   obj-$(CONFIG_TICK_ONESHOT)			+=3D tick-sched.o
+> diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-=
+broadcast-hrtimer.c
+> new file mode 100644
+> index 0000000..af1e119
+> --- /dev/null
+> +++ b/kernel/time/tick-broadcast-hrtimer.c
+> @@ -0,0 +1,105 @@
+> +/*
+> + * linux/kernel/time/tick-broadcast-hrtimer.c
+> + * This file emulates a local clock event device
+> + * via a pseudo clock device.
+> + */
+> +#include <linux/cpu.h>
+> +#include <linux/err.h>
+> +#include <linux/hrtimer.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/percpu.h>
+> +#include <linux/profile.h>
+> +#include <linux/clockchips.h>
+> +#include <linux/sched.h>
+> +#include <linux/smp.h>
+> +#include <linux/module.h>
+> +
+> +#include "tick-internal.h"
+> +
+> +static struct hrtimer bctimer;
+> +
+> +static void bc_set_mode(enum clock_event_mode mode,
+> +			struct clock_event_device *bc)
+> +{
+> +	switch (mode) {
+> +	case CLOCK_EVT_MODE_SHUTDOWN:
+> +		/*
+> +		 * Note, we cannot cancel the timer here as we might
+> +		 * run into the following live lock scenario:
+> +		 *
+> +		 * cpu 0		cpu1
+> +		 * lock(broadcast_lock);
+> +		 *			hrtimer_interrupt()
+> +		 *			bc_handler()
+> +		 *			   tick_handle_oneshot_broadcast();
+> +		 *			    lock(broadcast_lock);
+> +		 * hrtimer_cancel()
+> +		 *  wait_for_callback()
+> +		 */
+> +		hrtimer_try_to_cancel(&bctimer);
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +}
+> +
+> +/*
+> + * This is called from the guts of the broadcast code when the cpu
+> + * which is about to enter idle has the earliest broadcast timer eve=
+nt.
+> + */
+> +static int bc_set_next(ktime_t expires, struct clock_event_device *b=
+c)
+> +{
+> +	/*
+> +	 * We try to cancel the timer first. If the callback is on
+> +	 * flight on some other cpu then we let it handle it. If we
+> +	 * were able to cancel the timer nothing can rearm it as we
+> +	 * own broadcast_lock.
+> +	 *
+> +	 * However we can also be called from the event handler of
+> +	 * ce_broadcast_hrtimer itself when it expires. We cannot therefore
+> +	 * restart the timer since it is on flight on the same CPU. But
+> +	 * due to the same reason we can reset it.
+> +	 */
+> +	if (hrtimer_try_to_cancel(&bctimer) >=3D 0) {
+> +		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
+> +		/* Bind the "device" to the cpu */
+> +		bc->bound_on =3D smp_processor_id();
+> +	} else if (bc->bound_on =3D=3D smp_processor_id()) {
+> +		hrtimer_set_expires(&bctimer, expires);
+> +	}
+> +	return 0;
+> +}
+> +
+> +static struct clock_event_device ce_broadcast_hrtimer =3D {
+> +	.set_mode		=3D bc_set_mode,
+> +	.set_next_ktime		=3D bc_set_next,
+> +	.features		=3D CLOCK_EVT_FEAT_ONESHOT |
+> +				  CLOCK_EVT_FEAT_KTIME |
+> +				  CLOCK_EVT_FEAT_HRTIMER,
+> +	.rating			=3D 0,
+> +	.bound_on		=3D -1,
+> +	.min_delta_ns		=3D 1,
+> +	.max_delta_ns		=3D KTIME_MAX,
+> +	.min_delta_ticks	=3D 1,
+> +	.max_delta_ticks	=3D KTIME_MAX,
+> +	.mult			=3D 1,
+> +	.shift			=3D 0,
+> +	.cpumask		=3D cpu_all_mask,
+> +};
+> +
+> +static enum hrtimer_restart bc_handler(struct hrtimer *t)
+> +{
+> +	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
+> +
+> +	if (ce_broadcast_hrtimer.next_event.tv64 =3D=3D KTIME_MAX)
+> +		return HRTIMER_NORESTART;
+> +
+> +	return HRTIMER_RESTART;
+> +}
+> +
+> +void tick_setup_hrtimer_broadcast(void)
+> +{
+> +	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
+> +	bctimer.function =3D bc_handler;
+> +	clockevents_register_device(&ce_broadcast_hrtimer);
+> +}
+> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcas=
+t.c
+> index ddf2ac2..2f013c3 100644
+> --- a/kernel/time/tick-broadcast.c
+> +++ b/kernel/time/tick-broadcast.c
+> @@ -630,6 +630,42 @@ again:
+>   	raw_spin_unlock(&tick_broadcast_lock);
+>   }
+>
+> +static int broadcast_needs_cpu(struct clock_event_device *bc, int cp=
+u)
+> +{
+> +	if (!(bc->features & CLOCK_EVT_FEAT_HRTIMER))
+> +		return 0;
+> +	if (bc->next_event.tv64 =3D=3D KTIME_MAX)
+> +		return 0;
+> +	return bc->bound_on =3D=3D cpu ? -EBUSY : 0;
+> +}
+> +
+> +static void broadcast_shutdown_local(struct clock_event_device *bc,
+> +				     struct clock_event_device *dev)
+> +{
+> +	/*
+> +	 * For hrtimer based broadcasting we cannot shutdown the cpu
+> +	 * local device if our own event is the first one to expire or
+> +	 * if we own the broadcast timer.
+> +	 */
+> +	if (bc->features & CLOCK_EVT_FEAT_HRTIMER) {
+> +		if (broadcast_needs_cpu(bc, smp_processor_id()))
+> +			return;
+> +		if (dev->next_event.tv64 < bc->next_event.tv64)
+> +			return;
+> +	}
+> +	clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
+> +}
+> +
+> +static void broadcast_move_bc(int deadcpu)
+> +{
+> +	struct clock_event_device *bc =3D tick_broadcast_device.evtdev;
+> +
+> +	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
+> +		return;
+> +	/* This moves the broadcast assignment to this cpu */
+> +	clockevents_program_event(bc, bc->next_event, 1);
+> +}
+> +
+>   /*
+>    * Powerstate information: The system enters/leaves a state, where
+>    * affected devices might stop
+> @@ -648,7 +684,7 @@ int tick_broadcast_oneshot_control(unsigned long =
+reason)
+>   	 * states
+>   	 */
+>   	if (tick_broadcast_device.mode =3D=3D TICKDEV_MODE_PERIODIC)
+> -		return;
+> +		return 0;
+>
+>   	/*
+>   	 * We are called with preemtion disabled from the depth of the
+> @@ -659,7 +695,7 @@ int tick_broadcast_oneshot_control(unsigned long =
+reason)
+>   	dev =3D td->evtdev;
+>
+>   	if (!(dev->features & CLOCK_EVT_FEAT_C3STOP))
+> -		return;
+> +		return 0;
+>
+>   	bc =3D tick_broadcast_device.evtdev;
+>
+> @@ -667,7 +703,7 @@ int tick_broadcast_oneshot_control(unsigned long =
+reason)
+>   	if (reason =3D=3D CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
+>   		if (!cpumask_test_and_set_cpu(cpu, tick_broadcast_oneshot_mask)) =
+{
+>   			WARN_ON_ONCE(cpumask_test_cpu(cpu, tick_broadcast_pending_mask))=
+;
+> -			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
+> +			broadcast_shutdown_local(bc, dev);
+>   			/*
+>   			 * We only reprogram the broadcast timer if we
+>   			 * did not mark ourself in the force mask and
+> @@ -680,6 +716,16 @@ int tick_broadcast_oneshot_control(unsigned long=
+ reason)
+>   			    dev->next_event.tv64 < bc->next_event.tv64)
+>   				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
+>   		}
+> +		/*
+> +		 * If the current CPU owns the hrtimer broadcast
+> +		 * mechanism, it cannot go deep idle and we remove the
+> +		 * CPU from the broadcast mask. We don't have to go
+> +		 * through the EXIT path as the local timer is not
+> +		 * shutdown.
+> +		 */
+> +		ret =3D broadcast_needs_cpu(bc, cpu);
+> +		if (ret)
+> +			cpumask_clear_cpu(cpu, tick_broadcast_oneshot_mask);
+>   	} else {
+>   		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask))=
+ {
+>   			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
+> @@ -853,6 +899,8 @@ void tick_shutdown_broadcast_oneshot(unsigned int=
+ *cpup)
+>   	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
+>   	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
+>
+> +	broadcast_move_bc(cpu);
+> +
+>   	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
+>   }
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-These patches are tested with SPEAr1310 evaluation board:
-	- INTEL PRO 100/100 EP card
-	- USB xhci gen2 card
- 	- Above cards connected through LeCROY PTC switch
 
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: spear-devel-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-Mohit Kumar (2):
-  SPEAr13xx: defconfig: Update
-  MAINTAINERS: Add ST SPEAr13xx PCIe driver maintainer
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-Pratyush Anand (10):
-  clk: SPEAr13XX: Fix pcie clock name
-  SPEAr13XX: Fix static mapping table
-  phy: st-miphy40lp: Add binding information
-  phy: st-miphy40lp: Add skeleton driver
-  SPEAr: misc: Add binding information
-  SPEAr13xx: Fixup: Move SPEAr1340 SATA platform code to phy driver
-  phy: st-miphy-40lp: Add SPEAr1310 and SPEAr1340 PCIe phy support
-  SPEAr13xx: Add binding information for PCIe controller
-  SPEAr13XX: dts: Add PCIe node information
-  pcie: SPEAr13xx: Add designware wrapper support
-
- .../devicetree/bindings/arm/spear-misc.txt         |    9 +
- .../devicetree/bindings/pci/spear13xx-pcie.txt     |   14 +
- .../devicetree/bindings/phy/st-miphy40lp.txt       |   18 +
- MAINTAINERS                                        |    6 +
- arch/arm/boot/dts/spear1310-evb.dts                |    4 +
- arch/arm/boot/dts/spear1310.dtsi                   |   93 ++++-
- arch/arm/boot/dts/spear1340-evb.dts                |    4 +
- arch/arm/boot/dts/spear1340.dtsi                   |   31 ++-
- arch/arm/boot/dts/spear13xx.dtsi                   |    9 +-
- arch/arm/configs/spear13xx_defconfig               |   16 +
- arch/arm/mach-spear/Kconfig                        |    3 +
- arch/arm/mach-spear/include/mach/spear.h           |    4 +-
- arch/arm/mach-spear/spear1340.c                    |  127 +-----
- arch/arm/mach-spear/spear13xx.c                    |    2 +-
- drivers/clk/spear/spear1310_clock.c                |    6 +-
- drivers/clk/spear/spear1340_clock.c                |    2 +-
- drivers/pci/host/Kconfig                           |    8 +
- drivers/pci/host/Makefile                          |    1 +
- drivers/pci/host/pcie-spear13xx.c                  |  414 +++++++++++++++
- drivers/phy/Kconfig                                |    7 +
- drivers/phy/Makefile                               |    1 +
- drivers/phy/phy-miphy40lp.c                        |  543 ++++++++++++++++++++
- 22 files changed, 1183 insertions(+), 139 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/arm/spear-misc.txt
- create mode 100644 Documentation/devicetree/bindings/pci/spear13xx-pcie.txt
- create mode 100644 Documentation/devicetree/bindings/phy/st-miphy40lp.txt
- create mode 100644 drivers/pci/host/pcie-spear13xx.c
- create mode 100644 drivers/phy/phy-miphy40lp.c
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
