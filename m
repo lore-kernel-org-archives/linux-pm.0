@@ -1,47 +1,45 @@
 From: Josh Cartwright <joshc@codeaurora.org>
-Subject: [PATCH 0/8] of_find_matching_node/of_match_node -> of_find_matching_node_and_match
-Date: Tue, 11 Feb 2014 10:23:58 -0600
-Message-ID: <1392135847-30791-1-git-send-email-joshc@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-c6x-dev@linux-c6x.org
+Subject: [PATCH 8/8] cpufreq: ppc: make use of of_find_matching_node_and_match
+Date: Tue, 11 Feb 2014 10:24:06 -0600
+Message-ID: <1392135847-30791-9-git-send-email-joshc@codeaurora.org>
+References: <1392135847-30791-1-git-send-email-joshc@codeaurora.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1392135847-30791-1-git-send-email-joshc@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patchset updates users of the of_find_matching_node()/of_match_node() pair
-to leverage of_find_matching_node_and_match(), which only requires one walk
-through the match table.  This functionality was added by Stephen Warren[1], and
-landed in v3.8.
+Instead of the of_find_matching_node()/of_match_node() pair, which requires two
+iterations through the match table, make use of of_find_matching_node_and_match(),
+which only iterates through the table once.
 
-Cc: Stephen Warren <swarren@nvidia.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
+---
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-1: 50c8af4cf9 (of: introduce for_each_matching_node_and_match())
-
-Josh Cartwright (8):
-  bus: arm-cci: make use of of_find_matching_node_and_match
-  bus: mvebu-mbus: make use of of_find_matching_node_and_match
-  ARM: at91: make use of of_find_matching_node_and_match
-  ARM: mvebu: make use of of_find_matching_node_and_match
-  ARM: prima2: make use of of_find_matching_node_and_match
-  ARM: l2x0: make use of of_find_matching_node_and_match
-  C6X: make use of of_find_matching_node_and_match
-  cpufreq: ppc: make use of of_find_matching_node_and_match
-
- arch/arm/mach-at91/setup.c              | 16 ++++------------
- arch/arm/mach-mvebu/system-controller.c |  9 ++++-----
- arch/arm/mach-prima2/l2x0.c             |  7 ++++---
- arch/arm/mm/cache-l2x0.c                |  5 +++--
- arch/c6x/platforms/plldata.c            |  7 +++----
- drivers/bus/arm-cci.c                   |  5 +++--
- drivers/bus/mvebu-mbus.c                |  3 +--
- drivers/cpufreq/ppc-corenet-cpufreq.c   |  3 +--
- 8 files changed, 23 insertions(+), 32 deletions(-)
-
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index 051000f..041ef3a 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -278,7 +278,7 @@ static int __init ppc_corenet_cpufreq_init(void)
+ 	const struct soc_data *data;
+ 	unsigned int cpu;
+ 
+-	np = of_find_matching_node(NULL, node_matches);
++	np = of_find_matching_node_and_match(NULL, node_matches, &match);
+ 	if (!np)
+ 		return -ENODEV;
+ 
+@@ -288,7 +288,6 @@ static int __init ppc_corenet_cpufreq_init(void)
+ 		cpumask_copy(per_cpu(cpu_mask, cpu), cpu_core_mask(cpu));
+ 	}
+ 
+-	match = of_match_node(node_matches, np);
+ 	data = match->data;
+ 	if (data) {
+ 		if (data->flag)
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 hosted by The Linux Foundation
-
