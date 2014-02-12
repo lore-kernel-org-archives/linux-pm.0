@@ -1,54 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 8/8] cpufreq: ppc: make use of of_find_matching_node_and_match
-Date: Wed, 12 Feb 2014 10:31:17 +0530
-Message-ID: <CAKohponRmoV=hLcMfhULDUkaOuChdnAVFt4BpgSaz=0Qxr=yJA@mail.gmail.com>
-References: <1392135847-30791-1-git-send-email-joshc@codeaurora.org>
-	<1392135847-30791-9-git-send-email-joshc@codeaurora.org>
+From: Francis Moreau <francis.moro@gmail.com>
+Subject: Re: 3.12: ethernet controller missing after resuming from suspend
+ to RAM
+Date: Wed, 12 Feb 2014 08:44:13 +0100
+Message-ID: <52FB264D.30809@gmail.com>
+References: <52F2CC7B.80406@gmail.com> <20140211104237.GE18029@intel.com> <8701691.z6Q6jDD18v@al> <1835578.EmLUpvTMQe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:57312 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbaBLFBS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 00:01:18 -0500
-Received: by mail-oa0-f42.google.com with SMTP id i7so10435345oag.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Feb 2014 21:01:17 -0800 (PST)
-In-Reply-To: <1392135847-30791-9-git-send-email-joshc@codeaurora.org>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:39541 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbaBLHnN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 02:43:13 -0500
+In-Reply-To: <1835578.EmLUpvTMQe@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Josh Cartwright <joshc@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <lekensteyn@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 11 February 2014 21:54, Josh Cartwright <joshc@codeaurora.org> wrote:
-> Instead of the of_find_matching_node()/of_match_node() pair, which requires two
-> iterations through the match table, make use of of_find_matching_node_and_match(),
-> which only iterates through the table once.
->
-> Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
-> ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index 051000f..041ef3a 100644
-> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -278,7 +278,7 @@ static int __init ppc_corenet_cpufreq_init(void)
->         const struct soc_data *data;
->         unsigned int cpu;
->
-> -       np = of_find_matching_node(NULL, node_matches);
-> +       np = of_find_matching_node_and_match(NULL, node_matches, &match);
->         if (!np)
->                 return -ENODEV;
->
-> @@ -288,7 +288,6 @@ static int __init ppc_corenet_cpufreq_init(void)
->                 cpumask_copy(per_cpu(cpu_mask, cpu), cpu_core_mask(cpu));
->         }
->
-> -       match = of_match_node(node_matches, np);
->         data = match->data;
->         if (data) {
->                 if (data->flag)
+On 02/12/2014 12:58 AM, Rafael J. Wysocki wrote:
+> On Tuesday, February 11, 2014 07:17:37 PM Peter Wu wrote:
+>> On Tuesday 11 February 2014 12:42:37 Mika Westerberg wrote:
+>>> On Mon, Feb 10, 2014 at 11:39:29PM +0100, Rafael J. Wysocki wrote:
+>>>>> _STA() returns 0x0A instead of 0x0F. Could there be something missing in
+>>>>> the ACPI hotplug code that overlooks this and removes the device on
+>>>>> resume?
+>>>>
+>>>> That is possible.  Actually even quite likely, but let's wait for the
+>>>> response from Peter.
+>>>
+>>> Here's a hack that should take the 0xa return value into consideration. It
+>>> turned out that this case is even mentioned in the ACPI spec.
+>>
+>> Tested-by: Peter Wu <lekensteyn@gmail.com>
+>>
+>> This works, the devices are not lost anymore after resume. dmesg
+>> mentions the 04:00.* devices at resume compared to the unpatched kernel:
+>>
+>> [   42.650721] PM: Finishing wakeup.
+>> [   42.650768] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
+>> [   42.650772] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
+>> [   42.650874] iwlwifi 0000:05:00.0: no hotplug settings from platform
+>> [   42.650722] Restarting tasks ... done.
+>> [   42.650985] video LNXVIDEO:00: Restoring backlight state
+>> [   42.650988] video LNXVIDEO:01: Restoring backlight state
+>> [   43.124208] ACPI: \_SB_.AC__: ACPI_NOTIFY_BUS_CHECK event: unsupported
+>> [   43.128401] jme 0000:04:00.5: irq 50 for MSI/MSI-X
+>> [   43.153005] jme 0000:04:00.5 eth0: Link is down
+>> [   43.153030] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+>> [   43.154364] iwlwifi 0000:05:00.0: L1 Enabled; Disabling L0S
+>> [   43.162307] iwlwifi 0000:05:00.0: Radio type=0x1-0x3-0x1
+>> [   43.276220] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP01
+>> [   43.276223] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP01
+>> [   43.276257] xhci_hcd 0000:02:00.0: no hotplug settings from platform
+>> [   43.276267] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP02
+>> [   43.276268] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP02
+>> [   43.276355] sdhci-pci 0000:04:00.0: no hotplug settings from platform
+>> [   43.276368] pci 0000:04:00.2: no hotplug settings from platform
+>> [   43.276381] jmb38x_ms 0000:04:00.3: no hotplug settings from platform
+>> [   43.276393] jme 0000:04:00.5: no hotplug settings from platform
+>> [   43.276398] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
+>> [   43.276399] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
+>> [   43.276491] iwlwifi 0000:05:00.0: no hotplug settings from platform
+>> [   43.277214] IPv6: ADDRCONF(NETDEV_UP): wlan0: link is not ready
+>>
+>> Rafael, do you want me to test the other patch as well?
+> 
+> No, thanks!
+> 
+> Mika, I'll add a changelog to your patch and queue it up as a fix for 3.14.
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thanks guys for solving this issue !
+
+Rafael, could this be submitted to stable trees (at least 3.12, 3.13) as
+well ?
+
