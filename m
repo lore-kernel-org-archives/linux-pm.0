@@ -1,64 +1,42 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 5/5] intel_pstate: Add support for Baytrail turbo P states
-Date: Wed, 12 Feb 2014 10:01:07 -0800
-Message-ID: <1392228067-14817-6-git-send-email-dirk.j.brandewie@intel.com>
-References: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
+ rq
+Date: Wed, 12 Feb 2014 14:05:13 -0500 (EST)
+Message-ID: <alpine.LFD.2.11.1402121404280.17677@knanqh.ubzr>
+References: <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org> <52EBC645.2040607@linux.intel.com> <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr> <20140203125441.GD19029@e103034-lin> <52EFA9D3.1030601@linux.intel.com>
+ <20140203145605.GL8874@twins.programming.kicks-ass.net> <52EFC12B.50704@linux.intel.com> <20140212151626.GE28661@e102568-lin.cambridge.arm.com> <52FB9DEE.9020200@linux.intel.com> <20140212173758.GF28661@e102568-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com>
+In-Reply-To: <20140212173758.GF28661@e102568-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Wed, 12 Feb 2014, Lorenzo Pieralisi wrote:
 
-A documentation update exposed the existance of the turbo ratio
-register. Update baytrail support to use the turbo range.
+> On Wed, Feb 12, 2014 at 04:14:38PM +0000, Arjan van de Ven wrote:
+> > 
+> > >> sched_cpu_cache_wiped(int llc)
+> > >>
+> > >> that would be very nice for this; the menuidle side knows this
+> > >> for some cases and thus can just call it. This would be a very
+> > >> small and minimal change
+> > >
+> > > What do you mean by "menuidle side knows this for some cases" ?
+> > > You mean you know that some C-state entries imply llc clean/invalidate ?
+> > 
+> > in the architectural idle code we can know if the llc got flushed
+> > there's also the per core flags where we know with reasonable certainty
+> > that the per core caches got flushed.
+> 
+> Ok, but that's arch specific, not something we can detect from the menu
+> governor in generic code , that's what I wanted to ask because it was not
+> clear.
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+I would think this is meant to be called from architecture specific 
+backend code.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index ff45ce1..ea58eb6 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -34,8 +34,10 @@
- 
- #define SAMPLE_COUNT		3
- 
--#define BYT_RATIOS	0x66a
--#define BYT_VIDS        0x66b
-+#define BYT_RATIOS		0x66a
-+#define BYT_VIDS		0x66b
-+#define BYT_TURBO_RATIOS	0x66c
-+
- 
- #define FRAC_BITS 8
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
-@@ -366,6 +368,13 @@ static int byt_get_max_pstate(void)
- 	return (value >> 16) & 0xFF;
- }
- 
-+static int byt_get_turbo_pstate(void)
-+{
-+	u64 value;
-+	rdmsrl(BYT_TURBO_RATIOS, value);
-+	return value & 0x3F;
-+}
-+
- static void byt_set_pstate(struct cpudata *cpudata, int pstate)
- {
- 	u64 val;
-@@ -468,7 +477,7 @@ static struct cpu_defaults byt_params = {
- 	.funcs = {
- 		.get_max = byt_get_max_pstate,
- 		.get_min = byt_get_min_pstate,
--		.get_turbo = byt_get_max_pstate,
-+		.get_turbo = byt_get_turbo_pstate,
- 		.set = byt_set_pstate,
- 		.get_vid = byt_get_vid,
- 	},
--- 
-1.8.3.1
+
+Nicolas
