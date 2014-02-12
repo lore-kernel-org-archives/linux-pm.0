@@ -1,68 +1,65 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
-Date: Wed, 12 Feb 2014 16:06:29 +0100
-Message-ID: <20140212150627.GB5496@localhost.localdomain>
-References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com>
- <alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de>
- <CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com>
- <CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
+Date: Wed, 12 Feb 2014 15:16:26 +0000
+Message-ID: <20140212151626.GE28661@e102568-lin.cambridge.arm.com>
+References: <20140131090230.GM5002@laptop.programming.kicks-ass.net>
+ <52EB6F65.8050008@linux.vnet.ibm.com>
+ <52EBBC23.8020603@linux.intel.com>
+ <52EBC33A.6080101@linaro.org>
+ <52EBC645.2040607@linux.intel.com>
+ <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr>
+ <20140203125441.GD19029@e103034-lin>
+ <52EFA9D3.1030601@linux.intel.com>
+ <20140203145605.GL8874@twins.programming.kicks-ass.net>
+ <52EFC12B.50704@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:41139 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbaBLPGd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 10:06:33 -0500
+Received: from service87.mimecast.com ([91.220.42.44]:48793 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbaBLPQb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 10:16:31 -0500
+In-Reply-To: <52EFC12B.50704@linux.intel.com>
 Content-Disposition: inline
-In-Reply-To: <CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lei Wen <adrian.wenl@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-Hi Viresh,
+On Mon, Feb 03, 2014 at 04:17:47PM +0000, Arjan van de Ven wrote:
 
-On Thu, Jan 23, 2014 at 11:22:32AM +0530, Viresh Kumar wrote:
-> 
-> Hi Guys,
-> 
-> So the first question is why cpufreq needs it and is it really stupid?
-> Yes, it is stupid but that's how its implemented since a long time. It does
-> so to get data about the load on CPUs, so that freq can be scaled up/down.
-> 
-> Though there is a solution in discussion currently, which will take
-> inputs from scheduler and so these background timers would go away.
-> But we need to wait until that time.
-> 
-> Now, why do we need that for every cpu, while that for a single cpu might
-> be enough? The answer is cpuidle here: What if the cpu responsible for
-> running timer goes to sleep? Who will evaluate the load then? And if we
-> make this timer run on one cpu in non-deferrable mode then that cpu
-> would be waken up again and again from idle. So, it was decided to have
-> a per-cpu deferrable timer. Though to improve efficiency, once it is fired
-> on any cpu, timer for all other CPUs are rescheduled, so that they don't
-> fire before 5ms (sampling time)..
-> 
-> I think below diff might get this fixed for you, though I am not sure if it
-> breaks something else. Probably Thomas/Frederic can answer here.
-> If this looks fine I will send it formally again:
-> 
-> diff --git a/kernel/timer.c b/kernel/timer.c
-> index accfd24..3a2c7fa 100644
-> --- a/kernel/timer.c
-> +++ b/kernel/timer.c
-> @@ -940,7 +940,8 @@ void add_timer_on(struct timer_list *timer, int cpu)
->          * makes sure that a CPU on the way to stop its tick can not
->          * evaluate the timer wheel.
->          */
-> -       wake_up_nohz_cpu(cpu);
-> +       if (!tbase_get_deferrable(timer->base))
-> +               wake_up_nohz_cpu(cpu);
+[...]
 
-The change I'm applying is strongly inspired from the above. Can I use your Signed-off-by?
+> >> 1) A latency driven one
+> >> 2) A performance impact on
+> >>
+> >> first one is pretty much the exit latency related time, sort of a
+> >> "expected time to first instruction" (currently menuidle has the
+> >> 99.999% worst case number, which is not useful for this, but is a
+> >> first approximation). This is obviously the dominating number for
+> >> expected-short running tasks
+> >>
+> >> second on is more of a "is there any cache/TLB left or is it flushed"
+> >> kind of metric. It's more tricky to compute, since what is the cost of
+> >> an empty cache (or even a cache migration) after all....  .... but I
+> >> suspect it's in part what the scheduler will care about more for
+> >> expected-long  running tasks.
+> >
+> > Yeah, so currently we 'assume' cache hotness based on runtime; see
+> > task_hot(). A hint that the CPU wiped its caches might help there.
+> 
+> if there's a simple api like
+> 
+> sched_cpu_cache_wiped(int llc)
+> 
+> that would be very nice for this; the menuidle side knows this
+> for some cases and thus can just call it. This would be a very
+> small and minimal change
 
-Thanks.
+What do you mean by "menuidle side knows this for some cases" ?
+You mean you know that some C-state entries imply llc clean/invalidate ?
 
->         spin_unlock_irqrestore(&base->lock, flags);
->  }
->  EXPORT_SYMBOL_GPL(add_timer_on);
+Thanks,
+Lorenzo
+
