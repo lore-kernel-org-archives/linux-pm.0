@@ -1,85 +1,111 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: 3.12: ethernet controller missing after resuming from suspend to RAM
-Date: Wed, 12 Feb 2014 15:04:28 +0100
-Message-ID: <1717405.VfecqV3UgO@vostro.rjw.lan>
-References: <52F2CC7B.80406@gmail.com> <1835578.EmLUpvTMQe@vostro.rjw.lan> <52FB264D.30809@gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v3 3/3] Documentation: arm: define DT idle states
+ bindings
+Date: Wed, 12 Feb 2014 14:34:46 +0000
+Message-ID: <20140212143446.GD28661@e102568-lin.cambridge.arm.com>
+References: <1392128273-8614-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1392128273-8614-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <CADGdYn6O6Vpye8knxXdpGzVQNy9p6mM1Sf-bBs7aQtQv6ReoHQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65458 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751087AbaBLNts (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 08:49:48 -0500
-In-Reply-To: <52FB264D.30809@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CADGdYn6O6Vpye8knxXdpGzVQNy9p6mM1Sf-bBs7aQtQv6ReoHQ@mail.gmail.com>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Amit Kachhap <amit.kachhap@gmail.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
 List-Id: linux-pm@vger.kernel.org
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: Peter Wu <lekensteyn@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bastien Traverse <bastien.traverse@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, February 12, 2014 08:44:13 AM Francis Moreau wrote:
-> On 02/12/2014 12:58 AM, Rafael J. Wysocki wrote:
-> > On Tuesday, February 11, 2014 07:17:37 PM Peter Wu wrote:
-> >> On Tuesday 11 February 2014 12:42:37 Mika Westerberg wrote:
-> >>> On Mon, Feb 10, 2014 at 11:39:29PM +0100, Rafael J. Wysocki wrote:
-> >>>>> _STA() returns 0x0A instead of 0x0F. Could there be something missing in
-> >>>>> the ACPI hotplug code that overlooks this and removes the device on
-> >>>>> resume?
-> >>>>
-> >>>> That is possible.  Actually even quite likely, but let's wait for the
-> >>>> response from Peter.
-> >>>
-> >>> Here's a hack that should take the 0xa return value into consideration. It
-> >>> turned out that this case is even mentioned in the ACPI spec.
-> >>
-> >> Tested-by: Peter Wu <lekensteyn@gmail.com>
-> >>
-> >> This works, the devices are not lost anymore after resume. dmesg
-> >> mentions the 04:00.* devices at resume compared to the unpatched kernel:
-> >>
-> >> [   42.650721] PM: Finishing wakeup.
-> >> [   42.650768] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
-> >> [   42.650772] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
-> >> [   42.650874] iwlwifi 0000:05:00.0: no hotplug settings from platform
-> >> [   42.650722] Restarting tasks ... done.
-> >> [   42.650985] video LNXVIDEO:00: Restoring backlight state
-> >> [   42.650988] video LNXVIDEO:01: Restoring backlight state
-> >> [   43.124208] ACPI: \_SB_.AC__: ACPI_NOTIFY_BUS_CHECK event: unsupported
-> >> [   43.128401] jme 0000:04:00.5: irq 50 for MSI/MSI-X
-> >> [   43.153005] jme 0000:04:00.5 eth0: Link is down
-> >> [   43.153030] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
-> >> [   43.154364] iwlwifi 0000:05:00.0: L1 Enabled; Disabling L0S
-> >> [   43.162307] iwlwifi 0000:05:00.0: Radio type=0x1-0x3-0x1
-> >> [   43.276220] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP01
-> >> [   43.276223] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP01
-> >> [   43.276257] xhci_hcd 0000:02:00.0: no hotplug settings from platform
-> >> [   43.276267] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP02
-> >> [   43.276268] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP02
-> >> [   43.276355] sdhci-pci 0000:04:00.0: no hotplug settings from platform
-> >> [   43.276368] pci 0000:04:00.2: no hotplug settings from platform
-> >> [   43.276381] jmb38x_ms 0000:04:00.3: no hotplug settings from platform
-> >> [   43.276393] jme 0000:04:00.5: no hotplug settings from platform
-> >> [   43.276398] acpiphp_glue: hotplug_event: Bus check notify on \_SB_.PCI0.RP03
-> >> [   43.276399] acpiphp_glue: hotplug_event: re-enumerating slots under \_SB_.PCI0.RP03
-> >> [   43.276491] iwlwifi 0000:05:00.0: no hotplug settings from platform
-> >> [   43.277214] IPv6: ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> >>
-> >> Rafael, do you want me to test the other patch as well?
-> > 
-> > No, thanks!
-> > 
-> > Mika, I'll add a changelog to your patch and queue it up as a fix for 3.14.
-> > 
+Hi Amit,
+
+On Wed, Feb 12, 2014 at 11:39:28AM +0000, Amit Kachhap wrote:
+> Hi Lorenzo,
 > 
-> Thanks guys for solving this issue !
-> 
-> Rafael, could this be submitted to stable trees (at least 3.12, 3.13) as
-> well ?
+> This patch series looks nice and explains the ARM C state DT bindings clearly.
+Thank you.
 
-Yes, I have marked it for stable.
+[...]
 
-Thanks!
+> > +     - entry-latency
+> > +             Usage: Required
+> > +             Value type: <prop-encoded-array>
+> > +             Definition: u32 value representing worst case latency
+> > +                         in microseconds required to enter the idle state.
+> I liked your V2 version of OPP based latency more. However in this way
+> also latency supplied can correspond to max OPP and based on the
+> current OPP, the cpuidle driver can compute the new latency
+> proportionately. In case of frequency this can be linear but may not
+> be linear for residency.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+I understand that, but the bindings do not preclude having a list instead of
+just worst case value. Let's go for the worst case and build on it
+(when we have a decent method to express OPP dependencies in the DT bindings,
+that is not the case at present). Your point is taken, I just want a first
+version that provides the groundwork on top of which more complex
+bindings can be defined.
+
+> > +
+> > +     - exit-latency
+> > +             Usage: Required
+> > +             Value type: <prop-encoded-array>
+> > +             Definition: u32 value representing worst case latency
+> > +                         in microseconds required to exit the idle state.
+> > +
+> > +     - min-residency
+> > +             Usage: Required
+> > +             Value type: <prop-encoded-array>
+> > +             Definition: u32 value representing time in microseconds
+> > +                         required for the CPU to be in the idle state to
+> > +                         make up for the dynamic power consumed to
+> > +                         enter/exit the idle state in order to break even
+> > +                         in terms of power consumption compared to idle
+> > +                         state index 1 (idle_standby).
+> > +
+> > +     - power-domains
+> > +             Usage: Optional
+> > +             Value type: <prop-encoded-array>
+> > +             Definition: List of power domain specifiers ([1]) describing
+> > +                         the power domains that are affected by the idle
+> > +                         state entry.
+> I can see power-domains used in 2 places. First in C state definitions
+> and second in cpu node cache descriptions. I am not sure but if
+> possible than this can be put in one place.
+
+Power domain specifiers are there to link devices (ie caches) to the
+idle states. We have to know which devices are affected by an idle state
+entry, and that's done through the power-domain (ie all devices that
+belong to a power domain affected by the idle state entry must be acted
+upon).
+
+All devices have to be linked to the power domain they belong to,
+possibly by using a hierarchical representation (to group devices under
+a power domain and avoid duplicating the power domain specifier).
+
+> > +
+> > +     - cache-state-retained
+> > +             Usage: See definition
+> > +             Value type: <none>
+> > +             Definition: if present cache memory is retained on power down,
+> > +                         otherwise it is lost.
+> Can the DT bindings support both retained and non-retained with
+> different C states? The example shown does not use the retained flag.
+> I guess than many combinations are possible.
+> Processor retained, cache non-retained = C state 2
+> Processor non retained , cache retained = C state 3
+> Processor non retained, cache non retained = C state 4
+
+Yes. Those are per idle state properties so the can be used as you defined,
+I cannot think of any issue regarding those boolean properties at the
+moment, but if you do please flag it up.
+
+Thanks !
+Lorenzo
