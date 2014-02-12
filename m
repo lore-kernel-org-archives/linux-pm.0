@@ -1,51 +1,39 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct rq
-Date: Wed, 12 Feb 2014 17:37:59 +0000
-Message-ID: <20140212173758.GF28661@e102568-lin.cambridge.arm.com>
-References: <52EBBC23.8020603@linux.intel.com>
- <52EBC33A.6080101@linaro.org>
- <52EBC645.2040607@linux.intel.com>
- <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr>
- <20140203125441.GD19029@e103034-lin>
- <52EFA9D3.1030601@linux.intel.com>
- <20140203145605.GL8874@twins.programming.kicks-ass.net>
- <52EFC12B.50704@linux.intel.com>
- <20140212151626.GE28661@e102568-lin.cambridge.arm.com>
- <52FB9DEE.9020200@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+From: dirk.brandewie@gmail.com
+Subject: [PATCH 0/5] intel_pstate updates for v3.14-rcX
+Date: Wed, 12 Feb 2014 10:01:02 -0800
+Message-ID: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54242 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbaBLRiD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 12:38:03 -0500
-In-Reply-To: <52FB9DEE.9020200@linux.intel.com>
-Content-Disposition: inline
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:39282 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752240AbaBLSBa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 13:01:30 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Wed, Feb 12, 2014 at 04:14:38PM +0000, Arjan van de Ven wrote:
-> 
-> >> sched_cpu_cache_wiped(int llc)
-> >>
-> >> that would be very nice for this; the menuidle side knows this
-> >> for some cases and thus can just call it. This would be a very
-> >> small and minimal change
-> >
-> > What do you mean by "menuidle side knows this for some cases" ?
-> > You mean you know that some C-state entries imply llc clean/invalidate ?
-> 
-> in the architectural idle code we can know if the llc got flushed
-> there's also the per core flags where we know with reasonable certainty
-> that the per core caches got flushed.
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Ok, but that's arch specific, not something we can detect from the menu
-governor in generic code , that's what I wanted to ask because it was not
-clear.
+Based on v3.14-rc2
 
-Thanks,
-Lorenzo
+Patch 1 removes energy reporting the patch from Maurizio Lambardi 
+ intel_pstate: fix race condition in intel_pstate_init() can be dropped.
+
+Patch 2-3 cleanups
+
+Patch 4-5 Baytrail bug fixes
+
+Dirk Brandewie (5):
+  intel_pstate: Remove energy reporting from pstate_sample tracepoint
+  intel_pstate: remove unneeded sample buffers
+  intel_pstate: fix pid_reset to use fixed point values
+  intel_pstate: Use LFM bus ratio as min ratio/P state
+  intel_pstate: Add support for Baytrail turbo P states
+
+ drivers/cpufreq/intel_pstate.c | 53 +++++++++++++++++++++---------------------
+ include/trace/events/power.h   |  7 +-----
+ 2 files changed, 27 insertions(+), 33 deletions(-)
+
+-- 
+1.8.3.1
 
