@@ -1,42 +1,94 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCH 3/3] idle: store the idle state index in the struct
- rq
-Date: Wed, 12 Feb 2014 14:05:13 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1402121404280.17677@knanqh.ubzr>
-References: <52EBBC23.8020603@linux.intel.com> <52EBC33A.6080101@linaro.org> <52EBC645.2040607@linux.intel.com> <alpine.LFD.2.11.1401311236470.2312@knanqh.ubzr> <20140203125441.GD19029@e103034-lin> <52EFA9D3.1030601@linux.intel.com>
- <20140203145605.GL8874@twins.programming.kicks-ass.net> <52EFC12B.50704@linux.intel.com> <20140212151626.GE28661@e102568-lin.cambridge.arm.com> <52FB9DEE.9020200@linux.intel.com> <20140212173758.GF28661@e102568-lin.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140212173758.GF28661@e102568-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Preeti Murthy <preeti.lkml@gmail.com>, "mingo@redhat.com" <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [RFT][PATCH v3] mmc: change cb710-mmc platform power management to use dev_pm_ops
+Date: Wed, 12 Feb 2014 14:21:29 -0700
+Message-ID: <1392240089-19489-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta11.emeryville.ca.mail.comcast.net ([76.96.27.211]:55540
+	"EHLO qmta11.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753892AbaBLVVi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 16:21:38 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, mirq-linux@rere.qmqm.pl, ulf.hansson@linaro.org, chris@printf.net
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, shuahkhan@gmail.com
 
-On Wed, 12 Feb 2014, Lorenzo Pieralisi wrote:
+Change cb710-mmc platform driver to register pm ops using dev_pm_ops instead
+of legacy pm_ops. The existing legacy suspend/resume routines are identical
+and simply clear IRQ mask in the device in case it got undefined during sleep
+state. Changed code to collapse suspend and resume into one .pm interface
+for suspend and resume which gets installed for suspend, freeze, poweroff,
+thaw, restore, and resume states using SIMPLE_DEV_PM_OPS().
 
-> On Wed, Feb 12, 2014 at 04:14:38PM +0000, Arjan van de Ven wrote:
-> > 
-> > >> sched_cpu_cache_wiped(int llc)
-> > >>
-> > >> that would be very nice for this; the menuidle side knows this
-> > >> for some cases and thus can just call it. This would be a very
-> > >> small and minimal change
-> > >
-> > > What do you mean by "menuidle side knows this for some cases" ?
-> > > You mean you know that some C-state entries imply llc clean/invalidate ?
-> > 
-> > in the architectural idle code we can know if the llc got flushed
-> > there's also the per core flags where we know with reasonable certainty
-> > that the per core caches got flushed.
-> 
-> Ok, but that's arch specific, not something we can detect from the menu
-> governor in generic code , that's what I wanted to ask because it was not
-> clear.
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
 
-I would think this is meant to be called from architecture specific 
-backend code.
+patch v3: Addresses review comments on patch v2
 
+ drivers/mmc/host/cb710-mmc.c |   40 ++++++++++++++++------------------------
+ 1 file changed, 16 insertions(+), 24 deletions(-)
 
-Nicolas
+diff --git a/drivers/mmc/host/cb710-mmc.c b/drivers/mmc/host/cb710-mmc.c
+index 1087b4c..2dc7b2dc 100644
+--- a/drivers/mmc/host/cb710-mmc.c
++++ b/drivers/mmc/host/cb710-mmc.c
+@@ -662,26 +662,6 @@ static const struct mmc_host_ops cb710_mmc_host = {
+ 	.get_cd = cb710_mmc_get_cd,
+ };
+ 
+-#ifdef CONFIG_PM
+-
+-static int cb710_mmc_suspend(struct platform_device *pdev, pm_message_t state)
+-{
+-	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
+-
+-	cb710_mmc_enable_irq(slot, 0, ~0);
+-	return 0;
+-}
+-
+-static int cb710_mmc_resume(struct platform_device *pdev)
+-{
+-	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
+-
+-	cb710_mmc_enable_irq(slot, 0, ~0);
+-	return 0;
+-}
+-
+-#endif /* CONFIG_PM */
+-
+ static int cb710_mmc_init(struct platform_device *pdev)
+ {
+ 	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
+@@ -762,14 +742,26 @@ static int cb710_mmc_exit(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++static int cb710_mmc_suspend_resume(struct device *dev)
++{
++	struct cb710_slot *slot = cb710_pdev_to_slot(to_platform_device(dev));
++
++	cb710_mmc_enable_irq(slot, 0, ~0);
++	return 0;
++}
++#else
++#define cb710_mmc_suspend_resume NULL
++#endif
++
++static SIMPLE_DEV_PM_OPS(cb710_mmc_dev_pm_ops, cb710_mmc_suspend_resume,
++			 cb710_mmc_suspend_resume);
++
+ static struct platform_driver cb710_mmc_driver = {
+ 	.driver.name = "cb710-mmc",
+ 	.probe = cb710_mmc_init,
+ 	.remove = cb710_mmc_exit,
+-#ifdef CONFIG_PM
+-	.suspend = cb710_mmc_suspend,
+-	.resume = cb710_mmc_resume,
+-#endif
++	.driver.pm = &cb710_mmc_dev_pm_ops,
+ };
+ 
+ module_platform_driver(cb710_mmc_driver);
+-- 
+1.7.10.4
+
