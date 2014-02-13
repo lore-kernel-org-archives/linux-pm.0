@@ -1,203 +1,104 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v4 04/13] ARM: mvebu: Remove the unused argument of set_cpu_coherent()
-Date: Thu, 13 Feb 2014 18:33:27 +0100
-Message-ID: <1392312816-17657-5-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v4 01/13] ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
+Date: Thu, 13 Feb 2014 18:33:24 +0100
+Message-ID: <1392312816-17657-2-git-send-email-gregory.clement@free-electrons.com>
 References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:51885 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:51877 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752640AbaBMReD (ORCPT
+	with ESMTP id S1752637AbaBMReD (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 12:34:03 -0500
 In-Reply-To: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Russell King <linux@arm.linux.org.uk>
 
-set_cpu_coherent() took the SMP group ID as parameter. But this
-parameter was never used, and the CPU always use the SMP group 0. So
-we can remove this parameter.
+PJ4B needs extra instructions for suspend and resume, so instead of
+using the armv7 version, this commit introduces specific versions for
+PJ4B.
 
+Cc: Russell King <linux@arm.linux.org.uk>
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mach-mvebu/coherency.c    |  8 ++---
- arch/arm/mach-mvebu/coherency.h    |  2 +-
- arch/arm/mach-mvebu/coherency_ll.S | 61 ++++++++++++++++++++++++--------------
- arch/arm/mach-mvebu/headsmp.S      |  4 +--
- arch/arm/mach-mvebu/platsmp.c      |  2 +-
- 5 files changed, 46 insertions(+), 31 deletions(-)
+ arch/arm/mm/proc-v7.S | 64 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 61 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
-index 51010dbbf7e4..931c62be2bce 100644
---- a/arch/arm/mach-mvebu/coherency.c
-+++ b/arch/arm/mach-mvebu/coherency.c
-@@ -44,9 +44,9 @@ static struct of_device_id of_coherency_table[] = {
- };
- 
- /* Function defined in coherency_ll.S */
--int ll_set_cpu_coherent(void);
-+int ll_set_cpu_coherent_and_smp(void);
- 
--int set_cpu_coherent(int smp_group_id)
-+int set_cpu_coherent(void)
- {
- 	if (!coherency_base) {
- 		pr_warn("Can't make current CPU cache coherent.\n");
-@@ -54,7 +54,7 @@ int set_cpu_coherent(int smp_group_id)
- 		return 1;
- 	}
- 
--	return ll_set_cpu_coherent();
-+	return ll_set_cpu_coherent_and_smp();
- }
- 
- static inline void mvebu_hwcc_sync_io_barrier(void)
-@@ -140,7 +140,7 @@ int __init coherency_init(void)
- 		sync_cache_w(&coherency_phys_base);
- 		coherency_base = of_iomap(np, 0);
- 		coherency_cpu_base = of_iomap(np, 1);
--		set_cpu_coherent(0);
-+		set_cpu_coherent();
- 		of_node_put(np);
- 	}
- 
-diff --git a/arch/arm/mach-mvebu/coherency.h b/arch/arm/mach-mvebu/coherency.h
-index c7e5df368d98..dff16612dd93 100644
---- a/arch/arm/mach-mvebu/coherency.h
-+++ b/arch/arm/mach-mvebu/coherency.h
-@@ -15,8 +15,8 @@
- #define __MACH_370_XP_COHERENCY_H
- 
- extern unsigned long coherency_phys_base;
-+int set_cpu_coherent(void);
- 
--int set_cpu_coherent(int smp_group_id);
- int coherency_init(void);
- 
- #endif	/* __MACH_370_XP_COHERENCY_H */
-diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-index 6cb26b919787..7b42b4b08a80 100644
---- a/arch/arm/mach-mvebu/coherency_ll.S
-+++ b/arch/arm/mach-mvebu/coherency_ll.S
-@@ -25,52 +25,67 @@
- 
- 	.text
- 
--ENTRY(ll_set_cpu_coherent)
-+	.macro modify_coherent_reg join_smp
- 	mrc	p15, 0, r1, c1, c0, 0
- 	tst	r1, #CR_M @ Check MMU bit enabled
- 	bne	1f
- 
--	/* use physical address of the coherency register*/
--	adr	r0, 3f
--	ldr	r3, [r0]
--	ldr	r0, [r0, r3]
-+	/* use physical address of the coherency register */
-+	adr	r1, 3f
-+	ldr	r3, [r1]
-+	ldr	r1, [r1, r3]
- 	b	2f
- 1:
--	/* use virtual address of the coherency register*/
--	ldr	r0, =coherency_base
--	ldr	r0, [r0]
-+	/* use virtual address of the coherency register */
-+	ldr	r1, =coherency_base
-+	ldr	r1, [r1]
- 2:
- 	/* Create bit by cpu index */
--	mrc	15, 0, r1, cr0, cr0, 5
--	and	r1, r1, #15
-+	mrc	15, 0, r3, cr0, cr0, 5
-+	and	r3, r3, #15
- 	mov	r2, #(1 << 24)
--	lsl	r1, r2, r1
--	ARM_BE8(rev	r1, r1)
-+	lsl	r3, r2, r3
-+	ARM_BE8(rev	r3, r3)
- 
--	/* Add CPU to SMP group - Atomic */
--	add	r3, r0, #ARMADA_XP_CFB_CTL_REG_OFFSET
-+	.if \join_smp == 1
-+	/* Add CPU to SMP group - Atomic (only if the flag is set) */
-+	add	r0, r1, #ARMADA_XP_CFB_CFG_REG_OFFSET
- 1:
--	ldrex	r2, [r3]
--	orr	r2, r2, r1
--	strex 	r0, r2, [r3]
--	cmp	r0, #0
-+	ldrex	r2, [r0]
-+	orr	r2, r2, r3
-+	strex 	r1, r2, [r0]
-+	cmp	r1, #0
- 	bne 1b
- 
-+	/* get back to the base register */
-+	sub	r1, r0, #ARMADA_XP_CFB_CFG_REG_OFFSET
-+	.endif
+diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
+index bd1781979a39..11117423a9b4 100644
+--- a/arch/arm/mm/proc-v7.S
++++ b/arch/arm/mm/proc-v7.S
+@@ -169,9 +169,67 @@ ENDPROC(cpu_pj4b_do_idle)
+ 	globl_equ	cpu_pj4b_do_idle,  	cpu_v7_do_idle
+ #endif
+ 	globl_equ	cpu_pj4b_dcache_clean_area,	cpu_v7_dcache_clean_area
+-	globl_equ	cpu_pj4b_do_suspend,	cpu_v7_do_suspend
+-	globl_equ	cpu_pj4b_do_resume,	cpu_v7_do_resume
+-	globl_equ	cpu_pj4b_suspend_size,	cpu_v7_suspend_size
++#ifdef CONFIG_ARM_CPU_SUSPEND
++ENTRY(cpu_pj4b_do_suspend)
++	stmfd	sp!, {r4 - r10, lr}
++	mrc	p15, 0, r4, c13, c0, 0	@ FCSE/PID
++	mrc	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
++	stmia	r0!, {r4 - r5}
++	mrc	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
++	mrc	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
++	mrc	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
++	mrc	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
++	mrc	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
++	stmia	r0!, {r6 - r10}
++	mrc	p15, 0, r6, c3, c0, 0	@ Domain ID
++	mrc	p15, 0, r7, c2, c0, 1	@ TTB 1
++	mrc	p15, 0, r11, c2, c0, 2	@ TTB control register
++	mrc	p15, 0, r8, c1, c0, 0	@ Control register
++	mrc	p15, 0, r9, c1, c0, 1	@ Auxiliary control register
++	mrc	p15, 0, r10, c1, c0, 2	@ Co-processor access control
++	stmia	r0, {r6 - r11}
++	ldmfd	sp!, {r4 - r10, pc}
++ENDPROC(cpu_pj4b_do_suspend)
 +
- 	/* Enable coherency on CPU - Atomic */
--	add	r3, r3, #ARMADA_XP_CFB_CFG_REG_OFFSET
-+	add	r0, r1, #ARMADA_XP_CFB_CTL_REG_OFFSET
- 1:
--	ldrex	r2, [r3]
--	orr	r2, r2, r1
--	strex	r0, r2, [r3]
--	cmp	r0, #0
-+	ldrex	r2, [r0]
-+	orr	r2, r2, r3
-+	strex	r1, r2, [r0]
-+	cmp	r1, #0
- 	bne 1b
++ENTRY(cpu_pj4b_do_resume)
++	mov	ip, #0
++	mcr	p15, 0, ip, c7, c5, 0	@ invalidate I cache
++	mcr	p15, 0, ip, c13, c0, 1	@ set reserved context ID
++	ldmia	r0!, {r4 - r5}
++	mcr	p15, 0, r4, c13, c0, 0	@ FCSE/PID
++	mcr	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
++	ldmia	r0!, {r6 - r10}
++	mcr	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
++	mcr	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
++	mcr	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
++	mcr	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
++	mcr	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
++	ldmia	r0, {r6 - r11}
++	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
++	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
++#ifndef CONFIG_ARM_LPAE
++	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
++	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
++#endif
++	mcr	p15, 0, r1, c2, c0, 0	@ TTB 0
++	mcr	p15, 0, r7, c2, c0, 1	@ TTB 1
++	mcr	p15, 0, r11, c2, c0, 2	@ TTB control register
++	ldr	r4, =PRRR		@ PRRR
++	ldr	r5, =NMRR		@ NMRR
++	mcr	p15, 0, r4, c10, c2, 0	@ write PRRR
++	mcr	p15, 0, r5, c10, c2, 1	@ write NMRR
++	mrc	p15, 0, r4, c1, c0, 1	@ Read Auxiliary control register
++	teq	r4, r9			@ Is it already set?
++	mcrne	p15, 0, r9, c1, c0, 1	@ No, so write it
++	mcr	p15, 0, r10, c1, c0, 2	@ Co-processor access control
++	isb
++	dsb
++	mov	r0, r8			@ control register
++	b	cpu_resume_mmu
++ENDPROC(cpu_pj4b_do_resume)
++#endif
++.globl	cpu_pj4b_suspend_size
++.equ	cpu_pj4b_suspend_size, 4 * 13
  
- 	dsb
+ #endif
  
- 	mov	r0, #0
- 	mov	pc, lr
-+	.endm
-+
-+/*  Enable coherency on CPU */
-+ENTRY(ll_set_cpu_coherent)
-+	modify_coherent_reg join_smp = 0
- ENDPROC(ll_set_cpu_coherent)
- 
-+/* Add CPU to SMP group */
-+ENTRY(ll_set_cpu_coherent_and_smp)
-+	modify_coherent_reg join_smp = 1
-+ENDPROC(ll_set_cpu_coherent_and_smp)
-+
- 	.align 2
- 3:
- 	.long	coherency_phys_base - .
-diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
-index cf7abe6554f7..924fb96775c5 100644
---- a/arch/arm/mach-mvebu/headsmp.S
-+++ b/arch/arm/mach-mvebu/headsmp.S
-@@ -31,8 +31,8 @@
- ENTRY(armada_xp_secondary_startup)
-  ARM_BE8(setend	be )			@ go BE8 if entered LE
- 
--	/* Add CPU to coherency fabric */
--	bl	ll_set_cpu_coherent
-+	bl	ll_set_cpu_coherent_and_smp
-+
- 	b	secondary_startup
- 
- ENDPROC(armada_xp_secondary_startup)
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index a99d71a747f0..f2f1830063c8 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -102,7 +102,7 @@ static void __init armada_xp_smp_prepare_cpus(unsigned int max_cpus)
- 
- 	set_secondary_cpus_clock();
- 	flush_cache_all();
--	set_cpu_coherent(0);
-+	set_cpu_coherent();
- 
- 	/*
- 	 * In order to boot the secondary CPUs we need to ensure
 -- 
 1.8.1.2
 
