@@ -1,93 +1,227 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 4/7] cpufreq: Implement cpufreq_generic_suspend()
-Date: Thu, 13 Feb 2014 12:20:19 +0530
-Message-ID: <7c98f029b36c50addec4840d5dae88725949d386.1392273723.git.viresh.kumar@linaro.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Sleep / Runtime: Add pm_runtime_suspend|resume_force functions
+Date: Thu, 13 Feb 2014 10:01:48 +0100
+Message-ID: <1392282108-2449-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f172.google.com ([74.125.82.172]:54236 "EHLO
-	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbaBMGvG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 01:51:06 -0500
-Received: by mail-we0-f172.google.com with SMTP id p61so7112499wes.17
-        for <linux-pm@vger.kernel.org>; Wed, 12 Feb 2014 22:51:05 -0800 (PST)
-In-Reply-To: <cover.1392273722.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1392273722.git.viresh.kumar@linaro.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>
+Received: from mail-we0-f179.google.com ([74.125.82.179]:44946 "EHLO
+	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbaBMJBx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 04:01:53 -0500
+Received: by mail-we0-f179.google.com with SMTP id q58so7046391wes.38
+        for <linux-pm@vger.kernel.org>; Thu, 13 Feb 2014 01:01:52 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@linaro.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>
 
-Multiple platforms need to set CPU to a particular frequency before suspending
-system. And so they need a common infrastructure which is provided by this
-patch. Those platforms just need to initialize their ->suspend() pointers with
-the generic routine.
+This patch provides two new runtime PM helper functions which intend to
+be used from system suspend/resume callbacks, to make sure devices are
+put into low power state during system suspend and brought back to full
+power at system resume.
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+The prerequisite is to have all levels of a device's runtime PM
+callbacks to be defined through the SET_PM_RUNTIME_PM_OPS macro, which
+means these are available for CONFIG_PM.
+
+By using the new runtime PM helper functions especially the two
+scenarios below will be addressed.
+
+1) The PM core prevents .runtime_suspend callbacks from being invoked
+during system suspend. That means even for a runtime PM centric
+subsystem and driver, the device needs to be put into low power state
+from a system suspend callback. Otherwise it may very well be left in
+full power state (runtime resumed) while the system is suspended. By
+using the new helper functions, we make sure to walk the hierarchy of
+a device's power domain, subsystem and driver.
+
+2) Subsystems and drivers need to cope with all the combinations of
+CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions
+smothly addresses this.
+
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Mark Brown <broonie@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 29 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 87a4b96..c13c100 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1579,6 +1579,32 @@ static struct subsys_interface cpufreq_interface = {
- 	.remove_dev	= cpufreq_remove_dev,
- };
+Some relevant background to this patch:
+
+Recent discussions on linux-pm mailing list regarding a similar patch, but which
+added similar functionality as pm_generic* functions, which concluded to be
+dropped.
+
+http://marc.info/?t=138556666500004&r=1&w=2
+
+Responses on recent sent patches, which are rejected from subsystem maintainers,
+while trying to adopt suspend/resume callbacks when using SET_PM_RUNTIME_PM_OPS.
+
+http://marc.info/?t=139152977000004&r=1&w=2
+http://marc.info/?t=139152958400001&r=1&w=2
+
+---
+ drivers/base/power/Makefile  |    3 +-
+ drivers/base/power/runtime.c |  110 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_runtime.h   |    4 ++
+ 3 files changed, 115 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+index 2e58ebb..1cb8544 100644
+--- a/drivers/base/power/Makefile
++++ b/drivers/base/power/Makefile
+@@ -1,6 +1,5 @@
+-obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o
++obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+-obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+ obj-$(CONFIG_PM_OPP)	+= opp.o
+ obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 72e00e6..959c478 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -13,6 +13,7 @@
+ #include <trace/events/rpm.h>
+ #include "power.h"
  
-+/*
-+ * In case platform wants some specific frequency to be configured
-+ * during suspend..
-+ */
-+int cpufreq_generic_suspend(struct cpufreq_policy *policy)
-+{
-+	int ret;
++#ifdef CONFIG_PM_RUNTIME
+ static int rpm_resume(struct device *dev, int rpmflags);
+ static int rpm_suspend(struct device *dev, int rpmflags);
+ 
+@@ -1401,3 +1402,112 @@ void pm_runtime_remove(struct device *dev)
+ 	if (dev->power.irq_safe && dev->parent)
+ 		pm_runtime_put(dev->parent);
+ }
++#endif
 +
-+	if (!policy->suspend_freq) {
-+		pr_err("%s: suspend_freq can't be zero\n", __func__);
-+		return -EINVAL;
++#ifdef CONFIG_PM
++/**
++ * pm_runtime_force_suspend - Force a device into suspend state if needed.
++ * @dev: Device to suspend.
++ *
++ * Disable runtime PM so we safely can check the device's runtime PM status and
++ * if it is active, invoke it's .runtime_suspend callback to bring it into
++ * suspend state. Keep runtime PM disabled to preserve the state unless we
++ * encounter errors.
++ *
++ * Typically this function may be invoked from a system suspend callback to make
++ * sure the device is put into low power state.
++ */
++int pm_runtime_force_suspend(struct device *dev)
++{
++	int (*callback)(struct device *);
++	int ret = 0;
++
++	pm_runtime_disable(dev);
++
++	/*
++	 * Note that pm_runtime_status_suspended() returns false while
++	 * !CONFIG_PM_RUNTIME, which means the device will be put into low
++	 * power state.
++	 */
++	if (pm_runtime_status_suspended(dev))
++		return 0;
++
++	if (dev->pm_domain)
++		callback = dev->pm_domain->ops.runtime_suspend;
++	else if (dev->type && dev->type->pm)
++		callback = dev->type->pm->runtime_suspend;
++	else if (dev->class && dev->class->pm)
++		callback = dev->class->pm->runtime_suspend;
++	else if (dev->bus && dev->bus->pm)
++		callback = dev->bus->pm->runtime_suspend;
++	else
++		callback = NULL;
++
++	if (!callback && dev->driver && dev->driver->pm)
++		callback = dev->driver->pm->runtime_suspend;
++
++	if (!callback) {
++		ret = -ENOSYS;
++		goto err;
 +	}
 +
-+	pr_debug("%s: Setting suspend-freq: %u\n", __func__,
-+			policy->suspend_freq);
-+
-+	ret = __cpufreq_driver_target(policy, policy->suspend_freq,
-+			CPUFREQ_RELATION_H);
++	ret = callback(dev);
 +	if (ret)
-+		pr_err("%s: unable to set suspend-freq: %u. err: %d\n",
-+				__func__, policy->suspend_freq, ret);
++		goto err;
 +
++	pm_runtime_set_suspended(dev);
++	return 0;
++err:
++	pm_runtime_enable(dev);
 +	return ret;
 +}
-+EXPORT_SYMBOL(cpufreq_generic_suspend);
++EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
 +
- /**
-  * cpufreq_suspend() - Suspend CPUFreq governors
-  *
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 94ed907..325bab0 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -74,6 +74,8 @@ struct cpufreq_policy {
- 	unsigned int		max;    /* in kHz */
- 	unsigned int		cur;    /* in kHz, only needed if cpufreq
- 					 * governors are used */
-+	unsigned int		suspend_freq; /* freq to set during suspend */
++/**
++ * pm_runtime_force_resume - Force a device into resume state.
++ * @dev: Device to resume.
++ *
++ * Prior invoking this function we expect the user to have brought the device
++ * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
++ * those actions and brings the device into full power. We update the runtime PM
++ * status and re-enables runtime PM.
++ *
++ * Typically this function may be invoked from a system resume callback to make
++ * sure the device is put into full power state.
++ */
++int pm_runtime_force_resume(struct device *dev)
++{
++	int (*callback)(struct device *);
++	int ret = 0;
 +
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
-@@ -299,6 +301,7 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
- #ifdef CONFIG_CPU_FREQ
- void cpufreq_suspend(void);
- void cpufreq_resume(void);
-+int cpufreq_generic_suspend(struct cpufreq_policy *policy);
++	if (dev->pm_domain)
++		callback = dev->pm_domain->ops.runtime_resume;
++	else if (dev->type && dev->type->pm)
++		callback = dev->type->pm->runtime_resume;
++	else if (dev->class && dev->class->pm)
++		callback = dev->class->pm->runtime_resume;
++	else if (dev->bus && dev->bus->pm)
++		callback = dev->bus->pm->runtime_resume;
++	else
++		callback = NULL;
++
++	if (!callback && dev->driver && dev->driver->pm)
++		callback = dev->driver->pm->runtime_resume;
++
++	if (!callback) {
++		ret = -ENOSYS;
++		goto out;
++	}
++
++	ret = callback(dev);
++	if (ret)
++		goto out;
++
++	pm_runtime_set_active(dev);
++	pm_runtime_mark_last_busy(dev);
++out:
++	pm_runtime_enable(dev);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_runtime_force_resume);
++#endif
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 16c9a62..2a5897a 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -26,9 +26,13 @@
+ #ifdef CONFIG_PM
+ extern int pm_generic_runtime_suspend(struct device *dev);
+ extern int pm_generic_runtime_resume(struct device *dev);
++extern int pm_runtime_force_suspend(struct device *dev);
++extern int pm_runtime_force_resume(struct device *dev);
  #else
- static inline void cpufreq_suspend(void) {}
- static inline void cpufreq_resume(void) {}
+ static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
+ static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
++static inline int pm_runtime_force_suspend(struct device *dev) { return 0; }
++static inline int pm_runtime_force_resume(struct device *dev) { return 0; }
+ #endif
+ 
+ #ifdef CONFIG_PM_RUNTIME
 -- 
-1.7.12.rc2.18.g61b472e
+1.7.9.5
 
