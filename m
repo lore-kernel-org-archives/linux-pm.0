@@ -1,86 +1,73 @@
-From: Philipp Zabel <philipp.zabel@gmail.com>
+From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
 Subject: Re: [PATCH] thermal: imx: update formula for thermal sensor
-Date: Thu, 13 Feb 2014 20:09:22 +0100
-Message-ID: <CA+gwMccQPxxi2N8wTb4ggK2LaaZk1vOS6RtnP_XfpgLgJyYrtw@mail.gmail.com>
+Date: Thu, 13 Feb 2014 23:39:05 +0000
+Message-ID: <74FD66EE-8055-40FA-8692-E2DA0F1E643B@freescale.com>
 References: <1392199595-1054-1-git-send-email-b20788@freescale.com>
-	<20140213130252.GB20842@S2101-09.ap.freescale.net>
+	<20140213130252.GB20842@S2101-09.ap.freescale.net>,<CA+gwMccQPxxi2N8wTb4ggK2LaaZk1vOS6RtnP_XfpgLgJyYrtw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f43.google.com ([209.85.216.43]:58309 "EHLO
-	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbaBMTJX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 14:09:23 -0500
-Received: by mail-qa0-f43.google.com with SMTP id o15so16682196qap.2
-        for <linux-pm@vger.kernel.org>; Thu, 13 Feb 2014 11:09:22 -0800 (PST)
-In-Reply-To: <20140213130252.GB20842@S2101-09.ap.freescale.net>
+Received: from mail-bl2lp0209.outbound.protection.outlook.com ([207.46.163.209]:21928
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751749AbaBMXj0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 13 Feb 2014 18:39:26 -0500
+In-Reply-To: <CA+gwMccQPxxi2N8wTb4ggK2LaaZk1vOS6RtnP_XfpgLgJyYrtw@mail.gmail.com>
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: Anson Huang <b20788@freescale.com>, eduardo.valentin@ti.com, rui.zhang@intel.com, Sascha Hauer <kernel@pengutronix.de>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Sascha Hauer <kernel@pengutronix.de>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi,
-
-On Thu, Feb 13, 2014 at 2:02 PM, Shawn Guo <shawn.guo@linaro.org> wrote=
-:
->
-> Copy LAKML and pengutronix folks in case they have comments.
->
-> On Wed, Feb 12, 2014 at 06:06:35PM +0800, Anson Huang wrote:
-> > Thermal sensor used to need two calibration points which are
-> > in fuse map to get a slope for converting thermal sensor's raw
-> > data to real temperature in degree C. Due to the chip calibration
-> > limitation, hardware team provides an universal formula to get
-> > real temperature from internal thermal sensor raw data:
-> >
-> > Slope =3D 0.4297157 - (0.0015976 * 25C fuse);
-
-I have an i.MX6Q 1.2 with 1417 counts at 25=B0C and 1296 counts at 105=B0=
-C fused.
-Assuming that those values are fused correctly, with the old formula I =
-get:
-
-t1=3D25, n1=3D1417, t2=3D105, n2=3D1296
-c1=3D1000*(t1-t2)/(n1-n2)=3D-662, c2=3D1000*t2-c1*n2=3D962952
-T_meas=3Dc2+c1*N_meas=3D962952-662*N_meas
-
-N_meas=3D1417 --> T_meas =3D 24898
-N_meas=3D1296 --> T_meas =3D 105000
-
-With the new formula, on the other hand, I would get:
-
-t1=3D25, n1=3D1417
-=460=3D10000000, F1=3D15976, 4297157
-c1=3DF0*1000/(F1*n1-F2)=3D545, c2=3Dn1*c1+1000*25=3D797265
-T_meas=3Dc2-N_meas*c1=3D797265-N_meas*545
-
-N_meas=3D1417 --> T_meas =3D 25000
-N_meas=3D1296 --> T_meas =3D 90945
-
-That's off by over 14=B0C!
-
-The default passive cooling trip point is at 85=B0C,
-which translated to 1326 counts before:
-alarm_value=3D(alarm_temp-c2)/c1=3D(85000-962952)/(-662)=3D1326
-
-With the new formula the trip count is only
-alarm_value=3D(c2-alarm_temp)/c1=3D(797265-85000)/545=3D1306
-That translates to 98.4=B0C according to the old formula. I think
-that is awfully close to the critical trip point at 100=B0C, which,
-according to the old formula, corresponded to 1303 counts.
-
-The new critical trip point for 100=B0C is at 1279 counts. According
-to the old formula this corresponds to 116.2=B0C, well over the
-rated maximum of 105=B0C.
-
-Do I need to be afraid for my old silicon?
-
-> > Update the formula, as there will be no hot point calibration
-> > data in fuse map from now on.
-
-I wonder if it would be better to keep using the high temperature
-calibration point if it is fused at all.
-
-regards
-Philipp
+SGksIHBoaWxpcHANCiAgICAgICAgSSBrbm93IHlvdXIgY29uY2VybiwgYnV0IGZyb20gaGFyZHdh
+cmUgdGVhbSwgdGhleSBzYWlkIGR1ZSB0byB0aGUgY2FsaWJyYXRpb24gdG9vbCdzIGxpbWl0YXRp
+b24sIHRoZSBoaWdoIHBvaW50IGNhbGlicmF0aW9uIGRhdGEgaXMgbm90IHJlbGlhYmxlIGV2ZW4g
+dGhlIGZ1c2UgZGF0YSBpcyB0aGVyZS4gIElmIHNvLCB0aGVuIGNvbXBhcmluZyB0byBvbGQgZm9y
+bXVsYSBpcyBub3QgbWFraW5nIHNlbnNlLCB3ZSBzaG91bGQgcmVhZCB0aGUgdGVtcGVyYXR1cmUg
+aW4gYW4gb3ZlbiBhbmQgY29tcGFyZSB0aGUgb3ZlbiBlbnZpcm9ubWVudCdzIHRlbXBlcmF0dXJl
+IHRvIHRoZSByZXN1bHQgcmVhZCBmcm9tIHRoZXJtYWwgc2Vuc29yIHVzaW5nIG5ldyBmb3JtdWxh
+Lg0KDQpXZSBoYXZlIGRvbmUgdGhlIHRlc3QsIGFuZCB0aGlzIG5ldyBmb3JtdWxhIGlzIGluY2x1
+ZGVkIGluIG91ciBCU1AgcmVsZWFzZSBhbHJlYWR5Lg0KDQpTZW50IGZyb20gQW5zb24ncyBpUGhv
+bmUNCg0KPiDU2iAyMDE0xOoy1MIxNMjVo6wzOjA5o6wiUGhpbGlwcCBaYWJlbCIgPHBoaWxpcHAu
+emFiZWxAZ21haWwuY29tPiDQtLXAo7oNCj4gDQo+IEhpLA0KPiANCj4+IE9uIFRodSwgRmViIDEz
+LCAyMDE0IGF0IDI6MDIgUE0sIFNoYXduIEd1byA8c2hhd24uZ3VvQGxpbmFyby5vcmc+IHdyb3Rl
+Og0KPj4gDQo+PiBDb3B5IExBS01MIGFuZCBwZW5ndXRyb25peCBmb2xrcyBpbiBjYXNlIHRoZXkg
+aGF2ZSBjb21tZW50cy4NCj4+IA0KPj4+IE9uIFdlZCwgRmViIDEyLCAyMDE0IGF0IDA2OjA2OjM1
+UE0gKzA4MDAsIEFuc29uIEh1YW5nIHdyb3RlOg0KPj4+IFRoZXJtYWwgc2Vuc29yIHVzZWQgdG8g
+bmVlZCB0d28gY2FsaWJyYXRpb24gcG9pbnRzIHdoaWNoIGFyZQ0KPj4+IGluIGZ1c2UgbWFwIHRv
+IGdldCBhIHNsb3BlIGZvciBjb252ZXJ0aW5nIHRoZXJtYWwgc2Vuc29yJ3MgcmF3DQo+Pj4gZGF0
+YSB0byByZWFsIHRlbXBlcmF0dXJlIGluIGRlZ3JlZSBDLiBEdWUgdG8gdGhlIGNoaXAgY2FsaWJy
+YXRpb24NCj4+PiBsaW1pdGF0aW9uLCBoYXJkd2FyZSB0ZWFtIHByb3ZpZGVzIGFuIHVuaXZlcnNh
+bCBmb3JtdWxhIHRvIGdldA0KPj4+IHJlYWwgdGVtcGVyYXR1cmUgZnJvbSBpbnRlcm5hbCB0aGVy
+bWFsIHNlbnNvciByYXcgZGF0YToNCj4+PiANCj4+PiBTbG9wZSA9IDAuNDI5NzE1NyAtICgwLjAw
+MTU5NzYgKiAyNUMgZnVzZSk7DQo+IA0KPiBJIGhhdmUgYW4gaS5NWDZRIDEuMiB3aXRoIDE0MTcg
+Y291bnRzIGF0IDI1oeNDIGFuZCAxMjk2IGNvdW50cyBhdCAxMDWh40MgZnVzZWQuDQo+IEFzc3Vt
+aW5nIHRoYXQgdGhvc2UgdmFsdWVzIGFyZSBmdXNlZCBjb3JyZWN0bHksIHdpdGggdGhlIG9sZCBm
+b3JtdWxhIEkgZ2V0Og0KPiANCj4gdDE9MjUsIG4xPTE0MTcsIHQyPTEwNSwgbjI9MTI5Ng0KPiBj
+MT0xMDAwKih0MS10MikvKG4xLW4yKT0tNjYyLCBjMj0xMDAwKnQyLWMxKm4yPTk2Mjk1Mg0KPiBU
+X21lYXM9YzIrYzEqTl9tZWFzPTk2Mjk1Mi02NjIqTl9tZWFzDQo+IA0KPiBOX21lYXM9MTQxNyAt
+LT4gVF9tZWFzID0gMjQ4OTgNCj4gTl9tZWFzPTEyOTYgLS0+IFRfbWVhcyA9IDEwNTAwMA0KPiAN
+Cj4gV2l0aCB0aGUgbmV3IGZvcm11bGEsIG9uIHRoZSBvdGhlciBoYW5kLCBJIHdvdWxkIGdldDoN
+Cj4gDQo+IHQxPTI1LCBuMT0xNDE3DQo+IEYwPTEwMDAwMDAwLCBGMT0xNTk3NiwgNDI5NzE1Nw0K
+PiBjMT1GMCoxMDAwLyhGMSpuMS1GMik9NTQ1LCBjMj1uMSpjMSsxMDAwKjI1PTc5NzI2NQ0KPiBU
+X21lYXM9YzItTl9tZWFzKmMxPTc5NzI2NS1OX21lYXMqNTQ1DQo+IA0KPiBOX21lYXM9MTQxNyAt
+LT4gVF9tZWFzID0gMjUwMDANCj4gTl9tZWFzPTEyOTYgLS0+IFRfbWVhcyA9IDkwOTQ1DQo+IA0K
+PiBUaGF0J3Mgb2ZmIGJ5IG92ZXIgMTSh40MhDQo+IA0KPiBUaGUgZGVmYXVsdCBwYXNzaXZlIGNv
+b2xpbmcgdHJpcCBwb2ludCBpcyBhdCA4NaHjQywNCj4gd2hpY2ggdHJhbnNsYXRlZCB0byAxMzI2
+IGNvdW50cyBiZWZvcmU6DQo+IGFsYXJtX3ZhbHVlPShhbGFybV90ZW1wLWMyKS9jMT0oODUwMDAt
+OTYyOTUyKS8oLTY2Mik9MTMyNg0KPiANCj4gV2l0aCB0aGUgbmV3IGZvcm11bGEgdGhlIHRyaXAg
+Y291bnQgaXMgb25seQ0KPiBhbGFybV92YWx1ZT0oYzItYWxhcm1fdGVtcCkvYzE9KDc5NzI2NS04
+NTAwMCkvNTQ1PTEzMDYNCj4gVGhhdCB0cmFuc2xhdGVzIHRvIDk4LjSh40MgYWNjb3JkaW5nIHRv
+IHRoZSBvbGQgZm9ybXVsYS4gSSB0aGluaw0KPiB0aGF0IGlzIGF3ZnVsbHkgY2xvc2UgdG8gdGhl
+IGNyaXRpY2FsIHRyaXAgcG9pbnQgYXQgMTAwoeNDLCB3aGljaCwNCj4gYWNjb3JkaW5nIHRvIHRo
+ZSBvbGQgZm9ybXVsYSwgY29ycmVzcG9uZGVkIHRvIDEzMDMgY291bnRzLg0KPiANCj4gVGhlIG5l
+dyBjcml0aWNhbCB0cmlwIHBvaW50IGZvciAxMDCh40MgaXMgYXQgMTI3OSBjb3VudHMuIEFjY29y
+ZGluZw0KPiB0byB0aGUgb2xkIGZvcm11bGEgdGhpcyBjb3JyZXNwb25kcyB0byAxMTYuMqHjQywg
+d2VsbCBvdmVyIHRoZQ0KPiByYXRlZCBtYXhpbXVtIG9mIDEwNaHjQy4NCj4gDQo+IERvIEkgbmVl
+ZCB0byBiZSBhZnJhaWQgZm9yIG15IG9sZCBzaWxpY29uPw0KPiANCj4+PiBVcGRhdGUgdGhlIGZv
+cm11bGEsIGFzIHRoZXJlIHdpbGwgYmUgbm8gaG90IHBvaW50IGNhbGlicmF0aW9uDQo+Pj4gZGF0
+YSBpbiBmdXNlIG1hcCBmcm9tIG5vdyBvbi4NCj4gDQo+IEkgd29uZGVyIGlmIGl0IHdvdWxkIGJl
+IGJldHRlciB0byBrZWVwIHVzaW5nIHRoZSBoaWdoIHRlbXBlcmF0dXJlDQo+IGNhbGlicmF0aW9u
+IHBvaW50IGlmIGl0IGlzIGZ1c2VkIGF0IGFsbC4NCj4gDQo+IHJlZ2FyZHMNCj4gUGhpbGlwcA0K
+PiANCj4gDQo=
