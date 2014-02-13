@@ -1,24 +1,28 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Patch v1] ACPI, x86: fix bug in associating hot-added CPUs with
- corresponding NUMA node
-Date: Wed, 12 Feb 2014 19:37:32 -0800
-Message-ID: <52FC3DFC.4020601@zytor.com>
-References: <1390185115-26850-1-git-send-email-jiang.liu@linux.intel.com> <4676819.HL23G4Egmr@vostro.rjw.lan> <52F4A4B9.2060006@linux.intel.com> <1440384.cOMzyfyUzg@vostro.rjw.lan> <52FC2EB5.3010805@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Is it ok for deferrable timer wakeup the idle cpu?
+Date: Thu, 13 Feb 2014 10:50:19 +0530
+Message-ID: <CAKohpomAmkvHkhqWe685M0W7N2hs0JHuSzrJ+QKmoj-w6QkMRA@mail.gmail.com>
+References: <CALZhoSQZQcM0yKTw1=ZkYz3Z_3X2QxLk0vCw6gKXW55HSrVEdw@mail.gmail.com>
+	<alpine.DEB.2.02.1401221459590.4260@ionos.tec.linutronix.de>
+	<CALZhoSSSOZKwDok2ZHumeZAs0R88SC6bU2BaL54U3TU6jgoaZA@mail.gmail.com>
+	<CAKohpomMZ0TAN2e6N76_g4ZRzxd5vZ1XfuZfxrP7GMxfTNiLVw@mail.gmail.com>
+	<20140212150627.GB5496@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-hotplug-owner@vger.kernel.org>
-In-Reply-To: <52FC2EB5.3010805@linux.intel.com>
-Sender: linux-hotplug-owner@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Toshi Kani <toshi.kani@hp.com>, Yinghai Lu <yinghai@kernel.org>, Yijing Wang <wangyijing@huawei.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, linux-acpi@vger.kernel.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:36139 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbaBMFUV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 00:20:21 -0500
+Received: by mail-ob0-f172.google.com with SMTP id vb8so11727559obc.3
+        for <linux-pm@vger.kernel.org>; Wed, 12 Feb 2014 21:20:21 -0800 (PST)
+In-Reply-To: <20140212150627.GB5496@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Lei Wen <adrian.wenl@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 02/12/2014 06:32 PM, Jiang Liu wrote:
-> Ping...
+On 12 February 2014 20:36, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> The change I'm applying is strongly inspired from the above. Can I use your Signed-off-by?
 
-Sorry, will look at it tomorrow.
-
-	-hpa
-
-
+Sure :)
