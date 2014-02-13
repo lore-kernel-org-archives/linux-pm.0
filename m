@@ -1,98 +1,130 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [RFT][PATCH v3] mmc: change cb710-mmc platform power management to
- use dev_pm_ops
-Date: Thu, 13 Feb 2014 06:49:33 -0700
-Message-ID: <52FCCD6D.6020704@samsung.com>
-References: <1392240089-19489-1-git-send-email-shuah.kh@samsung.com>
- <CAPDyKFoukY2PGNWimUbRqDr36eJ_+eBASJR4uac6nH4-kowmCQ@mail.gmail.com>
-Reply-To: shuah.kh@samsung.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: [PATCH v4 02/13] ARM: mvebu: remove the address parameter for ll_set_cpu_coherent
+Date: Thu, 13 Feb 2014 18:33:25 +0100
+Message-ID: <1392312816-17657-3-git-send-email-gregory.clement@free-electrons.com>
+References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w2.samsung.com ([211.189.100.14]:20399 "EHLO
-	usmailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084AbaBMNtn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 08:49:43 -0500
-In-reply-to: <CAPDyKFoukY2PGNWimUbRqDr36eJ_+eBASJR4uac6nH4-kowmCQ@mail.gmail.com>
+Received: from top.free-electrons.com ([176.31.233.9]:51865 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752416AbaBMReC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 12:34:02 -0500
+In-Reply-To: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, mirq-linux@rere.qmqm.pl, Chris Ball <chris@printf.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Shuah Khan <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-On 02/13/2014 02:47 AM, Ulf Hansson wrote:
-> On 12 February 2014 22:21, Shuah Khan <shuah.kh@samsung.com> wrote:
->> Change cb710-mmc platform driver to register pm ops using dev_pm_ops instead
->> of legacy pm_ops. The existing legacy suspend/resume routines are identical
->> and simply clear IRQ mask in the device in case it got undefined during sleep
->> state. Changed code to collapse suspend and resume into one .pm interface
->> for suspend and resume which gets installed for suspend, freeze, poweroff,
->> thaw, restore, and resume states using SIMPLE_DEV_PM_OPS().
->>
->> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
->> ---
->>
->> patch v3: Addresses review comments on patch v2
->>
->>   drivers/mmc/host/cb710-mmc.c |   40 ++++++++++++++++------------------------
->>   1 file changed, 16 insertions(+), 24 deletions(-)
->>
->> diff --git a/drivers/mmc/host/cb710-mmc.c b/drivers/mmc/host/cb710-mmc.c
->> index 1087b4c..2dc7b2dc 100644
->> --- a/drivers/mmc/host/cb710-mmc.c
->> +++ b/drivers/mmc/host/cb710-mmc.c
->> @@ -662,26 +662,6 @@ static const struct mmc_host_ops cb710_mmc_host = {
->>          .get_cd = cb710_mmc_get_cd,
->>   };
->>
->> -#ifdef CONFIG_PM
->> -
->> -static int cb710_mmc_suspend(struct platform_device *pdev, pm_message_t state)
->> -{
->> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
->> -
->> -       cb710_mmc_enable_irq(slot, 0, ~0);
->> -       return 0;
->> -}
->> -
->> -static int cb710_mmc_resume(struct platform_device *pdev)
->> -{
->> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
->> -
->> -       cb710_mmc_enable_irq(slot, 0, ~0);
->> -       return 0;
->> -}
->> -
->> -#endif /* CONFIG_PM */
->> -
->>   static int cb710_mmc_init(struct platform_device *pdev)
->>   {
->>          struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
->> @@ -762,14 +742,26 @@ static int cb710_mmc_exit(struct platform_device *pdev)
->>          return 0;
->>   }
->>
->> +#ifdef CONFIG_PM_SLEEP
->> +static int cb710_mmc_suspend_resume(struct device *dev)
->> +{
->> +       struct cb710_slot *slot = cb710_pdev_to_slot(to_platform_device(dev));
->> +
->> +       cb710_mmc_enable_irq(slot, 0, ~0);
->> +       return 0;
->> +}
->> +#else
->> +#define cb710_mmc_suspend_resume NULL
->
-> You don't need this. The macro will handle this for you.
->
+Until now the calling functions of ll_set_cpu_coherent() have to know
+the base address of the coherency registers. This commit doesn't
+expose anymore this address. This was needed to be able to use either
+a virtual or a physical address. This patch add a check of the MMU bit
+to choose the accurate address, then the calling function do have pass
+this information.
 
-Without this compiles fail when CONFIG_PM_SLEEP is not defined.
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+---
+ arch/arm/mach-mvebu/coherency.c    |  6 +++---
+ arch/arm/mach-mvebu/coherency_ll.S | 22 ++++++++++++++++++++--
+ arch/arm/mach-mvebu/headsmp.S      |  9 ---------
+ 3 files changed, 23 insertions(+), 14 deletions(-)
 
--- Shuah
-
-
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index 4e9d58148ca7..88dd507221fc 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -30,7 +30,7 @@
+ #include "coherency.h"
+ 
+ unsigned long coherency_phys_base;
+-static void __iomem *coherency_base;
++void __iomem *coherency_base;
+ static void __iomem *coherency_cpu_base;
+ 
+ /* Coherency fabric registers */
+@@ -44,7 +44,7 @@ static struct of_device_id of_coherency_table[] = {
+ };
+ 
+ /* Function defined in coherency_ll.S */
+-int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
++int ll_set_cpu_coherent(unsigned int hw_cpu_id);
+ 
+ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ {
+@@ -54,7 +54,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ 		return 1;
+ 	}
+ 
+-	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
++	return ll_set_cpu_coherent(hw_cpu_id);
+ }
+ 
+ static inline void mvebu_hwcc_sync_io_barrier(void)
+diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
+index ee7598fe75db..1f2bcd4b5424 100644
+--- a/arch/arm/mach-mvebu/coherency_ll.S
++++ b/arch/arm/mach-mvebu/coherency_ll.S
+@@ -21,13 +21,27 @@
+ #define ARMADA_XP_CFB_CFG_REG_OFFSET 0x4
+ 
+ #include <asm/assembler.h>
++#include <asm/cp15.h>
+ 
+ 	.text
+ /*
+- * r0: Coherency fabric base register address
+- * r1: HW CPU id
++ * r0: HW CPU id
+  */
+ ENTRY(ll_set_cpu_coherent)
++	mrc	p15, 0, r1, c1, c0, 0
++	tst	r1, #CR_M @ Check MMU bit enabled
++	bne	1f
++
++	/* use physical address of the coherency register*/
++	adr	r0, 3f
++	ldr	r3, [r0]
++	ldr	r0, [r0, r3]
++	b	2f
++1:
++	/* use virtual address of the coherency register*/
++	ldr	r0, =coherency_base
++	ldr	r0, [r0]
++2:
+ 	/* Create bit by cpu index */
+ 	mov	r3, #(1 << 24)
+ 	lsl	r1, r3, r1
+@@ -56,3 +70,7 @@ ARM_BE8(rev	r1, r1)
+ 	mov	r0, #0
+ 	mov	pc, lr
+ ENDPROC(ll_set_cpu_coherent)
++
++	.align 2
++3:
++	.long	coherency_phys_base - .
+diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
+index 3dd80df428f7..f30bc8d78871 100644
+--- a/arch/arm/mach-mvebu/headsmp.S
++++ b/arch/arm/mach-mvebu/headsmp.S
+@@ -31,11 +31,6 @@
+ ENTRY(armada_xp_secondary_startup)
+  ARM_BE8(setend	be )			@ go BE8 if entered LE
+ 
+-	/* Get coherency fabric base physical address */
+-	adr	r0, 1f
+-	ldr	r1, [r0]
+-	ldr	r0, [r0, r1]
+-
+ 	/* Read CPU id */
+ 	mrc     p15, 0, r1, c0, c0, 5
+ 	and     r1, r1, #0xF
+@@ -45,7 +40,3 @@ ENTRY(armada_xp_secondary_startup)
+ 	b	secondary_startup
+ 
+ ENDPROC(armada_xp_secondary_startup)
+-
+-	.align 2
+-1:
+-	.long	coherency_phys_base - .
 -- 
-Shuah Khan
-Senior Linux Kernel Developer - Open Source Group
-Samsung Research America(Silicon Valley)
-shuah.kh@samsung.com | (970) 672-0658
+1.8.1.2
+
