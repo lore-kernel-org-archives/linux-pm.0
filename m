@@ -1,91 +1,45 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [Patch v1] ACPI, x86: fix bug in associating hot-added CPUs with
- corresponding NUMA node
-Date: Thu, 13 Feb 2014 10:32:21 +0800
-Message-ID: <52FC2EB5.3010805@linux.intel.com>
-References: <1390185115-26850-1-git-send-email-jiang.liu@linux.intel.com> <4676819.HL23G4Egmr@vostro.rjw.lan> <52F4A4B9.2060006@linux.intel.com> <1440384.cOMzyfyUzg@vostro.rjw.lan>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH 0/6] drivers/acpi: fix driver compile errors when CONFIG_PM_SLEEP is undefined
+Date: Wed, 12 Feb 2014 20:19:04 -0700
+Message-ID: <cover.1392250669.git.shuah.kh@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-hotplug-owner@vger.kernel.org>
-In-Reply-To: <1440384.cOMzyfyUzg@vostro.rjw.lan>
-Sender: linux-hotplug-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Toshi Kani <toshi.kani@hp.com>, Yinghai Lu <yinghai@kernel.org>, Yijing Wang <wangyijing@huawei.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, linux-acpi@vger.kernel.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta11.emeryville.ca.mail.comcast.net ([76.96.27.211]:55318
+	"EHLO qmta11.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751390AbaBMDTP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 22:19:15 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: lenb@kernel.org, rjw@rjwysocki.net, rui.zhang@intel.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, shuahkhan@gmail.com
 
-Ping...
+The following acpi drivers fail with compile errors when CONFIG_PM_SLEEP
+is undefined.
 
-On 2014/2/7 20:03, Rafael J. Wysocki wrote:
-> On Friday, February 07, 2014 05:17:45 PM Jiang Liu wrote:
->>
->> On 2014/2/5 8:14, Rafael J. Wysocki wrote:
->>> On Monday, January 20, 2014 10:31:54 AM Jiang Liu wrote:
->>>> Current ACPI cpu hotplug driver fails to associate hot-added CPUs with
->>>> corresponding NUMA node when doing socket online. The code path to
->>>> associate CPU with NUMA node is as below:
->>>> acpi_processor_add()
->>>>     ->acpi_processor_get_info()
->>>> 	->acpi_processor_hotadd_init()
->>>> 	    ->acpi_map_lsapic()
->>>> 		->_acpi_map_lsapic()
->>>> 		    ->acpi_map_cpu2node()
->>>> cpu_subsys_online()
->>>>     ->try_online_node()
->>>> 	->node_set_online()
->>>>
->>>> When doing socket online, a new NUMA node is introduced in addition to
->>>> hot-added CPU and memory device. And the new NUMA node is marked as
->>>> online when onlining hot-added CPUs through sysfs interface
->>>> /sys/devices/system/cpu/cpuxx/online.
->>>>
->>>> On the other hand, acpi_map_cpu2node() will only build the CPU to node
->>>> map if corresponding NUMA node is already online, so it always fails
->>>> to associate hot-added CPUs with corresponding NUMA node because the
->>>> NUMA node is still in offline state.
->>>>
->>>> For the fix, we could safely remove the "node_online(node)" check in
->>>> function acpi_map_cpu2node() because it's only called for hot-added CPUs
->>>> by acpi_processor_hotadd_init().
->>>>
->>>> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
->>>
->>> I wonder what the status here is?  Did this patch go anywhere?
->> Hi Rafael,
->> 	It's still in review stage, hasn't been accepted by any
->> maintainer yet.
-> 
-> OK
-> 
-> Peter, are you fine with the patch below?
-> 
-> Rafael
-> 
-> 
->>>
->>>> ---
->>>>  arch/x86/kernel/acpi/boot.c |    8 ++++----
->>>>  1 file changed, 4 insertions(+), 4 deletions(-)
->>>>
->>>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
->>>> index 6c0b43b..7625de9 100644
->>>> --- a/arch/x86/kernel/acpi/boot.c
->>>> +++ b/arch/x86/kernel/acpi/boot.c
->>>> @@ -614,10 +614,10 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
->>>>  	int nid;
->>>>  
->>>>  	nid = acpi_get_node(handle);
->>>> -	if (nid == -1 || !node_online(nid))
->>>> -		return;
->>>> -	set_apicid_to_node(physid, nid);
->>>> -	numa_set_node(cpu, nid);
->>>> +	if (nid != -1) {
->>>> +		set_apicid_to_node(physid, nid);
->>>> +		numa_set_node(cpu, nid);
->>>> +	}
->>>>  #endif
->>>>  }
->>>>  
->>>>
->>>
-> 
+Shuah Khan (6):
+  drivers/acpi: fix ac driver compile error when CONFIG_PM_SLEEP is
+    undefined
+  drivers/acpi: fix battery driver compile error when CONFIG_PM_SLEEP is
+    undefined
+  drivers/acpi: fix button driver compile error when CONFIG_PM_SLEEP is
+    undefined
+  drivers/acpi: fix fan driver compile error when CONFIG_PM_SLEEP is
+    undefined
+  drivers/acpi: fix sbs driver compile error when CONFIG_PM_SLEEP is
+    undefined
+  drivers/acpi: fix thermal driver compile error when CONFIG_PM_SLEEP
+    is undefined
+
+ drivers/acpi/ac.c      |    2 ++
+ drivers/acpi/battery.c |    2 ++
+ drivers/acpi/button.c  |    2 ++
+ drivers/acpi/fan.c     |    3 +++
+ drivers/acpi/sbs.c     |    2 ++
+ drivers/acpi/thermal.c |    2 ++
+ 6 files changed, 13 insertions(+)
+
+-- 
+1.7.10.4
+
