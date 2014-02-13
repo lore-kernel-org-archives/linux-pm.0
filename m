@@ -1,79 +1,70 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v4 11/13] ARM: mvebu: Register notifier callback for the cpuidle transition
-Date: Thu, 13 Feb 2014 18:33:34 +0100
-Message-ID: <1392312816-17657-12-git-send-email-gregory.clement@free-electrons.com>
+From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH v4 07/13] ARM: dts: mvebu: Add a new set of registers to the PMSU node
+Date: Thu, 13 Feb 2014 18:33:30 +0100
+Message-ID: <1392312816-17657-8-git-send-email-gregory.clement@free-electrons.com>
 References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:51939 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752637AbaBMReK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 12:34:10 -0500
-In-Reply-To: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1392312816-17657-1-git-send-email-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Lior Amsalem <alior-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Tawfik Bayouk <tawfik-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-In order to have well encapsulated code use notifier callback for
-CPU_PM_ENTER and CPU_PM_EXIT inside the mvebu power management code.
+The Power Management Unit Service block also controls the Coherency
+Fabric subsystem. This new set of registers is needed for the CPU idle
+implementation for the Armada XP, it allows to enter in a deep CPU
+idle state where the Coherency Fabric and the L2 cache are powerdown.
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Signed-off-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- arch/arm/mach-mvebu/pmsu.c | 24 ++++++++++++++++++++++++
- arch/arm/mach-mvebu/pmsu.h |  1 +
- 2 files changed, 25 insertions(+)
+ Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt | 12 +++++++-----
+ arch/arm/boot/dts/armada-xp.dtsi                             |  2 +-
+ 2 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 162ae1399f2a..0e54077c31cb 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -16,6 +16,7 @@
-  * other SOC units
-  */
+diff --git a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+index 926b4d6aae7e..8a9db0c32ba5 100644
+--- a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
++++ b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+@@ -7,14 +7,16 @@ Required properties:
+ - compatible: "marvell,armada-370-xp-pmsu"
  
-+#include <linux/cpu_pm.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/of_address.h>
-@@ -189,4 +190,27 @@ static noinline void armada_370_xp_pmsu_idle_restore(void)
- 	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
- }
+ - reg: Should contain PMSU registers location and length. First pair
+-  for the per-CPU SW Reset Control registers, second pair for the
+-  Power Management Service Unit.
++  for the per-CPU SW Reset Control registers, second pair for the CPU
++  Power Management Service Unit registers, third pair for the Fabric Power
++  Management Service Unit registers.
  
-+static int armada_370_xp_cpu_pm_notify(struct notifier_block *self,
-+				    unsigned long action, void *hcpu)
-+{
-+	if (action == CPU_PM_ENTER) {
-+		unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
-+		armada_370_xp_pmsu_set_start_addr(armada_370_xp_cpu_resume,
-+						hw_cpu);
-+	} else if (action == CPU_PM_EXIT) {
-+		armada_370_xp_pmsu_idle_restore();
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block armada_370_xp_cpu_pm_notifier = {
-+	.notifier_call = armada_370_xp_cpu_pm_notify,
-+};
-+
-+int __init armada_370_xp_cpu_pm_init(void)
-+{
-+	return cpu_pm_register_notifier(&armada_370_xp_cpu_pm_notifier);
-+}
-+
- early_initcall(armada_370_xp_pmsu_init);
-diff --git a/arch/arm/mach-mvebu/pmsu.h b/arch/arm/mach-mvebu/pmsu.h
-index 054cdd8b0ece..e7a766fba757 100644
---- a/arch/arm/mach-mvebu/pmsu.h
-+++ b/arch/arm/mach-mvebu/pmsu.h
-@@ -13,5 +13,6 @@
+ Example:
  
- int armada_xp_boot_cpu(unsigned int cpu_id, void *phys_addr);
- void armada_370_xp_pmsu_enable_l2_powerdown_onidle(void);
-+int armada_370_xp_cpu_pm_init(void);
+-armada-370-xp-pmsu@d0022000 {
++armada-370-xp-pmsu@22000 {
+ 	compatible = "marvell,armada-370-xp-pmsu";
+-	reg = <0xd0022100 0x430>,
+-	      <0xd0020800 0x20>;
++	reg = <0x22100 0x430>,
++	      <0x20800 0x20>,
++	      <0x22000 0x24>;
+ };
  
- #endif	/* __MACH_370_XP_PMSU_H */
+diff --git a/arch/arm/boot/dts/armada-xp.dtsi b/arch/arm/boot/dts/armada-xp.dtsi
+index b8b84a22f0f3..f717da4f4d97 100644
+--- a/arch/arm/boot/dts/armada-xp.dtsi
++++ b/arch/arm/boot/dts/armada-xp.dtsi
+@@ -113,7 +113,7 @@
+ 
+ 			armada-370-xp-pmsu@22000 {
+ 				compatible = "marvell,armada-370-xp-pmsu";
+-				reg = <0x22100 0x400>, <0x20800 0x20>;
++				reg = <0x22100 0x400>, <0x20800 0x20>, <0x22000 0x24>;
+ 			};
+ 
+ 			eth2: ethernet@30000 {
 -- 
 1.8.1.2
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
