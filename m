@@ -1,129 +1,86 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v4 09/13] ARM: mvebu: Add the PMSU related part of the cpu idle functions
-Date: Thu, 13 Feb 2014 18:33:32 +0100
-Message-ID: <1392312816-17657-10-git-send-email-gregory.clement@free-electrons.com>
-References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
+From: Philipp Zabel <philipp.zabel@gmail.com>
+Subject: Re: [PATCH] thermal: imx: update formula for thermal sensor
+Date: Thu, 13 Feb 2014 20:09:22 +0100
+Message-ID: <CA+gwMccQPxxi2N8wTb4ggK2LaaZk1vOS6RtnP_XfpgLgJyYrtw@mail.gmail.com>
+References: <1392199595-1054-1-git-send-email-b20788@freescale.com>
+	<20140213130252.GB20842@S2101-09.ap.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:51923 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752638AbaBMReI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 12:34:08 -0500
-In-Reply-To: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
+Received: from mail-qa0-f43.google.com ([209.85.216.43]:58309 "EHLO
+	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbaBMTJX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2014 14:09:23 -0500
+Received: by mail-qa0-f43.google.com with SMTP id o15so16682196qap.2
+        for <linux-pm@vger.kernel.org>; Thu, 13 Feb 2014 11:09:22 -0800 (PST)
+In-Reply-To: <20140213130252.GB20842@S2101-09.ap.freescale.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Anson Huang <b20788@freescale.com>, eduardo.valentin@ti.com, rui.zhang@intel.com, Sascha Hauer <kernel@pengutronix.de>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-The cpu idle support will need to access to Power Management Service
-Unit. This commit adds the prepare and restore functions that will be
-used in the idle path of the cpuidle driver.
+Hi,
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
----
- arch/arm/mach-mvebu/pmsu.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
+On Thu, Feb 13, 2014 at 2:02 PM, Shawn Guo <shawn.guo@linaro.org> wrote=
+:
+>
+> Copy LAKML and pengutronix folks in case they have comments.
+>
+> On Wed, Feb 12, 2014 at 06:06:35PM +0800, Anson Huang wrote:
+> > Thermal sensor used to need two calibration points which are
+> > in fuse map to get a slope for converting thermal sensor's raw
+> > data to real temperature in degree C. Due to the chip calibration
+> > limitation, hardware team provides an universal formula to get
+> > real temperature from internal thermal sensor raw data:
+> >
+> > Slope =3D 0.4297157 - (0.0015976 * 25C fuse);
 
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 36d946d53f54..ec745d59fea8 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -29,6 +29,24 @@ static void __iomem *pmsu_reset_base;
- static void __iomem *pmsu_fabric_base;
- 
- /* PMSU MP registers */
-+#define PMSU_CONTROL_AND_CONFIG(cpu)	    ((cpu * 0x100) + 0x4)
-+#define PMSU_CONTROL_AND_CONFIG_DFS_REQ		BIT(18)
-+#define PMSU_CONTROL_AND_CONFIG_PWDDN_REQ	BIT(16)
-+#define PMSU_CONTROL_AND_CONFIG_L2_PWDDN	BIT(20)
-+
-+#define PMSU_CPU_POWER_DOWN_CONTROL(cpu)    ((cpu * 0x100) + 0x8)
-+
-+#define PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP	BIT(0)
-+
-+#define PMSU_STATUS_AND_MASK(cpu)	    ((cpu * 0x100) + 0xc)
-+#define PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT	BIT(16)
-+#define PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT	BIT(17)
-+#define PMSU_STATUS_AND_MASK_IRQ_WAKEUP		BIT(20)
-+#define PMSU_STATUS_AND_MASK_FIQ_WAKEUP		BIT(21)
-+#define PMSU_STATUS_AND_MASK_DBG_WAKEUP		BIT(22)
-+#define PMSU_STATUS_AND_MASK_IRQ_MASK		BIT(24)
-+#define PMSU_STATUS_AND_MASK_FIQ_MASK		BIT(25)
-+
- #define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu) ((cpu * 0x100) + 0x24)
- 
- /* PMSU reset registers */
-@@ -99,4 +117,71 @@ void armada_370_xp_pmsu_enable_l2_powerdown_onidle(void)
- 	writel(reg, pmsu_fabric_base + L2C_NFABRIC_PM_CTL);
- }
- 
-+static void armada_370_xp_cpu_resume(void)
-+{
-+	asm volatile("bl    ll_set_cpu_coherent_and_smp\n\t"
-+		     "b	    cpu_resume\n\t");
-+}
-+
-+/* No locking is needed because we only access per-CPU registers */
-+void armada_370_xp_pmsu_idle_prepare(bool deepidle)
-+{
-+	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
-+	u32 reg;
-+
-+	if (pmsu_mp_base == NULL)
-+		return;
-+
-+	/*
-+	 * Adjust the PMSU configuration to wait for WFI signal, enable
-+	 * IRQ and FIQ as wakeup events, set wait for snoop queue empty
-+	 * indication and mask IRQ and FIQ from CPU
-+	 */
-+	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+	reg |= PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT    |
-+	       PMSU_STATUS_AND_MASK_IRQ_WAKEUP       |
-+	       PMSU_STATUS_AND_MASK_FIQ_WAKEUP       |
-+	       PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT |
-+	       PMSU_STATUS_AND_MASK_IRQ_MASK         |
-+	       PMSU_STATUS_AND_MASK_FIQ_MASK;
-+	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+
-+	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+	/* ask HW to power down the L2 Cache if needed */
-+	if (deepidle)
-+		reg |= PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
-+
-+	/* request power down */
-+	reg |= PMSU_CONTROL_AND_CONFIG_PWDDN_REQ;
-+	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+
-+	/* Disable snoop disable by HW - SW is taking care of it */
-+	reg = readl(pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
-+	reg |= PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP;
-+	writel(reg, pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
-+}
-+
-+/* No locking is needed because we only access per-CPU registers */
-+static noinline void armada_370_xp_pmsu_idle_restore(void)
-+{
-+	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
-+	u32 reg;
-+
-+	if (pmsu_mp_base == NULL)
-+		return;
-+
-+	/* cancel ask HW to power down the L2 Cache if possible */
-+	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+	reg &= ~PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
-+	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+
-+	/* cancel Enable wakeup events and mask interrupts */
-+	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_WAKEUP | PMSU_STATUS_AND_MASK_FIQ_WAKEUP);
-+	reg &= ~PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT;
-+	reg &= ~PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT;
-+	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_MASK | PMSU_STATUS_AND_MASK_FIQ_MASK);
-+	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+}
-+
- early_initcall(armada_370_xp_pmsu_init);
--- 
-1.8.1.2
+I have an i.MX6Q 1.2 with 1417 counts at 25=B0C and 1296 counts at 105=B0=
+C fused.
+Assuming that those values are fused correctly, with the old formula I =
+get:
 
+t1=3D25, n1=3D1417, t2=3D105, n2=3D1296
+c1=3D1000*(t1-t2)/(n1-n2)=3D-662, c2=3D1000*t2-c1*n2=3D962952
+T_meas=3Dc2+c1*N_meas=3D962952-662*N_meas
+
+N_meas=3D1417 --> T_meas =3D 24898
+N_meas=3D1296 --> T_meas =3D 105000
+
+With the new formula, on the other hand, I would get:
+
+t1=3D25, n1=3D1417
+=460=3D10000000, F1=3D15976, 4297157
+c1=3DF0*1000/(F1*n1-F2)=3D545, c2=3Dn1*c1+1000*25=3D797265
+T_meas=3Dc2-N_meas*c1=3D797265-N_meas*545
+
+N_meas=3D1417 --> T_meas =3D 25000
+N_meas=3D1296 --> T_meas =3D 90945
+
+That's off by over 14=B0C!
+
+The default passive cooling trip point is at 85=B0C,
+which translated to 1326 counts before:
+alarm_value=3D(alarm_temp-c2)/c1=3D(85000-962952)/(-662)=3D1326
+
+With the new formula the trip count is only
+alarm_value=3D(c2-alarm_temp)/c1=3D(797265-85000)/545=3D1306
+That translates to 98.4=B0C according to the old formula. I think
+that is awfully close to the critical trip point at 100=B0C, which,
+according to the old formula, corresponded to 1303 counts.
+
+The new critical trip point for 100=B0C is at 1279 counts. According
+to the old formula this corresponds to 116.2=B0C, well over the
+rated maximum of 105=B0C.
+
+Do I need to be afraid for my old silicon?
+
+> > Update the formula, as there will be no hot point calibration
+> > data in fuse map from now on.
+
+I wonder if it would be better to keep using the high temperature
+calibration point if it is fused at all.
+
+regards
+Philipp
