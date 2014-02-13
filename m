@@ -1,39 +1,36 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/5] intel_pstate updates for v3.14-rcX
-Date: Thu, 13 Feb 2014 02:00:09 +0100
-Message-ID: <1625364.33ktXkOf95@vostro.rjw.lan>
-References: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com> <1412818.o51aAvTvMU@vostro.rjw.lan>
+Subject: Re: [PATCH] MAINTAINERS: update Sudeep's email address
+Date: Thu, 13 Feb 2014 02:16:13 +0100
+Message-ID: <4024653.b1q1gerlip@vostro.rjw.lan>
+References: <1392118952-10804-1-git-send-email-sudeep.holla@arm.com> <5444651.iTiV0Exjik@vostro.rjw.lan> <52FA2CAE.1010702@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54937 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751076AbaBMAp2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 19:45:28 -0500
-In-Reply-To: <1412818.o51aAvTvMU@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52FA2CAE.1010702@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sudeep Holla <Sudeep.Holla@arm.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: dirk.brandewie@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Thursday, February 13, 2014 01:47:43 AM Rafael J. Wysocki wrote:
-> On Wednesday, February 12, 2014 10:01:02 AM dirk.brandewie@gmail.com wrote:
-> > From: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> > 
-> > Based on v3.14-rc2
-> > 
-> > Patch 1 removes energy reporting the patch from Maurizio Lambardi 
-> >  intel_pstate: fix race condition in intel_pstate_init() can be dropped.
-> > 
+On Tuesday, February 11, 2014 01:59:10 PM Sudeep Holla wrote:
+> Hi Rafael,
 > 
-> OK, I'll replace that patch with your [1/5].
+> On 11/02/14 12:58, Rafael J. Wysocki wrote:
+> > On Tuesday, February 11, 2014 11:42:32 AM Sudeep Holla wrote:
+> >> From: Sudeep Holla <sudeep.holla@arm.com>
+> >>
+> >> Though my old email address continues to work as alias, updating
+> >> to the new address as it's shorterm, easier and more appropriate.
+> > 
+> > OK
+> > 
+> > I guess I'm supposed to take this?
+> > 
+> I just noticed I have made a spell mistake which probably confused you.
+> s/shorterm/shorter (extra trailing m by mistake)
 
-On a second thought, we'll need a fix for stable for that and quite frankly
-your [1/5] doesn't really fit there.  So I'm going to push the Maurizio's
-patch anyway and plaese rebase the whole series on top of it.
-
-Thanks!
+Applied, thanks!
 
 -- 
 I speak only for myself.
