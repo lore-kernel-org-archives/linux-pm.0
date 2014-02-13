@@ -1,94 +1,54 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [RFT][PATCH v3] mmc: change cb710-mmc platform power management to use dev_pm_ops
-Date: Wed, 12 Feb 2014 14:21:29 -0700
-Message-ID: <1392240089-19489-1-git-send-email-shuah.kh@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/5] intel_pstate updates for v3.14-rcX
+Date: Thu, 13 Feb 2014 01:47:43 +0100
+Message-ID: <1412818.o51aAvTvMU@vostro.rjw.lan>
+References: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta11.emeryville.ca.mail.comcast.net ([76.96.27.211]:55540
-	"EHLO qmta11.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753892AbaBLVVi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 16:21:38 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:52840 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752070AbaBMAdC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2014 19:33:02 -0500
+In-Reply-To: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, mirq-linux@rere.qmqm.pl, ulf.hansson@linaro.org, chris@printf.net
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, shuahkhan@gmail.com
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Change cb710-mmc platform driver to register pm ops using dev_pm_ops instead
-of legacy pm_ops. The existing legacy suspend/resume routines are identical
-and simply clear IRQ mask in the device in case it got undefined during sleep
-state. Changed code to collapse suspend and resume into one .pm interface
-for suspend and resume which gets installed for suspend, freeze, poweroff,
-thaw, restore, and resume states using SIMPLE_DEV_PM_OPS().
+On Wednesday, February 12, 2014 10:01:02 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> 
+> Based on v3.14-rc2
+> 
+> Patch 1 removes energy reporting the patch from Maurizio Lambardi 
+>  intel_pstate: fix race condition in intel_pstate_init() can be dropped.
+> 
 
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
+OK, I'll replace that patch with your [1/5].
 
-patch v3: Addresses review comments on patch v2
+> Patch 2-3 cleanups
+> 
+> Patch 4-5 Baytrail bug fixes
 
- drivers/mmc/host/cb710-mmc.c |   40 ++++++++++++++++------------------------
- 1 file changed, 16 insertions(+), 24 deletions(-)
+How [4-5/5] depend on [2-3/5]?
 
-diff --git a/drivers/mmc/host/cb710-mmc.c b/drivers/mmc/host/cb710-mmc.c
-index 1087b4c..2dc7b2dc 100644
---- a/drivers/mmc/host/cb710-mmc.c
-+++ b/drivers/mmc/host/cb710-mmc.c
-@@ -662,26 +662,6 @@ static const struct mmc_host_ops cb710_mmc_host = {
- 	.get_cd = cb710_mmc_get_cd,
- };
- 
--#ifdef CONFIG_PM
--
--static int cb710_mmc_suspend(struct platform_device *pdev, pm_message_t state)
--{
--	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
--
--	cb710_mmc_enable_irq(slot, 0, ~0);
--	return 0;
--}
--
--static int cb710_mmc_resume(struct platform_device *pdev)
--{
--	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
--
--	cb710_mmc_enable_irq(slot, 0, ~0);
--	return 0;
--}
--
--#endif /* CONFIG_PM */
--
- static int cb710_mmc_init(struct platform_device *pdev)
- {
- 	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
-@@ -762,14 +742,26 @@ static int cb710_mmc_exit(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+static int cb710_mmc_suspend_resume(struct device *dev)
-+{
-+	struct cb710_slot *slot = cb710_pdev_to_slot(to_platform_device(dev));
-+
-+	cb710_mmc_enable_irq(slot, 0, ~0);
-+	return 0;
-+}
-+#else
-+#define cb710_mmc_suspend_resume NULL
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(cb710_mmc_dev_pm_ops, cb710_mmc_suspend_resume,
-+			 cb710_mmc_suspend_resume);
-+
- static struct platform_driver cb710_mmc_driver = {
- 	.driver.name = "cb710-mmc",
- 	.probe = cb710_mmc_init,
- 	.remove = cb710_mmc_exit,
--#ifdef CONFIG_PM
--	.suspend = cb710_mmc_suspend,
--	.resume = cb710_mmc_resume,
--#endif
-+	.driver.pm = &cb710_mmc_dev_pm_ops,
- };
- 
- module_platform_driver(cb710_mmc_driver);
+I'd prefer to push fixes only for 3.14 at this point to be honest.
+
+> Dirk Brandewie (5):
+>   intel_pstate: Remove energy reporting from pstate_sample tracepoint
+>   intel_pstate: remove unneeded sample buffers
+>   intel_pstate: fix pid_reset to use fixed point values
+>   intel_pstate: Use LFM bus ratio as min ratio/P state
+>   intel_pstate: Add support for Baytrail turbo P states
+> 
+>  drivers/cpufreq/intel_pstate.c | 53 +++++++++++++++++++++---------------------
+>  include/trace/events/power.h   |  7 +-----
+>  2 files changed, 27 insertions(+), 33 deletions(-)
+
+Thanks!
+
 -- 
-1.7.10.4
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
