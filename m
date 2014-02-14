@@ -1,109 +1,55 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 43/52] thermal,
- x86-pkg-temp: Fix CPU hotplug callback registration
-Date: Fri, 14 Feb 2014 13:28:59 +0530
-Message-ID: <20140214075858.22701.51893.stgit@srivatsabhat.in.ibm.com>
-References: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
-Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Fri, 14 Feb 2014 16:30:40 +0530
+Message-ID: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:60941 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbaBNLAw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 06:00:52 -0500
+Received: by mail-wi0-f179.google.com with SMTP id hn9so336862wib.0
+        for <linux-pm@vger.kernel.org>; Fri, 14 Feb 2014 03:00:51 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pierre-list@ossman.eu, Viresh Kumar <viresh.kumar@linaro.org>
 
-Subsystems that want to register CPU hotplug callbacks, as well as perform
-initialization for the CPUs that are already online, often do it as shown
-below:
+cpufreq_update_policy() calls cpufreq_driver->get() to get current frequency of
+a CPU and it is not supposed to fail or return zero. Return error in case that
+happens.
 
-	get_online_cpus();
-
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	register_cpu_notifier(&foobar_cpu_notifier);
-
-	put_online_cpus();
-
-This is wrong, since it is prone to ABBA deadlocks involving the
-cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-with CPU hotplug operations).
-
-Instead, the correct and race-free way of performing the callback
-registration is:
-
-	cpu_notifier_register_begin();
-
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	/* Note the use of the double underscored version of the API */
-	__register_cpu_notifier(&foobar_cpu_notifier);
-
-	cpu_notifier_register_done();
-
-
-Fix the thermal x86-pkg-temp code by using this latter form of callback
-registration.
-
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
+Pierre,
 
- drivers/thermal/x86_pkg_temp_thermal.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+I don't think this will fix the issue you were facing but might supress it :)..
+And so you need to understand what causes your ->get() to return zero.
 
-diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
-index 972e1c7..7592048 100644
---- a/drivers/thermal/x86_pkg_temp_thermal.c
-+++ b/drivers/thermal/x86_pkg_temp_thermal.c
-@@ -589,12 +589,12 @@ static int __init pkg_temp_thermal_init(void)
- 	platform_thermal_package_rate_control =
- 			pkg_temp_thermal_platform_thermal_rate_control;
- 
--	get_online_cpus();
-+	cpu_notifier_register_begin();
- 	for_each_online_cpu(i)
- 		if (get_core_online(i))
- 			goto err_ret;
--	register_hotcpu_notifier(&pkg_temp_thermal_notifier);
--	put_online_cpus();
-+	__register_hotcpu_notifier(&pkg_temp_thermal_notifier);
-+	cpu_notifier_register_done();
- 
- 	pkg_temp_debugfs_init(); /* Don't care if fails */
- 
-@@ -603,7 +603,7 @@ static int __init pkg_temp_thermal_init(void)
- err_ret:
- 	for_each_online_cpu(i)
- 		put_core_offline(i);
--	put_online_cpus();
-+	cpu_notifier_register_done();
- 	kfree(pkg_work_scheduled);
- 	platform_thermal_package_notify = NULL;
- 	platform_thermal_package_rate_control = NULL;
-@@ -616,8 +616,8 @@ static void __exit pkg_temp_thermal_exit(void)
- 	struct phy_dev_entry *phdev, *n;
- 	int i;
- 
--	get_online_cpus();
--	unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
-+	cpu_notifier_register_begin();
-+	__unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
- 	mutex_lock(&phy_dev_list_mutex);
- 	list_for_each_entry_safe(phdev, n, &phy_dev_list, list) {
- 		/* Retore old MSR value for package thermal interrupt */
-@@ -635,7 +635,7 @@ static void __exit pkg_temp_thermal_exit(void)
- 	for_each_online_cpu(i)
- 		cancel_delayed_work_sync(
- 			&per_cpu(pkg_temp_thermal_threshold_work, i));
--	put_online_cpus();
-+	cpu_notifier_register_done();
- 
- 	kfree(pkg_work_scheduled);
- 
+@Rafael: I got to these patches while looking at code recently after Pierre
+complained about. Came to this conclusion after having discussions with Srivatsa
+over IRC..
+
+ drivers/cpufreq/cpufreq.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 08ca8c9..383362b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2151,6 +2151,13 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	 */
+ 	if (cpufreq_driver->get) {
+ 		new_policy.cur = cpufreq_driver->get(cpu);
++
++		if (!new_policy.cur) {
++			pr_err("%s: ->get() returned 0 KHz\n", __func__);
++			ret = -EINVAL;
++			goto no_policy;
++		}
++
+ 		if (!policy->cur) {
+ 			pr_debug("Driver did not initialize current freq");
+ 			policy->cur = new_policy.cur;
+-- 
+1.7.12.rc2.18.g61b472e
+
