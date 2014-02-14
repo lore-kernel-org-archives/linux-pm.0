@@ -1,73 +1,182 @@
-From: "Anson.Huang@freescale.com" <Anson.Huang@freescale.com>
-Subject: Re: [PATCH] thermal: imx: update formula for thermal sensor
-Date: Thu, 13 Feb 2014 23:39:05 +0000
-Message-ID: <74FD66EE-8055-40FA-8692-E2DA0F1E643B@freescale.com>
-References: <1392199595-1054-1-git-send-email-b20788@freescale.com>
-	<20140213130252.GB20842@S2101-09.ap.freescale.net>,<CA+gwMccQPxxi2N8wTb4ggK2LaaZk1vOS6RtnP_XfpgLgJyYrtw@mail.gmail.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v3 3/3] Documentation: arm: define DT idle states
+ bindings
+Date: Thu, 13 Feb 2014 16:29:26 -0800
+Message-ID: <20140214002926.1014.3599@capellas-linux>
+References: <1392128273-8614-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1392128273-8614-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140213013153.18853.21632@capellas-linux>
+ <20140213124731.GD26329@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2lp0209.outbound.protection.outlook.com ([207.46.163.209]:21928
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751749AbaBMXj0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 13 Feb 2014 18:39:26 -0500
-In-Reply-To: <CA+gwMccQPxxi2N8wTb4ggK2LaaZk1vOS6RtnP_XfpgLgJyYrtw@mail.gmail.com>
-Content-Language: zh-CN
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140213124731.GD26329@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, "pveerapa@broadcom.com" <pveerapa@broadcom.com>, Peter De Schrijver <pdeschrijver@nvidia.>
 List-Id: linux-pm@vger.kernel.org
-To: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Sascha Hauer <kernel@pengutronix.de>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-SGksIHBoaWxpcHANCiAgICAgICAgSSBrbm93IHlvdXIgY29uY2VybiwgYnV0IGZyb20gaGFyZHdh
-cmUgdGVhbSwgdGhleSBzYWlkIGR1ZSB0byB0aGUgY2FsaWJyYXRpb24gdG9vbCdzIGxpbWl0YXRp
-b24sIHRoZSBoaWdoIHBvaW50IGNhbGlicmF0aW9uIGRhdGEgaXMgbm90IHJlbGlhYmxlIGV2ZW4g
-dGhlIGZ1c2UgZGF0YSBpcyB0aGVyZS4gIElmIHNvLCB0aGVuIGNvbXBhcmluZyB0byBvbGQgZm9y
-bXVsYSBpcyBub3QgbWFraW5nIHNlbnNlLCB3ZSBzaG91bGQgcmVhZCB0aGUgdGVtcGVyYXR1cmUg
-aW4gYW4gb3ZlbiBhbmQgY29tcGFyZSB0aGUgb3ZlbiBlbnZpcm9ubWVudCdzIHRlbXBlcmF0dXJl
-IHRvIHRoZSByZXN1bHQgcmVhZCBmcm9tIHRoZXJtYWwgc2Vuc29yIHVzaW5nIG5ldyBmb3JtdWxh
-Lg0KDQpXZSBoYXZlIGRvbmUgdGhlIHRlc3QsIGFuZCB0aGlzIG5ldyBmb3JtdWxhIGlzIGluY2x1
-ZGVkIGluIG91ciBCU1AgcmVsZWFzZSBhbHJlYWR5Lg0KDQpTZW50IGZyb20gQW5zb24ncyBpUGhv
-bmUNCg0KPiDU2iAyMDE0xOoy1MIxNMjVo6wzOjA5o6wiUGhpbGlwcCBaYWJlbCIgPHBoaWxpcHAu
-emFiZWxAZ21haWwuY29tPiDQtLXAo7oNCj4gDQo+IEhpLA0KPiANCj4+IE9uIFRodSwgRmViIDEz
-LCAyMDE0IGF0IDI6MDIgUE0sIFNoYXduIEd1byA8c2hhd24uZ3VvQGxpbmFyby5vcmc+IHdyb3Rl
-Og0KPj4gDQo+PiBDb3B5IExBS01MIGFuZCBwZW5ndXRyb25peCBmb2xrcyBpbiBjYXNlIHRoZXkg
-aGF2ZSBjb21tZW50cy4NCj4+IA0KPj4+IE9uIFdlZCwgRmViIDEyLCAyMDE0IGF0IDA2OjA2OjM1
-UE0gKzA4MDAsIEFuc29uIEh1YW5nIHdyb3RlOg0KPj4+IFRoZXJtYWwgc2Vuc29yIHVzZWQgdG8g
-bmVlZCB0d28gY2FsaWJyYXRpb24gcG9pbnRzIHdoaWNoIGFyZQ0KPj4+IGluIGZ1c2UgbWFwIHRv
-IGdldCBhIHNsb3BlIGZvciBjb252ZXJ0aW5nIHRoZXJtYWwgc2Vuc29yJ3MgcmF3DQo+Pj4gZGF0
-YSB0byByZWFsIHRlbXBlcmF0dXJlIGluIGRlZ3JlZSBDLiBEdWUgdG8gdGhlIGNoaXAgY2FsaWJy
-YXRpb24NCj4+PiBsaW1pdGF0aW9uLCBoYXJkd2FyZSB0ZWFtIHByb3ZpZGVzIGFuIHVuaXZlcnNh
-bCBmb3JtdWxhIHRvIGdldA0KPj4+IHJlYWwgdGVtcGVyYXR1cmUgZnJvbSBpbnRlcm5hbCB0aGVy
-bWFsIHNlbnNvciByYXcgZGF0YToNCj4+PiANCj4+PiBTbG9wZSA9IDAuNDI5NzE1NyAtICgwLjAw
-MTU5NzYgKiAyNUMgZnVzZSk7DQo+IA0KPiBJIGhhdmUgYW4gaS5NWDZRIDEuMiB3aXRoIDE0MTcg
-Y291bnRzIGF0IDI1oeNDIGFuZCAxMjk2IGNvdW50cyBhdCAxMDWh40MgZnVzZWQuDQo+IEFzc3Vt
-aW5nIHRoYXQgdGhvc2UgdmFsdWVzIGFyZSBmdXNlZCBjb3JyZWN0bHksIHdpdGggdGhlIG9sZCBm
-b3JtdWxhIEkgZ2V0Og0KPiANCj4gdDE9MjUsIG4xPTE0MTcsIHQyPTEwNSwgbjI9MTI5Ng0KPiBj
-MT0xMDAwKih0MS10MikvKG4xLW4yKT0tNjYyLCBjMj0xMDAwKnQyLWMxKm4yPTk2Mjk1Mg0KPiBU
-X21lYXM9YzIrYzEqTl9tZWFzPTk2Mjk1Mi02NjIqTl9tZWFzDQo+IA0KPiBOX21lYXM9MTQxNyAt
-LT4gVF9tZWFzID0gMjQ4OTgNCj4gTl9tZWFzPTEyOTYgLS0+IFRfbWVhcyA9IDEwNTAwMA0KPiAN
-Cj4gV2l0aCB0aGUgbmV3IGZvcm11bGEsIG9uIHRoZSBvdGhlciBoYW5kLCBJIHdvdWxkIGdldDoN
-Cj4gDQo+IHQxPTI1LCBuMT0xNDE3DQo+IEYwPTEwMDAwMDAwLCBGMT0xNTk3NiwgNDI5NzE1Nw0K
-PiBjMT1GMCoxMDAwLyhGMSpuMS1GMik9NTQ1LCBjMj1uMSpjMSsxMDAwKjI1PTc5NzI2NQ0KPiBU
-X21lYXM9YzItTl9tZWFzKmMxPTc5NzI2NS1OX21lYXMqNTQ1DQo+IA0KPiBOX21lYXM9MTQxNyAt
-LT4gVF9tZWFzID0gMjUwMDANCj4gTl9tZWFzPTEyOTYgLS0+IFRfbWVhcyA9IDkwOTQ1DQo+IA0K
-PiBUaGF0J3Mgb2ZmIGJ5IG92ZXIgMTSh40MhDQo+IA0KPiBUaGUgZGVmYXVsdCBwYXNzaXZlIGNv
-b2xpbmcgdHJpcCBwb2ludCBpcyBhdCA4NaHjQywNCj4gd2hpY2ggdHJhbnNsYXRlZCB0byAxMzI2
-IGNvdW50cyBiZWZvcmU6DQo+IGFsYXJtX3ZhbHVlPShhbGFybV90ZW1wLWMyKS9jMT0oODUwMDAt
-OTYyOTUyKS8oLTY2Mik9MTMyNg0KPiANCj4gV2l0aCB0aGUgbmV3IGZvcm11bGEgdGhlIHRyaXAg
-Y291bnQgaXMgb25seQ0KPiBhbGFybV92YWx1ZT0oYzItYWxhcm1fdGVtcCkvYzE9KDc5NzI2NS04
-NTAwMCkvNTQ1PTEzMDYNCj4gVGhhdCB0cmFuc2xhdGVzIHRvIDk4LjSh40MgYWNjb3JkaW5nIHRv
-IHRoZSBvbGQgZm9ybXVsYS4gSSB0aGluaw0KPiB0aGF0IGlzIGF3ZnVsbHkgY2xvc2UgdG8gdGhl
-IGNyaXRpY2FsIHRyaXAgcG9pbnQgYXQgMTAwoeNDLCB3aGljaCwNCj4gYWNjb3JkaW5nIHRvIHRo
-ZSBvbGQgZm9ybXVsYSwgY29ycmVzcG9uZGVkIHRvIDEzMDMgY291bnRzLg0KPiANCj4gVGhlIG5l
-dyBjcml0aWNhbCB0cmlwIHBvaW50IGZvciAxMDCh40MgaXMgYXQgMTI3OSBjb3VudHMuIEFjY29y
-ZGluZw0KPiB0byB0aGUgb2xkIGZvcm11bGEgdGhpcyBjb3JyZXNwb25kcyB0byAxMTYuMqHjQywg
-d2VsbCBvdmVyIHRoZQ0KPiByYXRlZCBtYXhpbXVtIG9mIDEwNaHjQy4NCj4gDQo+IERvIEkgbmVl
-ZCB0byBiZSBhZnJhaWQgZm9yIG15IG9sZCBzaWxpY29uPw0KPiANCj4+PiBVcGRhdGUgdGhlIGZv
-cm11bGEsIGFzIHRoZXJlIHdpbGwgYmUgbm8gaG90IHBvaW50IGNhbGlicmF0aW9uDQo+Pj4gZGF0
-YSBpbiBmdXNlIG1hcCBmcm9tIG5vdyBvbi4NCj4gDQo+IEkgd29uZGVyIGlmIGl0IHdvdWxkIGJl
-IGJldHRlciB0byBrZWVwIHVzaW5nIHRoZSBoaWdoIHRlbXBlcmF0dXJlDQo+IGNhbGlicmF0aW9u
-IHBvaW50IGlmIGl0IGlzIGZ1c2VkIGF0IGFsbC4NCj4gDQo+IHJlZ2FyZHMNCj4gUGhpbGlwcA0K
-PiANCj4gDQo=
+Quoting Lorenzo Pieralisi (2014-02-13 04:47:32)
+
+> Such as ? "idle-states" ?
+
+That sounds good to me.  Our preference is for idle-states to be used
+for name of the idle-states.txt node.
+
+> > During last connect, we'd discussed that the small set of
+> > states here could apply to a single node, which can represent a cpu, a
+> > cluster with cache etc.  Then the complexities of the system power state
+> > would be represented using a heirarchy, with each node in the
+> > tree having its own state from the list above.  This would allow
+> > a fairly rich system state while having just a few power states defined
+> > at each level.  Is this how you're intending these bindings to go?
+>
+> Yes, CPUs point at states that can be reached by that CPU (eg a CPU core
+> gating state is represented by a single node pointed at by all CPUs in the
+> system - it the same state data, different power domains though).
+> 
+> States are hierarchical, which means that a parent state implies entry on all
+> substates that's how cluster states are defined.
+
+The cpu 0 node, in its cpu-idle-state array is also pointing at a cluster
+node right?  STATE0 -> power-domains refers to <pd_clusters 0>.  Is it
+correct that if the cpu's workload is such that it tolerates the
+500/1000/2500 entry/exit latency/min-residency, it will call the
+entry-method with the psci-power-state of 0x10100000 matching that node?
+
+
+> > Also, would it be nice to have a name field for each state?
+> 
+> There is:
+> 
+> "The state node name shall be "stateN", where N = {0, 1, ...} is
+> the node number; state nodes which are siblings within a single
+> common parent node must be given a unique and sequential N value,
+> starting from 0."
+> I can remove the rule and allow people to call states as they wish
+> since they already have a compatible property to match them.
+> 
+> Actually, states can be called with any name, provided it is unique.
+
+Sorry, I was referring to a descriptive name string property.  Something
+that can be useful to help a human understand what's going on.  Naming
+the nodes might work too.
+
+> > > +       A state node can contain state child nodes. A state node with
+> > > +       children represents a hierarchical state, which is a superset of
+> > > +       the child states. Hierarchical states require all CPUs on which
+> > > +       they are valid to request the state in order for it to be entered.
+> > 
+> > Is it possible for a cpu to request a deeper state and unblock other cpus
+> > from entering this state?
+> 
+> That's not DT bindings business, hierarchical states define states that
+> require all CPUs on which they are valid to enter that state for it to
+> be considered "enabled".
+> 
+> It is a hard nut to crack. In x86 this stuff does not exist and it is
+> managed in HW, basically an idle state is always per-cpu (but it might
+> end up becoming a package state when all CPUs in a package enter that
+> state). On ARM, we want to define hierarchical states explicitly to
+> link resources (ie caches) to them.
+> 
+> CPUs are not prevented from requesting a hierarchical state, but the
+> state only becomes "enabled" when all CPUs on which it is valid request
+> it.
+
+The way we've seen it work, is a cpu tries to enter the lowest state it can
+tolerate (including for eg. cluster off).  The system level code then looks
+at the allowable states from all the cpus and selects the lowest power
+state permissible for the heirarchies.
+
+Eg. this way, the last cpu preventing a cluster from going to sleep enters
+cluster sleep state (where peer cpu's have already voted for cluster
+sleep) and the cluster will sleep.  Alternately if the same cpu cannot
+tolerate the additional latency of the cluster sleeping, it will vote
+only for cpu-sleep, then the cluster remains in a state where all cpu's are
+sleeping but the cluster remains up.
+
+> I cannot think of any other way of to express this properly but still in
+> a compact way.
+
+You're doing a great job by the way!  Thanks! :)
+
+> > "all CPUs on which they are valid" is this determined by seeing which
+> > state's phandle is in each cpu->cpu-idle-states?
+> 
+> Yes, does it make sense ?
+
+Yup, maybe adding a little parenthetical text like below may help others
+as well?
+
+Hierarchical states require all CPUs on which they are valid (ie. CPU nodes
+containing cpu-idle-state arrays having a phandle reference to the state)
+to request the state in order for it to be entered.
+
+> 
+> > Definition: It represents an idle state index.
+> > 
+> >         Index 0 and 1 shall not be specified and are reserved for ARM
+> >         states where index 0 is running, and index 1 is idle_standby
+> >         entered by executing a wfi instruction (SBSA,[3])
+> > 
+> > What mechanism is used to order the power states WRT power consumption?
+> 
+> I think we should use index for that. The higher the index the lower the
+> power consumption.
+
+Ok, I think I get it now.
+If we decouple index and SBSA states, do we really need to reserve index
+0 and 1 then?
+
+> > Can this field be used to combine both psci and non-psci states in any order?
+> 
+> No. I will enforce a unique entry method.
+
+So a single entry-method for all  states in idle-states node?
+Should this be specified once only then?
+
+Should we not allow more flexibility here to mix methods where some
+states use one method and some use others?  Is this mostly a security
+concern?  What if a vendor wants to introduce a state between wfi and
+cpu-sleep?
+
+> > I assume psci will be turning off the powerdomains not Linux right?
+> 
+> This is not a PSCI only document, and even if it was, we still need to deal
+> with devices. Which means we need to know what we have to save/restore (PMU,
+> arch timer, GIC), and power domains help us detect that.
+
+> > > +
+> > > +cpus {
+> > > +       #size-cells = <0>;
+> > > +       #address-cells = <2>;
+> > > +
+> > > +       cpu-idle-states {
+> > > +
+> > > +               STATE0: state0 {
+> > > +                       compatible = "arm,cpu-idle-state";
+> > > +                       index = <3>;
+> > 
+> > Are the index fields of nested states independent of each other or
+> > sequential?
+> ...
+> I understand index is misleading and either I remove it, or I
+> leave it there to define power savings scale as you mentioned.
+
+I like index, but I was confused.  You cleared it up pretty quick with
+your earlier comment.  Removing the numbering may help, but I think
+keeping the index is useful.
+
+Thanks!
+
+Sebastian
