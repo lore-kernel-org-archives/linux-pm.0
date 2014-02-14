@@ -1,25 +1,17 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 37/52] acpi-cpufreq: Fix CPU hotplug callback registration
-Date: Fri, 14 Feb 2014 13:27:37 +0530
-Message-ID: <20140214075736.22701.78024.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH v2 40/52] intel-idle: Fix CPU hotplug callback registration
+Date: Fri, 14 Feb 2014 13:28:15 +0530
+Message-ID: <20140214075814.22701.67329.stgit@srivatsabhat.in.ibm.com>
 References: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:48762 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155AbaBNIDK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 03:03:10 -0500
-Received: from /spool/local
-	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 14 Feb 2014 18:03:09 +1000
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
-Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com"Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Len Brown <lenb@kernel.org>"Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+List-Id: linux-pm@vger.kernel.org
 
 Subsystems that want to register CPU hotplug callbacks, as well as perform
 initialization for the CPUs that are already online, often do it as shown
@@ -52,41 +44,55 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the acpi-cpufreq code by using this latter form of callback registration.
+Fix the intel-idle code by using this latter form of callback registration.
 
+Cc: Len Brown <lenb@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: cpufreq@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/idle/intel_idle.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 18448a7..245ae078e 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 8e1939f..51493ed 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -681,14 +681,19 @@ static int __init intel_idle_init(void)
+ 	if (intel_idle_cpuidle_devices == NULL)
+ 		return -ENOMEM;
  
- 		acpi_cpufreq_driver.boost_supported = true;
- 		acpi_cpufreq_driver.boost_enabled = boost_state(0);
--		get_online_cpus();
++	cpu_notifier_register_begin();
 +
-+		cpu_notifier_register_begin();
- 
- 		/* Force all MSRs to the same value */
- 		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
- 			       cpu_online_mask);
- 
--		register_cpu_notifier(&boost_nb);
-+		__register_cpu_notifier(&boost_nb);
- 
--		put_online_cpus();
-+		cpu_notifier_register_done();
+ 	for_each_online_cpu(i) {
+ 		retval = intel_idle_cpu_init(i);
+ 		if (retval) {
++			cpu_notifier_register_done();
+ 			cpuidle_unregister_driver(&intel_idle_driver);
+ 			return retval;
+ 		}
  	}
- }
+-	register_cpu_notifier(&cpu_hotplug_notifier);
++	__register_cpu_notifier(&cpu_hotplug_notifier);
++
++	cpu_notifier_register_done();
  
-
+ 	return 0;
+ }
+@@ -698,10 +703,13 @@ static void __exit intel_idle_exit(void)
+ 	intel_idle_cpuidle_devices_uninit();
+ 	cpuidle_unregister_driver(&intel_idle_driver);
+ 
++	cpu_notifier_register_begin();
+ 
+ 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
+ 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
+-	unregister_cpu_notifier(&cpu_hotplug_notifier);
++	__unregister_cpu_notifier(&cpu_hotplug_notifier);
++
++	cpu_notifier_register_done();
+ 
+ 	return;
+ }
