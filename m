@@ -1,120 +1,69 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFT][PATCH v3] mmc: change cb710-mmc platform power management
- to use dev_pm_ops
-Date: Fri, 14 Feb 2014 15:32:47 +0100
-Message-ID: <CAPDyKFqYd=CqfTbO8cCqobg=StjYgeq6NhfKecbnPXc8B+W7FQ@mail.gmail.com>
-References: <1392240089-19489-1-git-send-email-shuah.kh@samsung.com>
-	<CAPDyKFoukY2PGNWimUbRqDr36eJ_+eBASJR4uac6nH4-kowmCQ@mail.gmail.com>
-	<52FCCD6D.6020704@samsung.com>
+From: Pierre Ossman <pierre-list@ossman.eu>
+Subject: Re: [PATCH] cpufreq: fix current freq check on policy update
+Date: Fri, 14 Feb 2014 15:34:23 +0100
+Message-ID: <20140214153423.340e404e@mjolnir.ossman.eu>
+References: <20140214072623.3dd67851@mjolnir.ossman.eu>
+	<52FE01A2.9030905@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha256; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-17047-1392388467-0001-2"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f45.google.com ([209.85.216.45]:50810 "EHLO
-	mail-qa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbaBNOcs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 09:32:48 -0500
-Received: by mail-qa0-f45.google.com with SMTP id m5so5061121qaj.32
-        for <linux-pm@vger.kernel.org>; Fri, 14 Feb 2014 06:32:47 -0800 (PST)
-In-Reply-To: <52FCCD6D.6020704@samsung.com>
+Received: from saehrimnir.ossman.eu ([193.12.253.10]:35914 "EHLO
+	smtp-relay.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbaBNOed (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 09:34:33 -0500
+In-Reply-To: <52FE01A2.9030905@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, mirq-linux@rere.qmqm.pl, Chris Ball <chris@printf.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Shuah Khan <shuahkhan@gmail.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-On 13 February 2014 14:49, Shuah Khan <shuah.kh@samsung.com> wrote:
-> On 02/13/2014 02:47 AM, Ulf Hansson wrote:
->>
->> On 12 February 2014 22:21, Shuah Khan <shuah.kh@samsung.com> wrote:
->>>
->>> Change cb710-mmc platform driver to register pm ops using dev_pm_ops
->>> instead
->>> of legacy pm_ops. The existing legacy suspend/resume routines are
->>> identical
->>> and simply clear IRQ mask in the device in case it got undefined during
->>> sleep
->>> state. Changed code to collapse suspend and resume into one .pm interface
->>> for suspend and resume which gets installed for suspend, freeze,
->>> poweroff,
->>> thaw, restore, and resume states using SIMPLE_DEV_PM_OPS().
->>>
->>> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
->>> ---
->>>
->>> patch v3: Addresses review comments on patch v2
->>>
->>>   drivers/mmc/host/cb710-mmc.c |   40
->>> ++++++++++++++++------------------------
->>>   1 file changed, 16 insertions(+), 24 deletions(-)
->>>
->>> diff --git a/drivers/mmc/host/cb710-mmc.c b/drivers/mmc/host/cb710-mmc.c
->>> index 1087b4c..2dc7b2dc 100644
->>> --- a/drivers/mmc/host/cb710-mmc.c
->>> +++ b/drivers/mmc/host/cb710-mmc.c
->>> @@ -662,26 +662,6 @@ static const struct mmc_host_ops cb710_mmc_host = {
->>>          .get_cd = cb710_mmc_get_cd,
->>>   };
->>>
->>> -#ifdef CONFIG_PM
->>> -
->>> -static int cb710_mmc_suspend(struct platform_device *pdev, pm_message_t
->>> state)
->>> -{
->>> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
->>> -
->>> -       cb710_mmc_enable_irq(slot, 0, ~0);
->>> -       return 0;
->>> -}
->>> -
->>> -static int cb710_mmc_resume(struct platform_device *pdev)
->>> -{
->>> -       struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
->>> -
->>> -       cb710_mmc_enable_irq(slot, 0, ~0);
->>> -       return 0;
->>> -}
->>> -
->>> -#endif /* CONFIG_PM */
->>> -
->>>   static int cb710_mmc_init(struct platform_device *pdev)
->>>   {
->>>          struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
->>> @@ -762,14 +742,26 @@ static int cb710_mmc_exit(struct platform_device
->>> *pdev)
->>>          return 0;
->>>   }
->>>
->>> +#ifdef CONFIG_PM_SLEEP
->>> +static int cb710_mmc_suspend_resume(struct device *dev)
->>> +{
->>> +       struct cb710_slot *slot =
->>> cb710_pdev_to_slot(to_platform_device(dev));
->>> +
->>> +       cb710_mmc_enable_irq(slot, 0, ~0);
->>> +       return 0;
->>> +}
->>> +#
->>> +#define cb710_mmc_suspend_resume NULL
->>
->>
->> You don't need this. The macro will handle this for you.
->>
->
-> Without this compiles fail when CONFIG_PM_SLEEP is not defined.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-No it won't. You can remove the #else statement.
+--=_freyr.ossman.eu-17047-1392388467-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The functions don't have to be defined for !CONFIG_PM_SLEEP, since the
-macro will handle that.
+On Fri, 14 Feb 2014 17:14:34 +0530
+"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
 
-Kind regards
-Ulf Hansson
+>=20
+> So with that, I don't see how the KHz value can turn out to be zero!
+>=20
 
->
-> -- Shuah
->
->
-> --
-> Shuah Khan
-> Senior Linux Kernel Developer - Open Source Group
-> Samsung Research America(Silicon Valley)
-> shuah.kh@samsung.com | (970) 672-0658
+Very interesting. But I can tell you that it is indeed happening. With
+my earlier patch (that checked the return value), I did have this in my
+dmesg:
+
+[  188.044175] cpufreq: updating policy for CPU 1
+[  188.044177] cpufreq: Driver did not initialize current freq
+[  188.044177] cpufreq: setting new policy for CPU 0: 1000000 - 2800000 kHz
+
+I can sprinkle some more pr_debug:s in there if you want to trace it
+further?
+
+Note that this is with 3.12.9, not master.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by FRA, a
+  Swedish intelligence agency. Make sure your server uses
+  encryption for SMTP traffic and consider using PGP for
+  end-to-end encryption.
+
+--=_freyr.ossman.eu-17047-1392388467-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iF4EAREIAAYFAlL+KXIACgkQopDLsoqlmELpEQD+IuSLf7uiPf537GrdmqwYfRqH
+cDum3sOHwRFa9/cMIz0BAMjWk9UYLrKbTT3Cx7aNHtNWYJhCZbTQapRCURKZrtBR
+=SoLJ
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-17047-1392388467-0001-2--
