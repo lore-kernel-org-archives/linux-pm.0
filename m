@@ -1,50 +1,133 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: don't call cpufreq_update_policy() on CPU addition
-Date: Fri, 14 Feb 2014 16:30:41 +0530
-Message-ID: <8f2fc4d6240b567fdb69a0b47f073d174b7ef9b2.1392375504.git.viresh.kumar@linaro.org>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
+Date: Fri, 14 Feb 2014 16:47:32 +0530
+Message-ID: <52FDFB4C.7010607@linux.vnet.ibm.com>
+References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f181.google.com ([74.125.82.181]:65368 "EHLO
-	mail-we0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751517AbaBNLA6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 06:00:58 -0500
-Received: by mail-we0-f181.google.com with SMTP id w61so8327184wes.26
-        for <linux-pm@vger.kernel.org>; Fri, 14 Feb 2014 03:00:57 -0800 (PST)
-In-Reply-To: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
-In-Reply-To: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:53740 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbaBNLVW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 06:21:22 -0500
+Received: from /spool/local
+	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Fri, 14 Feb 2014 21:21:20 +1000
+In-Reply-To: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pierre-list@ossman.eu, Viresh Kumar <viresh.kumar@linaro.org>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 
-cpufreq_update_policy() is called from two places currently. From a workqueue
-handled queued from cpufreq_bp_resume() for boot CPU and from
-cpufreq_cpu_callback() whenever a CPU is added.
+Hi Nicolas,
 
-The first one makes sure that boot CPU is running on the frequency present in
-policy->cpu. But we don't really need a call from cpufreq_cpu_callback(),
-because we always call cpufreq_driver->init() (which will set policy->cur
-correctly) whenever first CPU of any policy is added back. And so every policy
-structure is guaranteed to have the right frequency in policy->cur.
+You will have to include the below patch with yours. You
+could squash the two I guess, I have added the changelog
+just for clarity. And you also might want to change the subject to
+cpuidle/powernv. It gives a better picture.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thanks
+
+Regards
+Preeti U Murthy
+
+
+cpuidle/powernv: Add ppc64_runlatch_off/on() to idle routines
+
+Following moving of cpuidle_idle_call() to the generic idle loop, we need to
+add the runlatch functions to the idle routines on powernv which was earlier
+taken care of by the arch specific idle routine.
+
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/cpufreq.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/cpuidle/cpuidle-powernv.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 383362b..b6eb4ed 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2194,7 +2194,6 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
- 		switch (action & ~CPU_TASKS_FROZEN) {
- 		case CPU_ONLINE:
- 			__cpufreq_add_dev(dev, NULL, frozen);
--			cpufreq_update_policy(cpu);
- 			break;
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 78fd174..f48607c 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -14,6 +14,7 @@
  
- 		case CPU_DOWN_PREPARE:
--- 
-1.7.12.rc2.18.g61b472e
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
++#include <asm/runlatch.h>
+ 
+ struct cpuidle_driver powernv_idle_driver = {
+ 	.name             = "powernv_idle",
+@@ -30,12 +31,14 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 	local_irq_enable();
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 
++	ppc64_runlatch_off();
+ 	while (!need_resched()) {
+ 		HMT_low();
+ 		HMT_very_low();
+ 	}
+ 
+ 	HMT_medium();
++	ppc64_runlatch_on();
+ 	clear_thread_flag(TIF_POLLING_NRFLAG);
+ 	smp_mb();
+ 	return index;
+@@ -45,7 +48,9 @@ static int nap_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+ {
++	ppc64_runlatch_off();
+ 	power7_idle();
++	ppc64_runlatch_on();
+ 	return index;
+ }
+
+ 
+On 02/06/2014 07:46 PM, Nicolas Pitre wrote:
+> The core idle loop now takes care of it.
+> 
+> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+> ---
+>  arch/powerpc/platforms/powernv/setup.c | 13 +------------
+>  1 file changed, 1 insertion(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+> index 21166f65c9..a932feb290 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -26,7 +26,6 @@
+>  #include <linux/of_fdt.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/bug.h>
+> -#include <linux/cpuidle.h>
+> 
+>  #include <asm/machdep.h>
+>  #include <asm/firmware.h>
+> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
+>  	return 1;
+>  }
+> 
+> -void powernv_idle(void)
+> -{
+> -	/* Hook to cpuidle framework if available, else
+> -	 * call on default platform idle code
+> -	 */
+> -	if (cpuidle_idle_call()) {
+> -		power7_idle();
+> -	}
+> -}
+> -
+>  define_machine(powernv) {
+>  	.name			= "PowerNV",
+>  	.probe			= pnv_probe,
+> @@ -236,7 +225,7 @@ define_machine(powernv) {
+>  	.show_cpuinfo		= pnv_show_cpuinfo,
+>  	.progress		= pnv_progress,
+>  	.machine_shutdown	= pnv_shutdown,
+> -	.power_save             = powernv_idle,
+> +	.power_save             = power7_idle,
+>  	.calibrate_decr		= generic_calibrate_decr,
+>  #ifdef CONFIG_KEXEC
+>  	.kexec_cpu_down		= pnv_kexec_cpu_down,
+> 
 
