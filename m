@@ -1,182 +1,105 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v3 3/3] Documentation: arm: define DT idle states
- bindings
-Date: Thu, 13 Feb 2014 16:29:26 -0800
-Message-ID: <20140214002926.1014.3599@capellas-linux>
-References: <1392128273-8614-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1392128273-8614-4-git-send-email-lorenzo.pieralisi@arm.com>
- <20140213013153.18853.21632@capellas-linux>
- <20140213124731.GD26329@e102568-lin.cambridge.arm.com>
+From: Pierre Ossman <pierre-list@ossman.eu>
+Subject: [PATCH] cpufreq: fix current freq check on policy update
+Date: Fri, 14 Feb 2014 07:26:23 +0100
+Message-ID: <20140214072623.3dd67851@mjolnir.ossman.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140213124731.GD26329@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, "pveerapa@broadcom.com" <pveerapa@broadcom.com>, Peter De Schrijver <pdeschrijver@nvidia.>
+Content-Type: multipart/signed; micalg=pgp-sha256; protocol="application/pgp-signature"; boundary="=_saehrimnir-13075-1392359188-0001-2"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from saehrimnir.ossman.eu ([193.12.253.10]:51186 "EHLO
+	smtp-relay.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751538AbaBNGbd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 01:31:33 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Quoting Lorenzo Pieralisi (2014-02-13 04:47:32)
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> Such as ? "idle-states" ?
+--=_saehrimnir-13075-1392359188-0001-2
+Content-Type: multipart/mixed; boundary="MP_/KilhiHyBQnnXFZ_ImD_rCv6"
 
-That sounds good to me.  Our preference is for idle-states to be used
-for name of the idle-states.txt node.
+--MP_/KilhiHyBQnnXFZ_ImD_rCv6
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > During last connect, we'd discussed that the small set of
-> > states here could apply to a single node, which can represent a cpu, a
-> > cluster with cache etc.  Then the complexities of the system power state
-> > would be represented using a heirarchy, with each node in the
-> > tree having its own state from the list above.  This would allow
-> > a fairly rich system state while having just a few power states defined
-> > at each level.  Is this how you're intending these bindings to go?
->
-> Yes, CPUs point at states that can be reached by that CPU (eg a CPU core
-> gating state is represented by a single node pointed at by all CPUs in the
-> system - it the same state data, different power domains though).
-> 
-> States are hierarchical, which means that a parent state implies entry on all
-> substates that's how cluster states are defined.
+See attached patch. Discussed in bugzilla:
 
-The cpu 0 node, in its cpu-idle-state array is also pointing at a cluster
-node right?  STATE0 -> power-domains refers to <pd_clusters 0>.  Is it
-correct that if the cpu's workload is such that it tolerates the
-500/1000/2500 entry/exit latency/min-residency, it will call the
-entry-method with the psci-power-state of 0x10100000 matching that node?
+https://bugzilla.kernel.org/show_bug.cgi?id=3D70311
+
+Not clear why this cpufreq bug causes that breakage to r8169 and to the
+pci bus. Input welcome. :)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by FRA, a
+  Swedish intelligence agency. Make sure your server uses
+  encryption for SMTP traffic and consider using PGP for
+  end-to-end encryption.
+
+--MP_/KilhiHyBQnnXFZ_ImD_rCv6
+Content-Type: text/x-patch
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+ filename=0001-cpufreq-fix-current-freq-check-on-policy-update.patch
+
+=46rom de497de3fcd81e8340498cd0b34b3388fe75cc19 Mon Sep 17 00:00:00 2001
+From: Pierre Ossman <pierre@ossman.eu>
+Date: Fri, 14 Feb 2014 07:17:02 +0100
+Subject: [PATCH] cpufreq: fix current freq check on policy update
+
+There was some variable confusion in cpufreq_update_policy()
+when we tried to get a current reading of the CPU frequency.
+If it failed to get the frequency, a current frequency of
+0 kHz would be stored which in turn screwed up other parts
+of the kernel.
+
+In particular it somehow disoriented the r8169 driver and
+this entire issue was handled on this bug:
+
+  https://bugzilla.kernel.org/show_bug.cgi?id=3D70311
+
+Signed-off-by: Pierre Ossman <pierre@ossman.eu>
+---
+ drivers/cpufreq/cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 08ca8c9..1b61310 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2151,9 +2151,9 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	 */
+ 	if (cpufreq_driver->get) {
+ 		new_policy.cur =3D cpufreq_driver->get(cpu);
+-		if (!policy->cur) {
++		if (!new_policy.cur) {
+ 			pr_debug("Driver did not initialize current freq");
+-			policy->cur =3D new_policy.cur;
++			new_policy.cur =3D policy->cur;
+ 		} else {
+ 			if (policy->cur !=3D new_policy.cur && has_target())
+ 				cpufreq_out_of_sync(cpu, policy->cur,
+--=20
+1.8.5.3
 
 
-> > Also, would it be nice to have a name field for each state?
-> 
-> There is:
-> 
-> "The state node name shall be "stateN", where N = {0, 1, ...} is
-> the node number; state nodes which are siblings within a single
-> common parent node must be given a unique and sequential N value,
-> starting from 0."
-> I can remove the rule and allow people to call states as they wish
-> since they already have a compatible property to match them.
-> 
-> Actually, states can be called with any name, provided it is unique.
+--MP_/KilhiHyBQnnXFZ_ImD_rCv6--
 
-Sorry, I was referring to a descriptive name string property.  Something
-that can be useful to help a human understand what's going on.  Naming
-the nodes might work too.
+--=_saehrimnir-13075-1392359188-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-> > > +       A state node can contain state child nodes. A state node with
-> > > +       children represents a hierarchical state, which is a superset of
-> > > +       the child states. Hierarchical states require all CPUs on which
-> > > +       they are valid to request the state in order for it to be entered.
-> > 
-> > Is it possible for a cpu to request a deeper state and unblock other cpus
-> > from entering this state?
-> 
-> That's not DT bindings business, hierarchical states define states that
-> require all CPUs on which they are valid to enter that state for it to
-> be considered "enabled".
-> 
-> It is a hard nut to crack. In x86 this stuff does not exist and it is
-> managed in HW, basically an idle state is always per-cpu (but it might
-> end up becoming a package state when all CPUs in a package enter that
-> state). On ARM, we want to define hierarchical states explicitly to
-> link resources (ie caches) to them.
-> 
-> CPUs are not prevented from requesting a hierarchical state, but the
-> state only becomes "enabled" when all CPUs on which it is valid request
-> it.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-The way we've seen it work, is a cpu tries to enter the lowest state it can
-tolerate (including for eg. cluster off).  The system level code then looks
-at the allowable states from all the cpus and selects the lowest power
-state permissible for the heirarchies.
+iF4EAREIAAYFAlL9txIACgkQopDLsoqlmEJhjAD7BVCgjaX1gYc4cElle4Lwv3dt
+R8ODDjvLNl0WAqaZk4sBALetuAKYL/MFf0NziBojYHo4MSAH5eq4tTbPzLD19+Tn
+=LzJM
+-----END PGP SIGNATURE-----
 
-Eg. this way, the last cpu preventing a cluster from going to sleep enters
-cluster sleep state (where peer cpu's have already voted for cluster
-sleep) and the cluster will sleep.  Alternately if the same cpu cannot
-tolerate the additional latency of the cluster sleeping, it will vote
-only for cpu-sleep, then the cluster remains in a state where all cpu's are
-sleeping but the cluster remains up.
-
-> I cannot think of any other way of to express this properly but still in
-> a compact way.
-
-You're doing a great job by the way!  Thanks! :)
-
-> > "all CPUs on which they are valid" is this determined by seeing which
-> > state's phandle is in each cpu->cpu-idle-states?
-> 
-> Yes, does it make sense ?
-
-Yup, maybe adding a little parenthetical text like below may help others
-as well?
-
-Hierarchical states require all CPUs on which they are valid (ie. CPU nodes
-containing cpu-idle-state arrays having a phandle reference to the state)
-to request the state in order for it to be entered.
-
-> 
-> > Definition: It represents an idle state index.
-> > 
-> >         Index 0 and 1 shall not be specified and are reserved for ARM
-> >         states where index 0 is running, and index 1 is idle_standby
-> >         entered by executing a wfi instruction (SBSA,[3])
-> > 
-> > What mechanism is used to order the power states WRT power consumption?
-> 
-> I think we should use index for that. The higher the index the lower the
-> power consumption.
-
-Ok, I think I get it now.
-If we decouple index and SBSA states, do we really need to reserve index
-0 and 1 then?
-
-> > Can this field be used to combine both psci and non-psci states in any order?
-> 
-> No. I will enforce a unique entry method.
-
-So a single entry-method for all  states in idle-states node?
-Should this be specified once only then?
-
-Should we not allow more flexibility here to mix methods where some
-states use one method and some use others?  Is this mostly a security
-concern?  What if a vendor wants to introduce a state between wfi and
-cpu-sleep?
-
-> > I assume psci will be turning off the powerdomains not Linux right?
-> 
-> This is not a PSCI only document, and even if it was, we still need to deal
-> with devices. Which means we need to know what we have to save/restore (PMU,
-> arch timer, GIC), and power domains help us detect that.
-
-> > > +
-> > > +cpus {
-> > > +       #size-cells = <0>;
-> > > +       #address-cells = <2>;
-> > > +
-> > > +       cpu-idle-states {
-> > > +
-> > > +               STATE0: state0 {
-> > > +                       compatible = "arm,cpu-idle-state";
-> > > +                       index = <3>;
-> > 
-> > Are the index fields of nested states independent of each other or
-> > sequential?
-> ...
-> I understand index is misleading and either I remove it, or I
-> leave it there to define power savings scale as you mentioned.
-
-I like index, but I was confused.  You cleared it up pretty quick with
-your earlier comment.  Removing the numbering may help, but I think
-keeping the index is useful.
-
-Thanks!
-
-Sebastian
+--=_saehrimnir-13075-1392359188-0001-2--
