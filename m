@@ -1,71 +1,75 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Fri, 14 Feb 2014 13:22:21 -0700
-Message-ID: <52FE7AFD.2040203@wwwdotorg.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org> <52FE71BD.3020103@wwwdotorg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Christoph Lameter <cl@linux.com>
+Subject: [PATCH 11/48] drivers/cpuidle: Replace __get_cpu_var uses for address calculation
+Date: Fri, 14 Feb 2014 14:18:52 -0600
+Message-ID: <20140214201905.082757614@linux.com>
+References: <20140214201841.826179349@linux.com>
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52FE71BD.3020103@wwwdotorg.org>
+Content-Disposition: inline; filename=this_drivers_cpuidle
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
+To: Tejun Heo <tj@kernel.org>
+Cc: akpm@linuxfoundation.org, rostedt@goodmis.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/14/2014 12:42 PM, Stephen Warren wrote:
-> On 02/12/2014 11:50 PM, Viresh Kumar wrote:
->> This patchset creates/calls cpufreq suspend/resume callbacks from dpm_{suspend|resume}()
->> for handling suspend/resume of cpufreq governors and core.
+All of these are for address calculation. Replace with
+this_cpu_ptr().
 
-BTW, I also happened to test these on a Tegra114 system, on which there
-is no cpufreq driver, and this series (applied on top of commit
-9398a10cd964 Merge tag 'regulator-v3.14-rc2') causes the following
-during suspend:
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+[cpufreq changes]
+Signed-off-by: Christoph Lameter <cl@linux.com>
 
-> [  196.666799] PM: Syncing filesystems ... done.
-> [  196.692824] Freezing user space processes ... (elapsed 0.002 seconds) done.
-> [  196.694265] Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
-> [  196.695377] Unable to handle kernel NULL pointer dereference at virtual address 00000024
-> [  196.695380] pgd = ec454000
-> [  196.695390] [00000024] *pgd=acb0c831, *pte=00000000, *ppte=00000000
-> [  196.695398] Internal error: Oops: 17 [#1] PREEMPT SMP ARM
-> [  196.695405] Modules linked in:
-> [  196.695413] CPU: 0 PID: 892 Comm: test-rtc-resume Not tainted 3.14.0-rc2-00266-gca91b201c563-dirty #41
-> [  196.695418] task: ecb86e00 ti: ec692000 task.ti: ec692000
-> [  196.695432] PC is at cpufreq_suspend+0xc/0xc8
-> [  196.695440] LR is at dpm_suspend+0x30/0x214
-> [  196.695447] pc : [<c038f6c0>]    lr : [<c02c3208>]    psr: 60000113
-> [  196.695447] sp : ec693e60  ip : 00000018  fp : 000aa2b8
-> [  196.695451] r10: c07dcfec  r9 : ec975808  r8 : c07f4a28
-> [  196.695455] r7 : c08642c8  r6 : c08658a0  r5 : 00000003  r4 : c081f690
-> [  196.695459] r3 : 00000000  r2 : cbf0c52d  r1 : 3b9aca00  r0 : ec693e80
-> [  196.695465] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
-> [  196.695470] Control: 10c5387d  Table: ac45406a  DAC: 00000015
-> [  196.695475] Process test-rtc-resume (pid: 892, stack limit = 0xec692240)
-> [  196.695479] Stack: (0xec693e60 to 0xec694000)
-> [  196.695488] 3e60: c081f690 00000003 c07f49ec c02c3208 c07f4a20 00000002 cbf0c52d 0000002d
-> [  196.695495] 3e80: cbf0c52d 0000002d 00000003 c081f690 00000003 00000003 00000003 ec88bcc0
-> [  196.695503] 3ea0: ec975808 00000004 000aa2b8 c006324c 000aa2b8 c056cb70 c070a0a4 ec693ed4
-> [  196.695509] 3ec0: 00000003 ec693ed4 00000003 00000000 00000003 c0577bc4 00000003 ec88bcc0
-> [  196.695516] 3ee0: 00000004 c0063654 0000006d 00000003 c06b8040 c00624e0 00000004 ed13b4c8
-> [  196.695523] 3f00: ec88bcc0 00000004 ec693f80 ec88bcc0 ec975800 c01fc200 00000004 c0126e50
-> [  196.695530] 3f20: c0126e0c 00000000 00000000 c012a274 00000000 00000000 ec4f3ec0 00000004
-> [  196.695536] 3f40: 000ac408 ec693f80 00000000 ec692000 00000004 c00d4818 ec9c6d40 00000001
-> [  196.695543] 3f60: 0000000a 00000000 00000000 ec4f3ec0 000ac408 00000000 00000004 c00d4bb8
-> [  196.695550] 3f80: 00000000 00000000 ec4f3ec0 b6f17a78 00000004 000ac408 00000004 c000e7a4
-> [  196.695556] 3fa0: 00000000 c000e620 b6f17a78 00000004 00000001 000ac408 00000004 00000000
-> [  196.695563] 3fc0: b6f17a78 00000004 000ac408 00000004 beca645c 000a6094 00000000 000aa2b8
-> [  196.695570] 3fe0: 00000000 beca63dc b6e86747 b6ebe60c 400f0010 00000001 941e9002 3000f8d9
-> [  196.695585] [<c038f6c0>] (cpufreq_suspend) from [<c02c3208>] (dpm_suspend+0x30/0x214)
-> [  196.695601] [<c02c3208>] (dpm_suspend) from [<c006324c>] (suspend_devices_and_enter+0x48/0x2dc)
-> [  196.695613] [<c006324c>] (suspend_devices_and_enter) from [<c0063654>] (pm_suspend+0x174/0x1e8)
-> [  196.695623] [<c0063654>] (pm_suspend) from [<c00624e0>] (state_store+0x6c/0xbc)
-> [  196.695634] [<c00624e0>] (state_store) from [<c01fc200>] (kobj_attr_store+0x14/0x20)
-> [  196.695650] [<c01fc200>] (kobj_attr_store) from [<c0126e50>] (sysfs_kf_write+0x44/0x48)
-> [  196.695663] [<c0126e50>] (sysfs_kf_write) from [<c012a274>] (kernfs_fop_write+0xb4/0x14c)
-> [  196.695677] [<c012a274>] (kernfs_fop_write) from [<c00d4818>] (vfs_write+0xa8/0x180)
-> [  196.695691] [<c00d4818>] (vfs_write) from [<c00d4bb8>] (SyS_write+0x3c/0x70)
-> [  196.695705] [<c00d4bb8>] (SyS_write) from [<c000e620>] (ret_fast_syscall+0x0/0x30)
-> [  196.695716] Code: e12fff1e e92d4070 e59f60a8 e5963000 (e5932024) 
-> [  196.695722] ---[ end trace 606f168631f0e32f ]---
+Index: linux/drivers/cpuidle/governors/ladder.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/ladder.c	2013-12-02 16:07:48.284675507 -0600
++++ linux/drivers/cpuidle/governors/ladder.c	2013-12-02 16:07:48.274675782 -0600
+@@ -66,7 +66,7 @@ static inline void ladder_do_selection(s
+ static int ladder_select_state(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	struct ladder_device_state *last_state;
+ 	int last_residency, last_idx = ldev->last_state_idx;
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+@@ -170,7 +170,7 @@ static int ladder_enable_device(struct c
+  */
+ static void ladder_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	if (index > 0)
+ 		ldev->last_state_idx = index;
+ }
+Index: linux/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/menu.c	2013-12-02 16:07:48.284675507 -0600
++++ linux/drivers/cpuidle/governors/menu.c	2013-12-02 16:07:48.274675782 -0600
+@@ -286,7 +286,7 @@ again:
+  */
+ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
+ 	int multiplier;
+@@ -375,7 +375,7 @@ static int menu_select(struct cpuidle_dr
+  */
+ static void menu_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	data->last_state_idx = index;
+ 	if (index >= 0)
+ 		data->needs_update = 1;
+@@ -388,7 +388,7 @@ static void menu_reflect(struct cpuidle_
+  */
+ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int last_idx = data->last_state_idx;
+ 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
+ 	struct cpuidle_state *target = &drv->states[last_idx];
