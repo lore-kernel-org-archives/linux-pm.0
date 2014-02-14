@@ -1,66 +1,71 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
 Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Fri, 14 Feb 2014 12:42:53 -0700
-Message-ID: <52FE71BD.3020103@wwwdotorg.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>
+Date: Fri, 14 Feb 2014 13:22:21 -0700
+Message-ID: <52FE7AFD.2040203@wwwdotorg.org>
+References: <cover.1392273722.git.viresh.kumar@linaro.org> <52FE71BD.3020103@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1392273722.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52FE71BD.3020103@wwwdotorg.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On 02/12/2014 11:50 PM, Viresh Kumar wrote:
-> This patchset creates/calls cpufreq suspend/resume callbacks from dpm_{suspend|resume}()
-> for handling suspend/resume of cpufreq governors and core.
+On 02/14/2014 12:42 PM, Stephen Warren wrote:
+> On 02/12/2014 11:50 PM, Viresh Kumar wrote:
+>> This patchset creates/calls cpufreq suspend/resume callbacks from dpm_{suspend|resume}()
+>> for handling suspend/resume of cpufreq governors and core.
 
-Are these patches for 3.14 or 3.15?
+BTW, I also happened to test these on a Tegra114 system, on which there
+is no cpufreq driver, and this series (applied on top of commit
+9398a10cd964 Merge tag 'regulator-v3.14-rc2') causes the following
+during suspend:
 
-I ask because I just tested Linus's master from a few days back (some
-point after v3.14-rc2; commit 9398a10cd964 Merge tag
-'regulator-v3.14-rc2'), and I see a lot of the following messages during
-suspend and/or resume (about 2-7 times, perhaps more of them from the
-resume path, but it's hard to tell):
-
-cpufreq: __cpufreq_driver_target: Failed to change cpu frequency: -16
-
-This series does appear to solve those, so I think at least part of it
-needs to be applied for 3.14.
-
-Also, I sometimes see the following during resume. I saw it twice with
-Linus's tree, but then I did 10 more reboot+suspend+resume cycles and
-couldn't repro it, and I saw it once with Linus's tree plus this series
-applied, then couldn't reproduce it in 5 more tries.
-
-> [ 48.500410] ------------[ cut here ]------------
-> [ 48.505252] WARNING: CPU: 0 PID: 877 at fs/sysfs/dir.c:52 sysfs_warn_dup+0x68/0x84()
-> [ 48.513005] sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
-> [ 48.520995] Modules linked in: brcmfmac brcmutil
-> [ 48.525740] CPU: 0 PID: 877 Comm: test-rtc-resume Not tainted 3.14.0-rc2-00259-g9398a10cd964 #12
-> [ 48.534645] [<c0015bac>] (unwind_backtrace) from [<c0011850>] (show_stack+0x10/0x14)
-> [ 48.542440] [<c0011850>] (show_stack) from [<c056e018>] (dump_stack+0x80/0xcc)
-> [ 48.549757] [<c056e018>] (dump_stack) from [<c0025e44>] (warn_slowpath_common+0x64/0x88)
-> [ 48.557964] [<c0025e44>] (warn_slowpath_common) from [<c0025efc>] (warn_slowpath_fmt+0x30/0x40)
-> [ 48.566756] [<c0025efc>] (warn_slowpath_fmt) from [<c012776c>] (sysfs_warn_dup+0x68/0x84)
-> [ 48.575024] [<c012776c>] (sysfs_warn_dup) from [<c0127a54>] (sysfs_do_create_link_sd+0xb0/0xb8)
-> [ 48.583772] [<c0127a54>] (sysfs_do_create_link_sd) from [<c038ef64>] (__cpufreq_add_dev.isra.27+0x2a8/0x814)
-> [ 48.593701] [<c038ef64>] (__cpufreq_add_dev.isra.27) from [<c038f548>] (cpufreq_cpu_callback+0x70/0x8c)
-> [ 48.603198] [<c038f548>] (cpufreq_cpu_callback) from [<c0043864>] (notifier_call_chain+0x44/0x84)
-> [ 48.612166] [<c0043864>] (notifier_call_chain) from [<c0025f60>] (__cpu_notify+0x28/0x44)
-> [ 48.620424] [<c0025f60>] (__cpu_notify) from [<c00261e8>] (_cpu_up+0xf0/0x140)
-> [ 48.627748] [<c00261e8>] (_cpu_up) from [<c0569eb8>] (enable_nonboot_cpus+0x68/0xb0)
-> [ 48.635579] [<c0569eb8>] (enable_nonboot_cpus) from [<c006339c>] (suspend_devices_and_enter+0x198/0x2dc)
-> [ 48.645136] [<c006339c>] (suspend_devices_and_enter) from [<c0063654>] (pm_suspend+0x174/0x1e8)
-> [ 48.653862] [<c0063654>] (pm_suspend) from [<c00624e0>] (state_store+0x6c/0xbc)
-> [ 48.661258] [<c00624e0>] (state_store) from [<c01fc200>] (kobj_attr_store+0x14/0x20)
-> [ 48.669083] [<c01fc200>] (kobj_attr_store) from [<c0126e50>] (sysfs_kf_write+0x44/0x48)
-> [ 48.677163] [<c0126e50>] (sysfs_kf_write) from [<c012a274>] (kernfs_fop_write+0xb4/0x14c)
-> [ 48.685432] [<c012a274>] (kernfs_fop_write) from [<c00d4818>] (vfs_write+0xa8/0x180)
-> [ 48.693214] [<c00d4818>] (vfs_write) from [<c00d4bb8>] (SyS_write+0x3c/0x70)
-> [ 48.700349] [<c00d4bb8>] (SyS_write) from [<c000e620>] (ret_fast_syscall+0x0/0x30)
-> [ 48.708053] ---[ end trace 76969904b614c18f ]--- 
-
-Do you have any idea what the problem might be, and how to solve it?
+> [  196.666799] PM: Syncing filesystems ... done.
+> [  196.692824] Freezing user space processes ... (elapsed 0.002 seconds) done.
+> [  196.694265] Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+> [  196.695377] Unable to handle kernel NULL pointer dereference at virtual address 00000024
+> [  196.695380] pgd = ec454000
+> [  196.695390] [00000024] *pgd=acb0c831, *pte=00000000, *ppte=00000000
+> [  196.695398] Internal error: Oops: 17 [#1] PREEMPT SMP ARM
+> [  196.695405] Modules linked in:
+> [  196.695413] CPU: 0 PID: 892 Comm: test-rtc-resume Not tainted 3.14.0-rc2-00266-gca91b201c563-dirty #41
+> [  196.695418] task: ecb86e00 ti: ec692000 task.ti: ec692000
+> [  196.695432] PC is at cpufreq_suspend+0xc/0xc8
+> [  196.695440] LR is at dpm_suspend+0x30/0x214
+> [  196.695447] pc : [<c038f6c0>]    lr : [<c02c3208>]    psr: 60000113
+> [  196.695447] sp : ec693e60  ip : 00000018  fp : 000aa2b8
+> [  196.695451] r10: c07dcfec  r9 : ec975808  r8 : c07f4a28
+> [  196.695455] r7 : c08642c8  r6 : c08658a0  r5 : 00000003  r4 : c081f690
+> [  196.695459] r3 : 00000000  r2 : cbf0c52d  r1 : 3b9aca00  r0 : ec693e80
+> [  196.695465] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+> [  196.695470] Control: 10c5387d  Table: ac45406a  DAC: 00000015
+> [  196.695475] Process test-rtc-resume (pid: 892, stack limit = 0xec692240)
+> [  196.695479] Stack: (0xec693e60 to 0xec694000)
+> [  196.695488] 3e60: c081f690 00000003 c07f49ec c02c3208 c07f4a20 00000002 cbf0c52d 0000002d
+> [  196.695495] 3e80: cbf0c52d 0000002d 00000003 c081f690 00000003 00000003 00000003 ec88bcc0
+> [  196.695503] 3ea0: ec975808 00000004 000aa2b8 c006324c 000aa2b8 c056cb70 c070a0a4 ec693ed4
+> [  196.695509] 3ec0: 00000003 ec693ed4 00000003 00000000 00000003 c0577bc4 00000003 ec88bcc0
+> [  196.695516] 3ee0: 00000004 c0063654 0000006d 00000003 c06b8040 c00624e0 00000004 ed13b4c8
+> [  196.695523] 3f00: ec88bcc0 00000004 ec693f80 ec88bcc0 ec975800 c01fc200 00000004 c0126e50
+> [  196.695530] 3f20: c0126e0c 00000000 00000000 c012a274 00000000 00000000 ec4f3ec0 00000004
+> [  196.695536] 3f40: 000ac408 ec693f80 00000000 ec692000 00000004 c00d4818 ec9c6d40 00000001
+> [  196.695543] 3f60: 0000000a 00000000 00000000 ec4f3ec0 000ac408 00000000 00000004 c00d4bb8
+> [  196.695550] 3f80: 00000000 00000000 ec4f3ec0 b6f17a78 00000004 000ac408 00000004 c000e7a4
+> [  196.695556] 3fa0: 00000000 c000e620 b6f17a78 00000004 00000001 000ac408 00000004 00000000
+> [  196.695563] 3fc0: b6f17a78 00000004 000ac408 00000004 beca645c 000a6094 00000000 000aa2b8
+> [  196.695570] 3fe0: 00000000 beca63dc b6e86747 b6ebe60c 400f0010 00000001 941e9002 3000f8d9
+> [  196.695585] [<c038f6c0>] (cpufreq_suspend) from [<c02c3208>] (dpm_suspend+0x30/0x214)
+> [  196.695601] [<c02c3208>] (dpm_suspend) from [<c006324c>] (suspend_devices_and_enter+0x48/0x2dc)
+> [  196.695613] [<c006324c>] (suspend_devices_and_enter) from [<c0063654>] (pm_suspend+0x174/0x1e8)
+> [  196.695623] [<c0063654>] (pm_suspend) from [<c00624e0>] (state_store+0x6c/0xbc)
+> [  196.695634] [<c00624e0>] (state_store) from [<c01fc200>] (kobj_attr_store+0x14/0x20)
+> [  196.695650] [<c01fc200>] (kobj_attr_store) from [<c0126e50>] (sysfs_kf_write+0x44/0x48)
+> [  196.695663] [<c0126e50>] (sysfs_kf_write) from [<c012a274>] (kernfs_fop_write+0xb4/0x14c)
+> [  196.695677] [<c012a274>] (kernfs_fop_write) from [<c00d4818>] (vfs_write+0xa8/0x180)
+> [  196.695691] [<c00d4818>] (vfs_write) from [<c00d4bb8>] (SyS_write+0x3c/0x70)
+> [  196.695705] [<c00d4bb8>] (SyS_write) from [<c000e620>] (ret_fast_syscall+0x0/0x30)
+> [  196.695716] Code: e12fff1e e92d4070 e59f60a8 e5963000 (e5932024) 
+> [  196.695722] ---[ end trace 606f168631f0e32f ]---
