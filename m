@@ -1,105 +1,92 @@
-From: Pierre Ossman <pierre-list@ossman.eu>
-Subject: [PATCH] cpufreq: fix current freq check on policy update
-Date: Fri, 14 Feb 2014 07:26:23 +0100
-Message-ID: <20140214072623.3dd67851@mjolnir.ossman.eu>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v2 37/52] acpi-cpufreq: Fix CPU hotplug callback registration
+Date: Fri, 14 Feb 2014 13:27:37 +0530
+Message-ID: <20140214075736.22701.78024.stgit@srivatsabhat.in.ibm.com>
+References: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256; protocol="application/pgp-signature"; boundary="=_saehrimnir-13075-1392359188-0001-2"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from saehrimnir.ossman.eu ([193.12.253.10]:51186 "EHLO
-	smtp-relay.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbaBNGbd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 01:31:33 -0500
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:48762 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbaBNIDK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 03:03:10 -0500
+Received: from /spool/local
+	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 14 Feb 2014 18:03:09 +1000
+In-Reply-To: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
+Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com"Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Subsystems that want to register CPU hotplug callbacks, as well as perform
+initialization for the CPUs that are already online, often do it as shown
+below:
 
---=_saehrimnir-13075-1392359188-0001-2
-Content-Type: multipart/mixed; boundary="MP_/KilhiHyBQnnXFZ_ImD_rCv6"
+	get_online_cpus();
 
---MP_/KilhiHyBQnnXFZ_ImD_rCv6
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
 
-See attached patch. Discussed in bugzilla:
+	register_cpu_notifier(&foobar_cpu_notifier);
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D70311
+	put_online_cpus();
 
-Not clear why this cpufreq bug causes that breakage to r8169 and to the
-pci bus. Input welcome. :)
+This is wrong, since it is prone to ABBA deadlocks involving the
+cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+with CPU hotplug operations).
 
-Rgds
---=20
-     -- Pierre Ossman
+Instead, the correct and race-free way of performing the callback
+registration is:
 
-  WARNING: This correspondence is being monitored by FRA, a
-  Swedish intelligence agency. Make sure your server uses
-  encryption for SMTP traffic and consider using PGP for
-  end-to-end encryption.
+	cpu_notifier_register_begin();
 
---MP_/KilhiHyBQnnXFZ_ImD_rCv6
-Content-Type: text/x-patch
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename=0001-cpufreq-fix-current-freq-check-on-policy-update.patch
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
 
-=46rom de497de3fcd81e8340498cd0b34b3388fe75cc19 Mon Sep 17 00:00:00 2001
-From: Pierre Ossman <pierre@ossman.eu>
-Date: Fri, 14 Feb 2014 07:17:02 +0100
-Subject: [PATCH] cpufreq: fix current freq check on policy update
+	/* Note the use of the double underscored version of the API */
+	__register_cpu_notifier(&foobar_cpu_notifier);
 
-There was some variable confusion in cpufreq_update_policy()
-when we tried to get a current reading of the CPU frequency.
-If it failed to get the frequency, a current frequency of
-0 kHz would be stored which in turn screwed up other parts
-of the kernel.
+	cpu_notifier_register_done();
 
-In particular it somehow disoriented the r8169 driver and
-this entire issue was handled on this bug:
 
-  https://bugzilla.kernel.org/show_bug.cgi?id=3D70311
+Fix the acpi-cpufreq code by using this latter form of callback registration.
 
-Signed-off-by: Pierre Ossman <pierre@ossman.eu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 08ca8c9..1b61310 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2151,9 +2151,9 @@ int cpufreq_update_policy(unsigned int cpu)
- 	 */
- 	if (cpufreq_driver->get) {
- 		new_policy.cur =3D cpufreq_driver->get(cpu);
--		if (!policy->cur) {
-+		if (!new_policy.cur) {
- 			pr_debug("Driver did not initialize current freq");
--			policy->cur =3D new_policy.cur;
-+			new_policy.cur =3D policy->cur;
- 		} else {
- 			if (policy->cur !=3D new_policy.cur && has_target())
- 				cpufreq_out_of_sync(cpu, policy->cur,
---=20
-1.8.5.3
+ drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 18448a7..245ae078e 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
+ 
+ 		acpi_cpufreq_driver.boost_supported = true;
+ 		acpi_cpufreq_driver.boost_enabled = boost_state(0);
+-		get_online_cpus();
++
++		cpu_notifier_register_begin();
+ 
+ 		/* Force all MSRs to the same value */
+ 		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
+ 			       cpu_online_mask);
+ 
+-		register_cpu_notifier(&boost_nb);
++		__register_cpu_notifier(&boost_nb);
+ 
+-		put_online_cpus();
++		cpu_notifier_register_done();
+ 	}
+ }
+ 
 
---MP_/KilhiHyBQnnXFZ_ImD_rCv6--
-
---=_saehrimnir-13075-1392359188-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iF4EAREIAAYFAlL9txIACgkQopDLsoqlmEJhjAD7BVCgjaX1gYc4cElle4Lwv3dt
-R8ODDjvLNl0WAqaZk4sBALetuAKYL/MFf0NziBojYHo4MSAH5eq4tTbPzLD19+Tn
-=LzJM
------END PGP SIGNATURE-----
-
---=_saehrimnir-13075-1392359188-0001-2--
