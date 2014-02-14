@@ -1,120 +1,150 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v4 01/13] ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for
- PJ4B
-Date: Fri, 14 Feb 2014 16:06:36 +0000
-Message-ID: <20140214160636.GC25043@e102568-lin.cambridge.arm.com>
+Subject: Re: [PATCH v4 12/13] cpuidle: mvebu: Add initial CPU idle support
+ for Armada 370/XP SoC
+Date: Fri, 14 Feb 2014 17:00:46 +0000
+Message-ID: <20140214170046.GA32564@e102568-lin.cambridge.arm.com>
 References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
- <1392312816-17657-2-git-send-email-gregory.clement@free-electrons.com>
+ <1392312816-17657-13-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54162 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:39525 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbaBNQGm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 11:06:42 -0500
-In-Reply-To: <1392312816-17657-2-git-send-email-gregory.clement@free-electrons.com>
+	with ESMTP id S1752524AbaBNRAz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Feb 2014 12:00:55 -0500
+In-Reply-To: <1392312816-17657-13-git-send-email-gregory.clement@free-electrons.com>
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Russell King <linux@arm.linux.org.uk>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-Hi Gregory,
+On Thu, Feb 13, 2014 at 05:33:35PM +0000, Gregory CLEMENT wrote:
 
-On Thu, Feb 13, 2014 at 05:33:24PM +0000, Gregory CLEMENT wrote:
-> PJ4B needs extra instructions for suspend and resume, so instead of
-> using the armv7 version, this commit introduces specific versions for
-> PJ4B.
-> 
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->  arch/arm/mm/proc-v7.S | 64 ++++++++++++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 61 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
-> index bd1781979a39..11117423a9b4 100644
-> --- a/arch/arm/mm/proc-v7.S
-> +++ b/arch/arm/mm/proc-v7.S
-> @@ -169,9 +169,67 @@ ENDPROC(cpu_pj4b_do_idle)
->  	globl_equ	cpu_pj4b_do_idle,  	cpu_v7_do_idle
->  #endif
->  	globl_equ	cpu_pj4b_dcache_clean_area,	cpu_v7_dcache_clean_area
-> -	globl_equ	cpu_pj4b_do_suspend,	cpu_v7_do_suspend
-> -	globl_equ	cpu_pj4b_do_resume,	cpu_v7_do_resume
-> -	globl_equ	cpu_pj4b_suspend_size,	cpu_v7_suspend_size
-> +#ifdef CONFIG_ARM_CPU_SUSPEND
-> +ENTRY(cpu_pj4b_do_suspend)
-> +	stmfd	sp!, {r4 - r10, lr}
-> +	mrc	p15, 0, r4, c13, c0, 0	@ FCSE/PID
-> +	mrc	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
-> +	stmia	r0!, {r4 - r5}
-> +	mrc	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
-> +	mrc	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
-> +	mrc	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
-> +	mrc	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
-> +	mrc	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
-> +	stmia	r0!, {r6 - r10}
-> +	mrc	p15, 0, r6, c3, c0, 0	@ Domain ID
-> +	mrc	p15, 0, r7, c2, c0, 1	@ TTB 1
-> +	mrc	p15, 0, r11, c2, c0, 2	@ TTB control register
-> +	mrc	p15, 0, r8, c1, c0, 0	@ Control register
-> +	mrc	p15, 0, r9, c1, c0, 1	@ Auxiliary control register
-> +	mrc	p15, 0, r10, c1, c0, 2	@ Co-processor access control
-> +	stmia	r0, {r6 - r11}
-> +	ldmfd	sp!, {r4 - r10, pc}
-> +ENDPROC(cpu_pj4b_do_suspend)
+[...]
+
+> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidle/cpuidle-armada-370-xp.c
+> new file mode 100644
+> index 000000000000..57c69812e79d
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-armada-370-xp.c
+> @@ -0,0 +1,120 @@
+> +/*
+> + * Marvell Armada 370 and Armada XP SoC cpuidle driver
+> + *
+> + * Copyright (C) 2013 Marvell
+> + *
+> + * Nadav Haklai <nadavh@marvell.com>
+> + * Gregory CLEMENT <gregory.clement@free-electrons.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without any
+> + * warranty of any kind, whether express or implied.
+> + *
+> + * Maintainer: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> + */
 > +
-> +ENTRY(cpu_pj4b_do_resume)
-> +	mov	ip, #0
-> +	mcr	p15, 0, ip, c7, c5, 0	@ invalidate I cache
-> +	mcr	p15, 0, ip, c13, c0, 1	@ set reserved context ID
-> +	ldmia	r0!, {r4 - r5}
-> +	mcr	p15, 0, r4, c13, c0, 0	@ FCSE/PID
-> +	mcr	p15, 0, r5, c13, c0, 3	@ User r/o thread ID
-> +	ldmia	r0!, {r6 - r10}
-> +	mcr	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
-> +	mcr	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
-> +	mcr	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
-> +	mcr	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
-> +	mcr	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
-> +	ldmia	r0, {r6 - r11}
-> +	mcr	p15, 0, ip, c8, c7, 0	@ invalidate TLBs
-> +	mcr	p15, 0, r6, c3, c0, 0	@ Domain ID
-> +#ifndef CONFIG_ARM_LPAE
-> +	ALT_SMP(orr	r1, r1, #TTB_FLAGS_SMP)
-> +	ALT_UP(orr	r1, r1, #TTB_FLAGS_UP)
-> +#endif
-> +	mcr	p15, 0, r1, c2, c0, 0	@ TTB 0
-> +	mcr	p15, 0, r7, c2, c0, 1	@ TTB 1
-> +	mcr	p15, 0, r11, c2, c0, 2	@ TTB control register
-> +	ldr	r4, =PRRR		@ PRRR
-> +	ldr	r5, =NMRR		@ NMRR
-> +	mcr	p15, 0, r4, c10, c2, 0	@ write PRRR
-> +	mcr	p15, 0, r5, c10, c2, 1	@ write NMRR
-> +	mrc	p15, 0, r4, c1, c0, 1	@ Read Auxiliary control register
-> +	teq	r4, r9			@ Is it already set?
-> +	mcrne	p15, 0, r9, c1, c0, 1	@ No, so write it
-> +	mcr	p15, 0, r10, c1, c0, 2	@ Co-processor access control
-> +	isb
-> +	dsb
-> +	mov	r0, r8			@ control register
-> +	b	cpu_resume_mmu
-> +ENDPROC(cpu_pj4b_do_resume)
-> +#endif
-> +.globl	cpu_pj4b_suspend_size
-> +.equ	cpu_pj4b_suspend_size, 4 * 13
->  
->  #endif
+> +#include <linux/cpu_pm.h>
+> +#include <linux/cpuidle.h>
+> +#include <linux/module.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/suspend.h>
+> +#include <asm/suspend.h>
+> +#include <linux/smp.h>
+> +#include <asm/cpuidle.h>
+> +#include <asm/smp_plat.h>
+> +#include <linux/platform_device.h>
+> +#include <asm/cp15.h>
+> +#include <asm/cacheflush.h>
 
-A couple of questions:
+You should order them <linux/...>, then <asm/...>
 
-1) Do the extra registers ever change after coldboot ?
-2) Do you need to restore them before turning the MMU and caches on ?
-3) Most of the code is copy'n'paste from v7, is not it possible to reuse
-   that code by doing processor specific save/restore and then jump to
-   the v7 functions ?
+> +
+> +#define ARMADA_370_XP_MAX_STATES	3
+
+Is this macro really needed ?
+
+> +#define ARMADA_370_XP_FLAG_DEEP_IDLE	0x10000
+> +extern void armada_370_xp_pmsu_idle_prepare(bool deepidle);
+> +extern void ll_clear_cpu_coherent(void);
+> +extern void ll_set_cpu_coherent(void);
+> +
+> +noinline static int armada_370_xp_cpu_suspend(unsigned long deepidle)
+> +{
+> +	armada_370_xp_pmsu_idle_prepare(deepidle);
+> +
+> +	v7_exit_coherency_flush(all);
+
+The macro above clears the C bit in SCTLR and exit coherency (clears SMP
+bit in SCTLR), let's keep this in mind, see below.
+
+> +	ll_clear_cpu_coherent();
+
+And the macro above uses ldr/str exclusives, and this is done with MMU
+on and off (on cold-boot before jumping to secondary_startup and also
+before jumping to cpu_resume in armada_370_xp_cpu_resume).
+
+Can you explain to me how load/store exclusives work on this platform ?
+
+ARM ARM A3.4.5
+
+"It is IMPLEMENTATION DEFINED whether LDREX and STREX operations can be
+performed to a memory region with the Device or Strongly-ordered memory
+attribute. Unless the implementation documentation explicitly states that
+LDREX and STREX operations to a memory region with the Device or
+Strongly-ordered attribute are permitted, the effect of such operations is
+UNPREDICTABLE."
+
+At least code must be commented and an explanation on why this works has
+to be given.
+
+> +
+> +	dsb();
+> +
+> +	wfi();
+> +
+> +	ll_set_cpu_coherent();
+> +
+> +	asm volatile(
+> +	"mrc	p15, 0, %0, c1, c0, 0 \n\t"
+> +	"tst	%0, #(1 << 2) \n\t"
+> +	"orreq	r0, %0, #(1 << 2) \n\t"
+> +	"mcreq	p15, 0, %0, c1, c0, 0 \n\t"
+> +	"isb	"
+> +	: : "r" (0));
+
+First of all, complex code like this must be commented.
+
+Moreover, this sequence is wrong. If wfi completes the kernel would explode.
+
+1) where is the SMP bit in SCTLR restored ?
+2) where are tlbs flushed (ie processors run out of coherency for _some_
+   time, so tlbs might be stale) ?
+
+> +
+> +	return 0;
+> +}
+> +
+> +static int armada_370_xp_enter_idle(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv,
+> +				int index)
+> +{
+> +	bool deepidle = false;
+> +	cpu_pm_enter();
+> +
+> +	if (drv->states[index].flags & ARMADA_370_XP_FLAG_DEEP_IDLE)
+> +		deepidle = true;
+> +
+> +	cpu_suspend(deepidle, armada_370_xp_cpu_suspend);
+> +
+> +	cpu_pm_exit();
+> +
+> +	return index;
+
+You should check the cpu_suspend return value and demote the idle state
+accordingly, if it failed.
 
 Thanks,
 Lorenzo
