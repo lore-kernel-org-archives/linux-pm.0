@@ -1,7 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 40/52] intel-idle: Fix CPU hotplug callback registration
-Date: Fri, 14 Feb 2014 13:28:15 +0530
-Message-ID: <20140214075814.22701.67329.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH v2 43/52] thermal,
+ x86-pkg-temp: Fix CPU hotplug callback registration
+Date: Fri, 14 Feb 2014 13:28:59 +0530
+Message-ID: <20140214075858.22701.51893.stgit@srivatsabhat.in.ibm.com>
 References: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -10,7 +11,7 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
-Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Len Brown <lenb@kernel.org>"Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
 Subsystems that want to register CPU hotplug callbacks, as well as perform
@@ -44,55 +45,65 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the intel-idle code by using this latter form of callback registration.
+Fix the thermal x86-pkg-temp code by using this latter form of callback
+registration.
 
-Cc: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/idle/intel_idle.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ drivers/thermal/x86_pkg_temp_thermal.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 8e1939f..51493ed 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -681,14 +681,19 @@ static int __init intel_idle_init(void)
- 	if (intel_idle_cpuidle_devices == NULL)
- 		return -ENOMEM;
+diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+index 972e1c7..7592048 100644
+--- a/drivers/thermal/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -589,12 +589,12 @@ static int __init pkg_temp_thermal_init(void)
+ 	platform_thermal_package_rate_control =
+ 			pkg_temp_thermal_platform_thermal_rate_control;
  
+-	get_online_cpus();
 +	cpu_notifier_register_begin();
-+
- 	for_each_online_cpu(i) {
- 		retval = intel_idle_cpu_init(i);
- 		if (retval) {
-+			cpu_notifier_register_done();
- 			cpuidle_unregister_driver(&intel_idle_driver);
- 			return retval;
- 		}
- 	}
--	register_cpu_notifier(&cpu_hotplug_notifier);
-+	__register_cpu_notifier(&cpu_hotplug_notifier);
-+
+ 	for_each_online_cpu(i)
+ 		if (get_core_online(i))
+ 			goto err_ret;
+-	register_hotcpu_notifier(&pkg_temp_thermal_notifier);
+-	put_online_cpus();
++	__register_hotcpu_notifier(&pkg_temp_thermal_notifier);
 +	cpu_notifier_register_done();
  
- 	return 0;
- }
-@@ -698,10 +703,13 @@ static void __exit intel_idle_exit(void)
- 	intel_idle_cpuidle_devices_uninit();
- 	cpuidle_unregister_driver(&intel_idle_driver);
+ 	pkg_temp_debugfs_init(); /* Don't care if fails */
  
+@@ -603,7 +603,7 @@ static int __init pkg_temp_thermal_init(void)
+ err_ret:
+ 	for_each_online_cpu(i)
+ 		put_core_offline(i);
+-	put_online_cpus();
++	cpu_notifier_register_done();
+ 	kfree(pkg_work_scheduled);
+ 	platform_thermal_package_notify = NULL;
+ 	platform_thermal_package_rate_control = NULL;
+@@ -616,8 +616,8 @@ static void __exit pkg_temp_thermal_exit(void)
+ 	struct phy_dev_entry *phdev, *n;
+ 	int i;
+ 
+-	get_online_cpus();
+-	unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
 +	cpu_notifier_register_begin();
- 
- 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
- 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
--	unregister_cpu_notifier(&cpu_hotplug_notifier);
-+	__unregister_cpu_notifier(&cpu_hotplug_notifier);
-+
++	__unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
+ 	mutex_lock(&phy_dev_list_mutex);
+ 	list_for_each_entry_safe(phdev, n, &phy_dev_list, list) {
+ 		/* Retore old MSR value for package thermal interrupt */
+@@ -635,7 +635,7 @@ static void __exit pkg_temp_thermal_exit(void)
+ 	for_each_online_cpu(i)
+ 		cancel_delayed_work_sync(
+ 			&per_cpu(pkg_temp_thermal_threshold_work, i));
+-	put_online_cpus();
 +	cpu_notifier_register_done();
  
- 	return;
- }
+ 	kfree(pkg_work_scheduled);
+ 
