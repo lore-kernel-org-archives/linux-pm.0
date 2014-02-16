@@ -1,73 +1,64 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/5] Enabling the asynchronous threads for other phases
-Date: Mon, 17 Feb 2014 00:40:59 +0100
-Message-ID: <9364493.5ysfSuJl7g@vostro.rjw.lan>
-References: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com> <2360514.bLFmJYMItS@vostro.rjw.lan> <27240C0AC20F114CBF8149A2696CBE4A01C1AF9E@SHSMSX101.ccr.corp.intel.com>
+Subject: [PATCH 3/3] ACPI / PM: Avoid resuming devices in ACPI PM domain during system suspend
+Date: Mon, 17 Feb 2014 00:52:26 +0100
+Message-ID: <4644785.jPoV06XLG5@vostro.rjw.lan>
+References: <5420830.W4laSGaAU9@vostro.rjw.lan> <1829141.MEZji1aIKp@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57122 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752953AbaBPX0L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 18:26:11 -0500
-In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01C1AF9E@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1829141.MEZji1aIKp@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-On Monday, February 10, 2014 08:36:57 AM Liu, Chuansheng wrote:
-> Hello Rafael,
-> 
-> > -----Original Message-----
-> > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
-> > Sent: Thursday, February 06, 2014 5:53 AM
-> > To: Liu, Chuansheng
-> > Cc: gregkh@linuxfoundation.org; pavel@ucw.cz; Brown, Len;
-> > linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Li, Zhuangzhi
-> > Subject: Re: [PATCH 0/5] Enabling the asynchronous threads for other phases
-> > 
-> > On Monday, January 20, 2014 04:44:34 PM Liu, Chuansheng wrote:
-> > > Hello,
-> > >
-> > > This patch series are for enabling the asynchronous threads for the phases
-> > > resume_noirq, resume_early, suspend_noirq and suspend_late.
-> > >
-> > > Just like commit 5af84b82701a and 97df8c12995, with async threads it will
-> > > reduce the system suspending and resuming time significantly.
-> > >
-> > > With these patches, in my test platform, it saved 80% time in resume_noirq
-> > > phase.
-> > >
-> > > Has done the suspend-resume stress test for a long time, please help to
-> > > review.
-> > >
-> > > Best Regards,
-> > >
-> > > [PATCH 1/5] PM: Adding two flags for async suspend_noirq and
-> > > [PATCH 2/5] PM: Enabling the asynchronous threads for resume_noirq
-> > > [PATCH 3/5] PM: Enabling the asyncronous threads for resume_early
-> > > [PATCH 4/5] PM: Enabling the asyncronous threads for suspend_noirq
-> > > [PATCH 5/5] PM: Enabling the asyncronous threads for suspend_late
-> > 
-> > I've applied this to the bleeding-edge branch of the linux-pm.git tree, with
-> > minor changes related to coding style, white space etc.
-> Thanks your help.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Unfortunately, I've just realized that your patches don't add any mechanism
-ensuring that parent devices' .suspend_noirq() will be called *after* the
-.suspend_noirq() of all their children.  Of course, analogously for
-.suspend_late() and for the resume part (where children have to wait for
-their parents).
+Rework the ACPI PM domain's PM callbacks to avoid resuming devices
+during system suspend in order to modify their wakeup settings if
+that isn't necessary.
 
-In the original async suspend/resume code that is implemented using
-power.completion and I suppose you can do the same thing here.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/device_pm.c |   24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
-I have to drop the series for the time being.
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -900,12 +900,28 @@ EXPORT_SYMBOL_GPL(acpi_dev_resume_early)
+  */
+ int acpi_subsys_prepare(struct device *dev)
+ {
++	struct acpi_device *adev = ACPI_COMPANION(dev);
++	u32 target_state;
++	int error, state;
++
++	if (!adev || !pm_runtime_enabled_and_suspended(dev))
++		return pm_generic_prepare(dev);
++
++	target_state = acpi_target_system_state();
++	error = acpi_dev_pm_get_state(dev, adev, target_state, NULL, &state);
++	if (error || state != adev->power.state
++	    || device_may_wakeup(dev) != !!adev->wakeup.prepare_count) {
++		pm_runtime_resume(dev);
++		return pm_generic_prepare(dev);
++	}
+ 	/*
+-	 * Follow PCI and resume devices suspended at run time before running
+-	 * their system suspend callbacks.
++	 * If this is a wakeup device, wakeup power has been enabled already for
++	 * it during the preceding runtime suspend.  Caveat: "sleep state" is
++	 * one of the _DSW arguments, but that shouldn't matter for the devices
++	 * using acpi_general_pm_domain.
+ 	 */
+-	pm_runtime_resume(dev);
+-	return pm_generic_prepare(dev);
++	error =  pm_generic_prepare(dev);
++	return error ? error : 1;
+ }
+ EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
+ 
 
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
