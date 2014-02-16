@@ -1,92 +1,65 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/3][Resend] PM / runtime: Routine for checking device status during system suspend
-Date: Mon, 17 Feb 2014 00:51:32 +0100
-Message-ID: <2606690.DpdlurHHNW@vostro.rjw.lan>
-References: <5420830.W4laSGaAU9@vostro.rjw.lan> <1829141.MEZji1aIKp@vostro.rjw.lan>
+Subject: Re: [RFC][PATCH 0/3] PM: Mechanism to avoid resuming runtime-suspended devices during system suspend
+Date: Mon, 17 Feb 2014 00:49:33 +0100
+Message-ID: <1829141.MEZji1aIKp@vostro.rjw.lan>
+References: <5420830.W4laSGaAU9@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49658 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:55412 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752620AbaBPXii (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 18:38:38 -0500
-In-Reply-To: <1829141.MEZji1aIKp@vostro.rjw.lan>
+	with SMTP id S1753139AbaBPXij (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 18:38:39 -0500
+In-Reply-To: <5420830.W4laSGaAU9@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wednesday, January 15, 2014 12:12:29 AM Rafael J. Wysocki wrote:
+> Hi,
+> 
+> The following experimental series of 3 patches implements a mechanism allowing
+> subsystems to avoid resuming runtime-suspended devices during system suspend.
+> 
+> As far as the PM core goes, it introduces a new flag, power.no_suspend, that
+> will be set by the core for devices which can stay suspended.  The idea is that
+> subsystems should know which devices can stay suspended over system suspend
+> and to allow them to tell the core about that patch [1/3] changes the calling
+> convention of the device PM .prepare() callback so that it can return a positive
+> value on success to be interpreted as "this device has been runtime-suspended
+> and doesn't need to be resumed" information.  If .prepare() returns a positive
+> number for certain device, the core will set power.no_suspend and will not run
+> suspend callbacks for device with that flag set going forward (during this
+> particular system suspend transition).
+> 
+> However, parents may generally need to be resumed so that the suspend of their
+> children can be carried out, so the PM core will clear power.no_suspend for
+> the parents of devices whose power.no_suspend is not set (unless those parents
+> have power.ignore_children set).
+> 
+> Patch [2/3] adds a new runtime PM helper function that subsystems can use to
+> check whether or not a given device is runtime-suspended when .prepare() is being
+> executed for it.
+> 
+> Patch [3/3] implements the subsystem part for the ACPI PM domain, because that
+> is relatively straightforward.  If the general approach makes sense, I'll think
+> about doing the same for PCI.
 
-Add a new helper routine, pm_runtime_enabled_and_suspended(), to
-allow subsystems (or PM domains) to check the runtime PM status of
-devices during system suspend (possibly to avoid resuming those
-devices upfront at that time).
+I have a new version of this.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/runtime.c |   28 ++++++++++++++++++++++++++++
- include/linux/pm_runtime.h   |    2 ++
- 2 files changed, 30 insertions(+)
+The new patch [1/3] goes farther than the previous one, because I realized that
+all subsystems returning values greater from zero from their .prepare()
+callbacks will want to skip .resume_noirq() and .resume_early() for the
+"fast suspended" devices and all of them will likely want to run a
+pm_request_resume() for those devices in their .resume().  So, if all of
+them would do that anyway, it's better if the core does that for them.
+Of course, that simplifies patch [3/3] quite a bit.  Patch [2/3] is the
+same as before.
 
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -53,6 +53,7 @@ extern unsigned long pm_runtime_autosusp
- extern void pm_runtime_update_max_time_suspended(struct device *dev,
- 						 s64 delta_ns);
- extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
-+extern bool pm_runtime_enabled_and_suspended(struct device *dev);
- 
- static inline bool pm_children_suspended(struct device *dev)
- {
-@@ -161,6 +162,7 @@ static inline unsigned long pm_runtime_a
- 				struct device *dev) { return 0; }
- static inline void pm_runtime_set_memalloc_noio(struct device *dev,
- 						bool enable){}
-+static inline bool pm_runtime_enabled_and_suspended(struct device *dev) { return false; }
- 
- #endif /* !CONFIG_PM_RUNTIME */
- 
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -1194,6 +1194,34 @@ void pm_runtime_enable(struct device *de
- EXPORT_SYMBOL_GPL(pm_runtime_enable);
- 
- /**
-+ * pm_runtime_enabled_and_suspended - Check runtime PM status of a device.
-+ * @dev: Device to handle.
-+ *
-+ * This routine is to be executed during system suspend only, after
-+ * device_prepare() has been executed for @dev.
-+ *
-+ * Return false if runtime PM is disabled for the device.  Otherwise, wait
-+ * for pending transitions to complete and check the runtime PM status of the
-+ * device after that.  Return true if it is RPM_SUSPENDED.
-+ */
-+bool pm_runtime_enabled_and_suspended(struct device *dev)
-+{
-+	unsigned long flags;
-+	bool ret;
-+
-+	spin_lock_irqsave(&dev->power.lock, flags);
-+	if (dev->power.disable_depth) {
-+		ret = false;
-+	} else {
-+		__pm_runtime_barrier(dev);
-+		ret = pm_runtime_status_suspended(dev);
-+	}
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_enabled_and_suspended);
-+
-+/**
-  * pm_runtime_forbid - Block runtime PM of a device.
-  * @dev: Device to handle.
-  *
+Thanks!
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
