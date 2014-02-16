@@ -1,159 +1,73 @@
-From: Jan Kiszka <jan.kiszka@web.de>
-Subject: Re: [PATCH] intel_idle: Add CPU model 54 (Atom N2000 series)
-Date: Sun, 16 Feb 2014 10:05:19 +0100
-Message-ID: <53007F4F.8090309@web.de>
-References: <52E42B86.1020701@web.de> <CAJvTdKnt=75AEQhsa8aAdEft7nnySvhxc57_1BHmOS7+tbLeNQ@mail.gmail.com> <52F9B88E.3090601@web.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/5] Enabling the asynchronous threads for other phases
+Date: Mon, 17 Feb 2014 00:40:59 +0100
+Message-ID: <9364493.5ysfSuJl7g@vostro.rjw.lan>
+References: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com> <2360514.bLFmJYMItS@vostro.rjw.lan> <27240C0AC20F114CBF8149A2696CBE4A01C1AF9E@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="NpK3n2rNXt9TgMxCtgrg9d8xU0n7GopW2"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.web.de ([212.227.15.3]:61839 "EHLO mout.web.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751817AbaBPJFX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 16 Feb 2014 04:05:23 -0500
-Received: from mchn199C.mchp.siemens.de ([95.157.58.223]) by smtp.web.de
- (mrweb003) with ESMTPSA (Nemesis) id 0Lp712-1Wtm7g38Mu-00eqAO for
- <linux-pm@vger.kernel.org>; Sun, 16 Feb 2014 10:05:21 +0100
-In-Reply-To: <52F9B88E.3090601@web.de>
+Received: from v094114.home.net.pl ([79.96.170.134]:57122 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752953AbaBPX0L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 18:26:11 -0500
+In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01C1AF9E@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---NpK3n2rNXt9TgMxCtgrg9d8xU0n7GopW2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Monday, February 10, 2014 08:36:57 AM Liu, Chuansheng wrote:
+> Hello Rafael,
+> 
+> > -----Original Message-----
+> > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > Sent: Thursday, February 06, 2014 5:53 AM
+> > To: Liu, Chuansheng
+> > Cc: gregkh@linuxfoundation.org; pavel@ucw.cz; Brown, Len;
+> > linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Li, Zhuangzhi
+> > Subject: Re: [PATCH 0/5] Enabling the asynchronous threads for other phases
+> > 
+> > On Monday, January 20, 2014 04:44:34 PM Liu, Chuansheng wrote:
+> > > Hello,
+> > >
+> > > This patch series are for enabling the asynchronous threads for the phases
+> > > resume_noirq, resume_early, suspend_noirq and suspend_late.
+> > >
+> > > Just like commit 5af84b82701a and 97df8c12995, with async threads it will
+> > > reduce the system suspending and resuming time significantly.
+> > >
+> > > With these patches, in my test platform, it saved 80% time in resume_noirq
+> > > phase.
+> > >
+> > > Has done the suspend-resume stress test for a long time, please help to
+> > > review.
+> > >
+> > > Best Regards,
+> > >
+> > > [PATCH 1/5] PM: Adding two flags for async suspend_noirq and
+> > > [PATCH 2/5] PM: Enabling the asynchronous threads for resume_noirq
+> > > [PATCH 3/5] PM: Enabling the asyncronous threads for resume_early
+> > > [PATCH 4/5] PM: Enabling the asyncronous threads for suspend_noirq
+> > > [PATCH 5/5] PM: Enabling the asyncronous threads for suspend_late
+> > 
+> > I've applied this to the bleeding-edge branch of the linux-pm.git tree, with
+> > minor changes related to coding style, white space etc.
+> Thanks your help.
 
-On 2014-02-11 06:43, Jan Kiszka wrote:
-> On 2014-02-11 01:01, Len Brown wrote:
->> Please send the output of these two command before and after the patch=
-:
->>
->> dmesg | grep idle
->> grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
->=20
-> Before:
-> # dmesg | grep idle
-> [    0.648783] cpuidle: using governor ladder
-> [    0.648787] cpuidle: using governor menu
-> [    1.053215] intel_idle: does not run on family 6 model 54
-> [    3.285430] ACPI: acpi_idle registered with cpuidle
-> # grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL IDLE=
+Unfortunately, I've just realized that your patches don't add any mechanism
+ensuring that parent devices' .suspend_noirq() will be called *after* the
+.suspend_noirq() of all their children.  Of course, analogously for
+.suspend_late() and for the resume part (where children have to wait for
+their parents).
 
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/time:443
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/usage:5
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI FFH INTEL MWAIT 0=
-x0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/time:420944
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/usage:1798
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI FFH INTEL MWAIT 0=
-x10
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/latency:20
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/time:119479360
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/usage:32863
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI FFH INTEL MWAIT 0=
-x30
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:100
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:1673
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:7
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/desc:ACPI FFH INTEL MWAIT 0=
-x52
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/latency:140
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/name:C4
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/time:125622
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/usage:63
->=20
-> After:
-> # dmesg | grep idle
-> [    0.244640] cpuidle: using governor ladder
-> [    0.244645] cpuidle: using governor menu
-> [    0.654351] intel_idle: MWAIT substates: 0x3020220
-> [    0.654355] intel_idle: v0.4 model 0x36
-> [    0.654359] intel_idle: lapic_timer_reliable_states 0xffffffff
-> # grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL IDLE=
+In the original async suspend/resume code that is implemented using
+power.completion and I suppose you can do the same thing here.
 
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/time:572
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/usage:12
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/desc:MWAIT 0x00
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/latency:10
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1E-ATM
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/time:722013
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/usage:3132
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/desc:MWAIT 0x10
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/latency:20
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2-ATM
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/time:4512127
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/usage:9147
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:MWAIT 0x30
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:100
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C4-ATM
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:1996954
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:2696
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/desc:MWAIT 0x52
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/latency:140
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/name:C6-ATM
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/time:266926331
-> /sys/devices/system/cpu/cpu0/cpuidle/state4/usage:73695
->=20
->>
->> How did you measure power on the the DN2800MT, and on what workload?
->=20
-> I measured the input current of the board @12V. In both cases, the
-> system was idle in single-user mode, practically no processes running.
->=20
-> Jan
->=20
->=20
+I have to drop the series for the time being.
 
-Was this answering your questions sufficiently? Can it be merged?
+Thanks!
 
-Jan
-
-
---NpK3n2rNXt9TgMxCtgrg9d8xU0n7GopW2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlMAf08ACgkQitSsb3rl5xQOKQCgwPovXV4q34kZThTcqVjSdQxM
-TXgAn05rPkRmbig6jijexZ6Y5s30yKpV
-=vmmd
------END PGP SIGNATURE-----
-
---NpK3n2rNXt9TgMxCtgrg9d8xU0n7GopW2--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
