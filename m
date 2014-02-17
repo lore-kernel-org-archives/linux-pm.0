@@ -1,66 +1,169 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Mon, 17 Feb 2014 01:28:43 +0100
-Message-ID: <4772234.6D4cUIJHX4@vostro.rjw.lan>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Refactor cpufreq_set_policy()
+Date: Mon, 17 Feb 2014 02:06:15 +0100
+Message-ID: <3582112.BRVGbkstFm@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pierre-list@ossman.eu
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51190 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753540AbaBQAv2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 19:51:28 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Friday, February 14, 2014 04:30:40 PM Viresh Kumar wrote:
-> cpufreq_update_policy() calls cpufreq_driver->get() to get current frequency of
-> a CPU and it is not supposed to fail or return zero. Return error in case that
-> happens.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Pierre,
-> 
-> I don't think this will fix the issue you were facing but might supress it :)..
-> And so you need to understand what causes your ->get() to return zero.
-> 
-> @Rafael: I got to these patches while looking at code recently after Pierre
-> complained about. Came to this conclusion after having discussions with Srivatsa
-> over IRC..
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Good to know that you chat with each other, but it really is not a useful piece
-of information until you say what *exactly* you were talking about.
+Reduce the rampant usage of goto and the indentation level in
+cpufreq_set_policy() to improve the readability of that code.
 
->  drivers/cpufreq/cpufreq.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 08ca8c9..383362b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2151,6 +2151,13 @@ int cpufreq_update_policy(unsigned int cpu)
->  	 */
->  	if (cpufreq_driver->get) {
->  		new_policy.cur = cpufreq_driver->get(cpu);
-> +
-> +		if (!new_policy.cur) {
-> +			pr_err("%s: ->get() returned 0 KHz\n", __func__);
-> +			ret = -EINVAL;
+No functional changes should result from that.
 
-That isn't -EINVAL.  It may be -EIO or -ENODEV, but not -EINVAL.  Please.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |  102 ++++++++++++++++++++--------------------------
+ 1 file changed, 45 insertions(+), 57 deletions(-)
 
-> +			goto no_policy;
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -2018,22 +2018,21 @@ EXPORT_SYMBOL(cpufreq_get_policy);
+ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 				struct cpufreq_policy *new_policy)
+ {
+-	int ret = 0, failed = 1;
++	struct cpufreq_governor *old_gov;
++	int ret;
+ 
+ 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_policy->cpu,
+ 		new_policy->min, new_policy->max);
+ 
+ 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
+ 
+-	if (new_policy->min > policy->max || new_policy->max < policy->min) {
+-		ret = -EINVAL;
+-		goto error_out;
+-	}
++	if (new_policy->min > policy->max || new_policy->max < policy->min)
++		return -EINVAL;
+ 
+ 	/* verify the cpu speed can be set within this limit */
+ 	ret = cpufreq_driver->verify(new_policy);
+ 	if (ret)
+-		goto error_out;
++		return ret;
+ 
+ 	/* adjust if necessary - all reasons */
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+@@ -2049,7 +2048,7 @@ static int cpufreq_set_policy(struct cpu
+ 	 */
+ 	ret = cpufreq_driver->verify(new_policy);
+ 	if (ret)
+-		goto error_out;
++		return ret;
+ 
+ 	/* notification of the new policy */
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+@@ -2064,58 +2063,47 @@ static int cpufreq_set_policy(struct cpu
+ 	if (cpufreq_driver->setpolicy) {
+ 		policy->policy = new_policy->policy;
+ 		pr_debug("setting range\n");
+-		ret = cpufreq_driver->setpolicy(new_policy);
+-	} else {
+-		if (new_policy->governor != policy->governor) {
+-			/* save old, working values */
+-			struct cpufreq_governor *old_gov = policy->governor;
+-
+-			pr_debug("governor switch\n");
+-
+-			/* end old governor */
+-			if (policy->governor) {
+-				__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-				up_write(&policy->rwsem);
+-				__cpufreq_governor(policy,
+-						CPUFREQ_GOV_POLICY_EXIT);
+-				down_write(&policy->rwsem);
+-			}
+-
+-			/* start new governor */
+-			policy->governor = new_policy->governor;
+-			if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
+-				if (!__cpufreq_governor(policy, CPUFREQ_GOV_START)) {
+-					failed = 0;
+-				} else {
+-					up_write(&policy->rwsem);
+-					__cpufreq_governor(policy,
+-							CPUFREQ_GOV_POLICY_EXIT);
+-					down_write(&policy->rwsem);
+-				}
+-			}
+-
+-			if (failed) {
+-				/* new governor failed, so re-start old one */
+-				pr_debug("starting governor %s failed\n",
+-							policy->governor->name);
+-				if (old_gov) {
+-					policy->governor = old_gov;
+-					__cpufreq_governor(policy,
+-							CPUFREQ_GOV_POLICY_INIT);
+-					__cpufreq_governor(policy,
+-							   CPUFREQ_GOV_START);
+-				}
+-				ret = -EINVAL;
+-				goto error_out;
+-			}
+-			/* might be a policy change, too, so fall through */
+-		}
+-		pr_debug("governor: change or update limits\n");
+-		ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++		return cpufreq_driver->setpolicy(new_policy);
+ 	}
++	if (new_policy->governor == policy->governor)
++		goto out;
++
++	pr_debug("governor switch\n");
++
++	/* save old, working values */
++	old_gov = policy->governor;
++	/* end old governor */
++	if (old_gov) {
++		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++		up_write(&policy->rwsem);
++		__cpufreq_governor(policy,CPUFREQ_GOV_POLICY_EXIT);
++		down_write(&policy->rwsem);
++	}
++
++	/* start new governor */
++	policy->governor = new_policy->governor;
++	if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
++		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
++			goto out;
++
++		up_write(&policy->rwsem);
++		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
++		down_write(&policy->rwsem);
++	}
++
++	/* new governor failed, so re-start old one */
++	pr_debug("starting governor %s failed\n", policy->governor->name);
++	if (old_gov) {
++		policy->governor = old_gov;
++		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT);
++		__cpufreq_governor(policy, CPUFREQ_GOV_START);
++	}
++
++	return -EINVAL;
+ 
+-error_out:
+-	return ret;
++ out:
++	pr_debug("governor: change or update limits\n");
++	return __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ }
+ 
+ /**
 
-And is it unsafe to continue here?  Or can we continue regardless of getting 0?
-
-> +		}
-> +
->  		if (!policy->cur) {
->  			pr_debug("Driver did not initialize current freq");
->  			policy->cur = new_policy.cur;
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
