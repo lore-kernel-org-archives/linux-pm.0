@@ -1,205 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of suspended devices
-Date: Mon, 17 Feb 2014 00:50:39 +0100
-Message-ID: <21442757.ztmIxNHa8O@vostro.rjw.lan>
-References: <5420830.W4laSGaAU9@vostro.rjw.lan> <1829141.MEZji1aIKp@vostro.rjw.lan>
+Subject: Re: [PATCH 2/2] cpufreq: don't call cpufreq_update_policy() on CPU addition
+Date: Mon, 17 Feb 2014 01:21:47 +0100
+Message-ID: <1725957.nHPERWcMfN@vostro.rjw.lan>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <8f2fc4d6240b567fdb69a0b47f073d174b7ef9b2.1392375504.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1829141.MEZji1aIKp@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64280 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751622AbaBQAHB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 19:07:01 -0500
+In-Reply-To: <8f2fc4d6240b567fdb69a0b47f073d174b7ef9b2.1392375504.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pierre-list@ossman.eu
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, February 14, 2014 04:30:41 PM Viresh Kumar wrote:
+> cpufreq_update_policy() is called from two places currently. From a workqueue
+> handled queued from cpufreq_bp_resume() for boot CPU and from
+> cpufreq_cpu_callback() whenever a CPU is added.
+> 
+> The first one makes sure that boot CPU is running on the frequency present in
+> policy->cpu. But we don't really need a call from cpufreq_cpu_callback(),
+> because we always call cpufreq_driver->init() (which will set policy->cur
+> correctly) whenever first CPU of any policy is added back. And so every policy
+> structure is guaranteed to have the right frequency in policy->cur.
 
-Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-resume all runtime-suspended devices during system suspend, mostly
-because those devices may need to be reprogrammed due to different
-wakeup settings for system sleep and for runtime PM.  However, at
-least in some cases, that isn't really necessary, because the wakeup
-settings may not be really different.
+That sounds good, but doing the extra cpufreq_update_policy() shouldn't actually
+hurt, should it?
 
-The idea here is that subsystems should know whether or not it is
-necessary to reprogram a given device during system suspend and they
-should be able to tell the PM core about that.  For this reason,
-modify the PM core so that if the .prepare() callback returns a
-positive value for certain device, the core will set a new
-power.fast_suspend flag for it.  Then, if that flag is set, the core
-will skip all of the subsequent suspend callbacks for that device.
-It also will skip all of the system resume callbacks for the device
-during the subsequent system resume and pm_request_resume() will be
-executed to trigger a runtime PM resume of the device after the
-system device resume sequence has been finished.
+So, that would be a cleanup rather than a fix, right?
 
-However, since parents may need to be resumed so that their children
-can be reprogrammed, make the PM core clear power.fast_suspend for
-devices whose children don't have power.fast_suspend set (the
-power.ignore_children flag doesn't matter here, because a parent
-whose children are normally ignored for runtime PM may still need to
-be accessible for their children to be prepare for system suspend
-properly).
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 383362b..b6eb4ed 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2194,7 +2194,6 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
+>  		switch (action & ~CPU_TASKS_FROZEN) {
+>  		case CPU_ONLINE:
+>  			__cpufreq_add_dev(dev, NULL, frozen);
+> -			cpufreq_update_policy(cpu);
+>  			break;
+>  
+>  		case CPU_DOWN_PREPARE:
+> 
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |   49 +++++++++++++++++++++++++++++++---------------
- include/linux/pm.h        |    1 
- 2 files changed, 35 insertions(+), 15 deletions(-)
-
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -478,7 +478,7 @@ static int device_resume_noirq(struct de
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.fast_suspend)
- 		goto Out;
- 
- 	if (!dev->power.is_noirq_suspended)
-@@ -599,7 +599,7 @@ static int device_resume_early(struct de
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.fast_suspend)
- 		goto Out;
- 
- 	if (!dev->power.is_late_suspended)
-@@ -724,6 +724,11 @@ static int device_resume(struct device *
- 	if (dev->power.syscore)
- 		goto Complete;
- 
-+	if (dev->power.fast_suspend) {
-+		pm_request_resume(dev);
-+		goto Complete;
-+	}
-+
- 	dpm_wait(dev->parent, async);
- 	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
-@@ -994,7 +999,7 @@ static int __device_suspend_noirq(struct
- 		return async_error;
- 	}
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.fast_suspend)
- 		return 0;
- 
- 	if (dev->pm_domain) {
-@@ -1127,7 +1132,7 @@ static int __device_suspend_late(struct
- 		return async_error;
- 	}
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.fast_suspend)
- 		return 0;
- 
- 	if (dev->pm_domain) {
-@@ -1296,8 +1301,10 @@ static int __device_suspend(struct devic
- 	 * for it, this is equivalent to the device signaling wakeup, so the
- 	 * system suspend operation should be aborted.
- 	 */
--	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-+	if (pm_runtime_barrier(dev) && device_may_wakeup(dev)) {
- 		pm_wakeup_event(dev, 0);
-+		dev->power.fast_suspend = false;
-+	}
- 
- 	if (pm_wakeup_pending()) {
- 		async_error = -EBUSY;
-@@ -1310,6 +1317,9 @@ static int __device_suspend(struct devic
- 	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
-+	if (dev->power.fast_suspend)
-+		goto End;
-+
- 	if (dev->pm_domain) {
- 		info = "power domain ";
- 		callback = pm_op(&dev->pm_domain->ops, state);
-@@ -1358,9 +1368,14 @@ static int __device_suspend(struct devic
-  End:
- 	if (!error) {
- 		dev->power.is_suspended = true;
--		if (dev->power.wakeup_path
--		    && dev->parent && !dev->parent->power.ignore_children)
--			dev->parent->power.wakeup_path = true;
-+		if (dev->parent) {
-+			if (!dev->parent->power.ignore_children
-+			    && dev->power.wakeup_path)
-+				dev->parent->power.wakeup_path = true;
-+
-+			if (!dev->power.fast_suspend)
-+				dev->parent->power.fast_suspend = false;
-+		}
- 	}
- 
- 	device_unlock(dev);
-@@ -1460,7 +1475,7 @@ static int device_prepare(struct device
- {
- 	int (*callback)(struct device *) = NULL;
- 	char *info = NULL;
--	int error = 0;
-+	int ret = 0;
- 
- 	if (dev->power.syscore)
- 		return 0;
-@@ -1476,6 +1491,7 @@ static int device_prepare(struct device
- 	device_lock(dev);
- 
- 	dev->power.wakeup_path = device_may_wakeup(dev);
-+	dev->power.fast_suspend = false;
- 
- 	if (dev->pm_domain) {
- 		info = "preparing power domain ";
-@@ -1497,16 +1513,19 @@ static int device_prepare(struct device
- 	}
- 
- 	if (callback) {
--		error = callback(dev);
--		suspend_report_result(callback, error);
-+		ret = callback(dev);
-+		suspend_report_result(callback, ret);
- 	}
- 
- 	device_unlock(dev);
- 
--	if (error)
-+	if (ret < 0) {
- 		pm_runtime_put(dev);
--
--	return error;
-+		return ret;
-+	} else if (ret > 0) {
-+		dev->power.fast_suspend = true;
-+	}
-+	return 0;
- }
- 
- /**
-@@ -1575,7 +1594,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_start);
- 
- void __suspend_report_result(const char *function, void *fn, int ret)
- {
--	if (ret)
-+	if (ret < 0)
- 		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
- }
- EXPORT_SYMBOL_GPL(__suspend_report_result);
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -546,6 +546,7 @@ struct dev_pm_info {
- 	bool			is_late_suspended:1;
- 	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
-+	bool			fast_suspend:1;	/* Owned by the PM core */
- 	spinlock_t		lock;
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
