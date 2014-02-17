@@ -1,57 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Mon, 17 Feb 2014 11:38:53 +0530
-Message-ID: <CAKohpo=7Kbvh5UN9iZ6V3e=1ZY6y5_grQjxj6raEL_djHnMZrQ@mail.gmail.com>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>
-	<52FE71BD.3020103@wwwdotorg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Chuansheng Liu <chuansheng.liu@intel.com>
+Subject: [PATCH v3 0/5] Enabling the asynchronous threads for other phases
+Date: Mon, 17 Feb 2014 14:19:09 +0800
+Message-ID: <1392617954-5292-1-git-send-email-chuansheng.liu@intel.com>
+References: <y>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:38563 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbaBQGIy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2014 01:08:54 -0500
-Received: by mail-oa0-f44.google.com with SMTP id g12so17353413oah.31
-        for <linux-pm@vger.kernel.org>; Sun, 16 Feb 2014 22:08:53 -0800 (PST)
-In-Reply-To: <52FE71BD.3020103@wwwdotorg.org>
+Received: from mga02.intel.com ([134.134.136.20]:39340 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbaBQGac (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Feb 2014 01:30:32 -0500
+In-Reply-To: <y>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, zhuangzhi.li@intel.com
 
-On 15 February 2014 01:12, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 02/12/2014 11:50 PM, Viresh Kumar wrote:
->> This patchset creates/calls cpufreq suspend/resume callbacks from dpm_{suspend|resume}()
->> for handling suspend/resume of cpufreq governors and core.
->
-> Are these patches for 3.14 or 3.15?
+Hello,
 
-3.15
+This patch series are for enabling the asynchronous threads for the phases
+resume_noirq, resume_early, suspend_noirq and suspend_late.
 
-> I ask because I just tested Linus's master from a few days back (some
-> point after v3.14-rc2; commit 9398a10cd964 Merge tag
-> 'regulator-v3.14-rc2'), and I see a lot of the following messages during
-> suspend and/or resume (about 2-7 times, perhaps more of them from the
-> resume path, but it's hard to tell):
->
-> cpufreq: __cpufreq_driver_target: Failed to change cpu frequency: -16
+Just like commit 5af84b82701a and 97df8c12995, with async threads it will
+reduce the system suspending and resuming time significantly.
 
-That's because you return -EBUSY from your tegra_cpu_init() once
-suspend/resume has started. Probably the print message is new here,
-and so you are able to see it failing.. Nothing else should have changed
-otherwise.
+With these patches, in my test platform, it saved 80% time in resume_noirq
+phase.
 
-> This series does appear to solve those, so I think at least part of it
-> needs to be applied for 3.14.
+Best Regards,
 
-Because we disallow calls to __cpufreq_driver_target() after suspend/
-resume have started.
+---
+V2:
+ -- Based on Rafael's minor changes related to coding style, white space etc;
+ -- Rafael pointed out the v1 series break the device parent-children
+    suspending/resuming order when enabling asyncing, here using the
+    dev completion to sync parent-children order;
 
-> Also, I sometimes see the following during resume. I saw it twice with
-> Linus's tree, but then I did 10 more reboot+suspend+resume cycles and
-> couldn't repro it, and I saw it once with Linus's tree plus this series
-> applied, then couldn't reproduce it in 5 more tries.
+V3:
+ -- In patch v2 5/5, there is one missing "dpm_wait_for_children";
 
-> Do you have any idea what the problem might be, and how to solve it?
+---
 
-Not yet, will check..
+[PATCH v3 1/5] PM / sleep: Two flags for async suspend_noirq and
+[PATCH v3 2/5] PM / sleep: Asynchronous threads for resume_noirq
+[PATCH v3 3/5] PM / sleep: Asynchronous threads for resume_early
+[PATCH v3 4/5] PM / sleep: Asynchronous threads for suspend_noirq
+[PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
+
+ drivers/base/power/main.c | 275 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------
+ include/linux/pm.h        |   2 ++
+ 2 files changed, 227 insertions(+), 50 deletions(-)
+
+
