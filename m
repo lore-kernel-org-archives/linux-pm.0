@@ -1,150 +1,47 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH v2 4/5] PM / sleep: Asynchronous threads for suspend_noirq
-Date: Mon, 17 Feb 2014 13:42:25 +0800
-Message-ID: <1392615746-4574-5-git-send-email-chuansheng.liu@intel.com>
-References: <y>
- <1392615746-4574-1-git-send-email-chuansheng.liu@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Mon, 17 Feb 2014 11:32:55 +0530
+Message-ID: <CAKohpo=JVUPV81hFmwpuweWrfoEGZ0S_pkb9Fd+-SCXy+O+QCQ@mail.gmail.com>
+References: <cover.1392273722.git.viresh.kumar@linaro.org>
+	<52FE71BD.3020103@wwwdotorg.org>
+	<52FE7AFD.2040203@wwwdotorg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1392615746-4574-1-git-send-email-chuansheng.liu@intel.com>
+In-Reply-To: <52FE7AFD.2040203@wwwdotorg.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, zhuangzhi.li@intel.com
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-In analogy with commits 5af84b82701a and 97df8c12995, using
-asynchronous threads can improve the overall suspend_noirq
-time significantly.
+On 15 February 2014 01:52, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> BTW, I also happened to test these on a Tegra114 system, on which there
+> is no cpufreq driver, and this series (applied on top of commit
+> 9398a10cd964 Merge tag 'regulator-v3.14-rc2') causes the following
+> during suspend:
 
-This patch is for suspend_noirq phase.
+Ahh, that's a obvious bug. Following would fix it, thanks:
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
----
- drivers/base/power/main.c | 68 +++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 57 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 2f2d110..72b4c9c 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -990,14 +990,24 @@ static pm_message_t resume_event(pm_message_t sleep_state)
-  * The driver of @dev will not receive interrupts while this function is being
-  * executed.
-  */
--static int device_suspend_noirq(struct device *dev, pm_message_t state)
-+static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool async)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index c13c100..2dfbb7e 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1617,6 +1617,9 @@ void cpufreq_suspend(void)
  {
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
--	int error;
-+	int error = 0;
+        struct cpufreq_policy *policy;
+
++       if (!cpufreq_driver)
++               return;
 +
-+	dpm_wait_for_children(dev, async);
+        if (!has_target())
+                return;
+
+@@ -1645,6 +1648,9 @@ void cpufreq_resume(void)
+ {
+        struct cpufreq_policy *policy;
+
++       if (!cpufreq_driver)
++               return;
 +
-+	if (async_error)
-+		goto Complete;
-+
-+	if (pm_wakeup_pending()) {
-+		async_error = -EBUSY;
-+		goto Complete;
-+	}
- 
- 	if (dev->power.syscore)
--		return 0;
-+		goto Complete;
- 
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
-@@ -1021,10 +1031,40 @@ static int device_suspend_noirq(struct device *dev, pm_message_t state)
- 	error = dpm_run_callback(callback, dev, state, info);
- 	if (!error)
- 		dev->power.is_noirq_suspended = true;
-+	else
-+		async_error = error;
- 
-+Complete:
-+	complete_all(&dev->power.completion);
- 	return error;
- }
- 
-+static void async_suspend_noirq(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	error = __device_suspend_noirq(dev, pm_transition, true);
-+	if (error) {
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, pm_transition, " async", error);
-+	}
-+
-+	put_device(dev);
-+}
-+
-+static int device_suspend_noirq(struct device *dev)
-+{
-+	reinit_completion(&dev->power.completion);
-+
-+	if (pm_async_enabled && dev->power.async_suspend) {
-+		get_device(dev);
-+		async_schedule(async_suspend_noirq, dev);
-+		return 0;
-+	}
-+	return __device_suspend_noirq(dev, pm_transition, false);
-+}
-+
- /**
-  * dpm_suspend_noirq - Execute "noirq suspend" callbacks for all devices.
-  * @state: PM transition of the system being carried out.
-@@ -1040,19 +1080,20 @@ static int dpm_suspend_noirq(pm_message_t state)
- 	cpuidle_pause();
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
-+	async_error = 0;
-+
- 	while (!list_empty(&dpm_late_early_list)) {
- 		struct device *dev = to_device(dpm_late_early_list.prev);
- 
- 		get_device(dev);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		error = device_suspend_noirq(dev, state);
-+		error = device_suspend_noirq(dev);
- 
- 		mutex_lock(&dpm_list_mtx);
- 		if (error) {
- 			pm_dev_err(dev, state, " noirq", error);
--			suspend_stats.failed_suspend_noirq++;
--			dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
- 			dpm_save_failed_dev(dev_name(dev));
- 			put_device(dev);
- 			break;
-@@ -1061,16 +1102,21 @@ static int dpm_suspend_noirq(pm_message_t state)
- 			list_move(&dev->power.entry, &dpm_noirq_list);
- 		put_device(dev);
- 
--		if (pm_wakeup_pending()) {
--			error = -EBUSY;
-+		if (async_error)
- 			break;
--		}
- 	}
- 	mutex_unlock(&dpm_list_mtx);
--	if (error)
-+	async_synchronize_full();
-+	if (!error)
-+		error = async_error;
-+
-+	if (error) {
-+		suspend_stats.failed_suspend_noirq++;
-+		dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
- 		dpm_resume_noirq(resume_event(state));
--	else
-+	} else {
- 		dpm_show_time(starttime, state, "noirq");
-+	}
- 	return error;
- }
- 
--- 
-1.9.rc0
+        if (!has_target())
+                return;
