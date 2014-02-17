@@ -1,47 +1,47 @@
-From: Nicolas Pitre <nico@fluxnic.net>
-Subject: [PATCH] cpuidle/mips: remove redundant cpuidle_idle_call()
-Date: Mon, 17 Feb 2014 11:09:45 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1402171101060.17677@knanqh.ubzr>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v3 3/3] Documentation: arm: define DT idle states
+ bindings
+Date: Mon, 17 Feb 2014 16:34:21 +0000
+Message-ID: <20140217163421.GD20125@e102568-lin.cambridge.arm.com>
+References: <1392128273-8614-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1392128273-8614-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140216013956.GV4451@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relais.videotron.ca ([24.201.245.36]:64603 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbaBQQJy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2014 11:09:54 -0500
-Received: from xanadu.home ([66.130.143.177]) by VL-VM-MR006.ip.videotron.ca
- (Oracle Communications Messaging Exchange Server 7u4-22.01 64bit (built Apr 21
- 2011)) with ESMTP id <0N1500CYVE89B0B0@VL-VM-MR006.ip.videotron.ca> for
- linux-pm@vger.kernel.org; Mon, 17 Feb 2014 11:09:46 -0500 (EST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140216013956.GV4451@sirena.org.uk>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
 List-Id: linux-pm@vger.kernel.org
-To: Paul Burton <paul.burton@imgtec.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-mips@linux-mips.org
 
+On Sun, Feb 16, 2014 at 01:39:56AM +0000, Mark Brown wrote:
 
-The core idle loop now takes care of it.
+[...]
 
-Signed-off-by: Nicolas Pitre <nico@linaro.org>
----
+> > +	- cache-state-retained
+> > +		Usage: See definition
+> > +		Value type: <none>
+> > +		Definition: if present cache memory is retained on power down,
+> > +			    otherwise it is lost.
+> 
+> Might be better to define which caches?
 
-I noticed commit c0b5d598aefda in linux-next adds a call to 
-cpuidle_idle_call().  At the same time we're rationalizing the idle 
-handling code in order to integrate it with the scheduler proper.  
-Please note that a similar patch to the one below will be necessary once 
-everything gets merged together.
+I do not expect caches in the same power domain to have different retention
+capabilities, so a flag per-state should be enough. If anyone is unhappy
+about this please flag it up. List of caches affected can be retrieved by
+walking the power-domain specifiers and check those against the caches power
+domains.
 
-diff --git a/arch/mips/kernel/idle.c b/arch/mips/kernel/idle.c
-index 4b1554b3f5..2d753de5dc 100644
---- a/arch/mips/kernel/idle.c
-+++ b/arch/mips/kernel/idle.c
-@@ -253,8 +253,7 @@ static void mips_cpu_idle(void)
- 
- void arch_cpu_idle(void)
- {
--	if (cpuidle_idle_call())
--		mips_cpu_idle();
-+	mips_cpu_idle();
- }
- 
- #ifdef CONFIG_CPU_IDLE
+Thanks,
+Lorenzo
