@@ -1,47 +1,57 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Mon, 17 Feb 2014 11:32:55 +0530
-Message-ID: <CAKohpo=JVUPV81hFmwpuweWrfoEGZ0S_pkb9Fd+-SCXy+O+QCQ@mail.gmail.com>
+Date: Mon, 17 Feb 2014 11:38:53 +0530
+Message-ID: <CAKohpo=7Kbvh5UN9iZ6V3e=1ZY6y5_grQjxj6raEL_djHnMZrQ@mail.gmail.com>
 References: <cover.1392273722.git.viresh.kumar@linaro.org>
 	<52FE71BD.3020103@wwwdotorg.org>
-	<52FE7AFD.2040203@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52FE7AFD.2040203@wwwdotorg.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f44.google.com ([209.85.219.44]:38563 "EHLO
+	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbaBQGIy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2014 01:08:54 -0500
+Received: by mail-oa0-f44.google.com with SMTP id g12so17353413oah.31
+        for <linux-pm@vger.kernel.org>; Sun, 16 Feb 2014 22:08:53 -0800 (PST)
+In-Reply-To: <52FE71BD.3020103@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Stephen Warren <swarren@wwwdotorg.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-On 15 February 2014 01:52, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> BTW, I also happened to test these on a Tegra114 system, on which there
-> is no cpufreq driver, and this series (applied on top of commit
-> 9398a10cd964 Merge tag 'regulator-v3.14-rc2') causes the following
-> during suspend:
+On 15 February 2014 01:12, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> On 02/12/2014 11:50 PM, Viresh Kumar wrote:
+>> This patchset creates/calls cpufreq suspend/resume callbacks from dpm_{suspend|resume}()
+>> for handling suspend/resume of cpufreq governors and core.
+>
+> Are these patches for 3.14 or 3.15?
 
-Ahh, that's a obvious bug. Following would fix it, thanks:
+3.15
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c13c100..2dfbb7e 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1617,6 +1617,9 @@ void cpufreq_suspend(void)
- {
-        struct cpufreq_policy *policy;
+> I ask because I just tested Linus's master from a few days back (some
+> point after v3.14-rc2; commit 9398a10cd964 Merge tag
+> 'regulator-v3.14-rc2'), and I see a lot of the following messages during
+> suspend and/or resume (about 2-7 times, perhaps more of them from the
+> resume path, but it's hard to tell):
+>
+> cpufreq: __cpufreq_driver_target: Failed to change cpu frequency: -16
 
-+       if (!cpufreq_driver)
-+               return;
-+
-        if (!has_target())
-                return;
+That's because you return -EBUSY from your tegra_cpu_init() once
+suspend/resume has started. Probably the print message is new here,
+and so you are able to see it failing.. Nothing else should have changed
+otherwise.
 
-@@ -1645,6 +1648,9 @@ void cpufreq_resume(void)
- {
-        struct cpufreq_policy *policy;
+> This series does appear to solve those, so I think at least part of it
+> needs to be applied for 3.14.
 
-+       if (!cpufreq_driver)
-+               return;
-+
-        if (!has_target())
-                return;
+Because we disallow calls to __cpufreq_driver_target() after suspend/
+resume have started.
+
+> Also, I sometimes see the following during resume. I saw it twice with
+> Linus's tree, but then I did 10 more reboot+suspend+resume cycles and
+> couldn't repro it, and I saw it once with Linus's tree plus this series
+> applied, then couldn't reproduce it in 5 more tries.
+
+> Do you have any idea what the problem might be, and how to solve it?
+
+Not yet, will check..
