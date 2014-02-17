@@ -1,65 +1,73 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Mon, 17 Feb 2014 14:50:18 +0530
-Message-ID: <CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>
-	<52FE71BD.3020103@wwwdotorg.org>
-	<2869027.iYHxWOSS2C@vostro.rjw.lan>
-	<52FEAECA.5080905@wwwdotorg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:57863 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbaBQJUT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2014 04:20:19 -0500
-Received: by mail-ob0-f182.google.com with SMTP id wm4so16634805obc.41
-        for <linux-pm@vger.kernel.org>; Mon, 17 Feb 2014 01:20:19 -0800 (PST)
-In-Reply-To: <52FEAECA.5080905@wwwdotorg.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH] cpufreq: remove sysfs link when a cpu != policy->cpu, is removed
+Date: Mon, 17 Feb 2014 14:52:11 +0530
+Message-ID: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, swarren@nvidia.com
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 
-On 15 February 2014 05:33, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 02/14/2014 03:23 PM, Rafael J. Wysocki wrote:
+Earlier patch tried to do this but missed this piece of code to fix.
 
->> Well, it would be good to verify which part, then.
->
-> Patch 2/7 appears to stop that message from being printed during
-> suspend, and perhaps reduce the number of times it's printed during
-> resume. Patch 7/7 stops the message being printed at all.
->
-> Looking at patch 7, I wonder if it's simply because tegra_target() was
-> modified never to return -EBUSY, so the bug is still there, but it's
-> just been hidden.
+42f921a cpufreq: remove sysfs files for CPUs which failed to come back after
+resume
 
-No, the bug is removed now. Its hidden in current linus/master :)
+Currently we are getting this on suspend/resume:
 
->>> Also, I sometimes see the following during resume. I saw it twice with
->>> Linus's tree, but then I did 10 more reboot+suspend+resume cycles and
->>> couldn't repro it, and I saw it once with Linus's tree plus this series
->>> applied, then couldn't reproduce it in 5 more tries.
->
-> Oops. I screwed up my re-testing (tested on the wrong board, without
-> cpufreq active:-/). The message below is reproducible 100% of the time
-> with or without this series.
+------------[ cut here ]------------
+WARNING: CPU: 0 PID: 877 at fs/sysfs/dir.c:52 sysfs_warn_dup+0x68/0x84()
+sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
+Modules linked in: brcmfmac brcmutil
+CPU: 0 PID: 877 Comm: test-rtc-resume Not tainted 3.14.0-rc2-00259-g9398a10cd964 #12
+[<c0015bac>] (unwind_backtrace) from [<c0011850>] (show_stack+0x10/0x14)
+[<c0011850>] (show_stack) from [<c056e018>] (dump_stack+0x80/0xcc)
+[<c056e018>] (dump_stack) from [<c0025e44>] (warn_slowpath_common+0x64/0x88)
+[<c0025e44>] (warn_slowpath_common) from [<c0025efc>] (warn_slowpath_fmt+0x30/0x40)
+[<c0025efc>] (warn_slowpath_fmt) from [<c012776c>] (sysfs_warn_dup+0x68/0x84)
+[<c012776c>] (sysfs_warn_dup) from [<c0127a54>] (sysfs_do_create_link_sd+0xb0/0xb8)
+[<c0127a54>] (sysfs_do_create_link_sd) from [<c038ef64>] (__cpufreq_add_dev.isra.27+0x2a8/0x814)
+[<c038ef64>] (__cpufreq_add_dev.isra.27) from [<c038f548>] (cpufreq_cpu_callback+0x70/0x8c)
+[<c038f548>] (cpufreq_cpu_callback) from [<c0043864>] (notifier_call_chain+0x44/0x84)
+[<c0043864>] (notifier_call_chain) from [<c0025f60>] (__cpu_notify+0x28/0x44)
+[<c0025f60>] (__cpu_notify) from [<c00261e8>] (_cpu_up+0xf0/0x140)
+[<c00261e8>] (_cpu_up) from [<c0569eb8>] (enable_nonboot_cpus+0x68/0xb0)
+[<c0569eb8>] (enable_nonboot_cpus) from [<c006339c>] (suspend_devices_and_enter+0x198/0x2dc)
+[<c006339c>] (suspend_devices_and_enter) from [<c0063654>] (pm_suspend+0x174/0x1e8)
+[<c0063654>] (pm_suspend) from [<c00624e0>] (state_store+0x6c/0xbc)
+[<c00624e0>] (state_store) from [<c01fc200>] (kobj_attr_store+0x14/0x20)
+[<c01fc200>] (kobj_attr_store) from [<c0126e50>] (sysfs_kf_write+0x44/0x48)
+[<c0126e50>] (sysfs_kf_write) from [<c012a274>] (kernfs_fop_write+0xb4/0x14c)
+[<c012a274>] (kernfs_fop_write) from [<c00d4818>] (vfs_write+0xa8/0x180)
+[<c00d4818>] (vfs_write) from [<c00d4bb8>] (SyS_write+0x3c/0x70)
+[<c00d4bb8>] (SyS_write) from [<c000e620>] (ret_fast_syscall+0x0/0x30)
+---[ end trace 76969904b614c18f ]---
 
-Somehow I missed it. Following will fix it, sending a separate patch for it as
-well:
+Fix this by removing sysfs link for cpufreq directory when cpu removed isn't
+policy->cpu.
+
+Reported-by: Stephen Warren <swarren@nvidia.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+
+Fix for 3.14 only.
+
+ drivers/cpufreq/cpufreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2dfbb7e..48315e0 100644
+index 08ca8c9..cb003a6 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1326,8 +1326,7 @@ static int __cpufreq_remove_dev_prepare(struct
-device *dev,
-        up_read(&policy->rwsem);
-
-        if (cpu != policy->cpu) {
--               if (!frozen)
--                       sysfs_remove_link(&dev->kobj, "cpufreq");
-+               sysfs_remove_link(&dev->kobj, "cpufreq");
-        } else if (cpus > 1) {
-                new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
-                if (new_cpu >= 0) {
+@@ -1323,8 +1323,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 	up_read(&policy->rwsem);
+ 
+ 	if (cpu != policy->cpu) {
+-		if (!frozen)
+-			sysfs_remove_link(&dev->kobj, "cpufreq");
++		sysfs_remove_link(&dev->kobj, "cpufreq");
+ 	} else if (cpus > 1) {
+ 		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
+ 		if (new_cpu >= 0) {
+-- 
+1.7.12.rc2.18.g61b472e
