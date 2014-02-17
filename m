@@ -1,135 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Refactor cpufreq_set_policy()
-Date: Mon, 17 Feb 2014 10:51:17 +0530
-Message-ID: <CAKohpo=W+5cFRBfdL=dubXn_AJtN3_Ghx0+9AYdMR-CQe+sD8w@mail.gmail.com>
-References: <3582112.BRVGbkstFm@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:51790 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbaBQFVR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2014 00:21:17 -0500
-Received: by mail-oa0-f48.google.com with SMTP id l6so17142117oag.35
-        for <linux-pm@vger.kernel.org>; Sun, 16 Feb 2014 21:21:17 -0800 (PST)
-In-Reply-To: <3582112.BRVGbkstFm@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chuansheng Liu <chuansheng.liu@intel.com>
+Subject: [PATCH v2 0/5] Enabling the asynchronous threads for other phases
+Date: Mon, 17 Feb 2014 13:42:21 +0800
+Message-ID: <1392615746-4574-1-git-send-email-chuansheng.liu@intel.com>
+References: <y>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <y>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, zhuangzhi.li@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On 17 February 2014 06:36, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Reduce the rampant usage of goto and the indentation level in
-> cpufreq_set_policy() to improve the readability of that code.
->
-> No functional changes should result from that.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |  102 ++++++++++++++++++++--------------------------
->  1 file changed, 45 insertions(+), 57 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -2018,22 +2018,21 @@ EXPORT_SYMBOL(cpufreq_get_policy);
->  static int cpufreq_set_policy(struct cpufreq_policy *policy,
->                                 struct cpufreq_policy *new_policy)
->  {
-> -       int ret = 0, failed = 1;
-> +       struct cpufreq_governor *old_gov;
-> +       int ret;
->
->         pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_policy->cpu,
->                 new_policy->min, new_policy->max);
->
->         memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
->
-> -       if (new_policy->min > policy->max || new_policy->max < policy->min) {
-> -               ret = -EINVAL;
-> -               goto error_out;
-> -       }
-> +       if (new_policy->min > policy->max || new_policy->max < policy->min)
-> +               return -EINVAL;
->
->         /* verify the cpu speed can be set within this limit */
->         ret = cpufreq_driver->verify(new_policy);
->         if (ret)
-> -               goto error_out;
-> +               return ret;
->
->         /* adjust if necessary - all reasons */
->         blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-> @@ -2049,7 +2048,7 @@ static int cpufreq_set_policy(struct cpu
->          */
->         ret = cpufreq_driver->verify(new_policy);
->         if (ret)
-> -               goto error_out;
-> +               return ret;
->
->         /* notification of the new policy */
->         blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-> @@ -2064,58 +2063,47 @@ static int cpufreq_set_policy(struct cpu
->         if (cpufreq_driver->setpolicy) {
->                 policy->policy = new_policy->policy;
->                 pr_debug("setting range\n");
-> -               ret = cpufreq_driver->setpolicy(new_policy);
-> -       } else {
-> -               if (new_policy->governor != policy->governor) {
-> -                       /* save old, working values */
-> -                       struct cpufreq_governor *old_gov = policy->governor;
-> -
-> -                       pr_debug("governor switch\n");
-> -
-> -                       /* end old governor */
-> -                       if (policy->governor) {
-> -                               __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> -                               up_write(&policy->rwsem);
-> -                               __cpufreq_governor(policy,
-> -                                               CPUFREQ_GOV_POLICY_EXIT);
-> -                               down_write(&policy->rwsem);
-> -                       }
-> -
-> -                       /* start new governor */
-> -                       policy->governor = new_policy->governor;
-> -                       if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
-> -                               if (!__cpufreq_governor(policy, CPUFREQ_GOV_START)) {
-> -                                       failed = 0;
-> -                               } else {
-> -                                       up_write(&policy->rwsem);
-> -                                       __cpufreq_governor(policy,
-> -                                                       CPUFREQ_GOV_POLICY_EXIT);
-> -                                       down_write(&policy->rwsem);
-> -                               }
-> -                       }
-> -
-> -                       if (failed) {
-> -                               /* new governor failed, so re-start old one */
-> -                               pr_debug("starting governor %s failed\n",
-> -                                                       policy->governor->name);
-> -                               if (old_gov) {
-> -                                       policy->governor = old_gov;
-> -                                       __cpufreq_governor(policy,
-> -                                                       CPUFREQ_GOV_POLICY_INIT);
-> -                                       __cpufreq_governor(policy,
-> -                                                          CPUFREQ_GOV_START);
-> -                               }
-> -                               ret = -EINVAL;
-> -                               goto error_out;
-> -                       }
-> -                       /* might be a policy change, too, so fall through */
-> -               }
-> -               pr_debug("governor: change or update limits\n");
-> -               ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> +               return cpufreq_driver->setpolicy(new_policy);
->         }
+Hello,
 
-Maybe a blank line here..
+This patch series are for enabling the asynchronous threads for the phases
+resume_noirq, resume_early, suspend_noirq and suspend_late.
 
-> +       if (new_policy->governor == policy->governor)
-> +               goto out;
+Just like commit 5af84b82701a and 97df8c12995, with async threads it will
+reduce the system suspending and resuming time significantly.
 
-Otherwise: Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+With these patches, in my test platform, it saved 80% time in resume_noirq
+phase.
+
+Best Regards,
+
+---
+V2:
+ -- Based on Rafael's minor changes related to coding style, white space etc;
+ -- Rafael pointed out the v1 series break the device parent-children
+    suspending/resuming order when enabling asyncing, here using the
+    dev completion to sync parent-children order;
+
+---
+[PATCH 1/5] PM / sleep: Two flags for async suspend_noirq and
+[PATCH 2/5] PM / sleep: Asynchronous threads for resume_noirq
+[PATCH 3/5] PM / sleep: Asynchronous threads for resume_early
+[PATCH 4/5] PM / sleep: Asynchronous threads for suspend_noirq
+[PATCH 5/5] PM / sleep: Asynchronous threads for suspend_late
+
+ drivers/base/power/main.c | 273 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------
+ include/linux/pm.h        |   2 ++
+ 2 files changed, 225 insertions(+), 50 deletions(-)
