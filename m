@@ -1,73 +1,97 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Mon, 17 Feb 2014 23:00:32 +0100
-Message-ID: <1489022.1IbaesBAQQ@vostro.rjw.lan>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com> <5301CE86.9020105@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq, powernow-k8: Initialize per-cpu data-structures properly
+Date: Mon, 17 Feb 2014 23:02:50 +0100
+Message-ID: <1851033.kRQPL2X90T@vostro.rjw.lan>
+References: <20140217104821.21147.71463.stgit@srivatsabhat.in.ibm.com> <CAKohpo=nYQpZFh5=2g=REDyf-LKaMqJvnZ=pSncawLFpr1K_+Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5301CE86.9020105@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53110 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751254AbaBQVsC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2014 16:48:02 -0500
+In-Reply-To: <CAKohpo=nYQpZFh5=2g=REDyf-LKaMqJvnZ=pSncawLFpr1K_+Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Pierre Ossman <pierre-list@ossman.eu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
-> On 02/17/2014 02:09 PM, Viresh Kumar wrote:
-> > On 17 February 2014 13:49, Srivatsa S. Bhat
-> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> >> Quick question: Looking at cpufreq_update_policy() and cpufreq_out_of_sync(),
-> >> I understand that if the cpufreq subsystem's notion of the current frequency
-> >> does not match with the actual frequency of the CPU, it tries to adjust and
-> >> notify everyone that the current frequency is so-and-so, as read from the
-> >> hardware. Instead, why can't we simply set the frequency to the value that
-> >> we _want_ it to be at? I mean, if cpufreq subsystem thinks it is X KHz and
-> >> the actual frequency is Y KHz, we can as well fix the anomaly by setting the
-> >> frequency immediately to X KHz right?
-> >>
-> >> The reason I ask this is that, if we follow this approach, then we can avoid
-> >> ambiguities in dealing with the out-of-sync situation. That is, it becomes
-> >> very straightforward to decide _what_ to do, when we detect scenarios where
-> >> the frequency goes out of sync.
-> > 
-> > Hmm, it is just about doing all that stuff in a single line, like:
-> > __cpufreq_driver_target(...) ??
-> > 
-> > There are few problems here:
-> > - If we simply call above routine with X, then it will simply return as
-> > X == policy->cur. And I don't want to hack this code in a bad way now :)
-> > 
-> > - So, probably the way it is implemented is right, as we do that the most
-> > efficient way. We just broadcast the new freq in case there is a difference
-> > otherwise nothing.
+On Monday, February 17, 2014 04:35:08 PM Viresh Kumar wrote:
+> On 17 February 2014 16:18, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> > The powernow-k8 driver maintains a per-cpu data-structure called powernow_data
+> > that is used to perform the frequency transitions. It initializes this data-
+> > structure only for the policy->cpu. So, accesses to this data-structure by
+> > other CPUs results in various problems because they would have been
+> > uninitialized.
+> >
+> > Specifically, if a cpu (!= policy->cpu) invokes the drivers' ->get() function,
+> > it returns 0 as the KHz value, since its per-cpu memory doesn't point to
+> > anything valid. This causes problems during suspend/resume since
+> > cpufreq_update_policy() tries to enforce this (0 KHz) as the current frequency
+> > of the CPU, and this madness gets propagated to adjust_jiffies() as well.
+> > Eventually, lots of things start breaking down, including the r8169 ethernet
+> > card, in one particularly interesting case reported by Pierre Ossman.
+> >
+> > https://bugzilla.kernel.org/show_bug.cgi?id=70311
+> >
+> > Fix this by initializing the per-cpu data-structures of _all_ the CPUs
+> > in the policy appropriately.
+> >
+> > Cc: stable@vger.kernel.org
+> > Reported-by: Pierre Ossman <pierre@ossman.eu>
+> > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > ---
+> >
+> >  drivers/cpufreq/powernow-k8.c |   10 +++++++---
+> >  1 file changed, 7 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+> > index e10b646..6684e03 100644
+> > --- a/drivers/cpufreq/powernow-k8.c
+> > +++ b/drivers/cpufreq/powernow-k8.c
+> > @@ -1076,7 +1076,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+> >  {
+> >         struct powernow_k8_data *data;
+> >         struct init_on_cpu init_on_cpu;
+> > -       int rc;
+> > +       int rc, cpu;
+> >
+> >         smp_call_function_single(pol->cpu, check_supported_cpu, &rc, 1);
+> >         if (rc)
+> > @@ -1140,7 +1140,9 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+> >         pr_debug("cpu_init done, current fid 0x%x, vid 0x%x\n",
+> >                  data->currfid, data->currvid);
+> >
+> > -       per_cpu(powernow_data, pol->cpu) = data;
+> > +       /* Point all the CPUs in this policy to the same data */
+> > +       for_each_cpu(cpu, pol->cpus)
+> > +               per_cpu(powernow_data, cpu) = data;
+> >
+> >         return 0;
+> >
+> > @@ -1155,6 +1157,7 @@ err_out:
+> >  static int powernowk8_cpu_exit(struct cpufreq_policy *pol)
+> >  {
+> >         struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+> > +       int cpu;
+> >
+> >         if (!data)
+> >                 return -EINVAL;
+> > @@ -1165,7 +1168,8 @@ static int powernowk8_cpu_exit(struct cpufreq_policy *pol)
+> >
+> >         kfree(data->powernow_table);
+> >         kfree(data);
+> > -       per_cpu(powernow_data, pol->cpu) = NULL;
+> > +       for_each_cpu(cpu, pol->cpus)
+> > +               per_cpu(powernow_data, cpu) = NULL;
+> >
+> >         return 0;
 > 
-> Specifically, I'm referring to the problem where there _is_ a difference,
-> but the ->get() is not reporting it properly, like returning a 0 for example.
-> In such a case, instead of erroring out (and thereby perhaps opening the doors
-> to more problems down the line), won't it be better to simply set the CPU's
-> frequency to what we want it to be?
-> 
-> That is, I'm concerned about this part of your patch:
-> 
->  	if (cpufreq_driver->get) {
->  		new_policy.cur = cpufreq_driver->get(cpu);
-> +
-> +		if (!new_policy.cur) {
-> +			pr_err("%s: ->get() returned 0 KHz\n", __func__);
-> +			ret = -EINVAL;
-> +			goto no_policy;
-> +		}
-> +
-> 
-> Why go to no_policy when we can actually set things right?
-> 
-> Anyway, I am not arguing against this strongly. I just wanted to share my
-> thoughts, since this is the approach that made more sense to me.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-And I agree with that.  In particular, since we're going to set the new
-policy *anyway* at this point, we can adjust the current frequency just fine
-in the process, can't we?
+Queued up as a fix for 3.14, thanks!
 
 -- 
 I speak only for myself.
