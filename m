@@ -1,84 +1,91 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH 0/5] Enabling the asynchronous threads for other phases
-Date: Mon, 17 Feb 2014 02:10:46 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C2203F@SHSMSX101.ccr.corp.intel.com>
-References: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
- <2360514.bLFmJYMItS@vostro.rjw.lan>
- <27240C0AC20F114CBF8149A2696CBE4A01C1AF9E@SHSMSX101.ccr.corp.intel.com>
- <9364493.5ysfSuJl7g@vostro.rjw.lan>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH v4 07/13] ARM: dts: mvebu: Add a new set of registers
+ to the PMSU node
+Date: Sun, 16 Feb 2014 21:57:05 -0500
+Message-ID: <20140217025705.GJ7862@titan.lakedaemon.net>
+References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
+ <1392312816-17657-8-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:5174 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751622AbaBQCLv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 16 Feb 2014 21:11:51 -0500
-Content-Language: en-US
+Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:59292 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750805AbaBQC5W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 21:57:22 -0500
+Content-Disposition: inline
+In-Reply-To: <1392312816-17657-8-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, devicetree@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IExp
-dSwgQ2h1YW5zaGVuZw0KPiBTZW50OiBNb25kYXksIEZlYnJ1YXJ5IDE3LCAyMDE0IDk6NDQgQU0N
-Cj4gVG86ICdSYWZhZWwgSi4gV3lzb2NraScNCj4gQ2M6IGdyZWdraEBsaW51eGZvdW5kYXRpb24u
-b3JnOyBwYXZlbEB1Y3cuY3o7IEJyb3duLCBMZW47DQo+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
-ZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTGksIFpodWFuZ3poaQ0KPiBTdWJqZWN0
-OiBSRTogW1BBVENIIDAvNV0gRW5hYmxpbmcgdGhlIGFzeW5jaHJvbm91cyB0aHJlYWRzIGZvciBv
-dGhlciBwaGFzZXMNCj4gDQo+IEhlbGxvIFJhZmFlbCwNCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5
-c29ja2kubmV0XQ0KPiA+IFNlbnQ6IE1vbmRheSwgRmVicnVhcnkgMTcsIDIwMTQgNzo0MSBBTQ0K
-PiA+IFRvOiBMaXUsIENodWFuc2hlbmcNCj4gPiBDYzogZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5v
-cmc7IHBhdmVsQHVjdy5jejsgQnJvd24sIExlbjsNCj4gPiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
-cmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IExpLCBaaHVhbmd6aGkNCj4gPiBTdWJq
-ZWN0OiBSZTogW1BBVENIIDAvNV0gRW5hYmxpbmcgdGhlIGFzeW5jaHJvbm91cyB0aHJlYWRzIGZv
-ciBvdGhlciBwaGFzZXMNCj4gPg0KPiA+IE9uIE1vbmRheSwgRmVicnVhcnkgMTAsIDIwMTQgMDg6
-MzY6NTcgQU0gTGl1LCBDaHVhbnNoZW5nIHdyb3RlOg0KPiA+ID4gSGVsbG8gUmFmYWVsLA0KPiA+
-ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gRnJvbTogUmFm
-YWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gPiA+ID4gU2VudDog
-VGh1cnNkYXksIEZlYnJ1YXJ5IDA2LCAyMDE0IDU6NTMgQU0NCj4gPiA+ID4gVG86IExpdSwgQ2h1
-YW5zaGVuZw0KPiA+ID4gPiBDYzogZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IHBhdmVsQHVj
-dy5jejsgQnJvd24sIExlbjsNCj4gPiA+ID4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51
-eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBMaSwgWmh1YW5nemhpDQo+ID4gPiA+IFN1YmplY3Q6
-IFJlOiBbUEFUQ0ggMC81XSBFbmFibGluZyB0aGUgYXN5bmNocm9ub3VzIHRocmVhZHMgZm9yIG90
-aGVyDQo+ID4gcGhhc2VzDQo+ID4gPiA+DQo+ID4gPiA+IE9uIE1vbmRheSwgSmFudWFyeSAyMCwg
-MjAxNCAwNDo0NDozNCBQTSBMaXUsIENodWFuc2hlbmcgd3JvdGU6DQo+ID4gPiA+ID4gSGVsbG8s
-DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBUaGlzIHBhdGNoIHNlcmllcyBhcmUgZm9yIGVuYWJsaW5n
-IHRoZSBhc3luY2hyb25vdXMgdGhyZWFkcyBmb3IgdGhlDQo+ID4gcGhhc2VzDQo+ID4gPiA+ID4g
-cmVzdW1lX25vaXJxLCByZXN1bWVfZWFybHksIHN1c3BlbmRfbm9pcnEgYW5kIHN1c3BlbmRfbGF0
-ZS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEp1c3QgbGlrZSBjb21taXQgNWFmODRiODI3MDFhIGFu
-ZCA5N2RmOGMxMjk5NSwgd2l0aCBhc3luYyB0aHJlYWRzIGl0DQo+ID4gd2lsbA0KPiA+ID4gPiA+
-IHJlZHVjZSB0aGUgc3lzdGVtIHN1c3BlbmRpbmcgYW5kIHJlc3VtaW5nIHRpbWUgc2lnbmlmaWNh
-bnRseS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFdpdGggdGhlc2UgcGF0Y2hlcywgaW4gbXkgdGVz
-dCBwbGF0Zm9ybSwgaXQgc2F2ZWQgODAlIHRpbWUgaW4NCj4gPiByZXN1bWVfbm9pcnENCj4gPiA+
-ID4gPiBwaGFzZS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEhhcyBkb25lIHRoZSBzdXNwZW5kLXJl
-c3VtZSBzdHJlc3MgdGVzdCBmb3IgYSBsb25nIHRpbWUsIHBsZWFzZSBoZWxwIHRvDQo+ID4gPiA+
-ID4gcmV2aWV3Lg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gQmVzdCBSZWdhcmRzLA0KPiA+ID4gPiA+
-DQo+ID4gPiA+ID4gW1BBVENIIDEvNV0gUE06IEFkZGluZyB0d28gZmxhZ3MgZm9yIGFzeW5jIHN1
-c3BlbmRfbm9pcnEgYW5kDQo+ID4gPiA+ID4gW1BBVENIIDIvNV0gUE06IEVuYWJsaW5nIHRoZSBh
-c3luY2hyb25vdXMgdGhyZWFkcyBmb3IgcmVzdW1lX25vaXJxDQo+ID4gPiA+ID4gW1BBVENIIDMv
-NV0gUE06IEVuYWJsaW5nIHRoZSBhc3luY3Jvbm91cyB0aHJlYWRzIGZvciByZXN1bWVfZWFybHkN
-Cj4gPiA+ID4gPiBbUEFUQ0ggNC81XSBQTTogRW5hYmxpbmcgdGhlIGFzeW5jcm9ub3VzIHRocmVh
-ZHMgZm9yIHN1c3BlbmRfbm9pcnENCj4gPiA+ID4gPiBbUEFUQ0ggNS81XSBQTTogRW5hYmxpbmcg
-dGhlIGFzeW5jcm9ub3VzIHRocmVhZHMgZm9yIHN1c3BlbmRfbGF0ZQ0KPiA+ID4gPg0KPiA+ID4g
-PiBJJ3ZlIGFwcGxpZWQgdGhpcyB0byB0aGUgYmxlZWRpbmctZWRnZSBicmFuY2ggb2YgdGhlIGxp
-bnV4LXBtLmdpdCB0cmVlLCB3aXRoDQo+ID4gPiA+IG1pbm9yIGNoYW5nZXMgcmVsYXRlZCB0byBj
-b2Rpbmcgc3R5bGUsIHdoaXRlIHNwYWNlIGV0Yy4NCj4gPiA+IFRoYW5rcyB5b3VyIGhlbHAuDQo+
-ID4NCj4gPiBVbmZvcnR1bmF0ZWx5LCBJJ3ZlIGp1c3QgcmVhbGl6ZWQgdGhhdCB5b3VyIHBhdGNo
-ZXMgZG9uJ3QgYWRkIGFueSBtZWNoYW5pc20NCj4gPiBlbnN1cmluZyB0aGF0IHBhcmVudCBkZXZp
-Y2VzJyAuc3VzcGVuZF9ub2lycSgpIHdpbGwgYmUgY2FsbGVkICphZnRlciogdGhlDQo+ID4gLnN1
-c3BlbmRfbm9pcnEoKSBvZiBhbGwgdGhlaXIgY2hpbGRyZW4uICBPZiBjb3Vyc2UsIGFuYWxvZ291
-c2x5IGZvcg0KPiA+IC5zdXNwZW5kX2xhdGUoKSBhbmQgZm9yIHRoZSByZXN1bWUgcGFydCAod2hl
-cmUgY2hpbGRyZW4gaGF2ZSB0byB3YWl0IGZvcg0KPiA+IHRoZWlyIHBhcmVudHMpLg0KPiA+DQo+
-ID4gSW4gdGhlIG9yaWdpbmFsIGFzeW5jIHN1c3BlbmQvcmVzdW1lIGNvZGUgdGhhdCBpcyBpbXBs
-ZW1lbnRlZCB1c2luZw0KPiA+IHBvd2VyLmNvbXBsZXRpb24gYW5kIEkgc3VwcG9zZSB5b3UgY2Fu
-IGRvIHRoZSBzYW1lIHRoaW5nIGhlcmUuDQo+IA0KPiBJIHRoaW5rICJwYXJlbnQgZGV2aWNlcyBz
-dXNwZW5kIGFmdGVyIHRoZWlyIGNoaWxkcmVuIiBpcyBub3QgcmVsYXRlZCBkaXJlY3RseQ0KPiB3
-aXRoIHVzaW5nIGFzeW5jIG9yIG5vdDsNCj4gSW4gdGhlIG9yaWdpbmFsIGNvZGUsIGV2ZW4gd2l0
-aG91dCBhc3luY2luZywgdGhlIHN1c3BlbmQvcmVzdW1lIGhhcyB0aGUNCj4gd2FpdGluZw0KPiBh
-Y3Rpb24sIGJ1dCB0aGVyZSBubyB3YWl0aW5nIGFjdGlvbiBmb3Igc3VzcGVuZF9ub2lycSBhbmQg
-b3RoZXIgcGhhc2VzLg0KPiANClNvcnJ5LCByZS1jaGVja2VkIHRoZSBjb2RlLCB0aGUgb3JkZXIg
-aW4gdGhlIGxpc3QgaGFzIG1hZGUgc3VyZSB0aGUgc2VxdWVuY2UNCm9mIHBhcmVudC10aGVuLWNo
-aWxkcmVuIHdoZW4gd2l0aG91dCBhc3luY2luZy4NClRoYW5rcyB5b3VyIHBvaW50aW5nIG91dCwg
-d2lsbCByZS1jb29rIHRoaXMgc2VyaWVzIHBhdGNoLg0KDQo=
+On Thu, Feb 13, 2014 at 06:33:30PM +0100, Gregory CLEMENT wrote:
+> The Power Management Unit Service block also controls the Coherency
+> Fabric subsystem. This new set of registers is needed for the CPU idle
+> implementation for the Armada XP, it allows to enter in a deep CPU
+> idle state where the Coherency Fabric and the L2 cache are powerdown.
+> 
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> ---
+>  Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt | 12 +++++++-----
+>  arch/arm/boot/dts/armada-xp.dtsi                             |  2 +-
+>  2 files changed, 8 insertions(+), 6 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+> index 926b4d6aae7e..8a9db0c32ba5 100644
+> --- a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+> +++ b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+> @@ -7,14 +7,16 @@ Required properties:
+>  - compatible: "marvell,armada-370-xp-pmsu"
+>  
+>  - reg: Should contain PMSU registers location and length. First pair
+> -  for the per-CPU SW Reset Control registers, second pair for the
+> -  Power Management Service Unit.
+> +  for the per-CPU SW Reset Control registers, second pair for the CPU
+> +  Power Management Service Unit registers, third pair for the Fabric Power
+> +  Management Service Unit registers.
+
+Please mention explicitly that previous versions of this binding only
+specified the first two registers.  I haven't dug through the rest of
+this series yet, but I assume the driver will behave sanely when
+encountering an old dtb w/o the third reg entry?
+
+thx,
+
+Jason.
+
+>  
+>  Example:
+>  
+> -armada-370-xp-pmsu@d0022000 {
+> +armada-370-xp-pmsu@22000 {
+>  	compatible = "marvell,armada-370-xp-pmsu";
+> -	reg = <0xd0022100 0x430>,
+> -	      <0xd0020800 0x20>;
+> +	reg = <0x22100 0x430>,
+> +	      <0x20800 0x20>,
+> +	      <0x22000 0x24>;
+>  };
+>  
+> diff --git a/arch/arm/boot/dts/armada-xp.dtsi b/arch/arm/boot/dts/armada-xp.dtsi
+> index b8b84a22f0f3..f717da4f4d97 100644
+> --- a/arch/arm/boot/dts/armada-xp.dtsi
+> +++ b/arch/arm/boot/dts/armada-xp.dtsi
+> @@ -113,7 +113,7 @@
+>  
+>  			armada-370-xp-pmsu@22000 {
+>  				compatible = "marvell,armada-370-xp-pmsu";
+> -				reg = <0x22100 0x400>, <0x20800 0x20>;
+> +				reg = <0x22100 0x400>, <0x20800 0x20>, <0x22000 0x24>;
+>  			};
+>  
+>  			eth2: ethernet@30000 {
+> -- 
+> 1.8.1.2
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
