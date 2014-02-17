@@ -1,83 +1,41 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: remove sysfs link when a cpu != policy->cpu, is removed
-Date: Mon, 17 Feb 2014 23:03:27 +0100
-Message-ID: <1848612.IZFZXgfmHj@vostro.rjw.lan>
-References: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: don't call cpufreq_update_policy() on CPU addition
+Date: Mon, 17 Feb 2014 23:22:07 +0100
+Message-ID: <3201988.ZpLiSN5z6s@vostro.rjw.lan>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <1725957.nHPERWcMfN@vostro.rjw.lan> <CAKohpo=57bYHsx+m5wevuB0_4fhTK813T5TXnUYZh64gQ1YdWA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
+In-Reply-To: <CAKohpo=57bYHsx+m5wevuB0_4fhTK813T5TXnUYZh64gQ1YdWA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: swarren@nvidia.com, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, February 17, 2014 02:52:11 PM Viresh Kumar wrote:
-> Earlier patch tried to do this but missed this piece of code to fix.
+On Monday, February 17, 2014 10:45:41 AM Viresh Kumar wrote:
+> On 17 February 2014 05:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Friday, February 14, 2014 04:30:41 PM Viresh Kumar wrote:
+> >> cpufreq_update_policy() is called from two places currently. From a workqueue
+> >> handled queued from cpufreq_bp_resume() for boot CPU and from
+> >> cpufreq_cpu_callback() whenever a CPU is added.
+> >>
+> >> The first one makes sure that boot CPU is running on the frequency present in
+> >> policy->cpu. But we don't really need a call from cpufreq_cpu_callback(),
+> >> because we always call cpufreq_driver->init() (which will set policy->cur
+> >> correctly) whenever first CPU of any policy is added back. And so every policy
+> >> structure is guaranteed to have the right frequency in policy->cur.
+> >
+> > That sounds good, but doing the extra cpufreq_update_policy() shouldn't actually
+> > hurt, should it?
 > 
-> 42f921a cpufreq: remove sysfs files for CPUs which failed to come back after
-> resume
+> Yeah, it shouldn't hurt badly..
 > 
-> Currently we are getting this on suspend/resume:
+> > So, that would be a cleanup rather than a fix, right?
 > 
-> ------------[ cut here ]------------
-> WARNING: CPU: 0 PID: 877 at fs/sysfs/dir.c:52 sysfs_warn_dup+0x68/0x84()
-> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
-> Modules linked in: brcmfmac brcmutil
-> CPU: 0 PID: 877 Comm: test-rtc-resume Not tainted 3.14.0-rc2-00259-g9398a10cd964 #12
-> [<c0015bac>] (unwind_backtrace) from [<c0011850>] (show_stack+0x10/0x14)
-> [<c0011850>] (show_stack) from [<c056e018>] (dump_stack+0x80/0xcc)
-> [<c056e018>] (dump_stack) from [<c0025e44>] (warn_slowpath_common+0x64/0x88)
-> [<c0025e44>] (warn_slowpath_common) from [<c0025efc>] (warn_slowpath_fmt+0x30/0x40)
-> [<c0025efc>] (warn_slowpath_fmt) from [<c012776c>] (sysfs_warn_dup+0x68/0x84)
-> [<c012776c>] (sysfs_warn_dup) from [<c0127a54>] (sysfs_do_create_link_sd+0xb0/0xb8)
-> [<c0127a54>] (sysfs_do_create_link_sd) from [<c038ef64>] (__cpufreq_add_dev.isra.27+0x2a8/0x814)
-> [<c038ef64>] (__cpufreq_add_dev.isra.27) from [<c038f548>] (cpufreq_cpu_callback+0x70/0x8c)
-> [<c038f548>] (cpufreq_cpu_callback) from [<c0043864>] (notifier_call_chain+0x44/0x84)
-> [<c0043864>] (notifier_call_chain) from [<c0025f60>] (__cpu_notify+0x28/0x44)
-> [<c0025f60>] (__cpu_notify) from [<c00261e8>] (_cpu_up+0xf0/0x140)
-> [<c00261e8>] (_cpu_up) from [<c0569eb8>] (enable_nonboot_cpus+0x68/0xb0)
-> [<c0569eb8>] (enable_nonboot_cpus) from [<c006339c>] (suspend_devices_and_enter+0x198/0x2dc)
-> [<c006339c>] (suspend_devices_and_enter) from [<c0063654>] (pm_suspend+0x174/0x1e8)
-> [<c0063654>] (pm_suspend) from [<c00624e0>] (state_store+0x6c/0xbc)
-> [<c00624e0>] (state_store) from [<c01fc200>] (kobj_attr_store+0x14/0x20)
-> [<c01fc200>] (kobj_attr_store) from [<c0126e50>] (sysfs_kf_write+0x44/0x48)
-> [<c0126e50>] (sysfs_kf_write) from [<c012a274>] (kernfs_fop_write+0xb4/0x14c)
-> [<c012a274>] (kernfs_fop_write) from [<c00d4818>] (vfs_write+0xa8/0x180)
-> [<c00d4818>] (vfs_write) from [<c00d4bb8>] (SyS_write+0x3c/0x70)
-> [<c00d4bb8>] (SyS_write) from [<c000e620>] (ret_fast_syscall+0x0/0x30)
-> ---[ end trace 76969904b614c18f ]---
-> 
-> Fix this by removing sysfs link for cpufreq directory when cpu removed isn't
-> policy->cpu.
-> 
-> Reported-by: Stephen Warren <swarren@nvidia.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> 
-> Fix for 3.14 only.
+> Hmm, yeah..
 
-Queued up for 3.14, thanks!
-
->  drivers/cpufreq/cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 08ca8c9..cb003a6 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1323,8 +1323,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->  	up_read(&policy->rwsem);
->  
->  	if (cpu != policy->cpu) {
-> -		if (!frozen)
-> -			sysfs_remove_link(&dev->kobj, "cpufreq");
-> +		sysfs_remove_link(&dev->kobj, "cpufreq");
->  	} else if (cpus > 1) {
->  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
->  		if (new_cpu >= 0) {
-> 
+I've queued this up for 3.15, then.  Thanks!
 
 -- 
 I speak only for myself.
