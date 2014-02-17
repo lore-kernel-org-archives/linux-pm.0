@@ -1,169 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: Refactor cpufreq_set_policy()
-Date: Mon, 17 Feb 2014 02:06:15 +0100
-Message-ID: <3582112.BRVGbkstFm@vostro.rjw.lan>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH 0/5] Enabling the asynchronous threads for other phases
+Date: Mon, 17 Feb 2014 01:44:28 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C21FC2@SHSMSX101.ccr.corp.intel.com>
+References: <1390207479-26064-1-git-send-email-chuansheng.liu@intel.com>
+ <2360514.bLFmJYMItS@vostro.rjw.lan>
+ <27240C0AC20F114CBF8149A2696CBE4A01C1AF9E@SHSMSX101.ccr.corp.intel.com>
+ <9364493.5ysfSuJl7g@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51190 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753540AbaBQAv2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 19:51:28 -0500
+Received: from mga11.intel.com ([192.55.52.93]:35869 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753869AbaBQBod (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 16 Feb 2014 20:44:33 -0500
+In-Reply-To: <9364493.5ysfSuJl7g@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Reduce the rampant usage of goto and the indentation level in
-cpufreq_set_policy() to improve the readability of that code.
-
-No functional changes should result from that.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |  102 ++++++++++++++++++++--------------------------
- 1 file changed, 45 insertions(+), 57 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2018,22 +2018,21 @@ EXPORT_SYMBOL(cpufreq_get_policy);
- static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 				struct cpufreq_policy *new_policy)
- {
--	int ret = 0, failed = 1;
-+	struct cpufreq_governor *old_gov;
-+	int ret;
- 
- 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_policy->cpu,
- 		new_policy->min, new_policy->max);
- 
- 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
- 
--	if (new_policy->min > policy->max || new_policy->max < policy->min) {
--		ret = -EINVAL;
--		goto error_out;
--	}
-+	if (new_policy->min > policy->max || new_policy->max < policy->min)
-+		return -EINVAL;
- 
- 	/* verify the cpu speed can be set within this limit */
- 	ret = cpufreq_driver->verify(new_policy);
- 	if (ret)
--		goto error_out;
-+		return ret;
- 
- 	/* adjust if necessary - all reasons */
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-@@ -2049,7 +2048,7 @@ static int cpufreq_set_policy(struct cpu
- 	 */
- 	ret = cpufreq_driver->verify(new_policy);
- 	if (ret)
--		goto error_out;
-+		return ret;
- 
- 	/* notification of the new policy */
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-@@ -2064,58 +2063,47 @@ static int cpufreq_set_policy(struct cpu
- 	if (cpufreq_driver->setpolicy) {
- 		policy->policy = new_policy->policy;
- 		pr_debug("setting range\n");
--		ret = cpufreq_driver->setpolicy(new_policy);
--	} else {
--		if (new_policy->governor != policy->governor) {
--			/* save old, working values */
--			struct cpufreq_governor *old_gov = policy->governor;
--
--			pr_debug("governor switch\n");
--
--			/* end old governor */
--			if (policy->governor) {
--				__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
--				up_write(&policy->rwsem);
--				__cpufreq_governor(policy,
--						CPUFREQ_GOV_POLICY_EXIT);
--				down_write(&policy->rwsem);
--			}
--
--			/* start new governor */
--			policy->governor = new_policy->governor;
--			if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
--				if (!__cpufreq_governor(policy, CPUFREQ_GOV_START)) {
--					failed = 0;
--				} else {
--					up_write(&policy->rwsem);
--					__cpufreq_governor(policy,
--							CPUFREQ_GOV_POLICY_EXIT);
--					down_write(&policy->rwsem);
--				}
--			}
--
--			if (failed) {
--				/* new governor failed, so re-start old one */
--				pr_debug("starting governor %s failed\n",
--							policy->governor->name);
--				if (old_gov) {
--					policy->governor = old_gov;
--					__cpufreq_governor(policy,
--							CPUFREQ_GOV_POLICY_INIT);
--					__cpufreq_governor(policy,
--							   CPUFREQ_GOV_START);
--				}
--				ret = -EINVAL;
--				goto error_out;
--			}
--			/* might be a policy change, too, so fall through */
--		}
--		pr_debug("governor: change or update limits\n");
--		ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+		return cpufreq_driver->setpolicy(new_policy);
- 	}
-+	if (new_policy->governor == policy->governor)
-+		goto out;
-+
-+	pr_debug("governor switch\n");
-+
-+	/* save old, working values */
-+	old_gov = policy->governor;
-+	/* end old governor */
-+	if (old_gov) {
-+		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		up_write(&policy->rwsem);
-+		__cpufreq_governor(policy,CPUFREQ_GOV_POLICY_EXIT);
-+		down_write(&policy->rwsem);
-+	}
-+
-+	/* start new governor */
-+	policy->governor = new_policy->governor;
-+	if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
-+		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
-+			goto out;
-+
-+		up_write(&policy->rwsem);
-+		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-+		down_write(&policy->rwsem);
-+	}
-+
-+	/* new governor failed, so re-start old one */
-+	pr_debug("starting governor %s failed\n", policy->governor->name);
-+	if (old_gov) {
-+		policy->governor = old_gov;
-+		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT);
-+		__cpufreq_governor(policy, CPUFREQ_GOV_START);
-+	}
-+
-+	return -EINVAL;
- 
--error_out:
--	return ret;
-+ out:
-+	pr_debug("governor: change or update limits\n");
-+	return __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
- }
- 
- /**
-
+SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
+ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IE1vbmRh
+eSwgRmVicnVhcnkgMTcsIDIwMTQgNzo0MSBBTQ0KPiBUbzogTGl1LCBDaHVhbnNoZW5nDQo+IENj
+OiBncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZzsgcGF2ZWxAdWN3LmN6OyBCcm93biwgTGVuOw0K
+PiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7
+IExpLCBaaHVhbmd6aGkNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzVdIEVuYWJsaW5nIHRoZSBh
+c3luY2hyb25vdXMgdGhyZWFkcyBmb3Igb3RoZXIgcGhhc2VzDQo+IA0KPiBPbiBNb25kYXksIEZl
+YnJ1YXJ5IDEwLCAyMDE0IDA4OjM2OjU3IEFNIExpdSwgQ2h1YW5zaGVuZyB3cm90ZToNCj4gPiBI
+ZWxsbyBSYWZhZWwsDQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4g
+PiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiA+
+ID4gU2VudDogVGh1cnNkYXksIEZlYnJ1YXJ5IDA2LCAyMDE0IDU6NTMgQU0NCj4gPiA+IFRvOiBM
+aXUsIENodWFuc2hlbmcNCj4gPiA+IENjOiBncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZzsgcGF2
+ZWxAdWN3LmN6OyBCcm93biwgTGVuOw0KPiA+ID4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBs
+aW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBMaSwgWmh1YW5nemhpDQo+ID4gPiBTdWJqZWN0
+OiBSZTogW1BBVENIIDAvNV0gRW5hYmxpbmcgdGhlIGFzeW5jaHJvbm91cyB0aHJlYWRzIGZvciBv
+dGhlcg0KPiBwaGFzZXMNCj4gPiA+DQo+ID4gPiBPbiBNb25kYXksIEphbnVhcnkgMjAsIDIwMTQg
+MDQ6NDQ6MzQgUE0gTGl1LCBDaHVhbnNoZW5nIHdyb3RlOg0KPiA+ID4gPiBIZWxsbywNCj4gPiA+
+ID4NCj4gPiA+ID4gVGhpcyBwYXRjaCBzZXJpZXMgYXJlIGZvciBlbmFibGluZyB0aGUgYXN5bmNo
+cm9ub3VzIHRocmVhZHMgZm9yIHRoZQ0KPiBwaGFzZXMNCj4gPiA+ID4gcmVzdW1lX25vaXJxLCBy
+ZXN1bWVfZWFybHksIHN1c3BlbmRfbm9pcnEgYW5kIHN1c3BlbmRfbGF0ZS4NCj4gPiA+ID4NCj4g
+PiA+ID4gSnVzdCBsaWtlIGNvbW1pdCA1YWY4NGI4MjcwMWEgYW5kIDk3ZGY4YzEyOTk1LCB3aXRo
+IGFzeW5jIHRocmVhZHMgaXQNCj4gd2lsbA0KPiA+ID4gPiByZWR1Y2UgdGhlIHN5c3RlbSBzdXNw
+ZW5kaW5nIGFuZCByZXN1bWluZyB0aW1lIHNpZ25pZmljYW50bHkuDQo+ID4gPiA+DQo+ID4gPiA+
+IFdpdGggdGhlc2UgcGF0Y2hlcywgaW4gbXkgdGVzdCBwbGF0Zm9ybSwgaXQgc2F2ZWQgODAlIHRp
+bWUgaW4NCj4gcmVzdW1lX25vaXJxDQo+ID4gPiA+IHBoYXNlLg0KPiA+ID4gPg0KPiA+ID4gPiBI
+YXMgZG9uZSB0aGUgc3VzcGVuZC1yZXN1bWUgc3RyZXNzIHRlc3QgZm9yIGEgbG9uZyB0aW1lLCBw
+bGVhc2UgaGVscCB0bw0KPiA+ID4gPiByZXZpZXcuDQo+ID4gPiA+DQo+ID4gPiA+IEJlc3QgUmVn
+YXJkcywNCj4gPiA+ID4NCj4gPiA+ID4gW1BBVENIIDEvNV0gUE06IEFkZGluZyB0d28gZmxhZ3Mg
+Zm9yIGFzeW5jIHN1c3BlbmRfbm9pcnEgYW5kDQo+ID4gPiA+IFtQQVRDSCAyLzVdIFBNOiBFbmFi
+bGluZyB0aGUgYXN5bmNocm9ub3VzIHRocmVhZHMgZm9yIHJlc3VtZV9ub2lycQ0KPiA+ID4gPiBb
+UEFUQ0ggMy81XSBQTTogRW5hYmxpbmcgdGhlIGFzeW5jcm9ub3VzIHRocmVhZHMgZm9yIHJlc3Vt
+ZV9lYXJseQ0KPiA+ID4gPiBbUEFUQ0ggNC81XSBQTTogRW5hYmxpbmcgdGhlIGFzeW5jcm9ub3Vz
+IHRocmVhZHMgZm9yIHN1c3BlbmRfbm9pcnENCj4gPiA+ID4gW1BBVENIIDUvNV0gUE06IEVuYWJs
+aW5nIHRoZSBhc3luY3Jvbm91cyB0aHJlYWRzIGZvciBzdXNwZW5kX2xhdGUNCj4gPiA+DQo+ID4g
+PiBJJ3ZlIGFwcGxpZWQgdGhpcyB0byB0aGUgYmxlZWRpbmctZWRnZSBicmFuY2ggb2YgdGhlIGxp
+bnV4LXBtLmdpdCB0cmVlLCB3aXRoDQo+ID4gPiBtaW5vciBjaGFuZ2VzIHJlbGF0ZWQgdG8gY29k
+aW5nIHN0eWxlLCB3aGl0ZSBzcGFjZSBldGMuDQo+ID4gVGhhbmtzIHlvdXIgaGVscC4NCj4gDQo+
+IFVuZm9ydHVuYXRlbHksIEkndmUganVzdCByZWFsaXplZCB0aGF0IHlvdXIgcGF0Y2hlcyBkb24n
+dCBhZGQgYW55IG1lY2hhbmlzbQ0KPiBlbnN1cmluZyB0aGF0IHBhcmVudCBkZXZpY2VzJyAuc3Vz
+cGVuZF9ub2lycSgpIHdpbGwgYmUgY2FsbGVkICphZnRlciogdGhlDQo+IC5zdXNwZW5kX25vaXJx
+KCkgb2YgYWxsIHRoZWlyIGNoaWxkcmVuLiAgT2YgY291cnNlLCBhbmFsb2dvdXNseSBmb3INCj4g
+LnN1c3BlbmRfbGF0ZSgpIGFuZCBmb3IgdGhlIHJlc3VtZSBwYXJ0ICh3aGVyZSBjaGlsZHJlbiBo
+YXZlIHRvIHdhaXQgZm9yDQo+IHRoZWlyIHBhcmVudHMpLg0KPiANCj4gSW4gdGhlIG9yaWdpbmFs
+IGFzeW5jIHN1c3BlbmQvcmVzdW1lIGNvZGUgdGhhdCBpcyBpbXBsZW1lbnRlZCB1c2luZw0KPiBw
+b3dlci5jb21wbGV0aW9uIGFuZCBJIHN1cHBvc2UgeW91IGNhbiBkbyB0aGUgc2FtZSB0aGluZyBo
+ZXJlLg0KDQpJIHRoaW5rICJwYXJlbnQgZGV2aWNlcyBzdXNwZW5kIGFmdGVyIHRoZWlyIGNoaWxk
+cmVuIiBpcyBub3QgcmVsYXRlZCBkaXJlY3RseQ0Kd2l0aCB1c2luZyBhc3luYyBvciBub3Q7DQpJ
+biB0aGUgb3JpZ2luYWwgY29kZSwgZXZlbiB3aXRob3V0IGFzeW5jaW5nLCB0aGUgc3VzcGVuZC9y
+ZXN1bWUgaGFzIHRoZSB3YWl0aW5nDQphY3Rpb24sIGJ1dCB0aGVyZSBubyB3YWl0aW5nIGFjdGlv
+biBmb3Igc3VzcGVuZF9ub2lycSBhbmQgb3RoZXIgcGhhc2VzLg0KDQpJZiB5b3UgdGhpbmsgdGhl
+IHBhcmVudCB3YWl0aW5nIGZvciBjaGlsZHJlbiBpcyBuZWNlc3NhcnkgZm9yIHN1c3BlbmRfbm9p
+cnEvc3VzcGVuZF9sYXRlDQovcmVzdW1lX2Vhcmx5L3Jlc3VtZV9ub2lycSwgSSBjYW4gY29vayBv
+dGhlciBzZXJpZXMgcGF0Y2hlcy4NCg0KQnV0IHdlIGNhbiBzZXBhcmF0ZSB0aGVtIHdpdGggY3Vy
+cmVudCBhc3luY2luZyBzZXJpZXMgcGF0Y2hlcy4gQWdyZWU/DQoNCg==
