@@ -1,91 +1,46 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH v4 07/13] ARM: dts: mvebu: Add a new set of registers
- to the PMSU node
-Date: Sun, 16 Feb 2014 21:57:05 -0500
-Message-ID: <20140217025705.GJ7862@titan.lakedaemon.net>
-References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
- <1392312816-17657-8-git-send-email-gregory.clement@free-electrons.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH] Thermal: Allow first update of cooling device state
+Date: Mon, 17 Feb 2014 11:02:55 +0800
+Message-ID: <1392606175-19635-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:59292 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750805AbaBQC5W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 21:57:22 -0500
-Content-Disposition: inline
-In-Reply-To: <1392312816-17657-8-git-send-email-gregory.clement@free-electrons.com>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:4657 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbaBQDDC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2014 22:03:02 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, devicetree@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+To: rui.zhang@intel.com
+Cc: durgadoss.r@intel.com, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-On Thu, Feb 13, 2014 at 06:33:30PM +0100, Gregory CLEMENT wrote:
-> The Power Management Unit Service block also controls the Coherency
-> Fabric subsystem. This new set of registers is needed for the CPU idle
-> implementation for the Armada XP, it allows to enter in a deep CPU
-> idle state where the Coherency Fabric and the L2 cache are powerdown.
-> 
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->  Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt | 12 +++++++-----
->  arch/arm/boot/dts/armada-xp.dtsi                             |  2 +-
->  2 files changed, 8 insertions(+), 6 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
-> index 926b4d6aae7e..8a9db0c32ba5 100644
-> --- a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
-> +++ b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
-> @@ -7,14 +7,16 @@ Required properties:
->  - compatible: "marvell,armada-370-xp-pmsu"
->  
->  - reg: Should contain PMSU registers location and length. First pair
-> -  for the per-CPU SW Reset Control registers, second pair for the
-> -  Power Management Service Unit.
-> +  for the per-CPU SW Reset Control registers, second pair for the CPU
-> +  Power Management Service Unit registers, third pair for the Fabric Power
-> +  Management Service Unit registers.
+In initialization, if the cooling device is initialized at
+max cooling state, and the thermal zone temperature is below
+the first trip point, then the cooling state can't be updated
+to the right state, untill the first trip point be triggered.
 
-Please mention explicitly that previous versions of this binding only
-specified the first two registers.  I haven't dug through the rest of
-this series yet, but I assume the driver will behave sanely when
-encountering an old dtb w/o the third reg entry?
+To fix this issue, allow first update of cooling device state
+during registration, initialized "updated" device field as
+"false" (instead of "true").
 
-thx,
+Signed-off-by: Wei Ni <wni@nvidia.com>
+---
+ drivers/thermal/thermal_core.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Jason.
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 338a88b..02f57af 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1107,7 +1107,7 @@ __thermal_cooling_device_register(struct device_node *np,
+ 	INIT_LIST_HEAD(&cdev->thermal_instances);
+ 	cdev->np = np;
+ 	cdev->ops = ops;
+-	cdev->updated = true;
++	cdev->updated = false;
+ 	cdev->device.class = &thermal_class;
+ 	cdev->devdata = devdata;
+ 	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
+-- 
+1.7.9.5
 
->  
->  Example:
->  
-> -armada-370-xp-pmsu@d0022000 {
-> +armada-370-xp-pmsu@22000 {
->  	compatible = "marvell,armada-370-xp-pmsu";
-> -	reg = <0xd0022100 0x430>,
-> -	      <0xd0020800 0x20>;
-> +	reg = <0x22100 0x430>,
-> +	      <0x20800 0x20>,
-> +	      <0x22000 0x24>;
->  };
->  
-> diff --git a/arch/arm/boot/dts/armada-xp.dtsi b/arch/arm/boot/dts/armada-xp.dtsi
-> index b8b84a22f0f3..f717da4f4d97 100644
-> --- a/arch/arm/boot/dts/armada-xp.dtsi
-> +++ b/arch/arm/boot/dts/armada-xp.dtsi
-> @@ -113,7 +113,7 @@
->  
->  			armada-370-xp-pmsu@22000 {
->  				compatible = "marvell,armada-370-xp-pmsu";
-> -				reg = <0x22100 0x400>, <0x20800 0x20>;
-> +				reg = <0x22100 0x400>, <0x20800 0x20>, <0x22000 0x24>;
->  			};
->  
->  			eth2: ethernet@30000 {
-> -- 
-> 1.8.1.2
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
