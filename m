@@ -1,66 +1,27 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] cpufreq: don't call cpufreq_update_policy() on CPU
- addition
-Date: Mon, 17 Feb 2014 14:29:53 +0530
-Message-ID: <5301CF89.5070803@linux.vnet.ibm.com>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <8f2fc4d6240b567fdb69a0b47f073d174b7ef9b2.1392375504.git.viresh.kumar@linaro.org> <5301CBAE.3000102@linux.vnet.ibm.com> <CAKohpom1DUOMBt6iAVcoQ5+DAXUgjSPGWaqpp6Jm=Vo+YExCFA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Mon, 17 Feb 2014 14:40:26 +0530
+Message-ID: <CAKohpomHEjqN+qPF9_v95kG+1=Yzpm54mVoN-3Vn51X=QckbHw@mail.gmail.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+	<4772234.6D4cUIJHX4@vostro.rjw.lan>
+	<CAKohpo=uPbqMcDEHYEMahRF0rCO8KYscj2nocz81_OTKyU+Tfw@mail.gmail.com>
+	<5301C605.3030205@linux.vnet.ibm.com>
+	<CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com>
+	<5301CE86.9020105@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom1DUOMBt6iAVcoQ5+DAXUgjSPGWaqpp6Jm=Vo+YExCFA@mail.gmail.com>
+In-Reply-To: <5301CE86.9020105@linux.vnet.ibm.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/17/2014 02:24 PM, Viresh Kumar wrote:
-> On 17 February 2014 14:13, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> On 02/14/2014 04:30 PM, Viresh Kumar wrote:
->>> cpufreq_update_policy() is called from two places currently. From a workqueue
->>> handled queued from cpufreq_bp_resume() for boot CPU and from
->>> cpufreq_cpu_callback() whenever a CPU is added.
->>>
->>> The first one makes sure that boot CPU is running on the frequency present in
->>> policy->cpu. But we don't really need a call from cpufreq_cpu_callback(),
->>> because we always call cpufreq_driver->init() (which will set policy->cur
->>> correctly) whenever first CPU of any policy is added back. And so every policy
->>> structure is guaranteed to have the right frequency in policy->cur.
->>>
->>
->> This wording is slightly inaccurate. ->init() may or may not set policy->cur
->> (for example, powernowk8 driver doesn't set it in the init routine)..
-> 
-> Its not the wording that is wrong but this particular driver then :)
-> This is what Documentation/cpu-drivers.txt says:
-> 
-> 1.2 Per-CPU Initialization
-> Then, the driver must fill in the following values:
-> 
-> policy->cur The current operating frequency of
-> this CPU (if appropriate)
-> 
-> And so it is supposed to do it.
->
+On 17 February 2014 14:25, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Specifically, I'm referring to the problem where there _is_ a difference,
+> but the ->get() is not reporting it properly, like returning a 0 for example.
 
-Ah, I see.
- 
->> But we set it for sure in __cpufreq_add_dev():
->>
->> 1117         if (cpufreq_driver->get) {
->> 1118                 policy->cur = cpufreq_driver->get(policy->cpu);
->> 1119                 if (!policy->cur) {
->> 1120                         pr_err("%s: ->get() failed\n", __func__);
->> 1121                         goto err_get_freq;
->> 1122                 }
->> 1123         }
-> 
-> Its just about removing that from drivers and doing it once in core :)
->
-
-Ok..
-
-Regards,
-Srivatsa S. Bhat
-
+I think get() returning zero isn't acceptable at all. How can current freq be
+zero :) .. There has to be a bug somewhere and so we shouldn't really
+try to get working here.. That's what I thought.
