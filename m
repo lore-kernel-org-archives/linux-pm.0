@@ -1,95 +1,52 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH RFC v3 3/3] Documentation: arm: define DT idle states
- bindings
-Date: Tue, 18 Feb 2014 08:48:16 +0900
-Message-ID: <20140217234816.GC2669@sirena.org.uk>
-References: <1392128273-8614-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1392128273-8614-4-git-send-email-lorenzo.pieralisi@arm.com>
- <20140216013956.GV4451@sirena.org.uk>
- <20140217163421.GD20125@e102568-lin.cambridge.arm.com>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
+Date: Tue, 18 Feb 2014 00:33:11 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
+References: <1392617954-5292-6-git-send-email-chuansheng.liu@intel.com>
+ <10253072.9TaPuJL1lG@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5099062454696658546=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140217163421.GD20125@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:65087 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751435AbaBRAdT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Feb 2014 19:33:19 -0500
+In-Reply-To: <10253072.9TaPuJL1lG@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-
---===============5099062454696658546==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="i7F3eY7HS/tUJxUd"
-Content-Disposition: inline
-
-
---i7F3eY7HS/tUJxUd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Mon, Feb 17, 2014 at 04:34:21PM +0000, Lorenzo Pieralisi wrote:
-> On Sun, Feb 16, 2014 at 01:39:56AM +0000, Mark Brown wrote:
-
-> > > +	- cache-state-retained
-> > > +		Usage: See definition
-> > > +		Value type: <none>
-> > > +		Definition: if present cache memory is retained on power down,
-> > > +			    otherwise it is lost.
-
-> > Might be better to define which caches?
-
-> I do not expect caches in the same power domain to have different retention
-> capabilities, so a flag per-state should be enough. If anyone is unhappy
-> about this please flag it up. List of caches affected can be retrieved by
-> walking the power-domain specifiers and check those against the caches power
-> domains.
-
-OK, so it's caches located within the power domains referenced by the
-state node?  Might be good to say that say that just for clarity since
-the power domains are indirected.
-
---i7F3eY7HS/tUJxUd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTAp+9AAoJELSic+t+oim9vNQP/iavmPVh9EzJ497LQvWlRsZ6
-JHaggKvVBrNTb9i5AtX9DInevb1e470LNUxIF5+XtH6dQEXhS45dBDxtaf1TZGAA
-NQKTVs/QwvRDsIHM6wZz751dTdwxqP7AkN48Yhbng5yLdKHm+uaq7/8LkBmacI0h
-ACRTF/vXin6YRgA0JfCbxxSIJdj1zYtZeWIcoeKGS49AzanNDPssntwiyoA1hW0p
-er+IqZ7rNCBbbU6MlolEhLPNkaTN1CJMJ9/DqOO3QTlEasf/L4MMs0aY5wQwub9U
-j2LAMmLKLil3QXosX0HtXQVyifvVjVQzfPEgdNWuIR7BI7aTZg3Ma78W3R1TquEC
-JBldsuicJpTJZRj4Y99kvFJ6WztTaXgfoAliPtqeP1b2UElteuRhENy496NjoZWj
-lk5lfAZVrENX9O6YorhdCwpHyxqxyy6k93L9C7CsvsguetNvtjcM8MrZPig/7Umt
-tbwnBpGbmeIP6QoYd2K6oRcQtC2c+kaQU2Ffu3PetYkwEfnTvKJJfHn73tQ6KQEh
-dXN/1KwUe/JF5BYp7q6G7BLa/x5nXgXEV+OzjOt+hzygiVV5r5bYX3dTcoJe7iH7
-W91tWNX2OeSJhQcw8yuN+EeDg8F8nNfIGzJIOWnJONogc2PPkOFQH15khs5aiqby
-kSjN5EAkBb6XnspscbwX
-=qVRM
------END PGP SIGNATURE-----
-
---i7F3eY7HS/tUJxUd--
-
-
---===============5099062454696658546==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============5099062454696658546==--
+SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
+ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNk
+YXksIEZlYnJ1YXJ5IDE4LCAyMDE0IDE6MjggQU0NCj4gVG86IExpdSwgQ2h1YW5zaGVuZw0KPiBD
+YzogZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IEJyb3duLCBMZW47IHBhdmVsQHVjdy5jejsN
+Cj4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
+OyBMaSwgWmh1YW5nemhpDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjMgNS81XSBQTSAvIHNsZWVw
+OiBBc3luY2hyb25vdXMgdGhyZWFkcyBmb3Igc3VzcGVuZF9sYXRlDQo+IA0KPiBPbiBNb25kYXks
+IEZlYnJ1YXJ5IDE3LCAyMDE0IDAyOjE5OjE0IFBNIENodWFuc2hlbmcgTGl1IHdyb3RlOg0KPiA+
+IEluIGFuYWxvZ3kgd2l0aCBjb21taXRzIDVhZjg0YjgyNzAxYSBhbmQgOTdkZjhjMTI5OTUsIHVz
+aW5nDQo+ID4gYXN5bmNocm9ub3VzIHRocmVhZHMgY2FuIGltcHJvdmUgdGhlIG92ZXJhbGwgc3Vz
+cGVuZF9sYXRlDQo+ID4gdGltZSBzaWduaWZpY2FudGx5Lg0KPiA+DQo+ID4gVGhpcyBwYXRjaCBp
+cyBmb3Igc3VzcGVuZF9sYXRlIHBoYXNlLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2h1YW5z
+aGVuZyBMaXUgPGNodWFuc2hlbmcubGl1QGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVy
+cy9iYXNlL3Bvd2VyL21haW4uYyB8IDY2DQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrLS0tLS0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA1NCBpbnNlcnRpb25zKCsp
+LCAxMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93
+ZXIvbWFpbi5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYw0KPiA+IGluZGV4IDcyYjRjOWMu
+LmMwMzEwNTAgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYw0KPiA+
+ICsrKyBiL2RyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMNCj4gPiBAQCAtMTEyNywxNiArMTEyNywy
+NiBAQCBzdGF0aWMgaW50IGRwbV9zdXNwZW5kX25vaXJxKHBtX21lc3NhZ2VfdA0KPiBzdGF0ZSkN
+Cj4gPiAgICoNCj4gPiAgICogUnVudGltZSBQTSBpcyBkaXNhYmxlZCBmb3IgQGRldiB3aGlsZSB0
+aGlzIGZ1bmN0aW9uIGlzIGJlaW5nIGV4ZWN1dGVkLg0KPiA+ICAgKi8NCj4gPiAtc3RhdGljIGlu
+dCBkZXZpY2Vfc3VzcGVuZF9sYXRlKHN0cnVjdCBkZXZpY2UgKmRldiwgcG1fbWVzc2FnZV90IHN0
+YXRlKQ0KPiA+ICtzdGF0aWMgaW50IF9fZGV2aWNlX3N1c3BlbmRfbGF0ZShzdHJ1Y3QgZGV2aWNl
+ICpkZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSwNCj4gYm9vbCBhc3luYykNCj4gPiAgew0KPiA+ICAJ
+cG1fY2FsbGJhY2tfdCBjYWxsYmFjayA9IE5VTEw7DQo+ID4gIAljaGFyICppbmZvID0gTlVMTDsN
+Cj4gPiAtCWludCBlcnJvcjsNCj4gPiArCWludCBlcnJvciA9IDA7DQo+ID4gKw0KPiA+ICsJZHBt
+X3dhaXRfZm9yX2NoaWxkcmVuKGRldiwgYXN5bmMpOw0KPiA+DQo+IA0KPiBMaWtlIGluIHBhdGNo
+IFs0LzVdLCBhbGwgb2YgdGhlICJnb3RvIENvbXBsZXRlIiBzdGF0ZW1lbnRzIGNhbiBnbyBiZWZv
+cmUNCj4gdGhlIHdhaXRpbmcuDQo+IA0KWW91IGFyZSByaWdodCwgd2lsbCBkbyB0aGF0IGluIHBh
+dGNoIFY0LCB0aGFua3MgeW91ciByZXZpZXdpbmcuDQoNCg==
