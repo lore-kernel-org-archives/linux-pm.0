@@ -1,183 +1,68 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: Refactor cpufreq_set_policy()
-Date: Tue, 18 Feb 2014 14:40:58 +0530
-Message-ID: <530323A2.3040909@linux.vnet.ibm.com>
-References: <3582112.BRVGbkstFm@vostro.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH RFC v4 1/3] Documentation: devicetree: psci: define CPU
+ suspend parameter
+Date: Tue, 18 Feb 2014 11:47:29 +0000
+Message-ID: <1392724051-11950-2-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1392724051-11950-1-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:35386 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754473AbaBRJQb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 04:16:31 -0500
-Received: from /spool/local
-	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 18 Feb 2014 19:16:29 +1000
-In-Reply-To: <3582112.BRVGbkstFm@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1392724051-11950-1-git-send-email-lorenzo.pieralisi@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: devicetree@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Sebastian Capella <sebastian.capella@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, Grant Likely <grant.likely@linaro.org>, Dave Martin <dave.martin@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>Mark
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 02/17/2014 06:36 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Reduce the rampant usage of goto and the indentation level in
-> cpufreq_set_policy() to improve the readability of that code.
-> 
-> No functional changes should result from that.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+OS layers built on top of PSCI to enter low-power states require the
+power_state parameter to be passed to the PSCI CPU suspend method.
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+This parameter is specific to a power state and platform specific,
+therefore must be provided by firmware to the OS in order to enable
+proper call sequence.
 
-Regards,
-Srivatsa S. Bhat
+This patch adds a property in the PSCI bindings that describes how
+the CPU suspend power_state parameter should be defined in DT in
+all device nodes that rely on PSCI CPU suspend method usage.
 
-> ---
->  drivers/cpufreq/cpufreq.c |  102 ++++++++++++++++++++--------------------------
->  1 file changed, 45 insertions(+), 57 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -2018,22 +2018,21 @@ EXPORT_SYMBOL(cpufreq_get_policy);
->  static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  				struct cpufreq_policy *new_policy)
->  {
-> -	int ret = 0, failed = 1;
-> +	struct cpufreq_governor *old_gov;
-> +	int ret;
-> 
->  	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_policy->cpu,
->  		new_policy->min, new_policy->max);
-> 
->  	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
-> 
-> -	if (new_policy->min > policy->max || new_policy->max < policy->min) {
-> -		ret = -EINVAL;
-> -		goto error_out;
-> -	}
-> +	if (new_policy->min > policy->max || new_policy->max < policy->min)
-> +		return -EINVAL;
-> 
->  	/* verify the cpu speed can be set within this limit */
->  	ret = cpufreq_driver->verify(new_policy);
->  	if (ret)
-> -		goto error_out;
-> +		return ret;
-> 
->  	/* adjust if necessary - all reasons */
->  	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-> @@ -2049,7 +2048,7 @@ static int cpufreq_set_policy(struct cpu
->  	 */
->  	ret = cpufreq_driver->verify(new_policy);
->  	if (ret)
-> -		goto error_out;
-> +		return ret;
-> 
->  	/* notification of the new policy */
->  	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-> @@ -2064,58 +2063,47 @@ static int cpufreq_set_policy(struct cpu
->  	if (cpufreq_driver->setpolicy) {
->  		policy->policy = new_policy->policy;
->  		pr_debug("setting range\n");
-> -		ret = cpufreq_driver->setpolicy(new_policy);
-> -	} else {
-> -		if (new_policy->governor != policy->governor) {
-> -			/* save old, working values */
-> -			struct cpufreq_governor *old_gov = policy->governor;
-> -
-> -			pr_debug("governor switch\n");
-> -
-> -			/* end old governor */
-> -			if (policy->governor) {
-> -				__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> -				up_write(&policy->rwsem);
-> -				__cpufreq_governor(policy,
-> -						CPUFREQ_GOV_POLICY_EXIT);
-> -				down_write(&policy->rwsem);
-> -			}
-> -
-> -			/* start new governor */
-> -			policy->governor = new_policy->governor;
-> -			if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
-> -				if (!__cpufreq_governor(policy, CPUFREQ_GOV_START)) {
-> -					failed = 0;
-> -				} else {
-> -					up_write(&policy->rwsem);
-> -					__cpufreq_governor(policy,
-> -							CPUFREQ_GOV_POLICY_EXIT);
-> -					down_write(&policy->rwsem);
-> -				}
-> -			}
-> -
-> -			if (failed) {
-> -				/* new governor failed, so re-start old one */
-> -				pr_debug("starting governor %s failed\n",
-> -							policy->governor->name);
-> -				if (old_gov) {
-> -					policy->governor = old_gov;
-> -					__cpufreq_governor(policy,
-> -							CPUFREQ_GOV_POLICY_INIT);
-> -					__cpufreq_governor(policy,
-> -							   CPUFREQ_GOV_START);
-> -				}
-> -				ret = -EINVAL;
-> -				goto error_out;
-> -			}
-> -			/* might be a policy change, too, so fall through */
-> -		}
-> -		pr_debug("governor: change or update limits\n");
-> -		ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> +		return cpufreq_driver->setpolicy(new_policy);
->  	}
-> +	if (new_policy->governor == policy->governor)
-> +		goto out;
-> +
-> +	pr_debug("governor switch\n");
-> +
-> +	/* save old, working values */
-> +	old_gov = policy->governor;
-> +	/* end old governor */
-> +	if (old_gov) {
-> +		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> +		up_write(&policy->rwsem);
-> +		__cpufreq_governor(policy,CPUFREQ_GOV_POLICY_EXIT);
-> +		down_write(&policy->rwsem);
-> +	}
-> +
-> +	/* start new governor */
-> +	policy->governor = new_policy->governor;
-> +	if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
-> +		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
-> +			goto out;
-> +
-> +		up_write(&policy->rwsem);
-> +		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> +		down_write(&policy->rwsem);
-> +	}
-> +
-> +	/* new governor failed, so re-start old one */
-> +	pr_debug("starting governor %s failed\n", policy->governor->name);
-> +	if (old_gov) {
-> +		policy->governor = old_gov;
-> +		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT);
-> +		__cpufreq_governor(policy, CPUFREQ_GOV_START);
-> +	}
-> +
-> +	return -EINVAL;
-> 
-> -error_out:
-> -	return ret;
-> + out:
-> +	pr_debug("governor: change or update limits\n");
-> +	return __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
->  }
-> 
->  /**
-> 
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ Documentation/devicetree/bindings/arm/psci.txt | 11 +++++
+ 1 file changed, 11 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
+index 433afe9..797c48f 100644
+--- a/Documentation/devicetree/bindings/arm/psci.txt
++++ b/Documentation/devicetree/bindings/arm/psci.txt
+@@ -42,6 +42,14 @@ Main node optional properties:
+ 
+  - migrate       : Function ID for MIGRATE operation
+ 
++Device tree nodes that require usage of PSCI CPU_SUSPEND function (ie idle
++states bindings[1]) must specify the following properties:
++
++- entry-method-param
++		Usage: Required for idle states bindings [1].
++		Value type: <u32>
++		Definition: power_state parameter to pass to the PSCI
++			    suspend call.
+ 
+ Example:
+ 
+@@ -53,3 +61,6 @@ Example:
+ 		cpu_on		= <0x95c10002>;
+ 		migrate		= <0x95c10003>;
+ 	};
++
++[1] Kernel documentation - ARM idle states bindings
++    Documentation/devicetree/bindings/arm/idle-states.txt
+-- 
+1.8.4
