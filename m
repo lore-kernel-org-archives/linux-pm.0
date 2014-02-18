@@ -1,81 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
-Date: Tue, 18 Feb 2014 16:29:26 +0100
-Message-ID: <4518865.xplOjLcUGM@vostro.rjw.lan>
-References: <1392617954-5292-6-git-send-email-chuansheng.liu@intel.com> <10253072.9TaPuJL1lG@vostro.rjw.lan> <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH] cpufreq: remove sysfs link when a cpu != policy->cpu,
+ is removed
+Date: Tue, 18 Feb 2014 13:05:59 -0700
+Message-ID: <5303BD27.4000905@wwwdotorg.org>
+References: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55519 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755530AbaBRPOh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 10:14:37 -0500
-In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <324f43fc664f51eec355b08b6c2d4cedd2140b4c.1392628861.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, swarren@nvidia.com
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-On Tuesday, February 18, 2014 12:33:11 AM Liu, Chuansheng wrote:
-> Hello Rafael,
+On 02/17/2014 02:22 AM, Viresh Kumar wrote:
+> Earlier patch tried to do this but missed this piece of code to fix.
 > 
-> > -----Original Message-----
-> > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
-> > Sent: Tuesday, February 18, 2014 1:28 AM
-> > To: Liu, Chuansheng
-> > Cc: gregkh@linuxfoundation.org; Brown, Len; pavel@ucw.cz;
-> > linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Li, Zhuangzhi
-> > Subject: Re: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
-> > 
-> > On Monday, February 17, 2014 02:19:14 PM Chuansheng Liu wrote:
-> > > In analogy with commits 5af84b82701a and 97df8c12995, using
-> > > asynchronous threads can improve the overall suspend_late
-> > > time significantly.
-> > >
-> > > This patch is for suspend_late phase.
-> > >
-> > > Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-> > > ---
-> > >  drivers/base/power/main.c | 66
-> > ++++++++++++++++++++++++++++++++++++++---------
-> > >  1 file changed, 54 insertions(+), 12 deletions(-)
-> > >
-> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > > index 72b4c9c..c031050 100644
-> > > --- a/drivers/base/power/main.c
-> > > +++ b/drivers/base/power/main.c
-> > > @@ -1127,16 +1127,26 @@ static int dpm_suspend_noirq(pm_message_t
-> > state)
-> > >   *
-> > >   * Runtime PM is disabled for @dev while this function is being executed.
-> > >   */
-> > > -static int device_suspend_late(struct device *dev, pm_message_t state)
-> > > +static int __device_suspend_late(struct device *dev, pm_message_t state,
-> > bool async)
-> > >  {
-> > >  	pm_callback_t callback = NULL;
-> > >  	char *info = NULL;
-> > > -	int error;
-> > > +	int error = 0;
-> > > +
-> > > +	dpm_wait_for_children(dev, async);
-> > >
-> > 
-> > Like in patch [4/5], all of the "goto Complete" statements can go before
-> > the waiting.
-> > 
-> You are right, will do that in patch V4, thanks your reviewing.
+> 42f921a cpufreq: remove sysfs files for CPUs which failed to come back after
+> resume
+> 
+> Currently we are getting this on suspend/resume:
+> 
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 877 at fs/sysfs/dir.c:52 sysfs_warn_dup+0x68/0x84()
+> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
+...
+> Fix this by removing sysfs link for cpufreq directory when cpu removed isn't
+> policy->cpu.
 
-I've queued up your last series:
-
-http://marc.info/?l=linux-pm&m=139269109711745&w=4
-
-for 3.15, but I've rebased it on some patches already in my queue, so please
-double check the result in linux-pm.git/bleeding-edge.
-
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Tested-by: Stephen Warren <swarren@nvidia.com>
