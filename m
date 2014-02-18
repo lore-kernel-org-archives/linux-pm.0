@@ -1,52 +1,48 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
-Date: Tue, 18 Feb 2014 00:33:11 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
-References: <1392617954-5292-6-git-send-email-chuansheng.liu@intel.com>
- <10253072.9TaPuJL1lG@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/6] drivers/acpi: fix driver compile errors when CONFIG_PM_SLEEP is undefined
+Date: Tue, 18 Feb 2014 02:03:39 +0100
+Message-ID: <2205879.dV8tEujxdx@vostro.rjw.lan>
+References: <cover.1392250669.git.shuah.kh@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:65087 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbaBRAdT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Feb 2014 19:33:19 -0500
-In-Reply-To: <10253072.9TaPuJL1lG@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <cover.1392250669.git.shuah.kh@samsung.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: lenb@kernel.org, rui.zhang@intel.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, shuahkhan@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
-ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNk
-YXksIEZlYnJ1YXJ5IDE4LCAyMDE0IDE6MjggQU0NCj4gVG86IExpdSwgQ2h1YW5zaGVuZw0KPiBD
-YzogZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IEJyb3duLCBMZW47IHBhdmVsQHVjdy5jejsN
-Cj4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
-OyBMaSwgWmh1YW5nemhpDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjMgNS81XSBQTSAvIHNsZWVw
-OiBBc3luY2hyb25vdXMgdGhyZWFkcyBmb3Igc3VzcGVuZF9sYXRlDQo+IA0KPiBPbiBNb25kYXks
-IEZlYnJ1YXJ5IDE3LCAyMDE0IDAyOjE5OjE0IFBNIENodWFuc2hlbmcgTGl1IHdyb3RlOg0KPiA+
-IEluIGFuYWxvZ3kgd2l0aCBjb21taXRzIDVhZjg0YjgyNzAxYSBhbmQgOTdkZjhjMTI5OTUsIHVz
-aW5nDQo+ID4gYXN5bmNocm9ub3VzIHRocmVhZHMgY2FuIGltcHJvdmUgdGhlIG92ZXJhbGwgc3Vz
-cGVuZF9sYXRlDQo+ID4gdGltZSBzaWduaWZpY2FudGx5Lg0KPiA+DQo+ID4gVGhpcyBwYXRjaCBp
-cyBmb3Igc3VzcGVuZF9sYXRlIHBoYXNlLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2h1YW5z
-aGVuZyBMaXUgPGNodWFuc2hlbmcubGl1QGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVy
-cy9iYXNlL3Bvd2VyL21haW4uYyB8IDY2DQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrLS0tLS0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA1NCBpbnNlcnRpb25zKCsp
-LCAxMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93
-ZXIvbWFpbi5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYw0KPiA+IGluZGV4IDcyYjRjOWMu
-LmMwMzEwNTAgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYw0KPiA+
-ICsrKyBiL2RyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMNCj4gPiBAQCAtMTEyNywxNiArMTEyNywy
-NiBAQCBzdGF0aWMgaW50IGRwbV9zdXNwZW5kX25vaXJxKHBtX21lc3NhZ2VfdA0KPiBzdGF0ZSkN
-Cj4gPiAgICoNCj4gPiAgICogUnVudGltZSBQTSBpcyBkaXNhYmxlZCBmb3IgQGRldiB3aGlsZSB0
-aGlzIGZ1bmN0aW9uIGlzIGJlaW5nIGV4ZWN1dGVkLg0KPiA+ICAgKi8NCj4gPiAtc3RhdGljIGlu
-dCBkZXZpY2Vfc3VzcGVuZF9sYXRlKHN0cnVjdCBkZXZpY2UgKmRldiwgcG1fbWVzc2FnZV90IHN0
-YXRlKQ0KPiA+ICtzdGF0aWMgaW50IF9fZGV2aWNlX3N1c3BlbmRfbGF0ZShzdHJ1Y3QgZGV2aWNl
-ICpkZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSwNCj4gYm9vbCBhc3luYykNCj4gPiAgew0KPiA+ICAJ
-cG1fY2FsbGJhY2tfdCBjYWxsYmFjayA9IE5VTEw7DQo+ID4gIAljaGFyICppbmZvID0gTlVMTDsN
-Cj4gPiAtCWludCBlcnJvcjsNCj4gPiArCWludCBlcnJvciA9IDA7DQo+ID4gKw0KPiA+ICsJZHBt
-X3dhaXRfZm9yX2NoaWxkcmVuKGRldiwgYXN5bmMpOw0KPiA+DQo+IA0KPiBMaWtlIGluIHBhdGNo
-IFs0LzVdLCBhbGwgb2YgdGhlICJnb3RvIENvbXBsZXRlIiBzdGF0ZW1lbnRzIGNhbiBnbyBiZWZv
-cmUNCj4gdGhlIHdhaXRpbmcuDQo+IA0KWW91IGFyZSByaWdodCwgd2lsbCBkbyB0aGF0IGluIHBh
-dGNoIFY0LCB0aGFua3MgeW91ciByZXZpZXdpbmcuDQoNCg==
+On Wednesday, February 12, 2014 08:19:04 PM Shuah Khan wrote:
+> The following acpi drivers fail with compile errors when CONFIG_PM_SLEEP
+> is undefined.
+
+I'm going to push all of these patches as fixes for 3.14.  Thanks!
+
+> Shuah Khan (6):
+>   drivers/acpi: fix ac driver compile error when CONFIG_PM_SLEEP is
+>     undefined
+>   drivers/acpi: fix battery driver compile error when CONFIG_PM_SLEEP is
+>     undefined
+>   drivers/acpi: fix button driver compile error when CONFIG_PM_SLEEP is
+>     undefined
+>   drivers/acpi: fix fan driver compile error when CONFIG_PM_SLEEP is
+>     undefined
+>   drivers/acpi: fix sbs driver compile error when CONFIG_PM_SLEEP is
+>     undefined
+>   drivers/acpi: fix thermal driver compile error when CONFIG_PM_SLEEP
+>     is undefined
+> 
+>  drivers/acpi/ac.c      |    2 ++
+>  drivers/acpi/battery.c |    2 ++
+>  drivers/acpi/button.c  |    2 ++
+>  drivers/acpi/fan.c     |    3 +++
+>  drivers/acpi/sbs.c     |    2 ++
+>  drivers/acpi/thermal.c |    2 ++
+>  6 files changed, 13 insertions(+)
+> 
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
