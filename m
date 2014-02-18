@@ -1,62 +1,81 @@
-From: Fabio Estevam <fabio.estevam@freescale.com>
-Subject: [PATCH v3] cpufreq: Kconfig.arm: Fix unmet direct dependencies
-Date: Tue, 18 Feb 2014 10:44:51 -0300
-Message-ID: <1392731091-817-1-git-send-email-fabio.estevam@freescale.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
+Date: Tue, 18 Feb 2014 16:29:26 +0100
+Message-ID: <4518865.xplOjLcUGM@vostro.rjw.lan>
+References: <1392617954-5292-6-git-send-email-chuansheng.liu@intel.com> <10253072.9TaPuJL1lG@vostro.rjw.lan> <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from co1ehsobe006.messaging.microsoft.com ([216.32.180.189]:12544
-	"EHLO co1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754609AbaBRNpK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 08:45:10 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:55519 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755530AbaBRPOh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 10:14:37 -0500
+In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, shawn.guo@linaro.org, linux-pm@vger.kernel.org, festevam@gmail.com, Fabio Estevam <fabio.estevam@freescale.com>
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-Currently the following warning is generated when building multi_v7_defconfig:
+On Tuesday, February 18, 2014 12:33:11 AM Liu, Chuansheng wrote:
+> Hello Rafael,
+> 
+> > -----Original Message-----
+> > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > Sent: Tuesday, February 18, 2014 1:28 AM
+> > To: Liu, Chuansheng
+> > Cc: gregkh@linuxfoundation.org; Brown, Len; pavel@ucw.cz;
+> > linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Li, Zhuangzhi
+> > Subject: Re: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
+> > 
+> > On Monday, February 17, 2014 02:19:14 PM Chuansheng Liu wrote:
+> > > In analogy with commits 5af84b82701a and 97df8c12995, using
+> > > asynchronous threads can improve the overall suspend_late
+> > > time significantly.
+> > >
+> > > This patch is for suspend_late phase.
+> > >
+> > > Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+> > > ---
+> > >  drivers/base/power/main.c | 66
+> > ++++++++++++++++++++++++++++++++++++++---------
+> > >  1 file changed, 54 insertions(+), 12 deletions(-)
+> > >
+> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > > index 72b4c9c..c031050 100644
+> > > --- a/drivers/base/power/main.c
+> > > +++ b/drivers/base/power/main.c
+> > > @@ -1127,16 +1127,26 @@ static int dpm_suspend_noirq(pm_message_t
+> > state)
+> > >   *
+> > >   * Runtime PM is disabled for @dev while this function is being executed.
+> > >   */
+> > > -static int device_suspend_late(struct device *dev, pm_message_t state)
+> > > +static int __device_suspend_late(struct device *dev, pm_message_t state,
+> > bool async)
+> > >  {
+> > >  	pm_callback_t callback = NULL;
+> > >  	char *info = NULL;
+> > > -	int error;
+> > > +	int error = 0;
+> > > +
+> > > +	dpm_wait_for_children(dev, async);
+> > >
+> > 
+> > Like in patch [4/5], all of the "goto Complete" statements can go before
+> > the waiting.
+> > 
+> You are right, will do that in patch V4, thanks your reviewing.
 
-$ make multi_v7_defconfig 
-warning: (ARM_HIGHBANK_CPUFREQ) selects GENERIC_CPUFREQ_CPU0 which has unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL)
-# configuration written to .config
+I've queued up your last series:
 
-Instead of forcing the selection of GENERIC_CPUFREQ_CPU0 let's depend on it.
+http://marc.info/?l=linux-pm&m=139269109711745&w=4
 
-By depending on GENERIC_CPUFREQ_CPU0 we can remove the selection of PM_OPP
-and REGULATOR because we have:
+for 3.15, but I've rebased it on some patches already in my queue, so please
+double check the result in linux-pm.git/bleeding-edge.
 
-config GENERIC_CPUFREQ_CPU0
-	tristate "Generic CPU0 cpufreq driver"
-	depends on HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL
-	select PM_OPP
+Thanks!
 
-Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
----
-Changes since v2:
-- Only keep the 'depends on GENERIC_CPUFREQ_CPU0' and remove the other 
-selections
-Changes since v1:
-- Use 'depends on'
-
- drivers/cpufreq/Kconfig.arm | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 3129749..c43e2c2 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -84,9 +84,7 @@ config ARM_EXYNOS_CPU_FREQ_BOOST_SW
- config ARM_HIGHBANK_CPUFREQ
- 	tristate "Calxeda Highbank-based"
- 	depends on ARCH_HIGHBANK
--	select GENERIC_CPUFREQ_CPU0
--	select PM_OPP
--	select REGULATOR
-+	depends on GENERIC_CPUFREQ_CPU0
- 
- 	default m
- 	help
 -- 
-1.8.1.2
-
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
