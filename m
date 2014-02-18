@@ -1,150 +1,29 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH v4 5/5] PM / sleep: Asynchronous threads for suspend_late
-Date: Tue, 18 Feb 2014 10:28:48 +0800
-Message-ID: <1392690528-10024-6-git-send-email-chuansheng.liu@intel.com>
-References: <y>
- <1392690528-10024-1-git-send-email-chuansheng.liu@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1392690528-10024-1-git-send-email-chuansheng.liu@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, gregkh@linuxfoundation.org, len.brown@intel.com, pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, zhuangzhi.li@intel.com, chuansheng.liu@intel.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Kconfig.arm: Do not select GENERIC_CPUFREQ_CPU0
+Date: Tue, 18 Feb 2014 11:07:17 +0530
+Message-ID: <CAKohponYMWSARUXuga9ep9nYWGzgoShTH+cp62zhGxgP=VG=kQ@mail.gmail.com>
+References: <1392662127-31005-1-git-send-email-fabio.estevam@freescale.com>
+	<8017605.Hn2oDKGgE8@vostro.rjw.lan>
+	<20140218022619.GD15716@S2101-09.ap.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f47.google.com ([209.85.219.47]:41052 "EHLO
+	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbaBRFhS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 00:37:18 -0500
+Received: by mail-oa0-f47.google.com with SMTP id m1so18628794oag.6
+        for <linux-pm@vger.kernel.org>; Mon, 17 Feb 2014 21:37:17 -0800 (PST)
+In-Reply-To: <20140218022619.GD15716@S2101-09.ap.freescale.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabio Estevam <fabio.estevam@freescale.com>, festevam@gmail.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-In analogy with commits 5af84b82701a and 97df8c12995, using
-asynchronous threads can improve the overall suspend_late
-time significantly.
+On 18 February 2014 07:56, Shawn Guo <shawn.guo@linaro.org> wrote:
+> Dropping this selection does not break build of highbank cpufreq driver,
+> but will result in a non-functional driver.  So maybe we need
+>
+>         depends on GENERIC_CPUFREQ_CPU0
 
-This patch is for suspend_late phase.
-
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
----
- drivers/base/power/main.c | 66 ++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 54 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9335b32..42355e4 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1127,16 +1127,26 @@ static int dpm_suspend_noirq(pm_message_t state)
-  *
-  * Runtime PM is disabled for @dev while this function is being executed.
-  */
--static int device_suspend_late(struct device *dev, pm_message_t state)
-+static int __device_suspend_late(struct device *dev, pm_message_t state, bool async)
- {
- 	pm_callback_t callback = NULL;
- 	char *info = NULL;
--	int error;
-+	int error = 0;
- 
- 	__pm_runtime_disable(dev, false);
- 
-+	if (async_error)
-+		goto Complete;
-+
-+	if (pm_wakeup_pending()) {
-+		async_error = -EBUSY;
-+		goto Complete;
-+	}
-+
- 	if (dev->power.syscore)
--		return 0;
-+		goto Complete;
-+
-+	dpm_wait_for_children(dev, async);
- 
- 	if (dev->pm_domain) {
- 		info = "late power domain ";
-@@ -1160,10 +1170,40 @@ static int device_suspend_late(struct device *dev, pm_message_t state)
- 	error = dpm_run_callback(callback, dev, state, info);
- 	if (!error)
- 		dev->power.is_late_suspended = true;
-+	else
-+		async_error = error;
- 
-+Complete:
-+	complete_all(&dev->power.completion);
- 	return error;
- }
- 
-+static void async_suspend_late(void *data, async_cookie_t cookie)
-+{
-+	struct device *dev = (struct device *)data;
-+	int error;
-+
-+	error = __device_suspend_late(dev, pm_transition, true);
-+	if (error) {
-+		dpm_save_failed_dev(dev_name(dev));
-+		pm_dev_err(dev, pm_transition, " async", error);
-+	}
-+	put_device(dev);
-+}
-+
-+static int device_suspend_late(struct device *dev)
-+{
-+	reinit_completion(&dev->power.completion);
-+
-+	if (pm_async_enabled && dev->power.async_suspend) {
-+		get_device(dev);
-+		async_schedule(async_suspend_late, dev);
-+		return 0;
-+	}
-+
-+	return __device_suspend_late(dev, pm_transition, false);
-+}
-+
- /**
-  * dpm_suspend_late - Execute "late suspend" callbacks for all devices.
-  * @state: PM transition of the system being carried out.
-@@ -1174,19 +1214,20 @@ static int dpm_suspend_late(pm_message_t state)
- 	int error = 0;
- 
- 	mutex_lock(&dpm_list_mtx);
-+	pm_transition = state;
-+	async_error = 0;
-+
- 	while (!list_empty(&dpm_suspended_list)) {
- 		struct device *dev = to_device(dpm_suspended_list.prev);
- 
- 		get_device(dev);
- 		mutex_unlock(&dpm_list_mtx);
- 
--		error = device_suspend_late(dev, state);
-+		error = device_suspend_late(dev);
- 
- 		mutex_lock(&dpm_list_mtx);
- 		if (error) {
- 			pm_dev_err(dev, state, " late", error);
--			suspend_stats.failed_suspend_late++;
--			dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
- 			dpm_save_failed_dev(dev_name(dev));
- 			put_device(dev);
- 			break;
-@@ -1195,17 +1236,18 @@ static int dpm_suspend_late(pm_message_t state)
- 			list_move(&dev->power.entry, &dpm_late_early_list);
- 		put_device(dev);
- 
--		if (pm_wakeup_pending()) {
--			error = -EBUSY;
-+		if (async_error)
- 			break;
--		}
- 	}
- 	mutex_unlock(&dpm_list_mtx);
--	if (error)
-+	async_synchronize_full();
-+	if (error) {
-+		suspend_stats.failed_suspend_late++;
-+		dpm_save_failed_step(SUSPEND_SUSPEND_LATE);
- 		dpm_resume_early(resume_event(state));
--	else
-+	} else {
- 		dpm_show_time(starttime, state, "late");
--
-+	}
- 	return error;
- }
- 
--- 
-1.9.rc0
++1
