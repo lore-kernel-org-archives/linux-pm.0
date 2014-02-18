@@ -1,37 +1,51 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Tue, 18 Feb 2014 13:18:32 -0700
-Message-ID: <5303C018.1020707@wwwdotorg.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>	<52FE71BD.3020103@wwwdotorg.org>	<2869027.iYHxWOSS2C@vostro.rjw.lan>	<52FEAECA.5080905@wwwdotorg.org> <CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 0/5] intel_pstate updates for v3.14-rcX
+Date: Tue, 18 Feb 2014 12:29:54 -0800
+Message-ID: <5303C2C2.8040605@intel.com>
+References: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f51.google.com ([209.85.160.51]:51501 "EHLO
+	mail-pb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbaBRU36 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 15:29:58 -0500
+In-Reply-To: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: dirk.brandewie@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc: dirk.j.brandewie@intel.com, linux-kernel@vger.kernel.org
 
-On 02/17/2014 02:20 AM, Viresh Kumar wrote:
-> On 15 February 2014 05:33, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> On 02/14/2014 03:23 PM, Rafael J. Wysocki wrote:
-> 
->>> Well, it would be good to verify which part, then.
->>
->> Patch 2/7 appears to stop that message from being printed during
->> suspend, and perhaps reduce the number of times it's printed during
->> resume. Patch 7/7 stops the message being printed at all.
->>
->> Looking at patch 7, I wonder if it's simply because tegra_target() was
->> modified never to return -EBUSY, so the bug is still there, but it's
->> just been hidden.
-> 
-> No, the bug is removed now. Its hidden in current linus/master :)
+Hi Rafael,
 
-I'm not sure what that means; I still see the message:
+On 02/12/2014 10:01 AM, dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>
+> Based on v3.14-rc2
+>
+> Patch 1 removes energy reporting the patch from Maurizio Lambardi
+>   intel_pstate: fix race condition in intel_pstate_init() can be dropped.
+>
 
-cpufreq: __cpufreq_driver_target: Failed to change cpu frequency: -16
+Any reason why patches 2-5 did not make rc3 other than timing?
 
-... in Linus's tree (805937cf45f9 "Merge tag 'ext4_for_linus_stable' of
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4").
+Patches 2/3 can easily wait for v3.15.x
+
+Patches 4/5 fix bugs that are in the wild.
+
+
+> Patch 2-3 cleanups
+>
+> Patch 4-5 Baytrail bug fixes
+>
+> Dirk Brandewie (5):
+>    intel_pstate: Remove energy reporting from pstate_sample tracepoint
+>    intel_pstate: remove unneeded sample buffers
+>    intel_pstate: fix pid_reset to use fixed point values
+>    intel_pstate: Use LFM bus ratio as min ratio/P state
+>    intel_pstate: Add support for Baytrail turbo P states
+>
+
+--Dirk
+
