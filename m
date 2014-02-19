@@ -1,48 +1,68 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH RFC v1 2/3] Fix hibernation restore hang in freeze_processes
-Date: Tue, 18 Feb 2014 17:52:08 -0800
-Message-ID: <1392774729-3235-3-git-send-email-sebastian.capella@linaro.org>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:55070 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbaBSBwW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 20:52:22 -0500
-Received: by mail-pd0-f178.google.com with SMTP id fp1so8385334pdb.9
-        for <linux-pm@vger.kernel.org>; Tue, 18 Feb 2014 17:52:21 -0800 (PST)
-In-Reply-To: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
+Date: Wed, 19 Feb 2014 03:34:58 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C2580D@SHSMSX101.ccr.corp.intel.com>
+References: <1392617954-5292-6-git-send-email-chuansheng.liu@intel.com>
+ <10253072.9TaPuJL1lG@vostro.rjw.lan>
+ <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
+ <4518865.xplOjLcUGM@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4518865.xplOjLcUGM@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Russ Dill <Russ.Dill@ti.com>, Ming Lei <ming.lei@canonical.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-During restore, pm_notifier chain are called with
-PM_RESTORE_PREPARE.  The firmware_class driver handler
-fw_pm_notify does not have a handler for this.  As a result,
-it keeps a reader on the kmod.c umhelper_sem.  During
-freeze_processes, the call to __usermodehelper_disable tries to
-take a write lock on this semaphore and hangs waiting.
-
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Russ Dill <Russ.Dill@ti.com>
-Cc: Ming Lei <ming.lei@canonical.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/base/firmware_class.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index eb8fb94..e2b51f8 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -1541,6 +1541,7 @@ static int fw_pm_notify(struct notifier_block *notify_block,
- 	switch (mode) {
- 	case PM_HIBERNATION_PREPARE:
- 	case PM_SUSPEND_PREPARE:
-+	case PM_RESTORE_PREPARE:
- 		kill_requests_without_uevent();
- 		device_cache_fw_images();
- 		break;
--- 
-1.7.9.5
-
+SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
+ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNk
+YXksIEZlYnJ1YXJ5IDE4LCAyMDE0IDExOjI5IFBNDQo+IFRvOiBMaXUsIENodWFuc2hlbmcNCj4g
+Q2M6IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBCcm93biwgTGVuOyBwYXZlbEB1Y3cuY3o7
+DQo+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
+ZzsgTGksIFpodWFuZ3poaQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYzIDUvNV0gUE0gLyBzbGVl
+cDogQXN5bmNocm9ub3VzIHRocmVhZHMgZm9yIHN1c3BlbmRfbGF0ZQ0KPiANCj4gT24gVHVlc2Rh
+eSwgRmVicnVhcnkgMTgsIDIwMTQgMTI6MzM6MTEgQU0gTGl1LCBDaHVhbnNoZW5nIHdyb3RlOg0K
+PiA+IEhlbGxvIFJhZmFlbCwNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRd
+DQo+ID4gPiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSAxOCwgMjAxNCAxOjI4IEFNDQo+ID4gPiBU
+bzogTGl1LCBDaHVhbnNoZW5nDQo+ID4gPiBDYzogZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7
+IEJyb3duLCBMZW47IHBhdmVsQHVjdy5jejsNCj4gPiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
+ZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTGksIFpodWFuZ3poaQ0KPiA+ID4gU3Vi
+amVjdDogUmU6IFtQQVRDSCB2MyA1LzVdIFBNIC8gc2xlZXA6IEFzeW5jaHJvbm91cyB0aHJlYWRz
+IGZvcg0KPiBzdXNwZW5kX2xhdGUNCj4gPiA+DQo+ID4gPiBPbiBNb25kYXksIEZlYnJ1YXJ5IDE3
+LCAyMDE0IDAyOjE5OjE0IFBNIENodWFuc2hlbmcgTGl1IHdyb3RlOg0KPiA+ID4gPiBJbiBhbmFs
+b2d5IHdpdGggY29tbWl0cyA1YWY4NGI4MjcwMWEgYW5kIDk3ZGY4YzEyOTk1LCB1c2luZw0KPiA+
+ID4gPiBhc3luY2hyb25vdXMgdGhyZWFkcyBjYW4gaW1wcm92ZSB0aGUgb3ZlcmFsbCBzdXNwZW5k
+X2xhdGUNCj4gPiA+ID4gdGltZSBzaWduaWZpY2FudGx5Lg0KPiA+ID4gPg0KPiA+ID4gPiBUaGlz
+IHBhdGNoIGlzIGZvciBzdXNwZW5kX2xhdGUgcGhhc2UuDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25l
+ZC1vZmYtYnk6IENodWFuc2hlbmcgTGl1IDxjaHVhbnNoZW5nLmxpdUBpbnRlbC5jb20+DQo+ID4g
+PiA+IC0tLQ0KPiA+ID4gPiAgZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYyB8IDY2DQo+ID4gPiAr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLQ0KPiA+ID4gPiAg
+MSBmaWxlIGNoYW5nZWQsIDU0IGluc2VydGlvbnMoKyksIDEyIGRlbGV0aW9ucygtKQ0KPiA+ID4g
+Pg0KPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYyBiL2RyaXZl
+cnMvYmFzZS9wb3dlci9tYWluLmMNCj4gPiA+ID4gaW5kZXggNzJiNGM5Yy4uYzAzMTA1MCAxMDA2
+NDQNCj4gPiA+ID4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYw0KPiA+ID4gPiArKysg
+Yi9kcml2ZXJzL2Jhc2UvcG93ZXIvbWFpbi5jDQo+ID4gPiA+IEBAIC0xMTI3LDE2ICsxMTI3LDI2
+IEBAIHN0YXRpYyBpbnQNCj4gZHBtX3N1c3BlbmRfbm9pcnEocG1fbWVzc2FnZV90DQo+ID4gPiBz
+dGF0ZSkNCj4gPiA+ID4gICAqDQo+ID4gPiA+ICAgKiBSdW50aW1lIFBNIGlzIGRpc2FibGVkIGZv
+ciBAZGV2IHdoaWxlIHRoaXMgZnVuY3Rpb24gaXMgYmVpbmcNCj4gZXhlY3V0ZWQuDQo+ID4gPiA+
+ICAgKi8NCj4gPiA+ID4gLXN0YXRpYyBpbnQgZGV2aWNlX3N1c3BlbmRfbGF0ZShzdHJ1Y3QgZGV2
+aWNlICpkZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSkNCj4gPiA+ID4gK3N0YXRpYyBpbnQgX19kZXZp
+Y2Vfc3VzcGVuZF9sYXRlKHN0cnVjdCBkZXZpY2UgKmRldiwgcG1fbWVzc2FnZV90DQo+IHN0YXRl
+LA0KPiA+ID4gYm9vbCBhc3luYykNCj4gPiA+ID4gIHsNCj4gPiA+ID4gIAlwbV9jYWxsYmFja190
+IGNhbGxiYWNrID0gTlVMTDsNCj4gPiA+ID4gIAljaGFyICppbmZvID0gTlVMTDsNCj4gPiA+ID4g
+LQlpbnQgZXJyb3I7DQo+ID4gPiA+ICsJaW50IGVycm9yID0gMDsNCj4gPiA+ID4gKw0KPiA+ID4g
+PiArCWRwbV93YWl0X2Zvcl9jaGlsZHJlbihkZXYsIGFzeW5jKTsNCj4gPiA+ID4NCj4gPiA+DQo+
+ID4gPiBMaWtlIGluIHBhdGNoIFs0LzVdLCBhbGwgb2YgdGhlICJnb3RvIENvbXBsZXRlIiBzdGF0
+ZW1lbnRzIGNhbiBnbyBiZWZvcmUNCj4gPiA+IHRoZSB3YWl0aW5nLg0KPiA+ID4NCj4gPiBZb3Ug
+YXJlIHJpZ2h0LCB3aWxsIGRvIHRoYXQgaW4gcGF0Y2ggVjQsIHRoYW5rcyB5b3VyIHJldmlld2lu
+Zy4NCj4gDQo+IEkndmUgcXVldWVkIHVwIHlvdXIgbGFzdCBzZXJpZXM6DQo+IA0KPiBodHRwOi8v
+bWFyYy5pbmZvLz9sPWxpbnV4LXBtJm09MTM5MjY5MTA5NzExNzQ1Jnc9NA0KPiANCj4gZm9yIDMu
+MTUsIGJ1dCBJJ3ZlIHJlYmFzZWQgaXQgb24gc29tZSBwYXRjaGVzIGFscmVhZHkgaW4gbXkgcXVl
+dWUsIHNvIHBsZWFzZQ0KPiBkb3VibGUgY2hlY2sgdGhlIHJlc3VsdCBpbiBsaW51eC1wbS5naXQv
+YmxlZWRpbmctZWRnZS4NCj4gDQpUaGFua3MuIEkgaGF2ZSBwdWxsZWQgdGhlIGxhdGVzdCBsaW51
+eC1wbS5naXQvYmxlZWRpbmctZWRnZSBicmFuY2gsIGFuZCBjaGVja2VkDQp0aGVtIHdoaWNoIGFy
+ZSBPSy4NCg0KDQo=
