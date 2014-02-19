@@ -1,93 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/5] intel_pstate updates for v3.14-rcX
-Date: Wed, 19 Feb 2014 01:53:22 +0100
-Message-ID: <2254366.ixXkMqbYNC@vostro.rjw.lan>
-References: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com> <1862084.mmnlZ4yS6m@vostro.rjw.lan> <5303FC4E.7040305@gmail.com>
+Subject: Re: [PATCH 4/5] intel_pstate: Use LFM bus ratio as min ratio/P state
+Date: Wed, 19 Feb 2014 01:58:59 +0100
+Message-ID: <5856987.3qKttR09W1@vostro.rjw.lan>
+References: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com> <1392228067-14817-5-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5303FC4E.7040305@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "dirk.j.brandewie@intel.com" <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63474 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751698AbaBSAoJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2014 19:44:09 -0500
+In-Reply-To: <1392228067-14817-5-git-send-email-dirk.j.brandewie@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Tuesday, February 18, 2014 04:35:26 PM Dirk Brandewie wrote:
-> On 02/18/2014 04:43 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, February 18, 2014 04:24:02 PM Dirk Brandewie wrote:
-> >> On Tuesday, February 18, 2014, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >>
-> >>> On Tuesday, February 18, 2014 03:53:48 PM Dirk Brandewie wrote:
-> >>>> On 02/18/2014 02:27 PM, Rafael J. Wysocki wrote:
-> >>>>> On Tuesday, February 18, 2014 12:29:54 PM Dirk Brandewie wrote:
-> >>>>>> Hi Rafael,
-> >>>>>
-> >>>>> Hi,
-> >>>>>
-> >>>>>> On 02/12/2014 10:01 AM, dirk.brandewie@gmail.com <javascript:;>wrote:
-> >>>>>>> From: Dirk Brandewie <dirk.j.brandewie@intel.com <javascript:;>>
-> >>>>>>>
-> >>>>>>> Based on v3.14-rc2
-> >>>>>>>
-> >>>>>>> Patch 1 removes energy reporting the patch from Maurizio Lambardi
-> >>>>>>>     intel_pstate: fix race condition in intel_pstate_init() can be
-> >>> dropped.
-> >>>>>>>
-> >>>>>>
-> >>>>>> Any reason why patches 2-5 did not make rc3 other than timing?
-> >>>>>>
-> >>>>>> Patches 2/3 can easily wait for v3.15.x
-> >>>>>>
-> >>>>>> Patches 4/5 fix bugs that are in the wild.
-> >>>>>
-> >>>>> I asked you about them, but you didn't reply:
-> >>>>>
-> >>>>> http://marc.info/?l=linux-pm&m=139225158531023&w=4
-> >>>>>
-> >>>>> Again, do patches [4-5/5] depend on [2-3/5]?
-> >>>>>
-> >>>>> If not, I can queue them up for -rc4.
-> >>>>
-> >>>> All the patches are independent of one another.
-> >>>>
-> >>>> Patch 2 is straight cleanup no functional change but reduces the memory
-> >>>> footprint slightly.
-> >>>>
-> >>>> Patch 3 is a bug that will only be seen when the PID is reset at init
-> >>> time
-> >>>> or when a change is made to PID params via debugfs.  The problem will
-> >>> only
-> >>>> exist for one sample time since it is setting last_err in the PID.
-> >>>>
-> >>>> Patch 4-5 are bugs found during Baytrail-T testing
-> >>>
-> >>> Are there any pointers to bug reports that may be included in the
-> >>> changelogs
-> >>> of these?
-> >>
-> >>
-> >> No.  I got the reports via email.  I could probably get the reporters to
-> >> file bugzillas.
-> >
-> > It would be good to add information about what machines are affected
-> > and what the user-visible problems are to the changelogs for future
-> > reference.
-> >
-> > And do we want these two patches in -stable?  If so, what -stable series should
-> > they go into?
+On Wednesday, February 12, 2014 10:01:06 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > 
-> Patch 2 v3.10+
+> Using LFM ratio provides better perf/watt vs min ratio.
 > 
-> Patch 3 v3.12+
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-You said [2-3/5] were cleanups, so why do you think they are -stable material?
+This changelog is particularly insufficient.
 
-> Patch 4/5 v3.13+
+Can you please explain what's wrong with the previous calculation and how
+the change makes it better?
 
-OK
+> ---
+>  drivers/cpufreq/intel_pstate.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index b80c03d..ff45ce1 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -356,7 +356,7 @@ static int byt_get_min_pstate(void)
+>  {
+>  	u64 value;
+>  	rdmsrl(BYT_RATIOS, value);
+> -	return value & 0xFF;
+> +	return (value >> 8) & 0xFF;
+>  }
+>  
+>  static int byt_get_max_pstate(void)
+> 
 
-What about the bug information?  Can you please point me to the e-mail threads
-where the bugs were discussed at least?
-
-Rafael
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
