@@ -1,68 +1,48 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH v3 5/5] PM / sleep: Asynchronous threads for suspend_late
-Date: Wed, 19 Feb 2014 03:34:58 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A01C2580D@SHSMSX101.ccr.corp.intel.com>
-References: <1392617954-5292-6-git-send-email-chuansheng.liu@intel.com>
- <10253072.9TaPuJL1lG@vostro.rjw.lan>
- <27240C0AC20F114CBF8149A2696CBE4A01C241FF@SHSMSX101.ccr.corp.intel.com>
- <4518865.xplOjLcUGM@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Wed, 19 Feb 2014 09:45:44 +0530
+Message-ID: <CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com>
+References: <cover.1392273722.git.viresh.kumar@linaro.org>
+	<52FE71BD.3020103@wwwdotorg.org>
+	<2869027.iYHxWOSS2C@vostro.rjw.lan>
+	<52FEAECA.5080905@wwwdotorg.org>
+	<CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>
+	<5303C018.1020707@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4518865.xplOjLcUGM@vostro.rjw.lan>
-Content-Language: en-US
+In-Reply-To: <5303C018.1020707@wwwdotorg.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, jinchoi@broadcom.com, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8gUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJh
-ZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNk
-YXksIEZlYnJ1YXJ5IDE4LCAyMDE0IDExOjI5IFBNDQo+IFRvOiBMaXUsIENodWFuc2hlbmcNCj4g
-Q2M6IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBCcm93biwgTGVuOyBwYXZlbEB1Y3cuY3o7
-DQo+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-ZzsgTGksIFpodWFuZ3poaQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYzIDUvNV0gUE0gLyBzbGVl
-cDogQXN5bmNocm9ub3VzIHRocmVhZHMgZm9yIHN1c3BlbmRfbGF0ZQ0KPiANCj4gT24gVHVlc2Rh
-eSwgRmVicnVhcnkgMTgsIDIwMTQgMTI6MzM6MTEgQU0gTGl1LCBDaHVhbnNoZW5nIHdyb3RlOg0K
-PiA+IEhlbGxvIFJhZmFlbCwNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
-Cj4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRd
-DQo+ID4gPiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSAxOCwgMjAxNCAxOjI4IEFNDQo+ID4gPiBU
-bzogTGl1LCBDaHVhbnNoZW5nDQo+ID4gPiBDYzogZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7
-IEJyb3duLCBMZW47IHBhdmVsQHVjdy5jejsNCj4gPiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
-ZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTGksIFpodWFuZ3poaQ0KPiA+ID4gU3Vi
-amVjdDogUmU6IFtQQVRDSCB2MyA1LzVdIFBNIC8gc2xlZXA6IEFzeW5jaHJvbm91cyB0aHJlYWRz
-IGZvcg0KPiBzdXNwZW5kX2xhdGUNCj4gPiA+DQo+ID4gPiBPbiBNb25kYXksIEZlYnJ1YXJ5IDE3
-LCAyMDE0IDAyOjE5OjE0IFBNIENodWFuc2hlbmcgTGl1IHdyb3RlOg0KPiA+ID4gPiBJbiBhbmFs
-b2d5IHdpdGggY29tbWl0cyA1YWY4NGI4MjcwMWEgYW5kIDk3ZGY4YzEyOTk1LCB1c2luZw0KPiA+
-ID4gPiBhc3luY2hyb25vdXMgdGhyZWFkcyBjYW4gaW1wcm92ZSB0aGUgb3ZlcmFsbCBzdXNwZW5k
-X2xhdGUNCj4gPiA+ID4gdGltZSBzaWduaWZpY2FudGx5Lg0KPiA+ID4gPg0KPiA+ID4gPiBUaGlz
-IHBhdGNoIGlzIGZvciBzdXNwZW5kX2xhdGUgcGhhc2UuDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25l
-ZC1vZmYtYnk6IENodWFuc2hlbmcgTGl1IDxjaHVhbnNoZW5nLmxpdUBpbnRlbC5jb20+DQo+ID4g
-PiA+IC0tLQ0KPiA+ID4gPiAgZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYyB8IDY2DQo+ID4gPiAr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLQ0KPiA+ID4gPiAg
-MSBmaWxlIGNoYW5nZWQsIDU0IGluc2VydGlvbnMoKyksIDEyIGRlbGV0aW9ucygtKQ0KPiA+ID4g
-Pg0KPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYyBiL2RyaXZl
-cnMvYmFzZS9wb3dlci9tYWluLmMNCj4gPiA+ID4gaW5kZXggNzJiNGM5Yy4uYzAzMTA1MCAxMDA2
-NDQNCj4gPiA+ID4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYw0KPiA+ID4gPiArKysg
-Yi9kcml2ZXJzL2Jhc2UvcG93ZXIvbWFpbi5jDQo+ID4gPiA+IEBAIC0xMTI3LDE2ICsxMTI3LDI2
-IEBAIHN0YXRpYyBpbnQNCj4gZHBtX3N1c3BlbmRfbm9pcnEocG1fbWVzc2FnZV90DQo+ID4gPiBz
-dGF0ZSkNCj4gPiA+ID4gICAqDQo+ID4gPiA+ICAgKiBSdW50aW1lIFBNIGlzIGRpc2FibGVkIGZv
-ciBAZGV2IHdoaWxlIHRoaXMgZnVuY3Rpb24gaXMgYmVpbmcNCj4gZXhlY3V0ZWQuDQo+ID4gPiA+
-ICAgKi8NCj4gPiA+ID4gLXN0YXRpYyBpbnQgZGV2aWNlX3N1c3BlbmRfbGF0ZShzdHJ1Y3QgZGV2
-aWNlICpkZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSkNCj4gPiA+ID4gK3N0YXRpYyBpbnQgX19kZXZp
-Y2Vfc3VzcGVuZF9sYXRlKHN0cnVjdCBkZXZpY2UgKmRldiwgcG1fbWVzc2FnZV90DQo+IHN0YXRl
-LA0KPiA+ID4gYm9vbCBhc3luYykNCj4gPiA+ID4gIHsNCj4gPiA+ID4gIAlwbV9jYWxsYmFja190
-IGNhbGxiYWNrID0gTlVMTDsNCj4gPiA+ID4gIAljaGFyICppbmZvID0gTlVMTDsNCj4gPiA+ID4g
-LQlpbnQgZXJyb3I7DQo+ID4gPiA+ICsJaW50IGVycm9yID0gMDsNCj4gPiA+ID4gKw0KPiA+ID4g
-PiArCWRwbV93YWl0X2Zvcl9jaGlsZHJlbihkZXYsIGFzeW5jKTsNCj4gPiA+ID4NCj4gPiA+DQo+
-ID4gPiBMaWtlIGluIHBhdGNoIFs0LzVdLCBhbGwgb2YgdGhlICJnb3RvIENvbXBsZXRlIiBzdGF0
-ZW1lbnRzIGNhbiBnbyBiZWZvcmUNCj4gPiA+IHRoZSB3YWl0aW5nLg0KPiA+ID4NCj4gPiBZb3Ug
-YXJlIHJpZ2h0LCB3aWxsIGRvIHRoYXQgaW4gcGF0Y2ggVjQsIHRoYW5rcyB5b3VyIHJldmlld2lu
-Zy4NCj4gDQo+IEkndmUgcXVldWVkIHVwIHlvdXIgbGFzdCBzZXJpZXM6DQo+IA0KPiBodHRwOi8v
-bWFyYy5pbmZvLz9sPWxpbnV4LXBtJm09MTM5MjY5MTA5NzExNzQ1Jnc9NA0KPiANCj4gZm9yIDMu
-MTUsIGJ1dCBJJ3ZlIHJlYmFzZWQgaXQgb24gc29tZSBwYXRjaGVzIGFscmVhZHkgaW4gbXkgcXVl
-dWUsIHNvIHBsZWFzZQ0KPiBkb3VibGUgY2hlY2sgdGhlIHJlc3VsdCBpbiBsaW51eC1wbS5naXQv
-YmxlZWRpbmctZWRnZS4NCj4gDQpUaGFua3MuIEkgaGF2ZSBwdWxsZWQgdGhlIGxhdGVzdCBsaW51
-eC1wbS5naXQvYmxlZWRpbmctZWRnZSBicmFuY2gsIGFuZCBjaGVja2VkDQp0aGVtIHdoaWNoIGFy
-ZSBPSy4NCg0KDQo=
+On 19-Feb-2014 1:48 AM, "Stephen Warren" <swarren@wwwdotorg.org> wrote:
+>
+> On 02/17/2014 02:20 AM, Viresh Kumar wrote:
+> > On 15 February 2014 05:33, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> >> On 02/14/2014 03:23 PM, Rafael J. Wysocki wrote:
+> >
+> >>> Well, it would be good to verify which part, then.
+> >>
+> >> Patch 2/7 appears to stop that message from being printed during
+> >> suspend, and perhaps reduce the number of times it's printed during
+> >> resume. Patch 7/7 stops the message being printed at all.
+> >>
+> >> Looking at patch 7, I wonder if it's simply because tegra_target() was
+> >> modified never to return -EBUSY, so the bug is still there, but it's
+> >> just been hidden.
+> >
+> > No, the bug is removed now. Its hidden in current linus/master :)
+>
+> I'm not sure what that means; I still see the message:
+
+I have given a better reply in one of the earlier mails in this thread.
+And skipped a more elaborative reply now.
+
+So this failure was always there since long time, as you disable your
+target() fn early in suspend. But the message wasn't printed earlier.
+
+A recently added core patch started printing this, so not a new bug.
+But this series fixes suspend resume completely and you wouldn't see it
+anymore.
