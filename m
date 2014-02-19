@@ -1,63 +1,41 @@
-From: Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v4 07/13] ARM: dts: mvebu: Add a new set of registers to
- the PMSU node
-Date: Wed, 19 Feb 2014 17:00:33 +0100
-Message-ID: <20140219170033.4ca8343b@skate>
-References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
-	<1392312816-17657-8-git-send-email-gregory.clement@free-electrons.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v4 3/3] Documentation: arm: define DT idle states
+ bindings
+Date: Wed, 19 Feb 2014 08:04:49 -0800
+Message-ID: <20140219160449.11460.93660@capellas-linux>
+References: <1392724051-11950-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1392724051-11950-4-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1392312816-17657-8-git-send-email-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lior Amsalem <alior-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Tawfik Bayouk <tawfik-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1392724051-11950-4-git-send-email-lorenzo.pieralisi@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: devicetree@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, Grant Likely <grant.likely@linaro.org>, Dave Martin <dave.martin@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Mark Brown <broonie@kernel.org>, Santosh Shilimkar <santosh.sh>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Gregory CLEMENT,
+Quoting Lorenzo Pieralisi (2014-02-18 03:47:31)
+> +       - index
+> +               Usage: Required
+> +               Value type: <u32>
+> +               Definition: It represents the idle state index.
+> +                           An increasing index value implies less power
+> +                           consumption. Index must be given a sequential
+> +                           value = {0, 1, ....}, starting from 0.
+One minor comment.  In the example, it can be tricky to see how this is sequential
+since the states interleave.  Not sure if it merits rewording here?
 
-On Thu, 13 Feb 2014 18:33:30 +0100, Gregory CLEMENT wrote:
+These look good to me!
 
->  - reg: Should contain PMSU registers location and length. First pair
-> -  for the per-CPU SW Reset Control registers, second pair for the
-> -  Power Management Service Unit.
-> +  for the per-CPU SW Reset Control registers, second pair for the CPU
-> +  Power Management Service Unit registers, third pair for the Fabric Power
-> +  Management Service Unit registers.
->  
->  Example:
->  
-> -armada-370-xp-pmsu@d0022000 {
-> +armada-370-xp-pmsu@22000 {
->  	compatible = "marvell,armada-370-xp-pmsu";
-> -	reg = <0xd0022100 0x430>,
-> -	      <0xd0020800 0x20>;
-> +	reg = <0x22100 0x430>,
-> +	      <0x20800 0x20>,
-> +	      <0x22000 0x24>;
+Thanks!
 
-I am not too happy with this because:
-
- *) We have to remove the second register pair from the PMSU. I haven't
-    yet posted the patches on LAKML for SMP on 375 and 38x, but the 375
-    doesn't have a PMSU. It however has the same CPU reset control
-    registers as 370 and XP. Therefore, these 0x20800 registers have to
-    be handled by a separate driver (that uses the reset framework),
-    and not handled by the PMSU driver. This way, Armada 370/XP can use
-    PMSU+CPU reset, while 375 will only use CPU reset.
-
- *) I think making the PMSU register start at 0x22100 was a mistake.
-    The PMSU registers actually start at 0x22000 and they seem to go all
-    the way to 0x23000. So we should have only one register pair. This
-    of course raises some backward compatibility questions for the DT.
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Sebastian
