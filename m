@@ -1,61 +1,44 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH v4 12/13] cpuidle: mvebu: Add initial CPU idle support
- for Armada 370/XP SoC
-Date: Wed, 19 Feb 2014 19:32:11 +0100
-Message-ID: <20140219193211.10dd2f22@skate>
-References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
-	<1392312816-17657-13-git-send-email-gregory.clement@free-electrons.com>
-	<20140219175145.4b4fcba5@skate>
-	<5304E7B7.3040206@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: dirk.brandewie@gmail.com
+Subject: [PATCH v2] intel_pstate: Use LFM bus ratio as min ratio/P state
+Date: Wed, 19 Feb 2014 10:35:25 -0800
+Message-ID: <1392834925-21648-1-git-send-email-dirk.j.brandewie@intel.com>
+References: <5856987.3qKttR09W1@vostro.rjw.lan>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:51691 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754395AbaBSScO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2014 13:32:14 -0500
-In-Reply-To: <5304E7B7.3040206@free-electrons.com>
+Received: from mail-pb0-f50.google.com ([209.85.160.50]:34546 "EHLO
+	mail-pb0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754486AbaBSSfx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2014 13:35:53 -0500
+In-Reply-To: <5856987.3qKttR09W1@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Dear Gregory CLEMENT,
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Wed, 19 Feb 2014 18:19:51 +0100, Gregory CLEMENT wrote:
+LFM (max efficiency ratio) is the max frequency at minimum voltage
+supported by the processor.  Using LFM as the minimum P state
+increases performmance without affecting power. By not using P states
+below LFM we avoid using P states that are less power efficient.
 
-> > Sorry to bring the naming issue, but it looks like the Armada 38x has a
-> > PMSU that looks almost identical to the Armada XP PMSU, except that it
-> > doesn't have the L2 fabric registers (probably because Armada 38x uses
-> > the PL310 and not the Marvell L2 cache).
-> > 
-> > Therefore, should this cpuidle driver be named Armada 370/XP, or
-> > ARMADA_MVEBU for example?
-> 
-> Well most of the code is related to the coherency and the L2 cache, so
-> a different L2 cache is a significant difference. The CPU are also different
-> for example the PJ4B can  use LDREX/STREX without MMU whereas the Cortex A9
-> can't.
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Right, ok.
-
-> > Also, I'm a bit unsure about your choice of mixing C and assembly here.
-> > This function is already calling ll_clear_cpu_coherent() and
-> > ll_set_cpu_coherent() that are assembly functions implement in
-> > coherency_ll.S. Shouldn't we do the same for this final bit of assembly?
-> 
-> I made several tries when I converted most of the code in C, so I am not
-> sure but I think that using a C function didn't work here. But as Lorenzo
-> pointed they were mistakes in this code, so once I will have fixed them, I
-> will try again.
-
-Having this is C would certainly be a lot better, but my comment was
-merely to move this tiny bit of assembly somewhere else, but keep it as
-assembly if it's really needed.
-
-Thomas
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index b80c03d..ff45ce1 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -356,7 +356,7 @@ static int byt_get_min_pstate(void)
+ {
+ 	u64 value;
+ 	rdmsrl(BYT_RATIOS, value);
+-	return value & 0xFF;
++	return (value >> 8) & 0xFF;
+ }
+ 
+ static int byt_get_max_pstate(void)
 -- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+1.8.3.1
+
