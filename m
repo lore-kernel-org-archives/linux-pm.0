@@ -1,59 +1,180 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH v4 03/13] ARM: mvebu: ll_set_cpu_coherent always uses
- the current CPU
-Date: Wed, 19 Feb 2014 17:09:07 +0100
-Message-ID: <20140219170907.002941da@skate>
-References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
-	<1392312816-17657-4-git-send-email-gregory.clement@free-electrons.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
+Date: Wed, 19 Feb 2014 16:12:54 +0000
+Message-ID: <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:50463 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753801AbaBSQK0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2014 11:10:26 -0500
-In-Reply-To: <1392312816-17657-4-git-send-email-gregory.clement@free-electrons.com>
+Received: from service87.mimecast.com ([91.220.42.44]:52987 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbaBSQNB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2014 11:13:01 -0500
+In-Reply-To: <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Cyril Chemparathy <cyril@ti.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 
-Dear Gregory CLEMENT,
+On Wed, Feb 19, 2014 at 01:52:09AM +0000, Sebastian Capella wrote:
 
-On Thu, 13 Feb 2014 18:33:26 +0100, Gregory CLEMENT wrote:
-> ll_set_cpu_coherent is always used on the current CPU, so instead of
-> passing the CPU id as argument, ll_set_cpu_coherent() can find it by
-> itself.
-> 
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->  arch/arm/mach-mvebu/coherency.c    | 10 +++++-----
->  arch/arm/mach-mvebu/coherency.h    |  2 +-
->  arch/arm/mach-mvebu/coherency_ll.S | 12 ++++++------
->  arch/arm/mach-mvebu/headsmp.S      |  4 ----
->  arch/arm/mach-mvebu/platsmp.c      |  2 +-
->  5 files changed, 13 insertions(+), 17 deletions(-)
+[...]
 
-Acked-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
+> new file mode 100644
+> index 0000000..16f406f
+> --- /dev/null
+> +++ b/arch/arm/kernel/hibernate.c
+> @@ -0,0 +1,106 @@
+> +/*
+> + * Hibernation support specific for ARM
+> + *
+> + * Derived from work on ARM hibernation support by:
+> + *
+> + * Ubuntu project, hibernation support for mach-dove
+> + * Copyright (C) 2010 Nokia Corporation (Hiroshi Doyu)
+> + * Copyright (C) 2010 Texas Instruments, Inc. (Teerth Reddy et al.)
+> + *  https://lkml.org/lkml/2010/6/18/4
+> + *  https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/027422.html
+> + *  https://patchwork.kernel.org/patch/96442/
+> + *
+> + * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
+> + *
+> + * License terms: GNU General Public License (GPL) version 2
+> + */
+> +
+> +#include <linux/mm.h>
+> +#include <linux/suspend.h>
+> +#include <asm/tlbflush.h>
+> +#include <asm/cacheflush.h>
+> +#include <asm/system_misc.h>
+> +#include <asm/idmap.h>
+> +#include <asm/suspend.h>
+> +
+> +extern const void __nosave_begin, __nosave_end;
+> +
+> +int pfn_is_nosave(unsigned long pfn)
+> +{
+> +	unsigned long nosave_begin_pfn =
+> +			__pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
+> +	unsigned long nosave_end_pfn =
+> +			PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
+> +
+> +	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+> +}
+> +
+> +void notrace save_processor_state(void)
+> +{
+> +	WARN_ON(num_online_cpus() != 1);
+> +	flush_thread();
 
-with just one thing I am not entirely sure about:
+Can you explain to me please why we need to call flush_thread() here ?
+At this point in time syscore_suspend() was already called and CPU
+peripheral state saved through CPU PM notifiers.
 
->  	/* Create bit by cpu index */
-> -	mov	r3, #(1 << 24)
-> -	lsl	r1, r3, r1
-> -ARM_BE8(rev	r1, r1)
-> +	mrc	15, 0, r1, cr0, cr0, 5
-> +	and	r1, r1, #15
-> +	mov	r2, #(1 << 24)
-> +	lsl	r1, r2, r1
-> +	ARM_BE8(rev	r1, r1)
+> +	local_fiq_disable();
 
-Have you tested this in a big endian configuration? I'd like to make
-sure we have gotten the ARM_BE8(rev ...) thing correct.
+To me it looks like we are using this hook to disable fiqs, since it is
+not done in generic code.
 
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+> +}
+> +
+> +void notrace restore_processor_state(void)
+> +{
+> +	local_fiq_enable();
+> +}
+> +
+> +/*
+> + * Snapshot kernel memory and reset the system.
+> + * After resume, the hibernation snapshot is written out.
+> + */
+> +static int notrace __swsusp_arch_save_image(unsigned long unused)
+> +{
+> +	int ret;
+> +
+> +	ret = swsusp_save();
+> +	if (ret == 0)
+> +		soft_restart(virt_to_phys(cpu_resume));
+
+By the time the suspend finisher (ie this function) is run, the
+processor state has been saved and I think that's all you have to do,
+function can just return after calling swsusp_save(), unless I am missing
+something.
+
+I do not understand why a soft_restart is required here. On a side note,
+finisher is called with irqs disabled so, since you added a function for
+soft restart noirq, it should be used, if needed, but I have to understand
+why in the first place.
+
+> +	return ret;
+> +}
+> +
+> +/*
+> + * Save the current CPU state before suspend / poweroff.
+> + */
+> +int notrace swsusp_arch_suspend(void)
+> +{
+> +	return cpu_suspend(0, __swsusp_arch_save_image);
+
+If the goal of soft_restart is to return 0 on success from this call,
+you can still do that without requiring a soft_restart in the first
+place. IIUC all you want to achieve is to save processor context
+registers so that when you resume from image you will actually return
+from here.
+
+> +}
+> +
+> +/*
+> + * The framework loads the hibernation image into a linked list anchored
+> + * at restore_pblist, for swsusp_arch_resume() to copy back to the proper
+> + * destinations.
+> + *
+> + * To make this work if resume is triggered from initramfs, the
+> + * pagetables need to be switched to allow writes to kernel mem.
+
+Can you elaborate a bit more on this please ?
+
+> + */
+> +static void notrace __swsusp_arch_restore_image(void *unused)
+> +{
+> +	struct pbe *pbe;
+> +
+> +	cpu_switch_mm(idmap_pgd, &init_mm);
+
+Same here, thanks.
+
+> +	for (pbe = restore_pblist; pbe; pbe = pbe->next)
+> +		copy_page(pbe->orig_address, pbe->address);
+> +
+> +	soft_restart_noirq(virt_to_phys(cpu_resume));
+
+This soft_restart is justified so that you resume from the context saved
+when creating the image.
+
+> +}
+> +
+> +static u8 __swsusp_resume_stk[PAGE_SIZE/2] __nosavedata;
+> +
+> +/*
+> + * Resume from the hibernation image.
+> + * Due to the kernel heap / data restore, stack contents change underneath
+> + * and that would make function calls impossible; switch to a temporary
+> + * stack within the nosave region to avoid that problem.
+> + */
+> +int __naked swsusp_arch_resume(void)
+> +{
+> +	extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
+
+Ok, a function with attribute __naked that still calls C functions, is
+attr __naked really needed here ?
+
+> +	cpu_init();	/* get a clean PSR */
+
+cpu_init is called in the cpu_resume path, why is this call needed here ?
+
+Thanks,
+Lorenzo
+
