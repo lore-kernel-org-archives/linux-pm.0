@@ -1,167 +1,115 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Wed, 19 Feb 2014 11:33:15 -0800
-Message-ID: <20140219193315.3732.21819@capellas-linux>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
- <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM / Sleep / Runtime: Add pm_runtime_suspend|resume_force
+ functions
+Date: Wed, 19 Feb 2014 15:59:13 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1402191556170.1133-100000@iolanthe.rowland.org>
+References: <1392282108-2449-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Pavel Machek <pavel@ucw.cz>, Cyril Chemparathy <cyril@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:35173 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755219AbaBSU7O (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2014 15:59:14 -0500
+In-Reply-To: <1392282108-2449-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@linaro.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>
 
-Quoting Lorenzo Pieralisi (2014-02-19 08:12:54)
-> On Wed, Feb 19, 2014 at 01:52:09AM +0000, Sebastian Capella wrote:
-> [...]
-> > diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
-> > new file mode 100644
-> > index 0000000..16f406f
-> > --- /dev/null
-> > +++ b/arch/arm/kernel/hibernate.c
-> > +void notrace save_processor_state(void)
-> > +{
-> > +     WARN_ON(num_online_cpus() != 1);
-> > +     flush_thread();
+On Thu, 13 Feb 2014, Ulf Hansson wrote:
+
+> This patch provides two new runtime PM helper functions which intend to
+> be used from system suspend/resume callbacks, to make sure devices are
+> put into low power state during system suspend and brought back to full
+> power at system resume.
 > 
-> Can you explain to me please why we need to call flush_thread() here ?
-> At this point in time syscore_suspend() was already called and CPU
-> peripheral state saved through CPU PM notifiers.
-
-Copying Russ' response here: 
-
-"I think the idea here is to get the CPU into a state so that later
-when we resume from the resume kernel, the actual CPU state matches
-the state we have in kernel. The main thing flush_thread does is clear
-out any and all FP state." - Russ Dill
-
+> The prerequisite is to have all levels of a device's runtime PM
+> callbacks to be defined through the SET_PM_RUNTIME_PM_OPS macro, which
+> means these are available for CONFIG_PM.
 > 
-> > +     local_fiq_disable();
+> By using the new runtime PM helper functions especially the two
+> scenarios below will be addressed.
 > 
-> To me it looks like we are using this hook to disable fiqs, since it is
-> not done in generic code.
+> 1) The PM core prevents .runtime_suspend callbacks from being invoked
+> during system suspend. That means even for a runtime PM centric
+> subsystem and driver, the device needs to be put into low power state
+> from a system suspend callback. Otherwise it may very well be left in
+> full power state (runtime resumed) while the system is suspended. By
+> using the new helper functions, we make sure to walk the hierarchy of
+> a device's power domain, subsystem and driver.
 > 
-> > +
-> > +/*
-> > + * Snapshot kernel memory and reset the system.
-> > + * After resume, the hibernation snapshot is written out.
-> > + */
-> > +static int notrace __swsusp_arch_save_image(unsigned long unused)
-> > +{
-> > +     int ret;
-> > +
-> > +     ret = swsusp_save();
-> > +     if (ret == 0)
-> > +             soft_restart(virt_to_phys(cpu_resume));
-> 
-> By the time the suspend finisher (ie this function) is run, the
-> processor state has been saved and I think that's all you have to do,
-> function can just return after calling swsusp_save(), unless I am missing
-> something.
-> 
-> I do not understand why a soft_restart is required here.
+> 2) Subsystems and drivers need to cope with all the combinations of
+> CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions
+> smothly addresses this.
 
-Let me try skipping the restart, it sounds like a good idea, thanks!
-I'll let you know.
+I don't know how Rafael feels about this proposal.  One aspect of it is 
+striking, however...
 
-> On a side note,
-> finisher is called with irqs disabled so, since you added a function for
-> soft restart noirq, it should be used, if needed, but I have to understand
-> why in the first place.
+> +#ifdef CONFIG_PM
+> +/**
+> + * pm_runtime_force_suspend - Force a device into suspend state if needed.
+> + * @dev: Device to suspend.
+> + *
+> + * Disable runtime PM so we safely can check the device's runtime PM status and
+> + * if it is active, invoke it's .runtime_suspend callback to bring it into
+> + * suspend state. Keep runtime PM disabled to preserve the state unless we
+> + * encounter errors.
+> + *
+> + * Typically this function may be invoked from a system suspend callback to make
+> + * sure the device is put into low power state.
+> + */
+> +int pm_runtime_force_suspend(struct device *dev)
+> +{
+> +	int (*callback)(struct device *);
+> +	int ret = 0;
+> +
+> +	pm_runtime_disable(dev);
+> +
+> +	/*
+> +	 * Note that pm_runtime_status_suspended() returns false while
+> +	 * !CONFIG_PM_RUNTIME, which means the device will be put into low
+> +	 * power state.
+> +	 */
+> +	if (pm_runtime_status_suspended(dev))
+> +		return 0;
+> +
+> +	if (dev->pm_domain)
+> +		callback = dev->pm_domain->ops.runtime_suspend;
+> +	else if (dev->type && dev->type->pm)
+> +		callback = dev->type->pm->runtime_suspend;
+> +	else if (dev->class && dev->class->pm)
+> +		callback = dev->class->pm->runtime_suspend;
+> +	else if (dev->bus && dev->bus->pm)
+> +		callback = dev->bus->pm->runtime_suspend;
+> +	else
+> +		callback = NULL;
+> +
+> +	if (!callback && dev->driver && dev->driver->pm)
+> +		callback = dev->driver->pm->runtime_suspend;
+> +
+> +	if (!callback) {
+> +		ret = -ENOSYS;
+> +		goto err;
+> +	}
+> +
+> +	ret = callback(dev);
+> +	if (ret)
+> +		goto err;
+> +
+> +	pm_runtime_set_suspended(dev);
+> +	return 0;
+> +err:
+> +	pm_runtime_enable(dev);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
 
-Thanks, will have a look at this also
+Most of this code is already present in rpm_suspend.  Instead of 
+copying it, you should put it in a separate function that can be 
+invoked from both places.
 
-> > +/*
-> > + * Save the current CPU state before suspend / poweroff.
-> > + */
-> > +int notrace swsusp_arch_suspend(void)
-> > +{
-> > +     return cpu_suspend(0, __swsusp_arch_save_image);
-> 
-> If the goal of soft_restart is to return 0 on success from this call,
-> you can still do that without requiring a soft_restart in the first
-> place. IIUC all you want to achieve is to save processor context
-> registers so that when you resume from image you will actually return
-> from here.
+The same is true of your pm_runtime_force_resume routine.
 
-I think you're right, but I need to verify.  Here, we want to snapshot the
-system's suspended state to the hibernation buffer, that way when we restore
-the image, we resume from the saved suspended state.  This state is
-already saved to the buffer after the swsusp_save call in
-__swsusp_arch_save_image.  We resume and then write the saved buffer to
-the resume partition.  Once we're done saving the image to the buffer I
-can't think why we actually need the restart.  There's only one tricky bit
-that I can think of, and that's the use of the nosave area to distinguish
-the path of completing hibernation entry from resume from hibernation,
-but I believe this would be handled correctly without a restart.
-Let me try it out and see.
+Alan Stern
 
-> > +/*
-> > + * The framework loads the hibernation image into a linked list anchored
-> > + * at restore_pblist, for swsusp_arch_resume() to copy back to the proper
-> > + * destinations.
-> > + *
-> > + * To make this work if resume is triggered from initramfs, the
-> > + * pagetables need to be switched to allow writes to kernel mem.
-> 
-> Can you elaborate a bit more on this please ?
-> 
-> > + */
-> > +static void notrace __swsusp_arch_restore_image(void *unused)
-> > +{
-> > +     struct pbe *pbe;
-> > +
-> > +     cpu_switch_mm(idmap_pgd, &init_mm);
-> 
-> Same here, thanks.
-
-At restore time, we take the save buffer data and restore it to the same
-physical locations used in the previous execution.  This will require having
-write access to all of memory, which may not be generally granted by the
-current mm.  So we switch to 1-1 init_mm to restore memory.
-
-At hibernation entry, the system is writing only to save buffer memory,
-so we don't have this problem.  It has read access to all of the memory,
-and can copy to the save buffer.
-
-Hopefully my comment above addressed this, but please let me know if I
-need to provide more info.
-
-> > +/*
-> > + * Resume from the hibernation image.
-> > + * Due to the kernel heap / data restore, stack contents change underneath
-> > + * and that would make function calls impossible; switch to a temporary
-> > + * stack within the nosave region to avoid that problem.
-> > + */
-> > +int __naked swsusp_arch_resume(void)
-> > +{
-> > +     extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-> 
-> Ok, a function with attribute __naked that still calls C functions, is
-> attr __naked really needed here ?
-
-I will need to look at this more carefully and get back to you.  I can
-
-
-> 
-> > +     cpu_init();     /* get a clean PSR */
-> 
-> cpu_init is called in the cpu_resume path, why is this call needed here ?
-
-I'll look more into this and get back with further comments.
-
-Thanks Lorenzo!
-
-Sebastian
