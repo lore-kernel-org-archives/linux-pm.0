@@ -1,41 +1,55 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v4 3/3] Documentation: arm: define DT idle states
- bindings
-Date: Wed, 19 Feb 2014 08:04:49 -0800
-Message-ID: <20140219160449.11460.93660@capellas-linux>
-References: <1392724051-11950-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1392724051-11950-4-git-send-email-lorenzo.pieralisi@arm.com>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH v4 02/13] ARM: mvebu: remove the address parameter for
+ ll_set_cpu_coherent
+Date: Wed, 19 Feb 2014 17:06:10 +0100
+Message-ID: <20140219170610.779573a2@skate>
+References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com>
+	<1392312816-17657-3-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1392724051-11950-4-git-send-email-lorenzo.pieralisi@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: devicetree@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, Grant Likely <grant.likely@linaro.org>, Dave Martin <dave.martin@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Mark Brown <broonie@kernel.org>, Santosh Shilimkar <santosh.sh>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:50397 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754273AbaBSQGe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2014 11:06:34 -0500
+In-Reply-To: <1392312816-17657-3-git-send-email-gregory.clement@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-Quoting Lorenzo Pieralisi (2014-02-18 03:47:31)
-> +       - index
-> +               Usage: Required
-> +               Value type: <u32>
-> +               Definition: It represents the idle state index.
-> +                           An increasing index value implies less power
-> +                           consumption. Index must be given a sequential
-> +                           value = {0, 1, ....}, starting from 0.
-One minor comment.  In the example, it can be tricky to see how this is sequential
-since the states interleave.  Not sure if it merits rewording here?
+Gregory,
 
-These look good to me!
+On Thu, 13 Feb 2014 18:33:25 +0100, Gregory CLEMENT wrote:
+> Until now the calling functions of ll_set_cpu_coherent() have to know
+> the base address of the coherency registers. This commit doesn't
+> expose anymore this address. This was needed to be able to use either
+> a virtual or a physical address. This patch add a check of the MMU bit
+> to choose the accurate address, then the calling function do have pass
+> this information.
+> 
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-Thanks!
+I think your commit log needs some review:
 
-Sebastian
+I don't understand "This commit doesn't expose anymore this address."
+from your commit log. Do you mean that the address is no longer passed
+as argument to ll_set_cpu_coherent() ?
+
+Similarly, the sentence "This patch add a check of the MMU bit to choose
+the accurate address, then the calling function do have pass this
+information." seems incorrect, as the commit does quite the opposite:
+the calling function do *NOT* have to pass the base address of the
+coherency.
+
+Finally, your commit log doesn't explain *why* this change is
+necessary. At first sight, switching from using a function argument to
+a global variable looks like a step in the wrong direction. An
+explanation as to why this is the right direction seems needed here.
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
