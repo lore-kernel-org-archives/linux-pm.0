@@ -1,69 +1,56 @@
-From: Linaro <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Thu, 20 Feb 2014 07:20:35 +0530
-Message-ID: <BEC64F5C-76E8-40C3-81BE-59096C3838F3@linaro.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org> <52FE71BD.3020103@wwwdotorg.org> <2869027.iYHxWOSS2C@vostro.rjw.lan> <52FEAECA.5080905@wwwdotorg.org> <CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com> <5303C018.1020707@wwwdotorg.org> <CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com> <5304E93C.9000104@wwwdotorg.org> <90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, "jinchoi@broadcom.com" <jinchoi@broadcom.com>, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+From: loody <miloody@gmail.com>
+Subject: Re: how to know how long it takes on suspend/resume for platform usb driver
+Date: Thu, 20 Feb 2014 14:09:56 +0800
+Message-ID: <CANudz+sEiQHqkKfcQM_2gKckkNSuv_H6YCfKmaoThQ1xJB=2FQ@mail.gmail.com>
+References: <CANudz+vLJCwDVfhc-8VSF6kumjW7fBOkWQLFF+UihQhE34eUVg@mail.gmail.com>
+	<Pine.LNX.4.44L0.1401061006470.1282-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f169.google.com ([74.125.82.169]:38571 "EHLO
+	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753590AbaBTGJ6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 01:09:58 -0500
+Received: by mail-we0-f169.google.com with SMTP id t61so1128395wes.14
+        for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2014 22:09:56 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1401061006470.1282-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
+
+hi all:
+
+2014-01-06 23:10 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
+> On Mon, 6 Jan 2014, loody wrote:
+>
+>> >> 2. is it possible to change the order of calling resume callback?
+>> >>     for example, suppose the original sequence is "ehci -> xhci -> tty
+>> >> ..." and I want to change as "tty-> ehci -> xhci".
+>> >
+>> > It is possible only to a very limited extent.  You can turn async
+>> > suspend/resume on or off, and this will affect the order.  Of course,
+>> > when async suspend/resume is off, the total time required will be
+>> > longer than when it is on.
+>> >
+>> > Why do you want to change the order?  It shouldn't make any difference.
+>> Because I want the GUI and input part of driver resume as earlier as possible.
+>> Such that user can keep on their previous work more quicker.
+>
+> I doubt it will make any noticeable difference.  Remember, userspace
+> remains frozen until _all_ the devices have been resumed.  Until that
+> happens, the user can't do anything.
+
+after tracing the kernel src, I found the usb resume call back is
+called in drivers/base/power/main.c -> dpm_resume.
+
+is that the only way usb resume functions could be called?
+if resume  has bottom half mechanism, is it possible to put usb resume
+function at there in stead of first beginning resume step?
+
+thanks for your help,
 
 
 
-> On 20-Feb-2014, at 7:19 am, Linaro <viresh.kumar@linaro.org> wrote:
-> 
-> 
-> 
->>> On 19-Feb-2014, at 10:56 pm, Stephen Warren <swarren@wwwdotorg.org> wrote:
->>> 
->>>> On 02/18/2014 09:15 PM, Viresh Kumar wrote:
->>>>> On 19-Feb-2014 1:48 AM, "Stephen Warren" <swarren@wwwdotorg.org> wrote:
->>>>> 
->>>>>> On 02/17/2014 02:20 AM, Viresh Kumar wrote:
->>>>>> On 15 February 2014 05:33, Stephen Warren <swarren@wwwdotorg.org> wrote:
->>>>>> On 02/14/2014 03:23 PM, Rafael J. Wysocki wrote:
->>>>> 
->>>>>>> Well, it would be good to verify which part, then.
->>>>>> 
->>>>>> Patch 2/7 appears to stop that message from being printed during
->>>>>> suspend, and perhaps reduce the number of times it's printed during
->>>>>> resume. Patch 7/7 stops the message being printed at all.
->>>>>> 
->>>>>> Looking at patch 7, I wonder if it's simply because tegra_target() was
->>>>>> modified never to return -EBUSY, so the bug is still there, but it's
->>>>>> just been hidden.
->>>>> 
->>>>> No, the bug is removed now. Its hidden in current linus/master :)
->>>> 
->>>> I'm not sure what that means; I still see the message:
->>> 
->>> I have given a better reply in one of the earlier mails in this thread.
->>> And skipped a more elaborative reply now.
->>> 
->>> So this failure was always there since long time, as you disable your
->>> target() fn early in suspend. But the message wasn't printed earlier.
->>> 
->>> A recently added core patch started printing this, so not a new bug.
->>> But this series fixes suspend resume completely and you wouldn't see it
->>> anymore.
->> 
->> OK, so I suppose we have two options:
->> 
->> a) Just ignore the kernel error spew since it's a known issue.
->> 
->> b) If I make the Tegra driver return 0 rather than -EBUSY, would that
->> work? It would certainly silence the error. However, I wonder if it
->> would cause the cpufreq core to get out of sync with HW; the core would
->> think that it'd set some frequency, which the driver ignored, and if it
->> later wanted to switch frequency, the call might get skipped because the
->> core thought the HW was already set to that frequency?
-> 
-> Option is the one you need.
-
-Option a..
+-- 
+Regards,
