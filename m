@@ -1,57 +1,82 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: how to know how long it takes on suspend/resume for platform
- usb driver
-Date: Thu, 20 Feb 2014 10:53:11 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1402201052030.888-100000@iolanthe.rowland.org>
-References: <CANudz+sEiQHqkKfcQM_2gKckkNSuv_H6YCfKmaoThQ1xJB=2FQ@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
+Date: Thu, 20 Feb 2014 16:27:55 +0000
+Message-ID: <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
+ <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
+ <20140219193315.3732.21819@capellas-linux>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:42509 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752939AbaBTPxM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 10:53:12 -0500
-In-Reply-To: <CANudz+sEiQHqkKfcQM_2gKckkNSuv_H6YCfKmaoThQ1xJB=2FQ@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:53044 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706AbaBTQ2D convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 11:28:03 -0500
+In-Reply-To: <20140219193315.3732.21819@capellas-linux>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: loody <miloody@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Cyril Chemparathy <cyril@ti.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Thu, 20 Feb 2014, loody wrote:
+Hi Sebastian,
 
-> hi all:
+On Wed, Feb 19, 2014 at 07:33:15PM +0000, Sebastian Capella wrote:
+> Quoting Lorenzo Pieralisi (2014-02-19 08:12:54)
+> > On Wed, Feb 19, 2014 at 01:52:09AM +0000, Sebastian Capella wrote:
+> > [...]
+> > > diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
+> > > new file mode 100644
+> > > index 0000000..16f406f
+> > > --- /dev/null
+> > > +++ b/arch/arm/kernel/hibernate.c
+> > > +void notrace save_processor_state(void)
+> > > +{
+> > > +     WARN_ON(num_online_cpus() != 1);
+> > > +     flush_thread();
+> > 
+> > Can you explain to me please why we need to call flush_thread() here ?
+> > At this point in time syscore_suspend() was already called and CPU
+> > peripheral state saved through CPU PM notifiers.
 > 
-> 2014-01-06 23:10 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
-> > On Mon, 6 Jan 2014, loody wrote:
-> >
-> >> >> 2. is it possible to change the order of calling resume callback?
-> >> >>     for example, suppose the original sequence is "ehci -> xhci -> tty
-> >> >> ..." and I want to change as "tty-> ehci -> xhci".
-> >> >
-> >> > It is possible only to a very limited extent.  You can turn async
-> >> > suspend/resume on or off, and this will affect the order.  Of course,
-> >> > when async suspend/resume is off, the total time required will be
-> >> > longer than when it is on.
-> >> >
-> >> > Why do you want to change the order?  It shouldn't make any difference.
-> >> Because I want the GUI and input part of driver resume as earlier as possible.
-> >> Such that user can keep on their previous work more quicker.
-> >
-> > I doubt it will make any noticeable difference.  Remember, userspace
-> > remains frozen until _all_ the devices have been resumed.  Until that
-> > happens, the user can't do anything.
+> Copying Russ' response here: 
 > 
-> after tracing the kernel src, I found the usb resume call back is
-> called in drivers/base/power/main.c -> dpm_resume.
+> "I think the idea here is to get the CPU into a state so that later
+> when we resume from the resume kernel, the actual CPU state matches
+> the state we have in kernel. The main thing flush_thread does is clear
+> out any and all FP state." - Russ Dill
+
+See my reply to Russ.
+
+[...]
+
+> > > +static void notrace __swsusp_arch_restore_image(void *unused)
+> > > +{
+> > > +     struct pbe *pbe;
+> > > +
+> > > +     cpu_switch_mm(idmap_pgd, &init_mm);
+> > 
+> > Same here, thanks.
 > 
-> is that the only way usb resume functions could be called?
+> At restore time, we take the save buffer data and restore it to the same
+> physical locations used in the previous execution.  This will require having
+> write access to all of memory, which may not be generally granted by the
+> current mm.  So we switch to 1-1 init_mm to restore memory.
 
-Yes.
+I still do not understand why switching to idmap, which is a clone of
+init_mm + 1:1 kernel mappings is required here. Why idmap ?
 
-> if resume  has bottom half mechanism, is it possible to put usb resume
-> function at there in stead of first beginning resume step?
+And while at it, can't the idmap be overwritten _while_ copying back the
+resume kernel ? Is it safe to use idmap page tables while copying ?
 
-The USB resume routines do not have bottom halves.
+I had a look at x86 and there idmap page tables used to resume are created
+on the fly using safe pages, on ARM idmap is created at boot.
 
-Alan Stern
+I am grokking the code to understand what is really needed here, will get
+back to you asap but I would like things to be clarified in the interim.
+
+Thanks,
+Lorenzo
 
