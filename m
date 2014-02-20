@@ -1,111 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of suspended devices
-Date: Thu, 20 Feb 2014 02:42:38 +0100
-Message-ID: <2436342.FaiucBZtkf@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1402191137350.1133-100000@iolanthe.rowland.org> <1757715.oeT3oQZ2Zz@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1757715.oeT3oQZ2Zz@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Linaro <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Thu, 20 Feb 2014 07:19:31 +0530
+Message-ID: <90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>
+References: <cover.1392273722.git.viresh.kumar@linaro.org> <52FE71BD.3020103@wwwdotorg.org> <2869027.iYHxWOSS2C@vostro.rjw.lan> <52FEAECA.5080905@wwwdotorg.org> <CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com> <5303C018.1020707@wwwdotorg.org> <CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com> <5304E93C.9000104@wwwdotorg.org>
+Mime-Version: 1.0 (1.0)
+Content-Type: text/plain;
+	charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5304E93C.9000104@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, "jinchoi@broadcom.com" <jinchoi@broadcom.com>, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, February 20, 2014 02:23:30 AM Rafael J. Wysocki wrote:
-> On Wednesday, February 19, 2014 12:01:20 PM Alan Stern wrote:
-> > On Mon, 17 Feb 2014, Rafael J. Wysocki wrote:
-> > 
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-> > > resume all runtime-suspended devices during system suspend, mostly
-> > > because those devices may need to be reprogrammed due to different
-> > > wakeup settings for system sleep and for runtime PM.  However, at
-> > > least in some cases, that isn't really necessary, because the wakeup
-> > > settings may not be really different.
-> > > 
-> > > The idea here is that subsystems should know whether or not it is
-> > > necessary to reprogram a given device during system suspend and they
-> > > should be able to tell the PM core about that.  For this reason,
-> > > modify the PM core so that if the .prepare() callback returns a
-> > > positive value for certain device, the core will set a new
-> > > power.fast_suspend flag for it.  Then, if that flag is set, the core
-> > > will skip all of the subsequent suspend callbacks for that device.
-> > > It also will skip all of the system resume callbacks for the device
-> > > during the subsequent system resume and pm_request_resume() will be
-> > > executed to trigger a runtime PM resume of the device after the
-> > > system device resume sequence has been finished.
-> 
-> I was worried that you wouldn't comment at all. ;-)
-> 
-> > Does the PM core really need to get involved in this?
-> 
-> Yes, it does, in my opinion, and the reason is because it may be necessary
-> to resume parents in order to reprogram their children and the parents and
-> the children may be on different bus types.
-> 
-> > Can't the subsystem do the right thing on its own?
-> 
-> No, I don't think so.
-> 
-> > In the USB subsystem, the .suspend routine checks the required wakeup
-> > settings.  If they are different for runtime suspend and system
-> > suspend, and if the device is runtime suspended, then we call
-> > pm_runtime_resume.  After that, if the device is still in runtime
-> > suspend then we return immediately.
-> > 
-> > Of course, this addresses only the suspend side of the issue.  Skipping 
-> > the resume callbacks is a separate matter, and the USB subsystem 
-> > doesn't try to do it.  Still, I don't see any reason why we couldn't 
-> > take care of that as well.
-> 
-> What about USB controllers that are PCI devices?
-> 
-> > > However, since parents may need to be resumed so that their children
-> > > can be reprogrammed, make the PM core clear power.fast_suspend for
-> > > devices whose children don't have power.fast_suspend set (the
-> > > power.ignore_children flag doesn't matter here, because a parent
-> > > whose children are normally ignored for runtime PM may still need to
-> > > be accessible for their children to be prepare for system suspend
-> > > properly).
-> > 
-> > I have run across a similar issue.  It's a general problem that a
-> > device may try to remain in runtime suspend during a system resume, but
-> > a descendant of the device may need to perform I/O as part of its own
-> > resume routine.  A natural solution would be to use the regular runtime
-> > PM facilities to wake up the device.  But since the PM work queue is
-> > frozen, we can't rely on pm_runtime_get or the equivalent.  I'm not
-> > sure what the best solution will be.
-> 
-> We can rely on pm_runtime_get_sync(), though, which would be the right thing to
-> use here.
-> 
-> However, given that the parent's .prepare() has run already, I'm not sure
-> if we want runtime PM to be involved at all.
-> 
-> > After a quick look, I noticed a couple of questionable things in this
-> > patch.  This is after reading just the second half...
-> > 
-> > > @@ -1296,8 +1301,10 @@ static int __device_suspend(struct devic
-> > >  	 * for it, this is equivalent to the device signaling wakeup, so the
-> > >  	 * system suspend operation should be aborted.
-> > >  	 */
-> > > -	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-> > > +	if (pm_runtime_barrier(dev) && device_may_wakeup(dev)) {
-> > >  		pm_wakeup_event(dev, 0);
-> > > +		dev->power.fast_suspend = false;
-> > > +	}
-> > 
-> > Is this change needed?  We're aborting the sleep transition anyway, 
-> > right?
-> 
-> Yes, we are.  The goal was to ensure that power.fast_suspend would be cleared
-> in that case, but dpm_resume_end() should take care of this anyway.
 
-Sorry, I wanted to say "the clearing of it in device_prepare()", not sure why
-I mentioned dpm_resume_end().  Well, maybe I'm too tired ...
 
-Rafael
+> On 19-Feb-2014, at 10:56 pm, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> 
+>> On 02/18/2014 09:15 PM, Viresh Kumar wrote:
+>>> On 19-Feb-2014 1:48 AM, "Stephen Warren" <swarren@wwwdotorg.org> wrote:
+>>> 
+>>>> On 02/17/2014 02:20 AM, Viresh Kumar wrote:
+>>>>> On 15 February 2014 05:33, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>>>>> On 02/14/2014 03:23 PM, Rafael J. Wysocki wrote:
+>>>> 
+>>>>>> Well, it would be good to verify which part, then.
+>>>>> 
+>>>>> Patch 2/7 appears to stop that message from being printed during
+>>>>> suspend, and perhaps reduce the number of times it's printed during
+>>>>> resume. Patch 7/7 stops the message being printed at all.
+>>>>> 
+>>>>> Looking at patch 7, I wonder if it's simply because tegra_target() was
+>>>>> modified never to return -EBUSY, so the bug is still there, but it's
+>>>>> just been hidden.
+>>>> 
+>>>> No, the bug is removed now. Its hidden in current linus/master :)
+>>> 
+>>> I'm not sure what that means; I still see the message:
+>> 
+>> I have given a better reply in one of the earlier mails in this thread.
+>> And skipped a more elaborative reply now.
+>> 
+>> So this failure was always there since long time, as you disable your
+>> target() fn early in suspend. But the message wasn't printed earlier.
+>> 
+>> A recently added core patch started printing this, so not a new bug.
+>> But this series fixes suspend resume completely and you wouldn't see it
+>> anymore.
+> 
+> OK, so I suppose we have two options:
+> 
+> a) Just ignore the kernel error spew since it's a known issue.
+> 
+> b) If I make the Tegra driver return 0 rather than -EBUSY, would that
+> work? It would certainly silence the error. However, I wonder if it
+> would cause the cpufreq core to get out of sync with HW; the core would
+> think that it'd set some frequency, which the driver ignored, and if it
+> later wanted to switch frequency, the call might get skipped because the
+> core thought the HW was already set to that frequency?
 
+Option is the one you need.
