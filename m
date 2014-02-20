@@ -1,573 +1,157 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: Commit fcb6a15c2e7e (intel_pstate: Take core C0 time into
- account for core busy calculation) sucks rocks
-Date: Wed, 19 Feb 2014 16:51:48 -0800
-Message-ID: <20140220005148.GA15760@kroah.com>
-References: <20140219224752.GA370@kroah.com>
- <5305465C.7060806@gmail.com>
- <20140220003537.GA4671@kroah.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of suspended devices
+Date: Thu, 20 Feb 2014 02:23:30 +0100
+Message-ID: <1757715.oeT3oQZ2Zz@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1402191137350.1133-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MGYHOYXEY6WxJCY8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140220003537.GA4671@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1402191137350.1133-100000@iolanthe.rowland.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---MGYHOYXEY6WxJCY8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Wed, Feb 19, 2014 at 04:35:37PM -0800, Greg KH wrote:
-> On Wed, Feb 19, 2014 at 04:03:40PM -0800, Dirk Brandewie wrote:
-> > On 02/19/2014 02:47 PM, Greg KH wrote:
-> > >Hi Dirk,
-> > >
-> > >I've been having some huge slowdowns on my box building kernels, and I
-> > >took the time to bisect it down to commit
-> > >fcb6a15c2e7e76d493e6f91ea889ab40e1c643a4 (intel_pstate: Take core C0
-> > >time into account for core busy calculation).  With that patch reverted
-> > >on Linus's current tree, my build speeds are back up to the normal rate.
-> > >
-> > >The difference is huge, 2 minutes to do a kernel build with that patch
-> > >reverted, 8-10 minutes with it applied!  With all of the stable kernel
-> > >builds and other trees, this is a huge problem for my workload (all I do
-> > >is kernel builds it seems...)
-> > >
-> > >I see some patches you marked as "fixes" that you sent to Rafael, do you
-> > >want me to test any of those?  How am I the only one seeing this
-> > >problem, do you need my cpu information or anything else?
+On Wednesday, February 19, 2014 12:01:20 PM Alan Stern wrote:
+> On Mon, 17 Feb 2014, Rafael J. Wysocki wrote:
+> 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > > 
-> > Can you give me a description of you build system?  CPU, number of sockets,
+> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> > resume all runtime-suspended devices during system suspend, mostly
+> > because those devices may need to be reprogrammed due to different
+> > wakeup settings for system sleep and for runtime PM.  However, at
+> > least in some cases, that isn't really necessary, because the wakeup
+> > settings may not be really different.
+> > 
+> > The idea here is that subsystems should know whether or not it is
+> > necessary to reprogram a given device during system suspend and they
+> > should be able to tell the PM core about that.  For this reason,
+> > modify the PM core so that if the .prepare() callback returns a
+> > positive value for certain device, the core will set a new
+> > power.fast_suspend flag for it.  Then, if that flag is set, the core
+> > will skip all of the subsequent suspend callbacks for that device.
+> > It also will skip all of the system resume callbacks for the device
+> > during the subsequent system resume and pm_request_resume() will be
+> > executed to trigger a runtime PM resume of the device after the
+> > system device resume sequence has been finished.
+
+I was worried that you wouldn't comment at all. ;-)
+
+> Does the PM core really need to get involved in this?
+
+Yes, it does, in my opinion, and the reason is because it may be necessary
+to resume parents in order to reprogram their children and the parents and
+the children may be on different bus types.
+
+> Can't the subsystem do the right thing on its own?
+
+No, I don't think so.
+
+> In the USB subsystem, the .suspend routine checks the required wakeup
+> settings.  If they are different for runtime suspend and system
+> suspend, and if the device is runtime suspended, then we call
+> pm_runtime_resume.  After that, if the device is still in runtime
+> suspend then we return immediately.
 > 
-> The last processor in /proc/cpuinfo:
+> Of course, this addresses only the suspend side of the issue.  Skipping 
+> the resume callbacks is a separate matter, and the USB subsystem 
+> doesn't try to do it.  Still, I don't see any reason why we couldn't 
+> take care of that as well.
+
+What about USB controllers that are PCI devices?
+
+> > However, since parents may need to be resumed so that their children
+> > can be reprogrammed, make the PM core clear power.fast_suspend for
+> > devices whose children don't have power.fast_suspend set (the
+> > power.ignore_children flag doesn't matter here, because a parent
+> > whose children are normally ignored for runtime PM may still need to
+> > be accessible for their children to be prepare for system suspend
+> > properly).
 > 
-> processor       : 7
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 60
-> model name      : Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
-> stepping        : 3
-> microcode       : 0x9
-> cpu MHz         : 3556.464
-> cache size      : 8192 KB
-> physical id     : 0
-> siblings        : 8
-> core id         : 3
-> cpu cores       : 4
-> apicid          : 7
-> initial apicid  : 7
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 13
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm ida arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid
-> bogomips        : 7000.78
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 39 bits physical, 48 bits virtual
+> I have run across a similar issue.  It's a general problem that a
+> device may try to remain in runtime suspend during a system resume, but
+> a descendant of the device may need to perform I/O as part of its own
+> resume routine.  A natural solution would be to use the regular runtime
+> PM facilities to wake up the device.  But since the PM work queue is
+> frozen, we can't rely on pm_runtime_get or the equivalent.  I'm not
+> sure what the best solution will be.
+
+We can rely on pm_runtime_get_sync(), though, which would be the right thing to
+use here.
+
+However, given that the parent's .prepare() has run already, I'm not sure
+if we want runtime PM to be involved at all.
+
+> After a quick look, I noticed a couple of questionable things in this
+> patch.  This is after reading just the second half...
 > 
-> > building from/to local media.  Any special setup I should use here for my test?
+> > @@ -1296,8 +1301,10 @@ static int __device_suspend(struct devic
+> >  	 * for it, this is equivalent to the device signaling wakeup, so the
+> >  	 * system suspend operation should be aborted.
+> >  	 */
+> > -	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+> > +	if (pm_runtime_barrier(dev) && device_may_wakeup(dev)) {
+> >  		pm_wakeup_event(dev, 0);
+> > +		dev->power.fast_suspend = false;
+> > +	}
 > 
-> I build on a SSD-like disk (flash media on PCI Express slot), so I
-> should have almost no i/o time.
+> Is this change needed?  We're aborting the sleep transition anyway, 
+> right?
+
+Yes, we are.  The goal was to ensure that power.fast_suspend would be cleared
+in that case, but dpm_resume_end() should take care of this anyway.
+
+> > @@ -1310,6 +1317,9 @@ static int __device_suspend(struct devic
+> >  	dpm_watchdog_set(&wd, dev);
+> >  	device_lock(dev);
+> >  
+> > +	if (dev->power.fast_suspend)
+> > +		goto End;
+> > +
 > 
-> I build with 'make -j16'
+> What happens if dev->power.fast_suspend gets set following the .prepare
+> callback, but then before __device_suspend runs, the device gets
+> runtime resumed?
 > 
-> > If you have time having the output of turbostat for a build with and
-> > without would be very useful.
+> It looks like rpm_resume needs to clear the new flag.
+
+I thought about that and came to the conclusion that that wasn't necessary.
+
+There simply is no reason for devices with power.fast_suspend set to be
+runtime-resumed after (or even during) dpm_prepare() other than while
+resuming their children, in which case power.fast_suspend is going to be
+cleared for the children and then for the parents too.
+
+That *is* a little fragile, though.
+
+> > @@ -1358,9 +1368,14 @@ static int __device_suspend(struct devic
+> >   End:
+> >  	if (!error) {
+> >  		dev->power.is_suspended = true;
+> > -		if (dev->power.wakeup_path
+> > -		    && dev->parent && !dev->parent->power.ignore_children)
+> > -			dev->parent->power.wakeup_path = true;
+> > +		if (dev->parent) {
+> > +			if (!dev->parent->power.ignore_children
+> > +			    && dev->power.wakeup_path)
+> > +				dev->parent->power.wakeup_path = true;
+> > +
+> > +			if (!dev->power.fast_suspend)
+> > +				dev->parent->power.fast_suspend = false;
+> > +		}
 > 
->  $ ./turbostat
->  turbostat: no /dev/cpu/0/msr
->  Try "# modprobe msr": No such file or directory
-> 
-> Bah, I'll rebuild with msr and get you that info...
+> On SMP systems with async suspend, this isn't safe.  Two threads should 
+> not be allowed to write to bitfields in the same structure at the same 
+> time.
 
-Attached is two files, "fast_build.txt" is when your patch is reverted,
-and building a kernel takes only 2 minutes.  "slow_build.txt" is when
-the patch is not reverted, using Linus's latest tree, and I stopped it
-after a while because I got bored :)
+Do I understand correctly that your concern is about suspending two
+children of the same parent in parallel and one of them modifying
+power.wakeup_path and the other modifying power.fast_suspend at the
+same time?
 
-I think the numbers in these two files shows the real problem that is
-happening...
+If so, that modification can be done under the parent's power.lock.
 
-If there's anything else you need me to test, please let me know.
+Rafael
 
-thanks,
-
-greg k-h
-
---MGYHOYXEY6WxJCY8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="fast_build.txt"
-
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-          6.13 3.74 3.50   0   8.83   3.05   0.97  81.02   42   42  49.04   0.00   0.00   0.00  13.47   6.84  0.02
-  0   0   1.14 3.69 3.50   0  16.51   2.26   0.96  79.14   42   42  49.04   0.00   0.00   0.00  13.47   6.84  0.02
-  0   4  13.41 3.77 3.50   0   4.23
-  1   1   0.92 3.63 3.50   0  18.04   5.29   1.20  74.56   37
-  1   5  14.63 3.73 3.50   0   4.32
-  2   2   1.42 3.65 3.50   0  10.34   2.69   1.07  84.48   33
-  2   6   7.85 3.73 3.50   0   3.92
-  3   3   0.86 3.65 3.50   0  10.61   1.97   0.64  85.93   39
-  3   7   8.82 3.74 3.50   0   2.65
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         41.65 3.71 3.50   0   9.90   2.66   1.16  44.64   53   53  29.03   0.00   0.00   0.00  36.54  28.82  0.03
-  0   0  38.88 3.70 3.50   0  12.77   3.85   0.72  43.78   53   53  29.03   0.00   0.00   0.00  36.54  28.82  0.03
-  0   4  42.56 3.71 3.50   0   9.09
-  1   1  37.76 3.70 3.50   0  14.63   2.49   0.44  44.67   52
-  1   5  45.89 3.71 3.50   0   6.51
-  2   2  36.92 3.70 3.50   0  15.53   1.77   1.05  44.74   51
-  2   6  47.46 3.72 3.50   0   4.98
-  3   3  37.58 3.70 3.50   0  12.13   2.52   2.42  45.35   49
-  3   7  46.15 3.71 3.50   0   3.56
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   55   55   0.00   0.00   0.00   0.00  70.41  61.25  0.04
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   55   55   0.00   0.00   0.00   0.00  70.41  61.25  0.04
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1  99.98 3.70 3.50   0   0.02   0.00   0.00   0.00   55
-  1   5  99.88 3.70 3.50   0   0.12
-  2   2  99.99 3.70 3.50   0   0.01   0.00   0.00   0.00   54
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3  99.95 3.70 3.50   0   0.05   0.00   0.00   0.00   51
-  3   7  99.98 3.70 3.50   0   0.02
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-        100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   57   57   0.00   0.00   0.00   0.00  70.47  61.41  0.02
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   57   57   0.00   0.00   0.00   0.00  70.47  61.41  0.02
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   55
-  1   5 100.00 3.70 3.50   0   0.00
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   54
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   53
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   57   57   0.00   0.00   0.00   0.00  70.68  61.56  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   57   57   0.00   0.00   0.00   0.00  70.68  61.56  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   57
-  1   5  99.97 3.70 3.50   0   0.03
-  2   2  99.85 3.70 3.50   0   0.15   0.00   0.00   0.00   55
-  2   6  99.98 3.70 3.50   0   0.02
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   54
-  3   7  99.97 3.70 3.50   0   0.03
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.95 3.70 3.50   0   0.05   0.00   0.00   0.00   61   61   0.00   0.00   0.00   0.00  70.71  61.60  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   61   61   0.00   0.00   0.00   0.00  70.71  61.60  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1  99.92 3.70 3.50   0   0.08   0.00   0.00   0.00   58
-  1   5  99.94 3.70 3.50   0   0.06
-  2   2  99.99 3.70 3.50   0   0.01   0.00   0.00   0.00   58
-  2   6  99.95 3.70 3.50   0   0.05
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   55
-  3   7  99.77 3.70 3.50   0   0.23
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.95 3.70 3.50   0   0.05   0.00   0.00   0.00   59   59   0.00   0.00   0.00   0.00  70.69  61.58  0.02
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   59   59   0.00   0.00   0.00   0.00  70.69  61.58  0.02
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   59
-  1   5  99.89 3.70 3.50   0   0.11
-  2   2  99.98 3.70 3.50   0   0.02   0.00   0.00   0.00   59
-  2   6  99.81 3.70 3.50   0   0.19
-  3   3  99.95 3.70 3.50   0   0.05   0.00   0.00   0.00   56
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   62   62   0.00   0.00   0.00   0.00  70.93  61.82  0.02
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   62   62   0.00   0.00   0.00   0.00  70.93  61.82  0.02
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1  99.91 3.70 3.50   0   0.09   0.00   0.00   0.00   60
-  1   5  99.96 3.70 3.50   0   0.04
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   59
-  2   6  99.93 3.70 3.50   0   0.07
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   57
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   63   63   0.00   0.00   0.00   0.00  71.15  61.99  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   63   63   0.00   0.00   0.00   0.00  71.15  61.99  0.03
-  0   4  99.96 3.70 3.50   0   0.04
-  1   1  99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   62
-  1   5  99.95 3.70 3.50   0   0.05
-  2   2  99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   60
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   59
-  3   7  99.90 3.70 3.50   0   0.10
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   64   64   0.00   0.00   0.00   0.00  71.13  61.98  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   64   64   0.00   0.00   0.00   0.00  71.13  61.98  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   62
-  1   5  99.95 3.70 3.50   0   0.05
-  2   2  99.86 3.70 3.50   0   0.14   0.00   0.00   0.00   61
-  2   6  99.92 3.70 3.50   0   0.08
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   59
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   65   65   0.00   0.00   0.00   0.00  71.20  62.06  0.03
-  0   0  99.94 3.70 3.50   0   0.06   0.00   0.00   0.00   65   65   0.00   0.00   0.00   0.00  71.20  62.06  0.03
-  0   4  99.99 3.70 3.50   0   0.01
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   64
-  1   5  99.86 3.70 3.50   0   0.14
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   63
-  2   6  99.95 3.70 3.50   0   0.05
-  3   3  99.98 3.70 3.50   0   0.02   0.00   0.00   0.00   60
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.96 3.70 3.50   0   0.04   0.00   0.00   0.00   64   64   0.00   0.00   0.00   0.00  71.10  61.97  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   64   64   0.00   0.00   0.00   0.00  71.10  61.97  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   64
-  1   5  99.93 3.70 3.50   0   0.07
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   63
-  2   6  99.88 3.70 3.50   0   0.12
-  3   3  99.94 3.70 3.50   0   0.06   0.00   0.00   0.00   61
-  3   7  99.94 3.70 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.96 3.70 3.50   0   0.04   0.00   0.00   0.00   67   67   0.00   0.00   0.00   0.00  71.59  62.44  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   67   67   0.00   0.00   0.00   0.00  71.59  62.44  0.03
-  0   4  99.98 3.70 3.50   0   0.02
-  1   1  99.90 3.70 3.50   0   0.10   0.00   0.00   0.00   66
-  1   5 100.00 3.70 3.50   0   0.00
-  2   2  99.94 3.70 3.50   0   0.06   0.00   0.00   0.00   64
-  2   6  99.97 3.70 3.50   0   0.03
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   61
-  3   7  99.92 3.70 3.50   0   0.08
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-        100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   68   68   0.00   0.00   0.00   0.00  71.94  62.79  0.03
-  0   0  99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   68   68   0.00   0.00   0.00   0.00  71.94  62.79  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   65
-  1   5 100.00 3.70 3.50   0   0.00
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   65
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   63
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-        100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   67   67   0.00   0.00   0.00   0.00  72.12  62.96  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   67   67   0.00   0.00   0.00   0.00  72.12  62.96  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   66
-  1   5 100.00 3.70 3.50   0   0.00
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   66
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3  99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   63
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.95 3.70 3.50   0   0.05   0.00   0.00   0.00   68   68   0.00   0.00   0.00   0.00  72.11  62.94  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   68   68   0.00   0.00   0.00   0.00  72.11  62.94  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1  99.99 3.70 3.50   0   0.01   0.00   0.00   0.00   67
-  1   5  99.91 3.70 3.50   0   0.09
-  2   2  99.86 3.70 3.50   0   0.14   0.00   0.00   0.00   68
-  2   6  99.94 3.70 3.50   0   0.06
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   64
-  3   7  99.93 3.70 3.50   0   0.07
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.98 3.70 3.50   0   0.02   0.00   0.00   0.00   69   69   0.00   0.00   0.00   0.00  72.14  62.96  0.04
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   69   69   0.00   0.00   0.00   0.00  72.14  62.96  0.04
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1  99.96 3.70 3.50   0   0.04   0.00   0.00   0.00   68
-  1   5  99.98 3.70 3.50   0   0.02
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   67
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3  99.98 3.70 3.50   0   0.02   0.00   0.00   0.00   64
-  3   7  99.96 3.70 3.50   0   0.04
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.96 3.70 3.50   0   0.04   0.00   0.00   0.00   70   70   0.00   0.00   0.00   0.00  72.10  62.89  0.04
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   70   70   0.00   0.00   0.00   0.00  72.10  62.89  0.04
-  0   4  99.98 3.70 3.50   0   0.02
-  1   1  99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   70
-  1   5 100.00 3.70 3.50   0   0.00
-  2   2  99.94 3.70 3.50   0   0.06   0.00   0.00   0.00   69
-  2   6  99.85 3.70 3.50   0   0.15
-  3   3  99.96 3.70 3.50   0   0.04   0.00   0.00   0.00   66
-  3   7  99.95 3.70 3.50   0   0.05
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   70   70   0.00   0.00   0.00   0.00  72.32  63.16  0.04
-  0   0  99.99 3.70 3.50   0   0.01   0.00   0.00   0.00   70   70   0.00   0.00   0.00   0.00  72.32  63.16  0.04
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1  99.93 3.70 3.50   0   0.07   0.00   0.00   0.00   70
-  1   5 100.00 3.70 3.50   0   0.00
-  2   2  99.89 3.70 3.50   0   0.11   0.00   0.00   0.00   69
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3  99.95 3.70 3.50   0   0.05   0.00   0.00   0.00   66
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   71   71   0.00   0.00   0.00   0.00  72.28  63.12  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   71   71   0.00   0.00   0.00   0.00  72.28  63.12  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1  99.97 3.70 3.50   0   0.03   0.00   0.00   0.00   71
-  1   5  99.89 3.70 3.50   0   0.11
-  2   2  99.94 3.70 3.50   0   0.06   0.00   0.00   0.00   70
-  2   6  99.93 3.70 3.50   0   0.07
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   68
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-        100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   71   71   0.00   0.00   0.00   0.00  72.57  63.43  0.03
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   71   71   0.00   0.00   0.00   0.00  72.57  63.43  0.03
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   71
-  1   5  99.99 3.70 3.50   0   0.01
-  2   2 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   70
-  2   6 100.00 3.70 3.50   0   0.00
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   68
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.98 3.70 3.50   0   0.02   0.00   0.00   0.00   72   72   0.00   0.00   0.00   0.00  72.45  63.26  0.06
-  0   0 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   70   72   0.00   0.00   0.00   0.00  72.45  63.26  0.06
-  0   4 100.00 3.70 3.50   0   0.00
-  1   1 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   72
-  1   5 100.00 3.70 3.50   0   0.00
-  2   2  99.90 3.70 3.50   0   0.10   0.00   0.00   0.00   70
-  2   6  99.93 3.70 3.50   0   0.07
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   68
-  3   7 100.00 3.70 3.50   0   0.00
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.76 3.70 3.50   0   0.24   0.00   0.00   0.00   72   72   0.00   0.00   0.00   0.00  72.67  63.46  0.05
-  0   0  99.03 3.70 3.50   0   0.97   0.00   0.00   0.00   72   72   0.00   0.00   0.00   0.00  72.67  63.46  0.05
-  0   4  99.76 3.70 3.50   0   0.24
-  1   1  99.91 3.70 3.50   0   0.09   0.00   0.00   0.00   72
-  1   5  99.95 3.70 3.50   0   0.05
-  2   2  99.99 3.70 3.50   0   0.01   0.00   0.00   0.00   70
-  2   6  99.84 3.70 3.50   0   0.16
-  3   3 100.00 3.70 3.50   0   0.00   0.00   0.00   0.00   69
-  3   7  99.56 3.70 3.50   0   0.44
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         98.35 3.70 3.50   0   0.83   0.11   0.01   0.71   67   67   0.00   0.00   0.00   0.00  72.04  62.84  0.04
-  0   0  99.01 3.70 3.50   0   0.15   0.00   0.01   0.84   63   67   0.00   0.00   0.00   0.00  72.04  62.84  0.04
-  0   4  98.44 3.70 3.50   0   0.72
-  1   1  97.16 3.70 3.50   0   1.14   0.16   0.00   1.52   64
-  1   5  97.98 3.70 3.50   0   0.33
-  2   2  98.43 3.70 3.50   0   1.53   0.03   0.01   0.01   67
-  2   6  99.35 3.70 3.50   0   0.61
-  3   3  99.23 3.70 3.50   0   0.06   0.24   0.00   0.47   65
-  3   7  97.17 3.70 3.50   0   2.12
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         68.95 3.71 3.50   0   6.31   1.02   0.23  23.48   72   72   0.00   0.00   0.00   0.00  56.43  47.08  0.04
-  0   0  64.32 3.70 3.50   0   7.73   0.72   0.23  27.00   72   72   0.00   0.00   0.00   0.00  56.43  47.08  0.04
-  0   4  70.88 3.71 3.50   0   1.17
-  1   1  67.27 3.71 3.50   0  15.61   0.67   0.08  16.38   72
-  1   5  77.84 3.73 3.50   0   5.04
-  2   2  65.73 3.70 3.50   0  11.46   1.03   0.59  21.19   72
-  2   6  73.56 3.72 3.50   0   3.63
-  3   3  64.45 3.70 3.50   0   4.50   1.67   0.03  29.35   70
-  3   7  67.57 3.71 3.50   0   1.37
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         38.19 3.70 3.50   0   0.85   1.73   0.09  59.14   55   55  58.63   0.00   0.00   0.00  30.04  24.52  0.04
-  0   0  38.34 3.70 3.50   0   0.55   0.38   0.32  60.41   54   55  58.63   0.00   0.00   0.00  30.04  24.52  0.04
-  0   4  37.75 3.70 3.50   0   1.14
-  1   1  38.29 3.70 3.50   0   0.43   0.22   0.01  61.05   54
-  1   5  37.75 3.70 3.50   0   0.97
-  2   2  38.64 3.70 3.50   0   0.84   6.19   0.03  54.30   51
-  2   6  38.38 3.70 3.50   0   1.10
-  3   3  38.38 3.70 3.50   0   0.69   0.12   0.00  60.82   55
-  3   7  37.97 3.70 3.50   0   1.09
-
---MGYHOYXEY6WxJCY8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="slow_build.txt"
-
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         27.02 0.80 3.50   0  10.41   0.33   0.03  62.21   42   42  37.08   0.00   0.00   0.00   5.67   1.66  0.01
-  0   0  20.33 0.80 3.50   0  15.20   0.57   0.00  63.89   38   42  37.08   0.00   0.00   0.00   5.67   1.66  0.01
-  0   4  30.12 0.80 3.50   0   5.42
-  1   1  29.90 0.80 3.50   0   8.77   0.48   0.07  60.77   39
-  1   5  25.93 0.80 3.50   0  12.74
-  2   2  22.03 0.80 3.50   0  18.17   0.22   0.04  59.54   37
-  2   6  35.37 0.80 3.50   0   4.83
-  3   3  20.95 0.80 3.50   0  14.36   0.05   0.02  64.62   42
-  3   7  31.52 0.80 3.50   0   3.80
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         57.07 0.80 3.50   0  16.13   0.20   0.10  26.49   40   40   0.00   0.00   0.00   0.00   9.04   3.58  0.01
-  0   0  44.54 0.80 3.50   0  23.44   0.10   0.22  31.70   36   40   0.00   0.00   0.00   0.00   9.04   3.58  0.01
-  0   4  64.41 0.80 3.50   0   3.57
-  1   1  45.65 0.80 3.50   0  27.15   0.20   0.16  26.84   38
-  1   5  68.45 0.80 3.50   0   4.35
-  2   2  54.79 0.80 3.50   0  28.06   0.27   0.03  16.85   36
-  2   6  69.45 0.80 3.50   0  13.40
-  3   3  53.33 0.80 3.50   0  15.86   0.25   0.01  30.56   40
-  3   7  55.97 0.80 3.50   0  13.22
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         79.21 0.80 3.50   0   4.23   0.75   0.14  15.67   41   41   0.00   0.00   0.00   0.00   9.96   4.42  0.02
-  0   0  76.28 0.80 3.50   0   8.88   2.10   0.44  12.30   38   41   0.00   0.00   0.00   0.00   9.96   4.42  0.02
-  0   4  84.08 0.80 3.50   0   1.08
-  1   1  76.65 0.80 3.50   0   2.58   0.41   0.06  20.30   39
-  1   5  77.60 0.80 3.50   0   1.63
-  2   2  76.33 0.80 3.50   0   9.85   0.13   0.05  13.65   37
-  2   6  84.75 0.80 3.50   0   1.43
-  3   3  76.98 0.80 3.50   0   6.22   0.34   0.02  16.44   41
-  3   7  81.01 0.80 3.50   0   2.19
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.17   5.41  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39   41   0.00   0.00   0.00   0.00  11.17   5.41  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40   40   0.00   0.00   0.00   0.00  11.10   5.38  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39   40   0.00   0.00   0.00   0.00  11.10   5.38  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.24   5.44  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   37   41   0.00   0.00   0.00   0.00  11.24   5.44  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   40   0.00   0.00   0.00   0.00  11.17   5.40  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38   40   0.00   0.00   0.00   0.00  11.17   5.40  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   37
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40   40   0.00   0.00   0.00   0.00  11.04   5.36  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38   40   0.00   0.00   0.00   0.00  11.04   5.36  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.07   5.38  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39   41   0.00   0.00   0.00   0.00  11.07   5.38  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.38   5.54  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38   41   0.00   0.00   0.00   0.00  11.38   5.54  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   37
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40   40   0.00   0.00   0.00   0.00  11.57   5.64  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38   40   0.00   0.00   0.00   0.00  11.57   5.64  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   40   41   0.00   0.00   0.00   0.00  11.61   5.65  0.01
-  0   0  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   39   41   0.00   0.00   0.00   0.00  11.61   5.65  0.01
-  0   4  99.93 0.80 3.50   0   0.07
-  1   1  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   39
-  1   5  99.93 0.80 3.50   0   0.07
-  2   2  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   36
-  2   6  99.93 0.80 3.50   0   0.07
-  3   3  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   40
-  3   7  99.93 0.80 3.50   0   0.07
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39   39   0.00   0.00   0.00   0.00  11.59   5.65  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38   39   0.00   0.00   0.00   0.00  11.59   5.65  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.55   5.63  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   37   41   0.00   0.00   0.00   0.00  11.55   5.63  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.69   5.68  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   38   41   0.00   0.00   0.00   0.00  11.69   5.68  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   36
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.68   5.69  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39   41   0.00   0.00   0.00   0.00  11.68   5.69  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   39
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   37
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   41
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   41   40   0.00   0.00   0.00   0.00  11.65   5.67  0.01
-  0   0  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   38   40   0.00   0.00   0.00   0.00  11.65   5.67  0.01
-  0   4  99.93 0.80 3.50   0   0.07
-  1   1  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   39
-  1   5  99.93 0.80 3.50   0   0.07
-  2   2  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   37
-  2   6  99.93 0.80 3.50   0   0.07
-  3   3  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   41
-  3   7  99.93 0.80 3.50   0   0.07
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40   40   0.00   0.00   0.00   0.00  11.61   5.65  0.01
-  0   0  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   37   40   0.00   0.00   0.00   0.00  11.61   5.65  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   37
-  2   6  99.94 0.80 3.50   0   0.06
-  3   3  99.94 0.80 3.50   0   0.06   0.00   0.00   0.00   40
-  3   7  99.94 0.80 3.50   0   0.06
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   41   41   0.00   0.00   0.00   0.00  11.68   5.68  0.01
-  0   0  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   37   41   0.00   0.00   0.00   0.00  11.68   5.68  0.01
-  0   4  99.94 0.80 3.50   0   0.06
-  1   1  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   38
-  1   5  99.94 0.80 3.50   0   0.06
-  2   2  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   36
-  2   6  99.93 0.80 3.50   0   0.07
-  3   3  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   41
-  3   7  99.93 0.80 3.50   0   0.07
-cor CPU    %c0  GHz  TSC SMI    %c1    %c3    %c6    %c7 CTMP PTMP   %pc2   %pc3   %pc6   %pc7  Pkg_W  Cor_W GFX_W
-         99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   41   40   0.00   0.00   0.00   0.00  11.66   5.66  0.01
-  0   0  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   38   40   0.00   0.00   0.00   0.00  11.66   5.66  0.01
-  0   4  99.93 0.80 3.50   0   0.07
-  1   1  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   38
-  1   5  99.93 0.80 3.50   0   0.07
-  2   2  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   36
-  2   6  99.93 0.80 3.50   0   0.07
-  3   3  99.93 0.80 3.50   0   0.07   0.00   0.00   0.00   41
-  3   7  99.93 0.80 3.50   0   0.07
-
---MGYHOYXEY6WxJCY8--
