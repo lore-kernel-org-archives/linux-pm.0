@@ -1,56 +1,39 @@
-From: loody <miloody@gmail.com>
-Subject: Re: how to know how long it takes on suspend/resume for platform usb driver
-Date: Thu, 20 Feb 2014 14:09:56 +0800
-Message-ID: <CANudz+sEiQHqkKfcQM_2gKckkNSuv_H6YCfKmaoThQ1xJB=2FQ@mail.gmail.com>
-References: <CANudz+vLJCwDVfhc-8VSF6kumjW7fBOkWQLFF+UihQhE34eUVg@mail.gmail.com>
-	<Pine.LNX.4.44L0.1401061006470.1282-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Prabhakar Lad <prabhakar.csengg@gmail.com>
+Subject: [PATCH] PM: fix typo
+Date: Thu, 20 Feb 2014 13:30:32 +0530
+Message-ID: <1392883232-24738-1-git-send-email-prabhakar.csengg@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f169.google.com ([74.125.82.169]:38571 "EHLO
-	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753590AbaBTGJ6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 01:09:58 -0500
-Received: by mail-we0-f169.google.com with SMTP id t61so1128395wes.14
-        for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2014 22:09:56 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.44L0.1401061006470.1282-100000@iolanthe.rowland.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:62949 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752208AbaBTIAm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 03:00:42 -0500
+Received: by mail-pa0-f41.google.com with SMTP id fa1so1591216pad.0
+        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 00:00:42 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-hi all:
+From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-2014-01-06 23:10 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
-> On Mon, 6 Jan 2014, loody wrote:
->
->> >> 2. is it possible to change the order of calling resume callback?
->> >>     for example, suppose the original sequence is "ehci -> xhci -> tty
->> >> ..." and I want to change as "tty-> ehci -> xhci".
->> >
->> > It is possible only to a very limited extent.  You can turn async
->> > suspend/resume on or off, and this will affect the order.  Of course,
->> > when async suspend/resume is off, the total time required will be
->> > longer than when it is on.
->> >
->> > Why do you want to change the order?  It shouldn't make any difference.
->> Because I want the GUI and input part of driver resume as earlier as possible.
->> Such that user can keep on their previous work more quicker.
->
-> I doubt it will make any noticeable difference.  Remember, userspace
-> remains frozen until _all_ the devices have been resumed.  Until that
-> happens, the user can't do anything.
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+---
+ include/linux/pm.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-after tracing the kernel src, I found the usb resume call back is
-called in drivers/base/power/main.c -> dpm_resume.
-
-is that the only way usb resume functions could be called?
-if resume  has bottom half mechanism, is it possible to put usb resume
-function at there in stead of first beginning resume step?
-
-thanks for your help,
-
-
-
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 8c6583a..b051ba9 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -352,7 +352,7 @@ const struct dev_pm_ops name = { \
+ 
+ /*
+  * Use this for defining a set of PM operations to be used in all situations
+- * (sustem suspend, hibernation or runtime PM).
++ * (system suspend, hibernation or runtime PM).
+  * NOTE: In general, system suspend callbacks, .suspend() and .resume(), should
+  * be different from the corresponding runtime PM callbacks, .runtime_suspend(),
+  * and .runtime_resume(), because .runtime_suspend() always works on an already
 -- 
-Regards,
+1.7.9.5
+
