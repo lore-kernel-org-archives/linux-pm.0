@@ -1,59 +1,90 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: Commit fcb6a15c2e7e (intel_pstate: Take core C0 time into account
- for core busy calculation) sucks rocks
-Date: Wed, 19 Feb 2014 16:03:40 -0800
-Message-ID: <5305465C.7060806@gmail.com>
-References: <20140219224752.GA370@kroah.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/5] intel_pstate updates for v3.14-rcX
+Date: Thu, 20 Feb 2014 01:43:24 +0100
+Message-ID: <2826539.Rd6WiyZhYe@vostro.rjw.lan>
+References: <1392228067-14817-1-git-send-email-dirk.j.brandewie@intel.com> <2254366.ixXkMqbYNC@vostro.rjw.lan> <5304F76C.1070500@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140219224752.GA370@kroah.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: dirk.brandewie@gmail.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5304F76C.1070500@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: dirk.j.brandewie@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/19/2014 02:47 PM, Greg KH wrote:
-> Hi Dirk,
->
-> I've been having some huge slowdowns on my box building kernels, and I
-> took the time to bisect it down to commit
-> fcb6a15c2e7e76d493e6f91ea889ab40e1c643a4 (intel_pstate: Take core C0
-> time into account for core busy calculation).  With that patch reverted
-> on Linus's current tree, my build speeds are back up to the normal rate.
->
-> The difference is huge, 2 minutes to do a kernel build with that patch
-> reverted, 8-10 minutes with it applied!  With all of the stable kernel
-> builds and other trees, this is a huge problem for my workload (all I do
-> is kernel builds it seems...)
->
-> I see some patches you marked as "fixes" that you sent to Rafael, do you
-> want me to test any of those?  How am I the only one seeing this
-> problem, do you need my cpu information or anything else?
+On Wednesday, February 19, 2014 10:26:52 AM Dirk Brandewie wrote:
+> On 02/18/2014 04:53 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, February 18, 2014 04:35:26 PM Dirk Brandewie wrote:
+> >> On 02/18/2014 04:43 PM, Rafael J. Wysocki wrote:
+> >>> On Tuesday, February 18, 2014 04:24:02 PM Dirk Brandewie wrote:
+> >>>> On Tuesday, February 18, 2014, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >>>>
+> >>>>> On Tuesday, February 18, 2014 03:53:48 PM Dirk Brandewie wrote:
+> >>>>>> On 02/18/2014 02:27 PM, Rafael J. Wysocki wrote:
+> >>>>>>> On Tuesday, February 18, 2014 12:29:54 PM Dirk Brandewie wrote:
+> >>>>>>>> Hi Rafael,
+> >>>>>>>
+> >>>>>>> Hi,
+> >>>>>>>
+> >>>>>>>> On 02/12/2014 10:01 AM, dirk.brandewie@gmail.com <javascript:;>wrote:
+> >>>>>>>>> From: Dirk Brandewie <dirk.j.brandewie@intel.com <javascript:;>>
+> >>>>>>>>>
+> >>>>>>>>> Based on v3.14-rc2
+> >>>>>>>>>
+> >>>>>>>>> Patch 1 removes energy reporting the patch from Maurizio Lambardi
+> >>>>>>>>>      intel_pstate: fix race condition in intel_pstate_init() can be
+> >>>>> dropped.
+> >>>>>>>>>
+> >>>>>>>>
+> >>>>>>>> Any reason why patches 2-5 did not make rc3 other than timing?
+> >>>>>>>>
+> >>>>>>>> Patches 2/3 can easily wait for v3.15.x
+> >>>>>>>>
+> >>>>>>>> Patches 4/5 fix bugs that are in the wild.
+> >>>>>>>
+> >>>>>>> I asked you about them, but you didn't reply:
+> >>>>>>>
+> >>>>>>> http://marc.info/?l=linux-pm&m=139225158531023&w=4
+> >>>>>>>
+> >>>>>>> Again, do patches [4-5/5] depend on [2-3/5]?
+> >>>>>>>
+> >>>>>>> If not, I can queue them up for -rc4.
+> >>>>>>
+> >>>>>> All the patches are independent of one another.
+> >>>>>>
+> >>>>>> Patch 2 is straight cleanup no functional change but reduces the memory
+> >>>>>> footprint slightly.
+> >>>>>>
+> >>>>>> Patch 3 is a bug that will only be seen when the PID is reset at init
+> >>>>> time
+> >>>>>> or when a change is made to PID params via debugfs.  The problem will
+> >>>>> only
+> >>>>>> exist for one sample time since it is setting last_err in the PID.
+> >>>>>>
+> >>>>>> Patch 4-5 are bugs found during Baytrail-T testing
+> >>>>>
+> >>>>> Are there any pointers to bug reports that may be included in the
+> >>>>> changelogs
+> >>>>> of these?
+> >>>>
+> >>>>
+> >>>> No.  I got the reports via email.  I could probably get the reporters to
+> >>>> file bugzillas.
+> >>>
+> >>> It would be good to add information about what machines are affected
+> >>> and what the user-visible problems are to the changelogs for future
+> >>> reference.
+> >>>
+> >>> And do we want these two patches in -stable?  If so, what -stable series should
+> >>> they go into?
+> >>
+> >> Patch 2 v3.10+
+> >>
+> >> Patch 3 v3.12+
+> >
+> > You said [2-3/5] were cleanups, so why do you think they are -stable material?
+> 
+> I misspoke these are not stable material
 
-Can you give me a description of you build system?  CPU, number of sockets,
-building from/to local media.  Any special setup I should use here for my test?
-
-If you have time having the output of turbostat for a build with and
-without would be very useful.
-
-On my single socket Sandybridge test system I don't see any difference.
-I tested against v3.10.30, v3.12.11 and v3.13.3
-
->
-> Oh, and because of the problems, I'll just drop this patch from the
-> -stable trees for now, I don't want to pollute them with the issue until
-> it is resolved properly.
->
-
-
-> thanks,
->
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
+OK
