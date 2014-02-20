@@ -1,88 +1,57 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 8/8] mmc: mmci: Put the device into low power state at system suspend
-Date: Thu, 20 Feb 2014 16:31:20 +0100
-Message-ID: <1392910280-12891-9-git-send-email-ulf.hansson@linaro.org>
-References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: how to know how long it takes on suspend/resume for platform
+ usb driver
+Date: Thu, 20 Feb 2014 10:53:11 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1402201052030.888-100000@iolanthe.rowland.org>
+References: <CANudz+sEiQHqkKfcQM_2gKckkNSuv_H6YCfKmaoThQ1xJB=2FQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:37618 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753995AbaBTPbp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 10:31:45 -0500
-Received: by mail-wi0-f176.google.com with SMTP id hi5so6010982wib.15
-        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 07:31:44 -0800 (PST)
-In-Reply-To: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:42509 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752939AbaBTPxM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 10:53:12 -0500
+In-Reply-To: <CANudz+sEiQHqkKfcQM_2gKckkNSuv_H6YCfKmaoThQ1xJB=2FQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Ulf Hansson <ulf.hansson@linaro.org>
+To: loody <miloody@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-For CONFIG_PM_SLEEP, the device were always left in full power state
-after system suspend.
+On Thu, 20 Feb 2014, loody wrote:
 
-We solely relied on a power domain to put it into low power state,
-which is an unreasonable requirement to put on SOCs to implement.
-Especially for those SOCs not supporting power domains at all.
+> hi all:
+> 
+> 2014-01-06 23:10 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
+> > On Mon, 6 Jan 2014, loody wrote:
+> >
+> >> >> 2. is it possible to change the order of calling resume callback?
+> >> >>     for example, suppose the original sequence is "ehci -> xhci -> tty
+> >> >> ..." and I want to change as "tty-> ehci -> xhci".
+> >> >
+> >> > It is possible only to a very limited extent.  You can turn async
+> >> > suspend/resume on or off, and this will affect the order.  Of course,
+> >> > when async suspend/resume is off, the total time required will be
+> >> > longer than when it is on.
+> >> >
+> >> > Why do you want to change the order?  It shouldn't make any difference.
+> >> Because I want the GUI and input part of driver resume as earlier as possible.
+> >> Such that user can keep on their previous work more quicker.
+> >
+> > I doubt it will make any noticeable difference.  Remember, userspace
+> > remains frozen until _all_ the devices have been resumed.  Until that
+> > happens, the user can't do anything.
+> 
+> after tracing the kernel src, I found the usb resume call back is
+> called in drivers/base/power/main.c -> dpm_resume.
+> 
+> is that the only way usb resume functions could be called?
 
-Use pm_runtime_force_suspend|resume() as the system suspend callbacks,
-to resolve the issue.
+Yes.
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/mmc/host/mmci.c |   33 ++-------------------------------
- 1 file changed, 2 insertions(+), 31 deletions(-)
+> if resume  has bottom half mechanism, is it possible to put usb resume
+> function at there in stead of first beginning resume step?
 
-diff --git a/drivers/mmc/host/mmci.c b/drivers/mmc/host/mmci.c
-index c88da1c..1432ae2 100644
---- a/drivers/mmc/host/mmci.c
-+++ b/drivers/mmc/host/mmci.c
-@@ -1723,36 +1723,6 @@ static int mmci_remove(struct amba_device *dev)
- 	return 0;
- }
- 
--#ifdef CONFIG_SUSPEND
--static int mmci_suspend(struct device *dev)
--{
--	struct amba_device *adev = to_amba_device(dev);
--	struct mmc_host *mmc = amba_get_drvdata(adev);
--
--	if (mmc) {
--		struct mmci_host *host = mmc_priv(mmc);
--		pm_runtime_get_sync(dev);
--		writel(0, host->base + MMCIMASK0);
--	}
--
--	return 0;
--}
--
--static int mmci_resume(struct device *dev)
--{
--	struct amba_device *adev = to_amba_device(dev);
--	struct mmc_host *mmc = amba_get_drvdata(adev);
--
--	if (mmc) {
--		struct mmci_host *host = mmc_priv(mmc);
--		writel(MCI_IRQENABLE, host->base + MMCIMASK0);
--		pm_runtime_put(dev);
--	}
--
--	return 0;
--}
--#endif
--
- #ifdef CONFIG_PM
- static void mmci_save(struct mmci_host *host)
- {
-@@ -1820,7 +1790,8 @@ static int mmci_runtime_resume(struct device *dev)
- #endif
- 
- static const struct dev_pm_ops mmci_dev_pm_ops = {
--	SET_SYSTEM_SLEEP_PM_OPS(mmci_suspend, mmci_resume)
-+	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-+				pm_runtime_force_resume)
- 	SET_PM_RUNTIME_PM_OPS(mmci_runtime_suspend, mmci_runtime_resume, NULL)
- };
- 
--- 
-1.7.9.5
+The USB resume routines do not have bottom halves.
+
+Alan Stern
 
