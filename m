@@ -1,74 +1,52 @@
-From: Josh Cartwright <joshc@codeaurora.org>
-Subject: Re: [PATCH 1/8] PM / Runtime: Fetch runtime PM callbacks using a
- macro
-Date: Thu, 20 Feb 2014 10:28:21 -0600
-Message-ID: <20140220162821.GD31820@joshc.qualcomm.com>
-References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
- <1392910280-12891-2-git-send-email-ulf.hansson@linaro.org>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [3.14-rc3] possible regression Haswell runs only at 770Mhz with
+ powersave governor
+Date: Thu, 20 Feb 2014 08:48:37 -0800
+Message-ID: <530631E5.5050104@gmail.com>
+References: <53061204.7080700@gmx.net> <20140220150101.GA9557@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:47393 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbaBTQaw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 11:30:52 -0500
-Content-Disposition: inline
-In-Reply-To: <1392910280-12891-2-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140220150101.GA9557@pd.tnic>
+Sender: cpufreq-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>, Otto Meier <gf435@gmx.net>
+Cc: dirk.brandewie@gmail.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, linux-arm-kernel@lists.infradead.org, Alessandro Rubini <rubini@unipv.it>
 
-On Thu, Feb 20, 2014 at 04:31:13PM +0100, Ulf Hansson wrote:
-> While fetching the proper runtime PM callback, we walk the hierarchy of
-> device's power domains, subsystems and drivers.
-> 
-> This is common for rpm_suspend(), rpm_idle() and rpm_resume(). Let's
-> clean up the code by using a macro that handles this.
-> 
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Alessandro Rubini <rubini@unipv.it>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/runtime.c |   59 ++++++++++++++----------------------------
->  1 file changed, 20 insertions(+), 39 deletions(-)
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 72e00e6..dedbd64 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -13,6 +13,23 @@
->  #include <trace/events/rpm.h>
->  #include "power.h"
->  
-> +#define RPM_GET_CALLBACK(dev, cb)				\
-> +({								\
-> +	if (dev->pm_domain)					\
-> +		callback = dev->pm_domain->ops.cb;		\
-> +	else if (dev->type && dev->type->pm)			\
-> +		callback = dev->type->pm->cb;			\
-> +	else if (dev->class && dev->class->pm)			\
-> +		callback = dev->class->pm->cb;			\
-> +	else if (dev->bus && dev->bus->pm)			\
-> +		callback = dev->bus->pm->cb;			\
-> +	else							\
-> +		callback = NULL;				\
-> +								\
-> +	if (!callback && dev->driver && dev->driver->pm)	\
-> +		callback = dev->driver->pm->cb;			\
+On 02/20/2014 07:01 AM, Borislav Petkov wrote:
+> Add lists to CC.
+>
+> On Thu, Feb 20, 2014 at 03:32:36PM +0100, Otto Meier wrote:
+>> Hello,
+>>
+>> My System which runs with older kernels up to 3.13.3
+>> fine on my i3-4330 with 3.5 Ghz and governor powersave.
+>> and pstate driver.
+>>
+>> With kernel 3.14-rc3 and Governor powersave it runs
+>> only at 770Mhz and never switches to higher Freq. on load.
+>> Even compiling a kernel with make -j4   does not change freq.
+>>
 
-Just a matter of style, but toying with the caller's 'callback' variable
-is a bit ugly, I'm wondering if it would be cleaner to rework the
-statement expression to "return" the callback, which would be used like:
+commit fcb6a15c2e7e76d493e6f91ea889ab40e1c643a4 seems to be the culprit
 
-	callback = rpm_get_callback(dev, runtime_idle);
+>> With governor performance  it switches to 3.5 Ghz and stays
+>> there.
+>>
+>> Any Idea how to fix this?
+>>
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+Greg KH is seeing the same thing on his Haswell system.  I am trying
+to figure what went south.
+
+https://lkml.org/lkml/2014/2/19/626
+
+
+Can you send me the .config for the broken kernel also the output of gcc -v
+
+
+
+>> Best regards
+>
+
