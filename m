@@ -1,136 +1,63 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 4/8] spi: pl022: Don't ignore power domain and amba bus at system suspend
-Date: Thu, 20 Feb 2014 16:31:16 +0100
-Message-ID: <1392910280-12891-5-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 3/8] spi: pl022: Let runtime PM callbacks be available for CONFIG_PM
+Date: Thu, 20 Feb 2014 16:31:15 +0100
+Message-ID: <1392910280-12891-4-git-send-email-ulf.hansson@linaro.org>
 References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f54.google.com ([74.125.82.54]:52993 "EHLO
-	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbaBTPbh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 10:31:37 -0500
-Received: by mail-wg0-f54.google.com with SMTP id l18so1557324wgh.33
-        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 07:31:36 -0800 (PST)
+Received: from mail-wg0-f43.google.com ([74.125.82.43]:44616 "EHLO
+	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbaBTPbi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 10:31:38 -0500
+Received: by mail-wg0-f43.google.com with SMTP id a1so1597192wgh.10
+        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 07:31:34 -0800 (PST)
 In-Reply-To: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Previously only the resources controlled by the driver were put into
-low power state at system suspend. Both the amba bus and a potential
-power domain were ignored.
-
-Moreover, while putting the device into low power state we first
-brought it back to full power, but for no particular reason.
-
-To handle both issues above, use pm_runtime_force_suspend|resume() from
-the system suspend|resume callbacks.
+Convert to the SET_PM_RUNTIME_PM macro while defining the runtime PM
+callbacks. This means the callbacks becomes available for both
+CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME, which is needed to handle the
+combinations of these scenarios.
 
 Cc: Mark Brown <broonie@kernel.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/spi/spi-pl022.c |   54 ++++++++++++++++-------------------------------
- 1 file changed, 18 insertions(+), 36 deletions(-)
+ drivers/spi/spi-pl022.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/spi/spi-pl022.c b/drivers/spi/spi-pl022.c
-index 6dfcabf..d37e840 100644
+index 74a0729..6dfcabf 100644
 --- a/drivers/spi/spi-pl022.c
 +++ b/drivers/spi/spi-pl022.c
-@@ -2277,35 +2277,7 @@ pl022_remove(struct amba_device *adev)
+@@ -2277,7 +2277,7 @@ pl022_remove(struct amba_device *adev)
  	return 0;
  }
  
--#ifdef CONFIG_PM
--/*
-- * These two functions are used from both suspend/resume and
-- * the runtime counterparts to handle external resources like
-- * clocks, pins and regulators when going to sleep.
-- */
--static void pl022_suspend_resources(struct pl022 *pl022, bool runtime)
--{
--	clk_disable_unprepare(pl022->clk);
--
--	if (runtime)
--		pinctrl_pm_select_idle_state(&pl022->adev->dev);
--	else
--		pinctrl_pm_select_sleep_state(&pl022->adev->dev);
--}
--
--static void pl022_resume_resources(struct pl022 *pl022, bool runtime)
--{
--	/* First go to the default state */
--	pinctrl_pm_select_default_state(&pl022->adev->dev);
--	if (!runtime)
--		/* Then let's idle the pins until the next transfer happens */
--		pinctrl_pm_select_idle_state(&pl022->adev->dev);
--
--	clk_prepare_enable(pl022->clk);
--}
--#endif
--
--#ifdef CONFIG_SUSPEND
-+#ifdef CONFIG_PM_SLEEP
- static int pl022_suspend(struct device *dev)
- {
- 	struct pl022 *pl022 = dev_get_drvdata(dev);
-@@ -2317,8 +2289,13 @@ static int pl022_suspend(struct device *dev)
- 		return ret;
- 	}
- 
--	pm_runtime_get_sync(dev);
--	pl022_suspend_resources(pl022, false);
-+	ret = pm_runtime_force_suspend(dev);
-+	if (ret) {
-+		spi_master_resume(pl022->master);
-+		return ret;
-+	}
-+
-+	pinctrl_pm_select_sleep_state(dev);
- 
- 	dev_dbg(dev, "suspended\n");
- 	return 0;
-@@ -2329,8 +2306,9 @@ static int pl022_resume(struct device *dev)
- 	struct pl022 *pl022 = dev_get_drvdata(dev);
- 	int ret;
- 
--	pl022_resume_resources(pl022, false);
--	pm_runtime_put(dev);
-+	ret = pm_runtime_force_resume(dev);
-+	if (ret)
-+		dev_err(dev, "problem resuming\n");
- 
- 	/* Start the queue running */
- 	ret = spi_master_resume(pl022->master);
-@@ -2341,14 +2319,16 @@ static int pl022_resume(struct device *dev)
- 
- 	return ret;
+-#if defined(CONFIG_SUSPEND) || defined(CONFIG_PM_RUNTIME)
++#ifdef CONFIG_PM
+ /*
+  * These two functions are used from both suspend/resume and
+  * the runtime counterparts to handle external resources like
+@@ -2343,7 +2343,7 @@ static int pl022_resume(struct device *dev)
  }
--#endif	/* CONFIG_PM */
-+#endif
+ #endif	/* CONFIG_PM */
  
- #ifdef CONFIG_PM
+-#ifdef CONFIG_PM_RUNTIME
++#ifdef CONFIG_PM
  static int pl022_runtime_suspend(struct device *dev)
  {
  	struct pl022 *pl022 = dev_get_drvdata(dev);
+@@ -2363,7 +2363,7 @@ static int pl022_runtime_resume(struct device *dev)
  
--	pl022_suspend_resources(pl022, true);
-+	clk_disable_unprepare(pl022->clk);
-+	pinctrl_pm_select_idle_state(dev);
-+
- 	return 0;
- }
+ static const struct dev_pm_ops pl022_dev_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(pl022_suspend, pl022_resume)
+-	SET_RUNTIME_PM_OPS(pl022_runtime_suspend, pl022_runtime_resume, NULL)
++	SET_PM_RUNTIME_PM_OPS(pl022_runtime_suspend, pl022_runtime_resume, NULL)
+ };
  
-@@ -2356,7 +2336,9 @@ static int pl022_runtime_resume(struct device *dev)
- {
- 	struct pl022 *pl022 = dev_get_drvdata(dev);
- 
--	pl022_resume_resources(pl022, true);
-+	pinctrl_pm_select_default_state(dev);
-+	clk_prepare_enable(pl022->clk);
-+
- 	return 0;
- }
- #endif
+ static struct vendor_data vendor_arm = {
 -- 
 1.7.9.5
 
