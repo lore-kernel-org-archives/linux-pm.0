@@ -1,52 +1,64 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [3.14-rc3] possible regression Haswell runs only at 770Mhz with
- powersave governor
-Date: Thu, 20 Feb 2014 08:48:37 -0800
-Message-ID: <530631E5.5050104@gmail.com>
-References: <53061204.7080700@gmx.net> <20140220150101.GA9557@pd.tnic>
+From: loody <miloody@gmail.com>
+Subject: Re: how to know how long it takes on suspend/resume for platform usb driver
+Date: Fri, 21 Feb 2014 00:49:21 +0800
+Message-ID: <CANudz+ujM_fhOCEKGhMVV3CWg5_zTJM+n5OVTm+7fHcVV8jK9g@mail.gmail.com>
+References: <CANudz+sEiQHqkKfcQM_2gKckkNSuv_H6YCfKmaoThQ1xJB=2FQ@mail.gmail.com>
+	<Pine.LNX.4.44L0.1402201052030.888-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140220150101.GA9557@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Otto Meier <gf435@gmx.net>
-Cc: dirk.brandewie@gmail.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f172.google.com ([74.125.82.172]:61985 "EHLO
+	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932081AbaBTQtW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 11:49:22 -0500
+Received: by mail-we0-f172.google.com with SMTP id u56so1703702wes.3
+        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 08:49:21 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1402201052030.888-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On 02/20/2014 07:01 AM, Borislav Petkov wrote:
-> Add lists to CC.
+hi alan:
+
+2014-02-20 23:53 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
+> On Thu, 20 Feb 2014, loody wrote:
 >
-> On Thu, Feb 20, 2014 at 03:32:36PM +0100, Otto Meier wrote:
->> Hello,
+>> hi all:
 >>
->> My System which runs with older kernels up to 3.13.3
->> fine on my i3-4330 with 3.5 Ghz and governor powersave.
->> and pstate driver.
+>> 2014-01-06 23:10 GMT+08:00 Alan Stern <stern@rowland.harvard.edu>:
+>> > On Mon, 6 Jan 2014, loody wrote:
+>> >
+>> >> >> 2. is it possible to change the order of calling resume callback?
+>> >> >>     for example, suppose the original sequence is "ehci -> xhci -> tty
+>> >> >> ..." and I want to change as "tty-> ehci -> xhci".
+>> >> >
+>> >> > It is possible only to a very limited extent.  You can turn async
+>> >> > suspend/resume on or off, and this will affect the order.  Of course,
+>> >> > when async suspend/resume is off, the total time required will be
+>> >> > longer than when it is on.
+>> >> >
+>> >> > Why do you want to change the order?  It shouldn't make any difference.
+>> >> Because I want the GUI and input part of driver resume as earlier as possible.
+>> >> Such that user can keep on their previous work more quicker.
+>> >
+>> > I doubt it will make any noticeable difference.  Remember, userspace
+>> > remains frozen until _all_ the devices have been resumed.  Until that
+>> > happens, the user can't do anything.
 >>
->> With kernel 3.14-rc3 and Governor powersave it runs
->> only at 770Mhz and never switches to higher Freq. on load.
->> Even compiling a kernel with make -j4   does not change freq.
+>> after tracing the kernel src, I found the usb resume call back is
+>> called in drivers/base/power/main.c -> dpm_resume.
 >>
-
-commit fcb6a15c2e7e76d493e6f91ea889ab40e1c643a4 seems to be the culprit
-
->> With governor performance  it switches to 3.5 Ghz and stays
->> there.
->>
->> Any Idea how to fix this?
->>
-
-Greg KH is seeing the same thing on his Haswell system.  I am trying
-to figure what went south.
-
-https://lkml.org/lkml/2014/2/19/626
-
-
-Can you send me the .config for the broken kernel also the output of gcc -v
-
-
-
->> Best regards
+>> is that the only way usb resume functions could be called?
 >
+> Yes.
+I found all usb devices will be register as dev->power.async_suspend
+=1 in usb_new_device.
 
+if all usb devices' resume will be finished in
+drivers/base/power/main.c -> dpm_resume, what is the difference to
+register these devices as async_suspend =1?
+Doesn't async_schedule in dpm_resume will let those async_suspend =1
+devices resume after calling dpm_resume?
+
+Appreciate your kind help,
