@@ -1,81 +1,61 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Thu, 20 Feb 2014 10:37:31 +0000
-Message-ID: <20140220103731.GB15994@e102568-lin.cambridge.arm.com>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
- <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
- <530501A7.2030703@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 09/10] cpuidle: declare cpuidle_dev in cpuidle.h
+Date: Thu, 20 Feb 2014 14:35:18 +0100
+Message-ID: <53060496.6000303@linaro.org>
+References: <1389794137-11361-1-git-send-email-paul.burton@imgtec.com> <1389794137-11361-10-git-send-email-paul.burton@imgtec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:34342 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbaBTKhi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 05:37:38 -0500
-In-Reply-To: <530501A7.2030703@ti.com>
-Content-Disposition: inline
+Received: from mail-we0-f170.google.com ([74.125.82.170]:63828 "EHLO
+	mail-we0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754506AbaBTNfU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 08:35:20 -0500
+Received: by mail-we0-f170.google.com with SMTP id w62so1476275wes.29
+        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 05:35:19 -0800 (PST)
+In-Reply-To: <1389794137-11361-10-git-send-email-paul.burton@imgtec.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russ Dill <Russ.Dill@ti.com>
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+To: Paul Burton <paul.burton@imgtec.com>, linux-mips@linux-mips.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Wed, Feb 19, 2014 at 07:10:31PM +0000, Russ Dill wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> On 02/19/2014 08:12 AM, Lorenzo Pieralisi wrote:
-> 
-> + *  https://patchwork.kernel.org/patch/96442/
-> 
+On 01/15/2014 02:55 PM, Paul Burton wrote:
+> Declaring this allows drivers which need to initialise each struct
+> cpuidle_device at initialisation time to make use of the structures
+> already defined in cpuidle.c, rather than having to wastefully define
+> their own.
+>
+> Signed-off-by: Paul Burton <paul.burton@imgtec.com>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>   include/linux/cpuidle.h | 1 +
+>   1 file changed, 1 insertion(+)
+>
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 50fcbb0..bab4f33 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -84,6 +84,7 @@ struct cpuidle_device {
+>   };
+>
+>   DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+> +DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
 
-I am guessing the snippets of code your comments refer to.
 
-> I think the idea here is to get the CPU into a state so that later
-> when we resume from the resume kernel, the actual CPU state matches
-> the state we have in kernel. The main thing flush_thread does is clear
-> out any and all FP state.
+Nak. When a device is registered, it is assigned to the cpuidle_devices=
+=20
+pointer and the backend driver should use it.
 
-Which has already been saved through syscore_suspend()....
 
-> The may be part of the patchset that is OBE.
 
-It has to be updated then.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-> cpu_resume makes many assumptions about the state of the state of the
-> CPU, the primary being that the MMU is disabled, but also that all
-> caches and IRQs are disabled. soft_restart does all this for us.
-> 
-> 
-> 
-> ah, you are saying just return from __swsusp_arch_save_image and allow
-> cpu_suspend_abort to be called, placing the result of swsusp_save
-> somewhere else. This may work and would reduce the complexity of the
-> code slightly.
-
-Yes. Basically you are doing a soft reboot just to return 0.
-
-> This is taken from the previous iteration of the patchset, I think the
-> comment is OBE.
-
-Updated it please then.
-
-> But this is still required to select the right mapping for our copying.
-
-/me confused. Please describe what switching to idmap is meant to
-achieve. In the patch above the copied swapper pgdir is not even used, I
-would like to understand why this is done.
-
-> I don't remember why I needed to prevent gcc from manipulating the
-> stack here.
-
-That's not a good reason to mark a function with attr __naked. If it is
-needed we leave it there, if it is not it has to go.
-
-> This is another holdover from previous patch versions that may be OBE.
-
-See above.
-
-Lorenzo
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
