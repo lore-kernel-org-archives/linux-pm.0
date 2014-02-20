@@ -1,88 +1,136 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
-Date: Thu, 20 Feb 2014 16:31:12 +0100
-Message-ID: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 4/8] spi: pl022: Don't ignore power domain and amba bus at system suspend
+Date: Thu, 20 Feb 2014 16:31:16 +0100
+Message-ID: <1392910280-12891-5-git-send-email-ulf.hansson@linaro.org>
+References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:44279 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753691AbaBTPb3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 10:31:29 -0500
-Received: by mail-wi0-f180.google.com with SMTP id hm4so1920846wib.1
-        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 07:31:28 -0800 (PST)
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:52993 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706AbaBTPbh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 10:31:37 -0500
+Received: by mail-wg0-f54.google.com with SMTP id l18so1557324wgh.33
+        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 07:31:36 -0800 (PST)
+In-Reply-To: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Patch 1 -> 2:
-These patches provides two new runtime PM helper functions which intend to be
-used from system suspend/resume callbacks, to make sure devices are put into low
-power state during system suspend and brought back to full power at system
-resume.
+Previously only the resources controlled by the driver were put into
+low power state at system suspend. Both the amba bus and a potential
+power domain were ignored.
 
-The prerequisite is to have all levels of a device's runtime PM callbacks to be
-defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
-for CONFIG_PM.
+Moreover, while putting the device into low power state we first
+brought it back to full power, but for no particular reason.
 
-By using the new runtime PM helper functions especially the two scenarios below
-will be addressed.
+To handle both issues above, use pm_runtime_force_suspend|resume() from
+the system suspend|resume callbacks.
 
-1) The PM core prevents .runtime_suspend callbacks from being invoked during
-system suspend. That means even for a runtime PM centric subsystem and driver,
-the device needs to be put into low power state from a system suspend callback.
-Otherwise it may very well be left in full power state (runtime resumed) while
-the system is suspended. By using the new helper functions, we make sure to walk
-the hierarchy of a device's power domain, subsystem and driver.
+Cc: Mark Brown <broonie@kernel.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/spi/spi-pl022.c |   54 ++++++++++++++++-------------------------------
+ 1 file changed, 18 insertions(+), 36 deletions(-)
 
-2) Subsystems and drivers need to cope with all the combinations of
-CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions smothly
-addresses this.
-
-Patch 3 -> 4:
-Fixup system suspend for spi-pl022 driver, by using the new runtime PM helper
-functions.
-
-These patches is based upon the latest next-branch for spi-pl022 driver. They
-will not apply to Rafael's linux-pm tree, but are included in this patchset for
-reference and to receive comments/acks.
-
-Patch 5:
-Fixup system suspend for i2c-nomadik driver, by using the new runtime PM helper
-functions.
-
-This patch is based upon the latest next-branch for the i2c-nomadik driver. They
-will not apply to Rafael's linux-pm tree, but are included in this patchset for
-reference and to receive comments/acks.
-
-Patch 6 -> 8:
-Fixup system suspend for mmci driver, by using the new runtime PM helper
-functions.
-
-
-A final note, the amba bus has converted to use the SET_PM_RUNTIME_PM_OPS
-which is needed for these patches to work with only CONFIG_PM_SLEEP and not
-CONFIG_PM_RUNTIME. Anyway, the patches for the amba bus have recently been
-applied by Russell and resides in his ARM tree.
-
-
-Ulf Hansson (8):
-  PM / Runtime: Fetch runtime PM callbacks using a macro
-  PM / Sleep / Runtime: Add pm_runtime_suspend|resume_force functions
-  spi: pl022: Let runtime PM callbacks be available for CONFIG_PM
-  spi: pl022: Don't ignore power domain and amba bus at system suspend
-  i2c: nomadik: Fixup system suspend
-  mmc: mmci: Mask IRQs for all variants during runtime suspend
-  mmc: mmci: Let runtime PM callbacks be available for CONFIG_PM
-  mmc: mmci: Put the device into low power state at system suspend
-
- drivers/base/power/Makefile      |    3 +-
- drivers/base/power/runtime.c     |  143 +++++++++++++++++++++++++++-----------
- drivers/i2c/busses/i2c-nomadik.c |   14 ++--
- drivers/mmc/host/mmci.c          |   60 ++++------------
- drivers/spi/spi-pl022.c          |   58 ++++++----------
- include/linux/pm_runtime.h       |    4 ++
- 6 files changed, 151 insertions(+), 131 deletions(-)
-
+diff --git a/drivers/spi/spi-pl022.c b/drivers/spi/spi-pl022.c
+index 6dfcabf..d37e840 100644
+--- a/drivers/spi/spi-pl022.c
++++ b/drivers/spi/spi-pl022.c
+@@ -2277,35 +2277,7 @@ pl022_remove(struct amba_device *adev)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PM
+-/*
+- * These two functions are used from both suspend/resume and
+- * the runtime counterparts to handle external resources like
+- * clocks, pins and regulators when going to sleep.
+- */
+-static void pl022_suspend_resources(struct pl022 *pl022, bool runtime)
+-{
+-	clk_disable_unprepare(pl022->clk);
+-
+-	if (runtime)
+-		pinctrl_pm_select_idle_state(&pl022->adev->dev);
+-	else
+-		pinctrl_pm_select_sleep_state(&pl022->adev->dev);
+-}
+-
+-static void pl022_resume_resources(struct pl022 *pl022, bool runtime)
+-{
+-	/* First go to the default state */
+-	pinctrl_pm_select_default_state(&pl022->adev->dev);
+-	if (!runtime)
+-		/* Then let's idle the pins until the next transfer happens */
+-		pinctrl_pm_select_idle_state(&pl022->adev->dev);
+-
+-	clk_prepare_enable(pl022->clk);
+-}
+-#endif
+-
+-#ifdef CONFIG_SUSPEND
++#ifdef CONFIG_PM_SLEEP
+ static int pl022_suspend(struct device *dev)
+ {
+ 	struct pl022 *pl022 = dev_get_drvdata(dev);
+@@ -2317,8 +2289,13 @@ static int pl022_suspend(struct device *dev)
+ 		return ret;
+ 	}
+ 
+-	pm_runtime_get_sync(dev);
+-	pl022_suspend_resources(pl022, false);
++	ret = pm_runtime_force_suspend(dev);
++	if (ret) {
++		spi_master_resume(pl022->master);
++		return ret;
++	}
++
++	pinctrl_pm_select_sleep_state(dev);
+ 
+ 	dev_dbg(dev, "suspended\n");
+ 	return 0;
+@@ -2329,8 +2306,9 @@ static int pl022_resume(struct device *dev)
+ 	struct pl022 *pl022 = dev_get_drvdata(dev);
+ 	int ret;
+ 
+-	pl022_resume_resources(pl022, false);
+-	pm_runtime_put(dev);
++	ret = pm_runtime_force_resume(dev);
++	if (ret)
++		dev_err(dev, "problem resuming\n");
+ 
+ 	/* Start the queue running */
+ 	ret = spi_master_resume(pl022->master);
+@@ -2341,14 +2319,16 @@ static int pl022_resume(struct device *dev)
+ 
+ 	return ret;
+ }
+-#endif	/* CONFIG_PM */
++#endif
+ 
+ #ifdef CONFIG_PM
+ static int pl022_runtime_suspend(struct device *dev)
+ {
+ 	struct pl022 *pl022 = dev_get_drvdata(dev);
+ 
+-	pl022_suspend_resources(pl022, true);
++	clk_disable_unprepare(pl022->clk);
++	pinctrl_pm_select_idle_state(dev);
++
+ 	return 0;
+ }
+ 
+@@ -2356,7 +2336,9 @@ static int pl022_runtime_resume(struct device *dev)
+ {
+ 	struct pl022 *pl022 = dev_get_drvdata(dev);
+ 
+-	pl022_resume_resources(pl022, true);
++	pinctrl_pm_select_default_state(dev);
++	clk_prepare_enable(pl022->clk);
++
+ 	return 0;
+ }
+ #endif
 -- 
 1.7.9.5
 
