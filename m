@@ -1,148 +1,163 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Sleep / Runtime: Add pm_runtime_suspend|resume_force functions
-Date: Thu, 20 Feb 2014 10:28:13 +0100
-Message-ID: <CAPDyKFom8ngHEjtN+Emi=mmojXhyBBf-+X30VLX2+EBDbbemuw@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1402191556170.1133-100000@iolanthe.rowland.org>
-	<1566282.iCFPmzopVa@vostro.rjw.lan>
+From: Paul Burton <paul.burton@imgtec.com>
+Subject: Re: [PATCH 08/10] MIPS: support use of cpuidle
+Date: Thu, 20 Feb 2014 09:57:32 +0000
+Message-ID: <20140220095732.GO25765@pburton-linux.le.imgtec.org>
+References: <1389794137-11361-1-git-send-email-paul.burton@imgtec.com>
+ <1389794137-11361-9-git-send-email-paul.burton@imgtec.com>
+ <5305C24A.1070006@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f179.google.com ([209.85.216.179]:36151 "EHLO
-	mail-qc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbaBTJ2O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2014 04:28:14 -0500
-Received: by mail-qc0-f179.google.com with SMTP id e16so2846145qcx.38
-        for <linux-pm@vger.kernel.org>; Thu, 20 Feb 2014 01:28:13 -0800 (PST)
-In-Reply-To: <1566282.iCFPmzopVa@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-mips-bounce@linux-mips.org>
+Content-Disposition: inline
+In-Reply-To: <5305C24A.1070006@linaro.org>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-mips@linux-mips.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@linaro.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>
 
-On 20 February 2014 02:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, February 19, 2014 03:59:13 PM Alan Stern wrote:
->> On Thu, 13 Feb 2014, Ulf Hansson wrote:
->>
->> > This patch provides two new runtime PM helper functions which intend to
->> > be used from system suspend/resume callbacks, to make sure devices are
->> > put into low power state during system suspend and brought back to full
->> > power at system resume.
->> >
->> > The prerequisite is to have all levels of a device's runtime PM
->> > callbacks to be defined through the SET_PM_RUNTIME_PM_OPS macro, which
->> > means these are available for CONFIG_PM.
->> >
->> > By using the new runtime PM helper functions especially the two
->> > scenarios below will be addressed.
->> >
->> > 1) The PM core prevents .runtime_suspend callbacks from being invoked
->> > during system suspend. That means even for a runtime PM centric
->> > subsystem and driver, the device needs to be put into low power state
->> > from a system suspend callback. Otherwise it may very well be left in
->> > full power state (runtime resumed) while the system is suspended. By
->> > using the new helper functions, we make sure to walk the hierarchy of
->> > a device's power domain, subsystem and driver.
->> >
->> > 2) Subsystems and drivers need to cope with all the combinations of
->> > CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions
->> > smothly addresses this.
->>
->> I don't know how Rafael feels about this proposal.
->
-> Quite frankly, I don't see much point in adding helpers without any users.
+On Thu, Feb 20, 2014 at 09:52:26AM +0100, Daniel Lezcano wrote:
+> On 01/15/2014 02:55 PM, Paul Burton wrote:
+> >This patch lays the groundwork for MIPS platforms to make use of the
+> >cpuidle framework. The arch_cpu_idle function simply calls cpuidle &
+> >falls back to the regular cpu_wait path if cpuidle should fail (eg. =
+if
+> >it's not selected or no driver is registered). A generic cpuidle sta=
+te
+> >for the wait instruction is introduced, intended to ease use of the =
+wait
+> >instruction from cpuidle drivers and reduce code duplication.
+>=20
+> Hi,
+>=20
+> What is the status of this patchset ? Still need comments ?
+>=20
+> Thanks
+>   -- Daniel
+>=20
 
-Then, let me post some patches were you can see some examples. :-)
+It's present in Ralf's current mips-for-linux-next branch, and in
+linux-next from next-20140210 up to todays next-20140220. So I presume
+barring any problems it should make it into 3.15.
 
-Do note, I have already posted patches to fixup three amba drivers and
-the amba bus, though these implemented similar code as the new helper
-functions by themselves, which obviously caused subsystem maintainers
-to complain about open coding.
+Thanks,
+    Paul
 
-SPI: PL022 driver:
-http://marc.info/?t=139152977000004&r=1&w=2
-
-MMC: MMCI driver:
-http://marc.info/?t=139152958400001&r=1&w=2
-
-I2C: Nomadik driver:
-http://marc.info/?t=139281301800011&r=1&w=2
-
->
->> One aspect of it is striking, however...
->>
->> > +#ifdef CONFIG_PM
->> > +/**
->> > + * pm_runtime_force_suspend - Force a device into suspend state if needed.
->> > + * @dev: Device to suspend.
->> > + *
->> > + * Disable runtime PM so we safely can check the device's runtime PM status and
->> > + * if it is active, invoke it's .runtime_suspend callback to bring it into
->> > + * suspend state. Keep runtime PM disabled to preserve the state unless we
->> > + * encounter errors.
->> > + *
->> > + * Typically this function may be invoked from a system suspend callback to make
->> > + * sure the device is put into low power state.
->> > + */
->> > +int pm_runtime_force_suspend(struct device *dev)
->> > +{
->> > +   int (*callback)(struct device *);
->> > +   int ret = 0;
->> > +
->> > +   pm_runtime_disable(dev);
->> > +
->> > +   /*
->> > +    * Note that pm_runtime_status_suspended() returns false while
->> > +    * !CONFIG_PM_RUNTIME, which means the device will be put into low
->> > +    * power state.
->> > +    */
->> > +   if (pm_runtime_status_suspended(dev))
->> > +           return 0;
->> > +
->> > +   if (dev->pm_domain)
->> > +           callback = dev->pm_domain->ops.runtime_suspend;
->> > +   else if (dev->type && dev->type->pm)
->> > +           callback = dev->type->pm->runtime_suspend;
->> > +   else if (dev->class && dev->class->pm)
->> > +           callback = dev->class->pm->runtime_suspend;
->> > +   else if (dev->bus && dev->bus->pm)
->> > +           callback = dev->bus->pm->runtime_suspend;
->> > +   else
->> > +           callback = NULL;
->> > +
->> > +   if (!callback && dev->driver && dev->driver->pm)
->> > +           callback = dev->driver->pm->runtime_suspend;
->> > +
->> > +   if (!callback) {
->> > +           ret = -ENOSYS;
->> > +           goto err;
->> > +   }
->> > +
->> > +   ret = callback(dev);
->> > +   if (ret)
->> > +           goto err;
->> > +
->> > +   pm_runtime_set_suspended(dev);
->> > +   return 0;
->> > +err:
->> > +   pm_runtime_enable(dev);
->> > +   return ret;
->> > +}
->> > +EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
->>
->> Most of this code is already present in rpm_suspend.  Instead of
->> copying it, you should put it in a separate function that can be
->> invoked from both places.
->>
->> The same is true of your pm_runtime_force_resume routine.
->
-> Agreed.
-
-Thanks for your input, I will update in v2.
-
-Kind regards
-Uffe
-
->
-> Thanks,
-> Rafael
->
+> >
+> >Signed-off-by: Paul Burton <paul.burton@imgtec.com>
+> >Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> >Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >Cc: linux-pm@vger.kernel.org
+> >---
+> >  arch/mips/Kconfig            |  2 ++
+> >  arch/mips/include/asm/idle.h | 14 ++++++++++++++
+> >  arch/mips/kernel/idle.c      | 20 +++++++++++++++++++-
+> >  3 files changed, 35 insertions(+), 1 deletion(-)
+> >
+> >diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+> >index 5bc27c0..95f2f11 100644
+> >--- a/arch/mips/Kconfig
+> >+++ b/arch/mips/Kconfig
+> >@@ -1838,6 +1838,8 @@ config CPU_R4K_CACHE_TLB
+> >  	bool
+> >  	default y if !(CPU_R3000 || CPU_R8000 || CPU_SB1 || CPU_TX39XX ||=
+ CPU_CAVIUM_OCTEON)
+> >
+> >+source "drivers/cpuidle/Kconfig"
+> >+
+> >  choice
+> >  	prompt "MIPS MT options"
+> >
+> >diff --git a/arch/mips/include/asm/idle.h b/arch/mips/include/asm/id=
+le.h
+> >index d192158..d9f932d 100644
+> >--- a/arch/mips/include/asm/idle.h
+> >+++ b/arch/mips/include/asm/idle.h
+> >@@ -1,6 +1,7 @@
+> >  #ifndef __ASM_IDLE_H
+> >  #define __ASM_IDLE_H
+> >
+> >+#include <linux/cpuidle.h>
+> >  #include <linux/linkage.h>
+> >
+> >  extern void (*cpu_wait)(void);
+> >@@ -20,4 +21,17 @@ static inline int address_is_in_r4k_wait_irqoff(u=
+nsigned long addr)
+> >  	       addr < (unsigned long)__pastwait;
+> >  }
+> >
+> >+extern int mips_cpuidle_wait_enter(struct cpuidle_device *dev,
+> >+				   struct cpuidle_driver *drv, int index);
+> >+
+> >+#define MIPS_CPUIDLE_WAIT_STATE {\
+> >+	.enter			=3D mips_cpuidle_wait_enter,\
+> >+	.exit_latency		=3D 1,\
+> >+	.target_residency	=3D 1,\
+> >+	.power_usage		=3D UINT_MAX,\
+> >+	.flags			=3D CPUIDLE_FLAG_TIME_VALID,\
+> >+	.name			=3D "wait",\
+> >+	.desc			=3D "MIPS wait",\
+> >+}
+> >+
+> >  #endif /* __ASM_IDLE_H  */
+> >diff --git a/arch/mips/kernel/idle.c b/arch/mips/kernel/idle.c
+> >index 3553243..64e91e4 100644
+> >--- a/arch/mips/kernel/idle.c
+> >+++ b/arch/mips/kernel/idle.c
+> >@@ -11,6 +11,7 @@
+> >   * as published by the Free Software Foundation; either version
+> >   * 2 of the License, or (at your option) any later version.
+> >   */
+> >+#include <linux/cpuidle.h>
+> >  #include <linux/export.h>
+> >  #include <linux/init.h>
+> >  #include <linux/irqflags.h>
+> >@@ -239,7 +240,7 @@ static void smtc_idle_hook(void)
+> >  #endif
+> >  }
+> >
+> >-void arch_cpu_idle(void)
+> >+static void mips_cpu_idle(void)
+> >  {
+> >  	smtc_idle_hook();
+> >  	if (cpu_wait)
+> >@@ -247,3 +248,20 @@ void arch_cpu_idle(void)
+> >  	else
+> >  		local_irq_enable();
+> >  }
+> >+
+> >+void arch_cpu_idle(void)
+> >+{
+> >+	if (cpuidle_idle_call())
+> >+		mips_cpu_idle();
+> >+}
+> >+
+> >+#ifdef CONFIG_CPU_IDLE
+> >+
+> >+int mips_cpuidle_wait_enter(struct cpuidle_device *dev,
+> >+			    struct cpuidle_driver *drv, int index)
+> >+{
+> >+	mips_cpu_idle();
+> >+	return index;
+> >+}
+> >+
+> >+#endif
+> >
+>=20
+>=20
+> --=20
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>=20
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+>=20
