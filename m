@@ -1,177 +1,192 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [3.14-rc3] possible regression Haswell runs only at 770Mhz with
- powersave governor
-Date: Thu, 20 Feb 2014 13:36:27 -0800
-Message-ID: <5306755B.9050006@gmail.com>
-References: <53061204.7080700@gmx.net> <20140220150101.GA9557@pd.tnic> <530631E5.5050104@gmail.com> <53065247.9080803@gmx.net>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
+Date: Thu, 20 Feb 2014 17:01:23 -0800
+Message-ID: <20140221010123.1302.67558@capellas-linux>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
+ <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53065247.9080803@gmx.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Otto Meier <gf435@gmx.net>, Borislav Petkov <bp@alien8.de>
-Cc: dirk.brandewie@gmail.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Pavel Machek <pavel@ucw.cz>, Cyril Chemparathy <cyril@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/20/2014 11:06 AM, Otto Meier wrote:
-> Am 20.02.2014 17:48, schrieb Dirk Brandewie:
->> On 02/20/2014 07:01 AM, Borislav Petkov wrote:
->>> Add lists to CC.
->>>
->>> On Thu, Feb 20, 2014 at 03:32:36PM +0100, Otto Meier wrote:
->>>> Hello,
->>>>
->>>> My System which runs with older kernels up to 3.13.3
->>>> fine on my i3-4330 with 3.5 Ghz and governor powersave.
->>>> and pstate driver.
->>>>
->>>> With kernel 3.14-rc3 and Governor powersave it runs
->>>> only at 770Mhz and never switches to higher Freq. on load.
->>>> Even compiling a kernel with make -j4   does not change freq.
->>>>
->>
->> commit fcb6a15c2e7e76d493e6f91ea889ab40e1c643a4 seems to be the culprit
->>
->>>> With governor performance  it switches to 3.5 Ghz and stays
->>>> there.
->>>>
->>>> Any Idea how to fix this?
->>>>
->>
->> Greg KH is seeing the same thing on his Haswell system.  I am trying
->> to figure what went south.
->>
->> https://lkml.org/lkml/2014/2/19/626
->>
->>
->> Can you send me the .config for the broken kernel also the output of
->> gcc -v
->>
->>
->>
->>>> Best regards
->>>
->>
->>
->>
->
-> Hello
->
-> I reverted the mentioned commit.
->
-> it now seams to work. But total idle power comsumption is aprox. 5 Watts
-> higher as
-> running kernel 3.13.3. Measured with a true rms powermeter on primery side.
->
+Quoting Lorenzo Pieralisi (2014-02-19 08:12:54)
+> On Wed, Feb 19, 2014 at 01:52:09AM +0000, Sebastian Capella wrote:
+> 
+> [...]
+> 
+> > diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
+> > new file mode 100644
+> > index 0000000..16f406f
+> > --- /dev/null
+> > +++ b/arch/arm/kernel/hibernate.c
+> > @@ -0,0 +1,106 @@
+> > +/*
+> > + * Hibernation support specific for ARM
+> > + *
+> > + * Derived from work on ARM hibernation support by:
+> > + *
+> > + * Ubuntu project, hibernation support for mach-dove
+> > + * Copyright (C) 2010 Nokia Corporation (Hiroshi Doyu)
+> > + * Copyright (C) 2010 Texas Instruments, Inc. (Teerth Reddy et al.)
+> > + *  https://lkml.org/lkml/2010/6/18/4
+> > + *  https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/027422.html
+> > + *  https://patchwork.kernel.org/patch/96442/
+> > + *
+> > + * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
+> > + *
+> > + * License terms: GNU General Public License (GPL) version 2
+> > + */
+> > +
+> > +#include <linux/mm.h>
+> > +#include <linux/suspend.h>
+> > +#include <asm/tlbflush.h>
+> > +#include <asm/cacheflush.h>
+> > +#include <asm/system_misc.h>
+> > +#include <asm/idmap.h>
+> > +#include <asm/suspend.h>
+> > +
+> > +extern const void __nosave_begin, __nosave_end;
+> > +
+> > +int pfn_is_nosave(unsigned long pfn)
+> > +{
+> > +     unsigned long nosave_begin_pfn =
+> > +                     __pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
+> > +     unsigned long nosave_end_pfn =
+> > +                     PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
+> > +
+> > +     return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+> > +}
+> > +
+> > +void notrace save_processor_state(void)
+> > +{
+> > +     WARN_ON(num_online_cpus() != 1);
+> > +     flush_thread();
+> 
+> Can you explain to me please why we need to call flush_thread() here ?
+> At this point in time syscore_suspend() was already called and CPU
+> peripheral state saved through CPU PM notifiers.
 
-This is the bug the commit was trying to fix :-)  It works well on the test
-systems I have,  I am building up a Haswell test system to add to my stable.
+Removed this, and everything seems to function correctly.  I'll remove this
+in v2.
 
-Could you send me your whole .config file?
+> > +     local_fiq_disable();
+> 
+> To me it looks like we are using this hook to disable fiqs, since it is
+> not done in generic code.
 
---Dirk
->
-> gcc -v:
->
-> Using built-in specs.
-> COLLECT_GCC=gcc
-> COLLECT_LTO_WRAPPER=/usr/lib64/gcc/x86_64-suse-linux/4.8/lto-wrapper
-> Target: x86_64-suse-linux
-> Configured with: ../configure --prefix=/usr --infodir=/usr/share/info
-> --mandir=/usr/share/man --libdir=/usr/lib64 --libexecdir=/usr/lib64
-> --enable-languages=c,c++,objc,fortran,obj-c++,java,ada
-> --enable-checking=release --with-gxx-include-dir=/usr/include/c++/4.8
-> --enable-ssp --disable-libssp --disable-plugin
-> --with-bugurl=http://bugs.opensuse.org/ --with-pkgversion='SUSE Linux'
-> --disable-libgcj --disable-libmudflap --with-slibdir=/lib64
-> --with-system-zlib --enable-__cxa_atexit
-> --enable-libstdcxx-allocator=new --disable-libstdcxx-pch
-> --enable-version-specific-runtime-libs --enable-linker-build-id
-> --program-suffix=-4.8 --enable-linux-futex --without-system-libunwind
-> --with-arch-32=i586 --with-tune=generic --build=x86_64-suse-linux
-> Thread model: posix
-> gcc version 4.8.1 20130909 [gcc-4_8-branch revision 202388] (SUSE Linux)
->
-> .config:
->
-> #
-> # Power management and ACPI options
-> #
-> CONFIG_ARCH_HIBERNATION_HEADER=y
-> CONFIG_SUSPEND=y
-> CONFIG_SUSPEND_FREEZER=y
-> CONFIG_HIBERNATE_CALLBACKS=y
-> CONFIG_HIBERNATION=y
-> CONFIG_PM_STD_PARTITION=""
-> CONFIG_PM_SLEEP=y
-> CONFIG_PM_SLEEP_SMP=y
-> CONFIG_PM_AUTOSLEEP=y
-> CONFIG_PM_WAKELOCKS=y
-> CONFIG_PM_WAKELOCKS_LIMIT=100
-> CONFIG_PM_WAKELOCKS_GC=y
-> CONFIG_PM_RUNTIME=y
-> CONFIG_PM=y
-> CONFIG_PM_DEBUG=y
-> CONFIG_PM_ADVANCED_DEBUG=y
-> # CONFIG_PM_TEST_SUSPEND is not set
-> CONFIG_PM_SLEEP_DEBUG=y
-> # CONFIG_DPM_WATCHDOG is not set
-> CONFIG_PM_TRACE=y
-> CONFIG_PM_TRACE_RTC=y
-> CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
-> CONFIG_ACPI=y
-> CONFIG_ACPI_SLEEP=y
-> CONFIG_ACPI_PROCFS=y
-> # CONFIG_ACPI_EC_DEBUGFS is not set
-> CONFIG_ACPI_AC=m
-> CONFIG_ACPI_BATTERY=m
-> CONFIG_ACPI_BUTTON=m
-> CONFIG_ACPI_VIDEO=m
-> CONFIG_ACPI_FAN=y
-> CONFIG_ACPI_DOCK=y
-> CONFIG_ACPI_PROCESSOR=m
-> CONFIG_ACPI_HOTPLUG_CPU=y
-> CONFIG_ACPI_PROCESSOR_AGGREGATOR=m
-> CONFIG_ACPI_THERMAL=m
-> CONFIG_ACPI_NUMA=y
-> CONFIG_ACPI_CUSTOM_DSDT_FILE=""
-> # CONFIG_ACPI_CUSTOM_DSDT is not set
-> CONFIG_ACPI_INITRD_TABLE_OVERRIDE=y
-> CONFIG_ACPI_DEBUG=y
-> CONFIG_ACPI_PCI_SLOT=y
-> CONFIG_X86_PM_TIMER=y
-> CONFIG_ACPI_CONTAINER=y
-> # CONFIG_ACPI_SBS is not set
-> # CONFIG_ACPI_HED is not set
-> # CONFIG_ACPI_CUSTOM_METHOD is not set
-> CONFIG_ACPI_BGRT=y
-> CONFIG_ACPI_APEI=y
-> # CONFIG_ACPI_APEI_GHES is not set
-> CONFIG_ACPI_APEI_PCIEAER=y
-> # CONFIG_ACPI_APEI_MEMORY_FAILURE is not set
-> # CONFIG_ACPI_APEI_EINJ is not set
-> # CONFIG_ACPI_APEI_ERST_DEBUG is not set
-> # CONFIG_ACPI_EXTLOG is not set
-> CONFIG_SFI=y
->
-> #
-> # CPU Frequency scaling
-> #
-> CONFIG_CPU_FREQ=y
-> CONFIG_CPU_FREQ_GOV_COMMON=y
-> CONFIG_CPU_FREQ_STAT=m
-> CONFIG_CPU_FREQ_STAT_DETAILS=y
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-> CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
-> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-> CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-> CONFIG_CPU_FREQ_GOV_USERSPACE=m
-> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
->
-> bye
->
->
+Correct.
+
+> > +
+> > +/*
+> > + * Snapshot kernel memory and reset the system.
+> > + * After resume, the hibernation snapshot is written out.
+> > + */
+> > +static int notrace __swsusp_arch_save_image(unsigned long unused)
+> > +{
+> > +     int ret;
+> > +
+> > +     ret = swsusp_save();
+> > +     if (ret == 0)
+> > +             soft_restart(virt_to_phys(cpu_resume));
+> 
+> By the time the suspend finisher (ie this function) is run, the
+> processor state has been saved and I think that's all you have to do,
+> function can just return after calling swsusp_save(), unless I am missing
+> something.
+> 
+> I do not understand why a soft_restart is required here. On a side note,
+> finisher is called with irqs disabled so, since you added a function for
+> soft restart noirq, it should be used, if needed, but I have to understand
+> why in the first place.
+	[...]
+> If the goal of soft_restart is to return 0 on success from this call,
+> you can still do that without requiring a soft_restart in the first
+> place. IIUC all you want to achieve is to save processor context
+> registers so that when you resume from image you will actually return
+> from here.
+
+Returning 0 here produces a return value of 1 to the caller of
+cpu_suspend.  The return value is replaced with a literal 1 in
+the cpu_suspend_abort handling.  I don't see this being used anywhere;
+most places seem to consider it a suspend failure/panic/bug.  It only
+happens if the finisher returns 0.
+
+If I check for this literal in swsusp_arch_suspend, everything appears to work well.
+The check is a little ugly looking.  I'll plan to add this to v2.
+Please let me know if you have any suggestions.
+
+> > +}
+> > +
+> > +/*
+> > + * The framework loads the hibernation image into a linked list anchored
+> > + * at restore_pblist, for swsusp_arch_resume() to copy back to the proper
+> > + * destinations.
+> > + *
+> > + * To make this work if resume is triggered from initramfs, the
+> > + * pagetables need to be switched to allow writes to kernel mem.
+> 
+> Can you elaborate a bit more on this please ?
+> 
+> > + */
+> > +static void notrace __swsusp_arch_restore_image(void *unused)
+> > +{
+> > +     struct pbe *pbe;
+> > +
+> > +     cpu_switch_mm(idmap_pgd, &init_mm);
+> 
+> Same here, thanks.
+
+Let's follow this at the head of your comments, since we've had more
+discussion on this..
+
+> > +}
+> > +
+> > +static u8 __swsusp_resume_stk[PAGE_SIZE/2] __nosavedata;
+> > +
+> > +/*
+> > + * Resume from the hibernation image.
+> > + * Due to the kernel heap / data restore, stack contents change underneath
+> > + * and that would make function calls impossible; switch to a temporary
+> > + * stack within the nosave region to avoid that problem.
+> > + */
+> > +int __naked swsusp_arch_resume(void)
+> > +{
+> > +     extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
+> 
+> Ok, a function with attribute __naked that still calls C functions, is
+> attr __naked really needed here ?
+
+With the cpu_init gone, the c functions are no longer called.  I've
+removed the __naked and see no issues;  I'll test overnight and see.
+
+BTW, this function is prototyped in kernel/power/power.h as:
+  extern asmlinkage int swsusp_arch_resume(void);  I'm not sure
+  whether/how to use this, but thought I'd bring it up.
+
+> 
+> > +     cpu_init();     /* get a clean PSR */
+> 
+> cpu_init is called in the cpu_resume path, why is this call needed here ?
+
+Removed and behaves well.
+
+I'm running overnight testing with these changes and will add them to
+v2 patch after.
+
+Thanks for your help and comments Lorenzo
+
+Sebastian
