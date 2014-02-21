@@ -1,51 +1,62 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: fix typo
-Date: Fri, 21 Feb 2014 15:50:55 +0100
-Message-ID: <20140221145054.GA5796@amd.pavel.ucw.cz>
-References: <1392883232-24738-1-git-send-email-prabhakar.csengg@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 0/5] Enabling the asynchronous threads for other phases
+Date: Fri, 21 Feb 2014 17:43:33 +0100
+Message-ID: <4216593.WbzE5aJO7L@vostro.rjw.lan>
+References: <27240C0AC20F114CBF8149A2696CBE4A01C27D32@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52431 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754396AbaBUOu4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2014 09:50:56 -0500
-Content-Disposition: inline
-In-Reply-To: <1392883232-24738-1-git-send-email-prabhakar.csengg@gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:50809 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932607AbaBUQ2k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2014 11:28:40 -0500
+In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A01C27D32@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Li, Zhuangzhi" <zhuangzhi.li@intel.com>
 
-On Thu 2014-02-20 13:30:32, Prabhakar Lad wrote:
-> From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+On Friday, February 21, 2014 01:38:45 AM Liu, Chuansheng wrote:
+> Hello Rafael,
 > 
-> Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
-...and as this is really trivial, you may want to send it to
-trivial@kernel.org if it is not applied by Rafael.
-								Pavel
-
-> ---
->  include/linux/pm.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> > -----Original Message-----
+> > From: Liu, Chuansheng
+> > Sent: Tuesday, February 18, 2014 10:29 AM
+> > To: rjw@rjwysocki.net; gregkh@linuxfoundation.org; Brown, Len;
+> > pavel@ucw.cz
+> > Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Li, Zhuangzhi; Liu,
+> > Chuansheng
+> > Subject: [PATCH v4 0/5] Enabling the asynchronous threads for other phases
+> > 
+> > Hello,
+> > 
+> > This patch series are for enabling the asynchronous threads for the phases
+> > resume_noirq, resume_early, suspend_noirq and suspend_late.
+> > 
 > 
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 8c6583a..b051ba9 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -352,7 +352,7 @@ const struct dev_pm_ops name = { \
->  
->  /*
->   * Use this for defining a set of PM operations to be used in all situations
-> - * (sustem suspend, hibernation or runtime PM).
-> + * (system suspend, hibernation or runtime PM).
->   * NOTE: In general, system suspend callbacks, .suspend() and .resume(), should
->   * be different from the corresponding runtime PM callbacks, .runtime_suspend(),
->   * and .runtime_resume(), because .runtime_suspend() always works on an already
+> After dig more about async threads, I found dpm_prepare/complete phases need
+> them also.
+> 
+> dpm_prepare()
+>   -- > call pci_pm_prepare() one by one
+>       -- > call pm_runtime_resume() one by one
+>         -- > call pci_set_power_state to D3HOT -- > D0
+> 
+> It will cause much time delaying due to d3_delay.
+> And I made one draft patch to implement the asynchronous threads for dpm_prepare(),
+> it is really save much time.
+> 
+> If you like it, I can prepare another series patches for dpm_prepare() and dpm_complete(),
+> thanks.
+
+I think a better solution here would be to move the pm_runtime_resume()
+out of the .prepare() callback for PCI.  We may be doing that in the
+process of suspend optimization anyway, so I'd wait with making those
+phases async.
+
+Thanks!
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
