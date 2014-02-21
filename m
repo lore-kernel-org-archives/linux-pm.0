@@ -1,38 +1,59 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH] cpuidle/mips: remove redundant cpuidle_idle_call()
-Date: Fri, 21 Feb 2014 17:27:20 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1402211719140.17677@knanqh.ubzr>
-References: <alpine.LFD.2.11.1402171101060.17677@knanqh.ubzr> <20140221214428.GJ19285@linux-mips.org>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
+Date: Fri, 21 Feb 2014 15:59:11 -0800
+Message-ID: <20140221235911.14777.13919@capellas-linux>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
+ <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
+ <20140219193315.3732.21819@capellas-linux>
+ <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
+ <20140221183956.29890.80931@capellas-linux>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f173.google.com ([209.85.216.173]:39758 "EHLO
-	mail-qc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754457AbaBUW1X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2014 17:27:23 -0500
-Received: by mail-qc0-f173.google.com with SMTP id i8so6732289qcq.4
-        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2014 14:27:22 -0800 (PST)
-In-Reply-To: <20140221214428.GJ19285@linux-mips.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140221183956.29890.80931@capellas-linux>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Pavel Machek <pavel@ucw.cz>, Catalin Marinas <Catalin.Marinas@arm.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Paul Burton <paul.burton@imgtec.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-mips@linux-mips.org
 
-On Fri, 21 Feb 2014, Ralf Baechle wrote:
+- Cyril Chemparathy as his email is bouncing back to me. 
 
-> On Mon, Feb 17, 2014 at 11:09:45AM -0500, Nicolas Pitre wrote:
-> 
-> > I noticed commit c0b5d598aefda in linux-next adds a call to 
-> > cpuidle_idle_call().  At the same time we're rationalizing the idle 
-> > handling code in order to integrate it with the scheduler proper.  
-> > Please note that a similar patch to the one below will be necessary once 
-> > everything gets merged together.
-> 
-> So how shall we merge this patch, shall I fold it into c0b5d598aefda or?
+Quoting Sebastian Capella (2014-02-21 10:39:56)
+> Quoting Lorenzo Pieralisi (2014-02-20 08:27:55)
+> > > > > +     cpu_switch_mm(idmap_pgd, &init_mm);
+  [ ... ]
+> I can try removing it and seeing if there are side effects.
 
-Merging it on your side is probably the best option.  There would be a 
-window in mainline during which the callback registered with cpuidle 
-won't be invoked, but that is not worse than the v3.13 behavior.
+FYI, It's definitely hanging with this removed, still looking.
 
+> In this state I believe:
+>   - our stack is safe because it's in nosave.
+>   - userspace is frozen, those pages are 'don't care', as we're
+>     discarding its state.
+>   - our instructions and globals are ok, because they're in the
+>     same place as last boot and are not getting restored.  None are in
+>     modules.
+>      - Globals: restore_pblist, idmap_pgd, init_mm, swapper_pg_dir
 
-Nicolas
+Sorry, this last bit about the globals is not correct.  Of course
+they're getting restored.  What I meant to say is that they shouldn't
+be affected by the mmu switch as they remain at the same address.
+
+For our purposes, I think we won't care about their state as we're not
+referencing them after we start restoring.  We start the list
+with restore_pblist, but after following the initial pointer, we don't
+reference it again.  From then on, we're walking safe memory lists.
+
+Sorry for the misleading statements.
+
+Sebastian
