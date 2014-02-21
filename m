@@ -1,139 +1,111 @@
-From: Rafael Wysocki <rjwysocki@gmail.com>
-Subject: [GIT PULL] ACPI and power management fixes for v3.14-rc4
-Date: Fri, 21 Feb 2014 18:16:10 +0100
-Message-ID: <CAJZ5v0jZrD+jML2hT7v=gYog1TuXK-VK2DjoPthNbMpoPxnbmg@mail.gmail.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
+Date: Fri, 21 Feb 2014 10:39:56 -0800
+Message-ID: <20140221183956.29890.80931@capellas-linux>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
+ <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
+ <20140219193315.3732.21819@capellas-linux>
+ <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Pavel Machek <pavel@ucw.cz>, Cyril Chemparathy <cyril@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Quoting Lorenzo Pieralisi (2014-02-20 08:27:55)
+> Hi Sebastian,
+> 
+> On Wed, Feb 19, 2014 at 07:33:15PM +0000, Sebastian Capella wrote:
+> > Quoting Lorenzo Pieralisi (2014-02-19 08:12:54)
+> > > On Wed, Feb 19, 2014 at 01:52:09AM +0000, Sebastian Capella wrote:
+> > > > +static void notrace __swsusp_arch_restore_image(void *unused)
+> > > > +{
+> > > > +     struct pbe *pbe;
+> > > > +
+> > > > +     cpu_switch_mm(idmap_pgd, &init_mm);
+> > 
+> > At restore time, we take the save buffer data and restore it to the same
+> > physical locations used in the previous execution.  This will require having
+> > write access to all of memory, which may not be generally granted by the
+> > current mm.  So we switch to 1-1 init_mm to restore memory.
 
-Please pull from the git repository at
+I can try removing it and seeing if there are side effects.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.14-rc4
+> 
+> I still do not understand why switching to idmap, which is a clone of
+> init_mm + 1:1 kernel mappings is required here. Why idmap ?
+> And while at it, can't the idmap be overwritten _while_ copying back the
+> resume kernel ? Is it safe to use idmap page tables while copying ?
 
-to receive ACPI and power management fixes for v3.14-rc4
-with top-most commit fee5ae96e0bc48b13f97512aef91d5aea60240a5
+Thanks for finding this!  I'm concerned about this now.  I still
+haven't seen where this is handled.  I think we do need to switch
+to a page table in safe memory, or at least make sure we're not going to
+overwrite the page tables we're using.  I'll focus on this today
 
-  Merge branch 'pm-cpufreq'
+> I had a look at x86 and there idmap page tables used to resume are created
+> on the fly using safe pages, on ARM idmap is created at boot.
 
-on top of commit 6d0abeca3242a88cab8232e4acd7e2bf088f3bc2
+After looking more at the arm code here's what I see:
+- swsusp_read, will restore all hibernation pages to the same physical
+  pages occupied pre-hibernation if the physical page is free. (get_buffer)
+  - Since the page is free, nothing is dependent on it, it's writable
+    and available, so we directly save to it, and it's ready for our
+    restore.
+  - if the original page is not free, we save the page to a different
+    physical page that was not part of the physical page set
+    pre-hibernation(safe_pages).  These pages are added to the
+    restore_pblist along with the original intended physical address
+    of the page.
+- highmem is handled separately (pages that were not free are swapped
+  and the memory map updated) (restore_himem)  Not sure if this affects
+  anything, but I thought I'd mention it JIC.
+- once we've read all of the hibernation image off of flash, we have a
+  bunch of pages that are in the wrong place, linked at restore_pblist.
+  We enter the restore image finisher, where everything is frozen,
+  irq/fiq disabled and we're ready to suspend, and now we have to copy
+  the pages in the wrong places back to their original physical pages.
 
-  Linux 3.14-rc3
+In this state I believe:
+  - our stack is safe because it's in nosave.
+  - userspace is frozen, those pages are 'don't care', as we're
+    discarding its state.
+  - our instructions and globals are ok, because they're in the
+    same place as last boot and are not getting restored.  None are in
+    modules.
+     - Globals: restore_pblist, idmap_pgd, init_mm, swapper_pg_dir
+  - restore_pblist chain is allocated from "safe pages"
+  - idmap_pgd table is allocated from freepages without worring about
+    safe pages -- this is where there may be concern.  Also, not sure
+    about 2nd or 3rd level pages if needed.  I'll look into this more.
 
-These include two fixes for recent regressions related to ACPI, a
-cpufreq fix for breakage overlooked by a previous fix commit, two
-intel_pstate fixes for stuff added during the 3.13 cycle that need
-to go into -stable, three fixes for older bugs that also are -stable
-candidates, ACPI video blacklist changes related to BIOSes that
-behave in a special way on Windows 8, several build fixes for
-CONFIG_PM_SLEEP unset in ACPI drivers and an ACPI driver
-cleanup.
+static void notrace __swsusp_arch_restore_image(void *unused)
+{
+        struct pbe *pbe;    
 
-Specifics:
+        cpu_switch_mm(idmap_pgd, &init_mm);
+        for (pbe = restore_pblist; pbe; pbe = pbe->next)
+                copy_page(pbe->orig_address, pbe->address);
+        
+        soft_restart_noirq(virt_to_phys(cpu_resume));
+}
 
- - Fix for a recent probing regression in the nouveau driver introduced
-   by an ACPI change related to the handling of _DSM from Jiang Liu.
+As far as I see, where we are in swsusp_arch_init, the remaining risk
+area is this page table.  Everything else looks ok?  Do you see any
+more gaps?
 
- - Fix for a dock station sysfs attribute that stopped working correctly
-   after recent changes in the ACPI core.
+Thanks Lorenzo!!
 
- - cpufreq fix taking care of broken code related to CPU removal and
-   overlooked by a previous recent fix in that area.  From Viresh Kumar.
-
- - Two intel_pstate fixes related to Baytrail support added during
-   the 3.13 cycle (candidates for -stable) from Dirk Brandewie.
-
- - ACPI video fix removing duplicate brightness values from the _BCL
-   table which makes its user space interface behave sanely.  From
-   Hans de Goede.
-
- - Fix for the powernow-k8 cpufreq driver making it initialize its
-   per-CPU data structures correctly from Srivatsa S. Bhat.
-
- - Fix for an obscure memory leak in the ACPI PCI interrupt allocation
-   code (related to ISA) from Tomasz Nowicki.
-
- - ACPI video blacklist changes moving several systems that should
-   use the native backlight interface instead of the ACPI one from
-   the general ACPI _OSI blacklist the the ACPI video driver's
-   blacklist where they belong.  This consists of an ACPI video
-   driver update from Aaron Lu and a revert of a previous commit
-   adding systems to the ACPI _OSI blacklist requested by
-   Takashi Iwai.  All of that has been tested by the involved
-   reporters and should not cause any fallout to happen.
-
- - Several fixes for build issues in ACPI drivers occuring when
-   CONFIG_PM_SLEEP is unset from Shuah Khan.
-
- - Fix for an sscanf() format string in the ACPI Smart Battery
-   Subsystem (SBS) driver from Luis G.F.
-
-Thanks!
-
-
----------------
-
-Aaron Lu (1):
-      ACPI / video: Add systems that should favour native backlight interface
-
-Dirk Brandewie (2):
-      intel_pstate: Use LFM bus ratio as min ratio/P state
-      intel_pstate: Add support for Baytrail turbo P states
-
-Hans de Goede (1):
-      ACPI / video: Filter the _BCL table for duplicate brightness values
-
-Jiang Liu (1):
-      ACPI / nouveau: fix probing regression related to _DSM
-
-Luis G.F (1):
-      ACPI / SBS: Fix incorrect sscanf() string
-
-Rafael J. Wysocki (2):
-      ACPI / dock: Make 'docked' sysfs attribute work as documented
-      Revert "ACPI: Blacklist Win8 OSI for some HP laptop 2013 models"
-
-Shuah Khan (6):
-      ACPI / AC: fix AC driver compile error when CONFIG_PM_SLEEP is undefined
-      ACPI / battery: fix battery driver compile error when
-CONFIG_PM_SLEEP is undefined
-      ACPI / button: fix button driver compile error when
-CONFIG_PM_SLEEP is undefined
-      ACPI / fan: fix fan driver compile error when CONFIG_PM_SLEEP is undefined
-      ACPI / SBS: fix SBS driver compile error when CONFIG_PM_SLEEP is undefined
-      ACPI / thermal: fix thermal driver compile error when
-CONFIG_PM_SLEEP is undefined
-
-Srivatsa S. Bhat (1):
-      cpufreq: powernow-k8: Initialize per-cpu data-structures properly
-
-Tomasz Nowicki (1):
-      ACPI / PCI: Fix memory leak in acpi_pci_irq_enable()
-
-Viresh Kumar (1):
-      cpufreq: remove sysfs link when a cpu != policy->cpu, is removed
-
----------------
-
- drivers/acpi/ac.c                      |   2 +
- drivers/acpi/battery.c                 |   2 +
- drivers/acpi/blacklist.c               |  58 -------------
- drivers/acpi/button.c                  |   2 +
- drivers/acpi/dock.c                    |   8 +-
- drivers/acpi/fan.c                     |   3 +
- drivers/acpi/pci_irq.c                 |   1 +
- drivers/acpi/sbs.c                     |   4 +-
- drivers/acpi/thermal.c                 |   2 +
- drivers/acpi/video.c                   | 147 +++++++++++++++++++++++++++++++--
- drivers/acpi/video_detect.c            |  16 ----
- drivers/cpufreq/cpufreq.c              |   3 +-
- drivers/cpufreq/intel_pstate.c         |  17 +++-
- drivers/cpufreq/powernow-k8.c          |  10 ++-
- drivers/gpu/drm/nouveau/nouveau_acpi.c |  26 +++++-
- 15 files changed, 204 insertions(+), 97 deletions(-)
+Sebastian
