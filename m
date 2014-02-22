@@ -1,49 +1,46 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Sat, 22 Feb 2014 12:13:15 +0000
-Message-ID: <20140222121315.GB9012@e102568-lin.cambridge.arm.com>
+Date: Sat, 22 Feb 2014 23:28:19 +0100
+Message-ID: <20140222222819.GA20490@amd.pavel.ucw.cz>
 References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
  <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
  <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
- <20140219193315.3732.21819@capellas-linux>
- <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
- <20140222101655.GE21483@n2100.arm.linux.org.uk>
+ <20140222103840.GH21483@n2100.arm.linux.org.uk>
+ <20140222120910.GA9012@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:37828 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbaBVMNT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Feb 2014 07:13:19 -0500
-In-Reply-To: <20140222101655.GE21483@n2100.arm.linux.org.uk>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37996 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751790AbaBVW2W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Feb 2014 17:28:22 -0500
 Content-Disposition: inline
+In-Reply-To: <20140222120910.GA9012@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Cyril Chemparathy <cyril@ti.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Sebastian Capella <sebastian.capella@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Cyril Chemparathy <cyril@ti.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Sat, Feb 22, 2014 at 10:16:55AM +0000, Russell King - ARM Linux wrote:
-> On Thu, Feb 20, 2014 at 04:27:55PM +0000, Lorenzo Pieralisi wrote:
-> > I still do not understand why switching to idmap, which is a clone of
-> > init_mm + 1:1 kernel mappings is required here. Why idmap ?
+Hi!
+
+> > return from the finisher will always be interpreted as an abort rather
+> > than success (because the state has to be unwound.)
 > > 
-> > And while at it, can't the idmap be overwritten _while_ copying back the
-> > resume kernel ? Is it safe to use idmap page tables while copying ?
-> > 
-> > I had a look at x86 and there idmap page tables used to resume are created
-> > on the fly using safe pages, on ARM idmap is created at boot.
+> > This is the only way to get a zero return from cpu_suspend().
 > 
-> That's fine.
-> 
-> Remember, you're required to boot exactly the same kernel image when
-> resuming as the kernel which created the suspend image.  Unless you
-> have random allocations going on, you should get the same layout for
-> the idmap stuff at each boot.
+> Yes, that's the only reason why this code is jumping to cpu_resume, since
+> all it is needed is to snapshot the CPU context and by the time the
+> finisher is called that's done. Wanted to say that soft reboot is not
+> useful (cache flushing and resume with MMU off), but what you are saying
+> is correct. We might be saving swsusp_save return value in a global
+> variable and just return from the finisher, but that's horrible and
+> given the amount of time it takes to snapshot the image to disk the
+> cost of this soft reboot will be dwarfed by that.
 
-Thanks Russell, now that's clear. We do need a copy of page tables
-that are not tampered with while copying, and idmap works well for
-that.
+I feel bad for the "global variable" trick on x86, and if you can
+avoid it, please do!
 
-Lorenzo
-
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
