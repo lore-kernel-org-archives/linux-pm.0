@@ -1,28 +1,32 @@
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Sat, 22 Feb 2014 10:22:21 +0000
-Message-ID: <20140222102221.GF21483@n2100.arm.linux.org.uk>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org> <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org> <20140219161254.GB19343@e102568-lin.cambridge.arm.com> <20140219193315.3732.21819@capellas-linux> <20140220162754.GC15994@e102568-lin.cambridge.arm.com> <20140221183956.29890.80931@capellas-linux> <20140221235911.14777.13919@capellas-linux> <20140222043714.19852.67450@capellas-linux> <530847E3.4070401@ti.com>
+Subject: Re: [PATCH RFC v1 1/3] ARM: Add irq disabled version of
+	soft_restart.
+Date: Sat, 22 Feb 2014 10:26:17 +0000
+Message-ID: <20140222102616.GG21483@n2100.arm.linux.org.uk>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org> <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:46778 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751325AbaBVK0X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Feb 2014 05:26:23 -0500
 Content-Disposition: inline
-In-Reply-To: <530847E3.4070401@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russ Dill <Russ.Dill@ti.com>
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+In-Reply-To: <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Russ Dill <Russ.Dill@ti.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>, Robin Holt <holt@sgi.com>
 
-On Fri, Feb 21, 2014 at 10:46:59PM -0800, Russ Dill wrote:
-> If there is worry about this, you could setup a page mapping in a
-> __nosave region, preventing it from being overwritten.
+On Tue, Feb 18, 2014 at 05:52:07PM -0800, Sebastian Capella wrote:
+> From: Russ Dill <Russ.Dill@ti.com>
+> 
+> This adds the ability to run soft_restart with local_irq/fiq_disable
+> already called. This is helpful for the hibernation code paths.
 
-Why would we need _another_ set of pages tables?  Aren't two (swapper_pg_dir
-and the idmap one) enough?
-
-You do need to switch to the idmap one if you're going to call cpu_resume
-at its physical address, because that requires the identity mapping in
-order to work.
+I'd rather keep this simple.  There's no problem with calling soft_restart
+with interrupts already disabled.  local_irq_disable()/local_fiq_disable()
+there should be harmless.
 
 -- 
 FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
