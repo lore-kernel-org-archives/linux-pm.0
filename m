@@ -1,38 +1,28 @@
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Sat, 22 Feb 2014 10:16:55 +0000
-Message-ID: <20140222101655.GE21483@n2100.arm.linux.org.uk>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org> <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org> <20140219161254.GB19343@e102568-lin.cambridge.arm.com> <20140219193315.3732.21819@capellas-linux> <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
+Date: Sat, 22 Feb 2014 10:22:21 +0000
+Message-ID: <20140222102221.GF21483@n2100.arm.linux.org.uk>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org> <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org> <20140219161254.GB19343@e102568-lin.cambridge.arm.com> <20140219193315.3732.21819@capellas-linux> <20140220162754.GC15994@e102568-lin.cambridge.arm.com> <20140221183956.29890.80931@capellas-linux> <20140221235911.14777.13919@capellas-linux> <20140222043714.19852.67450@capellas-linux> <530847E3.4070401@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:46750 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752389AbaBVKRK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Feb 2014 05:17:10 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <530847E3.4070401@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Russ Dill <Russ.Dill@ti.com>
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Cyril Chemparathy <cyril@ti.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Thu, Feb 20, 2014 at 04:27:55PM +0000, Lorenzo Pieralisi wrote:
-> I still do not understand why switching to idmap, which is a clone of
-> init_mm + 1:1 kernel mappings is required here. Why idmap ?
-> 
-> And while at it, can't the idmap be overwritten _while_ copying back the
-> resume kernel ? Is it safe to use idmap page tables while copying ?
-> 
-> I had a look at x86 and there idmap page tables used to resume are created
-> on the fly using safe pages, on ARM idmap is created at boot.
+On Fri, Feb 21, 2014 at 10:46:59PM -0800, Russ Dill wrote:
+> If there is worry about this, you could setup a page mapping in a
+> __nosave region, preventing it from being overwritten.
 
-That's fine.
+Why would we need _another_ set of pages tables?  Aren't two (swapper_pg_dir
+and the idmap one) enough?
 
-Remember, you're required to boot exactly the same kernel image when
-resuming as the kernel which created the suspend image.  Unless you
-have random allocations going on, you should get the same layout for
-the idmap stuff at each boot.
+You do need to switch to the idmap one if you're going to call cpu_resume
+at its physical address, because that requires the identity mapping in
+order to work.
 
 -- 
 FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
