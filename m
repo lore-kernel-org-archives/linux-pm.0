@@ -1,65 +1,40 @@
-From: Russ Dill <Russ.Dill@ti.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Fri, 21 Feb 2014 22:46:59 -0800
-Message-ID: <530847E3.4070401@ti.com>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
- <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
- <20140219193315.3732.21819@capellas-linux>
- <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
- <20140221183956.29890.80931@capellas-linux>
- <20140221235911.14777.13919@capellas-linux>
- <20140222043714.19852.67450@capellas-linux>
+Date: Sat, 22 Feb 2014 10:16:55 +0000
+Message-ID: <20140222101655.GE21483@n2100.arm.linux.org.uk>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org> <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org> <20140219161254.GB19343@e102568-lin.cambridge.arm.com> <20140219193315.3732.21819@capellas-linux> <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140222043714.19852.67450@capellas-linux>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Capella <sebastian.capella@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Pavel Machek <pavel@ucw.cz>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:46750 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752389AbaBVKRK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Feb 2014 05:17:10 -0500
+Content-Disposition: inline
+In-Reply-To: <20140220162754.GC15994@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Cyril Chemparathy <cyril@ti.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 
-On 02/21/2014 08:37 PM, Sebastian Capella wrote:
-> Quoting Sebastian Capella (2014-02-21 15:59:11)
->> - Cyril Chemparathy as his email is bouncing back to me. 
->>
->> Quoting Sebastian Capella (2014-02-21 10:39:56)
->>> Quoting Lorenzo Pieralisi (2014-02-20 08:27:55)
->>>>>>> +     cpu_switch_mm(idmap_pgd, &init_mm);
->>   [ ... ]
->>> I can try removing it and seeing if there are side effects.
->>
->> FYI, It's definitely hanging with this removed, still looking.
+On Thu, Feb 20, 2014 at 04:27:55PM +0000, Lorenzo Pieralisi wrote:
+> I still do not understand why switching to idmap, which is a clone of
+> init_mm + 1:1 kernel mappings is required here. Why idmap ?
 > 
-> I see when we reach this call, the 1st level page table @ TTBR0 is located
-> at different memory locations each run (expected).  If we omit the
-> cpu_switch_mm we're corrupting the page table causing the observed
-> intermittent failures.  I believe these match the corruption you expected.
+> And while at it, can't the idmap be overwritten _while_ copying back the
+> resume kernel ? Is it safe to use idmap page tables while copying ?
 > 
-> The reason this doesn't happen when I leave the call is that idmap_pgd
-> is always at the same memory location.  I expect this is because it's
-> allocated during init.  I've seen the same address 50/50 times for
-> idmap_pgd.  I don't think it is correct to rely on this behavior.
-> 
-> Would it be appropriate to use the swapper_pg_dir directly in place
-> of idmap_pgd?
->   - I do not see any modification to the swapper_pg_dir contents in the
->     code that would change from init time.
->   - swapper_pg_dir is always at the same offset.
-> 
-> Ideally we should have no issue with overwriting it with identical data.
-> 
-> I've run a couple hundred test loops using swapper_pg_dir and so far
-> there are no failures.
+> I had a look at x86 and there idmap page tables used to resume are created
+> on the fly using safe pages, on ARM idmap is created at boot.
 
-If there is worry about this, you could setup a page mapping in a
-__nosave region, preventing it from being overwritten.
+That's fine.
+
+Remember, you're required to boot exactly the same kernel image when
+resuming as the kernel which created the suspend image.  Unless you
+have random allocations going on, you should get the same layout for
+the idmap stuff at each boot.
+
+-- 
+FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
+in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
+Estimate before purchase was "up to 13.2Mbit".
