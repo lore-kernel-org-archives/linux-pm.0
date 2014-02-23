@@ -1,91 +1,112 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Sun, 23 Feb 2014 12:02:08 -0800
-Message-ID: <20140223200208.12998.47604@capellas-linux>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
- <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
- <20140222103840.GH21483@n2100.arm.linux.org.uk>
- <20140222120910.GA9012@e102568-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 2/2] PCI / PM: Resume runtime-suspended devices later during system suspend
+Date: Mon, 24 Feb 2014 00:21:11 +0100
+Message-ID: <3851541.s2776YTCMH@vostro.rjw.lan>
+References: <1853950.oxM3KDpyLu@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f51.google.com ([209.85.160.51]:43177 "EHLO
-	mail-pb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbaBWUCJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 23 Feb 2014 15:02:09 -0500
-Received: by mail-pb0-f51.google.com with SMTP id un15so5606864pbc.10
-        for <linux-pm@vger.kernel.org>; Sun, 23 Feb 2014 12:02:09 -0800 (PST)
-In-Reply-To: <20140222120910.GA9012@e102568-lin.cambridge.arm.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:61119 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752126AbaBWXGX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 23 Feb 2014 18:06:23 -0500
+In-Reply-To: <1853950.oxM3KDpyLu@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Cyril Chemparathy <cyril@ti.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>
 
-Quoting Lorenzo Pieralisi (2014-02-22 04:09:10)
-> On Sat, Feb 22, 2014 at 10:38:40AM +0000, Russell King - ARM Linux wrote:
-> > On Wed, Feb 19, 2014 at 04:12:54PM +0000, Lorenzo Pieralisi wrote:
-> > > On Wed, Feb 19, 2014 at 01:52:09AM +0000, Sebastian Capella wrote:
-> > > > +/*
-> > > > + * Snapshot kernel memory and reset the system.
-> > > > + * After resume, the hibernation snapshot is written out.
-> > > > + */
-> > > > +static int notrace __swsusp_arch_save_image(unsigned long unused)
-> > > > +{
-> > > > + int ret;
-> > > > +
-> > > > + ret = swsusp_save();
-> > > > + if (ret == 0)
-> > > > +         soft_restart(virt_to_phys(cpu_resume));
-> > > 
-> > > By the time the suspend finisher (ie this function) is run, the
-> > > processor state has been saved and I think that's all you have to do,
-> > > function can just return after calling swsusp_save(), unless I am missing
-> > > something.
-> > > 
-> > > I do not understand why a soft_restart is required here. On a side note,
-> > > finisher is called with irqs disabled so, since you added a function for
-> > > soft restart noirq, it should be used, if needed, but I have to understand
-> > > why in the first place.
-> > 
-> > It's required because you can't just return from the finisher.  A normal
-> > return from the finisher will always be interpreted as an abort rather
-> > than success (because the state has to be unwound.)
-> > 
-> > This is the only way to get a zero return from cpu_suspend().
-> 
-> Yes, that's the only reason why this code is jumping to cpu_resume, since
-> all it is needed is to snapshot the CPU context and by the time the
-> finisher is called that's done. Wanted to say that soft reboot is not
-> useful (cache flushing and resume with MMU off), but what you are saying
-> is correct. We might be saving swsusp_save return value in a global
-> variable and just return from the finisher, but that's horrible and
-> given the amount of time it takes to snapshot the image to disk the
-> cost of this soft reboot will be dwarfed by that.
-> 
-> I wanted to ask and clarify why the code was written like this though, given
-> its complexity.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-We could also return a constant > 1.  __cpu_suspend code will replace
-a 0 return with 1 for paths exiting suspend, but will not change return
-values != 0.  
+Runtime-suspended devices are resumed during system suspend by
+pci_pm_prepare() for two reasons: First, because they may need
+to be reprogrammed in order to change their wakeup settings and,
+second, because they may need to be operatonal for their children
+to be successfully suspended.  That is a problem, though, if there
+are many runtime-suspended devices that need to be resumed this
+way during system suspend, because the .prepare() PM callbacks of
+devices are executed sequentially and the times taken by them
+accumulate, which may increase the total system suspend time quite
+a bit.
 
-cpu_suspend_abort:
-        ldmia   sp!, {r1 - r3}          @ pop phys pgd, virt SP, phys
-	resume fn
-	teq     r0, #0
-	moveq   r0, #1                  @ force non-zero value
-	mov     sp, r2
-	ldmfd   sp!, {r4 - r11, pc}
+For this reason, move the resume of runtime-suspended devices up
+to the next phase of device suspend (during system suspend), except
+for the ones that have power.ignore_children set.  The exception is
+made, because the devices with power.ignore_children set may still
+be necessary for their children to be successfully suspended (during
+system suspend) and they won't be resumed automatically as a result
+of the runtime resume of their children.
 
-We could take advantage of that if we wanted, but Lorenzo pointed out
-also that the relative benefit is very low since the cost of
-resuming is >> soft_restart. 
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pci-driver.c |   33 +++++++++++++++++++++++++--------
+ 1 file changed, 25 insertions(+), 8 deletions(-)
 
-I'll go with leaving the soft_restart as is unless someone feels
-strongly against.
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -616,15 +616,11 @@ static int pci_pm_prepare(struct device
+ 	int error = 0;
+ 
+ 	/*
+-	 * PCI devices suspended at run time need to be resumed at this
+-	 * point, because in general it is necessary to reconfigure them for
+-	 * system suspend.  Namely, if the device is supposed to wake up the
+-	 * system from the sleep state, we may need to reconfigure it for this
+-	 * purpose.  In turn, if the device is not supposed to wake up the
+-	 * system from the sleep state, we'll have to prevent it from signaling
+-	 * wake-up.
++	 * Devices having power.ignore_children set may still be necessary for
++	 * suspending their children in the next phase of device suspend.
+ 	 */
+-	pm_runtime_resume(dev);
++	if (dev->power.ignore_children)
++		pm_runtime_resume(dev);
+ 
+ 	if (drv && drv->pm && drv->pm->prepare)
+ 		error = drv->pm->prepare(dev);
+@@ -654,6 +650,16 @@ static int pci_pm_suspend(struct device
+ 		goto Fixup;
+ 	}
+ 
++	/*
++	 * PCI devices suspended at run time need to be resumed at this point,
++	 * because in general it is necessary to reconfigure them for system
++	 * suspend.  Namely, if the device is supposed to wake up the system
++	 * from the sleep state, we may need to reconfigure it for this purpose.
++	 * In turn, if the device is not supposed to wake up the system from the
++	 * sleep state, we'll have to prevent it from signaling wake-up.
++	 */
++	pm_runtime_resume(dev);
++
+ 	pci_dev->state_saved = false;
+ 	if (pm->suspend) {
+ 		pci_power_t prev = pci_dev->current_state;
+@@ -808,6 +814,14 @@ static int pci_pm_freeze(struct device *
+ 		return 0;
+ 	}
+ 
++	/*
++	 * This used to be done in pci_pm_prepare() for all devices and some
++	 * drivers may depend on it, so do it here.  Ideally, runtime-suspended
++	 * devices should not be touched during freeze/thaw transitions,
++	 * however.
++	 */
++	pm_runtime_resume(dev);
++
+ 	pci_dev->state_saved = false;
+ 	if (pm->freeze) {
+ 		int error;
+@@ -915,6 +929,9 @@ static int pci_pm_poweroff(struct device
+ 		goto Fixup;
+ 	}
+ 
++	/* The reason to do that is the same as in pci_pm_suspend(). */
++	pm_runtime_resume(dev);
++
+ 	pci_dev->state_saved = false;
+ 	if (pm->poweroff) {
+ 		int error;
 
-Thanks!
-
-Sebastian
