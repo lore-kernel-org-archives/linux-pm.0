@@ -1,91 +1,38 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug online work is done
-Date: Sun, 23 Feb 2014 22:57:52 -0800
-Message-ID: <1393225072-3997-1-git-send-email-skannan@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
+From: Ming Lei <ming.lei@canonical.com>
+Subject: Re: [PATCH RFC v1 2/3] Fix hibernation restore hang in freeze_processes
+Date: Mon, 24 Feb 2014 15:09:38 +0800
+Message-ID: <CACVXFVMN_uijYRj9CCKHbnM40YVyp8ar7mp4g=s70gv8YmFCLA@mail.gmail.com>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+	<1392774729-3235-3-git-send-email-sebastian.capella@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from youngberry.canonical.com ([91.189.89.112]:35398 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbaBXHJl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 02:09:41 -0500
+In-Reply-To: <1392774729-3235-3-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, linaro-kernel@lists.linaro.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russ Dill <Russ.Dill@ti.com>
 
-The existing code sets the per CPU policy to a non-NULL value before all
-the steps performed during the hotplug online path is done. Specifically,
-this is done before the policy min/max, governors, etc are initialized for
-the policy.  This in turn means that calls to cpufreq_cpu_get() return a
-non-NULL policy before the policy/CPU is ready to be used.
+On Wed, Feb 19, 2014 at 9:52 AM, Sebastian Capella
+<sebastian.capella@linaro.org> wrote:
+> During restore, pm_notifier chain are called with
+> PM_RESTORE_PREPARE.  The firmware_class driver handler
+> fw_pm_notify does not have a handler for this.  As a result,
+> it keeps a reader on the kmod.c umhelper_sem.  During
+> freeze_processes, the call to __usermodehelper_disable tries to
+> take a write lock on this semaphore and hangs waiting.
+>
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> Cc: Russ Dill <Russ.Dill@ti.com>
+> Cc: Ming Lei <ming.lei@canonical.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-To fix this, move the update of per CPU policy to a valid value after all
-the initialization steps for the policy are completed.
+Acked-by: Ming Lei <ming.lei@canonical.com>
 
-Example kernel panic without this fix:
-[  512.146185] Unable to handle kernel NULL pointer dereference at virtual address 00000020
-[  512.146195] pgd = c0003000
-[  512.146213] [00000020] *pgd=80000000004003, *pmd=00000000
-[  512.146228] Internal error: Oops: 206 [#1] PREEMPT SMP ARM
-<snip>
-[  512.146297] PC is at __cpufreq_governor+0x10/0x1ac
-[  512.146312] LR is at cpufreq_update_policy+0x114/0x150
-<snip>
-[  512.149740] ---[ end trace f23a8defea6cd706 ]---
-[  512.149761] Kernel panic - not syncing: Fatal exception
-[  513.152016] CPU0: stopping
-[  513.154710] CPU: 0 PID: 7136 Comm: mpdecision Tainted: G      D W    3.10.0-gd727407-00074-g979ede8 #396
-<snip>
-[  513.317224] [<c0afe180>] (notifier_call_chain+0x40/0x68) from [<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58)
-[  513.327809] [<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58) from [<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c)
-[  513.339182] [<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c) from [<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8)
-[  513.349594] [<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8) from [<c0803e7c>] (cpufreq_init_policy+0x30/0x98)
-[  513.359231] [<c0803e7c>] (cpufreq_init_policy+0x30/0x98) from [<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4)
-[  513.369560] [<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4) from [<c0805d38>] (cpufreq_cpu_callback+0x58/0x84)
-[  513.379978] [<c0805d38>] (cpufreq_cpu_callback+0x58/0x84) from [<c0afe180>] (notifier_call_chain+0x40/0x68)
-[  513.389704] [<c0afe180>] (notifier_call_chain+0x40/0x68) from [<c02812dc>] (__cpu_notify+0x28/0x44)
-[  513.398728] [<c02812dc>] (__cpu_notify+0x28/0x44) from [<c0aeed90>] (_cpu_up+0xf4/0x1dc)
-[  513.406797] [<c0aeed90>] (_cpu_up+0xf4/0x1dc) from [<c0aeeed4>] (cpu_up+0x5c/0x78)
-[  513.414357] [<c0aeeed4>] (cpu_up+0x5c/0x78) from [<c0aec808>] (store_online+0x44/0x74)
-[  513.422253] [<c0aec808>] (store_online+0x44/0x74) from [<c03a40f4>] (sysfs_write_file+0x108/0x14c)
-[  513.431195] [<c03a40f4>] (sysfs_write_file+0x108/0x14c) from [<c03517d4>] (vfs_write+0xd0/0x180)
-[  513.439958] [<c03517d4>] (vfs_write+0xd0/0x180) from [<c0351ca8>] (SyS_write+0x38/0x68)
-[  513.447947] [<c0351ca8>] (SyS_write+0x38/0x68) from [<c0205de0>] (ret_fast_syscall+0x0/0x30)
-
-In this specific case, CPU0 set's CPU1's policy->governor in
-cpufreq_init_policy() to NULL while CPU1 is using the policy->governor in
-__cpufreq_governor().
-
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
----
- drivers/cpufreq/cpufreq.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index cb003a6..d5ceb43 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1109,11 +1109,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		goto err_set_policy_cpu;
- 	}
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
--	for_each_cpu(j, policy->cpus)
--		per_cpu(cpufreq_cpu_data, j) = policy;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
--
- 	if (cpufreq_driver->get) {
- 		policy->cur = cpufreq_driver->get(policy->cpu);
- 		if (!policy->cur) {
-@@ -1207,6 +1202,11 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 		policy->user_policy.governor = policy->governor;
- 	}
- 
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	for_each_cpu(j, policy->cpus)
-+		per_cpu(cpufreq_cpu_data, j) = policy;
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+
- 	kobject_uevent(&policy->kobj, KOBJ_ADD);
- 	up_read(&cpufreq_rwsem);
- 
--- 
-1.8.2.1
-
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+Thanks,
+--
+Ming Lei
