@@ -1,55 +1,57 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH] Thermal: Allow first update of cooling device state
-Date: Mon, 24 Feb 2014 15:13:56 +0800
-Message-ID: <530AF134.4000505@nvidia.com>
-References: <1392606175-19635-1-git-send-email-wni@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:17169 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbaBXHOU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 02:14:20 -0500
-In-Reply-To: <1392606175-19635-1-git-send-email-wni@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: [PATCH] PM / devfreq: Fix out of bounds access of transition table array
+Date: Sun, 23 Feb 2014 23:15:00 -0800
+Message-ID: <1393226100-18428-1-git-send-email-skannan@codeaurora.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: "rui.zhang@intel.com" <rui.zhang@intel.com>
-Cc: "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wei Ni <wni@nvidia.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi, Rui
-Do you have any comment for it ?
+The previous_freq value for a device could be an invalid frequency that
+results in a error value being returned from devfreq_get_freq_level().
+Check for an error value before using that to index into the transition
+table.
 
-Thanks.
-Wei.
+Not doing this check will result in memory corruption when previous_freq is
+not a valid frequency.
 
-On 02/17/2014 11:02 AM, Wei Ni wrote:
-> In initialization, if the cooling device is initialized at
-> max cooling state, and the thermal zone temperature is below
-> the first trip point, then the cooling state can't be updated
-> to the right state, untill the first trip point be triggered.
-> 
-> To fix this issue, allow first update of cooling device state
-> during registration, initialized "updated" device field as
-> "false" (instead of "true").
-> 
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  drivers/thermal/thermal_core.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 338a88b..02f57af 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1107,7 +1107,7 @@ __thermal_cooling_device_register(struct device_node *np,
->  	INIT_LIST_HEAD(&cdev->thermal_instances);
->  	cdev->np = np;
->  	cdev->ops = ops;
-> -	cdev->updated = true;
-> +	cdev->updated = false;
->  	cdev->device.class = &thermal_class;
->  	cdev->devdata = devdata;
->  	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
-> 
+Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+---
+ drivers/devfreq/devfreq.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index a0b2f7e..f91ea29 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -101,14 +101,20 @@ static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
+ 	cur_time = jiffies;
+ 	devfreq->time_in_state[lev] +=
+ 			 cur_time - devfreq->last_stat_updated;
+-	if (freq != devfreq->previous_freq) {
+-		prev_lev = devfreq_get_freq_level(devfreq,
+-						devfreq->previous_freq);
++	devfreq->last_stat_updated = cur_time;
++
++	if (freq == devfreq->previous_freq)
++		return 0;
++
++	prev_lev = devfreq_get_freq_level(devfreq, devfreq->previous_freq);
++	if (prev_lev < 0)
++		return 0;
++
++	if (lev != prev_lev) {
+ 		devfreq->trans_table[(prev_lev *
+ 				devfreq->profile->max_state) + lev]++;
+ 		devfreq->total_trans++;
+ 	}
+-	devfreq->last_stat_updated = cur_time;
+ 
+ 	return 0;
+ }
+-- 
+1.8.2.1
+
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
