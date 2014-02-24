@@ -1,57 +1,104 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH] PM / devfreq: Fix out of bounds access of transition table array
-Date: Sun, 23 Feb 2014 23:15:00 -0800
-Message-ID: <1393226100-18428-1-git-send-email-skannan@codeaurora.org>
+From: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+Subject: [PATCH 4/7] Cpuidle: Do not substract exit latency from assumed sleep length
+Date: Mon, 24 Feb 2014 08:29:34 +0200
+Message-ID: <1393223377-5744-5-git-send-email-tuukka.tikkanen@linaro.org>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
+To: linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc: daniel.lezcano@linaro.org, tuukka.tikkanen@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The previous_freq value for a device could be an invalid frequency that
-results in a error value being returned from devfreq_get_freq_level().
-Check for an error value before using that to index into the transition
-table.
+The menu governor statistics update function tries to determine the
+amount of time between entry to low power state and the occurrence
+of the wakeup event. However, the time measured by the framework
+includes exit latency on top of the desired value. This exit latency
+is substracted from the measured value to obtain the desired value.
 
-Not doing this check will result in memory corruption when previous_freq is
-not a valid frequency.
+When measured value is not available, the menu governor assumes
+the wakeup was caused by the timer and the time is equal to remaining
+timer length. No exit latency should be substracted from this value.
 
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+This patch prevents the erroneous substraction and clarifies the
+associated comment. It also removes one intermediate variable that
+serves no purpose.
+
+Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 ---
- drivers/devfreq/devfreq.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/menu.c |   44 ++++++++++++++++++++++----------------
+ 1 file changed, 26 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index a0b2f7e..f91ea29 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -101,14 +101,20 @@ static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
- 	cur_time = jiffies;
- 	devfreq->time_in_state[lev] +=
- 			 cur_time - devfreq->last_stat_updated;
--	if (freq != devfreq->previous_freq) {
--		prev_lev = devfreq_get_freq_level(devfreq,
--						devfreq->previous_freq);
-+	devfreq->last_stat_updated = cur_time;
-+
-+	if (freq == devfreq->previous_freq)
-+		return 0;
-+
-+	prev_lev = devfreq_get_freq_level(devfreq, devfreq->previous_freq);
-+	if (prev_lev < 0)
-+		return 0;
-+
-+	if (lev != prev_lev) {
- 		devfreq->trans_table[(prev_lev *
- 				devfreq->profile->max_state) + lev]++;
- 		devfreq->total_trans++;
- 	}
--	devfreq->last_stat_updated = cur_time;
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index f0995dd..b347c10 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -387,32 +387,40 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = &__get_cpu_var(menu_devices);
+ 	int last_idx = data->last_state_idx;
+-	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
+ 	struct cpuidle_state *target = &drv->states[last_idx];
+ 	unsigned int measured_us;
+ 	unsigned int new_factor;
  
- 	return 0;
+ 	/*
+-	 * Ugh, this idle state doesn't support residency measurements, so we
+-	 * are basically lost in the dark.  As a compromise, assume we slept
+-	 * for the whole expected time.
++	 * Try to figure out how much time passed between entry to low
++	 * power state and occurrence of the wakeup event.
++	 *
++	 * If the entered idle state didn't support residency measurements,
++	 * we are basically lost in the dark how much time passed.
++	 * As a compromise, assume we slept for the whole expected time.
++	 *
++	 * Any measured amount of time will include the exit latency.
++	 * Since we are interested in when the wakeup begun, not when it
++	 * was completed, we must substract the exit latency. However, if
++	 * the measured amount of time is less than the exit latency,
++	 * assume the state was never reached and the exit latency is 0.
+ 	 */
+-	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID)))
+-		last_idle_us = data->next_timer_us;
+-
++	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID))) {
++		/* Use timer value as is */
++		measured_us = data->next_timer_us;
+ 
+-	measured_us = last_idle_us;
++	} else {
++		/* Use measured value */
++		measured_us = cpuidle_get_last_residency(dev);
+ 
+-	/*
+-	 * We correct for the exit latency; we are assuming here that the
+-	 * exit latency happens after the event that we're interested in.
+-	 */
+-	if (measured_us > target->exit_latency)
+-		measured_us -= target->exit_latency;
++		/* Deduct exit latency */
++		if (measured_us > target->exit_latency)
++			measured_us -= target->exit_latency;
+ 
+-	/* Make sure our coefficients do not exceed unity */
+-	if (measured_us > data->next_timer_us)
+-		measured_us = data->next_timer_us;
++		/* Make sure our coefficients do not exceed unity */
++		if (measured_us > data->next_timer_us)
++			measured_us = data->next_timer_us;
++	}
+ 
+ 	/* Update our correction ratio */
+ 	new_factor = data->correction_factor[data->bucket];
+@@ -439,7 +447,7 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	data->correction_factor[data->bucket] = new_factor;
+ 
+ 	/* update the repeating-pattern data */
+-	data->intervals[data->interval_ptr++] = last_idle_us;
++	data->intervals[data->interval_ptr++] = measured_us;
+ 	if (data->interval_ptr >= INTERVALS)
+ 		data->interval_ptr = 0;
  }
 -- 
-1.8.2.1
-
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+1.7.9.5
