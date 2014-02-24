@@ -1,80 +1,38 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH 3/6] PM / Voltagedomain: introduce voltage domain
- driver support
-Date: Mon, 24 Feb 2014 10:58:26 +0900
-Message-ID: <20140224015826.GU25940@sirena.org.uk>
-References: <1392755543-28335-1-git-send-email-nm@ti.com>
- <1392755543-28335-4-git-send-email-nm@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Mon, 24 Feb 2014 12:13:24 +0530
+Message-ID: <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
+References: <cover.1392273722.git.viresh.kumar@linaro.org>
+	<52FE71BD.3020103@wwwdotorg.org>
+	<2869027.iYHxWOSS2C@vostro.rjw.lan>
+	<52FEAECA.5080905@wwwdotorg.org>
+	<CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>
+	<5303C018.1020707@wwwdotorg.org>
+	<CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com>
+	<5304E93C.9000104@wwwdotorg.org>
+	<90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>
+	<BEC64F5C-76E8-40C3-81BE-59096C3838F3@linaro.org>
+	<53063E01.5030808@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="NIjw7+ppZq6Cg8/r"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1392755543-28335-4-git-send-email-nm@ti.com>
+In-Reply-To: <53063E01.5030808@wwwdotorg.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Mike Turquette <mturquette@linaro.org>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, "jinchoi@broadcom.com" <jinchoi@broadcom.com>, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 20 February 2014 23:10, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> Well, except that still leaves a bunch of errors in the kernel log, and
+> I have to remember to ignore them:-/
 
---NIjw7+ppZq6Cg8/r
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Just for few releases, before this patchset goes in.
 
-On Tue, Feb 18, 2014 at 02:32:20PM -0600, Nishanth Menon wrote:
+> It'd be nice if the cpufreq core didn't keep changing its behaviour and
+> adding new error prints. It really should be up to the cpufreq drivers
+> to log the errors if they experience any.
 
-> The current regulator model provides the basic building blocks for the
-> transitions, however SoC drivers specific to each of these devices, be
-> it cpufreq/devfreq have to replicate the logic for functionality.
-
-> To simply the logic, we can hence introduce a layer that takes care
-> of the mundane transition logic, registration mechanisms to provide
-> the "user drivers" such as cpufreq/devfreq a generic interface, whose
-> details are abstracted by the device tree description for the SoC on
-> which the driver operates on.
-
-This doesn't really provide a picture of what the generic interface
-that's being offered is and...
-
->  drivers/power/voltdm/Kconfig                  |    5 +
->  drivers/power/voltdm/Makefile                 |    3 +
->  drivers/power/voltdm/core.c                   |  347 +++++++++++++++++++++++--
->  drivers/power/voltdm/voltage_domain_private.h |   86 ++++++
->  4 files changed, 424 insertions(+), 17 deletions(-)
-
-...the diffstat doesn't make it obvious what the external interface is
-either.  It would be much easier to review this with a clearer picture
-of what it's aiming to implement.
-
-> +	voltdm_np = of_parse_phandle(np, prop_name, 0);
-> +	if (voltdm_np) {
-> +		ret = of_parse_phandle_with_args(np, prop_name, "#voltdm-cells",
-> +						 0, args);
-> +		if (ret)
-> +			return ERR_PTR(ret);
-
-There seems to be some DT stuff going on here, is the interface DT only?
-
---NIjw7+ppZq6Cg8/r
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTCqc/AAoJELSic+t+oim99JAQAIvNUcSKJZ4qH3VU6X2AgGLF
-FM0PjxD0KzEiS6YIduwO7lFodm0X45TFCwQ6XXtMpppHMMcnPK6tb9p4lVZqisyZ
-dMu/9GlurCLSbYcBaG2kjmMmdaAnxzh4qNP/FySe9R2f6MATRAZ/NmNM2HSRK2QS
-8+aRfk6OI0iv/qSh7q9KP4ondA0FuxA8oQ6a2fVtsz+SyfN5w5j8k30zQu5XCB8G
-EpbEr9XueWiFm0zeqUMSdNO9YRYqeyk7z+uUCtN5DJ/ytUG8RNWt/ppF/h7Ss6Wr
-Mlh9bzH1WkiUUcsAnXq6yvNfIbFZNxyxXKxrmYIH/5hzvydjbkqPedVnZX94eBKU
-d8l+N9supzjBlKeUSRd7BcDhZ4j0gtYfkzmQ5VlShp/cac/sgShHaSx3aEXmI7g8
-xY5L7JVE3K0WyCXVSQhqesfQtHWp8yUe5ErFV3Y+rhmjxEnRdetLOFiAe/BFWeZc
-w/7M9J4EMgpgz59XvPK/ADNOgoDweab/s86I6XBdB4KzQpf566hX7CiCExZw4tdo
-PhyvFtsfJC5Mtzd6X5OgITeP4nZjrmuA7OSiLkDXp1Km2z0Mok8YorzeRR4P49SW
-fzeEwb+2QRPivAVjvzHDMD2fI8Tv9YBqe2yejfgmdsTHnvN6OkFwVaMmcxORVIcc
-w0CjuzDTcDCDwNqYlPuu
-=E9AS
------END PGP SIGNATURE-----
-
---NIjw7+ppZq6Cg8/r--
+Hmm... not sure.. Its better to do error prints at a single place, i.e. cpufreq
+core on behalf of all drivers. If there is a error being returned from some
+routine, we better print a message for that. Rather than living in the illusion
+that everything is fine :)
