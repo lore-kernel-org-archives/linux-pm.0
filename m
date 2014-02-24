@@ -1,167 +1,207 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of
- suspended devices
-Date: Mon, 24 Feb 2014 14:36:02 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1402241124350.1427-100000@iolanthe.rowland.org>
-References: <6679559.WlyTU99iuj@vostro.rjw.lan>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug
+ online work is done
+Date: Mon, 24 Feb 2014 12:23:13 -0800
+Message-ID: <530BAA31.4050701@codeaurora.org>
+References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org> <530AF7E4.5080806@linux.vnet.ibm.com> <1f7bd419ce78af0137c0d63189c6ad35.squirrel@www.codeaurora.org> <CAKohponY-OXwAEZT0WRjxpHmvi78Ne9kv6LOHXvLOFG-KjU1FQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6679559.WlyTU99iuj@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAKohponY-OXwAEZT0WRjxpHmvi78Ne9kv6LOHXvLOFG-KjU1FQ@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 24 Feb 2014, Rafael J. Wysocki wrote:
+On 02/24/2014 02:55 AM, Viresh Kumar wrote:
+> On 24 February 2014 14:09,  <skannan@codeaurora.org> wrote:
+>>
+>> Srivatsa S. Bhat wrote:
+>>> On 02/24/2014 12:27 PM, Saravana Kannan wrote:
+>>>> The existing code sets the per CPU policy to a non-NULL value before all
+>>>> the steps performed during the hotplug online path is done.
+>>>> Specifically,
+>>>> this is done before the policy min/max, governors, etc are initialized
+>>>> for
+>>>> the policy.  This in turn means that calls to cpufreq_cpu_get() return a
+>>>> non-NULL policy before the policy/CPU is ready to be used.
+>>>>
+>>>> To fix this, move the update of per CPU policy to a valid value after
+>>>> all
+>>>> the initialization steps for the policy are completed.
+>>>>
+>>>> Example kernel panic without this fix:
+>>>> [  512.146185] Unable to handle kernel NULL pointer dereference at
+>>>> virtual address 00000020
+>>>> [  512.146195] pgd = c0003000
+>>>> [  512.146213] [00000020] *pgd=80000000004003, *pmd=00000000
+>>>> [  512.146228] Internal error: Oops: 206 [#1] PREEMPT SMP ARM
+>>>> <snip>
+>>>> [  512.146297] PC is at __cpufreq_governor+0x10/0x1ac
+>>>> [  512.146312] LR is at cpufreq_update_policy+0x114/0x150
+>>>> <snip>
+>>>> [  512.149740] ---[ end trace f23a8defea6cd706 ]---
+>>>> [  512.149761] Kernel panic - not syncing: Fatal exception
+>>>> [  513.152016] CPU0: stopping
+>>>> [  513.154710] CPU: 0 PID: 7136 Comm: mpdecision Tainted: G      D W
+>>>> 3.10.0-gd727407-00074-g979ede8 #396
+>>>> <snip>
+>>>> [  513.317224] [<c0afe180>] (notifier_call_chain+0x40/0x68) from
+>>>> [<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58)
+>>>> [  513.327809] [<c02a23ac>] (__blocking_notifier_call_chain+0x40/0x58)
+>>>> from [<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c)
+>>>> [  513.339182] [<c02a23d8>] (blocking_notifier_call_chain+0x14/0x1c)
+>>>> from [<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8)
+>>>> [  513.349594] [<c0803c68>] (cpufreq_set_policy+0xd4/0x2b8) from
+>>>> [<c0803e7c>] (cpufreq_init_policy+0x30/0x98)
+>>>> [  513.359231] [<c0803e7c>] (cpufreq_init_policy+0x30/0x98) from
+>>>> [<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4)
+>>>> [  513.369560] [<c0805a18>] (__cpufreq_add_dev.isra.17+0x4dc/0x7a4) from
+>>>> [<c0805d38>] (cpufreq_cpu_callback+0x58/0x84)
+>>>> [  513.379978] [<c0805d38>] (cpufreq_cpu_callback+0x58/0x84) from
+>>>> [<c0afe180>] (notifier_call_chain+0x40/0x68)
+>>>> [  513.389704] [<c0afe180>] (notifier_call_chain+0x40/0x68) from
+>>>> [<c02812dc>] (__cpu_notify+0x28/0x44)
+>>>> [  513.398728] [<c02812dc>] (__cpu_notify+0x28/0x44) from [<c0aeed90>]
+>>>> (_cpu_up+0xf4/0x1dc)
+>>>> [  513.406797] [<c0aeed90>] (_cpu_up+0xf4/0x1dc) from [<c0aeeed4>]
+>>>> (cpu_up+0x5c/0x78)
+>>>> [  513.414357] [<c0aeeed4>] (cpu_up+0x5c/0x78) from [<c0aec808>]
+>>>> (store_online+0x44/0x74)
+>>>> [  513.422253] [<c0aec808>] (store_online+0x44/0x74) from [<c03a40f4>]
+>>>> (sysfs_write_file+0x108/0x14c)
+>>>> [  513.431195] [<c03a40f4>] (sysfs_write_file+0x108/0x14c) from
+>>>> [<c03517d4>] (vfs_write+0xd0/0x180)
+>>>> [  513.439958] [<c03517d4>] (vfs_write+0xd0/0x180) from [<c0351ca8>]
+>>>> (SyS_write+0x38/0x68)
+>>>> [  513.447947] [<c0351ca8>] (SyS_write+0x38/0x68) from [<c0205de0>]
+>>>> (ret_fast_syscall+0x0/0x30)
+>>>>
+>>>> In this specific case, CPU0 set's CPU1's policy->governor in
+>>>> cpufreq_init_policy() to NULL while CPU1 is using the policy->governor
+>>>> in
+>>>> __cpufreq_governor().
+>>>>
+>>>
+>>> Whoa! That's horrible! Can you please explain how exactly you
+>>> triggered this? I'm curious...
+>>
+>> Just call cpufreq_update_policy(cpu) on a CPU and have another thread
+>> online/offline it.
+>
+> But would you do that? Means why would you call them this way?
+> cpufreq_update_policy() shouldn't be called that way I believe..
 
-> Also, it may not do that today and I'd like to introduce a mechanism by which
-> that optimizatiom may be enabled by subsystems/drivers when ready.
-> 
-> So for example today there is no guarantee that each device will be resumed
-> as appropriate by whoever handles its children when necessary, because that
-> code may expect the device to be operational when it is running (precisely
-> because we used to resume that device in .prepare()).
+I was simplifying the scenario that causes it. We change the min/max 
+using ADJUST notifiers for multiple reasons -- thermal being one of them.
 
-> Yes.  In particular, I'd like the "child" subsystem to be able to let the
-> core know that it is fine to leave the parent suspended.
+thermal/cpu_cooling is one example of it.
 
-> That said the patchset doesn't really do both.  It only really is about
-> skipping the ->suspend callbacks if possible, but the *consequence* of that
-> is that *system* resume ->resume callbacks cannot be used to resume the
-> device any more in general.  That's because ->resume_early may try to
-> reverse the ->suspend_late's actions and so on, so if ->suspend_late hasn't
-> run, it would be a bug to run ->resume_early for that device.
+So, cpufreq_update_policy() can be called on any CPU. If that races with 
+someone offlining a CPU and onlining it, you'll get this crash.
 
-> I agree.  For this reason, I think that the core has no choice but to treat
-> power.ignore_children set as "well, that device may need to be operational
-> going forward".
+>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>>>> ---
+>>>>   drivers/cpufreq/cpufreq.c | 10 +++++-----
+>>>>   1 file changed, 5 insertions(+), 5 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>>> index cb003a6..d5ceb43 100644
+>>>> --- a/drivers/cpufreq/cpufreq.c
+>>>> +++ b/drivers/cpufreq/cpufreq.c
+>>>> @@ -1109,11 +1109,6 @@ static int __cpufreq_add_dev(struct device *dev,
+>>>> struct subsys_interface *sif,
+>>>>               goto err_set_policy_cpu;
+>>>>       }
+>>>>
+>>>> -    write_lock_irqsave(&cpufreq_driver_lock, flags);
+>>>> -    for_each_cpu(j, policy->cpus)
+>>>> -            per_cpu(cpufreq_cpu_data, j) = policy;
+>>>> -    write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>>>> -
+>>>>       if (cpufreq_driver->get) {
+>>>>               policy->cur = cpufreq_driver->get(policy->cpu);
+>>>
+>>> If you move the per-cpu init further down, then what happens to the
+>>> cpufreq_generic_get() that gets invoked here by some of the drivers?
+>>
+>> While cpufreq_generic_get() was a good refactor, I think it's causing
+>> unnecessary cyclic dependency. You need that function to not fail for a
+>> policy to get added properly and you need a proper policy for the function
+>> to work. I care more about fixing the panic than trying to keep
+>> cpufreq_generic_get().
+>
+> Surely, I will like a solution which would keep this as is :)..
+> cpufreq_generic_get() should pass..
 
-This discussion is getting a little messy.  Let's try to clarify it.
-Here is the major point:
+The idea would exist, but we can just call cpufreq_generic_get() and 
+pass it policy->clk if it is not NULL. Does that work for you?
 
-	We would like to save time during system suspend/resume by
-	skipping over devices that are already in runtime suspend,
-	whenever it is safe to do so.
+>>> It will almost always fail (because policy will be NULL) and hence
+>>> CPU online will be unsuccessful (though you wont observe it because
+>>> the error code is not bubbled up to the CPU hotplug core; perhaps we
+>>> should).
+>>
+>> Good catch. I actually hit this issue, fixed and test it on a 3.12 cpufreq
+>> code base. Since this new function isn't there at that point, I missed it.
+>> Even if I did use the latest kernel, I wouldn't have hit this issue,
+>> because the MSM cpufreq driver doesn't use this function.
+>>
+>>>
+>>> IMHO, we should fix the synchronization in cpufreq_init_policy().
+>>> I notice cpufreq_update_policy() as well as __cpufreq_governor() in
+>>> your stack trace, which means cpufreq_set_policy() was involved.
+>>> cpufreq_update_policy() takes the policy->rwsem for write, whereas
+>>> cpufreq_init_policy() doesn't take that lock at all, which is clearly
+>>> wrong.
+>>>
+>>> My guess is that, if we fix that locking, everything will be fine and
+>>> you won't hit the bug. Would you like to give that a shot?
+>>
+>> While locking might need fixing, this is not about the locking though.
+>> Plenty of drivers and the framework use cpufreq_cpu_get() to get a policy
+>> that they consider valid and also use it as a way to check and reject API
+>> calls trying to manipulate an offline CPU.
+>>
+>> Without this fix, the framework is advertising an incomplete policy object
+>> as available. I think that breaks the CPUfreq framework APIs in a very
+>> fundamental sense. This is a "no-no" in programming.
+>>
+>> It's like trying to register a CPUfreq driver before getting the clocks to
+>> control the CPU.
+>
+> So the real question here is: What fields of 'policy' do we need to guarantee
+> to be initialized before policy is made available for others? And probably
+> that is what we need to fix.
 
-Of course, the "it is safe to do so" part is what makes this difficult.  
-It boils down to three characteristics for each device.
+That's going to be hard to define since future uses could be looking at 
+different fields. What is the API semantics of cpufreq_cpu_get(). I 
+can't ever imagine it being correct for any API to return a partially 
+initialized data structure.
 
-    (a) The device uses the same power state for runtime suspend and
-	system suspend.  Therefore, if the device is already in runtime
-	suspend and the wakeup settings are correct, there is no need
-	for the PM core to invoke the device's ->suspend callbacks.
+> Even your current solution would break things. For example, below will happen
+> before policy is set in per-cpu variable:
+> - CPUFREQ_CREATE_POLICY notifier will be fired and calls to do cpufreq_cpu_get()
+> there will fail. And hence cpufreq-stats sysfs will break.
+I did this on 3.12. I'll fix it up to handle this one.
 
-This requires a few comments.  The matter of whether the same power
-state is used for both types of suspend is generally known beforehand,
-because it is decided by the subsystem or driver.  The matter of
-whether the wakeup settings are correct often can't be known until the
-system suspend starts, because userspace can select whether or not
-wakeup should be enabled during a system sleep.
+> - Governors also use cpufreq_cpu_get() and so those would also fail as they
+> are started from cpufreq_init_policy()..
+The only use of this in governors is in update_sampling_rate() and the 
+behavior after this fix would be correct in that case. If the policy is 
+not fully initialized -- that update doesn't get to go through.
 
-Also, if the PM core is going to skip the ->suspend callbacks then it 
-is obliged to skip the ->resume callbacks as well (we mustn't call one 
-without the other).  Therefore, in cases where (a) holds, the device 
-will necessarily emerge from the system resume in a runtime-suspended 
-state.  This may or may not cause problems for the device's children; 
-see below.
+All other uses of this API fall under one of these categories:
+* CPUs are already fully offline whenever it's called.
+* Already get the real policy as part of the notifier so don't need to
+   call cpufreq_cpu_get
 
-    (b) It's okay for the device's parent to be in runtime suspend
-	when the device's ->suspend callbacks are invoked.
+If I find any that doesn't fit the above, I would be glad to fix that if 
+it's pointed out.
 
-I included this just to be thorough.  In fact, I expect (b) to be true 
-for pretty much every device already.  Or if it isn't true for some 
-devices, this is because of a special arrangement between the device's 
-subsystem and the parent's subsystem.  For example, the parent might 
-always be runtime-resumed by its subsystem at the start of a system 
-suspend (which is what PCI does now; I don't know if it is necessary).
-
-In the absence of any sort of special arrangement, if (b) wasn't true 
-for some device then that device would already be experiencing problems 
-going into system suspend.  So (b) should not cause much difficulty.  
-And if a special arrangement is present, it is a private matter between 
-the two subsystems, not involving the PM core.
-
-    (c) It's okay for the device's parent to be in runtime suspend
-	when the device's ->resume callbacks are invoked.
-
-Unlike (b), I expect that (c) does _not_ hold for quite a few devices
-currently.  The reason is historical: When runtime PM was first
-implemented, we decided that all devices should emerge from system
-resume in the RPM_ACTIVE state, even if they were in runtime suspend
-when the system suspend started.  Therefore drivers could depend on the
-parent not being in runtime suspend while the device's ->resume
-callback was running.
-
-I don't think it is a good idea to perpetuate an accident of history.  
-Instead of adding a special mechanism to the PM core for accomodating 
-devices where (c) doesn't hold, I think we should fix up the drivers 
-so that (c) _does_ hold everywhere.  Maybe you disagree.
-
-
-Anyway, let's assume first that things are all fixed up, and (b) and
-(c) hold for every device.  This means we can go back and consider (a).
-
-Since the "same power state for both types of suspend" answer is known 
-beforehand, let's concentrate on devices where it is true (other 
-devices will simply continue to operate as they do today).  For these 
-devices, the driver or subsystem will have to compute a flag value --
-let's call it "same_wakeup_setting".  The PM core can't do this because 
-it doesn't understand the device-specific details of wakeup settings.
-
-Then your proposal comes down to this:
-
-	If ->prepare returns > 0, the PM core sets the
-	same_wakeup_setting flag.
-
-	If same_wakeup_setting is on and the device is in runtime
-	suspend, the PM core skips the various ->suspend and ->resume 
-	callbacks.
-
-My proposal was never made explicit, but it would take a form something 
-like this:
-
-	During ->prepare, the subsystem sets the same_wakeup_setting
-	flag appropriately.
-
-	If same_wakeup_setting is on and the device is in runtime
-	suspend, the subsystem's ->suspend and ->resume callbacks
-	return immediately.
-
-There isn't very much difference between the two proposals.  Mine is a 
-little more flexible; for example, it allows the subsystem to return 
-immediately from ->suspend but have ->resume put the device back in the 
-RPM_ACTIVE state.
-
-
-Now let's change course and suppose that (c) _doesn't_ hold for a large
-selection of devices.  As a simple consequence, if (c) doesn't hold for
-some device then (a) can't be allowed to hold for any ancestor of that
-device.  (I'm disregarding the power.ignore_children flag.)
-
-Your proposal would take the same_wakeup_setting flag (you called it
-"fast_suspend"), used for answering (a), and combine it with the answer
-to (c).  That is, you would have ->prepare return > 0 only if (a) and
-(c) both hold -- and in addition, you turn off the flag if it is off in
-any child.
-
-In practice, I suspect this means fast_suspend will end up affecting
-only leaf devices: those with no children.  This is partly because many
-devices don't have a .prepare method; there are plenty of entries in
-the device tree that don't correspond to physical devices (e.g., class
-devices, or devices present only for their sysfs attributes) and hence
-have no PM support at all.  Even though (c) does hold for such devices,
-the PM core won't realize it.
-
-In addition, I don't like the way your proposal mixes together the
-answers to (a) and (c).  If they could be kept separate, I think you
-could do a better job.
-
-For instance, suppose (a) is true for some device, but (c) is false for
-one of its children.  Then the PM core could skip the ->suspend and
-->resume callbacks for that device, and it could do a pm_runtime_resume
-on the device before resuming the child.  The end result would be a
-single ->runtime_resume call, instead of ->runtime_resume followed by
-->suspend and then ->resume.
-
-Alan Stern
+Regards,
+Saravana
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
