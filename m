@@ -1,70 +1,89 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 6/7] Cpuidle: Deal with timer expiring in the past
-Date: Mon, 24 Feb 2014 12:05:39 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1402241201330.17677@knanqh.ubzr>
-References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Josh Cartwright <joshc@codeaurora.org>
+Subject: [PATCH 2/3] PM: define new ASSIGN_*_PM_OPS macros based on assign_if
+Date: Mon, 24 Feb 2014 11:08:26 -0600
+Message-ID: <1393261707-30565-3-git-send-email-joshc@codeaurora.org>
+References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org>
+In-Reply-To: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 24 Feb 2014, Tuukka Tikkanen wrote:
+Similar to the SET_*_PM_OPS(), these functions are to be used in
+initializers of struct dev_pm_ops, for example:
 
-> Sometimes (fairly often) when the cpuidle menu governor is making a decision
-> about idle state to enter the next timer for the cpu appears to expire in
-> the past. The menu governor expects the expiry to always be in the future
-> and in fact stores the time delta in an unsigned variable. However, when
-> the expiry is in the past, the value returned by tick_nohz_get_sleep_length
-> can be negative. This patch prevents using negative values, instead making
-> the governor return immediately similar to having latency requirement set
-> to 0.
-> 
-> Note: As with latency == 0, the return value is 0 with no check to see if
-> the state 0 has been disabled or not.
+	static const struct dev_pm_ops foo_pm_ops = {
+		ASSIGN_RUNTIME_PM_OPS(foo_rpm_suspend, foo_rpm_resume, NULL)
+		ASSIGN_SYSTEM_SLEEP_PM_OPS(foo_suspend, foo_resume)
+	};
 
-In your cover letter you mention some occurrences of the negative result 
-being observed on x86.  That information is worth capturing in the 
-commit log as well to distinguish between theoretical problems from 
-actual observations.
+Unlike their SET_*_PM_OPS() counter parts, it is unnecessary to wrap the
+function callbacks in #ifdeffery in order to prevent 'defined but not
+used' warnings when the corresponding CONFIG_PM* options are unset.
 
-> 
-> Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-> ---
->  drivers/cpuidle/governors/menu.c |   10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 71b5232..c414468 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -302,8 +302,16 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  	if (unlikely(latency_req == 0))
->  		return 0;
->  
-> -	/* determine the expected residency time, round up */
-> +	/*
-> +	 * Determine the expected residency time. If the time is negative,
-> +	 * a timer interrupt has probably just expired after disabling
-> +	 * interrupts. Return as quickly as possible in the most shallow
-> +	 * state possible. tv_nsec is always positive, so only check the
-> +	 * seconds.
-> +	 */
->  	t = ktime_to_timespec(tick_nohz_get_sleep_length());
-> +	if (t.tv_sec < 0)
-> +		return 0;
->  	data->next_timer_us =
->  		t.tv_sec * USEC_PER_SEC + t.tv_nsec / NSEC_PER_USEC;
->  
-> -- 
-> 1.7.9.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
+---
+ include/linux/pm.h | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index db2be5f..3810d56 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -299,6 +299,15 @@ struct dev_pm_ops {
+ 	int (*runtime_idle)(struct device *dev);
+ };
+ 
++#define assign_if_pm_sleep(fn) \
++	assign_if_enabled(CONFIG_PM_SLEEP, fn)
++
++#define assign_if_pm_runtime(fn) \
++	assign_if_enabled(CONFIG_PM_RUNTIME, fn)
++
++#define assign_if_pm(fn) \
++	assign_if_enabled(CONFIG_PM, fn)
++
+ #ifdef CONFIG_PM_SLEEP
+ #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+ 	.suspend = suspend_fn, \
+@@ -342,6 +351,36 @@ struct dev_pm_ops {
+ #endif
+ 
+ /*
++ * The ASSIGN_* variations of the above make wrapping the associated callback
++ * functions in preprocessor defines unnecessary.
++ */
++#define ASSIGN_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
++	.suspend = assign_if_pm_sleep(suspend_fn), \
++	.resume = assign_if_pm_sleep(resume_fn), \
++	.freeze = assign_if_pm_sleep(suspend_fn), \
++	.thaw = assign_if_pm_sleep(resume_fn), \
++	.poweroff = assign_if_pm_sleep(suspend_fn), \
++	.restore = assign_if_pm_sleep(resume_fn),
++
++#define ASSIGN_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
++	.suspend_late = assign_if_pm_sleep(suspend_fn), \
++	.resume_early = assign_if_pm_sleep(resume_fn), \
++	.freeze_late = assign_if_pm_sleep(suspend_fn), \
++	.thaw_early = assign_if_pm_sleep(resume_fn), \
++	.poweroff_late = assign_if_pm_sleep(suspend_fn), \
++	.restore_early = assign_if_pm_sleep(resume_fn),
++
++#define ASSIGN_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
++	.runtime_suspend = assign_if_pm_runtime(suspend_fn), \
++	.runtime_resume = assign_if_pm_runtime(resume_fn), \
++	.runtime_idle = assign_if_pm_runtime(idle_fn),
++
++#define ASSIGN_PM_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
++	.runtime_suspend = assign_if_pm(suspend_fn), \
++	.runtime_resume = assign_if_pm(resume_fn), \
++	.runtime_idle = assign_if_pm(idle_fn),
++
++/*
+  * Use this if you want to use the same suspend and resume callbacks for suspend
+  * to RAM and hibernation.
+  */
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
