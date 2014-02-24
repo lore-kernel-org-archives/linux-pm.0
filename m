@@ -1,82 +1,36 @@
-From: Josh Cartwright <joshc@codeaurora.org>
-Subject: [PATCH 1/3] typecheck: introduce assign_if() and assign_if_enabled()
-Date: Mon, 24 Feb 2014 11:08:25 -0600
-Message-ID: <1393261707-30565-2-git-send-email-joshc@codeaurora.org>
-References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
+Date: Mon, 24 Feb 2014 10:17:35 -0700
+Message-ID: <530B7EAF.9060502@wwwdotorg.org>
+References: <cover.1392273722.git.viresh.kumar@linaro.org>	<52FE71BD.3020103@wwwdotorg.org>	<2869027.iYHxWOSS2C@vostro.rjw.lan>	<52FEAECA.5080905@wwwdotorg.org>	<CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>	<5303C018.1020707@wwwdotorg.org>	<CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com>	<5304E93C.9000104@wwwdotorg.org>	<90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>	<BEC64F5C-76E8-40C3-81BE-59096C3838F3@linaro.org>	<53063E01.5030808@wwwdotorg.org> <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, "jinchoi@broadcom.com" <jinchoi@broadcom.com>, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-The assign_if() and assign_if_enable() macros are intended to be used
-in static initializers for function pointers, where the pointer is
-expected to be NULL when a compile-time condition does not hold.
+On 02/23/2014 11:43 PM, Viresh Kumar wrote:
+> On 20 February 2014 23:10, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> Well, except that still leaves a bunch of errors in the kernel log, and
+>> I have to remember to ignore them:-/
+> 
+> Just for few releases, before this patchset goes in.
+> 
+>> It'd be nice if the cpufreq core didn't keep changing its behaviour and
+>> adding new error prints. It really should be up to the cpufreq drivers
+>> to log the errors if they experience any.
+> 
+> Hmm... not sure.. Its better to do error prints at a single place, i.e. cpufreq
+> core on behalf of all drivers. If there is a error being returned from some
+> routine, we better print a message for that. Rather than living in the illusion
+> that everything is fine :)
 
-These macros allow for implementing this behavior, without requiring the
-functions be wrapped in #ifdef conditionals, and while providing
-typesafety regardless of the value of the conditional.
+As a general rule, I think it's better to report the error right where
+it happened. That's the only place where the code knows exactly what the
+error was. Further up the call stack, we have to guess why there was an
+error from the return code, which isn't very much information.
 
-For example, the following pattern is common:
-
-	#ifdef CONFIG_FOO
-	static void foo_callback(void)
-	{
-	}
-	#else
-	#define foo_callback NULL
-	#endif
-
-	static struct foo_object foo_obj = {
-		.callback = foo_callback,
-	};
-
-Usage of assign_if_enabled() allows for achieving the same effect
-without the preprocessor conditional, and in addition, allowing the
-compiler to typecheck the function regardless of CONFIG_FOO.
-
-	static void foo_callback(void)
-	{
-	}
-
-	static struct foo_object foo_obj = {
-		.callback = assign_if_enabled(CONFIG_FOO, foo_callback),
-	};
-
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
----
- include/linux/typecheck.h | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
-
-diff --git a/include/linux/typecheck.h b/include/linux/typecheck.h
-index eb5b74a..04134c7 100644
---- a/include/linux/typecheck.h
-+++ b/include/linux/typecheck.h
-@@ -21,4 +21,22 @@
- 	(void)__tmp; \
- })
- 
-+/*
-+ * Intended for use in static object initializers,
-+ * assign_if(const_expr, function) evaluates to 'function' if 'const_expr',
-+ * otherwise NULL.
-+ *
-+ * The type of the assign_if() expression is typeof(function), and therefore
-+ * can provide typechecking regardless of 'const_expr'.
-+ *
-+ * gcc considers 'function' to be used and will not generate a 'defined but not
-+ * used' warning when not 'const_expr', however, gcc is smart enough to
-+ * eliminate 'function' if assign_if() is the only reference.
-+ */
-+#define assign_if(const_expr,function)	\
-+	((const_expr) ? function : NULL)
-+
-+#define assign_if_enabled(option,function)	\
-+	assign_if(IS_ENABLED(option), function)
-+
- #endif		/* TYPECHECK_H_INCLUDED */
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
