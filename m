@@ -1,13 +1,12 @@
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 3/7] Cpuidle: Ensure menu coefficients stay within
- domain
-Date: Mon, 24 Feb 2014 11:57:14 -0500 (EST)
-Message-ID: <alpine.LFD.2.11.1402241156440.17677@knanqh.ubzr>
-References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <1393223377-5744-4-git-send-email-tuukka.tikkanen@linaro.org>
+Subject: Re: [PATCH 6/7] Cpuidle: Deal with timer expiring in the past
+Date: Mon, 24 Feb 2014 12:05:39 -0500 (EST)
+Message-ID: <alpine.LFD.2.11.1402241201330.17677@knanqh.ubzr>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1393223377-5744-4-git-send-email-tuukka.tikkanen@linaro.org>
+In-Reply-To: <1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
@@ -15,44 +14,51 @@ List-Id: linux-pm@vger.kernel.org
 
 On Mon, 24 Feb 2014, Tuukka Tikkanen wrote:
 
-> The menu governor uses coefficients as one method of actual idle
-> period length estimation. The coefficients are, as detailed below,
-> multipliers giving expected idle period length from time until next
-> timer expiry. The multipliers are supposed to have domain of (0..1].
+> Sometimes (fairly often) when the cpuidle menu governor is making a decision
+> about idle state to enter the next timer for the cpu appears to expire in
+> the past. The menu governor expects the expiry to always be in the future
+> and in fact stores the time delta in an unsigned variable. However, when
+> the expiry is in the past, the value returned by tick_nohz_get_sleep_length
+> can be negative. This patch prevents using negative values, instead making
+> the governor return immediately similar to having latency requirement set
+> to 0.
 > 
-> The coefficients are fractions where only the numerators are stored
-> and denominators are a shared constant RESOLUTION*DECAY. Since the
-> value of the coefficient should always be greater than 0 and less
-> than or equal to 1, the numerator must have a value greater than
-> 0 and less than or equal to RESOLUTION*DECAY.
-> 
-> If the coefficients are updated with measured idle durations exceeding
-> timer length, the multiplier may reach values exceeding unity (i.e.
-> the stored numerator exceeds RESOLUTION*DECAY). This patch ensures that
-> the multipliers are updated with durations capped to timer length.
+> Note: As with latency == 0, the return value is 0 with no check to see if
+> the state 0 has been disabled or not.
+
+In your cover letter you mention some occurrences of the negative result 
+being observed on x86.  That information is worth capturing in the 
+commit log as well to distinguish between theoretical problems from 
+actual observations.
+
 > 
 > Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-Acked-by: Nicolas Pitre <nico@linaro.org>
-
-
 > ---
->  drivers/cpuidle/governors/menu.c |    3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/cpuidle/governors/menu.c |   10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
 > 
 > diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 115386a..f0995dd 100644
+> index 71b5232..c414468 100644
 > --- a/drivers/cpuidle/governors/menu.c
 > +++ b/drivers/cpuidle/governors/menu.c
-> @@ -410,6 +410,9 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  	if (measured_us > target->exit_latency)
->  		measured_us -= target->exit_latency;
+> @@ -302,8 +302,16 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  	if (unlikely(latency_req == 0))
+>  		return 0;
 >  
-> +	/* Make sure our coefficients do not exceed unity */
-> +	if (measured_us > data->next_timer_us)
-> +		measured_us = data->next_timer_us;
+> -	/* determine the expected residency time, round up */
+> +	/*
+> +	 * Determine the expected residency time. If the time is negative,
+> +	 * a timer interrupt has probably just expired after disabling
+> +	 * interrupts. Return as quickly as possible in the most shallow
+> +	 * state possible. tv_nsec is always positive, so only check the
+> +	 * seconds.
+> +	 */
+>  	t = ktime_to_timespec(tick_nohz_get_sleep_length());
+> +	if (t.tv_sec < 0)
+> +		return 0;
+>  	data->next_timer_us =
+>  		t.tv_sec * USEC_PER_SEC + t.tv_nsec / NSEC_PER_USEC;
 >  
->  	/* Update our correction ratio */
->  	new_factor = data->correction_factor[data->bucket];
 > -- 
 > 1.7.9.5
 > 
