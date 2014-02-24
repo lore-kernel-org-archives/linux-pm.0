@@ -1,112 +1,86 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/7] Cpuidle: Minor fixes
-Date: Mon, 24 Feb 2014 22:24:41 +0100
-Message-ID: <530BB899.4060803@linaro.org>
-References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
+Subject: Re: [PATCH 2/7] Cpuidle: Use actual state latency in menu governor
+Date: Mon, 24 Feb 2014 23:35:40 +0100
+Message-ID: <530BC93C.4090907@linaro.org>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <1393223377-5744-3-git-send-email-tuukka.tikkanen@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:46636 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751489AbaBXVYl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 16:24:41 -0500
-Received: by mail-wi0-f181.google.com with SMTP id hi5so3631362wib.2
-        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 13:24:40 -0800 (PST)
-In-Reply-To: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:55012 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753048AbaBXWfk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 17:35:40 -0500
+Received: by mail-wg0-f54.google.com with SMTP id l18so5325829wgh.9
+        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 14:35:39 -0800 (PST)
+In-Reply-To: <1393223377-5744-3-git-send-email-tuukka.tikkanen@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
 
 On 02/24/2014 07:29 AM, Tuukka Tikkanen wrote:
-> This set of patches makes some minor changes to menu governor and the=
- poll
-> idle state.
+> Currently menu governor records the exit latency of the state it has
+> chosen for the idle period. The stored latency value is then later
+> used to calculate the actual length of the idle period. This value
+> may however be incorrect, as the entered state may not be the one
+> chosen by the governor. The entered state information is available,
+> so we can use that to obtain the real exit latency.
 >
-> Patch 1 is simply a rename of a variable to make the name better repr=
-esent
-> the contained information.
->
-> Patch 2 fixes calculating actual residency in cases where the entered=
- state
-> is different from the state decided by the menu governor.
->
-> Patch 3 makes sure the menu governor timer coefficients are not updat=
-ed
-> with values that might cause a coefficient to reach a value greater t=
-han
-> unity.
->
-> Patch 4 fixes calculation actual residency in cases where the entered=
- state
-> does not support measuring residency. In such cases the residency tim=
-e
-> is taken from time remaining until next timer expiry. The timer is ex=
-pected
-> to go off at the start of exit latency, not after it. Therefore the e=
-xit
-> latency must not be substracted from the assumed value.
->
-> Patch 5 moves the performance multiplier based comparison out of the =
-state
-> selection loop by changing it into a latency requirement. This allows
-> using a generic state selection function accepting only (duration, la=
-tency)
-> tuple as input. The change is possible by noting that performance mul=
-tiplier
-> is used only to check for a minimum predicted idle duration to exit l=
-atency
-> ratio. As predicted idle duration is a constant for the loop, the max=
-imum
-> allowed latency can be calculated outside of the loop.
->
-> Patch 6 prevents using negative values from tick_nohz_get_sleep_lengt=
-h()
-> in the menu governor. If unchecked, the negative values are used as h=
-uge
-> unsigned values. Negative values occur fairly often (e.g. on x86_64 I=
-'ve
-> seen this happen several times per minute) on a busy system, allowing
-> the deepest state to win the selection while the shallowest should be=
- picked.
->
-> Patch 7 adds CPUIDLE_FLAG_TIME_VALID to poll_idle. I do not know of a=
-ny
-> platfrom where cpu_relax() would break ktime_get() and in fact poll_i=
-dle
-> uses ktime_get itself.
-> (Note: poll_idle updates dev->last_residency for some reason. Does it=
- ever
-> get called without going through cpuidle_enter_state, which will over=
-write
-> the value? Even if some state redirects to this state, the call will
-> eventually return to the framework. The redundant time measurement co=
-uld
-> be removed, unless there is some obscure way of getting called on som=
-e
-> platform that I am unable to figure out.)
->
-> Tuukka Tikkanen (7):
->    Cpuidle: rename expected_us to next_timer_us in menu governor
->    Cpuidle: Use actual state latency in menu governor
->    Cpuidle: Ensure menu coefficients stay within domain
->    Cpuidle: Do not substract exit latency from assumed sleep length
->    Cpuidle: Move perf multiplier calculation out of the selection loo=
-p
->    Cpuidle: Deal with timer expiring in the past
->    Cpuidle: poll state can measure residency
->
->   drivers/cpuidle/driver.c         |    2 +-
->   drivers/cpuidle/governors/menu.c |   85 ++++++++++++++++++++++++---=
------------
->   2 files changed, 54 insertions(+), 33 deletions(-)
+> Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 
-You should put Arjan van de Ven in Cc for the menu governor changes.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Thanks
-   -- Daniel
+> ---
+>   drivers/cpuidle/governors/menu.c |    7 ++-----
+>   1 file changed, 2 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gover=
+nors/menu.c
+> index e9a2a27..115386a 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -124,7 +124,6 @@ struct menu_device {
+>
+>   	unsigned int	next_timer_us;
+>   	unsigned int	predicted_us;
+> -	unsigned int	exit_us;
+>   	unsigned int	bucket;
+>   	unsigned int	correction_factor[BUCKETS];
+>   	unsigned int	intervals[INTERVALS];
+> @@ -298,7 +297,6 @@ static int menu_select(struct cpuidle_driver *drv=
+, struct cpuidle_device *dev)
+>   	}
+>
+>   	data->last_state_idx =3D 0;
+> -	data->exit_us =3D 0;
+>
+>   	/* Special case when user has set very strict latency requirement =
+*/
+>   	if (unlikely(latency_req =3D=3D 0))
+> @@ -359,7 +357,6 @@ static int menu_select(struct cpuidle_driver *drv=
+, struct cpuidle_device *dev)
+>   			continue;
+>
+>   		data->last_state_idx =3D i;
+> -		data->exit_us =3D s->exit_latency;
+>   	}
+>
+>   	return data->last_state_idx;
+> @@ -410,8 +407,8 @@ static void menu_update(struct cpuidle_driver *dr=
+v, struct cpuidle_device *dev)
+>   	 * We correct for the exit latency; we are assuming here that the
+>   	 * exit latency happens after the event that we're interested in.
+>   	 */
+> -	if (measured_us > data->exit_us)
+> -		measured_us -=3D data->exit_us;
+> +	if (measured_us > target->exit_latency)
+> +		measured_us -=3D target->exit_latency;
+>
+>
+>   	/* Update our correction ratio */
+>
 
 
 --=20
