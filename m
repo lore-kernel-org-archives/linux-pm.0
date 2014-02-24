@@ -1,61 +1,112 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] PM / Sleep / Runtime: Add pm_runtime_suspend|resume_force functions
-Date: Mon, 24 Feb 2014 14:19:25 +0100
-Message-ID: <CACRpkda=Qo+ib77Ug2sWWiLEJdG2Z=pjvn6LzCy9-Y0wN=pbjA@mail.gmail.com>
-References: <1392225374-28156-1-git-send-email-ulf.hansson@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 3/6] PM / Voltagedomain: introduce voltage domain
+ driver support
+Date: Mon, 24 Feb 2014 08:38:07 -0600
+Message-ID: <530B594F.2030500@ti.com>
+References: <1392755543-28335-1-git-send-email-nm@ti.com>
+ <1392755543-28335-4-git-send-email-nm@ti.com>
+ <20140224015826.GU25940@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:45315 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbaBXNT0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 08:19:26 -0500
-Received: by mail-oa0-f53.google.com with SMTP id o6so1876322oag.26
-        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 05:19:25 -0800 (PST)
-In-Reply-To: <1392225374-28156-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140224015826.GU25940@sirena.org.uk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mark Brown <broonie@kernel.org>
+Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, linux-doc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@linaro.org>, Russell King <linux@arm.linux.org.uk>
 
-On Wed, Feb 12, 2014 at 6:16 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On 02/23/2014 07:58 PM, Mark Brown wrote:
+> On Tue, Feb 18, 2014 at 02:32:20PM -0600, Nishanth Menon wrote:
+> 
+>> The current regulator model provides the basic building blocks for the
+>> transitions, however SoC drivers specific to each of these devices, be
+>> it cpufreq/devfreq have to replicate the logic for functionality.
+> 
+>> To simply the logic, we can hence introduce a layer that takes care
+>> of the mundane transition logic, registration mechanisms to provide
+>> the "user drivers" such as cpufreq/devfreq a generic interface, whose
+>> details are abstracted by the device tree description for the SoC on
+>> which the driver operates on.
+> 
+> This doesn't really provide a picture of what the generic interface
+> that's being offered is and...
+I should have probably picked up part of the cover letter[1] and
+elaborated further in the commit message here.
 
-> This patch provides two new runtime PM helper functions which intend to
-> be used from system suspend/resume callbacks, to make sure devices are
-> put into low power state during system suspend and brought back to full
-> power at system resume.
->
-> The prerequisite is to have all levels of a device's runtime PM
-> callbacks to be defined through the SET_PM_RUNTIME_PM_OPS macro, which
-> means these are available for CONFIG_PM.
->
-> By using the new runtime PM helper functions especially the two
-> scenarios below will be addressed.
->
-> 1) The PM core prevents .runtime_suspend callbacks from being invoked
-> during system suspend. That means even for a runtime PM centric
-> subsystem and driver, the device needs to be put into low power state
-> from a system suspend callback. Otherwise it may very well be left in
-> full power state (runtime resumed) while the system is suspended. By
-> using the new helper functions, we make sure to walk the hierarchy of
-> a device's power domain, subsystem and driver.
->
-> 2) Subsystems and drivers need to cope with all the combinations of
-> CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions
-> smothly addresses this.
->
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Mark Brown <broonie@linaro.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Intent here is to allow drivers such as cpufreq-cpu0 to be reused on
+platforms such as TI's OMAP derivatives, and other SoCs which differ
+only by the sequence involved in voltage scale operations. So, this
+patch provides a framework for registering the underlying
+implementation of the SoC specific voltage change methodology.
 
-This looks to my amateurish eyes like a piece of the puzzle that
-was always missing - there was simply no way for walking
-the ladder for drivers, so FWIW:
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Overall the sequence takes place after this patch is as follows:
+a) voltage domain drivers such as those of TI or others register with
+voltage domain with devm_voltdm_register.
+b) cpufreq-cpu0/devfreq drivers:
+of_pm_voltdm_notifier_register(introduced as part of patch #1) to
+register notifiers around clk of interest. This request is linked to
+the specific voltage domain using phandle in device tree.
+c) when cpufreq-cpu0/devfreq does a clk_set_rate, the common clock
+framework triggers notifiers in voltage domain core which in turn,
+invokes the corresponding handlers for the voltage domain driver
+ensuring the right dvfs sequence specific to the SoC is triggered.
 
-Yours,
-Linus Walleij
+With this patch, the logic for a SoC specific voltage domain
+intricacies can now be abstracted out to the voltage domain layer.
+This allows reuse of the logic by multiple drivers such as
+devfreq/cpufreq and allows these to remain consistent with very
+minimal SoC(if any at all) specific implementations in them.
+
+Among the other obvious alternatives to this approach are:
+a) To duplicate the logic multiple times for various drivers such as
+devfreq/cpufreq and try to ensure the logic sequences are proper.
+basically, create cpufreq-abb-omap, cpufreq-avs-omap,
+devfreq-abb-omap, devfreq-avs-omap etc..
+b) introduce a specific API for voltage change (something like
+pm_dev_scale_opp_frequency or the equivalent).
+
+
+> 
+>>  drivers/power/voltdm/Kconfig                  |    5 +
+>>  drivers/power/voltdm/Makefile                 |    3 +
+>>  drivers/power/voltdm/core.c                   |  347 +++++++++++++++++++++++--
+>>  drivers/power/voltdm/voltage_domain_private.h |   86 ++++++
+>>  4 files changed, 424 insertions(+), 17 deletions(-)
+> 
+> ...the diffstat doesn't make it obvious what the external interface is
+> either.  It would be much easier to review this with a clearer picture
+> of what it's aiming to implement.
+
+The drivers such as cpufreq/devfreq has the same interface introduced
+by patch #1 in this series of_pm_voltdm_notifier_register/unregister
+which is exposed by include/linux/pm_voltage_domain.h
+
+Underlying implementation of the SoC specific voltage change
+methodology can now be isolated by voltage domain driver using
+voltage_domain_private.h and services provided by core.c
+
+> 
+>> +	voltdm_np = of_parse_phandle(np, prop_name, 0);
+>> +	if (voltdm_np) {
+>> +		ret = of_parse_phandle_with_args(np, prop_name, "#voltdm-cells",
+>> +						 0, args);
+>> +		if (ret)
+>> +			return ERR_PTR(ret);
+> 
+> There seems to be some DT stuff going on here, is the interface DT only?
+> 
+yes. i will make that clear in the documentation.
+
+[1] http://marc.info/?l=linux-kernel&m=139275560531711&w=2
+-- 
+Regards,
+Nishanth Menon
