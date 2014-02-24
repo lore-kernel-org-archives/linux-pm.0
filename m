@@ -1,36 +1,59 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V5 0/7] cpufreq: suspend early/resume late: dpm_{suspend|resume}()
-Date: Mon, 24 Feb 2014 10:17:35 -0700
-Message-ID: <530B7EAF.9060502@wwwdotorg.org>
-References: <cover.1392273722.git.viresh.kumar@linaro.org>	<52FE71BD.3020103@wwwdotorg.org>	<2869027.iYHxWOSS2C@vostro.rjw.lan>	<52FEAECA.5080905@wwwdotorg.org>	<CAKohpomhvuQQ0JN3wgLBnrSpFUjC9J9QwWZpD9nA6AFYw+paKA@mail.gmail.com>	<5303C018.1020707@wwwdotorg.org>	<CAKohponF7ag-tfv77JK0pDVukS6v3QeSY+G_br3FJGskMDCvVw@mail.gmail.com>	<5304E93C.9000104@wwwdotorg.org>	<90EA67AE-7F57-4F43-8967-642903AD72AC@linaro.org>	<BEC64F5C-76E8-40C3-81BE-59096C3838F3@linaro.org>	<53063E01.5030808@wwwdotorg.org> <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok3Y9H96rSFkUL=v3pMwRd9=YyVDfuY7SSSq6FevF1Snw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Kgene Kim <kgene.kim@samsung.com>, "jinchoi@broadcom.com" <jinchoi@broadcom.com>, Lan Tianyu <tianyu.lan@intel.com>, Sebastian Capella <sebastian.capella@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH] thermal: of: use the default governor when registering thermal zones from DT
+Date: Mon, 24 Feb 2014 17:45:53 +0000
+Message-ID: <1393263953-4590-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:53983 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752456AbaBXRqO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 12:46:14 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: sudeep.holla@arm.com, punit.agrawal@arm.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 02/23/2014 11:43 PM, Viresh Kumar wrote:
-> On 20 February 2014 23:10, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> Well, except that still leaves a bunch of errors in the kernel log, and
->> I have to remember to ignore them:-/
-> 
-> Just for few releases, before this patchset goes in.
-> 
->> It'd be nice if the cpufreq core didn't keep changing its behaviour and
->> adding new error prints. It really should be up to the cpufreq drivers
->> to log the errors if they experience any.
-> 
-> Hmm... not sure.. Its better to do error prints at a single place, i.e. cpufreq
-> core on behalf of all drivers. If there is a error being returned from some
-> routine, we better print a message for that. Rather than living in the illusion
-> that everything is fine :)
+Thermal zones specified in the DT get no governor because the
+thermal_zone_parameters they pass to thermal_zone_device_register()
+has an empty governor_name entry.  As there is no way to set the
+governor from the DT at the moment, make them register the default
+governor.
 
-As a general rule, I think it's better to report the error right where
-it happened. That's the only place where the code knows exactly what the
-error was. Further up the call stack, we have to guess why there was an
-error from the return code, which isn't very much information.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+
+Another alternative would be to set governor_name to the default in
+thermal_zone_device_register() if it receives the empty string.
+
+There are no other users of thermal_zone_parameters in the kernel and
+there is no user of the governor_name.  I was tempted to kill
+governor_name, but I guess it's there to be used by external modules.
+
+ drivers/thermal/of-thermal.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 04b1be7..3f850f2 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -791,6 +791,13 @@ int __init of_parse_thermal_zones(void)
+ =09=09/* No hwmon because there might be hwmon drivers registering */
+ =09=09tzp->no_hwmon =3D true;
+=20
++=09=09/*
++=09=09 * We can't specify the governor in the DT, so use the
++=09=09 * default one
++=09=09 */
++=09=09strncpy(tzp->governor_name, DEFAULT_THERMAL_GOVERNOR,
++=09=09=09ARRAY_SIZE(tzp->governor_name));
++
+ =09=09zone =3D thermal_zone_device_register(child->name, tz->ntrips,
+ =09=09=09=09=09=09    0, tz,
+ =09=09=09=09=09=09    ops, tzp,
+--=20
+1.7.9.5
+
 
