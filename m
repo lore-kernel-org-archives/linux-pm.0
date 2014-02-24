@@ -1,53 +1,53 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v1 1/3] ARM: Add irq disabled version of soft_restart.
-Date: Mon, 24 Feb 2014 15:13:45 -0800
-Message-ID: <20140224231345.10580.62916@capellas-linux>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org>
- <20140222102616.GG21483@n2100.arm.linux.org.uk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] PCI / PM: Resume runtime-suspended devices later during system suspend
+Date: Tue, 25 Feb 2014 00:33:51 +0100
+Message-ID: <1759353.q92oO0bmJQ@vostro.rjw.lan>
+References: <1853950.oxM3KDpyLu@vostro.rjw.lan> <3851541.s2776YTCMH@vostro.rjw.lan> <CAErSpo5rX=1YnAR8QZYLsww-1c4_KvAgEZEkkQ5C26=+cEYqFw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140222102616.GG21483@n2100.arm.linux.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, Russ Dill <Russ.Dill@ti.com>, Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60434 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752995AbaBXXSx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 18:18:53 -0500
+In-Reply-To: <CAErSpo5rX=1YnAR8QZYLsww-1c4_KvAgEZEkkQ5C26=+cEYqFw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
 
-Quoting Russell King - ARM Linux (2014-02-22 02:26:17)
-> On Tue, Feb 18, 2014 at 05:52:07PM -0800, Sebastian Capella wrote:
-> > From: Russ Dill <Russ.Dill@ti.com>
-> > 
-> > This adds the ability to run soft_restart with local_irq/fiq_disable
-> > already called. This is helpful for the hibernation code paths.
+On Monday, February 24, 2014 01:58:05 PM Bjorn Helgaas wrote:
+> On Sun, Feb 23, 2014 at 4:21 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Runtime-suspended devices are resumed during system suspend by
+> > pci_pm_prepare() for two reasons: First, because they may need
+> > to be reprogrammed in order to change their wakeup settings and,
+> > second, because they may need to be operatonal for their children
+> > to be successfully suspended.  That is a problem, though, if there
+> > are many runtime-suspended devices that need to be resumed this
+> > way during system suspend, because the .prepare() PM callbacks of
+> > devices are executed sequentially and the times taken by them
+> > accumulate, which may increase the total system suspend time quite
+> > a bit.
+> >
+> > For this reason, move the resume of runtime-suspended devices up
+> > to the next phase of device suspend (during system suspend), except
+> > for the ones that have power.ignore_children set.  The exception is
+> > made, because the devices with power.ignore_children set may still
+> > be necessary for their children to be successfully suspended (during
+> > system suspend) and they won't be resumed automatically as a result
+> > of the runtime resume of their children.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I'd rather keep this simple.  There's no problem with calling soft_restart
-> with interrupts already disabled.  local_irq_disable()/local_fiq_disable()
-> there should be harmless.
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> You can merge these two via your tree if you want.  I don't have any
+> changes queued up for pci-driver.c.
 
-Hi Russell,
+I will, thanks!
 
-I'm observing a data abort loop when I replace this call:
+Rafael
 
-In the local_irq_disable, it ends up calling trace_hardirqs_off
-(CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled), which calls
-trace_hardirqs_off_caller which checks lockdep_recursion in the
-current task, but we've switched to a temporary stack with the
-call_with_stack, and get_current is returning NULL.  This
-triggers a data abort, which calls trace_hardirqs_off
-again and so on.
-
-Do you have any suggestions here?
-
-Thanks,
-
-Sebastian
