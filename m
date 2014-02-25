@@ -1,55 +1,46 @@
-From: Robert Hancock <hancockrwd@gmail.com>
-Subject: Problem with hibernate partitions and encrypted volumes
-Date: Mon, 24 Feb 2014 21:27:57 -0600
-Message-ID: <530C0DBD.6060502@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 10:11:41 +0530
+Message-ID: <CAKohpokk5-6vGV93fZDob8Q=xZXsd7E4OkMUAC1M6Z71G=d1Ow@mail.gmail.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+	<CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com>
+	<5301CE86.9020105@linux.vnet.ibm.com>
+	<1489022.1IbaesBAQQ@vostro.rjw.lan>
+	<CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f179.google.com ([209.85.213.179]:53234 "EHLO
-	mail-ig0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752442AbaBYD2A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 22:28:00 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel <linux-kernel@vger.kernel.org>, pm list <linux-pm@vger.kernel.org>
 
-A while ago I reported this Fedora bug:
+On 18 February 2014 07:49, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 18 February 2014 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
+>>> Why go to no_policy when we can actually set things right?
+>>>
+>>> Anyway, I am not arguing against this strongly. I just wanted to share my
+>>> thoughts, since this is the approach that made more sense to me.
+>>
+>> And I agree with that.  In particular, since we're going to set the new
+>> policy *anyway* at this point, we can adjust the current frequency just fine
+>> in the process, can't we?
+>
+> Though I still feel that it wouldn't be the right thing to do as get()
+> just can't
+> return zero. Actually I was planning to place a WARN() over its return value
+> of zero.
+>
+> Anyway, as two of the three are in favor of this we can get that in.. But how
+> would that work?
+>
+> - What frequency should we call cpufreq_driver_target ?
+> - Remember that it wouldn't do anything if policy->cur is same as new freq.
+> - Also remember that drivers need special attention if new freq is > old
+> freq or vice versa. As they will change voltage before or after change here.
+> And because we actually don't know what frequency we are at currently, how
+> will we decide that?
 
-https://bugzilla.redhat.com/show_bug.cgi?id=981841
-
-and thought I would check on the kernel side about what the best way to 
-handle the problem was.
-
-Essentially the problem relates to the way in which the kernel stores 
-the device that it uses to resume and hibernate to/from. During boot, 
-dracut writes the device major/minor number of the swap partition to 
-/sys/power/resume, which triggers the kernel to resume from disk if a 
-valid resume image is present. If not, bootup continues normally, and 
-the kernel has stashed away that major/minor pair as 
-swsusp_resume_device. Later on, when you choose to hibernate the system 
-and "disk" gets written to /sys/power/state, the kernel uses that device 
-as the swap partition it will try to save the hibernate image to.
-
-The problem comes in when the swap partition is on a LUKS encrypted 
-volume - specifically, when there is more than one encrypted volume on 
-the system. (In my case, the machine has separate encrypted /home and 
-swap partitions.) Since the kernel stores the resume partition as a 
-major/minor pair, it's sensitive to any change in the device ordering. 
-It appears that at some point in the Fedora boot process, the device 
-nodes for the encrypted volumes get torn down and re-created, and there 
-is apparently no guarantee of the order in which this will occur. If the 
-devices get recreated in the opposite order (for example if the swap 
-partition was originally minor 1 and is now minor 2), the stored device 
-ID will no longer refer to a swap partition, and the hibernate process 
-discovers this and aborts.
-
-It seems like all of this could be avoided if there was a way for 
-userspace to set the device used to store the hibernate image before 
-triggering hibernation. As far as I can see there is no way to change 
-the device stored in swsusp_resume_device without writing to 
-/sys/power/resume, which immediately tries to resume from it. That seems 
-like quite a hack when one is trying to hibernate. It seems like the 
-"set image device" and "resume" requests should be separated.
-
-Any thoughts?
+@Rafael/Srivatsa: Ping!!
