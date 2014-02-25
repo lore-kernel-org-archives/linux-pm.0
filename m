@@ -1,102 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug
- online work is done
-Date: Tue, 25 Feb 2014 14:20:57 +0530
-Message-ID: <CAKohpo=0CgzjCgKnDxUMcN6-CgbQ2ML=Tx-K8fS7=VJJYOD0eg@mail.gmail.com>
-References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org>
-	<530AF7E4.5080806@linux.vnet.ibm.com>
-	<1f7bd419ce78af0137c0d63189c6ad35.squirrel@www.codeaurora.org>
-	<CAKohponY-OXwAEZT0WRjxpHmvi78Ne9kv6LOHXvLOFG-KjU1FQ@mail.gmail.com>
-	<530BAA31.4050701@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <530BAA31.4050701@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: [PATCH V2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 14:29:44 +0530
+Message-ID: <79539d6c5c04165da855863c4015f90b278d86d1.1393318725.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:62001 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbaBYI7v (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 03:59:51 -0500
+Received: by mail-wi0-f172.google.com with SMTP id e4so4104106wiv.11
+        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 00:59:50 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 25 February 2014 01:53, Saravana Kannan <skannan@codeaurora.org> wrote:
-> I was simplifying the scenario that causes it. We change the min/max using
-> ADJUST notifiers for multiple reasons -- thermal being one of them.
->
-> thermal/cpu_cooling is one example of it.
+cpufreq_update_policy() calls cpufreq_driver->get() to get current frequency of
+a CPU and it is not supposed to fail or return zero. Return error in case that
+happens.
 
-Just to understand the clear picture, you are actually hitting this bug? Or
-is this only a theoretical bug?
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- Fixed return error to EIO instead of EINVAL
+- Added WARN_ON() to flag get() failing and hence removed the print message as
+  well which was earlier printed during errors.
+ drivers/cpufreq/cpufreq.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-> So, cpufreq_update_policy() can be called on any CPU. If that races with
-> someone offlining a CPU and onlining it, you'll get this crash.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index c755b5f..bf80502 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2139,6 +2139,11 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	 */
+ 	if (cpufreq_driver->get) {
+ 		new_policy.cur = cpufreq_driver->get(cpu);
++		if (WARN_ON(!new_policy.cur)) {
++			ret = -EIO;
++			goto no_policy;
++		}
++
+ 		if (!policy->cur) {
+ 			pr_debug("Driver did not initialize current freq");
+ 			policy->cur = new_policy.cur;
+-- 
+1.7.12.rc2.18.g61b472e
 
-Then shouldn't that be fixed by locks? I think yes. That makes me agree with
-Srivatsa more here.
-
-Though I would say that your argument was also valid that 'policy' shouldn't be
-up for sale unless it is prepared to. And for that reason only I
-floated that question
-earlier: What exactly we need to make sure is initialized in policy? Because
-policy might keep changing in future as well and that needs locks to protect
-that stuff. Like min/max/governor/ etc..
-
-So, probably a solution here might be a mix of both. Initialize policy to this
-minimum level and then make sure locking is used correctly..
-
-> The idea would exist, but we can just call cpufreq_generic_get() and pass it
-> policy->clk if it is not NULL. Does that work for you?
-
-No. Not all drivers implement clk interface. And so clk doesn't look to be the
-right parameter. I thought maybe 'policy' can be the right parameter and
-then people can get use policy->cpu to get cpu id out of it.
-
-But even that doesn't look to be a great idea. X86 drivers may share policy
-structure for CPUs that don't actually share a clock line. And so they do need
-right CPU number as parameter instead of policy. As they might be doing
-some tricky stuff there. Also, we need to make sure that ->get() returns
-the frequency at which CPU x is running.
-
->> So the real question here is: What fields of 'policy' do we need to
->> guarantee
->> to be initialized before policy is made available for others? And probably
->> that is what we need to fix.
->
-> That's going to be hard to define since future uses could be looking at
-> different fields. What is the API semantics of cpufreq_cpu_get(). I can't
-> ever imagine it being correct for any API to return a partially initialized
-> data structure.
-
-I do agree that we can't broadcast 'policy' before it is usable. And that's
-why I am asking about the right place where we are sure that it is ready..
-
->> Even your current solution would break things. For example, below will
->> happen
->> before policy is set in per-cpu variable:
->> - CPUFREQ_CREATE_POLICY notifier will be fired and calls to do
->> cpufreq_cpu_get()
->> there will fail. And hence cpufreq-stats sysfs will break.
->
-> I did this on 3.12. I'll fix it up to handle this one.
-
-This can be moved down without much issues I believe.
-
->> - Governors also use cpufreq_cpu_get() and so those would also fail as
->> they
->> are started from cpufreq_init_policy()..
->
-> The only use of this in governors is in update_sampling_rate() and the
-> behavior after this fix would be correct in that case. If the policy is not
-> fully initialized -- that update doesn't get to go through.
-
-hmm.. but even that looks odd. We have reached upto governors but
-policy isn't available to be used? It should have been ready by now?
-
-> All other uses of this API fall under one of these categories:
-> * CPUs are already fully offline whenever it's called.
-> * Already get the real policy as part of the notifier so don't need to
->   call cpufreq_cpu_get
->
-> If I find any that doesn't fit the above, I would be glad to fix that if
-> it's pointed out.
-
-I have just sent out a patchset to you and others, would be great if
-you can give it a review/test ..
