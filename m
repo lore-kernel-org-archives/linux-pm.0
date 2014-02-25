@@ -1,107 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug online work is done
-Date: Tue, 25 Feb 2014 23:41:18 +0100
-Message-ID: <1789244.B5CzWbcp6h@vostro.rjw.lan>
-References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org> <15001517.xLHO8lGdWr@vostro.rjw.lan> <530D06FF.201@codeaurora.org>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v1 1/3] ARM: Add irq disabled version of soft_restart.
+Date: Tue, 25 Feb 2014 15:24:09 -0800
+Message-ID: <20140225232409.18229.4284@capellas-linux>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org>
+ <20140222102616.GG21483@n2100.arm.linux.org.uk>
+ <20140224231345.10580.62916@capellas-linux> <530C4CAE.5000202@ti.com>
+ <alpine.DEB.2.02.1402251125500.21251@ionos.tec.linutronix.de>
+ <530CCFB5.5030205@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <530D06FF.201@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:51624 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbaBYXYN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 18:24:13 -0500
+Received: by mail-pa0-f52.google.com with SMTP id fb1so111311pad.39
+        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 15:24:13 -0800 (PST)
+In-Reply-To: <530CCFB5.5030205@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russ Dill <Russ.Dill@ti.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will.deacon@arm.com>, Robin Holt <holt@sgi.com>
 
-On Tuesday, February 25, 2014 01:11:27 PM Saravana Kannan wrote:
-> On 02/25/2014 05:04 AM, Rafael J. Wysocki wrote:
-> > On Tuesday, February 25, 2014 02:20:57 PM Viresh Kumar wrote:
-> >> On 25 February 2014 01:53, Saravana Kannan <skannan@codeaurora.org> wrote:
-> >>> I was simplifying the scenario that causes it. We change the min/max using
-> >>> ADJUST notifiers for multiple reasons -- thermal being one of them.
-> >>>
-> >>> thermal/cpu_cooling is one example of it.
-> >>
-> >> Just to understand the clear picture, you are actually hitting this bug? Or
-> >> is this only a theoretical bug?
-> >>
-> This is a real bug. But the actual caller of cpufreq_update_policy() is 
-> a driver that's local to our tree. I'm just giving examples of upstream 
-> code that act in a similar way.
+Quoting Russ Dill (2014-02-25 09:15:33)
+> On 02/25/2014 02:27 AM, Thomas Gleixner wrote:
+> > If you want escape the tracer and in that case you really want it 
+> > being on a different stack, use raw_local_irq_* which are not
+> > traced.
 > 
-> >>> So, cpufreq_update_policy() can be called on any CPU. If that races with
-> >>> someone offlining a CPU and onlining it, you'll get this crash.
-> >>
-> >> Then shouldn't that be fixed by locks? I think yes. That makes me agree with
-> >> Srivatsa more here.
-> >>
-> >> Though I would say that your argument was also valid that 'policy' shouldn't be
-> >> up for sale unless it is prepared to. And for that reason only I
-> >> floated that question
-> >> earlier: What exactly we need to make sure is initialized in policy? Because
-> >> policy might keep changing in future as well and that needs locks to protect
-> >> that stuff. Like min/max/governor/ etc..
-> >
-> > Well, that depends on what the current users expect it to look like initially.
-> > It should be initialized to the point in which all of them can handle it
-> > correctly.
-> 
-> Yes, so let's not make it available until all of it is initialized.
+> So it might make sense to change soft_restart to use the
+> raw_local_irq_* calls.
 
-And is "fully initialized" actually well defined?
-
-> I don't like the piece meal check. 6 months down the lane someone making 
-> changes might not remember this. The problem also applies for drivers 
-> that might not be upstreamed, etc.
-
-Please don't bring up out-of-the-tree drivers argument in mainline discussions,
-it is meaningless here.
-
-> >> So, probably a solution here might be a mix of both. Initialize policy to this
-> >> minimum level and then make sure locking is used correctly..
-> >
-> > Yes.
-> 
-> Rafael, It's not clear what you mean by the yes. Do you want to 
-> initialize it partly and make it available. I think that's always wrong.
-
-So what actually is your porposal?
-
-> >>> The idea would exist, but we can just call cpufreq_generic_get() and pass it
-> >>> policy->clk if it is not NULL. Does that work for you?
-> >>
-> >> No. Not all drivers implement clk interface. And so clk doesn't look to be the
-> >> right parameter. I thought maybe 'policy' can be the right parameter and
-> >> then people can get use policy->cpu to get cpu id out of it.
-> >>
-> >> But even that doesn't look to be a great idea. X86 drivers may share policy
-> >> structure for CPUs that don't actually share a clock line. And so they do need
-> >> right CPU number as parameter instead of policy. As they might be doing
-> >> some tricky stuff there. Also, we need to make sure that ->get() returns
-> >> the frequency at which CPU x is running.
-> >
-> > That's not going to work in at least some cases anyway, because for some types
-> > of HW we simply can't retrieve the current frequency in a non-racy way.
-> 
-> I think there's been a misunderstanding of what I'm proposing. The 
-> reference to policy->clk is only to get rid of the dependency that 
-> cpufreq_generic_get() has on the per cpu policy variable being filled. 
-> You can do that by just removing calls to get _IF_ clk is filled in.
-
-I still have a little problem understanding what you mean exactly.  At least
-please explain the last sentence.
-
-> Viresh,
-> 
-> I'll look at the patches later today and respond. Although, I would have 
-> been nice you had helped me fix any issues with my patch than coming up 
-> with new ones. Kinda removes to motivation for submitting patches upstream.
-
-Everyone is free to post patches at any time during the discussion.  Viresh is
-as well as you are.
+I've added this change.  So far it's working well.
 
 Thanks!
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Sebastian
