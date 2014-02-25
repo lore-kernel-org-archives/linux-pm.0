@@ -1,39 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
-Date: Tue, 25 Feb 2014 14:10:23 +0100
-Message-ID: <3894986.dK3STNSG71@vostro.rjw.lan>
-References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <530C2FD7.4000105@linux.vnet.ibm.com> <CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug
+ online work is done
+Date: Tue, 25 Feb 2014 20:10:54 +0530
+Message-ID: <CAKohponkjccKjc9xBQ3kCjdTMqFtKLCh1-mQXMS579+2_JmTCA@mail.gmail.com>
+References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org>
+ <530BAA31.4050701@codeaurora.org>
+ <CAKohpo=0CgzjCgKnDxUMcN6-CgbQ2ML=Tx-K8fS7=VJJYOD0eg@mail.gmail.com>
+ <15001517.xLHO8lGdWr@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponr5b8nBaV9TFiiFkvyg8Qb6qz_0UXbYCaFRPG=XP28rA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <15001517.xLHO8lGdWr@vostro.rjw.lan>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-msm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 25, 2014 11:38:14 AM Viresh Kumar wrote:
-> On 25 February 2014 11:23, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> > Hmm, that's a good point. However, lets first think about the simple scenario
-> > that the driver _is_ able to detect the current frequency from the hardware
-> > (a non-zero, sane value) say X KHz, and that frequency is different from what
-> > the cpufreq subsystem thinks it is (Y KHz).
-> >
-> > In the current code, when we observe this, we send out a notification and try
-> > to adjust to X KHz. Instead, what I'm suggesting is to invoke the driver to
-> > set the frequency to Y KHz, since that's what the cpufreq subsystems wants the
-> > frequency to be at.
-> 
-> Actually we don't know at this point what cpufreq wants :)
-> Governor will decide what frequency to run CPU at and lets leave it to
-> that point.
-> As the transition that we might end up doing here would be simply overridden
-> very soon. And to be honest this decision must be taken by governor and not
-> core. We just want to make sure core is in sync with hardware.
+On 25 February 2014 18:34, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Well, that depends on what the current users expect it to look like initially.
+> It should be initialized to the point in which all of them can handle it
+> correctly.
 
-Well, why exactly does the core need to operate "current frequency" at all?
+Exactly.
 
-Rafael
+> That's not going to work in at least some cases anyway, because for some types
+> of HW we simply can't retrieve the current frequency in a non-racy way.
 
+I agree. But this is all that we can guarantee here :)
