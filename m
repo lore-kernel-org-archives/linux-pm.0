@@ -1,100 +1,159 @@
-From: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-Subject: Re: [PATCH 7/7] Cpuidle: poll state can measure residency
-Date: Tue, 25 Feb 2014 17:40:08 +0200
-Message-ID: <CAG-99FNrtBf77Kx4z3fhmpMnttnoowpqMiWFUTTMmdroBr4FYw@mail.gmail.com>
-References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
-	<1393223377-5744-8-git-send-email-tuukka.tikkanen@linaro.org>
-	<530C76E7.8090607@linaro.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of
+ suspended devices
+Date: Tue, 25 Feb 2014 12:08:14 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1402251010190.1294-100000@iolanthe.rowland.org>
+References: <10187724.x3fLnu1cYV@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <530C76E7.8090607@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:42698 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752844AbaBYRIP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 12:08:15 -0500
+In-Reply-To: <10187724.x3fLnu1cYV@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 25 February 2014 12:56, Daniel Lezcano <daniel.lezcano@linaro.org> w=
-rote:
-> On 02/24/2014 07:29 AM, Tuukka Tikkanen wrote:
->>
->> For some platforms, a poll state is inserted in the cpuidle driver s=
-tates.
->> The flags for the state do not indicate that timekeeping is not affe=
-cted.
->> As the state does not do anything apart from calling cpu_relax(), th=
-e
->> times returned by ktime_get should remain valid. Add the missing fla=
-g.
->
->
-> Yes, but it is done with the interrupt enabled, so the interrupt hand=
-ler +
-> softirq handler times will be accounted in the residency time.
->
-> I am not sure adding this flag is good.
+On Tue, 25 Feb 2014, Rafael J. Wysocki wrote:
 
-Granted, with a slow CPU and very complex interrupt handing there
-might be some extra time added. So let's consider what might happen:
+> > This discussion is getting a little messy.  Let's try to clarify it.
+> > Here is the major point:
+> > 
+> > 	We would like to save time during system suspend/resume by
+> 
+> Actually, that's not only about saving time, but also about saving energy.
 
-Menu: Not having this flag assumes the residency matches time until
-next timer expiry. Any measured amount of time less than that
-indicates that the residency was shorter. We might not know exactly
-how much, but we are closer to the truth and everything is fine. So
-that leaves reporting time that exceeds what was established as the
-time until next timer expiry. That too is OK (assuming another patch
-in the series) as the value is limited to the time until next timer
-expiry. In short, we get the same or better outcome and have no
-issues.
+Sure.
 
-Ladder: Last residency is assumed to be
-last_state->threshold.promotion_time + 1 if the flag is not set.
-Obviously we won't be considering demotion in that case and will go
-into the promotion path. Any measured value below that is again closer
-to the truth and any value at or above that is simply going to result
-in the same outcome.
+> > 	skipping over devices that are already in runtime suspend,
+> > 	whenever it is safe to do so.
+> > 
+> > Of course, the "it is safe to do so" part is what makes this difficult.  
+> > It boils down to three characteristics for each device.
+> > 
+> >     (a) The device uses the same power state for runtime suspend and
+> > 	system suspend.  Therefore, if the device is already in runtime
+> > 	suspend and the wakeup settings are correct, there is no need
+> > 	for the PM core to invoke the device's ->suspend callbacks.
+> > 
+> > This requires a few comments.  The matter of whether the same power
+> > state is used for both types of suspend is generally known beforehand,
+> > because it is decided by the subsystem or driver.  The matter of
+> > whether the wakeup settings are correct often can't be known until the
+> > system suspend starts, because userspace can select whether or not
+> > wakeup should be enabled during a system sleep.
+> > 
+> > Also, if the PM core is going to skip the ->suspend callbacks then it 
+> > is obliged to skip the ->resume callbacks as well (we mustn't call one 
+> > without the other).  Therefore, in cases where (a) holds, the device 
+> > will necessarily emerge from the system resume in a runtime-suspended 
+> > state.
+> 
+> The "emerge from system resume" requires a bit of clarification in my
+> opinion.  Do you refer to the status of the device when user space is
+> thawed or earlier?  If earlier, then when exactly?
 
-The only remaining issue is any hypothetical governor not currently in
-the kernel tree. It would have to depend on accurate measurements
-while being able to work with states that do not have the valid time
-flag. I'm not sure if I can picture a scenario like that.
+The status of the device when its ->resume callback returns.  Or in 
+the context of your patch, when the ->resume callback is skipped.
 
-Tuukka
+> > This may or may not cause problems for the device's children; 
+> > see below.
+> > 
+> >     (b) It's okay for the device's parent to be in runtime suspend
+> > 	when the device's ->suspend callbacks are invoked.
+> > 
+> > I included this just to be thorough.  In fact, I expect (b) to be true 
+> > for pretty much every device already.
+> 
+> I don't quite understand this.  What if the parent is a bridge and the
+> child's ->suspend tries to access the child's registers?  That surely won't
+> work if the parent is in a low-power state at that point.
 
->
->> Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
->> ---
->>   drivers/cpuidle/driver.c |    2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
->> index 06dbe7c..136d6a2 100644
->> --- a/drivers/cpuidle/driver.c
->> +++ b/drivers/cpuidle/driver.c
->> @@ -209,7 +209,7 @@ static void poll_idle_init(struct cpuidle_driver=
- *drv)
->>         state->exit_latency =3D 0;
->>         state->target_residency =3D 0;
->>         state->power_usage =3D -1;
->> -       state->flags =3D 0;
->> +       state->flags =3D CPUIDLE_FLAG_TIME_VALID;
->>         state->enter =3D poll_idle;
->>         state->disabled =3D false;
->>   }
->>
->
->
-> --
->  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
-or ARM SoCs
->
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+It _does_ work on all current systems -- but only because the question 
+never arises if the device's parent is never in runtime suspend when 
+the device's ->suspend callbacks are invoked.
+
+I admit, there most likely _are_ devices that would get into trouble if
+the question ever did arise.
+
+> > In the absence of any sort of special arrangement, if (b) wasn't true 
+> > for some device then that device would already be experiencing problems 
+> > going into system suspend.
+> 
+> Unless, of course, its parent is a PCI device, because in that case it will
+> always be resumed by the PCI bus type.  And if the "always resumed" is going
+> to be changed to "only resumed if the parent's configuration needs to change",
+> there may be some regressions here and there.
+
+Okay, so you want to take a problem involving PCI and some other
+subsystems, and solve it by getting the PM core involved.  And you want
+to mix it in with the idea of "fast suspend".  Is that really the best
+approach?
+
+Here's another approach.  Add an "okay for my parent to be
+runtime-suspended when my ->suspend and ->resume callbacks are invoked"  
+flag to dev->power.  Make pci_pm_prepare(dev) check this flag in every
+child of dev; if there are any children where the flag isn't set then
+call pm_runtime_resume(dev) (and print a message in the kernel log so 
+that you know which driver needs to be fixed).
+
+This is appropriate because it adjusts the PCI core in a way that can
+safely avoid regressions, without getting the PM core involved in
+matters that should remain strictly between the PCI subsystem and the
+subsystems of children of PCI devices.
+
+It also allows the "fast suspend" change to be cleanly separated out 
+into a second patch.  In that patch, all you do is set 
+dev->power.fast_suspend if ->prepare returns > 0, and then you skip 
+->suspend and ->resume if fast_suspend is set and the device is
+runtime-suspended.
+
+> I agree with the idea, but I have a certain view on how to achieve it.
+> Which is by allowing the "good" ones to mark themselves as "good", then
+> go through the ones that aren't marked as "good" yet, fix them up and
+> mark them as "good".  Finally, when everyone is marked "good", we can
+> drop the marking.
+
+How will you know when nothing remains unmarked?
+
+> The reasoning was basically to set fast_suspend for a device if your condition
+> (a) held *and* if fast_suspend was set for all of the device's children.  Then
+> we would know that all those children would be RPM_SUSPENDED during system
+> resume as well and the resume part might be "streamlined" as well.  There was
+> nothing about (c) anywhere in that patchset. :-)
+
+This seems like getting the answer to the wrong question.  You want to
+know whether the children are okay with the parent being
+runtime-suspended during the child's suspend and resume callbacks, but
+instead you are asking if the children can remain runtime-suspended
+through the entire system suspend.  Those are two different questions.
+
+They seem related, because if the parent is in runtime suspend then the
+child must also be in runtime suspend (disregarding the possibility of
+ignore_children).  But this is a red herring.  It's entirely possible
+for the child to be RPM_ACTIVE during one of these callback even if the
+parent is RPM_SUSPENDED when the callback starts.  The child's driver
+merely needs to call pm_runtime_resume(dev) at the beginning of the
+callback.
+
+If the child's driver does this, it would be perfectly okay for the
+parent to use fast_suspend without the child using it too.  You could
+skip calling the parent's suspend and resume callbacks, and the child
+would work just fine.
+
+> That would be a different optimization from the one I'm thinking about.
+> 
+> For now, I'm focusing on one problem, which is when resuming runtime-suspended
+> devices during system suspend may be avoided and how to make that generally
+> work for different parent-child arrangements.
+> 
+> The resume part changes in my patchset were consequences of that only.
+
+See, I think that by considering this as a single problem, you aren't 
+getting down to the fundamental issues.
+
+Alan Stern
+
