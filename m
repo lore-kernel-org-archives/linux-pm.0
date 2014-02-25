@@ -1,244 +1,58 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v2 3/3] ARM hibernation / suspend-to-disk
-Date: Mon, 24 Feb 2014 16:27:39 -0800
-Message-ID: <1393288059-18174-4-git-send-email-sebastian.capella@linaro.org>
-References: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v1 1/3] ARM: Add irq disabled version of soft_restart.
+Date: Mon, 24 Feb 2014 16:22:37 -0800
+Message-ID: <20140225002237.10580.89781@capellas-linux>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org>
+ <20140222102616.GG21483@n2100.arm.linux.org.uk>
+ <20140224231345.10580.62916@capellas-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140224231345.10580.62916@capellas-linux>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, Russ Dill <Russ.Dill@ti.com>, Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-=46rom: Russ Dill <Russ.Dill@ti.com>
+Quoting Sebastian Capella (2014-02-24 15:13:45)
+> Quoting Russell King - ARM Linux (2014-02-22 02:26:17)
+> > On Tue, Feb 18, 2014 at 05:52:07PM -0800, Sebastian Capella wrote:
+> > > From: Russ Dill <Russ.Dill@ti.com>
+> > > 
+> > > This adds the ability to run soft_restart with local_irq/fiq_disable
+> > > already called. This is helpful for the hibernation code paths.
+> > 
+> > I'd rather keep this simple.  There's no problem with calling soft_restart
+> > with interrupts already disabled.  local_irq_disable()/local_fiq_disable()
+> > there should be harmless.
+> 
+> Hi Russell,
+> 
+> I'm observing a data abort loop when I replace this call:
+> 
+> In the local_irq_disable, it ends up calling trace_hardirqs_off
+> (CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled), which calls
+> trace_hardirqs_off_caller which checks lockdep_recursion in the
+> current task, but we've switched to a temporary stack with the
+> call_with_stack, and get_current is returning NULL.  This
+> triggers a data abort, which calls trace_hardirqs_off
+> again and so on.
+> 
+> Do you have any suggestions here?
 
-Enable hibernation for ARM architectures and provide ARM
-architecture specific calls used during hibernation.
+I'll go ahead and send v2, leaving the soft_restart_noirq in place for
+now since it's already past midnight in Surrey.
 
-The swsusp hibernation framework depends on the
-platform first having functional suspend/resume.
+Thanks!
 
-Then, in order to enable hibernation on a given platform, a
-platform_hibernation_ops structure may need to be registered with
-the system in order to save/restore any SoC-specific / cpu specific
-state needing (re)init over a suspend-to-disk/resume-from-disk cycle.
-
-=46or example:
-
-     - "secure" SoCs that have different sets of control registers
-       and/or different CR reg access patterns.
-
-     - SoCs with L2 caches as the activation sequence there is
-       SoC-dependent; a full off-on cycle for L2 is not done
-       by the hibernation support code.
-
-     - SoCs requiring steps on wakeup _before_ the "generic" parts
-       done by cpu_suspend / cpu_resume can work correctly.
-
-     - SoCs having persistent state which is maintained during suspend
-       and resume, but will be lost during the power off cycle after
-       suspend-to-disk.
-
-This is a rebase/rework of Frank Hofmann's v5 hibernation patchset.
-
-Cc: Russ Dill <Russ.Dill@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Nicolas Pitre <nico@linaro.org>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Jonathan Austin <jonathan.austin@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Uwe Kleine-K=C3=B6nig" <u.kleine-koenig@pengutronix.de>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
----
- arch/arm/include/asm/memory.h |    1 +
- arch/arm/kernel/Makefile      |    1 +
- arch/arm/kernel/hibernate.c   |  104 +++++++++++++++++++++++++++++++++=
-++++++++
- arch/arm/mm/Kconfig           |    5 ++
- include/linux/suspend.h       |    2 +
- 5 files changed, 113 insertions(+)
- create mode 100644 arch/arm/kernel/hibernate.c
-
-diff --git a/arch/arm/include/asm/memory.h b/arch/arm/include/asm/memor=
-y.h
-index 8756e4b..1079ea8 100644
---- a/arch/arm/include/asm/memory.h
-+++ b/arch/arm/include/asm/memory.h
-@@ -291,6 +291,7 @@ static inline void *phys_to_virt(phys_addr_t x)
-  */
- #define __pa(x)			__virt_to_phys((unsigned long)(x))
- #define __va(x)			((void *)__phys_to_virt((phys_addr_t)(x)))
-+#define __pa_symbol(x)		__pa(RELOC_HIDE((unsigned long)(x), 0))
- #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
-=20
- extern phys_addr_t (*arch_virt_to_idmap)(unsigned long x);
-diff --git a/arch/arm/kernel/Makefile b/arch/arm/kernel/Makefile
-index a30fc9b..8afa848 100644
---- a/arch/arm/kernel/Makefile
-+++ b/arch/arm/kernel/Makefile
-@@ -39,6 +39,7 @@ obj-$(CONFIG_ARTHUR)		+=3D arthur.o
- obj-$(CONFIG_ISA_DMA)		+=3D dma-isa.o
- obj-$(CONFIG_PCI)		+=3D bios32.o isa.o
- obj-$(CONFIG_ARM_CPU_SUSPEND)	+=3D sleep.o suspend.o
-+obj-$(CONFIG_HIBERNATION)	+=3D hibernate.o
- obj-$(CONFIG_SMP)		+=3D smp.o
- ifdef CONFIG_MMU
- obj-$(CONFIG_SMP)		+=3D smp_tlb.o
-diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
-new file mode 100644
-index 0000000..74bfa8b
---- /dev/null
-+++ b/arch/arm/kernel/hibernate.c
-@@ -0,0 +1,104 @@
-+/*
-+ * Hibernation support specific for ARM
-+ *
-+ * Derived from work on ARM hibernation support by:
-+ *
-+ * Ubuntu project, hibernation support for mach-dove
-+ * Copyright (C) 2010 Nokia Corporation (Hiroshi Doyu)
-+ * Copyright (C) 2010 Texas Instruments, Inc. (Teerth Reddy et al.)
-+ *  https://lkml.org/lkml/2010/6/18/4
-+ *  https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/02=
-7422.html
-+ *  https://patchwork.kernel.org/patch/96442/
-+ *
-+ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ *
-+ * License terms: GNU General Public License (GPL) version 2
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/suspend.h>
-+#include <asm/tlbflush.h>
-+#include <asm/cacheflush.h>
-+#include <asm/system_misc.h>
-+#include <asm/idmap.h>
-+#include <asm/suspend.h>
-+
-+extern const void __nosave_begin, __nosave_end;
-+
-+int pfn_is_nosave(unsigned long pfn)
-+{
-+	unsigned long nosave_begin_pfn =3D
-+			__pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
-+	unsigned long nosave_end_pfn =3D
-+			PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
-+
-+	return (pfn >=3D nosave_begin_pfn) && (pfn < nosave_end_pfn);
-+}
-+
-+void notrace save_processor_state(void)
-+{
-+	WARN_ON(num_online_cpus() !=3D 1);
-+	local_fiq_disable();
-+}
-+
-+void notrace restore_processor_state(void)
-+{
-+	local_fiq_enable();
-+}
-+
-+/*
-+ * Snapshot kernel memory and reset the system.
-+ * After resume, the hibernation snapshot is written out.
-+ */
-+static int notrace __swsusp_arch_save_image(unsigned long unused)
-+{
-+	int ret;
-+
-+	ret =3D swsusp_save();
-+	if (ret =3D=3D 0)
-+		soft_restart(virt_to_phys(cpu_resume));
-+	return ret;
-+}
-+
-+/*
-+ * Save the current CPU state before suspend / poweroff.
-+ */
-+int notrace swsusp_arch_suspend(void)
-+{
-+	return cpu_suspend(0, __swsusp_arch_save_image);
-+}
-+
-+/*
-+ * The framework loads the hibernation image into a linked list anchor=
-ed
-+ * at restore_pblist, for swsusp_arch_resume() to copy back to the pro=
-per
-+ * destinations.
-+ *
-+ * To make this work if resume is triggered from initramfs, the
-+ * pagetables need to be switched to allow writes to kernel mem.
-+ */
-+static void notrace __swsusp_arch_restore_image(void *unused)
-+{
-+	struct pbe *pbe;
-+
-+	cpu_switch_mm(idmap_pgd, &init_mm);
-+	for (pbe =3D restore_pblist; pbe; pbe =3D pbe->next)
-+		copy_page(pbe->orig_address, pbe->address);
-+
-+	soft_restart_noirq(virt_to_phys(cpu_resume));
-+}
-+
-+static u8 __swsusp_resume_stk[PAGE_SIZE/2] __nosavedata;
-+
-+/*
-+ * Resume from the hibernation image.
-+ * Due to the kernel heap / data restore, stack contents change undern=
-eath
-+ * and that would make function calls impossible; switch to a temporar=
-y
-+ * stack within the nosave region to avoid that problem.
-+ */
-+int swsusp_arch_resume(void)
-+{
-+	extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-+	call_with_stack(__swsusp_arch_restore_image, 0,
-+		__swsusp_resume_stk + sizeof(__swsusp_resume_stk));
-+	return 0;
-+}
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 1f8fed9..83707702 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -611,6 +611,11 @@ config CPU_USE_DOMAINS
- config IO_36
- 	bool
-=20
-+config ARCH_HIBERNATION_POSSIBLE
-+	bool
-+	depends on MMU
-+	default y if CPU_ARM920T || CPU_ARM926T || CPU_SA1100 || CPU_XSCALE |=
-| CPU_XSC3 || CPU_V6 || CPU_V6K || CPU_V7
-+
- comment "Processor Features"
-=20
- config ARM_LPAE
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index f73cabf..38bbf95 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -320,6 +320,8 @@ extern unsigned long get_safe_page(gfp_t gfp_mask);
- extern void hibernation_set_ops(const struct platform_hibernation_ops =
-*ops);
- extern int hibernate(void);
- extern bool system_entering_hibernation(void);
-+asmlinkage int swsusp_save(void);
-+extern struct pbe *restore_pblist;
- #else /* CONFIG_HIBERNATION */
- static inline void register_nosave_region(unsigned long b, unsigned lo=
-ng e) {}
- static inline void register_nosave_region_late(unsigned long b, unsign=
-ed long e) {}
---=20
-1.7.9.5
+Sebastian
