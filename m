@@ -1,65 +1,60 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RFC v1 1/3] ARM: Add irq disabled version of
- soft_restart.
-Date: Tue, 25 Feb 2014 11:27:52 +0100 (CET)
-Message-ID: <alpine.DEB.2.02.1402251125500.21251@ionos.tec.linutronix.de>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org> <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org> <20140222102616.GG21483@n2100.arm.linux.org.uk> <20140224231345.10580.62916@capellas-linux>
- <530C4CAE.5000202@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 7/7] Cpuidle: poll state can measure residency
+Date: Tue, 25 Feb 2014 11:56:39 +0100
+Message-ID: <530C76E7.8090607@linaro.org>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <1393223377-5744-8-git-send-email-tuukka.tikkanen@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:35838 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbaBYK1v (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 05:27:51 -0500
-In-Reply-To: <530C4CAE.5000202@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1393223377-5744-8-git-send-email-tuukka.tikkanen@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russ Dill <Russ.Dill@ti.com>
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will.deacon@arm.com>, Robin Holt <holt@sgi.com>
 
-On Mon, 24 Feb 2014, Russ Dill wrote:
-> On 02/24/2014 03:13 PM, Sebastian Capella wrote:
-> > Quoting Russell King - ARM Linux (2014-02-22 02:26:17)
-> >> On Tue, Feb 18, 2014 at 05:52:07PM -0800, Sebastian Capella wrote:
-> >>> From: Russ Dill <Russ.Dill@ti.com>
-> >>>
-> >>> This adds the ability to run soft_restart with local_irq/fiq_disable
-> >>> already called. This is helpful for the hibernation code paths.
-> >>
-> >> I'd rather keep this simple.  There's no problem with calling soft_restart
-> >> with interrupts already disabled.  local_irq_disable()/local_fiq_disable()
-> >> there should be harmless.
-> > 
-> > Hi Russell,
-> > 
-> > I'm observing a data abort loop when I replace this call:
-> > 
-> > In the local_irq_disable, it ends up calling trace_hardirqs_off
-> > (CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled), which calls
-> > trace_hardirqs_off_caller which checks lockdep_recursion in the
-> > current task, but we've switched to a temporary stack with the
-> > call_with_stack, and get_current is returning NULL.  This
-> > triggers a data abort, which calls trace_hardirqs_off
-> > again and so on.
-> > 
-> > Do you have any suggestions here?
-> > 
-> > Thanks,
-> > 
-> > Sebastian
-> > 
-> 
-> So the alternative is to have a version of the call that calls a special
-> no trace version of local_irq_disable()/local_fiq_disable(). Which would
-> be preferable? Having a noirq version of soft_restart seems much simpler
-> to me.
+On 02/24/2014 07:29 AM, Tuukka Tikkanen wrote:
+> For some platforms, a poll state is inserted in the cpuidle driver st=
+ates.
+> The flags for the state do not indicate that timekeeping is not affec=
+ted.
+> As the state does not do anything apart from calling cpu_relax(), the
+> times returned by ktime_get should remain valid. Add the missing flag=
+=2E
 
-If you want escape the tracer and in that case you really want it
-being on a different stack, use raw_local_irq_* which are not traced.
+Yes, but it is done with the interrupt enabled, so the interrupt handle=
+r=20
++ softirq handler times will be accounted in the residency time.
 
-Thanks,
+I am not sure adding this flag is good.
 
-	tglx
+> Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+> ---
+>   drivers/cpuidle/driver.c |    2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+> index 06dbe7c..136d6a2 100644
+> --- a/drivers/cpuidle/driver.c
+> +++ b/drivers/cpuidle/driver.c
+> @@ -209,7 +209,7 @@ static void poll_idle_init(struct cpuidle_driver =
+*drv)
+>   	state->exit_latency =3D 0;
+>   	state->target_residency =3D 0;
+>   	state->power_usage =3D -1;
+> -	state->flags =3D 0;
+> +	state->flags =3D CPUIDLE_FLAG_TIME_VALID;
+>   	state->enter =3D poll_idle;
+>   	state->disabled =3D false;
+>   }
+>
 
 
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
