@@ -1,102 +1,68 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
-Date: Tue, 25 Feb 2014 11:32:51 +0000
-Message-ID: <20140225113251.GB6855@e102568-lin.cambridge.arm.com>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
- <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
- <20140222103840.GH21483@n2100.arm.linux.org.uk>
- <20140222120910.GA9012@e102568-lin.cambridge.arm.com>
- <20140223200208.12998.47604@capellas-linux>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug online work is done
+Date: Tue, 25 Feb 2014 14:04:16 +0100
+Message-ID: <15001517.xLHO8lGdWr@vostro.rjw.lan>
+References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org> <530BAA31.4050701@codeaurora.org> <CAKohpo=0CgzjCgKnDxUMcN6-CgbQ2ML=Tx-K8fS7=VJJYOD0eg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59474 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbaBYLc4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 06:32:56 -0500
-In-Reply-To: <20140223200208.12998.47604@capellas-linux>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=0CgzjCgKnDxUMcN6-CgbQ2ML=Tx-K8fS7=VJJYOD0eg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Pavel Machek <pavel@ucw.cz>, Cyril Chemparathy <cyril@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Sun, Feb 23, 2014 at 08:02:08PM +0000, Sebastian Capella wrote:
-> Quoting Lorenzo Pieralisi (2014-02-22 04:09:10)
-> > On Sat, Feb 22, 2014 at 10:38:40AM +0000, Russell King - ARM Linux wrote:
-> > > On Wed, Feb 19, 2014 at 04:12:54PM +0000, Lorenzo Pieralisi wrote:
-> > > > On Wed, Feb 19, 2014 at 01:52:09AM +0000, Sebastian Capella wrote:
-> > > > > +/*
-> > > > > + * Snapshot kernel memory and reset the system.
-> > > > > + * After resume, the hibernation snapshot is written out.
-> > > > > + */
-> > > > > +static int notrace __swsusp_arch_save_image(unsigned long unused)
-> > > > > +{
-> > > > > + int ret;
-> > > > > +
-> > > > > + ret = swsusp_save();
-> > > > > + if (ret == 0)
-> > > > > +         soft_restart(virt_to_phys(cpu_resume));
-> > > > 
-> > > > By the time the suspend finisher (ie this function) is run, the
-> > > > processor state has been saved and I think that's all you have to do,
-> > > > function can just return after calling swsusp_save(), unless I am missing
-> > > > something.
-> > > > 
-> > > > I do not understand why a soft_restart is required here. On a side note,
-> > > > finisher is called with irqs disabled so, since you added a function for
-> > > > soft restart noirq, it should be used, if needed, but I have to understand
-> > > > why in the first place.
-> > > 
-> > > It's required because you can't just return from the finisher.  A normal
-> > > return from the finisher will always be interpreted as an abort rather
-> > > than success (because the state has to be unwound.)
-> > > 
-> > > This is the only way to get a zero return from cpu_suspend().
-> > 
-> > Yes, that's the only reason why this code is jumping to cpu_resume, since
-> > all it is needed is to snapshot the CPU context and by the time the
-> > finisher is called that's done. Wanted to say that soft reboot is not
-> > useful (cache flushing and resume with MMU off), but what you are saying
-> > is correct. We might be saving swsusp_save return value in a global
-> > variable and just return from the finisher, but that's horrible and
-> > given the amount of time it takes to snapshot the image to disk the
-> > cost of this soft reboot will be dwarfed by that.
-> > 
-> > I wanted to ask and clarify why the code was written like this though, given
-> > its complexity.
+On Tuesday, February 25, 2014 02:20:57 PM Viresh Kumar wrote:
+> On 25 February 2014 01:53, Saravana Kannan <skannan@codeaurora.org> wrote:
+> > I was simplifying the scenario that causes it. We change the min/max using
+> > ADJUST notifiers for multiple reasons -- thermal being one of them.
+> >
+> > thermal/cpu_cooling is one example of it.
 > 
-> We could also return a constant > 1.  __cpu_suspend code will replace
-> a 0 return with 1 for paths exiting suspend, but will not change return
-> values != 0.  
-
-Yes, we could but that's an API abuse and as I mentioned that soft_reboot is
-not a massive deal, should not block your series. It is certainly
-something to be benchmarked though since wiping the entire cache hierarchy
-for nothing is not nifty.
-
-> cpu_suspend_abort:
->         ldmia   sp!, {r1 - r3}          @ pop phys pgd, virt SP, phys
-> 	resume fn
-> 	teq     r0, #0
-> 	moveq   r0, #1                  @ force non-zero value
-> 	mov     sp, r2
-> 	ldmfd   sp!, {r4 - r11, pc}
+> Just to understand the clear picture, you are actually hitting this bug? Or
+> is this only a theoretical bug?
 > 
-> We could take advantage of that if we wanted, but Lorenzo pointed out
-> also that the relative benefit is very low since the cost of
-> resuming is >> soft_restart. 
+> > So, cpufreq_update_policy() can be called on any CPU. If that races with
+> > someone offlining a CPU and onlining it, you'll get this crash.
+> 
+> Then shouldn't that be fixed by locks? I think yes. That makes me agree with
+> Srivatsa more here.
+> 
+> Though I would say that your argument was also valid that 'policy' shouldn't be
+> up for sale unless it is prepared to. And for that reason only I
+> floated that question
+> earlier: What exactly we need to make sure is initialized in policy? Because
+> policy might keep changing in future as well and that needs locks to protect
+> that stuff. Like min/max/governor/ etc..
 
-The cost of writing to disk, to be precise. Again, this should be benchmarked.
+Well, that depends on what the current users expect it to look like initially.
+It should be initialized to the point in which all of them can handle it
+correctly.
 
-> I'll go with leaving the soft_restart as is unless someone feels
-> strongly against.
+> So, probably a solution here might be a mix of both. Initialize policy to this
+> minimum level and then make sure locking is used correctly..
 
-Leaving it as it is is fine for now, but should be commented, because that's
-not clear why it is needed by just reading the code.
+Yes.
 
-Thanks,
-Lorenzo
+> > The idea would exist, but we can just call cpufreq_generic_get() and pass it
+> > policy->clk if it is not NULL. Does that work for you?
+> 
+> No. Not all drivers implement clk interface. And so clk doesn't look to be the
+> right parameter. I thought maybe 'policy' can be the right parameter and
+> then people can get use policy->cpu to get cpu id out of it.
+> 
+> But even that doesn't look to be a great idea. X86 drivers may share policy
+> structure for CPUs that don't actually share a clock line. And so they do need
+> right CPU number as parameter instead of policy. As they might be doing
+> some tricky stuff there. Also, we need to make sure that ->get() returns
+> the frequency at which CPU x is running.
 
+That's not going to work in at least some cases anyway, because for some types
+of HW we simply can't retrieve the current frequency in a non-racy way.
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
