@@ -1,81 +1,86 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v2 0/3] hibernation support on ARM
-Date: Mon, 24 Feb 2014 16:27:36 -0800
-Message-ID: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
+Subject: [PATCH v2 1/3] ARM: Add irq disabled version of soft_restart.
+Date: Mon, 24 Feb 2014 16:27:37 -0800
+Message-ID: <1393288059-18174-2-git-send-email-sebastian.capella@linaro.org>
+References: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:39092 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbaBYA1r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 19:27:47 -0500
-Received: by mail-pa0-f54.google.com with SMTP id fa1so7302462pad.27
-        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 16:27:46 -0800 (PST)
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:50056 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbaBYA1u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 19:27:50 -0500
+Received: by mail-pa0-f43.google.com with SMTP id rd3so7275487pab.16
+        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 16:27:50 -0800 (PST)
+In-Reply-To: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: Russ Dill <Russ.Dill@ti.com>, Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>, Robin Holt <robin.m.holt@gmail.com>
 
-Patches adding support for hibernation on ARM
-  - ARM hibernation / suspend-to-disk
-  - Fix hang in freeze_processes during hibernation
-  - add an irq disabled version of soft_restart
+From: Russ Dill <Russ.Dill@ti.com>
 
-Patches based on v3.13 tag, verified hibernation on beaglebone black on a branch
-based on 3.13 merged with initial omap support from Russ Dill which be found here:
-http://git.linaro.org/git-ro/people/sebastian.capella/linux.git hibernation_3.13_russMerge
-(includes v1 patchset)
+This adds the ability to run soft_restart with local_irq/fiq_disable
+already called. This is helpful for the hibernation code paths.
 
-[PATCH v2 1/3] ARM: Add irq disabled version of soft_restart.
-
+Signed-off-by: Russ Dill <Russ.Dill@ti.com>
+Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Robin Holt <robin.m.holt@gmail.com>
+---
  arch/arm/include/asm/system_misc.h |    1 +
  arch/arm/kernel/process.c          |   15 ++++++++++-----
  2 files changed, 11 insertions(+), 5 deletions(-)
 
- Adds the ability to run soft restart with local_irq/fiq_disable
- Useful in hibernation code paths (unchanged from v1)
-
-[PATCH v2 2/3] Fix hibernation restore hang in freeze_processes
- drivers/base/firmware_class.c |    1 +
- 1 file changed, 1 insertion(+)
-
- Add handling for PM_RESTORE_PREPARE notifier (unchanged from v1)
-
-[PATCH v2 3/3] ARM hibernation / suspend-to-disk
- arch/arm/include/asm/memory.h |    1 +
- arch/arm/kernel/Makefile      |    1 +
- arch/arm/kernel/hibernate.c   |  104 +++++++++++++++++++++++++++++++++++++++++
- arch/arm/mm/Kconfig           |    5 ++
- include/linux/suspend.h       |    2 +
- 5 files changed, 113 insertions(+)
-
- Adds support for ARM based hibernation
-
-
-Additional notes:
------------------
-
-There are two checkpatch warnings added by this patch.  These follow
-behavior in existing hibernation implementations on other platforms.
-
-    WARNING: externs should be avoided in .c files
-    #116: FILE: arch/arm/kernel/hibernate.c:26:
-    +extern const void __nosave_begin, __nosave_end;
-
-  This extern is picking up the linker nosave region definitions, only
-  used in hibernate.  Follows same extern line used mips, powerpc, s390,
-  sh, sparc, x86 & unicore32
-
-    WARNING: externs should be avoided in .c files
-    #191: FILE: arch/arm/kernel/hibernate.c:101:
-    +extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-
-  This extern is used in the arch/arm/ in hibernate, process and bL_switcher
-
-
-Changes in v2:
---------------
-* Removed unneeded flush_thread, use of __naked and cpu_init.
-* dropped Cyril Chemparathy <cyril@ti.com> from Cc: list as 
-  emails are bouncing.
-
-
-
+diff --git a/arch/arm/include/asm/system_misc.h b/arch/arm/include/asm/system_misc.h
+index a3d61ad..eca8dd4 100644
+--- a/arch/arm/include/asm/system_misc.h
++++ b/arch/arm/include/asm/system_misc.h
+@@ -10,6 +10,7 @@
+ 
+ extern void cpu_init(void);
+ 
++void soft_restart_noirq(unsigned long);
+ void soft_restart(unsigned long);
+ extern void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd);
+ extern void (*arm_pm_idle)(void);
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index 92f7b15..685bc4a 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -95,14 +95,10 @@ static void __soft_restart(void *addr)
+ 	BUG();
+ }
+ 
+-void soft_restart(unsigned long addr)
++void soft_restart_noirq(unsigned long addr)
+ {
+ 	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
+ 
+-	/* Disable interrupts first */
+-	local_irq_disable();
+-	local_fiq_disable();
+-
+ 	/* Disable the L2 if we're the last man standing. */
+ 	if (num_online_cpus() == 1)
+ 		outer_disable();
+@@ -114,6 +110,15 @@ void soft_restart(unsigned long addr)
+ 	BUG();
+ }
+ 
++void soft_restart(unsigned long addr)
++{
++	/* Disable interrupts first */
++	local_irq_disable();
++	local_fiq_disable();
++
++	soft_restart_noirq(addr);
++}
++
+ static void null_restart(enum reboot_mode reboot_mode, const char *cmd)
+ {
+ }
+-- 
+1.7.9.5
 
