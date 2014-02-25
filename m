@@ -1,58 +1,55 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v1 1/3] ARM: Add irq disabled version of soft_restart.
-Date: Mon, 24 Feb 2014 16:22:37 -0800
-Message-ID: <20140225002237.10580.89781@capellas-linux>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org>
- <20140222102616.GG21483@n2100.arm.linux.org.uk>
- <20140224231345.10580.62916@capellas-linux>
+From: Robert Hancock <hancockrwd@gmail.com>
+Subject: Problem with hibernate partitions and encrypted volumes
+Date: Mon, 24 Feb 2014 21:27:57 -0600
+Message-ID: <530C0DBD.6060502@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140224231345.10580.62916@capellas-linux>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Capella <sebastian.capella@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, Russ Dill <Russ.Dill@ti.com>, Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f179.google.com ([209.85.213.179]:53234 "EHLO
+	mail-ig0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752442AbaBYD2A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 22:28:00 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel <linux-kernel@vger.kernel.org>, pm list <linux-pm@vger.kernel.org>
 
-Quoting Sebastian Capella (2014-02-24 15:13:45)
-> Quoting Russell King - ARM Linux (2014-02-22 02:26:17)
-> > On Tue, Feb 18, 2014 at 05:52:07PM -0800, Sebastian Capella wrote:
-> > > From: Russ Dill <Russ.Dill@ti.com>
-> > > 
-> > > This adds the ability to run soft_restart with local_irq/fiq_disable
-> > > already called. This is helpful for the hibernation code paths.
-> > 
-> > I'd rather keep this simple.  There's no problem with calling soft_restart
-> > with interrupts already disabled.  local_irq_disable()/local_fiq_disable()
-> > there should be harmless.
-> 
-> Hi Russell,
-> 
-> I'm observing a data abort loop when I replace this call:
-> 
-> In the local_irq_disable, it ends up calling trace_hardirqs_off
-> (CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled), which calls
-> trace_hardirqs_off_caller which checks lockdep_recursion in the
-> current task, but we've switched to a temporary stack with the
-> call_with_stack, and get_current is returning NULL.  This
-> triggers a data abort, which calls trace_hardirqs_off
-> again and so on.
-> 
-> Do you have any suggestions here?
+A while ago I reported this Fedora bug:
 
-I'll go ahead and send v2, leaving the soft_restart_noirq in place for
-now since it's already past midnight in Surrey.
+https://bugzilla.redhat.com/show_bug.cgi?id=981841
 
-Thanks!
+and thought I would check on the kernel side about what the best way to 
+handle the problem was.
 
-Sebastian
+Essentially the problem relates to the way in which the kernel stores 
+the device that it uses to resume and hibernate to/from. During boot, 
+dracut writes the device major/minor number of the swap partition to 
+/sys/power/resume, which triggers the kernel to resume from disk if a 
+valid resume image is present. If not, bootup continues normally, and 
+the kernel has stashed away that major/minor pair as 
+swsusp_resume_device. Later on, when you choose to hibernate the system 
+and "disk" gets written to /sys/power/state, the kernel uses that device 
+as the swap partition it will try to save the hibernate image to.
+
+The problem comes in when the swap partition is on a LUKS encrypted 
+volume - specifically, when there is more than one encrypted volume on 
+the system. (In my case, the machine has separate encrypted /home and 
+swap partitions.) Since the kernel stores the resume partition as a 
+major/minor pair, it's sensitive to any change in the device ordering. 
+It appears that at some point in the Fedora boot process, the device 
+nodes for the encrypted volumes get torn down and re-created, and there 
+is apparently no guarantee of the order in which this will occur. If the 
+devices get recreated in the opposite order (for example if the swap 
+partition was originally minor 1 and is now minor 2), the stored device 
+ID will no longer refer to a swap partition, and the hibernate process 
+discovers this and aborts.
+
+It seems like all of this could be avoided if there was a way for 
+userspace to set the device used to store the hibernate image before 
+triggering hibernation. As far as I can see there is no way to change 
+the device stored in swsusp_resume_device without writing to 
+/sys/power/resume, which immediately tries to resume from it. That seems 
+like quite a hack when one is trying to hibernate. It seems like the 
+"set image device" and "resume" requests should be separated.
+
+Any thoughts?
