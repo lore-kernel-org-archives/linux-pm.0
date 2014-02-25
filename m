@@ -1,104 +1,97 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] intel_pstate: Change busy calculation to use fixed point math.
-Date: Tue, 25 Feb 2014 10:35:37 -0800
-Message-ID: <1393353337-19778-1-git-send-email-dirk.j.brandewie@intel.com>
-References: <20140219224752.GA370@kroah.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140219224752.GA370@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, rafael.j.wysocki@intel.com, gf435@gmx.net, bp@alien8.de, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 1/6] PM / Voltagedomain: Add generic clk notifier
+ handler for regulator based dynamic voltage scaling
+Date: Tue, 25 Feb 2014 14:56:52 -0600
+Message-ID: <530D0394.4020208@ti.com>
+References: <1392755543-28335-1-git-send-email-nm@ti.com>
+ <1392755543-28335-2-git-send-email-nm@ti.com>
+ <20140225055142.22529.21814@quantum>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140225055142.22529.21814@quantum>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Mark Brown <broonie@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Hi Mike,
+On 02/24/2014 11:51 PM, Mike Turquette wrote:
+> Quoting Nishanth Menon (2014-02-18 12:32:18)
+>> From: Mike Turquette <mturquette@linaro.org>
+>>
+>> This patch provides helper functions for drivers that wish to scale
+>> voltage through the clock rate-change notifiers. The approach taken
+>> is that the user-driver(cpufreq/devfreq) do not care about the
+>> details of the OPP table, nor does it care about handling the voltage
+>> regulator directly.
+>>
+>> By using the clk notifier flags, we are able to sequence the operations
+>> in the right order. The current logic is heavily influenced by
+>> implementation done in cpufreq-cpu0.
+>>
+>> [nm@ti.com: Fixes in logic, and broken out from clk to allow building
+>> a generic voltagedomain solution independent of cpufreq]
+>> Signed-off-by: Nishanth Menon <nm@ti.com>
+>> Signed-off-by: Mike Turquette <mturquette@linaro.org>
+> 
+> Not-signed-off-by: Mike Turquette <mturquette@linaro.org>
+> 
+> I haven't reviewed this series and it is a pretty big deviation from my
+> original RFC. You can have authorship of the patches if you want.
 
-Commit fcb6a15c2e Take core C0 time into account for core busy calculation.
+Sure, I had send a private note requesting clarification about the
+authorship, but I guess I can take this as the response :).
 
-Introduced a regression on some processor SKUs supported by
-intel_pstate. This was caused by the truncation caused by using
-integer math to calculate core busy and C0 percentages.
+> 
+> I'm not sure about trying to capture the "voltdm" as a core concept. It
+> feels a bit unwieldy to me.
 
-On a i7-4770K processor operating at 800Mhz going to 100% utilization
-the percent busy of the CPU using integer math is 22% it actually is
-22.85%.  This value scaled to the current frequency returned 97 which
-the PID interpreted as no error and did not adjust the P state.
+Considering it is a simple collation of regulators and SoC specific
+"magic" which have to be operated in tandem to clock operation, Why
+does it seem unwieldy? Usage of multiple voltage planes in a single
+voltage domain concept does not seem unique to TI processors either:
+For example, imx6q-cpufreq.c uses 3 regulators (arm, pu, soc),
+s5pv210-cpufreq.c uses two regulators (vddarm, vddint), ideally OMAP
+implementation would use two (vdd_mpu, vbb_mpu).
 
-Tested on i7-4770K, i7-2600, i5-3230M
+> I have wondered about making an abstract
+> "performance domain" which is the dvfs analogue to generic power
+> domains. This a reasonable split since gpd are good for idle power
+> savings (e.g. clock gate, power gate, sleep state, etc) and "perf
+> domains" would be good for active power savings (dvfs).
+> 
+> Having a generic container for performance domains might make a good
+> place to stuff all of this glue logic that we keep running into (e.g.
+> CPU and GPU max frequencies that are related), and it might make another
+> nice knob for the thermal folks to use.
 
-References:
-   https://lkml.org/lkml/2014/2/19/626
-   https://bugzilla.kernel.org/show_bug.cgi?id=70941
+This sounds like one level higher abstraction that we are speaking of
+here? I was'nt intending to solve the bigger picture problem here -
+just an abstraction level that might allow reusablity for multiple
+SoCs. In fact, having an abstraction away for voltage domain(which may
+consist of multiple regulators and any SoC specific magic) purely
+allows us to move towards a direction you mention here.
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 28 ++++++++++++++++++----------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+> 
+> For the case of the OMAP voltage domains, it would be a place to stuff
+> all of the VC/VP -> ABB -> Smart Reflex AVS stuff.
+> 
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index e908161..2cd36b9 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -39,9 +39,10 @@
- #define BYT_TURBO_RATIOS	0x66c
- 
- 
--#define FRAC_BITS 8
-+#define FRAC_BITS 6
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
- #define fp_toint(X) ((X) >> FRAC_BITS)
-+#define FP_ROUNDUP(X) ((X) += 1 << FRAC_BITS)
- 
- static inline int32_t mul_fp(int32_t x, int32_t y)
- {
-@@ -556,18 +557,20 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- static inline void intel_pstate_calc_busy(struct cpudata *cpu,
- 					struct sample *sample)
- {
--	u64 core_pct;
--	u64 c0_pct;
-+	int32_t core_pct;
-+	int32_t c0_pct;
- 
--	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
-+	core_pct = div_fp(int_tofp((sample->aperf)),
-+			int_tofp((sample->mperf)));
-+	core_pct = mul_fp(core_pct, int_tofp(100));
-+	FP_ROUNDUP(core_pct);
-+
-+	c0_pct = div_fp(int_tofp(sample->mperf), int_tofp(sample->tsc));
- 
--	c0_pct = div64_u64(sample->mperf * 100, sample->tsc);
- 	sample->freq = fp_toint(
--		mul_fp(int_tofp(cpu->pstate.max_pstate),
--			int_tofp(core_pct * 1000)));
-+		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
- 
--	sample->core_pct_busy = mul_fp(int_tofp(core_pct),
--				div_fp(int_tofp(c0_pct + 1), int_tofp(100)));
-+	sample->core_pct_busy = mul_fp(core_pct, c0_pct);
- }
- 
- static inline void intel_pstate_sample(struct cpudata *cpu)
-@@ -579,6 +582,10 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 	rdmsrl(MSR_IA32_MPERF, mperf);
- 	tsc = native_read_tsc();
- 
-+	aperf = aperf >> FRAC_BITS;
-+	mperf = mperf >> FRAC_BITS;
-+	tsc = tsc >> FRAC_BITS;
-+
- 	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
- 	cpu->samples[cpu->sample_ptr].aperf = aperf;
- 	cpu->samples[cpu->sample_ptr].mperf = mperf;
-@@ -610,7 +617,8 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
- 	core_busy = cpu->samples[cpu->sample_ptr].core_pct_busy;
- 	max_pstate = int_tofp(cpu->pstate.max_pstate);
- 	current_pstate = int_tofp(cpu->pstate.current_pstate);
--	return mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-+	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-+	return FP_ROUNDUP(core_busy);
- }
- 
- static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+Unfortunately, I dont completely comprehend objection we have to this
+approach (other than an higher level abstraction is needed) and if we
+do have an objection, what is the alternate approach should be for
+representing hardware which this series attempts to present.
+
 -- 
-1.8.3.1
+Regards,
+Nishanth Menon
