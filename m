@@ -1,50 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 6/7] Cpuidle: Deal with timer expiring in the past
-Date: Tue, 25 Feb 2014 01:20:28 +0100
-Message-ID: <4412976.XQe5SncyQX@vostro.rjw.lan>
-References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org> <alpine.LFD.2.11.1402241201330.17677@knanqh.ubzr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v2 0/3] hibernation support on ARM
+Date: Mon, 24 Feb 2014 16:27:36 -0800
+Message-ID: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58828 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752981AbaBYAFb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 19:05:31 -0500
-In-Reply-To: <alpine.LFD.2.11.1402241201330.17677@knanqh.ubzr>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:39092 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbaBYA1r (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 19:27:47 -0500
+Received: by mail-pa0-f54.google.com with SMTP id fa1so7302462pad.27
+        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 16:27:46 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>, Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Monday, February 24, 2014 12:05:39 PM Nicolas Pitre wrote:
-> On Mon, 24 Feb 2014, Tuukka Tikkanen wrote:
-> 
-> > Sometimes (fairly often) when the cpuidle menu governor is making a decision
-> > about idle state to enter the next timer for the cpu appears to expire in
-> > the past. The menu governor expects the expiry to always be in the future
-> > and in fact stores the time delta in an unsigned variable. However, when
-> > the expiry is in the past, the value returned by tick_nohz_get_sleep_length
-> > can be negative. This patch prevents using negative values, instead making
-> > the governor return immediately similar to having latency requirement set
-> > to 0.
-> > 
-> > Note: As with latency == 0, the return value is 0 with no check to see if
-> > the state 0 has been disabled or not.
-> 
-> In your cover letter you mention some occurrences of the negative result 
-> being observed on x86.  That information is worth capturing in the 
-> commit log as well to distinguish between theoretical problems from 
-> actual observations.
+Patches adding support for hibernation on ARM
+  - ARM hibernation / suspend-to-disk
+  - Fix hang in freeze_processes during hibernation
+  - add an irq disabled version of soft_restart
 
-In my opinion that applies to the other patches in the series too.  In all
-cases it would be good to know whether or not the problems addressed are
-theoretical or they can be reproduced in practice (and if so, then how), or
-they already have been reported by somebody.
+Patches based on v3.13 tag, verified hibernation on beaglebone black on a branch
+based on 3.13 merged with initial omap support from Russ Dill which be found here:
+http://git.linaro.org/git-ro/people/sebastian.capella/linux.git hibernation_3.13_russMerge
+(includes v1 patchset)
 
-In the two latter cases the patches would be good candidates for -stable,
-in particular.
+[PATCH v2 1/3] ARM: Add irq disabled version of soft_restart.
 
-Thanks,
-Rafael
+ arch/arm/include/asm/system_misc.h |    1 +
+ arch/arm/kernel/process.c          |   15 ++++++++++-----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
+
+ Adds the ability to run soft restart with local_irq/fiq_disable
+ Useful in hibernation code paths (unchanged from v1)
+
+[PATCH v2 2/3] Fix hibernation restore hang in freeze_processes
+ drivers/base/firmware_class.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+ Add handling for PM_RESTORE_PREPARE notifier (unchanged from v1)
+
+[PATCH v2 3/3] ARM hibernation / suspend-to-disk
+ arch/arm/include/asm/memory.h |    1 +
+ arch/arm/kernel/Makefile      |    1 +
+ arch/arm/kernel/hibernate.c   |  104 +++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mm/Kconfig           |    5 ++
+ include/linux/suspend.h       |    2 +
+ 5 files changed, 113 insertions(+)
+
+ Adds support for ARM based hibernation
+
+
+Additional notes:
+-----------------
+
+There are two checkpatch warnings added by this patch.  These follow
+behavior in existing hibernation implementations on other platforms.
+
+    WARNING: externs should be avoided in .c files
+    #116: FILE: arch/arm/kernel/hibernate.c:26:
+    +extern const void __nosave_begin, __nosave_end;
+
+  This extern is picking up the linker nosave region definitions, only
+  used in hibernate.  Follows same extern line used mips, powerpc, s390,
+  sh, sparc, x86 & unicore32
+
+    WARNING: externs should be avoided in .c files
+    #191: FILE: arch/arm/kernel/hibernate.c:101:
+    +extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
+
+  This extern is used in the arch/arm/ in hibernate, process and bL_switcher
+
+
+Changes in v2:
+--------------
+* Removed unneeded flush_thread, use of __naked and cpu_init.
+* dropped Cyril Chemparathy <cyril@ti.com> from Cc: list as 
+  emails are bouncing.
+
+
+
 
