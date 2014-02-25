@@ -1,61 +1,65 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [RFC PATCH 1/6] PM / Voltagedomain: Add generic clk notifier handler for
- regulator based dynamic voltage scaling
-Date: Mon, 24 Feb 2014 21:51:42 -0800
-Message-ID: <20140225055142.22529.21814@quantum>
-References: <1392755543-28335-1-git-send-email-nm@ti.com>
- <1392755543-28335-2-git-send-email-nm@ti.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 11:23:27 +0530
+Message-ID: <530C2FD7.4000105@linux.vnet.ibm.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <CAKohpo=mQWxoKTduR8FrrB4Qz45qXQrJjSudq=FkCJtHBTbo2Q@mail.gmail.com> <5301CE86.9020105@linux.vnet.ibm.com>	<1489022.1IbaesBAQQ@vostro.rjw.lan> <CAKohpokGtcJbdzt0FPZnKjSFi54Np+Ss7--Z83UEZp8FMY94pQ@mail.gmail.com> <CAKohpokk5-6vGV93fZDob8Q=xZXsd7E4OkMUAC1M6Z71G=d1Ow@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1392755543-28335-2-git-send-email-nm@ti.com>
+In-Reply-To: <CAKohpokk5-6vGV93fZDob8Q=xZXsd7E4OkMUAC1M6Z71G=d1Ow@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Mark Brown <broonie@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, Nishanth Menon <nm@ti.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Nishanth Menon (2014-02-18 12:32:18)
-> From: Mike Turquette <mturquette@linaro.org>
+On 02/25/2014 10:11 AM, Viresh Kumar wrote:
+> On 18 February 2014 07:49, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 18 February 2014 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> On Monday, February 17, 2014 02:25:34 PM Srivatsa S. Bhat wrote:
+>>>> Why go to no_policy when we can actually set things right?
+>>>>
+>>>> Anyway, I am not arguing against this strongly. I just wanted to share my
+>>>> thoughts, since this is the approach that made more sense to me.
+>>>
+>>> And I agree with that.  In particular, since we're going to set the new
+>>> policy *anyway* at this point, we can adjust the current frequency just fine
+>>> in the process, can't we?
+>>
+>> Though I still feel that it wouldn't be the right thing to do as get()
+>> just can't
+>> return zero. Actually I was planning to place a WARN() over its return value
+>> of zero.
+
+A WARN() would definitely be good.
+
+>>
+>> Anyway, as two of the three are in favor of this we can get that in.. But how
+>> would that work?
+>>
+>> - What frequency should we call cpufreq_driver_target ?
+>> - Remember that it wouldn't do anything if policy->cur is same as new freq.
+>> - Also remember that drivers need special attention if new freq is > old
+>> freq or vice versa. As they will change voltage before or after change here.
+>> And because we actually don't know what frequency we are at currently, how
+>> will we decide that?
 > 
-> This patch provides helper functions for drivers that wish to scale
-> voltage through the clock rate-change notifiers. The approach taken
-> is that the user-driver(cpufreq/devfreq) do not care about the
-> details of the OPP table, nor does it care about handling the voltage
-> regulator directly.
-> 
-> By using the clk notifier flags, we are able to sequence the operations
-> in the right order. The current logic is heavily influenced by
-> implementation done in cpufreq-cpu0.
-> 
-> [nm@ti.com: Fixes in logic, and broken out from clk to allow building
-> a generic voltagedomain solution independent of cpufreq]
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Mike Turquette <mturquette@linaro.org>
 
-Not-signed-off-by: Mike Turquette <mturquette@linaro.org>
+Hmm, that's a good point. However, lets first think about the simple scenario
+that the driver _is_ able to detect the current frequency from the hardware
+(a non-zero, sane value) say X KHz, and that frequency is different from what
+the cpufreq subsystem thinks it is (Y KHz).
 
-I haven't reviewed this series and it is a pretty big deviation from my
-original RFC. You can have authorship of the patches if you want.
+In the current code, when we observe this, we send out a notification and try
+to adjust to X KHz. Instead, what I'm suggesting is to invoke the driver to
+set the frequency to Y KHz, since that's what the cpufreq subsystems wants the
+frequency to be at.
 
-I'm not sure about trying to capture the "voltdm" as a core concept. It
-feels a bit unwieldy to me. I have wondered about making an abstract
-"performance domain" which is the dvfs analogue to generic power
-domains. This a reasonable split since gpd are good for idle power
-savings (e.g. clock gate, power gate, sleep state, etc) and "perf
-domains" would be good for active power savings (dvfs).
-
-Having a generic container for performance domains might make a good
-place to stuff all of this glue logic that we keep running into (e.g.
-CPU and GPU max frequencies that are related), and it might make another
-nice knob for the thermal folks to use.
-
-For the case of the OMAP voltage domains, it would be a place to stuff
-all of the VC/VP -> ABB -> Smart Reflex AVS stuff.
-
-Anyways, I don't have a real proposal. I just don't want my name on
-these patches since they are really yours now. I might resurrect them
-some day in a different context.
-
+As for the case where the driver reports the frequency to be 0 KHz, we can
+print a WARN() and try to force set the frequency to Y KHz. But if that turns
+out to be too tricky to handle, we can just put a WARN() and error out, as you
+proposed earlier.
+ 
 Regards,
-Mike
+Srivatsa S. Bhat
+
