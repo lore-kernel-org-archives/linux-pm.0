@@ -1,61 +1,120 @@
-From: Russ Dill <Russ.Dill@ti.com>
-Subject: Re: [PATCH RFC v1 1/3] ARM: Add irq disabled version of soft_restart.
-Date: Mon, 24 Feb 2014 23:56:30 -0800
-Message-ID: <530C4CAE.5000202@ti.com>
-References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
- <1392774729-3235-2-git-send-email-sebastian.capella@linaro.org>
- <20140222102616.GG21483@n2100.arm.linux.org.uk>
- <20140224231345.10580.62916@capellas-linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140224231345.10580.62916@capellas-linux>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Capella <sebastian.capella@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/3] cpufreq: move call to __find_governor() to cpufreq_init_policy()
+Date: Tue, 25 Feb 2014 14:20:09 +0530
+Message-ID: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net, skannan@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/24/2014 03:13 PM, Sebastian Capella wrote:
-> Quoting Russell King - ARM Linux (2014-02-22 02:26:17)
->> On Tue, Feb 18, 2014 at 05:52:07PM -0800, Sebastian Capella wrote:
->>> From: Russ Dill <Russ.Dill@ti.com>
->>>
->>> This adds the ability to run soft_restart with local_irq/fiq_disable
->>> already called. This is helpful for the hibernation code paths.
->>
->> I'd rather keep this simple.  There's no problem with calling soft_restart
->> with interrupts already disabled.  local_irq_disable()/local_fiq_disable()
->> there should be harmless.
-> 
-> Hi Russell,
-> 
-> I'm observing a data abort loop when I replace this call:
-> 
-> In the local_irq_disable, it ends up calling trace_hardirqs_off
-> (CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled), which calls
-> trace_hardirqs_off_caller which checks lockdep_recursion in the
-> current task, but we've switched to a temporary stack with the
-> call_with_stack, and get_current is returning NULL.  This
-> triggers a data abort, which calls trace_hardirqs_off
-> again and so on.
-> 
-> Do you have any suggestions here?
-> 
-> Thanks,
-> 
-> Sebastian
-> 
+We call __find_governor() during addition of first CPU of every policy to find
+the last governor used for this CPU before it was hotplugged-out.
 
-So the alternative is to have a version of the call that calls a special
-no trace version of local_irq_disable()/local_fiq_disable(). Which would
-be preferable? Having a noirq version of soft_restart seems much simpler
-to me.
+After that we call cpufreq_parse_governor() in cpufreq_init_policy() either with
+this governor or default governor. And right after that policy->governor is set
+to NULL.
+
+So, instead of doing this move the relevant parts to cpufreq_init_policy()
+policy only and initialize policy->governor to NULL at the beginning.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+
+Hi Saravana,
+
+I hope only the first two patches would fix things for you but probably you can
+test all three.
+
+@Rafael: We might need to get these in next rc only as these are more or less
+fixes.
+
+ drivers/cpufreq/cpufreq.c | 34 ++++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index c755b5f..cc4f244 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -879,18 +879,27 @@ err_out_kobj_put:
+ 
+ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ {
++	struct cpufreq_governor *gov = NULL;
+ 	struct cpufreq_policy new_policy;
+ 	int ret = 0;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
+ 
++	/* Update governor of new_policy to the governor used before hotplug */
++#ifdef CONFIG_HOTPLUG_CPU
++	gov = __find_governor(per_cpu(cpufreq_cpu_governor, policy->cpu));
++#endif
++	if (gov)
++		pr_debug("Restoring governor %s for cpu %d\n",
++				policy->governor->name, policy->cpu);
++	else
++		gov = CPUFREQ_DEFAULT_GOVERNOR;
++
++	new_policy.governor = gov;
++
+ 	/* Use the default policy if its valid. */
+ 	if (cpufreq_driver->setpolicy)
+-		cpufreq_parse_governor(policy->governor->name,
+-					&new_policy.policy, NULL);
+-
+-	/* assure that the starting sequence is run in cpufreq_set_policy */
+-	policy->governor = NULL;
++		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
+ 
+ 	/* set default policy */
+ 	ret = cpufreq_set_policy(policy, &new_policy);
+@@ -944,11 +953,11 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+ 	unsigned long flags;
+ 
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+-
+ 	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
+-
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
++	policy->governor = NULL;
++
+ 	return policy;
+ }
+ 
+@@ -1036,7 +1045,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	unsigned long flags;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	struct cpufreq_policy *tpolicy;
+-	struct cpufreq_governor *gov;
+ #endif
+ 
+ 	if (cpu_is_offline(cpu))
+@@ -1094,7 +1102,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	else
+ 		policy->cpu = cpu;
+ 
+-	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 
+ 	init_completion(&policy->kobj_unregister);
+@@ -1179,15 +1186,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				     CPUFREQ_START, policy);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	gov = __find_governor(per_cpu(cpufreq_cpu_governor, cpu));
+-	if (gov) {
+-		policy->governor = gov;
+-		pr_debug("Restoring governor %s for cpu %d\n",
+-		       policy->governor->name, cpu);
+-	}
+-#endif
+-
+ 	if (!frozen) {
+ 		ret = cpufreq_add_dev_interface(policy, dev);
+ 		if (ret)
+-- 
+1.7.12.rc2.18.g61b472e
+
