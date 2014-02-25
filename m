@@ -1,86 +1,48 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v2 1/3] ARM: Add irq disabled version of soft_restart.
-Date: Mon, 24 Feb 2014 16:27:37 -0800
-Message-ID: <1393288059-18174-2-git-send-email-sebastian.capella@linaro.org>
+Subject: [PATCH v2 2/3] Fix hibernation restore hang in freeze_processes
+Date: Mon, 24 Feb 2014 16:27:38 -0800
+Message-ID: <1393288059-18174-3-git-send-email-sebastian.capella@linaro.org>
 References: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:50056 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752879AbaBYA1u (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 19:27:50 -0500
-Received: by mail-pa0-f43.google.com with SMTP id rd3so7275487pab.16
-        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 16:27:50 -0800 (PST)
+Received: from mail-pb0-f49.google.com ([209.85.160.49]:49892 "EHLO
+	mail-pb0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752905AbaBYA1x (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2014 19:27:53 -0500
+Received: by mail-pb0-f49.google.com with SMTP id jt11so1910878pbb.8
+        for <linux-pm@vger.kernel.org>; Mon, 24 Feb 2014 16:27:53 -0800 (PST)
 In-Reply-To: <1393288059-18174-1-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Russ Dill <Russ.Dill@ti.com>, Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>, Robin Holt <robin.m.holt@gmail.com>
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, Russ Dill <Russ.Dill@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-From: Russ Dill <Russ.Dill@ti.com>
+During restore, pm_notifier chain are called with
+PM_RESTORE_PREPARE.  The firmware_class driver handler
+fw_pm_notify does not have a handler for this.  As a result,
+it keeps a reader on the kmod.c umhelper_sem.  During
+freeze_processes, the call to __usermodehelper_disable tries to
+take a write lock on this semaphore and hangs waiting.
 
-This adds the ability to run soft_restart with local_irq/fiq_disable
-already called. This is helpful for the hibernation code paths.
-
-Signed-off-by: Russ Dill <Russ.Dill@ti.com>
 Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Robin Holt <robin.m.holt@gmail.com>
+Acked-by: Ming Lei <ming.lei@canonical.com>
+Cc: Russ Dill <Russ.Dill@ti.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/arm/include/asm/system_misc.h |    1 +
- arch/arm/kernel/process.c          |   15 ++++++++++-----
- 2 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/base/firmware_class.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/include/asm/system_misc.h b/arch/arm/include/asm/system_misc.h
-index a3d61ad..eca8dd4 100644
---- a/arch/arm/include/asm/system_misc.h
-+++ b/arch/arm/include/asm/system_misc.h
-@@ -10,6 +10,7 @@
- 
- extern void cpu_init(void);
- 
-+void soft_restart_noirq(unsigned long);
- void soft_restart(unsigned long);
- extern void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd);
- extern void (*arm_pm_idle)(void);
-diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-index 92f7b15..685bc4a 100644
---- a/arch/arm/kernel/process.c
-+++ b/arch/arm/kernel/process.c
-@@ -95,14 +95,10 @@ static void __soft_restart(void *addr)
- 	BUG();
- }
- 
--void soft_restart(unsigned long addr)
-+void soft_restart_noirq(unsigned long addr)
- {
- 	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
- 
--	/* Disable interrupts first */
--	local_irq_disable();
--	local_fiq_disable();
--
- 	/* Disable the L2 if we're the last man standing. */
- 	if (num_online_cpus() == 1)
- 		outer_disable();
-@@ -114,6 +110,15 @@ void soft_restart(unsigned long addr)
- 	BUG();
- }
- 
-+void soft_restart(unsigned long addr)
-+{
-+	/* Disable interrupts first */
-+	local_irq_disable();
-+	local_fiq_disable();
-+
-+	soft_restart_noirq(addr);
-+}
-+
- static void null_restart(enum reboot_mode reboot_mode, const char *cmd)
- {
- }
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index eb8fb94..e2b51f8 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -1541,6 +1541,7 @@ static int fw_pm_notify(struct notifier_block *notify_block,
+ 	switch (mode) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
++	case PM_RESTORE_PREPARE:
+ 		kill_requests_without_uevent();
+ 		device_cache_fw_images();
+ 		break;
 -- 
 1.7.9.5
 
