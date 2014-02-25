@@ -1,42 +1,27 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] PM / devfreq: Fix out of bounds access of transition
- table array
-Date: Tue, 25 Feb 2014 13:13:56 -0800
-Message-ID: <530D0794.2080405@codeaurora.org>
-References: <1393226100-18428-1-git-send-email-skannan@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Tue, 25 Feb 2014 23:29:28 +0100
+Message-ID: <1456811.7asrQYHEt1@vostro.rjw.lan>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org> <3894986.dK3STNSG71@vostro.rjw.lan> <CAKohpom+RUAi0jZBVWUEWZh36O4QgoJcK-YrCq6eDnfMVf+GCg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:46289 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbaBYVN5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 16:13:57 -0500
-In-Reply-To: <1393226100-18428-1-git-send-email-skannan@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpom+RUAi0jZBVWUEWZh36O4QgoJcK-YrCq6eDnfMVf+GCg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 02/23/2014 11:15 PM, Saravana Kannan wrote:
-> The previous_freq value for a device could be an invalid frequency that
-> results in a error value being returned from devfreq_get_freq_level().
-> Check for an error value before using that to index into the transition
-> table.
->
-> Not doing this check will result in memory corruption when previous_freq is
-> not a valid frequency.
->
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+On Tuesday, February 25, 2014 08:12:52 PM Viresh Kumar wrote:
+> On 25 February 2014 18:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > Well, why exactly does the core need to operate "current frequency" at all?
+> 
+> I don't think I understood what you meant here. Do you mean why should
+> we maintain policy->cur?
 
-MyungJoo/Kyungmin,
-
-Would either of you have some time to respond to this?
-
-Thanks,
-Saravana
-
+Yes, what exactly do we need it for in the core?
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
