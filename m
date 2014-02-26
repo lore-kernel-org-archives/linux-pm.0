@@ -1,43 +1,34 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug
- online work is done
-Date: Wed, 26 Feb 2014 10:50:43 +0530
-Message-ID: <CAKohpo=iUBBcznKf0YbwNpvHNRuknC1wC0=MOSMrDYSaY2VLJQ@mail.gmail.com>
-References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org>
-	<530BAA31.4050701@codeaurora.org>
-	<CAKohpo=0CgzjCgKnDxUMcN6-CgbQ2ML=Tx-K8fS7=VJJYOD0eg@mail.gmail.com>
-	<15001517.xLHO8lGdWr@vostro.rjw.lan>
-	<530D06FF.201@codeaurora.org>
+From: Chetan C R <chetancr123@gmail.com>
+Subject: Fwd: Charger not detected when plugged during the suspend state of
+ the Android phone.
+Date: Wed, 26 Feb 2014 11:28:30 +0530
+Message-ID: <CAJ8diHQ4NgGFa-HrZa1k2fcM-PB_MakjSNM8z-JVuyisR+zq1Q@mail.gmail.com>
+References: <CAJ8diHQhrTy_y051A73qT-NKuxepZf4v6SC8D1ymS-O_9EHGVA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <530D06FF.201@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f51.google.com ([209.85.219.51]:54587 "EHLO
+	mail-oa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbaBZF6a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 00:58:30 -0500
+Received: by mail-oa0-f51.google.com with SMTP id j17so369394oag.10
+        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 21:58:30 -0800 (PST)
+In-Reply-To: <CAJ8diHQhrTy_y051A73qT-NKuxepZf4v6SC8D1ymS-O_9EHGVA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 26 February 2014 02:41, Saravana Kannan <skannan@codeaurora.org> wrote:
-> On 02/25/2014 05:04 AM, Rafael J. Wysocki wrote:
->> On Tuesday, February 25, 2014 02:20:57 PM Viresh Kumar wrote:
+Hi All,
 
-> I think there's been a misunderstanding of what I'm proposing. The reference
-> to policy->clk is only to get rid of the dependency that
-> cpufreq_generic_get() has on the per cpu policy variable being filled. You
-> can do that by just removing calls to get _IF_ clk is filled in.
 
-cpufreq_cpu_get() can be called by other drivers as well, which may not have
-clock interface implemented for them. We can't stop them from calling it.
+I am developing a battery charging driver.
+I am facing some issue in charging the mobile when it has been enter
+into suspend mode.
 
-> I'll look at the patches later today and respond. Although, I would have
-> been nice you had helped me fix any issues with my patch than coming up with
-> new ones. Kinda removes to motivation for submitting patches upstream.
+Issue faced:
+1. When the device has entered the suspend mode its not able to detect
+the charger,wake up and start charging.
 
-Sorry if I demotivated you at all :)
 
-I just wanted to get to a quick-fix and wasn't interested in getting
-my patch count
-up. Thought that isn't always bad :)
-
-I sent my patches as they were very different then your approach. Obviously, I
-wouldn't have done this otherwise :)
+Thanks in Advance
+Chet
