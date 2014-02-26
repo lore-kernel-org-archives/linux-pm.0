@@ -1,87 +1,140 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/7] Cpuidle: Minor fixes
-Date: Wed, 26 Feb 2014 01:46:25 +0100
-Message-ID: <2037831.3FXZ8RTMPh@vostro.rjw.lan>
-References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug
+ online work is done
+Date: Tue, 25 Feb 2014 17:48:36 -0800
+Message-ID: <530D47F4.2010204@codeaurora.org>
+References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org> <15001517.xLHO8lGdWr@vostro.rjw.lan> <530D06FF.201@codeaurora.org> <1789244.B5CzWbcp6h@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56144 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752619AbaBZAb0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 19:31:26 -0500
-In-Reply-To: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1789244.B5CzWbcp6h@vostro.rjw.lan>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
 
-On Monday, February 24, 2014 08:29:30 AM Tuukka Tikkanen wrote:
-> This set of patches makes some minor changes to menu governor and the poll
-> idle state.
-> 
-> Patch 1 is simply a rename of a variable to make the name better represent
-> the contained information.
-> 
-> Patch 2 fixes calculating actual residency in cases where the entered state
-> is different from the state decided by the menu governor.
-> 
-> Patch 3 makes sure the menu governor timer coefficients are not updated
-> with values that might cause a coefficient to reach a value greater than
-> unity.
-> 
-> Patch 4 fixes calculation actual residency in cases where the entered state
-> does not support measuring residency. In such cases the residency time
-> is taken from time remaining until next timer expiry. The timer is expected
-> to go off at the start of exit latency, not after it. Therefore the exit
-> latency must not be substracted from the assumed value.
-> 
-> Patch 5 moves the performance multiplier based comparison out of the state
-> selection loop by changing it into a latency requirement. This allows
-> using a generic state selection function accepting only (duration, latency)
-> tuple as input. The change is possible by noting that performance multiplier
-> is used only to check for a minimum predicted idle duration to exit latency
-> ratio. As predicted idle duration is a constant for the loop, the maximum
-> allowed latency can be calculated outside of the loop.
-> 
-> Patch 6 prevents using negative values from tick_nohz_get_sleep_length()
-> in the menu governor. If unchecked, the negative values are used as huge
-> unsigned values. Negative values occur fairly often (e.g. on x86_64 I've
-> seen this happen several times per minute) on a busy system, allowing
-> the deepest state to win the selection while the shallowest should be picked.
-> 
-> Patch 7 adds CPUIDLE_FLAG_TIME_VALID to poll_idle. I do not know of any
-> platfrom where cpu_relax() would break ktime_get() and in fact poll_idle
-> uses ktime_get itself.
-> (Note: poll_idle updates dev->last_residency for some reason. Does it ever
-> get called without going through cpuidle_enter_state, which will overwrite
-> the value? Even if some state redirects to this state, the call will
-> eventually return to the framework. The redundant time measurement could
-> be removed, unless there is some obscure way of getting called on some
-> platform that I am unable to figure out.)
-> 
-> Tuukka Tikkanen (7):
->   Cpuidle: rename expected_us to next_timer_us in menu governor
->   Cpuidle: Use actual state latency in menu governor
->   Cpuidle: Ensure menu coefficients stay within domain
->   Cpuidle: Do not substract exit latency from assumed sleep length
->   Cpuidle: Move perf multiplier calculation out of the selection loop
->   Cpuidle: Deal with timer expiring in the past
->   Cpuidle: poll state can measure residency
-> 
->  drivers/cpuidle/driver.c         |    2 +-
->  drivers/cpuidle/governors/menu.c |   85 ++++++++++++++++++++++++--------------
->  2 files changed, 54 insertions(+), 33 deletions(-)
+On 02/25/2014 02:41 PM, Rafael J. Wysocki wrote:
+> On Tuesday, February 25, 2014 01:11:27 PM Saravana Kannan wrote:
+>> On 02/25/2014 05:04 AM, Rafael J. Wysocki wrote:
+>>> On Tuesday, February 25, 2014 02:20:57 PM Viresh Kumar wrote:
+>>>> On 25 February 2014 01:53, Saravana Kannan <skannan@codeaurora.org> wrote:
+>>>>> I was simplifying the scenario that causes it. We change the min/max using
+>>>>> ADJUST notifiers for multiple reasons -- thermal being one of them.
+>>>>>
+>>>>> thermal/cpu_cooling is one example of it.
+>>>>
+>>>> Just to understand the clear picture, you are actually hitting this bug? Or
+>>>> is this only a theoretical bug?
+>>>>
+>> This is a real bug. But the actual caller of cpufreq_update_policy() is
+>> a driver that's local to our tree. I'm just giving examples of upstream
+>> code that act in a similar way.
+>>
+>>>>> So, cpufreq_update_policy() can be called on any CPU. If that races with
+>>>>> someone offlining a CPU and onlining it, you'll get this crash.
+>>>>
+>>>> Then shouldn't that be fixed by locks? I think yes. That makes me agree with
+>>>> Srivatsa more here.
+>>>>
+>>>> Though I would say that your argument was also valid that 'policy' shouldn't be
+>>>> up for sale unless it is prepared to. And for that reason only I
+>>>> floated that question
+>>>> earlier: What exactly we need to make sure is initialized in policy? Because
+>>>> policy might keep changing in future as well and that needs locks to protect
+>>>> that stuff. Like min/max/governor/ etc..
+>>>
+>>> Well, that depends on what the current users expect it to look like initially.
+>>> It should be initialized to the point in which all of them can handle it
+>>> correctly.
+>>
+>> Yes, so let's not make it available until all of it is initialized.
+>
+> And is "fully initialized" actually well defined?
 
-I'm queuing this series up for 3.15.
+The point in add dev/hot plug path after which we will no longer change 
+policy fields without sending further CPUFREQ_UPDATE_POLICY_CPU / 
+CPUFRE_NOTIFY notifiers.
 
-It looks like at least some of these patches should go into 3.14 and -stable,
-but for that I'd need some references like links to bug reports or documented
-reproducibility (on what hardware, what it takes to reproduce etc.).
+Pretty much the end of __cpufreq_add_dev() so that it's after:
+- cpufreq_init_policy()
+- And the update of userpolicy fields that after thie init call
 
-Thanks!
+>> I don't like the piece meal check. 6 months down the lane someone making
+>> changes might not remember this. The problem also applies for drivers
+>> that might not be upstreamed, etc.
+>
+> Please don't bring up out-of-the-tree drivers argument in mainline discussions,
+> it is meaningless here.
+
+Sure. This also applies to in-tree code. The 6 months down the lane, 
+what fields are being looked at could still change and we might slip up 
+on making sure that the policy is not made available before that field 
+is initialized.
+
+>>>> So, probably a solution here might be a mix of both. Initialize policy to this
+>>>> minimum level and then make sure locking is used correctly..
+>>>
+>>> Yes.
+>>
+>> Rafael, It's not clear what you mean by the yes. Do you want to
+>> initialize it partly and make it available. I think that's always wrong.
+>
+> So what actually is your porposal?
+>
+
+Same as reply to "fully initialized". We make the policy after it's 
+fully initialized. After that point, any changes to the policy can be 
+tracked by registering for CPUFREQ_UPDATE_POLICY_CPU / CPUFREQ_NOTIFY.
+
+>>>>> The idea would exist, but we can just call cpufreq_generic_get() and pass it
+>>>>> policy->clk if it is not NULL. Does that work for you?
+>>>>
+>>>> No. Not all drivers implement clk interface. And so clk doesn't look to be the
+>>>> right parameter. I thought maybe 'policy' can be the right parameter and
+>>>> then people can get use policy->cpu to get cpu id out of it.
+>>>>
+>>>> But even that doesn't look to be a great idea. X86 drivers may share policy
+>>>> structure for CPUs that don't actually share a clock line. And so they do need
+>>>> right CPU number as parameter instead of policy. As they might be doing
+>>>> some tricky stuff there. Also, we need to make sure that ->get() returns
+>>>> the frequency at which CPU x is running.
+>>>
+>>> That's not going to work in at least some cases anyway, because for some types
+>>> of HW we simply can't retrieve the current frequency in a non-racy way.
+>>
+>> I think there's been a misunderstanding of what I'm proposing. The
+>> reference to policy->clk is only to get rid of the dependency that
+>> cpufreq_generic_get() has on the per cpu policy variable being filled.
+>> You can do that by just removing calls to get _IF_ clk is filled in.
+>
+> I still have a little problem understanding what you mean exactly.  At least
+> please explain the last sentence.
+
+Ok, here's some pseudo code to explain it better:
+
+Something like, replace all calls to cpufreq_driver->get with 
+__cpufreq_driver_get() with the fn being something like:
+
+unsigned int __cpufreq_driver_get(cpufreq_policy *policy)
+{
+   if (policy->clk)
+      return clk_get_rate(policy->clk) / 1000;
+   else
+      return cpufreq_driver->get(policy->cpu);
+}
+
+That way, we don't have to depend on cpufreq_cpu_get() to return a 
+policy in cpufreq_generic_get() for the existing add dev code path to 
+complete without an error (after my patch to advertise the policy struct 
+after it's fully initialized)
+
+This also avoid unnecessary function calls to ->get() when we just as 
+well know that it's going to call back into cpufreq_generic_get() and 
+get the clock rate. We can just do that in the framework.
+
+-Saravana
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
