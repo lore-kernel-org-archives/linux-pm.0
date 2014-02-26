@@ -1,117 +1,46 @@
-From: Otto Meier <gf435@gmx.net>
-Subject: Re: [PATCH] intel_pstate: Change busy calculation to use fixed point
- math.
-Date: Wed, 26 Feb 2014 15:57:05 +0100
-Message-ID: <530E00C1.4070705@gmx.net>
-References: <20140219224752.GA370@kroah.com> <1393353337-19778-1-git-send-email-dirk.j.brandewie@intel.com> <1509075.br8MLUFIAK@vostro.rjw.lan>
+From: Rashika Kheria <rashika.kheria@gmail.com>
+Subject: [PATCH] drivers: cpufreq: Remove unused function in cpufreq.c
+Date: Wed, 26 Feb 2014 21:16:25 +0530
+Message-ID: <20140226154625.GA10701@rashika>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1509075.br8MLUFIAK@vostro.rjw.lan>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, dirk.brandewie@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, rafael.j.wysocki@intel.com, bp@alien8.de, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, josh@joshtriplett.org
 List-Id: linux-pm@vger.kernel.org
 
-On my i3-4330 this patch fixed the problem. works fine
+Remove unused function show_boost() in drivers/cpufreq/cpufreq.c.
 
-Thanks
+This eliminates the following warning in drivers/cpufreq/cpufreq.c:
+drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for =E2=
+=80=98show_boost=E2=80=99 [-Wmissing-prototypes]
 
-Am 26.02.2014 01:39, schrieb Rafael J. Wysocki:
-> On Tuesday, February 25, 2014 10:35:37 AM dirk.brandewie@gmail.com wrote:
->> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>
->> Commit fcb6a15c2e Take core C0 time into account for core busy calculation.
->>
->> Introduced a regression on some processor SKUs supported by
->> intel_pstate. This was caused by the truncation caused by using
->> integer math to calculate core busy and C0 percentages.
->>
->> On a i7-4770K processor operating at 800Mhz going to 100% utilization
->> the percent busy of the CPU using integer math is 22% it actually is
->> 22.85%.  This value scaled to the current frequency returned 97 which
->> the PID interpreted as no error and did not adjust the P state.
->>
->> Tested on i7-4770K, i7-2600, i5-3230M
->>
->> References:
->>    https://lkml.org/lkml/2014/2/19/626
->>    https://bugzilla.kernel.org/show_bug.cgi?id=70941
->>
->> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> Queued up as a fix for 3.14.
->
-> Thanks!
->
->> ---
->>  drivers/cpufreq/intel_pstate.c | 28 ++++++++++++++++++----------
->>  1 file changed, 18 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index e908161..2cd36b9 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -39,9 +39,10 @@
->>  #define BYT_TURBO_RATIOS	0x66c
->>  
->>  
->> -#define FRAC_BITS 8
->> +#define FRAC_BITS 6
->>  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
->>  #define fp_toint(X) ((X) >> FRAC_BITS)
->> +#define FP_ROUNDUP(X) ((X) += 1 << FRAC_BITS)
->>  
->>  static inline int32_t mul_fp(int32_t x, int32_t y)
->>  {
->> @@ -556,18 +557,20 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
->>  static inline void intel_pstate_calc_busy(struct cpudata *cpu,
->>  					struct sample *sample)
->>  {
->> -	u64 core_pct;
->> -	u64 c0_pct;
->> +	int32_t core_pct;
->> +	int32_t c0_pct;
->>  
->> -	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
->> +	core_pct = div_fp(int_tofp((sample->aperf)),
->> +			int_tofp((sample->mperf)));
->> +	core_pct = mul_fp(core_pct, int_tofp(100));
->> +	FP_ROUNDUP(core_pct);
->> +
->> +	c0_pct = div_fp(int_tofp(sample->mperf), int_tofp(sample->tsc));
->>  
->> -	c0_pct = div64_u64(sample->mperf * 100, sample->tsc);
->>  	sample->freq = fp_toint(
->> -		mul_fp(int_tofp(cpu->pstate.max_pstate),
->> -			int_tofp(core_pct * 1000)));
->> +		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
->>  
->> -	sample->core_pct_busy = mul_fp(int_tofp(core_pct),
->> -				div_fp(int_tofp(c0_pct + 1), int_tofp(100)));
->> +	sample->core_pct_busy = mul_fp(core_pct, c0_pct);
->>  }
->>  
->>  static inline void intel_pstate_sample(struct cpudata *cpu)
->> @@ -579,6 +582,10 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
->>  	rdmsrl(MSR_IA32_MPERF, mperf);
->>  	tsc = native_read_tsc();
->>  
->> +	aperf = aperf >> FRAC_BITS;
->> +	mperf = mperf >> FRAC_BITS;
->> +	tsc = tsc >> FRAC_BITS;
->> +
->>  	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
->>  	cpu->samples[cpu->sample_ptr].aperf = aperf;
->>  	cpu->samples[cpu->sample_ptr].mperf = mperf;
->> @@ -610,7 +617,8 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
->>  	core_busy = cpu->samples[cpu->sample_ptr].core_pct_busy;
->>  	max_pstate = int_tofp(cpu->pstate.max_pstate);
->>  	current_pstate = int_tofp(cpu->pstate.current_pstate);
->> -	return mul_fp(core_busy, div_fp(max_pstate, current_pstate));
->> +	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
->> +	return FP_ROUNDUP(core_busy);
->>  }
->>  
->>  static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
->>
+Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
+---
+ drivers/cpufreq/cpufreq.c |    6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 08ca8c9..6dce474 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -352,12 +352,6 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
+ /*********************************************************************
+  *                          SYSFS INTERFACE                          *
+  *********************************************************************=
+/
+-ssize_t show_boost(struct kobject *kobj,
+-				 struct attribute *attr, char *buf)
+-{
+-	return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
+-}
+-
+ static ssize_t store_boost(struct kobject *kobj, struct attribute *att=
+r,
+ 				  const char *buf, size_t count)
+ {
+--=20
+1.7.9.5
