@@ -1,119 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] intel_pstate: Change busy calculation to use fixed point math.
-Date: Wed, 26 Feb 2014 01:39:25 +0100
-Message-ID: <1509075.br8MLUFIAK@vostro.rjw.lan>
-References: <20140219224752.GA370@kroah.com> <1393353337-19778-1-git-send-email-dirk.j.brandewie@intel.com>
+Subject: Re: [PATCH 0/7] Cpuidle: Minor fixes
+Date: Wed, 26 Feb 2014 01:46:25 +0100
+Message-ID: <2037831.3FXZ8RTMPh@vostro.rjw.lan>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57968 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56144 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752724AbaBZAY0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 19:24:26 -0500
-In-Reply-To: <1393353337-19778-1-git-send-email-dirk.j.brandewie@intel.com>
+	with SMTP id S1752619AbaBZAb0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 19:31:26 -0500
+In-Reply-To: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dirk.brandewie@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, rafael.j.wysocki@intel.com, gf435@gmx.net, bp@alien8.de, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
 
-On Tuesday, February 25, 2014 10:35:37 AM dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Monday, February 24, 2014 08:29:30 AM Tuukka Tikkanen wrote:
+> This set of patches makes some minor changes to menu governor and the poll
+> idle state.
 > 
-> Commit fcb6a15c2e Take core C0 time into account for core busy calculation.
+> Patch 1 is simply a rename of a variable to make the name better represent
+> the contained information.
 > 
-> Introduced a regression on some processor SKUs supported by
-> intel_pstate. This was caused by the truncation caused by using
-> integer math to calculate core busy and C0 percentages.
+> Patch 2 fixes calculating actual residency in cases where the entered state
+> is different from the state decided by the menu governor.
 > 
-> On a i7-4770K processor operating at 800Mhz going to 100% utilization
-> the percent busy of the CPU using integer math is 22% it actually is
-> 22.85%.  This value scaled to the current frequency returned 97 which
-> the PID interpreted as no error and did not adjust the P state.
+> Patch 3 makes sure the menu governor timer coefficients are not updated
+> with values that might cause a coefficient to reach a value greater than
+> unity.
 > 
-> Tested on i7-4770K, i7-2600, i5-3230M
+> Patch 4 fixes calculation actual residency in cases where the entered state
+> does not support measuring residency. In such cases the residency time
+> is taken from time remaining until next timer expiry. The timer is expected
+> to go off at the start of exit latency, not after it. Therefore the exit
+> latency must not be substracted from the assumed value.
 > 
-> References:
->    https://lkml.org/lkml/2014/2/19/626
->    https://bugzilla.kernel.org/show_bug.cgi?id=70941
+> Patch 5 moves the performance multiplier based comparison out of the state
+> selection loop by changing it into a latency requirement. This allows
+> using a generic state selection function accepting only (duration, latency)
+> tuple as input. The change is possible by noting that performance multiplier
+> is used only to check for a minimum predicted idle duration to exit latency
+> ratio. As predicted idle duration is a constant for the loop, the maximum
+> allowed latency can be calculated outside of the loop.
 > 
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> Patch 6 prevents using negative values from tick_nohz_get_sleep_length()
+> in the menu governor. If unchecked, the negative values are used as huge
+> unsigned values. Negative values occur fairly often (e.g. on x86_64 I've
+> seen this happen several times per minute) on a busy system, allowing
+> the deepest state to win the selection while the shallowest should be picked.
+> 
+> Patch 7 adds CPUIDLE_FLAG_TIME_VALID to poll_idle. I do not know of any
+> platfrom where cpu_relax() would break ktime_get() and in fact poll_idle
+> uses ktime_get itself.
+> (Note: poll_idle updates dev->last_residency for some reason. Does it ever
+> get called without going through cpuidle_enter_state, which will overwrite
+> the value? Even if some state redirects to this state, the call will
+> eventually return to the framework. The redundant time measurement could
+> be removed, unless there is some obscure way of getting called on some
+> platform that I am unable to figure out.)
+> 
+> Tuukka Tikkanen (7):
+>   Cpuidle: rename expected_us to next_timer_us in menu governor
+>   Cpuidle: Use actual state latency in menu governor
+>   Cpuidle: Ensure menu coefficients stay within domain
+>   Cpuidle: Do not substract exit latency from assumed sleep length
+>   Cpuidle: Move perf multiplier calculation out of the selection loop
+>   Cpuidle: Deal with timer expiring in the past
+>   Cpuidle: poll state can measure residency
+> 
+>  drivers/cpuidle/driver.c         |    2 +-
+>  drivers/cpuidle/governors/menu.c |   85 ++++++++++++++++++++++++--------------
+>  2 files changed, 54 insertions(+), 33 deletions(-)
 
-Queued up as a fix for 3.14.
+I'm queuing this series up for 3.15.
+
+It looks like at least some of these patches should go into 3.14 and -stable,
+but for that I'd need some references like links to bug reports or documented
+reproducibility (on what hardware, what it takes to reproduce etc.).
 
 Thanks!
-
-> ---
->  drivers/cpufreq/intel_pstate.c | 28 ++++++++++++++++++----------
->  1 file changed, 18 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index e908161..2cd36b9 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -39,9 +39,10 @@
->  #define BYT_TURBO_RATIOS	0x66c
->  
->  
-> -#define FRAC_BITS 8
-> +#define FRAC_BITS 6
->  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
->  #define fp_toint(X) ((X) >> FRAC_BITS)
-> +#define FP_ROUNDUP(X) ((X) += 1 << FRAC_BITS)
->  
->  static inline int32_t mul_fp(int32_t x, int32_t y)
->  {
-> @@ -556,18 +557,20 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
->  static inline void intel_pstate_calc_busy(struct cpudata *cpu,
->  					struct sample *sample)
->  {
-> -	u64 core_pct;
-> -	u64 c0_pct;
-> +	int32_t core_pct;
-> +	int32_t c0_pct;
->  
-> -	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
-> +	core_pct = div_fp(int_tofp((sample->aperf)),
-> +			int_tofp((sample->mperf)));
-> +	core_pct = mul_fp(core_pct, int_tofp(100));
-> +	FP_ROUNDUP(core_pct);
-> +
-> +	c0_pct = div_fp(int_tofp(sample->mperf), int_tofp(sample->tsc));
->  
-> -	c0_pct = div64_u64(sample->mperf * 100, sample->tsc);
->  	sample->freq = fp_toint(
-> -		mul_fp(int_tofp(cpu->pstate.max_pstate),
-> -			int_tofp(core_pct * 1000)));
-> +		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
->  
-> -	sample->core_pct_busy = mul_fp(int_tofp(core_pct),
-> -				div_fp(int_tofp(c0_pct + 1), int_tofp(100)));
-> +	sample->core_pct_busy = mul_fp(core_pct, c0_pct);
->  }
->  
->  static inline void intel_pstate_sample(struct cpudata *cpu)
-> @@ -579,6 +582,10 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
->  	rdmsrl(MSR_IA32_MPERF, mperf);
->  	tsc = native_read_tsc();
->  
-> +	aperf = aperf >> FRAC_BITS;
-> +	mperf = mperf >> FRAC_BITS;
-> +	tsc = tsc >> FRAC_BITS;
-> +
->  	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
->  	cpu->samples[cpu->sample_ptr].aperf = aperf;
->  	cpu->samples[cpu->sample_ptr].mperf = mperf;
-> @@ -610,7 +617,8 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
->  	core_busy = cpu->samples[cpu->sample_ptr].core_pct_busy;
->  	max_pstate = int_tofp(cpu->pstate.max_pstate);
->  	current_pstate = int_tofp(cpu->pstate.current_pstate);
-> -	return mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-> +	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-> +	return FP_ROUNDUP(core_busy);
->  }
->  
->  static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
-> 
 
 -- 
 I speak only for myself.
