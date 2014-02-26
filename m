@@ -1,112 +1,73 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of
- suspended devices
-Date: Wed, 26 Feb 2014 11:49:05 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1402261103190.1308-100000@iolanthe.rowland.org>
-References: <1473124.o9vSBYk3be@vostro.rjw.lan>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v1 3/3] ARM hibernation / suspend-to-disk
+Date: Wed, 26 Feb 2014 09:50:55 -0800
+Message-ID: <20140226175055.3502.49656@capellas-linux>
+References: <1392774729-3235-1-git-send-email-sebastian.capella@linaro.org>
+ <1392774729-3235-4-git-send-email-sebastian.capella@linaro.org>
+ <20140219161254.GB19343@e102568-lin.cambridge.arm.com>
+ <20140222103840.GH21483@n2100.arm.linux.org.uk>
+ <20140222120910.GA9012@e102568-lin.cambridge.arm.com>
+ <20140223200208.12998.47604@capellas-linux>
+ <20140225113251.GB6855@e102568-lin.cambridge.arm.com>
+ <20140225175531.18229.77850@capellas-linux>
+ <20140226102427.GA22839@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1473124.o9vSBYk3be@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140226102427.GA22839@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Nicolas Pitre <nico@linaro.org>, Will Deacon <Will.Deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Cyril Chemparathy <cyril@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 Feb 2014, Rafael J. Wysocki wrote:
-
-> > I admit, there most likely _are_ devices that would get into trouble if
-> > the question ever did arise.
+Quoting Lorenzo Pieralisi (2014-02-26 02:24:27)
+> On Tue, Feb 25, 2014 at 05:55:31PM +0000, Sebastian Capella wrote:
 > 
-> Well, I kind of put that to a test by posting these two patches:
+> Please add:
 > 
-> https://patchwork.kernel.org/patch/3705261/
-> https://patchwork.kernel.org/patch/3705271/
+> "swsusp_save() is executed in the suspend finisher so that the CPU context
+> pointer and memory are part of the saved image, which is required by the
+> resume kernel image to restart execution from swsusp_arch_suspend()"
 > 
-> We'll see if they lead to any regressions, but I'm going to work on top of
-> them going forward anyway.
-
-And here I had the impression that you wanted to avoid any regressions
-from those patches...
-
-> Actually, on top of the two patches mentioned above (and for devices
-> without power.ignore_children set) the question reduces to whether or not
-> (i) the device itself is runtime-suspended when its .suspend() callback is
-> running and (ii) its power state is such that it can remain suspended.
-> If both (i) and (ii) are met, the device may be left suspended safely,
-> because if any of its children had depended on it, they would have resumed
-> it already.
-
-Does this mean you changed your mind?  In an earlier email, you wrote:
-
-> >     (b) It's okay for the device's parent to be in runtime suspend
-> >       when the device's ->suspend callbacks are invoked.
-> > 
-> > I included this just to be thorough.  In fact, I expect (b) to be true 
-> > for pretty much every device already.
+> >  * soft_restart is not technically needed, but is used
+> >  * to get success returned from cpu_suspend.
+> >  * After resume, the hibernation snapshot is written out.
 > 
-> I don't quite understand this.  What if the parent is a bridge and the
-> child's ->suspend tries to access the child's registers?  That surely won't
-> work if the parent is in a low-power state at that point.
+> "When soft reboot completes, the hibernation snapshot is written out."
+> 
+> Resume is confusing since this code is resuming twice :D on image saving
+> and on kernel image restoration.
 
-So the answer is that if the bridge is suspended, then the child must
-be suspended too and hence the child's ->suspend should _expect_
-problems if it tries to access the child's registers.
+Thanks Lorenzo!
 
-(By the way, during this discussion I have had a tendency to mix up two 
-related concepts:
+Here's what I've got.
 
-	The device's ->suspend routine expects the _parent_ not to be
-	suspended;
+/*
+ * Snapshot kernel memory and reset the system.
+ *
+ * swsusp_save() is executed in the suspend finisher so that the CPU
+ * context pointer and memory are part of the saved image, which is
+ * required by the resume kernel image to restart execution from
+ * swsusp_arch_suspend().
+ *
+ * soft_restart is not technically needed, but is used to get success
+ * returned from cpu_suspend.
+ * 
+ * When soft reboot completes, the hibernation snapshot is
+ * written out.
+ */
 
-	The device's ->suspend routine expects the _device_ not to be
-	suspended.
+Does this look ok?  I'll prepare a v4 patchset.
 
-Obviously the second implies the first.  But once the second has been
-fixed, the first should never cause any trouble.)
+Thanks!
 
-> Still, I think that something like power.fast_suspend is needed to indicate
-> that .suspend_late(), .suspend_noirq(), .resume_noirq() and .resume_early()
-> should be skipped for it (in my opinion the core may very well skip them then)
-> and so that .resume() knows how to handle the device.
-
-I don't follow.  Why would you skip these routines without also
-skipping .suspend and .resume?
-
-> I generally agree that whether or not a device may be left suspended during and
-> after system resume and whether or not a device may be left suspended during
-> system suspend are two different questions.  However, when it *is* left
-> suspended during system suspend, then that implies certain way of handling it
-> during the subsequent system resume.  After which it still may not be left
-> suspended.
-
-I would prefer to say: "However, when the system suspend callbacks
-_are_ skipped, that implies the corresponding system resume callbacks
-must also be skipped and hence the device must remain suspended".  Is
-this consistent with what you meant?
-
-As I see it, the fast_suspend implementation could lead to regressions
-in two ways:
-
-	The child's ->suspend doesn't expect the parent to be 
-	suspended.
-
-	The child's ->resume doesn't expect the parent to be
-	suspended.
-
-We agree now that the first won't be a problem, because it would imply
-the child is suspended too.
-
-However, the second may indeed be a problem.  I don't know how you
-intend to handle it.  Apply the patch, like you did for ACPI and PCI
-above, and then see what happens?
-
-A simple solution is to use fast_suspend only for devices that have no
-children.  But that would not be optimal.
-
-Another possibility is always to call pm_runtime_resume(dev->parent)
-before invoking dev's ->resume callback.  But that might not solve the
-entire problem (it wouldn't help dev's ->resume_early callback, for
-instance) and it also might be sub-optimal.
-
-Alan Stern
+Sebastian
