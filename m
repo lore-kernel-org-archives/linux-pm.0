@@ -1,34 +1,74 @@
-From: Chetan C R <chetancr123@gmail.com>
-Subject: Fwd: Charger not detected when plugged during the suspend state of
- the Android phone.
-Date: Wed, 26 Feb 2014 11:28:30 +0530
-Message-ID: <CAJ8diHQ4NgGFa-HrZa1k2fcM-PB_MakjSNM8z-JVuyisR+zq1Q@mail.gmail.com>
-References: <CAJ8diHQhrTy_y051A73qT-NKuxepZf4v6SC8D1ymS-O_9EHGVA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug
+ online work is done
+Date: Wed, 26 Feb 2014 11:32:19 +0530
+Message-ID: <CAKohpo==WVKytPCaMk=O5rGfPNFDAF7ffYo7OE0d3uAPyJfwwA@mail.gmail.com>
+References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org>
+	<15001517.xLHO8lGdWr@vostro.rjw.lan>
+	<530D06FF.201@codeaurora.org>
+	<1789244.B5CzWbcp6h@vostro.rjw.lan>
+	<530D47F4.2010204@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f51.google.com ([209.85.219.51]:54587 "EHLO
-	mail-oa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbaBZF6a (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 00:58:30 -0500
-Received: by mail-oa0-f51.google.com with SMTP id j17so369394oag.10
-        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 21:58:30 -0800 (PST)
-In-Reply-To: <CAJ8diHQhrTy_y051A73qT-NKuxepZf4v6SC8D1ymS-O_9EHGVA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <530D47F4.2010204@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-Hi All,
+On 26 February 2014 07:18, Saravana Kannan <skannan@codeaurora.org> wrote:
+> On 02/25/2014 02:41 PM, Rafael J. Wysocki wrote:
 
+>> And is "fully initialized" actually well defined?
+>
+> The point in add dev/hot plug path after which we will no longer change
+> policy fields without sending further CPUFREQ_UPDATE_POLICY_CPU /
+> CPUFRE_NOTIFY notifiers.
 
-I am developing a battery charging driver.
-I am facing some issue in charging the mobile when it has been enter
-into suspend mode.
+Okay..
 
-Issue faced:
-1. When the device has entered the suspend mode its not able to detect
-the charger,wake up and start charging.
+> Pretty much the end of __cpufreq_add_dev() so that it's after:
+> - cpufreq_init_policy()
+> - And the update of userpolicy fields that after thie init call
 
+No. In that case it can be considered initialized before cpufreq_init_policy().
+As we do send CPUFREQ_NOTIFY after that from cpufreq_init_policy()->
+cpufreq_set_policy().
 
-Thanks in Advance
-Chet
+There are two types of fields within policy, some are very basic: cpu/min/max/
+affected_cpus/related_cpus
+
+some are advanced: sysfs/governors/..
+
+And as a rule you have to get policy->rwsem lock before accessing policy
+members. We might not have followed it very well for small things like cpu.
+
+And so if you are doing anything over that, please use a lock and that is
+already present in cpufreq_update_policy().
+
+With my latest patchset that I sent yesterday, locking is improved and now
+a policy will be usable only after the rwsem is released. And that should be
+fine. And so making it available in the per-cpu variable after all the necessary
+fields are filled looks fine to me. And so I don't think we need to move it
+after call to cpufreq_init_policy(maybe a better name to this function is
+required)..
+
+> Ok, here's some pseudo code to explain it better:
+>
+> Something like, replace all calls to cpufreq_driver->get with
+> __cpufreq_driver_get() with the fn being something like:
+>
+> unsigned int __cpufreq_driver_get(cpufreq_policy *policy)
+> {
+>   if (policy->clk)
+>      return clk_get_rate(policy->clk) / 1000;
+>   else
+>      return cpufreq_driver->get(policy->cpu);
+
+This part may still use cpufreq_cpu_get().
+
+> }
+
+Drivers are free to have their implementation of ->get() even
+if they have a valid policy->clk field..
