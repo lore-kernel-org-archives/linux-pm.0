@@ -1,192 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of suspended devices
-Date: Wed, 26 Feb 2014 00:56:25 +0100
-Message-ID: <1473124.o9vSBYk3be@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1402251010190.1294-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v3 0/3] hibernation support on ARM
+Date: Tue, 25 Feb 2014 16:01:57 -0800
+Message-ID: <1393372920-3896-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63865 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752563AbaBYXl1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 18:41:27 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1402251010190.1294-100000@iolanthe.rowland.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:48667 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbaBZACF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 19:02:05 -0500
+Received: by mail-pa0-f54.google.com with SMTP id fa1so143630pad.41
+        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 16:02:04 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Tuesday, February 25, 2014 12:08:14 PM Alan Stern wrote:
-> On Tue, 25 Feb 2014, Rafael J. Wysocki wrote:
-> 
-> > > This discussion is getting a little messy.  Let's try to clarify it.
-> > > Here is the major point:
-> > > 
-> > > 	We would like to save time during system suspend/resume by
-> > 
-> > Actually, that's not only about saving time, but also about saving energy.
-> 
-> Sure.
-> 
-> > > 	skipping over devices that are already in runtime suspend,
-> > > 	whenever it is safe to do so.
-> > > 
-> > > Of course, the "it is safe to do so" part is what makes this difficult.  
-> > > It boils down to three characteristics for each device.
-> > > 
-> > >     (a) The device uses the same power state for runtime suspend and
-> > > 	system suspend.  Therefore, if the device is already in runtime
-> > > 	suspend and the wakeup settings are correct, there is no need
-> > > 	for the PM core to invoke the device's ->suspend callbacks.
-> > > 
-> > > This requires a few comments.  The matter of whether the same power
-> > > state is used for both types of suspend is generally known beforehand,
-> > > because it is decided by the subsystem or driver.  The matter of
-> > > whether the wakeup settings are correct often can't be known until the
-> > > system suspend starts, because userspace can select whether or not
-> > > wakeup should be enabled during a system sleep.
-> > > 
-> > > Also, if the PM core is going to skip the ->suspend callbacks then it 
-> > > is obliged to skip the ->resume callbacks as well (we mustn't call one 
-> > > without the other).  Therefore, in cases where (a) holds, the device 
-> > > will necessarily emerge from the system resume in a runtime-suspended 
-> > > state.
-> > 
-> > The "emerge from system resume" requires a bit of clarification in my
-> > opinion.  Do you refer to the status of the device when user space is
-> > thawed or earlier?  If earlier, then when exactly?
-> 
-> The status of the device when its ->resume callback returns.  Or in 
-> the context of your patch, when the ->resume callback is skipped.
-> 
-> > > This may or may not cause problems for the device's children; 
-> > > see below.
-> > > 
-> > >     (b) It's okay for the device's parent to be in runtime suspend
-> > > 	when the device's ->suspend callbacks are invoked.
-> > > 
-> > > I included this just to be thorough.  In fact, I expect (b) to be true 
-> > > for pretty much every device already.
-> > 
-> > I don't quite understand this.  What if the parent is a bridge and the
-> > child's ->suspend tries to access the child's registers?  That surely won't
-> > work if the parent is in a low-power state at that point.
-> 
-> It _does_ work on all current systems -- but only because the question 
-> never arises if the device's parent is never in runtime suspend when 
-> the device's ->suspend callbacks are invoked.
-> 
-> I admit, there most likely _are_ devices that would get into trouble if
-> the question ever did arise.
+Patches adding support for hibernation on ARM
+  - ARM hibernation / suspend-to-disk
+  - Fix hang in freeze_processes during hibernation
+  - Change soft_restart to use non-tracing raw_local_irq_disable
 
-Well, I kind of put that to a test by posting these two patches:
+Patches based on v3.13 tag, verified hibernation on beaglebone black on a branch
+based on 3.13 merged with initial omap support from Russ Dill which be found here:
+http://git.linaro.org/git-ro/people/sebastian.capella/linux.git hibernation_3.13_russMerge
+(includes v1 patchset)
 
-https://patchwork.kernel.org/patch/3705261/
-https://patchwork.kernel.org/patch/3705271/
 
-We'll see if they lead to any regressions, but I'm going to work on top of
-them going forward anyway.
+[PATCH v3 1/3] Fix hibernation restore hang in freeze_processes
+ drivers/base/firmware_class.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-> > > In the absence of any sort of special arrangement, if (b) wasn't true 
-> > > for some device then that device would already be experiencing problems 
-> > > going into system suspend.
-> > 
-> > Unless, of course, its parent is a PCI device, because in that case it will
-> > always be resumed by the PCI bus type.  And if the "always resumed" is going
-> > to be changed to "only resumed if the parent's configuration needs to change",
-> > there may be some regressions here and there.
-> 
-> Okay, so you want to take a problem involving PCI and some other
-> subsystems, and solve it by getting the PM core involved.  And you want
-> to mix it in with the idea of "fast suspend".  Is that really the best
-> approach?
-> 
-> Here's another approach.  Add an "okay for my parent to be
-> runtime-suspended when my ->suspend and ->resume callbacks are invoked"  
-> flag to dev->power.  Make pci_pm_prepare(dev) check this flag in every
-> child of dev; if there are any children where the flag isn't set then
-> call pm_runtime_resume(dev) (and print a message in the kernel log so 
-> that you know which driver needs to be fixed).
-> 
-> This is appropriate because it adjusts the PCI core in a way that can
-> safely avoid regressions, without getting the PM core involved in
-> matters that should remain strictly between the PCI subsystem and the
-> subsystems of children of PCI devices.
-> 
-> It also allows the "fast suspend" change to be cleanly separated out 
-> into a second patch.  In that patch, all you do is set 
-> dev->power.fast_suspend if ->prepare returns > 0, and then you skip 
-> ->suspend and ->resume if fast_suspend is set and the device is
-> runtime-suspended.
+ Add handling for PM_RESTORE_PREPARE notifier (unchanged from v1)
 
-Actually, on top of the two patches mentioned above (and for devices
-without power.ignore_children set) the question reduces to whether or not
-(i) the device itself is runtime-suspended when its .suspend() callback is
-running and (ii) its power state is such that it can remain suspended.
-If both (i) and (ii) are met, the device may be left suspended safely,
-because if any of its children had depended on it, they would have resumed
-it already.
+[PATCH v3 2/3] ARM: avoid tracers in soft_restart
+ arch/arm/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Still, I think that something like power.fast_suspend is needed to indicate
-that .suspend_late(), .suspend_noirq(), .resume_noirq() and .resume_early()
-should be skipped for it (in my opinion the core may very well skip them then)
-and so that .resume() knows how to handle the device.
+ Use raw_local_irq_disable in place of local_irq_disable to avoid
+ infinite abort recursion while tracing.
 
-I'll prepare a new series working along these lines.
+[PATCH v3 3/3] ARM hibernation / suspend-to-disk
+ arch/arm/include/asm/memory.h |    1 +
+ arch/arm/kernel/Makefile      |    1 +
+ arch/arm/kernel/hibernate.c   |  106 +++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mm/Kconfig           |    5 ++
+ include/linux/suspend.h       |    2 +
+ 5 files changed, 115 insertions(+)
 
-> > I agree with the idea, but I have a certain view on how to achieve it.
-> > Which is by allowing the "good" ones to mark themselves as "good", then
-> > go through the ones that aren't marked as "good" yet, fix them up and
-> > mark them as "good".  Finally, when everyone is marked "good", we can
-> > drop the marking.
-> 
-> How will you know when nothing remains unmarked?
-> 
-> > The reasoning was basically to set fast_suspend for a device if your condition
-> > (a) held *and* if fast_suspend was set for all of the device's children.  Then
-> > we would know that all those children would be RPM_SUSPENDED during system
-> > resume as well and the resume part might be "streamlined" as well.  There was
-> > nothing about (c) anywhere in that patchset. :-)
-> 
-> This seems like getting the answer to the wrong question.  You want to
-> know whether the children are okay with the parent being
-> runtime-suspended during the child's suspend and resume callbacks, but
-> instead you are asking if the children can remain runtime-suspended
-> through the entire system suspend.  Those are two different questions.
-> 
-> They seem related, because if the parent is in runtime suspend then the
-> child must also be in runtime suspend (disregarding the possibility of
-> ignore_children).  But this is a red herring.  It's entirely possible
-> for the child to be RPM_ACTIVE during one of these callback even if the
-> parent is RPM_SUSPENDED when the callback starts.  The child's driver
-> merely needs to call pm_runtime_resume(dev) at the beginning of the
-> callback.
-> 
-> If the child's driver does this, it would be perfectly okay for the
-> parent to use fast_suspend without the child using it too.  You could
-> skip calling the parent's suspend and resume callbacks, and the child
-> would work just fine.
-> 
-> > That would be a different optimization from the one I'm thinking about.
-> > 
-> > For now, I'm focusing on one problem, which is when resuming runtime-suspended
-> > devices during system suspend may be avoided and how to make that generally
-> > work for different parent-child arrangements.
-> > 
-> > The resume part changes in my patchset were consequences of that only.
-> 
-> See, I think that by considering this as a single problem, you aren't 
-> getting down to the fundamental issues.
+ Adds support for ARM based hibernation
 
-Well, I'm not sure what exactly you mean.
 
-I generally agree that whether or not a device may be left suspended during and
-after system resume and whether or not a device may be left suspended during
-system suspend are two different questions.  However, when it *is* left
-suspended during system suspend, then that implies certain way of handling it
-during the subsequent system resume.  After which it still may not be left
-suspended.
+Additional notes:
+-----------------
 
-Rafael
+There are two checkpatch warnings added by this patch.  These follow
+behavior in existing hibernation implementations on other platforms.
 
+    WARNING: externs should be avoided in .c files
+    #116: FILE: arch/arm/kernel/hibernate.c:26:
+    +extern const void __nosave_begin, __nosave_end;
+
+  This extern is picking up the linker nosave region definitions, only
+  used in hibernate.  Follows same extern line used mips, powerpc, s390,
+  sh, sparc, x86 & unicore32
+
+    WARNING: externs should be avoided in .c files
+    #191: FILE: arch/arm/kernel/hibernate.c:101:
+    +extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
+
+  This extern is used in the arch/arm/ in hibernate, process and bL_switcher
+
+
+Changes in v3:
+--------------
+* added comment to use of soft_restart
+* drop irq disable soft_restart patch
+* add patch to avoid tracers in soft_restart by using raw_local_irq_*
+
+Changes in v2:
+--------------
+* Removed unneeded flush_thread, use of __naked and cpu_init.
+* dropped Cyril Chemparathy <cyril@ti.com> from Cc: list as 
+  emails are bouncing.
+
+Thanks,
+
+Sebastian Capella
