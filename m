@@ -1,55 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: stats: Fix error handling in __cpufreq_stats_create_table()
-Date: Wed, 26 Feb 2014 10:41:33 +0530
-Message-ID: <CAKohpomZ9VnZOdtEr5HCWTOCUQ-49UZXaUW4qKVF7rwFgTUdjg@mail.gmail.com>
-References: <1789244.B5CzWbcp6h@vostro.rjw.lan>
-	<1393385915-19138-2-git-send-email-skannan@codeaurora.org>
+From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH] PM / devfreq: Fix out of bounds access of transition
+ table array
+Date: Wed, 26 Feb 2014 05:12:03 +0000 (GMT)
+Message-ID: <19338058.266151393391521988.JavaMail.weblogic@epml02>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f50.google.com ([209.85.219.50]:48418 "EHLO
-	mail-oa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbaBZFLe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 00:11:34 -0500
-Received: by mail-oa0-f50.google.com with SMTP id i11so335101oag.9
-        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 21:11:33 -0800 (PST)
-In-Reply-To: <1393385915-19138-2-git-send-email-skannan@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 26 February 2014 09:08, Saravana Kannan <skannan@codeaurora.org> wrote:
-> Remove sysfs group if __cpufreq_stats_create_table() fails after creating
-> one.
->
-> Change-Id: Icb0b44424cc4eb6c88be255e2839ef51c3f8779c
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->  drivers/cpufreq/cpufreq_stats.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index e4bd27f..c52b440 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -216,7 +216,7 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
->         stat->time_in_state = kzalloc(alloc_size, GFP_KERNEL);
->         if (!stat->time_in_state) {
->                 ret = -ENOMEM;
-> -               goto error_out;
-> +               goto error_alloc;
->         }
->         stat->freq_table = (unsigned int *)(stat->time_in_state + count);
->
-> @@ -237,6 +237,8 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
->         stat->last_index = freq_table_get_index(stat, policy->cur);
->         spin_unlock(&cpufreq_stats_lock);
->         return 0;
-> +error_alloc:
-> +       sysfs_remove_group(&policy->kobj, &stats_attr_group);
->  error_out:
->         kfree(stat);
->         per_cpu(cpufreq_stats_table, cpu) = NULL;
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+PiBPbiAwMi8yMy8yMDE0IDExOjE1IFBNLCBTYXJhdmFuYSBLYW5uYW4gd3JvdGU6DQo+ID4gVGhl
+IHByZXZpb3VzX2ZyZXEgdmFsdWUgZm9yIGEgZGV2aWNlIGNvdWxkIGJlIGFuIGludmFsaWQgZnJl
+cXVlbmN5IHRoYXQNCj4gPiByZXN1bHRzIGluIGEgZXJyb3IgdmFsdWUgYmVpbmcgcmV0dXJuZWQg
+ZnJvbSBkZXZmcmVxX2dldF9mcmVxX2xldmVsKCkuDQo+ID4gQ2hlY2sgZm9yIGFuIGVycm9yIHZh
+bHVlIGJlZm9yZSB1c2luZyB0aGF0IHRvIGluZGV4IGludG8gdGhlIHRyYW5zaXRpb24NCj4gPiB0
+YWJsZS4NCj4gPg0KPiA+IE5vdCBkb2luZyB0aGlzIGNoZWNrIHdpbGwgcmVzdWx0IGluIG1lbW9y
+eSBjb3JydXB0aW9uIHdoZW4gcHJldmlvdXNfZnJlcSBpcw0KPiA+IG5vdCBhIHZhbGlkIGZyZXF1
+ZW5jeS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFNhcmF2YW5hIEthbm5hbiA8c2thbm5hbkBj
+b2RlYXVyb3JhLm9yZz4NCj4gDQo+IE15dW5nSm9vL0t5dW5nbWluLA0KPiANCj4gV291bGQgZWl0
+aGVyIG9mIHlvdSBoYXZlIHNvbWUgdGltZSB0byByZXNwb25kIHRvIHRoaXM/DQo+IA0KPiBUaGFu
+a3MsDQo+IFNhcmF2YW5hDQoNCkRlYXIgU2FyYXZhbmEsDQoNCj4gPiArCXByZXZfbGV2ID0gZGV2
+ZnJlcV9nZXRfZnJlcV9sZXZlbChkZXZmcmVxLCBkZXZmcmVxLT5wcmV2aW91c19mcmVxKTsNCj4g
+PiArCWlmIChwcmV2X2xldiA8IDApDQo+ID4gKwkJcmV0dXJuIDA7DQoNCklmIGRldmZyZXFfZ2V0
+X2ZyZXFfbGV2ZWwgcmV0dXJuZWQgZXJyb3IsIHBsZWFzZSByZXR1cm4gdGhhdCBlcnJvcg0KdG8g
+dGhlIGNhbGxlci4gWW91IGFyZSByZXR1bmluZyAwIGluIHRoYXQgY2FzZS4NCg0KUGx1cywgZG8g
+eW91IHRoaW5rIHdlIGFyZSBnb2luZyB0byBjaGFuZ2UgcHJvZmlsZS0+ZnJlcV90YWJsZSBpbiBy
+dW4tdGltZT8NCihieSBhY2NpZGVudGx5PyBvciBpbnRlbnRpb25hbGx5PykNCg0KQ2hlZXJzLA0K
+TXl1bmdKb28uDQoNCj4gDQo+IA0KPiAtLSANCj4gVGhlIFF1YWxjb21tIElubm92YXRpb24gQ2Vu
+dGVyLCBJbmMuIGlzIGEgbWVtYmVyIG9mIHRoZSBDb2RlIEF1cm9yYSBGb3J1bSwNCj4gaG9zdGVk
+IGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uDQo+IA0KPiANCj4gDQo+ICAgICAgICANCj4gICANCj4g
+ICAgICAgICAgDQo+IA0K
