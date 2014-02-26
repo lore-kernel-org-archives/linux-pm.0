@@ -1,69 +1,74 @@
-From: josh@joshtriplett.org
-Subject: Re: [PATCH v3] drivers: cpufreq: Mark function as static in
- cpufreq.c
-Date: Wed, 26 Feb 2014 14:16:51 -0800
-Message-ID: <20140226221651.GA24021@cloud>
-References: <20140226154625.GA10701@rashika>
- <1393432962-3647-1-git-send-email-rashika.kheria@gmail.com>
- <16591432.HQVTHU5NYJ@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of
+ suspended devices
+Date: Wed, 26 Feb 2014 17:17:03 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1402261708030.1308-100000@iolanthe.rowland.org>
+References: <3594089.JH6xlacmJ3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relay3-d.mail.gandi.net ([217.70.183.195]:53806 "EHLO
-	relay3-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbaBZWQ5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 17:16:57 -0500
-Content-Disposition: inline
-In-Reply-To: <16591432.HQVTHU5NYJ@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3594089.JH6xlacmJ3@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Rashika Kheria <rashika.kheria@gmail.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 26, 2014 at 10:56:45PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday, February 26, 2014 10:12:42 PM Rashika Kheria wrote:
-> > Mark function as static in cpufreq.c because it is not
-> > used outside this file.
-> >=20
-> > This eliminates the following warning in cpufreq.c:
-> > drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for=
- =E2=80=98show_boost=E2=80=99 [-Wmissing-prototypes]
-> >=20
-> > Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
->=20
-> v2 has been Reviewed-by: Josh already, right?
+On Wed, 26 Feb 2014, Rafael J. Wysocki wrote:
 
-=46eel free to forward-propagate to v3 as well, if that helps.
+> > > Still, I think that something like power.fast_suspend is needed to indicate
+> > > that .suspend_late(), .suspend_noirq(), .resume_noirq() and .resume_early()
+> > > should be skipped for it (in my opinion the core may very well skip them then)
+> > > and so that .resume() knows how to handle the device.
+> > 
+> > I don't follow.  Why would you skip these routines without also
+> > skipping .suspend and .resume?
+> 
+> Because .suspend will set the flag and then it would be reasonable to call .resume,
+> for symmetry and to let it decide what to do (e.g. call pm_runtime_resume(dev) or
+> do something else, depending on the subsystem).
 
-> > ---
-> > Changes since v1:
-> > Incorrect Fix
-> > Changes since v2:
-> > Show Changelog
-> >=20
-> >  drivers/cpufreq/cpufreq.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >=20
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 08ca8c9..54fd670 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -352,7 +352,7 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transitio=
-n);
-> >  /*****************************************************************=
-****
-> >   *                          SYSFS INTERFACE                       =
-   *
-> >   *****************************************************************=
-****/
-> > -ssize_t show_boost(struct kobject *kobj,
-> > +static ssize_t show_boost(struct kobject *kobj,
-> >  				 struct attribute *attr, char *buf)
-> >  {
-> >  	return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
-> >=20
->=20
-> --=20
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+In the original patch, ->prepare returned the flag.  When it was set,
+you would skip ->suspend, ->suspend_late, and ->suspend_noirq (and the
+corresponding resume callbacks).  Did you decide to change this?
+
+> > However, the second may indeed be a problem.  I don't know how you
+> > intend to handle it.  Apply the patch, like you did for ACPI and PCI
+> > above, and then see what happens?
+> 
+> For starters, I'd just make the parent's ->resume call pm_runtime_resume(dev).
+> That will make the parent be ready before the child's ->resume is called.
+> And then it may be optimized further going forward, possibly by replacing
+> the pm_runtime_resume() with pm_request_resume() for some devices and by
+> leaving some devices in RPM_SUSPENDED.
+
+Of course, this would not be possible with the original version of the 
+patch, because it wouldn't invoke the parent's ->resume.
+
+> > A simple solution is to use fast_suspend only for devices that have no
+> > children.  But that would not be optimal.
+> > 
+> > Another possibility is always to call pm_runtime_resume(dev->parent)
+> > before invoking dev's ->resume callback.  But that might not solve the
+> > entire problem (it wouldn't help dev's ->resume_early callback, for
+> > instance) and it also might be sub-optimal.
+> 
+> The child's ->resume_early may be a problem indeed (or its ->resume_noirq
+> for that matter).
+
+If the child knows about the problem beforehand, it can runtime-resume 
+the parent during its ->suspend.
+
+> Well, if power.fast_suspend set guarantees that ->suspend_late, ->suspend_noirq,
+> ->resume_noirq, and ->resume_early will be skipped for a device, then we may
+> restrict setting it for devices whose children have it set (or that have no
+> children).  Initially, that will be equivalent to setting it for leaf devices
+> only, but it might be extended over time in a natural way.
+
+Initially, maybe.  But it's the wrong approach in general.  The right 
+approach is to restrict setting fast_suspend for devices whose children 
+don't mind their parent being suspended when their resume callbacks 
+run -- not for devices whose children also have fast_suspend set.
+
+That's the point I've been trying to express all along.
+
+Alan Stern
