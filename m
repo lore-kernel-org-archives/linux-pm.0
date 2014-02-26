@@ -1,93 +1,70 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH 3/3] cpufreq: stats: Refactor common code into __cpufreq_stats_create_table()
-Date: Wed, 26 Feb 2014 12:17:38 -0800
-Message-ID: <1393445858-7062-3-git-send-email-skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: Set policy to non-NULL only after all hotplug
+ online work is done
+Date: Wed, 26 Feb 2014 12:20:26 -0800
+Message-ID: <530E4C8A.6060906@codeaurora.org>
+References: <1393225072-3997-1-git-send-email-skannan@codeaurora.org> <15001517.xLHO8lGdWr@vostro.rjw.lan> <530D06FF.201@codeaurora.org> <1789244.B5CzWbcp6h@vostro.rjw.lan> <530D47F4.2010204@codeaurora.org> <CAKohpo==WVKytPCaMk=O5rGfPNFDAF7ffYo7OE0d3uAPyJfwwA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:33545 "EHLO
+Received: from smtp.codeaurora.org ([198.145.11.231]:34043 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769AbaBZURs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 15:17:48 -0500
+	with ESMTP id S1750813AbaBZUU1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 15:20:27 -0500
+In-Reply-To: <CAKohpo==WVKytPCaMk=O5rGfPNFDAF7ffYo7OE0d3uAPyJfwwA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-cpufreq_frequency_get_table() is called from all callers of
-__cpufreq_stats_create_table(). So, move it inside.
+On 02/25/2014 10:02 PM, Viresh Kumar wrote:
+> On 26 February 2014 07:18, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> On 02/25/2014 02:41 PM, Rafael J. Wysocki wrote:
+>
+>>> And is "fully initialized" actually well defined?
+>>
+>> The point in add dev/hot plug path after which we will no longer change
+>> policy fields without sending further CPUFREQ_UPDATE_POLICY_CPU /
+>> CPUFRE_NOTIFY notifiers.
+>
+> Okay..
+>
+>> Pretty much the end of __cpufreq_add_dev() so that it's after:
+>> - cpufreq_init_policy()
+>> - And the update of userpolicy fields that after thie init call
+>
+> No. In that case it can be considered initialized before cpufreq_init_policy().
+> As we do send CPUFREQ_NOTIFY after that from cpufreq_init_policy()->
+> cpufreq_set_policy().
 
-Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
----
- drivers/cpufreq/cpufreq_stats.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
+Ok, valid hole in my definition of "fully initialized".
+>
+> There are two types of fields within policy, some are very basic: cpu/min/max/
+> affected_cpus/related_cpus
+>
+> some are advanced: sysfs/governors/..
+>
+> And as a rule you have to get policy->rwsem lock before accessing policy
+> members. We might not have followed it very well for small things like cpu.
+>
+> And so if you are doing anything over that, please use a lock and that is
+> already present in cpufreq_update_policy().
+>
+> With my latest patchset that I sent yesterday, locking is improved and now
+> a policy will be usable only after the rwsem is released. And that should be
+> fine. And so making it available in the per-cpu variable after all the necessary
+> fields are filled looks fine to me. And so I don't think we need to move it
+> after call to cpufreq_init_policy(maybe a better name to this function is
+> required)..
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index c52b440..9d9e366 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -180,13 +180,18 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- 	cpufreq_cpu_put(policy);
- }
- 
--static int __cpufreq_stats_create_table(struct cpufreq_policy *policy,
--		struct cpufreq_frequency_table *table)
-+static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
- {
- 	unsigned int i, j, count = 0, ret = 0;
- 	struct cpufreq_stats *stat;
- 	unsigned int alloc_size;
- 	unsigned int cpu = policy->cpu;
-+	struct cpufreq_frequency_table *table;
-+
-+	table = cpufreq_frequency_get_table(policy->cpu);
-+	if (unlikely(!table))
-+		return 0;
-+
- 	if (per_cpu(cpufreq_stats_table, cpu))
- 		return -EBUSY;
- 	stat = kzalloc(sizeof(*stat), GFP_KERNEL);
-@@ -248,7 +253,6 @@ error_out:
- static void cpufreq_stats_create_table(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy;
--	struct cpufreq_frequency_table *table;
- 
- 	/*
- 	 * "likely(!policy)" because normally cpufreq_stats will be registered
-@@ -258,9 +262,7 @@ static void cpufreq_stats_create_table(unsigned int cpu)
- 	if (likely(!policy))
- 		return;
- 
--	table = cpufreq_frequency_get_table(policy->cpu);
--	if (likely(table))
--		__cpufreq_stats_create_table(policy, table);
-+	__cpufreq_stats_create_table(policy);
- 
- 	cpufreq_cpu_put(policy);
- }
-@@ -283,20 +285,14 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
- {
- 	int ret = 0;
- 	struct cpufreq_policy *policy = data;
--	struct cpufreq_frequency_table *table;
--	unsigned int cpu = policy->cpu;
- 
- 	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
- 		cpufreq_stats_update_policy_cpu(policy);
- 		return 0;
- 	}
- 
--	table = cpufreq_frequency_get_table(cpu);
--	if (!table)
--		return 0;
--
- 	if (val == CPUFREQ_CREATE_POLICY)
--		ret = __cpufreq_stats_create_table(policy, table);
-+		ret = __cpufreq_stats_create_table(policy);
- 	else if (val == CPUFREQ_REMOVE_POLICY)
- 		__cpufreq_stats_free_table(policy);
- 
+I'll take a closer look. Internal tree cpufreq code is in 3.12, so 
+back-porting all the cpufreq changes and testing it can take a bit of 
+time. Will get back on this.
+
+-Saravana
+
+
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 hosted by The Linux Foundation
-
