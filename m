@@ -1,171 +1,60 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH 7/7] cpuidle/powernv: Parse device tree to setup idle states
-Date: Wed, 26 Feb 2014 05:39:20 +0530
-Message-ID: <20140226000919.17879.87737.stgit@preeti>
-References: <20140226000310.17879.67295.stgit@preeti>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 1/3] Fix hibernation restore hang in freeze_processes
+Date: Wed, 26 Feb 2014 01:37:57 +0100
+Message-ID: <3879011.h2KX4caCrF@vostro.rjw.lan>
+References: <1393372920-3896-1-git-send-email-sebastian.capella@linaro.org> <1393372920-3896-2-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e33.co.us.ibm.com ([32.97.110.151]:52695 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbaBZANL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 19:13:11 -0500
-Received: from /spool/local
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 25 Feb 2014 17:13:10 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
-	by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1ECDD1FF003B
-	for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 17:13:07 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s1Q0CewU5374420
-	for <linux-pm@vger.kernel.org>; Wed, 26 Feb 2014 01:12:40 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s1Q0D4T3028690
-	for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 17:13:06 -0700
-In-Reply-To: <20140226000310.17879.67295.stgit@preeti>
+Received: from v094114.home.net.pl ([79.96.170.134]:55340 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752656AbaBZAW6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2014 19:22:58 -0500
+In-Reply-To: <1393372920-3896-2-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, geoff@infradead.org, fweisbec@gmail.com, daniel.lezcano@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, benh@kernel.crashing.org, tglx@linutronix.de, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
-Cc: paulmck@linux.vnet.ibm.com, rafael.j.wysocki@intel.com
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Russ Dill <Russ.Dill@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Add deep idle states such as nap and fast sleep to the cpuidle state table
-only if they are discovered from the device tree during cpuidle initialization.
+On Tuesday, February 25, 2014 04:01:58 PM Sebastian Capella wrote:
+> During restore, pm_notifier chain are called with
+> PM_RESTORE_PREPARE.  The firmware_class driver handler
+> fw_pm_notify does not have a handler for this.  As a result,
+> it keeps a reader on the kmod.c umhelper_sem.  During
+> freeze_processes, the call to __usermodehelper_disable tries to
+> take a write lock on this semaphore and hangs waiting.
+> 
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> Acked-by: Ming Lei <ming.lei@canonical.com>
+> Cc: Russ Dill <Russ.Dill@ti.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+Since this is a -stable candidate patch, I've queued it up as a fix for 3.14.
 
- drivers/cpuidle/cpuidle-powernv.c |   82 +++++++++++++++++++++++++++++--------
- 1 file changed, 65 insertions(+), 17 deletions(-)
+The other two patches are ARM mostly, so I'd prefer them to be merged through
+the ARM arch tree.  The changes in suspend.h made by [3/3] are fine by me.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 4fb97ce..fdae1c4 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -12,10 +12,17 @@
- #include <linux/cpu.h>
- #include <linux/notifier.h>
- #include <linux/clockchips.h>
-+#include <linux/of.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- 
-+/* Flags and constants used in PowerNV platform */
-+
-+#define MAX_POWERNV_IDLE_STATES	8
-+#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
-+#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
-+
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
- 	.owner            = THIS_MODULE,
-@@ -79,7 +86,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- /*
-  * States for dedicated partition case.
-  */
--static struct cpuidle_state powernv_states[] = {
-+static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
-@@ -87,20 +94,6 @@ static struct cpuidle_state powernv_states[] = {
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &snooze_loop },
--	{ /* NAP */
--		.name = "NAP",
--		.desc = "NAP",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &nap_loop },
--	 { /* Fastsleep */
--		.name = "fastsleep",
--		.desc = "fastsleep",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &fastsleep_loop },
- };
- 
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
-@@ -161,19 +154,74 @@ static int powernv_cpuidle_driver_init(void)
- 	return 0;
- }
- 
-+static int powernv_add_idle_states(void)
-+{
-+	struct device_node *power_mgt;
-+	struct property *prop;
-+	int nr_idle_states = 1; /* Snooze */
-+	int dt_idle_states;
-+	u32 *flags;
-+	int i;
-+
-+	/* Currently we have snooze statically defined */
-+
-+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-+	if (!power_mgt) {
-+		pr_warn("opal: PowerMgmt Node not found\n");
-+		return nr_idle_states;
-+	}
-+
-+	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
-+	if (!prop) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-+		return nr_idle_states;
-+	}
-+
-+	dt_idle_states = prop->length / sizeof(u32);
-+	flags = (u32 *) prop->value;
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+
-+		if (flags[i] & IDLE_USE_INST_NAP) {
-+			/* Add NAP state */
-+			strcpy(powernv_states[nr_idle_states].name, "Nap");
-+			strcpy(powernv_states[nr_idle_states].desc, "Nap");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 10;
-+			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].enter = &nap_loop;
-+			nr_idle_states++;
-+		}
-+
-+		if (flags[i] & IDLE_USE_INST_SLEEP) {
-+			/* Add FASTSLEEP state */
-+			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
-+			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-+			powernv_states[nr_idle_states].flags =
-+				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
-+			powernv_states[nr_idle_states].exit_latency = 300;
-+			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+			nr_idle_states++;
-+		}
-+	}
-+
-+	return nr_idle_states;
-+}
-+
- /*
-  * powernv_idle_probe()
-  * Choose state table for shared versus dedicated partition
-  */
- static int powernv_idle_probe(void)
- {
--
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
- 
- 	if (firmware_has_feature(FW_FEATURE_OPALv3)) {
- 		cpuidle_state_table = powernv_states;
--		max_idle_state = ARRAY_SIZE(powernv_states);
-+		/* Device tree can indicate more idle states */
-+		max_idle_state = powernv_add_idle_states();
-  	} else
-  		return -ENODEV;
- 
+Thanks!
 
+> ---
+>  drivers/base/firmware_class.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> index eb8fb94..e2b51f8 100644
+> --- a/drivers/base/firmware_class.c
+> +++ b/drivers/base/firmware_class.c
+> @@ -1541,6 +1541,7 @@ static int fw_pm_notify(struct notifier_block *notify_block,
+>  	switch (mode) {
+>  	case PM_HIBERNATION_PREPARE:
+>  	case PM_SUSPEND_PREPARE:
+> +	case PM_RESTORE_PREPARE:
+>  		kill_requests_without_uevent();
+>  		device_cache_fw_images();
+>  		break;
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
