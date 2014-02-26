@@ -1,106 +1,80 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of suspended devices
-Date: Thu, 27 Feb 2014 00:13:19 +0100
-Message-ID: <4633671.dBN1DXCk1F@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1402261708030.1308-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH V2 1/8] PM / Runtime: Fetch runtime PM callbacks using a macro
+Date: Wed, 26 Feb 2014 15:00:42 -0800
+Message-ID: <7hk3chwkbp.fsf@paris.lan>
+References: <1393237368-15500-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1402261708030.1308-100000@iolanthe.rowland.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:37506 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753252AbaBZXAz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 18:00:55 -0500
+Received: by mail-pd0-f169.google.com with SMTP id fp1so512573pdb.14
+        for <linux-pm@vger.kernel.org>; Wed, 26 Feb 2014 15:00:54 -0800 (PST)
+In-Reply-To: <1393237368-15500-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Mon, 24 Feb 2014 11:22:48 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
 
-On Wednesday, February 26, 2014 05:17:03 PM Alan Stern wrote:
-> On Wed, 26 Feb 2014, Rafael J. Wysocki wrote:
-> 
-> > > > Still, I think that something like power.fast_suspend is needed to indicate
-> > > > that .suspend_late(), .suspend_noirq(), .resume_noirq() and .resume_early()
-> > > > should be skipped for it (in my opinion the core may very well skip them then)
-> > > > and so that .resume() knows how to handle the device.
-> > > 
-> > > I don't follow.  Why would you skip these routines without also
-> > > skipping .suspend and .resume?
-> > 
-> > Because .suspend will set the flag and then it would be reasonable to call .resume,
-> > for symmetry and to let it decide what to do (e.g. call pm_runtime_resume(dev) or
-> > do something else, depending on the subsystem).
-> 
-> In the original patch, ->prepare returned the flag.  When it was set,
-> you would skip ->suspend, ->suspend_late, and ->suspend_noirq (and the
-> corresponding resume callbacks).  Did you decide to change this?
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-Yes, I did.
+> While fetching the proper runtime PM callback, we walk the hierarchy of
+> device's power domains, subsystems and drivers.
+>
+> This is common for rpm_suspend(), rpm_idle() and rpm_resume(). Let's
+> clean up the code by using a macro that handles this.
+>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Alessandro Rubini <rubini@unipv.it>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>
+> Changes in v2:
+> 	Updated the macro to return a callback instead.
+> 	Suggested by Josh Cartwright.
+>
+> ---
+>  drivers/base/power/runtime.c |   63 ++++++++++++++++--------------------------
+>  1 file changed, 24 insertions(+), 39 deletions(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 72e00e6..cc7d1ed 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -13,6 +13,27 @@
+>  #include <trace/events/rpm.h>
+>  #include "power.h"
+>  
+> +#define RPM_GET_CALLBACK(dev, cb)				\
+> +({								\
+> +	int (*__rpm_cb)(struct device *__d);			\
+> +								\
+> +	if (dev->pm_domain)					\
+> +		__rpm_cb = dev->pm_domain->ops.cb;		\
+> +	else if (dev->type && dev->type->pm)			\
+> +		__rpm_cb = dev->type->pm->cb;			\
+> +	else if (dev->class && dev->class->pm)			\
+> +		__rpm_cb = dev->class->pm->cb;			\
+> +	else if (dev->bus && dev->bus->pm)			\
+> +		__rpm_cb = dev->bus->pm->cb;			\
+> +	else							\
+> +		__rpm_cb = NULL;				\
+> +								\
+> +	if (!__rpm_cb && dev->driver && dev->driver->pm)	\
+> +		__rpm_cb = dev->driver->pm->cb;			\
+> +								\
+> +	__rpm_cb;						\
+> +})
 
-After these patches:
+So the main question from v1 remains: why use a macro, and not a function?
 
-https://patchwork.kernel.org/patch/3705261/
-https://patchwork.kernel.org/patch/3705271/
-
-the decision doesn't have to be made until ->suspend (I'm ingoring the
-power.ignore_children set special case), because that's when
-pm_runtime_resume(dev) is now called (by ACPI and PCI).
-
-> > > However, the second may indeed be a problem.  I don't know how you
-> > > intend to handle it.  Apply the patch, like you did for ACPI and PCI
-> > > above, and then see what happens?
-> > 
-> > For starters, I'd just make the parent's ->resume call pm_runtime_resume(dev).
-> > That will make the parent be ready before the child's ->resume is called.
-> > And then it may be optimized further going forward, possibly by replacing
-> > the pm_runtime_resume() with pm_request_resume() for some devices and by
-> > leaving some devices in RPM_SUSPENDED.
-> 
-> Of course, this would not be possible with the original version of the 
-> patch, because it wouldn't invoke the parent's ->resume.
-
-Right.
-
-> > > A simple solution is to use fast_suspend only for devices that have no
-> > > children.  But that would not be optimal.
-> > > 
-> > > Another possibility is always to call pm_runtime_resume(dev->parent)
-> > > before invoking dev's ->resume callback.  But that might not solve the
-> > > entire problem (it wouldn't help dev's ->resume_early callback, for
-> > > instance) and it also might be sub-optimal.
-> > 
-> > The child's ->resume_early may be a problem indeed (or its ->resume_noirq
-> > for that matter).
-> 
-> If the child knows about the problem beforehand, it can runtime-resume 
-> the parent during its ->suspend.
-
-Well, it even should do that in those cases.  We may need to deal with children
-that don't do that, though.
-
-> > Well, if power.fast_suspend set guarantees that ->suspend_late, ->suspend_noirq,
-> > ->resume_noirq, and ->resume_early will be skipped for a device, then we may
-> > restrict setting it for devices whose children have it set (or that have no
-> > children).  Initially, that will be equivalent to setting it for leaf devices
-> > only, but it might be extended over time in a natural way.
-> 
-> Initially, maybe.
-
-Of course initially.
-
-> But it's the wrong approach in general.
-
-In the long run - I agree.
-
-> The right approach is to restrict setting fast_suspend for devices whose
-> children don't mind their parent being suspended when their resume callbacks 
-> run -- not for devices whose children also have fast_suspend set.
-
-I agree, but we need to know which children are OK with the parent being
-suspended.  Having fast_suspend set is a good indication of that. :-)
-
-Of course, we may introduce a separate flag for that just fine if you prefer.
-
-> That's the point I've been trying to express all along.
-
-I see.
-
-Rafael
-
+Kevin
