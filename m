@@ -1,91 +1,54 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V2 1/8] PM / Runtime: Fetch runtime PM callbacks using a macro
-Date: Thu, 27 Feb 2014 00:13:54 +0100
-Message-ID: <CAPDyKFqCHXj-O5EwYLQXpfs5oko=Yfi_ZLmQwKVVW8AjUSUZfQ@mail.gmail.com>
-References: <1393237368-15500-1-git-send-email-ulf.hansson@linaro.org>
-	<7hk3chwkbp.fsf@paris.lan>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v4 1/2] ARM: avoid tracers in soft_restart
+Date: Wed, 26 Feb 2014 23:37:44 +0000
+Message-ID: <20140226233744.GG21483@n2100.arm.linux.org.uk>
+References: <1393441857-15472-1-git-send-email-sebastian.capella@linaro.org> <1393441857-15472-2-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f50.google.com ([209.85.216.50]:45236 "EHLO
-	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752299AbaBZXNz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 18:13:55 -0500
-Received: by mail-qa0-f50.google.com with SMTP id cm18so3159270qab.23
-        for <linux-pm@vger.kernel.org>; Wed, 26 Feb 2014 15:13:54 -0800 (PST)
-In-Reply-To: <7hk3chwkbp.fsf@paris.lan>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:52339 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752918AbaBZXhw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 18:37:52 -0500
+Content-Disposition: inline
+In-Reply-To: <1393441857-15472-2-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>, Robin Holt <robin.m.holt@gmail.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On 27 February 2014 00:00, Kevin Hilman <khilman@linaro.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
->> While fetching the proper runtime PM callback, we walk the hierarchy of
->> device's power domains, subsystems and drivers.
->>
->> This is common for rpm_suspend(), rpm_idle() and rpm_resume(). Let's
->> clean up the code by using a macro that handles this.
->>
->> Cc: Kevin Hilman <khilman@linaro.org>
->> Cc: Alan Stern <stern@rowland.harvard.edu>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Cc: Mark Brown <broonie@kernel.org>
->> Cc: Russell King <linux@arm.linux.org.uk>
->> Cc: Linus Walleij <linus.walleij@linaro.org>
->> Cc: Wolfram Sang <wsa@the-dreams.de>
->> Cc: Alessandro Rubini <rubini@unipv.it>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>
->> Changes in v2:
->>       Updated the macro to return a callback instead.
->>       Suggested by Josh Cartwright.
->>
->> ---
->>  drivers/base/power/runtime.c |   63 ++++++++++++++++--------------------------
->>  1 file changed, 24 insertions(+), 39 deletions(-)
->>
->> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> index 72e00e6..cc7d1ed 100644
->> --- a/drivers/base/power/runtime.c
->> +++ b/drivers/base/power/runtime.c
->> @@ -13,6 +13,27 @@
->>  #include <trace/events/rpm.h>
->>  #include "power.h"
->>
->> +#define RPM_GET_CALLBACK(dev, cb)                            \
->> +({                                                           \
->> +     int (*__rpm_cb)(struct device *__d);                    \
->> +                                                             \
->> +     if (dev->pm_domain)                                     \
->> +             __rpm_cb = dev->pm_domain->ops.cb;              \
->> +     else if (dev->type && dev->type->pm)                    \
->> +             __rpm_cb = dev->type->pm->cb;                   \
->> +     else if (dev->class && dev->class->pm)                  \
->> +             __rpm_cb = dev->class->pm->cb;                  \
->> +     else if (dev->bus && dev->bus->pm)                      \
->> +             __rpm_cb = dev->bus->pm->cb;                    \
->> +     else                                                    \
->> +             __rpm_cb = NULL;                                \
->> +                                                             \
->> +     if (!__rpm_cb && dev->driver && dev->driver->pm)        \
->> +             __rpm_cb = dev->driver->pm->cb;                 \
->> +                                                             \
->> +     __rpm_cb;                                               \
->> +})
->
-> So the main question from v1 remains: why use a macro, and not a function?
->
+On Wed, Feb 26, 2014 at 11:10:56AM -0800, Sebastian Capella wrote:
+> Use of tracers in local_irq_disable is causes recursive aborts when
+> called with irqs disabled and using a temporary stack (hibernation).
+> Replace local_irq_disable with raw_local_irq_disable instead to
+> avoid tracers.
+> 
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Robin Holt <robin.m.holt@gmail.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> ---
+>  arch/arm/kernel/process.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+> index 92f7b15..f58b723 100644
+> --- a/arch/arm/kernel/process.c
+> +++ b/arch/arm/kernel/process.c
+> @@ -100,7 +100,7 @@ void soft_restart(unsigned long addr)
+>  	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
+>  
+>  	/* Disable interrupts first */
+> -	local_irq_disable();
+> +	raw_local_irq_disable();
+>  	local_fiq_disable();
 
-I am no big fan of macros, but in this case I thought it make sense.
-Using _a_ function would not be enough, since we would need three, one
-for each runtime PM callback (suspend, idle, resume), right?
+Great, I'm happy with this now.  I assume that the plan is to submit this
+to my patch system when everyone's given their fill of acks?
 
-I am happy to change to whatever you guys thinks best, I have no strong opinion.
-
-Kind regards
-Uffe
-
-> Kevin
+-- 
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
