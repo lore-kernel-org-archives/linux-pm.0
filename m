@@ -1,74 +1,126 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/3] PM / sleep: New flag to speed up suspend-resume of
- suspended devices
-Date: Wed, 26 Feb 2014 17:17:03 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1402261708030.1308-100000@iolanthe.rowland.org>
-References: <3594089.JH6xlacmJ3@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
+Date: Wed, 26 Feb 2014 23:30:28 +0100
+Message-ID: <CAPDyKFp_eGhJxcFtXCPLC3d+k3hdeKuXrFTUyn-uA9CvkTFwMA@mail.gmail.com>
+References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
+	<7htxblx2eo.fsf@paris.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3594089.JH6xlacmJ3@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f172.google.com ([209.85.216.172]:40143 "EHLO
+	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbaBZWa3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 17:30:29 -0500
+Received: by mail-qc0-f172.google.com with SMTP id i8so538924qcq.31
+        for <linux-pm@vger.kernel.org>; Wed, 26 Feb 2014 14:30:29 -0800 (PST)
+In-Reply-To: <7htxblx2eo.fsf@paris.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>
 
-On Wed, 26 Feb 2014, Rafael J. Wysocki wrote:
+On 26 February 2014 17:30, Kevin Hilman <khilman@linaro.org> wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>
+>> Patch 1 -> 2:
+>> These patches provides two new runtime PM helper functions which intend to be
+>> used from system suspend/resume callbacks, to make sure devices are put into low
+>> power state during system suspend and brought back to full power at system
+>> resume.
+>>
+>> The prerequisite is to have all levels of a device's runtime PM callbacks to be
+>> defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
+>> for CONFIG_PM.
+>>
+>> By using the new runtime PM helper functions especially the two scenarios below
+>> will be addressed.
+>>
+>> 1) The PM core prevents .runtime_suspend callbacks from being invoked during
+>> system suspend. That means even for a runtime PM centric subsystem and driver,
+>> the device needs to be put into low power state from a system suspend callback.
+>> Otherwise it may very well be left in full power state (runtime resumed) while
+>> the system is suspended. By using the new helper functions, we make sure to walk
+>> the hierarchy of a device's power domain, subsystem and driver.
+>
+> I thought it was the case that runtime PM was only disabled during the
+> 'late' phase now.  Isn't that enough to allow runtime callbacks in the
+> normal suspend/resume hooks now?   /me looks.
 
-> > > Still, I think that something like power.fast_suspend is needed to indicate
-> > > that .suspend_late(), .suspend_noirq(), .resume_noirq() and .resume_early()
-> > > should be skipped for it (in my opinion the core may very well skip them then)
-> > > and so that .resume() knows how to handle the device.
-> > 
-> > I don't follow.  Why would you skip these routines without also
-> > skipping .suspend and .resume?
-> 
-> Because .suspend will set the flag and then it would be reasonable to call .resume,
-> for symmetry and to let it decide what to do (e.g. call pm_runtime_resume(dev) or
-> do something else, depending on the subsystem).
+I am not sure, I get your point here.
 
-In the original patch, ->prepare returned the flag.  When it was set,
-you would skip ->suspend, ->suspend_late, and ->suspend_noirq (and the
-corresponding resume callbacks).  Did you decide to change this?
+The PM core disables runtime PM at suspend_late. That is somewhat not
+related to this patch, since the helper functions are supposed to work
+standalone. Subsystem/drivers will in some cases need to invoke the
+helper functions in an earlier phase than suspend_late, thus those can
+not rely on runtime PM to be disabled, but need to handle that
+themselves.
 
-> > However, the second may indeed be a problem.  I don't know how you
-> > intend to handle it.  Apply the patch, like you did for ACPI and PCI
-> > above, and then see what happens?
-> 
-> For starters, I'd just make the parent's ->resume call pm_runtime_resume(dev).
-> That will make the parent be ready before the child's ->resume is called.
-> And then it may be optimized further going forward, possibly by replacing
-> the pm_runtime_resume() with pm_request_resume() for some devices and by
-> leaving some devices in RPM_SUSPENDED.
+>
+> oh, wait.  Ee still have the _get_noresume() in device_prepare().  hmm
+>
+> Either way, I'm not not a big fan of new functions.  Personally, I think
+> subsystems/busses/pm_domains should be able to opt out of the PM core
+> behavior that blocks runtime PM transitions during system suspend.
+> Something like the (untested) hack below.  That way, we could avoid the
+> need for new helper functions.
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 1b41fca3d65a..e0770009ba8e 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -832,7 +832,8 @@ static void device_complete(struct device *dev, pm_message_t state)
+>
+>         device_unlock(dev);
+>
+> -       pm_runtime_put(dev);
+> +       if (dev->power.block_rpm_during_suspend)
+> +               pm_runtime_put(dev);
+>  }
+>
+>  /**
+> @@ -1318,7 +1319,8 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>          * block runtime suspend here, during the prepare phase, and allow
+>          * it again during the complete phase.
+>          */
+> -       pm_runtime_get_noresume(dev);
+> +       if (dev->power.block_rpm_during_suspend)
+> +               pm_runtime_get_noresume(dev);
+>
+>         device_lock(dev);
+>
+> @@ -1350,7 +1352,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>
+>         device_unlock(dev);
+>
+> -       if (error)
+> +       if (error && dev->power.block_rpm_during_suspend)
+>                 pm_runtime_put(dev);
+>
+>         return error;
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 8c6583a53a06..692cd543b71d 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -551,6 +551,7 @@ struct dev_pm_info {
+>         struct wakeup_source    *wakeup;
+>         bool                    wakeup_path:1;
+>         bool                    syscore:1;
+> +       unsigned int            block_rpm_during_suspend:1;
+>  #else
+>         unsigned int            should_wakeup:1;
+>  #endif
 
-Of course, this would not be possible with the original version of the 
-patch, because it wouldn't invoke the parent's ->resume.
+This approach is what I initially started with earlier this autumn -
+primarily to kick off the discussion. :-)
 
-> > A simple solution is to use fast_suspend only for devices that have no
-> > children.  But that would not be optimal.
-> > 
-> > Another possibility is always to call pm_runtime_resume(dev->parent)
-> > before invoking dev's ->resume callback.  But that might not solve the
-> > entire problem (it wouldn't help dev's ->resume_early callback, for
-> > instance) and it also might be sub-optimal.
-> 
-> The child's ->resume_early may be a problem indeed (or its ->resume_noirq
-> for that matter).
+This is not the way to go, there are several reasons. Alan and Rafael,
+should be given cred for being so patient with me while the pointed
+out the reasons. Please have look at the discussion below.
 
-If the child knows about the problem beforehand, it can runtime-resume 
-the parent during its ->suspend.
+http://marc.info/?t=138436024400005&r=1&w=2
 
-> Well, if power.fast_suspend set guarantees that ->suspend_late, ->suspend_noirq,
-> ->resume_noirq, and ->resume_early will be skipped for a device, then we may
-> restrict setting it for devices whose children have it set (or that have no
-> children).  Initially, that will be equivalent to setting it for leaf devices
-> only, but it might be extended over time in a natural way.
+Kind regards
+Uffe
 
-Initially, maybe.  But it's the wrong approach in general.  The right 
-approach is to restrict setting fast_suspend for devices whose children 
-don't mind their parent being suspended when their resume callbacks 
-run -- not for devices whose children also have fast_suspend set.
-
-That's the point I've been trying to express all along.
-
-Alan Stern
+>
+> Kevin
