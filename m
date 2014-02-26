@@ -1,46 +1,95 @@
-From: Rashika Kheria <rashika.kheria@gmail.com>
-Subject: [PATCH] drivers: cpufreq: Remove unused function in cpufreq.c
-Date: Wed, 26 Feb 2014 21:16:25 +0530
-Message-ID: <20140226154625.GA10701@rashika>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH 1/8] PM / Runtime: Fetch runtime PM callbacks using a macro
+Date: Wed, 26 Feb 2014 07:50:03 -0800
+Message-ID: <7htxblyitw.fsf@paris.lan>
+References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
+	<1392910280-12891-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, josh@joshtriplett.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:47621 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752603AbaBZPuH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 10:50:07 -0500
+Received: by mail-pa0-f43.google.com with SMTP id rd3so1133829pab.30
+        for <linux-pm@vger.kernel.org>; Wed, 26 Feb 2014 07:50:06 -0800 (PST)
+In-Reply-To: <1392910280-12891-2-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Thu, 20 Feb 2014 16:31:13 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Remove unused function show_boost() in drivers/cpufreq/cpufreq.c.
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-This eliminates the following warning in drivers/cpufreq/cpufreq.c:
-drivers/cpufreq/cpufreq.c:355:9: warning: no previous prototype for =E2=
-=80=98show_boost=E2=80=99 [-Wmissing-prototypes]
+> While fetching the proper runtime PM callback, we walk the hierarchy of
+> device's power domains, subsystems and drivers.
+>
+> This is common for rpm_suspend(), rpm_idle() and rpm_resume(). Let's
+> clean up the code by using a macro that handles this.
+>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Alessandro Rubini <rubini@unipv.it>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/runtime.c |   59 ++++++++++++++----------------------------
+>  1 file changed, 20 insertions(+), 39 deletions(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 72e00e6..dedbd64 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -13,6 +13,23 @@
+>  #include <trace/events/rpm.h>
+>  #include "power.h"
+>  
+> +#define RPM_GET_CALLBACK(dev, cb)				\
+> +({								\
+> +	if (dev->pm_domain)					\
+> +		callback = dev->pm_domain->ops.cb;		\
+> +	else if (dev->type && dev->type->pm)			\
+> +		callback = dev->type->pm->cb;			\
+> +	else if (dev->class && dev->class->pm)			\
+> +		callback = dev->class->pm->cb;			\
+> +	else if (dev->bus && dev->bus->pm)			\
+> +		callback = dev->bus->pm->cb;			\
+> +	else							\
+> +		callback = NULL;				\
+> +								\
+> +	if (!callback && dev->driver && dev->driver->pm)	\
+> +		callback = dev->driver->pm->cb;			\
+> +})
+> +
+>  static int rpm_resume(struct device *dev, int rpmflags);
+>  static int rpm_suspend(struct device *dev, int rpmflags);
+>  
+> @@ -310,19 +327,7 @@ static int rpm_idle(struct device *dev, int rpmflags)
+>  
+>  	dev->power.idle_notification = true;
+>  
+> -	if (dev->pm_domain)
+> -		callback = dev->pm_domain->ops.runtime_idle;
+> -	else if (dev->type && dev->type->pm)
+> -		callback = dev->type->pm->runtime_idle;
+> -	else if (dev->class && dev->class->pm)
+> -		callback = dev->class->pm->runtime_idle;
+> -	else if (dev->bus && dev->bus->pm)
+> -		callback = dev->bus->pm->runtime_idle;
+> -	else
+> -		callback = NULL;
+> -
+> -	if (!callback && dev->driver && dev->driver->pm)
+> -		callback = dev->driver->pm->runtime_idle;
+> +	RPM_GET_CALLBACK(dev, runtime_idle);
 
-Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
----
- drivers/cpufreq/cpufreq.c |    6 ------
- 1 file changed, 6 deletions(-)
+This macro sets the local 'callback' variable, but it's not at all
+obvious when reading the code.  macros with side-effects like this are a
+major readability problem.  Just use a function.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 08ca8c9..6dce474 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -352,12 +352,6 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
- /*********************************************************************
-  *                          SYSFS INTERFACE                          *
-  *********************************************************************=
-/
--ssize_t show_boost(struct kobject *kobj,
--				 struct attribute *attr, char *buf)
--{
--	return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
--}
--
- static ssize_t store_boost(struct kobject *kobj, struct attribute *att=
-r,
- 				  const char *buf, size_t count)
- {
---=20
-1.7.9.5
+Kevin
