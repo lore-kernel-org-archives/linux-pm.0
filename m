@@ -1,37 +1,34 @@
-From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH] PM / devfreq: Fix out of bounds access of transition
- table array
-Date: Wed, 26 Feb 2014 05:12:03 +0000 (GMT)
-Message-ID: <19338058.266151393391521988.JavaMail.weblogic@epml02>
-Reply-To: myungjoo.ham@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: Return error if ->get() failed in cpufreq_update_policy()
+Date: Wed, 26 Feb 2014 10:45:32 +0530
+Message-ID: <CAKohpokKJUt4UhC5_dJAhU3LCBwht4pfDWT5Lqo0T1-y_M31=A@mail.gmail.com>
+References: <15ccc0609cb9ee3db0ad3a95b29bf69d11ea197c.1392375504.git.viresh.kumar@linaro.org>
+	<3894986.dK3STNSG71@vostro.rjw.lan>
+	<CAKohpom+RUAi0jZBVWUEWZh36O4QgoJcK-YrCq6eDnfMVf+GCg@mail.gmail.com>
+	<1456811.7asrQYHEt1@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f180.google.com ([209.85.214.180]:36279 "EHLO
+	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbaBZFPc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 00:15:32 -0500
+Received: by mail-ob0-f180.google.com with SMTP id vb8so272905obc.39
+        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2014 21:15:32 -0800 (PST)
+In-Reply-To: <1456811.7asrQYHEt1@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pierre Ossman <pierre-list@ossman.eu>
 
-PiBPbiAwMi8yMy8yMDE0IDExOjE1IFBNLCBTYXJhdmFuYSBLYW5uYW4gd3JvdGU6DQo+ID4gVGhl
-IHByZXZpb3VzX2ZyZXEgdmFsdWUgZm9yIGEgZGV2aWNlIGNvdWxkIGJlIGFuIGludmFsaWQgZnJl
-cXVlbmN5IHRoYXQNCj4gPiByZXN1bHRzIGluIGEgZXJyb3IgdmFsdWUgYmVpbmcgcmV0dXJuZWQg
-ZnJvbSBkZXZmcmVxX2dldF9mcmVxX2xldmVsKCkuDQo+ID4gQ2hlY2sgZm9yIGFuIGVycm9yIHZh
-bHVlIGJlZm9yZSB1c2luZyB0aGF0IHRvIGluZGV4IGludG8gdGhlIHRyYW5zaXRpb24NCj4gPiB0
-YWJsZS4NCj4gPg0KPiA+IE5vdCBkb2luZyB0aGlzIGNoZWNrIHdpbGwgcmVzdWx0IGluIG1lbW9y
-eSBjb3JydXB0aW9uIHdoZW4gcHJldmlvdXNfZnJlcSBpcw0KPiA+IG5vdCBhIHZhbGlkIGZyZXF1
-ZW5jeS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFNhcmF2YW5hIEthbm5hbiA8c2thbm5hbkBj
-b2RlYXVyb3JhLm9yZz4NCj4gDQo+IE15dW5nSm9vL0t5dW5nbWluLA0KPiANCj4gV291bGQgZWl0
-aGVyIG9mIHlvdSBoYXZlIHNvbWUgdGltZSB0byByZXNwb25kIHRvIHRoaXM/DQo+IA0KPiBUaGFu
-a3MsDQo+IFNhcmF2YW5hDQoNCkRlYXIgU2FyYXZhbmEsDQoNCj4gPiArCXByZXZfbGV2ID0gZGV2
-ZnJlcV9nZXRfZnJlcV9sZXZlbChkZXZmcmVxLCBkZXZmcmVxLT5wcmV2aW91c19mcmVxKTsNCj4g
-PiArCWlmIChwcmV2X2xldiA8IDApDQo+ID4gKwkJcmV0dXJuIDA7DQoNCklmIGRldmZyZXFfZ2V0
-X2ZyZXFfbGV2ZWwgcmV0dXJuZWQgZXJyb3IsIHBsZWFzZSByZXR1cm4gdGhhdCBlcnJvcg0KdG8g
-dGhlIGNhbGxlci4gWW91IGFyZSByZXR1bmluZyAwIGluIHRoYXQgY2FzZS4NCg0KUGx1cywgZG8g
-eW91IHRoaW5rIHdlIGFyZSBnb2luZyB0byBjaGFuZ2UgcHJvZmlsZS0+ZnJlcV90YWJsZSBpbiBy
-dW4tdGltZT8NCihieSBhY2NpZGVudGx5PyBvciBpbnRlbnRpb25hbGx5PykNCg0KQ2hlZXJzLA0K
-TXl1bmdKb28uDQoNCj4gDQo+IA0KPiAtLSANCj4gVGhlIFF1YWxjb21tIElubm92YXRpb24gQ2Vu
-dGVyLCBJbmMuIGlzIGEgbWVtYmVyIG9mIHRoZSBDb2RlIEF1cm9yYSBGb3J1bSwNCj4gaG9zdGVk
-IGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uDQo+IA0KPiANCj4gDQo+ICAgICAgICANCj4gICANCj4g
-ICAgICAgICAgDQo+IA0K
+On 26 February 2014 03:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Yes, what exactly do we need it for in the core?
+
+Its probably there to make things faster. We cache the value so that we
+don't go to the hardware to read/calculate that again. Isn't it?
+
+And we need to know current freq on many occasions. One of that is that
+many drivers need to know the relation between current and new freq before
+they can make the change. As they might need to play with volt regulators
+before or after the freq change. Also it is used mainly in our loops_per_jiffiy
+calculations.
