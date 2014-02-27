@@ -1,107 +1,81 @@
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH 2/4] ARM: dove: prepare new Dove DT Kconfig variable
-Date: Thu, 27 Feb 2014 23:05:54 +0100
-Message-ID: <530FB6C2.8080008@gmail.com>
-References: <1393536486-3827-1-git-send-email-sebastian.hesselbarth@gmail.com> <1393536486-3827-3-git-send-email-sebastian.hesselbarth@gmail.com> <20140227215145.GR1484@spo001.leaseweb.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <20140227215145.GR1484@spo001.leaseweb.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Chris Ball <chris@printf.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, alsa-devel@alsa-project.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 3/3] ARM hibernation / suspend-to-disk
+Date: Thu, 27 Feb 2014 23:18:19 +0100
+Message-ID: <20140227221819.GA6910@amd.pavel.ucw.cz>
+References: <1393372920-3896-1-git-send-email-sebastian.capella@linaro.org>
+ <1393372920-3896-4-git-send-email-sebastian.capella@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59745 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbaB0WSU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 17:18:20 -0500
+Content-Disposition: inline
+In-Reply-To: <1393372920-3896-4-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 
-On 02/27/2014 10:51 PM, Wim Van Sebroeck wrote:
-> Acked-by me.
+Hi!
+On Tue 2014-02-25 16:02:00, Sebastian Capella wrote:
+> From: Russ Dill <Russ.Dill@ti.com>
+> 
+> Enable hibernation for ARM architectures and provide ARM
+> architecture specific calls used during hibernation.
+> 
+> The swsusp hibernation framework depends on the
+> platform first having functional suspend/resume.
+> 
+> Then, in order to enable hibernation on a given platform, a
+> platform_hibernation_ops structure may need to be registered with
+> the system in order to save/restore any SoC-specific / cpu specific
+> state needing (re)init over a suspend-to-disk/resume-from-disk cycle.
+> 
+> For example:
+> 
+>      - "secure" SoCs that have different sets of control registers
+>        and/or different CR reg access patterns.
+> 
+>      - SoCs with L2 caches as the activation sequence there is
+>        SoC-dependent; a full off-on cycle for L2 is not done
+>        by the hibernation support code.
+> 
+>      - SoCs requiring steps on wakeup _before_ the "generic" parts
+>        done by cpu_suspend / cpu_resume can work correctly.
+> 
+>      - SoCs having persistent state which is maintained during suspend
+>        and resume, but will be lost during the power off cycle after
+>        suspend-to-disk.
+> 
+> This is a rebase/rework of Frank Hofmann's v5 hibernation patchset.
+> 
 
-Thanks Wim,
+> +/*
+> + * Snapshot kernel memory and reset the system.
+> + * soft_restart is not technically needed, but is used
+> + * to get success returned from cpu_suspend.
+> + * After resume, the hibernation snapshot is written out.
+> + */
+> +static int notrace __swsusp_arch_save_image(unsigned long unused)
+> +{
+> +	int ret;
+> +
+> +	ret = swsusp_save();
+> +	if (ret == 0)
+> +		soft_restart(virt_to_phys(cpu_resume));
+> +	return ret;
+> +}
 
-as I forgot to explicitly ask for maintainer Acks: It would be great to
-get Acked-by's from mmc, thermal, and asoc, too.
+This is static, so maybe arch_save_image() is better name?
 
-Sebastian
+> +static u8 __swsusp_resume_stk[PAGE_SIZE/2] __nosavedata;
 
->> DT-enabled Dove will move over from ARCH_DOVE in mach-dove to MACH_DOVE in
->> mach-mvebu. As non-DT ARCH_DOVE will stay to rot for a while, add a new
->> DT-only MACH_DOVE to mmc, thermal, wdt, and asoc Kconfigs.
->>
->> Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
->> ---
->> Cc: Chris Ball <chris@printf.net>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
->> Cc: Wim Van Sebroeck <wim@iguana.be>
->> Cc: Liam Girdwood <lgirdwood@gmail.com>
->> Cc: Mark Brown <broonie@kernel.org>
->> Cc: Jason Cooper <jason@lakedaemon.net>
->> Cc: Andrew Lunn <andrew@lunn.ch>
->> Cc: Gregory Clement <gregory.clement@free-electrons.com>
->> Cc: alsa-devel@alsa-project.org
->> Cc: linux-watchdog@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-mmc@vger.kernel.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-kernel@vger.kernel.org
->> ---
->>   drivers/mmc/host/Kconfig   | 2 +-
->>   drivers/thermal/Kconfig    | 2 +-
->>   drivers/watchdog/Kconfig   | 2 +-
->>   sound/soc/kirkwood/Kconfig | 2 +-
->>   4 files changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
->> index 1384f67abe21..a69e48b582e5 100644
->> --- a/drivers/mmc/host/Kconfig
->> +++ b/drivers/mmc/host/Kconfig
->> @@ -168,7 +168,7 @@ config MMC_SDHCI_ESDHC_IMX
->>
->>   config MMC_SDHCI_DOVE
->>   	tristate "SDHCI support on Marvell's Dove SoC"
->> -	depends on ARCH_DOVE
->> +	depends on ARCH_DOVE || MACH_DOVE
->>   	depends on MMC_SDHCI_PLTFM
->>   	select MMC_SDHCI_IO_ACCESSORS
->>   	help
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 35c066489a19..07b5e56e9a97 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -150,7 +150,7 @@ config KIRKWOOD_THERMAL
->>
->>   config DOVE_THERMAL
->>   	tristate "Temperature sensor on Marvell Dove SoCs"
->> -	depends on ARCH_DOVE
->> +	depends on ARCH_DOVE || MACH_DOVE
->>   	depends on OF
->>   	help
->>   	  Support for the Dove thermal sensor driver in the Linux thermal
->> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
->> index 79d25894343a..5659c62a175c 100644
->> --- a/drivers/watchdog/Kconfig
->> +++ b/drivers/watchdog/Kconfig
->> @@ -292,7 +292,7 @@ config DAVINCI_WATCHDOG
->>
->>   config ORION_WATCHDOG
->>   	tristate "Orion watchdog"
->> -	depends on ARCH_ORION5X || ARCH_KIRKWOOD || ARCH_DOVE
->> +	depends on ARCH_ORION5X || ARCH_KIRKWOOD || ARCH_DOVE || MACH_DOVE
->>   	select WATCHDOG_CORE
->>   	help
->>   	  Say Y here if to include support for the watchdog timer
->> diff --git a/sound/soc/kirkwood/Kconfig b/sound/soc/kirkwood/Kconfig
->> index 78ed4a42ad21..a1506d57e646 100644
->> --- a/sound/soc/kirkwood/Kconfig
->> +++ b/sound/soc/kirkwood/Kconfig
->> @@ -1,6 +1,6 @@
->>   config SND_KIRKWOOD_SOC
->>   	tristate "SoC Audio for the Marvell Kirkwood and Dove chips"
->> -	depends on ARCH_KIRKWOOD || ARCH_DOVE || COMPILE_TEST
->> +	depends on ARCH_KIRKWOOD || ARCH_DOVE || MACH_DOVE || COMPILE_TEST
->>   	help
->>   	  Say Y or M if you want to add support for codecs attached to
->>   	  the Kirkwood I2S interface. You will also need to select the
->> --
->> 1.8.5.3
->>
+resume_stack?
 
+Thanks,
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
