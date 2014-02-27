@@ -1,74 +1,95 @@
-From: Josh Cartwright <joshc@codeaurora.org>
-Subject: Re: [PATCH 1/3] typecheck: introduce assign_if() and
- assign_if_enabled()
-Date: Thu, 27 Feb 2014 17:48:50 -0600
-Message-ID: <20140227234850.GC7308@joshc.qualcomm.com>
-References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
- <1393261707-30565-2-git-send-email-joshc@codeaurora.org>
- <20140227190032.GA4421@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v6 0/2] hibernation support on ARM
+Date: Thu, 27 Feb 2014 15:57:56 -0800
+Message-ID: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:57956 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbaB0Xva (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 18:51:30 -0500
-Content-Disposition: inline
-In-Reply-To: <20140227190032.GA4421@kroah.com>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:64260 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbaB0X6H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 18:58:07 -0500
+Received: by mail-pd0-f176.google.com with SMTP id r10so3088317pdi.7
+        for <linux-pm@vger.kernel.org>; Thu, 27 Feb 2014 15:58:06 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Thu, Feb 27, 2014 at 11:00:32AM -0800, Greg Kroah-Hartman wrote:
-> On Mon, Feb 24, 2014 at 11:08:25AM -0600, Josh Cartwright wrote:
-> > +/*
-> > + * Intended for use in static object initializers,
-> > + * assign_if(const_expr, function) evaluates to 'function' if 'const_expr',
-> > + * otherwise NULL.
-> > + *
-> > + * The type of the assign_if() expression is typeof(function), and therefore
-> > + * can provide typechecking regardless of 'const_expr'.
-> > + *
-> > + * gcc considers 'function' to be used and will not generate a 'defined but not
-> > + * used' warning when not 'const_expr', however, gcc is smart enough to
-> > + * eliminate 'function' if assign_if() is the only reference.
-> > + */
-> 
-> What version of gcc started doing this?  Does llvm also do this?
+Patches adding support for hibernation on ARM
+ - ARM hibernation / suspend-to-disk
+ - Change soft_restart to use non-tracing raw_local_irq_disable
 
-I'll need to dig up some old gcc's to give this a more thorough
-testing; testing with clang 3.4, and it appears to have the same
-behavior, at least when I throw a trivial usecase at it.
+Patches based on v3.13 tag, verified hibernation on beaglebone black on a
+branch based on 3.13 merged with initial omap support from Russ Dill which
+can be found here (includes v1 patchset):
+http://git.linaro.org/git-ro/people/sebastian.capella/linux.git hibernation_3.13_russMerge
 
-	$ clang --version
-	clang version 3.4 (tags/RELEASE_34/final)
-	Target: x86_64-unknown-linux-gnu
-	Thread model: posix
+[PATCH v6 1/2] ARM: avoid tracers in soft_restart
 
-	$ cat test.c
-	static void foo(void)
-	{
-		extern void BROKEN(void);
-		BROKEN();
-	}
-	void (*callback)(void) = 0 ? foo : 0;
+ arch/arm/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-	$ clang -Wall -Werror -c test.c
+ Use raw_local_irq_disable in place of local_irq_disable to avoid
+ infinite abort recursion while tracing. (unchanged since v3)
 
-	$ size test.o
-	   text	   data	    bss	    dec	    hex	filename
-	      0	      0	      8	      8	      8	/tmp/test.o
+[PATCH v6 2/2] ARM hibernation / suspend-to-disk
+ arch/arm/include/asm/memory.h |    1 +
+ arch/arm/kernel/Makefile      |    1 +
+ arch/arm/kernel/hibernate.c   |  113 +++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mm/Kconfig           |    5 ++
+ include/linux/suspend.h       |    2 +
+ 5 files changed, 122 insertions(+)
 
-	$ nm test.o
-	0000000000000000 B callback
+ Adds support for ARM based hibernation
 
-Although, given the feedback on the other patches, assign_if() may
-become just be a solution in search of a problem :).
+
+Additional notes:
+-----------------
+
+There are two checkpatch warnings added by this patch.  These follow
+behavior in existing hibernation implementations on other platforms.
+
+    WARNING: externs should be avoided in .c files
+    #116: FILE: arch/arm/kernel/hibernate.c:26:
+    +extern const void __nosave_begin, __nosave_end;
+
+  This extern is picking up the linker nosave region definitions, only
+  used in hibernate.  Follows same extern line used mips, powerpc, s390,
+  sh, sparc, x86 & unicore32
+
+    WARNING: externs should be avoided in .c files
+    #199: FILE: arch/arm/kernel/hibernate.c:109:
+    +extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
+
+  This extern is used in the arch/arm/ in hibernate, process and bL_switcher
+
+
+Changes in v6:
+--------------
+* Simplify static variable names
+
+Changes in v5:
+--------------
+* Fixed checkpatch warning on trailing whitespace
+
+Changes in v4:
+--------------
+* updated comment for soft_restart with review feedback
+* dropped freeze_processes patch which was queued separately 
+  to 3.14 by Rafael Wysocki:
+  https://lkml.org/lkml/2014/2/25/683
+
+Changes in v3:
+--------------
+* added comment to use of soft_restart
+* drop irq disable soft_restart patch
+* add patch to avoid tracers in soft_restart by using raw_local_irq_*
+
+Changes in v2:
+--------------
+* Removed unneeded flush_thread, use of __naked and cpu_init.
+* dropped Cyril Chemparathy <cyril@ti.com> from Cc: list as 
+  emails are bouncing.
 
 Thanks,
-  Josh
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+Sebastian Capella
+
