@@ -1,83 +1,69 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] PM / devfreq: Fix out of bounds access of transition
- table array
-Date: Wed, 26 Feb 2014 16:45:13 -0800
-Message-ID: <530E8A99.50402@codeaurora.org>
-References: <19338058.266151393391521988.JavaMail.weblogic@epml02>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
+Date: Thu, 27 Feb 2014 02:22:54 +0100
+Message-ID: <12123949.qNoh3vhWUc@vostro.rjw.lan>
+References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org> <7htxblx2eo.fsf@paris.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <19338058.266151393391521988.JavaMail.weblogic@epml02>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50198 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752868AbaB0BHy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2014 20:07:54 -0500
+In-Reply-To: <7htxblx2eo.fsf@paris.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>
 
-On 02/25/2014 09:12 PM, =C7=D4=B8=ED=C1=D6 wrote:
->> On 02/23/2014 11:15 PM, Saravana Kannan wrote:
->>> The previous_freq value for a device could be an invalid frequency =
-that
->>> results in a error value being returned from devfreq_get_freq_level=
-().
->>> Check for an error value before using that to index into the transi=
-tion
->>> table.
->>>
->>> Not doing this check will result in memory corruption when previous=
-_freq is
->>> not a valid frequency.
->>>
->>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->>
->> MyungJoo/Kyungmin,
->>
->> Would either of you have some time to respond to this?
->>
->> Thanks,
->> Saravana
->=20
-> Dear Saravana,
->=20
->>> +	prev_lev =3D devfreq_get_freq_level(devfreq, devfreq->previous_fr=
-eq);
->>> +	if (prev_lev < 0)
->>> +		return 0;
->=20
-> If devfreq_get_freq_level returned error, please return that error
-> to the caller. You are retuning 0 in that case.
->=20
-> Plus, do you think we are going to change profile->freq_table in run-=
-time?
-> (by accidently? or intentionally?)
+On Wednesday, February 26, 2014 08:30:07 AM Kevin Hilman wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+> 
+> > Patch 1 -> 2:
+> > These patches provides two new runtime PM helper functions which intend to be
+> > used from system suspend/resume callbacks, to make sure devices are put into low
+> > power state during system suspend and brought back to full power at system
+> > resume.
+> >
+> > The prerequisite is to have all levels of a device's runtime PM callbacks to be
+> > defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
+> > for CONFIG_PM.
+> >
+> > By using the new runtime PM helper functions especially the two scenarios below
+> > will be addressed.
+> >
+> > 1) The PM core prevents .runtime_suspend callbacks from being invoked during
+> > system suspend. That means even for a runtime PM centric subsystem and driver,
+> > the device needs to be put into low power state from a system suspend callback.
+> > Otherwise it may very well be left in full power state (runtime resumed) while
+> > the system is suspended. By using the new helper functions, we make sure to walk
+> > the hierarchy of a device's power domain, subsystem and driver.
+> 
+> I thought it was the case that runtime PM was only disabled during the
+> 'late' phase now.  Isn't that enough to allow runtime callbacks in the
+> normal suspend/resume hooks now?   /me looks.
+> 
+> oh, wait.  Ee still have the _get_noresume() in device_prepare().  hmm
+> 
+> Either way, I'm not not a big fan of new functions.  Personally, I think
+> subsystems/busses/pm_domains should be able to opt out of the PM core
+> behavior that blocks runtime PM transitions during system suspend.
+> Something like the (untested) hack below.  That way, we could avoid the
+> need for new helper functions.
 
-Hi MyungJoo,
+And if one of the subsystems in question is the platform bus type, then
+adding the flag doesn't really make sense, because that means that on
+many system it will be set for the majority of devices. :-)
 
-The reason for this fix is that some devices can't reliably detect thei=
-r
-current frequency. So, we set the initial freq to 0 so that the first
-request from the default governor actually goes through.
+That said I'm tired of this stuff already.  If you really really want to
+remove the bumping up and dropping of the usage counter during system
+suspend/resume by the core, please feel free to submit a patch for that
+and I'll apply it.  However, if it causes any regressions to happen
+anywhere, it will be dropped and we'll never talk about this again.
 
-If we randomly pick one of the valid frequencies, then the initial
-request could get short circuited by devfreq, cause wrong stats, the
-device itself might short circuit it after comparing it to prev freq, e=
-tc.
+Deal? 
 
-The reason I intentionally ignored the error was to prevent printing an
-error at boot every time for such devices. I could do better with more
-complicated code, but I couldn't imagine any other case where
-previous_freq could actually end up being an invalid value.
-
-Hold on, I just realized that the stats code is completely wrong! Isn't
-the current code updating the time_in_state[] of the wrong level? It's
-updating the new level's time in state instead of the previous one?
-
-I'll send out a patch that fixes all this with in a couple of days.
-
-Thanks,
-Saravana
-
---=20
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora For=
-um,
-hosted by The Linux Foundation
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
