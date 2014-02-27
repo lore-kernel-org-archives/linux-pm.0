@@ -1,98 +1,61 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 3/3] usb: phy: msm: use ASSIGN_*_PM_OPS variants
-Date: Thu, 27 Feb 2014 11:03:24 -0800
-Message-ID: <20140227190324.GC4421@kroah.com>
-References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
- <1393261707-30565-4-git-send-email-joshc@codeaurora.org>
- <20140225183336.GH23275@saruman.home>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2 1/8] PM / Runtime: Fetch runtime PM callbacks using a
+ macro
+Date: Thu, 27 Feb 2014 22:13:51 +0100
+Message-ID: <CAPDyKFq4X3G1zZay0XG2g-djEvyRdf9s47GDSC5htXZ7c-LdRQ@mail.gmail.com>
+References: <CAPDyKFrbhmqmu-0uqX_U18nKXuu2z5ueYXqaz4LOHy=ijecs1g@mail.gmail.com>
+ <Pine.LNX.4.44L0.1402271120280.888-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:36951 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbaB0TBr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 14:01:47 -0500
-Content-Disposition: inline
-In-Reply-To: <20140225183336.GH23275@saruman.home>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <Pine.LNX.4.44L0.1402271120280.888-100000@iolanthe.rowland.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>, Josh Cartwright <joshc@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Alessandro Rubini <rubini@unipv.it>
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: Josh Cartwright <joshc@codeaurora.org>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Feb 25, 2014 at 12:33:36PM -0600, Felipe Balbi wrote:
-> Hi,
-> 
-> On Mon, Feb 24, 2014 at 11:08:27AM -0600, Josh Cartwright wrote:
-> > Use ASSIGN_SYSTEM_SLEEP_PM_OPS and ASSIGN_RUNTIME_PM_OPS in the
-> > initializer for msm_otg_dev_pm_ops.  Doing so allows us to eliminate
-> > preprocessor conditionals around the specified callbacks.
-> > 
-> > Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
-> > ---
-> >  drivers/usb/phy/phy-msm-usb.c | 13 +++----------
-> >  1 file changed, 3 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/drivers/usb/phy/phy-msm-usb.c b/drivers/usb/phy/phy-msm-usb.c
-> > index 5b37b81..c04f2e3 100644
-> > --- a/drivers/usb/phy/phy-msm-usb.c
-> > +++ b/drivers/usb/phy/phy-msm-usb.c
-> > @@ -414,8 +414,6 @@ static int msm_otg_reset(struct usb_phy *phy)
-> >  #define PHY_SUSPEND_TIMEOUT_USEC	(500 * 1000)
-> >  #define PHY_RESUME_TIMEOUT_USEC	(100 * 1000)
-> >  
-> > -#ifdef CONFIG_PM
-> > -
-> >  #define USB_PHY_SUSP_DIG_VOL  500000
-> >  static int msm_hsusb_config_vddcx(int high)
-> >  {
-> > @@ -609,7 +607,6 @@ skip_phy_resume:
-> >  
-> >  	return 0;
-> >  }
-> > -#endif
-> >  
-> >  static void msm_otg_notify_charger(struct msm_otg *motg, unsigned mA)
-> >  {
-> > @@ -1664,7 +1661,6 @@ static int msm_otg_remove(struct platform_device *pdev)
-> >  	return 0;
-> >  }
-> >  
-> > -#ifdef CONFIG_PM_RUNTIME
-> >  static int msm_otg_runtime_idle(struct device *dev)
-> >  {
-> >  	struct msm_otg *motg = dev_get_drvdata(dev);
-> > @@ -1699,9 +1695,7 @@ static int msm_otg_runtime_resume(struct device *dev)
-> >  	dev_dbg(dev, "OTG runtime resume\n");
-> >  	return msm_otg_resume(motg);
-> >  }
-> > -#endif
-> >  
-> > -#ifdef CONFIG_PM_SLEEP
-> >  static int msm_otg_pm_suspend(struct device *dev)
-> >  {
-> >  	struct msm_otg *motg = dev_get_drvdata(dev);
-> > @@ -1731,12 +1725,11 @@ static int msm_otg_pm_resume(struct device *dev)
-> >  
-> >  	return 0;
-> >  }
-> > -#endif
-> >  
-> >  static const struct dev_pm_ops msm_otg_dev_pm_ops = {
-> > -	SET_SYSTEM_SLEEP_PM_OPS(msm_otg_pm_suspend, msm_otg_pm_resume)
-> > -	SET_RUNTIME_PM_OPS(msm_otg_runtime_suspend, msm_otg_runtime_resume,
-> > -				msm_otg_runtime_idle)
-> > +	ASSIGN_SYSTEM_SLEEP_PM_OPS(msm_otg_pm_suspend, msm_otg_pm_resume)
-> > +	ASSIGN_RUNTIME_PM_OPS(msm_otg_runtime_suspend, msm_otg_runtime_resume,
-> > +			      msm_otg_runtime_idle)
-> 
-> if the patch introducing assign_if() gets accepted, I'm ok with this
-> patch.
+On 27 February 2014 17:22, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 27 Feb 2014, Ulf Hansson wrote:
+>
+>> > A reasonable compromise would be to define the macro, and then use it
+>> > in those three new functions (and nowhere else).
+>>
+>> Okay, let me send a v3 that tries this approach then.
+>>
+>> >
+>> > The existing rpm_idle, rpm_suspend, and rpm_resume routines should then
+>> > be changed to use the new functions.  And of course, the new functions
+>> > could be called directly by subsystems or PM domains.
+>>
+>> Not sure we should export these functions as a part of this patchset.
+>> Would it not be preferred, to first see if there are any that needs
+>> it?
+>
+> I don't understand.  V2 of the patchset exports
+> pm_runtime_force_suspend and pm_runtime_force_resume.  Why wouldn't you
+> want to export them in V3?
 
-I can't take that patch at this point in time, it's just too ugly...
+There are some confusion here. :-)  pm_runtime_force_suspend|resume()
+surely need to be exported, but that's "patch v2 2/8".
 
-As are those crazy SET_SYSTEM_SLEEP_PM_OPS() macros, ick, who made those
-things?
+I think we were debating whether this patch "patch v2 1/8" should use
+a macro to walk the ladder to fetch the runtime PM callback - or if we
+should implement a three c-functions to handle it. I prefer to keep
+this patch as is, thus using the macro.
 
-What language are we trying to program in here people?
+Kind regards
+Ulf Hansson
 
-greg k-h
+
+>
+> Alan Stern
+>
