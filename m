@@ -1,81 +1,74 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 3/3] ARM hibernation / suspend-to-disk
-Date: Thu, 27 Feb 2014 23:18:19 +0100
-Message-ID: <20140227221819.GA6910@amd.pavel.ucw.cz>
-References: <1393372920-3896-1-git-send-email-sebastian.capella@linaro.org>
- <1393372920-3896-4-git-send-email-sebastian.capella@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2 1/8] PM / Runtime: Fetch runtime PM callbacks using a macro
+Date: Thu, 27 Feb 2014 23:36:16 +0100
+Message-ID: <CAPDyKFqPAaHTt1rESG2192sD=nFqDgOQ7vSxopcmAUvGgY6hyg@mail.gmail.com>
+References: <CAPDyKFq4X3G1zZay0XG2g-djEvyRdf9s47GDSC5htXZ7c-LdRQ@mail.gmail.com>
+	<Pine.LNX.4.44L0.1402271621430.888-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59745 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbaB0WSU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 17:18:20 -0500
-Content-Disposition: inline
-In-Reply-To: <1393372920-3896-4-git-send-email-sebastian.capella@linaro.org>
+Received: from mail-qc0-f169.google.com ([209.85.216.169]:53927 "EHLO
+	mail-qc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546AbaB0WgR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 17:36:17 -0500
+Received: by mail-qc0-f169.google.com with SMTP id e9so4131667qcy.0
+        for <linux-pm@vger.kernel.org>; Thu, 27 Feb 2014 14:36:16 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1402271621430.888-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
 
-Hi!
-On Tue 2014-02-25 16:02:00, Sebastian Capella wrote:
-> From: Russ Dill <Russ.Dill@ti.com>
-> 
-> Enable hibernation for ARM architectures and provide ARM
-> architecture specific calls used during hibernation.
-> 
-> The swsusp hibernation framework depends on the
-> platform first having functional suspend/resume.
-> 
-> Then, in order to enable hibernation on a given platform, a
-> platform_hibernation_ops structure may need to be registered with
-> the system in order to save/restore any SoC-specific / cpu specific
-> state needing (re)init over a suspend-to-disk/resume-from-disk cycle.
-> 
-> For example:
-> 
->      - "secure" SoCs that have different sets of control registers
->        and/or different CR reg access patterns.
-> 
->      - SoCs with L2 caches as the activation sequence there is
->        SoC-dependent; a full off-on cycle for L2 is not done
->        by the hibernation support code.
-> 
->      - SoCs requiring steps on wakeup _before_ the "generic" parts
->        done by cpu_suspend / cpu_resume can work correctly.
-> 
->      - SoCs having persistent state which is maintained during suspend
->        and resume, but will be lost during the power off cycle after
->        suspend-to-disk.
-> 
-> This is a rebase/rework of Frank Hofmann's v5 hibernation patchset.
-> 
+On 27 February 2014 22:25, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 27 Feb 2014, Ulf Hansson wrote:
+>
+>> On 27 February 2014 17:22, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > On Thu, 27 Feb 2014, Ulf Hansson wrote:
+>> >
+>> >> > A reasonable compromise would be to define the macro, and then use it
+>> >> > in those three new functions (and nowhere else).
+>> >>
+>> >> Okay, let me send a v3 that tries this approach then.
+>> >>
+>> >> >
+>> >> > The existing rpm_idle, rpm_suspend, and rpm_resume routines should then
+>> >> > be changed to use the new functions.  And of course, the new functions
+>> >> > could be called directly by subsystems or PM domains.
+>> >>
+>> >> Not sure we should export these functions as a part of this patchset.
+>> >> Would it not be preferred, to first see if there are any that needs
+>> >> it?
+>> >
+>> > I don't understand.  V2 of the patchset exports
+>> > pm_runtime_force_suspend and pm_runtime_force_resume.  Why wouldn't you
+>> > want to export them in V3?
+>>
+>> There are some confusion here. :-)  pm_runtime_force_suspend|resume()
+>> surely need to be exported, but that's "patch v2 2/8".
+>>
+>> I think we were debating whether this patch "patch v2 1/8" should use
+>> a macro to walk the ladder to fetch the runtime PM callback - or if we
+>> should implement a three c-functions to handle it. I prefer to keep
+>> this patch as is, thus using the macro.
+>
+> But you're going to expand the macro (say, the version that handles
+> runtime_resume callbacks) in two places: rpm_resume and
+> pm_runtime_force_resume.  That's inefficient.  The macro generates
+> fairly complicated code, and so it should be expanded in only one
+> place: a single new function.  The new function can be called by both
+> rpm_resume and pm_runtime_force_resume.
 
-> +/*
-> + * Snapshot kernel memory and reset the system.
-> + * soft_restart is not technically needed, but is used
-> + * to get success returned from cpu_suspend.
-> + * After resume, the hibernation snapshot is written out.
-> + */
-> +static int notrace __swsusp_arch_save_image(unsigned long unused)
-> +{
-> +	int ret;
-> +
-> +	ret = swsusp_save();
-> +	if (ret == 0)
-> +		soft_restart(virt_to_phys(cpu_resume));
-> +	return ret;
-> +}
+That's a valid point. Maybe you were trying to tell me this before as
+well, not sure.
 
-This is static, so maybe arch_save_image() is better name?
+Anyway, l will send a v3 to address your comments.
 
-> +static u8 __swsusp_resume_stk[PAGE_SIZE/2] __nosavedata;
+Kind regards
+Ulf Hansson
 
-resume_stack?
-
-Thanks,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
+> In fact, from comparing those two routines, it looks like the new
+> function could include a little more than just the macro expansion.
+>
+> Alan Stern
+>
