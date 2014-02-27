@@ -1,343 +1,164 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: add generic IIO channel thermal sensor driver
-Date: Thu, 27 Feb 2014 14:53:34 +0800
-Message-ID: <1393484014.2637.14.camel@rzhang1-mobl4>
-References: <1391651007-29813-1-git-send-email-courtney.cavin@sonymobile.com>
+Subject: Re: [PATCH] thermal: imx: update formula for thermal sensor
+Date: Thu, 27 Feb 2014 14:54:22 +0800
+Message-ID: <1393484062.2637.15.camel@rzhang1-mobl4>
+References: <1392199595-1054-1-git-send-email-b20788@freescale.com>
+	 <20140213130252.GB20842@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:3613 "EHLO mga01.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:61425 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbaB0Gxk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Feb 2014 01:53:40 -0500
-In-Reply-To: <1391651007-29813-1-git-send-email-courtney.cavin@sonymobile.com>
+	id S1751406AbaB0Gy0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Feb 2014 01:54:26 -0500
+In-Reply-To: <20140213130252.GB20842@S2101-09.ap.freescale.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Courtney Cavin <courtney.cavin@sonymobile.com>
-Cc: eduardo.valentin@ti.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, rob@landley.net, grant.likely@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Anson Huang <b20788@freescale.com>, eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 
-On Wed, 2014-02-05 at 17:43 -0800, Courtney Cavin wrote:
-> This driver is a generic method for using IIO ADC channels as thermal
-> sensors.
-> 
-> Signed-off-by: Courtney Cavin <courtney.cavin@sonymobile.com>
-
-Eduardo,
-
-what do you think of this patch?
+On Thu, 2014-02-13 at 21:02 +0800, Shawn Guo wrote:
+> Copy LAKML and pengutronix folks in case they have comments.
+>=20
+> On Wed, Feb 12, 2014 at 06:06:35PM +0800, Anson Huang wrote:
+> > Thermal sensor used to need two calibration points which are
+> > in fuse map to get a slope for converting thermal sensor's raw
+> > data to real temperature in degree C. Due to the chip calibration
+> > limitation, hardware team provides an universal formula to get
+> > real temperature from internal thermal sensor raw data:
+> >=20
+> > Slope =3D 0.4297157 - (0.0015976 * 25C fuse);
+> >=20
+> > Update the formula, as there will be no hot point calibration
+> > data in fuse map from now on.
+> >=20
+> > Signed-off-by: Anson Huang <b20788@freescale.com>
+>=20
+> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+>=20
+applied.
 
 thanks,
 rui
-> ---
->  .../devicetree/bindings/thermal/iio-thermal.txt    |  46 +++++
->  drivers/thermal/Kconfig                            |  13 ++
->  drivers/thermal/Makefile                           |   1 +
->  drivers/thermal/iio_thermal.c                      | 207 +++++++++++++++++++++
->  4 files changed, 267 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/iio-thermal.txt
->  create mode 100644 drivers/thermal/iio_thermal.c
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/iio-thermal.txt b/Documentation/devicetree/bindings/thermal/iio-thermal.txt
-> new file mode 100644
-> index 0000000..3be11b6
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/iio-thermal.txt
-> @@ -0,0 +1,46 @@
-> +Generic IIO channel thermal sensor bindings
-> +
-> +compatible:
-> +	Usage: required
-> +	Type: string
-> +	Desc: compatible string, must be "iio-thermal"
-> +
-> +conversion-method:
-> +	Usage: required
-> +	Type: string
-> +	Desc: How to convert IIO voltage values to temperature, one of:
-> +		"interpolation" - interpolate between values in lookup table
-> +		"scalar" - use values as multiplier and divisor
-> +
-> +conversion-values:
-> +	Usage: required
-> +	Type: u32 array, 2-tuples
-> +	Desc: lookup table for conversion, for conversion-method:
-> +		"interpolation" - 2-tuples of < uV mK >; micro-volts to
-> +				  milli-kelvin; table must ascend
-> +		"scalar" - single scalar 2-tuple as < M D >; where:
-> +			   mK = uV * M / D
-> +
-> +io-channels:
-> +	Usage: required
-> +	Type: prop-encoded-array
-> +	Desc: See bindings/iio/iio-bindings.txt; must be a voltage channel
-> +
-> +Example:
-> +
-> +vadc: some_vadc {
-> +	compatible = "...";
-> +	#io-channel-cells = <1>;
-> +};
-> +
-> +iio-thermal {
-> +	compatible = "iio-thermal";
-> +	io-channels = <&vadc 0>;
-> +	conversion-method = "interpolation";
-> +	conversion-values = <
-> +		  30000 398200
-> +		 385000 318200
-> +		1738000 233200
-> +	>;
-> +};
-> +
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 35c0664..f83a8e8 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -114,6 +114,19 @@ config THERMAL_EMULATION
->  	  because userland can easily disable the thermal policy by simply
->  	  flooding this sysfs node with low temperature values.
->  
-> +config IIO_THERMAL
-> +	tristate "Temperature sensor driver for generic IIO channels"
-> +	depends on IIO
-> +	depends on THERMAL_OF
-> +	help
-> +	  Support for generic IIO channels, such as ADCs.  This driver allows
-> +	  you to expose an IIO voltage channel as a thermal sensor.  This is
-> +	  implemented as a thermal sensor, not a thermal zone, and thus
-> +	  requires DT defined thermal infrastructure in order to be useful.
-> +
-> +	  If you aren't sure that you need this support, or haven't configured
-> +	  a thermal infrastructure in device tree, you should say 'N' here.
-> +
->  config IMX_THERMAL
->  	tristate "Temperature sensor driver for Freescale i.MX SoCs"
->  	depends on CPU_THERMAL
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 54e4ec9..0ee2c92 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -25,6 +25,7 @@ obj-y				+= samsung/
->  obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
->  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
->  obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
-> +obj-$(CONFIG_IIO_THERMAL)	+= iio_thermal.o
->  obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
->  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
->  obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
-> diff --git a/drivers/thermal/iio_thermal.c b/drivers/thermal/iio_thermal.c
-> new file mode 100644
-> index 0000000..df21dbc
-> --- /dev/null
-> +++ b/drivers/thermal/iio_thermal.c
-> @@ -0,0 +1,207 @@
-> +/*
-> + * An IIO channel based thermal sensor driver
-> + *
-> + * Copyright (C) 2014 Sony Mobile Communications, AB
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/iio/iio.h>
-> +#include <linux/iio/consumer.h>
-> +#include <linux/thermal.h>
-> +#include <linux/err.h>
-> +#include <linux/of.h>
-> +
-> +#define MILLIKELVIN_0C 273150
-> +
-> +struct iio_thermal_conv {
-> +	s32 *values;
-> +	int ntuple;
-> +	long (*convert)(const struct iio_thermal_conv *, int val);
-> +};
-> +
-> +struct iio_thermal {
-> +	struct thermal_zone_device *tz;
-> +	struct iio_channel *chan;
-> +	struct iio_thermal_conv conv;
-> +};
-> +
-> +static int iio_bsearch(const struct iio_thermal_conv *conv, s32 input)
-> +{
-> +	int h = conv->ntuple - 1;
-> +	int l = 0;
-> +
-> +	while (h - 1 > l) {
-> +		int m = (l + h) & ~1;
-> +		s32 v = conv->values[m];
-> +		if (v < input)
-> +			l = m >> 1;
-> +		else
-> +			h = m >> 1;
-> +	}
-> +
-> +	return h;
-> +}
-> +
-> +static long iio_thermal_interpolate(const struct iio_thermal_conv *conv, int v)
-> +{
-> +	int n;
-> +
-> +	n = iio_bsearch(conv, v);
-> +	if (n == 0 || n == conv->ntuple) {
-> +		BUG();
-> +	} else {
-> +		s32 *pts = &conv->values[(n-1)*2];
-> +		s32 sx = pts[3] - pts[1];
-> +		s32 sy = pts[2] - pts[0];
-> +		return sx * (v - pts[0]) / sy + pts[1];
-> +	}
-> +}
-> +
-> +static long iio_thermal_scale(const struct iio_thermal_conv *conv, int v)
-> +{
-> +	return div_s64((s64)v * conv->values[0], conv->values[1]);
-> +}
-> +
-> +static int iio_thermal_get_temp(void *pdata, long *value)
-> +{
-> +	struct iio_thermal *iio = pdata;
-> +	long temp;
-> +	int val;
-> +	int rc;
-> +
-> +	rc = iio_read_channel_processed(iio->chan, &val);
-> +	if (rc)
-> +		return rc;
-> +
-> +	temp = iio->conv.convert(&iio->conv, val);
-> +
-> +	/* thermal core wants milli-celsius; we deal in milli-kelvin */
-> +	temp = temp - MILLIKELVIN_0C;
-> +
-> +	/*
-> +	 * Although it would appear that the temperature value here is a
-> +	 * signed value for sensors, the underlying thermal zone core
-> +	 * doesn't deal with negative temperature. Cut this value off at 0C.
-> +	 */
-> +	*value = (temp < 0) ? 0 : temp;
-> +
-> +	return 0;
-> +}
-> +
-> +static int iio_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct iio_thermal *iio;
-> +	const void *values;
-> +	const char *type;
-> +	int rc;
-> +
-> +	dev_info(&pdev->dev, "registering IIO thermal device\n");
-> +	iio = devm_kzalloc(&pdev->dev, sizeof(*iio), GFP_KERNEL);
-> +	if (!iio)
-> +		return -ENOMEM;
-> +
-> +	values = of_get_property(pdev->dev.of_node,
-> +			"conversion-values", &iio->conv.ntuple);
-> +	if (values == NULL || (iio->conv.ntuple % (sizeof(u32) * 2)) != 0) {
-> +		dev_err(&pdev->dev, "invalid/missing conversion values\n");
-> +		return -EINVAL;
-> +	}
-> +	iio->conv.ntuple /= sizeof(u32) * 2;
-> +	iio->conv.values = devm_kzalloc(&pdev->dev,
-> +			sizeof(u32) * 2 * iio->conv.ntuple, GFP_KERNEL);
-> +	if (!iio->conv.values)
-> +		return -ENOMEM;
-> +
-> +	rc = of_property_read_u32_array(pdev->dev.of_node,
-> +			"conversion-values", (u32 *)iio->conv.values,
-> +			iio->conv.ntuple * 2);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "invalid/missing conversion values\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	rc = of_property_read_string(pdev->dev.of_node,
-> +			"conversion-method", &type);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "invalid/missing conversion method\n");
-> +		return rc;
-> +	}
-> +	if (!strcmp(type, "interpolation") && iio->conv.ntuple > 1) {
-> +		if (iio->conv.values[0] > iio->conv.values[2]) {
-> +			dev_err(&pdev->dev,
-> +					"conversion values should ascend\n");
-> +			return rc;
-> +		}
-> +		iio->conv.convert = iio_thermal_interpolate;
-> +	} else if (!strcmp(type, "scalar") && iio->conv.ntuple == 1) {
-> +		iio->conv.convert = iio_thermal_scale;
-> +	} else {
-> +		dev_err(&pdev->dev, "invalid conversion method for values\n");
-> +		return rc;
-> +	}
-> +
-> +	iio->chan = iio_channel_get(&pdev->dev, NULL);
-> +	if (IS_ERR(iio->chan)) {
-> +		dev_err(&pdev->dev, "invalid/missing iio channel\n");
-> +		return PTR_ERR(iio->chan);
-> +	}
-> +	if (iio->chan->channel->type != IIO_VOLTAGE) {
-> +		dev_err(&pdev->dev, "specified iio channel is not voltage\n");
-> +		iio_channel_release(iio->chan);
-> +		return -EINVAL;
-> +	}
-> +	platform_set_drvdata(pdev, iio);
-> +
-> +	iio->tz = thermal_zone_of_sensor_register(&pdev->dev, 0, iio,
-> +			iio_thermal_get_temp, NULL);
-> +	if (IS_ERR(iio->tz)) {
-> +		dev_err(&pdev->dev, "failed to register thermal sensor\n");
-> +		iio_channel_release(iio->chan);
-> +		return PTR_ERR(iio->tz);
-> +	}
-> +	dev_info(&pdev->dev, "successfully registered IIO thermal sensor\n");
-> +
-> +	return 0;
-> +}
-> +
-> +static int iio_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct iio_thermal *iio;
-> +
-> +	iio = platform_get_drvdata(pdev);
-> +
-> +	thermal_zone_of_sensor_unregister(&pdev->dev, iio->tz);
-> +	iio_channel_release(iio->chan);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id iio_thermal_match[] = {
-> +	{ .compatible = "iio-thermal", },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(of, iio_thermal_match);
-> +
-> +static struct platform_driver iio_thermal = {
-> +	.driver = {
-> +		.name = "iio-thermal",
-> +		.owner = THIS_MODULE,
-> +		.of_match_table = iio_thermal_match,
-> +	},
-> +	.probe = iio_thermal_probe,
-> +	.remove = iio_thermal_remove,
-> +};
-> +module_platform_driver(iio_thermal);
-> +
-> +MODULE_DESCRIPTION("Thermal driver for IIO ADCs");
-> +MODULE_LICENSE("GPL v2");
+
+> > ---
+> >  drivers/thermal/imx_thermal.c |   39 ++++++++++++++++++++++++++---=
+----------
+> >  1 file changed, 26 insertions(+), 13 deletions(-)
+> >=20
+> > diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_th=
+ermal.c
+> > index 45af765..a99c631 100644
+> > --- a/drivers/thermal/imx_thermal.c
+> > +++ b/drivers/thermal/imx_thermal.c
+> > @@ -62,12 +62,16 @@ enum imx_thermal_trip {
+> >  #define IMX_POLLING_DELAY		2000 /* millisecond */
+> >  #define IMX_PASSIVE_DELAY		1000
+> > =20
+> > +#define FACTOR0				10000000
+> > +#define FACTOR1				15976
+> > +#define FACTOR2				4297157
+> > +
+> >  struct imx_thermal_data {
+> >  	struct thermal_zone_device *tz;
+> >  	struct thermal_cooling_device *cdev;
+> >  	enum thermal_device_mode mode;
+> >  	struct regmap *tempmon;
+> > -	int c1, c2; /* See formula in imx_get_sensor_data() */
+> > +	u32 c1, c2; /* See formula in imx_get_sensor_data() */
+> >  	unsigned long temp_passive;
+> >  	unsigned long temp_critical;
+> >  	unsigned long alarm_temp;
+> > @@ -84,7 +88,7 @@ static void imx_set_alarm_temp(struct imx_thermal=
+_data *data,
+> >  	int alarm_value;
+> > =20
+> >  	data->alarm_temp =3D alarm_temp;
+> > -	alarm_value =3D (alarm_temp - data->c2) / data->c1;
+> > +	alarm_value =3D (data->c2 - alarm_temp) / data->c1;
+> >  	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_ALARM_VALUE_MA=
+SK);
+> >  	regmap_write(map, TEMPSENSE0 + REG_SET, alarm_value <<
+> >  			TEMPSENSE0_ALARM_VALUE_SHIFT);
+> > @@ -136,7 +140,7 @@ static int imx_get_temp(struct thermal_zone_dev=
+ice *tz, unsigned long *temp)
+> >  	n_meas =3D (val & TEMPSENSE0_TEMP_CNT_MASK) >> TEMPSENSE0_TEMP_CN=
+T_SHIFT;
+> > =20
+> >  	/* See imx_get_sensor_data() for formula derivation */
+> > -	*temp =3D data->c2 + data->c1 * n_meas;
+> > +	*temp =3D data->c2 - n_meas * data->c1;
+> > =20
+> >  	/* Update alarm value to next higher trip point */
+> >  	if (data->alarm_temp =3D=3D data->temp_passive && *temp >=3D data=
+->temp_passive)
+> > @@ -305,6 +309,7 @@ static int imx_get_sensor_data(struct platform_=
+device *pdev)
+> >  	int t1, t2, n1, n2;
+> >  	int ret;
+> >  	u32 val;
+> > +	u64 temp64;
+> > =20
+> >  	map =3D syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
+> >  					      "fsl,tempmon-data");
+> > @@ -330,6 +335,8 @@ static int imx_get_sensor_data(struct platform_=
+device *pdev)
+> >  	 *   [31:20] - sensor value @ 25C
+> >  	 *    [19:8] - sensor value of hot
+> >  	 *     [7:0] - hot temperature value
+> > +	 * Use universal formula now and only need sensor value @ 25C
+> > +	 * slope =3D 0.4297157 - (0.0015976 * 25C fuse)
+> >  	 */
+> >  	n1 =3D val >> 20;
+> >  	n2 =3D (val & 0xfff00) >> 8;
+> > @@ -337,20 +344,26 @@ static int imx_get_sensor_data(struct platfor=
+m_device *pdev)
+> >  	t1 =3D 25; /* t1 always 25C */
+> > =20
+> >  	/*
+> > -	 * Derived from linear interpolation,
+> > -	 * Tmeas =3D T2 + (Nmeas - N2) * (T1 - T2) / (N1 - N2)
+> > +	 * Derived from linear interpolation:
+> > +	 * slope =3D 0.4297157 - (0.0015976 * 25C fuse)
+> > +	 * slope =3D (FACTOR2 - FACTOR1 * n1) / FACTOR0
+> > +	 * (Nmeas - n1) / (Tmeas - t1) =3D slope
+> >  	 * We want to reduce this down to the minimum computation necessa=
+ry
+> >  	 * for each temperature read.  Also, we want Tmeas in millicelsiu=
+s
+> >  	 * and we don't want to lose precision from integer division. So.=
+=2E.
+> > -	 * milli_Tmeas =3D 1000 * T2 + 1000 * (Nmeas - N2) * (T1 - T2) / =
+(N1 - N2)
+> > -	 * Let constant c1 =3D 1000 * (T1 - T2) / (N1 - N2)
+> > -	 * milli_Tmeas =3D (1000 * T2) + c1 * (Nmeas - N2)
+> > -	 * milli_Tmeas =3D (1000 * T2) + (c1 * Nmeas) - (c1 * N2)
+> > -	 * Let constant c2 =3D (1000 * T2) - (c1 * N2)
+> > -	 * milli_Tmeas =3D c2 + (c1 * Nmeas)
+> > +	 * Tmeas =3D (Nmeas - n1) / slope + t1
+> > +	 * milli_Tmeas =3D 1000 * (Nmeas - n1) / slope + 1000 * t1
+> > +	 * milli_Tmeas =3D -1000 * (n1 - Nmeas) / slope + 1000 * t1
+> > +	 * Let constant c1 =3D (-1000 / slope)
+> > +	 * milli_Tmeas =3D (n1 - Nmeas) * c1 + 1000 * t1
+> > +	 * Let constant c2 =3D n1 *c1 + 1000 * t1
+> > +	 * milli_Tmeas =3D c2 - Nmeas * c1
+> >  	 */
+> > -	data->c1 =3D 1000 * (t1 - t2) / (n1 - n2);
+> > -	data->c2 =3D 1000 * t2 - data->c1 * n2;
+> > +	temp64 =3D FACTOR0;
+> > +	temp64 *=3D 1000;
+> > +	do_div(temp64, FACTOR1 * n1 - FACTOR2);
+> > +	data->c1 =3D temp64;
+> > +	data->c2 =3D n1 * data->c1 + 1000 * t1;
+> > =20
+> >  	/*
+> >  	 * Set the default passive cooling trip point to 20 =C2=B0C below=
+ the
+> > --=20
+> > 1.7.9.5
+> >=20
+> >=20
+>=20
 
 
