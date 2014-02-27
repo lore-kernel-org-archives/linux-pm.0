@@ -1,74 +1,56 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V2 1/8] PM / Runtime: Fetch runtime PM callbacks using a macro
-Date: Thu, 27 Feb 2014 23:36:16 +0100
-Message-ID: <CAPDyKFqPAaHTt1rESG2192sD=nFqDgOQ7vSxopcmAUvGgY6hyg@mail.gmail.com>
-References: <CAPDyKFq4X3G1zZay0XG2g-djEvyRdf9s47GDSC5htXZ7c-LdRQ@mail.gmail.com>
-	<Pine.LNX.4.44L0.1402271621430.888-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH] PM / Domains: Turn latency warning into debug message
+Date: Thu, 27 Feb 2014 23:43:35 +0100
+Message-ID: <CAPDyKFoSQQqiL7=H12z9Ag2_DZNig_DGu_u9qrpQ53YtJhwUSQ@mail.gmail.com>
+References: <1393525604-21471-1-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f169.google.com ([209.85.216.169]:53927 "EHLO
-	mail-qc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751546AbaB0WgR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 17:36:17 -0500
-Received: by mail-qc0-f169.google.com with SMTP id e9so4131667qcy.0
-        for <linux-pm@vger.kernel.org>; Thu, 27 Feb 2014 14:36:16 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.44L0.1402271621430.888-100000@iolanthe.rowland.org>
+Received: from mail-qc0-f171.google.com ([209.85.216.171]:51309 "EHLO
+	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752487AbaB0Wng (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 17:43:36 -0500
+Received: by mail-qc0-f171.google.com with SMTP id x3so4124834qcv.2
+        for <linux-pm@vger.kernel.org>; Thu, 27 Feb 2014 14:43:35 -0800 (PST)
+In-Reply-To: <1393525604-21471-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 27 February 2014 22:25, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 27 Feb 2014, Ulf Hansson wrote:
->
->> On 27 February 2014 17:22, Alan Stern <stern@rowland.harvard.edu> wrote:
->> > On Thu, 27 Feb 2014, Ulf Hansson wrote:
->> >
->> >> > A reasonable compromise would be to define the macro, and then use it
->> >> > in those three new functions (and nowhere else).
->> >>
->> >> Okay, let me send a v3 that tries this approach then.
->> >>
->> >> >
->> >> > The existing rpm_idle, rpm_suspend, and rpm_resume routines should then
->> >> > be changed to use the new functions.  And of course, the new functions
->> >> > could be called directly by subsystems or PM domains.
->> >>
->> >> Not sure we should export these functions as a part of this patchset.
->> >> Would it not be preferred, to first see if there are any that needs
->> >> it?
->> >
->> > I don't understand.  V2 of the patchset exports
->> > pm_runtime_force_suspend and pm_runtime_force_resume.  Why wouldn't you
->> > want to export them in V3?
->>
->> There are some confusion here. :-)  pm_runtime_force_suspend|resume()
->> surely need to be exported, but that's "patch v2 2/8".
->>
->> I think we were debating whether this patch "patch v2 1/8" should use
->> a macro to walk the ladder to fetch the runtime PM callback - or if we
->> should implement a three c-functions to handle it. I prefer to keep
->> this patch as is, thus using the macro.
->
-> But you're going to expand the macro (say, the version that handles
-> runtime_resume callbacks) in two places: rpm_resume and
-> pm_runtime_force_resume.  That's inefficient.  The macro generates
-> fairly complicated code, and so it should be expanded in only one
-> place: a single new function.  The new function can be called by both
-> rpm_resume and pm_runtime_force_resume.
+On 27 February 2014 19:26, Philipp Zabel <p.zabel@pengutronix.de> wrote:
+> If devices don't provide latency data, this warning can be quite noisy until
+> the pm domain was enabled and disabled a few times. Turn this warning into
+> a debug message.
 
-That's a valid point. Maybe you were trying to tell me this before as
-well, not sure.
-
-Anyway, l will send a v3 to address your comments.
-
-Kind regards
-Ulf Hansson
+Just curious, why is the latency not interesting for you?
 
 >
-> In fact, from comparing those two routines, it looks like the new
-> function could include a little more than just the macro expansion.
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+> ---
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> Alan Stern
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 6d47498..93ca31f 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -46,7 +46,7 @@
+>         struct gpd_timing_data *__td = &dev_gpd_data(dev)->td;                  \
+>         if (!__retval && __elapsed > __td->field) {                             \
+>                 __td->field = __elapsed;                                        \
+> -               dev_warn(dev, name " latency exceeded, new value %lld ns\n",    \
+> +               dev_dbg(dev, name " latency exceeded, new value %lld ns\n",     \
+>                         __elapsed);                                             \
+>                 genpd->max_off_time_changed = true;                             \
+>                 __td->constraint_changed = true;                                \
+> --
+> 1.8.5.3
 >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
