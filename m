@@ -1,41 +1,39 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH V2 1/8] PM / Runtime: Fetch runtime PM callbacks using
- a macro
-Date: Thu, 27 Feb 2014 11:22:23 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1402271120280.888-100000@iolanthe.rowland.org>
-References: <CAPDyKFrbhmqmu-0uqX_U18nKXuu2z5ueYXqaz4LOHy=ijecs1g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: [PATCH] PM / Domains: Turn latency warning into debug message
+Date: Thu, 27 Feb 2014 19:26:44 +0100
+Message-ID: <1393525604-21471-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:42539 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751048AbaB0QWY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 11:22:24 -0500
-In-Reply-To: <CAPDyKFrbhmqmu-0uqX_U18nKXuu2z5ueYXqaz4LOHy=ijecs1g@mail.gmail.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:53461 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753580AbaB0S0v (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 13:26:51 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>
 
-On Thu, 27 Feb 2014, Ulf Hansson wrote:
+If devices don't provide latency data, this warning can be quite noisy until
+the pm domain was enabled and disabled a few times. Turn this warning into
+a debug message.
 
-> > A reasonable compromise would be to define the macro, and then use it
-> > in those three new functions (and nowhere else).
-> 
-> Okay, let me send a v3 that tries this approach then.
-> 
-> >
-> > The existing rpm_idle, rpm_suspend, and rpm_resume routines should then
-> > be changed to use the new functions.  And of course, the new functions
-> > could be called directly by subsystems or PM domains.
-> 
-> Not sure we should export these functions as a part of this patchset.
-> Would it not be preferred, to first see if there are any that needs
-> it?
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+---
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I don't understand.  V2 of the patchset exports 
-pm_runtime_force_suspend and pm_runtime_force_resume.  Why wouldn't you 
-want to export them in V3?
-
-Alan Stern
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 6d47498..93ca31f 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -46,7 +46,7 @@
+ 	struct gpd_timing_data *__td = &dev_gpd_data(dev)->td;			\
+ 	if (!__retval && __elapsed > __td->field) {				\
+ 		__td->field = __elapsed;					\
+-		dev_warn(dev, name " latency exceeded, new value %lld ns\n",	\
++		dev_dbg(dev, name " latency exceeded, new value %lld ns\n",	\
+ 			__elapsed);						\
+ 		genpd->max_off_time_changed = true;				\
+ 		__td->constraint_changed = true;				\
+-- 
+1.8.5.3
 
