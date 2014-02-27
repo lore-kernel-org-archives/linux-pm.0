@@ -1,111 +1,130 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH 2/2] Thermal: thermal zone governor fix
-Date: Thu, 27 Feb 2014 13:48:20 +0000
-Message-ID: <1393508900-19931-2-git-send-email-javi.merino@arm.com>
-References: <20140227134122.GA4417@e102654-lin.cambridge.arm.com>
- <1393508900-19931-1-git-send-email-javi.merino@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH] Thermal: thermal zone governor fix
+Date: Thu, 27 Feb 2014 14:21:46 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B909263011DEECB@SHSMSX101.ccr.corp.intel.com>
+References: <1393483276.2637.7.camel@rzhang1-mobl4>
+ <1393483668.2637.12.camel@rzhang1-mobl4>
+ <20140227134122.GA4417@e102654-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:58488 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbaB0NtV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 08:49:21 -0500
-In-Reply-To: <1393508900-19931-1-git-send-email-javi.merino@arm.com>
+Received: from mga02.intel.com ([134.134.136.20]:2911 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753455AbaB0OVv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Feb 2014 09:21:51 -0500
+In-Reply-To: <20140227134122.GA4417@e102654-lin.cambridge.arm.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: eduardo.valentin@ti.com, wni@nvidia.com
+To: Javi Merino <javi.merino@arm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, eduardo <eduardo.valentin@ti.com>, "wni@nvidia.com" <wni@nvidia.com>
 
-From: Zhang Rui <rui.zhang@intel.com>
+--_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 
-This patch does a cleanup about the thermal zone govenor,
-setting and make the following rule.
-1. For thermal zone devices that are registered w/o tz->tzp,
-   they can use the default thermal governor only.
-2. For thermal zone devices w/ governor name specified in
-   tz->tzp->governor_name, we will use the default govenor
-   if the governor specified is not available at the moment,
-   and update tz->governor when the matched governor is registered.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSmF2aSBNZXJpbm8gW21h
+aWx0bzpqYXZpLm1lcmlub0Bhcm0uY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgRmVicnVhcnkgMjcs
+IDIwMTQgOTo0MSBQTQ0KPiBUbzogWmhhbmcsIFJ1aQ0KPiBDYzogTGludXggUE0gbGlzdDsgZWR1
+YXJkbzsgd25pQG52aWRpYS5jb20NCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gVGhlcm1hbDogdGhl
+cm1hbCB6b25lIGdvdmVybm9yIGZpeA0KPiBJbXBvcnRhbmNlOiBIaWdoDQo+IA0KPiBIaSBSdWks
+DQo+IA0KPiBPbiBUaHUsIEZlYiAyNywgMjAxNCBhdCAwNjo0Nzo0OEFNICswMDAwLCBaaGFuZyBS
+dWkgd3JvdGU6DQo+ID4gT24gVGh1LCAyMDE0LTAyLTI3IGF0IDE0OjQxICswODAwLCBaaGFuZyBS
+dWkgd3JvdGU6DQo+ID4gPiBGcm9tIGNkNTg3YWRkMzA0M2VkN2JmMzM0N2U1ZDk1NmY2NWVjOGFk
+ZjA0Y2YgTW9uIFNlcCAxNyAwMDowMDowMA0KPiA+ID4gMjAwMQ0KPiA+ID4gRnJvbTogWmhhbmcg
+UnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiA+ID4gRGF0ZTogRnJpLCAyNCBKYW4gMjAxNCAx
+MDoyMzoxOSArMDgwMA0KPiA+ID4gU3ViamVjdDogW1BBVENIXSBUaGVybWFsOiB0aGVybWFsIHpv
+bmUgZ292ZXJub3IgZml4DQo+ID4NCj4gPiBvb3BzLiBmb3Jnb3QgdG8gYXR0YWNoIHRoZSB1cGRh
+dGVkIHZlcnNpb24uDQo+ID4NCj4gPiB0aGFua3MsDQo+ID4gcnVpDQo+ID4NCj4gPiBGcm9tIGRm
+ZjFiMjA3ODI1NjA5ZTczYzc3MjJiYzc5ZGRhMGVhMjk5NzQ5MzEgTW9uIFNlcCAxNyAwMDowMDow
+MCAyMDAxDQo+ID4gRnJvbTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiA+IERh
+dGU6IEZyaSwgMjQgSmFuIDIwMTQgMTA6MjM6MTkgKzA4MDANCj4gPiBTdWJqZWN0OiBbUEFUQ0hd
+IFRoZXJtYWw6IHRoZXJtYWwgem9uZSBnb3Zlcm5vciBmaXgNCj4gPg0KPiA+IFRoaXMgcGF0Y2gg
+ZG9lcyBhIGNsZWFudXAgYWJvdXQgdGhlIHRoZXJtYWwgem9uZSBnb3Zlbm9yLCBzZXR0aW5nIGFu
+ZA0KPiA+IG1ha2UgdGhlIGZvbGxvd2luZyBydWxlLg0KPiA+IDEuIEZvciB0aGVybWFsIHpvbmUg
+ZGV2aWNlcyB0aGF0IGFyZSByZWdpc3RlcmVkIHcvbyB0ei0+dHpwLA0KPiA+ICAgIHRoZXkgY2Fu
+IHVzZSB0aGUgZGVmYXVsdCB0aGVybWFsIGdvdmVybm9yIG9ubHkuDQo+ID4gMi4gRm9yIHRoZXJt
+YWwgem9uZSBkZXZpY2VzIHcvIGdvdmVybm9yIG5hbWUgc3BlY2lmaWVkIGluDQo+ID4gICAgdHot
+PnR6cC0+Z292ZXJub3JfbmFtZSwgd2Ugd2lsbCB1c2UgdGhlIGRlZmF1bHQgZ292ZW5vcg0KPiA+
+ICAgIGlmIHRoZSBnb3Zlcm5vciBzcGVjaWZpZWQgaXMgbm90IGF2YWlsYWJsZSBhdCB0aGUgbW9t
+ZW50LA0KPiA+ICAgIGFuZCB1cGRhdGUgdHotPmdvdmVybm9yIHdoZW4gdGhlIG1hdGNoZWQgZ292
+ZXJub3IgaXMgcmVnaXN0ZXJlZC4NCj4gDQo+IFJpZ2h0LCBidXQgdGhpcyBkb2Vzbid0IHNvbHZl
+IG15IHByb2JsZW0uICBXaGF0IEkgd2FzIHRyeWluZyB0byBzYXkgd2FzDQo+IHRoYXQgd2Ugc2hv
+dWxkIGdldCB0aGUgZGVmYXVsdCBnb3Zlcm5vciBpZiB0ei0+dHpwLT5nb3Zlcm5vcl9uYW1lIGlz
+IG5vdA0KPiBpbml0aWFsaXplZC4gIG9mX3BhcnNlX3RoZXJtYWxfem9uZXMoKSBjYWxscw0KPiB0
+aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyKCkgd2l0aCBhIHR6cCB0aGF0IGhhcyBhbiBlbXB0
+eSBnb3Zlcm5vcl9uYW1lDQo+IGFuZCBlbmRzIHVwIHdpdGggbm8gZ292ZXJub3IuDQo+IA0KSSBr
+bm93LCBJIHRyaWVkIHRvIGZpeCB0aGlzIGJ5IGNoZWNraW5nIHRoZSBpbnB1dCBwYXJhbWV0ZXIg
+aW4gX19maW5kX2dvdmVybm9yLCBhbmQgYXBwYXJlbnRseSBJIGRpZCBpdCB3cm9uZy4NClJlZnJl
+c2hlZCBwYXRjaCBhdHRhY2hlZC4gKE15IExpbnV4IG1hY2hpbmUgaXMgYnJva2VuIGF0IHRoZSBt
+b21lbnQsIHRodXMgSSB3aWxsIHJlc2VuZCB0aGUgcmVmcmVzaGVkIHBhdGNoIHRvIHRoZSBsaXN0
+IGxhdGVyLCBpZiB5b3UgdGhpbmsgaXQgZml4ZXMgdGhlIHByb2JsZW0gZm9yIHlvdSB0aGlzIHRp
+bWUuKQ0KDQpUaGFua3MsDQpydWkNCg==
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/thermal_core.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
+--_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_
+Content-Type: application/octet-stream;
+	name="0001-Thermal-thermal-zone-governor-fix.patch"
+Content-Description: 0001-Thermal-thermal-zone-governor-fix.patch
+Content-Disposition: attachment;
+	filename="0001-Thermal-thermal-zone-governor-fix.patch"; size=3068;
+	creation-date="Thu, 27 Feb 2014 14:19:42 GMT";
+	modification-date="Thu, 27 Feb 2014 14:17:03 GMT"
+Content-Transfer-Encoding: base64
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.=
-c
-index 9b655b0..cc9b420 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -56,10 +56,15 @@ static LIST_HEAD(thermal_governor_list);
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
-=20
-+static struct thermal_governor *def_governor;
-+
- static struct thermal_governor *__find_governor(const char *name)
- {
- =09struct thermal_governor *pos;
-=20
-+=09if (!name)
-+=09=09return def_governor;
-+
- =09list_for_each_entry(pos, &thermal_governor_list, governor_list)
- =09=09if (!strnicmp(name, pos->name, THERMAL_NAME_LENGTH))
- =09=09=09return pos;
-@@ -82,17 +87,23 @@ int thermal_register_governor(struct thermal_governor *=
-governor)
- =09if (__find_governor(governor->name) =3D=3D NULL) {
- =09=09err =3D 0;
- =09=09list_add(&governor->governor_list, &thermal_governor_list);
-+=09=09if (!def_governor && !strncmp(governor->name,
-+=09=09=09DEFAULT_THERMAL_GOVERNOR, THERMAL_NAME_LENGTH))
-+=09=09=09def_governor =3D governor;
- =09}
-=20
- =09mutex_lock(&thermal_list_lock);
-=20
- =09list_for_each_entry(pos, &thermal_tz_list, node) {
-+=09=09/*
-+=09=09 * only thermal zones with specified tz->tzp->governor_name
-+=09=09 * may run with tz->governor unset
-+=09=09 */
- =09=09if (pos->governor)
- =09=09=09continue;
--=09=09if ((pos->tzp) && (pos->tzp->governor_name[0]))
--=09=09=09name =3D pos->tzp->governor_name;
--=09=09else
--=09=09=09name =3D DEFAULT_THERMAL_GOVERNOR;
-+
-+=09=09name =3D pos->tzp->governor_name;
-+
- =09=09if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
- =09=09=09pos->governor =3D governor;
- =09}
-@@ -342,8 +353,8 @@ static void monitor_thermal_zone(struct thermal_zone_de=
-vice *tz)
- static void handle_non_critical_trips(struct thermal_zone_device *tz,
- =09=09=09int trip, enum thermal_trip_type trip_type)
- {
--=09if (tz->governor)
--=09=09tz->governor->throttle(tz, trip);
-+=09tz->governor ? tz->governor->throttle(tz, trip) :
-+=09=09       def_governor->throttle(tz, trip);
- }
-=20
- static void handle_critical_trips(struct thermal_zone_device *tz,
-@@ -1533,7 +1544,7 @@ struct thermal_zone_device *thermal_zone_device_regis=
-ter(const char *type,
- =09if ((tz->tzp) && (tz->tzp->governor_name[0]))
- =09=09tz->governor =3D __find_governor(tz->tzp->governor_name);
- =09else
--=09=09tz->governor =3D __find_governor(DEFAULT_THERMAL_GOVERNOR);
-+=09=09tz->governor =3D def_governor;
-=20
- =09mutex_unlock(&thermal_governor_lock);
-=20
---=20
-1.7.9.5
+RnJvbSA2MzVhMWY0MWE4Zjk1YTM1ZDFiZjI0YzljYzAxOGZmYjAxOGE5M2U2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+CkRhdGU6
+IEZyaSwgMjQgSmFuIDIwMTQgMTA6MjM6MTkgKzA4MDAKU3ViamVjdDogW1BBVENIXSBUaGVybWFs
+OiB0aGVybWFsIHpvbmUgZ292ZXJub3IgZml4CgpUaGlzIHBhdGNoIGRvZXMgYSBjbGVhbnVwIGFi
+b3V0IHRoZSB0aGVybWFsIHpvbmUgZ292ZW5vciwKc2V0dGluZyBhbmQgbWFrZSB0aGUgZm9sbG93
+aW5nIHJ1bGUuCjEuIEZvciB0aGVybWFsIHpvbmUgZGV2aWNlcyB0aGF0IGFyZSByZWdpc3RlcmVk
+IHcvbyB0ei0+dHpwLAogICB0aGV5IGNhbiB1c2UgdGhlIGRlZmF1bHQgdGhlcm1hbCBnb3Zlcm5v
+ciBvbmx5LgoyLiBGb3IgdGhlcm1hbCB6b25lIGRldmljZXMgdy8gZ292ZXJub3IgbmFtZSBzcGVj
+aWZpZWQgaW4KICAgdHotPnR6cC0+Z292ZXJub3JfbmFtZSwgd2Ugd2lsbCB1c2UgdGhlIGRlZmF1
+bHQgZ292ZW5vcgogICBpZiB0aGUgZ292ZXJub3Igc3BlY2lmaWVkIGlzIG5vdCBhdmFpbGFibGUg
+YXQgdGhlIG1vbWVudCwKICAgYW5kIHVwZGF0ZSB0ei0+Z292ZXJub3Igd2hlbiB0aGUgbWF0Y2hl
+ZCBnb3Zlcm5vciBpcyByZWdpc3RlcmVkLgoKU2lnbmVkLW9mZi1ieTogWmhhbmcgUnVpIDxydWku
+emhhbmdAaW50ZWwuY29tPgotLS0KIGRyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYyB8ICAg
+MjUgKysrKysrKysrKysrKysrKysrLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDE4IGluc2VydGlv
+bnMoKyksIDcgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3RoZXJt
+YWxfY29yZS5jIGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jCmluZGV4IDMzOGE4OGIu
+LjEzNDYyMDUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYworKysg
+Yi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMKQEAgLTU2LDEwICs1NiwxNSBAQCBzdGF0
+aWMgTElTVF9IRUFEKHRoZXJtYWxfZ292ZXJub3JfbGlzdCk7CiBzdGF0aWMgREVGSU5FX01VVEVY
+KHRoZXJtYWxfbGlzdF9sb2NrKTsKIHN0YXRpYyBERUZJTkVfTVVURVgodGhlcm1hbF9nb3Zlcm5v
+cl9sb2NrKTsKIAorc3RhdGljIHN0cnVjdCB0aGVybWFsX2dvdmVybm9yICpkZWZfZ292ZXJub3I7
+CisKIHN0YXRpYyBzdHJ1Y3QgdGhlcm1hbF9nb3Zlcm5vciAqX19maW5kX2dvdmVybm9yKGNvbnN0
+IGNoYXIgKm5hbWUpCiB7CiAJc3RydWN0IHRoZXJtYWxfZ292ZXJub3IgKnBvczsKIAorCWlmICgh
+bmFtZSB8fCAhbmFtZVswXSkKKwkJcmV0dXJuIGRlZl9nb3Zlcm5vcjsKKwogCWxpc3RfZm9yX2Vh
+Y2hfZW50cnkocG9zLCAmdGhlcm1hbF9nb3Zlcm5vcl9saXN0LCBnb3Zlcm5vcl9saXN0KQogCQlp
+ZiAoIXN0cm5pY21wKG5hbWUsIHBvcy0+bmFtZSwgVEhFUk1BTF9OQU1FX0xFTkdUSCkpCiAJCQly
+ZXR1cm4gcG9zOwpAQCAtODIsMTcgKzg3LDIzIEBAIGludCB0aGVybWFsX3JlZ2lzdGVyX2dvdmVy
+bm9yKHN0cnVjdCB0aGVybWFsX2dvdmVybm9yICpnb3Zlcm5vcikKIAlpZiAoX19maW5kX2dvdmVy
+bm9yKGdvdmVybm9yLT5uYW1lKSA9PSBOVUxMKSB7CiAJCWVyciA9IDA7CiAJCWxpc3RfYWRkKCZn
+b3Zlcm5vci0+Z292ZXJub3JfbGlzdCwgJnRoZXJtYWxfZ292ZXJub3JfbGlzdCk7CisJCWlmICgh
+ZGVmX2dvdmVybm9yICYmICFzdHJuY21wKGdvdmVybm9yLT5uYW1lLAorCQkJREVGQVVMVF9USEVS
+TUFMX0dPVkVSTk9SLCBUSEVSTUFMX05BTUVfTEVOR1RIKSkKKwkJCWRlZl9nb3Zlcm5vciA9IGdv
+dmVybm9yOwogCX0KIAogCW11dGV4X2xvY2soJnRoZXJtYWxfbGlzdF9sb2NrKTsKIAogCWxpc3Rf
+Zm9yX2VhY2hfZW50cnkocG9zLCAmdGhlcm1hbF90el9saXN0LCBub2RlKSB7CisJCS8qCisJCSAq
+IG9ubHkgdGhlcm1hbCB6b25lcyB3aXRoIHNwZWNpZmllZCB0ei0+dHpwLT5nb3Zlcm5vcl9uYW1l
+CisJCSAqIG1heSBydW4gd2l0aCB0ei0+Z292ZW5vciB1bnNldAorCQkgKi8KIAkJaWYgKHBvcy0+
+Z292ZXJub3IpCiAJCQljb250aW51ZTsKLQkJaWYgKHBvcy0+dHpwKQotCQkJbmFtZSA9IHBvcy0+
+dHpwLT5nb3Zlcm5vcl9uYW1lOwotCQllbHNlCi0JCQluYW1lID0gREVGQVVMVF9USEVSTUFMX0dP
+VkVSTk9SOworCisJCW5hbWUgPSBwb3MtPnR6cC0+Z292ZXJub3JfbmFtZTsKKwogCQlpZiAoIXN0
+cm5pY21wKG5hbWUsIGdvdmVybm9yLT5uYW1lLCBUSEVSTUFMX05BTUVfTEVOR1RIKSkKIAkJCXBv
+cy0+Z292ZXJub3IgPSBnb3Zlcm5vcjsKIAl9CkBAIC0zNDIsOCArMzUzLDggQEAgc3RhdGljIHZv
+aWQgbW9uaXRvcl90aGVybWFsX3pvbmUoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6KQog
+c3RhdGljIHZvaWQgaGFuZGxlX25vbl9jcml0aWNhbF90cmlwcyhzdHJ1Y3QgdGhlcm1hbF96b25l
+X2RldmljZSAqdHosCiAJCQlpbnQgdHJpcCwgZW51bSB0aGVybWFsX3RyaXBfdHlwZSB0cmlwX3R5
+cGUpCiB7Ci0JaWYgKHR6LT5nb3Zlcm5vcikKLQkJdHotPmdvdmVybm9yLT50aHJvdHRsZSh0eiwg
+dHJpcCk7CisJdHotPmdvdmVybm9yID8gdHotPmdvdmVybm9yLT50aHJvdHRsZSh0eiwgdHJpcCkg
+OgorCQkgICAgICAgZGVmX2dvdmVybm9yLT50aHJvdHRsZSh0eiwgdHJpcCk7CiB9CiAKIHN0YXRp
+YyB2b2lkIGhhbmRsZV9jcml0aWNhbF90cmlwcyhzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAq
+dHosCkBAIC0xNTMzLDcgKzE1NDQsNyBAQCBzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdGhl
+cm1hbF96b25lX2RldmljZV9yZWdpc3Rlcihjb25zdCBjaGFyICp0eXBlLAogCWlmICh0ei0+dHpw
+KQogCQl0ei0+Z292ZXJub3IgPSBfX2ZpbmRfZ292ZXJub3IodHotPnR6cC0+Z292ZXJub3JfbmFt
+ZSk7CiAJZWxzZQotCQl0ei0+Z292ZXJub3IgPSBfX2ZpbmRfZ292ZXJub3IoREVGQVVMVF9USEVS
+TUFMX0dPVkVSTk9SKTsKKwkJdHotPmdvdmVybm9yID0gZGVmX2dvdmVybm9yOwogCiAJbXV0ZXhf
+dW5sb2NrKCZ0aGVybWFsX2dvdmVybm9yX2xvY2spOwogCi0tIAoxLjcuOS41Cgo=
 
-
+--_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_--
