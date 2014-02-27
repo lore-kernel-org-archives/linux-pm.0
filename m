@@ -1,39 +1,88 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH] PM / Domains: Turn latency warning into debug message
-Date: Thu, 27 Feb 2014 19:26:44 +0100
-Message-ID: <1393525604-21471-1-git-send-email-p.zabel@pengutronix.de>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 1/3] typecheck: introduce assign_if() and
+ assign_if_enabled()
+Date: Thu, 27 Feb 2014 11:00:32 -0800
+Message-ID: <20140227190032.GA4421@kroah.com>
+References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
+ <1393261707-30565-2-git-send-email-joshc@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:53461 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbaB0S0v (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 13:26:51 -0500
+Received: from mail.linuxfoundation.org ([140.211.169.12]:36932 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbaB0S6z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 13:58:55 -0500
+Content-Disposition: inline
+In-Reply-To: <1393261707-30565-2-git-send-email-joshc@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>
+To: Josh Cartwright <joshc@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-If devices don't provide latency data, this warning can be quite noisy until
-the pm domain was enabled and disabled a few times. Turn this warning into
-a debug message.
+On Mon, Feb 24, 2014 at 11:08:25AM -0600, Josh Cartwright wrote:
+> The assign_if() and assign_if_enable() macros are intended to be used
+> in static initializers for function pointers, where the pointer is
+> expected to be NULL when a compile-time condition does not hold.
+> 
+> These macros allow for implementing this behavior, without requiring the
+> functions be wrapped in #ifdef conditionals, and while providing
+> typesafety regardless of the value of the conditional.
+> 
+> For example, the following pattern is common:
+> 
+> 	#ifdef CONFIG_FOO
+> 	static void foo_callback(void)
+> 	{
+> 	}
+> 	#else
+> 	#define foo_callback NULL
+> 	#endif
+> 
+> 	static struct foo_object foo_obj = {
+> 		.callback = foo_callback,
+> 	};
+> 
+> Usage of assign_if_enabled() allows for achieving the same effect
+> without the preprocessor conditional, and in addition, allowing the
+> compiler to typecheck the function regardless of CONFIG_FOO.
+> 
+> 	static void foo_callback(void)
+> 	{
+> 	}
+> 
+> 	static struct foo_object foo_obj = {
+> 		.callback = assign_if_enabled(CONFIG_FOO, foo_callback),
+> 	};
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
+> ---
+>  include/linux/typecheck.h | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> diff --git a/include/linux/typecheck.h b/include/linux/typecheck.h
+> index eb5b74a..04134c7 100644
+> --- a/include/linux/typecheck.h
+> +++ b/include/linux/typecheck.h
+> @@ -21,4 +21,22 @@
+>  	(void)__tmp; \
+>  })
+>  
+> +/*
+> + * Intended for use in static object initializers,
+> + * assign_if(const_expr, function) evaluates to 'function' if 'const_expr',
+> + * otherwise NULL.
+> + *
+> + * The type of the assign_if() expression is typeof(function), and therefore
+> + * can provide typechecking regardless of 'const_expr'.
+> + *
+> + * gcc considers 'function' to be used and will not generate a 'defined but not
+> + * used' warning when not 'const_expr', however, gcc is smart enough to
+> + * eliminate 'function' if assign_if() is the only reference.
+> + */
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
----
- drivers/base/power/domain.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+What version of gcc started doing this?  Does llvm also do this?
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 6d47498..93ca31f 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -46,7 +46,7 @@
- 	struct gpd_timing_data *__td = &dev_gpd_data(dev)->td;			\
- 	if (!__retval && __elapsed > __td->field) {				\
- 		__td->field = __elapsed;					\
--		dev_warn(dev, name " latency exceeded, new value %lld ns\n",	\
-+		dev_dbg(dev, name " latency exceeded, new value %lld ns\n",	\
- 			__elapsed);						\
- 		genpd->max_off_time_changed = true;				\
- 		__td->constraint_changed = true;				\
--- 
-1.8.5.3
+thanks,
 
+greg k-h
