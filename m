@@ -1,130 +1,160 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH] Thermal: thermal zone governor fix
-Date: Thu, 27 Feb 2014 14:21:46 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B909263011DEECB@SHSMSX101.ccr.corp.intel.com>
-References: <1393483276.2637.7.camel@rzhang1-mobl4>
- <1393483668.2637.12.camel@rzhang1-mobl4>
- <20140227134122.GA4417@e102654-lin.cambridge.arm.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 1/6] PM / Voltagedomain: Add generic clk notifier
+ handler for regulator based dynamic voltage scaling
+Date: Thu, 27 Feb 2014 08:42:53 -0600
+Message-ID: <530F4EED.9050207@ti.com>
+References: <1392755543-28335-1-git-send-email-nm@ti.com> <1392755543-28335-2-git-send-email-nm@ti.com> <20140225055142.22529.21814@quantum> <530D0394.4020208@ti.com> <20140227023455.GA15712@kahuna> <20140227050043.12081.54173@quantum>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:2911 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753455AbaB0OVv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Feb 2014 09:21:51 -0500
-In-Reply-To: <20140227134122.GA4417@e102654-lin.cambridge.arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20140227050043.12081.54173@quantum>
+Sender: linux-omap-owner@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Mark Brown <broonie@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, eduardo <eduardo.valentin@ti.com>, "wni@nvidia.com" <wni@nvidia.com>
 
---_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+On 02/26/2014 11:00 PM, Mike Turquette wrote:
+> Quoting Nishanth Menon (2014-02-26 18:34:55)
+>> +/**
+>> + * pm_runtime_get_rate() - Returns the device operational frequency
+>> + * @dev:       Device to handle
+>> + * @rate:      Returns rate in Hz.
+>> + *
+>> + * Returns appropriate error value in case of error conditions, else
+>> + * returns 0 and rate is updated. The pm_domain logic does all the necessary
+>> + * operation (which may consider magic hardware stuff) to provide the rate.
+>> + *
+>> + * NOTE: the rate returned is a snapshot and in many cases just a bypass
+>> + * to clk api to set the rate.
+>> + */
+>> +int pm_runtime_get_rate(struct device *dev, unsigned long *rate)
+> 
+> Instead of "rate", how about we use "level" and leave it undefined as to
+> what that means? It would be equally valid for level to represent a
+> clock rate, or an opp from a table of opp's, or a p-state, or some value
+> passed to a PM microcontroller.
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSmF2aSBNZXJpbm8gW21h
-aWx0bzpqYXZpLm1lcmlub0Bhcm0uY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgRmVicnVhcnkgMjcs
-IDIwMTQgOTo0MSBQTQ0KPiBUbzogWmhhbmcsIFJ1aQ0KPiBDYzogTGludXggUE0gbGlzdDsgZWR1
-YXJkbzsgd25pQG52aWRpYS5jb20NCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gVGhlcm1hbDogdGhl
-cm1hbCB6b25lIGdvdmVybm9yIGZpeA0KPiBJbXBvcnRhbmNlOiBIaWdoDQo+IA0KPiBIaSBSdWks
-DQo+IA0KPiBPbiBUaHUsIEZlYiAyNywgMjAxNCBhdCAwNjo0Nzo0OEFNICswMDAwLCBaaGFuZyBS
-dWkgd3JvdGU6DQo+ID4gT24gVGh1LCAyMDE0LTAyLTI3IGF0IDE0OjQxICswODAwLCBaaGFuZyBS
-dWkgd3JvdGU6DQo+ID4gPiBGcm9tIGNkNTg3YWRkMzA0M2VkN2JmMzM0N2U1ZDk1NmY2NWVjOGFk
-ZjA0Y2YgTW9uIFNlcCAxNyAwMDowMDowMA0KPiA+ID4gMjAwMQ0KPiA+ID4gRnJvbTogWmhhbmcg
-UnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiA+ID4gRGF0ZTogRnJpLCAyNCBKYW4gMjAxNCAx
-MDoyMzoxOSArMDgwMA0KPiA+ID4gU3ViamVjdDogW1BBVENIXSBUaGVybWFsOiB0aGVybWFsIHpv
-bmUgZ292ZXJub3IgZml4DQo+ID4NCj4gPiBvb3BzLiBmb3Jnb3QgdG8gYXR0YWNoIHRoZSB1cGRh
-dGVkIHZlcnNpb24uDQo+ID4NCj4gPiB0aGFua3MsDQo+ID4gcnVpDQo+ID4NCj4gPiBGcm9tIGRm
-ZjFiMjA3ODI1NjA5ZTczYzc3MjJiYzc5ZGRhMGVhMjk5NzQ5MzEgTW9uIFNlcCAxNyAwMDowMDow
-MCAyMDAxDQo+ID4gRnJvbTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiA+IERh
-dGU6IEZyaSwgMjQgSmFuIDIwMTQgMTA6MjM6MTkgKzA4MDANCj4gPiBTdWJqZWN0OiBbUEFUQ0hd
-IFRoZXJtYWw6IHRoZXJtYWwgem9uZSBnb3Zlcm5vciBmaXgNCj4gPg0KPiA+IFRoaXMgcGF0Y2gg
-ZG9lcyBhIGNsZWFudXAgYWJvdXQgdGhlIHRoZXJtYWwgem9uZSBnb3Zlbm9yLCBzZXR0aW5nIGFu
-ZA0KPiA+IG1ha2UgdGhlIGZvbGxvd2luZyBydWxlLg0KPiA+IDEuIEZvciB0aGVybWFsIHpvbmUg
-ZGV2aWNlcyB0aGF0IGFyZSByZWdpc3RlcmVkIHcvbyB0ei0+dHpwLA0KPiA+ICAgIHRoZXkgY2Fu
-IHVzZSB0aGUgZGVmYXVsdCB0aGVybWFsIGdvdmVybm9yIG9ubHkuDQo+ID4gMi4gRm9yIHRoZXJt
-YWwgem9uZSBkZXZpY2VzIHcvIGdvdmVybm9yIG5hbWUgc3BlY2lmaWVkIGluDQo+ID4gICAgdHot
-PnR6cC0+Z292ZXJub3JfbmFtZSwgd2Ugd2lsbCB1c2UgdGhlIGRlZmF1bHQgZ292ZW5vcg0KPiA+
-ICAgIGlmIHRoZSBnb3Zlcm5vciBzcGVjaWZpZWQgaXMgbm90IGF2YWlsYWJsZSBhdCB0aGUgbW9t
-ZW50LA0KPiA+ICAgIGFuZCB1cGRhdGUgdHotPmdvdmVybm9yIHdoZW4gdGhlIG1hdGNoZWQgZ292
-ZXJub3IgaXMgcmVnaXN0ZXJlZC4NCj4gDQo+IFJpZ2h0LCBidXQgdGhpcyBkb2Vzbid0IHNvbHZl
-IG15IHByb2JsZW0uICBXaGF0IEkgd2FzIHRyeWluZyB0byBzYXkgd2FzDQo+IHRoYXQgd2Ugc2hv
-dWxkIGdldCB0aGUgZGVmYXVsdCBnb3Zlcm5vciBpZiB0ei0+dHpwLT5nb3Zlcm5vcl9uYW1lIGlz
-IG5vdA0KPiBpbml0aWFsaXplZC4gIG9mX3BhcnNlX3RoZXJtYWxfem9uZXMoKSBjYWxscw0KPiB0
-aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyKCkgd2l0aCBhIHR6cCB0aGF0IGhhcyBhbiBlbXB0
-eSBnb3Zlcm5vcl9uYW1lDQo+IGFuZCBlbmRzIHVwIHdpdGggbm8gZ292ZXJub3IuDQo+IA0KSSBr
-bm93LCBJIHRyaWVkIHRvIGZpeCB0aGlzIGJ5IGNoZWNraW5nIHRoZSBpbnB1dCBwYXJhbWV0ZXIg
-aW4gX19maW5kX2dvdmVybm9yLCBhbmQgYXBwYXJlbnRseSBJIGRpZCBpdCB3cm9uZy4NClJlZnJl
-c2hlZCBwYXRjaCBhdHRhY2hlZC4gKE15IExpbnV4IG1hY2hpbmUgaXMgYnJva2VuIGF0IHRoZSBt
-b21lbnQsIHRodXMgSSB3aWxsIHJlc2VuZCB0aGUgcmVmcmVzaGVkIHBhdGNoIHRvIHRoZSBsaXN0
-IGxhdGVyLCBpZiB5b3UgdGhpbmsgaXQgZml4ZXMgdGhlIHByb2JsZW0gZm9yIHlvdSB0aGlzIHRp
-bWUuKQ0KDQpUaGFua3MsDQpydWkNCg==
+IMHO, from a driver which already exists for multiple SoCs/
+architectures, we cannot have variant definitions that a generic
+driver will be unable to depend upon. what should such a driver
+expect? level == rate OR level == index to p-state or magic PM
+controller value?
 
---_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_
-Content-Type: application/octet-stream;
-	name="0001-Thermal-thermal-zone-governor-fix.patch"
-Content-Description: 0001-Thermal-thermal-zone-governor-fix.patch
-Content-Disposition: attachment;
-	filename="0001-Thermal-thermal-zone-governor-fix.patch"; size=3068;
-	creation-date="Thu, 27 Feb 2014 14:19:42 GMT";
-	modification-date="Thu, 27 Feb 2014 14:17:03 GMT"
-Content-Transfer-Encoding: base64
+Today the definitions are very clear to such a driver, pm_runtime APIs
+are used for device specific idle management, but for active
+management, use clk and regulator code as needed - ofcourse, that
+machine specificity triggers the need for the 50 odd cpufreq drivers
+we have today - intent was to be able to abstract it enough for a
+generic logic to exist.
 
-RnJvbSA2MzVhMWY0MWE4Zjk1YTM1ZDFiZjI0YzljYzAxOGZmYjAxOGE5M2U2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+CkRhdGU6
-IEZyaSwgMjQgSmFuIDIwMTQgMTA6MjM6MTkgKzA4MDAKU3ViamVjdDogW1BBVENIXSBUaGVybWFs
-OiB0aGVybWFsIHpvbmUgZ292ZXJub3IgZml4CgpUaGlzIHBhdGNoIGRvZXMgYSBjbGVhbnVwIGFi
-b3V0IHRoZSB0aGVybWFsIHpvbmUgZ292ZW5vciwKc2V0dGluZyBhbmQgbWFrZSB0aGUgZm9sbG93
-aW5nIHJ1bGUuCjEuIEZvciB0aGVybWFsIHpvbmUgZGV2aWNlcyB0aGF0IGFyZSByZWdpc3RlcmVk
-IHcvbyB0ei0+dHpwLAogICB0aGV5IGNhbiB1c2UgdGhlIGRlZmF1bHQgdGhlcm1hbCBnb3Zlcm5v
-ciBvbmx5LgoyLiBGb3IgdGhlcm1hbCB6b25lIGRldmljZXMgdy8gZ292ZXJub3IgbmFtZSBzcGVj
-aWZpZWQgaW4KICAgdHotPnR6cC0+Z292ZXJub3JfbmFtZSwgd2Ugd2lsbCB1c2UgdGhlIGRlZmF1
-bHQgZ292ZW5vcgogICBpZiB0aGUgZ292ZXJub3Igc3BlY2lmaWVkIGlzIG5vdCBhdmFpbGFibGUg
-YXQgdGhlIG1vbWVudCwKICAgYW5kIHVwZGF0ZSB0ei0+Z292ZXJub3Igd2hlbiB0aGUgbWF0Y2hl
-ZCBnb3Zlcm5vciBpcyByZWdpc3RlcmVkLgoKU2lnbmVkLW9mZi1ieTogWmhhbmcgUnVpIDxydWku
-emhhbmdAaW50ZWwuY29tPgotLS0KIGRyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYyB8ICAg
-MjUgKysrKysrKysrKysrKysrKysrLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDE4IGluc2VydGlv
-bnMoKyksIDcgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3RoZXJt
-YWxfY29yZS5jIGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jCmluZGV4IDMzOGE4OGIu
-LjEzNDYyMDUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYworKysg
-Yi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMKQEAgLTU2LDEwICs1NiwxNSBAQCBzdGF0
-aWMgTElTVF9IRUFEKHRoZXJtYWxfZ292ZXJub3JfbGlzdCk7CiBzdGF0aWMgREVGSU5FX01VVEVY
-KHRoZXJtYWxfbGlzdF9sb2NrKTsKIHN0YXRpYyBERUZJTkVfTVVURVgodGhlcm1hbF9nb3Zlcm5v
-cl9sb2NrKTsKIAorc3RhdGljIHN0cnVjdCB0aGVybWFsX2dvdmVybm9yICpkZWZfZ292ZXJub3I7
-CisKIHN0YXRpYyBzdHJ1Y3QgdGhlcm1hbF9nb3Zlcm5vciAqX19maW5kX2dvdmVybm9yKGNvbnN0
-IGNoYXIgKm5hbWUpCiB7CiAJc3RydWN0IHRoZXJtYWxfZ292ZXJub3IgKnBvczsKIAorCWlmICgh
-bmFtZSB8fCAhbmFtZVswXSkKKwkJcmV0dXJuIGRlZl9nb3Zlcm5vcjsKKwogCWxpc3RfZm9yX2Vh
-Y2hfZW50cnkocG9zLCAmdGhlcm1hbF9nb3Zlcm5vcl9saXN0LCBnb3Zlcm5vcl9saXN0KQogCQlp
-ZiAoIXN0cm5pY21wKG5hbWUsIHBvcy0+bmFtZSwgVEhFUk1BTF9OQU1FX0xFTkdUSCkpCiAJCQly
-ZXR1cm4gcG9zOwpAQCAtODIsMTcgKzg3LDIzIEBAIGludCB0aGVybWFsX3JlZ2lzdGVyX2dvdmVy
-bm9yKHN0cnVjdCB0aGVybWFsX2dvdmVybm9yICpnb3Zlcm5vcikKIAlpZiAoX19maW5kX2dvdmVy
-bm9yKGdvdmVybm9yLT5uYW1lKSA9PSBOVUxMKSB7CiAJCWVyciA9IDA7CiAJCWxpc3RfYWRkKCZn
-b3Zlcm5vci0+Z292ZXJub3JfbGlzdCwgJnRoZXJtYWxfZ292ZXJub3JfbGlzdCk7CisJCWlmICgh
-ZGVmX2dvdmVybm9yICYmICFzdHJuY21wKGdvdmVybm9yLT5uYW1lLAorCQkJREVGQVVMVF9USEVS
-TUFMX0dPVkVSTk9SLCBUSEVSTUFMX05BTUVfTEVOR1RIKSkKKwkJCWRlZl9nb3Zlcm5vciA9IGdv
-dmVybm9yOwogCX0KIAogCW11dGV4X2xvY2soJnRoZXJtYWxfbGlzdF9sb2NrKTsKIAogCWxpc3Rf
-Zm9yX2VhY2hfZW50cnkocG9zLCAmdGhlcm1hbF90el9saXN0LCBub2RlKSB7CisJCS8qCisJCSAq
-IG9ubHkgdGhlcm1hbCB6b25lcyB3aXRoIHNwZWNpZmllZCB0ei0+dHpwLT5nb3Zlcm5vcl9uYW1l
-CisJCSAqIG1heSBydW4gd2l0aCB0ei0+Z292ZW5vciB1bnNldAorCQkgKi8KIAkJaWYgKHBvcy0+
-Z292ZXJub3IpCiAJCQljb250aW51ZTsKLQkJaWYgKHBvcy0+dHpwKQotCQkJbmFtZSA9IHBvcy0+
-dHpwLT5nb3Zlcm5vcl9uYW1lOwotCQllbHNlCi0JCQluYW1lID0gREVGQVVMVF9USEVSTUFMX0dP
-VkVSTk9SOworCisJCW5hbWUgPSBwb3MtPnR6cC0+Z292ZXJub3JfbmFtZTsKKwogCQlpZiAoIXN0
-cm5pY21wKG5hbWUsIGdvdmVybm9yLT5uYW1lLCBUSEVSTUFMX05BTUVfTEVOR1RIKSkKIAkJCXBv
-cy0+Z292ZXJub3IgPSBnb3Zlcm5vcjsKIAl9CkBAIC0zNDIsOCArMzUzLDggQEAgc3RhdGljIHZv
-aWQgbW9uaXRvcl90aGVybWFsX3pvbmUoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6KQog
-c3RhdGljIHZvaWQgaGFuZGxlX25vbl9jcml0aWNhbF90cmlwcyhzdHJ1Y3QgdGhlcm1hbF96b25l
-X2RldmljZSAqdHosCiAJCQlpbnQgdHJpcCwgZW51bSB0aGVybWFsX3RyaXBfdHlwZSB0cmlwX3R5
-cGUpCiB7Ci0JaWYgKHR6LT5nb3Zlcm5vcikKLQkJdHotPmdvdmVybm9yLT50aHJvdHRsZSh0eiwg
-dHJpcCk7CisJdHotPmdvdmVybm9yID8gdHotPmdvdmVybm9yLT50aHJvdHRsZSh0eiwgdHJpcCkg
-OgorCQkgICAgICAgZGVmX2dvdmVybm9yLT50aHJvdHRsZSh0eiwgdHJpcCk7CiB9CiAKIHN0YXRp
-YyB2b2lkIGhhbmRsZV9jcml0aWNhbF90cmlwcyhzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAq
-dHosCkBAIC0xNTMzLDcgKzE1NDQsNyBAQCBzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdGhl
-cm1hbF96b25lX2RldmljZV9yZWdpc3Rlcihjb25zdCBjaGFyICp0eXBlLAogCWlmICh0ei0+dHpw
-KQogCQl0ei0+Z292ZXJub3IgPSBfX2ZpbmRfZ292ZXJub3IodHotPnR6cC0+Z292ZXJub3JfbmFt
-ZSk7CiAJZWxzZQotCQl0ei0+Z292ZXJub3IgPSBfX2ZpbmRfZ292ZXJub3IoREVGQVVMVF9USEVS
-TUFMX0dPVkVSTk9SKTsKKwkJdHotPmdvdmVybm9yID0gZGVmX2dvdmVybm9yOwogCiAJbXV0ZXhf
-dW5sb2NrKCZ0aGVybWFsX2dvdmVybm9yX2xvY2spOwogCi0tIAoxLjcuOS41Cgo=
+> 
+> Code that is tightly coupled to the hardware would simply know what
+> value to use with no extra sugar.
 
---_002_744357E9AAD1214791ACBA4B0B909263011DEECBSHSMSX101ccrcor_--
+agreed on the machine specific implementation, but the logic at driver
+level will then get tied down to machine specific implementation as well
+
+> 
+> Generic code would need to get the various supported "levels" populated
+> at run time, but a DT binding could do that, or a query to the ACPI
+> tables, or whatever.
+
+then we'd also have to introduce a translator API for drivers that
+need frequency -> we go back to the old world of having specific
+functions depending on usage in the frequency world, ACPI world, PM
+controller world.
+
+That completely breaks the concept of having a higher level function,
+right?
+
+> 
+>> +{
+>> +       unsigned long flags;
+>> +       int error = -ENOSYS;
+>> +
+>> +       if (!rate || !dev)
+>> +               return -EINVAL;
+>> +
+>> +       spin_lock_irqsave(&dev->power.lock, flags);
+>> +       if (!pm_runtime_active(dev)) {
+>> +               error = -EINVAL;
+>> +               goto out;
+>> +       }
+>> +
+>> +       if (dev->pm_domain && dev->pm_domain->active_ops.get_rate)
+>> +               error = dev->pm_domain->active_ops.get_rate(dev, rate);
+>> +out:
+>> +       spin_unlock_irqrestore(&dev->power.lock, flags);
+>> +
+>> +       return error;
+>> +}
+>> +
+>> +/**
+>> + * pm_runtime_set_rate() - Set a specific rate for the device operation
+>> + * @dev:       Device to handle
+>> + * @rate:      Rate to set in Hz
+>> + *
+>> + * Returns appropriate error value in case of error conditions, else
+>> + * returns 0. The pm_domain logic does all the necessary operation (which
+>> + * may include voltage scale operations or other magic hardware stuff) to
+>> + * achieve the operation. It is guarenteed that the requested rate is achieved
+>> + * on returning from this function if return value is 0.
+>> + */
+>> +int pm_runtime_set_rate(struct device *dev, unsigned long rate)
+> 
+> Additionally I wonder if the function signature should include a way to
+> specify the sub-unit of a device that we are operating on? This is a way
+> to tackle the issues you raised regarding multiple clocks per device,
+> etc. Two approaches come to mind:
+> 
+> int pm_runtime_set_rate(struct device *dev, int index,
+> 				unsigned long rate);
+> 
+> Where index is a sub-unit of struct device *dev.
+
+Here the problem is trying to define what that index is. should it be
+clk index? how again would a generic driver be able to consistently
+function? lets, for a moment replace that with a string - "clk_name"
+to uniquely identify the clk -> but then, it still, in concept makes
+it no better than a clk_set_rate since we are uniquely identifying the
+clk to operate upon -> and we can definitely add "magic dvfs" stuff on
+existing clock framework without a need for additional wrappers (which
+what the original $subject series does).
+
+
+>The second approach is
+> to create a publicly declared structure representing the sub-unit. Some
+> variations on that theme:
+> 
+> int pm_runtime_set_rate(struct perf_domain *perfdm, unsigned long rate);
+> 
+> or,
+> 
+> int pm_runtime_set_rate(struct generic_power_domain *gpd,
+> 				unsigned long rate);
+> 
+> or whatever that sub-unit looks like. The gpd thing might be a total
+> layering violation, I don't know. Or perhaps it's a decent idea but it
+> shouldn't be as a PM runtime call. Again, I dunno.
+
+Again, we goes back to the same question, right? which clock in a
+power_domain/perf_domain are we intending with the rate? a device
+belongs to a perf domain -> Taking drivers/cpufreq/imx6q-cpufreq.c as
+an example.
+Clocks needed: arm_clk, pll1_sys_clk, pll1_sw_clk, step_clk,
+pll2_pfd2_396m_clk.
+regulators needed: arm_reg, pu_reg, soc_reg.
+
+The device we want to set a frequency is the ARM processor. by
+describing "perf_domain" or "generic power domain" as a single clock
+entity, we might as well use clk_set_rate instead to be specific,
+instead of writing one wrapper on top of the entire thing.
+
+
+I apologize, more I think in this angle, less I think such a generic
+api seems feasible.
+
+-- 
+Regards,
+Nishanth Menon
