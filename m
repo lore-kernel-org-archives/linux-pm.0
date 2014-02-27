@@ -1,113 +1,72 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH] Thermal: thermal zone governor fix
-Date: Thu, 27 Feb 2014 14:41:16 +0800
-Message-ID: <1393483276.2637.7.camel@rzhang1-mobl4>
+Subject: Re: [PATCH] thermal: of: use the default governor when registering
+ thermal zones from DT
+Date: Thu, 27 Feb 2014 14:43:06 +0800
+Message-ID: <1393483386.2637.9.camel@rzhang1-mobl4>
+References: <1393263953-4590-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:47711 "EHLO mga01.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:11699 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbaB0GlU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Feb 2014 01:41:20 -0500
+	id S1751384AbaB0GnJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Feb 2014 01:43:09 -0500
+In-Reply-To: <1393263953-4590-1-git-send-email-javi.merino@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: eduardo <eduardo.valentin@ti.com>, javi.merino@arm.com, wni@nvidia.com
+To: Javi Merino <javi.merino@arm.com>
+Cc: linux-pm@vger.kernel.org, sudeep.holla@arm.com, punit.agrawal@arm.com, Eduardo Valentin <eduardo.valentin@ti.com>
 
->From cd587add3043ed7bf3347e5d956f65ec8adf04cf Mon Sep 17 00:00:00 2001
-From: Zhang Rui <rui.zhang@intel.com>
-Date: Fri, 24 Jan 2014 10:23:19 +0800
-Subject: [PATCH] Thermal: thermal zone governor fix
+Hi,
 
-This patch does a cleanup about the thermal zone governor,
-and make the following rules,
-1. For thermal zone devices that are registered w/o tz->tzp,
-   they can use the default thermal governor only.
-2. For thermal zone devices w/ governor name specified in
-   tz->tzp->governor_name, we will use the default governor
-   if the governor specified is not available at the moment,
-   and update tz->governor when the matched governor is registered.
+On Mon, 2014-02-24 at 17:45 +0000, Javi Merino wrote:
+> Thermal zones specified in the DT get no governor because the
+> thermal_zone_parameters they pass to thermal_zone_device_register()
+> has an empty governor_name entry.  As there is no way to set the
+> governor from the DT at the moment, make them register the default
+> governor.
+> 
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> ---
+> 
+> Another alternative would be to set governor_name to the default in
+> thermal_zone_device_register() if it receives the empty string.
+> 
+agreed.
+please check if the patch at https://patchwork.kernel.org/patch/3730391/
+fixes the problem for you or not.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/thermal_core.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
+thanks,
+rui
 
-diff --git a/drivers/thermal/thermal_core.c
-b/drivers/thermal/thermal_core.c
-index 338a88b..6bcf0628a 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -56,10 +56,15 @@ static LIST_HEAD(thermal_governor_list);
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
- 
-+static struct thermal_governor *def_governor;
-+
- static struct thermal_governor *__find_governor(const char *name)
- {
- 	struct thermal_governor *pos;
- 
-+	if (!name)
-+		return def_governor;
-+
- 	list_for_each_entry(pos, &thermal_governor_list, governor_list)
- 		if (!strnicmp(name, pos->name, THERMAL_NAME_LENGTH))
- 			return pos;
-@@ -82,17 +87,23 @@ int thermal_register_governor(struct
-thermal_governor *governor)
- 	if (__find_governor(governor->name) == NULL) {
- 		err = 0;
- 		list_add(&governor->governor_list, &thermal_governor_list);
-+		if (!def_governor && !strncmp(governor->name,
-+			THERMAL_DEFAULT_GOVERNOR, THERMAL_NAME_LENGTH))
-+			def_governor = governor;
- 	}
- 
- 	mutex_lock(&thermal_list_lock);
- 
- 	list_for_each_entry(pos, &thermal_tz_list, node) {
-+		/*
-+		 * only thermal zones with specified tz->tzp->governor_name
-+		 * may run with tz->govenor unset
-+		 */
- 		if (pos->governor)
- 			continue;
--		if (pos->tzp)
--			name = pos->tzp->governor_name;
--		else
--			name = DEFAULT_THERMAL_GOVERNOR;
-+
-+		name = pos->tzp->governor_name;
-+
- 		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
- 			pos->governor = governor;
- 	}
-@@ -342,8 +353,8 @@ static void monitor_thermal_zone(struct
-thermal_zone_device *tz)
- static void handle_non_critical_trips(struct thermal_zone_device *tz,
- 			int trip, enum thermal_trip_type trip_type)
- {
--	if (tz->governor)
--		tz->governor->throttle(tz, trip);
-+	tz->governor ?
-+		tz->governor->throttle(tz, trip) : def_governor(tz, trip);
- }
- 
- static void handle_critical_trips(struct thermal_zone_device *tz,
-@@ -1533,7 +1544,7 @@ struct thermal_zone_device
-*thermal_zone_device_register(const char *type,
- 	if (tz->tzp)
- 		tz->governor = __find_governor(tz->tzp->governor_name);
- 	else
--		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
-+		tz->governor = def_governor;
- 
- 	mutex_unlock(&thermal_governor_lock);
- 
--- 
-1.7.9.5
 
+> There are no other users of thermal_zone_parameters in the kernel and
+> there is no user of the governor_name.  I was tempted to kill
+> governor_name, but I guess it's there to be used by external modules.
+> 
+>  drivers/thermal/of-thermal.c |    7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 04b1be7..3f850f2 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -791,6 +791,13 @@ int __init of_parse_thermal_zones(void)
+>  		/* No hwmon because there might be hwmon drivers registering */
+>  		tzp->no_hwmon = true;
+>  
+> +		/*
+> +		 * We can't specify the governor in the DT, so use the
+> +		 * default one
+> +		 */
+> +		strncpy(tzp->governor_name, DEFAULT_THERMAL_GOVERNOR,
+> +			ARRAY_SIZE(tzp->governor_name));
+> +
+>  		zone = thermal_zone_device_register(child->name, tz->ntrips,
+>  						    0, tz,
+>  						    ops, tzp,
 
 
