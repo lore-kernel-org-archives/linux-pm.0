@@ -1,95 +1,192 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
-Date: Thu, 27 Feb 2014 09:18:34 +0100
-Message-ID: <CAPDyKFp_ugRytLGR4fGXvdZEMRohg6uWPykcFJ7Co_wipJujDA@mail.gmail.com>
-References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
-	<7htxblx2eo.fsf@paris.lan>
-	<12123949.qNoh3vhWUc@vostro.rjw.lan>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH v4 2/2] thermal: add interface to support tune governor
+ in run-time
+Date: Thu, 27 Feb 2014 16:21:04 +0800
+Message-ID: <530EF570.7060104@nvidia.com>
+References: <1390211732-5853-1-git-send-email-wni@nvidia.com>
+		 <1390211732-5853-3-git-send-email-wni@nvidia.com>
+	 <1393485045.2637.22.camel@rzhang1-mobl4> <530EF099.9010804@nvidia.com>
+ <1393488380.2637.47.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f175.google.com ([209.85.216.175]:33010 "EHLO
-	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbaB0ISf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 03:18:35 -0500
-Received: by mail-qc0-f175.google.com with SMTP id m20so2211608qcx.34
-        for <linux-pm@vger.kernel.org>; Thu, 27 Feb 2014 00:18:35 -0800 (PST)
-In-Reply-To: <12123949.qNoh3vhWUc@vostro.rjw.lan>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:19813 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbaB0IVG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 03:21:06 -0500
+In-Reply-To: <1393488380.2637.47.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 27 February 2014 02:22, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, February 26, 2014 08:30:07 AM Kevin Hilman wrote:
->> Ulf Hansson <ulf.hansson@linaro.org> writes:
+On 02/27/2014 04:06 PM, Zhang Rui wrote:
+> On Thu, 2014-02-27 at 16:00 +0800, Wei Ni wrote:
+>> On 02/27/2014 03:10 PM, Zhang Rui wrote:
+>>> On Mon, 2014-01-20 at 17:55 +0800, Wei Ni wrote:
+>>>> In the of-thermal driver, it register a thermal zone device
+>>>> without governor,
+>>>
+>>> I think this would be fixed by
+>>> https://patchwork.kernel.org/patch/3730411/
+>>> right?
 >>
->> > Patch 1 -> 2:
->> > These patches provides two new runtime PM helper functions which intend to be
->> > used from system suspend/resume callbacks, to make sure devices are put into low
->> > power state during system suspend and brought back to full power at system
->> > resume.
->> >
->> > The prerequisite is to have all levels of a device's runtime PM callbacks to be
->> > defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
->> > for CONFIG_PM.
->> >
->> > By using the new runtime PM helper functions especially the two scenarios below
->> > will be addressed.
->> >
->> > 1) The PM core prevents .runtime_suspend callbacks from being invoked during
->> > system suspend. That means even for a runtime PM centric subsystem and driver,
->> > the device needs to be put into low power state from a system suspend callback.
->> > Otherwise it may very well be left in full power state (runtime resumed) while
->> > the system is suspended. By using the new helper functions, we make sure to walk
->> > the hierarchy of a device's power domain, subsystem and driver.
+>> Yes, I think so.
 >>
->> I thought it was the case that runtime PM was only disabled during the
->> 'late' phase now.  Isn't that enough to allow runtime callbacks in the
->> normal suspend/resume hooks now?   /me looks.
+>>>
+>>>
+>>>>  since the governers are not static, we
+>>>> should be able to update to a new one in run-time, so I add
+>>>> a new fucntion thermal_update_governor() to do it.
+>>>>
+>>> With the patch mentioned above, the of thermal zones will run with the
+>>> def_governor.
+>>> do we still need to switch to a different governor at runtime?
 >>
->> oh, wait.  Ee still have the _get_noresume() in device_prepare().  hmm
+>> In some case, the user will want to use other governor, not the
+>> def_governor, then he can use this function. for example:
+>> ...
+>> /* use of-thermal to register */
+>> tzd = thermal_zone_of_sensor_register();
+>> /* assume the "step_wise" is def_governor */
+>> thermal_update_governor(tzd, "fair_share");
+>> ...
 >>
->> Either way, I'm not not a big fan of new functions.  Personally, I think
->> subsystems/busses/pm_domains should be able to opt out of the PM core
->> behavior that blocks runtime PM transitions during system suspend.
->> Something like the (untested) hack below.  That way, we could avoid the
->> need for new helper functions.
->
-> And if one of the subsystems in question is the platform bus type, then
-> adding the flag doesn't really make sense, because that means that on
-> many system it will be set for the majority of devices. :-)
->
-> That said I'm tired of this stuff already.  If you really really want to
-> remove the bumping up and dropping of the usage counter during system
-> suspend/resume by the core, please feel free to submit a patch for that
-> and I'll apply it.  However, if it causes any regressions to happen
-> anywhere, it will be dropped and we'll never talk about this again.
->
-> Deal?
+> yes, I know.
+> If you need the code above in any platform thermal driver, it would be
+> good to submit this patch together with that change, and I'll be glad to
+> take it. Or else, my concern is that we're introducing an API without
+> any real users.
 
-No deal. I prefer the runtime PM helpers, I think that is the right
-approach. I also believe this is what Alan Stern also would prefer,
-right!? So let's convince Kevin instead. :-)
+Sure, it's ok.
 
-Let's just be clear of why I don't think Kevin suggested solution is
-the way to go:
-
-1. The runtime PM sysfs interface. Userspace may prevent
-->runtime_suspend callbacks from being invoked anyway. So, it doesn't
-matter if PM core does it too.
-
-2. Currently we have CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP. Subsystem
-and driver, must cope with both. I know there were a discussion about
-combining them as one define, but we rejected that - at least for now.
-Anyway, my point is, subsystem/driver must not rely on PM runtime core
-(like pm_runtime_put_sync) from the system suspend callback to put
-their devices into low power state.
-
-Kind regards
-Uffe
-
->
+> 
+> thanks,
+> rui
+>> Thanks.
+>> Wei.
+>>
+>>>
+>>> thanks,
+>>> rui
+>>>
+>>>> Change-Id: Ie4995d6404d6d4f16250958487f3e3b8f63fc4c6
+>>>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>>>> ---
+>>>>  Documentation/thermal/sysfs-api.txt |    4 ++++
+>>>>  drivers/thermal/thermal_core.c      |   38 ++++++++++++++++++++++++++++-------
+>>>>  include/linux/thermal.h             |    1 +
+>>>>  3 files changed, 36 insertions(+), 7 deletions(-)
+>>>>
+>>>> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+>>>> index 8459d45..bcd50b5 100644
+>>>> --- a/Documentation/thermal/sysfs-api.txt
+>>>> +++ b/Documentation/thermal/sysfs-api.txt
+>>>> @@ -405,3 +405,7 @@ platform data is provided, this uses the step_wise throttling policy.
+>>>>  This function serves as an arbitrator to set the state of a cooling
+>>>>  device. It sets the cooling device to the deepest cooling state if
+>>>>  possible.
+>>>> +
+>>>> +5.5:thermal_update_governor:
+>>>> +This function update the thermal zone's governor to a new one.
+>>>> +Returns 0 if success, an erro code otherwise.
+>>>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>>>> index a91684b..ef0fc40 100644
+>>>> --- a/drivers/thermal/thermal_core.c
+>>>> +++ b/drivers/thermal/thermal_core.c
+>>>> @@ -130,6 +130,35 @@ exit:
+>>>>  	return;
+>>>>  }
+>>>>  
+>>>> +/**
+>>>> + * thermal_update_governor() - update the thermal zone device's governor
+>>>> + * to a new one.
+>>>> + * @tzd: pointer of thermal zone device, which need to update governor.
+>>>> + * @name: new governor name.
+>>>> + *
+>>>> + * Return: On success returns 0, an error code otherwise
+>>>> + */
+>>>> +int thermal_update_governor(struct thermal_zone_device *tzd,
+>>>> +			    const char *name)
+>>>> +{
+>>>> +	struct thermal_governor *new_gov;
+>>>> +	int ret = 0;
+>>>> +
+>>>> +	mutex_lock(&thermal_governor_lock);
+>>>> +
+>>>> +	new_gov = __find_governor(name);
+>>>> +	if (!new_gov) {
+>>>> +		ret = -EINVAL;
+>>>> +		goto exit;
+>>>> +	}
+>>>> +
+>>>> +	tzd->governor = new_gov;
+>>>> +
+>>>> +exit:
+>>>> +	mutex_unlock(&thermal_governor_lock);
+>>>> +	return ret;
+>>>> +}
+>>>> +
+>>>>  static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+>>>>  {
+>>>>  	int ret;
+>>>> @@ -734,22 +763,17 @@ policy_store(struct device *dev, struct device_attribute *attr,
+>>>>  {
+>>>>  	int ret = -EINVAL;
+>>>>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+>>>> -	struct thermal_governor *gov;
+>>>>  	char name[THERMAL_NAME_LENGTH];
+>>>>  
+>>>>  	snprintf(name, sizeof(name), "%s", buf);
+>>>>  
+>>>> -	mutex_lock(&thermal_governor_lock);
+>>>> -
+>>>> -	gov = __find_governor(strim(name));
+>>>> -	if (!gov)
+>>>> +	ret = thermal_update_governor(tz, strim(name));
+>>>> +	if (ret < 0)
+>>>>  		goto exit;
+>>>>  
+>>>> -	tz->governor = gov;
+>>>>  	ret = count;
+>>>>  
+>>>>  exit:
+>>>> -	mutex_unlock(&thermal_governor_lock);
+>>>>  	return ret;
+>>>>  }
+>>>>  
+>>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>>>> index f7e11c7..715b3cd 100644
+>>>> --- a/include/linux/thermal.h
+>>>> +++ b/include/linux/thermal.h
+>>>> @@ -293,6 +293,7 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+>>>>  		struct thermal_cooling_device *, int);
+>>>>  void thermal_cdev_update(struct thermal_cooling_device *);
+>>>>  void thermal_notify_framework(struct thermal_zone_device *, int);
+>>>> +int thermal_update_governor(struct thermal_zone_device *, const char *);
+>>>>  
+>>>>  #ifdef CONFIG_NET
+>>>>  extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+>>>
+>>>
+>>
+>>
+>> -----------------------------------------------------------------------------------
+>> This email message is for the sole use of the intended recipient(s) and may contain
+>> confidential information.  Any unauthorized review, use, disclosure or distribution
+>> is prohibited.  If you are not the intended recipient, please contact the sender by
+>> reply email and destroy all copies of the original message.
+>> -----------------------------------------------------------------------------------
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 > --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
