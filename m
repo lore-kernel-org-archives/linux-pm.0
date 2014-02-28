@@ -1,40 +1,48 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 14/46] kernel: Move prototype declaration to header
- file kernel/power/power.h
-Date: Fri, 28 Feb 2014 14:21:09 +0100
-Message-ID: <20140228132109.GB16401@amd.pavel.ucw.cz>
-References: <7b4a60c74ced00e0d65c38488f20dc4bd69f0dd2.1393493276.git.rashika.kheria@gmail.com>
- <620346a9abff597545a6249d0d8c4adba8f1a1d9.1393493276.git.rashika.kheria@gmail.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH] PM / Domains: Turn latency warning into debug message
+Date: Fri, 28 Feb 2014 15:18:28 +0100
+Message-ID: <1393597108.3802.42.camel@paszta.hi.pengutronix.de>
+References: <1393525604-21471-1-git-send-email-p.zabel@pengutronix.de>
+	 <CAPDyKFoSQQqiL7=H12z9Ag2_DZNig_DGu_u9qrpQ53YtJhwUSQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48219 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751523AbaB1NVL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 08:21:11 -0500
-Content-Disposition: inline
-In-Reply-To: <620346a9abff597545a6249d0d8c4adba8f1a1d9.1393493276.git.rashika.kheria@gmail.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57862 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbaB1OSe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 09:18:34 -0500
+In-Reply-To: <CAPDyKFoSQQqiL7=H12z9Ag2_DZNig_DGu_u9qrpQ53YtJhwUSQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rashika Kheria <rashika.kheria@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, josh@joshtriplett.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu 2014-02-27 17:13:53, Rashika Kheria wrote:
-> Move prototype declaration of function to header file
-> kernel/power/power.h
-> because it is used by more than one file.
->=20
-> This eliminates the following warning in kernel/power/snapshot.c:
-> kernel/power/snapshot.c:1588:16: warning: no previous prototype for =E2=
-=80=98swsusp_save=E2=80=99 [-Wmissing-prototypes]
->=20
-> Signed-off-by: Rashika Kheria <rashika.kheria@gmail.com>
-> Reviewed-by: Josh Triplett <josh@joshtriplett.org>
+Hi Ulf,
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Am Donnerstag, den 27.02.2014, 23:43 +0100 schrieb Ulf Hansson:
+> On 27 February 2014 19:26, Philipp Zabel <p.zabel@pengutronix.de> wrote:
+> > If devices don't provide latency data, this warning can be quite noisy until
+> > the pm domain was enabled and disabled a few times. Turn this warning into
+> > a debug message.
+> 
+> Just curious, why is the latency not interesting for you?
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+at least it is not always interesting.
+
+root@BDSL:~ v4l2-ctl -D -d /dev/video5
+coda 2040000.vpu: start latency exceeded, new value 743 ns
+coda 2040000.vpu: state restore latency exceeded, new value 4828363 ns
+Driver Info (not using libv4l2):coda 2040000.vpu: stop latency exceeded,
+new value 1561 ns
+
+	Driver name   : coda
+	Card type     : CODA960
+	[...]
+
+That's a bit too verbose for my taste if I'm not currently working on
+either latency or the pm domain handling itself.
+
+regards
+Philipp
+
