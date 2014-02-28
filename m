@@ -1,63 +1,33 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] intel_idle: Add CPU model 54 (Atom N2000 series)
-Date: Thu, 27 Feb 2014 22:44:03 -0500
-Message-ID: <CAJvTdK=4+fDpPCzy16gch+21JH_t-icixehEkdz_wJBSvrZFXw@mail.gmail.com>
-References: <52E42B86.1020701@web.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/3] cpufreq: stats: Remove redundant cpufreq_cpu_get() call
+Date: Fri, 28 Feb 2014 09:18:02 +0530
+Message-ID: <CAKohpomjtE7Rtrs-TgxtSo658+4p0AHLzr9niN1GnkkrDqTxTw@mail.gmail.com>
+References: <1393552716-9754-1-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f48.google.com ([209.85.213.48]:51863 "EHLO
-	mail-yh0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbaB1DoE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 22:44:04 -0500
-In-Reply-To: <52E42B86.1020701@web.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1393552716-9754-1-git-send-email-skannan@codeaurora.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Applied.
-
-Note that the difference that will be noticed most will be that ACPI
-on this kind of box typically offers the deepest C-state only when
-on DC, and disables it on DC.  intel_idle offers it no matter
-if the box is on AC or DC.
-
-thanks,
--Len Brown, Intel Open Source Technology Center
-
-
-On Sat, Jan 25, 2014 at 4:24 PM, Jan Kiszka <jan.kiszka@web.de> wrote:
-> From: Jan Kiszka <jan.kiszka@siemens.com>
+On 28 February 2014 07:28, Saravana Kannan <skannan@codeaurora.org> wrote:
+> __cpufreq_stats_create_table always gets pass the valid and real policy
+> struct. So, there's no need to call cpufreq_cpu_get() to get the policy
+> again.
 >
-> Add CPU ID for Atom N2600/N2800 processors. Datasheets indicate support
-> for this, detailed information about potential quirks or limitations are
-> missing, though. So we just reuse the definition for the previous ATOM
-> series. Tests on N2800 systems showed that this addition is fine an can
-> reduce power consumption by about 0.25 W (personally confirmed on Intel
-> DN2800MT).
->
-> Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
 > ---
->  drivers/idle/intel_idle.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 797ed29..6467fc9 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -503,6 +503,7 @@ static const struct x86_cpu_id intel_idle_ids[] = {
->         ICPU(0x2f, idle_cpu_nehalem),
->         ICPU(0x2a, idle_cpu_snb),
->         ICPU(0x2d, idle_cpu_snb),
-> +       ICPU(0x36, idle_cpu_atom),
->         ICPU(0x3a, idle_cpu_ivb),
->         ICPU(0x3e, idle_cpu_ivb),
->         ICPU(0x3c, idle_cpu_hsw),
->
->
+>  drivers/cpufreq/cpufreq_stats.c | 12 +-----------
+>  1 file changed, 1 insertion(+), 11 deletions(-)
 
+All patches look fine now. Rafael you can queue them up as per your
+convenience.
 
+@Saravana: Though I am quite sure you still need my patches to get
+your initial issue fixed. So, can you please get them tested as early
+as possible, so that we can get them in for 3.14?
 
--- 
-Len Brown, Intel Open Source Technology Center
+@Srivatsa: Your reviews will also help :)
