@@ -1,92 +1,168 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
-Date: Fri, 28 Feb 2014 22:49:33 +0000
-Message-ID: <20140228224933.GA11040@e102568-lin.cambridge.arm.com>
-References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
- <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
- <20140228095022.GA25090@e102568-lin.cambridge.arm.com>
- <20140228201557.29118.62126@capellas-linux>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 1/8] PM / Runtime: Fetch runtime PM callbacks using a macro
+Date: Sat, 01 Mar 2014 00:24:38 +0100
+Message-ID: <1458913.mU1RdcNOty@vostro.rjw.lan>
+References: <1393588172-20640-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:50311 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbaB1Wtm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 17:49:42 -0500
-In-Reply-To: <20140228201557.29118.62126@capellas-linux>
-Content-Disposition: inline
+Received: from v094114.home.net.pl ([79.96.170.134]:56500 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751184AbaB1XJe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 18:09:34 -0500
+In-Reply-To: <1393588172-20640-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
 
-On Fri, Feb 28, 2014 at 08:15:57PM +0000, Sebastian Capella wrote:
-
-[...]
-
-> > > +
-> > > +/*
-> > > + * The framework loads the hibernation image into a linked list anchored
-> > > + * at restore_pblist, for swsusp_arch_resume() to copy back to the proper
-> > > + * destinations.
-> > > + *
-> > > + * To make this work if resume is triggered from initramfs, the
-> > > + * pagetables need to be switched to allow writes to kernel mem.
-> > > + */
-> > 
-> > Comment above needs updating. We are switching page tables to a set of
-> > page tables that are certain to live at the same location in the older
-> > kernel, that's the only reason, as we discussed. soft_restart will make
-> > sure (again) to switch to 1:1 page tables so that we can call cpu_resume
-> > with the MMU off.
+On Friday, February 28, 2014 12:49:32 PM Ulf Hansson wrote:
+> While fetching the proper runtime PM callback, we walk the hierarchy of
+> device's power domains, subsystems and drivers.
 > 
-> How does this look?
+> This is common for rpm_suspend(), rpm_idle() and rpm_resume(). Let's
+> clean up the code by using a macro that handles this.
 > 
-> The framework loads as much of the hibernation image to final physical
-> pages as possible.  Any pages that were in use, will need to be restored
-> prior to the soft_restart.  The pages to restore are maintained in
-> the list anchored at restore_pblist.  At this point, we can swap the
-> pages to their final location.  We must switch the mapping to 1:1 to
-> ensure that when we overwrite the page table physical pages we're using
-> a known physical location (idmap_pgd) with known contents.
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Alessandro Rubini <rubini@unipv.it>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-It is ok, a tad too verbose. All I care about is a comment describing
-what's really needed, the existing one was confusing and wrong.
+Can you please repost the entire series?  It would be a bit easier to handle
+this way.
 
-> > > +/*
-> > > + * Resume from the hibernation image.
-> > > + * Due to the kernel heap / data restore, stack contents change underneath
-> > > + * and that would make function calls impossible; switch to a temporary
-> > > + * stack within the nosave region to avoid that problem.
-> > > + */
-> > > +int swsusp_arch_resume(void)
-> > > +{
-> > > +     extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-> > > +     call_with_stack(arch_restore_image, 0,
-> > > +             resume_stack + sizeof(resume_stack));
-> > 
-> > This does not guarantee your stack is 8-byte aligned, that's not AAPCS
-> > compliant and might buy you trouble.
-> > 
-> > Either you align the stack or you align the pointer you are passing.
-> > 
-> > Please have a look at kernel/process.c
+> ---
 > 
-> I've added this for now, do you see any issues?
+> Changes in v3:
+> 	Added functions to return the callbacks, which will be the only users of
+> 	the macro. According to comments from Alan Stern and Kevin Hilman.
 > 
-> -static u8 resume_stack[PAGE_SIZE/2] __nosavedata;
-> +static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
-> -               resume_stack + sizeof(resume_stack));
-> +               resume_stack + ARRAY_SIZE(resume_stack));
+> Changes in v2:
+> 	Updated the macro to return a callback instead.
+> 	Suggested by Josh Cartwright.
+> 
+> ---
+>  drivers/base/power/runtime.c |   78 +++++++++++++++++++++---------------------
+>  1 file changed, 39 insertions(+), 39 deletions(-)
+> 
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 72e00e6..ac495b1 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -13,6 +13,42 @@
+>  #include <trace/events/rpm.h>
+>  #include "power.h"
+>  
+> +#define RPM_GET_CALLBACK(dev, cb)				\
+> +({								\
+> +	int (*__rpm_cb)(struct device *__d);			\
+> +								\
+> +	if (dev->pm_domain)					\
+> +		__rpm_cb = dev->pm_domain->ops.cb;		\
+> +	else if (dev->type && dev->type->pm)			\
+> +		__rpm_cb = dev->type->pm->cb;			\
+> +	else if (dev->class && dev->class->pm)			\
+> +		__rpm_cb = dev->class->pm->cb;			\
+> +	else if (dev->bus && dev->bus->pm)			\
+> +		__rpm_cb = dev->bus->pm->cb;			\
+> +	else							\
+> +		__rpm_cb = NULL;				\
+> +								\
+> +	if (!__rpm_cb && dev->driver && dev->driver->pm)	\
+> +		__rpm_cb = dev->driver->pm->cb;			\
+> +								\
+> +	__rpm_cb;						\
+> +})
+> +
+> +static int (*rpm_get_suspend_cb(struct device *dev))(struct device *)
+> +{
+> +	return RPM_GET_CALLBACK(dev, runtime_suspend);
+> +}
+> +
+> +static int (*rpm_get_resume_cb(struct device *dev))(struct device *)
+> +{
+> +	return RPM_GET_CALLBACK(dev, runtime_resume);
+> +}
+> +
+> +static int (*rpm_get_idle_cb(struct device *dev))(struct device *)
+> +{
+> +	return RPM_GET_CALLBACK(dev, runtime_idle);
+> +}
+> +
+>  static int rpm_resume(struct device *dev, int rpmflags);
+>  static int rpm_suspend(struct device *dev, int rpmflags);
+>  
+> @@ -310,19 +346,7 @@ static int rpm_idle(struct device *dev, int rpmflags)
+>  
+>  	dev->power.idle_notification = true;
+>  
+> -	if (dev->pm_domain)
+> -		callback = dev->pm_domain->ops.runtime_idle;
+> -	else if (dev->type && dev->type->pm)
+> -		callback = dev->type->pm->runtime_idle;
+> -	else if (dev->class && dev->class->pm)
+> -		callback = dev->class->pm->runtime_idle;
+> -	else if (dev->bus && dev->bus->pm)
+> -		callback = dev->bus->pm->runtime_idle;
+> -	else
+> -		callback = NULL;
+> -
+> -	if (!callback && dev->driver && dev->driver->pm)
+> -		callback = dev->driver->pm->runtime_idle;
+> +	callback = rpm_get_idle_cb(dev);
+>  
+>  	if (callback)
+>  		retval = __rpm_callback(callback, dev);
+> @@ -492,19 +516,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>  
+>  	__update_runtime_status(dev, RPM_SUSPENDING);
+>  
+> -	if (dev->pm_domain)
+> -		callback = dev->pm_domain->ops.runtime_suspend;
+> -	else if (dev->type && dev->type->pm)
+> -		callback = dev->type->pm->runtime_suspend;
+> -	else if (dev->class && dev->class->pm)
+> -		callback = dev->class->pm->runtime_suspend;
+> -	else if (dev->bus && dev->bus->pm)
+> -		callback = dev->bus->pm->runtime_suspend;
+> -	else
+> -		callback = NULL;
+> -
+> -	if (!callback && dev->driver && dev->driver->pm)
+> -		callback = dev->driver->pm->runtime_suspend;
+> +	callback = rpm_get_suspend_cb(dev);
+>  
+>  	retval = rpm_callback(callback, dev);
+>  	if (retval)
+> @@ -724,19 +736,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
+>  
+>  	__update_runtime_status(dev, RPM_RESUMING);
+>  
+> -	if (dev->pm_domain)
+> -		callback = dev->pm_domain->ops.runtime_resume;
+> -	else if (dev->type && dev->type->pm)
+> -		callback = dev->type->pm->runtime_resume;
+> -	else if (dev->class && dev->class->pm)
+> -		callback = dev->class->pm->runtime_resume;
+> -	else if (dev->bus && dev->bus->pm)
+> -		callback = dev->bus->pm->runtime_resume;
+> -	else
+> -		callback = NULL;
+> -
+> -	if (!callback && dev->driver && dev->driver->pm)
+> -		callback = dev->driver->pm->runtime_resume;
+> +	callback = rpm_get_resume_cb(dev);
+>  
+>  	retval = rpm_callback(callback, dev);
+>  	if (retval) {
+> 
 
-I do not see why the stack depends on the PAGE_SIZE. I would be surprised
-if you need more than a few bytes (given that soft_restart switches stack
-again...), go through it with a debugger, it is easy to check the stack
-usage and allow for some extra buffer (but half a page is not needed).
-
-My main concern was alignment, and now that's fixed.
-
-Thanks !
-Lorenzo
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
