@@ -1,67 +1,108 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI and power management fixes for v3.14-rc5
-Date: Sat, 1 Mar 2014 00:16:05 +0100
-Message-ID: <CAJZ5v0jgsEYh8KTUDPmxP5=XSgqDr15hDCWATqE-FT9vS7v_BA@mail.gmail.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
+Date: Fri, 28 Feb 2014 15:38:54 -0800
+Message-ID: <53111e0f.a50a430a.6ef6.ffff99ae@mx.google.com>
+References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
+ <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
+ <20140228095022.GA25090@e102568-lin.cambridge.arm.com>
+ <20140228201557.29118.62126@capellas-linux>
+ <20140228224933.GA11040@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140228224933.GA11040@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Quoting Lorenzo Pieralisi (2014-02-28 14:49:33)
+> On Fri, Feb 28, 2014 at 08:15:57PM +0000, Sebastian Capella wrote:
+> 
+> [...]
+> 
+> > > > +
+> > > > +/*
+> > > > + * The framework loads the hibernation image into a linked list anchored
+> > > > + * at restore_pblist, for swsusp_arch_resume() to copy back to the proper
+> > > > + * destinations.
+> > > > + *
+> > > > + * To make this work if resume is triggered from initramfs, the
+> > > > + * pagetables need to be switched to allow writes to kernel mem.
+> > > > + */
+> > > 
+> > > Comment above needs updating. We are switching page tables to a set of
+> > > page tables that are certain to live at the same location in the older
+> > > kernel, that's the only reason, as we discussed. soft_restart will make
+> > > sure (again) to switch to 1:1 page tables so that we can call cpu_resume
+> > > with the MMU off.
+> > 
+> > How does this look?
+> > 
+> > The framework loads as much of the hibernation image to final physical
+> > pages as possible.  Any pages that were in use, will need to be restored
+> > prior to the soft_restart.  The pages to restore are maintained in
+> > the list anchored at restore_pblist.  At this point, we can swap the
+> > pages to their final location.  We must switch the mapping to 1:1 to
+> > ensure that when we overwrite the page table physical pages we're using
+> > a known physical location (idmap_pgd) with known contents.
+> 
+> It is ok, a tad too verbose. All I care about is a comment describing
+> what's really needed, the existing one was confusing and wrong.
 
-Please pull from the git repository at
+Maybe more like: 
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.14-rc5
+Restore physical pages that were in use while loading hibernation image.
+Use idmap_pgd so our page tables use the same physical address as the
+hibernation image.  Will be overwriten with the same contents.
 
-to receive ACPI and power management fixes for v3.14-rc5
-with top-most commit 6c09ea49ceb8a3b2b709718f6acdb1edd92ea899
+> > > > +/*
+> > > > + * Resume from the hibernation image.
+> > > > + * Due to the kernel heap / data restore, stack contents change underneath
+> > > > + * and that would make function calls impossible; switch to a temporary
+> > > > + * stack within the nosave region to avoid that problem.
+> > > > + */
+> > > > +int swsusp_arch_resume(void)
+> > > > +{
+> > > > +     extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
+> > > > +     call_with_stack(arch_restore_image, 0,
+> > > > +             resume_stack + sizeof(resume_stack));
+> > > 
+> > > This does not guarantee your stack is 8-byte aligned, that's not AAPCS
+> > > compliant and might buy you trouble.
+> > > 
+> > > Either you align the stack or you align the pointer you are passing.
+> > > 
+> > > Please have a look at kernel/process.c
+> > 
+> > I've added this for now, do you see any issues?
+> > 
+> > -static u8 resume_stack[PAGE_SIZE/2] __nosavedata;
+> > +static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
+> > -               resume_stack + sizeof(resume_stack));
+> > +               resume_stack + ARRAY_SIZE(resume_stack));
+> 
+> I do not see why the stack depends on the PAGE_SIZE. I would be surprised
+> if you need more than a few bytes (given that soft_restart switches stack
+> again...), go through it with a debugger, it is easy to check the stack
+> usage and allow for some extra buffer (but half a page is not needed).
 
-  Merge branches 'pm-cpufreq', 'pm-hibernate' and 'acpi-processor'
+I assuming this is becase the no-save region is one page anyway (we skip
+restoring the no-save region physical page).  So maybe 1/2 is a way to
+leave some room for whatever else may need to be here, but in any case
+the 4k is used for nosave.  I think you're right that it can be much less.
 
-on top of commit cfbf8d4857c26a8a307fb7cd258074c9dcd8c691
-
-  Linux 3.14-rc4
-
-These three commits fix a recent intel_pstate regression and two old
-bugs that should be fixed in -stable too, one in the ACPI processor
-driver and one in the firmare loader.
-
-Specifics:
-
- - One of the recent intel_pstate driver fixes introduced a rounding
-   error that on some systems causes the frequency to be stuck at the
-   lowest level forever.  Fix from Dirk Brandewie.
-
- - The firmware_class driver's PM notifier doesn't handle the
-   PM_RESTORE_PREPARE event during hibernation image restore and that
-   leads to a deadlock on umhelper_sem in __usermodehelper_disable().
-   Fix from Sebastian Capella.
-
- - acpi_processor_set_throttling() abuses set_cpus_allowed_ptr() in a
-   nasty way which triggers the WARN_ON_ONCE() in wq_worker_waking_up()
-   among other things.  Fix from Lan Tianyu.
+I'll check into this...
 
 Thanks!
 
-
----------------
-
-Dirk Brandewie (1):
-      intel_pstate: Change busy calculation to use fixed point math.
-
-Lan Tianyu (1):
-      ACPI / processor: Rework processor throttling with work_on_cpu()
-
-Sebastian Capella (1):
-      PM / hibernate: Fix restore hang in freeze_processes()
-
----------------
-
- drivers/acpi/processor_throttling.c | 69 +++++++++++++++++--------------------
- drivers/base/firmware_class.c       |  1 +
- drivers/cpufreq/intel_pstate.c      | 28 +++++++++------
- 3 files changed, 51 insertions(+), 47 deletions(-)
+Sebastian
