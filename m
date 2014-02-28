@@ -1,239 +1,129 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: SDIO driver return -ENOSYS behaviour change?
-Date: Fri, 28 Feb 2014 09:30:26 +0100
-Message-ID: <CAPDyKFpWS+hRJM2Fz=TZxyFzQWkGwE7YRTuToB_t+1ODY0SQeg@mail.gmail.com>
-References: <530F0118.2010501@intel.com>
-	<CAPDyKFrZAAVfFcaFx7o3TWMikWx7TvSPW_AuV1VsiuQF656uXg@mail.gmail.com>
-	<530F20E5.9000107@intel.com>
-	<CAPDyKFpcJ5T9QXbFzZnu4fdgfjsTntfrtS=mo=5Wb_uJa7iMbw@mail.gmail.com>
-	<530FF686.2080901@intel.com>
+Subject: Re: [PATCH 3/3] usb: phy: msm: use ASSIGN_*_PM_OPS variants
+Date: Fri, 28 Feb 2014 09:48:08 +0100
+Message-ID: <CAPDyKFp3R=w6Vx6zCHZQJXgLgh=u5HdwmUcbgkbsGb=pVah9Mw@mail.gmail.com>
+References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
+	<1393261707-30565-4-git-send-email-joshc@codeaurora.org>
+	<20140225183336.GH23275@saruman.home>
+	<20140227190324.GC4421@kroah.com>
+	<20140227234129.GA21032@psi-dev26.jf.intel.com>
+	<20140227234425.GA32426@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f181.google.com ([209.85.216.181]:47886 "EHLO
-	mail-qc0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbaB1Ia1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 03:30:27 -0500
-Received: by mail-qc0-f181.google.com with SMTP id c9so367824qcz.26
-        for <linux-pm@vger.kernel.org>; Fri, 28 Feb 2014 00:30:26 -0800 (PST)
-In-Reply-To: <530FF686.2080901@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140227234425.GA32426@kroah.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: David Cohen <david.a.cohen@linux.intel.com>, Felipe Balbi <balbi@ti.com>, Josh Cartwright <joshc@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: NeilBrown <neilb@suse.de>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On 28 February 2014 03:37, Aaron Lu <aaron.lu@intel.com> wrote:
-> On 02/27/2014 09:05 PM, Ulf Hansson wrote:
->> On 27 February 2014 12:26, Aaron Lu <aaron.lu@intel.com> wrote:
->>> On 02/27/2014 06:18 PM, Ulf Hansson wrote:
->>>> On 27 February 2014 10:10, Aaron Lu <aaron.lu@intel.com> wrote:
->>>>> Hi Ulf,
->>>>>
->>>>> I was tracking some SDIO suspend problem and came across this. As Neil
->>>>> mentioned here:
->>>>> http://lkml.org/lkml/2012/3/25/20
->>>>> Quote:
->>>>> "
->>>>> SDIO (and possible MMC in general) has a protocol where the suspend
->>>>>  method can return -ENOSYS and this means "There is no point in suspending,
->>>>>  just turn me off".
->>>>> "
->>>>>
->>>>> It seems that the following commit:
->>>>>
->>>>> commit 810caddba42a54fe5db4e2664757a9a334ba359c
->>>>> Author: Ulf Hansson <ulf.hansson@linaro.org>
->>>>> Date:   Mon Jun 10 17:03:37 2013 +0200
->>>>>
->>>>>     mmc: core: Validate suspend prerequisites for SDIO at SUSPEND_PREPARE
->>>>>
->>>>> Changed this behaviour?
->>>>
->>>> I realized I changed the behaviour to not cover for sdio func drivers,
->>>> that actually implements the pm callbacks - but do return -ENOSYS in
->>>> them. That wasn't obvious when looking at the code back then, sorry!
->>>
->>> Never mind, this behaviour change doesn't cause my problems but knowing
->>> whether this behaviour should be kept affects how I'm going to solve my
->>> problem.
+On 28 February 2014 00:44, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+> On Thu, Feb 27, 2014 at 03:41:31PM -0800, David Cohen wrote:
+>> On Thu, Feb 27, 2014 at 11:03:24AM -0800, Greg Kroah-Hartman wrote:
+>> > On Tue, Feb 25, 2014 at 12:33:36PM -0600, Felipe Balbi wrote:
+>> > > Hi,
+>> > >
+>> > > On Mon, Feb 24, 2014 at 11:08:27AM -0600, Josh Cartwright wrote:
+>> > > > Use ASSIGN_SYSTEM_SLEEP_PM_OPS and ASSIGN_RUNTIME_PM_OPS in the
+>> > > > initializer for msm_otg_dev_pm_ops.  Doing so allows us to eliminate
+>> > > > preprocessor conditionals around the specified callbacks.
+>> > > >
+>> > > > Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
+>> > > > ---
+>> > > >  drivers/usb/phy/phy-msm-usb.c | 13 +++----------
+>> > > >  1 file changed, 3 insertions(+), 10 deletions(-)
+>> > > >
+>> > > > diff --git a/drivers/usb/phy/phy-msm-usb.c b/drivers/usb/phy/phy-msm-usb.c
+>> > > > index 5b37b81..c04f2e3 100644
+>> > > > --- a/drivers/usb/phy/phy-msm-usb.c
+>> > > > +++ b/drivers/usb/phy/phy-msm-usb.c
+>> > > > @@ -414,8 +414,6 @@ static int msm_otg_reset(struct usb_phy *phy)
+>> > > >  #define PHY_SUSPEND_TIMEOUT_USEC       (500 * 1000)
+>> > > >  #define PHY_RESUME_TIMEOUT_USEC        (100 * 1000)
+>> > > >
+>> > > > -#ifdef CONFIG_PM
+>> > > > -
+>> > > >  #define USB_PHY_SUSP_DIG_VOL  500000
+>> > > >  static int msm_hsusb_config_vddcx(int high)
+>> > > >  {
+>> > > > @@ -609,7 +607,6 @@ skip_phy_resume:
+>> > > >
+>> > > >         return 0;
+>> > > >  }
+>> > > > -#endif
+>> > > >
+>> > > >  static void msm_otg_notify_charger(struct msm_otg *motg, unsigned mA)
+>> > > >  {
+>> > > > @@ -1664,7 +1661,6 @@ static int msm_otg_remove(struct platform_device *pdev)
+>> > > >         return 0;
+>> > > >  }
+>> > > >
+>> > > > -#ifdef CONFIG_PM_RUNTIME
+>> > > >  static int msm_otg_runtime_idle(struct device *dev)
+>> > > >  {
+>> > > >         struct msm_otg *motg = dev_get_drvdata(dev);
+>> > > > @@ -1699,9 +1695,7 @@ static int msm_otg_runtime_resume(struct device *dev)
+>> > > >         dev_dbg(dev, "OTG runtime resume\n");
+>> > > >         return msm_otg_resume(motg);
+>> > > >  }
+>> > > > -#endif
+>> > > >
+>> > > > -#ifdef CONFIG_PM_SLEEP
+>> > > >  static int msm_otg_pm_suspend(struct device *dev)
+>> > > >  {
+>> > > >         struct msm_otg *motg = dev_get_drvdata(dev);
+>> > > > @@ -1731,12 +1725,11 @@ static int msm_otg_pm_resume(struct device *dev)
+>> > > >
+>> > > >         return 0;
+>> > > >  }
+>> > > > -#endif
+>> > > >
+>> > > >  static const struct dev_pm_ops msm_otg_dev_pm_ops = {
+>> > > > -       SET_SYSTEM_SLEEP_PM_OPS(msm_otg_pm_suspend, msm_otg_pm_resume)
+>> > > > -       SET_RUNTIME_PM_OPS(msm_otg_runtime_suspend, msm_otg_runtime_resume,
+>> > > > -                               msm_otg_runtime_idle)
+>> > > > +       ASSIGN_SYSTEM_SLEEP_PM_OPS(msm_otg_pm_suspend, msm_otg_pm_resume)
+>> > > > +       ASSIGN_RUNTIME_PM_OPS(msm_otg_runtime_suspend, msm_otg_runtime_resume,
+>> > > > +                             msm_otg_runtime_idle)
+>> > >
+>> > > if the patch introducing assign_if() gets accepted, I'm ok with this
+>> > > patch.
+>> >
+>> > I can't take that patch at this point in time, it's just too ugly...
+>> >
+>> > As are those crazy SET_SYSTEM_SLEEP_PM_OPS() macros, ick, who made those
+>> > things?
+>> >
+>> > What language are we trying to program in here people?
 >>
->> So let's aim for the a proper solution instead of a quick hack.
+>> Since we're discussing this topic here, I'd like point my RFC which gets
+>> rid of same ifdeffery in a different way:
+>> http://lkml.org/lkml/2013/12/13/4
 >
-> OK.
+> Again, why can't we just always define these fields in the structure,
+> then we don't need any crazy, complicated mess for assigning the
+> function pointers?
 >
->>
->> Although apparently mwifiex, libertas and btmrvl_sdio (bluetooth) may
->> return -ENOSYS from the respective system supend callbacks, thus
->> expecting the card to be removed. Currently this won't happen, but
->> instead the suspend will be aborted, which is really bad.
->>
->> I believe those driver's suspend callback should be fixed to not
->> return -ENOSYS. Returning 0 will, when MMC_PM_KEEP_POWER is not set,
->> power off the card similar what's done when removing the card - that
->> should be perfectly fine. Do note that the sdio func driver then
->> should expect the resume callback to invoked, instead of being
->> _probed_ at the next system resume.
->
-> Good to know this.
->
->>
->>>
->>> My problem is that, after the following commit:
->>>
->>> commit eed222aca8d077af3600b651176f6fd04d95cce1
->>> Author: Aaron Lu <aaron.lu@intel.com>
->>> Date:   Tue Mar 5 11:24:52 2013 +0800
->>>
->>>     mmc: sdio: bind acpi with sdio function device
->>>
->>> The SDIO function that has an ACPI node associated with will have the
->>> pm_domain assigned, which breaks the intention that during SDIO function
->>> device suspend phase nothing should be done by having a dummy BUS layer
->>> callback. The existence of the pm_domain for the SDIO function device
->>> will make its function driver's suspend callback gets called now. The
->>> end result is the function driver's suspend callback is called twice.
->>
->> Why is the sdio bus ignored?
->
-> In __device_suspend, if pm_domain is set, the suspend callback is
-> fetched there, no matter if there is a suspend callback defined in the
-> pm_domain or not. In ACPI PM domain's case, the suspend callback is
-> NULL, so the driver's suspend callback is used then.
+> Again, the odds that this config option is ever disabled in "real"
+> systems is so low these days, I have half a mind just to rip it out
+> entirely as the amount of work spent on compiler warnings and the like
+> in this area has proably offset any power savings the code was supposed
+> to save on systems :(
 
-Will it be possible to add a suspend callback in the ACPI PM domain,
-which then respects susbystems callbacks before it uses
-pm_generic_suspend?
-
->
-> I consulted Rafael whether adding a NULL check before goto Run is OK
-> like the following shows:
->
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 1b41fca3d65a..506583d84ed4 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1160,7 +1160,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
->         if (dev->pm_domain) {
->                 info = "power domain ";
->                 callback = pm_op(&dev->pm_domain->ops, state);
-> -               goto Run;
-> +               if (callback)
-> +                       goto Run;
->         }
->
->         if (dev->type && dev->type->pm) {
->
-> And Rafael said that would introduce regressions elsewhere, so it's a no
-> go.
->
->>
->> Are you saying the power domain is using the pm_generic_suspend for or
->> from it's ->suspend callback? If so, that could be the problem!?
->>
->>>
->>> To solve this problem, I was wondering why SDIO function device has this
->>> 'special' requirement that nothing should be done at its own device
->>> suspend phase but instead, relies on its suspend callback gets called in
->>> its parent device's suspend callback. And then I realized the reason is
->>> for the special handling of -ENOSYS.
->>
->> That's to my understanding not the only reason.
->>
->> I think it's more a matter of having a controlled suspend sequence.
->> The mmc core are not able to serve any new SDIO requests while it is
->> suspended, therefore it tells the sdio func driver about when it safe
->> to send request - using it's PM callbacks.
->
-> Does this mean after the function device is suspended from PM core's
-> pespective, the mmc core will still send some requests to the function
-> device? I did see one such request, disable_width, get sent after the
-> function driver's suspend callback is invoked, don't know if there are
-> others.
-
-Nope. The mmc core will send request to the "card device" during
-suspend. Those are part's of a sequence to put the card in a proper
-"suspend mode".
-
->
-> From the mmc_sdio_suspend function I can see two things are done:
-> 1 function device driver's suspend callback is called;
-> 2 optionally disable_width and power off the card according to some flags.
->
-> So once we fixed the -ENOSYS problem, can we have the function device
-> run its own suspend callback and have the mmc_sdio_suspend just did the
-> disable_width and power off thing?
-
-That requires that all sdio func devices get suspended before the card
-devices. (And resumed after, but that will of course be implicit.)
-
-I guess the guarantee for that is already present, since we have added
-the func device to the driver model after we have added the card
-device at mmc_sdio_attach(). So, I suppose this could work.
-
-Do you want me to create a patch that you can test?
+Your point is certainly valid. I suppose the footprint of the kernel
+is nothing we should bother about? We have other solutions for that,
+right?
 
 Kind regards
 Ulf Hansson
 
 >
->>
->> You could debate whether that actually should be done though the PM
->> callbacks, or by some other SDIO specific callbacks. Haven't thought
->> it through completely yet.
->>
->>>
->>> So if we could get rid of the -ENOSYS, my problem could be easily solved
->>> by deleting some lines in current code(the calling of function driver's
->>> suspend callback in mmc_sdio_suspend and the dummy system suspend/resume
->>> callback for SDIO bus). Buf if the behaviour has to be kept, I'll
->>> probably need to remove the pm_domain for the device and do some
->>> additional ACPI handing in mmc_sdio_suspend/resume for the function
->>> device.
->>>
->>
->> So we have two different issues to address here.
->>
->> Removing the option for sdio func drivers to return -ENOSYS from their
->> suspend callback - has already be done, though by my mistake. Anyway,
->> this won't solve your problem.
->>
->> Additionally, I don't like putting this option back, since it's not
->> possible to remove the card in that path. Still we could handle
->> -ENOSYS and OK error and decide to power off the card. On the other
->> hand, we could instead fix the sdio func drivers, that should be quite
->> easy I think.
->>
->>>>
->>>> There are no solution to this problem in the mmc core right now, since
->>>> we can't remove the card while we have reach the state when the
->>>> suspend callback is being invoked.
->>>>
->>>> Instead, the sdio func driver shall not implement the PM callbacks at
->>>> all. That behaviour means the mmc core will remove the card, but now
->>>> it's done a in an earlier phase of the system suspend when we are
->>>> still able to remove it.
->>>
->>> The libertas suspend callback is doing different things depending on
->>> different conditions - sometime it will enable wakeup capability and
->>> sometime it will want the mmc core to remove the device entirely by
->>> retuning -ENOSYS, so it may not be that easy by just deleting the
->>> callback, but I don't know for sure.
->>
->> I had a look, the callback must remains.
->>
->> As, stated - fix the suspend callback to not return -ENOSYS.
+> ick.
 >
-> OK, I see, I'll try to come up with a patch for this, thanks for the
-> suggestion!
->
-> -Aaron
->
->>
->> Kind regards
->> Uffe
->>
->>
->>>
->>> Thanks,
->>> Aaron
->
+> greg k-h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
