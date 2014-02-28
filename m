@@ -1,65 +1,45 @@
-From: Patrick Titiano <ptitiano@baylibre.com>
-Subject: [RFC 0/1] thermal: rcar-thermal: add cpu cooling
-Date: Fri, 28 Feb 2014 16:02:37 +0100
-Message-ID: <1393599758-17315-1-git-send-email-ptitiano@baylibre.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:61724 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752487AbaB1PCq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 10:02:46 -0500
-Received: by mail-wi0-f175.google.com with SMTP id hm4so838965wib.14
-        for <linux-pm@vger.kernel.org>; Fri, 28 Feb 2014 07:02:45 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH 2/4] ARM: dove: prepare new Dove DT Kconfig
+	variable
+Date: Fri, 28 Feb 2014 11:34:48 -0500
+Message-ID: <20140228163448.GM1872@titan.lakedaemon.net>
+References: <1393536486-3827-1-git-send-email-sebastian.hesselbarth@gmail.com>
+ <1393536486-3827-3-git-send-email-sebastian.hesselbarth@gmail.com>
+ <20140228015310.GC9383@sirena.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <alsa-devel-bounces@alsa-project.org>
+Content-Disposition: inline
+In-Reply-To: <20140228015310.GC9383@sirena.org.uk>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, alsa-devel@alsa-project.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Chris Ball <chris@printf.net>, Eduardo Valentin <eduardo.valentin@ti.com>, Wim Van Sebroeck <wim@iguana.be>, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: magnus.damm@gmail.com, kuninori.morimoto.gx@renesas.com, eduardo.valentin@ti.com
-Cc: bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Patrick Titiano <ptitiano@baylibre.com>
 
-Hi,
-This not-yet-ready-to-merge patch proposes to enable CPU thermal management on
-Renesas platform. Currently these platforms only register a thermal zone,
-but do not implement or register any cooling device.
+On Fri, Feb 28, 2014 at 10:53:10AM +0900, Mark Brown wrote:
+> On Thu, Feb 27, 2014 at 10:28:03PM +0100, Sebastian Hesselbarth wrote:
+> > DT-enabled Dove will move over from ARCH_DOVE in mach-dove to MACH_DOVE in
+> > mach-mvebu. As non-DT ARCH_DOVE will stay to rot for a while, add a new
+> > DT-only MACH_DOVE to mmc, thermal, wdt, and asoc Kconfigs.
+> 
+> I'd be much happier merging this sort of stuff individually through the
+> subsystems, we already have an annoying conflict here...  Is there some
+> bisection problem with doing that?
 
-With this patch:
- - CPU0 cpufreq driver is registered as a cooling device,
- - a new passive trip point is defined to trigger CPU scaling when temperature
-   crosses it,
- - CPU0 cooling device and thermal zone 0 are being bound together,
- - set_trip_temp callback is implemented to facilitate experimentation and 
-   platform tuning. 
+shouldn't be.  Since these changes || the old with the new config
+symbols.
 
-Developed on a RCar-H2 platform, it is intended to support multi-platform.
-It leverages CPUFreq support from the series Benoit Cousson recently shared
-(http://www.spinics.net/lists/linux-sh/msg29236.html).
-The passive trip point temperature is arbitrarily set to 70C, as no HW data was
-available at the time this patch was developed.
+Sebastian, can you split this up into individual patches?
 
-Being multi-platform, this patch is expected to run smoothly in any situation:
- 1/ Platform has no thermal sensor,
- 2/ Platform has a thermal sensor and is DVFS capable,
- 3/ Platform has a thermal sensor but is not DVFS capable.
+thx,
 
-This patch has no side-effect in case 1/ (thermal driver wouldn't be loaded).
-Case 2/ is the regular case, no issue.
-case 3/ is the problematic one.
-Using cpufreq driver as a cooling device adds a dependency between those 2
-drivers. This is taken care by deferring rcar-thermal probing until
-cpufreq driver is up, but this becomes an issue when a platform does
-not have DVFS support. cpufreq driver will never be probed, blocking
-rcar-thermal probing.
-
-We are still investigation what would be the best way to go, however we would
-appreciate a lot any advice from the community.
-Thanks!
-
-Regards,
-Patrick.
-
-Patrick Titiano (1):
-  thermal: rcar-thermal: add cpu cooling
-
- drivers/thermal/rcar_thermal.c | 103 ++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 96 insertions(+), 7 deletions(-)
-
--- 
-1.8.3.2
-
+Jason.
