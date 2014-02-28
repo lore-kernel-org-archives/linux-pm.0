@@ -1,42 +1,50 @@
-From: "Du, Yuyang" <yuyang.du@intel.com>
-Subject: [RFC] Splitting scheduler into two halves
-Date: Fri, 28 Feb 2014 02:13:32 +0000
-Message-ID: <0DA73B5D686AEC4AAEF6054BE04DA1CD116C50EA@SHSMSX102.ccr.corp.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
+Date: Thu, 27 Feb 2014 18:19:49 -0800
+Message-ID: <530FF245.7070300@codeaurora.org>
+References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org> <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org> <530FD3CF.2040900@codeaurora.org> <530FEAA9.7040601@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:6896 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbaB1COA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 21:14:00 -0500
-Content-Language: en-US
+Received: from smtp.codeaurora.org ([198.145.11.231]:38313 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbaB1CTu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2014 21:19:50 -0500
+In-Reply-To: <530FEAA9.7040601@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+To: Russ Dill <Russ.Dill@ti.com>
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= <u.kleine-koenig@pengutronix.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-Hi Peter/Ingo and all,
+On 02/27/14 17:47, Russ Dill wrote:
+> On 02/27/2014 04:09 PM, Stephen Boyd wrote:
+>> On 02/27/14 15:57, Sebastian Capella wrote:
+>>> diff --git a/arch/arm/include/asm/memory.h
+>>> b/arch/arm/include/asm/memory.h index 8756e4b..1079ea8 100644 ---
+>>> a/arch/arm/include/asm/memory.h +++
+>>> b/arch/arm/include/asm/memory.h @@ -291,6 +291,7 @@ static inline
+>>> void *phys_to_virt(phys_addr_t x) */ #define __pa(x)
+>>> __virt_to_phys((unsigned long)(x)) #define __va(x)			((void
+>>> *)__phys_to_virt((phys_addr_t)(x))) +#define __pa_symbol(x)
+>>> __pa(RELOC_HIDE((unsigned long)(x), 0))
+>> Just curious, is there a reason for the RELOC_HIDE() here? Or 
+>> __pa_symbol() for that matter? It looks like only x86 uses this on
+>> the __nosave_{begin,end} symbol. Maybe it's copy-pasta?
+> From my understanding this needs to stick around so long as gcc 3.x is
+> supported (did it get dropped yet?) on ARM Linux since it doesn't
+> support -fno-strict-overflow.
 
-With the advent of more cores and heterogeneous architectures, the scheduler is required to be more complex (power efficiency) and diverse (big.little). For the scheduler to address that challenge as a whole, it is costly but not necessary. This proposal argues that the scheduler be spitted into two parts: top half (task scheduling) and bottom half (load balance). Let the bottom half take charge of the incoming requirements.
+I don't think it's been dropped yet but I wonder if anyone has tried
+recent kernels with such a compiler?
 
-The two halves are rather orthogonal in functionality. The task scheduling (top half) seeks for *ONE* CPU to execute running tasks fairly (priority included), while the load balance (bottom half) aims for *ALL* CPUs to maximize the throughput of the computing power. The goal of task scheduling is pretty unique and clear, and CFS and RT in that part are exactly approaching the goal. The load balance, however, is constrained to meet more goals, to name a few, performance (throughput/responsiveness), power consumption, architecture differences, etc. Those things are often hard to achieve because they may conflict and are difficult to estimate and plan. So, shall we declare the independence of the two, give them freedom to pursue their own "happiness".
+Would the usage of &__pv_table_begin in arch/arm/mm/mmu.c also need the
+same treatment? Or the tagtable loop in atags_parse.c? Do the other
+architectures also need to be fixed? That link Sebastian points to says
+that ppc originally needed it but pfn_is_nosave() on ppc doesn't use
+RELOC_HIDE anywhere in their __pa() macro from what I can tell.
 
-We take an incremental development method. As a starting point, we did three things (but did not change one single line of real-work code):
-	1)	Remove load balance from fair.c into load_balance.c (~3000 lines of codes). As a result, fair.c/rt.c and load_balance.c have very little intersection.
-	2)	Define struct sched_lb_class that consists of the following members to umbrella the load balance entry points.
-		a.	const struct sched_lb_class *next;
-		b.	int (*fork_balance) (struct task_struct *p, int sd_flags, int wake_flags);
-		c.	int (*exec_balance) (struct task_struct *p, int sd_flags, int wake_flags);
-		d.	int (*wakeup_balance) (struct task_struct *p, int sd_flags, int wake_flags);
-		e.	void (*idle_balance) (int this_cpu, struct rq *this_rq);
-		f.	void (*periodic_rebalance) (int cpu, enum cpu_idle_type idle);
-		g.	void (*nohz_idle_balance) (int this_cpu, enum cpu_idle_type idle);
-		h.	void (*start_periodic_balance) (struct rq *rq, int cpu);
-		i.	void (*check_nohz_idle_balance) (struct rq *rq, int cpu);
-	3)	Insert another layer of indirection to wrap the implemented functions in sched_lb_class. Implement a default load balance class that is just the previous load balance.
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
 
-The next to do is to continue redesigning and refactoring to make life easier toward more powerful and diverse load balance. And more importantly, this RFC solicits a discussion to get early feedback on the big proposed change.
-
-Thanks,
-Yuyang
