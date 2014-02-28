@@ -1,167 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 1/8] PM / Runtime: Fetch runtime PM callbacks using a macro
-Date: Sat, 01 Mar 2014 00:24:38 +0100
-Message-ID: <1458913.mU1RdcNOty@vostro.rjw.lan>
-References: <1393588172-20640-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 1/3] cpufreq: stats: Remove redundant cpufreq_cpu_get() call
+Date: Sat, 01 Mar 2014 00:26:23 +0100
+Message-ID: <8945263.cDODqBSQxb@vostro.rjw.lan>
+References: <1393552716-9754-1-git-send-email-skannan@codeaurora.org> <CAKohpomjtE7Rtrs-TgxtSo658+4p0AHLzr9niN1GnkkrDqTxTw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56500 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56418 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751184AbaB1XJe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 18:09:34 -0500
-In-Reply-To: <1393588172-20640-1-git-send-email-ulf.hansson@linaro.org>
+	with SMTP id S1751998AbaB1XLT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 18:11:19 -0500
+In-Reply-To: <CAKohpomjtE7Rtrs-TgxtSo658+4p0AHLzr9niN1GnkkrDqTxTw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Friday, February 28, 2014 12:49:32 PM Ulf Hansson wrote:
-> While fetching the proper runtime PM callback, we walk the hierarchy of
-> device's power domains, subsystems and drivers.
+On Friday, February 28, 2014 09:18:02 AM Viresh Kumar wrote:
+> On 28 February 2014 07:28, Saravana Kannan <skannan@codeaurora.org> wrote:
+> > __cpufreq_stats_create_table always gets pass the valid and real policy
+> > struct. So, there's no need to call cpufreq_cpu_get() to get the policy
+> > again.
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> > ---
+> >  drivers/cpufreq/cpufreq_stats.c | 12 +-----------
+> >  1 file changed, 1 insertion(+), 11 deletions(-)
 > 
-> This is common for rpm_suspend(), rpm_idle() and rpm_resume(). Let's
-> clean up the code by using a macro that handles this.
+> All patches look fine now. Rafael you can queue them up as per your
+> convenience.
 > 
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Alessandro Rubini <rubini@unipv.it>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> @Saravana: Though I am quite sure you still need my patches to get
+> your initial issue fixed. So, can you please get them tested as early
+> as possible, so that we can get them in for 3.14?
 
-Can you please repost the entire series?  It would be a bit easier to handle
-this way.
+That's a bit late ...
 
-> ---
-> 
-> Changes in v3:
-> 	Added functions to return the callbacks, which will be the only users of
-> 	the macro. According to comments from Alan Stern and Kevin Hilman.
-> 
-> Changes in v2:
-> 	Updated the macro to return a callback instead.
-> 	Suggested by Josh Cartwright.
-> 
-> ---
->  drivers/base/power/runtime.c |   78 +++++++++++++++++++++---------------------
->  1 file changed, 39 insertions(+), 39 deletions(-)
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 72e00e6..ac495b1 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -13,6 +13,42 @@
->  #include <trace/events/rpm.h>
->  #include "power.h"
->  
-> +#define RPM_GET_CALLBACK(dev, cb)				\
-> +({								\
-> +	int (*__rpm_cb)(struct device *__d);			\
-> +								\
-> +	if (dev->pm_domain)					\
-> +		__rpm_cb = dev->pm_domain->ops.cb;		\
-> +	else if (dev->type && dev->type->pm)			\
-> +		__rpm_cb = dev->type->pm->cb;			\
-> +	else if (dev->class && dev->class->pm)			\
-> +		__rpm_cb = dev->class->pm->cb;			\
-> +	else if (dev->bus && dev->bus->pm)			\
-> +		__rpm_cb = dev->bus->pm->cb;			\
-> +	else							\
-> +		__rpm_cb = NULL;				\
-> +								\
-> +	if (!__rpm_cb && dev->driver && dev->driver->pm)	\
-> +		__rpm_cb = dev->driver->pm->cb;			\
-> +								\
-> +	__rpm_cb;						\
-> +})
-> +
-> +static int (*rpm_get_suspend_cb(struct device *dev))(struct device *)
-> +{
-> +	return RPM_GET_CALLBACK(dev, runtime_suspend);
-> +}
-> +
-> +static int (*rpm_get_resume_cb(struct device *dev))(struct device *)
-> +{
-> +	return RPM_GET_CALLBACK(dev, runtime_resume);
-> +}
-> +
-> +static int (*rpm_get_idle_cb(struct device *dev))(struct device *)
-> +{
-> +	return RPM_GET_CALLBACK(dev, runtime_idle);
-> +}
-> +
->  static int rpm_resume(struct device *dev, int rpmflags);
->  static int rpm_suspend(struct device *dev, int rpmflags);
->  
-> @@ -310,19 +346,7 @@ static int rpm_idle(struct device *dev, int rpmflags)
->  
->  	dev->power.idle_notification = true;
->  
-> -	if (dev->pm_domain)
-> -		callback = dev->pm_domain->ops.runtime_idle;
-> -	else if (dev->type && dev->type->pm)
-> -		callback = dev->type->pm->runtime_idle;
-> -	else if (dev->class && dev->class->pm)
-> -		callback = dev->class->pm->runtime_idle;
-> -	else if (dev->bus && dev->bus->pm)
-> -		callback = dev->bus->pm->runtime_idle;
-> -	else
-> -		callback = NULL;
-> -
-> -	if (!callback && dev->driver && dev->driver->pm)
-> -		callback = dev->driver->pm->runtime_idle;
-> +	callback = rpm_get_idle_cb(dev);
->  
->  	if (callback)
->  		retval = __rpm_callback(callback, dev);
-> @@ -492,19 +516,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  
->  	__update_runtime_status(dev, RPM_SUSPENDING);
->  
-> -	if (dev->pm_domain)
-> -		callback = dev->pm_domain->ops.runtime_suspend;
-> -	else if (dev->type && dev->type->pm)
-> -		callback = dev->type->pm->runtime_suspend;
-> -	else if (dev->class && dev->class->pm)
-> -		callback = dev->class->pm->runtime_suspend;
-> -	else if (dev->bus && dev->bus->pm)
-> -		callback = dev->bus->pm->runtime_suspend;
-> -	else
-> -		callback = NULL;
-> -
-> -	if (!callback && dev->driver && dev->driver->pm)
-> -		callback = dev->driver->pm->runtime_suspend;
-> +	callback = rpm_get_suspend_cb(dev);
->  
->  	retval = rpm_callback(callback, dev);
->  	if (retval)
-> @@ -724,19 +736,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  
->  	__update_runtime_status(dev, RPM_RESUMING);
->  
-> -	if (dev->pm_domain)
-> -		callback = dev->pm_domain->ops.runtime_resume;
-> -	else if (dev->type && dev->type->pm)
-> -		callback = dev->type->pm->runtime_resume;
-> -	else if (dev->class && dev->class->pm)
-> -		callback = dev->class->pm->runtime_resume;
-> -	else if (dev->bus && dev->bus->pm)
-> -		callback = dev->bus->pm->runtime_resume;
-> -	else
-> -		callback = NULL;
-> -
-> -	if (!callback && dev->driver && dev->driver->pm)
-> -		callback = dev->driver->pm->runtime_resume;
-> +	callback = rpm_get_resume_cb(dev);
->  
->  	retval = rpm_callback(callback, dev);
->  	if (retval) {
-> 
+> @Srivatsa: Your reviews will also help :)
 
 -- 
 I speak only for myself.
