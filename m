@@ -1,131 +1,86 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 3/3] usb: phy: msm: use ASSIGN_*_PM_OPS variants
-Date: Fri, 28 Feb 2014 08:52:53 -0800
-Message-ID: <20140228165253.GA19872@kroah.com>
-References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
- <1393261707-30565-4-git-send-email-joshc@codeaurora.org>
- <20140225183336.GH23275@saruman.home>
- <20140227190324.GC4421@kroah.com>
- <20140227234129.GA21032@psi-dev26.jf.intel.com>
- <20140227234425.GA32426@kroah.com>
- <CAPDyKFp3R=w6Vx6zCHZQJXgLgh=u5HdwmUcbgkbsGb=pVah9Mw@mail.gmail.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
+Date: Fri, 28 Feb 2014 09:21:34 -0800
+Message-ID: <7hk3cftaox.fsf@paris.lan>
+References: <1392910280-12891-1-git-send-email-ulf.hansson@linaro.org>
+	<7htxblx2eo.fsf@paris.lan> <12123949.qNoh3vhWUc@vostro.rjw.lan>
+	<CAPDyKFp_ugRytLGR4fGXvdZEMRohg6uWPykcFJ7Co_wipJujDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFp3R=w6Vx6zCHZQJXgLgh=u5HdwmUcbgkbsGb=pVah9Mw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: David Cohen <david.a.cohen@linux.intel.com>, Felipe Balbi <balbi@ti.com>, Josh Cartwright <joshc@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f45.google.com ([209.85.160.45]:33874 "EHLO
+	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752714AbaB1RVh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 12:21:37 -0500
+Received: by mail-pb0-f45.google.com with SMTP id uo5so313232pbc.18
+        for <linux-pm@vger.kernel.org>; Fri, 28 Feb 2014 09:21:37 -0800 (PST)
+In-Reply-To: <CAPDyKFp_ugRytLGR4fGXvdZEMRohg6uWPykcFJ7Co_wipJujDA@mail.gmail.com>
+	(Ulf Hansson's message of "Thu, 27 Feb 2014 09:18:34 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>
 
-On Fri, Feb 28, 2014 at 09:48:08AM +0100, Ulf Hansson wrote:
-> On 28 February 2014 00:44, Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> > On Thu, Feb 27, 2014 at 03:41:31PM -0800, David Cohen wrote:
-> >> On Thu, Feb 27, 2014 at 11:03:24AM -0800, Greg Kroah-Hartman wrote:
-> >> > On Tue, Feb 25, 2014 at 12:33:36PM -0600, Felipe Balbi wrote:
-> >> > > Hi,
-> >> > >
-> >> > > On Mon, Feb 24, 2014 at 11:08:27AM -0600, Josh Cartwright wrote:
-> >> > > > Use ASSIGN_SYSTEM_SLEEP_PM_OPS and ASSIGN_RUNTIME_PM_OPS in the
-> >> > > > initializer for msm_otg_dev_pm_ops.  Doing so allows us to eliminate
-> >> > > > preprocessor conditionals around the specified callbacks.
-> >> > > >
-> >> > > > Signed-off-by: Josh Cartwright <joshc@codeaurora.org>
-> >> > > > ---
-> >> > > >  drivers/usb/phy/phy-msm-usb.c | 13 +++----------
-> >> > > >  1 file changed, 3 insertions(+), 10 deletions(-)
-> >> > > >
-> >> > > > diff --git a/drivers/usb/phy/phy-msm-usb.c b/drivers/usb/phy/phy-msm-usb.c
-> >> > > > index 5b37b81..c04f2e3 100644
-> >> > > > --- a/drivers/usb/phy/phy-msm-usb.c
-> >> > > > +++ b/drivers/usb/phy/phy-msm-usb.c
-> >> > > > @@ -414,8 +414,6 @@ static int msm_otg_reset(struct usb_phy *phy)
-> >> > > >  #define PHY_SUSPEND_TIMEOUT_USEC       (500 * 1000)
-> >> > > >  #define PHY_RESUME_TIMEOUT_USEC        (100 * 1000)
-> >> > > >
-> >> > > > -#ifdef CONFIG_PM
-> >> > > > -
-> >> > > >  #define USB_PHY_SUSP_DIG_VOL  500000
-> >> > > >  static int msm_hsusb_config_vddcx(int high)
-> >> > > >  {
-> >> > > > @@ -609,7 +607,6 @@ skip_phy_resume:
-> >> > > >
-> >> > > >         return 0;
-> >> > > >  }
-> >> > > > -#endif
-> >> > > >
-> >> > > >  static void msm_otg_notify_charger(struct msm_otg *motg, unsigned mA)
-> >> > > >  {
-> >> > > > @@ -1664,7 +1661,6 @@ static int msm_otg_remove(struct platform_device *pdev)
-> >> > > >         return 0;
-> >> > > >  }
-> >> > > >
-> >> > > > -#ifdef CONFIG_PM_RUNTIME
-> >> > > >  static int msm_otg_runtime_idle(struct device *dev)
-> >> > > >  {
-> >> > > >         struct msm_otg *motg = dev_get_drvdata(dev);
-> >> > > > @@ -1699,9 +1695,7 @@ static int msm_otg_runtime_resume(struct device *dev)
-> >> > > >         dev_dbg(dev, "OTG runtime resume\n");
-> >> > > >         return msm_otg_resume(motg);
-> >> > > >  }
-> >> > > > -#endif
-> >> > > >
-> >> > > > -#ifdef CONFIG_PM_SLEEP
-> >> > > >  static int msm_otg_pm_suspend(struct device *dev)
-> >> > > >  {
-> >> > > >         struct msm_otg *motg = dev_get_drvdata(dev);
-> >> > > > @@ -1731,12 +1725,11 @@ static int msm_otg_pm_resume(struct device *dev)
-> >> > > >
-> >> > > >         return 0;
-> >> > > >  }
-> >> > > > -#endif
-> >> > > >
-> >> > > >  static const struct dev_pm_ops msm_otg_dev_pm_ops = {
-> >> > > > -       SET_SYSTEM_SLEEP_PM_OPS(msm_otg_pm_suspend, msm_otg_pm_resume)
-> >> > > > -       SET_RUNTIME_PM_OPS(msm_otg_runtime_suspend, msm_otg_runtime_resume,
-> >> > > > -                               msm_otg_runtime_idle)
-> >> > > > +       ASSIGN_SYSTEM_SLEEP_PM_OPS(msm_otg_pm_suspend, msm_otg_pm_resume)
-> >> > > > +       ASSIGN_RUNTIME_PM_OPS(msm_otg_runtime_suspend, msm_otg_runtime_resume,
-> >> > > > +                             msm_otg_runtime_idle)
-> >> > >
-> >> > > if the patch introducing assign_if() gets accepted, I'm ok with this
-> >> > > patch.
-> >> >
-> >> > I can't take that patch at this point in time, it's just too ugly...
-> >> >
-> >> > As are those crazy SET_SYSTEM_SLEEP_PM_OPS() macros, ick, who made those
-> >> > things?
-> >> >
-> >> > What language are we trying to program in here people?
-> >>
-> >> Since we're discussing this topic here, I'd like point my RFC which gets
-> >> rid of same ifdeffery in a different way:
-> >> http://lkml.org/lkml/2013/12/13/4
-> >
-> > Again, why can't we just always define these fields in the structure,
-> > then we don't need any crazy, complicated mess for assigning the
-> > function pointers?
-> >
-> > Again, the odds that this config option is ever disabled in "real"
-> > systems is so low these days, I have half a mind just to rip it out
-> > entirely as the amount of work spent on compiler warnings and the like
-> > in this area has proably offset any power savings the code was supposed
-> > to save on systems :(
-> 
-> Your point is certainly valid. I suppose the footprint of the kernel
-> is nothing we should bother about? We have other solutions for that,
-> right?
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-What does the "footprint of the kernel" have to do with an option that
-everyone enables as they want/need the functionality?  You are only
-talking about saving size for systems that do not exist.  Do you know of
-any commen system that cares about size and yet not power that would be
-affected by this change?
+> On 27 February 2014 02:22, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Wednesday, February 26, 2014 08:30:07 AM Kevin Hilman wrote:
+>>> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>>>
+>>> > Patch 1 -> 2:
+>>> > These patches provides two new runtime PM helper functions which intend to be
+>>> > used from system suspend/resume callbacks, to make sure devices are put into low
+>>> > power state during system suspend and brought back to full power at system
+>>> > resume.
+>>> >
+>>> > The prerequisite is to have all levels of a device's runtime PM callbacks to be
+>>> > defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
+>>> > for CONFIG_PM.
+>>> >
+>>> > By using the new runtime PM helper functions especially the two scenarios below
+>>> > will be addressed.
+>>> >
+>>> > 1) The PM core prevents .runtime_suspend callbacks from being invoked during
+>>> > system suspend. That means even for a runtime PM centric subsystem and driver,
+>>> > the device needs to be put into low power state from a system suspend callback.
+>>> > Otherwise it may very well be left in full power state (runtime resumed) while
+>>> > the system is suspended. By using the new helper functions, we make sure to walk
+>>> > the hierarchy of a device's power domain, subsystem and driver.
+>>>
+>>> I thought it was the case that runtime PM was only disabled during the
+>>> 'late' phase now.  Isn't that enough to allow runtime callbacks in the
+>>> normal suspend/resume hooks now?   /me looks.
+>>>
+>>> oh, wait.  Ee still have the _get_noresume() in device_prepare().  hmm
+>>>
+>>> Either way, I'm not not a big fan of new functions.  Personally, I think
+>>> subsystems/busses/pm_domains should be able to opt out of the PM core
+>>> behavior that blocks runtime PM transitions during system suspend.
+>>> Something like the (untested) hack below.  That way, we could avoid the
+>>> need for new helper functions.
+>>
+>> And if one of the subsystems in question is the platform bus type, then
+>> adding the flag doesn't really make sense, because that means that on
+>> many system it will be set for the majority of devices. :-)
+>>
+>> That said I'm tired of this stuff already.  If you really really want to
+>> remove the bumping up and dropping of the usage counter during system
+>> suspend/resume by the core, please feel free to submit a patch for that
+>> and I'll apply it.  However, if it causes any regressions to happen
+>> anywhere, it will be dropped and we'll never talk about this again.
+>>
+>> Deal?
+>
+> No deal. I prefer the runtime PM helpers, I think that is the right
+> approach. I also believe this is what Alan Stern also would prefer,
+> right!? So let's convince Kevin instead. :-)
 
-And exactly how much "size" are we talking about here?  Did the
-available memory size for new chips just increase more in me writing
-this email than the size that this proposed patch would have offset?
+I don't need much convincing.  
 
-greg k-h
+My preference is for fewer functions/helpers because runtime PM is
+already complicated enough for drivers.  However, I'm not going to
+object to the helpers because they will allow us to simplify many
+drivers/subsystems that are trying to handle the various combinations of
+suspend/resume and runtime PM, so it's a step in the right direction.
+
+Kevin
