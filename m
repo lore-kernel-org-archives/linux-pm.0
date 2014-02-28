@@ -1,33 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/3] cpufreq: stats: Remove redundant cpufreq_cpu_get() call
-Date: Fri, 28 Feb 2014 09:18:02 +0530
-Message-ID: <CAKohpomjtE7Rtrs-TgxtSo658+4p0AHLzr9niN1GnkkrDqTxTw@mail.gmail.com>
-References: <1393552716-9754-1-git-send-email-skannan@codeaurora.org>
+From: Richard Weinberger <richard@nod.at>
+Subject: Re: [PATCH 2/2] thermal,rcar_thermal: Add dependency on HAS_IOMEM
+Date: Fri, 28 Feb 2014 09:21:33 +0100
+Message-ID: <5310470D.6000404@nod.at>
+References: <1390688954-4940-1-git-send-email-richard@nod.at>	<1393484282.2637.17.camel@rzhang1-mobl4> <87fvn4yskv.wl%kuninori.morimoto.gx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1393552716-9754-1-git-send-email-skannan@codeaurora.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from b.ns.miles-group.at ([95.130.255.144]:1661 "EHLO radon.swed.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750701AbaB1IVn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 28 Feb 2014 03:21:43 -0500
+In-Reply-To: <87fvn4yskv.wl%kuninori.morimoto.gx@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: eduardo.valentin@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms@verge.net.au, laurent.pinchart+renesas@ideasonboard.com
 
-On 28 February 2014 07:28, Saravana Kannan <skannan@codeaurora.org> wrote:
-> __cpufreq_stats_create_table always gets pass the valid and real policy
-> struct. So, there's no need to call cpufreq_cpu_get() to get the policy
-> again.
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->  drivers/cpufreq/cpufreq_stats.c | 12 +-----------
->  1 file changed, 1 insertion(+), 11 deletions(-)
+Am 28.02.2014 01:44, schrieb Kuninori Morimoto:
+>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>>> index 35c0664..88efa8f 100644
+>>> --- a/drivers/thermal/Kconfig
+>>> +++ b/drivers/thermal/Kconfig
+>>> @@ -136,6 +136,7 @@ config SPEAR_THERMAL
+>>>  config RCAR_THERMAL
+>>>  	tristate "Renesas R-Car thermal driver"
+>>>  	depends on ARCH_SHMOBILE || COMPILE_TEST
+>>> +	depends on HAS_IO_MEM
+>>>  	help
+>>>  	  Enable this to plug the R-Car thermal sensor driver into the Linux
+>>>  	  thermal framework.
+> 
+> I guess
+> 
+>  - HAS_IO_MEM
+>  + HAS_IOMEM
 
-All patches look fine now. Rafael you can queue them up as per your
-convenience.
+Yeah, this has been resolved in v2:
+https://lkml.org/lkml/2014/1/27/59
 
-@Saravana: Though I am quite sure you still need my patches to get
-your initial issue fixed. So, can you please get them tested as early
-as possible, so that we can get them in for 3.14?
-
-@Srivatsa: Your reviews will also help :)
+Thanks,
+//richard
