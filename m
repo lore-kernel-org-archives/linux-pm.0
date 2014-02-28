@@ -1,115 +1,36 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC] Splitting scheduler into two halves
-Date: Fri, 28 Feb 2014 13:01:47 +0100
-Message-ID: <20140228120147.GJ3104@twins.programming.kicks-ass.net>
-References: <0DA73B5D686AEC4AAEF6054BE04DA1CD116C50EA@SHSMSX102.ccr.corp.intel.com>
- <20140228102932.GI19029@e103034-lin>
- <20140228114459.GM27965@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:53911 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbaB1MB4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 07:01:56 -0500
-Content-Disposition: inline
-In-Reply-To: <20140228114459.GM27965@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Patrick Titiano <ptitiano@baylibre.com>
+Subject: [PATCH 1/2] thermal: rcar-thermal: fix same mask applied twice
+Date: Fri, 28 Feb 2014 14:10:03 +0100
+Message-ID: <1393593004-16285-2-git-send-email-ptitiano@baylibre.com>
+References: <1393593004-16285-1-git-send-email-ptitiano@baylibre.com>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1393593004-16285-1-git-send-email-ptitiano@baylibre.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: magnus.damm@gmail.com, kuninori.morimoto.gx@renesas.com, eduardo.valentin@ti.com
+Cc: bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Patrick Titiano <ptitiano@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: "Du, Yuyang" <yuyang.du@intel.com>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
 
-On Fri, Feb 28, 2014 at 12:44:59PM +0100, Peter Zijlstra wrote:
-> On Fri, Feb 28, 2014 at 10:29:32AM +0000, Morten Rasmussen wrote:
-> > If I understand your proposal correctly, you are proposing to have a
-> > pluggable scheduler where it is possible to have many different
-> > load-balance (bottom half) implementations.
-> 
-> Yeah, that's not _ever_ going to happen. We've had that discussion many
-> times, use your favourite search engine.
+Mask is already applied preceding the if statement.
+Remove the second mask.
 
-*groan*, the version in my inbox to which I replied earlier seems
-private; and then I'm not CC'd to the list one.
-
-
+Signed-off-by: Patrick Titiano <ptitiano@baylibre.com>
 ---
-Please use a sane MUA and teach it to wrap at around ~78 chars.
+ drivers/thermal/rcar_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Fri, Feb 28, 2014 at 02:13:32AM +0000, Du, Yuyang wrote:
-> Hi Peter/Ingo and all,
-> 
-> With the advent of more cores and heterogeneous architectures, the
-> scheduler is required to be more complex (power efficiency) and
-> diverse (big.little). For the scheduler to address that challenge as a
-> whole, it is costly but not necessary. This proposal argues that the
-> scheduler be spitted into two parts: top half (task scheduling) and
-> bottom half (load balance). Let the bottom half take charge of the
-> incoming requirements.
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index e2bb589..6ea8c5c 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -316,7 +316,7 @@ static u32 rcar_thermal_had_changed(struct rcar_thermal_priv *priv, u32 status)
+ 
+ 	status = (status >> rcar_id_to_shift(priv)) & 0x3;
+ 
+-	if (status & 0x3) {
++	if (status) {
+ 		dev_dbg(dev, "thermal%d %s%s\n",
+ 			priv->id,
+ 			(status & 0x2) ? "Rising " : "",
+-- 
+1.8.3.2
 
-This is already so.
-
-> The two halves are rather orthogonal in functionality. The task
-> scheduling (top half) seeks for *ONE* CPU to execute running tasks
-> fairly (priority included), while the load balance (bottom half) aims
-> for *ALL* CPUs to maximize the throughput of the computing power. The
-> goal of task scheduling is pretty unique and clear, and CFS and RT in
-> that part are exactly approaching the goal. The load balance, however,
-> is constrained to meet more goals, to name a few, performance
-> (throughput/responsiveness), power consumption, architecture
-> differences, etc. Those things are often hard to achieve because they
-> may conflict and are difficult to estimate and plan. So, shall we
-> declare the independence of the two, give them freedom to pursue their
-> own "happiness".
-
-You cannot treat them completely independent, as fairness must extend
-across CPUs. And there's good reasons to integrate them further still;
-our current min_vruntime is a poor substitute for the per-cpu zero-lag
-point. But with some of the runtime tracking we did for SMP-cgroup we
-can approximate the global zero-lag point.
-
-Using a global zero-lag point has advantages in that task latency is
-petter preserved in the face of migrations.
-
-So no; you cannot completely separate them. But even if you could;
-I don't see the point in doing so.
-
-> We take an incremental development method. As a starting point, we did three things (but did not change one single line of real-work code):
-> 	1)	Remove load balance from fair.c into load_balance.c
-> 	(~3000 lines of codes). As a result, fair.c/rt.c and
-> 	load_balance.c have very little intersection.
-
-You're very much overlooking the fact that RT and DL have their own
-SMP logic. So the sched_class interface must very much include the
-SMP logic.
-
-The best you can try is creating fair_smp.c, but I'm not seeing how
-that's going to be anything but pure code movement. You're not going to
-suddenly make it all easier.
-
-> 	2)	Define struct sched_lb_class that consists of the following members to umbrella the load balance entry points.
-> 		a.	const struct sched_lb_class *next;
-> 		b.	int (*fork_balance) (struct task_struct *p, int sd_flags, int wake_flags);
-> 		c.	int (*exec_balance) (struct task_struct *p, int sd_flags, int wake_flags);
-> 		d.	int (*wakeup_balance) (struct task_struct *p, int sd_flags, int wake_flags);
-> 		e.	void (*idle_balance) (int this_cpu, struct rq *this_rq);
-> 		f.	void (*periodic_rebalance) (int cpu, enum cpu_idle_type idle);
-> 		g.	void (*nohz_idle_balance) (int this_cpu, enum cpu_idle_type idle);
-> 		h.	void (*start_periodic_balance) (struct rq *rq, int cpu);
-> 		i.	void (*check_nohz_idle_balance) (struct rq *rq, int cpu);
-
-No point in doing that; as there will only ever be the one consumer.
-
-> 	3)	Insert another layer of indirection to wrap the
-> 	implemented functions in sched_lb_class. Implement a default
-> 	load balance class that is just the previous load balance.
-
-Every problem in CS can be solved by another layer of abstraction;
-except for the problem of too many layers.
-
-> The next to do is to continue redesigning and refactoring to make life
-> easier toward more powerful and diverse load balance. And more
-> importantly, this RFC solicits a discussion to get early feedback on
-> the big proposed change.
-
-I'm not seeing the point. Abstraction and indirection for a single user
-are bloody pointless.
