@@ -1,45 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/3] cpufreq: stats: Remove redundant cpufreq_cpu_get() call
-Date: Sat, 01 Mar 2014 00:26:23 +0100
-Message-ID: <8945263.cDODqBSQxb@vostro.rjw.lan>
-References: <1393552716-9754-1-git-send-email-skannan@codeaurora.org> <CAKohpomjtE7Rtrs-TgxtSo658+4p0AHLzr9niN1GnkkrDqTxTw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for v3.14-rc5
+Date: Sat, 1 Mar 2014 00:16:05 +0100
+Message-ID: <CAJZ5v0jgsEYh8KTUDPmxP5=XSgqDr15hDCWATqE-FT9vS7v_BA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56418 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751998AbaB1XLT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 18:11:19 -0500
-In-Reply-To: <CAKohpomjtE7Rtrs-TgxtSo658+4p0AHLzr9niN1GnkkrDqTxTw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Friday, February 28, 2014 09:18:02 AM Viresh Kumar wrote:
-> On 28 February 2014 07:28, Saravana Kannan <skannan@codeaurora.org> wrote:
-> > __cpufreq_stats_create_table always gets pass the valid and real policy
-> > struct. So, there's no need to call cpufreq_cpu_get() to get the policy
-> > again.
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> > ---
-> >  drivers/cpufreq/cpufreq_stats.c | 12 +-----------
-> >  1 file changed, 1 insertion(+), 11 deletions(-)
-> 
-> All patches look fine now. Rafael you can queue them up as per your
-> convenience.
-> 
-> @Saravana: Though I am quite sure you still need my patches to get
-> your initial issue fixed. So, can you please get them tested as early
-> as possible, so that we can get them in for 3.14?
+Hi Linus,
 
-That's a bit late ...
+Please pull from the git repository at
 
-> @Srivatsa: Your reviews will also help :)
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.14-rc5
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+to receive ACPI and power management fixes for v3.14-rc5
+with top-most commit 6c09ea49ceb8a3b2b709718f6acdb1edd92ea899
+
+  Merge branches 'pm-cpufreq', 'pm-hibernate' and 'acpi-processor'
+
+on top of commit cfbf8d4857c26a8a307fb7cd258074c9dcd8c691
+
+  Linux 3.14-rc4
+
+These three commits fix a recent intel_pstate regression and two old
+bugs that should be fixed in -stable too, one in the ACPI processor
+driver and one in the firmare loader.
+
+Specifics:
+
+ - One of the recent intel_pstate driver fixes introduced a rounding
+   error that on some systems causes the frequency to be stuck at the
+   lowest level forever.  Fix from Dirk Brandewie.
+
+ - The firmware_class driver's PM notifier doesn't handle the
+   PM_RESTORE_PREPARE event during hibernation image restore and that
+   leads to a deadlock on umhelper_sem in __usermodehelper_disable().
+   Fix from Sebastian Capella.
+
+ - acpi_processor_set_throttling() abuses set_cpus_allowed_ptr() in a
+   nasty way which triggers the WARN_ON_ONCE() in wq_worker_waking_up()
+   among other things.  Fix from Lan Tianyu.
+
+Thanks!
+
+
+---------------
+
+Dirk Brandewie (1):
+      intel_pstate: Change busy calculation to use fixed point math.
+
+Lan Tianyu (1):
+      ACPI / processor: Rework processor throttling with work_on_cpu()
+
+Sebastian Capella (1):
+      PM / hibernate: Fix restore hang in freeze_processes()
+
+---------------
+
+ drivers/acpi/processor_throttling.c | 69 +++++++++++++++++--------------------
+ drivers/base/firmware_class.c       |  1 +
+ drivers/cpufreq/intel_pstate.c      | 28 +++++++++------
+ 3 files changed, 51 insertions(+), 47 deletions(-)
