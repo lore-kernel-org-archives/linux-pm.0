@@ -1,52 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
-Date: Sun, 02 Mar 2014 00:38:47 +0100
-Message-ID: <7021741.2WcVMr4q95@vostro.rjw.lan>
-References: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Sleep: Set pm_generic functions to NULL for !CONFIG_PM_SLEEP
+Date: Sun, 02 Mar 2014 00:59:25 +0100
+Message-ID: <1517514.5FC3TgtPH4@vostro.rjw.lan>
+References: <1392811761-28201-1-git-send-email-ulf.hansson@linaro.org> <20140219122715.GB32069@amd.pavel.ucw.cz> <CAPDyKFrhyBZV6yUogxTQPdFPg=1R3UZ0Yr_VfXrTivMaNeGVEQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54320 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:53360 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753310AbaCAXXn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Mar 2014 18:23:43 -0500
-In-Reply-To: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
+	with SMTP id S1753318AbaCAXoU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Mar 2014 18:44:20 -0500
+In-Reply-To: <CAPDyKFrhyBZV6yUogxTQPdFPg=1R3UZ0Yr_VfXrTivMaNeGVEQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>
 
-On Saturday, March 01, 2014 11:56:03 AM Ulf Hansson wrote:
-> Patch 1 -> 2:
-> These patches provides two new runtime PM helper functions which intend to be
-> used from system suspend/resume callbacks, to make sure devices are put into low
-> power state during system suspend and brought back to full power at system
-> resume.
+On Thursday, February 27, 2014 09:29:31 AM Ulf Hansson wrote:
+> On 19 February 2014 13:27, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Wed 2014-02-19 13:09:21, Ulf Hansson wrote:
+> >> Previously only a subset of the functions were defined and set to NULL
+> >> while !CONFIG_PM_SLEEP. Let's make them all available so they can be
+> >> used no matter of CONFIG_PM_SLEEP or not.
+> >>
+> >> Cc: Russell King <linux@arm.linux.org.uk>
+> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >
+> > Reviewed-by: Pavel Machek <pavel@ucw.cz>
+> >
 > 
-> The prerequisite is to have all levels of a device's runtime PM callbacks to be
-> defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
-> for CONFIG_PM.
+> Hi Rafael,
 > 
-> By using the new runtime PM helper functions especially the two scenarios below
-> will be addressed.
+> If you have no concern with this one, I would appreciate if it could
+> go in for 3.15.
 > 
-> 1) The PM core prevents .runtime_suspend callbacks from being invoked during
-> system suspend. That means even for a runtime PM centric subsystem and driver,
-> the device needs to be put into low power state from a system suspend callback.
-> Otherwise it may very well be left in full power state (runtime resumed) while
-> the system is suspended. By using the new helper functions, we make sure to walk
-> the hierarchy of a device's power domain, subsystem and driver.
-> 
-> 2) Subsystems and drivers need to cope with all the combinations of
-> CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions smothly
-> addresses this.
+> I have some patches for the amba bus (driver/amba/bus.c) that would
+> require these pointers to be available.
 
-OK, I've queued up [1-2/8] for 3.15.  The rest generally didn't apply for me
-and I think it'd be better to push them through the respective subsystem trees
-later anyway.
-
-Thanks!
+I've queued it up for 3.15, thanks!
 
 -- 
 I speak only for myself.
