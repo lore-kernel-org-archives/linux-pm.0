@@ -1,75 +1,53 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/3] PM: define new ASSIGN_*_PM_OPS macros based on
- assign_if
-Date: Sat, 1 Mar 2014 17:26:03 +0100
-Message-ID: <20140301162603.GA2275@amd.pavel.ucw.cz>
-References: <1393261707-30565-1-git-send-email-joshc@codeaurora.org>
- <1393261707-30565-3-git-send-email-joshc@codeaurora.org>
- <20140227190219.GB4421@kroah.com>
- <20140301110633.GA27749@amd.pavel.ucw.cz>
- <20140301160231.GA9911@kroah.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
+Date: Sun, 02 Mar 2014 00:38:47 +0100
+Message-ID: <7021741.2WcVMr4q95@vostro.rjw.lan>
+References: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43386 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963AbaCAQ0G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Mar 2014 11:26:06 -0500
-Content-Disposition: inline
-In-Reply-To: <20140301160231.GA9911@kroah.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:54320 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753310AbaCAXXn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Mar 2014 18:23:43 -0500
+In-Reply-To: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Josh Cartwright <joshc@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
 
-Hi!
-
-> > > > +#define ASSIGN_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-> > > > +	.suspend = assign_if_pm_sleep(suspend_fn), \
-> > > > +	.resume = assign_if_pm_sleep(resume_fn), \
-> > > > +	.freeze = assign_if_pm_sleep(suspend_fn), \
-> > > > +	.thaw = assign_if_pm_sleep(resume_fn), \
-> > > > +	.poweroff = assign_if_pm_sleep(suspend_fn), \
-> > > > +	.restore = assign_if_pm_sleep(resume_fn),
-> > > 
-> > > Ugh, what a mess, really?  Is it that hard to get the #ifdef right in
-> > > the code?  Why not just always define the functions and then also always
-> > > have them in the structures, and if the feature isn't enabled, just
-> > > don't call/use them?
-> > 
-> > The functions may not compile with CONFIG_PM disabled. (And #ifdefs in
-> > the code are considered ugly).
-> > 
-> > > Yes, it would cause a _very_ tiny increase in code size if the option is
-> > > disabled, but really, does anyone ever disable those options becides on
-> > > the dreaded 'make randconfig' checkers?
-> > 
-> > We don't want CONFIG_PM complexity on some embedded systems...
+On Saturday, March 01, 2014 11:56:03 AM Ulf Hansson wrote:
+> Patch 1 -> 2:
+> These patches provides two new runtime PM helper functions which intend to be
+> used from system suspend/resume callbacks, to make sure devices are put into low
+> power state during system suspend and brought back to full power at system
+> resume.
 > 
-> Really, what embedded systems do not want this?
-
-Most of them? :-) In last four years, I cooperated on 4 of those, and
-device power management was not requirement on any of those. Just one
-was operated on battery that was "small".
-
-> > and it is useful tostart with simple (!PM) system when introducing new
-> > board.
+> The prerequisite is to have all levels of a device's runtime PM callbacks to be
+> defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
+> for CONFIG_PM.
 > 
-> I'm not saying to disable the option, I'm saying to stop worrying about
-> saving a few hundred bytes in individual drivers with this crazy #ifdef
-> and macro mess that no one understands and always gets wrong.
+> By using the new runtime PM helper functions especially the two scenarios below
+> will be addressed.
+> 
+> 1) The PM core prevents .runtime_suspend callbacks from being invoked during
+> system suspend. That means even for a runtime PM centric subsystem and driver,
+> the device needs to be put into low power state from a system suspend callback.
+> Otherwise it may very well be left in full power state (runtime resumed) while
+> the system is suspended. By using the new helper functions, we make sure to walk
+> the hierarchy of a device's power domain, subsystem and driver.
+> 
+> 2) Subsystems and drivers need to cope with all the combinations of
+> CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions smothly
+> addresses this.
 
-I wrote: 
+OK, I've queued up [1-2/8] for 3.15.  The rest generally didn't apply for me
+and I think it'd be better to push them through the respective subsystem trees
+later anyway.
 
-> > The functions may not compile with CONFIG_PM disabled. (And #ifdefs in
-> > the code are considered ugly).
-
-To reiterate: suspend_fn (etc) is likely to use stuff not avialable in
-!PM case, so it will break your compilation if you don't add some
-#ifdefs.
-
-									Pavel
+Thanks!
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
