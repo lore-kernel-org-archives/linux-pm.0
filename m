@@ -1,21 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 1/3] cpufreq: move call to __find_governor() to cpufreq_init_policy()
-Date: Sat, 01 Mar 2014 02:00:03 +0100
-Message-ID: <1502303.OT1VzMZkk2@vostro.rjw.lan>
+Date: Sat, 01 Mar 2014 02:09:20 +0100
+Message-ID: <7507031.JAfx7W3apJ@vostro.rjw.lan>
 References: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51088 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752578AbaCAAo7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 19:44:59 -0500
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: skannan@codeaurora.org, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
+List-Id: linux-pm@vger.kernel.org
 
 On Tuesday, February 25, 2014 02:20:09 PM Viresh Kumar wrote:
 > We call __find_governor() during addition of first CPU of every policy to find
@@ -24,17 +20,11 @@ On Tuesday, February 25, 2014 02:20:09 PM Viresh Kumar wrote:
 > After that we call cpufreq_parse_governor() in cpufreq_init_policy() either with
 > this governor or default governor. And right after that policy->governor is set
 > to NULL.
-
-This is a problem, right?  So care to write *why* it is a problem here?
-
+> 
 > So, instead of doing this move the relevant parts to cpufreq_init_policy()
 > policy only and initialize policy->governor to NULL at the beginning.
-
-And this change is supposed to fix that problem, right?  You're not moving
-stuff around just for the fun of it?
-
+> 
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->
 > ---
 > 
 > Hi Saravana,
@@ -62,6 +52,13 @@ stuff around just for the fun of it?
 >  
 >  	memcpy(&new_policy, policy, sizeof(*policy));
 >  
+
+And while I'm at it, can we *please* avoid adding new #ifdef blocks into
+function bodies?
+
+Please introduce a wrapper around __find_governor() returning NULL for
+CONFIG_HOTPLUG_CPU unset.
+
 > +	/* Update governor of new_policy to the governor used before hotplug */
 > +#ifdef CONFIG_HOTPLUG_CPU
 > +	gov = __find_governor(per_cpu(cpufreq_cpu_governor, policy->cpu));
@@ -92,6 +89,9 @@ stuff around just for the fun of it?
 > -
 >  	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
 > -
+
+Why do these whitespace changes belong to this patch?
+
 >  	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
 >  
 > +	policy->governor = NULL;
