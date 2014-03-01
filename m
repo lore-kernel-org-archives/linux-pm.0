@@ -1,86 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] cpufreq: Initialize policy before making it available for others to use
-Date: Sat, 01 Mar 2014 02:14:35 +0100
-Message-ID: <278741659.0r4LI3yGJ4@vostro.rjw.lan>
-References: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org> <57b8ab66ba21f42c91311641319cec16d2c8923d.1393318100.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57799 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752725AbaCAA7b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 19:59:31 -0500
-In-Reply-To: <57b8ab66ba21f42c91311641319cec16d2c8923d.1393318100.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: [PATCH v2 3/5] thermal: dove: prepare new Dove DT Kconfig variable
+Date: Sat,  1 Mar 2014 09:33:19 +0100
+Message-ID: <1393662801-17950-3-git-send-email-sebastian.hesselbarth@gmail.com>
+References: <1393662801-17950-1-git-send-email-sebastian.hesselbarth@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1393662801-17950-1-git-send-email-sebastian.hesselbarth@gmail.com>
+In-Reply-To: <1393536486-3827-3-git-send-email-sebastian.hesselbarth@gmail.com>
+References: <1393536486-3827-3-git-send-email-sebastian.hesselbarth@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: skannan@codeaurora.org, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
-On Tuesday, February 25, 2014 02:20:10 PM Viresh Kumar wrote:
-> Policy must be fully initialized before it is being made available for use by
-> others.
+DT-enabled Dove will move over from ARCH_DOVE in mach-dove to MACH_DOVE in
+mach-mvebu. As non-DT ARCH_DOVE will stay to rot for a while, add a new
+DT-only MACH_DOVE Kconfig.
 
-True enough.  And the problem is?
+Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+---
+Rui, Eduardo,
 
-> This patch moves some initialization code before making policy available
-> for others.
+Mark Brown requested to take the corresponding ASoC patch through
+his tree. Therefore, I have split the former patch into individual subsystem
+patches.              
 
-So why/how exactly does this fix the problem?
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Jason Cooper <jason@lakedaemon.net>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Gregory Clement <gregory.clement@free-electrons.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 28 ++++++++++++++--------------
->  1 file changed, 14 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index cc4f244..110c0cd 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1116,6 +1116,20 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->  		goto err_set_policy_cpu;
->  	}
->  
-> +	/* related cpus should atleast have policy->cpus */
-> +	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
-> +
-> +	/*
-> +	 * affected cpus must always be the one, which are online. We aren't
-> +	 * managing offline cpus here.
-> +	 */
-> +	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-> +
-> +	if (!frozen) {
-> +		policy->user_policy.min = policy->min;
-> +		policy->user_policy.max = policy->max;
-> +	}
-> +
->  	write_lock_irqsave(&cpufreq_driver_lock, flags);
->  	for_each_cpu(j, policy->cpus)
->  		per_cpu(cpufreq_cpu_data, j) = policy;
-> @@ -1169,20 +1183,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
->  		}
->  	}
->  
-> -	/* related cpus should atleast have policy->cpus */
-> -	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
-> -
-> -	/*
-> -	 * affected cpus must always be the one, which are online. We aren't
-> -	 * managing offline cpus here.
-> -	 */
-> -	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-> -
-> -	if (!frozen) {
-> -		policy->user_policy.min = policy->min;
-> -		policy->user_policy.max = policy->max;
-> -	}
-> -
->  	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
->  				     CPUFREQ_START, policy);
->  
-> 
-
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 35c066489a19..07b5e56e9a97 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -150,7 +150,7 @@ config KIRKWOOD_THERMAL
+ 
+ config DOVE_THERMAL
+ 	tristate "Temperature sensor on Marvell Dove SoCs"
+-	depends on ARCH_DOVE
++	depends on ARCH_DOVE || MACH_DOVE
+ 	depends on OF
+ 	help
+ 	  Support for the Dove thermal sensor driver in the Linux thermal
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.5.3
