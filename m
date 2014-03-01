@@ -1,53 +1,91 @@
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH v2 3/5] thermal: dove: prepare new Dove DT Kconfig variable
-Date: Sat,  1 Mar 2014 09:33:19 +0100
-Message-ID: <1393662801-17950-3-git-send-email-sebastian.hesselbarth@gmail.com>
-References: <1393662801-17950-1-git-send-email-sebastian.hesselbarth@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1393662801-17950-1-git-send-email-sebastian.hesselbarth@gmail.com>
-In-Reply-To: <1393536486-3827-3-git-send-email-sebastian.hesselbarth@gmail.com>
-References: <1393536486-3827-3-git-send-email-sebastian.hesselbarth@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH V3 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
+Date: Sat,  1 Mar 2014 11:56:03 +0100
+Message-ID: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f53.google.com ([209.85.215.53]:50297 "EHLO
+	mail-la0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbaCAK4R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Mar 2014 05:56:17 -0500
+Received: by mail-la0-f53.google.com with SMTP id b8so3454744lan.12
+        for <linux-pm@vger.kernel.org>; Sat, 01 Mar 2014 02:56:16 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-DT-enabled Dove will move over from ARCH_DOVE in mach-dove to MACH_DOVE in
-mach-mvebu. As non-DT ARCH_DOVE will stay to rot for a while, add a new
-DT-only MACH_DOVE Kconfig.
+Patch 1 -> 2:
+These patches provides two new runtime PM helper functions which intend to be
+used from system suspend/resume callbacks, to make sure devices are put into low
+power state during system suspend and brought back to full power at system
+resume.
 
-Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
----
-Rui, Eduardo,
+The prerequisite is to have all levels of a device's runtime PM callbacks to be
+defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
+for CONFIG_PM.
 
-Mark Brown requested to take the corresponding ASoC patch through
-his tree. Therefore, I have split the former patch into individual subsystem
-patches.              
+By using the new runtime PM helper functions especially the two scenarios below
+will be addressed.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Gregory Clement <gregory.clement@free-electrons.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/thermal/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+1) The PM core prevents .runtime_suspend callbacks from being invoked during
+system suspend. That means even for a runtime PM centric subsystem and driver,
+the device needs to be put into low power state from a system suspend callback.
+Otherwise it may very well be left in full power state (runtime resumed) while
+the system is suspended. By using the new helper functions, we make sure to walk
+the hierarchy of a device's power domain, subsystem and driver.
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 35c066489a19..07b5e56e9a97 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -150,7 +150,7 @@ config KIRKWOOD_THERMAL
- 
- config DOVE_THERMAL
- 	tristate "Temperature sensor on Marvell Dove SoCs"
--	depends on ARCH_DOVE
-+	depends on ARCH_DOVE || MACH_DOVE
- 	depends on OF
- 	help
- 	  Support for the Dove thermal sensor driver in the Linux thermal
+2) Subsystems and drivers need to cope with all the combinations of
+CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions smothly
+addresses this.
+
+Patch 3 -> 4:
+Fixup system suspend for spi-pl022 driver, by using the new runtime PM helper
+functions.
+
+These patches is based upon the latest next-branch for spi-pl022 driver. They
+will not apply to Rafael's linux-pm tree, but are included in this patchset for
+reference and to receive comments/acks.
+
+Patch 5:
+Fixup system suspend for i2c-nomadik driver, by using the new runtime PM helper
+functions.
+
+This patch is based upon the latest next-branch for the i2c-nomadik driver. They
+will not apply to Rafael's linux-pm tree, but are included in this patchset for
+reference and to receive comments/acks.
+
+Patch 6 -> 8:
+Fixup system suspend for mmci driver, by using the new runtime PM helper
+functions.
+
+
+A final note, the amba bus has converted to use the SET_PM_RUNTIME_PM_OPS
+which is needed for these patches to work with only CONFIG_PM_SLEEP and not
+CONFIG_PM_RUNTIME. Anyway, the patches for the amba bus have recently been
+applied by Russell and resides in his ARM tree.
+
+Changes in v3:
+	This is repost of the patchset. Only patch 1 and patch 2 has been
+	updated to v3, the rest are still in v1.
+
+Ulf Hansson (8):
+  PM / Runtime: Fetch runtime PM callbacks using a macro
+  PM / Sleep / Runtime: Add pm_runtime_suspend|resume_force functions
+  spi: pl022: Let runtime PM callbacks be available for CONFIG_PM
+  spi: pl022: Don't ignore power domain and amba bus at system suspend
+  i2c: nomadik: Fixup system suspend
+  mmc: mmci: Mask IRQs for all variants during runtime suspend
+  mmc: mmci: Let runtime PM callbacks be available for CONFIG_PM
+  mmc: mmci: Put the device into low power state at system suspend
+
+ drivers/base/power/Makefile      |    3 +-
+ drivers/base/power/runtime.c     |  162 +++++++++++++++++++++++++++++---------
+ drivers/i2c/busses/i2c-nomadik.c |   14 ++--
+ drivers/mmc/host/mmci.c          |   60 ++++----------
+ drivers/spi/spi-pl022.c          |   58 +++++---------
+ include/linux/pm_runtime.h       |    4 +
+ 6 files changed, 170 insertions(+), 131 deletions(-)
+
 -- 
-1.8.5.3
+1.7.9.5
+
