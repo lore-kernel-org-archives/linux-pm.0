@@ -1,108 +1,138 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
-Date: Fri, 28 Feb 2014 15:38:54 -0800
-Message-ID: <53111e0f.a50a430a.6ef6.ffff99ae@mx.google.com>
-References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
- <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
- <20140228095022.GA25090@e102568-lin.cambridge.arm.com>
- <20140228201557.29118.62126@capellas-linux>
- <20140228224933.GA11040@e102568-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/3] cpufreq: move call to __find_governor() to cpufreq_init_policy()
+Date: Sat, 01 Mar 2014 02:00:03 +0100
+Message-ID: <1502303.OT1VzMZkk2@vostro.rjw.lan>
+References: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140228224933.GA11040@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <Jonathan.Austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <Will.Deacon@arm.com>, Nicolas Pitre <nico@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Russ Dill <Russ.Dill@ti.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51088 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752578AbaCAAo7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2014 19:44:59 -0500
+In-Reply-To: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: skannan@codeaurora.org, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
-Quoting Lorenzo Pieralisi (2014-02-28 14:49:33)
-> On Fri, Feb 28, 2014 at 08:15:57PM +0000, Sebastian Capella wrote:
+On Tuesday, February 25, 2014 02:20:09 PM Viresh Kumar wrote:
+> We call __find_governor() during addition of first CPU of every policy to find
+> the last governor used for this CPU before it was hotplugged-out.
 > 
-> [...]
+> After that we call cpufreq_parse_governor() in cpufreq_init_policy() either with
+> this governor or default governor. And right after that policy->governor is set
+> to NULL.
+
+This is a problem, right?  So care to write *why* it is a problem here?
+
+> So, instead of doing this move the relevant parts to cpufreq_init_policy()
+> policy only and initialize policy->governor to NULL at the beginning.
+
+And this change is supposed to fix that problem, right?  You're not moving
+stuff around just for the fun of it?
+
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> ---
 > 
-> > > > +
-> > > > +/*
-> > > > + * The framework loads the hibernation image into a linked list anchored
-> > > > + * at restore_pblist, for swsusp_arch_resume() to copy back to the proper
-> > > > + * destinations.
-> > > > + *
-> > > > + * To make this work if resume is triggered from initramfs, the
-> > > > + * pagetables need to be switched to allow writes to kernel mem.
-> > > > + */
-> > > 
-> > > Comment above needs updating. We are switching page tables to a set of
-> > > page tables that are certain to live at the same location in the older
-> > > kernel, that's the only reason, as we discussed. soft_restart will make
-> > > sure (again) to switch to 1:1 page tables so that we can call cpu_resume
-> > > with the MMU off.
-> > 
-> > How does this look?
-> > 
-> > The framework loads as much of the hibernation image to final physical
-> > pages as possible.  Any pages that were in use, will need to be restored
-> > prior to the soft_restart.  The pages to restore are maintained in
-> > the list anchored at restore_pblist.  At this point, we can swap the
-> > pages to their final location.  We must switch the mapping to 1:1 to
-> > ensure that when we overwrite the page table physical pages we're using
-> > a known physical location (idmap_pgd) with known contents.
+> Hi Saravana,
 > 
-> It is ok, a tad too verbose. All I care about is a comment describing
-> what's really needed, the existing one was confusing and wrong.
-
-Maybe more like: 
-
-Restore physical pages that were in use while loading hibernation image.
-Use idmap_pgd so our page tables use the same physical address as the
-hibernation image.  Will be overwriten with the same contents.
-
-> > > > +/*
-> > > > + * Resume from the hibernation image.
-> > > > + * Due to the kernel heap / data restore, stack contents change underneath
-> > > > + * and that would make function calls impossible; switch to a temporary
-> > > > + * stack within the nosave region to avoid that problem.
-> > > > + */
-> > > > +int swsusp_arch_resume(void)
-> > > > +{
-> > > > +     extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-> > > > +     call_with_stack(arch_restore_image, 0,
-> > > > +             resume_stack + sizeof(resume_stack));
-> > > 
-> > > This does not guarantee your stack is 8-byte aligned, that's not AAPCS
-> > > compliant and might buy you trouble.
-> > > 
-> > > Either you align the stack or you align the pointer you are passing.
-> > > 
-> > > Please have a look at kernel/process.c
-> > 
-> > I've added this for now, do you see any issues?
-> > 
-> > -static u8 resume_stack[PAGE_SIZE/2] __nosavedata;
-> > +static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
-> > -               resume_stack + sizeof(resume_stack));
-> > +               resume_stack + ARRAY_SIZE(resume_stack));
+> I hope only the first two patches would fix things for you but probably you can
+> test all three.
 > 
-> I do not see why the stack depends on the PAGE_SIZE. I would be surprised
-> if you need more than a few bytes (given that soft_restart switches stack
-> again...), go through it with a debugger, it is easy to check the stack
-> usage and allow for some extra buffer (but half a page is not needed).
+> @Rafael: We might need to get these in next rc only as these are more or less
+> fixes.
+> 
+>  drivers/cpufreq/cpufreq.c | 34 ++++++++++++++++------------------
+>  1 file changed, 16 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index c755b5f..cc4f244 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -879,18 +879,27 @@ err_out_kobj_put:
+>  
+>  static void cpufreq_init_policy(struct cpufreq_policy *policy)
+>  {
+> +	struct cpufreq_governor *gov = NULL;
+>  	struct cpufreq_policy new_policy;
+>  	int ret = 0;
+>  
+>  	memcpy(&new_policy, policy, sizeof(*policy));
+>  
+> +	/* Update governor of new_policy to the governor used before hotplug */
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +	gov = __find_governor(per_cpu(cpufreq_cpu_governor, policy->cpu));
+> +#endif
+> +	if (gov)
+> +		pr_debug("Restoring governor %s for cpu %d\n",
+> +				policy->governor->name, policy->cpu);
+> +	else
+> +		gov = CPUFREQ_DEFAULT_GOVERNOR;
+> +
+> +	new_policy.governor = gov;
+> +
+>  	/* Use the default policy if its valid. */
+>  	if (cpufreq_driver->setpolicy)
+> -		cpufreq_parse_governor(policy->governor->name,
+> -					&new_policy.policy, NULL);
+> -
+> -	/* assure that the starting sequence is run in cpufreq_set_policy */
+> -	policy->governor = NULL;
+> +		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
+>  
+>  	/* set default policy */
+>  	ret = cpufreq_set_policy(policy, &new_policy);
+> @@ -944,11 +953,11 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+>  	unsigned long flags;
+>  
+>  	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> -
+>  	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
+> -
+>  	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>  
+> +	policy->governor = NULL;
+> +
+>  	return policy;
+>  }
+>  
+> @@ -1036,7 +1045,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>  	unsigned long flags;
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  	struct cpufreq_policy *tpolicy;
+> -	struct cpufreq_governor *gov;
+>  #endif
+>  
+>  	if (cpu_is_offline(cpu))
+> @@ -1094,7 +1102,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>  	else
+>  		policy->cpu = cpu;
+>  
+> -	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+>  	cpumask_copy(policy->cpus, cpumask_of(cpu));
+>  
+>  	init_completion(&policy->kobj_unregister);
+> @@ -1179,15 +1186,6 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
+>  	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+>  				     CPUFREQ_START, policy);
+>  
+> -#ifdef CONFIG_HOTPLUG_CPU
+> -	gov = __find_governor(per_cpu(cpufreq_cpu_governor, cpu));
+> -	if (gov) {
+> -		policy->governor = gov;
+> -		pr_debug("Restoring governor %s for cpu %d\n",
+> -		       policy->governor->name, cpu);
+> -	}
+> -#endif
+> -
+>  	if (!frozen) {
+>  		ret = cpufreq_add_dev_interface(policy, dev);
+>  		if (ret)
+> 
 
-I assuming this is becase the no-save region is one page anyway (we skip
-restoring the no-save region physical page).  So maybe 1/2 is a way to
-leave some room for whatever else may need to be here, but in any case
-the 4k is used for nosave.  I think you're right that it can be much less.
-
-I'll check into this...
-
-Thanks!
-
-Sebastian
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
