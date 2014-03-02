@@ -1,44 +1,82 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Sleep: Set pm_generic functions to NULL for !CONFIG_PM_SLEEP
-Date: Sun, 02 Mar 2014 00:59:25 +0100
-Message-ID: <1517514.5FC3TgtPH4@vostro.rjw.lan>
-References: <1392811761-28201-1-git-send-email-ulf.hansson@linaro.org> <20140219122715.GB32069@amd.pavel.ucw.cz> <CAPDyKFrhyBZV6yUogxTQPdFPg=1R3UZ0Yr_VfXrTivMaNeGVEQ@mail.gmail.com>
+Subject: Re: [PATCH V6 2/7] cpufreq: suspend governors from dpm_{suspend|resume}()
+Date: Sun, 02 Mar 2014 01:01:03 +0100
+Message-ID: <3426517.B7CbpxFO4d@vostro.rjw.lan>
+References: <cover.1392629003.git.viresh.kumar@linaro.org> <5b79cd9aa706d988d242d80d73cfe67c0e6c5b3d.1392629003.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53360 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:54797 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753318AbaCAXoU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Mar 2014 18:44:20 -0500
-In-Reply-To: <CAPDyKFrhyBZV6yUogxTQPdFPg=1R3UZ0Yr_VfXrTivMaNeGVEQ@mail.gmail.com>
+	with SMTP id S1753318AbaCAXp4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Mar 2014 18:45:56 -0500
+In-Reply-To: <5b79cd9aa706d988d242d80d73cfe67c0e6c5b3d.1392629003.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
 
-On Thursday, February 27, 2014 09:29:31 AM Ulf Hansson wrote:
-> On 19 February 2014 13:27, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Wed 2014-02-19 13:09:21, Ulf Hansson wrote:
-> >> Previously only a subset of the functions were defined and set to NULL
-> >> while !CONFIG_PM_SLEEP. Let's make them all available so they can be
-> >> used no matter of CONFIG_PM_SLEEP or not.
-> >>
-> >> Cc: Russell King <linux@arm.linux.org.uk>
-> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >
-> > Reviewed-by: Pavel Machek <pavel@ucw.cz>
-> >
+On Monday, February 17, 2014 02:55:08 PM Viresh Kumar wrote:
+> Previous patch added support for suspending governors, with callbacks being
+> called from dpm_{suspend|resume}_noirq(). The problem here is that most of the
+> devices (i.e. devices with ->suspend() callbacks) have already been suspended by
+> now and so if drivers want to change frequency before suspending, then it might
+> not be possible for many platforms (which depend on other peripherals like i2c,
+> regulators, etc).
 > 
-> Hi Rafael,
-> 
-> If you have no concern with this one, I would appreciate if it could
-> go in for 3.15.
-> 
-> I have some patches for the amba bus (driver/amba/bus.c) that would
-> require these pointers to be available.
+> So, we actually need to do this from dpm_{suspend|resume}() instead. This patch
+> does it.
 
-I've queued it up for 3.15, thanks!
+Please fold this into [1/7].
+
+> Tested-by: Lan Tianyu <tianyu.lan@intel.com>
+> Tested-by: Nishanth Menon <nm@ti.com>
+> Tested-by: Stephen Warren <swarren@nvidia.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/base/power/main.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index da49882..0f82012 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -582,7 +582,6 @@ static void dpm_resume_noirq(pm_message_t state)
+>  	dpm_show_time(starttime, state, "noirq");
+>  	resume_device_irqs();
+>  	cpuidle_resume();
+> -	cpufreq_resume();
+>  }
+>  
+>  /**
+> @@ -858,6 +857,8 @@ void dpm_resume(pm_message_t state)
+>  	mutex_unlock(&dpm_list_mtx);
+>  	async_synchronize_full();
+>  	dpm_show_time(starttime, state, NULL);
+> +
+> +	cpufreq_resume();
+>  }
+>  
+>  /**
+> @@ -1063,7 +1064,6 @@ static int dpm_suspend_noirq(pm_message_t state)
+>  	ktime_t starttime = ktime_get();
+>  	int error = 0;
+>  
+> -	cpufreq_suspend();
+>  	cpuidle_pause();
+>  	suspend_device_irqs();
+>  	mutex_lock(&dpm_list_mtx);
+> @@ -1415,6 +1415,8 @@ int dpm_suspend(pm_message_t state)
+>  
+>  	might_sleep();
+>  
+> +	cpufreq_suspend();
+> +
+>  	mutex_lock(&dpm_list_mtx);
+>  	pm_transition = state;
+>  	async_error = 0;
+> 
 
 -- 
 I speak only for myself.
