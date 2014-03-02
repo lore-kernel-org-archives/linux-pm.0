@@ -1,71 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: enable ARM drivers on arm64
-Date: Sun, 02 Mar 2014 01:03:25 +0100
-Message-ID: <1789818.fd7lIbF9Ps@vostro.rjw.lan>
-References: <1393208877-15797-1-git-send-email-broonie@kernel.org>
+From: Jean Delvare <jdelvare@suse.de>
+Subject: [PATCH] x86_pkg_temp_thermal: Fix the thermal zone type
+Date: Sun, 2 Mar 2014 15:05:49 +0100
+Message-ID: <20140302150549.45f6df2a@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1393208877-15797-1-git-send-email-broonie@kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@linaro.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:60828 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752043AbaCBOF5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Mar 2014 09:05:57 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Guenter Roeck <linux@roeck-us.net>
 
-On Monday, February 24, 2014 11:27:57 AM Mark Brown wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
-> 
-> Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
-> drivers. The power menu is needed for OPP support. At least on Calxeda
-> systems, the same cpufreq driver is used for arm and arm64 based
-> systems.
-> 
-> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Mark Brown <broonie@linaro.org>
+The thermal zone type should not include an instance number. Otherwise
+each zone is considered a different type and the thermal-to-hwmon
+bridge fails to group them all in a single hwmon device.
 
-Queued up for 3.15, thanks!
+I also changed the type to "x86_pkg_temp", because "pkg" was too
+generic, and other thermal drivers use an underscore, not a dash, as
+a separator. Or maybe "cpu_pkg_temp" would be better?
 
-> ---
->  arch/arm64/Kconfig      | 8 ++++++++
->  drivers/cpufreq/Kconfig | 2 +-
->  2 files changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index fea7b47..939e95a 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -327,6 +327,14 @@ source "drivers/cpuidle/Kconfig"
->  
->  endmenu
->  
-> +menu "Power management options"
-> +
-> +source "kernel/power/Kconfig"
-> +
-> +source "drivers/cpufreq/Kconfig"
-> +
-> +endmenu
-> +
->  source "net/Kconfig"
->  
->  source "drivers/Kconfig"
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 4b029c0..1fbe11f 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -200,7 +200,7 @@ source "drivers/cpufreq/Kconfig.x86"
->  endmenu
->  
->  menu "ARM CPU frequency scaling drivers"
-> -depends on ARM
-> +depends on ARM || ARM64
->  source "drivers/cpufreq/Kconfig.arm"
->  endmenu
->  
-> 
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+Candidate for stable trees?
+
+ drivers/thermal/x86_pkg_temp_thermal.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- linux-3.14-rc4.orig/drivers/thermal/x86_pkg_temp_thermal.c	2014-02-09 16:53:05.464687235 +0100
++++ linux-3.14-rc4/drivers/thermal/x86_pkg_temp_thermal.c	2014-03-02 15:02:15.950089266 +0100
+@@ -394,7 +394,6 @@ static int pkg_temp_thermal_device_add(u
+ 	int err;
+ 	u32 tj_max;
+ 	struct phy_dev_entry *phy_dev_entry;
+-	char buffer[30];
+ 	int thres_count;
+ 	u32 eax, ebx, ecx, edx;
+ 	u8 *temp;
+@@ -440,9 +439,7 @@ static int pkg_temp_thermal_device_add(u
+ 	phy_dev_entry->first_cpu = cpu;
+ 	phy_dev_entry->tj_max = tj_max;
+ 	phy_dev_entry->ref_cnt = 1;
+-	snprintf(buffer, sizeof(buffer), "pkg-temp-%d\n",
+-					phy_dev_entry->phys_proc_id);
+-	phy_dev_entry->tzone = thermal_zone_device_register(buffer,
++	phy_dev_entry->tzone = thermal_zone_device_register("x86_pkg_temp",
+ 			thres_count,
+ 			(thres_count == MAX_NUMBER_OF_TRIPS) ?
+ 				0x03 : 0x01,
+
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Jean Delvare
+SUSE L3 Support
