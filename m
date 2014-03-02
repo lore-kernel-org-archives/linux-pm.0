@@ -1,183 +1,69 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V6 3/7] cpufreq: call driver's suspend/resume for each policy
-Date: Sun, 02 Mar 2014 01:02:48 +0100
-Message-ID: <2643598.WF6sczxQTx@vostro.rjw.lan>
-References: <cover.1392629003.git.viresh.kumar@linaro.org> <c2fe4eb6746b1dfd234d1d07ad2efdea55292359.1392629003.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: enable ARM drivers on arm64
+Date: Sun, 02 Mar 2014 01:03:25 +0100
+Message-ID: <1789818.fd7lIbF9Ps@vostro.rjw.lan>
+References: <1393208877-15797-1-git-send-email-broonie@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <c2fe4eb6746b1dfd234d1d07ad2efdea55292359.1392629003.git.viresh.kumar@linaro.org>
+In-Reply-To: <1393208877-15797-1-git-send-email-broonie@kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
+To: Mark Brown <broonie@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, February 17, 2014 02:55:09 PM Viresh Kumar wrote:
-> Earlier cpufreq suspend/resume callbacks into drivers were getting called only
-> for the boot CPU, as by the time callbacks were called non-boot CPUs were
-> already removed. Because we might still need driver specific actions on
-> suspend/resume, its better to use earlier infrastructure from the early
-> suspend/late resume calls.
+On Monday, February 24, 2014 11:27:57 AM Mark Brown wrote:
+> From: Rob Herring <rob.herring@calxeda.com>
 > 
-> In effect, we call suspend/resume for each policy. The resume part also takes
-> care of synchronising frequency for boot CPU, which might turn out be different
-> than what cpufreq core believes.
+> Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
+> drivers. The power menu is needed for OPP support. At least on Calxeda
+> systems, the same cpufreq driver is used for arm and arm64 based
+> systems.
 > 
-> Hence, the earlier syscore infrastructure is getting removed now.
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Mark Brown <broonie@linaro.org>
 
-This should be folded into [1-2/7] too, I think, because otherwise you have a
-gap where things are kind of in between the two solutions.
+Queued up for 3.15, thanks!
 
-> Tested-by: Lan Tianyu <tianyu.lan@intel.com>
-> Tested-by: Nishanth Menon <nm@ti.com>
-> Tested-by: Stephen Warren <swarren@nvidia.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/cpufreq/cpufreq.c | 98 +++++++++--------------------------------------
->  1 file changed, 18 insertions(+), 80 deletions(-)
+>  arch/arm64/Kconfig      | 8 ++++++++
+>  drivers/cpufreq/Kconfig | 2 +-
+>  2 files changed, 9 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 4ca2297..c240232 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -27,7 +27,6 @@
->  #include <linux/mutex.h>
->  #include <linux/slab.h>
->  #include <linux/suspend.h>
-> -#include <linux/syscore_ops.h>
->  #include <linux/tick.h>
->  #include <trace/events/power.h>
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index fea7b47..939e95a 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -327,6 +327,14 @@ source "drivers/cpuidle/Kconfig"
 >  
-> @@ -1599,10 +1598,15 @@ void cpufreq_suspend(void)
+>  endmenu
 >  
->  	pr_debug("%s: Suspending Governors\n", __func__);
+> +menu "Power management options"
+> +
+> +source "kernel/power/Kconfig"
+> +
+> +source "drivers/cpufreq/Kconfig"
+> +
+> +endmenu
+> +
+>  source "net/Kconfig"
 >  
-> -	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
->  		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
->  			pr_err("%s: Failed to stop governor for policy: %p\n",
->  				__func__, policy);
-> +		else if (cpufreq_driver->suspend
-> +		    && cpufreq_driver->suspend(policy))
-> +			pr_err("%s: Failed to suspend driver: %p\n", __func__,
-> +				policy);
-> +	}
+>  source "drivers/Kconfig"
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 4b029c0..1fbe11f 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -200,7 +200,7 @@ source "drivers/cpufreq/Kconfig.x86"
+>  endmenu
 >  
->  	cpufreq_suspended = true;
->  }
-> @@ -1627,91 +1631,26 @@ void cpufreq_resume(void)
+>  menu "ARM CPU frequency scaling drivers"
+> -depends on ARM
+> +depends on ARM || ARM64
+>  source "drivers/cpufreq/Kconfig.arm"
+>  endmenu
 >  
->  	cpufreq_suspended = false;
->  
-> -	list_for_each_entry(policy, &cpufreq_policy_list, policy_list)
-> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
->  		if (__cpufreq_governor(policy, CPUFREQ_GOV_START)
->  		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
->  			pr_err("%s: Failed to start governor for policy: %p\n",
->  				__func__, policy);
-> -}
-> -
-> -/**
-> - * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
-> - *
-> - * This function is only executed for the boot processor.  The other CPUs
-> - * have been put offline by means of CPU hotplug.
-> - */
-> -static int cpufreq_bp_suspend(void)
-> -{
-> -	int ret = 0;
-> -
-> -	int cpu = smp_processor_id();
-> -	struct cpufreq_policy *policy;
-> -
-> -	pr_debug("suspending cpu %u\n", cpu);
-> -
-> -	/* If there's no policy for the boot CPU, we have nothing to do. */
-> -	policy = cpufreq_cpu_get(cpu);
-> -	if (!policy)
-> -		return 0;
-> -
-> -	if (cpufreq_driver->suspend) {
-> -		ret = cpufreq_driver->suspend(policy);
-> -		if (ret)
-> -			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
-> -					"step on CPU %u\n", policy->cpu);
-> -	}
-> -
-> -	cpufreq_cpu_put(policy);
-> -	return ret;
-> -}
-> +		else if (cpufreq_driver->resume
-> +		    && cpufreq_driver->resume(policy))
-> +			pr_err("%s: Failed to resume driver: %p\n", __func__,
-> +				policy);
->  
-> -/**
-> - * cpufreq_bp_resume - Restore proper frequency handling of the boot CPU.
-> - *
-> - *	1.) resume CPUfreq hardware support (cpufreq_driver->resume())
-> - *	2.) schedule call cpufreq_update_policy() ASAP as interrupts are
-> - *	    restored. It will verify that the current freq is in sync with
-> - *	    what we believe it to be. This is a bit later than when it
-> - *	    should be, but nonethteless it's better than calling
-> - *	    cpufreq_driver->get() here which might re-enable interrupts...
-> - *
-> - * This function is only executed for the boot CPU.  The other CPUs have not
-> - * been turned on yet.
-> - */
-> -static void cpufreq_bp_resume(void)
-> -{
-> -	int ret = 0;
-> -
-> -	int cpu = smp_processor_id();
-> -	struct cpufreq_policy *policy;
-> -
-> -	pr_debug("resuming cpu %u\n", cpu);
-> -
-> -	/* If there's no policy for the boot CPU, we have nothing to do. */
-> -	policy = cpufreq_cpu_get(cpu);
-> -	if (!policy)
-> -		return;
-> -
-> -	if (cpufreq_driver->resume) {
-> -		ret = cpufreq_driver->resume(policy);
-> -		if (ret) {
-> -			printk(KERN_ERR "cpufreq: resume failed in ->resume "
-> -					"step on CPU %u\n", policy->cpu);
-> -			goto fail;
-> -		}
-> +		/*
-> +		 * schedule call cpufreq_update_policy() for boot CPU, i.e. last
-> +		 * policy in list. It will verify that the current freq is in
-> +		 * sync with what we believe it to be.
-> +		 */
-> +		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
-> +			schedule_work(&policy->update);
->  	}
-> -
-> -	schedule_work(&policy->update);
-> -
-> -fail:
-> -	cpufreq_cpu_put(policy);
->  }
->  
-> -static struct syscore_ops cpufreq_syscore_ops = {
-> -	.suspend	= cpufreq_bp_suspend,
-> -	.resume		= cpufreq_bp_resume,
-> -};
-> -
->  /**
->   *	cpufreq_get_current_driver - return current driver's name
->   *
-> @@ -2477,7 +2416,6 @@ static int __init cpufreq_core_init(void)
->  
->  	cpufreq_global_kobject = kobject_create();
->  	BUG_ON(!cpufreq_global_kobject);
-> -	register_syscore_ops(&cpufreq_syscore_ops);
->  
->  	return 0;
->  }
 > 
 
 -- 
