@@ -1,59 +1,53 @@
 From: Jean Delvare <jdelvare@suse.de>
-Subject: [PATCH] x86_pkg_temp_thermal: Fix the thermal zone type
-Date: Sun, 2 Mar 2014 15:05:49 +0100
-Message-ID: <20140302150549.45f6df2a@endymion.delvare>
+Subject: [PATCH] x86_pkg_temp_thermal: Do not expose as a hwmon device
+Date: Sun, 2 Mar 2014 15:33:35 +0100
+Message-ID: <20140302153335.0f1326b6@endymion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:60828 "EHLO mx2.suse.de"
+Received: from cantor2.suse.de ([195.135.220.15]:32790 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752043AbaCBOF5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Mar 2014 09:05:57 -0500
+	id S1753504AbaCBOdp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Mar 2014 09:33:45 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Guenter Roeck <linux@roeck-us.net>
 
-The thermal zone type should not include an instance number. Otherwise
-each zone is considered a different type and the thermal-to-hwmon
-bridge fails to group them all in a single hwmon device.
-
-I also changed the type to "x86_pkg_temp", because "pkg" was too
-generic, and other thermal drivers use an underscore, not a dash, as
-a separator. Or maybe "cpu_pkg_temp" would be better?
+The temperature value reported by x86_pkg_temp_thermal is already
+reported by the coretemp driver. So, do not expose this thermal zone
+as a hwmon device, because it would be redundant.
 
 Signed-off-by: Jean Delvare <jdelvare@suse.de>
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
-Candidate for stable trees?
+ drivers/thermal/x86_pkg_temp_thermal.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
- drivers/thermal/x86_pkg_temp_thermal.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
---- linux-3.14-rc4.orig/drivers/thermal/x86_pkg_temp_thermal.c	2014-02-09 16:53:05.464687235 +0100
-+++ linux-3.14-rc4/drivers/thermal/x86_pkg_temp_thermal.c	2014-03-02 15:02:15.950089266 +0100
-@@ -394,7 +394,6 @@ static int pkg_temp_thermal_device_add(u
- 	int err;
- 	u32 tj_max;
- 	struct phy_dev_entry *phy_dev_entry;
--	char buffer[30];
- 	int thres_count;
- 	u32 eax, ebx, ecx, edx;
- 	u8 *temp;
-@@ -440,9 +439,7 @@ static int pkg_temp_thermal_device_add(u
- 	phy_dev_entry->first_cpu = cpu;
- 	phy_dev_entry->tj_max = tj_max;
- 	phy_dev_entry->ref_cnt = 1;
--	snprintf(buffer, sizeof(buffer), "pkg-temp-%d\n",
--					phy_dev_entry->phys_proc_id);
--	phy_dev_entry->tzone = thermal_zone_device_register(buffer,
-+	phy_dev_entry->tzone = thermal_zone_device_register("x86_pkg_temp",
+--- linux-3.14-rc4.orig/drivers/thermal/x86_pkg_temp_thermal.c	2014-03-02 15:29:21.646475545 +0100
++++ linux-3.14-rc4/drivers/thermal/x86_pkg_temp_thermal.c	2014-03-02 15:29:37.568831104 +0100
+@@ -68,6 +68,10 @@ struct phy_dev_entry {
+ 	struct thermal_zone_device *tzone;
+ };
+ 
++static const struct thermal_zone_params pkg_temp_tz_params = {
++	.no_hwmon	= true,
++};
++
+ /* List maintaining number of package instances */
+ static LIST_HEAD(phy_dev_list);
+ static DEFINE_MUTEX(phy_dev_list_mutex);
+@@ -443,7 +447,7 @@ static int pkg_temp_thermal_device_add(u
  			thres_count,
  			(thres_count == MAX_NUMBER_OF_TRIPS) ?
  				0x03 : 0x01,
-
+-			phy_dev_entry, &tzone_ops, NULL, 0, 0);
++			phy_dev_entry, &tzone_ops, &pkg_temp_tz_params, 0, 0);
+ 	if (IS_ERR(phy_dev_entry->tzone)) {
+ 		err = PTR_ERR(phy_dev_entry->tzone);
+ 		goto err_ret_free;
 
 -- 
 Jean Delvare
