@@ -1,24 +1,50 @@
-From: Emanuel Nazetta <emanuelnazetta@gmail.com>
-Subject: (unknown)
-Date: Mon, 03 Mar 2014 16:16:34 -0300
-Message-ID: <20140303191634.5824657.21090.9749@gmail.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: spear-cpufreq + multiplatform?
+Date: Mon, 3 Mar 2014 17:04:23 -0600
+Message-ID: <CAL_JsqJ1sHAXu3vzx7Q3mvFT=3JuH-a6d-tJHYZ=JCHUCF6Luw@mail.gmail.com>
+References: <20140303180809.GA28282@joshc.qualcomm.com>
 Mime-Version: 1.0
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <owner-linux-mm@kvack.org>
-Sender: owner-linux-mm@kvack.org
-To: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Sebastian Capella <sebastian.capella@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russ Dill <russ.dill@ti.com>, LKML <linux-kernel@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Jonathan Austin <jonathan.austin@arm.com>, Nicolas Pitre <nico@linaro.org>, =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Cyril Chemparathy <cyril@ti.com>, Patch Tracking <patches@linaro.org>, linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Jerome Marchand <jmarchan@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>, Shaohua Li <shli@kernel.org>, Michel Lespinasse <walken@google.com>, David Rientjes <rientjes@google.com>, Alexey Dobriyan <adobriyan@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f178.google.com ([209.85.128.178]:57341 "EHLO
+	mail-ve0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbaCCXEY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Mar 2014 18:04:24 -0500
+Received: by mail-ve0-f178.google.com with SMTP id jw12so1629229veb.9
+        for <linux-pm@vger.kernel.org>; Mon, 03 Mar 2014 15:04:24 -0800 (PST)
+In-Reply-To: <20140303180809.GA28282@joshc.qualcomm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Josh Cartwright <joshc@codeaurora.org>
+Cc: Viresh Kumar <viresh.linux@gmail.com>, Shiraz Hashim <shiraz.hashim@st.com>, Deepak Sikri <deepak.sikri@st.com>, spear-devel@list.st.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-<html><head></head><body data-blackberry-caret-color=3D"#00a8df" style=3D""=
-><div style=3D"white-space:pre-wrap; word-wrap: break-word;">#BBMme PIN:2AD=
-E8A36 www.pin.bbm.com/2ADE8A36</div><br><div style=3D"color: rgb(38, 38, 38=
-); font-family: Calibri, 'Slate Pro', sans-serif;">Enviado desde mi smartph=
-one BlackBerry 10.</div></body></html>
+On Mon, Mar 3, 2014 at 12:08 PM, Josh Cartwright <joshc@codeaurora.org> wrote:
+> Hey folks-
+>
+> I noticed booting today's next on a non-spear platform, that I'm seeing
+> the following in my logs:
+>
+>         [    2.126494] spear_cpufreq: Invalid cpufreq_tbl
+>
+> Looking closer, it looks like the spear-cpufreq driver has a
+> late_initcall() that's not too multiplatform friendly.  Perhaps the
+> spear cpufreq initialization routine should be called explicitly from
+> some platform-specific code, or explicitly check to ensure it's running
+> on SPEAr?
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Yes, I've seen this on 3.14 as well.
+
+There are also less harmful driver printk's for drivers where the
+device is not present. Serial and EHCI drivers are the main culprits.
+
+Rob
+
+>
+> --
+> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+> hosted by The Linux Foundation
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
