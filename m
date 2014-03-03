@@ -1,49 +1,51 @@
-From: "Du, Yuyang" <yuyang.du@intel.com>
-Subject: RE: [RFC] Splitting scheduler into two halves
-Date: Mon, 3 Mar 2014 09:56:55 +0000
-Message-ID: <0DA73B5D686AEC4AAEF6054BE04DA1CD116CE029@SHSMSX103.ccr.corp.intel.com>
-References: <0DA73B5D686AEC4AAEF6054BE04DA1CD116C50EA@SHSMSX102.ccr.corp.intel.com>
- <20140228102932.GI19029@e103034-lin>
- <20140228114459.GM27965@twins.programming.kicks-ass.net>
- <20140228120147.GJ3104@twins.programming.kicks-ass.net>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] Thermal: thermal zone governor fix
+Date: Mon, 3 Mar 2014 10:00:37 +0000
+Message-ID: <20140303100035.GA3576@e102654-lin.cambridge.arm.com>
+References: <1393825573.2199.3.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:63543 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbaCCJ46 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Mar 2014 04:56:58 -0500
-In-Reply-To: <20140228120147.GJ3104@twins.programming.kicks-ass.net>
-Content-Language: en-US
+Received: from service87.mimecast.com ([91.220.42.44]:49418 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753693AbaCCKAn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Mar 2014 05:00:43 -0500
+In-Reply-To: <1393825573.2199.3.camel@rzhang1-mobl4>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, eduardo <eduardo.valentin@ti.com>, "wni@nvidia.com" <wni@nvidia.com>
 
-Well, my two cents in response (sorry, I will use a Linux style mail client next time):
+Hi Rui,
 
-1) Top half and bottom half do have interaction with each other. They share information, top half provides some measurement/average to load balance. Good news is they don't interleave operation. Splitting them does not mean they must be self-inclusive to each other.
+On Mon, Mar 03, 2014 at 05:46:13AM +0000, Zhang Rui wrote:
+> From 635a1f41a8f95a35d1bf24c9cc018ffb018a93e6 Mon Sep 17 00:00:00 2001
+> From: Zhang Rui <rui.zhang@intel.com>
+> Date: Fri, 24 Jan 2014 10:23:19 +0800
+> Subject: [PATCH] Thermal: thermal zone governor fix
+> 
+> This patch does a cleanup about the thermal zone govenor,
+> setting and make the following rule.
+> 1. For thermal zone devices that are registered w/o tz->tzp,
+>    they can use the default thermal governor only.
+> 2. For thermal zone devices w/ governor name specified in
+>    tz->tzp->governor_name, we will use the default govenor
+>    if the governor specified is not available at the moment,
+>    and update tz->governor when the matched governor is registered.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 
-2) What I have done is a starting point. What really matters is some good design from that starting point. I myself have been working on workload consolidation (or task packing, you name it) for a while. I did have an intent to do a complete bottom half. So, encapsulating the load balance in a class allows it to be replaced easier. But this had already been the last thing I want even if I can do that (before the very first email), because it won't make "a better world".
+This solves my issue.  You can add my Acked-by.
 
-Lets explore the design space a little bit. For load balance, its function is like:
-
-Tasks -> be balanced -> on CPUs
-
-Be more specific:
-
-[ which_1 ] tasks -> be balanced -> on [ which_2 ] CPUs
-
-Which_1 can be: fair or rt by priority. ARM people may want "small/light" or "big/heavy" by load tracking (fortunately, we don't need that). Maybe others.
-
-Which_2 can be: all, or some.
-
-Which_1 * which_2 have many combinations, each of which has this in common: XX tasks -> be balanced -> on YY CPUs (XX defined by bottom half but got from top half, the other done by bottom half).
-
-So it looks like we need a class, and we need a few implementations (each for a combination) in a *hierarchy* and work together.
-
-I don't have the final answer yet, this is why I said I am continuing to redesign and refactor it. But it really looks that modularity should/can be applied here to help realize so complex a system.
+I was a bit worried about dereferencing def_governor in
+handle_non_critical_trips() without checking if it's initialised.  I
+guess that all the thermal zones initialise in device_initcall or
+later so by the time they run thermal_zone_device_update(),
+thermal_register_governors() must have initialised the default
+governor.  So it's not an issue.
 
 Thanks,
-Yuyang
+Javi
+
