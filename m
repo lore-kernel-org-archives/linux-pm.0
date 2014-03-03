@@ -1,109 +1,65 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH] Thermal: thermal zone governor fix
-Date: Mon, 03 Mar 2014 13:46:13 +0800
-Message-ID: <1393825573.2199.3.camel@rzhang1-mobl4>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3 0/8] PM / Sleep / Runtime: Fixup some driver's system suspend
+Date: Mon, 3 Mar 2014 08:29:17 +0100
+Message-ID: <CAPDyKFq5=Zdexm_YdBSmqvPhtAi3pUktqUWU7vc4NzrawDZSXA@mail.gmail.com>
+References: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
+	<7021741.2WcVMr4q95@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:47553 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbaCCFqQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Mar 2014 00:46:16 -0500
+Received: from mail-qc0-f171.google.com ([209.85.216.171]:33697 "EHLO
+	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbaCCH3S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Mar 2014 02:29:18 -0500
+Received: by mail-qc0-f171.google.com with SMTP id x13so2161660qcv.2
+        for <linux-pm@vger.kernel.org>; Sun, 02 Mar 2014 23:29:17 -0800 (PST)
+In-Reply-To: <7021741.2WcVMr4q95@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: javi.merino@arm.com, eduardo <eduardo.valentin@ti.com>, wni@nvidia.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
 
->From 635a1f41a8f95a35d1bf24c9cc018ffb018a93e6 Mon Sep 17 00:00:00 2001
-From: Zhang Rui <rui.zhang@intel.com>
-Date: Fri, 24 Jan 2014 10:23:19 +0800
-Subject: [PATCH] Thermal: thermal zone governor fix
+On 2 March 2014 00:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Saturday, March 01, 2014 11:56:03 AM Ulf Hansson wrote:
+>> Patch 1 -> 2:
+>> These patches provides two new runtime PM helper functions which intend to be
+>> used from system suspend/resume callbacks, to make sure devices are put into low
+>> power state during system suspend and brought back to full power at system
+>> resume.
+>>
+>> The prerequisite is to have all levels of a device's runtime PM callbacks to be
+>> defined through the SET_PM_RUNTIME_PM_OPS macro, which means these are available
+>> for CONFIG_PM.
+>>
+>> By using the new runtime PM helper functions especially the two scenarios below
+>> will be addressed.
+>>
+>> 1) The PM core prevents .runtime_suspend callbacks from being invoked during
+>> system suspend. That means even for a runtime PM centric subsystem and driver,
+>> the device needs to be put into low power state from a system suspend callback.
+>> Otherwise it may very well be left in full power state (runtime resumed) while
+>> the system is suspended. By using the new helper functions, we make sure to walk
+>> the hierarchy of a device's power domain, subsystem and driver.
+>>
+>> 2) Subsystems and drivers need to cope with all the combinations of
+>> CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions smothly
+>> addresses this.
+>
+> OK, I've queued up [1-2/8] for 3.15.  The rest generally didn't apply for me
+> and I think it'd be better to push them through the respective subsystem trees
+> later anyway.
 
-This patch does a cleanup about the thermal zone govenor,
-setting and make the following rule.
-1. For thermal zone devices that are registered w/o tz->tzp,
-   they can use the default thermal governor only.
-2. For thermal zone devices w/ governor name specified in
-   tz->tzp->governor_name, we will use the default govenor
-   if the governor specified is not available at the moment,
-   and update tz->governor when the matched governor is registered.
+Thanks Rafael!
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/thermal_core.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
+Agree, regarding 3->8, they were at this point mostly included for
+your reference.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 338a88b..1346205 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -56,10 +56,15 @@ static LIST_HEAD(thermal_governor_list);
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
- 
-+static struct thermal_governor *def_governor;
-+
- static struct thermal_governor *__find_governor(const char *name)
- {
- 	struct thermal_governor *pos;
- 
-+	if (!name || !name[0])
-+		return def_governor;
-+
- 	list_for_each_entry(pos, &thermal_governor_list, governor_list)
- 		if (!strnicmp(name, pos->name, THERMAL_NAME_LENGTH))
- 			return pos;
-@@ -82,17 +87,23 @@ int thermal_register_governor(struct thermal_governor *governor)
- 	if (__find_governor(governor->name) == NULL) {
- 		err = 0;
- 		list_add(&governor->governor_list, &thermal_governor_list);
-+		if (!def_governor && !strncmp(governor->name,
-+			DEFAULT_THERMAL_GOVERNOR, THERMAL_NAME_LENGTH))
-+			def_governor = governor;
- 	}
- 
- 	mutex_lock(&thermal_list_lock);
- 
- 	list_for_each_entry(pos, &thermal_tz_list, node) {
-+		/*
-+		 * only thermal zones with specified tz->tzp->governor_name
-+		 * may run with tz->govenor unset
-+		 */
- 		if (pos->governor)
- 			continue;
--		if (pos->tzp)
--			name = pos->tzp->governor_name;
--		else
--			name = DEFAULT_THERMAL_GOVERNOR;
-+
-+		name = pos->tzp->governor_name;
-+
- 		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
- 			pos->governor = governor;
- 	}
-@@ -342,8 +353,8 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
- static void handle_non_critical_trips(struct thermal_zone_device *tz,
- 			int trip, enum thermal_trip_type trip_type)
- {
--	if (tz->governor)
--		tz->governor->throttle(tz, trip);
-+	tz->governor ? tz->governor->throttle(tz, trip) :
-+		       def_governor->throttle(tz, trip);
- }
- 
- static void handle_critical_trips(struct thermal_zone_device *tz,
-@@ -1533,7 +1544,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	if (tz->tzp)
- 		tz->governor = __find_governor(tz->tzp->governor_name);
- 	else
--		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
-+		tz->governor = def_governor;
- 
- 	mutex_unlock(&thermal_governor_lock);
- 
--- 
-1.7.9.5
+Kind regards
+Uffe
 
-
-
+>
+> Thanks!
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
