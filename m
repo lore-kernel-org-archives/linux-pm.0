@@ -1,61 +1,49 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH V3 2/8] PM / Sleep / Runtime: Add pm_runtime_suspend|resume_force functions
-Date: Mon, 03 Mar 2014 00:30:00 -0800
-Message-ID: <7hppm3sn07.fsf@paris.lan>
-References: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
-	<1393671371-2398-3-git-send-email-ulf.hansson@linaro.org>
+From: "Du, Yuyang" <yuyang.du@intel.com>
+Subject: RE: [RFC] Splitting scheduler into two halves
+Date: Mon, 3 Mar 2014 09:56:55 +0000
+Message-ID: <0DA73B5D686AEC4AAEF6054BE04DA1CD116CE029@SHSMSX103.ccr.corp.intel.com>
+References: <0DA73B5D686AEC4AAEF6054BE04DA1CD116C50EA@SHSMSX102.ccr.corp.intel.com>
+ <20140228102932.GI19029@e103034-lin>
+ <20140228114459.GM27965@twins.programming.kicks-ass.net>
+ <20140228120147.GJ3104@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:62607 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752988AbaCCIaP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Mar 2014 03:30:15 -0500
-Received: by mail-pd0-f176.google.com with SMTP id r10so3439199pdi.35
-        for <linux-pm@vger.kernel.org>; Mon, 03 Mar 2014 00:30:15 -0800 (PST)
-In-Reply-To: <1393671371-2398-3-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Sat, 1 Mar 2014 11:56:05 +0100")
+Received: from mga11.intel.com ([192.55.52.93]:63543 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752263AbaCCJ46 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Mar 2014 04:56:58 -0500
+In-Reply-To: <20140228120147.GJ3104@twins.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
+To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+Well, my two cents in response (sorry, I will use a Linux style mail client next time):
 
-> This patch provides two new runtime PM helper functions which intend to
-> be used from system suspend/resume callbacks, to make sure devices are
-> put into low power state during system suspend and brought back to full
-> power at system resume.
->
-> The prerequisite is to have all levels of a device's runtime PM
-> callbacks to be defined through the SET_PM_RUNTIME_PM_OPS macro, which
-> means these are available for CONFIG_PM.
->
-> By using the new runtime PM helper functions especially the two
-> scenarios below will be addressed.
->
-> 1) The PM core prevents .runtime_suspend callbacks from being invoked
-> during system suspend. That means even for a runtime PM centric
-> subsystem and driver, the device needs to be put into low power state
-> from a system suspend callback. Otherwise it may very well be left in
-> full power state (runtime resumed) while the system is suspended. By
-> using the new helper functions, we make sure to walk the hierarchy of
-> a device's power domain, subsystem and driver.
->
-> 2) Subsystems and drivers need to cope with all the combinations of
-> CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME. The two new helper functions
-> smothly addresses this.
->
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Alessandro Rubini <rubini@unipv.it>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+1) Top half and bottom half do have interaction with each other. They share information, top half provides some measurement/average to load balance. Good news is they don't interleave operation. Splitting them does not mean they must be self-inclusive to each other.
 
-FWIW
+2) What I have done is a starting point. What really matters is some good design from that starting point. I myself have been working on workload consolidation (or task packing, you name it) for a while. I did have an intent to do a complete bottom half. So, encapsulating the load balance in a class allows it to be replaced easier. But this had already been the last thing I want even if I can do that (before the very first email), because it won't make "a better world".
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
+Lets explore the design space a little bit. For load balance, its function is like:
+
+Tasks -> be balanced -> on CPUs
+
+Be more specific:
+
+[ which_1 ] tasks -> be balanced -> on [ which_2 ] CPUs
+
+Which_1 can be: fair or rt by priority. ARM people may want "small/light" or "big/heavy" by load tracking (fortunately, we don't need that). Maybe others.
+
+Which_2 can be: all, or some.
+
+Which_1 * which_2 have many combinations, each of which has this in common: XX tasks -> be balanced -> on YY CPUs (XX defined by bottom half but got from top half, the other done by bottom half).
+
+So it looks like we need a class, and we need a few implementations (each for a combination) in a *hierarchy* and work together.
+
+I don't have the final answer yet, this is why I said I am continuing to redesign and refactor it. But it really looks that modularity should/can be applied here to help realize so complex a system.
+
+Thanks,
+Yuyang
