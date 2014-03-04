@@ -1,86 +1,24 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V6 Resend 2/5] cpufreq: Implement cpufreq_generic_suspend()
-Date: Tue,  4 Mar 2014 11:00:27 +0800
-Message-ID: <45ab2c8aa3c46d6ec6c87424e1529ccd54f6db47.1393901906.git.viresh.kumar@linaro.org>
-References: <b37f304efa4a007c0c53d9e8a33e11b7977cb0a4.1393901906.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] cpufreq: move call to __find_governor() to cpufreq_init_policy()
+Date: Tue, 4 Mar 2014 09:13:32 +0530
+Message-ID: <CAKohpo=RPh9rpWdTbAAiUQoeSugMTb-4W2hZXHzTcaD5yVEnjA@mail.gmail.com>
+References: <9f9546137135103556c69815c72b81ed93cc1ca2.1393318100.git.viresh.kumar@linaro.org>
+	<7507031.JAfx7W3apJ@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b37f304efa4a007c0c53d9e8a33e11b7977cb0a4.1393901906.git.viresh.kumar@linaro.org>
-In-Reply-To: <b37f304efa4a007c0c53d9e8a33e11b7977cb0a4.1393901906.git.viresh.kumar@linaro.org>
-References: <b37f304efa4a007c0c53d9e8a33e11b7977cb0a4.1393901906.git.viresh.kumar@linaro.org>
+In-Reply-To: <7507031.JAfx7W3apJ@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Multiple platforms need to set CPU to a particular frequency before suspending
-system. And so they need a common infrastructure which is provided by this
-patch. Those platforms just need to initialize their ->suspend() pointers with
-the generic routine.
+On 1 March 2014 06:39, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> And while I'm at it, can we *please* avoid adding new #ifdef blocks into
+> function bodies?
+>
+> Please introduce a wrapper around __find_governor() returning NULL for
+> CONFIG_HOTPLUG_CPU unset.
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 29 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2e43c08..b6f8545 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1578,6 +1578,32 @@ static struct subsys_interface cpufreq_interface = {
- 	.remove_dev	= cpufreq_remove_dev,
- };
- 
-+/*
-+ * In case platform wants some specific frequency to be configured
-+ * during suspend..
-+ */
-+int cpufreq_generic_suspend(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+
-+	if (!policy->suspend_freq) {
-+		pr_err("%s: suspend_freq can't be zero\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	pr_debug("%s: Setting suspend-freq: %u\n", __func__,
-+			policy->suspend_freq);
-+
-+	ret = __cpufreq_driver_target(policy, policy->suspend_freq,
-+			CPUFREQ_RELATION_H);
-+	if (ret)
-+		pr_err("%s: unable to set suspend-freq: %u. err: %d\n",
-+				__func__, policy->suspend_freq, ret);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(cpufreq_generic_suspend);
-+
- /**
-  * cpufreq_suspend() - Suspend CPUFreq governors
-  *
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 94ed907..325bab0 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -74,6 +74,8 @@ struct cpufreq_policy {
- 	unsigned int		max;    /* in kHz */
- 	unsigned int		cur;    /* in kHz, only needed if cpufreq
- 					 * governors are used */
-+	unsigned int		suspend_freq; /* freq to set during suspend */
-+
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
-@@ -299,6 +301,7 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
- #ifdef CONFIG_CPU_FREQ
- void cpufreq_suspend(void);
- void cpufreq_resume(void);
-+int cpufreq_generic_suspend(struct cpufreq_policy *policy);
- #else
- static inline void cpufreq_suspend(void) {}
- static inline void cpufreq_resume(void) {}
--- 
-1.7.12.rc2.18.g61b472e
+I have tried fixing all the suggestions you gave for this series. Please have a
+look at V2 set and let me know if I am still missing anything.
