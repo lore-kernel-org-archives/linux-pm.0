@@ -1,59 +1,41 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
-Date: Tue, 04 Mar 2014 01:55:31 -0800
-Message-ID: <5315a319.a3b2440a.039b.ffffc66e@mx.google.com>
-References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
- <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
- <20140228095022.GA25090@e102568-lin.cambridge.arm.com>
- <20140228201557.29118.62126@capellas-linux>
- <20140228224933.GA11040@e102568-lin.cambridge.arm.com>
- <53111e0f.a50a430a.6ef6.ffff99ae@mx.google.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Rewrite devfreq_update_status() to fix
+ multiple bugs
+Date: Tue, 04 Mar 2014 10:06:17 +0000 (GMT)
+Message-ID: <8984550.302431393927576253.JavaMail.weblogic@epv6ml05>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53111e0f.a50a430a.6ef6.ffff99ae@mx.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:63425 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756452AbaCDKGS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Mar 2014 05:06:18 -0500
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N1W00JCFPEHME20@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 04 Mar 2014 19:06:17 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Quoting Sebastian Capella (2014-02-28 15:38:54)
-> Quoting Lorenzo Pieralisi (2014-02-28 14:49:33)
-> > On Fri, Feb 28, 2014 at 08:15:57PM +0000, Sebastian Capella wrote:
-> > > > 
-> > > > This does not guarantee your stack is 8-byte aligned, that's not AAPCS
-> > > > compliant and might buy you trouble.
-> > > > 
-> > > > Either you align the stack or you align the pointer you are passing.
-> > > > 
-> > > > Please have a look at kernel/process.c
-> > > 
-> > > I've added this for now, do you see any issues?
-> > > 
-> > > -static u8 resume_stack[PAGE_SIZE/2] __nosavedata;
-> > > +static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
-> > > -               resume_stack + sizeof(resume_stack));
-> > > +               resume_stack + ARRAY_SIZE(resume_stack));
-> > 
-> > I do not see why the stack depends on the PAGE_SIZE. I would be surprised
-> > if you need more than a few bytes (given that soft_restart switches stack
-> > again...), go through it with a debugger, it is easy to check the stack
-> > usage and allow for some extra buffer (but half a page is not needed).
-> 
-> I assuming this is becase the no-save region is one page anyway (we skip
-> restoring the no-save region physical page).  So maybe 1/2 is a way to
-> leave some room for whatever else may need to be here, but in any case
-> the 4k is used for nosave.  I think you're right that it can be much less.
+PiBUaGUgY3VycmVudCBkZXZmcmVxX3VwZGF0ZV9zdGF0dXMoKSBoYXMgdGhlIGZvbGxvd2luZyBi
+dWdzOg0KPiAtIElmIHByZXZpb3VzIGZyZXF1ZW5jeSBkb2Vzbid0IGhhdmUgYSB2YWxpZCBsZXZl
+bCwgaXQgZG9lcyBhbiBvdXQgb2YgYm91bmRzDQo+ICAgYWNjZXNzIGludG8gdGhlIHRyYW5zX3Rh
+YmxlIGFuZCBjYXVzZXMgbWVtb3J5IGNvcnJ1cHRpb24uDQo+IC0gV2hlbiB0aGUgbmV3IGZyZXF1
+ZW5jeSBkb2Vzbid0IGhhdmUgYSB2YWxpZCBsZXZlbCwgdGhlIHRpbWUgc3BlbnQgaW4gdGhlDQo+
+ICAgbmV3IGZyZXF1ZW5jeSBpcyBjb3VudGVkIHRvd2FyZHMgdGhlIG5leHQgdmFsaWQgZnJlcXVl
+bmN5IHN3aXRjaCBpbnN0ZWFkIG9mDQo+ICAgYmVpbmcgaWdub3JlZC4NCj4gLSBUaGUgdGltZSBz
+cGVudCBvbiB0aGUgcHJldmlvdXMgZnJlcXVlbmN5IGlzIGFkZGVkIHRvIHRoZSBuZXcgZnJlcXVl
+bmN5J3MNCj4gICBzdGF0cyBpbnN0ZWFkIG9mIHRoZSBwcmV2aW91cyBmcmVxdWVuY3kncyBzdGF0
+cy4NCj4gDQo+IFRoaXMgcGF0Y2ggZml4ZXMgYWxsIG9mIHRoaXMuDQo+IA0KPiBTaWduZWQtb2Zm
+LWJ5OiBTYXJhdmFuYSBLYW5uYW4gPHNrYW5uYW5AY29kZWF1cm9yYS5vcmc+DQoNCk1lcmdlZC4N
+Cg0KSXQgYXBwZWFycyB0byBiZSBHcmVnJ3MgTFRTIG1hdGVyaWFsIGFzIHdlbGwuDQoNCg0KQ2hl
+ZXJzLA0KTXl1bmdKb28NCg0K
 
-Hi Lorenzo,
 
-Are you ok with this just being half a page?  Or do you want me to try
-to reduce the stack size?  I am at Connect without my debugger, so in
-that case it would have to wait until next week.
-
-The change for alignment is in as discussed.
-
-Thanks!
-
-Sebastian
