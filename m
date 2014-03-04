@@ -1,50 +1,42 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: spear-cpufreq + multiplatform?
-Date: Mon, 3 Mar 2014 17:04:23 -0600
-Message-ID: <CAL_JsqJ1sHAXu3vzx7Q3mvFT=3JuH-a6d-tJHYZ=JCHUCF6Luw@mail.gmail.com>
-References: <20140303180809.GA28282@joshc.qualcomm.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] PM / devfreq: Rewrite devfreq_update_status() to fix
+ multiple bugs
+Date: Mon, 03 Mar 2014 16:35:52 -0800
+Message-ID: <53151FE8.70703@codeaurora.org>
+References: <1393558737-24037-1-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f178.google.com ([209.85.128.178]:57341 "EHLO
-	mail-ve0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755016AbaCCXEY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Mar 2014 18:04:24 -0500
-Received: by mail-ve0-f178.google.com with SMTP id jw12so1629229veb.9
-        for <linux-pm@vger.kernel.org>; Mon, 03 Mar 2014 15:04:24 -0800 (PST)
-In-Reply-To: <20140303180809.GA28282@joshc.qualcomm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1393558737-24037-1-git-send-email-skannan@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Josh Cartwright <joshc@codeaurora.org>
-Cc: Viresh Kumar <viresh.linux@gmail.com>, Shiraz Hashim <shiraz.hashim@st.com>, Deepak Sikri <deepak.sikri@st.com>, spear-devel@list.st.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Mar 3, 2014 at 12:08 PM, Josh Cartwright <joshc@codeaurora.org> wrote:
-> Hey folks-
+On 02/27/2014 07:38 PM, Saravana Kannan wrote:
+> The current devfreq_update_status() has the following bugs:
+> - If previous frequency doesn't have a valid level, it does an out of bounds
+>    access into the trans_table and causes memory corruption.
+> - When the new frequency doesn't have a valid level, the time spent in the
+>    new frequency is counted towards the next valid frequency switch instead of
+>    being ignored.
+> - The time spent on the previous frequency is added to the new frequency's
+>    stats instead of the previous frequency's stats.
 >
-> I noticed booting today's next on a non-spear platform, that I'm seeing
-> the following in my logs:
+> This patch fixes all of this.
 >
->         [    2.126494] spear_cpufreq: Invalid cpufreq_tbl
->
-> Looking closer, it looks like the spear-cpufreq driver has a
-> late_initcall() that's not too multiplatform friendly.  Perhaps the
-> spear cpufreq initialization routine should be called explicitly from
-> some platform-specific code, or explicitly check to ensure it's running
-> on SPEAr?
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> ---
 
-Yes, I've seen this on 3.14 as well.
+MyungJoo/Kyungmin,
 
-There are also less harmful driver printk's for drivers where the
-device is not present. Serial and EHCI drivers are the main culprits.
+Can you please take a look and let me know if this looks ok? Any 
+possibility of getting this into 3.14?
 
-Rob
+Thanks,
+Saravana
 
->
-> --
-> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-> hosted by The Linux Foundation
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
