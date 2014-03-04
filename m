@@ -1,153 +1,59 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH] ACPI / Thermal: make acpi_thermal_check asynchronous on resume
-Date: Tue, 04 Mar 2014 14:24:46 +0800
-Message-ID: <531571AE.30408@intel.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
+Date: Tue, 04 Mar 2014 01:55:31 -0800
+Message-ID: <5315a319.a3b2440a.039b.ffffc66e@mx.google.com>
+References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
+ <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
+ <20140228095022.GA25090@e102568-lin.cambridge.arm.com>
+ <20140228201557.29118.62126@capellas-linux>
+ <20140228224933.GA11040@e102568-lin.cambridge.arm.com>
+ <53111e0f.a50a430a.6ef6.ffff99ae@mx.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:59501 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751518AbaCDGY1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Mar 2014 01:24:27 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53111e0f.a50a430a.6ef6.ffff99ae@mx.google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <Will.Deacon@arm.com>, Jonathan Austin <Jonathan.Austin@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>
 
-On resume we do not need to wait for acpi_thermal_check to finish.
-Instead, we can run it asynchronously and not block the whole system
-resume. Also, we make sure when we are suspending again, previously
-queued work for acpi_thermal_check is done.
+Quoting Sebastian Capella (2014-02-28 15:38:54)
+> Quoting Lorenzo Pieralisi (2014-02-28 14:49:33)
+> > On Fri, Feb 28, 2014 at 08:15:57PM +0000, Sebastian Capella wrote:
+> > > > 
+> > > > This does not guarantee your stack is 8-byte aligned, that's not AAPCS
+> > > > compliant and might buy you trouble.
+> > > > 
+> > > > Either you align the stack or you align the pointer you are passing.
+> > > > 
+> > > > Please have a look at kernel/process.c
+> > > 
+> > > I've added this for now, do you see any issues?
+> > > 
+> > > -static u8 resume_stack[PAGE_SIZE/2] __nosavedata;
+> > > +static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
+> > > -               resume_stack + sizeof(resume_stack));
+> > > +               resume_stack + ARRAY_SIZE(resume_stack));
+> > 
+> > I do not see why the stack depends on the PAGE_SIZE. I would be surprised
+> > if you need more than a few bytes (given that soft_restart switches stack
+> > again...), go through it with a debugger, it is easy to check the stack
+> > usage and allow for some extra buffer (but half a page is not needed).
+> 
+> I assuming this is becase the no-save region is one page anyway (we skip
+> restoring the no-save region physical page).  So maybe 1/2 is a way to
+> leave some room for whatever else may need to be here, but in any case
+> the 4k is used for nosave.  I think you're right that it can be much less.
 
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
- drivers/acpi/thermal.c | 37 +++++++++++++++++++++++++++++++++----
- 1 file changed, 33 insertions(+), 4 deletions(-)
+Hi Lorenzo,
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 08626c851be7..964068553334 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -43,6 +43,7 @@
- #include <linux/device.h>
- #include <linux/thermal.h>
- #include <linux/acpi.h>
-+#include <linux/workqueue.h>
- #include <asm/uaccess.h>
- 
- #define PREFIX "ACPI: "
-@@ -90,6 +91,8 @@ static int psv;
- module_param(psv, int, 0644);
- MODULE_PARM_DESC(psv, "Disable or override all passive trip points.");
- 
-+static struct workqueue_struct *acpi_thermal_pm_queue;
-+
- static int acpi_thermal_add(struct acpi_device *device);
- static int acpi_thermal_remove(struct acpi_device *device);
- static void acpi_thermal_notify(struct acpi_device *device, u32 event);
-@@ -101,11 +104,13 @@ static const struct acpi_device_id  thermal_device_ids[] = {
- MODULE_DEVICE_TABLE(acpi, thermal_device_ids);
- 
- #ifdef CONFIG_PM_SLEEP
-+static int acpi_thermal_suspend(struct device *dev);
- static int acpi_thermal_resume(struct device *dev);
- #else
-+#define acpi_thermal_suspend NULL
- #define acpi_thermal_resume NULL
- #endif
--static SIMPLE_DEV_PM_OPS(acpi_thermal_pm, NULL, acpi_thermal_resume);
-+static SIMPLE_DEV_PM_OPS(acpi_thermal_pm, acpi_thermal_suspend, acpi_thermal_resume);
- 
- static struct acpi_driver acpi_thermal_driver = {
- 	.name = "thermal",
-@@ -186,6 +191,7 @@ struct acpi_thermal {
- 	struct thermal_zone_device *thermal_zone;
- 	int tz_enabled;
- 	int kelvin_offset;
-+	struct work_struct thermal_check_work;
- };
- 
- /* --------------------------------------------------------------------------
-@@ -1064,6 +1070,13 @@ static void acpi_thermal_guess_offset(struct acpi_thermal *tz)
- 		tz->kelvin_offset = 2732;
- }
- 
-+static void acpi_thermal_check_fn(struct work_struct *work)
-+{
-+	struct acpi_thermal *tz = container_of(work, struct acpi_thermal,
-+					       thermal_check_work);
-+	acpi_thermal_check(tz);
-+}
-+
- static int acpi_thermal_add(struct acpi_device *device)
- {
- 	int result = 0;
-@@ -1093,6 +1106,8 @@ static int acpi_thermal_add(struct acpi_device *device)
- 	if (result)
- 		goto free_memory;
- 
-+	INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
-+
- 	pr_info(PREFIX "%s [%s] (%ld C)\n", acpi_device_name(device),
- 		acpi_device_bid(device), KELVIN_TO_CELSIUS(tz->temperature));
- 	goto end;
-@@ -1110,6 +1125,7 @@ static int acpi_thermal_remove(struct acpi_device *device)
- 	if (!device || !acpi_driver_data(device))
- 		return -EINVAL;
- 
-+	flush_workqueue(acpi_thermal_pm_queue);
- 	tz = acpi_driver_data(device);
- 
- 	acpi_thermal_unregister_thermal_zone(tz);
-@@ -1118,6 +1134,13 @@ static int acpi_thermal_remove(struct acpi_device *device)
- }
- 
- #ifdef CONFIG_PM_SLEEP
-+static int acpi_thermal_suspend(struct device *dev)
-+{
-+	/* Make sure the previously queued thermal check work has been done */
-+	flush_workqueue(acpi_thermal_pm_queue);
-+	return 0;
-+}
-+
- static int acpi_thermal_resume(struct device *dev)
- {
- 	struct acpi_thermal *tz;
-@@ -1148,7 +1171,7 @@ static int acpi_thermal_resume(struct device *dev)
- 		tz->state.active |= tz->trips.active[i].flags.enabled;
- 	}
- 
--	acpi_thermal_check(tz);
-+	queue_work(acpi_thermal_pm_queue, &tz->thermal_check_work);
- 
- 	return AE_OK;
- }
-@@ -1240,16 +1263,22 @@ static int __init acpi_thermal_init(void)
- 		return -ENODEV;
- 	}
- 
-+	acpi_thermal_pm_queue = create_workqueue("acpi_thermal_pm");
-+	if (!acpi_thermal_pm_queue)
-+		return -ENODEV;
-+
- 	result = acpi_bus_register_driver(&acpi_thermal_driver);
--	if (result < 0)
-+	if (result < 0) {
-+		destroy_workqueue(acpi_thermal_pm_queue);
- 		return -ENODEV;
-+	}
- 
- 	return 0;
- }
- 
- static void __exit acpi_thermal_exit(void)
- {
--
-+	destroy_workqueue(acpi_thermal_pm_queue);
- 	acpi_bus_unregister_driver(&acpi_thermal_driver);
- 
- 	return;
--- 
-1.8.5.3
+Are you ok with this just being half a page?  Or do you want me to try
+to reduce the stack size?  I am at Connect without my debugger, so in
+that case it would have to wait until next week.
 
+The change for alignment is in as discussed.
+
+Thanks!
+
+Sebastian
