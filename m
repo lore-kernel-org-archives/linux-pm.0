@@ -1,41 +1,57 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v2 02/11] drivercore: Bind/unbind power domain on
- probe/remove
-Date: Tue, 4 Mar 2014 10:29:22 -0800
-Message-ID: <20140304182922.GB9985@codeaurora.org>
-References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
- <1393862536-9842-3-git-send-email-tomasz.figa@gmail.com>
+From: Graeme Gregory <graeme@xora.org.uk>
+Subject: Re: [PATCH] MAINTAINERS: add maintainers for arm64 acpi
+Date: Wed, 5 Mar 2014 03:03:18 +0800
+Message-ID: <20140304190318.GE28736@xora-yoga13>
+References: <1393899345-7397-1-git-send-email-graeme.gregory@linaro.org>
+ <1393899345-7397-2-git-send-email-graeme.gregory@linaro.org>
+ <20140304102316.GG30596@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1393862536-9842-3-git-send-email-tomasz.figa@gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <20140304102316.GG30596@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Graeme Gregory <graeme.gregory@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Will Deacon <Will.Deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 03/03, Tomasz Figa wrote:
-> On a number of platforms, devices are part of controllable power
-> domains, which need to be enabled before such devices can be accessed
-> and may be powered down when the device is idle to save some power.
-> This means that on systems that support power domain control using
-> generic power domains subsystem, it is necessary to add device to its
-> power domain before binding a driver to it and remove it from its power
-> domain after its driver is unbound to make sure that an unused device
-> does not affect power domain state.
+On Tue, Mar 04, 2014 at 10:23:16AM +0000, Catalin Marinas wrote:
+> On Tue, Mar 04, 2014 at 02:15:45AM +0000, Graeme Gregory wrote:
+> > +ACPI ARM64
 > 
-> Since this is not limited to particular busses and specific
-> archs/platforms, it is more convenient to do the above directly in
-> driver core, just as done with pinctrl default configuration. This patch
-> adds necessary code to really_probe() and __device_release_driver() to
-> achieve this and maintain consistent stack-like ordering of operations
-> happening when binding and unbinding a driver.
+> That's a pretty broad statement for a single file. Is it core support,
+> architected peripherals, SoC?
 > 
-> Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
+Hi Catalin would changing the title to ACPI ARM64 Core Support be better
+in your mind. I do intend for the maintainership to cover just the
+plat/arm-core.c file.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Graeme
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+> > +M:	Hanjun Guo <hanjun.guo@linaro.org>
+> > +M:	Graeme Gregory <graeme.gregory@linaro.org>
+> > +S:	Supported
+> > +L:	linux-acpi@vger.kernel.org
+> > +F:	drivers/acpi/plat/arm-core.c
+> 
+> This patch should be part of the series introducing the arm-core.c file
+> and it will be ACKed (or NAKed) following review. We can't really commit
+> maintainers to a file which does not exist in mainline and while there is
+> still feedback to be addressed. It's like a blank cheque.
+> 
+> -- 
+> Catalin
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
