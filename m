@@ -1,37 +1,68 @@
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH] MAINTAINERS: add maintainers for arm64 acpi
-Date: Wed, 5 Mar 2014 01:07:34 +0800
-Message-ID: <CACxGe6svyLHZO8k6qVs+hhyAWxeg3tzh1wUfbRB_z-sxRMv4qw@mail.gmail.com>
-References: <1393899345-7397-1-git-send-email-graeme.gregory@linaro.org>
- <1393899345-7397-2-git-send-email-graeme.gregory@linaro.org>
- <1393899715.20435.8.camel@joe-AO722> <53153A4C.9050602@infradead.org>
- <CACxGe6tD3mQshDSoEQaPXAnXG_siUdiFoAWhjmO2gDY7ZzkjUw@mail.gmail.com> <20140304111520.GE8766@mudshark.cambridge.arm.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2 01/11] base: power: Add generic OF-based power domain
+ look-up
+Date: Tue, 4 Mar 2014 10:23:10 -0800
+Message-ID: <20140304182310.GA9985@codeaurora.org>
+References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
+ <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140304111520.GE8766@mudshark.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Will Deacon <will.deacon@arm.com>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Joe Perches <joe@perches.com>, "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:53670 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751988AbaCDSXM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Mar 2014 13:23:12 -0500
+Content-Disposition: inline
+In-Reply-To: <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Tue, Mar 4, 2014 at 7:15 PM, Will Deacon <will.deacon@arm.com> wrote:
-> On Tue, Mar 04, 2014 at 10:59:46AM +0000, Grant Likely wrote:
->> I agree with merging it with the rest of the series, but comparing it
->> to a blank cheque is not appropriate. Merely having an entry in
->> MAINTAINERS doesn't immediately confer trust or ability to merge code,
->> but it does tell people who to talk to when looking at ACPI on ARM.
->> You can bet that neither Linus, Len or Rafael will merge ARM ACPI
->> trees from them if you disagree. (And even if they did, you would
->> yell, and Linus would revert it).
->
-> If you want to know who to talk to regarding a subsystem then you use
-> get_maintainer.pl and/or git blame. Regardless of this patch, neither of
-> those tools will identify Graeme or Hanjun as the contacts for ACPI on ARM.
->
-> I think we're in agreement, but just to spell it out: this patch should be
-> included at the end of a series adding the files which will be maintained.
+On 03/03, Tomasz Figa wrote:
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index dc127e5..006b455 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -3,12 +3,16 @@
+>   *
+>   * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
+>   *
+> + * Support for Device Tree based power domain providers:
+> + * Copyright (C) 2014 Tomasz Figa <tomasz.figa@gmail.com>
+> + *
+>   * This file is released under the GPLv2.
+>   */
+>  
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+>  #include <linux/io.h>
+> +#include <linux/platform_device.h>
 
-Yes, agreed.
+Is this still needed?
 
-g.
+>  #include <linux/pm_runtime.h>
+>  #include <linux/pm_domain.h>
+>  #include <linux/pm_qos.h>
+[...]
+> +
+> +/*
+> + * DEVICE<->DOMAIN BINDING USING DEVICE TREE LOOK-UP
+> + *
+> + * The code below registers a notifier for platform bus devices'
+> + * BUS_NOTIFY_BIND_DRIVER events and tries to attach devices to their power
+> + * domains by looking them up using Device Tree.
+> + *
+> + * Similarly in BUS_NOTIFY_UNBOUND_DRIVER the device is detached from its
+> + * domain, since it no longer supports runtime PM without any driver bound
+> + * to it.
+
+This looks outdated.
+
+> + *
+> + * Both generic and legacy Samsung-specific DT bindings are supported to
+> + * keep backwards compatibility with existing DTBs.
+> + */
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
