@@ -1,59 +1,498 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH V3 0/8] PM / Sleep / Runtime: Fixup some driver's system
- suspend
-Date: Wed, 5 Mar 2014 14:16:47 +0800
-Message-ID: <20140305061647.GS13126@sirena.org.uk>
-References: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
- <7021741.2WcVMr4q95@vostro.rjw.lan>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH v2 01/11] base: power: Add generic OF-based power domain
+ look-up
+Date: Wed, 5 Mar 2014 00:41:38 -0600
+Message-ID: <CAL_JsqK4-zJ31VnV6qqYu8-AbD0VCeaJuc59HZ5ZWR6X=qWjbg@mail.gmail.com>
+References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
+ <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="RMlwNl9HEic8ziTx"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:56123 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbaCEG3N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Mar 2014 01:29:13 -0500
-Content-Disposition: inline
-In-Reply-To: <7021741.2WcVMr4q95@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
 
+On Mon, Mar 3, 2014 at 10:02 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> This patch introduces generic code to perform power domain look-up using
+> device tree and automatically bind devices to their power domains.
+> Generic device tree binding is introduced to specify power domains of
+> devices in their device tree nodes.
+>
+> Backwards compatibility with legacy Samsung-specific power domain
+> bindings is provided, but for now the new code is not compiled when
+> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
+> will change as soon as Exynos power domain code gets converted to use
+> the generic framework in further patch.
+>
+> Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
 
---RMlwNl9HEic8ziTx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Acked-by: Rob Herring <robh@kernel.org>
 
-On Sun, Mar 02, 2014 at 12:38:47AM +0100, Rafael J. Wysocki wrote:
-
-> OK, I've queued up [1-2/8] for 3.15.  The rest generally didn't apply for me
-> and I think it'd be better to push them through the respective subsystem trees
-> later anyway.
-
-Is there a tag we can pull to get those patches?  The driver changes
-depend on the new API introduced in patch 2.
-
---RMlwNl9HEic8ziTx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTFsFMAAoJELSic+t+oim9LWsP/0GgVIAaO6ZZrK3i7eiTLruI
-s+Bhu24UzVd4CAzO9q1KY/B8Yzrw4PgNK7r+24fnGbAJSBzrL09z+LmnICM7QTUt
-7vHMMT5/HLq+LrJafeJlsR5w1LP3uewSTCXM6VmPoE08qAbTyj4gCMJBUSbF6Gfy
-f7+B5DhrKCZXRCb+gQ1v/FgcPboA22ryObHQzDZrLt1ZSulYl1E1RfYIr5p6ndbU
-nI5RWweGfkQGrk4aVC0dhb6KjpP7RQZPrXf3sBVB7vMM3cx4bsf0fUybZyJxwV/L
-LRvQibS2xJieG+oreawFq2DfuCNS5sF/l1VxKFPjYCMqNssNbX7EbIsstSC4xZXJ
-PlAFgZxKYWWDQ63z9hWjnNCLodMllWbkTgcm6Fpmk+0NoV7EiuemqYTfUcd+EflA
-u8mshnxhO3tE7RDQCAON80XzpmLPQNKXduzmqDOq8E1gMK1jlcDVauVOanRnkL6y
-6ZEvceQy2+0qjwU4XrZ9OFuhhuBK6ws2NZANK2jwm2oE55a8Lmm1RUA4Upxtk0dA
-UQqrELEgzXFgQ6y6xGyzTHoBGPW/bL6IjzwP1jaK8rb2+ej74eY372ELe2PG9i7j
-7DlGm2bwcSXSGexMd/nJaDZ1vGZOH6+lmbJx8JdEFqlwhYcDVmd7tX8SIqR6wnf3
-I+ScqFheV5l2lZXtDe2c
-=RO3t
------END PGP SIGNATURE-----
-
---RMlwNl9HEic8ziTx--
+> ---
+>  .../devicetree/bindings/power/power_domain.txt     |  51 ++++
+>  drivers/base/power/domain.c                        | 298 +++++++++++++++++++++
+>  include/linux/pm_domain.h                          |  46 ++++
+>  kernel/power/Kconfig                               |   4 +
+>  4 files changed, 399 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> new file mode 100644
+> index 0000000..93be5d9
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -0,0 +1,51 @@
+> +* Generic power domains
+> +
+> +System on chip designs are often divided into multiple power domains that
+> +can be used for power gating of selected IP blocks for power saving by
+> +reduced leakage current.
+> +
+> +This device tree binding can be used to bind power domain consumer devices
+> +with their power domains provided by power domain providers. A power domain
+> +provider can be represented by any node in the device tree and can provide
+> +one or more power domains. A consumer node can refer to the provider by
+> +a phandle and a set of phandle arguments (so called power domain specifier)
+> +of length specified by #power-domain-cells property in the power domain
+> +provider node.
+> +
+> +==Power domain providers==
+> +
+> +Required properties:
+> + - #power-domain-cells : Number of cells in a power domain specifier;
+> +   Typically 0 for nodes representing a single power domain and 1 for nodes
+> +   providing multiple power domains (e.g. power controllers), but can be
+> +   any value as specified by device tree binding documentation of particular
+> +   provider.
+> +
+> +Example:
+> +
+> +       power: power-controller@12340000 {
+> +               compatible = "foo,power-controller";
+> +               reg = <0x12340000 0x1000>;
+> +               #power-domain-cells = <1>;
+> +       };
+> +
+> +The node above defines a power controller that is a power domain provider
+> +and expects one cell as its phandle argument.
+> +
+> +==Power domain consumers==
+> +
+> +Required properties:
+> + - power-domain : A phandle and power domain specifier as defined by bindings
+> +                  of power controller specified by phandle.
+> +
+> +Example:
+> +
+> +       leaky-device@12350000 {
+> +               compatible = "foo,i-leak-current";
+> +               reg = <0x12350000 0x1000>;
+> +               power-domain = <&power 0>;
+> +       };
+> +
+> +The node above defines a typical power domain consumer device, which is located
+> +inside power domain with index 0 of power controller represented by node with
+> +label "power".
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index dc127e5..006b455 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -3,12 +3,16 @@
+>   *
+>   * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
+>   *
+> + * Support for Device Tree based power domain providers:
+> + * Copyright (C) 2014 Tomasz Figa <tomasz.figa@gmail.com>
+> + *
+>   * This file is released under the GPLv2.
+>   */
+>
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+>  #include <linux/io.h>
+> +#include <linux/platform_device.h>
+>  #include <linux/pm_runtime.h>
+>  #include <linux/pm_domain.h>
+>  #include <linux/pm_qos.h>
+> @@ -2177,3 +2181,297 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>         list_add(&genpd->gpd_list_node, &gpd_list);
+>         mutex_unlock(&gpd_list_lock);
+>  }
+> +
+> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+> +/*
+> + * DEVICE TREE BASED POWER DOMAIN PROVIDERS
+> + *
+> + * The code below implements generic device tree based power domain providers
+> + * that bind device tree nodes with generic power domains registered in the
+> + * system.
+> + *
+> + * Any driver that registers generic power domains and need to support binding
+> + * of devices to these domains is supposed to register a power domain provider,
+> + * which maps a power domain specifier retrieved from device tree to a power
+> + * domain.
+> + *
+> + * Two simple mapping functions have been provided for convenience:
+> + *  - of_genpd_xlate_simple() for 1:1 device tree node to domain mapping,
+> + *  - of_genpd_xlate_onecell() for mapping of multiple domains per node
+> + *    by index.
+> + */
+> +
+> +/**
+> + * struct of_genpd_provider - Power domain provider registration structure
+> + * @link: Entry in global list of domain providers
+> + * @node: Pointer to device tree node of domain provider
+> + * @xlate: Provider-specific xlate callback mapping a set of specifier cells
+> + *         into a power domain.
+> + * @data: context pointer to be passed into @xlate callback
+> + */
+> +struct of_genpd_provider {
+> +       struct list_head link;
+> +
+> +       struct device_node *node;
+> +       genpd_xlate_t xlate;
+> +       void *data;
+> +};
+> +
+> +/* List of registered power domain providers. */
+> +static LIST_HEAD(of_genpd_providers);
+> +/* Mutex to protect the list above. */
+> +static DEFINE_MUTEX(of_genpd_mutex);
+> +
+> +/**
+> + * of_genpd_xlate_simple() - Xlate function for direct node-domain mapping
+> + * @genpdspec: OF phandle args to map into a power domain
+> + * @data: xlate function private data - pointer to struct generic_pm_domain
+> + *
+> + * This is a generic xlate function that can be used to model power domains
+> + * that have their own device tree nodes. The private data of xlate function
+> + * needs to be a valid pointer to struct generic_pm_domain.
+> + */
+> +struct generic_pm_domain *of_genpd_xlate_simple(
+> +                                       struct of_phandle_args *genpdspec,
+> +                                       void *data)
+> +{
+> +       if (genpdspec->args_count != 0)
+> +               return ERR_PTR(-EINVAL);
+> +       return data;
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_xlate_simple);
+> +
+> +/**
+> + * of_genpd_xlate_onecell() - Xlate function for providers using single index.
+> + * @genpdspec: OF phandle args to map into a power domain
+> + * @data: xlate function private data - pointer to struct genpd_onecell_data
+> + *
+> + * This is a generic xlate function that can be used to model simple power
+> + * domain controllers that have one device tree node and provide multiple
+> + * power domains. A single cell is used as an index to an array of power
+> + * domains specified in genpd_onecell_data struct when registering the
+> + * provider.
+> + */
+> +struct generic_pm_domain *of_genpd_xlate_onecell(
+> +                                       struct of_phandle_args *genpdspec,
+> +                                       void *data)
+> +{
+> +       struct genpd_onecell_data *genpd_data = data;
+> +       unsigned int idx = genpdspec->args[0];
+> +
+> +       if (genpdspec->args_count != 1)
+> +               return ERR_PTR(-EINVAL);
+> +
+> +       if (idx >= genpd_data->domain_num) {
+> +               pr_err("%s: invalid domain index %d\n", __func__, idx);
+> +               return ERR_PTR(-EINVAL);
+> +       }
+> +
+> +       return genpd_data->domains[idx];
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_xlate_onecell);
+> +
+> +/**
+> + * of_genpd_add_provider() - Register a domain provider for a node
+> + * @np: Device node pointer associated with domain provider.
+> + * @xlate: Callback for decoding domain from phandle arguments.
+> + * @data: Context pointer for @genpd_src_get callback.
+> + */
+> +int of_genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
+> +                         void *data)
+> +{
+> +       struct of_genpd_provider *cp;
+> +
+> +       cp = kzalloc(sizeof(*cp), GFP_KERNEL);
+> +       if (!cp)
+> +               return -ENOMEM;
+> +
+> +       cp->node = of_node_get(np);
+> +       cp->data = data;
+> +       cp->xlate = xlate;
+> +
+> +       mutex_lock(&of_genpd_mutex);
+> +       list_add(&cp->link, &of_genpd_providers);
+> +       mutex_unlock(&of_genpd_mutex);
+> +       pr_debug("Added domain provider from %s\n", np->full_name);
+> +
+> +       return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_add_provider);
+> +
+> +/**
+> + * of_genpd_del_provider() - Remove a previously registered domain provider
+> + * @np: Device node pointer associated with domain provider
+> + */
+> +void of_genpd_del_provider(struct device_node *np)
+> +{
+> +       struct of_genpd_provider *cp;
+> +
+> +       mutex_lock(&of_genpd_mutex);
+> +       list_for_each_entry(cp, &of_genpd_providers, link) {
+> +               if (cp->node == np) {
+> +                       list_del(&cp->link);
+> +                       of_node_put(cp->node);
+> +                       kfree(cp);
+> +                       break;
+> +               }
+> +       }
+> +       mutex_unlock(&of_genpd_mutex);
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+> +
+> +/* See of_genpd_get_from_provider(). */
+> +static struct generic_pm_domain *__of_genpd_get_from_provider(
+> +                                       struct of_phandle_args *genpdspec)
+> +{
+> +       struct of_genpd_provider *provider;
+> +       struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
+> +
+> +       /* Check if we have such a provider in our array */
+> +       list_for_each_entry(provider, &of_genpd_providers, link) {
+> +               if (provider->node == genpdspec->np)
+> +                       genpd = provider->xlate(genpdspec, provider->data);
+> +               if (!IS_ERR(genpd))
+> +                       break;
+> +       }
+> +
+> +       return genpd;
+> +}
+> +
+> +/**
+> + * of_genpd_get_from_provider() - Look-up power domain
+> + * @genpdspec: OF phandle args to use for look-up
+> + *
+> + * Looks for domain provider under node specified by @genpdspec and if found
+> + * uses xlate function of the provider to map phandle args to a power domain.
+> + *
+> + * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
+> + * on failure.
+> + */
+> +static struct generic_pm_domain *of_genpd_get_from_provider(
+> +                                       struct of_phandle_args *genpdspec)
+> +{
+> +       struct generic_pm_domain *genpd;
+> +
+> +       mutex_lock(&of_genpd_mutex);
+> +       genpd = __of_genpd_get_from_provider(genpdspec);
+> +       mutex_unlock(&of_genpd_mutex);
+> +
+> +       return genpd;
+> +}
+> +
+> +/*
+> + * DEVICE<->DOMAIN BINDING USING DEVICE TREE LOOK-UP
+> + *
+> + * The code below registers a notifier for platform bus devices'
+> + * BUS_NOTIFY_BIND_DRIVER events and tries to attach devices to their power
+> + * domains by looking them up using Device Tree.
+> + *
+> + * Similarly in BUS_NOTIFY_UNBOUND_DRIVER the device is detached from its
+> + * domain, since it no longer supports runtime PM without any driver bound
+> + * to it.
+> + *
+> + * Both generic and legacy Samsung-specific DT bindings are supported to
+> + * keep backwards compatibility with existing DTBs.
+> + */
+> +
+> +/**
+> + * genpd_bind_domain - Bind device to its power domain using Device Tree.
+> + * @dev: Device to bind to its power domain.
+> + *
+> + * Tries to parse power domain specifier from device's OF node and if succeeds
+> + * attaches the device to retrieved power domain.
+> + *
+> + * Returns 0 on success or negative error code otherwise.
+> + */
+> +int genpd_bind_domain(struct device *dev)
+> +{
+> +       struct of_phandle_args pd_args;
+> +       struct generic_pm_domain *pd;
+> +       int ret;
+> +
+> +       if (!dev->of_node)
+> +               return 0;
+> +
+> +       ret = of_parse_phandle_with_args(dev->of_node, "power-domain",
+> +                                       "#power-domain-cells", 0, &pd_args);
+> +       if (ret < 0) {
+> +               if (ret != -ENOENT)
+> +                       return ret;
+> +
+> +               /*
+> +                * Try legacy Samsung-specific bindings
+> +                * (for backwards compatibility of DT ABI)
+> +                */
+> +               pd_args.args_count = 0;
+> +               pd_args.np = of_parse_phandle(dev->of_node,
+> +                                               "samsung,power-domain", 0);
+> +               if (!pd_args.np)
+> +                       return 0;
+> +       }
+> +
+> +       pd = of_genpd_get_from_provider(&pd_args);
+> +       if (IS_ERR(pd)) {
+> +               if (PTR_ERR(pd) != -EPROBE_DEFER)
+> +                       dev_err(dev, "failed to find power domain: %ld\n",
+> +                               PTR_ERR(pd));
+> +               return PTR_ERR(pd);
+> +       }
+> +
+> +       dev_dbg(dev, "adding to power domain %s\n", pd->name);
+> +
+> +       while (1) {
+> +               ret = pm_genpd_add_device(pd, dev);
+> +               if (ret != -EAGAIN)
+> +                       break;
+> +               cond_resched();
+> +       }
+> +
+> +       if (ret < 0) {
+> +               dev_err(dev, "failed to add to power domain %s: %d",
+> +                       pd->name, ret);
+> +               return ret;
+> +       }
+> +
+> +       pm_genpd_dev_need_restore(dev, true);
+> +
+> +       return 0;
+> +}
+> +
+> +/**
+> + * genpd_unbind_domain - Unbind device from its power domain.
+> + * @dev: Device to unbind from its power domain.
+> + *
+> + * Unbinds device from power domain previously bound to it.
+> + *
+> + * Returns 0 on success or negative error code otherwise.
+> + */
+> +int genpd_unbind_domain(struct device *dev)
+> +{
+> +       struct generic_pm_domain *pd = dev_to_genpd(dev);
+> +       int ret;
+> +
+> +       if (!dev->of_node || IS_ERR(pd))
+> +               return 0;
+> +
+> +       dev_dbg(dev, "removing from power domain %s\n", pd->name);
+> +
+> +       while (1) {
+> +               ret = pm_genpd_remove_device(pd, dev);
+> +               if (ret != -EAGAIN)
+> +                       break;
+> +               cond_resched();
+> +       }
+> +
+> +       if (ret < 0) {
+> +               dev_err(dev, "failed to remove from power domain %s: %d",
+> +                       pd->name, ret);
+> +               return ret;
+> +       }
+> +
+> +       /* Check if domain can be powered off after removing this device. */
+> +       genpd_queue_power_off_work(pd);
+> +
+> +       return 0;
+> +}
+> +#endif
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 7c1d252..04473d4 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -310,4 +310,50 @@ static inline void pm_genpd_syscore_poweron(struct device *dev)
+>         pm_genpd_syscore_switch(dev, false);
+>  }
+>
+> +/* OF power domain providers */
+> +struct of_device_id;
+> +
+> +struct genpd_onecell_data {
+> +       struct generic_pm_domain **domains;
+> +       unsigned int domain_num;
+> +};
+> +
+> +typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
+> +                                                  void *data);
+> +
+> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+> +int of_genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
+> +                         void *data);
+> +void of_genpd_del_provider(struct device_node *np);
+> +
+> +struct generic_pm_domain *of_genpd_xlate_simple(
+> +                                       struct of_phandle_args *genpdspec,
+> +                                       void *data);
+> +struct generic_pm_domain *of_genpd_xlate_onecell(
+> +                                       struct of_phandle_args *genpdspec,
+> +                                       void *data);
+> +
+> +int genpd_bind_domain(struct device *dev);
+> +int genpd_unbind_domain(struct device *dev);
+> +#else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+> +static inline int of_genpd_add_provider(struct device_node *np,
+> +                                       genpd_xlate_t xlate, void *data)
+> +{
+> +       return 0;
+> +}
+> +static inline void of_genpd_del_provider(struct device_node *np) {}
+> +
+> +#define of_genpd_xlate_simple          NULL
+> +#define of_genpd_xlate_onecell         NULL
+> +
+> +static inline int genpd_bind_domain(struct device *dev)
+> +{
+> +       return 0;
+> +}
+> +static inline int genpd_unbind_domain(struct device *dev)
+> +{
+> +       return 0;
+> +}
+> +#endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+> +
+>  #endif /* _LINUX_PM_DOMAIN_H */
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index 2fac9cc..45aa98e 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -306,6 +306,10 @@ config PM_GENERIC_DOMAINS_RUNTIME
+>         def_bool y
+>         depends on PM_RUNTIME && PM_GENERIC_DOMAINS
+>
+> +config PM_GENERIC_DOMAINS_OF
+> +       def_bool y
+> +       depends on PM_GENERIC_DOMAINS && OF && !ARCH_EXYNOS
+> +
+>  config CPU_PM
+>         bool
+>         depends on SUSPEND || CPU_IDLE
+> --
+> 1.9.0
+>
