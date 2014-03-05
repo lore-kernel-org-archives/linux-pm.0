@@ -1,57 +1,59 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 08/11] ARM: s3c64xx: dt: Enable SoC-level power
- management
-Date: Wed, 5 Mar 2014 12:30:25 +0800
-Message-ID: <20140305043025.GJ13126@sirena.org.uk>
-References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
- <1393862536-9842-9-git-send-email-tomasz.figa@gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V3 0/8] PM / Sleep / Runtime: Fixup some driver's system
+ suspend
+Date: Wed, 5 Mar 2014 14:16:47 +0800
+Message-ID: <20140305061647.GS13126@sirena.org.uk>
+References: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
+ <7021741.2WcVMr4q95@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="hCH6UO/yhd9rsH1L"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="RMlwNl9HEic8ziTx"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:56123 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbaCEG3N (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Mar 2014 01:29:13 -0500
 Content-Disposition: inline
-In-Reply-To: <1393862536-9842-9-git-send-email-tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+In-Reply-To: <7021741.2WcVMr4q95@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>
 
 
---hCH6UO/yhd9rsH1L
+--RMlwNl9HEic8ziTx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Mon, Mar 03, 2014 at 05:02:13PM +0100, Tomasz Figa wrote:
-> This patch adds call to s3c64xx_pm_init() from init_machine() callback
-> of mach-s3c64xx-dt to enable SoC-level power management features, such
-> as power domain management and sleep support.
+On Sun, Mar 02, 2014 at 12:38:47AM +0100, Rafael J. Wysocki wrote:
 
-Reviewed-by: Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> OK, I've queued up [1-2/8] for 3.15.  The rest generally didn't apply for me
+> and I think it'd be better to push them through the respective subsystem trees
+> later anyway.
 
---hCH6UO/yhd9rsH1L
+Is there a tag we can pull to get those patches?  The driver changes
+depend on the new API introduced in patch 2.
+
+--RMlwNl9HEic8ziTx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTFqhdAAoJELSic+t+oim9QbUQAIz0DbEe549m4MfgKbCh8eKe
-B1kslsMqAUK2xpSJyJUFV9SGExpnXS04ga2QxDZOHxC5o1zMalJoQ/wYWzmCfNPy
-sdP7wcZjjacs6jybd/Wd8helVS2iOy1EQmalFq8jGKWkdZ7YVjVRUmMTw9FjlU3m
-z9OIdJ1hKC9hKqywXuTP4zAU85qJDn2UBPBG65UyceY8tY1+Q6I/sON7DXZQf37w
-IqJ4bhtIdaHhLn/ywg6lqSEu0KgFFV8ONwrs6YnFhoIhQ4yW0I6YnrpHokhKEoRK
-hJePtewBwKhUdj74NlRvp2GpniWqcxxCge7IwzNNxBWJo9yrPt2/kzW8trgway3G
-7crjFDXGJjdMiGA3Z+uz8Qk8CL2XcNfk+zXQoa339Z/y2NGnHAoxU4KHVHdZFA9j
-SDcj1m37lWFNJZv/oSv9oshrVNm9zTenwmD/nMJ0WNaQAwOiK2PVz/GH7/Df/deW
-C3wSRTEwQUkv4ZFNkeYfi6n+ScaUsTStafAlXIkRs6EpPFOpZ/2S3VwrQh4TOHB+
-NJMzJnoSdH9TXVS7/VFjJFVWJhZWfYmf3ZetfoIUpzygaj4HqkqSawXEeO5BdR7V
-CzqXsst7UhuCZhxjglPV/KoRzwTUV2aIEJGzUrtIH1538gsd0Nhh7ELulR8i7eyx
-Pqeljh9bvGgqKlWzezGK
-=BI8F
+iQIcBAEBAgAGBQJTFsFMAAoJELSic+t+oim9LWsP/0GgVIAaO6ZZrK3i7eiTLruI
+s+Bhu24UzVd4CAzO9q1KY/B8Yzrw4PgNK7r+24fnGbAJSBzrL09z+LmnICM7QTUt
+7vHMMT5/HLq+LrJafeJlsR5w1LP3uewSTCXM6VmPoE08qAbTyj4gCMJBUSbF6Gfy
+f7+B5DhrKCZXRCb+gQ1v/FgcPboA22ryObHQzDZrLt1ZSulYl1E1RfYIr5p6ndbU
+nI5RWweGfkQGrk4aVC0dhb6KjpP7RQZPrXf3sBVB7vMM3cx4bsf0fUybZyJxwV/L
+LRvQibS2xJieG+oreawFq2DfuCNS5sF/l1VxKFPjYCMqNssNbX7EbIsstSC4xZXJ
+PlAFgZxKYWWDQ63z9hWjnNCLodMllWbkTgcm6Fpmk+0NoV7EiuemqYTfUcd+EflA
+u8mshnxhO3tE7RDQCAON80XzpmLPQNKXduzmqDOq8E1gMK1jlcDVauVOanRnkL6y
+6ZEvceQy2+0qjwU4XrZ9OFuhhuBK6ws2NZANK2jwm2oE55a8Lmm1RUA4Upxtk0dA
+UQqrELEgzXFgQ6y6xGyzTHoBGPW/bL6IjzwP1jaK8rb2+ej74eY372ELe2PG9i7j
+7DlGm2bwcSXSGexMd/nJaDZ1vGZOH6+lmbJx8JdEFqlwhYcDVmd7tX8SIqR6wnf3
+I+ScqFheV5l2lZXtDe2c
+=RO3t
 -----END PGP SIGNATURE-----
 
---hCH6UO/yhd9rsH1L--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--RMlwNl9HEic8ziTx--
