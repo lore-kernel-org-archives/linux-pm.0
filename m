@@ -1,73 +1,67 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
-Date: Tue, 04 Mar 2014 18:28:24 -0800
-Message-ID: <53168bd7.426b440a.14d5.7306@mx.google.com>
-References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
- <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
- <530FD3CF.2040900@codeaurora.org> <530FEAA9.7040601@ti.com>
- <530FF245.7070300@codeaurora.org>
- <20140228102018.GP21483@n2100.arm.linux.org.uk>
- <20140228181731.29118.41809@capellas-linux>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 01/11] base: power: Add generic OF-based power domain
+ look-up
+Date: Wed, 5 Mar 2014 12:24:23 +0800
+Message-ID: <20140305042423.GD13126@sirena.org.uk>
+References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
+ <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="lpbaaqEfWJan1gxl"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:52762 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756763AbaCEC2l convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Mar 2014 21:28:41 -0500
-Received: by mail-pd0-f171.google.com with SMTP id r10so398135pdi.16
-        for <linux-pm@vger.kernel.org>; Tue, 04 Mar 2014 18:28:40 -0800 (PST)
-In-Reply-To: <20140228181731.29118.41809@capellas-linux>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55911 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755038AbaCEEZA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Mar 2014 23:25:00 -0500
+Content-Disposition: inline
+In-Reply-To: <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?utf-8?q?=22Uwe_Kleine-K=C3=B6nig=22?= <u.kleine-koenig@pengutronix.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russ Dill <Russ.Dill@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Quoting Sebastian Capella (2014-02-28 10:17:31)
-> Quoting Russell King - ARM Linux (2014-02-28 02:20:18)
-> > On Thu, Feb 27, 2014 at 06:19:49PM -0800, Stephen Boyd wrote:
-> > > On 02/27/14 17:47, Russ Dill wrote:
-> > > > On 02/27/2014 04:09 PM, Stephen Boyd wrote:
-> > > >> On 02/27/14 15:57, Sebastian Capella wrote:
-> > > >>> diff --git a/arch/arm/include/asm/memory.h
-> > > >>> b/arch/arm/include/asm/memory.h index 8756e4b..1079ea8 100644 ---
-> > > >>> a/arch/arm/include/asm/memory.h +++
-> > > >>> b/arch/arm/include/asm/memory.h @@ -291,6 +291,7 @@ static inline
-> > > >>> void *phys_to_virt(phys_addr_t x) */ #define __pa(x)
-> > > >>> __virt_to_phys((unsigned long)(x)) #define __va(x)                        ((void
-> > > >>> *)__phys_to_virt((phys_addr_t)(x))) +#define __pa_symbol(x)
-> > > >>> __pa(RELOC_HIDE((unsigned long)(x), 0))
-> > > >> Just curious, is there a reason for the RELOC_HIDE() here? Or 
-> > > >> __pa_symbol() for that matter? It looks like only x86 uses this on
-> > > >> the __nosave_{begin,end} symbol. Maybe it's copy-pasta?
-> > > > From my understanding this needs to stick around so long as gcc 3.x is
-> > > > supported (did it get dropped yet?) on ARM Linux since it doesn't
-> > > > support -fno-strict-overflow.
-> > > 
-> > > I don't think it's been dropped yet but I wonder if anyone has tried
-> > > recent kernels with such a compiler?
-> > > 
-> > > Would the usage of &__pv_table_begin in arch/arm/mm/mmu.c also need the
-> > > same treatment?
-> > 
-> > We've never had to play these kinds of games on ARM irrespective of
-> > compiler version.
-> 
-> I am using gcc 4.6.3.  I can try removing it but I suspect it will just
-> work without it.  Let me see if I can get an older compiler and try both
-> ways.
 
-Hi,
+--lpbaaqEfWJan1gxl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've been struggling a bit to test 3.x compilers on this.
+On Mon, Mar 03, 2014 at 05:02:06PM +0100, Tomasz Figa wrote:
+> This patch introduces generic code to perform power domain look-up using
+> device tree and automatically bind devices to their power domains.
+> Generic device tree binding is introduced to specify power domains of
+> devices in their device tree nodes.
+>=20
+> Backwards compatibility with legacy Samsung-specific power domain
+> bindings is provided, but for now the new code is not compiled when
+> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
+> will change as soon as Exynos power domain code gets converted to use
+> the generic framework in further patch.
 
-I'm running an armv7 board, but the 3.x compilers I'm trying
-don't appear to suport armv7.
+Reviwed-by: Mark Brown <broonie@linaro.org>
 
-Anyone have any suggestions?  Is this a worthwhile effort?
+(mainly the binding)
 
-Thanks!
+--lpbaaqEfWJan1gxl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Sebastian
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
+iQIcBAEBAgAGBQJTFqbuAAoJELSic+t+oim9qlEP/3Okw/4lgebLju+P/1YcDHei
+U2AtkQef0Yof6nj2Y3u5H7cnjlC2pMGpZLNs+xP7TzHTX20ahTN8PHG47xXqmdnz
+aiKSMY+ljj6VH+BlDieGiL8V/r7RkwRy48ZPfD1ua2+5iNzCt5cqCMjuOSWZQ0Zq
+3Dx9Ow8DIJiwFT3sSQkDv92/jK1gqEYGeNab/vOOCwkIAXzoLjwvloDKcLXS8mku
+CrBzwUW1SaFjQAjEKhiRhbA2CFNq9WrzVggsoESJYqDEonb6vuas2SYJ7t9io5Fw
+Q8eEQ/MqGg6RHfWE626BS2KwQWPAhJHmsu6VuD3nxkVsYYpvzAnkf8lmkHJu2fh9
+2HqLLqGRR5cPIPL6105f9LmzV+oUScCxvT+V9S/++JNyYZ4nkGkqlecV3LTHB/br
+NWIDI/C6dfuwR1M5CDx1EeR3KcPEgw/tqwmyEIOY78+cTpRvOHazNlY9ZHROcx7q
+LKHgwz8VtPRwhv3wzllFi2s2IzHXXTmNIAnCBb4meB1NDSd97HQlGJ9wP+r6A6cy
+wzUSOPiUd2AL3nFnB0ppTiH3W4WcpUgL+biMsWQfSiJZaR/FGLj0ZDh9UMUfGqjT
+16PDNGBj9HX5JC4jPj7ORhOb1P4vchMmg/qMblNS5XcAQYesTbg/NvovH6KYGutK
+TSGYPet1l/gxwmEZkA0b
+=EODB
+-----END PGP SIGNATURE-----
+
+--lpbaaqEfWJan1gxl--
