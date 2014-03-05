@@ -1,86 +1,103 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 02/11] drivercore: Bind/unbind power domain on probe/remove
-Date: Wed, 5 Mar 2014 08:22:48 +0100
-Message-ID: <CAPDyKFpMSwXG0e1Q38wMwBocXgMb4_v9y=1kNeNi6t0GXDGN2A@mail.gmail.com>
-References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
-	<1393862536-9842-3-git-send-email-tomasz.figa@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1393862536-9842-3-git-send-email-tomasz.figa@gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Loren
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v7 0/2] hibernation support on ARM
+Date: Wed,  5 Mar 2014 02:50:03 -0800
+Message-ID: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:61359 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbaCEKuU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Mar 2014 05:50:20 -0500
+Received: by mail-pb0-f46.google.com with SMTP id rq2so918202pbb.33
+        for <linux-pm@vger.kernel.org>; Wed, 05 Mar 2014 02:50:20 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On 3 March 2014 17:02, Tomasz Figa <tomasz.figa@gmail.com> wrote:
-> On a number of platforms, devices are part of controllable power
-> domains, which need to be enabled before such devices can be accessed
-> and may be powered down when the device is idle to save some power.
-> This means that on systems that support power domain control using
-> generic power domains subsystem, it is necessary to add device to its
-> power domain before binding a driver to it and remove it from its power
-> domain after its driver is unbound to make sure that an unused device
-> does not affect power domain state.
->
-> Since this is not limited to particular busses and specific
-> archs/platforms, it is more convenient to do the above directly in
-> driver core, just as done with pinctrl default configuration. This patch
-> adds necessary code to really_probe() and __device_release_driver() to
-> achieve this and maintain consistent stack-like ordering of operations
-> happening when binding and unbinding a driver.
->
-> Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
+Patches adding support for hibernation on ARM
+ - ARM hibernation / suspend-to-disk
+ - Change soft_restart to use non-tracing raw_local_irq_disable
 
-This definitely makes sense to me!
+Patches based on v3.14-rc5 tag, verified hibernation on beaglebone black on a
+branch based on 3.13 merged with initial omap support from Russ Dill which
+can be found here (includes v1 patchset):
+http://git.linaro.org/git-ro/people/sebastian.capella/linux.git hibernation_3.13_russMerge
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+[PATCH v7 1/2] ARM: avoid tracers in soft_restart
+ arch/arm/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> ---
->  drivers/base/dd.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 0605176..78e5b36 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -23,6 +23,7 @@
->  #include <linux/kthread.h>
->  #include <linux/wait.h>
->  #include <linux/async.h>
-> +#include <linux/pm_domain.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/pinctrl/devinfo.h>
->
-> @@ -273,6 +274,11 @@ static int really_probe(struct device *dev, struct device_driver *drv)
->
->         dev->driver = drv;
->
-> +       /* If using genpd, bind power domain now before probing */
-> +       ret = genpd_bind_domain(dev);
-> +       if (ret)
-> +               goto probe_failed;
-> +
->         /* If using pinctrl, bind pins now before probing */
->         ret = pinctrl_bind_pins(dev);
->         if (ret)
-> @@ -303,6 +309,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
->  probe_failed:
->         devres_release_all(dev);
->         driver_sysfs_remove(dev);
-> +       genpd_unbind_domain(dev);
->         dev->driver = NULL;
->         dev_set_drvdata(dev, NULL);
->
-> @@ -513,7 +520,7 @@ static void __device_release_driver(struct device *dev)
->                         blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->                                                      BUS_NOTIFY_UNBOUND_DRIVER,
->                                                      dev);
-> -
-> +               genpd_unbind_domain(dev);
->         }
->  }
->
-> --
-> 1.9.0
->
+ Use raw_local_irq_disable in place of local_irq_disable to avoid
+ infinite abort recursion while tracing. (unchanged since v3)
+
+[PATCH v7 2/2] ARM hibernation / suspend-to-disk
+ arch/arm/include/asm/memory.h |    1 +
+ arch/arm/kernel/Makefile      |    1 +
+ arch/arm/kernel/hibernate.c   |  108 +++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mm/Kconfig           |    5 ++
+ include/linux/suspend.h       |    2 +
+ 5 files changed, 117 insertions(+)
+
+ Adds support for ARM based hibernation
+
+
+Additional notes:
+-----------------
+
+There are two checkpatch warnings added by this patch.  These follow
+behavior in existing hibernation implementations on other platforms.
+
+
+    WARNING: externs should be avoided in .c files
+    #120: FILE: arch/arm/kernel/hibernate.c:24:
+    +extern const void __nosave_begin, __nosave_end;
+
+  This extern is picking up the linker nosave region definitions, only
+  used in hibernate.  Follows same extern line used mips, powerpc, s390,
+  sh, sparc, x86 & unicore32
+
+    WARNING: externs should be avoided in .c files
+    #200: FILE: arch/arm/kernel/hibernate.c:104:
+    +	extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
+
+  This extern is used in the arch/arm/ in hibernate, process and bL_switcher
+
+
+Changes in v7:
+--------------
+* remove use of RELOC_HIDE macro
+* remove unused #includes
+* fixup comment for arch_restore_image
+* ensure alignment of resume stack on 8 byte boundary
+
+Changes in v6:
+--------------
+* Simplify static variable names
+
+Changes in v5:
+--------------
+* Fixed checkpatch warning on trailing whitespace
+
+Changes in v4:
+--------------
+* updated comment for soft_restart with review feedback
+* dropped freeze_processes patch which was queued separately 
+  to 3.14 by Rafael Wysocki:
+  https://lkml.org/lkml/2014/2/25/683
+
+Changes in v3:
+--------------
+* added comment to use of soft_restart
+* drop irq disable soft_restart patch
+* add patch to avoid tracers in soft_restart by using raw_local_irq_*
+
+Changes in v2:
+--------------
+* Removed unneeded flush_thread, use of __naked and cpu_init.
+* dropped Cyril Chemparathy <cyril@ti.com> from Cc: list as 
+  emails are bouncing.
+
+Thanks,
+
+Sebastian Capella
+
+
