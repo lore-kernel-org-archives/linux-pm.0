@@ -1,36 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: spear-cpufreq + multiplatform?
-Date: Wed, 5 Mar 2014 09:58:27 +0800
-Message-ID: <CAOh2x=k6uo23O23RFE5Ld__q=FtQUnbNyJA1O72yf3r_dd8f-A@mail.gmail.com>
-References: <20140303180809.GA28282@joshc.qualcomm.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
+Date: Tue, 04 Mar 2014 18:28:24 -0800
+Message-ID: <53168bd7.426b440a.14d5.7306@mx.google.com>
+References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
+ <1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
+ <530FD3CF.2040900@codeaurora.org> <530FEAA9.7040601@ti.com>
+ <530FF245.7070300@codeaurora.org>
+ <20140228102018.GP21483@n2100.arm.linux.org.uk>
+ <20140228181731.29118.41809@capellas-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f170.google.com ([209.85.220.170]:43765 "EHLO
-	mail-vc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbaCEB62 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Mar 2014 20:58:28 -0500
-Received: by mail-vc0-f170.google.com with SMTP id hu8so373861vcb.15
-        for <linux-pm@vger.kernel.org>; Tue, 04 Mar 2014 17:58:27 -0800 (PST)
-In-Reply-To: <20140303180809.GA28282@joshc.qualcomm.com>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:52762 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756763AbaCEC2l convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Mar 2014 21:28:41 -0500
+Received: by mail-pd0-f171.google.com with SMTP id r10so398135pdi.16
+        for <linux-pm@vger.kernel.org>; Tue, 04 Mar 2014 18:28:40 -0800 (PST)
+In-Reply-To: <20140228181731.29118.41809@capellas-linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Josh Cartwright <joshc@codeaurora.org>
-Cc: Shiraz Hashim <shiraz.hashim@st.com>, Deepak Sikri <deepak.sikri@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, spear-devel <spear-devel@list.st.com>, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?utf-8?q?=22Uwe_Kleine-K=C3=B6nig=22?= <u.kleine-koenig@pengutronix.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russ Dill <Russ.Dill@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Tue, Mar 4, 2014 at 2:08 AM, Josh Cartwright <joshc@codeaurora.org> wrote:
-> Hey folks-
->
-> I noticed booting today's next on a non-spear platform, that I'm seeing
-> the following in my logs:
->
->         [    2.126494] spear_cpufreq: Invalid cpufreq_tbl
->
-> Looking closer, it looks like the spear-cpufreq driver has a
-> late_initcall() that's not too multiplatform friendly.  Perhaps the
-> spear cpufreq initialization routine should be called explicitly from
-> some platform-specific code, or explicitly check to ensure it's running
-> on SPEAr?
+Quoting Sebastian Capella (2014-02-28 10:17:31)
+> Quoting Russell King - ARM Linux (2014-02-28 02:20:18)
+> > On Thu, Feb 27, 2014 at 06:19:49PM -0800, Stephen Boyd wrote:
+> > > On 02/27/14 17:47, Russ Dill wrote:
+> > > > On 02/27/2014 04:09 PM, Stephen Boyd wrote:
+> > > >> On 02/27/14 15:57, Sebastian Capella wrote:
+> > > >>> diff --git a/arch/arm/include/asm/memory.h
+> > > >>> b/arch/arm/include/asm/memory.h index 8756e4b..1079ea8 100644 ---
+> > > >>> a/arch/arm/include/asm/memory.h +++
+> > > >>> b/arch/arm/include/asm/memory.h @@ -291,6 +291,7 @@ static inline
+> > > >>> void *phys_to_virt(phys_addr_t x) */ #define __pa(x)
+> > > >>> __virt_to_phys((unsigned long)(x)) #define __va(x)                        ((void
+> > > >>> *)__phys_to_virt((phys_addr_t)(x))) +#define __pa_symbol(x)
+> > > >>> __pa(RELOC_HIDE((unsigned long)(x), 0))
+> > > >> Just curious, is there a reason for the RELOC_HIDE() here? Or 
+> > > >> __pa_symbol() for that matter? It looks like only x86 uses this on
+> > > >> the __nosave_{begin,end} symbol. Maybe it's copy-pasta?
+> > > > From my understanding this needs to stick around so long as gcc 3.x is
+> > > > supported (did it get dropped yet?) on ARM Linux since it doesn't
+> > > > support -fno-strict-overflow.
+> > > 
+> > > I don't think it's been dropped yet but I wonder if anyone has tried
+> > > recent kernels with such a compiler?
+> > > 
+> > > Would the usage of &__pv_table_begin in arch/arm/mm/mmu.c also need the
+> > > same treatment?
+> > 
+> > We've never had to play these kinds of games on ARM irrespective of
+> > compiler version.
+> 
+> I am using gcc 4.6.3.  I can try removing it but I suspect it will just
+> work without it.  Let me see if I can get an older compiler and try both
+> ways.
 
-So sorry for that. I can't get it fixed right now as am busy with some
-conferences but will mark that in my todo list. Thanks for reporting it.
+Hi,
+
+I've been struggling a bit to test 3.x compilers on this.
+
+I'm running an armv7 board, but the 3.x compilers I'm trying
+don't appear to suport armv7.
+
+Anyone have any suggestions?  Is this a worthwhile effort?
+
+Thanks!
+
+Sebastian
+
