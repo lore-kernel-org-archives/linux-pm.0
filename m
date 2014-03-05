@@ -1,67 +1,58 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 01/11] base: power: Add generic OF-based power domain
- look-up
-Date: Wed, 5 Mar 2014 12:24:23 +0800
-Message-ID: <20140305042423.GD13126@sirena.org.uk>
+Subject: Re: [PATCH v2 02/11] drivercore: Bind/unbind power domain on
+ probe/remove
+Date: Wed, 5 Mar 2014 12:26:02 +0800
+Message-ID: <20140305042602.GE13126@sirena.org.uk>
 References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
- <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
+ <1393862536-9842-3-git-send-email-tomasz.figa@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="lpbaaqEfWJan1gxl"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55911 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755038AbaCEEZA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Mar 2014 23:25:00 -0500
+	protocol="application/pgp-signature"; boundary="+wcwqhATTmTB6/2m"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1393862536-9842-3-git-send-email-tomasz.figa@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Tomasz Figa <tomasz.figa@gmail.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
 
---lpbaaqEfWJan1gxl
+--+wcwqhATTmTB6/2m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 03, 2014 at 05:02:06PM +0100, Tomasz Figa wrote:
-> This patch introduces generic code to perform power domain look-up using
-> device tree and automatically bind devices to their power domains.
-> Generic device tree binding is introduced to specify power domains of
-> devices in their device tree nodes.
->=20
-> Backwards compatibility with legacy Samsung-specific power domain
-> bindings is provided, but for now the new code is not compiled when
-> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
-> will change as soon as Exynos power domain code gets converted to use
-> the generic framework in further patch.
+On Mon, Mar 03, 2014 at 05:02:07PM +0100, Tomasz Figa wrote:
+> On a number of platforms, devices are part of controllable power
+> domains, which need to be enabled before such devices can be accessed
+> and may be powered down when the device is idle to save some power.
+> This means that on systems that support power domain control using
+> generic power domains subsystem, it is necessary to add device to its
+> power domain before binding a driver to it and remove it from its power
+> domain after its driver is unbound to make sure that an unused device
+> does not affect power domain state.
 
-Reviwed-by: Mark Brown <broonie@linaro.org>
+Reviewed-by: Mark Brown <broonie@linaro.org>
 
-(mainly the binding)
-
---lpbaaqEfWJan1gxl
+--+wcwqhATTmTB6/2m
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTFqbuAAoJELSic+t+oim9qlEP/3Okw/4lgebLju+P/1YcDHei
-U2AtkQef0Yof6nj2Y3u5H7cnjlC2pMGpZLNs+xP7TzHTX20ahTN8PHG47xXqmdnz
-aiKSMY+ljj6VH+BlDieGiL8V/r7RkwRy48ZPfD1ua2+5iNzCt5cqCMjuOSWZQ0Zq
-3Dx9Ow8DIJiwFT3sSQkDv92/jK1gqEYGeNab/vOOCwkIAXzoLjwvloDKcLXS8mku
-CrBzwUW1SaFjQAjEKhiRhbA2CFNq9WrzVggsoESJYqDEonb6vuas2SYJ7t9io5Fw
-Q8eEQ/MqGg6RHfWE626BS2KwQWPAhJHmsu6VuD3nxkVsYYpvzAnkf8lmkHJu2fh9
-2HqLLqGRR5cPIPL6105f9LmzV+oUScCxvT+V9S/++JNyYZ4nkGkqlecV3LTHB/br
-NWIDI/C6dfuwR1M5CDx1EeR3KcPEgw/tqwmyEIOY78+cTpRvOHazNlY9ZHROcx7q
-LKHgwz8VtPRwhv3wzllFi2s2IzHXXTmNIAnCBb4meB1NDSd97HQlGJ9wP+r6A6cy
-wzUSOPiUd2AL3nFnB0ppTiH3W4WcpUgL+biMsWQfSiJZaR/FGLj0ZDh9UMUfGqjT
-16PDNGBj9HX5JC4jPj7ORhOb1P4vchMmg/qMblNS5XcAQYesTbg/NvovH6KYGutK
-TSGYPet1l/gxwmEZkA0b
-=EODB
+iQIcBAEBAgAGBQJTFqdXAAoJELSic+t+oim9lJgP/3yLE8EY4S+jtsmqD3m+2F3c
+RsPTLv8rvn9PEgplXczrlDf2Knisfeh7ads61m+VmoTAO+LSRDHIRS2Nbo6zGjmC
+R7ZYNlGS0hzcObirMtVlX/tC0WYiqYlgFlm7/TDcbxlDvwlKz8QqRNMFly5Ufvqm
+rSE0zi2J3hDKiuQPcernaOVubgv/w58kss2WWNLVKDfexcqPd8u4SOqTFvIp6r9+
+/uWl8ZNzkwLr88CkqLNDrE1D4iqyKvxpmMAnxDC8dKzMoDEq+EVc8OjI31J7e4Yt
+/e44dRIsdDU6J9VF9md3BKxquWFZifWBH7IvuXl8jDrdoMw3/Inb9PcpKkOYST4g
+7f4Dg2QVSvMc0EeLJ5XTk6Snr8IRs1LHKlyJWtXz6eq0oPo1PpL8UTJEFyieRr+d
+NVnrvahjAkVvAg+LctCalpCMK1xR8X30Qhdbd15DO+KDbBpQ5hSU6jE6gVKxaihB
+dCtNfLeJZYeZT3jaddJ9Rw6zu3aeKIQcGZRth7mA00KBNsuZ0xx25k2NqdisPrkA
+CqeuAZw5A5jsPNYp/iL9+cGe8szc4yI0Z7ZA0sQVX8D1uWVAHZeyqwLdIoXVNV0B
+OwDZIbkldBgoRwI0n64u0rZ1YLJKOcsTlzqNi4BNqMvbebaIqupqrPIZMrkdQTdj
+ml9+jUFjcAyLAhsP75ME
+=Lee6
 -----END PGP SIGNATURE-----
 
---lpbaaqEfWJan1gxl--
+--+wcwqhATTmTB6/2m--
