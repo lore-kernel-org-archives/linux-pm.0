@@ -1,29 +1,25 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v2 01/11] base: power: Add generic OF-based power domain
- look-up
-Date: Wed, 5 Mar 2014 00:41:38 -0600
-Message-ID: <CAL_JsqK4-zJ31VnV6qqYu8-AbD0VCeaJuc59HZ5ZWR6X=qWjbg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 01/11] base: power: Add generic OF-based power domain look-up
+Date: Wed, 5 Mar 2014 08:19:34 +0100
+Message-ID: <CAPDyKFqK1JqxeJ_L_bzduixRLGA5m_FFPq_of2r6y0aCpS7z9A@mail.gmail.com>
 References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
- <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
+	<1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:52823 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbaCEHTg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Mar 2014 02:19:36 -0500
+Received: by mail-qa0-f50.google.com with SMTP id o15so617384qap.23
+        for <linux-pm@vger.kernel.org>; Tue, 04 Mar 2014 23:19:35 -0800 (PST)
 In-Reply-To: <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Loren
 
-On Mon, Mar 3, 2014 at 10:02 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+On 3 March 2014 17:02, Tomasz Figa <tomasz.figa@gmail.com> wrote:
 > This patch introduces generic code to perform power domain look-up using
 > device tree and automatically bind devices to their power domains.
 > Generic device tree binding is introduced to specify power domains of
@@ -36,9 +32,6 @@ On Mon, Mar 3, 2014 at 10:02 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
 > the generic framework in further patch.
 >
 > Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
-
-Acked-by: Rob Herring <robh@kernel.org>
-
 > ---
 >  .../devicetree/bindings/power/power_domain.txt     |  51 ++++
 >  drivers/base/power/domain.c                        | 298 +++++++++++++++++++++
@@ -131,6 +124,9 @@ Acked-by: Rob Herring <robh@kernel.org>
 >  }
 > +
 > +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+
+Do we need a new config for this? Can't we just use CONFIG_OF?
+
 > +/*
 > + * DEVICE TREE BASED POWER DOMAIN PROVIDERS
 > + *
@@ -382,6 +378,16 @@ Acked-by: Rob Herring <robh@kernel.org>
 > +       }
 > +
 > +       pm_genpd_dev_need_restore(dev, true);
+
+So this will reflect the device as being inactive, which I think is
+the wrong approach.
+
+Usually we should expect drivers that's being probed successfully to
+leave their devices in active state, right?
+
+Kind regards
+Ulf Hansson
+
 > +
 > +       return 0;
 > +}
