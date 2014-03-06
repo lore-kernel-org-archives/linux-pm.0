@@ -1,49 +1,28 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: use cpufreq_cpu_get to avoid cpufreq_get race conditions
-Date: Thu, 06 Mar 2014 13:30:57 +0100
-Message-ID: <2112618.kABuM8MuMA@vostro.rjw.lan>
-References: <1393965735-15610-1-git-send-email-aplattner@nvidia.com> <2327882.a9zobM63G6@vostro.rjw.lan> <5317CBF2.40908@nvidia.com>
+Subject: Re: [PATCH V2 3/3] cpufreq: initialize governor for a new policy under policy->rwsem
+Date: Thu, 06 Mar 2014 13:34:43 +0100
+Message-ID: <4694302.3z6tDHSNGj@vostro.rjw.lan>
+References: <98b7ae22d936456bf830aa749556a115969cfa47.1393904428.git.viresh.kumar@linaro.org> <1892466.Txf61ZRumM@vostro.rjw.lan> <CAKohponJrsrFiugxALugZu3AKtD2i-Tk3NjeFM3KhXSoKgtLXg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54287 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751673AbaCFMPp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 07:15:45 -0500
-In-Reply-To: <5317CBF2.40908@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponJrsrFiugxALugZu3AKtD2i-Tk3NjeFM3KhXSoKgtLXg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Plattner <aplattner@nvidia.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wednesday, March 05, 2014 05:14:26 PM Aaron Plattner wrote:
-> On 03/05/14 17:23, Rafael J. Wysocki wrote:
-> > On Tuesday, March 04, 2014 12:42:15 PM Aaron Plattner wrote:
-> >> If a module calls cpufreq_get while cpufreq is initializing, it's possible for
-> >> it to be called after cpufreq_driver is set but before cpufreq_cpu_data is
-> >> written during subsys_interface_register.  This happens because cpufreq_get
-> >> doesn't take the cpufreq_driver_lock around its use of cpufreq_cpu_data.
+On Thursday, March 06, 2014 10:24:38 AM Viresh Kumar wrote:
+> On 6 March 2014 09:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > I've rebased this one on top of 3.14-rc5 and queued it up for 3.14-rc6.
 > >
-> > Is this a theoretical race, or can you actually reproduce it?  If so, on what
-> > system/driver?  Or are there any bug reports related to this you can point me
-> > to?
+> > Please check the bleeding-edge branch for the result.
 > 
-> It reproduces on my Arch Linux system at home with the nvidia driver, 
-> and there has been at least one bug report that looks like the same thing:
-> 
-> https://bbs.archlinux.org/viewtopic.php?id=177934
-> 
-> I reproduced the problem with v3.13.5, then applied this change and was 
-> able to boot successfully 10/10 times.  So I guess that means you can add
-> 
-> Tested-by: Aaron Plattner <aplattner@nvidia.com>
+> Yeah, it looks fine. And I assume that you are planning to take 1/3 in 3.15?
+> Or going to drop it?
 
-Tested-by is not needed if you're the author.
-
-Everybody should test their patches, right? ;-)
-
-I'll mark it for 3.13-stable and add the link above to the changelog.
+I'm going to queue it up for 3.15.
 
 Thanks!
 
