@@ -1,34 +1,55 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: thermal-zones DT node bound by name rather than compatible property
-Date: Thu, 06 Mar 2014 10:57:01 -0700
-Message-ID: <5318B6ED.3060104@wwwdotorg.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: My Kernel bug is celebrating 2 years. Can you help me fix it?
+Date: Thu, 6 Mar 2014 11:27:58 -0700
+Message-ID: <CAErSpo4wdYDgTUTBDLimbviLh54C9ELXKfQ2y5qeUR1FKN8fpw@mail.gmail.com>
+References: <CA+MoWDrTNtAHKsiBHz=W4=eJRO=m9EK_HZ7zLxb=4fg5riUQeg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:60792 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753548AbaCFR5G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 12:57:06 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CA+MoWDrTNtAHKsiBHz=W4=eJRO=m9EK_HZ7zLxb=4fg5riUQeg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Senna Tschudin <peter.senna@gmail.com>
+Cc: "kernelnewbies@kernelnewbies.org" <kernelnewbies@kernelnewbies.org>, kernel-janitors@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stoney Wang <song-bo.wang@hp.com>, Yinghai Lu <yinghai@kernel.org>, Suresh Siddha <suresh.b.siddha@intel.com>, Joerg Roedel <joro@8bytes.org>, Jiang Liu <jiang.liu@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Wei Ni <wni@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
-Commit 4e5e4705bf69 "thermal: introduce device tree parser" introduced
-the text below into Documentation/devicetree/bindings/thermal/thermal.txt:
+[+cc Stoney, Yinghai, Suresh, Joerg, Jiang, Pavel, Rafael, linux-pm]
 
-> * The thermal-zones node
-> 
-> The "thermal-zones" node is a container for all thermal zone nodes. It shall
-> contain only sub-nodes describing thermal zones as in the section
-> "Thermal zone nodes". The "thermal-zones" node appears under "/".
+Let's add some folks who know about x2apic and VT-d.  It's hard for
+people to magically pick stuff out of the LKML firehose :)
 
-This implies that software must find the thermal-zones node by node
-name. Node names aren't supposed to be significant in DT. Rather,
-software is supposed to bind to a node by searching for all nodes with a
-particular value in the compatible property. While there are some legacy
-counter-examples such as /aliases, /chosen, and /cpus, I don't think we
-should propagate any more of these in new bindings.
-
-Can this mistake in the binding definition be rectified, or is it too late?
+On Tue, Mar 4, 2014 at 2:26 PM, Peter Senna Tschudin
+<peter.senna@gmail.com> wrote:
+> I have reported a bug more than two years ago and it is still
+> affecting me. The bug report gives some information:
+>
+> https://bugzilla.redhat.com/show_bug.cgi?id=787299
+>
+> I have tried basic debug instructions from:
+> https://www.kernel.org/doc/Documentation/power/basic-pm-debugging.txt
+>
+> And everything works as expected when:
+> # echo freeze > /sys/power/state
+> # echo disk > /sys/power/state
+>
+> I have asked for help for fixing it:
+> https://lkml.org/lkml/2013/11/1/186
+>
+> But I don't have a serial port. How can I debug this issue without a
+> "real" serial port? Or what else can I try? How can I explore the hint
+> about the problem only happening with VT-d enabled in BIOS? How can I
+> explore the hint about the problem not happening if the option
+> nox2apic is passed to the Kernel?
+>
+> Thank you,
+>
+> Peter
+>
+> P.S Yes, it works on Windows.
+>
+> --
+> Peter
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
