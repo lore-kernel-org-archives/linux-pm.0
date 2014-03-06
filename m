@@ -1,41 +1,34 @@
-From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH] cpufreq: Reformat printk() statement
-Date: Thu,  6 Mar 2014 09:34:39 -0800
-Message-ID: <1394127279-29871-1-git-send-email-soren.brinkmann@xilinx.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: thermal-zones DT node bound by name rather than compatible property
+Date: Thu, 06 Mar 2014 10:57:01 -0700
+Message-ID: <5318B6ED.3060104@wwwdotorg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:60792 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbaCFR5G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 12:57:06 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Wei Ni <wni@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
-Reformat a printk statement to:
- - use pr_warn
- - bring the whole string into a single line in favor of being able to
-   grep for the message (ignoring the 80 char limit)
+Commit 4e5e4705bf69 "thermal: introduce device tree parser" introduced
+the text below into Documentation/devicetree/bindings/thermal/thermal.txt:
 
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
----
- drivers/cpufreq/cpufreq.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+> * The thermal-zones node
+> 
+> The "thermal-zones" node is a container for all thermal zone nodes. It shall
+> contain only sub-nodes describing thermal zones as in the section
+> "Thermal zone nodes". The "thermal-zones" node appears under "/".
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index cb003a6b72c8..534c2df608ed 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1874,11 +1874,8 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 		if (!gov)
- 			return -EINVAL;
- 		else {
--			printk(KERN_WARNING "%s governor failed, too long"
--			       " transition latency of HW, fallback"
--			       " to %s governor\n",
--			       policy->governor->name,
--			       gov->name);
-+			pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
-+					policy->governor->name, gov->name);
- 			policy->governor = gov;
- 		}
- 	}
--- 
-1.9.0.1.g4196000
+This implies that software must find the thermal-zones node by node
+name. Node names aren't supposed to be significant in DT. Rather,
+software is supposed to bind to a node by searching for all nodes with a
+particular value in the compatible property. While there are some legacy
+counter-examples such as /aliases, /chosen, and /cpus, I don't think we
+should propagate any more of these in new bindings.
 
+Can this mistake in the binding definition be rectified, or is it too late?
