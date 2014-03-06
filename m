@@ -1,94 +1,86 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 5/8] i2c: nomadik: Fixup system suspend
-Date: Thu, 6 Mar 2014 08:10:43 +0100
-Message-ID: <CAPDyKFr7znu0ZM2Pqv1zNbG9366VXCM8FV=t0umEsF0R6ZeyEg@mail.gmail.com>
-References: <1393671371-2398-1-git-send-email-ulf.hansson@linaro.org>
-	<1393671371-2398-6-git-send-email-ulf.hansson@linaro.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 6/7] Cpuidle: Deal with timer expiring in the past
+Date: Thu, 6 Mar 2014 02:41:06 -0500
+Message-ID: <CAJvTdKneVk_ToJ=Sv4GnMfn5a0r=ynfL4fRLOoKHsqMrDYr8JA@mail.gmail.com>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
+	<1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f179.google.com ([209.85.216.179]:44304 "EHLO
-	mail-qc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbaCFHKo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 02:10:44 -0500
-Received: by mail-qc0-f179.google.com with SMTP id m20so2454383qcx.10
-        for <linux-pm@vger.kernel.org>; Wed, 05 Mar 2014 23:10:43 -0800 (PST)
-In-Reply-To: <1393671371-2398-6-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-yh0-f47.google.com ([209.85.213.47]:53914 "EHLO
+	mail-yh0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbaCFHlH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 02:41:07 -0500
+In-Reply-To: <1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Alessandro Rubini <rubini@unipv.it>, Josh Cartwright <joshc@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 1 March 2014 11:56, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> For !CONFIG_PM_RUNTIME, the device were never put back into active
-> state while resuming.
+On Mon, Feb 24, 2014 at 1:29 AM, Tuukka Tikkanen
+<tuukka.tikkanen@linaro.org> wrote:
+> Sometimes (fairly often) when the cpuidle menu governor is making a decision
+> about idle state to enter the next timer for the cpu appears to expire in
+> the past. The menu governor expects the expiry to always be in the future
+> and in fact stores the time delta in an unsigned variable. However, when
+> the expiry is in the past, the value returned by tick_nohz_get_sleep_length
+> can be negative. This patch prevents using negative values, instead making
+> the governor return immediately similar to having latency requirement set
+> to 0.
 >
-> For CONFIG_PM_RUNTIME, we blindly trusted the device to be inactive
-> while we were about to handle it at suspend late, which is just too
-> optimistic.
+> Note: As with latency == 0, the return value is 0 with no check to see if
+> the state 0 has been disabled or not.
 >
-> Even if the driver uses pm_runtime_put_sync() after each tranfer to
-> return it's runtime PM resources, there are no guarantees this will
-> actually mean the device will inactivated. The reason is that the PM
-> core will prevent runtime suspend during system suspend, and thus when
-> a transfer occurs during the early phases of system suspend the device
-> will be kept active after the transfer.
->
-> To handle both issues above, use pm_runtime_force_suspend|resume() from
-> the system suspend|resume callbacks.
->
-> Cc: Alessandro Rubini <rubini@unipv.it>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Hi Wolfram,
-
-The pm-drivers branch of the linux-pm.git, contains the helper
-functions this patch depends on.
-
-If you decide to pull that branch to your tree, to be able to apply
-this patch, please let me know. Otherwise I will repost this patch
-once 3.15 rc1 is available.
-
-Kind regards
-Ulf Hansson
-
+> Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 > ---
->  drivers/i2c/busses/i2c-nomadik.c |   14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+>  drivers/cpuidle/governors/menu.c |   10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/i2c/busses/i2c-nomadik.c b/drivers/i2c/busses/i2c-nomadik.c
-> index 8082f5c..519f5b8 100644
-> --- a/drivers/i2c/busses/i2c-nomadik.c
-> +++ b/drivers/i2c/busses/i2c-nomadik.c
-> @@ -879,19 +879,19 @@ static irqreturn_t i2c_irq_handler(int irq, void *arg)
->  #ifdef CONFIG_PM_SLEEP
->  static int nmk_i2c_suspend_late(struct device *dev)
->  {
-> -       pinctrl_pm_select_sleep_state(dev);
-> +       int ret;
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 71b5232..c414468 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -302,8 +302,16 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>         if (unlikely(latency_req == 0))
+>                 return 0;
 >
-> +       ret = pm_runtime_force_suspend(dev);
-> +       if (ret)
-> +               return ret;
-> +
-> +       pinctrl_pm_select_sleep_state(dev);
->         return 0;
->  }
+> -       /* determine the expected residency time, round up */
+> +       /*
+> +        * Determine the expected residency time. If the time is negative,
+> +        * a timer interrupt has probably just expired after disabling
+> +        * interrupts. Return as quickly as possible in the most shallow
+> +        * state possible. tv_nsec is always positive, so only check the
+> +        * seconds.
+> +        */
+>         t = ktime_to_timespec(tick_nohz_get_sleep_length());
+> +       if (t.tv_sec < 0)
+> +               return 0;
+>         data->next_timer_us =
+>                 t.tv_sec * USEC_PER_SEC + t.tv_nsec / NSEC_PER_USEC;
 >
->  static int nmk_i2c_resume_early(struct device *dev)
->  {
-> -       /* First go to the default state */
-> -       pinctrl_pm_select_default_state(dev);
-> -       /* Then let's idle the pins until the next transfer happens */
-> -       pinctrl_pm_select_idle_state(dev);
-> -
-> -       return 0;
-> +       return pm_runtime_force_resume(dev);
->  }
->  #endif
->
-> --
-> 1.7.9.5
->
+
+Are there special conditions that are necessary to provoke a negative
+return value?
+I've traced this code on several systems, and never seen a negative
+return value.
+
+However...
+I do see values up to 300.2 seconds, and those large values seem to decay
+at the rate of real-time so that after 5 minutes they are small, and then
+jump back up to 300 seconds.
+
+Some folks at Oracle debugged it down to use of NEXT_TIMER_MAX_DELTA
+when there is _no_ timer currently pending on that CPU.  It seems this is easier
+to observe, the more CPUs a system has -- though I've been able to reproduce
+it on a system as small as a single-package 8-cpu systems.
+
+One proposed way to address this is to cap large values at 1 second.
+However, that will not recognize that for the period when the large
+value decays to under 1 second, all of those are fiction.
+
+Also, if we could identify the case where there is no future timer,
+it seems that re-using dev->last_residency would probably be
+a more useful guess than pretending we'll have a timer expire in 1 second.
+
+thanks,
+Len Brown, Intel Open Source Technology Cente
