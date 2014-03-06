@@ -1,157 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] ACPI / Thermal: make acpi_thermal_check asynchronous on resume
-Date: Thu, 06 Mar 2014 14:17:43 +0100
-Message-ID: <1523951.yUmLCOPu6K@vostro.rjw.lan>
-References: <531571AE.30408@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <531571AE.30408@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>
+From: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Subject: [PATCH] cpufreq: Reformat printk() statement
+Date: Thu,  6 Mar 2014 09:34:39 -0800
+Message-ID: <1394127279-29871-1-git-send-email-soren.brinkmann@xilinx.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, March 04, 2014 02:24:46 PM Aaron Lu wrote:
-> On resume we do not need to wait for acpi_thermal_check to finish.
-> Instead, we can run it asynchronously and not block the whole system
-> resume. Also, we make sure when we are suspending again, previously
-> queued work for acpi_thermal_check is done.
-> 
-> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+Reformat a printk statement to:
+ - use pr_warn
+ - bring the whole string into a single line in favor of being able to
+   grep for the message (ignoring the 80 char limit)
 
-Queued up for 3.15, thanks!
+Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+---
+ drivers/cpufreq/cpufreq.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-> ---
->  drivers/acpi/thermal.c | 37 +++++++++++++++++++++++++++++++++----
->  1 file changed, 33 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 08626c851be7..964068553334 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -43,6 +43,7 @@
->  #include <linux/device.h>
->  #include <linux/thermal.h>
->  #include <linux/acpi.h>
-> +#include <linux/workqueue.h>
->  #include <asm/uaccess.h>
->  
->  #define PREFIX "ACPI: "
-> @@ -90,6 +91,8 @@ static int psv;
->  module_param(psv, int, 0644);
->  MODULE_PARM_DESC(psv, "Disable or override all passive trip points.");
->  
-> +static struct workqueue_struct *acpi_thermal_pm_queue;
-> +
->  static int acpi_thermal_add(struct acpi_device *device);
->  static int acpi_thermal_remove(struct acpi_device *device);
->  static void acpi_thermal_notify(struct acpi_device *device, u32 event);
-> @@ -101,11 +104,13 @@ static const struct acpi_device_id  thermal_device_ids[] = {
->  MODULE_DEVICE_TABLE(acpi, thermal_device_ids);
->  
->  #ifdef CONFIG_PM_SLEEP
-> +static int acpi_thermal_suspend(struct device *dev);
->  static int acpi_thermal_resume(struct device *dev);
->  #else
-> +#define acpi_thermal_suspend NULL
->  #define acpi_thermal_resume NULL
->  #endif
-> -static SIMPLE_DEV_PM_OPS(acpi_thermal_pm, NULL, acpi_thermal_resume);
-> +static SIMPLE_DEV_PM_OPS(acpi_thermal_pm, acpi_thermal_suspend, acpi_thermal_resume);
->  
->  static struct acpi_driver acpi_thermal_driver = {
->  	.name = "thermal",
-> @@ -186,6 +191,7 @@ struct acpi_thermal {
->  	struct thermal_zone_device *thermal_zone;
->  	int tz_enabled;
->  	int kelvin_offset;
-> +	struct work_struct thermal_check_work;
->  };
->  
->  /* --------------------------------------------------------------------------
-> @@ -1064,6 +1070,13 @@ static void acpi_thermal_guess_offset(struct acpi_thermal *tz)
->  		tz->kelvin_offset = 2732;
->  }
->  
-> +static void acpi_thermal_check_fn(struct work_struct *work)
-> +{
-> +	struct acpi_thermal *tz = container_of(work, struct acpi_thermal,
-> +					       thermal_check_work);
-> +	acpi_thermal_check(tz);
-> +}
-> +
->  static int acpi_thermal_add(struct acpi_device *device)
->  {
->  	int result = 0;
-> @@ -1093,6 +1106,8 @@ static int acpi_thermal_add(struct acpi_device *device)
->  	if (result)
->  		goto free_memory;
->  
-> +	INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
-> +
->  	pr_info(PREFIX "%s [%s] (%ld C)\n", acpi_device_name(device),
->  		acpi_device_bid(device), KELVIN_TO_CELSIUS(tz->temperature));
->  	goto end;
-> @@ -1110,6 +1125,7 @@ static int acpi_thermal_remove(struct acpi_device *device)
->  	if (!device || !acpi_driver_data(device))
->  		return -EINVAL;
->  
-> +	flush_workqueue(acpi_thermal_pm_queue);
->  	tz = acpi_driver_data(device);
->  
->  	acpi_thermal_unregister_thermal_zone(tz);
-> @@ -1118,6 +1134,13 @@ static int acpi_thermal_remove(struct acpi_device *device)
->  }
->  
->  #ifdef CONFIG_PM_SLEEP
-> +static int acpi_thermal_suspend(struct device *dev)
-> +{
-> +	/* Make sure the previously queued thermal check work has been done */
-> +	flush_workqueue(acpi_thermal_pm_queue);
-> +	return 0;
-> +}
-> +
->  static int acpi_thermal_resume(struct device *dev)
->  {
->  	struct acpi_thermal *tz;
-> @@ -1148,7 +1171,7 @@ static int acpi_thermal_resume(struct device *dev)
->  		tz->state.active |= tz->trips.active[i].flags.enabled;
->  	}
->  
-> -	acpi_thermal_check(tz);
-> +	queue_work(acpi_thermal_pm_queue, &tz->thermal_check_work);
->  
->  	return AE_OK;
->  }
-> @@ -1240,16 +1263,22 @@ static int __init acpi_thermal_init(void)
->  		return -ENODEV;
->  	}
->  
-> +	acpi_thermal_pm_queue = create_workqueue("acpi_thermal_pm");
-> +	if (!acpi_thermal_pm_queue)
-> +		return -ENODEV;
-> +
->  	result = acpi_bus_register_driver(&acpi_thermal_driver);
-> -	if (result < 0)
-> +	if (result < 0) {
-> +		destroy_workqueue(acpi_thermal_pm_queue);
->  		return -ENODEV;
-> +	}
->  
->  	return 0;
->  }
->  
->  static void __exit acpi_thermal_exit(void)
->  {
-> -
-> +	destroy_workqueue(acpi_thermal_pm_queue);
->  	acpi_bus_unregister_driver(&acpi_thermal_driver);
->  
->  	return;
-> 
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index cb003a6b72c8..534c2df608ed 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1874,11 +1874,8 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 		if (!gov)
+ 			return -EINVAL;
+ 		else {
+-			printk(KERN_WARNING "%s governor failed, too long"
+-			       " transition latency of HW, fallback"
+-			       " to %s governor\n",
+-			       policy->governor->name,
+-			       gov->name);
++			pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
++					policy->governor->name, gov->name);
+ 			policy->governor = gov;
+ 		}
+ 	}
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.9.0.1.g4196000
+
