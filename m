@@ -1,58 +1,52 @@
-From: Paul Burton <paul.burton@imgtec.com>
-Subject: [PATCH] cpuidle: delay enabling interrupts until all coupled CPUs leave idle
-Date: Thu, 6 Mar 2014 11:02:01 +0000
-Message-ID: <1394103721-32616-1-git-send-email-paul.burton@imgtec.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: use cpufreq_cpu_get to avoid cpufreq_get race conditions
+Date: Thu, 06 Mar 2014 13:30:57 +0100
+Message-ID: <2112618.kABuM8MuMA@vostro.rjw.lan>
+References: <1393965735-15610-1-git-send-email-aplattner@nvidia.com> <2327882.a9zobM63G6@vostro.rjw.lan> <5317CBF2.40908@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailapp01.imgtec.com ([195.89.28.115]:52371 "EHLO
-	mailapp01.imgtec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbaCFLCn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 06:02:43 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:54287 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751673AbaCFMPp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 07:15:45 -0500
+In-Reply-To: <5317CBF2.40908@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Paul Burton <paul.burton@imgtec.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Aaron Plattner <aplattner@nvidia.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-As described by a comment at the end of cpuidle_enter_state_coupled it
-can be inefficient for coupled idle states to return with IRQs enabled
-since they may proceed to service an interrupt instead of clearing the
-coupled idle state. Until they have finished & cleared the idle state
-all CPUs coupled with them will spin rather than being able to enter a
-safe idle state.
+On Wednesday, March 05, 2014 05:14:26 PM Aaron Plattner wrote:
+> On 03/05/14 17:23, Rafael J. Wysocki wrote:
+> > On Tuesday, March 04, 2014 12:42:15 PM Aaron Plattner wrote:
+> >> If a module calls cpufreq_get while cpufreq is initializing, it's possible for
+> >> it to be called after cpufreq_driver is set but before cpufreq_cpu_data is
+> >> written during subsys_interface_register.  This happens because cpufreq_get
+> >> doesn't take the cpufreq_driver_lock around its use of cpufreq_cpu_data.
+> >
+> > Is this a theoretical race, or can you actually reproduce it?  If so, on what
+> > system/driver?  Or are there any bug reports related to this you can point me
+> > to?
+> 
+> It reproduces on my Arch Linux system at home with the nvidia driver, 
+> and there has been at least one bug report that looks like the same thing:
+> 
+> https://bbs.archlinux.org/viewtopic.php?id=177934
+> 
+> I reproduced the problem with v3.13.5, then applied this change and was 
+> able to boot successfully 10/10 times.  So I guess that means you can add
+> 
+> Tested-by: Aaron Plattner <aplattner@nvidia.com>
 
-Commits e1689795a784 "cpuidle: Add common time keeping and irq
-enabling" and 554c06ba3ee2 "cpuidle: remove en_core_tk_irqen flag" led
-to the cpuidle_enter_state enabling interrupts for all idle states,
-including coupled ones, making this inefficiency unavoidable by drivers
-& the local_irq_enable near the end of cpuidle_enter_state_coupled
-redundant. This patch avoids enabling interrupts in cpuidle_enter_state
-after a coupled state has been entered, allowing them to remain disabled
-until all coupled CPUs have exited the idle state and
-cpuidle_enter_state_coupled re-enables them.
+Tested-by is not needed if you're the author.
 
-Signed-off-by: Paul Burton <paul.burton@imgtec.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
----
- drivers/cpuidle/cpuidle.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Everybody should test their patches, right? ;-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index a55e68f..366e684 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -85,7 +85,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 
- 	time_end = ktime_get();
- 
--	local_irq_enable();
-+	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
-+		local_irq_enable();
- 
- 	diff = ktime_to_us(ktime_sub(time_end, time_start));
- 	if (diff > INT_MAX)
+I'll mark it for 3.13-stable and add the link above to the changelog.
+
+Thanks!
+
 -- 
-1.8.5.3
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
