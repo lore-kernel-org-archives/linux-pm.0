@@ -1,30 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 3/3] cpufreq: initialize governor for a new policy under policy->rwsem
-Date: Thu, 06 Mar 2014 13:34:43 +0100
-Message-ID: <4694302.3z6tDHSNGj@vostro.rjw.lan>
-References: <98b7ae22d936456bf830aa749556a115969cfa47.1393904428.git.viresh.kumar@linaro.org> <1892466.Txf61ZRumM@vostro.rjw.lan> <CAKohponJrsrFiugxALugZu3AKtD2i-Tk3NjeFM3KhXSoKgtLXg@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: delay enabling interrupts until all coupled CPUs leave idle
+Date: Thu, 06 Mar 2014 13:55:06 +0100
+Message-ID: <6009429.TU4uH7j3ue@vostro.rjw.lan>
+References: <1394103721-32616-1-git-send-email-paul.burton@imgtec.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponJrsrFiugxALugZu3AKtD2i-Tk3NjeFM3KhXSoKgtLXg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58843 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750760AbaCFMjy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 07:39:54 -0500
+In-Reply-To: <1394103721-32616-1-git-send-email-paul.burton@imgtec.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Paul Burton <paul.burton@imgtec.com>
+Cc: linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Thursday, March 06, 2014 10:24:38 AM Viresh Kumar wrote:
-> On 6 March 2014 09:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > I've rebased this one on top of 3.14-rc5 and queued it up for 3.14-rc6.
-> >
-> > Please check the bleeding-edge branch for the result.
+On Thursday, March 06, 2014 11:02:01 AM Paul Burton wrote:
+> As described by a comment at the end of cpuidle_enter_state_coupled it
+> can be inefficient for coupled idle states to return with IRQs enabled
+> since they may proceed to service an interrupt instead of clearing the
+> coupled idle state. Until they have finished & cleared the idle state
+> all CPUs coupled with them will spin rather than being able to enter a
+> safe idle state.
 > 
-> Yeah, it looks fine. And I assume that you are planning to take 1/3 in 3.15?
-> Or going to drop it?
+> Commits e1689795a784 "cpuidle: Add common time keeping and irq
+> enabling" and 554c06ba3ee2 "cpuidle: remove en_core_tk_irqen flag" led
+> to the cpuidle_enter_state enabling interrupts for all idle states,
+> including coupled ones, making this inefficiency unavoidable by drivers
+> & the local_irq_enable near the end of cpuidle_enter_state_coupled
+> redundant. This patch avoids enabling interrupts in cpuidle_enter_state
+> after a coupled state has been entered, allowing them to remain disabled
+> until all coupled CPUs have exited the idle state and
+> cpuidle_enter_state_coupled re-enables them.
 
-I'm going to queue it up for 3.15.
+This appears to be a regression.
 
-Thanks!
+Are there any bug reports related to it?  Alternatively, can you reproduce
+it and if so, then on what hardware?
+
+> Signed-off-by: Paul Burton <paul.burton@imgtec.com>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  drivers/cpuidle/cpuidle.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a55e68f..366e684 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -85,7 +85,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  
+>  	time_end = ktime_get();
+>  
+> -	local_irq_enable();
+> +	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
+> +		local_irq_enable();
+>  
+>  	diff = ktime_to_us(ktime_sub(time_end, time_start));
+>  	if (diff > INT_MAX)
+> 
 
 -- 
 I speak only for myself.
