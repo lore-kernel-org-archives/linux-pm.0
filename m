@@ -1,136 +1,87 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2 03/11] ARM: exynos: Move to generic power domain bindings
-Date: Fri, 07 Mar 2014 14:04:16 +0100
-Message-ID: <19118595.DYTBeEpFjL@amdc1032>
-References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
- <1713847.uSatLFRtJj@amdc1032> <53174EB5.1090803@gmail.com>
+From: Peter Senna Tschudin <peter.senna@gmail.com>
+Subject: Re: My Kernel bug is celebrating 2 years. Can you help me fix it?
+Date: Fri, 7 Mar 2014 16:01:39 +0100
+Message-ID: <CA+MoWDpN7qK6m8fdhjjO7J6zNPm+NQSkZipQn5vmHSELXu3D_w@mail.gmail.com>
+References: <CA+MoWDrTNtAHKsiBHz=W4=eJRO=m9EK_HZ7zLxb=4fg5riUQeg@mail.gmail.com>
+	<CAErSpo4wdYDgTUTBDLimbviLh54C9ELXKfQ2y5qeUR1FKN8fpw@mail.gmail.com>
+	<5318C7B9.8040408@hurleysoftware.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:30646 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbaCGNEc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Mar 2014 08:04:32 -0500
-In-reply-to: <53174EB5.1090803@gmail.com>
+Received: from mail-qc0-f182.google.com ([209.85.216.182]:65222 "EHLO
+	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751156AbaCGPBk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Mar 2014 10:01:40 -0500
+In-Reply-To: <5318C7B9.8040408@hurleysoftware.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Peter Hurley <peter@hurleysoftware.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "kernelnewbies@kernelnewbies.org" <kernelnewbies@kernelnewbies.org>, kernel-janitors@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stoney Wang <song-bo.wang@hp.com>, Yinghai Lu <yinghai@kernel.org>, Suresh Siddha <suresh.b.siddha@intel.com>, Joerg Roedel <joro@8bytes.org>, Jiang Liu <jiang.liu@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+
+On Thu, Mar 6, 2014 at 8:08 PM, Peter Hurley <peter@hurleysoftware.com> wrote:
+> On 03/06/2014 01:27 PM, Bjorn Helgaas wrote:
+>>
+>> [+cc Stoney, Yinghai, Suresh, Joerg, Jiang, Pavel, Rafael, linux-pm]
+>>
+>> Let's add some folks who know about x2apic and VT-d.  It's hard for
+>> people to magically pick stuff out of the LKML firehose :)
+>>
+>> On Tue, Mar 4, 2014 at 2:26 PM, Peter Senna Tschudin
+>> <peter.senna@gmail.com> wrote:
+>>>
+>>> I have reported a bug more than two years ago and it is still
+>>> affecting me. The bug report gives some information:
+>>>
+>>> https://bugzilla.redhat.com/show_bug.cgi?id=787299
+>>>
+>>> I have tried basic debug instructions from:
+>>> https://www.kernel.org/doc/Documentation/power/basic-pm-debugging.txt
+>>>
+>>> And everything works as expected when:
+>>> # echo freeze > /sys/power/state
+>>> # echo disk > /sys/power/state
+>>>
+>>> I have asked for help for fixing it:
+>>> https://lkml.org/lkml/2013/11/1/186
+>>>
+>>> But I don't have a serial port. How can I debug this issue without a
+>>> "real" serial port? Or what else can I try? How can I explore the hint
+>>> about the problem only happening with VT-d enabled in BIOS? How can I
+>>> explore the hint about the problem not happening if the option
+>>> nox2apic is passed to the Kernel?
+>>>
+>>> Thank you,
+>>>
+>>> Peter
+>>>
+>>> P.S Yes, it works on Windows.
+>
+>
+> Windows 7 doesn't use x2apic mode.
+> Windows 8 does and this same problem happened with this model: see
+> http://forums.toshiba.com/t5/Windows-8-8-1/Resume-from-standby-issue-on-R830-PT321A-01K002/td-p/330110
+Thank you for the information. The model is similar to mine, probably
+the same motherboard. My tests were with Windows 7.
+
+>
+> Seems like your model was recently added to Toshiba's Windows 8
+> compatibility list: http://support.toshiba-tie.co.jp/windows8/list_au.htm
+>
+> Check for a more recent BIOS update that may fix this problem.
+I do that weekly since February last year, and there are no updates
+available. The bad news is that the model was discontinued, so it is
+possible that there will be no more BIOS updates. I'll write to
+Toshiba Europe GmbH asking for a fix, by my hopes in getting an answer
+are low.
+
+>
+> Regards,
+> Peter Hurley
+>
+> PS - kernel bugs are better filed on the kernel bugzilla
+> https://bugzilla.kernel.org/
+Thank you!
 
 
-On Wednesday, March 05, 2014 05:20:05 PM Tomasz Figa wrote:
-> Hi Bartek,
-> 
-> On 05.03.2014 17:15, Bartlomiej Zolnierkiewicz wrote:
-> >
-> > Hi Tomek,
-> >
-> > On Monday, March 03, 2014 05:02:08 PM Tomasz Figa wrote:
-> >> This patch moves Exynos power domain code to use the new generic power
-> >> domain look-up framework introduced by previous patch, allowing the new
-> >> code to be compiled with CONFIG_ARCH_EXYNOS selected as well.
-> >>
-> >> Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
-> >> ---
-> >>   .../bindings/arm/exynos/power_domain.txt           | 12 ++--
-> >>   arch/arm/mach-exynos/pm_domains.c                  | 80 +---------------------
-> >>   kernel/power/Kconfig                               |  2 +-
-> >>   3 files changed, 7 insertions(+), 87 deletions(-)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-> >> index 5216b41..60f26a8 100644
-> >> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-> >> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-> >> @@ -8,6 +8,8 @@ Required Properties:
-> >>       * samsung,exynos4210-pd - for exynos4210 type power domain.
-> >>   - reg: physical base address of the controller and length of memory mapped
-> >>       region.
-> >> +- #power-domain-cells: number of cells in power domain specifier;
-> >> +    must be 0.
-> >>
-> >>   Node of a device using power domains must have a samsung,power-domain property
-> >>   defined with a phandle to respective power domain.
-> >> @@ -17,12 +19,8 @@ Example:
-> >>   	lcd0: power-domain-lcd0 {
-> >>   		compatible = "samsung,exynos4210-pd";
-> >>   		reg = <0x10023C00 0x10>;
-> >> +		#power-domain-cells = <0>;
-> >>   	};
-> >>
-> >> -Example of the node using power domain:
-> >> -
-> >> -	node {
-> >> -		/* ... */
-> >> -		samsung,power-domain = <&lcd0>;
-> >> -		/* ... */
-> >> -	};
-> >> +See Documentation/devicetree/bindings/power/power_domain.txt for description
-> >> +of consumer-side bindings.
-> >> diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
-> >> index 8fd2488..48ee6c9 100644
-> >> --- a/arch/arm/mach-exynos/pm_domains.c
-> >> +++ b/arch/arm/mach-exynos/pm_domains.c
-> >> @@ -75,78 +75,6 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
-> >>   	return exynos_pd_power(domain, false);
-> >>   }
-> >>
-> >> -static void exynos_add_device_to_domain(struct exynos_pm_domain *pd,
-> >> -					 struct device *dev)
-> >> -{
-> >> -	int ret;
-> >> -
-> >> -	dev_dbg(dev, "adding to power domain %s\n", pd->pd.name);
-> >> -
-> >> -	while (1) {
-> >> -		ret = pm_genpd_add_device(&pd->pd, dev);
-> >> -		if (ret != -EAGAIN)
-> >> -			break;
-> >> -		cond_resched();
-> >> -	}
-> >> -
-> >> -	pm_genpd_dev_need_restore(dev, true);
-> >> -}
-> >> -
-> >> -static void exynos_remove_device_from_domain(struct device *dev)
-> >> -{
-> >> -	struct generic_pm_domain *genpd = dev_to_genpd(dev);
-> >> -	int ret;
-> >> -
-> >> -	dev_dbg(dev, "removing from power domain %s\n", genpd->name);
-> >> -
-> >> -	while (1) {
-> >> -		ret = pm_genpd_remove_device(genpd, dev);
-> >> -		if (ret != -EAGAIN)
-> >> -			break;
-> >> -		cond_resched();
-> >> -	}
-> >> -}
-> >> -
-> >> -static void exynos_read_domain_from_dt(struct device *dev)
-> >> -{
-> >> -	struct platform_device *pd_pdev;
-> >> -	struct exynos_pm_domain *pd;
-> >> -	struct device_node *node;
-> >> -
-> >> -	node = of_parse_phandle(dev->of_node, "samsung,power-domain", 0);
-> >
-> > This removes "samsung,power-domain" phandle handling but I cannot find
-> > in your patch series updates to existing EXYNOS dts files converting
-> > them to use the new "power-domain" property.  Am I missing something?
-> 
-> Patch 01/11 adds generic parsing code along with fallback to the legacy 
-> "samsung,power-domain" property, if the generic one is not present, as 
-> it was pretty straightforward to implement it there.
-
-Ah, silly me, I should have looked more closely at patch #1.  Anyway,
-I tested your patchset on Exynos4412 Trats2 target and it works fine
-(BTW it also seems that your patchset fixed the issue of device not
-being removed from power domain on ->probe failure).
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+-- 
+Peter
