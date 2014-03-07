@@ -1,82 +1,136 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/7] Cpuidle: Minor fixes
-Date: Fri, 07 Mar 2014 13:12:31 +0100
-Message-ID: <2675767.poCYkWDpin@vostro.rjw.lan>
-References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <2037831.3FXZ8RTMPh@vostro.rjw.lan>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 03/11] ARM: exynos: Move to generic power domain bindings
+Date: Fri, 07 Mar 2014 14:04:16 +0100
+Message-ID: <19118595.DYTBeEpFjL@amdc1032>
+References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
+ <1713847.uSatLFRtJj@amdc1032> <53174EB5.1090803@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2037831.3FXZ8RTMPh@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:30646 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbaCGNEc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Mar 2014 08:04:32 -0500
+In-reply-to: <53174EB5.1090803@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Wednesday, February 26, 2014 01:46:25 AM Rafael J. Wysocki wrote:
-> On Monday, February 24, 2014 08:29:30 AM Tuukka Tikkanen wrote:
-> > This set of patches makes some minor changes to menu governor and the poll
-> > idle state.
-> > 
-> > Patch 1 is simply a rename of a variable to make the name better represent
-> > the contained information.
-> > 
-> > Patch 2 fixes calculating actual residency in cases where the entered state
-> > is different from the state decided by the menu governor.
-> > 
-> > Patch 3 makes sure the menu governor timer coefficients are not updated
-> > with values that might cause a coefficient to reach a value greater than
-> > unity.
-> > 
-> > Patch 4 fixes calculation actual residency in cases where the entered state
-> > does not support measuring residency. In such cases the residency time
-> > is taken from time remaining until next timer expiry. The timer is expected
-> > to go off at the start of exit latency, not after it. Therefore the exit
-> > latency must not be substracted from the assumed value.
-> > 
-> > Patch 5 moves the performance multiplier based comparison out of the state
-> > selection loop by changing it into a latency requirement. This allows
-> > using a generic state selection function accepting only (duration, latency)
-> > tuple as input. The change is possible by noting that performance multiplier
-> > is used only to check for a minimum predicted idle duration to exit latency
-> > ratio. As predicted idle duration is a constant for the loop, the maximum
-> > allowed latency can be calculated outside of the loop.
-> > 
-> > Patch 6 prevents using negative values from tick_nohz_get_sleep_length()
-> > in the menu governor. If unchecked, the negative values are used as huge
-> > unsigned values. Negative values occur fairly often (e.g. on x86_64 I've
-> > seen this happen several times per minute) on a busy system, allowing
-> > the deepest state to win the selection while the shallowest should be picked.
-> > 
-> > Patch 7 adds CPUIDLE_FLAG_TIME_VALID to poll_idle. I do not know of any
-> > platfrom where cpu_relax() would break ktime_get() and in fact poll_idle
-> > uses ktime_get itself.
-> > (Note: poll_idle updates dev->last_residency for some reason. Does it ever
-> > get called without going through cpuidle_enter_state, which will overwrite
-> > the value? Even if some state redirects to this state, the call will
-> > eventually return to the framework. The redundant time measurement could
-> > be removed, unless there is some obscure way of getting called on some
-> > platform that I am unable to figure out.)
-> > 
-> > Tuukka Tikkanen (7):
-> >   Cpuidle: rename expected_us to next_timer_us in menu governor
-> >   Cpuidle: Use actual state latency in menu governor
-> >   Cpuidle: Ensure menu coefficients stay within domain
-> >   Cpuidle: Do not substract exit latency from assumed sleep length
-> >   Cpuidle: Move perf multiplier calculation out of the selection loop
-> >   Cpuidle: Deal with timer expiring in the past
-> >   Cpuidle: poll state can measure residency
-> > 
-> >  drivers/cpuidle/driver.c         |    2 +-
-> >  drivers/cpuidle/governors/menu.c |   85 ++++++++++++++++++++++++--------------
-> >  2 files changed, 54 insertions(+), 33 deletions(-)
+
+On Wednesday, March 05, 2014 05:20:05 PM Tomasz Figa wrote:
+> Hi Bartek,
 > 
-> I'm queuing this series up for 3.15.
+> On 05.03.2014 17:15, Bartlomiej Zolnierkiewicz wrote:
+> >
+> > Hi Tomek,
+> >
+> > On Monday, March 03, 2014 05:02:08 PM Tomasz Figa wrote:
+> >> This patch moves Exynos power domain code to use the new generic power
+> >> domain look-up framework introduced by previous patch, allowing the new
+> >> code to be compiled with CONFIG_ARCH_EXYNOS selected as well.
+> >>
+> >> Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
+> >> ---
+> >>   .../bindings/arm/exynos/power_domain.txt           | 12 ++--
+> >>   arch/arm/mach-exynos/pm_domains.c                  | 80 +---------------------
+> >>   kernel/power/Kconfig                               |  2 +-
+> >>   3 files changed, 7 insertions(+), 87 deletions(-)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> >> index 5216b41..60f26a8 100644
+> >> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> >> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+> >> @@ -8,6 +8,8 @@ Required Properties:
+> >>       * samsung,exynos4210-pd - for exynos4210 type power domain.
+> >>   - reg: physical base address of the controller and length of memory mapped
+> >>       region.
+> >> +- #power-domain-cells: number of cells in power domain specifier;
+> >> +    must be 0.
+> >>
+> >>   Node of a device using power domains must have a samsung,power-domain property
+> >>   defined with a phandle to respective power domain.
+> >> @@ -17,12 +19,8 @@ Example:
+> >>   	lcd0: power-domain-lcd0 {
+> >>   		compatible = "samsung,exynos4210-pd";
+> >>   		reg = <0x10023C00 0x10>;
+> >> +		#power-domain-cells = <0>;
+> >>   	};
+> >>
+> >> -Example of the node using power domain:
+> >> -
+> >> -	node {
+> >> -		/* ... */
+> >> -		samsung,power-domain = <&lcd0>;
+> >> -		/* ... */
+> >> -	};
+> >> +See Documentation/devicetree/bindings/power/power_domain.txt for description
+> >> +of consumer-side bindings.
+> >> diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
+> >> index 8fd2488..48ee6c9 100644
+> >> --- a/arch/arm/mach-exynos/pm_domains.c
+> >> +++ b/arch/arm/mach-exynos/pm_domains.c
+> >> @@ -75,78 +75,6 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
+> >>   	return exynos_pd_power(domain, false);
+> >>   }
+> >>
+> >> -static void exynos_add_device_to_domain(struct exynos_pm_domain *pd,
+> >> -					 struct device *dev)
+> >> -{
+> >> -	int ret;
+> >> -
+> >> -	dev_dbg(dev, "adding to power domain %s\n", pd->pd.name);
+> >> -
+> >> -	while (1) {
+> >> -		ret = pm_genpd_add_device(&pd->pd, dev);
+> >> -		if (ret != -EAGAIN)
+> >> -			break;
+> >> -		cond_resched();
+> >> -	}
+> >> -
+> >> -	pm_genpd_dev_need_restore(dev, true);
+> >> -}
+> >> -
+> >> -static void exynos_remove_device_from_domain(struct device *dev)
+> >> -{
+> >> -	struct generic_pm_domain *genpd = dev_to_genpd(dev);
+> >> -	int ret;
+> >> -
+> >> -	dev_dbg(dev, "removing from power domain %s\n", genpd->name);
+> >> -
+> >> -	while (1) {
+> >> -		ret = pm_genpd_remove_device(genpd, dev);
+> >> -		if (ret != -EAGAIN)
+> >> -			break;
+> >> -		cond_resched();
+> >> -	}
+> >> -}
+> >> -
+> >> -static void exynos_read_domain_from_dt(struct device *dev)
+> >> -{
+> >> -	struct platform_device *pd_pdev;
+> >> -	struct exynos_pm_domain *pd;
+> >> -	struct device_node *node;
+> >> -
+> >> -	node = of_parse_phandle(dev->of_node, "samsung,power-domain", 0);
+> >
+> > This removes "samsung,power-domain" phandle handling but I cannot find
+> > in your patch series updates to existing EXYNOS dts files converting
+> > them to use the new "power-domain" property.  Am I missing something?
+> 
+> Patch 01/11 adds generic parsing code along with fallback to the legacy 
+> "samsung,power-domain" property, if the generic one is not present, as 
+> it was pretty straightforward to implement it there.
 
-Patch [6/7] dropped, because of the Len's objection.
+Ah, silly me, I should have looked more closely at patch #1.  Anyway,
+I tested your patchset on Exynos4412 Trats2 target and it works fine
+(BTW it also seems that your patchset fixed the issue of device not
+being removed from power domain on ->probe failure).
 
-Thanks!
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
