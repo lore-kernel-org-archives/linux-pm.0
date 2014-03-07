@@ -1,95 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI and power management fixes for v3.14-rc6
-Date: Sat, 8 Mar 2014 02:51:09 +0100
-Message-ID: <CAJZ5v0hwn2L5sFiNYgDu1yLypaKOS9RD7=xfUuqXU6QnfbT3QA@mail.gmail.com>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH] MAINTAINERS: add maintainers for arm64 acpi
+Date: Fri, 07 Mar 2014 20:40:21 +0800
+Message-ID: <20140307124021.BB567C40928@trevor.secretlab.ca>
+References: <1393899345-7397-1-git-send-email-graeme.gregory@linaro.org> <
+ 1393899345-7397-2-git-send-email-graeme.gregory@linaro.org> <20140304102316
+ .GG30596@arm.com> <20140304190318.GE28736@xora-yoga13> <20140304235044.
+ GB11418@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140304235044.GB11418@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Catalin Marinas <catalin.marinas@arm.com>, Graeme Gregory <graeme@xora.org.uk>
+Cc: "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Will Deacon <Will.Deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Tue, 4 Mar 2014 23:50:44 +0000, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> On Tue, Mar 04, 2014 at 07:03:18PM +0000, Graeme Gregory wrote:
+> > On Tue, Mar 04, 2014 at 10:23:16AM +0000, Catalin Marinas wrote:
+> > > On Tue, Mar 04, 2014 at 02:15:45AM +0000, Graeme Gregory wrote:
+> > > > +ACPI ARM64
+> > > 
+> > > That's a pretty broad statement for a single file. Is it core support,
+> > > architected peripherals, SoC?
+> > > 
+> > Hi Catalin would changing the title to ACPI ARM64 Core Support be better
+> > in your mind. I do intend for the maintainership to cover just the
+> > plat/arm-core.c file.
+> 
+> See my reply to Grant. If that's the only thing you guys are aiming for,
+> who's in charge of the other bits? Face-to-face meeting in 3 hours
+> anyway, so we can get back here with the conclusion.
 
-Please pull from the git repository at
+Update for the benefit of those who weren't at Connect. I really think
+Hanjun and Graeme can do an excellent job here, but I appreciate that
+they are new to maintainership. To help them along, I'll mentor them in
+the maintainer process. I'm encouraging them to take the lead, but I'll
+be reading all the patches and I'll jump into the conversation if I
+think it is going off the rails. I'll also ack patches when I think they
+are in good shape and there is it is well defined what the boundaries
+need to be.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.14-rc6
+We all agree that the current patches are not ready to be merged and
+there is feedback to be addressed before the next merge request. We will
+not attempt to merge without acks from Catalin.
 
-to receive ACPI and power management fixes for v3.14-rc6
-with top-most commit 19bc45a59caf0ed2c2576da4d89c0ef8a8be1f63
+Also missing is a clear statement of how ACPI works on ARM. There needs
+to be a straight forward description of how ACPI PM works and how it is
+different from using FDT. That document will be written in short
+order and posted for review.
 
-  Merge branch 'pm-cpufreq'
-
-on top of commit 0414855fdc4a40da05221fc6062cccbc0c30f169
-
-  Linux 3.14-rc5
-
-These fix bugs that have been present for quite some time, but either
-they took a lot of effort to debug and address, or they have been
-spotted recently and the fixes are rather straightforward, so it
-doesn't seem useful to wait with them for the next couple of weeks.
-Two of them fix the ACPI core, one fixes the Embedded Controller (EC)
-driver and three fix concurrency-related issues in cpufreq.
-
-Specifics:
-
- - ACPI tables in some BIOSes list device resources with size equal
-   to 0, which doesn't make sense, so we should ignore them, but
-   instead we try to use them and mangle things completely.  Fix
-   from Zhang Rui.
-
- - Several models of Samsung laptops accumulate EC events when they
-   are in sleep states which leads to EC buffer overflows that prevent
-   new events from being signaled after system resume or reboot.  This
-   has been affecting many users for quite a while and is addressed
-   by clearing the EC buffer during system resume and system startup on
-   those machines.  From Kieran Clancy.
-
- - If the ACPI sleep control and status registers are not present
-   (which  happens if the Hardware Reduced ACPI mode bit is set in
-   the ACPI tables, but also may result from BIOS bugs), we should
-   not try to use ACPI to power off the system and ACPI S5 should
-   not be listed as supported.  Fix from Aubrey Li.
-
- - There's a race condition in cpufreq_get() that leads to a kernel
-   crash if that function is called at a wrong time.  Fix from
-   Aaron Plattner.
-
- - cpufreq policy objects have to be initialized entirely before
-   they are first accessed by their users which isn't the case
-   currently and that potentially leads to various kinds of
-   breakage that is difficult to debug.  Fix from Viresh Kumar.
-
- - Locking is missing in __cpufreq_add_dev() which leads to a race
-   condition that may trigger a kernel crash.  Fix from Viresh Kumar.
-
-Thanks!
-
-
----------------
-
-Aaron Plattner (1):
-      cpufreq: use cpufreq_cpu_get() to avoid cpufreq_get() race conditions
-
-Kieran Clancy (1):
-      ACPI / EC: Clear stale EC events on Samsung systems
-
-Li, Aubrey (1):
-      ACPI / sleep: pm_power_off needs more sanity checks to be installed
-
-Viresh Kumar (2):
-      cpufreq: Initialize policy before making it available for others to use
-      cpufreq: Initialize governor for a new policy under policy->rwsem
-
-Zhang Rui (1):
-      ACPI / resources: ignore invalid ACPI device resources
-
----------------
-
- drivers/acpi/ec.c         | 64 +++++++++++++++++++++++++++++++++++++++++++++++
- drivers/acpi/resource.c   | 10 ++++++++
- drivers/acpi/sleep.c      |  7 +++++-
- drivers/cpufreq/cpufreq.c | 51 +++++++++++++++++--------------------
- 4 files changed, 103 insertions(+), 29 deletions(-)
+g.
