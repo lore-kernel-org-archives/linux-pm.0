@@ -1,59 +1,82 @@
-From: Jean Delvare <jdelvare@suse.de>
-Subject: Re: [PATCH] x86_pkg_temp_thermal: Do not expose as a hwmon device
-Date: Fri, 7 Mar 2014 09:07:05 +0100
-Message-ID: <20140307090705.64b0a763@endymion.delvare>
-References: <20140302153335.0f1326b6@endymion.delvare>
-	<53135650.3070909@roeck-us.net>
-	<20140302180452.73fa2f8a@endymion.delvare>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/7] Cpuidle: Minor fixes
+Date: Fri, 07 Mar 2014 13:12:31 +0100
+Message-ID: <2675767.poCYkWDpin@vostro.rjw.lan>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org> <2037831.3FXZ8RTMPh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:42394 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751082AbaCGIHI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Mar 2014 03:07:08 -0500
-In-Reply-To: <20140302180452.73fa2f8a@endymion.delvare>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2037831.3FXZ8RTMPh@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org
 
-On Sun, 2 Mar 2014 18:04:52 +0100, Jean Delvare wrote:
-> On Sun, 02 Mar 2014 08:03:28 -0800, Guenter Roeck wrote:
-> > On 03/02/2014 06:33 AM, Jean Delvare wrote:
-> > > The temperature value reported by x86_pkg_temp_thermal is already
-> > > reported by the coretemp driver. So, do not expose this thermal zone
-> > > as a hwmon device, because it would be redundant.
-> > >
-> > > Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> > > Cc: Zhang Rui <rui.zhang@intel.com>
-> > > Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+On Wednesday, February 26, 2014 01:46:25 AM Rafael J. Wysocki wrote:
+> On Monday, February 24, 2014 08:29:30 AM Tuukka Tikkanen wrote:
+> > This set of patches makes some minor changes to menu governor and the poll
+> > idle state.
 > > 
-> > Acked-by: Guenter Roeck <linux@roeck-us.net>
+> > Patch 1 is simply a rename of a variable to make the name better represent
+> > the contained information.
 > > 
-> > Does that make the "Fix thermal zone type" patch unnecessary ?
+> > Patch 2 fixes calculating actual residency in cases where the entered state
+> > is different from the state decided by the menu governor.
+> > 
+> > Patch 3 makes sure the menu governor timer coefficients are not updated
+> > with values that might cause a coefficient to reach a value greater than
+> > unity.
+> > 
+> > Patch 4 fixes calculation actual residency in cases where the entered state
+> > does not support measuring residency. In such cases the residency time
+> > is taken from time remaining until next timer expiry. The timer is expected
+> > to go off at the start of exit latency, not after it. Therefore the exit
+> > latency must not be substracted from the assumed value.
+> > 
+> > Patch 5 moves the performance multiplier based comparison out of the state
+> > selection loop by changing it into a latency requirement. This allows
+> > using a generic state selection function accepting only (duration, latency)
+> > tuple as input. The change is possible by noting that performance multiplier
+> > is used only to check for a minimum predicted idle duration to exit latency
+> > ratio. As predicted idle duration is a constant for the loop, the maximum
+> > allowed latency can be calculated outside of the loop.
+> > 
+> > Patch 6 prevents using negative values from tick_nohz_get_sleep_length()
+> > in the menu governor. If unchecked, the negative values are used as huge
+> > unsigned values. Negative values occur fairly often (e.g. on x86_64 I've
+> > seen this happen several times per minute) on a busy system, allowing
+> > the deepest state to win the selection while the shallowest should be picked.
+> > 
+> > Patch 7 adds CPUIDLE_FLAG_TIME_VALID to poll_idle. I do not know of any
+> > platfrom where cpu_relax() would break ktime_get() and in fact poll_idle
+> > uses ktime_get itself.
+> > (Note: poll_idle updates dev->last_residency for some reason. Does it ever
+> > get called without going through cpuidle_enter_state, which will overwrite
+> > the value? Even if some state redirects to this state, the call will
+> > eventually return to the framework. The redundant time measurement could
+> > be removed, unless there is some obscure way of getting called on some
+> > platform that I am unable to figure out.)
+> > 
+> > Tuukka Tikkanen (7):
+> >   Cpuidle: rename expected_us to next_timer_us in menu governor
+> >   Cpuidle: Use actual state latency in menu governor
+> >   Cpuidle: Ensure menu coefficients stay within domain
+> >   Cpuidle: Do not substract exit latency from assumed sleep length
+> >   Cpuidle: Move perf multiplier calculation out of the selection loop
+> >   Cpuidle: Deal with timer expiring in the past
+> >   Cpuidle: poll state can measure residency
+> > 
+> >  drivers/cpuidle/driver.c         |    2 +-
+> >  drivers/cpuidle/governors/menu.c |   85 ++++++++++++++++++++++++--------------
+> >  2 files changed, 54 insertions(+), 33 deletions(-)
 > 
-> I think both patches are needed, as type "pkg-temp-0" is wrong anyway,
-> regardless of the hwmon side of things. But it is less important with
-> this patch applied, indeed.
-> 
-> > If so, this patch would be a candidate for stable.
-> 
-> I'm still not 100% certain we want either patch in stable. After all,
-> they aren't fixing any critical bug, and they change user interfaces so
-> they could impact some users in unpredictable ways.
+> I'm queuing this series up for 3.15.
 
-I made up my mind, and now believe this patch should go to stable
-trees. The invalid name attribute is causing real trouble to lm-sensors
-users.
+Patch [6/7] dropped, because of the Len's objection.
 
-The other patch OTOH doesn't need to go to stable trees if that one
-goes in.
-
-Rui, Eduardo, can either of you please review this patch, tag it for
-stable and apply it for 3.14? Thanks.
+Thanks!
 
 -- 
-Jean Delvare
-SUSE L3 Support
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
