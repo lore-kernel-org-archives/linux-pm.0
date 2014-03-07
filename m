@@ -1,65 +1,71 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
-Date: Thu, 6 Mar 2014 20:42:51 -0800
-Message-ID: <20140307044251.GD9985@codeaurora.org>
-References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
- <1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
+From: Jean Delvare <jdelvare@suse.de>
+Subject: Re: [PATCH] x86_pkg_temp_thermal: Fix the thermal zone type
+Date: Fri, 7 Mar 2014 09:03:58 +0100
+Message-ID: <20140307090358.71157133@endymion.delvare>
+References: <20140302150549.45f6df2a@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <jonathan.austin@arm.com>, Victor Kamensky <victor.kamensky@linaro.org>, Nicolas Pitre <nico@linaro.org>, Will Deacon <will.deacon@arm.com>, Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Laura Abbott <lauraa@codeaurora.org>, Sricharan R <r.sricharan@ti.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, Catalin Marinas <catalin.marinas@arm.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Jiang Liu <liuj97@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:42360 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750905AbaCGIEB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 7 Mar 2014 03:04:01 -0500
+In-Reply-To: <20140302150549.45f6df2a@endymion.delvare>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 
-On 03/05, Sebastian Capella wrote:
-> diff --git a/arch/arm/include/asm/memory.h b/arch/arm/include/asm/memory.h
-> index 8756e4b..d32adbb 100644
-> --- a/arch/arm/include/asm/memory.h
-> +++ b/arch/arm/include/asm/memory.h
-> @@ -291,6 +291,7 @@ static inline void *phys_to_virt(phys_addr_t x)
->   */
->  #define __pa(x)			__virt_to_phys((unsigned long)(x))
->  #define __va(x)			((void *)__phys_to_virt((phys_addr_t)(x)))
-> +#define __pa_symbol(x)		__pa((unsigned long)(x))
+Rui, Eduardo,
 
-Thanks for removing RELOC_HIDE, as Russell already stated it's
-never been necessary on ARM.
+We start getting more complaints from libsensors users, for example:
+http://lists.lm-sensors.org/pipermail/lm-sensors/2014-March/041486.html
 
-Looking at this definition now it doesn't look right. Isn't
-&__nosave_begin a virtual address? Casting it to an unsigned long
-isn't going to give you a physical address. Why can't we use
-__pa()?
+So it would be great to have this fix (and the following one) upstream
+quickly.
 
-> +extern const void __nosave_begin, __nosave_end;
-> +
-> +int pfn_is_nosave(unsigned long pfn)
-> +{
-> +	unsigned long nosave_begin_pfn =
-> +			__pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
-> +	unsigned long nosave_end_pfn =
-> +			PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
-> +
-> +	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
-> +}
+Thanks,
+Jean
 
-Perhaps this code could be:
-
-	unsigned long nosave_begin_pfn = virt_to_pfn(&__nosave_begin);
-	unsigned long nosave_end_pfn = virt_to_pfn(&__nosave_end);
-
-	return (pfn >= nosave_begin_pfn) && (pfn <= nosave_end_pfn);
-
-or if virt_to_pfn() doesn't exist on ARM and we can't add it for
-some reason:
-
-	unsigned long nosave_begin_pfn = __phys_to_pfn(__pa(&__nosave_begin));
-	unsigned long nosave_end_pfn = __phys_to_pfn(__pa(&__nosave_end));
-
-	return (pfn >= nosave_begin_pfn) && (pfn <= nosave_end_pfn);
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+On Sun, 2 Mar 2014 15:05:49 +0100, Jean Delvare wrote:
+> The thermal zone type should not include an instance number. Otherwise
+> each zone is considered a different type and the thermal-to-hwmon
+> bridge fails to group them all in a single hwmon device.
+> 
+> I also changed the type to "x86_pkg_temp", because "pkg" was too
+> generic, and other thermal drivers use an underscore, not a dash, as
+> a separator. Or maybe "cpu_pkg_temp" would be better?
+> 
+> Signed-off-by: Jean Delvare <jdelvare@suse.de>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+> ---
+> Candidate for stable trees?
+> 
+>  drivers/thermal/x86_pkg_temp_thermal.c |    5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> --- linux-3.14-rc4.orig/drivers/thermal/x86_pkg_temp_thermal.c	2014-02-09 16:53:05.464687235 +0100
+> +++ linux-3.14-rc4/drivers/thermal/x86_pkg_temp_thermal.c	2014-03-02 15:02:15.950089266 +0100
+> @@ -394,7 +394,6 @@ static int pkg_temp_thermal_device_add(u
+>  	int err;
+>  	u32 tj_max;
+>  	struct phy_dev_entry *phy_dev_entry;
+> -	char buffer[30];
+>  	int thres_count;
+>  	u32 eax, ebx, ecx, edx;
+>  	u8 *temp;
+> @@ -440,9 +439,7 @@ static int pkg_temp_thermal_device_add(u
+>  	phy_dev_entry->first_cpu = cpu;
+>  	phy_dev_entry->tj_max = tj_max;
+>  	phy_dev_entry->ref_cnt = 1;
+> -	snprintf(buffer, sizeof(buffer), "pkg-temp-%d\n",
+> -					phy_dev_entry->phys_proc_id);
+> -	phy_dev_entry->tzone = thermal_zone_device_register(buffer,
+> +	phy_dev_entry->tzone = thermal_zone_device_register("x86_pkg_temp",
+>  			thres_count,
+>  			(thres_count == MAX_NUMBER_OF_TRIPS) ?
+>  				0x03 : 0x01,
+> 
+> 
