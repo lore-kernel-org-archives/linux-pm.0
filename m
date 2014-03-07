@@ -1,70 +1,273 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 1/2] ARM: avoid tracers in soft_restart
-Date: Thu, 06 Mar 2014 15:45:53 -0800
-Message-ID: <531908b6.44f8440a.03ab.0cce@mx.google.com>
-References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
- <1394016605-24120-2-git-send-email-sebastian.capella@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V6 Resend 1/5] cpufreq: suspend governors on system suspend/hibernate
+Date: Fri, 07 Mar 2014 02:01:14 +0100
+Message-ID: <6523021.Z15JvIV2Lx@vostro.rjw.lan>
+References: <b37f304efa4a007c0c53d9e8a33e11b7977cb0a4.1393901906.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:36610 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbaCFXqA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Mar 2014 18:46:00 -0500
-Received: by mail-pa0-f53.google.com with SMTP id ld10so3323358pab.26
-        for <linux-pm@vger.kernel.org>; Thu, 06 Mar 2014 15:46:00 -0800 (PST)
-In-Reply-To: <1394016605-24120-2-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <b37f304efa4a007c0c53d9e8a33e11b7977cb0a4.1393901906.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nm@ti.com, swarren@wwwdotorg.org, kgene.kim@samsung.com, jinchoi@broadcom.com, tianyu.lan@intel.com, sebastian.capella@linaro.org, jhbird.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>, Robin Holt <robin.m.holt@gmail.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Steven Capper <steve.capper@linaro.org>, Stephen Warren <swarren@nvidia.com>, Tejun Heo <tj@kernel.org>
 
-Quoting Sebastian Capella (2014-03-05 02:50:04)
-> Use of tracers in local_irq_disable is causes recursive aborts when
-> called with irqs disabled and using a temporary stack (hibernation).
-> Replace local_irq_disable with raw_local_irq_disable instead to
-> avoid tracers.
+On Tuesday, March 04, 2014 11:00:26 AM Viresh Kumar wrote:
+> This patch adds cpufreq suspend/resume calls to dpm_{suspend|resume}() for
+> handling suspend/resume of cpufreq governors.
 > 
-> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Robin Holt <robin.m.holt@gmail.com>
-> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>
-> Cc: Steven Capper <steve.capper@linaro.org>
-> Cc: Stephen Warren <swarren@nvidia.com>
-> Cc: Tejun Heo <tj@kernel.org>
+> Lan Tianyu (Intel) & Jinhyuk Choi (Broadcom) found an issue where tunables
+> configuration for clusters/sockets with non-boot CPUs was getting lost after
+> suspend/resume, as we were notifying governors with CPUFREQ_GOV_POLICY_EXIT on
+> removal of the last cpu for that policy and so deallocating memory for tunables.
+> This is fixed by this patch as we don't allow any operation on governors after
+> device suspend and before device resume now.
+> 
+> We could have added these callbacks at dpm_{suspend|resume}_noirq() level but
+> the problem here is that most of the devices (i.e. devices with ->suspend()
+> callbacks) have already been suspended by now and so if drivers want to change
+> frequency before suspending, then it might not be possible for many platforms
+> (which depend on other peripherals like i2c, regulators, etc).
+> 
+> Reported-and-tested-by: Lan Tianyu <tianyu.lan@intel.com>
+> Reported-by: Jinhyuk Choi <jinchoi@broadcom.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Queued up for 3.15, thanks!
+
 > ---
->  arch/arm/kernel/process.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> V5->V6: 1-2-3/7 merged into 1/5
 > 
-> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-> index 92f7b15..f58b723 100644
-> --- a/arch/arm/kernel/process.c
-> +++ b/arch/arm/kernel/process.c
-> @@ -100,7 +100,7 @@ void soft_restart(unsigned long addr)
->         u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
+>  drivers/base/power/main.c |   5 +++
+>  drivers/cpufreq/cpufreq.c | 111 +++++++++++++++++++++++-----------------------
+>  include/linux/cpufreq.h   |   8 ++++
+>  3 files changed, 69 insertions(+), 55 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 42355e4..86d5e4f 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/async.h>
+>  #include <linux/suspend.h>
+>  #include <trace/events/power.h>
+> +#include <linux/cpufreq.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/timer.h>
 >  
->         /* Disable interrupts first */
-> -       local_irq_disable();
-> +       raw_local_irq_disable();
->         local_fiq_disable();
+> @@ -866,6 +867,8 @@ void dpm_resume(pm_message_t state)
+>  	mutex_unlock(&dpm_list_mtx);
+>  	async_synchronize_full();
+>  	dpm_show_time(starttime, state, NULL);
+> +
+> +	cpufreq_resume();
+>  }
 >  
->         /* Disable the L2 if we're the last man standing. */
-> -- 
-> 1.7.9.5
-Hi,
+>  /**
+> @@ -1434,6 +1437,8 @@ int dpm_suspend(pm_message_t state)
+>  
+>  	might_sleep();
+>  
+> +	cpufreq_suspend();
+> +
+>  	mutex_lock(&dpm_list_mtx);
+>  	pm_transition = state;
+>  	async_error = 0;
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 56b7b1b..2e43c08 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -26,7 +26,7 @@
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  #include <linux/slab.h>
+> -#include <linux/syscore_ops.h>
+> +#include <linux/suspend.h>
+>  #include <linux/tick.h>
+>  #include <trace/events/power.h>
+>  
+> @@ -47,6 +47,9 @@ static LIST_HEAD(cpufreq_policy_list);
+>  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  #endif
+>  
+> +/* Flag to suspend/resume CPUFreq governors */
+> +static bool cpufreq_suspended;
+> +
+>  static inline bool has_target(void)
+>  {
+>  	return cpufreq_driver->target_index || cpufreq_driver->target;
+> @@ -1576,82 +1579,77 @@ static struct subsys_interface cpufreq_interface = {
+>  };
+>  
+>  /**
+> - * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
+> + * cpufreq_suspend() - Suspend CPUFreq governors
+>   *
+> - * This function is only executed for the boot processor.  The other CPUs
+> - * have been put offline by means of CPU hotplug.
+> + * Called during system wide Suspend/Hibernate cycles for suspending governors
+> + * as some platforms can't change frequency after this point in suspend cycle.
+> + * Because some of the devices (like: i2c, regulators, etc) they use for
+> + * changing frequency are suspended quickly after this point.
+>   */
+> -static int cpufreq_bp_suspend(void)
+> +void cpufreq_suspend(void)
+>  {
+> -	int ret = 0;
+> -
+> -	int cpu = smp_processor_id();
+>  	struct cpufreq_policy *policy;
+>  
+> -	pr_debug("suspending cpu %u\n", cpu);
+> +	if (!cpufreq_driver)
+> +		return;
+>  
+> -	/* If there's no policy for the boot CPU, we have nothing to do. */
+> -	policy = cpufreq_cpu_get(cpu);
+> -	if (!policy)
+> -		return 0;
+> +	if (!has_target())
+> +		return;
+>  
+> -	if (cpufreq_driver->suspend) {
+> -		ret = cpufreq_driver->suspend(policy);
+> -		if (ret)
+> -			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
+> -					"step on CPU %u\n", policy->cpu);
+> +	pr_debug("%s: Suspending Governors\n", __func__);
+> +
+> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
+> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+> +			pr_err("%s: Failed to stop governor for policy: %p\n",
+> +				__func__, policy);
+> +		else if (cpufreq_driver->suspend
+> +		    && cpufreq_driver->suspend(policy))
+> +			pr_err("%s: Failed to suspend driver: %p\n", __func__,
+> +				policy);
+>  	}
+>  
+> -	cpufreq_cpu_put(policy);
+> -	return ret;
+> +	cpufreq_suspended = true;
+>  }
+>  
+>  /**
+> - * cpufreq_bp_resume - Restore proper frequency handling of the boot CPU.
+> + * cpufreq_resume() - Resume CPUFreq governors
+>   *
+> - *	1.) resume CPUfreq hardware support (cpufreq_driver->resume())
+> - *	2.) schedule call cpufreq_update_policy() ASAP as interrupts are
+> - *	    restored. It will verify that the current freq is in sync with
+> - *	    what we believe it to be. This is a bit later than when it
+> - *	    should be, but nonethteless it's better than calling
+> - *	    cpufreq_driver->get() here which might re-enable interrupts...
+> - *
+> - * This function is only executed for the boot CPU.  The other CPUs have not
+> - * been turned on yet.
+> + * Called during system wide Suspend/Hibernate cycle for resuming governors that
+> + * are suspended with cpufreq_suspend().
+>   */
+> -static void cpufreq_bp_resume(void)
+> +void cpufreq_resume(void)
+>  {
+> -	int ret = 0;
+> -
+> -	int cpu = smp_processor_id();
+>  	struct cpufreq_policy *policy;
+>  
+> -	pr_debug("resuming cpu %u\n", cpu);
+> +	if (!cpufreq_driver)
+> +		return;
+>  
+> -	/* If there's no policy for the boot CPU, we have nothing to do. */
+> -	policy = cpufreq_cpu_get(cpu);
+> -	if (!policy)
+> +	if (!has_target())
+>  		return;
+>  
+> -	if (cpufreq_driver->resume) {
+> -		ret = cpufreq_driver->resume(policy);
+> -		if (ret) {
+> -			printk(KERN_ERR "cpufreq: resume failed in ->resume "
+> -					"step on CPU %u\n", policy->cpu);
+> -			goto fail;
+> -		}
+> -	}
+> +	pr_debug("%s: Resuming Governors\n", __func__);
+>  
+> -	schedule_work(&policy->update);
+> +	cpufreq_suspended = false;
+>  
+> -fail:
+> -	cpufreq_cpu_put(policy);
+> -}
+> +	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
+> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_START)
+> +		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
+> +			pr_err("%s: Failed to start governor for policy: %p\n",
+> +				__func__, policy);
+> +		else if (cpufreq_driver->resume
+> +		    && cpufreq_driver->resume(policy))
+> +			pr_err("%s: Failed to resume driver: %p\n", __func__,
+> +				policy);
+>  
+> -static struct syscore_ops cpufreq_syscore_ops = {
+> -	.suspend	= cpufreq_bp_suspend,
+> -	.resume		= cpufreq_bp_resume,
+> -};
+> +		/*
+> +		 * schedule call cpufreq_update_policy() for boot CPU, i.e. last
+> +		 * policy in list. It will verify that the current freq is in
+> +		 * sync with what we believe it to be.
+> +		 */
+> +		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
+> +			schedule_work(&policy->update);
+> +	}
+> +}
+>  
+>  /**
+>   *	cpufreq_get_current_driver - return current driver's name
+> @@ -1868,6 +1866,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  	struct cpufreq_governor *gov = NULL;
+>  #endif
+>  
+> +	/* Don't start any governor operations if we are entering suspend */
+> +	if (cpufreq_suspended)
+> +		return 0;
+> +
+>  	if (policy->governor->max_transition_latency &&
+>  	    policy->cpuinfo.transition_latency >
+>  	    policy->governor->max_transition_latency) {
+> @@ -2407,7 +2409,6 @@ static int __init cpufreq_core_init(void)
+>  
+>  	cpufreq_global_kobject = kobject_create();
+>  	BUG_ON(!cpufreq_global_kobject);
+> -	register_syscore_ops(&cpufreq_syscore_ops);
+>  
+>  	return 0;
+>  }
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 4d89e0e..94ed907 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -296,6 +296,14 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
+>  			policy->cpuinfo.max_freq);
+>  }
+>  
+> +#ifdef CONFIG_CPU_FREQ
+> +void cpufreq_suspend(void);
+> +void cpufreq_resume(void);
+> +#else
+> +static inline void cpufreq_suspend(void) {}
+> +static inline void cpufreq_resume(void) {}
+> +#endif
+> +
+>  /*********************************************************************
+>   *                     CPUFREQ NOTIFIER INTERFACE                    *
+>   *********************************************************************/
+> 
 
-I have not heard any feedback on this change, since V3 of the
-patchset.
-
-Is everyone ok with this as it is?
-
-Thomas, thanks for proposing this, is this looking ok to you?
-
-Thanks!
-
-Sebastian
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
