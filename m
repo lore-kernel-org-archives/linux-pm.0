@@ -1,112 +1,95 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: 3.13.?: Strange / dangerous fan policy...
-Date: Fri, 7 Mar 2014 14:52:30 -0800
-Message-ID: <20140307225230.GA31135@roeck-us.net>
-References: <531A1EEE.9090101@netscape.net>
- <20140307205506.GA6870@roeck-us.net>
- <531A426D.6080100@netscape.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for v3.14-rc6
+Date: Sat, 8 Mar 2014 02:51:09 +0100
+Message-ID: <CAJZ5v0hwn2L5sFiNYgDu1yLypaKOS9RD7=xfUuqXU6QnfbT3QA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f67.google.com ([209.85.160.67]:62030 "EHLO
-	mail-pb0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbaCGWwe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Mar 2014 17:52:34 -0500
-Content-Disposition: inline
-In-Reply-To: <531A426D.6080100@netscape.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Manuel Krause <manuelkrause@netscape.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org
 
-On Fri, Mar 07, 2014 at 11:04:29PM +0100, Manuel Krause wrote:
-> On 2014-03-07 21:55, Guenter Roeck wrote:
-> >On Fri, Mar 07, 2014 at 08:33:02PM +0100, Manuel Krause wrote:
-> >>Please have a short look at the following BUG report + the comments
-> >>-- this message here is a kind of FWD-ing it:
-> >>https://bugs.archlinux.org/task/39005
-> >>
-> >>I came late to test kernel 3.13 with the .5 one, as it was the time
-> >>that the related -CK/BFS patch became available.
-> >>
-> >>I'm not using Archlinux, but openSUSE, and my problems are quite th=
-e
-> >>same. Especially these with smelling melting plastics.
-> >>
-> >>My own reports went to Con Kolivas' Blog first:
-> >>"I get weird temperatures and abrupt 100% fan actions with vanilla
-> >>3.13.5 with this CK and most recent BFQ at my HP Notebook.
-> >>In gkrellm the highest T had been @74=B0C, so far (3.12.13), and is
-> >>now growing to 94=B0C. Then, the fan goes to 100% for 10~30secs
-> >>cooling it to approx. 82=B0C.
-> >>That is not good, if I compare 74 to 94 =B0C.
-> >>Have I missed a .CONFIG option for 3.13, especially?"
-> >>
-> >>I'd get the same without (Con's && BFQ's) patches.
-> >>
-> >>Machine:           HP Notebook with Core2Duo CPU (Penryn)
-> >>Distro:            openSUSE 13.1, 64bit, continuously updated
-> >>Desktop:           KDE 4.12.3
-> >>MESA & drm & Xorg: most recent ones from:
-> >>http://download.opensuse.org/repositories/home:/pontostroy:/X11/ope=
-nSUSE_13.1/x86_64/
-> >>
-> >>Current kernel:    3.13.6 vanilla from openSUSE repos, with
-> >>                    -ck1 and BFQ patches
-> >>Same behaviour:    without these patches
-> >>
-> >>Last good kernel:  3.12.13 vanilla + CK2 + BFQ
-> >>
-> >
-> >Can you add more information about your fan control policy ?
-> >Do you rely on the hardware for automatic fan speed control,
-> >or do you run the fancontrol script ?
-> >
-> >What is the output from the 'sensors' command ?
-> >
-> >Thanks,
-> >Guenter
-> >
->=20
-> Hi, and thanks for the quick response!
-> No special fancy "fan control policy". 'fancontrol' isn't up or
-> running.
-> Vanilla kernels 3.11.* and 3.12.* had been working on here without
-> any extra work.
-> --
-> # sensors
-> acpitz-virtual-0
-> Adapter: Virtual device
-> temp1:        +71.0=B0C  (crit =3D +256.0=B0C)
-> temp2:        +69.0=B0C  (crit =3D +110.0=B0C)
-> temp3:        +52.0=B0C  (crit =3D +105.0=B0C)
-> temp4:        +25.0=B0C  (crit =3D +110.0=B0C)
-> temp5:        +58.0=B0C  (crit =3D +110.0=B0C)
->=20
-> coretemp-isa-0000
-> Adapter: ISA adapter
-> Core 0:       +62.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
-> Core 1:       +60.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
-> --
-> My notebook (HP/Compaq 6730b) does not have a seperate fan sensor.
-> This is with 3.12.13 with my normal workload.
->=20
-> Please, trust my above mentionned values of 94 =B0C vs. 74=B0C as I
-> don't like to boot 3.13.6 anymore, to avoid harm to the notebook's
-> casing.
->=20
-Understood. Unfortunately, we'll need to get information
-from the new kernel to be able to track down the problem.
+Hi Linus,
 
-> But I'd do to test any improvement-patch.
->=20
-So far I have no idea what is going on. I don't see anything in the
-drivers providing above data that would explain the behavior,
-but I might be missing something.
+Please pull from the git repository at
 
-Of course, if output is different in 3.13, that would be important
-to know. Maybe someone else can post related information for both
-kernel versions on an affected system.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.14-rc6
 
-Guenter
+to receive ACPI and power management fixes for v3.14-rc6
+with top-most commit 19bc45a59caf0ed2c2576da4d89c0ef8a8be1f63
+
+  Merge branch 'pm-cpufreq'
+
+on top of commit 0414855fdc4a40da05221fc6062cccbc0c30f169
+
+  Linux 3.14-rc5
+
+These fix bugs that have been present for quite some time, but either
+they took a lot of effort to debug and address, or they have been
+spotted recently and the fixes are rather straightforward, so it
+doesn't seem useful to wait with them for the next couple of weeks.
+Two of them fix the ACPI core, one fixes the Embedded Controller (EC)
+driver and three fix concurrency-related issues in cpufreq.
+
+Specifics:
+
+ - ACPI tables in some BIOSes list device resources with size equal
+   to 0, which doesn't make sense, so we should ignore them, but
+   instead we try to use them and mangle things completely.  Fix
+   from Zhang Rui.
+
+ - Several models of Samsung laptops accumulate EC events when they
+   are in sleep states which leads to EC buffer overflows that prevent
+   new events from being signaled after system resume or reboot.  This
+   has been affecting many users for quite a while and is addressed
+   by clearing the EC buffer during system resume and system startup on
+   those machines.  From Kieran Clancy.
+
+ - If the ACPI sleep control and status registers are not present
+   (which  happens if the Hardware Reduced ACPI mode bit is set in
+   the ACPI tables, but also may result from BIOS bugs), we should
+   not try to use ACPI to power off the system and ACPI S5 should
+   not be listed as supported.  Fix from Aubrey Li.
+
+ - There's a race condition in cpufreq_get() that leads to a kernel
+   crash if that function is called at a wrong time.  Fix from
+   Aaron Plattner.
+
+ - cpufreq policy objects have to be initialized entirely before
+   they are first accessed by their users which isn't the case
+   currently and that potentially leads to various kinds of
+   breakage that is difficult to debug.  Fix from Viresh Kumar.
+
+ - Locking is missing in __cpufreq_add_dev() which leads to a race
+   condition that may trigger a kernel crash.  Fix from Viresh Kumar.
+
+Thanks!
+
+
+---------------
+
+Aaron Plattner (1):
+      cpufreq: use cpufreq_cpu_get() to avoid cpufreq_get() race conditions
+
+Kieran Clancy (1):
+      ACPI / EC: Clear stale EC events on Samsung systems
+
+Li, Aubrey (1):
+      ACPI / sleep: pm_power_off needs more sanity checks to be installed
+
+Viresh Kumar (2):
+      cpufreq: Initialize policy before making it available for others to use
+      cpufreq: Initialize governor for a new policy under policy->rwsem
+
+Zhang Rui (1):
+      ACPI / resources: ignore invalid ACPI device resources
+
+---------------
+
+ drivers/acpi/ec.c         | 64 +++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/resource.c   | 10 ++++++++
+ drivers/acpi/sleep.c      |  7 +++++-
+ drivers/cpufreq/cpufreq.c | 51 +++++++++++++++++--------------------
+ 4 files changed, 103 insertions(+), 29 deletions(-)
