@@ -1,62 +1,81 @@
-From: Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH] MAINTAINERS: add maintainers for arm64 acpi
-Date: Fri, 07 Mar 2014 20:40:21 +0800
-Message-ID: <20140307124021.BB567C40928@trevor.secretlab.ca>
-References: <1393899345-7397-1-git-send-email-graeme.gregory@linaro.org> <
- 1393899345-7397-2-git-send-email-graeme.gregory@linaro.org> <20140304102316
- .GG30596@arm.com> <20140304190318.GE28736@xora-yoga13> <20140304235044.
- GB11418@arm.com>
+From: Jean Delvare <jdelvare@suse.de>
+Subject: Re: [lm-sensors] 3.13.?: Strange / dangerous fan policy...
+Date: Sat, 8 Mar 2014 12:08:31 +0100
+Message-ID: <20140308120831.328e0179@endymion.delvare>
+References: <531A1EEE.9090101@netscape.net>
+	<20140307205506.GA6870@roeck-us.net>
+	<531A426D.6080100@netscape.net>
+	<20140307225230.GA31135@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140304235044.GB11418@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Catalin Marinas <catalin.marinas@arm.com>, Graeme Gregory <graeme@xora.org.uk>
-Cc: "graeme.gregory@linaro.org" <graeme.gregory@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Will Deacon <Will.Deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:60631 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbaCHLIf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Mar 2014 06:08:35 -0500
+In-Reply-To: <20140307225230.GA31135@roeck-us.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Manuel Krause <manuelkrause@netscape.net>
+Cc: Guenter Roeck <linux@roeck-us.net>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, 4 Mar 2014 23:50:44 +0000, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> On Tue, Mar 04, 2014 at 07:03:18PM +0000, Graeme Gregory wrote:
-> > On Tue, Mar 04, 2014 at 10:23:16AM +0000, Catalin Marinas wrote:
-> > > On Tue, Mar 04, 2014 at 02:15:45AM +0000, Graeme Gregory wrote:
-> > > > +ACPI ARM64
-> > > 
-> > > That's a pretty broad statement for a single file. Is it core support,
-> > > architected peripherals, SoC?
-> > > 
-> > Hi Catalin would changing the title to ACPI ARM64 Core Support be better
-> > in your mind. I do intend for the maintainership to cover just the
-> > plat/arm-core.c file.
-> 
-> See my reply to Grant. If that's the only thing you guys are aiming for,
-> who's in charge of the other bits? Face-to-face meeting in 3 hours
-> anyway, so we can get back here with the conclusion.
+On Fri, 7 Mar 2014 14:52:30 -0800, Guenter Roeck wrote:
+> On Fri, Mar 07, 2014 at 11:04:29PM +0100, Manuel Krause wrote:
+> > Hi, and thanks for the quick response!
+> > No special fancy "fan control policy". 'fancontrol' isn't up or
+> > running.
+> > Vanilla kernels 3.11.* and 3.12.* had been working on here without
+> > any extra work.
+> > --
+> > # sensors
+> > acpitz-virtual-0
+> > Adapter: Virtual device
+> > temp1:        +71.0=B0C  (crit =3D +256.0=B0C)
+> > temp2:        +69.0=B0C  (crit =3D +110.0=B0C)
+> > temp3:        +52.0=B0C  (crit =3D +105.0=B0C)
+> > temp4:        +25.0=B0C  (crit =3D +110.0=B0C)
+> > temp5:        +58.0=B0C  (crit =3D +110.0=B0C)
+> >=20
+> > coretemp-isa-0000
+> > Adapter: ISA adapter
+> > Core 0:       +62.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
+> > Core 1:       +60.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
+> > --
+> > My notebook (HP/Compaq 6730b) does not have a seperate fan sensor.
+> > This is with 3.12.13 with my normal workload.
+> >=20
+> > Please, trust my above mentionned values of 94 =B0C vs. 74=B0C as I
+> > don't like to boot 3.13.6 anymore, to avoid harm to the notebook's
+> > casing.
+>=20
+> Understood. Unfortunately, we'll need to get information
+> from the new kernel to be able to track down the problem.
 
-Update for the benefit of those who weren't at Connect. I really think
-Hanjun and Graeme can do an excellent job here, but I appreciate that
-they are new to maintainership. To help them along, I'll mentor them in
-the maintainer process. I'm encouraging them to take the lead, but I'll
-be reading all the patches and I'll jump into the conversation if I
-think it is going off the rails. I'll also ack patches when I think they
-are in good shape and there is it is well defined what the boundaries
-need to be.
+Indeed. Not only the run-time temperatures, but also the high and crit
+limits.
 
-We all agree that the current patches are not ready to be merged and
-there is feedback to be addressed before the next merge request. We will
-not attempt to merge without acks from Catalin.
+> > But I'd do to test any improvement-patch.
+>=20
+> So far I have no idea what is going on. I don't see anything in the
+> drivers providing above data that would explain the behavior,
+> but I might be missing something.
 
-Also missing is a clear statement of how ACPI works on ARM. There needs
-to be a straight forward description of how ACPI PM works and how it is
-different from using FDT. That document will be written in short
-order and posted for review.
+Looks like a regression in the acpi subsystem or in power management,
+not hwmon. Hwmon is merely reporting the temperatures, it's not
+responsible for the actual temperatures.
 
-g.
+A bisection would certainly help, but of course that would require
+booting to a bad kernel half of the time, which I understand Manual
+wouldn't enjoy.
+
+The only two components which I think can reach such high temperatures
+in a laptop are the CPU and the GPU. I suppose that the "94 =B0C vs.
+74=B0C" refers to acpitz's temp1? If the the temperatures reported by
+coretemp remain the same, then I can only suppose that temp1 is the GPU
+temperature. Please tell us which GPU is in this laptop, and which
+driver you're using.
+
+--=20
+Jean Delvare
+SUSE L3 Support
