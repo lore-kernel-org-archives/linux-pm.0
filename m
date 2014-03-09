@@ -1,172 +1,78 @@
-From: Manuel Krause <manuelkrause@netscape.net>
-Subject: Re: 3.13.?: Strange / dangerous fan policy...
-Date: Sun, 09 Mar 2014 01:10:25 +0100
-Message-ID: <531BB171.1060208@netscape.net>
-References: <531A1EEE.9090101@netscape.net>	<20140307205506.GA6870@roeck-us.net>	<531A426D.6080100@netscape.net>	<20140307225230.GA31135@roeck-us.net>
-	<20140308120831.328e0179@endymion.delvare>
-	<531B3E4C.2040105@roeck-us.net>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal Management fixes for v3.14-rc6
+Date: Mon, 10 Mar 2014 00:25:21 +0800
+Message-ID: <1394382321.9269.54.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"; Format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <lm-sensors-bounces@lm-sensors.org>
-In-Reply-To: <531B3E4C.2040105@roeck-us.net>
-List-Unsubscribe: <http://lists.lm-sensors.org/mailman/options/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=unsubscribe>
-List-Archive: <http://lists.lm-sensors.org/pipermail/lm-sensors/>
-List-Post: <mailto:lm-sensors@lm-sensors.org>
-List-Help: <mailto:lm-sensors-request@lm-sensors.org?subject=help>
-List-Subscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=subscribe>
-Sender: lm-sensors-bounces@lm-sensors.org
-Errors-To: lm-sensors-bounces@lm-sensors.org
-To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, lm-sensors@lm-sensors.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2014-03-08 16:59, Guenter Roeck wrote:
-> On 03/08/2014 03:08 AM, Jean Delvare wrote:
->> On Fri, 7 Mar 2014 14:52:30 -0800, Guenter Roeck wrote:
->>> On Fri, Mar 07, 2014 at 11:04:29PM +0100, Manuel Krause wrote:
->>>> Hi, and thanks for the quick response!
->>>> No special fancy "fan control policy". 'fancontrol' isn't up or
->>>> running.
->>>> Vanilla kernels 3.11.* and 3.12.* had been working on here
->>>> without
->>>> any extra work.
->>>> --
->>>> # sensors
->>>> acpitz-virtual-0
->>>> Adapter: Virtual device
->>>> temp1:        +71.0=B0C  (crit =3D +256.0=B0C)
->>>> temp2:        +69.0=B0C  (crit =3D +110.0=B0C)
->>>> temp3:        +52.0=B0C  (crit =3D +105.0=B0C)
->>>> temp4:        +25.0=B0C  (crit =3D +110.0=B0C)
->>>> temp5:        +58.0=B0C  (crit =3D +110.0=B0C)
->>>>
->>>> coretemp-isa-0000
->>>> Adapter: ISA adapter
->>>> Core 0:       +62.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
->>>> Core 1:       +60.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
->>>> --
->>>> My notebook (HP/Compaq 6730b) does not have a seperate fan
->>>> sensor.
->>>> This is with 3.12.13 with my normal workload.
->>>>
->>>> Please, trust my above mentionned values of 94 =B0C vs. 74=B0C as I
->>>> don't like to boot 3.13.6 anymore, to avoid harm to the
->>>> notebook's
->>>> casing.
->>>
->>> Understood. Unfortunately, we'll need to get information
->>> from the new kernel to be able to track down the problem.
->>
->> Indeed. Not only the run-time temperatures, but also the high
->> and crit
->> limits.
->>
->>>> But I'd do to test any improvement-patch.
->>>
->>> So far I have no idea what is going on. I don't see anything
->>> in the
->>> drivers providing above data that would explain the behavior,
->>> but I might be missing something.
->>
->> Looks like a regression in the acpi subsystem or in power
->> management,
->> not hwmon. Hwmon is merely reporting the temperatures, it's not
->> responsible for the actual temperatures.
->>
->
-> I would agree. I don't think we have enough information to be sure,
-> though. There might be some unintended interaction or interference.
->
-> gpu is a good hint ... for example, look at commit b9ed919f1c8
-> (drm/nouveau/drm/pm: remove everything except the hwmon interfaces
-> to THERM). nouveau does export pwm and fan control information,
-> so any change in that code may have unintended side effects.
-> Similar, I don't know how ec39f64bba (drm/radeon/dpm: Convert to
-> use devm_hwmon_register_with_groups) could have the observed impact,
-> as it is purely passive, but I prefer to be rather safe than sorry.
->
-> This problem has now been submitted into bugzilla as
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D71711.
->
-> Guenter
->
+Hi, Linus,
 
-Sorry, for beeing late, had to search for/accumulate much info =
+Please pull from the git repository at
 
-for you...
-I hope, you like me to put it into one answer to you all CCing you.
+git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git for-rc6
 
-My GFX is a GM45 Intel (mobile), shared memory, running the =
+to receive thermal management fixes for v3.14-rc6
+with top-most commit f2234bcd03ad031225d7dc37dd18852a2f2ff2bf:
 
-opensource Mesa drivers/extensions.
-kernel-module: i915
+  Thermal: thermal zone governor fix (2014-03-03 23:15:57 +0800)
 
-According to the output of 'cpupower': I have
-CPUidle driver: acpi_idle
-CPUidle governor: menu
+on top of commit d2a0476307e67a6e6a293563a4f4ad4ec79ac0e5:
 
-CPUfreq:
-   driver: acpi-cpufreq
-   available cpufreq governors: ondemand, performance
--
-And "ondemand" is running.
---
-
-# sensors
-acpitz-virtual-0
-Adapter: Virtual device
-temp1:        +41.0=B0C  (crit =3D +256.0=B0C)
-temp2:        +92.0=B0C  (crit =3D +110.0=B0C)
-temp3:        +71.0=B0C  (crit =3D +105.0=B0C)
-temp4:        +26.5=B0C  (crit =3D +110.0=B0C)
-temp5:        +25.0=B0C  (crit =3D +110.0=B0C)
-
-coretemp-isa-0000
-Adapter: ISA adapter
-Core 0:       +86.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
-Core 1:       +84.0=B0C  (high =3D +105.0=B0C, crit =3D +105.0=B0C)
-
-FROM a critical "smelly" situation today, kernel-compilation, fan =
-
-@100%.
---
-
-Additional findings:
-
-Identification from bootup ACPI initialisation vs. sensors:
-temp1 =3D DTSZ
-temp2 =3D CPUZ --> triggering Cooling in 3.12.13 if > 74=B0C
-temp3 =3D SKNZ
-temp4 =3D BATZ "Battery Zone" always calm ~ +6=B0C of ambient T
-temp5 =3D FDTZ --- in 3.12.13 a representation of the cooling-fan =
-
-(25 - 45 - 58 - max?)
-Core 0 & Core 1 are the internal CPU T sensors.
-
-With the 3.13.x (.5+) kernels the first gatherered cooling =
-
-settings from bootup do stay forever. Means, rebooting a hot =
-
-system will get a FDTZ @45=B0C+ and won't make any problems, as it =
-
-does cool enough (even for kernel compiling on here). If it gets =
-
-25=B0C @bootup the system goes into emergency cooling somewhen. =
-
-Same is with a suspend/resume.
-
-Kernel 3.12.13 adjusts the cooling on it's own, but appropriately.
+  Merge branch 'akpm' (patches from Andrew Morton) (2014-02-25 15:38:13
+-0800)
 
 
-Thank you all for your engagement, best regards,
-Manuel Krause.
+Specifics:
 
+ - Update the help text of INT3403 Thermal driver, which was not
+friendly to users. From Zhang Rui.
 
+ - The "type" sysfs attribute of x86_pkg_temp_thermal registered thermal
+zones includes an instance number, which makes the thermal-to-hwmon
+bridge fails to group them all in a single hwmon device. Fixed by Jean
+Delvare.
 
-_______________________________________________
-lm-sensors mailing list
-lm-sensors@lm-sensors.org
-http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+ - The hwmon device registered by x86_pkg_temp_thermal driver is
+redundant because the temperature value reported by x86_pkg_temp_thermal
+is already reported by the coretemp driver. Fixed by Jean Delvare.
+
+ - Fix a problem that the cooling device can not be updated properly if
+it is initialized at max cooling state. From Ni Wade.
+
+ - Fix a problem that OF registered thermal zones are running without
+thermal governors. From Zhang Rui.
+
+ - Commit beeb5a1e (thermal: rcar-thermal: Enable driver compilation
+with COMPILE_TEST) broke build on archs wihout io memory. Thus make it
+depend on HAS_IOMEM to bypass build failures. Fixed by Richard
+Weinberger.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Jean Delvare (2):
+      x86_pkg_temp_thermal: Do not expose as a hwmon device
+      x86_pkg_temp_thermal: Fix the thermal zone type
+
+Ni Wade (1):
+      Thermal: Allow first update of cooling device state
+
+Richard Weinberger (1):
+      thermal,rcar_thermal: Add dependency on HAS_IOMEM
+
+Zhang Rui (2):
+      Thermal: update INT3404 thermal driver help text
+      Thermal: thermal zone governor fix
+
+ drivers/thermal/Kconfig                |   13 +++++++++++--
+ drivers/thermal/thermal_core.c         |   27
++++++++++++++++++++--------
+ drivers/thermal/x86_pkg_temp_thermal.c |   11 ++++++-----
+ 3 files changed, 36 insertions(+), 15 deletions(-)
