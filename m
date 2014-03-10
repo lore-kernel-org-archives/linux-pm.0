@@ -1,16 +1,16 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 37/52] acpi-cpufreq: Fix CPU hotplug callback registration
-Date: Tue, 11 Mar 2014 02:10:06 +0530
-Message-ID: <20140310204005.10746.58112.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH v3 35/52] scsi, fcoe: Fix CPU hotplug callback registration
+Date: Tue, 11 Mar 2014 02:09:52 +0530
+Message-ID: <20140310203952.10746.35946.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-arch-owner@vger.kernel.org>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
-Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, srivatsa.bhat@linux.vnet.ibm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, cpufreq@vger.kernel.orglinux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Sender: linux-arch-owner@vger.kernel.org
+To: paulus@samba.org, oleg@redhat.com, rjw@rjwysocki.net, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
+Cc: paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, srivatsa.bhat@linux.vnet.ibm.com, Robert Love <robert.w.love@intel.com>, "James E.J. Bottomley" <JBottomley@parallels.com>, Ingo Molnar <mingo@kernel.org>, fcoe-devel@open-fcoe.org, linux-scsi@vger.kernel.org"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
 Subsystems that want to register CPU hotplug callbacks, as well as perform
@@ -44,40 +44,67 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the acpi-cpufreq code by using this latter form of callback registration.
+Fix the fcoe code in scsi by using this latter form of callback registration.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Robert Love <robert.w.love@intel.com>
+Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: fcoe-devel@open-fcoe.org
+Cc: linux-scsi@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/scsi/fcoe/fcoe.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 18448a7..245ae078e 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
- 
- 		acpi_cpufreq_driver.boost_supported = true;
- 		acpi_cpufreq_driver.boost_enabled = boost_state(0);
--		get_online_cpus();
-+
-+		cpu_notifier_register_begin();
- 
- 		/* Force all MSRs to the same value */
- 		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
- 			       cpu_online_mask);
- 
--		register_cpu_notifier(&boost_nb);
-+		__register_cpu_notifier(&boost_nb);
- 
--		put_online_cpus();
-+		cpu_notifier_register_done();
+diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
+index f317000..d5e105b 100644
+--- a/drivers/scsi/fcoe/fcoe.c
++++ b/drivers/scsi/fcoe/fcoe.c
+@@ -2633,14 +2633,18 @@ static int __init fcoe_init(void)
+ 		skb_queue_head_init(&p->fcoe_rx_list);
  	}
- }
  
++	cpu_notifier_register_begin();
++
+ 	for_each_online_cpu(cpu)
+ 		fcoe_percpu_thread_create(cpu);
+ 
+ 	/* Initialize per CPU interrupt thread */
+-	rc = register_hotcpu_notifier(&fcoe_cpu_notifier);
++	rc = __register_hotcpu_notifier(&fcoe_cpu_notifier);
+ 	if (rc)
+ 		goto out_free;
+ 
++	cpu_notifier_register_done();
++
+ 	/* Setup link change notification */
+ 	fcoe_dev_setup();
+ 
+@@ -2655,6 +2659,9 @@ out_free:
+ 	for_each_online_cpu(cpu) {
+ 		fcoe_percpu_thread_destroy(cpu);
+ 	}
++
++	cpu_notifier_register_done();
++
+ 	mutex_unlock(&fcoe_config_mutex);
+ 	destroy_workqueue(fcoe_wq);
+ 	return rc;
+@@ -2687,11 +2694,15 @@ static void __exit fcoe_exit(void)
+ 	}
+ 	rtnl_unlock();
+ 
+-	unregister_hotcpu_notifier(&fcoe_cpu_notifier);
++	cpu_notifier_register_begin();
+ 
+ 	for_each_online_cpu(cpu)
+ 		fcoe_percpu_thread_destroy(cpu);
+ 
++	__unregister_hotcpu_notifier(&fcoe_cpu_notifier);
++
++	cpu_notifier_register_done();
++
+ 	mutex_unlock(&fcoe_config_mutex);
+ 
+ 	/*
