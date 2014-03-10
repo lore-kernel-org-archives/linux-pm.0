@@ -1,102 +1,124 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: SPEAr: Instantiate as platform_driver
-Date: Mon, 10 Mar 2014 15:43:18 +0530
-Message-ID: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org>
+From: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+Subject: Re: [PATCH 6/7] Cpuidle: Deal with timer expiring in the past
+Date: Mon, 10 Mar 2014 12:54:59 +0200
+Message-ID: <CAG-99FPk6kX3QO9g3M20SC1fq8VhpVv6iDLsgjZDAUd5KvzCOQ@mail.gmail.com>
+References: <1393223377-5744-1-git-send-email-tuukka.tikkanen@linaro.org>
+	<1393223377-5744-7-git-send-email-tuukka.tikkanen@linaro.org>
+	<CAJvTdKneVk_ToJ=Sv4GnMfn5a0r=ynfL4fRLOoKHsqMrDYr8JA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:37363 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbaCJKN0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Mar 2014 06:13:26 -0400
-Received: by mail-pa0-f51.google.com with SMTP id kq14so7026155pab.24
-        for <linux-pm@vger.kernel.org>; Mon, 10 Mar 2014 03:13:26 -0700 (PDT)
+Received: from mail-ve0-f169.google.com ([209.85.128.169]:47670 "EHLO
+	mail-ve0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbaCJKzA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Mar 2014 06:55:00 -0400
+Received: by mail-ve0-f169.google.com with SMTP id pa12so6833688veb.14
+        for <linux-pm@vger.kernel.org>; Mon, 10 Mar 2014 03:54:59 -0700 (PDT)
+In-Reply-To: <CAJvTdKneVk_ToJ=Sv4GnMfn5a0r=ynfL4fRLOoKHsqMrDYr8JA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, joshc@codeaurora.org, robherring2@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-As multiplatform build is being adopted by more and more ARM platforms, initcall
-function should be used very carefully. For example, when SPEAr cpufreq driver
-is enabled on a kernel booted on a non-SPEAr board, we will get following boot
-time error:
+Hi,
 
-	spear_cpufreq: Invalid cpufreq_tbl
+On 6 March 2014 09:41, Len Brown <lenb@kernel.org> wrote:
+>
+> On Mon, Feb 24, 2014 at 1:29 AM, Tuukka Tikkanen
+> <tuukka.tikkanen@linaro.org> wrote:
+> > Sometimes (fairly often) when the cpuidle menu governor is making a decision
+> > about idle state to enter the next timer for the cpu appears to expire in
+> > the past. The menu governor expects the expiry to always be in the future
+> > and in fact stores the time delta in an unsigned variable. However, when
+> > the expiry is in the past, the value returned by tick_nohz_get_sleep_length
+> > can be negative. This patch prevents using negative values, instead making
+> > the governor return immediately similar to having latency requirement set
+> > to 0.
+> >
+> > Note: As with latency == 0, the return value is 0 with no check to see if
+> > the state 0 has been disabled or not.
+> >
+> > Signed-off-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+> > ---
+> >  drivers/cpuidle/governors/menu.c |   10 +++++++++-
+> >  1 file changed, 9 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> > index 71b5232..c414468 100644
+> > --- a/drivers/cpuidle/governors/menu.c
+> > +++ b/drivers/cpuidle/governors/menu.c
+> > @@ -302,8 +302,16 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> >         if (unlikely(latency_req == 0))
+> >                 return 0;
+> >
+> > -       /* determine the expected residency time, round up */
+> > +       /*
+> > +        * Determine the expected residency time. If the time is negative,
+> > +        * a timer interrupt has probably just expired after disabling
+> > +        * interrupts. Return as quickly as possible in the most shallow
+> > +        * state possible. tv_nsec is always positive, so only check the
+> > +        * seconds.
+> > +        */
+> >         t = ktime_to_timespec(tick_nohz_get_sleep_length());
+> > +       if (t.tv_sec < 0)
+> > +               return 0;
+> >         data->next_timer_us =
+> >                 t.tv_sec * USEC_PER_SEC + t.tv_nsec / NSEC_PER_USEC;
+> >
+>
+> Are there special conditions that are necessary to provoke a negative
+> return value?
+> I've traced this code on several systems, and never seen a negative
+> return value.
+>
 
-To eliminate this undesired the effect, the patch changes SPEAr driver to have
-it instantiated as a platform_driver. Then it will only run on platforms that
-create the platform_device "spear-cpufreq".
+By changing the if statement to
+if (WARN_ONCE(t.tv_sec < 0, "Next timer in the past. tv_sec: %ld,
+tv_usec: %lu", t.tv_sec, t.tv_usec)) return 0;
 
-This patch also creates platform node for SPEAr13xx boards.
+I eventually got
+[ 3092.355144] WARNING: CPU: 4 PID: 0 at
+drivers/cpuidle/governors/menu.c:315 menu_select+0x410/0x420()
+[ 3092.355145] Next timer in the past. tv_sec: -1, tv_usec: 999999645
+...
+[ 3092.355169] CPU: 4 PID: 0 Comm: swapper/4 Not tainted 3.14.0-rc3+ #3
 
-Reported-by: Josh Cartwright <joshc@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- arch/arm/mach-spear/spear1310.c |  1 +
- arch/arm/mach-spear/spear1340.c |  1 +
- drivers/cpufreq/spear-cpufreq.c | 13 +++++++++++--
- 3 files changed, 13 insertions(+), 2 deletions(-)
+so the problem is still lurking there. However, as you can see from
+the timestamp, either something has changed recently and made it much
+much less frequent or I did not use the use case / hardware that
+triggers it more often. It has been quite a long time since I
+discovered and fixed this in my private trees, so I have forgotten the
+best way to reproduce this, sorry. In any case, existence is still
+confirmed.
 
-diff --git a/arch/arm/mach-spear/spear1310.c b/arch/arm/mach-spear/spear1310.c
-index 7ad0030..824b12a 100644
---- a/arch/arm/mach-spear/spear1310.c
-+++ b/arch/arm/mach-spear/spear1310.c
-@@ -28,6 +28,7 @@
- static void __init spear1310_dt_init(void)
- {
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-+	platform_device_register_simple("spear-cpufreq", -1, NULL, 0);
- }
- 
- static const char * const spear1310_dt_board_compat[] = {
-diff --git a/arch/arm/mach-spear/spear1340.c b/arch/arm/mach-spear/spear1340.c
-index 3fb6834..7b6bff7 100644
---- a/arch/arm/mach-spear/spear1340.c
-+++ b/arch/arm/mach-spear/spear1340.c
-@@ -143,6 +143,7 @@ static void __init spear1340_dt_init(void)
- {
- 	of_platform_populate(NULL, of_default_bus_match_table,
- 			spear1340_auxdata_lookup, NULL);
-+	platform_device_register_simple("spear-cpufreq", -1, NULL, 0);
- }
- 
- static const char * const spear1340_dt_board_compat[] = {
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 410b54a..4cfdcff 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -19,6 +19,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/of_device.h>
-+#include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/types.h>
- 
-@@ -166,7 +167,7 @@ static struct cpufreq_driver spear_cpufreq_driver = {
- 	.attr		= cpufreq_generic_attr,
- };
- 
--static int spear_cpufreq_driver_init(void)
-+static int spear_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np;
- 	const struct property *prop;
-@@ -234,7 +235,15 @@ out_put_node:
- 	of_node_put(np);
- 	return ret;
- }
--late_initcall(spear_cpufreq_driver_init);
-+
-+static struct platform_driver spear_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "spear-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= spear_cpufreq_probe,
-+};
-+module_platform_driver(spear_cpufreq_platdrv);
- 
- MODULE_AUTHOR("Deepak Sikri <deepak.sikri@st.com>");
- MODULE_DESCRIPTION("SPEAr CPUFreq driver");
--- 
-1.7.12.rc2.18.g61b472e
+This was on a i7-3770K with 64 bit kernel, running make clean && make
+-j8 && make clean && make for kernel source tree. If I happen to
+remember the use case + hardware combination that triggers this
+rapidly, I'll let you know.
 
+That said, I agree dropping this patch and fixing the called function
+is a better idea.
+
+Tuukka
+
+>
+> However...
+> I do see values up to 300.2 seconds, and those large values seem to decay
+> at the rate of real-time so that after 5 minutes they are small, and then
+> jump back up to 300 seconds.
+>
+> Some folks at Oracle debugged it down to use of NEXT_TIMER_MAX_DELTA
+> when there is _no_ timer currently pending on that CPU.  It seems this is easier
+> to observe, the more CPUs a system has -- though I've been able to reproduce
+> it on a system as small as a single-package 8-cpu systems.
+>
+> One proposed way to address this is to cap large values at 1 second.
+> However, that will not recognize that for the period when the large
+> value decays to under 1 second, all of those are fiction.
+>
+> Also, if we could identify the case where there is no future timer,
+> it seems that re-using dev->last_residency would probably be
+> a more useful guess than pretending we'll have a timer expire in 1 second.
+>
+> thanks,
+> Len Brown, Intel Open Source Technology Cente
