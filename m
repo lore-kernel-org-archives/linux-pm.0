@@ -1,215 +1,102 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V1 Resend 3/3] cpufreq: Remove unnecessary variable/parameter 'frozen'
-Date: Mon, 10 Mar 2014 14:53:35 +0530
-Message-ID: <a5cb16d19b6530e867a72d5d04c55b16d01a1ffa.1394431858.git.viresh.kumar@linaro.org>
-References: <cover.1394431858.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1394431858.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1394431858.git.viresh.kumar@linaro.org>
-References: <cover.1394431858.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: SPEAr: Instantiate as platform_driver
+Date: Mon, 10 Mar 2014 15:43:18 +0530
+Message-ID: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:37363 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbaCJKN0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Mar 2014 06:13:26 -0400
+Received: by mail-pa0-f51.google.com with SMTP id kq14so7026155pab.24
+        for <linux-pm@vger.kernel.org>; Mon, 10 Mar 2014 03:13:26 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, joshc@codeaurora.org, robherring2@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-We have used 'frozen' variable/function parameter at many places to
-differentiate CPU hotplugging on suspend/resume vs sysfs removals. We now have
-another variable cpufreq_suspended which can be used in these cases and hence we
-can get rid of all those variables or function parameters.
+As multiplatform build is being adopted by more and more ARM platforms, initcall
+function should be used very carefully. For example, when SPEAr cpufreq driver
+is enabled on a kernel booted on a non-SPEAr board, we will get following boot
+time error:
 
+	spear_cpufreq: Invalid cpufreq_tbl
+
+To eliminate this undesired the effect, the patch changes SPEAr driver to have
+it instantiated as a platform_driver. Then it will only run on platforms that
+create the platform_device "spear-cpufreq".
+
+This patch also creates platform node for SPEAr13xx boards.
+
+Reported-by: Josh Cartwright <joshc@codeaurora.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 51 ++++++++++++++++++++---------------------------
- 1 file changed, 22 insertions(+), 29 deletions(-)
+ arch/arm/mach-spear/spear1310.c |  1 +
+ arch/arm/mach-spear/spear1340.c |  1 +
+ drivers/cpufreq/spear-cpufreq.c | 13 +++++++++++--
+ 3 files changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index aae9dc1..53f5d0b6 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1042,13 +1042,13 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
- 			CPUFREQ_UPDATE_POLICY_CPU, policy);
+diff --git a/arch/arm/mach-spear/spear1310.c b/arch/arm/mach-spear/spear1310.c
+index 7ad0030..824b12a 100644
+--- a/arch/arm/mach-spear/spear1310.c
++++ b/arch/arm/mach-spear/spear1310.c
+@@ -28,6 +28,7 @@
+ static void __init spear1310_dt_init(void)
+ {
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
++	platform_device_register_simple("spear-cpufreq", -1, NULL, 0);
  }
  
--static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
--			     bool frozen)
-+static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ static const char * const spear1310_dt_board_compat[] = {
+diff --git a/arch/arm/mach-spear/spear1340.c b/arch/arm/mach-spear/spear1340.c
+index 3fb6834..7b6bff7 100644
+--- a/arch/arm/mach-spear/spear1340.c
++++ b/arch/arm/mach-spear/spear1340.c
+@@ -143,6 +143,7 @@ static void __init spear1340_dt_init(void)
  {
- 	unsigned int j, cpu = dev->id;
- 	int ret = -ENOMEM;
- 	struct cpufreq_policy *policy;
- 	unsigned long flags;
-+	bool recover_policy = cpufreq_suspended;
- #ifdef CONFIG_HOTPLUG_CPU
- 	struct cpufreq_policy *tpolicy;
- #endif
-@@ -1089,9 +1089,9 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	 * Restore the saved policy when doing light-weight init and fall back
- 	 * to the full init if that fails.
- 	 */
--	policy = frozen ? cpufreq_policy_restore(cpu) : NULL;
-+	policy = recover_policy ? cpufreq_policy_restore(cpu) : NULL;
- 	if (!policy) {
--		frozen = false;
-+		recover_policy = false;
- 		policy = cpufreq_policy_alloc();
- 		if (!policy)
- 			goto nomem_out;
-@@ -1103,7 +1103,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	 * the creation of a brand new one. So we need to perform this update
- 	 * by invoking update_policy_cpu().
- 	 */
--	if (frozen && cpu != policy->cpu)
-+	if (recover_policy && cpu != policy->cpu)
- 		update_policy_cpu(policy, cpu);
- 	else
- 		policy->cpu = cpu;
-@@ -1131,7 +1131,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	 */
- 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
- 
--	if (!frozen) {
-+	if (!recover_policy) {
- 		policy->user_policy.min = policy->min;
- 		policy->user_policy.max = policy->max;
- 	}
-@@ -1193,7 +1193,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				     CPUFREQ_START, policy);
- 
--	if (!frozen) {
-+	if (!recover_policy) {
- 		ret = cpufreq_add_dev_interface(policy, dev);
- 		if (ret)
- 			goto err_out_unregister;
-@@ -1207,7 +1207,7 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
- 
- 	cpufreq_init_policy(policy);
- 
--	if (!frozen) {
-+	if (!recover_policy) {
- 		policy->user_policy.policy = policy->policy;
- 		policy->user_policy.governor = policy->governor;
- 	}
-@@ -1230,7 +1230,7 @@ err_get_freq:
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
- err_set_policy_cpu:
--	if (frozen) {
-+	if (recover_policy) {
- 		/* Do not leave stale fallback data behind. */
- 		per_cpu(cpufreq_cpu_data_fallback, cpu) = NULL;
- 		cpufreq_policy_put_kobj(policy);
-@@ -1254,7 +1254,7 @@ nomem_out:
-  */
- static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- {
--	return __cpufreq_add_dev(dev, sif, false);
-+	return __cpufreq_add_dev(dev, sif);
+ 	of_platform_populate(NULL, of_default_bus_match_table,
+ 			spear1340_auxdata_lookup, NULL);
++	platform_device_register_simple("spear-cpufreq", -1, NULL, 0);
  }
  
- static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
-@@ -1285,8 +1285,7 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
- }
+ static const char * const spear1340_dt_board_compat[] = {
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 410b54a..4cfdcff 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -19,6 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/of_device.h>
++#include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
  
- static int __cpufreq_remove_dev_prepare(struct device *dev,
--					struct subsys_interface *sif,
--					bool frozen)
-+					struct subsys_interface *sif)
+@@ -166,7 +167,7 @@ static struct cpufreq_driver spear_cpufreq_driver = {
+ 	.attr		= cpufreq_generic_attr,
+ };
+ 
+-static int spear_cpufreq_driver_init(void)
++static int spear_cpufreq_probe(struct platform_device *pdev)
  {
- 	unsigned int cpu = dev->id, cpus;
- 	int new_cpu, ret;
-@@ -1300,7 +1299,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 	policy = per_cpu(cpufreq_cpu_data, cpu);
- 
- 	/* Save the policy somewhere when doing a light-weight tear-down */
--	if (frozen)
-+	if (cpufreq_suspended)
- 		per_cpu(cpufreq_cpu_data_fallback, cpu) = policy;
- 
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-@@ -1333,7 +1332,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 		if (new_cpu >= 0) {
- 			update_policy_cpu(policy, new_cpu);
- 
--			if (!frozen) {
-+			if (!cpufreq_suspended) {
- 				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
- 						__func__, new_cpu, cpu);
- 			}
-@@ -1344,8 +1343,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- }
- 
- static int __cpufreq_remove_dev_finish(struct device *dev,
--				       struct subsys_interface *sif,
--				       bool frozen)
-+				       struct subsys_interface *sif)
- {
- 	unsigned int cpu = dev->id, cpus;
- 	int ret;
-@@ -1380,7 +1378,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
- 			}
- 		}
- 
--		if (!frozen)
-+		if (!cpufreq_suspended)
- 			cpufreq_policy_put_kobj(policy);
- 
- 		/*
-@@ -1396,7 +1394,7 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
- 		list_del(&policy->policy_list);
- 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--		if (!frozen)
-+		if (!cpufreq_suspended)
- 			cpufreq_policy_free(policy);
- 	} else {
- 		if (has_target()) {
-@@ -1426,10 +1424,10 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
- 	if (cpu_is_offline(cpu))
- 		return 0;
- 
--	ret = __cpufreq_remove_dev_prepare(dev, sif, false);
-+	ret = __cpufreq_remove_dev_prepare(dev, sif);
- 
- 	if (!ret)
--		ret = __cpufreq_remove_dev_finish(dev, sif, false);
-+		ret = __cpufreq_remove_dev_finish(dev, sif);
- 
+ 	struct device_node *np;
+ 	const struct property *prop;
+@@ -234,7 +235,15 @@ out_put_node:
+ 	of_node_put(np);
  	return ret;
  }
-@@ -2187,29 +2185,24 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
- {
- 	unsigned int cpu = (unsigned long)hcpu;
- 	struct device *dev;
--	bool frozen = false;
+-late_initcall(spear_cpufreq_driver_init);
++
++static struct platform_driver spear_cpufreq_platdrv = {
++	.driver = {
++		.name	= "spear-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= spear_cpufreq_probe,
++};
++module_platform_driver(spear_cpufreq_platdrv);
  
- 	dev = get_cpu_device(cpu);
- 	if (dev) {
--
--		if (action & CPU_TASKS_FROZEN)
--			frozen = true;
--
- 		switch (action & ~CPU_TASKS_FROZEN) {
- 		case CPU_ONLINE:
--			__cpufreq_add_dev(dev, NULL, frozen);
-+			__cpufreq_add_dev(dev, NULL);
- 			break;
- 
- 		case CPU_DOWN_PREPARE:
--			__cpufreq_remove_dev_prepare(dev, NULL, frozen);
-+			__cpufreq_remove_dev_prepare(dev, NULL);
- 			break;
- 
- 		case CPU_POST_DEAD:
--			__cpufreq_remove_dev_finish(dev, NULL, frozen);
-+			__cpufreq_remove_dev_finish(dev, NULL);
- 			break;
- 
- 		case CPU_DOWN_FAILED:
--			__cpufreq_add_dev(dev, NULL, frozen);
-+			__cpufreq_add_dev(dev, NULL);
- 			break;
- 		}
- 	}
+ MODULE_AUTHOR("Deepak Sikri <deepak.sikri@st.com>");
+ MODULE_DESCRIPTION("SPEAr CPUFreq driver");
 -- 
 1.7.12.rc2.18.g61b472e
+
