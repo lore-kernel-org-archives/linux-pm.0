@@ -1,39 +1,89 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v4 3/3] Documentation: arm: define DT idle states
- bindings
-Date: Mon, 10 Mar 2014 11:22:33 -0700
-Message-ID: <CADHgK6tH5VuTTsbt=4KppvSmKTT4VrftxJHUokRje1uQthUhfA@mail.gmail.com>
-References: <1392724051-11950-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1392724051-11950-4-git-send-email-lorenzo.pieralisi@arm.com>
- <20140219160449.11460.93660@capellas-linux>
- <20140310180109.GB834@e102568-lin.cambridge.arm.com>
+Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
+Date: Mon, 10 Mar 2014 11:32:17 -0700
+Message-ID: <CADHgK6s4K+K+OZuUZVbHKNzbFiHzm82Ss0WpSfkUdQgP+E3j=w@mail.gmail.com>
+References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
+	<1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
+	<20140307044251.GD9985@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140310180109.GB834@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f43.google.com ([74.125.82.43]:59345 "EHLO
+	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753197AbaCJScT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Mar 2014 14:32:19 -0400
+Received: by mail-wg0-f43.google.com with SMTP id x13so9223638wgg.14
+        for <linux-pm@vger.kernel.org>; Mon, 10 Mar 2014 11:32:18 -0700 (PDT)
+In-Reply-To: <20140307044251.GD9985@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <jonathan.austin@arm.com>, Victor Kamensky <victor.kamensky@linaro.org>, Nicolas Pitre <nico@linaro.org>, Will Deacon <will.deacon@arm.com>, Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Laura Abbott <lauraa@codeaurora.org>, Sricharan R <r.sricharan@ti.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, Catalin Marinas <catalin.marinas@arm.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Jiang Liu <liuj97@gm>
 
-On 10 March 2014 11:01, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> Ack ?
+On 6 March 2014 20:42, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> On 03/05, Sebastian Capella wrote:
+>> diff --git a/arch/arm/include/asm/memory.h b/arch/arm/include/asm/memory.h
+>> index 8756e4b..d32adbb 100644
+>> --- a/arch/arm/include/asm/memory.h
+>> +++ b/arch/arm/include/asm/memory.h
+>> @@ -291,6 +291,7 @@ static inline void *phys_to_virt(phys_addr_t x)
+>>   */
+>>  #define __pa(x)                      __virt_to_phys((unsigned long)(x))
+>>  #define __va(x)                      ((void *)__phys_to_virt((phys_addr_t)(x)))
+>> +#define __pa_symbol(x)               __pa((unsigned long)(x))
+> Looking at this definition now it doesn't look right. Isn't
+> &__nosave_begin a virtual address? Casting it to an unsigned long
+> isn't going to give you a physical address. Why can't we use
+> __pa()?
 
-Hi Lorenzo,
+You're correct, sorry, I missed removing the cast, it's not needed.
+I've removed the __pa_symbol define as I'm switching to the __pa
+implementation you suggested below.
 
-Yes, ack from me.
+>> +extern const void __nosave_begin, __nosave_end;
+>> +
+>> +int pfn_is_nosave(unsigned long pfn)
+>> +{
+>> +     unsigned long nosave_begin_pfn =
+>> +                     __pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
+>> +     unsigned long nosave_end_pfn =
+>> +                     PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
+>> +
+>> +     return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+>> +}
+>
+> Perhaps this code could be:
+>
+>         unsigned long nosave_begin_pfn = virt_to_pfn(&__nosave_begin);
+>         unsigned long nosave_end_pfn = virt_to_pfn(&__nosave_end);
+>
+>         return (pfn >= nosave_begin_pfn) && (pfn <= nosave_end_pfn);
+>
+> or if virt_to_pfn() doesn't exist on ARM and we can't add it for
+> some reason:
+>
+>         unsigned long nosave_begin_pfn = __phys_to_pfn(__pa(&__nosave_begin));
+>         unsigned long nosave_end_pfn = __phys_to_pfn(__pa(&__nosave_end));
+>
+>         return (pfn >= nosave_begin_pfn) && (pfn <= nosave_end_pfn);
+I've moved to this second implementation.  I don't think I understand
+the ramifications enough to add the virt_to_pfn call for arm.
 
- Acked-by: Sebastian Capella <sebastian.capella@linaro.org>
+I've changed one thing.  __nosave_end is pointing at the first byte
+not included in the nosave region.  I subtracted one from it so that
+we make sure we're referring to the last pfn, and left the pfn
+comparison as you'd suggested.
 
-Thanks!
+int pfn_is_nosave(unsigned long pfn)
+{
+        unsigned long nosave_begin_pfn = __phys_to_pfn(__pa(&__nosave_begin));
+        unsigned long nosave_end_pfn = __phys_to_pfn(__pa(&__nosave_end - 1));
+
+        return (pfn >= nosave_begin_pfn) && (pfn <= nosave_end_pfn);
+}
+
+I'll test this and post it if everyone's ok with it.
+
+Thanks for your review and comments Stephen!
 
 Sebastian
