@@ -1,51 +1,89 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: SPEAr: Instantiate as platform_driver
-Date: Tue, 11 Mar 2014 13:44:19 +0100
-Message-ID: <4163075.Inno6QAHAN@vostro.rjw.lan>
-References: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org> <3114708.oz7nbHtIzQ@vostro.rjw.lan> <CAKohpokSTM9tUYEK2ggSOwrgK=RfLmmKRdtzaRQ1q=d2jrUzWQ@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: delay enabling interrupts until all coupled CPUs leave idle
+Date: Tue, 11 Mar 2014 13:45:33 +0100
+Message-ID: <5811450.84HlWmm2RW@vostro.rjw.lan>
+References: <1394103721-32616-1-git-send-email-paul.burton@imgtec.com> <6009429.TU4uH7j3ue@vostro.rjw.lan> <20140311094136.GP17457@pburton-linux.le.imgtec.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59234 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:59230 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754586AbaCKM3A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 08:29:00 -0400
-In-Reply-To: <CAKohpokSTM9tUYEK2ggSOwrgK=RfLmmKRdtzaRQ1q=d2jrUzWQ@mail.gmail.com>
+	with SMTP id S1755088AbaCKMaN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 08:30:13 -0400
+In-Reply-To: <20140311094136.GP17457@pburton-linux.le.imgtec.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Josh Cartwright <joshc@codeaurora.org>, Rob Herring <robherring2@gmail.com>
+To: Paul Burton <paul.burton@imgtec.com>
+Cc: linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Tuesday, March 11, 2014 11:46:22 AM Viresh Kumar wrote:
-> On 11 March 2014 09:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Monday, March 10, 2014 03:43:18 PM Viresh Kumar wrote:
-> >> As multiplatform build is being adopted by more and more ARM platforms, initcall
-> >> function should be used very carefully. For example, when SPEAr cpufreq driver
-> >> is enabled on a kernel booted on a non-SPEAr board, we will get following boot
-> >> time error:
-> >>
-> >>       spear_cpufreq: Invalid cpufreq_tbl
-> >>
-> >> To eliminate this undesired the effect, the patch changes SPEAr driver to have
-> >> it instantiated as a platform_driver. Then it will only run on platforms that
-> >> create the platform_device "spear-cpufreq".
-> >>
-> >> This patch also creates platform node for SPEAr13xx boards.
-> >>
-> >> Reported-by: Josh Cartwright <joshc@codeaurora.org>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> > Whoever maintains the SPEAr platform, I need an ACK from that person in order
-> > to take this patch.
+On Tuesday, March 11, 2014 09:41:36 AM Paul Burton wrote:
+> On Thu, Mar 06, 2014 at 01:55:06PM +0100, Rafael J. Wysocki wrote:
+> > On Thursday, March 06, 2014 11:02:01 AM Paul Burton wrote:
+> > > As described by a comment at the end of cpuidle_enter_state_coupled it
+> > > can be inefficient for coupled idle states to return with IRQs enabled
+> > > since they may proceed to service an interrupt instead of clearing the
+> > > coupled idle state. Until they have finished & cleared the idle state
+> > > all CPUs coupled with them will spin rather than being able to enter a
+> > > safe idle state.
+> > > 
+> > > Commits e1689795a784 "cpuidle: Add common time keeping and irq
+> > > enabling" and 554c06ba3ee2 "cpuidle: remove en_core_tk_irqen flag" led
+> > > to the cpuidle_enter_state enabling interrupts for all idle states,
+> > > including coupled ones, making this inefficiency unavoidable by drivers
+> > > & the local_irq_enable near the end of cpuidle_enter_state_coupled
+> > > redundant. This patch avoids enabling interrupts in cpuidle_enter_state
+> > > after a coupled state has been entered, allowing them to remain disabled
+> > > until all coupled CPUs have exited the idle state and
+> > > cpuidle_enter_state_coupled re-enables them.
+> > 
+> > This appears to be a regression.
+> > 
+> > Are there any bug reports related to it?  Alternatively, can you reproduce
+> > it and if so, then on what hardware?
 > 
-> Okay, here you go:
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> :)
+> I'm not aware of any bug reports related to this (though I haven't gone
+> looking). I can see the issue occur with (a further developed version
+> of) the MIPS CPS cpuidle driver I posted a while ago. I haven't measured
+> the impact on exit latency (which I suppose would be variable anyway
+> depending on the pending interrupt(s)) but have seen the issue with
+> interrupts processed whilst a coupled CPU spins. Given that there is
+> clearly an inconsistency between cpuidle_enter_state &
+> cpuidle_enter_state_coupled, and given that the latter documents the
+> issue & its intent with regards to IRQs pretty clearly, this would seem
+> to be the obvious fix.
 
-I see.  OK
+OK, thanks for the info.
+
+
+> > > Signed-off-by: Paul Burton <paul.burton@imgtec.com>
+> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > > Cc: linux-pm@vger.kernel.org
+> > > ---
+> > >  drivers/cpuidle/cpuidle.c | 3 ++-
+> > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > > index a55e68f..366e684 100644
+> > > --- a/drivers/cpuidle/cpuidle.c
+> > > +++ b/drivers/cpuidle/cpuidle.c
+> > > @@ -85,7 +85,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> > >  
+> > >  	time_end = ktime_get();
+> > >  
+> > > -	local_irq_enable();
+> > > +	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
+> > > +		local_irq_enable();
+> > >  
+> > >  	diff = ktime_to_us(ktime_sub(time_end, time_start));
+> > >  	if (diff > INT_MAX)
+> > > 
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
