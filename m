@@ -1,41 +1,17 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: SPEAr: Instantiate as platform_driver
-Date: Tue, 11 Mar 2014 11:46:22 +0800
-Message-ID: <CAKohpokSTM9tUYEK2ggSOwrgK=RfLmmKRdtzaRQ1q=d2jrUzWQ@mail.gmail.com>
-References: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org>
-	<3114708.oz7nbHtIzQ@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3114708.oz7nbHtIzQ@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Josh Cartwright <joshc@codeaurora.org>, Rob Herring <robherring2@gmail.com>
+From: <linux-pm@vger.kernel.org>
+Subject: Klientskie bazi dannix Tel: +79133913837 Skype:prodawez388 ICQ: 6288862 Email: TsetseroTsetse@gmail.com
+Date: 11 Mar 2014 00:54:46 -0400
+Message-ID: <DDSMAILOSfmC4QMJ80D00008404@smtp.doctordiabetic.com>
+Content-Type: text/plain;
+	charset="windows-1251"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from webmail.doctordiabetic.com ([69.42.108.153]:50937 "EHLO
+	smtp.doctordiabetic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbaCKFAS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 01:00:18 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 11 March 2014 09:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, March 10, 2014 03:43:18 PM Viresh Kumar wrote:
->> As multiplatform build is being adopted by more and more ARM platforms, initcall
->> function should be used very carefully. For example, when SPEAr cpufreq driver
->> is enabled on a kernel booted on a non-SPEAr board, we will get following boot
->> time error:
->>
->>       spear_cpufreq: Invalid cpufreq_tbl
->>
->> To eliminate this undesired the effect, the patch changes SPEAr driver to have
->> it instantiated as a platform_driver. Then it will only run on platforms that
->> create the platform_device "spear-cpufreq".
->>
->> This patch also creates platform node for SPEAr13xx boards.
->>
->> Reported-by: Josh Cartwright <joshc@codeaurora.org>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> Whoever maintains the SPEAr platform, I need an ACK from that person in order
-> to take this patch.
-
-Okay, here you go:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-:)
+Klientskie bazi dannix Tel: +79133913837 Skype:prodawez388 ICQ: 6288862 Email: TsetseroTsetse@gmail.com
