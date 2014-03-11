@@ -1,249 +1,365 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v8 2/2] ARM hibernation / suspend-to-disk
-Date: Tue, 11 Mar 2014 11:40:14 -0700
-Message-ID: <1394563214-26007-3-git-send-email-sebastian.capella@linaro.org>
-References: <1394563214-26007-1-git-send-email-sebastian.capella@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: Reformat printk() statements
+Date: Tue, 11 Mar 2014 20:29:27 +0100
+Message-ID: <16243824.d7jua8nUso@vostro.rjw.lan>
+References: <1394557380-15054-1-git-send-email-soren.brinkmann@xilinx.com> <531F441C.5070107@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:57755 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755281AbaCKSk2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 14:40:28 -0400
-Received: by mail-pa0-f41.google.com with SMTP id fa1so9192112pad.14
-        for <linux-pm@vger.kernel.org>; Tue, 11 Mar 2014 11:40:27 -0700 (PDT)
-In-Reply-To: <1394563214-26007-1-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <531F441C.5070107@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Soren Brinkmann <soren.brinkmann@xilinx.com>, Viresh Kumar <viresh.kumar@linaro.org>, Joe Perches <joe@perches.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Laura Abbott <lauraa@codeaurora.org>, Jiang Liu <liuj97@gmail.com>, Sricharan R <r.sricharan@ti.com>, Victor Kamensky <victor.kamensky@linaro.org>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Ben Dooks <ben.dooks@codethink.co.uk>
 
-=46rom: Russ Dill <Russ.Dill@ti.com>
+On Tuesday, March 11, 2014 10:13:00 AM Dirk Brandewie wrote:
+> On 03/11/2014 10:03 AM, Soren Brinkmann wrote:
+> > From: Joe Perches <joe@perches.com>
+> >
+> >   - Add missing newlines
+> >   - Coalesce format fragments
+> >   - Convert printks to pr_<level>
+> >   - Align arguments
+> >
+>=20
+> This introduces a bunch of lines over 80 charaters long.
 
-Enable hibernation for ARM architectures and provide ARM
-architecture specific calls used during hibernation.
+Do you mean code lines or output lines?
 
-The swsusp hibernation framework depends on the
-platform first having functional suspend/resume.
+>=20
+> > Original-patch-by: S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.com=
+>
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> > I didn't send this out yesterday, did I?
+> > Anyway, this is Joe's patch. I thought I just submit it as proper p=
+atch which is
+> > easier to handle than assembling this from all the pieces in the or=
+iginal
+> > thread.
+> >
+> > 	Thanks,
+> > 	S=C3=B6ren
+> >
+> >   drivers/cpufreq/cpufreq.c | 85 ++++++++++++++++++++++------------=
+-------------
+> >   1 file changed, 40 insertions(+), 45 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index 08ca8c9f41cd..9eb1bd924817 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -181,8 +181,8 @@ unsigned int cpufreq_generic_get(unsigned int c=
+pu)
+> >   	struct cpufreq_policy *policy =3D per_cpu(cpufreq_cpu_data, cpu)=
+;
+> >
+> >   	if (!policy || IS_ERR(policy->clk)) {
+> > -		pr_err("%s: No %s associated to cpu: %d\n", __func__,
+> > -				policy ? "clk" : "policy", cpu);
+> > +		pr_err("%s: No %s associated to cpu: %d\n",
+> > +		       __func__, policy ? "clk" : "policy", cpu);
+> >   		return 0;
+> >   	}
+> >
+> > @@ -254,15 +254,15 @@ static void adjust_jiffies(unsigned long val,=
+ struct cpufreq_freqs *ci)
+> >   	if (!l_p_j_ref_freq) {
+> >   		l_p_j_ref =3D loops_per_jiffy;
+> >   		l_p_j_ref_freq =3D ci->old;
+> > -		pr_debug("saving %lu as reference value for loops_per_jiffy; "
+> > -			"freq is %u kHz\n", l_p_j_ref, l_p_j_ref_freq);
+> > +		pr_debug("saving %lu as reference value for loops_per_jiffy; fre=
+q is %u kHz\n",
+> > +			 l_p_j_ref, l_p_j_ref_freq);
+> >   	}
+> >   	if ((val =3D=3D CPUFREQ_POSTCHANGE && ci->old !=3D ci->new) ||
+> >   	    (val =3D=3D CPUFREQ_RESUMECHANGE || val =3D=3D CPUFREQ_SUSPE=
+NDCHANGE)) {
+> >   		loops_per_jiffy =3D cpufreq_scale(l_p_j_ref, l_p_j_ref_freq,
+> >   								ci->new);
+> > -		pr_debug("scaling loops_per_jiffy to %lu "
+> > -			"for frequency %u kHz\n", loops_per_jiffy, ci->new);
+> > +		pr_debug("scaling loops_per_jiffy to %lu for frequency %u kHz\n"=
+,
+> > +			 loops_per_jiffy, ci->new);
+> >   	}
+> >   }
+> >   #else
+> > @@ -282,7 +282,7 @@ static void __cpufreq_notify_transition(struct =
+cpufreq_policy *policy,
+> >
+> >   	freqs->flags =3D cpufreq_driver->flags;
+> >   	pr_debug("notification %u of frequency transition to %u kHz\n",
+> > -		state, freqs->new);
+> > +		 state, freqs->new);
+> >
+> >   	switch (state) {
+> >
+> > @@ -294,9 +294,8 @@ static void __cpufreq_notify_transition(struct =
+cpufreq_policy *policy,
+> >   		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+> >   			if ((policy) && (policy->cpu =3D=3D freqs->cpu) &&
+> >   			    (policy->cur) && (policy->cur !=3D freqs->old)) {
+> > -				pr_debug("Warning: CPU frequency is"
+> > -					" %u, cpufreq assumed %u kHz.\n",
+> > -					freqs->old, policy->cur);
+> > +				pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz=
+\n",
+> > +					 freqs->old, policy->cur);
+> >   				freqs->old =3D policy->cur;
+> >   			}
+> >   		}
+> > @@ -307,8 +306,8 @@ static void __cpufreq_notify_transition(struct =
+cpufreq_policy *policy,
+> >
+> >   	case CPUFREQ_POSTCHANGE:
+> >   		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+> > -		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+> > -			(unsigned long)freqs->cpu);
+> > +		pr_debug("FREQ: %lu - CPU: %lu\n",
+> > +			 (unsigned long)freqs->new, (unsigned long)freqs->cpu);
+> >   		trace_cpu_frequency(freqs->new, freqs->cpu);
+> >   		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
+> >   				CPUFREQ_POSTCHANGE, freqs);
+> > @@ -368,13 +367,13 @@ static ssize_t store_boost(struct kobject *ko=
+bj, struct attribute *attr,
+> >   		return -EINVAL;
+> >
+> >   	if (cpufreq_boost_trigger_state(enable)) {
+> > -		pr_err("%s: Cannot %s BOOST!\n", __func__,
+> > -		       enable ? "enable" : "disable");
+> > +		pr_err("%s: Cannot %s BOOST!\n",
+> > +		       __func__, enable ? "enable" : "disable");
+> >   		return -EINVAL;
+> >   	}
+> >
+> > -	pr_debug("%s: cpufreq BOOST %s\n", __func__,
+> > -		 enable ? "enabled" : "disabled");
+> > +	pr_debug("%s: cpufreq BOOST %s\n",
+> > +		 __func__, enable ? "enabled" : "disabled");
+> >
+> >   	return count;
+> >   }
+> > @@ -1184,7 +1183,7 @@ static int __cpufreq_add_dev(struct device *d=
+ev, struct subsys_interface *sif,
+> >   	if (gov) {
+> >   		policy->governor =3D gov;
+> >   		pr_debug("Restoring governor %s for cpu %d\n",
+> > -		       policy->governor->name, cpu);
+> > +			 policy->governor->name, cpu);
+> >   	}
+> >   #endif
+> >
+> > @@ -1263,7 +1262,7 @@ static int cpufreq_nominate_new_policy_cpu(st=
+ruct cpufreq_policy *policy,
+> >   	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+> >   	ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
+> >   	if (ret) {
+> > -		pr_err("%s: Failed to move kobj: %d", __func__, ret);
+> > +		pr_err("%s: Failed to move kobj: %d\n", __func__, ret);
+> >
+> >   		down_write(&policy->rwsem);
+> >   		cpumask_set_cpu(old_cpu, policy->cpus);
+> > @@ -1332,7 +1331,7 @@ static int __cpufreq_remove_dev_prepare(struc=
+t device *dev,
+> >
+> >   			if (!frozen) {
+> >   				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
+> > -						__func__, new_cpu, cpu);
+> > +					 __func__, new_cpu, cpu);
+> >   			}
+> >   		}
+> >   	}
+> > @@ -1372,7 +1371,7 @@ static int __cpufreq_remove_dev_finish(struct=
+ device *dev,
+> >   					CPUFREQ_GOV_POLICY_EXIT);
+> >   			if (ret) {
+> >   				pr_err("%s: Failed to exit governor\n",
+> > -						__func__);
+> > +				       __func__);
+> >   				return ret;
+> >   			}
+> >   		}
+> > @@ -1400,7 +1399,7 @@ static int __cpufreq_remove_dev_finish(struct=
+ device *dev,
+> >   			if ((ret =3D __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
+> >   					(ret =3D __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
+> >   				pr_err("%s: Failed to start governor\n",
+> > -						__func__);
+> > +				       __func__);
+> >   				return ret;
+> >   			}
+> >   		}
+> > @@ -1457,8 +1456,8 @@ static void cpufreq_out_of_sync(unsigned int =
+cpu, unsigned int old_freq,
+> >   	struct cpufreq_freqs freqs;
+> >   	unsigned long flags;
+> >
+> > -	pr_debug("Warning: CPU frequency out of sync: cpufreq and timing =
+"
+> > -	       "core thinks of %u, is %u kHz.\n", old_freq, new_freq);
+> > +	pr_debug("Warning: CPU frequency out of sync: cpufreq and timing =
+core thinks of %u, is %u kHz\n",
+> > +		 old_freq, new_freq);
+> >
+> >   	freqs.old =3D old_freq;
+> >   	freqs.new =3D new_freq;
+> > @@ -1599,8 +1598,8 @@ static int cpufreq_bp_suspend(void)
+> >   	if (cpufreq_driver->suspend) {
+> >   		ret =3D cpufreq_driver->suspend(policy);
+> >   		if (ret)
+> > -			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
+> > -					"step on CPU %u\n", policy->cpu);
+> > +			pr_err("suspend failed in ->suspend step on CPU %u\n",
+> > +			       policy->cpu);
+> >   	}
+> >
+> >   	cpufreq_cpu_put(policy);
+> > @@ -1637,8 +1636,8 @@ static void cpufreq_bp_resume(void)
+> >   	if (cpufreq_driver->resume) {
+> >   		ret =3D cpufreq_driver->resume(policy);
+> >   		if (ret) {
+> > -			printk(KERN_ERR "cpufreq: resume failed in ->resume "
+> > -					"step on CPU %u\n", policy->cpu);
+> > +			pr_err("resume failed in ->resume step on CPU %u\n",
+> > +			       policy->cpu);
+> >   			goto fail;
+> >   		}
+> >   	}
+> > @@ -1768,7 +1767,7 @@ int __cpufreq_driver_target(struct cpufreq_po=
+licy *policy,
+> >   		target_freq =3D policy->min;
+> >
+> >   	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u k=
+Hz\n",
+> > -			policy->cpu, target_freq, relation, old_target_freq);
+> > +		 policy->cpu, target_freq, relation, old_target_freq);
+> >
+> >   	/*
+> >   	 * This might look like a redundant call as we are checking it a=
+gain
+> > @@ -1813,8 +1812,7 @@ int __cpufreq_driver_target(struct cpufreq_po=
+licy *policy,
+> >   			freqs.flags =3D 0;
+> >
+> >   			pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
+> > -					__func__, policy->cpu, freqs.old,
+> > -					freqs.new);
+> > +				 __func__, policy->cpu, freqs.old, freqs.new);
+> >
+> >   			cpufreq_notify_transition(policy, &freqs,
+> >   					CPUFREQ_PRECHANGE);
+> > @@ -1823,7 +1821,7 @@ int __cpufreq_driver_target(struct cpufreq_po=
+licy *policy,
+> >   		retval =3D cpufreq_driver->target_index(policy, index);
+> >   		if (retval)
+> >   			pr_err("%s: Failed to change cpu frequency: %d\n",
+> > -					__func__, retval);
+> > +			       __func__, retval);
+> >
+> >   		if (notify)
+> >   			cpufreq_notify_post_transition(policy, &freqs, retval);
+> > @@ -1875,11 +1873,8 @@ static int __cpufreq_governor(struct cpufreq=
+_policy *policy,
+> >   		if (!gov)
+> >   			return -EINVAL;
+> >   		else {
+> > -			printk(KERN_WARNING "%s governor failed, too long"
+> > -			       " transition latency of HW, fallback"
+> > -			       " to %s governor\n",
+> > -			       policy->governor->name,
+> > -			       gov->name);
+> > +			pr_warn("%s governor failed, too long transition latency of HW,=
+ fallback to %s governor\n",
+> > +				policy->governor->name, gov->name);
+> >   			policy->governor =3D gov;
+> >   		}
+> >   	}
+> > @@ -1889,7 +1884,7 @@ static int __cpufreq_governor(struct cpufreq_=
+policy *policy,
+> >   			return -EINVAL;
+> >
+> >   	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
+> > -						policy->cpu, event);
+> > +		 policy->cpu, event);
+> >
+> >   	mutex_lock(&cpufreq_governor_lock);
+> >   	if ((policy->governor_enabled && event =3D=3D CPUFREQ_GOV_START)
+> > @@ -2020,8 +2015,8 @@ static int cpufreq_set_policy(struct cpufreq_=
+policy *policy,
+> >   {
+> >   	int ret =3D 0, failed =3D 1;
+> >
+> > -	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_poli=
+cy->cpu,
+> > -		new_policy->min, new_policy->max);
+> > +	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
+> > +		 new_policy->cpu, new_policy->min, new_policy->max);
+> >
+> >   	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cp=
+uinfo));
+> >
+> > @@ -2059,7 +2054,7 @@ static int cpufreq_set_policy(struct cpufreq_=
+policy *policy,
+> >   	policy->max =3D new_policy->max;
+> >
+> >   	pr_debug("new min and max freqs are %u - %u kHz\n",
+> > -					policy->min, policy->max);
+> > +		 policy->min, policy->max);
+> >
+> >   	if (cpufreq_driver->setpolicy) {
+> >   		policy->policy =3D new_policy->policy;
+> > @@ -2152,7 +2147,7 @@ int cpufreq_update_policy(unsigned int cpu)
+> >   	if (cpufreq_driver->get) {
+> >   		new_policy.cur =3D cpufreq_driver->get(cpu);
+> >   		if (!policy->cur) {
+> > -			pr_debug("Driver did not initialize current freq");
+> > +			pr_debug("Driver did not initialize current freq\n");
+> >   			policy->cur =3D new_policy.cur;
+> >   		} else {
+> >   			if (policy->cur !=3D new_policy.cur && has_target())
+> > @@ -2255,8 +2250,8 @@ int cpufreq_boost_trigger_state(int state)
+> >   		cpufreq_driver->boost_enabled =3D !state;
+> >   		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> >
+> > -		pr_err("%s: Cannot %s BOOST\n", __func__,
+> > -		       state ? "enable" : "disable");
+> > +		pr_err("%s: Cannot %s BOOST\n",
+> > +		       __func__, state ? "enable" : "disable");
+> >   	}
+> >
+> >   	return ret;
+> > @@ -2328,7 +2323,7 @@ int cpufreq_register_driver(struct cpufreq_dr=
+iver *driver_data)
+> >   		ret =3D cpufreq_sysfs_create_file(&boost.attr);
+> >   		if (ret) {
+> >   			pr_err("%s: cannot register global BOOST sysfs file\n",
+> > -				__func__);
+> > +			       __func__);
+> >   			goto err_null_driver;
+> >   		}
+> >   	}
+> > @@ -2351,7 +2346,7 @@ int cpufreq_register_driver(struct cpufreq_dr=
+iver *driver_data)
+> >   		/* if all ->init() calls failed, unregister */
+> >   		if (ret) {
+> >   			pr_debug("no CPU initialized for driver %s\n",
+> > -							driver_data->name);
+> > +				 driver_data->name);
+> >   			goto err_if_unreg;
+> >   		}
+> >   	}
+> >
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Then, in order to enable hibernation on a given platform, a
-platform_hibernation_ops structure may need to be registered with
-the system in order to save/restore any SoC-specific / cpu specific
-state needing (re)init over a suspend-to-disk/resume-from-disk cycle.
-
-=46or example:
-
-     - "secure" SoCs that have different sets of control registers
-       and/or different CR reg access patterns.
-
-     - SoCs with L2 caches as the activation sequence there is
-       SoC-dependent; a full off-on cycle for L2 is not done
-       by the hibernation support code.
-
-     - SoCs requiring steps on wakeup _before_ the "generic" parts
-       done by cpu_suspend / cpu_resume can work correctly.
-
-     - SoCs having persistent state which is maintained during suspend
-       and resume, but will be lost during the power off cycle after
-       suspend-to-disk.
-
-This is a rebase/rework of Frank Hofmann's v5 hibernation patchset.
-
-Acked-by: Russ Dill <Russ.Dill@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Nicolas Pitre <nico@linaro.org>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Jonathan Austin <jonathan.austin@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Uwe Kleine-K=C3=B6nig" <u.kleine-koenig@pengutronix.de>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Laura Abbott <lauraa@codeaurora.org>
-Cc: Jiang Liu <liuj97@gmail.com>
-Cc: Sricharan R <r.sricharan@ti.com>
-Cc: Victor Kamensky <victor.kamensky@linaro.org>
-Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Cc: Ben Dooks <ben.dooks@codethink.co.uk>
----
- arch/arm/kernel/Makefile    |    1 +
- arch/arm/kernel/hibernate.c |  107 +++++++++++++++++++++++++++++++++++=
-++++++++
- arch/arm/mm/Kconfig         |    5 ++
- include/linux/suspend.h     |    2 +
- 4 files changed, 115 insertions(+)
- create mode 100644 arch/arm/kernel/hibernate.c
-
-diff --git a/arch/arm/kernel/Makefile b/arch/arm/kernel/Makefile
-index a30fc9b..8afa848 100644
---- a/arch/arm/kernel/Makefile
-+++ b/arch/arm/kernel/Makefile
-@@ -39,6 +39,7 @@ obj-$(CONFIG_ARTHUR)		+=3D arthur.o
- obj-$(CONFIG_ISA_DMA)		+=3D dma-isa.o
- obj-$(CONFIG_PCI)		+=3D bios32.o isa.o
- obj-$(CONFIG_ARM_CPU_SUSPEND)	+=3D sleep.o suspend.o
-+obj-$(CONFIG_HIBERNATION)	+=3D hibernate.o
- obj-$(CONFIG_SMP)		+=3D smp.o
- ifdef CONFIG_MMU
- obj-$(CONFIG_SMP)		+=3D smp_tlb.o
-diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
-new file mode 100644
-index 0000000..036293d
---- /dev/null
-+++ b/arch/arm/kernel/hibernate.c
-@@ -0,0 +1,107 @@
-+/*
-+ * Hibernation support specific for ARM
-+ *
-+ * Derived from work on ARM hibernation support by:
-+ *
-+ * Ubuntu project, hibernation support for mach-dove
-+ * Copyright (C) 2010 Nokia Corporation (Hiroshi Doyu)
-+ * Copyright (C) 2010 Texas Instruments, Inc. (Teerth Reddy et al.)
-+ *  https://lkml.org/lkml/2010/6/18/4
-+ *  https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/02=
-7422.html
-+ *  https://patchwork.kernel.org/patch/96442/
-+ *
-+ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ *
-+ * License terms: GNU General Public License (GPL) version 2
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/suspend.h>
-+#include <asm/system_misc.h>
-+#include <asm/idmap.h>
-+#include <asm/suspend.h>
-+#include <asm/memory.h>
-+
-+extern const void __nosave_begin, __nosave_end;
-+
-+int pfn_is_nosave(unsigned long pfn)
-+{
-+	unsigned long nosave_begin_pfn =3D __phys_to_pfn(__pa(&__nosave_begin=
-));
-+	unsigned long nosave_end_pfn =3D __phys_to_pfn(__pa(&__nosave_end - 1=
-));
-+
-+	return (pfn >=3D nosave_begin_pfn) && (pfn <=3D nosave_end_pfn);
-+}
-+
-+void notrace save_processor_state(void)
-+{
-+	WARN_ON(num_online_cpus() !=3D 1);
-+	local_fiq_disable();
-+}
-+
-+void notrace restore_processor_state(void)
-+{
-+	local_fiq_enable();
-+}
-+
-+/*
-+ * Snapshot kernel memory and reset the system.
-+ *
-+ * swsusp_save() is executed in the suspend finisher so that the CPU
-+ * context pointer and memory are part of the saved image, which is
-+ * required by the resume kernel image to restart execution from
-+ * swsusp_arch_suspend().
-+ *
-+ * soft_restart is not technically needed, but is used to get success
-+ * returned from cpu_suspend.
-+ *
-+ * When soft reboot completes, the hibernation snapshot is written out=
-=2E
-+ */
-+static int notrace arch_save_image(unsigned long unused)
-+{
-+	int ret;
-+
-+	ret =3D swsusp_save();
-+	if (ret =3D=3D 0)
-+		soft_restart(virt_to_phys(cpu_resume));
-+	return ret;
-+}
-+
-+/*
-+ * Save the current CPU state before suspend / poweroff.
-+ */
-+int notrace swsusp_arch_suspend(void)
-+{
-+	return cpu_suspend(0, arch_save_image);
-+}
-+
-+/*
-+ * Restore page contents for physical pages that were in use during lo=
-ading
-+ * hibernation image.  Switch to idmap_pgd so the physical page tables
-+ * are overwritten with the same contents.
-+ */
-+static void notrace arch_restore_image(void *unused)
-+{
-+	struct pbe *pbe;
-+
-+	cpu_switch_mm(idmap_pgd, &init_mm);
-+	for (pbe =3D restore_pblist; pbe; pbe =3D pbe->next)
-+		copy_page(pbe->orig_address, pbe->address);
-+
-+	soft_restart(virt_to_phys(cpu_resume));
-+}
-+
-+static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
-+
-+/*
-+ * Resume from the hibernation image.
-+ * Due to the kernel heap / data restore, stack contents change undern=
-eath
-+ * and that would make function calls impossible; switch to a temporar=
-y
-+ * stack within the nosave region to avoid that problem.
-+ */
-+int swsusp_arch_resume(void)
-+{
-+	extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-+	call_with_stack(arch_restore_image, 0,
-+		resume_stack + ARRAY_SIZE(resume_stack));
-+	return 0;
-+}
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 1f8fed9..83707702 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -611,6 +611,11 @@ config CPU_USE_DOMAINS
- config IO_36
- 	bool
-=20
-+config ARCH_HIBERNATION_POSSIBLE
-+	bool
-+	depends on MMU
-+	default y if CPU_ARM920T || CPU_ARM926T || CPU_SA1100 || CPU_XSCALE |=
-| CPU_XSC3 || CPU_V6 || CPU_V6K || CPU_V7
-+
- comment "Processor Features"
-=20
- config ARM_LPAE
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index f73cabf..38bbf95 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -320,6 +320,8 @@ extern unsigned long get_safe_page(gfp_t gfp_mask);
- extern void hibernation_set_ops(const struct platform_hibernation_ops =
-*ops);
- extern int hibernate(void);
- extern bool system_entering_hibernation(void);
-+asmlinkage int swsusp_save(void);
-+extern struct pbe *restore_pblist;
- #else /* CONFIG_HIBERNATION */
- static inline void register_nosave_region(unsigned long b, unsigned lo=
-ng e) {}
- static inline void register_nosave_region_late(unsigned long b, unsign=
-ed long e) {}
 --=20
-1.7.9.5
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
