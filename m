@@ -1,135 +1,111 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 00/52] CPU hotplug: Fix issues with callback registration
-Date: Tue, 11 Mar 2014 01:31:28 +0100
-Message-ID: <2714771.szsVpCAzkq@vostro.rjw.lan>
-References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH] ACPI / sleep: Add extra checks for HW Reduced ACPI mode sleep states
+Date: Tue, 11 Mar 2014 01:42:42 +0100
+Message-ID: <3761293.HvgvPUpS1F@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55095 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:49955 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753166AbaCKAQL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Mar 2014 20:16:11 -0400
-In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+	with SMTP id S1752958AbaCKA1X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Mar 2014 20:27:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, "Li, Aubrey" <aubrey.li@linux.intel.com>
 
-On Tuesday, March 11, 2014 02:03:52 AM Srivatsa S. Bhat wrote:
-> Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Hi,
+If the HW Reduced ACPI mode bit is set in the FADT, ACPICA uses
+the optional sleep control and sleep status registers for making
+the system enter sleep states (including S5), so it is not possible
+to use system sleep states or power it off using ACPI if the HW
+Reduced ACPI mode bit is set and those registers are not available.
 
-> Many subsystems and drivers have the need to register CPU hotplug callbacks
-> from their init routines and also perform initialization for the CPUs that are
-> already online. But unfortunately there is no race-free way to achieve this
-> today.
-> 
-> For example, consider this piece of code:
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	put_online_cpus();
-> 
-> This is not safe because there is a possibility of an ABBA deadlock involving
-> the cpu_add_remove_lock and the cpu_hotplug.lock.
-> 
->           CPU 0                                         CPU 1
->           -----                                         -----
-> 
->    Acquire cpu_hotplug.lock
->    [via get_online_cpus()]
-> 
->                                               CPU online/offline operation
->                                               takes cpu_add_remove_lock
->                                               [via cpu_maps_update_begin()]
-> 
->    Try to acquire
->    cpu_add_remove_lock
->    [via register_cpu_notifier()]
-> 
->                                               CPU online/offline operation
->                                               tries to acquire cpu_hotplug.lock
->                                               [via cpu_hotplug_begin()]
-> 
->                             *** DEADLOCK! ***
-> 
-> 
-> Other combinations of callback registration also don't work correctly.
-> Examples:
-> 
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	put_online_cpus();
-> 
-> This can lead to double initialization if a hotplug operation occurs after
-> registering the notifier and before invoking get_online_cpus().
-> 
-> On the other hand, the following piece of code can miss hotplug events
-> altogether:
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	put_online_cpus();
->               ^
->               |   Race window; Can miss hotplug events here
->               v
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 
-> To solve these issues and provide a race-free method to register CPU hotplug
-> callbacks, this patchset introduces new variants of the callback registration
-> APIs that don't hold the cpu_add_remove_lock, and exports the
-> cpu_add_remove_lock via 2 new APIs cpu_notifier_register_begin/done() for use
-> by various subsystems. With this in place, the following code snippet will
-> register a hotplug callback as well as initialize already online CPUs without
-> any race conditions.
-> 
-> 	cpu_notifier_register_begin();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	/* This doesn't take the cpu_add_remove_lock */
-> 	__register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	cpu_notifier_register_done();
-> 
-> 
-> In this patchset, patch 1 adds lockdep annotations to catch the above mentioned
-> deadlock scenario. Patch 2 introduces the new APIs and infrastructure necessary
-> for race-free callback registration. The remaining patches perform tree-wide
-> conversions (to use this model).
-> 
-> This patchset has been hosted in the below git tree. It applies cleanly on
-> v3.14-rc6.
-> 
-> git://github.com/srivatsabhat/linux.git cpuhp-registration-fixes-v3
+For this reason, add a new function, acpi_sleep_state_supported(),
+checking if the HW Reduced ACPI mode bit is set and whether or not
+system sleep states are usable in that case in addition to checking
+the return value of acpi_get_sleep_type_data() and make the ACPI
+sleep setup routines use that function to check the availability of
+system sleep states.
 
-So to me, this is a useful patchset and it addresses a real problem.  It has
-gone through several rounds of review and recently I haven't really seen any
-objections against is from anyone.  On the contrary, I've seen ACKs from a
-number of people whom I trust.
+Among other things, this prevents the kernel from attempting to use
+ACPI for powering off HW Reduced ACPI systems in which the sleep
+control and sleep status registers are not present.
 
-Thus, if nobody objects, I'm going to take this series into the PM tree for 3.15.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/sleep.c |   32 +++++++++++++++-----------------
+ 1 file changed, 15 insertions(+), 17 deletions(-)
 
-Thanks!
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -600,19 +600,24 @@ static const struct platform_suspend_ops
+ 	.recover = acpi_pm_finish,
+ };
+ 
++static bool acpi_sleep_state_supported(u8 sleep_state)
++{
++	acpi_status status;
++	u8 type_a, type_b;
++
++	status = acpi_get_sleep_type_data(sleep_state, &type_a, &type_b);
++	return ACPI_SUCCESS(status) && (!acpi_gbl_reduced_hardware
++		|| (acpi_gbl_FADT.sleep_control.address
++			&& acpi_gbl_FADT.sleep_status.address));
++}
++
+ static void acpi_sleep_suspend_setup(void)
+ {
+ 	int i;
+ 
+-	for (i = ACPI_STATE_S1; i < ACPI_STATE_S4; i++) {
+-		acpi_status status;
+-		u8 type_a, type_b;
+-
+-		status = acpi_get_sleep_type_data(i, &type_a, &type_b);
+-		if (ACPI_SUCCESS(status)) {
++	for (i = ACPI_STATE_S1; i < ACPI_STATE_S4; i++)
++		if (acpi_sleep_state_supported(i))
+ 			sleep_states[i] = 1;
+-		}
+-	}
+ 
+ 	suspend_set_ops(old_suspend_ordering ?
+ 		&acpi_suspend_ops_old : &acpi_suspend_ops);
+@@ -740,11 +745,7 @@ static const struct platform_hibernation
+ 
+ static void acpi_sleep_hibernate_setup(void)
+ {
+-	acpi_status status;
+-	u8 type_a, type_b;
+-
+-	status = acpi_get_sleep_type_data(ACPI_STATE_S4, &type_a, &type_b);
+-	if (ACPI_FAILURE(status))
++	if (!acpi_sleep_state_supported(ACPI_STATE_S4))
+ 		return;
+ 
+ 	hibernation_set_ops(old_suspend_ordering ?
+@@ -793,8 +794,6 @@ static void acpi_power_off(void)
+ 
+ int __init acpi_sleep_init(void)
+ {
+-	acpi_status status;
+-	u8 type_a, type_b;
+ 	char supported[ACPI_S_STATE_COUNT * 3 + 1];
+ 	char *pos = supported;
+ 	int i;
+@@ -806,8 +805,7 @@ int __init acpi_sleep_init(void)
+ 	acpi_sleep_suspend_setup();
+ 	acpi_sleep_hibernate_setup();
+ 
+-	status = acpi_get_sleep_type_data(ACPI_STATE_S5, &type_a, &type_b);
+-	if (ACPI_SUCCESS(status)) {
++	if (acpi_sleep_state_supported(ACPI_STATE_S5)) {
+ 		sleep_states[ACPI_STATE_S5] = 1;
+ 		pm_power_off_prepare = acpi_power_off_prepare;
+ 		pm_power_off = acpi_power_off;
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
