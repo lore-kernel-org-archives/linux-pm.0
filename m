@@ -1,108 +1,214 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: SPEAr: Instantiate as platform_driver
-Date: Tue, 11 Mar 2014 02:04:40 +0100
-Message-ID: <3114708.oz7nbHtIzQ@vostro.rjw.lan>
-References: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <92837e0c0ed734bb82d3c7d78f58beb31b4e0c1f.1394446335.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, joshc@codeaurora.org, robherring2@gmail.com
+From: Ruchi Kandoi <kandoiruchi@google.com>
+Subject: [PATCH] power: add an API to log wakeup reasons
+Date: Mon, 10 Mar 2014 19:02:02 -0700
+Message-ID: <1394503322-25210-1-git-send-email-kandoiruchi@google.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, ghackmann@google.com, Ruchi Kandoi <kandoiruchi@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 10, 2014 03:43:18 PM Viresh Kumar wrote:
-> As multiplatform build is being adopted by more and more ARM platforms, initcall
-> function should be used very carefully. For example, when SPEAr cpufreq driver
-> is enabled on a kernel booted on a non-SPEAr board, we will get following boot
-> time error:
-> 
-> 	spear_cpufreq: Invalid cpufreq_tbl
-> 
-> To eliminate this undesired the effect, the patch changes SPEAr driver to have
-> it instantiated as a platform_driver. Then it will only run on platforms that
-> create the platform_device "spear-cpufreq".
-> 
-> This patch also creates platform node for SPEAr13xx boards.
-> 
-> Reported-by: Josh Cartwright <joshc@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Add API log_wakeup_reason() and expose it to userspace via sysfs path
+/sys/kernel/wakeup_reasons/last_resume_reason
+This is useful for power management diagnostic purposes.
 
-Whoever maintains the SPEAr platform, I need an ACK from that person in order
-to take this patch.
+Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
+Signed-off-by: Greg Hackmann <ghackmann@google.com>
+---
+ include/linux/wakeup_reason.h |  23 +++++++
+ kernel/power/Makefile         |   2 +-
+ kernel/power/wakeup_reason.c  | 140 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 164 insertions(+), 1 deletion(-)
+ create mode 100644 include/linux/wakeup_reason.h
+ create mode 100644 kernel/power/wakeup_reason.c
 
-> ---
->  arch/arm/mach-spear/spear1310.c |  1 +
->  arch/arm/mach-spear/spear1340.c |  1 +
->  drivers/cpufreq/spear-cpufreq.c | 13 +++++++++++--
->  3 files changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/mach-spear/spear1310.c b/arch/arm/mach-spear/spear1310.c
-> index 7ad0030..824b12a 100644
-> --- a/arch/arm/mach-spear/spear1310.c
-> +++ b/arch/arm/mach-spear/spear1310.c
-> @@ -28,6 +28,7 @@
->  static void __init spear1310_dt_init(void)
->  {
->  	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-> +	platform_device_register_simple("spear-cpufreq", -1, NULL, 0);
->  }
->  
->  static const char * const spear1310_dt_board_compat[] = {
-> diff --git a/arch/arm/mach-spear/spear1340.c b/arch/arm/mach-spear/spear1340.c
-> index 3fb6834..7b6bff7 100644
-> --- a/arch/arm/mach-spear/spear1340.c
-> +++ b/arch/arm/mach-spear/spear1340.c
-> @@ -143,6 +143,7 @@ static void __init spear1340_dt_init(void)
->  {
->  	of_platform_populate(NULL, of_default_bus_match_table,
->  			spear1340_auxdata_lookup, NULL);
-> +	platform_device_register_simple("spear-cpufreq", -1, NULL, 0);
->  }
->  
->  static const char * const spear1340_dt_board_compat[] = {
-> diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-> index 410b54a..4cfdcff 100644
-> --- a/drivers/cpufreq/spear-cpufreq.c
-> +++ b/drivers/cpufreq/spear-cpufreq.c
-> @@ -19,6 +19,7 @@
->  #include <linux/init.h>
->  #include <linux/module.h>
->  #include <linux/of_device.h>
-> +#include <linux/platform_device.h>
->  #include <linux/slab.h>
->  #include <linux/types.h>
->  
-> @@ -166,7 +167,7 @@ static struct cpufreq_driver spear_cpufreq_driver = {
->  	.attr		= cpufreq_generic_attr,
->  };
->  
-> -static int spear_cpufreq_driver_init(void)
-> +static int spear_cpufreq_probe(struct platform_device *pdev)
->  {
->  	struct device_node *np;
->  	const struct property *prop;
-> @@ -234,7 +235,15 @@ out_put_node:
->  	of_node_put(np);
->  	return ret;
->  }
-> -late_initcall(spear_cpufreq_driver_init);
-> +
-> +static struct platform_driver spear_cpufreq_platdrv = {
-> +	.driver = {
-> +		.name	= "spear-cpufreq",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.probe		= spear_cpufreq_probe,
-> +};
-> +module_platform_driver(spear_cpufreq_platdrv);
->  
->  MODULE_AUTHOR("Deepak Sikri <deepak.sikri@st.com>");
->  MODULE_DESCRIPTION("SPEAr CPUFreq driver");
-> 
-
+diff --git a/include/linux/wakeup_reason.h b/include/linux/wakeup_reason.h
+new file mode 100644
+index 0000000..7ce50f0
+--- /dev/null
++++ b/include/linux/wakeup_reason.h
+@@ -0,0 +1,23 @@
++/*
++ * include/linux/wakeup_reason.h
++ *
++ * Logs the reason which caused the kernel to resume
++ * from the suspend mode.
++ *
++ * Copyright (C) 2014 Google, Inc.
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _LINUX_WAKEUP_REASON_H
++#define _LINUX_WAKEUP_REASON_H
++
++void log_wakeup_reason(int irq);
++
++#endif /* _LINUX_WAKEUP_REASON_H */
+diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+index 29472bf..f98f021 100644
+--- a/kernel/power/Makefile
++++ b/kernel/power/Makefile
+@@ -5,7 +5,7 @@ obj-y				+= qos.o
+ obj-$(CONFIG_PM)		+= main.o
+ obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
+ obj-$(CONFIG_FREEZER)		+= process.o
+-obj-$(CONFIG_SUSPEND)		+= suspend.o
++obj-$(CONFIG_SUSPEND)		+= suspend.o wakeup_reason.o
+ obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
+ obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o \
+ 				   block_io.o
+diff --git a/kernel/power/wakeup_reason.c b/kernel/power/wakeup_reason.c
+new file mode 100644
+index 0000000..188a6bf
+--- /dev/null
++++ b/kernel/power/wakeup_reason.c
+@@ -0,0 +1,140 @@
++/*
++ * kernel/power/wakeup_reason.c
++ *
++ * Logs the reasons which caused the kernel to resume from
++ * the suspend mode.
++ *
++ * Copyright (C) 2014 Google, Inc.
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/wakeup_reason.h>
++#include <linux/kernel.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/notifier.h>
++#include <linux/suspend.h>
++
++
++#define MAX_WAKEUP_REASON_IRQS 32
++static int irq_list[MAX_WAKEUP_REASON_IRQS];
++static int irqcount;
++static struct kobject *wakeup_reason;
++static spinlock_t resume_reason_lock;
++
++static ssize_t reason_show(struct kobject *kobj, struct kobj_attribute *attr,
++		char *buf)
++{
++	int irq_no, buf_offset = 0;
++	struct irq_desc *desc;
++	spin_lock(&resume_reason_lock);
++	for (irq_no = 0; irq_no < irqcount; irq_no++) {
++		desc = irq_to_desc(irq_list[irq_no]);
++		if (desc && desc->action && desc->action->name)
++			buf_offset += sprintf(buf + buf_offset, "%d %s\n",
++					irq_list[irq_no], desc->action->name);
++		else
++			buf_offset += sprintf(buf + buf_offset, "%d\n",
++					irq_list[irq_no]);
++	}
++	spin_unlock(&resume_reason_lock);
++	return buf_offset;
++}
++
++static struct kobj_attribute resume_reason = __ATTR(last_resume_reason, 0666,
++		reason_show, NULL);
++
++static struct attribute *attrs[] = {
++	&resume_reason.attr,
++	NULL,
++};
++static struct attribute_group attr_group = {
++	.attrs = attrs,
++};
++
++/*
++ * logs all the wake up reasons to the kernel
++ * stores the irqs to expose them to the userspace via sysfs
++ */
++void log_wakeup_reason(int irq)
++{
++	struct irq_desc *desc;
++	desc = irq_to_desc(irq);
++	if (desc && desc->action && desc->action->name)
++		printk(KERN_INFO "Resume caused by IRQ %d, %s\n", irq,
++				desc->action->name);
++	else
++		printk(KERN_INFO "Resume caused by IRQ %d\n", irq);
++
++	spin_lock(&resume_reason_lock);
++	if (irqcount == MAX_WAKEUP_REASON_IRQS) {
++		spin_unlock(&resume_reason_lock);
++		printk(KERN_WARNING "Resume caused by more than %d IRQs\n",
++				MAX_WAKEUP_REASON_IRQS);
++		return;
++	}
++
++	irq_list[irqcount++] = irq;
++	spin_unlock(&resume_reason_lock);
++}
++
++/* Detects a suspend and clears all the previous wake up reasons*/
++static int wakeup_reason_pm_event(struct notifier_block *notifier,
++		unsigned long pm_event, void *unused)
++{
++	switch (pm_event) {
++	case PM_SUSPEND_PREPARE:
++		spin_lock(&resume_reason_lock);
++		irqcount = 0;
++		spin_unlock(&resume_reason_lock);
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block wakeup_reason_pm_notifier_block = {
++	.notifier_call = wakeup_reason_pm_event,
++};
++
++/* Initializes the sysfs parameter
++ * registers the pm_event notifier
++ */
++int __init wakeup_reason_init(void)
++{
++	int retval;
++	spin_lock_init(&resume_reason_lock);
++	retval = register_pm_notifier(&wakeup_reason_pm_notifier_block);
++	if (retval)
++		printk(KERN_WARNING "[%s] failed to register PM notifier %d\n",
++				__func__, retval);
++
++	wakeup_reason = kobject_create_and_add("wakeup_reasons", kernel_kobj);
++	if (!wakeup_reason) {
++		printk(KERN_WARNING "[%s] failed to create a sysfs kobject\n",
++				__func__);
++		return 1;
++	}
++	retval = sysfs_create_group(wakeup_reason, &attr_group);
++	if (retval) {
++		kobject_put(wakeup_reason);
++		printk(KERN_WARNING "[%s] failed to create a sysfs group %d\n",
++				__func__, retval);
++	}
++	return 0;
++}
++
++late_initcall(wakeup_reason_init);
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.9.0.279.gdc9e3eb
