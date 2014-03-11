@@ -1,40 +1,54 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v2] cpufreq: Reformat printk() statements
-Date: Tue, 11 Mar 2014 10:16:52 -0700
-Message-ID: <1394558212.21085.57.camel@joe-AO722>
-References: <1394557380-15054-1-git-send-email-soren.brinkmann@xilinx.com>
-	 <531F441C.5070107@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <531F441C.5070107@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Soren Brinkmann <soren.brinkmann@xilinx.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v8 1/2] ARM: avoid tracers in soft_restart
+Date: Tue, 11 Mar 2014 11:40:13 -0700
+Message-ID: <1394563214-26007-2-git-send-email-sebastian.capella@linaro.org>
+References: <1394563214-26007-1-git-send-email-sebastian.capella@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f45.google.com ([209.85.160.45]:47542 "EHLO
+	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755131AbaCKSkX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 14:40:23 -0400
+Received: by mail-pb0-f45.google.com with SMTP id uo5so9173664pbc.4
+        for <linux-pm@vger.kernel.org>; Tue, 11 Mar 2014 11:40:23 -0700 (PDT)
+In-Reply-To: <1394563214-26007-1-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>, Robin Holt <robin.m.holt@gmail.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Steven Capper <steve.capper@linaro.org>, Stephen Warren <swarren@nvidia.com>, Tejun Heo <tj@kernel.org>
 
-On Tue, 2014-03-11 at 10:13 -0700, Dirk Brandewie wrote:
-> On 03/11/2014 10:03 AM, Soren Brinkmann wrote:
-> > From: Joe Perches <joe@perches.com>
-> >   - Add missing newlines
-> >   - Coalesce format fragments
-> >   - Convert printks to pr_<level>
-> >   - Align arguments
-> This introduces a bunch of lines over 80 charaters long.
+Use of tracers in local_irq_disable is causes recursive aborts when
+called with irqs disabled and using a temporary stack (hibernation).
+Replace local_irq_disable with raw_local_irq_disable instead to
+avoid tracers.
 
-Intentionally.
+Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Robin Holt <robin.m.holt@gmail.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>
+Cc: Steven Capper <steve.capper@linaro.org>
+Cc: Stephen Warren <swarren@nvidia.com>
+Cc: Tejun Heo <tj@kernel.org>
+---
+ arch/arm/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-from: Documentation/CodingStyle
-
-		Chapter 2: Breaking long lines and strings
-
-Coding style is all about readability and maintainability using commonly
-available tools.
-
-[]
-
-never break user-visible strings such as
-printk messages, because that breaks the ability to grep for them.
-
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index 92f7b15..f58b723 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -100,7 +100,7 @@ void soft_restart(unsigned long addr)
+ 	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
+ 
+ 	/* Disable interrupts first */
+-	local_irq_disable();
++	raw_local_irq_disable();
+ 	local_fiq_disable();
+ 
+ 	/* Disable the L2 if we're the last man standing. */
+-- 
+1.7.9.5
 
