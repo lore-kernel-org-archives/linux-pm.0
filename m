@@ -1,66 +1,66 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] PM: Add missing "freeze" state
-Date: Tue, 11 Mar 2014 16:41:58 +0530
-Message-ID: <531EEF7E.20107@linux.vnet.ibm.com>
-References: <1394536091-28881-1-git-send-email-geert@linux-m68k.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpufreq: enable ARM drivers on arm64
+Date: Tue, 11 Mar 2014 12:27:01 +0000
+Message-ID: <531F0115.4000109@arm.com>
+References: <1393208877-15797-1-git-send-email-broonie@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1394536091-28881-1-git-send-email-geert@linux-m68k.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:48961 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754831AbaCKM1F convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 08:27:05 -0400
+In-Reply-To: <1393208877-15797-1-git-send-email-broonie@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Mark Brown <broonie@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rob.herring@linaro.org" <rob.herring@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 03/11/2014 04:38 PM, Geert Uytterhoeven wrote:
-> From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+Hi Mark,
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Sorry for late response, looks like Rafael has pulled this change, but ...
+
+On 24/02/14 02:27, Mark Brown wrote:
+> From: Rob Herring <rob.herring@calxeda.com>
+>
+> Enable cpufreq and power kconfig menus on arm64 along with arm cpufreq
+> drivers. The power menu is needed for OPP support. At least on Calxeda
+> systems, the same cpufreq driver is used for arm and arm64 based
+> systems.
+>
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Mark Brown <broonie@linaro.org>
+> ---
+>   arch/arm64/Kconfig      | 8 ++++++++
+>   drivers/cpufreq/Kconfig | 2 +-
+>   2 files changed, 9 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index fea7b47..939e95a 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -327,6 +327,14 @@ source "drivers/cpuidle/Kconfig"
+>
+>   endmenu
+>
+> +menu "Power management options"
+> +
+> +source "kernel/power/Kconfig"
+> +
+> +source "drivers/cpufreq/Kconfig"
+> +
+> +endmenu
+> +
+
+Is this patch based on recent kernels ? If so, either it should have caused
+conflicts or silently duplicated the entries. "Power management options" are
+already present.
+
+Also to be more consistent it with menu options, I would prefer this to be
+placed under "CPU Power Management" like CPUIdle.
 
 Regards,
-Srivatsa S. Bhat
+Sudeep
 
-> ---
-> v2:
->   - Update comments for state_show() as suggested by Srivatsa S. Bhat
->     <srivatsa.bhat@linux.vnet.ibm.com>
-> 
->  Documentation/ABI/testing/sysfs-power |    5 +++--
->  kernel/power/main.c                   |    4 ++--
->  2 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-> index 205a73878441..64c9276e9421 100644
-> --- a/Documentation/ABI/testing/sysfs-power
-> +++ b/Documentation/ABI/testing/sysfs-power
-> @@ -12,8 +12,9 @@ Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
->  Description:
->  		The /sys/power/state file controls the system power state.
->  		Reading from this file returns what states are supported,
-> -		which is hard-coded to 'standby' (Power-On Suspend), 'mem'
-> -		(Suspend-to-RAM), and 'disk' (Suspend-to-Disk).
-> +		which is hard-coded to 'freeze' (Low-Power Idle), 'standby'
-> +		(Power-On Suspend), 'mem' (Suspend-to-RAM), and 'disk'
-> +		(Suspend-to-Disk).
-> 
->  		Writing to this file one of these strings causes the system to
->  		transition into that state. Please see the file
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 1d1bf630e6e9..6271bc4073ef 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -282,8 +282,8 @@ struct kobject *power_kobj;
->   *	state - control system power state.
->   *
->   *	show() returns what states are supported, which is hard-coded to
-> - *	'standby' (Power-On Suspend), 'mem' (Suspend-to-RAM), and
-> - *	'disk' (Suspend-to-Disk).
-> + *	'freeze' (Low-Power Idle), 'standby' (Power-On Suspend),
-> + *	'mem' (Suspend-to-RAM), and 'disk' (Suspend-to-Disk).
->   *
->   *	store() accepts one of those strings, translates it into the
->   *	proper enumerated value, and initiates a suspend transition.
-> 
