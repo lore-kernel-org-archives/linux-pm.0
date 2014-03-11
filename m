@@ -1,102 +1,249 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v8 0/2] hibernation support on ARM
-Date: Tue, 11 Mar 2014 11:40:12 -0700
-Message-ID: <1394563214-26007-1-git-send-email-sebastian.capella@linaro.org>
+Subject: [PATCH v8 2/2] ARM hibernation / suspend-to-disk
+Date: Tue, 11 Mar 2014 11:40:14 -0700
+Message-ID: <1394563214-26007-3-git-send-email-sebastian.capella@linaro.org>
+References: <1394563214-26007-1-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:57755 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755281AbaCKSk2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 14:40:28 -0400
+Received: by mail-pa0-f41.google.com with SMTP id fa1so9192112pad.14
+        for <linux-pm@vger.kernel.org>; Tue, 11 Mar 2014 11:40:27 -0700 (PDT)
+In-Reply-To: <1394563214-26007-1-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Laura Abbott <lauraa@codeaurora.org>, Jiang Liu <liuj97@gmail.com>, Sricharan R <r.sricharan@ti.com>, Victor Kamensky <victor.kamensky@linaro.org>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Ben Dooks <ben.dooks@codethink.co.uk>
 
+=46rom: Russ Dill <Russ.Dill@ti.com>
 
-Patches adding support for hibernation on ARM
- - ARM hibernation / suspend-to-disk
- - Change soft_restart to use non-tracing raw_local_irq_disable
+Enable hibernation for ARM architectures and provide ARM
+architecture specific calls used during hibernation.
 
-Patches based on v3.14-rc5 tag, verified hibernation on beaglebone black on a
-branch based on 3.13 merged with initial omap support from Russ Dill which
-can be found here (includes v1 patchset):
-http://git.linaro.org/git-ro/people/sebastian.capella/linux.git hibernation_3.13_russMerge
+The swsusp hibernation framework depends on the
+platform first having functional suspend/resume.
 
-[PATCH v8 1/2] ARM: avoid tracers in soft_restart
- arch/arm/kernel/process.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Then, in order to enable hibernation on a given platform, a
+platform_hibernation_ops structure may need to be registered with
+the system in order to save/restore any SoC-specific / cpu specific
+state needing (re)init over a suspend-to-disk/resume-from-disk cycle.
 
- Use raw_local_irq_disable in place of local_irq_disable to avoid
- infinite abort recursion while tracing. (unchanged since v3)
+=46or example:
 
-[PATCH v8 2/2] ARM hibernation / suspend-to-disk
+     - "secure" SoCs that have different sets of control registers
+       and/or different CR reg access patterns.
+
+     - SoCs with L2 caches as the activation sequence there is
+       SoC-dependent; a full off-on cycle for L2 is not done
+       by the hibernation support code.
+
+     - SoCs requiring steps on wakeup _before_ the "generic" parts
+       done by cpu_suspend / cpu_resume can work correctly.
+
+     - SoCs having persistent state which is maintained during suspend
+       and resume, but will be lost during the power off cycle after
+       suspend-to-disk.
+
+This is a rebase/rework of Frank Hofmann's v5 hibernation patchset.
+
+Acked-by: Russ Dill <Russ.Dill@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Reviewed-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Nicolas Pitre <nico@linaro.org>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Jonathan Austin <jonathan.austin@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "Uwe Kleine-K=C3=B6nig" <u.kleine-koenig@pengutronix.de>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Laura Abbott <lauraa@codeaurora.org>
+Cc: Jiang Liu <liuj97@gmail.com>
+Cc: Sricharan R <r.sricharan@ti.com>
+Cc: Victor Kamensky <victor.kamensky@linaro.org>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: Ben Dooks <ben.dooks@codethink.co.uk>
+---
  arch/arm/kernel/Makefile    |    1 +
- arch/arm/kernel/hibernate.c |  107 +++++++++++++++++++++++++++++++++++++++++++
+ arch/arm/kernel/hibernate.c |  107 +++++++++++++++++++++++++++++++++++=
+++++++++
  arch/arm/mm/Kconfig         |    5 ++
  include/linux/suspend.h     |    2 +
  4 files changed, 115 insertions(+)
+ create mode 100644 arch/arm/kernel/hibernate.c
 
- Adds support for ARM based hibernation
+diff --git a/arch/arm/kernel/Makefile b/arch/arm/kernel/Makefile
+index a30fc9b..8afa848 100644
+--- a/arch/arm/kernel/Makefile
++++ b/arch/arm/kernel/Makefile
+@@ -39,6 +39,7 @@ obj-$(CONFIG_ARTHUR)		+=3D arthur.o
+ obj-$(CONFIG_ISA_DMA)		+=3D dma-isa.o
+ obj-$(CONFIG_PCI)		+=3D bios32.o isa.o
+ obj-$(CONFIG_ARM_CPU_SUSPEND)	+=3D sleep.o suspend.o
++obj-$(CONFIG_HIBERNATION)	+=3D hibernate.o
+ obj-$(CONFIG_SMP)		+=3D smp.o
+ ifdef CONFIG_MMU
+ obj-$(CONFIG_SMP)		+=3D smp_tlb.o
+diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
+new file mode 100644
+index 0000000..036293d
+--- /dev/null
++++ b/arch/arm/kernel/hibernate.c
+@@ -0,0 +1,107 @@
++/*
++ * Hibernation support specific for ARM
++ *
++ * Derived from work on ARM hibernation support by:
++ *
++ * Ubuntu project, hibernation support for mach-dove
++ * Copyright (C) 2010 Nokia Corporation (Hiroshi Doyu)
++ * Copyright (C) 2010 Texas Instruments, Inc. (Teerth Reddy et al.)
++ *  https://lkml.org/lkml/2010/6/18/4
++ *  https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/02=
+7422.html
++ *  https://patchwork.kernel.org/patch/96442/
++ *
++ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
++ *
++ * License terms: GNU General Public License (GPL) version 2
++ */
++
++#include <linux/mm.h>
++#include <linux/suspend.h>
++#include <asm/system_misc.h>
++#include <asm/idmap.h>
++#include <asm/suspend.h>
++#include <asm/memory.h>
++
++extern const void __nosave_begin, __nosave_end;
++
++int pfn_is_nosave(unsigned long pfn)
++{
++	unsigned long nosave_begin_pfn =3D __phys_to_pfn(__pa(&__nosave_begin=
+));
++	unsigned long nosave_end_pfn =3D __phys_to_pfn(__pa(&__nosave_end - 1=
+));
++
++	return (pfn >=3D nosave_begin_pfn) && (pfn <=3D nosave_end_pfn);
++}
++
++void notrace save_processor_state(void)
++{
++	WARN_ON(num_online_cpus() !=3D 1);
++	local_fiq_disable();
++}
++
++void notrace restore_processor_state(void)
++{
++	local_fiq_enable();
++}
++
++/*
++ * Snapshot kernel memory and reset the system.
++ *
++ * swsusp_save() is executed in the suspend finisher so that the CPU
++ * context pointer and memory are part of the saved image, which is
++ * required by the resume kernel image to restart execution from
++ * swsusp_arch_suspend().
++ *
++ * soft_restart is not technically needed, but is used to get success
++ * returned from cpu_suspend.
++ *
++ * When soft reboot completes, the hibernation snapshot is written out=
+=2E
++ */
++static int notrace arch_save_image(unsigned long unused)
++{
++	int ret;
++
++	ret =3D swsusp_save();
++	if (ret =3D=3D 0)
++		soft_restart(virt_to_phys(cpu_resume));
++	return ret;
++}
++
++/*
++ * Save the current CPU state before suspend / poweroff.
++ */
++int notrace swsusp_arch_suspend(void)
++{
++	return cpu_suspend(0, arch_save_image);
++}
++
++/*
++ * Restore page contents for physical pages that were in use during lo=
+ading
++ * hibernation image.  Switch to idmap_pgd so the physical page tables
++ * are overwritten with the same contents.
++ */
++static void notrace arch_restore_image(void *unused)
++{
++	struct pbe *pbe;
++
++	cpu_switch_mm(idmap_pgd, &init_mm);
++	for (pbe =3D restore_pblist; pbe; pbe =3D pbe->next)
++		copy_page(pbe->orig_address, pbe->address);
++
++	soft_restart(virt_to_phys(cpu_resume));
++}
++
++static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
++
++/*
++ * Resume from the hibernation image.
++ * Due to the kernel heap / data restore, stack contents change undern=
+eath
++ * and that would make function calls impossible; switch to a temporar=
+y
++ * stack within the nosave region to avoid that problem.
++ */
++int swsusp_arch_resume(void)
++{
++	extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
++	call_with_stack(arch_restore_image, 0,
++		resume_stack + ARRAY_SIZE(resume_stack));
++	return 0;
++}
+diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+index 1f8fed9..83707702 100644
+--- a/arch/arm/mm/Kconfig
++++ b/arch/arm/mm/Kconfig
+@@ -611,6 +611,11 @@ config CPU_USE_DOMAINS
+ config IO_36
+ 	bool
+=20
++config ARCH_HIBERNATION_POSSIBLE
++	bool
++	depends on MMU
++	default y if CPU_ARM920T || CPU_ARM926T || CPU_SA1100 || CPU_XSCALE |=
+| CPU_XSC3 || CPU_V6 || CPU_V6K || CPU_V7
++
+ comment "Processor Features"
+=20
+ config ARM_LPAE
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index f73cabf..38bbf95 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -320,6 +320,8 @@ extern unsigned long get_safe_page(gfp_t gfp_mask);
+ extern void hibernation_set_ops(const struct platform_hibernation_ops =
+*ops);
+ extern int hibernate(void);
+ extern bool system_entering_hibernation(void);
++asmlinkage int swsusp_save(void);
++extern struct pbe *restore_pblist;
+ #else /* CONFIG_HIBERNATION */
+ static inline void register_nosave_region(unsigned long b, unsigned lo=
+ng e) {}
+ static inline void register_nosave_region_late(unsigned long b, unsign=
+ed long e) {}
+--=20
+1.7.9.5
 
-
-Additional notes:
------------------
-
-There are two checkpatch warnings added by this patch.  These follow
-behavior in existing hibernation implementations on other platforms.
-
-
-    WARNING: externs should be avoided in .c files
-    #108: FILE: arch/arm/kernel/hibernate.c:25:
-    +extern const void __nosave_begin, __nosave_end;
-
-  This extern is picking up the linker nosave region definitions, only
-  used in hibernate.  Follows same extern line used mips, powerpc, s390,
-  sh, sparc, x86 & unicore32
-
-    WARNING: externs should be avoided in .c files
-    #186: FILE: arch/arm/kernel/hibernate.c:103:
-    +   extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-
-  This extern is used in the arch/arm/ in hibernate, process and bL_switcher
-
-
-Changes in v8:
---------------
-* remove definition and use of __pa_symbol
-
-Changes in v7:
---------------
-* remove use of RELOC_HIDE macro
-* remove unused #includes
-* fixup comment for arch_restore_image
-* ensure alignment of resume stack on 8 byte boundary
-
-Changes in v6:
---------------
-* Simplify static variable names
-
-Changes in v5:
---------------
-* Fixed checkpatch warning on trailing whitespace
-
-Changes in v4:
---------------
-* updated comment for soft_restart with review feedback
-* dropped freeze_processes patch which was queued separately
-  to 3.14 by Rafael Wysocki:
-  https://lkml.org/lkml/2014/2/25/683
-
-Changes in v3:
---------------
-* added comment to use of soft_restart
-* drop irq disable soft_restart patch
-* add patch to avoid tracers in soft_restart by using raw_local_irq_*
-
-Changes in v2:
---------------
-* Removed unneeded flush_thread, use of __naked and cpu_init.
-* dropped Cyril Chemparathy <cyril@ti.com> from Cc: list as
-  emails are bouncing.
-
-Thanks,
-
-Sebastian Capella
