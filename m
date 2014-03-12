@@ -1,166 +1,349 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Wed, 12 Mar 2014 00:53:16 +0100
-Message-ID: <4501120.an62ETExKs@vostro.rjw.lan>
-References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <3509059.VnUUJct98J@vostro.rjw.lan> <3616342.xJi2LEuFEF@vostro.rjw.lan>
+Subject: Re: [PATCH v2] cpufreq: Reformat printk() statements
+Date: Wed, 12 Mar 2014 01:12:20 +0100
+Message-ID: <1810111.Io1c6LMg6e@vostro.rjw.lan>
+References: <1394557380-15054-1-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3616342.xJi2LEuFEF@vostro.rjw.lan>
+In-Reply-To: <1394557380-15054-1-git-send-email-soren.brinkmann@xilinx.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Patrik Lundquist <patrik.lundquist@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Joe Perches <joe@perches.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 12, 2014 12:09:13 AM Rafael J. Wysocki wrote:
-> On Wednesday, March 12, 2014 12:07:03 AM Rafael J. Wysocki wrote:
-> > On Tuesday, March 11, 2014 11:48:30 PM Rafael J. Wysocki wrote:
-> > > On Tuesday, March 11, 2014 01:55:23 PM Dirk Brandewie wrote:
-> > > > On 03/11/2014 01:57 PM, Rafael J. Wysocki wrote:
-> > > > > On Tuesday, March 11, 2014 09:52:42 PM Rafael J. Wysocki wrote:
-> > > > >> On Tuesday, March 11, 2014 01:17:20 PM Dirk Brandewie wrote:
-> > > > >>> On 03/11/2014 01:20 PM, Rafael J. Wysocki wrote:
-> > > > >>>> On Tuesday, March 11, 2014 10:58:59 AM Dirk Brandewie wrote:
-> > > > >>>>> Hi Patrick,
-> > > > >>>>>
-> > > > >>>>> Sorry for the slow response you caught me taking a few days off :-)
-> > > > >>>>>
-> > > > >>>>> On 03/07/2014 07:49 AM, Patrik Lundquist wrote:
-> > > > >>>>>> Hi,
-> > > > >>>>>>
-> > > > >>>>>> booting 3.13.5 on a dual socket Ivy Bridge-EP resulted in this error:
-> > > > >>>>>>
-> > > > >>>>>> [    0.194139] smpboot: CPU0: Intel(R) Xeon(R) CPU E5-2687W v2 @
-> > > > >>>>>> 3.40GHz (fam: 06, model: 3e, stepping: 04)
-> > > > >>>>>> ...
-> > > > >>>>>> [    0.246755] x86: Booting SMP configuration:
-> > > > >>>>>> [    0.250935] .... node  #0, CPUs:        #1  #2  #3  #4  #5  #6  #7
-> > > > >>>>>> [    0.357648] .... node  #1, CPUs:    #8  #9 #10 #11 #12 #13 #14 #15
-> > > > >>>>>> [    0.553293] x86: Booted up 2 nodes, 16 CPUs
-> > > > >>>>>> [    0.557666] smpboot: Total of 16 processors activated (108850.19 BogoMIPS)
-> > > > >>>>>> ...
-> > > > >>>>>> [    5.210204] Intel P-state driver initializing.
-> > > > >>>>>> [    5.232407] Intel pstate controlling: cpu 0
-> > > > >>>>>> [    5.253628] Intel pstate controlling: cpu 1
-> > > > >>>>>> [    5.274899] cpufreq: __cpufreq_add_dev: ->get() failed
-> > > > >>>>>> [    5.294856] Intel pstate controlling: cpu 2
-> > > > >>>>>> [    5.313553] Intel pstate controlling: cpu 3
-> > > > >>>>>> [    5.332526] Intel pstate controlling: cpu 4
-> > > > >>>>>> [    5.352347] Intel pstate controlling: cpu 5
-> > > > >>>>>> [    5.372112] Intel pstate controlling: cpu 6
-> > > > >>>>>> [    5.391097] Intel pstate controlling: cpu 7
-> > > > >>>>>> [    5.410272] Intel pstate controlling: cpu 8
-> > > > >>>>>> [    5.429092] Intel pstate controlling: cpu 9
-> > > > >>>>>> [    5.447714] Intel pstate controlling: cpu 10
-> > > > >>>>>> [    5.465872] Intel pstate controlling: cpu 11
-> > > > >>>>>> [    5.482942] Intel pstate controlling: cpu 12
-> > > > >>>>>> [    5.498414] Intel pstate controlling: cpu 13
-> > > > >>>>>> [    5.513586] Intel pstate controlling: cpu 14
-> > > > >>>>>> [    5.529200] Intel pstate controlling: cpu 15
-> > > > >>>>>>
-> > > > >>>>>> CPU 1 is alive and well but missing the cpufreq driver. The system is
-> > > > >>>>>> running fine otherwise.
-> > > > >>>>>
-> > > > >>>>> This is a regression introduced by commit
-> > > > >>>>> da60ce9f2fa cpufreq: call cpufreq_driver->get() after calling ->init()
-> > > > >>>>
-> > > > >>>> So the problem is that ->get() may return 0 in intel_pstate and that causes
-> > > > >>>> the core's _add function to abort?  That would mean sample->freq equal to 0,
-> > > > >>>> which shouldn't happen after intel_pstate_sample() called by intel_pstate_init_cpu().
-> > > > >>>>
-> > > > >>>> Or am I missing anything?
-> > > > >>>>
-> > > > >>>
-> > > > >>> The problem is that the core has been running less than 1% of the time based on
-> > > > >>> the absolute values of aperf/mperf and the second sample has not been taken to
-> > > > >>> get a more precise delta.
-> > > > >>>
-> > > > >>> I thought about running sample twice during init but didn't want to propose it
-> > > > >>> until I made sure I was not going to break anything else.
-> > > > >>
-> > > > >> Well, ->setpolicy drivers are a special case anyway, so we can simply skip the
-> > > > >> current frequency updates in __cpufreq_add_dev() and cpufreq_update_policy()
-> > > > >> for them.
-> > > > >
-> > > > > In other words, we can do something like in the patch below I suppose?
-> > > > >
-> > > > > Rafael
-> > > > >
-> > > > >
-> > > > > ---
-> > > > >   drivers/cpufreq/cpufreq.c |    4 ++--
-> > > > >   1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > >
-> > > > > Index: linux-pm/drivers/cpufreq/cpufreq.c
-> > > > > ===================================================================
-> > > > > --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> > > > > +++ linux-pm/drivers/cpufreq/cpufreq.c
-> > > > > @@ -1137,7 +1137,7 @@ static int __cpufreq_add_dev(struct devi
-> > > > >   		per_cpu(cpufreq_cpu_data, j) = policy;
-> > > > >   	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> > > > >
-> > > > > -	if (cpufreq_driver->get) {
-> > > > > +	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
-> > > > >   		policy->cur = cpufreq_driver->get(policy->cpu);
-> > > > >   		if (!policy->cur) {
-> > > > >   			pr_err("%s: ->get() failed\n", __func__);
-> > > > > @@ -2150,7 +2150,7 @@ int cpufreq_update_policy(unsigned int c
-> > > > >   	 * BIOS might change freq behind our back
-> > > > >   	 * -> ask driver for current freq and notify governors about a change
-> > > > >   	 */
-> > > > > -	if (cpufreq_driver->get) {
-> > > > > +	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
-> > > > >   		new_policy.cur = cpufreq_driver->get(cpu);
-> > > > >   		if (WARN_ON(!new_policy.cur)) {
-> > > > >   			ret = -EIO;
-> > > > >
-> > > > or use has_target()
-> > > 
-> > > Yes.
-> > > 
-> > > Modified patch is appended.  Patrik, can you please check if it helps?
-> > 
-> > Well, actually, I think that checking ->setpolicy is more appropriate, because
-> > both places modified by the patch above are before calling cpufreq_set_policy()
-> > and that quite explicitly handles ->setpolicy drivers in a special way.
-> > 
-> > It may be equivalent, but that's not obvious from the way the code is written.
-> 
-> And by the way, it would be good to clarify this particular thing.
-> 
-> Is having ->target set mutually exclusive with having ->setpolicy set?
+On Tuesday, March 11, 2014 10:03:00 AM Soren Brinkmann wrote:
+> From: Joe Perches <joe@perches.com>
+>=20
+>  - Add missing newlines
+>  - Coalesce format fragments
+>  - Convert printks to pr_<level>
+>  - Align arguments
+>=20
+> Original-patch-by: S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.com>
+> Signed-off-by: Joe Perches <joe@perches.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> I didn't send this out yesterday, did I?
+> Anyway, this is Joe's patch. I thought I just submit it as proper pat=
+ch which is
+> easier to handle than assembling this from all the pieces in the orig=
+inal
+> thread.
 
-It is quite clear that having ->setpolicy implies having ->target unset,
-because both drivers with ->setpolicy (intel_pstate and longrun) don't
-have ->target set.
-
-Now, are there any *other* cpufreq drivers without ->target?
-
-In either case, in my opinion we should just make cpufreq_register_driver()
-fail for drivers having both ->set_policy and ->target set at the same time.
-Like in the patch below.
-
-Rafael
+Rebased on top of linux-pm.git/linux-next and queued up for 3.15, thank=
+s!
 
 
----
- drivers/cpufreq/cpufreq.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+>  drivers/cpufreq/cpufreq.c | 85 ++++++++++++++++++++++---------------=
+----------
+>  1 file changed, 40 insertions(+), 45 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 08ca8c9f41cd..9eb1bd924817 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -181,8 +181,8 @@ unsigned int cpufreq_generic_get(unsigned int cpu=
+)
+>  	struct cpufreq_policy *policy =3D per_cpu(cpufreq_cpu_data, cpu);
+> =20
+>  	if (!policy || IS_ERR(policy->clk)) {
+> -		pr_err("%s: No %s associated to cpu: %d\n", __func__,
+> -				policy ? "clk" : "policy", cpu);
+> +		pr_err("%s: No %s associated to cpu: %d\n",
+> +		       __func__, policy ? "clk" : "policy", cpu);
+>  		return 0;
+>  	}
+> =20
+> @@ -254,15 +254,15 @@ static void adjust_jiffies(unsigned long val, s=
+truct cpufreq_freqs *ci)
+>  	if (!l_p_j_ref_freq) {
+>  		l_p_j_ref =3D loops_per_jiffy;
+>  		l_p_j_ref_freq =3D ci->old;
+> -		pr_debug("saving %lu as reference value for loops_per_jiffy; "
+> -			"freq is %u kHz\n", l_p_j_ref, l_p_j_ref_freq);
+> +		pr_debug("saving %lu as reference value for loops_per_jiffy; freq =
+is %u kHz\n",
+> +			 l_p_j_ref, l_p_j_ref_freq);
+>  	}
+>  	if ((val =3D=3D CPUFREQ_POSTCHANGE && ci->old !=3D ci->new) ||
+>  	    (val =3D=3D CPUFREQ_RESUMECHANGE || val =3D=3D CPUFREQ_SUSPENDC=
+HANGE)) {
+>  		loops_per_jiffy =3D cpufreq_scale(l_p_j_ref, l_p_j_ref_freq,
+>  								ci->new);
+> -		pr_debug("scaling loops_per_jiffy to %lu "
+> -			"for frequency %u kHz\n", loops_per_jiffy, ci->new);
+> +		pr_debug("scaling loops_per_jiffy to %lu for frequency %u kHz\n",
+> +			 loops_per_jiffy, ci->new);
+>  	}
+>  }
+>  #else
+> @@ -282,7 +282,7 @@ static void __cpufreq_notify_transition(struct cp=
+ufreq_policy *policy,
+> =20
+>  	freqs->flags =3D cpufreq_driver->flags;
+>  	pr_debug("notification %u of frequency transition to %u kHz\n",
+> -		state, freqs->new);
+> +		 state, freqs->new);
+> =20
+>  	switch (state) {
+> =20
+> @@ -294,9 +294,8 @@ static void __cpufreq_notify_transition(struct cp=
+ufreq_policy *policy,
+>  		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+>  			if ((policy) && (policy->cpu =3D=3D freqs->cpu) &&
+>  			    (policy->cur) && (policy->cur !=3D freqs->old)) {
+> -				pr_debug("Warning: CPU frequency is"
+> -					" %u, cpufreq assumed %u kHz.\n",
+> -					freqs->old, policy->cur);
+> +				pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n=
+",
+> +					 freqs->old, policy->cur);
+>  				freqs->old =3D policy->cur;
+>  			}
+>  		}
+> @@ -307,8 +306,8 @@ static void __cpufreq_notify_transition(struct cp=
+ufreq_policy *policy,
+> =20
+>  	case CPUFREQ_POSTCHANGE:
+>  		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+> -		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+> -			(unsigned long)freqs->cpu);
+> +		pr_debug("FREQ: %lu - CPU: %lu\n",
+> +			 (unsigned long)freqs->new, (unsigned long)freqs->cpu);
+>  		trace_cpu_frequency(freqs->new, freqs->cpu);
+>  		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
+>  				CPUFREQ_POSTCHANGE, freqs);
+> @@ -368,13 +367,13 @@ static ssize_t store_boost(struct kobject *kobj=
+, struct attribute *attr,
+>  		return -EINVAL;
+> =20
+>  	if (cpufreq_boost_trigger_state(enable)) {
+> -		pr_err("%s: Cannot %s BOOST!\n", __func__,
+> -		       enable ? "enable" : "disable");
+> +		pr_err("%s: Cannot %s BOOST!\n",
+> +		       __func__, enable ? "enable" : "disable");
+>  		return -EINVAL;
+>  	}
+> =20
+> -	pr_debug("%s: cpufreq BOOST %s\n", __func__,
+> -		 enable ? "enabled" : "disabled");
+> +	pr_debug("%s: cpufreq BOOST %s\n",
+> +		 __func__, enable ? "enabled" : "disabled");
+> =20
+>  	return count;
+>  }
+> @@ -1184,7 +1183,7 @@ static int __cpufreq_add_dev(struct device *dev=
+, struct subsys_interface *sif,
+>  	if (gov) {
+>  		policy->governor =3D gov;
+>  		pr_debug("Restoring governor %s for cpu %d\n",
+> -		       policy->governor->name, cpu);
+> +			 policy->governor->name, cpu);
+>  	}
+>  #endif
+> =20
+> @@ -1263,7 +1262,7 @@ static int cpufreq_nominate_new_policy_cpu(stru=
+ct cpufreq_policy *policy,
+>  	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+>  	ret =3D kobject_move(&policy->kobj, &cpu_dev->kobj);
+>  	if (ret) {
+> -		pr_err("%s: Failed to move kobj: %d", __func__, ret);
+> +		pr_err("%s: Failed to move kobj: %d\n", __func__, ret);
+> =20
+>  		down_write(&policy->rwsem);
+>  		cpumask_set_cpu(old_cpu, policy->cpus);
+> @@ -1332,7 +1331,7 @@ static int __cpufreq_remove_dev_prepare(struct =
+device *dev,
+> =20
+>  			if (!frozen) {
+>  				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
+> -						__func__, new_cpu, cpu);
+> +					 __func__, new_cpu, cpu);
+>  			}
+>  		}
+>  	}
+> @@ -1372,7 +1371,7 @@ static int __cpufreq_remove_dev_finish(struct d=
+evice *dev,
+>  					CPUFREQ_GOV_POLICY_EXIT);
+>  			if (ret) {
+>  				pr_err("%s: Failed to exit governor\n",
+> -						__func__);
+> +				       __func__);
+>  				return ret;
+>  			}
+>  		}
+> @@ -1400,7 +1399,7 @@ static int __cpufreq_remove_dev_finish(struct d=
+evice *dev,
+>  			if ((ret =3D __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
+>  					(ret =3D __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
+>  				pr_err("%s: Failed to start governor\n",
+> -						__func__);
+> +				       __func__);
+>  				return ret;
+>  			}
+>  		}
+> @@ -1457,8 +1456,8 @@ static void cpufreq_out_of_sync(unsigned int cp=
+u, unsigned int old_freq,
+>  	struct cpufreq_freqs freqs;
+>  	unsigned long flags;
+> =20
+> -	pr_debug("Warning: CPU frequency out of sync: cpufreq and timing "
+> -	       "core thinks of %u, is %u kHz.\n", old_freq, new_freq);
+> +	pr_debug("Warning: CPU frequency out of sync: cpufreq and timing co=
+re thinks of %u, is %u kHz\n",
+> +		 old_freq, new_freq);
+> =20
+>  	freqs.old =3D old_freq;
+>  	freqs.new =3D new_freq;
+> @@ -1599,8 +1598,8 @@ static int cpufreq_bp_suspend(void)
+>  	if (cpufreq_driver->suspend) {
+>  		ret =3D cpufreq_driver->suspend(policy);
+>  		if (ret)
+> -			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
+> -					"step on CPU %u\n", policy->cpu);
+> +			pr_err("suspend failed in ->suspend step on CPU %u\n",
+> +			       policy->cpu);
+>  	}
+> =20
+>  	cpufreq_cpu_put(policy);
+> @@ -1637,8 +1636,8 @@ static void cpufreq_bp_resume(void)
+>  	if (cpufreq_driver->resume) {
+>  		ret =3D cpufreq_driver->resume(policy);
+>  		if (ret) {
+> -			printk(KERN_ERR "cpufreq: resume failed in ->resume "
+> -					"step on CPU %u\n", policy->cpu);
+> +			pr_err("resume failed in ->resume step on CPU %u\n",
+> +			       policy->cpu);
+>  			goto fail;
+>  		}
+>  	}
+> @@ -1768,7 +1767,7 @@ int __cpufreq_driver_target(struct cpufreq_poli=
+cy *policy,
+>  		target_freq =3D policy->min;
+> =20
+>  	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\=
+n",
+> -			policy->cpu, target_freq, relation, old_target_freq);
+> +		 policy->cpu, target_freq, relation, old_target_freq);
+> =20
+>  	/*
+>  	 * This might look like a redundant call as we are checking it agai=
+n
+> @@ -1813,8 +1812,7 @@ int __cpufreq_driver_target(struct cpufreq_poli=
+cy *policy,
+>  			freqs.flags =3D 0;
+> =20
+>  			pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
+> -					__func__, policy->cpu, freqs.old,
+> -					freqs.new);
+> +				 __func__, policy->cpu, freqs.old, freqs.new);
+> =20
+>  			cpufreq_notify_transition(policy, &freqs,
+>  					CPUFREQ_PRECHANGE);
+> @@ -1823,7 +1821,7 @@ int __cpufreq_driver_target(struct cpufreq_poli=
+cy *policy,
+>  		retval =3D cpufreq_driver->target_index(policy, index);
+>  		if (retval)
+>  			pr_err("%s: Failed to change cpu frequency: %d\n",
+> -					__func__, retval);
+> +			       __func__, retval);
+> =20
+>  		if (notify)
+>  			cpufreq_notify_post_transition(policy, &freqs, retval);
+> @@ -1875,11 +1873,8 @@ static int __cpufreq_governor(struct cpufreq_p=
+olicy *policy,
+>  		if (!gov)
+>  			return -EINVAL;
+>  		else {
+> -			printk(KERN_WARNING "%s governor failed, too long"
+> -			       " transition latency of HW, fallback"
+> -			       " to %s governor\n",
+> -			       policy->governor->name,
+> -			       gov->name);
+> +			pr_warn("%s governor failed, too long transition latency of HW, f=
+allback to %s governor\n",
+> +				policy->governor->name, gov->name);
+>  			policy->governor =3D gov;
+>  		}
+>  	}
+> @@ -1889,7 +1884,7 @@ static int __cpufreq_governor(struct cpufreq_po=
+licy *policy,
+>  			return -EINVAL;
+> =20
+>  	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
+> -						policy->cpu, event);
+> +		 policy->cpu, event);
+> =20
+>  	mutex_lock(&cpufreq_governor_lock);
+>  	if ((policy->governor_enabled && event =3D=3D CPUFREQ_GOV_START)
+> @@ -2020,8 +2015,8 @@ static int cpufreq_set_policy(struct cpufreq_po=
+licy *policy,
+>  {
+>  	int ret =3D 0, failed =3D 1;
+> =20
+> -	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", new_policy=
+->cpu,
+> -		new_policy->min, new_policy->max);
+> +	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
+> +		 new_policy->cpu, new_policy->min, new_policy->max);
+> =20
+>  	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuin=
+fo));
+> =20
+> @@ -2059,7 +2054,7 @@ static int cpufreq_set_policy(struct cpufreq_po=
+licy *policy,
+>  	policy->max =3D new_policy->max;
+> =20
+>  	pr_debug("new min and max freqs are %u - %u kHz\n",
+> -					policy->min, policy->max);
+> +		 policy->min, policy->max);
+> =20
+>  	if (cpufreq_driver->setpolicy) {
+>  		policy->policy =3D new_policy->policy;
+> @@ -2152,7 +2147,7 @@ int cpufreq_update_policy(unsigned int cpu)
+>  	if (cpufreq_driver->get) {
+>  		new_policy.cur =3D cpufreq_driver->get(cpu);
+>  		if (!policy->cur) {
+> -			pr_debug("Driver did not initialize current freq");
+> +			pr_debug("Driver did not initialize current freq\n");
+>  			policy->cur =3D new_policy.cur;
+>  		} else {
+>  			if (policy->cur !=3D new_policy.cur && has_target())
+> @@ -2255,8 +2250,8 @@ int cpufreq_boost_trigger_state(int state)
+>  		cpufreq_driver->boost_enabled =3D !state;
+>  		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> =20
+> -		pr_err("%s: Cannot %s BOOST\n", __func__,
+> -		       state ? "enable" : "disable");
+> +		pr_err("%s: Cannot %s BOOST\n",
+> +		       __func__, state ? "enable" : "disable");
+>  	}
+> =20
+>  	return ret;
+> @@ -2328,7 +2323,7 @@ int cpufreq_register_driver(struct cpufreq_driv=
+er *driver_data)
+>  		ret =3D cpufreq_sysfs_create_file(&boost.attr);
+>  		if (ret) {
+>  			pr_err("%s: cannot register global BOOST sysfs file\n",
+> -				__func__);
+> +			       __func__);
+>  			goto err_null_driver;
+>  		}
+>  	}
+> @@ -2351,7 +2346,7 @@ int cpufreq_register_driver(struct cpufreq_driv=
+er *driver_data)
+>  		/* if all ->init() calls failed, unregister */
+>  		if (ret) {
+>  			pr_debug("no CPU initialized for driver %s\n",
+> -							driver_data->name);
+> +				 driver_data->name);
+>  			goto err_if_unreg;
+>  		}
+>  	}
+>=20
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2306,7 +2306,9 @@ int cpufreq_register_driver(struct cpufr
- 
- 	if (!driver_data || !driver_data->verify || !driver_data->init ||
- 	    !(driver_data->setpolicy || driver_data->target_index ||
--		    driver_data->target))
-+		    driver_data->target) ||
-+	     (driver_data->setpolicy && (driver_data->target_index ||
-+		    driver_data->target)))
- 		return -EINVAL;
- 
- 	pr_debug("trying to register driver %s\n", driver_data->name);
-
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
