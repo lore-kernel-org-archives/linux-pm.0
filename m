@@ -1,117 +1,84 @@
-From: Christoffer Dall <christoffer.dall@linaro.org>
-Subject: Re: [PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
-Date: Wed, 12 Mar 2014 16:21:27 -0700
-Message-ID: <20140312232127.GC24808@cbox>
-References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
- <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH] cpufreq: Skip current frequency initialization for ->setpolicy
+ drivers
+Date: Wed, 12 Mar 2014 16:30:44 -0700
+Message-ID: <5320EE24.4030005@gmail.com>
+References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <CAA7pwKOgtx8dBSzdu2iBS_f1Xck0MkmHYjQOvsS-8W+HxFkYmg@mail.gmail.com> <CAA7pwKN2Rn2y9TaEYLtwVmJ0_7Syx0kVQHUNga5ga2BwB=q1fQ@mail.gmail.com> <2460637.PSm5Ca8pqs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: ego@linux.vnet.ibm.com, kvm@vger.kernel.org, peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org, walken@google.com, kvmarm@lists.cs.columbia.edu, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, mingo@kernel.org, marc.zyngier@arm.com, paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, oleg@redhat.com, tj@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, akpm@linux-foundation.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f50.google.com ([209.85.160.50]:63974 "EHLO
+	mail-pb0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbaCLXiJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Mar 2014 19:38:09 -0400
+In-Reply-To: <2460637.PSm5Ca8pqs@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrik Lundquist <patrik.lundquist@gmail.com>
+Cc: dirk.brandewie@gmail.com, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
-> Subsystems that want to register CPU hotplug callbacks, as well as perform
-> initialization for the CPUs that are already online, often do it as shown
-> below:
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	put_online_cpus();
-> 
-> This is wrong, since it is prone to ABBA deadlocks involving the
-> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-> with CPU hotplug operations).
-> 
-> Instead, the correct and race-free way of performing the callback
-> registration is:
-> 
-> 	cpu_notifier_register_begin();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	/* Note the use of the double underscored version of the API */
-> 	__register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	cpu_notifier_register_done();
-> 
-> 
-> Fix the kvm code in arm by using this latter form of callback registration.
-> 
-> Cc: Christoffer Dall <christoffer.dall@linaro.org>
-> Cc: Gleb Natapov <gleb@kernel.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: kvmarm@lists.cs.columbia.edu
-> Cc: kvm@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+On 03/12/2014 04:30 PM, Rafael J. Wysocki wrote:
+> Dirk, please let me know if you're fine with it.
+>
 > ---
-> 
->  arch/arm/kvm/arm.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
-> index bd18bb8..f0e50a0 100644
-> --- a/arch/arm/kvm/arm.c
-> +++ b/arch/arm/kvm/arm.c
-> @@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
->  		}
->  	}
->  
-> +	cpu_notifier_register_begin();
-> +
->  	err = init_hyp_mode();
->  	if (err)
->  		goto out_err;
->  
-> -	err = register_cpu_notifier(&hyp_init_cpu_nb);
-> +	err = __register_cpu_notifier(&hyp_init_cpu_nb);
->  	if (err) {
->  		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
->  		goto out_err;
->  	}
->  
-> +	cpu_notifier_register_done();
-> +
->  	hyp_cpu_pm_init();
->  
->  	kvm_coproc_table_init();
->  	return 0;
->  out_err:
-> +	cpu_notifier_register_done();
->  	return err;
->  }
->  
-> 
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: cpufreq: Skip current frequency initialization for ->setpolicy drivers
+>
+> After commit da60ce9f2fac (cpufreq: call cpufreq_driver->get() after
+> calling ->init()) __cpufreq_add_dev() sometimes fails for CPUs handled
+> by intel_pstate, because that driver may return 0 from its ->get()
+> callback if it has not run long enough to collect enough samples on the
+> given CPU.  That didn't happen before commit da60ce9f2fac which added
+> policy->cur initialization to __cpufreq_add_dev() to help reduce code
+> duplication in other cpufreq drivers.
+>
+> However, the code added by commit da60ce9f2fac need not be executed
+> for cpufreq drivers having the ->setpolicy callback defined, because
+> the subsequent invocation of cpufreq_set_policy() will use that
+> callback to initialize the policy anyway and it doesn't need
+> policy->cur to be initialized upfront.  The analogous code in
+> cpufreq_update_policy() is also unnecessary for cpufreq drivers
+> having ->setpolicy set and may be skipped for them as well.
+>
+> Since intel_pstate provides ->setpolicy, skipping the upfront
+> policy->cur initialization for cpufreq drivers with that callback
+> set will cover intel_pstate and the problem it's been having after
+> commit da60ce9f2fac will be addressed.
+>
+> Fixes: da60ce9f2fac (cpufreq: call cpufreq_driver->get() after calling ->init())
+> References: https://bugzilla.kernel.org/show_bug.cgi?id=71931
+> Reported-and-tested-by: Patrik Lundquist <patrik.lundquist@gmail.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Just so we're clear, the existing code was simply racy as not prone to
-deadlocks, right?
+Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-This makes it clear that the test above for compatible CPUs can be quite
-easily evaded by using CPU hotplug, but we don't really have a good
-solution for handling that yet...  Hmmm, grumble grumble, I guess if you
-hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
+> Cc: 3.13+ <stable@vger.kernel.org> # 3.13+
+> ---
+>   drivers/cpufreq/cpufreq.c |    4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -1129,7 +1129,7 @@ static int __cpufreq_add_dev(struct devi
+>   		per_cpu(cpufreq_cpu_data, j) = policy;
+>   	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>
+> -	if (cpufreq_driver->get) {
+> +	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+>   		policy->cur = cpufreq_driver->get(policy->cpu);
+>   		if (!policy->cur) {
+>   			pr_err("%s: ->get() failed\n", __func__);
+> @@ -2143,7 +2143,7 @@ int cpufreq_update_policy(unsigned int c
+>   	 * BIOS might change freq behind our back
+>   	 * -> ask driver for current freq and notify governors about a change
+>   	 */
+> -	if (cpufreq_driver->get) {
+> +	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+>   		new_policy.cur = cpufreq_driver->get(cpu);
+>   		if (!policy->cur) {
+>   			pr_debug("Driver did not initialize current freq");
+>
 
-In any case:
-Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
