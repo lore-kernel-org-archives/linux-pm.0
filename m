@@ -1,226 +1,52 @@
-From: Ruchi Kandoi <kandoiruchi@google.com>
-Subject: [PATCH v2] power: add an API to log wakeup reasons
-Date: Tue, 11 Mar 2014 19:02:47 -0700
-Message-ID: <1394589767-16829-1-git-send-email-kandoiruchi@google.com>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH v2] power: add an API to log wakeup reasons
+Date: Tue, 11 Mar 2014 20:24:52 -0700
+Message-ID: <531FD384.1020700@linaro.org>
+References: <1394589767-16829-1-git-send-email-kandoiruchi@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f202.google.com ([209.85.214.202]:60864 "EHLO
-	mail-ob0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756456AbaCLCCu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 22:02:50 -0400
-Received: by mail-ob0-f202.google.com with SMTP id wo20so1997415obc.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Mar 2014 19:02:50 -0700 (PDT)
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:43854 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbaCLDY4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Mar 2014 23:24:56 -0400
+Received: by mail-pa0-f47.google.com with SMTP id lj1so463832pab.34
+        for <linux-pm@vger.kernel.org>; Tue, 11 Mar 2014 20:24:56 -0700 (PDT)
+In-Reply-To: <1394589767-16829-1-git-send-email-kandoiruchi@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: inux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, ghackmann@google.com, john.stultz@linaro.org, toddpoynor@google.com, Ruchi Kandoi <kandoiruchi@google.com>
+To: Ruchi Kandoi <kandoiruchi@google.com>, inux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, ghackmann@google.com, toddpoynor@google.com
 
-Add API log_wakeup_reason() and expose it to userspace via sysfs path
-/sys/kernel/wakeup_reasons/last_resume_reason
-This is useful for power management diagnostic purposes.
+On 03/11/2014 07:02 PM, Ruchi Kandoi wrote:
+> Add API log_wakeup_reason() and expose it to userspace via sysfs path
+> /sys/kernel/wakeup_reasons/last_resume_reason
+> This is useful for power management diagnostic purposes.
 
-Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
-Signed-off-by: Greg Hackmann <ghackmann@google.com>
----
-printk changed to pr_warn/pr_info
-added pr_fmt(fmt) "wakeup_reason:" fmt
-guard condition for MAX_WAKEUP_REASON_IRQ changed from == to >=
----
- include/linux/wakeup_reason.h |  23 +++++++
- kernel/power/Makefile         |   2 +-
- kernel/power/wakeup_reason.c  | 141 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 165 insertions(+), 1 deletion(-)
- create mode 100644 include/linux/wakeup_reason.h
- create mode 100644 kernel/power/wakeup_reason.c
+Thanks for re-submitting!
 
-diff --git a/include/linux/wakeup_reason.h b/include/linux/wakeup_reason.h
-new file mode 100644
-index 0000000..7ce50f0
---- /dev/null
-+++ b/include/linux/wakeup_reason.h
-@@ -0,0 +1,23 @@
-+/*
-+ * include/linux/wakeup_reason.h
-+ *
-+ * Logs the reason which caused the kernel to resume
-+ * from the suspend mode.
-+ *
-+ * Copyright (C) 2014 Google, Inc.
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#ifndef _LINUX_WAKEUP_REASON_H
-+#define _LINUX_WAKEUP_REASON_H
-+
-+void log_wakeup_reason(int irq);
-+
-+#endif /* _LINUX_WAKEUP_REASON_H */
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index 29472bf..f98f021 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -5,7 +5,7 @@ obj-y				+= qos.o
- obj-$(CONFIG_PM)		+= main.o
- obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
- obj-$(CONFIG_FREEZER)		+= process.o
--obj-$(CONFIG_SUSPEND)		+= suspend.o
-+obj-$(CONFIG_SUSPEND)		+= suspend.o wakeup_reason.o
- obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
- obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o \
- 				   block_io.o
-diff --git a/kernel/power/wakeup_reason.c b/kernel/power/wakeup_reason.c
-new file mode 100644
-index 0000000..a21c592
---- /dev/null
-+++ b/kernel/power/wakeup_reason.c
-@@ -0,0 +1,141 @@
-+/*
-+ * kernel/power/wakeup_reason.c
-+ *
-+ * Logs the reasons which caused the kernel to resume from
-+ * the suspend mode.
-+ *
-+ * Copyright (C) 2014 Google, Inc.
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+#define pr_fmt(fmt) "wakeup_reason:" fmt
-+
-+#include <linux/wakeup_reason.h>
-+#include <linux/kernel.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
-+#include <linux/init.h>
-+#include <linux/spinlock.h>
-+#include <linux/notifier.h>
-+#include <linux/suspend.h>
-+
-+
-+#define MAX_WAKEUP_REASON_IRQS 32
-+static int irq_list[MAX_WAKEUP_REASON_IRQS];
-+static int irqcount;
-+static struct kobject *wakeup_reason;
-+static spinlock_t resume_reason_lock;
-+
-+static ssize_t reason_show(struct kobject *kobj, struct kobj_attribute *attr,
-+		char *buf)
-+{
-+	int irq_no, buf_offset = 0;
-+	struct irq_desc *desc;
-+	spin_lock(&resume_reason_lock);
-+	for (irq_no = 0; irq_no < irqcount; irq_no++) {
-+		desc = irq_to_desc(irq_list[irq_no]);
-+		if (desc && desc->action && desc->action->name)
-+			buf_offset += sprintf(buf + buf_offset, "%d %s\n",
-+					irq_list[irq_no], desc->action->name);
-+		else
-+			buf_offset += sprintf(buf + buf_offset, "%d\n",
-+					irq_list[irq_no]);
-+	}
-+	spin_unlock(&resume_reason_lock);
-+	return buf_offset;
-+}
-+
-+static struct kobj_attribute resume_reason = __ATTR(last_resume_reason, 0666,
-+		reason_show, NULL);
-+
-+static struct attribute *attrs[] = {
-+	&resume_reason.attr,
-+	NULL,
-+};
-+static struct attribute_group attr_group = {
-+	.attrs = attrs,
-+};
-+
-+/*
-+ * logs all the wake up reasons to the kernel
-+ * stores the irqs to expose them to the userspace via sysfs
-+ */
-+void log_wakeup_reason(int irq)
-+{
-+	struct irq_desc *desc;
-+	desc = irq_to_desc(irq);
-+	if (desc && desc->action && desc->action->name)
-+		pr_info("Resume caused by IRQ %d, %s\n", irq,
-+				desc->action->name);
-+	else
-+		pr_info("Resume caused by IRQ %d\n", irq);
-+
-+	spin_lock(&resume_reason_lock);
-+	if (irqcount >= MAX_WAKEUP_REASON_IRQS) {
-+		spin_unlock(&resume_reason_lock);
-+		pr_warn("Resume caused by more than %d IRQs\n",
-+				MAX_WAKEUP_REASON_IRQS);
-+		return;
-+	}
-+
-+	irq_list[irqcount++] = irq;
-+	spin_unlock(&resume_reason_lock);
-+}
-+
-+/* Detects a suspend and clears all the previous wake up reasons*/
-+static int wakeup_reason_pm_event(struct notifier_block *notifier,
-+		unsigned long pm_event, void *unused)
-+{
-+	switch (pm_event) {
-+	case PM_SUSPEND_PREPARE:
-+		spin_lock(&resume_reason_lock);
-+		irqcount = 0;
-+		spin_unlock(&resume_reason_lock);
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block wakeup_reason_pm_notifier_block = {
-+	.notifier_call = wakeup_reason_pm_event,
-+};
-+
-+/* Initializes the sysfs parameter
-+ * registers the pm_event notifier
-+ */
-+int __init wakeup_reason_init(void)
-+{
-+	int retval;
-+	spin_lock_init(&resume_reason_lock);
-+	retval = register_pm_notifier(&wakeup_reason_pm_notifier_block);
-+	if (retval)
-+		pr_warn("%s: failed to register PM notifier %d\n",
-+				__func__, retval);
-+
-+	wakeup_reason = kobject_create_and_add("wakeup_reasons", kernel_kobj);
-+	if (!wakeup_reason) {
-+		pr_warn("%s: failed to create a sysfs kobject\n",
-+				__func__);
-+		return 1;
-+	}
-+	retval = sysfs_create_group(wakeup_reason, &attr_group);
-+	if (retval) {
-+		kobject_put(wakeup_reason);
-+		pr_warn("%s: failed to create a sysfs group %d\n",
-+				__func__, retval);
-+	}
-+	return 0;
-+}
-+
-+late_initcall(wakeup_reason_init);
--- 
-1.9.0.279.gdc9e3eb
+This commit message is still really too brief, focusing only on what
+you're doing and not *why*. You should include some of the rational you
+provided in in your earlier reply.
+
+The following template is usually good to follow:
+
+1) The Why: Explanation of a problem (and how it came to be) or
+problematic use case to be overcome.
+
+2) The What: Your approach or design to solving the problem, with
+details on any tradeoffs, or particular benefits of your solution that
+should be noted.
+
+I know it can seem terribly verbose for small patches, but it helps
+maintainers and other reviewers get into the right context in order to
+understand what your patch does before they look at the code.
+
+thanks
+-john
+
+
+
+
 
