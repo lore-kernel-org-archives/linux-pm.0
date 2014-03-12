@@ -1,181 +1,238 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH] thermal: provide a way for the governors to have private data for each thermal zone
-Date: Wed, 12 Mar 2014 15:38:55 +0000
-Message-ID: <1394638735-31540-1-git-send-email-javi.merino@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Ruchi Kandoi <kandoiruchi@google.com>
+Subject: [PATCH v3] power: add an API to log wakeup reasons
+Date: Wed, 12 Mar 2014 12:46:38 -0700
+Message-ID: <1394653598-17143-1-git-send-email-kandoiruchi@google.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:46342 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754151AbaCLPjP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Mar 2014 11:39:15 -0400
+Received: from mail-ie0-f201.google.com ([209.85.223.201]:57003 "EHLO
+	mail-ie0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750882AbaCLTrG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Mar 2014 15:47:06 -0400
+Received: by mail-ie0-f201.google.com with SMTP id rd18so2213903iec.4
+        for <linux-pm@vger.kernel.org>; Wed, 12 Mar 2014 12:47:05 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Punit.Agrawal@arm.com, Javi Merino <javi.merino@arm.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, ghackmann@google.com, john.stultz@linaro.org, toddpoynor@google.com, Ruchi Kandoi <kandoiruchi@google.com>
 
-A governor may need to store its current state between calls to
-throttle().  That state depends on the thermal zone, so store it as
-private data in struct thermal_zone_device.
+For power management diagnostic purposes, it is often useful to know
+what interrupts are frequently waking the system from low power
+suspend mode, especially on battery-powered consumer electronics
+devices that are expected to spend much of their time in low-power
+suspend while not in active use.  For example, reduced battery life on
+a mobile phone may be caused in part by frequent wakeups by broadcast
+traffic on a busy wireless LAN even while the screen is off and the
+phone not in active use.
 
-The governors may have two new ops: bind_to_tz() and unbind_from_tz().
-When provided, these functions allow a governor to do some
-initialization when it is bound to a tz and possibly store that
-information in the governor_data field of the struct
-thermal_zone_device.
+Add API log_wakeup_reason() exposes it to userspace via the sysfs path
+/sys/kernel/wakeup_reasons/last_resume_reason. This API would be called
+from the paltform specific, or from the driver for the interrupt controller,
+when the system resumes because of an IRQ. It logs the reasons which caused
+the system to wakeup from the low-power mode.
 
-Signed-off-by: Javi Merino <javi.merino@arm.com>
+This information can be collected by userspace as part of the accounting
+kept on power consumption.
 
+Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
+Signed-off-by: Greg Hackmann <ghackmann@google.com>
 ---
-Hi,
+commit message changed for clarity
+---
+ include/linux/wakeup_reason.h |  23 +++++++
+ kernel/power/Makefile         |   2 +-
+ kernel/power/wakeup_reason.c  | 141 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 165 insertions(+), 1 deletion(-)
+ create mode 100644 include/linux/wakeup_reason.h
+ create mode 100644 kernel/power/wakeup_reason.c
 
-We are working[1] on a new governor that has a Proportional Integral
-Derivative (PID) controller in it so we need a way to store its
-current state.  We're sending this as an RFC as there isn't any user
-for this in the kernel yet.  Our plan is to include it as part of the
-series of the governor.  This is an RFC to gather comments and see if
-this is a valid solution to the problem.
-
-[1] http://article.gmane.org/gmane.linux.power-management.general/43243
-
- drivers/thermal/thermal_core.c |   49 +++++++++++++++++++++++++++++++++---=
-----
- include/linux/thermal.h        |    3 +++
- 2 files changed, 44 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.=
-c
-index 71b0ec0..d937083 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -72,6 +72,27 @@ static struct thermal_governor *__find_governor(const ch=
-ar *name)
- =09return NULL;
- }
-=20
-+static int thermal_set_governor(struct thermal_zone_device *tz,
-+=09=09=09=09struct thermal_governor *gov)
+diff --git a/include/linux/wakeup_reason.h b/include/linux/wakeup_reason.h
+new file mode 100644
+index 0000000..7ce50f0
+--- /dev/null
++++ b/include/linux/wakeup_reason.h
+@@ -0,0 +1,23 @@
++/*
++ * include/linux/wakeup_reason.h
++ *
++ * Logs the reason which caused the kernel to resume
++ * from the suspend mode.
++ *
++ * Copyright (C) 2014 Google, Inc.
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _LINUX_WAKEUP_REASON_H
++#define _LINUX_WAKEUP_REASON_H
++
++void log_wakeup_reason(int irq);
++
++#endif /* _LINUX_WAKEUP_REASON_H */
+diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+index 29472bf..f98f021 100644
+--- a/kernel/power/Makefile
++++ b/kernel/power/Makefile
+@@ -5,7 +5,7 @@ obj-y				+= qos.o
+ obj-$(CONFIG_PM)		+= main.o
+ obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
+ obj-$(CONFIG_FREEZER)		+= process.o
+-obj-$(CONFIG_SUSPEND)		+= suspend.o
++obj-$(CONFIG_SUSPEND)		+= suspend.o wakeup_reason.o
+ obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
+ obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o \
+ 				   block_io.o
+diff --git a/kernel/power/wakeup_reason.c b/kernel/power/wakeup_reason.c
+new file mode 100644
+index 0000000..a21c592
+--- /dev/null
++++ b/kernel/power/wakeup_reason.c
+@@ -0,0 +1,141 @@
++/*
++ * kernel/power/wakeup_reason.c
++ *
++ * Logs the reasons which caused the kernel to resume from
++ * the suspend mode.
++ *
++ * Copyright (C) 2014 Google, Inc.
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++#define pr_fmt(fmt) "wakeup_reason:" fmt
++
++#include <linux/wakeup_reason.h>
++#include <linux/kernel.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/notifier.h>
++#include <linux/suspend.h>
++
++
++#define MAX_WAKEUP_REASON_IRQS 32
++static int irq_list[MAX_WAKEUP_REASON_IRQS];
++static int irqcount;
++static struct kobject *wakeup_reason;
++static spinlock_t resume_reason_lock;
++
++static ssize_t reason_show(struct kobject *kobj, struct kobj_attribute *attr,
++		char *buf)
 +{
-+=09int ret =3D 0;
-+
-+=09if (tz->governor && tz->governor->unbind_from_tz)
-+=09=09tz->governor->unbind_from_tz(tz);
-+
-+=09if (gov && gov->bind_to_tz) {
-+=09=09ret =3D gov->bind_to_tz(tz);
-+=09=09if (ret) {
-+=09=09=09tz->governor =3D NULL;
-+=09=09=09return ret;
-+=09=09}
-+=09}
-+
-+=09tz->governor =3D gov;
-+
-+=09return ret;
++	int irq_no, buf_offset = 0;
++	struct irq_desc *desc;
++	spin_lock(&resume_reason_lock);
++	for (irq_no = 0; irq_no < irqcount; irq_no++) {
++		desc = irq_to_desc(irq_list[irq_no]);
++		if (desc && desc->action && desc->action->name)
++			buf_offset += sprintf(buf + buf_offset, "%d %s\n",
++					irq_list[irq_no], desc->action->name);
++		else
++			buf_offset += sprintf(buf + buf_offset, "%d\n",
++					irq_list[irq_no]);
++	}
++	spin_unlock(&resume_reason_lock);
++	return buf_offset;
 +}
 +
- int thermal_register_governor(struct thermal_governor *governor)
- {
- =09int err;
-@@ -104,8 +125,12 @@ int thermal_register_governor(struct thermal_governor =
-*governor)
-=20
- =09=09name =3D pos->tzp->governor_name;
-=20
--=09=09if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
--=09=09=09pos->governor =3D governor;
-+=09=09if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
-+=09=09=09int ret =3D thermal_set_governor(pos, governor);
-+=09=09=09if (ret)
-+=09=09=09=09pr_warn("Failed to set governor %s for zone %d: %d\n",
-+=09=09=09=09=09governor->name, pos->id, ret);
-+=09=09}
- =09}
-=20
- =09mutex_unlock(&thermal_list_lock);
-@@ -131,7 +156,7 @@ void thermal_unregister_governor(struct thermal_governo=
-r *governor)
- =09list_for_each_entry(pos, &thermal_tz_list, node) {
- =09=09if (!strnicmp(pos->governor->name, governor->name,
- =09=09=09=09=09=09THERMAL_NAME_LENGTH))
--=09=09=09pos->governor =3D NULL;
-+=09=09=09thermal_set_governor(pos, NULL);
- =09}
-=20
- =09mutex_unlock(&thermal_list_lock);
-@@ -756,8 +781,9 @@ policy_store(struct device *dev, struct device_attribut=
-e *attr,
- =09if (!gov)
- =09=09goto exit;
-=20
--=09tz->governor =3D gov;
--=09ret =3D count;
-+=09ret =3D thermal_set_governor(tz, gov);
-+=09if (!ret)
-+=09=09ret =3D count;
-=20
- exit:
- =09mutex_unlock(&thermal_governor_lock);
-@@ -1452,6 +1478,7 @@ struct thermal_zone_device *thermal_zone_device_regis=
-ter(const char *type,
- =09int result;
- =09int count;
- =09int passive =3D 0;
-+=09struct thermal_governor *governor;
-=20
- =09if (type && strlen(type) >=3D THERMAL_NAME_LENGTH)
- =09=09return ERR_PTR(-EINVAL);
-@@ -1542,9 +1569,15 @@ struct thermal_zone_device *thermal_zone_device_regi=
-ster(const char *type,
- =09mutex_lock(&thermal_governor_lock);
-=20
- =09if (tz->tzp)
--=09=09tz->governor =3D __find_governor(tz->tzp->governor_name);
-+=09=09governor =3D __find_governor(tz->tzp->governor_name);
- =09else
--=09=09tz->governor =3D def_governor;
-+=09=09governor =3D def_governor;
++static struct kobj_attribute resume_reason = __ATTR(last_resume_reason, 0666,
++		reason_show, NULL);
 +
-+=09result =3D thermal_set_governor(tz, governor);
-+=09if (result) {
-+=09=09mutex_unlock(&thermal_governor_lock);
-+=09=09goto unregister;
-+=09}
-=20
- =09mutex_unlock(&thermal_governor_lock);
-=20
-@@ -1634,7 +1667,7 @@ void thermal_zone_device_unregister(struct thermal_zo=
-ne_device *tz)
- =09=09device_remove_file(&tz->device, &dev_attr_mode);
- =09device_remove_file(&tz->device, &dev_attr_policy);
- =09remove_trip_attrs(tz);
--=09tz->governor =3D NULL;
-+=09thermal_set_governor(tz, NULL);
-=20
- =09thermal_remove_hwmon_sysfs(tz);
- =09release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index f7e11c7..baac212 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -177,6 +177,7 @@ struct thermal_zone_device {
- =09struct thermal_zone_device_ops *ops;
- =09const struct thermal_zone_params *tzp;
- =09struct thermal_governor *governor;
-+=09void *governor_data;
- =09struct list_head thermal_instances;
- =09struct idr idr;
- =09struct mutex lock; /* protect thermal_instances list */
-@@ -187,6 +188,8 @@ struct thermal_zone_device {
- /* Structure that holds thermal governor information */
- struct thermal_governor {
- =09char name[THERMAL_NAME_LENGTH];
-+=09int (*bind_to_tz)(struct thermal_zone_device *tz);
-+=09void (*unbind_from_tz)(struct thermal_zone_device *tz);
- =09int (*throttle)(struct thermal_zone_device *tz, int trip);
- =09struct list_head=09governor_list;
- };
---=20
-1.7.9.5
-
++static struct attribute *attrs[] = {
++	&resume_reason.attr,
++	NULL,
++};
++static struct attribute_group attr_group = {
++	.attrs = attrs,
++};
++
++/*
++ * logs all the wake up reasons to the kernel
++ * stores the irqs to expose them to the userspace via sysfs
++ */
++void log_wakeup_reason(int irq)
++{
++	struct irq_desc *desc;
++	desc = irq_to_desc(irq);
++	if (desc && desc->action && desc->action->name)
++		pr_info("Resume caused by IRQ %d, %s\n", irq,
++				desc->action->name);
++	else
++		pr_info("Resume caused by IRQ %d\n", irq);
++
++	spin_lock(&resume_reason_lock);
++	if (irqcount >= MAX_WAKEUP_REASON_IRQS) {
++		spin_unlock(&resume_reason_lock);
++		pr_warn("Resume caused by more than %d IRQs\n",
++				MAX_WAKEUP_REASON_IRQS);
++		return;
++	}
++
++	irq_list[irqcount++] = irq;
++	spin_unlock(&resume_reason_lock);
++}
++
++/* Detects a suspend and clears all the previous wake up reasons*/
++static int wakeup_reason_pm_event(struct notifier_block *notifier,
++		unsigned long pm_event, void *unused)
++{
++	switch (pm_event) {
++	case PM_SUSPEND_PREPARE:
++		spin_lock(&resume_reason_lock);
++		irqcount = 0;
++		spin_unlock(&resume_reason_lock);
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block wakeup_reason_pm_notifier_block = {
++	.notifier_call = wakeup_reason_pm_event,
++};
++
++/* Initializes the sysfs parameter
++ * registers the pm_event notifier
++ */
++int __init wakeup_reason_init(void)
++{
++	int retval;
++	spin_lock_init(&resume_reason_lock);
++	retval = register_pm_notifier(&wakeup_reason_pm_notifier_block);
++	if (retval)
++		pr_warn("%s: failed to register PM notifier %d\n",
++				__func__, retval);
++
++	wakeup_reason = kobject_create_and_add("wakeup_reasons", kernel_kobj);
++	if (!wakeup_reason) {
++		pr_warn("%s: failed to create a sysfs kobject\n",
++				__func__);
++		return 1;
++	}
++	retval = sysfs_create_group(wakeup_reason, &attr_group);
++	if (retval) {
++		kobject_put(wakeup_reason);
++		pr_warn("%s: failed to create a sysfs group %d\n",
++				__func__, retval);
++	}
++	return 0;
++}
++
++late_initcall(wakeup_reason_init);
+-- 
+1.9.0.279.gdc9e3eb
 
