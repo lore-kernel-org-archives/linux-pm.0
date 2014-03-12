@@ -1,37 +1,95 @@
-From: Patrik Lundquist <patrik.lundquist@gmail.com>
-Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Wed, 12 Mar 2014 15:14:51 +0100
-Message-ID: <CAA7pwKN2Rn2y9TaEYLtwVmJ0_7Syx0kVQHUNga5ga2BwB=q1fQ@mail.gmail.com>
-References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com>
-	<531F783B.7010100@gmail.com>
-	<2792846.28xTH7a9zW@vostro.rjw.lan>
-	<3509059.VnUUJct98J@vostro.rjw.lan>
-	<CAA7pwKOgtx8dBSzdu2iBS_f1Xck0MkmHYjQOvsS-8W+HxFkYmg@mail.gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 1/4] devfreq: exynos4: Support devicetree to get device id
+ of Exynos4 SoC
+Date: Wed, 12 Mar 2014 15:37:24 +0100
+Message-ID: <1794344.yC40yetU2h@amdc1032>
+References: <1394624882-2989-1-git-send-email-cw00.choi@samsung.com>
+ <1394624882-2989-2-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:47725 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752947AbaCLOOx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Mar 2014 10:14:53 -0400
-In-Reply-To: <CAA7pwKOgtx8dBSzdu2iBS_f1Xck0MkmHYjQOvsS-8W+HxFkYmg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1394624882-2989-2-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 12 March 2014 12:42, Patrik Lundquist <patrik.lundquist@gmail.com> wrote:
-> On 12 March 2014 00:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>
->> So Patrik, please test this one (resending, so that it gets to linux-pm):
->
-> Will do. Might take a couple of days.
 
-Come to think of it, there's not much to test besides verifying that
-cpufreq_driver->get() isn't called like before (i.e. no need to test
-on the server).
+Hi Chanwoo,
 
-So I inserted pr_err()s and they aren't printed when booting my Intel
-Xeon CPU E3-1240 V2 while the intel_pstate driver still is used.
+On Wednesday, March 12, 2014 08:47:59 PM Chanwoo Choi wrote:
+> This patch support DT(DeviceTree) method to probe exynos4_bus and get device
+> id of each Exynos4 SoC by using dt helper function.
+> 
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  drivers/devfreq/exynos/exynos4_bus.c | 26 +++++++++++++++++++++++++-
+>  1 file changed, 25 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+> index e07b0c6..168a7c6 100644
+> --- a/drivers/devfreq/exynos/exynos4_bus.c
+> +++ b/drivers/devfreq/exynos/exynos4_bus.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/devfreq.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/regulator/consumer.h>
+> +#include <linux/of.h>
+>  #include <linux/module.h>
+>  
+>  /* Exynos4 ASV has been in the mailing list, but not upstreamed, yet. */
+> @@ -1017,6 +1018,28 @@ unlock:
+>  	return NOTIFY_DONE;
+>  }
+>  
+> +static struct of_device_id exynos4_busfreq_id_match[] = {
+> +	{
+> +		.compatible = "samsung,exynos4210-busfreq",
+> +		.data = (void *)TYPE_BUSF_EXYNOS4210,
+> +	}, {
+> +		.compatible = "samsung,exynos4x12-busfreq",
+> +		.data = (void *)TYPE_BUSF_EXYNOS4x12,
+> +	},
+> +};
+> +
+> +static int exynos4_busfreq_get_driver_data(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	const struct of_device_id *match;
+> +
+> +	match = of_match_node(exynos4_busfreq_id_match, dev->of_node);
+> +	if (!match)
+> +		return -ENODEV;
+> +
+> +	return (int) match->data;
+> +}
+> +
+>  static int exynos4_busfreq_probe(struct platform_device *pdev)
+>  {
+>  	struct busfreq_data *data;
+> @@ -1030,7 +1053,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  	}
+>  
+> -	data->type = pdev->id_entry->driver_data;
+> +	data->type = exynos4_busfreq_get_driver_data(pdev);
+>  	data->dmc[0].hw_base = S5P_VA_DMC0;
+>  	data->dmc[1].hw_base = S5P_VA_DMC1;
+>  	data->pm_notifier.notifier_call = exynos4_busfreq_pm_notifier_event;
+> @@ -1135,6 +1158,7 @@ static struct platform_driver exynos4_busfreq_driver = {
+>  		.name	= "exynos4-busfreq",
+>  		.owner	= THIS_MODULE,
+>  		.pm	= &exynos4_busfreq_pm,
+> +		.of_match_table = exynos4_busfreq_id_match,
+>  	},
+>  };
 
-The patch works for me.
+It looks OK but it would be good to also add bindings documentation file,
+i.e. Documentation/devicetree/bindings/devfreq/exynos4_bus.txt.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
