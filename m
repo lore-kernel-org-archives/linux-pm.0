@@ -1,93 +1,387 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 4/4] devfreq: exynos4: Use SET_SYSTEM_SLEEP_PM_OPS macro
- instead of legacy method
-Date: Wed, 12 Mar 2014 16:22:49 +0100
-Message-ID: <1869652.x5hcu1bJcu@amdc1032>
-References: <1394624882-2989-1-git-send-email-cw00.choi@samsung.com>
- <1394624882-2989-5-git-send-email-cw00.choi@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [RFC/PATCH] base: platform: add generic clock handling for platform-bus
+Date: Wed, 12 Mar 2014 16:37:19 +0100
+Message-ID: <2775124.TXohNNxBKa@avalon>
+References: <1391191965-31102-1-git-send-email-balbi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:32902 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbaCLPXH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Mar 2014 11:23:07 -0400
-In-reply-to: <1394624882-2989-5-git-send-email-cw00.choi@samsung.com>
+Received: from perceval.ideasonboard.com ([95.142.166.194]:32856 "EHLO
+	perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753198AbaCLPfm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Mar 2014 11:35:42 -0400
+In-Reply-To: <1391191965-31102-1-git-send-email-balbi@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@linaro.org>, Tero Kristo <t-kristo@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 
+Hi Felipe,
 
-Hi,
+(CC'ing Geert Uytterhoeven as we happen to discuss runtime PM and clock 
+handling for the Renesas SoCs at the moment)
 
-On Wednesday, March 12, 2014 08:48:02 PM Chanwoo Choi wrote:
-> This patch use SET_SYSTEM_SLEEP_PM_OPS macro instead of legacy method. Also,
-> Before entering suspend state, disable ppmu's clock to remove power-leakage
-> in suspend state.
+Thank you for the patch. This is a bit of a late reply, but that's better than 
+no reply I suppose. Please see below for a small comment.
 
-The main thing that this patch does is adding ->suspend method and PPMU
-clocks handling and this should be reflected in the patch summary (i.e.
-"devfreq: exynos4: fix PM suspend/resume handling for PPMU clocks") and in
-the patch description. The fact that the patch also converts code to use
-SET_SYSTEM_SLEEP_PM_OPS() macro is secondary.
-
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  drivers/devfreq/exynos/exynos4_bus.c | 26 +++++++++++++++++++++++++-
->  1 file changed, 25 insertions(+), 1 deletion(-)
+On Friday 31 January 2014 12:12:45 Felipe Balbi wrote:
+> Still TODO a commit log. Not for merging!!!!!
 > 
-> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-> index 0c5b99e..7e1540a 100644
-> --- a/drivers/devfreq/exynos/exynos4_bus.c
-> +++ b/drivers/devfreq/exynos/exynos4_bus.c
-> @@ -1229,16 +1229,40 @@ static int exynos4_busfreq_remove(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_PM_SLEEP
->  static int exynos4_busfreq_resume(struct device *dev)
->  {
->  	struct busfreq_data *data = dev_get_drvdata(dev);
-> +	int i;
+> NYET-Signed-off-by: Felipe Balbi <balbi@ti.com>
+> ---
+> 
+> This patch is an idea I've had recently in order to combine several
+> different PM implementations into the platform-bus.
+> 
+> This patch is bare minimum for platforms which need to handle functional and
+> interface clocks but the whole thing is made optional.
+> 
+> Note that this patch makes sure that by the time a platform_driver's probe
+> is called, we already have clocks enabled and pm_runtime_set_active() has
+> been called, thus making sure that a device driver's pm_runtime_get_sync()
+> will solely increase the pm usage counter.
+> 
+> I have *NOT* tested this anywhere *YET*, but I suppose it shouldn't cause
+> any issues since the clock API has ref counting too.
+> 
+> Would really like to get some review from several folks involved with ARM
+> SoC PM so that's the reason for the wide audience. If I have missed
+> anybody, please add them to Cc.
+> 
+> As mentioned above, this is *NOT* meant for merging, but serves as a
+> starting point for discussing some convergence of several PM domain
+> implementations on different arch/arm/mach-* directories.
+> 
+> For OMAP, this has the added benefit of removing clock handling from
+> omap_device/omap_hwmod and, thus, dropping the need for so many DT_CLK()
+> tables under drivers/clk/ti/
+> 
+>  drivers/base/platform.c         | 169 +++++++++++++++++++++++++++++++++++--
+>  include/linux/platform_device.h |   9 +++
+>  2 files changed, 173 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index 3a94b79..86aeb5b 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -484,6 +484,21 @@ static int platform_drv_probe(struct device *_dev)
+>  	if (ACPI_HANDLE(_dev))
+>  		acpi_dev_pm_attach(_dev, true);
+> 
+> +	dev->fck = devm_clk_get(_dev, "fck");
+> +	dev->ick = devm_clk_get(_dev, "ick");
+
+My concern with this that some devices might want to handle their functional 
+and interface clocks manually if they have exotic requirements. They would 
+thus need a way to signal that the platform bus core should not try to perform 
+clock management on its own.
+
+One possible way would be to name the clocks differently for those devices, 
+but we might then have a backward compatibility issue with DT.
+
+Another concern is how to handle the DT backward compatibility for devices 
+that would benefit from core management of their functional and interface 
+clocks, but that currently don't name those clocks "fck" and "ick". Renaming 
+those clocks in DT wouldn't be a problem for the future, but backward 
+compatibility needs to be handled. Maybe platforms could provide aliases in 
+that case.
+
+> +	if (!IS_ERR(dev->fck))
+> +		clk_prepare_enable(dev->fck);
+> +	else
+> +		dev->fck = NULL;
 > +
-> +	/* Enable clock after wake-up from suspend state */
-> +	for (i = 0; i < PPMU_END; i++)
-> +		clk_prepare_enable(data->clk_ppmu[i]);
->  
-> +	/* Reset PPMU to check utilization again */
->  	busfreq_mon_reset(data);
+> +	if (!IS_ERR(dev->ick))
+> +		clk_prepare_enable(dev->ick);
+> +	else
+> +		dev->ick = NULL;
 > +
-> +	return 0;
+> +	pm_runtime_set_active(_dev);
+> +
+>  	ret = drv->probe(dev);
+>  	if (ret && ACPI_HANDLE(_dev))
+>  		acpi_dev_pm_detach(_dev, true);
+> @@ -507,6 +522,14 @@ static int platform_drv_remove(struct device *_dev)
+>  	struct platform_device *dev = to_platform_device(_dev);
+>  	int ret;
+> 
+> +	if (!IS_ERR(dev->ick))
+> +		clk_disable_unprepare(dev->ick);
+> +
+> +	if (!IS_ERR(dev->fck))
+> +		clk_disable_unprepare(dev->fck);
+> +
+> +	pm_runtime_set_suspended(_dev);
+> +
+>  	ret = drv->remove(dev);
+>  	if (ACPI_HANDLE(_dev))
+>  		acpi_dev_pm_detach(_dev, true);
+> @@ -780,6 +803,59 @@ static int platform_legacy_resume(struct device *dev)
+> 
+>  #endif /* CONFIG_PM_SLEEP */
+> 
+> +#ifdef CONFIG_PM_RUNTIME
+> +int platform_pm_runtime_suspend(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	struct platform_driver *pdrv = to_platform_driver(drv);
+> +	struct platform_device *pdev = to_platform_device(dev);
+> +	int ret;
+> +
+> +	ret = pm_generic_runtime_suspend(dev);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_ICK, &pdrv->flags))
+> +		clk_disable(pdev->ick);
+> +
+> +	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_FCK, &pdrv->flags))
+> +		clk_disable(pdev->fck);
+> +
+> +	return ret;
 > +}
 > +
-> +static int exynos4_busfreq_suspend(struct device *dev)
+> +int platform_pm_runtime_resume(struct device *dev)
 > +{
-> +	struct busfreq_data *data = dev_get_drvdata(dev);
-> +	int i;
+> +	struct device_driver *drv = dev->driver;
+> +	struct platform_driver *pdrv = to_platform_driver(drv);
+> +	struct platform_device *pdev = to_platform_device(dev);
+> +	int ret;
 > +
-> +	/*
-> +	 * Disable clock before entering suspend state
-> +	 * to reduce leakage power on suspend state.
-> +	 */
-> +	for (i = 0; i < PPMU_END; i++)
-> +		clk_disable_unprepare(data->clk_ppmu[i]);
+> +	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_ICK, &pdrv->flags)) {
+> +		ret = clk_enable(pdev->ick);
+> +		if (ret)
+> +			return ret;
+> +	}
 > +
->  	return 0;
->  }
+> +	if (!test_bit(PLATFORM_PM_RUNTIME_KEEP_FCK, &pdrv->flags)) {
+> +		ret = clk_enable(pdev->fck);
+> +		if (ret) {
+> +			clk_disable(pdev->ick);
+> +			return ret;
+> +		}
+> +	}
+> +
+> +	ret = pm_generic_runtime_suspend(dev);
+> +	if (ret) {
+> +		clk_disable(pdev->ick);
+> +		clk_disable(pdev->fck);
+> +		return ret;
+> +	}
+> +
+> +	return ret;
+> +}
 > +#endif
->  
->  static const struct dev_pm_ops exynos4_busfreq_pm = {
-> -	.resume	= exynos4_busfreq_resume,
-> +	SET_SYSTEM_SLEEP_PM_OPS(exynos4_busfreq_suspend, exynos4_busfreq_resume)
+> +
+>  #ifdef CONFIG_SUSPEND
+> 
+>  int platform_pm_suspend(struct device *dev)
+> @@ -790,6 +866,9 @@ int platform_pm_suspend(struct device *dev)
+>  	if (!drv)
+>  		return 0;
+> 
+> +	if (pm_runtime_suspended(dev))
+> +		return 0;
+> +
+>  	if (drv->pm) {
+>  		if (drv->pm->suspend)
+>  			ret = drv->pm->suspend(dev);
+> @@ -802,12 +881,27 @@ int platform_pm_suspend(struct device *dev)
+> 
+>  int platform_pm_resume(struct device *dev)
+>  {
+> +	struct platform_device *pdev = to_platform_device(dev);
+>  	struct device_driver *drv = dev->driver;
+>  	int ret = 0;
+> 
+>  	if (!drv)
+>  		return 0;
+> 
+> +	ret = clk_enable(pdev->ick);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = clk_enable(pdev->fck);
+> +	if (ret) {
+> +		clk_disable(pdev->ick);
+> +		return ret;
+> +	}
+> +
+> +	pm_runtime_disable(dev);
+> +	pm_runtime_set_active(dev);
+> +	pm_runtime_enable(dev);
+> +
+>  	if (drv->pm) {
+>  		if (drv->pm->resume)
+>  			ret = drv->pm->resume(dev);
+> @@ -815,7 +909,17 @@ int platform_pm_resume(struct device *dev)
+>  		ret = platform_legacy_resume(dev);
+>  	}
+> 
+> -	return ret;
+> +	if (ret) {
+> +		clk_disable(pdev->ick);
+> +		clk_disable(pdev->fck);
+> +		pm_runtime_disable(dev);
+> +		pm_runtime_set_suspended(dev);
+> +		pm_runtime_enable(dev);
+> +
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+>  }
+> 
+>  #endif /* CONFIG_SUSPEND */
+> @@ -830,6 +934,9 @@ int platform_pm_freeze(struct device *dev)
+>  	if (!drv)
+>  		return 0;
+> 
+> +	if (pm_runtime_suspended(dev))
+> +		return 0;
+> +
+>  	if (drv->pm) {
+>  		if (drv->pm->freeze)
+>  			ret = drv->pm->freeze(dev);
+> @@ -848,6 +955,20 @@ int platform_pm_thaw(struct device *dev)
+>  	if (!drv)
+>  		return 0;
+> 
+> +	ret = clk_enable(pdev->ick);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = clk_enable(pdev->fck);
+> +	if (ret) {
+> +		clk_disable(pdev->ick);
+> +		return ret;
+> +	}
+> +
+> +	pm_runtime_disable(dev);
+> +	pm_runtime_set_active(dev);
+> +	pm_runtime_enable(dev);
+> +
+>  	if (drv->pm) {
+>  		if (drv->pm->thaw)
+>  			ret = drv->pm->thaw(dev);
+> @@ -855,7 +976,17 @@ int platform_pm_thaw(struct device *dev)
+>  		ret = platform_legacy_resume(dev);
+>  	}
+> 
+> -	return ret;
+> +	if (ret) {
+> +		clk_disable(pdev->ick);
+> +		clk_disable(pdev->fck);
+> +		pm_runtime_disable(dev);
+> +		pm_runtime_set_suspended(dev);
+> +		pm_runtime_enable(dev);
+> +
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+>  }
+> 
+>  int platform_pm_poweroff(struct device *dev)
+> @@ -866,6 +997,9 @@ int platform_pm_poweroff(struct device *dev)
+>  	if (!drv)
+>  		return 0;
+> 
+> +	if (pm_runtime_suspended(dev))
+> +		return 0;
+> +
+>  	if (drv->pm) {
+>  		if (drv->pm->poweroff)
+>  			ret = drv->pm->poweroff(dev);
+> @@ -884,6 +1018,20 @@ int platform_pm_restore(struct device *dev)
+>  	if (!drv)
+>  		return 0;
+> 
+> +	ret = clk_enable(pdev->ick);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = clk_enable(pdev->fck);
+> +	if (ret) {
+> +		clk_disable(pdev->ick);
+> +		return ret;
+> +	}
+> +
+> +	pm_runtime_disable(dev);
+> +	pm_runtime_set_active(dev);
+> +	pm_runtime_enable(dev);
+> +
+>  	if (drv->pm) {
+>  		if (drv->pm->restore)
+>  			ret = drv->pm->restore(dev);
+> @@ -891,14 +1039,25 @@ int platform_pm_restore(struct device *dev)
+>  		ret = platform_legacy_resume(dev);
+>  	}
+> 
+> -	return ret;
+> +	if (ret) {
+> +		clk_disable(pdev->ick);
+> +		clk_disable(pdev->fck);
+> +		pm_runtime_disable(dev);
+> +		pm_runtime_set_suspended(dev);
+> +		pm_runtime_enable(dev);
+> +
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+>  }
+> 
+>  #endif /* CONFIG_HIBERNATE_CALLBACKS */
+> 
+>  static const struct dev_pm_ops platform_dev_pm_ops = {
+> -	.runtime_suspend = pm_generic_runtime_suspend,
+> -	.runtime_resume = pm_generic_runtime_resume,
+> +	SET_RUNTIME_PM_OPS(platform_pm_runtime_suspend,
+> +			platform_pm_runtime_resume,
+> +			NULL)
+>  	USE_PLATFORM_PM_SLEEP_OPS
 >  };
->  
->  static const struct platform_device_id exynos4_busfreq_id[] = {
+> 
+> diff --git a/include/linux/platform_device.h
+> b/include/linux/platform_device.h index 16f6654..91133f5 100644
+> --- a/include/linux/platform_device.h
+> +++ b/include/linux/platform_device.h
+> @@ -12,6 +12,7 @@
+>  #define _PLATFORM_DEVICE_H_
+> 
+>  #include <linux/device.h>
+> +#include <linux/clk.h>
+>  #include <linux/mod_devicetable.h>
+> 
+>  #define PLATFORM_DEVID_NONE	(-1)
+> @@ -21,6 +22,10 @@ struct mfd_cell;
+> 
+>  struct platform_device {
+>  	const char	*name;
+> +
+> +	struct clk	*fck;
+> +	struct clk	*ick;
+> +
+>  	int		id;
+>  	bool		id_auto;
+>  	struct device	dev;
+> @@ -179,8 +184,12 @@ struct platform_driver {
+>  	struct device_driver driver;
+>  	const struct platform_device_id *id_table;
+>  	bool prevent_deferred_probe;
+> +	unsigned long flags;
+>  };
+> 
+> +#define PLATFORM_PM_RUNTIME_KEEP_ICK	BIT(0)
+> +#define PLATFORM_PM_RUNTIME_KEEP_FCK	BIT(1)
+> +
+>  #define to_platform_driver(drv)	(container_of((drv), struct
+> platform_driver, \ driver))
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-- 
+Regards,
+
+Laurent Pinchart
 
