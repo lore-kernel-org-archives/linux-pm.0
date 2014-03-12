@@ -1,54 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Patrik Lundquist <patrik.lundquist@gmail.com>
 Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Wed, 12 Mar 2014 13:22:54 +0800
-Message-ID: <CAKohpokONW5Q2GqrvmKBh+NLSVA1RSZ_Fg+jKZQnReDXianvUg@mail.gmail.com>
+Date: Wed, 12 Mar 2014 12:42:26 +0100
+Message-ID: <CAA7pwKOgtx8dBSzdu2iBS_f1Xck0MkmHYjQOvsS-8W+HxFkYmg@mail.gmail.com>
 References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com>
+	<531F783B.7010100@gmail.com>
+	<2792846.28xTH7a9zW@vostro.rjw.lan>
 	<3509059.VnUUJct98J@vostro.rjw.lan>
-	<3616342.xJi2LEuFEF@vostro.rjw.lan>
-	<4501120.an62ETExKs@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <4501120.an62ETExKs@vostro.rjw.lan>
+In-Reply-To: <3509059.VnUUJct98J@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Patrik Lundquist <patrik.lundquist@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 March 2014 07:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> Is having ->target set mutually exclusive with having ->setpolicy set?
+On 12 March 2014 00:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >
-> It is quite clear that having ->setpolicy implies having ->target unset,
-> because both drivers with ->setpolicy (intel_pstate and longrun) don't
-> have ->target set.
->
-> Now, are there any *other* cpufreq drivers without ->target?
->
-> In either case, in my opinion we should just make cpufreq_register_driver()
-> fail for drivers having both ->set_policy and ->target set at the same time.
-> Like in the patch below.
->
-> Rafael
->
->
+> So Patrik, please test this one (resending, so that it gets to linux-pm):
+
+Will do. Might take a couple of days.
+
+cpufreq_quick_get() caught my eye when applying the patch. "This is
+the last known freq, without actually getting it from the driver."
+doesn't make sense since it is calling the driver. And shouldn't it
+get the frequency from the policy when possible?
+
+
+@@ -1484,7 +1484,7 @@ unsigned int cpufreq_quick_get(unsigned int cpu)
+        struct cpufreq_policy *policy;
+        unsigned int ret_freq = 0;
+
+-       if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
++       if (cpufreq_driver && !cpufreq_driver->setpolicy && cpufreq_driver->get)
+                return cpufreq_driver->get(cpu);
+
+        policy = cpufreq_cpu_get(cpu);
+
+
+
 > ---
->  drivers/cpufreq/cpufreq.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  drivers/cpufreq/cpufreq.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
 > Index: linux-pm/drivers/cpufreq/cpufreq.c
 > ===================================================================
 > --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 > +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -2306,7 +2306,9 @@ int cpufreq_register_driver(struct cpufr
+> @@ -1137,7 +1137,7 @@ static int __cpufreq_add_dev(struct devi
+>                 per_cpu(cpufreq_cpu_data, j) = policy;
+>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 >
->         if (!driver_data || !driver_data->verify || !driver_data->init ||
->             !(driver_data->setpolicy || driver_data->target_index ||
-> -                   driver_data->target))
-> +                   driver_data->target) ||
-> +            (driver_data->setpolicy && (driver_data->target_index ||
-> +                   driver_data->target)))
->                 return -EINVAL;
+> -       if (cpufreq_driver->get) {
+> +       if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+>                 policy->cur = cpufreq_driver->get(policy->cpu);
+>                 if (!policy->cur) {
+>                         pr_err("%s: ->get() failed\n", __func__);
+> @@ -2150,7 +2150,7 @@ int cpufreq_update_policy(unsigned int c
+>          * BIOS might change freq behind our back
+>          * -> ask driver for current freq and notify governors about a change
+>          */
+> -       if (cpufreq_driver->get) {
+> +       if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+>                 new_policy.cur = cpufreq_driver->get(cpu);
+>                 if (WARN_ON(!new_policy.cur)) {
+>                         ret = -EIO;
 >
->         pr_debug("trying to register driver %s\n", driver_data->name);
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
