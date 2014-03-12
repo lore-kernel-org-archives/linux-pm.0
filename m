@@ -1,68 +1,81 @@
-From: Patrik Lundquist <patrik.lundquist@gmail.com>
-Subject: Re: v3.13.5 intel_pstate: cpufreq: __cpufreq_add_dev: ->get() failed
-Date: Wed, 12 Mar 2014 12:42:26 +0100
-Message-ID: <CAA7pwKOgtx8dBSzdu2iBS_f1Xck0MkmHYjQOvsS-8W+HxFkYmg@mail.gmail.com>
-References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com>
-	<531F783B.7010100@gmail.com>
-	<2792846.28xTH7a9zW@vostro.rjw.lan>
-	<3509059.VnUUJct98J@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3509059.VnUUJct98J@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 1/4] devfreq: exynos4: Support devicetree to get device id of
+ Exynos4 SoC
+Date: Wed, 12 Mar 2014 20:47:59 +0900
+Message-ID: <1394624882-2989-2-git-send-email-cw00.choi@samsung.com>
+References: <1394624882-2989-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1394624882-2989-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 March 2014 00:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> So Patrik, please test this one (resending, so that it gets to linux-pm):
+This patch support DT(DeviceTree) method to probe exynos4_bus and get device
+id of each Exynos4 SoC by using dt helper function.
 
-Will do. Might take a couple of days.
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/exynos/exynos4_bus.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-cpufreq_quick_get() caught my eye when applying the patch. "This is
-the last known freq, without actually getting it from the driver."
-doesn't make sense since it is calling the driver. And shouldn't it
-get the frequency from the policy when possible?
-
-
-@@ -1484,7 +1484,7 @@ unsigned int cpufreq_quick_get(unsigned int cpu)
-        struct cpufreq_policy *policy;
-        unsigned int ret_freq = 0;
-
--       if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
-+       if (cpufreq_driver && !cpufreq_driver->setpolicy && cpufreq_driver->get)
-                return cpufreq_driver->get(cpu);
-
-        policy = cpufreq_cpu_get(cpu);
-
-
-
-> ---
->  drivers/cpufreq/cpufreq.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -1137,7 +1137,7 @@ static int __cpufreq_add_dev(struct devi
->                 per_cpu(cpufreq_cpu_data, j) = policy;
->         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->
-> -       if (cpufreq_driver->get) {
-> +       if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
->                 policy->cur = cpufreq_driver->get(policy->cpu);
->                 if (!policy->cur) {
->                         pr_err("%s: ->get() failed\n", __func__);
-> @@ -2150,7 +2150,7 @@ int cpufreq_update_policy(unsigned int c
->          * BIOS might change freq behind our back
->          * -> ask driver for current freq and notify governors about a change
->          */
-> -       if (cpufreq_driver->get) {
-> +       if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
->                 new_policy.cur = cpufreq_driver->get(cpu);
->                 if (WARN_ON(!new_policy.cur)) {
->                         ret = -EIO;
->
+diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+index e07b0c6..168a7c6 100644
+--- a/drivers/devfreq/exynos/exynos4_bus.c
++++ b/drivers/devfreq/exynos/exynos4_bus.c
+@@ -23,6 +23,7 @@
+ #include <linux/devfreq.h>
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/of.h>
+ #include <linux/module.h>
+ 
+ /* Exynos4 ASV has been in the mailing list, but not upstreamed, yet. */
+@@ -1017,6 +1018,28 @@ unlock:
+ 	return NOTIFY_DONE;
+ }
+ 
++static struct of_device_id exynos4_busfreq_id_match[] = {
++	{
++		.compatible = "samsung,exynos4210-busfreq",
++		.data = (void *)TYPE_BUSF_EXYNOS4210,
++	}, {
++		.compatible = "samsung,exynos4x12-busfreq",
++		.data = (void *)TYPE_BUSF_EXYNOS4x12,
++	},
++};
++
++static int exynos4_busfreq_get_driver_data(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	const struct of_device_id *match;
++
++	match = of_match_node(exynos4_busfreq_id_match, dev->of_node);
++	if (!match)
++		return -ENODEV;
++
++	return (int) match->data;
++}
++
+ static int exynos4_busfreq_probe(struct platform_device *pdev)
+ {
+ 	struct busfreq_data *data;
+@@ -1030,7 +1053,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
+-	data->type = pdev->id_entry->driver_data;
++	data->type = exynos4_busfreq_get_driver_data(pdev);
+ 	data->dmc[0].hw_base = S5P_VA_DMC0;
+ 	data->dmc[1].hw_base = S5P_VA_DMC1;
+ 	data->pm_notifier.notifier_call = exynos4_busfreq_pm_notifier_event;
+@@ -1135,6 +1158,7 @@ static struct platform_driver exynos4_busfreq_driver = {
+ 		.name	= "exynos4-busfreq",
+ 		.owner	= THIS_MODULE,
+ 		.pm	= &exynos4_busfreq_pm,
++		.of_match_table = exynos4_busfreq_id_match,
+ 	},
+ };
+ 
+-- 
+1.8.0
