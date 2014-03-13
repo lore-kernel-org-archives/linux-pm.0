@@ -1,78 +1,74 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 2/2] intel_pstate: Set core to min P state during core offline
-Date: Thu, 13 Mar 2014 10:36:08 -0700
-Message-ID: <1394732168-12638-3-git-send-email-dirk.j.brandewie@intel.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [RFC] cpufreq-cpu0: allow OPP table supplied by platform
+Date: Thu, 13 Mar 2014 10:43:09 -0700
+Message-ID: <232645eb-183a-4a7c-997b-db3ab149d72b@TX2EHSMHS013.ehs.local>
+References: <20140313184859.7d6f6512@xhacker>
+ <CAKohpokLv0m+Cky7nCUOgP-djTMrA6jyka_EZ07+_exCAexXXg@mail.gmail.com>
+ <CAKohpoke1i8xmKProgF+ki7Q=Q+YxbPnewdtbyPqu7857DLLWA@mail.gmail.com>
+ <20140313194424.122ec572@xhacker>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140313194424.122ec572@xhacker>
+Sender: cpufreq-owner@vger.kernel.org
+To: Jisheng Zhang <jszhang@marvell.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Thu, 2014-03-13 at 07:44PM +0800, Jisheng Zhang wrote:
+> Fixing lakml :)
+>=20
+> sorry
+>=20
+> On Thu, 13 Mar 2014 03:56:46 -0700
+> Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>=20
+> > Fixing Rafael's id.
+> >=20
+> > On 13 March 2014 16:25, Viresh Kumar <viresh.kumar@linaro.org> wrot=
+e:
+> > > On 13 March 2014 16:18, Jisheng Zhang <jszhang@marvell.com> wrote=
+:
+> > >> Hi all,
+> > >>
+> > >> cpufreq-cpu0 is suitable for Marvell Berlin SoC. But there's one=
+ issue
+> > >> to address. The opp is different between chips even on the same =
+step
+> > >> SoC, BG2Q for example. we can calculate the OPP table from the v=
+alue of
+> > >> one OTP register. We have two solutions:
+> > >>
+> > >> 1. bootloader reads OTP register and calculate the OPP table the=
+n change
+> > >> dtb danamically
+> > >>
+> > >> 2. supply one driver in mach-berlin to initialize the OPP table;=
+ and
+> > >> modify cpufreq-cpu0 to allow platform supply OPP table, fall bac=
+k to
+> > >> of_init_opp_table() if there's no OPP table.
+> > >>
+> > >> Which solution is better?
+> > >
+> > > I think we can go ahead with second option here. We can just chec=
+k if opp
+> > > tables are already initialized or not. In case they are, don't pr=
+obe from
+> > > dt..
+> > >
+> > > But lets see with others have to say here..
 
-Change to use ->exit_prepare() callback to do clean up during CPU
-hotplug. The requested P state for an offline core will be used by the
-hardware coordination function to select the package P state. If the
-core is under load when it is offlined it will fix the package P state
-floor to the requested P state of offline core.
+This might become useful for Zynq as well. We essentially allow to boot
+with all kind of different frequencies and depending on how the PLL, an=
+d clock
+registers get setup by the bootloader, certain frequencies may or may
+not become possible. Having a way to dynamically build an OPP table
+would probably be a nicer way than having to tell everybody to adjust
+the DT according to how the bootloader sets up the clocks.
 
-Reported-by: Patrick Marlier <patrick.marlier@gmail.com>
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+	S=C3=B6ren
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 2cd36b9..fe32a8c 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -447,7 +447,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
- 	if (limits.no_turbo)
- 		val |= (u64)1 << 32;
- 
--	wrmsrl(MSR_IA32_PERF_CTL, val);
-+	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
- }
- 
- static struct cpu_defaults core_params = {
-@@ -773,16 +773,22 @@ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-+static int intel_pstate_cpu_exit_prepare(struct cpufreq_policy *policy)
- {
--	int cpu = policy->cpu;
-+	int cpu_num = policy->cpu;
-+	struct cpudata *cpu = all_cpu_data[cpu_num];
-+
-+	pr_info("intel_pstate CPU %d exiting\n", cpu_num);
-+
-+	del_timer(&all_cpu_data[cpu_num]->timer);	
-+	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
-+	kfree(all_cpu_data[cpu_num]);
-+	all_cpu_data[cpu_num] = NULL;
- 
--	del_timer(&all_cpu_data[cpu]->timer);
--	kfree(all_cpu_data[cpu]);
--	all_cpu_data[cpu] = NULL;
- 	return 0;
- }
- 
-+
- static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpudata *cpu;
-@@ -818,7 +824,7 @@ static struct cpufreq_driver intel_pstate_driver = {
- 	.setpolicy	= intel_pstate_set_policy,
- 	.get		= intel_pstate_get,
- 	.init		= intel_pstate_cpu_init,
--	.exit		= intel_pstate_cpu_exit,
-+	.exit_prepare	= intel_pstate_cpu_exit_prepare,
- 	.name		= "intel_pstate",
- };
- 
--- 
-1.8.3.1
+
