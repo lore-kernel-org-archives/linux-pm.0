@@ -1,90 +1,47 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv2 4/8] devfreq: exynos4: Fix bug of resource leak and code
- clean on probe()
-Date: Thu, 13 Mar 2014 17:17:25 +0900
-Message-ID: <1394698649-20996-5-git-send-email-cw00.choi@samsung.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
+Subject: [PATCHv2 0/8] devfreq: exynos4: Support dt and use common ppmu driver
+Date: Thu, 13 Mar 2014 17:17:21 +0900
+Message-ID: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 Cc: rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch fix bug about resource leak when happening probe fail and code clean
-to add debug message.
+This patchset support devicetree and use common ppmu driver instead of
+individual code of exynos4_bus.c to remove duplicate code. Also this patchset
+get the resources for busfreq from dt data by using DT helper function.
+- PPMU register address
+- PPMU clock
+- Regulator for INT/MIF block
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/exynos/exynos4_bus.c | 32 ++++++++++++++++++++++++++------
- 1 file changed, 26 insertions(+), 6 deletions(-)
+This patchset use SET_SYSTEM_SLEEP_PM_OPS macro intead of legacy method.
+To remove power-leakage in suspend state, before entering suspend state,
+disable ppmu clocks.
 
-diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-index a2a3a47..152a3e9 100644
---- a/drivers/devfreq/exynos/exynos4_bus.c
-+++ b/drivers/devfreq/exynos/exynos4_bus.c
-@@ -1152,8 +1152,11 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
- 		dev_err(dev, "Cannot determine the device id %d\n", data->type);
- 		err = -EINVAL;
- 	}
--	if (err)
-+	if (err) {
-+		dev_err(dev, "Cannot initialize busfreq table %d\n",
-+			     data->type);
- 		return err;
-+	}
- 
- 	rcu_read_lock();
- 	opp = dev_pm_opp_find_freq_floor(dev,
-@@ -1176,7 +1179,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
- 	if (IS_ERR(data->devfreq)) {
- 		dev_err(dev, "Failed to add devfreq device\n");
- 		err = PTR_ERR(data->devfreq);
--		goto err_opp;
-+		goto err_devfreq;
- 	}
- 
- 	/*
-@@ -1185,18 +1188,35 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
- 	 */
- 	busfreq_mon_reset(data);
- 
--	devfreq_register_opp_notifier(dev, data->devfreq);
-+	/* Register opp_notifier for Exynos4 busfreq */
-+	err = devfreq_register_opp_notifier(dev, data->devfreq);
-+	if (err < 0) {
-+		dev_err(dev, "Failed to register opp notifier\n");
-+		goto err_notifier_opp;
-+	}
- 
-+	/* Register pm_notifier for Exynos4 busfreq */
- 	err = register_pm_notifier(&data->pm_notifier);
- 	if (err) {
- 		dev_err(dev, "Failed to setup pm notifier\n");
--		devfreq_remove_device(data->devfreq);
--		return err;
-+		goto err_notifier_pm;
- 	}
- 
- 	return 0;
- 
--err_opp:
-+err_notifier_pm:
-+	devfreq_unregister_opp_notifier(dev, data->devfreq);
-+err_notifier_opp:
-+	/*
-+	 * The devfreq_remove_device() would execute finally devfreq->profile
-+	 * ->exit(). To avoid duplicate resource free operation, return directly
-+	 * before executing resource free below 'err_devfreq' goto statement.
-+	 */
-+	devfreq_remove_device(data->devfreq);
-+
-+	return err;
-+
-+err_devfreq:
- 	regulator_disable(data->vdd_int);
- 	if (data->type == TYPE_BUSF_EXYNOS4x12)
- 		regulator_disable(data->vdd_mif);
+Changes from v1:
+- Add exynos4_bus.txt documentation for devicetree guide
+- Fix probe failure if CONFIG_PM_OPP is disabled
+- Fix typo and resource leak(regulator/clock/memory) when happening probe failure
+- Add additionally comment for PPMU usage instead of previous PPC
+- Split separate patch to remove ambiguous of patch
+
+Chanwoo Choi (8):
+  devfreq: exynos4: Support devicetree to get device id of Exynos4 SoC
+  devfreq: exynos4: Use common ppmu driver and get ppmu address from dt data
+  devfreq: exynos4: Add ppmu's clock control and code clean about regulator control
+  devfreq: exynos4: Fix bug of resource leak and code clean on probe()
+  devfreq: exynos4: Use SET_SYSTEM_SLEEP_PM_OPS macro
+  devfreq: exynos4: Fix power-leakage of clock on suspend state
+  devfreq: exynos4: Add CONFIG_PM_OPP dependency to fix probe fail
+  devfreq: exynos4: Add busfreq driver for exynos4210/exynos4x12
+
+ .../devicetree/bindings/devfreq/exynos4_bus.txt    |  49 +++
+ drivers/devfreq/Kconfig                            |   1 +
+ drivers/devfreq/exynos/Makefile                    |   2 +-
+ drivers/devfreq/exynos/exynos4_bus.c               | 415 ++++++++++++++-------
+ 4 files changed, 341 insertions(+), 126 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+
 -- 
 1.8.0
-
