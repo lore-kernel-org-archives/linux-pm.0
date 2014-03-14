@@ -1,66 +1,114 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv3 6/8] devfreq: exynos4: Fix power-leakage of clock on suspend
- state
-Date: Fri, 14 Mar 2014 18:30:06 +0900
-Message-ID: <1394789408-14648-7-git-send-email-cw00.choi@samsung.com>
-References: <1394789408-14648-1-git-send-email-cw00.choi@samsung.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCHv2 8/8] devfreq: exynos4: Add busfreq driver for
+ exynos4210/exynos4x12
+Date: Fri, 14 Mar 2014 10:35:52 +0000
+Message-ID: <20140314103552.GK25870@e106331-lin.cambridge.arm.com>
+References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
+ <1394698649-20996-9-git-send-email-cw00.choi@samsung.com>
+ <20140313175308.GE25870@e106331-lin.cambridge.arm.com>
+ <5322AC5D.9070200@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1394789408-14648-1-git-send-email-cw00.choi@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <5322AC5D.9070200@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "nm@ti.com" <nm@ti.com>, "b.zolnierkie@samsaung.com" <b.zolnierkie@samsaung.com>, Pawel Moll <Pawel.Moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch disable ppmu clocks before entering suspend state to remove
-power-leakage and enable ppmu clocks on resume function.
+On Fri, Mar 14, 2014 at 07:14:37AM +0000, Chanwoo Choi wrote:
+> Hi Mark,
+> 
+> On 03/14/2014 02:53 AM, Mark Rutland wrote:
+> > On Thu, Mar 13, 2014 at 08:17:29AM +0000, Chanwoo Choi wrote:
+> >> This patch add busfreq driver for Exynos4210/Exynos4x12 memory interface
+> >> and bus to support DVFS(Dynamic Voltage Frequency Scaling) according to PPMU
+> >> counters. PPMU (Performance Profiling Monitorings Units) of Exynos4 SoC provides
+> >> PPMU counters for DMC(Dynamic Memory Controller) to check memory bus utilization
+> >> and then busfreq driver adjusts dynamically the operating frequency/voltage
+> >> by using DEVFREQ Subsystem.
+> >>
+> >> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> >> ---
+> >>  .../devicetree/bindings/devfreq/exynos4_bus.txt    | 49 ++++++++++++++++++++++
+> >>  1 file changed, 49 insertions(+)
+> >>  create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+> >> new file mode 100644
+> >> index 0000000..2a83fcc
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+> >> @@ -0,0 +1,49 @@
+> >> +
+> >> +Exynos4210/4x12 busfreq driver
+> >> +-----------------------------
+> >> +
+> >> +Exynos4210/4x12 Soc busfreq driver with devfreq for Memory bus frequency/voltage
+> >> +scaling according to PPMU counters of memory controllers
+> >> +
+> >> +Required properties:
+> >> +- compatible	: should contain Exynos4 SoC type as follwoing:
+> >> +		  - "samsung,exynos4x12-busfreq" for Exynos4x12
+> >> +		  - "samsung,exynos4210-busfreq" for Exynos4210
+> > 
+> > Is there a device called "busfreq"? What device does this binding
+> > describe?
+> 
+> I'll add detailed description of busfreq as following:
+> 
+> "busfreq(bus frequendcy)" driver means that busfreq driver control dynamically
+> memory bus frequency/voltage by checking memory bus utilization to optimize
+> power-consumption. When checking memeory bus utilization, exynos4_busfreq driver
+> would use PPMU(Performance Profiling Monitoring Units).
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/exynos/exynos4_bus.c | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+This still sounds like a description of the _driver_, not the _device_.
+The binding should describe the hardware, now the high level abstraction
+that software is going to build atop of it.
 
-diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-index e5d2c5a..65e097a 100644
---- a/drivers/devfreq/exynos/exynos4_bus.c
-+++ b/drivers/devfreq/exynos/exynos4_bus.c
-@@ -1251,14 +1251,37 @@ static int exynos4_busfreq_remove(struct platform_device *pdev)
- static int exynos4_busfreq_resume(struct device *dev)
- {
- 	struct busfreq_data *data = dev_get_drvdata(dev);
-+	int i;
-+
-+	/* Enable clock after wake-up from suspend state */
-+	for (i = 0; i < PPMU_END; i++)
-+		clk_prepare_enable(data->clk_ppmu[i]);
-+
-+	/* Reset PPMU to check utilization again */
- 
- 	busfreq_mon_reset(data);
-+
- 	return 0;
- }
-+
-+static int exynos4_busfreq_suspend(struct device *dev)
-+{
-+	struct busfreq_data *data = dev_get_drvdata(dev);
-+	int i;
-+
-+	/*
-+	 * Disable clock before entering suspend state
-+	 * to reduce leakage power on suspend state.
-+	 */
-+	for (i = 0; i < PPMU_END; i++)
-+		clk_disable_unprepare(data->clk_ppmu[i]);
-+
-+	return 0;
-+};
- #endif
- 
- static const struct dev_pm_ops exynos4_busfreq_pm = {
--	SET_SYSTEM_SLEEP_PM_OPS(NULL, exynos4_busfreq_resume)
-+	SET_SYSTEM_SLEEP_PM_OPS(exynos4_busfreq_suspend, exynos4_busfreq_resume)
- };
- 
- static const struct platform_device_id exynos4_busfreq_id[] = {
--- 
-1.8.0
+It sounds like this is a binding for the DMC PPMU?
+
+Is the PPMU a component of the DMC, or is it bolted on the side?
+
+> 
+> 
+> > 
+> >> +- reg		: offset and length of the ppmudmc0/1
+> >> +		  - PPMU (Performance Profiling Monitoring Units)
+> > 
+> > You seem to require a particular order here. It would be good to be
+> > explicit about it.
+> 
+> OK, I'll modify it as following:
+> the offset and length of the PPMU_DMC0 / PPMU_DMC1
+> PPMU_DMC0/PPMU_DMC1 show memory buy utilization to exynos4_bus driver.
+> 
+> > 
+> >> +		  : It is to profile performance event of DMC(Dynamic Memory
+> >> +		  Controller) So, exynos4_bus.c can check memory bus utilization
+> >> +		  by using PPMU of Exynos4 SoC.
+> > 
+> > This is superfluous, and Linux-specific. The binding document shouldn't
+> > need to refer to drivers.
+> 
+> I'll remove this description.
+> 
+> > 
+> >> +- clocks	: clock number of ppmudmc0/1
+> >> +- clock-names	: clock name of ppmudmc0/1
+> > 
+> > Are these two clocks, or one clock with a slash in the name?
+> > 
+> > Please list each name separately.
+> 
+> I'll expalin clocks as following:
+> 	"ppmudmc0", "ppmudmc1"
+> 
+> > 
+> >> +- vdd_int-supply: regulator for interface block of Exynos4
+
+How does the interface block relate to the DMC / PPMU?
+
+Cheers,
+Mark.
