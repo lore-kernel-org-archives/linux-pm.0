@@ -1,93 +1,134 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
-Date: Fri, 14 Mar 2014 10:29:08 +0530
-Message-ID: <CAOh2x==at2PtHRpa=-_V6O5Z9aSog4r9BDb7ixJgBZk_+vfPtg@mail.gmail.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
+Date: Fri, 14 Mar 2014 11:13:29 +0530
+Message-ID: <53229701.8050405@linux.vnet.ibm.com>
+References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com> <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com> <20140312232127.GC24808@cbox>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f174.google.com ([209.85.220.174]:65109 "EHLO
-	mail-vc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbaCNE7J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 00:59:09 -0400
-In-Reply-To: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:58085 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751834AbaCNFnx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 01:43:53 -0400
+Received: from /spool/local
+	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 14 Mar 2014 15:43:50 +1000
+In-Reply-To: <20140312232127.GC24808@cbox>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, patrick.marlier@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Christoffer Dall <christoffer.dall@linaro.org>
+Cc: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, Gleb Natapov <gleb@kernel.org>, kvmarm@lists.cs.columbia.edu, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, marc.zyngier@arm.com
 
-On Thu, Mar 13, 2014 at 11:06 PM,  <dirk.brandewie@gmail.com> wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
->
-> Some drivers (intel_pstate) need to modify state on a core before it
-> is completely offline.  The ->exit() callback is executed during the
-> CPU_POST_DEAD phase of the cpu offline process which is too late to
-> change the state of the core.
->
-> Patch 1 adds an optional callback function to the cpufreq_driver
-> interface which is called by the core during the CPU_DOWN_PREPARE
-> phase of cpu offline in __cpufreq_remove_dev_prepare().
->
-> Patch 2 changes intel_pstate to use the ->exit_prepare callback to do
-> its cleanup during cpu offline.
-
-Copying stuff from other mail thread here so that we can discuss on a
-single mail chain.
-
-On 14 March 2014 03:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, March 13, 2014 12:56:02 PM Viresh Kumar wrote:
->> On 13 March 2014 08:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Wednesday, March 12, 2014 02:27:07 PM Dirk Brandewie wrote:
+On 03/13/2014 04:51 AM, Christoffer Dall wrote:
+> On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
+>> Subsystems that want to register CPU hotplug callbacks, as well as perform
+>> initialization for the CPUs that are already online, often do it as shown
+>> below:
 >>
->> >> > I see two possibilities:
->> >> >   1. Move the exit() callback to __cpufreq_remove_dev_prepare().  I don't
->> >> >      have a good understanding of what carnage this would cause in the core
->> >> >      or other scaling drivers.
->> >> >
->> >> >   2. Add another callback to the cpufreq_driver interface that would be call
->> >> >      from __cpufreq_remove_dev_prepare() if the callback was set.
->> >
->> > I prefer 2, the reason being that it pretty much is guaranteed not to break
->> > anything.  For the record, I'm not a fan of adding new cpufreq driver callbacks,
->> > but in this particular case it seems we can't really do anything better.
+>> 	get_online_cpus();
 >>
->> I haven't thought a lot about which one of these two looks better, probably
->> Rafael might be correct. But I can see another way out here as this is very
->> much driver specific. Why can't we do a register_hotcpu_notifier() from
->> pstate driver alone?
->
-> Why would that be better than adding a new callback?
+>> 	for_each_online_cpu(cpu)
+>> 		init_cpu(cpu);
+>>
+>> 	register_cpu_notifier(&foobar_cpu_notifier);
+>>
+>> 	put_online_cpus();
+>>
+>> This is wrong, since it is prone to ABBA deadlocks involving the
+>> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+>> with CPU hotplug operations).
+>>
+>> Instead, the correct and race-free way of performing the callback
+>> registration is:
+>>
+>> 	cpu_notifier_register_begin();
+>>
+>> 	for_each_online_cpu(cpu)
+>> 		init_cpu(cpu);
+>>
+>> 	/* Note the use of the double underscored version of the API */
+>> 	__register_cpu_notifier(&foobar_cpu_notifier);
+>>
+>> 	cpu_notifier_register_done();
+>>
+>>
+>> Fix the kvm code in arm by using this latter form of callback registration.
+>>
+>> Cc: Christoffer Dall <christoffer.dall@linaro.org>
+>> Cc: Gleb Natapov <gleb@kernel.org>
+>> Cc: Russell King <linux@arm.linux.org.uk>
+>> Cc: Ingo Molnar <mingo@kernel.org>
+>> Cc: kvmarm@lists.cs.columbia.edu
+>> Cc: kvm@vger.kernel.org
+>> Cc: linux-arm-kernel@lists.infradead.org
+>> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>> ---
+>>
+>>  arch/arm/kvm/arm.c |    7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+>> index bd18bb8..f0e50a0 100644
+>> --- a/arch/arm/kvm/arm.c
+>> +++ b/arch/arm/kvm/arm.c
+>> @@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
+>>  		}
+>>  	}
+>>  
+>> +	cpu_notifier_register_begin();
+>> +
+>>  	err = init_hyp_mode();
+>>  	if (err)
+>>  		goto out_err;
+>>  
+>> -	err = register_cpu_notifier(&hyp_init_cpu_nb);
+>> +	err = __register_cpu_notifier(&hyp_init_cpu_nb);
+>>  	if (err) {
+>>  		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+>>  		goto out_err;
+>>  	}
+>>  
+>> +	cpu_notifier_register_done();
+>> +
+>>  	hyp_cpu_pm_init();
+>>  
+>>  	kvm_coproc_table_init();
+>>  	return 0;
+>>  out_err:
+>> +	cpu_notifier_register_done();
+>>  	return err;
+>>  }
+>>  
+>>
+> 
+> Just so we're clear, the existing code was simply racy as not prone to
+> deadlocks, right?
+> 
+> This makes it clear that the test above for compatible CPUs can be quite
+> easily evaded by using CPU hotplug, but we don't really have a good
+> solution for handling that yet...  Hmmm, grumble grumble, I guess if you
+> hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
+> 
 
-Because its becoming more and more confusing. Probably we got the problem
-right but have wrong solutions for it.
+In this particular case, there was no deadlock possibility, rather the
+existing code had insufficient synchronization against CPU hotplug.
 
-But having considered this issue in detail now, I have more inputs. All Dirk and
-Patrick wanted is to set core to min P-state before it gets offlined. We already
-have some infrastructure in core which is called this today:
-cpufreq_generic_suspend(). We can rework on that to get a more ideal solution
-for both the problems.
+init_hyp_mode() would invoke cpu_init_hyp_mode() on currently online CPUs
+using on_each_cpu(). If a CPU came online after this point and before calling
+register_cpu_notifier(), that CPU would remain uninitialized because this
+subsystem would miss the hot-online event. This patch fixes this bug and
+also uses the new synchronization method (instead of get/put_online_cpus())
+to ensure that we don't deadlock with CPU hotplug.
 
-Over that I don't think Dirk's solution is going to work if we twist
-the systems a
-bit. For example, Dirk probably wanted to set P-STATE of every core to MIN
-when it goes down. But his solution probably doesn't do that right now.
+> In any case:
+> Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
+> 
 
-As exit() is called only when the policy expires or all the CPUs of that policy
-are down. Suppose only one CPU out of 4 goes down from a policy, then
-pstate driver would never know that happened. And that core wouldn't go
-to min state.
+Thanks a lot!
 
-I think we have two solutions here:
-- If its just about setting core a particular freq when it goes down, I think it
-looks a generic enough problem and so better fix core for that. Probably with
-help of flags field/suspend-freq (maybe renamed) and without calling drivers
-exit() at all..
+Regards,
+Srivatsa S. Bhat
 
-- If this is highly driver specific (which doesn't look like if all we
-have to do
-is setting freq to MIN), then better have something like
-register_hotcpu_notifier() with priority set to -1, so that it gets called after
-cpufreq.
-
---
-viresh
