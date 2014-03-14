@@ -1,201 +1,102 @@
 From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCHv2 3/8] devfreq: exynos4: Add ppmu's clock control and code
- clean about regulator control
-Date: Fri, 14 Mar 2014 18:42:16 +0100
-Message-ID: <53233F78.8020500@samsung.com>
+Subject: Re: [PATCHv2 4/8] devfreq: exynos4: Fix bug of resource leak and code
+ clean on probe()
+Date: Fri, 14 Mar 2014 18:49:38 +0100
+Message-ID: <53234132.8080202@samsung.com>
 References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <1394698649-20996-4-git-send-email-cw00.choi@samsung.com>
+ <1394698649-20996-5-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1394698649-20996-4-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:45087 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754090AbaCNRtm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 13:49:42 -0400
+In-reply-to: <1394698649-20996-5-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 Cc: rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 Hi Chanwoo,
 
 On 13.03.2014 09:17, Chanwoo Choi wrote:
-> There are not the clock controller of ppmudmc0/1. This patch control the clock
-> of ppmudmc0/1 which is used for monitoring memory bus utilization.
->
-> Also, this patch code clean about regulator control and free resource
-> when calling exit/remove function.
->
-> For example,
-> busfreq@106A0000 {
-> 	compatible = "samsung,exynos4x12-busfreq";
->
-> 	/* Clock for PPMUDMC0/1 */
-> 	clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
-> 	clock-names = "ppmudmc0", "ppmudmc1";
->
-> 	/* Regulator for MIF/INT block */
-> 	vdd_mif-supply = <&buck1_reg>;
-> 	vdd_int-supply = <&buck3_reg>;
-> };
+> This patch fix bug about resource leak when happening probe fail and code clean
+> to add debug message.
 >
 > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 > ---
->   drivers/devfreq/exynos/exynos4_bus.c | 114 ++++++++++++++++++++++++++++++-----
->   1 file changed, 100 insertions(+), 14 deletions(-)
+>   drivers/devfreq/exynos/exynos4_bus.c | 32 ++++++++++++++++++++++++++------
+>   1 file changed, 26 insertions(+), 6 deletions(-)
 >
 > diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-> index 1a0effa..a2a3a47 100644
+> index a2a3a47..152a3e9 100644
 > --- a/drivers/devfreq/exynos/exynos4_bus.c
 > +++ b/drivers/devfreq/exynos/exynos4_bus.c
-> @@ -62,6 +62,11 @@ enum exynos_ppmu_idx {
->   	PPMU_END,
->   };
->
-> +static const char *exynos_ppmu_clk_name[] = {
-> +	[PPMU_DMC0]	= "ppmudmc0",
-> +	[PPMU_DMC1]	= "ppmudmc1",
-> +};
-> +
->   #define EX4210_LV_MAX	LV_2
->   #define EX4x12_LV_MAX	LV_4
->   #define EX4210_LV_NUM	(LV_2 + 1)
-> @@ -86,6 +91,7 @@ struct busfreq_data {
->   	struct regulator *vdd_mif; /* Exynos4412/4212 only */
->   	struct busfreq_opp_info curr_oppinfo;
->   	struct exynos_ppmu ppmu[PPMU_END];
-> +	struct clk *clk_ppmu[PPMU_END];
->
->   	struct notifier_block pm_notifier;
->   	struct mutex lock;
-> @@ -722,8 +728,26 @@ static int exynos4_bus_get_dev_status(struct device *dev,
->   static void exynos4_bus_exit(struct device *dev)
->   {
->   	struct busfreq_data *data = dev_get_drvdata(dev);
-> +	int i;
-> +
-> +	/*
-> +	 * Un-map memory map and disable regulator/clocks
-> +	 * to prevent power leakage.
-> +	 */
-> +	regulator_disable(data->vdd_int);
-> +	if (data->type == TYPE_BUSF_EXYNOS4x12)
-> +		regulator_disable(data->vdd_mif);
-> +
-> +	for (i = 0; i < PPMU_END; i++) {
-> +		if (data->clk_ppmu[i])
-
-This check is invalid. Clock pointers must be checked for validity using 
-the IS_ERR() macro, because NULL is a valid clock pointer value 
-indicating a dummy clock.
-
-> +			clk_disable_unprepare(data->clk_ppmu[i]);
+> @@ -1152,8 +1152,11 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+>   		dev_err(dev, "Cannot determine the device id %d\n", data->type);
+>   		err = -EINVAL;
+>   	}
+> -	if (err)
+> +	if (err) {
+> +		dev_err(dev, "Cannot initialize busfreq table %d\n",
+> +			     data->type);
+>   		return err;
 > +	}
 >
-> -	devfreq_unregister_opp_notifier(dev, data->devfreq);
-> +	for (i = 0; i < PPMU_END; i++) {
-> +		if (data->ppmu[i].hw_base)
-
-Can this even happen? Is there a PPMU without registers?
-
-> +			iounmap(data->ppmu[i].hw_base);
-> +
-> +	}
->   }
->
->   static struct devfreq_dev_profile exynos4_devfreq_profile = {
-> @@ -987,6 +1011,7 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
->   {
->   	struct device *dev = data->dev;
->   	struct device_node *np = dev->of_node;
-> +	const char **clk_name = exynos_ppmu_clk_name;
->   	int i, ret;
->
->   	if (!np) {
-> @@ -1005,8 +1030,70 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
->   		}
+>   	rcu_read_lock();
+>   	opp = dev_pm_opp_find_freq_floor(dev,
+> @@ -1176,7 +1179,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+>   	if (IS_ERR(data->devfreq)) {
+>   		dev_err(dev, "Failed to add devfreq device\n");
+>   		err = PTR_ERR(data->devfreq);
+> -		goto err_opp;
+> +		goto err_devfreq;
 >   	}
 >
-> +	/*
-> +	 * Get PPMU's clocks to control them. But, if PPMU's clocks
-> +	 * is default 'pass' state, this driver don't need control
-> +	 * PPMU's clock.
-> +	 */
-> +	for (i = 0; i < PPMU_END; i++) {
-> +		data->clk_ppmu[i] = devm_clk_get(dev, clk_name[i]);
-> +		if (IS_ERR_OR_NULL(data->clk_ppmu[i])) {
-
-Again, this check is invalid. Only IS_ERR() is the correct way to check 
-whether returned clock pointer is valid.
-
-> +			dev_warn(dev, "Cannot get %s clock\n", clk_name[i]);
-> +			data->clk_ppmu[i] = NULL;
-
-This assignment is wrong. To allow further checking whether the clock 
-was found the value returned from devm_clk_get() must be retained and 
-then IS_ERR() used in further code.
-
-However, I believe it should be an error if a clock is not provided. The 
-driver must make sure that PPMU clocks are ungated before trying to 
-access them, otherwise the system might hang.
-
-> +		}
-> +
-> +		ret = clk_prepare_enable(data->clk_ppmu[i]);
-
-The code above allows the clock to be skipped, but this line doesn't 
-check whether it is valid. Still, I think the clock should be always 
-required.
-
-> +		if (ret < 0) {
-> +			dev_warn(dev, "Cannot enable %s clock\n", clk_name[i]);
-> +			data->clk_ppmu[i] = NULL;
-> +			goto err_clocks;
-> +		}
+>   	/*
+> @@ -1185,18 +1188,35 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+>   	 */
+>   	busfreq_mon_reset(data);
+>
+> -	devfreq_register_opp_notifier(dev, data->devfreq);
+> +	/* Register opp_notifier for Exynos4 busfreq */
+> +	err = devfreq_register_opp_notifier(dev, data->devfreq);
+> +	if (err < 0) {
+> +		dev_err(dev, "Failed to register opp notifier\n");
+> +		goto err_notifier_opp;
 > +	}
-> +
-> +	/* Get regulator to control voltage of int block */
-> +	data->vdd_int = devm_regulator_get(dev, "vdd_int");
-> +	if (IS_ERR(data->vdd_int)) {
-> +		dev_err(dev, "Failed to get the regulator of vdd_int\n");
-> +		ret = PTR_ERR(data->vdd_int);
-> +		goto err_clocks;
-> +	}
-> +	ret = regulator_enable(data->vdd_int);
-> +	if (ret < 0) {
-> +		dev_err(dev, "Failed to enable regulator of vdd_int\n");
-> +		goto err_clocks;
-> +	}
-> +
-> +	switch (data->type) {
-> +	case TYPE_BUSF_EXYNOS4210:
-> +		break;
-> +	case TYPE_BUSF_EXYNOS4x12:
-> +		/* Get regulator to control voltage of mif blk if Exynos4x12 */
-> +		data->vdd_mif = devm_regulator_get(dev, "vdd_mif");
-> +		if (IS_ERR(data->vdd_mif)) {
-> +			dev_err(dev, "Failed to get the regulator vdd_mif\n");
-> +			ret = PTR_ERR(data->vdd_mif);
-> +			goto err_regulator;
-> +		}
-> +		ret = regulator_enable(data->vdd_mif);
-> +		if (ret < 0) {
-> +			dev_err(dev, "Failed to enable regulator of vdd_mif\n");
-> +			goto err_regulator;
-> +		}
-> +		break;
-> +	default:
-> +		dev_err(dev, "Unknown device type : %d\n", data->type);
-> +		return -EINVAL;
-> +	};
-> +
+>
+> +	/* Register pm_notifier for Exynos4 busfreq */
+>   	err = register_pm_notifier(&data->pm_notifier);
+>   	if (err) {
+>   		dev_err(dev, "Failed to setup pm notifier\n");
+> -		devfreq_remove_device(data->devfreq);
+> -		return err;
+> +		goto err_notifier_pm;
+>   	}
+>
 >   	return 0;
 >
-> +err_regulator:
-> +	regulator_disable(data->vdd_int);
-> +err_clocks:
-> +	for (i = 0; i < PPMU_END; i++) {
-> +		if (data->clk_ppmu[i])
+> -err_opp:
+> +err_notifier_pm:
+> +	devfreq_unregister_opp_notifier(dev, data->devfreq);
+> +err_notifier_opp:
+> +	/*
+> +	 * The devfreq_remove_device() would execute finally devfreq->profile
+> +	 * ->exit(). To avoid duplicate resource free operation, return directly
+> +	 * before executing resource free below 'err_devfreq' goto statement.
+> +	 */
 
-Invalid check.
+I'm not quite sure about this. I believe that in this case 
+devfreq->profile->exit() would be exynos4_bus_exit() and all it does is 
+devfreq_unregister_opp_notifier(dev, data->devfreq), so all remaining 
+resources (regulators, clocks, etc.) would get leaked.
+
+I believe the correct thing to do would be to remove the .exit() 
+callback from exynos4_devfreq_profile struct and handle all the clean-up 
+here in error path.
 
 Best regards,
 Tomasz
