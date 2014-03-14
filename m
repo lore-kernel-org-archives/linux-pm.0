@@ -1,132 +1,51 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
-Date: Fri, 14 Mar 2014 08:10:44 -0700
-Message-ID: <53231BF4.2000308@intel.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <CAOh2x==at2PtHRpa=-_V6O5Z9aSog4r9BDb7ixJgBZk_+vfPtg@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC] cpufreq-cpu0: allow OPP table supplied by platform
+Date: Fri, 14 Mar 2014 10:36:27 -0500
+Message-ID: <532321FB.7080106@ti.com>
+References: <20140313184859.7d6f6512@xhacker> <CAKohpokLv0m+Cky7nCUOgP-djTMrA6jyka_EZ07+_exCAexXXg@mail.gmail.com> <CAKohpoke1i8xmKProgF+ki7Q=Q+YxbPnewdtbyPqu7857DLLWA@mail.gmail.com> <20140313194424.122ec572@xhacker> <20140314123205.GC813@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:46130 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbaCNPKr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 11:10:47 -0400
-In-Reply-To: <CAOh2x==at2PtHRpa=-_V6O5Z9aSog4r9BDb7ixJgBZk_+vfPtg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140314123205.GC813@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@freescale.com>, Jisheng Zhang <jszhang@marvell.com>, Dave Gerlach <d-gerlach@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: dirk.j.brandewie@intel.com, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, patrick.marlier@gmail.com
 
-On 03/13/2014 09:59 PM, Viresh Kumar wrote:
-> On Thu, Mar 13, 2014 at 11:06 PM,  <dirk.brandewie@gmail.com> wrote:
->> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>
->> Some drivers (intel_pstate) need to modify state on a core before it
->> is completely offline.  The ->exit() callback is executed during the
->> CPU_POST_DEAD phase of the cpu offline process which is too late to
->> change the state of the core.
->>
->> Patch 1 adds an optional callback function to the cpufreq_driver
->> interface which is called by the core during the CPU_DOWN_PREPARE
->> phase of cpu offline in __cpufreq_remove_dev_prepare().
->>
->> Patch 2 changes intel_pstate to use the ->exit_prepare callback to do
->> its cleanup during cpu offline.
->
-> Copying stuff from other mail thread here so that we can discuss on a
-> single mail chain.
->
-> On 14 March 2014 03:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Thursday, March 13, 2014 12:56:02 PM Viresh Kumar wrote:
->>> On 13 March 2014 08:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>> On Wednesday, March 12, 2014 02:27:07 PM Dirk Brandewie wrote:
->>>
->>>>>> I see two possibilities:
->>>>>>    1. Move the exit() callback to __cpufreq_remove_dev_prepare().  I don't
->>>>>>       have a good understanding of what carnage this would cause in the core
->>>>>>       or other scaling drivers.
->>>>>>
->>>>>>    2. Add another callback to the cpufreq_driver interface that would be call
->>>>>>       from __cpufreq_remove_dev_prepare() if the callback was set.
+On 03/14/2014 07:32 AM, Shawn Guo wrote:
+> On Thu, Mar 13, 2014 at 07:44:24PM +0800, Jisheng Zhang wrote:
+>>> On 13 March 2014 16:25, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> On 13 March 2014 16:18, Jisheng Zhang <jszhang@marvell.com> wrote:
+>>>>> Hi all,
+>>>>>
+>>>>> cpufreq-cpu0 is suitable for Marvell Berlin SoC. But there's one issue
+>>>>> to address. The opp is different between chips even on the same step
+>>>>> SoC, BG2Q for example. we can calculate the OPP table from the value of
+>>>>> one OTP register. We have two solutions:
+>>>>>
+>>>>> 1. bootloader reads OTP register and calculate the OPP table then change
+>>>>> dtb danamically
+>>>>>
+>>>>> 2. supply one driver in mach-berlin to initialize the OPP table; and
+>>>>> modify cpufreq-cpu0 to allow platform supply OPP table, fall back to
+>>>>> of_init_opp_table() if there's no OPP table.
+>>>>>
+>>>>> Which solution is better?
 >>>>
->>>> I prefer 2, the reason being that it pretty much is guaranteed not to break
->>>> anything.  For the record, I'm not a fan of adding new cpufreq driver callbacks,
->>>> but in this particular case it seems we can't really do anything better.
->>>
->>> I haven't thought a lot about which one of these two looks better, probably
->>> Rafael might be correct. But I can see another way out here as this is very
->>> much driver specific. Why can't we do a register_hotcpu_notifier() from
->>> pstate driver alone?
->>
->> Why would that be better than adding a new callback?
->
-> Because its becoming more and more confusing. Probably we got the problem
-> right but have wrong solutions for it.
->
-> But having considered this issue in detail now, I have more inputs. All Dirk and
-> Patrick wanted is to set core to min P-state before it gets offlined. We already
-> have some infrastructure in core which is called this today:
-> cpufreq_generic_suspend(). We can rework on that to get a more ideal solution
-> for both the problems.
+>>>> I think we can go ahead with second option here. We can just check if opp
+>>>> tables are already initialized or not. In case they are, don't probe from
+>>>> dt..
+>>>>
+>>>> But lets see with others have to say here..
+> 
+> Yea, we had gone for the second option on imx6q-cpufreq driver with
+> commit 20b7cbe (cpufreq: imx6q: add of_init_opp_table).
 
-Are you proposing adding cpufreq_generic_suspend() to the core I can not find
-it in the mainline code.
+There might be a better alternative here given the scope of potential
+reuse cross SoCs - a generic opp modifier logic which'd work for all
+of us. I will let Dave Gerlach post his series to give an idea.
 
->
-> Over that I don't think Dirk's solution is going to work if we twist
-> the systems a bit.
-
-Could you explain what "twist the systems a bit" means?
-
->For example, Dirk probably wanted to set P-STATE of every core to MIN
-> when it goes down. But his solution probably doesn't do that right now.
->
-
-No, I wanted to set the core that was being off-lined to min P state.
-
-> As exit() is called only when the policy expires or all the CPUs of that policy
-> are down. Suppose only one CPU out of 4 goes down from a policy, then
-> pstate driver would never know that happened. And that core wouldn't go
-> to min state.
-
-My patch does not change the semantics of exit() or when it is called.  For
-intel_pstate their is one cpu per policy so I moved all the cleanup to
-exit_prepare() if there were work I needed to do at CPU_POST_DEAD I would have
-continued to export the *optional* exit callback.
-
-The callback name exit_prepare() was probably unfortunate and might be causing
-some confusion.  I will be changing the name per Rafael's feedback.
->
-> I think we have two solutions here:
-> - If its just about setting core a particular freq when it goes down, I think it
-> looks a generic enough problem and so better fix core for that. Probably with
-> help of flags field/suspend-freq (maybe renamed) and without calling drivers
-> exit() at all..
-
-ATM the only thing that needs to be done in this case is to allow intel_pstate
-to set the P state on the core when it is going done.  My solution from the
-cores point of view is more generic, it allows any driver that needs to do work
-during CPU_DOWN_PREPARE to do it without adding any new logic to the core.
-
->
-> - If this is highly driver specific (which doesn't look like if all we
-> have to do is setting freq to MIN),
-
-That is why intel_pstate is the *only* driver using exit_prepare().  If
-other drivers need to do work during this phase of the cpu hotplug process
-then they can export the callback otherwise it has no affect on existing
-or future scaling drivers.
-
-> then better have something like
-> register_hotcpu_notifier() with priority set to -1, so that it gets called after
-> cpufreq.
-
-intel_pstate or any scaling driver having its own hotcpu_notifier makes possible
-for the core and the driver to disagree on the state of the driver.  Having
-the driver take hotplug notifications from two directions is a bad idea IMHO.
-
->
-> --
-> viresh
->
-
+-- 
+Regards,
+Nishanth Menon
