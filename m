@@ -1,8 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv3 2/8] devfreq: exynos4: Support devicetree to get device id of
- Exynos4 SoC
-Date: Fri, 14 Mar 2014 18:30:02 +0900
-Message-ID: <1394789408-14648-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCHv3 8/8] Documentation: dt: devfreq: Add device tree binding of
+ Exynos4 busfreq
+Date: Fri, 14 Mar 2014 18:30:08 +0900
+Message-ID: <1394789408-14648-9-git-send-email-cw00.choi@samsung.com>
 References: <1394789408-14648-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1394789408-14648-1-git-send-email-cw00.choi@samsung.com>
@@ -11,71 +11,76 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 Cc: rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch support DT(DeviceTree) method to probe exynos4_bus and get device
-id of each Exynos4 SoC by using dt helper function.
+This patch introduce device tree binding for the Exynos4's busfreq driver.
+The Exynos4's busfreq driver support DVFS(Dynamic Voltage Frequency Scaling)
+of Exynos4 memory bus to optimize power-consumption on runtime state.
+Exynos4's busfreq driver need the utilization of memory bus. So, busfreq driver
+use PPMU_DMC0/PPMU_DMC1 IP among various PPMU(Performance Profiling Monitoring
+Units) which provide the data of read/write counters on memory bus. This driver
+adjust the frequency/voltage of memory bus according to PPMU_DMC0/PPMU_DMC1
+counters.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/exynos/exynos4_bus.c | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/devfreq/exynos4_bus.txt    | 50 ++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
 
-diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-index 378e4bd..2d2b44b 100644
---- a/drivers/devfreq/exynos/exynos4_bus.c
-+++ b/drivers/devfreq/exynos/exynos4_bus.c
-@@ -23,6 +23,7 @@
- #include <linux/devfreq.h>
- #include <linux/platform_device.h>
- #include <linux/regulator/consumer.h>
-+#include <linux/of.h>
- #include <linux/module.h>
- 
- /* Exynos4 ASV has been in the mailing list, but not upstreamed, yet. */
-@@ -1014,6 +1015,28 @@ unlock:
- 	return NOTIFY_DONE;
- }
- 
-+static struct of_device_id exynos4_busfreq_id_match[] = {
-+	{
-+		.compatible = "samsung,exynos4210-busfreq",
-+		.data = (void *)TYPE_BUSF_EXYNOS4210,
-+	}, {
-+		.compatible = "samsung,exynos4x12-busfreq",
-+		.data = (void *)TYPE_BUSF_EXYNOS4x12,
-+	},
-+};
+diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+new file mode 100644
+index 0000000..bd397ed
+--- /dev/null
++++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+@@ -0,0 +1,50 @@
 +
-+static int exynos4_busfreq_get_driver_data(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	const struct of_device_id *match;
++Exynos4 Memory Bus frequency driver
++-----------------------------------
 +
-+	match = of_match_node(exynos4_busfreq_id_match, dev->of_node);
-+	if (!match)
-+		return -ENODEV;
++Exynos4 SoC need Busfreq (Memory Bus frequency) driver to support DVFS (Dynamic
++Voltage Frequency Scaling) of Exynos4 SoC's memory bus. This driver controls
++dynamically the frequency/voltage of memory bus to optimize power-consumption
++of memory bus. When checking the utilization of memory bus, Exynos4's busfreq
++driver uses PPMU_DMC0/PPMU_DMC1 (Performance Profiling Monitoring Units)
++which provide the data of read/write counters on memory bus.
 +
-+	return (int) match->data;
-+}
++Required properties:
++- compatible	: should contain Exynos4 SoC type as following:
++		  - "samsung,exynos4210-busfreq" for Exynos4210
++		  - "samsung,exynos4x12-busfreq" for Exynos4x12
++- reg		: physical address of PPMU_DMC0/PPMU_DMC1 register and length
++		  for memory mapping
++- clocks	: phandles to clock-controller and clock number of PPMU_DMC0
++		  /PPMU_DMC1
++- clock-names	: clock names for PPMU_DMC0/PPMU_DMC1
++		  - "ppmudmc0" for PPMU_DMC0
++		  - "ppmudmc1" for PPMU_DMC1
++- vdd_int-supply: regulator for interface block of Exynos4 SoC
 +
- static int exynos4_busfreq_probe(struct platform_device *pdev)
- {
- 	struct busfreq_data *data;
-@@ -1027,7 +1050,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
--	data->type = pdev->id_entry->driver_data;
-+	data->type = exynos4_busfreq_get_driver_data(pdev);
- 	data->dmc[0].hw_base = S5P_VA_DMC0;
- 	data->dmc[1].hw_base = S5P_VA_DMC1;
- 	data->pm_notifier.notifier_call = exynos4_busfreq_pm_notifier_event;
-@@ -1151,6 +1174,7 @@ static struct platform_driver exynos4_busfreq_driver = {
- 		.name	= "exynos4-busfreq",
- 		.owner	= THIS_MODULE,
- 		.pm	= &exynos4_busfreq_pm,
-+		.of_match_table = exynos4_busfreq_id_match,
- 	},
- };
- 
++Optional properties:
++- vdd_mif-supply: regulator for DMC block if using Exynos4x12 SoC
++
++Example:
++For Exynos4210 busfreq,
++
++	busfreq@106A0000 {
++		compatible = "samsung,exynos4210-busfreq";
++		reg = <0x106A0000 0x2000>, <0x106B0000 0x2000>;
++		clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
++		clock-names = "ppmudmc0", "ppmudmc1";
++
++		vdd_int-supply = <&buck3_reg>;
++	};
++
++For Exynos4x12 busfreq,
++
++	busfreq@106A0000 {
++		compatible = "samsung,exynos4x12-busfreq";
++		reg = <0x106A0000 0x2000>, <0x106B0000 0x2000>;
++		clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
++		clock-names = "ppmudmc0", "ppmudmc1";
++
++		vdd_int-supply = <&buck3_reg>;
++		vdd_mif-suppy = <&buck1_reg>;
++	};
 -- 
 1.8.0
