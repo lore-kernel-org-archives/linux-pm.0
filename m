@@ -1,167 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [RFC V2] cpufreq: make sure frequency transitions are serialized
-Date: Fri, 14 Mar 2014 13:13:44 +0530
-Message-ID: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv3 2/8] devfreq: exynos4: Support devicetree to get device id of
+ Exynos4 SoC
+Date: Fri, 14 Mar 2014 18:30:02 +0900
+Message-ID: <1394789408-14648-3-git-send-email-cw00.choi@samsung.com>
+References: <1394789408-14648-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1394789408-14648-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-shouldn't be called twice continuously. Following examples show why this is
-important:
+This patch support DT(DeviceTree) method to probe exynos4_bus and get device
+id of each Exynos4 SoC by using dt helper function.
 
-Scenario 1:
------------
-One thread reading value of cpuinfo_cur_freq, which will call
-__cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()..
-
-And ondemand governor trying to change freq of cpu at the same time and so
-sending notification via ->target()..
-
-Notifiers are not serialized and suppose this is what happened
-- PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
-- PRECHANGE Notification for freq B (from target())
-- Freq changed by target() to B
-- POSTCHANGE Notification for freq B
-- POSTCHANGE Notification for freq A
-
-Now the last POSTCHANGE Notification happened for freq A and hardware is
-currently running at freq B :)
-
-Where would we break then?: adjust_jiffies() in cpufreq.c and cpufreq_callback()
-in arch/arm/kernel/smp.c (which is also adjusting jiffies).. All loops_per_jiffy
-based stuff is broken..
-
-Scenario 2:
------------
-Governor is changing freq and has called __cpufreq_driver_target(). At the same
-time we are changing scaling_{min|max}_freq from sysfs, which would eventually
-end up calling governor's: CPUFREQ_GOV_LIMITS notification, that will also call:
-__cpufreq_driver_target().. And hence concurrent calls to ->target()
-
-And Platform have something like this in their ->target() (Like: cpufreq-cpu0,
-omap, exynos, etc)
-
-A. If new freq is more than old: Increase voltage
-B. Change freq
-C. If new freq is less than old: decrease voltage
-
-Now, two concurrent calls to target are X and Y, where X is trying to increase
-freq and Y is trying to decrease it..
-
-And this is the sequence that followed due to races..
-
-X.A: voltage increased for larger freq
-Y.A: nothing happened here
-Y.B: freq decreased
-Y.C: voltage decreased
-X.B: freq increased
-X.C: nothing happened..
-
-We ended up setting a freq which is not supported by the voltage we have set..
-That will probably make clock to CPU unstable and system might not be workable
-anymore...
-
-This patch adds protection in cpufreq_notify_transition() to make transitions
-serialized. It runs WARN() if POSTCHANGE notification is sent when we are not in
-middle of a transition. And PRECHANGE notification is forced to wait while the
-current transition is in progress.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
+ drivers/devfreq/exynos/exynos4_bus.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-This was discussed earlier here:
-https://lkml.org/lkml/2013/9/25/402
-
-Where Rafael asked for better fix, as he called the V1 fixes: "quick and dirty".
-This is another approach, much simpler than previous one. Please see if this
-looks fine. There is a TODO note in there as I wanted some suggestions on how
-exactly should we wait for a transition to get over.
-
- drivers/cpufreq/cpufreq.c | 39 +++++++++++++++++++++++++++++++++++++--
- include/linux/cpufreq.h   |  2 ++
- 2 files changed, 39 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2677ff1..66bdfff 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -324,6 +324,13 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 	}
+diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+index 378e4bd..2d2b44b 100644
+--- a/drivers/devfreq/exynos/exynos4_bus.c
++++ b/drivers/devfreq/exynos/exynos4_bus.c
+@@ -23,6 +23,7 @@
+ #include <linux/devfreq.h>
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/of.h>
+ #include <linux/module.h>
+ 
+ /* Exynos4 ASV has been in the mailing list, but not upstreamed, yet. */
+@@ -1014,6 +1015,28 @@ unlock:
+ 	return NOTIFY_DONE;
  }
  
-+static void notify_transition_for_each_cpu(struct cpufreq_policy *policy,
-+		struct cpufreq_freqs *freqs, unsigned int state)
++static struct of_device_id exynos4_busfreq_id_match[] = {
++	{
++		.compatible = "samsung,exynos4210-busfreq",
++		.data = (void *)TYPE_BUSF_EXYNOS4210,
++	}, {
++		.compatible = "samsung,exynos4x12-busfreq",
++		.data = (void *)TYPE_BUSF_EXYNOS4x12,
++	},
++};
++
++static int exynos4_busfreq_get_driver_data(struct platform_device *pdev)
 +{
-+	for_each_cpu(freqs->cpu, policy->cpus)
-+		__cpufreq_notify_transition(policy, freqs, state);
++	struct device *dev = &pdev->dev;
++	const struct of_device_id *match;
++
++	match = of_match_node(exynos4_busfreq_id_match, dev->of_node);
++	if (!match)
++		return -ENODEV;
++
++	return (int) match->data;
 +}
 +
- /**
-  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
-  * on frequency transition.
-@@ -335,8 +342,35 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, unsigned int state)
+ static int exynos4_busfreq_probe(struct platform_device *pdev)
  {
--	for_each_cpu(freqs->cpu, policy->cpus)
--		__cpufreq_notify_transition(policy, freqs, state);
-+	if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
-+		return notify_transition_for_each_cpu(policy, freqs, state);
-+
-+	/* Serialize pre-post notifications */
-+	mutex_lock(&policy->transition_lock);
-+	if (unlikely(WARN_ON(!policy->transition_ongoing &&
-+				(state == CPUFREQ_POSTCHANGE)))) {
-+		mutex_unlock(&policy->transition_lock);
-+		return;
-+	}
-+
-+	if (state == CPUFREQ_PRECHANGE) {
-+		while (policy->transition_ongoing) {
-+			mutex_unlock(&policy->transition_lock);
-+			/* TODO: Can we do something better here? */
-+			cpu_relax();
-+			mutex_lock(&policy->transition_lock);
-+		}
-+
-+		policy->transition_ongoing = true;
-+		mutex_unlock(&policy->transition_lock);
-+	}
-+
-+	notify_transition_for_each_cpu(policy, freqs, state);
-+
-+	if (state == CPUFREQ_POSTCHANGE) {
-+		policy->transition_ongoing = false;
-+		mutex_unlock(&policy->transition_lock);
-+	}
- }
- EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
+ 	struct busfreq_data *data;
+@@ -1027,7 +1050,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
  
-@@ -983,6 +1017,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
- 
- 	INIT_LIST_HEAD(&policy->policy_list);
- 	init_rwsem(&policy->rwsem);
-+	mutex_init(&policy->transition_lock);
- 
- 	return policy;
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 31c431e..e5cebce 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -104,6 +104,8 @@ struct cpufreq_policy {
- 	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
- 	 */
- 	struct rw_semaphore	rwsem;
-+	bool			transition_ongoing; /* Tracks transition status */
-+	struct mutex		transition_lock;
+-	data->type = pdev->id_entry->driver_data;
++	data->type = exynos4_busfreq_get_driver_data(pdev);
+ 	data->dmc[0].hw_base = S5P_VA_DMC0;
+ 	data->dmc[1].hw_base = S5P_VA_DMC1;
+ 	data->pm_notifier.notifier_call = exynos4_busfreq_pm_notifier_event;
+@@ -1151,6 +1174,7 @@ static struct platform_driver exynos4_busfreq_driver = {
+ 		.name	= "exynos4-busfreq",
+ 		.owner	= THIS_MODULE,
+ 		.pm	= &exynos4_busfreq_pm,
++		.of_match_table = exynos4_busfreq_id_match,
+ 	},
  };
  
- /* Only for ACPI */
 -- 
-1.7.12.rc2.18.g61b472e
-
+1.8.0
