@@ -1,80 +1,93 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI and power management fixes for v3.14-rc7
-Date: Fri, 14 Mar 2014 17:17:48 +0100
-Message-ID: <CAJZ5v0jzME8pYhfRLheOKVgo9beeYk9wnG6-N=kdVNM2e9LJCA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Fri, 14 Mar 2014 22:37:27 +0530
+Message-ID: <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
+	<CAOh2x==at2PtHRpa=-_V6O5Z9aSog4r9BDb7ixJgBZk_+vfPtg@mail.gmail.com>
+	<53231BF4.2000308@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f47.google.com ([209.85.216.47]:34276 "EHLO
+	mail-qa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756081AbaCNRH2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 13:07:28 -0400
+Received: by mail-qa0-f47.google.com with SMTP id w5so2763397qac.20
+        for <linux-pm@vger.kernel.org>; Fri, 14 Mar 2014 10:07:27 -0700 (PDT)
+In-Reply-To: <53231BF4.2000308@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>
 
-Hi Linus,
+On 14 March 2014 20:40, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> Are you proposing adding cpufreq_generic_suspend() to the core I can not
+> find
+> it in the mainline code.
 
-Please pull from the git repository at
+Its already there in linux-next. I am suggesting to reuse that
+infrastructure with
+some necessary modification to support both suspend and hotplug.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.14-rc7
+>> Over that I don't think Dirk's solution is going to work if we twist
+>> the systems a bit.
+>
+> Could you explain what "twist the systems a bit" means?
 
-to receive ACPI and power management fixes for v3.14-rc7
-with top-most commit d5af40d6b34d9d1ba39a27f657948cbce4e0b0e7
+The one I explained in the below paragraph.
 
-  Merge branches 'pnp', 'acpi-init', 'acpi-sleep' and 'pm-cpufreq'
+>> For example, Dirk probably wanted to set P-STATE of every core to MIN
+>> when it goes down. But his solution probably doesn't do that right now.
+>>
+>
+> No, I wanted to set the core that was being off-lined to min P state.
 
-on top of commit fa389e220254c69ffae0d403eac4146171062d08
+Sorry, probably my words were a bit confusing. I meant exactly what
+you just wrote. Core going down will set its freq to min.
 
-  Linux 3.14-rc6
+>> As exit() is called only when the policy expires or all the CPUs of that
+>> policy
+>> are down. Suppose only one CPU out of 4 goes down from a policy, then
+>> pstate driver would never know that happened. And that core wouldn't go
+>> to min state.
+>
+> My patch does not change the semantics of exit() or when it is called.  For
+> intel_pstate their is one cpu per policy so I moved all the cleanup to
 
-Three of these are regression fixes, for two recent regressions and one
-introduced during the 3.13 cycle, and the fourth one is a working version
-of the fix that had to be reverted last time.
+I didn't knew that its guaranteed by pstate driver. I thought it would still be
+hardware dependent as some cores might share clock line.
 
-Specifics:
+> exit_prepare() if there were work I needed to do at CPU_POST_DEAD I would
+> have
+> continued to export the *optional* exit callback.
+>
+> The callback name exit_prepare() was probably unfortunate and might be
+> causing
+> some confusion.  I will be changing the name per Rafael's feedback.
 
- - A recent ACPI resources handling fix overlooked the fact that it had
-   to update the ACPI PNP subsystem's resources parsing too and caused
-   confusing warning messages to be printed during system intialization
-   on some systems (with arguably buggy ACPI tables).  Fix from Zhang Rui.
+Don't know.. There is another problem here that exit_prepare() would be called
+for each CPU whereas exit() would be called for each policy.
 
- - Moving the early ACPI initialization before timekeeping_init() earlier
-   in this cycle broke fast TSC calibration on at least one system, so it
-   needs to be done later, but still before efi_enter_virtual_mode() to
-   allow the EFI initialization to refer to ACPI.
+And I strongly feel that we shouldn't give another callback here but instead
+just set core to a specific freq as mentioned by driver with some other field.
 
- - A change related to code duplication reduction in the cpufreq core
-   inadvertently caused cpufreq intialization to fail for some CPUs
-   handled by intel_pstate by adding checks that may fail for that
-   driver, but aren't even necessary when it is used.  The issue is
-   addressed by preventing those checks from run in the configurations
-   in which they aren't needed.
+>> I think we have two solutions here:
+>> - If its just about setting core a particular freq when it goes down, I
+>> think it
+>> looks a generic enough problem and so better fix core for that. Probably
+>> with
+>> help of flags field/suspend-freq (maybe renamed) and without calling
+>> drivers
+>> exit() at all..
+>
+>
+> ATM the only thing that needs to be done in this case is to allow
+> intel_pstate
+> to set the P state on the core when it is going done.  My solution from the
+> cores point of view is more generic, it allows any driver that needs to do
+> work
+> during CPU_DOWN_PREPARE to do it without adding any new logic to the core.
 
- - If the Hardware Reduced ACPI flag is set in the ACPI tables, system
-   suspend, hibernation and ACPI power off will only work when special
-   sleep control and sleep status registeres are provided (their
-   addresses in the ACPI tables are not zero).  If those registers are
-   not available, the features in question have no chances to work,
-   so they shouldn't even be regarded as supported.  That helps with
-   power off in particular, because alternative power off methods may
-   be used then and they may actually work.
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (3):
-      cpufreq: Skip current frequency initialization for ->setpolicy drivers
-      ACPI / init: Invoke early ACPI initialization later
-      ACPI / sleep: Add extra checks for HW Reduced ACPI mode sleep states
-
-Zhang Rui (1):
-      PNP / ACPI: proper handling of ACPI IO/Memory resource parsing failures
-
----------------
-
- drivers/acpi/sleep.c           | 32 +++++++++++++++-----------------
- drivers/cpufreq/cpufreq.c      |  4 ++--
- drivers/pnp/pnpacpi/rsparser.c | 15 ++++++++++++---
- init/main.c                    |  2 +-
- 4 files changed, 30 insertions(+), 23 deletions(-)
+Yeah, do we really need to give that freedom right now? Would be better
+to get this into core as that would be more generic and people looking to set
+core to some freq at shutdown wouldn't be replicating that code.
