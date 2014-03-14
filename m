@@ -1,79 +1,38 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH v2 2/2] intel_pstate: Set core to min P state during core offline
-Date: Fri, 14 Mar 2014 14:03:57 -0700
-Message-ID: <1394831037-15553-3-git-send-email-dirk.j.brandewie@intel.com>
-References: <16035918.jZXKnQ3yiq@vostro.rjw.lan>
- <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+From: Courtney Cavin <courtney.cavin@sonymobile.com>
+Subject: Re: [PATCH] thermal: add generic IIO channel thermal sensor driver
+Date: Fri, 14 Mar 2014 14:19:53 -0700
+Message-ID: <20140314211952.GJ18578@sonymobile.com>
+References: <1391651007-29813-1-git-send-email-courtney.cavin@sonymobile.com>
+ <1393484014.2637.14.camel@rzhang1-mobl4>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1393484014.2637.14.camel@rzhang1-mobl4>
+Sender: linux-doc-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "rob@landley.net" <rob@landley.net>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Thu, Feb 27, 2014 at 07:53:34AM +0100, Zhang Rui wrote:
+> On Wed, 2014-02-05 at 17:43 -0800, Courtney Cavin wrote:
+> > This driver is a generic method for using IIO ADC channels as thermal
+> > sensors.
+> > 
+> > Signed-off-by: Courtney Cavin <courtney.cavin@sonymobile.com>
+> 
+> Eduardo,
+> 
+> what do you think of this patch?
 
-Change to use ->stop() callback to do clean up during CPU
-hotplug. The requested P state for an offline core will be used by the
-hardware coordination function to select the package P state. If the
-core is under load when it is offlined it will fix the package P state
-floor to the requested P state of offline core.
+Apparently not very much.  Oh well.
 
-Reported-by: Patrick Marlier <patrick.marlier@gmail.com>
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+Sans further input, I will submit a new series with the following
+changes:
+	- Fix some return values in probe().
+	- Change DT binding
+		- Submit as seperate patch in series
+		- Reword/rename to represent a thermistor
+		- Remove specific references to IIO, where appropriate
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 2cd36b9..e9092fd 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -447,7 +447,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
- 	if (limits.no_turbo)
- 		val |= (u64)1 << 32;
- 
--	wrmsrl(MSR_IA32_PERF_CTL, val);
-+	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
- }
- 
- static struct cpu_defaults core_params = {
-@@ -773,16 +773,22 @@ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-+static int intel_pstate_cpu_stop(struct cpufreq_policy *policy)
- {
--	int cpu = policy->cpu;
-+	int cpu_num = policy->cpu;
-+	struct cpudata *cpu = all_cpu_data[cpu_num];
-+
-+	pr_info("intel_pstate CPU %d exiting\n", cpu_num);
-+
-+	del_timer(&all_cpu_data[cpu_num]->timer);
-+	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
-+	kfree(all_cpu_data[cpu_num]);
-+	all_cpu_data[cpu_num] = NULL;
- 
--	del_timer(&all_cpu_data[cpu]->timer);
--	kfree(all_cpu_data[cpu]);
--	all_cpu_data[cpu] = NULL;
- 	return 0;
- }
- 
-+
- static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpudata *cpu;
-@@ -818,7 +824,7 @@ static struct cpufreq_driver intel_pstate_driver = {
- 	.setpolicy	= intel_pstate_set_policy,
- 	.get		= intel_pstate_get,
- 	.init		= intel_pstate_cpu_init,
--	.exit		= intel_pstate_cpu_exit,
-+	.stop		= intel_pstate_cpu_stop,
- 	.name		= "intel_pstate",
- };
- 
--- 
-1.8.3.1
+-Courtney
