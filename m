@@ -1,93 +1,137 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
-Date: Fri, 14 Mar 2014 22:37:27 +0530
-Message-ID: <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
-	<CAOh2x==at2PtHRpa=-_V6O5Z9aSog4r9BDb7ixJgBZk_+vfPtg@mail.gmail.com>
-	<53231BF4.2000308@intel.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCHv2 8/8] devfreq: exynos4: Add busfreq driver for
+ exynos4210/exynos4x12
+Date: Fri, 14 Mar 2014 18:35:35 +0100
+Message-ID: <53233DE7.2030902@samsung.com>
+References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
+ <1394698649-20996-9-git-send-email-cw00.choi@samsung.com>
+ <20140313175308.GE25870@e106331-lin.cambridge.arm.com>
+ <5322AC5D.9070200@samsung.com>
+ <20140314103552.GK25870@e106331-lin.cambridge.arm.com>
+ <5322E04D.2060801@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f47.google.com ([209.85.216.47]:34276 "EHLO
-	mail-qa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756081AbaCNRH2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 13:07:28 -0400
-Received: by mail-qa0-f47.google.com with SMTP id w5so2763397qac.20
-        for <linux-pm@vger.kernel.org>; Fri, 14 Mar 2014 10:07:27 -0700 (PDT)
-In-Reply-To: <53231BF4.2000308@intel.com>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:47185 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754090AbaCNRfl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 13:35:41 -0400
+In-reply-to: <5322E04D.2060801@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "nm@ti.com" <nm@ti.com>, "b.zolnierkie@samsaung.com" <b.zolnierkie@samsaung.com>, Pawel Moll <Pawel.Moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
-On 14 March 2014 20:40, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
-> Are you proposing adding cpufreq_generic_suspend() to the core I can not
-> find
-> it in the mainline code.
+Hi Chanwoo, Mark,
 
-Its already there in linux-next. I am suggesting to reuse that
-infrastructure with
-some necessary modification to support both suspend and hotplug.
-
->> Over that I don't think Dirk's solution is going to work if we twist
->> the systems a bit.
+On 14.03.2014 11:56, Chanwoo Choi wrote:
+> Hi Mark,
 >
-> Could you explain what "twist the systems a bit" means?
-
-The one I explained in the below paragraph.
-
->> For example, Dirk probably wanted to set P-STATE of every core to MIN
->> when it goes down. But his solution probably doesn't do that right now.
+> On 03/14/2014 07:35 PM, Mark Rutland wrote:
+>> On Fri, Mar 14, 2014 at 07:14:37AM +0000, Chanwoo Choi wrote:
+>>> Hi Mark,
+>>>
+>>> On 03/14/2014 02:53 AM, Mark Rutland wrote:
+>>>> On Thu, Mar 13, 2014 at 08:17:29AM +0000, Chanwoo Choi wrote:
+>>>>> This patch add busfreq driver for Exynos4210/Exynos4x12 memory interface
+>>>>> and bus to support DVFS(Dynamic Voltage Frequency Scaling) according to PPMU
+>>>>> counters. PPMU (Performance Profiling Monitorings Units) of Exynos4 SoC provides
+>>>>> PPMU counters for DMC(Dynamic Memory Controller) to check memory bus utilization
+>>>>> and then busfreq driver adjusts dynamically the operating frequency/voltage
+>>>>> by using DEVFREQ Subsystem.
+>>>>>
+>>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>> ---
+>>>>>   .../devicetree/bindings/devfreq/exynos4_bus.txt    | 49 ++++++++++++++++++++++
+>>>>>   1 file changed, 49 insertions(+)
+>>>>>   create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>>
+>>>>> diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>> new file mode 100644
+>>>>> index 0000000..2a83fcc
+>>>>> --- /dev/null
+>>>>> +++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>> @@ -0,0 +1,49 @@
+>>>>> +
+>>>>> +Exynos4210/4x12 busfreq driver
+>>>>> +-----------------------------
+>>>>> +
+>>>>> +Exynos4210/4x12 Soc busfreq driver with devfreq for Memory bus frequency/voltage
+>>>>> +scaling according to PPMU counters of memory controllers
+>>>>> +
+>>>>> +Required properties:
+>>>>> +- compatible	: should contain Exynos4 SoC type as follwoing:
+>>>>> +		  - "samsung,exynos4x12-busfreq" for Exynos4x12
+>>>>> +		  - "samsung,exynos4210-busfreq" for Exynos4210
+>>>>
+>>>> Is there a device called "busfreq"? What device does this binding
+>>>> describe?
+>>>
+>>> I'll add detailed description of busfreq as following:
+>>>
+>>> "busfreq(bus frequendcy)" driver means that busfreq driver control dynamically
+>>> memory bus frequency/voltage by checking memory bus utilization to optimize
+>>> power-consumption. When checking memeory bus utilization, exynos4_busfreq driver
+>>> would use PPMU(Performance Profiling Monitoring Units).
 >>
+>> This still sounds like a description of the _driver_, not the _device_.
+>> The binding should describe the hardware, now the high level abstraction
+>> that software is going to build atop of it.
+>>
+>> It sounds like this is a binding for the DMC PPMU?
+>>
+>> Is the PPMU a component of the DMC, or is it bolted on the side?
 >
-> No, I wanted to set the core that was being off-lined to min P state.
-
-Sorry, probably my words were a bit confusing. I meant exactly what
-you just wrote. Core going down will set its freq to min.
-
->> As exit() is called only when the policy expires or all the CPUs of that
->> policy
->> are down. Suppose only one CPU out of 4 goes down from a policy, then
->> pstate driver would never know that happened. And that core wouldn't go
->> to min state.
+> PPMU(Performance Profiling Monitoring Unit) is to profile performance event of
+> various IP on Exynos4. Each PPMU provide perforamnce event for each IP.
+> We can check various PPMU as following:
 >
-> My patch does not change the semantics of exit() or when it is called.  For
-> intel_pstate their is one cpu per policy so I moved all the cleanup to
-
-I didn't knew that its guaranteed by pstate driver. I thought it would still be
-hardware dependent as some cores might share clock line.
-
-> exit_prepare() if there were work I needed to do at CPU_POST_DEAD I would
-> have
-> continued to export the *optional* exit callback.
+> PPMU_3D
+> PPMU_ACP
+> PPMU_CAMIF
+> PPMU_CPU
+> PPMU_DMC0
+> PPMU_DMC1
+> PPMU_FSYS
+> PPMU_IMAGE
+> PPMU_LCD0
+> PPMU_LCD1
+> PPMU_MFC_L
+> PPMU_MFC_R
+> PPMU_TV
+> PPMU_LEFT_BUS
+> PPMU_RIGHT_BUS
 >
-> The callback name exit_prepare() was probably unfortunate and might be
-> causing
-> some confusion.  I will be changing the name per Rafael's feedback.
-
-Don't know.. There is another problem here that exit_prepare() would be called
-for each CPU whereas exit() would be called for each policy.
-
-And I strongly feel that we shouldn't give another callback here but instead
-just set core to a specific freq as mentioned by driver with some other field.
-
->> I think we have two solutions here:
->> - If its just about setting core a particular freq when it goes down, I
->> think it
->> looks a generic enough problem and so better fix core for that. Probably
->> with
->> help of flags field/suspend-freq (maybe renamed) and without calling
->> drivers
->> exit() at all..
+> DMC (Dynamic Memory Controller) control the operation of DRAM in Exynos4 SoC.
+> If we need to get memory bust utilization of DMC, we can get memory bus utilization
+> from PPMU_DMC0/PPMU_DMC1.
 >
->
-> ATM the only thing that needs to be done in this case is to allow
-> intel_pstate
-> to set the P state on the core when it is going done.  My solution from the
-> cores point of view is more generic, it allows any driver that needs to do
-> work
-> during CPU_DOWN_PREPARE to do it without adding any new logic to the core.
+> So, Exynos4's busfreq used two(PPMU_DMC0/PPMU_DMC1) among upper various PPMU list.
 
-Yeah, do we really need to give that freedom right now? Would be better
-to get this into core as that would be more generic and people looking to set
-core to some freq at shutdown wouldn't be replicating that code.
+Well, PPMUs and DMCs are separate hardware blocks found inside Exynos 
+SoCs. Busfreq/devfreq is just a Linux-specific abstraction responsible 
+for collecting data using PPMUs and controlling frequencies and voltages 
+of appropriate power planes, vdd_int responsible for powering DMC0 and 
+DMC1 blocks in this case.
+
+I'm afraid that the binding you're proposing is unfortunately incorrect, 
+because it represents the software abstraction, not the real hardware.
+
+Instead, this should be separated into several independent bindings:
+
+  - PPMU bindings to list all the PPMU instances present in the SoC and 
+resources they need,
+
+  - power plane bindings, which define a power plane in which multiple 
+IP blocks might reside, can be monitored by one or more PPMU units and 
+frequency and voltage of which can be configured according to determined 
+performance level. Needed resources will be clocks and regulators to 
+scale and probably also operating points.
+
+Then, exynos-busfreq driver should bind to such power planes, parse 
+necessary data from DT (list of PPMUs and IP blocks, clocks, regulators 
+and operating points) and register a devfreq entity.
+
+Best regards,
+Tomasz
