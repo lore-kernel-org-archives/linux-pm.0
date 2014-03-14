@@ -1,76 +1,126 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCHv2 0/8] devfreq: exynos4: Support dt and use common ppmu
- driver
-Date: Fri, 14 Mar 2014 18:58:06 +0100
-Message-ID: <5323432E.5060005@samsung.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Fri, 14 Mar 2014 11:29:04 -0700
+Message-ID: <53234A70.70506@gmail.com>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>	<CAOh2x==at2PtHRpa=-_V6O5Z9aSog4r9BDb7ixJgBZk_+vfPtg@mail.gmail.com>	<53231BF4.2000308@intel.com> <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:53172 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754747AbaCNS3I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 14:29:08 -0400
+In-Reply-To: <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>
 
-Hi Chanwoo,
-
-On 13.03.2014 09:17, Chanwoo Choi wrote:
-> This patchset support devicetree and use common ppmu driver instead of
-> individual code of exynos4_bus.c to remove duplicate code. Also this patchset
-> get the resources for busfreq from dt data by using DT helper function.
-> - PPMU register address
-> - PPMU clock
-> - Regulator for INT/MIF block
+On 03/14/2014 10:07 AM, Viresh Kumar wrote:
+> On 14 March 2014 20:40, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+>> Are you proposing adding cpufreq_generic_suspend() to the core I can not
+>> find
+>> it in the mainline code.
 >
-> This patchset use SET_SYSTEM_SLEEP_PM_OPS macro intead of legacy method.
-> To remove power-leakage in suspend state, before entering suspend state,
-> disable ppmu clocks.
+> Its already there in linux-next. I am suggesting to reuse that
+> infrastructure with
+> some necessary modification to support both suspend and hotplug.
+
+Suspend and hotplug are two very different things and if we start
+crossing those wires bad things are going to happen IMHO.
+
+In "normal" operation using the suspend path to do this work could
+work in principal but doesn't handle the case where the user does
+    echo 0 | sudo tee /sys/devices/system/cpu/cpuX/online
+
+Trying force hotplug and suspend into a common mechanism would
+lead to a bunch of special case code or a significant rework of the
+core code IMHO.
+
+
 >
-> Changes from v1:
-> - Add exynos4_bus.txt documentation for devicetree guide
-> - Fix probe failure if CONFIG_PM_OPP is disabled
-> - Fix typo and resource leak(regulator/clock/memory) when happening probe failure
-> - Add additionally comment for PPMU usage instead of previous PPC
-> - Split separate patch to remove ambiguous of patch
+>>> Over that I don't think Dirk's solution is going to work if we twist
+>>> the systems a bit.
+>>
+>> Could you explain what "twist the systems a bit" means?
 >
-> Chanwoo Choi (8):
->    devfreq: exynos4: Support devicetree to get device id of Exynos4 SoC
->    devfreq: exynos4: Use common ppmu driver and get ppmu address from dt data
->    devfreq: exynos4: Add ppmu's clock control and code clean about regulator control
->    devfreq: exynos4: Fix bug of resource leak and code clean on probe()
->    devfreq: exynos4: Use SET_SYSTEM_SLEEP_PM_OPS macro
->    devfreq: exynos4: Fix power-leakage of clock on suspend state
->    devfreq: exynos4: Add CONFIG_PM_OPP dependency to fix probe fail
->    devfreq: exynos4: Add busfreq driver for exynos4210/exynos4x12
+> The one I explained in the below paragraph.
 >
->   .../devicetree/bindings/devfreq/exynos4_bus.txt    |  49 +++
->   drivers/devfreq/Kconfig                            |   1 +
->   drivers/devfreq/exynos/Makefile                    |   2 +-
->   drivers/devfreq/exynos/exynos4_bus.c               | 415 ++++++++++++++-------
->   4 files changed, 341 insertions(+), 126 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>> For example, Dirk probably wanted to set P-STATE of every core to MIN
+>>> when it goes down. But his solution probably doesn't do that right now.
+>>>
+>>
+>> No, I wanted to set the core that was being off-lined to min P state.
+>
+> Sorry, probably my words were a bit confusing. I meant exactly what
+> you just wrote. Core going down will set its freq to min.
+>
+>>> As exit() is called only when the policy expires or all the CPUs of that
+>>> policy
+>>> are down. Suppose only one CPU out of 4 goes down from a policy, then
+>>> pstate driver would never know that happened. And that core wouldn't go
+>>> to min state.
+>>
+>> My patch does not change the semantics of exit() or when it is called.  For
+>> intel_pstate their is one cpu per policy so I moved all the cleanup to
+>
+> I didn't knew that its guaranteed by pstate driver. I thought it would still be
+> hardware dependent as some cores might share clock line.
+
+This is guaranteed by the hardware.  Each core has its own MSR for P state
+request.  Any coordination that is required between cores to select the
+package P state is handled by the hardware.
+
+>
+>> exit_prepare() if there were work I needed to do at CPU_POST_DEAD I would
+>> have
+>> continued to export the *optional* exit callback.
+>>
+>> The callback name exit_prepare() was probably unfortunate and might be
+>> causing
+>> some confusion.  I will be changing the name per Rafael's feedback.
+>
+> Don't know.. There is another problem here that exit_prepare() would be called
+> for each CPU whereas exit() would be called for each policy.
+
+Granted but I don't see this as a problem in this case there is a 1:1
+relationship.  If a driver chooses to use the *optional* exit_prepare() callback
+and knows that there is a many:1 relationship between the policy and CPUs
+then it would have to deal with it.
+
+>
+> And I strongly feel that we shouldn't give another callback here but instead
+> just set core to a specific freq as mentioned by driver with some other field.
+>
+>>> I think we have two solutions here:
+>>> - If its just about setting core a particular freq when it goes down, I
+>>> think it
+>>> looks a generic enough problem and so better fix core for that. Probably
+>>> with
+>>> help of flags field/suspend-freq (maybe renamed) and without calling
+>>> drivers
+>>> exit() at all..
+>>
+>>
+>> ATM the only thing that needs to be done in this case is to allow
+>> intel_pstate
+>> to set the P state on the core when it is going done.  My solution from the
+>> cores point of view is more generic, it allows any driver that needs to do
+>> work
+>> during CPU_DOWN_PREPARE to do it without adding any new logic to the core.
+>
+> Yeah, do we really need to give that freedom right now? Would be better
+> to get this into core as that would be more generic and people looking to set
+> core to some freq at shutdown wouldn't be replicating that code.
+
+IMHO yes and it would be hard to be more generic, if your platform needs to
+do architecture specific during the PREPARE phase of cpu hotplug use this
+callback or not.
+
+BTW now that you have added a path where the cpufreq_suspend() could fail
+it return a value and be checked in dpm_suspend() instead of printing an
+error and just continuing.
+
 >
 
-I have reviewed this series and there are several comments that I'd like 
-to ask you to address. Please see my replies to particular patches.
-
-However, this driver, even after applying your series, is still far from 
-a state that would allow it to be enabled. The most important issue is 
-direct access to CMU registers, based on static mapping, which is not 
-allowed on multiplatform kernels and multiplatform-awareness for drivers 
-is currently a must.
-
-To allow this driver to be enabled, it needs to be converted to use 
-common clock framework functions to configure all clocks, e.g. 
-clk_set_rate(), clk_set_parent(), etc., without accessing CMU registers 
-directly.
-
-Of course as long as the driver is effectively unusable, to keep 
-development, we can proceed with refactoring it step-by-step and your 
-series would be basically the first step, after addressing the review 
-comments.
-
-Best regards,
-Tomasz
