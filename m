@@ -1,137 +1,201 @@
 From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCHv2 8/8] devfreq: exynos4: Add busfreq driver for
- exynos4210/exynos4x12
-Date: Fri, 14 Mar 2014 18:35:35 +0100
-Message-ID: <53233DE7.2030902@samsung.com>
+Subject: Re: [PATCHv2 3/8] devfreq: exynos4: Add ppmu's clock control and code
+ clean about regulator control
+Date: Fri, 14 Mar 2014 18:42:16 +0100
+Message-ID: <53233F78.8020500@samsung.com>
 References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <1394698649-20996-9-git-send-email-cw00.choi@samsung.com>
- <20140313175308.GE25870@e106331-lin.cambridge.arm.com>
- <5322AC5D.9070200@samsung.com>
- <20140314103552.GK25870@e106331-lin.cambridge.arm.com>
- <5322E04D.2060801@samsung.com>
+ <1394698649-20996-4-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:47185 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090AbaCNRfl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 13:35:41 -0400
-In-reply-to: <5322E04D.2060801@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1394698649-20996-4-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "nm@ti.com" <nm@ti.com>, "b.zolnierkie@samsaung.com" <b.zolnierkie@samsaung.com>, Pawel Moll <Pawel.Moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
-Hi Chanwoo, Mark,
+Hi Chanwoo,
 
-On 14.03.2014 11:56, Chanwoo Choi wrote:
-> Hi Mark,
+On 13.03.2014 09:17, Chanwoo Choi wrote:
+> There are not the clock controller of ppmudmc0/1. This patch control the clock
+> of ppmudmc0/1 which is used for monitoring memory bus utilization.
 >
-> On 03/14/2014 07:35 PM, Mark Rutland wrote:
->> On Fri, Mar 14, 2014 at 07:14:37AM +0000, Chanwoo Choi wrote:
->>> Hi Mark,
->>>
->>> On 03/14/2014 02:53 AM, Mark Rutland wrote:
->>>> On Thu, Mar 13, 2014 at 08:17:29AM +0000, Chanwoo Choi wrote:
->>>>> This patch add busfreq driver for Exynos4210/Exynos4x12 memory interface
->>>>> and bus to support DVFS(Dynamic Voltage Frequency Scaling) according to PPMU
->>>>> counters. PPMU (Performance Profiling Monitorings Units) of Exynos4 SoC provides
->>>>> PPMU counters for DMC(Dynamic Memory Controller) to check memory bus utilization
->>>>> and then busfreq driver adjusts dynamically the operating frequency/voltage
->>>>> by using DEVFREQ Subsystem.
->>>>>
->>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>> ---
->>>>>   .../devicetree/bindings/devfreq/exynos4_bus.txt    | 49 ++++++++++++++++++++++
->>>>>   1 file changed, 49 insertions(+)
->>>>>   create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>>
->>>>> diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>> new file mode 100644
->>>>> index 0000000..2a83fcc
->>>>> --- /dev/null
->>>>> +++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>> @@ -0,0 +1,49 @@
->>>>> +
->>>>> +Exynos4210/4x12 busfreq driver
->>>>> +-----------------------------
->>>>> +
->>>>> +Exynos4210/4x12 Soc busfreq driver with devfreq for Memory bus frequency/voltage
->>>>> +scaling according to PPMU counters of memory controllers
->>>>> +
->>>>> +Required properties:
->>>>> +- compatible	: should contain Exynos4 SoC type as follwoing:
->>>>> +		  - "samsung,exynos4x12-busfreq" for Exynos4x12
->>>>> +		  - "samsung,exynos4210-busfreq" for Exynos4210
->>>>
->>>> Is there a device called "busfreq"? What device does this binding
->>>> describe?
->>>
->>> I'll add detailed description of busfreq as following:
->>>
->>> "busfreq(bus frequendcy)" driver means that busfreq driver control dynamically
->>> memory bus frequency/voltage by checking memory bus utilization to optimize
->>> power-consumption. When checking memeory bus utilization, exynos4_busfreq driver
->>> would use PPMU(Performance Profiling Monitoring Units).
->>
->> This still sounds like a description of the _driver_, not the _device_.
->> The binding should describe the hardware, now the high level abstraction
->> that software is going to build atop of it.
->>
->> It sounds like this is a binding for the DMC PPMU?
->>
->> Is the PPMU a component of the DMC, or is it bolted on the side?
+> Also, this patch code clean about regulator control and free resource
+> when calling exit/remove function.
 >
-> PPMU(Performance Profiling Monitoring Unit) is to profile performance event of
-> various IP on Exynos4. Each PPMU provide perforamnce event for each IP.
-> We can check various PPMU as following:
+> For example,
+> busfreq@106A0000 {
+> 	compatible = "samsung,exynos4x12-busfreq";
 >
-> PPMU_3D
-> PPMU_ACP
-> PPMU_CAMIF
-> PPMU_CPU
-> PPMU_DMC0
-> PPMU_DMC1
-> PPMU_FSYS
-> PPMU_IMAGE
-> PPMU_LCD0
-> PPMU_LCD1
-> PPMU_MFC_L
-> PPMU_MFC_R
-> PPMU_TV
-> PPMU_LEFT_BUS
-> PPMU_RIGHT_BUS
+> 	/* Clock for PPMUDMC0/1 */
+> 	clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
+> 	clock-names = "ppmudmc0", "ppmudmc1";
 >
-> DMC (Dynamic Memory Controller) control the operation of DRAM in Exynos4 SoC.
-> If we need to get memory bust utilization of DMC, we can get memory bus utilization
-> from PPMU_DMC0/PPMU_DMC1.
+> 	/* Regulator for MIF/INT block */
+> 	vdd_mif-supply = <&buck1_reg>;
+> 	vdd_int-supply = <&buck3_reg>;
+> };
 >
-> So, Exynos4's busfreq used two(PPMU_DMC0/PPMU_DMC1) among upper various PPMU list.
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>   drivers/devfreq/exynos/exynos4_bus.c | 114 ++++++++++++++++++++++++++++++-----
+>   1 file changed, 100 insertions(+), 14 deletions(-)
+>
+> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+> index 1a0effa..a2a3a47 100644
+> --- a/drivers/devfreq/exynos/exynos4_bus.c
+> +++ b/drivers/devfreq/exynos/exynos4_bus.c
+> @@ -62,6 +62,11 @@ enum exynos_ppmu_idx {
+>   	PPMU_END,
+>   };
+>
+> +static const char *exynos_ppmu_clk_name[] = {
+> +	[PPMU_DMC0]	= "ppmudmc0",
+> +	[PPMU_DMC1]	= "ppmudmc1",
+> +};
+> +
+>   #define EX4210_LV_MAX	LV_2
+>   #define EX4x12_LV_MAX	LV_4
+>   #define EX4210_LV_NUM	(LV_2 + 1)
+> @@ -86,6 +91,7 @@ struct busfreq_data {
+>   	struct regulator *vdd_mif; /* Exynos4412/4212 only */
+>   	struct busfreq_opp_info curr_oppinfo;
+>   	struct exynos_ppmu ppmu[PPMU_END];
+> +	struct clk *clk_ppmu[PPMU_END];
+>
+>   	struct notifier_block pm_notifier;
+>   	struct mutex lock;
+> @@ -722,8 +728,26 @@ static int exynos4_bus_get_dev_status(struct device *dev,
+>   static void exynos4_bus_exit(struct device *dev)
+>   {
+>   	struct busfreq_data *data = dev_get_drvdata(dev);
+> +	int i;
+> +
+> +	/*
+> +	 * Un-map memory map and disable regulator/clocks
+> +	 * to prevent power leakage.
+> +	 */
+> +	regulator_disable(data->vdd_int);
+> +	if (data->type == TYPE_BUSF_EXYNOS4x12)
+> +		regulator_disable(data->vdd_mif);
+> +
+> +	for (i = 0; i < PPMU_END; i++) {
+> +		if (data->clk_ppmu[i])
 
-Well, PPMUs and DMCs are separate hardware blocks found inside Exynos 
-SoCs. Busfreq/devfreq is just a Linux-specific abstraction responsible 
-for collecting data using PPMUs and controlling frequencies and voltages 
-of appropriate power planes, vdd_int responsible for powering DMC0 and 
-DMC1 blocks in this case.
+This check is invalid. Clock pointers must be checked for validity using 
+the IS_ERR() macro, because NULL is a valid clock pointer value 
+indicating a dummy clock.
 
-I'm afraid that the binding you're proposing is unfortunately incorrect, 
-because it represents the software abstraction, not the real hardware.
+> +			clk_disable_unprepare(data->clk_ppmu[i]);
+> +	}
+>
+> -	devfreq_unregister_opp_notifier(dev, data->devfreq);
+> +	for (i = 0; i < PPMU_END; i++) {
+> +		if (data->ppmu[i].hw_base)
 
-Instead, this should be separated into several independent bindings:
+Can this even happen? Is there a PPMU without registers?
 
-  - PPMU bindings to list all the PPMU instances present in the SoC and 
-resources they need,
+> +			iounmap(data->ppmu[i].hw_base);
+> +
+> +	}
+>   }
+>
+>   static struct devfreq_dev_profile exynos4_devfreq_profile = {
+> @@ -987,6 +1011,7 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
+>   {
+>   	struct device *dev = data->dev;
+>   	struct device_node *np = dev->of_node;
+> +	const char **clk_name = exynos_ppmu_clk_name;
+>   	int i, ret;
+>
+>   	if (!np) {
+> @@ -1005,8 +1030,70 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
+>   		}
+>   	}
+>
+> +	/*
+> +	 * Get PPMU's clocks to control them. But, if PPMU's clocks
+> +	 * is default 'pass' state, this driver don't need control
+> +	 * PPMU's clock.
+> +	 */
+> +	for (i = 0; i < PPMU_END; i++) {
+> +		data->clk_ppmu[i] = devm_clk_get(dev, clk_name[i]);
+> +		if (IS_ERR_OR_NULL(data->clk_ppmu[i])) {
 
-  - power plane bindings, which define a power plane in which multiple 
-IP blocks might reside, can be monitored by one or more PPMU units and 
-frequency and voltage of which can be configured according to determined 
-performance level. Needed resources will be clocks and regulators to 
-scale and probably also operating points.
+Again, this check is invalid. Only IS_ERR() is the correct way to check 
+whether returned clock pointer is valid.
 
-Then, exynos-busfreq driver should bind to such power planes, parse 
-necessary data from DT (list of PPMUs and IP blocks, clocks, regulators 
-and operating points) and register a devfreq entity.
+> +			dev_warn(dev, "Cannot get %s clock\n", clk_name[i]);
+> +			data->clk_ppmu[i] = NULL;
+
+This assignment is wrong. To allow further checking whether the clock 
+was found the value returned from devm_clk_get() must be retained and 
+then IS_ERR() used in further code.
+
+However, I believe it should be an error if a clock is not provided. The 
+driver must make sure that PPMU clocks are ungated before trying to 
+access them, otherwise the system might hang.
+
+> +		}
+> +
+> +		ret = clk_prepare_enable(data->clk_ppmu[i]);
+
+The code above allows the clock to be skipped, but this line doesn't 
+check whether it is valid. Still, I think the clock should be always 
+required.
+
+> +		if (ret < 0) {
+> +			dev_warn(dev, "Cannot enable %s clock\n", clk_name[i]);
+> +			data->clk_ppmu[i] = NULL;
+> +			goto err_clocks;
+> +		}
+> +	}
+> +
+> +	/* Get regulator to control voltage of int block */
+> +	data->vdd_int = devm_regulator_get(dev, "vdd_int");
+> +	if (IS_ERR(data->vdd_int)) {
+> +		dev_err(dev, "Failed to get the regulator of vdd_int\n");
+> +		ret = PTR_ERR(data->vdd_int);
+> +		goto err_clocks;
+> +	}
+> +	ret = regulator_enable(data->vdd_int);
+> +	if (ret < 0) {
+> +		dev_err(dev, "Failed to enable regulator of vdd_int\n");
+> +		goto err_clocks;
+> +	}
+> +
+> +	switch (data->type) {
+> +	case TYPE_BUSF_EXYNOS4210:
+> +		break;
+> +	case TYPE_BUSF_EXYNOS4x12:
+> +		/* Get regulator to control voltage of mif blk if Exynos4x12 */
+> +		data->vdd_mif = devm_regulator_get(dev, "vdd_mif");
+> +		if (IS_ERR(data->vdd_mif)) {
+> +			dev_err(dev, "Failed to get the regulator vdd_mif\n");
+> +			ret = PTR_ERR(data->vdd_mif);
+> +			goto err_regulator;
+> +		}
+> +		ret = regulator_enable(data->vdd_mif);
+> +		if (ret < 0) {
+> +			dev_err(dev, "Failed to enable regulator of vdd_mif\n");
+> +			goto err_regulator;
+> +		}
+> +		break;
+> +	default:
+> +		dev_err(dev, "Unknown device type : %d\n", data->type);
+> +		return -EINVAL;
+> +	};
+> +
+>   	return 0;
+>
+> +err_regulator:
+> +	regulator_disable(data->vdd_int);
+> +err_clocks:
+> +	for (i = 0; i < PPMU_END; i++) {
+> +		if (data->clk_ppmu[i])
+
+Invalid check.
 
 Best regards,
 Tomasz
