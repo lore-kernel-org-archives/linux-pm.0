@@ -1,150 +1,104 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv2 8/8] devfreq: exynos4: Add busfreq driver for
- exynos4210/exynos4x12
-Date: Fri, 14 Mar 2014 19:56:13 +0900
-Message-ID: <5322E04D.2060801@samsung.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <1394698649-20996-9-git-send-email-cw00.choi@samsung.com>
- <20140313175308.GE25870@e106331-lin.cambridge.arm.com>
- <5322AC5D.9070200@samsung.com>
- <20140314103552.GK25870@e106331-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: make vexpress driver dependent on bL core driver
+Date: Fri, 14 Mar 2014 13:34:09 +0100
+Message-ID: <2887258.3GWxA0iuUl@vostro.rjw.lan>
+References: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <20140314103552.GK25870@e106331-lin.cambridge.arm.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "nm@ti.com" <nm@ti.com>, "b.zolnierkie@samsaung.com" <b.zolnierkie@samsaung.com>, Pawel Moll <Pawel.Moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58155 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753859AbaCNMSq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 08:18:46 -0400
+In-Reply-To: <4689064c920e08d5667b38d7117620ab98150273.1394779110.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xin.wang@arm.com, arvind.chauhan@arm.com, Sudeep.Holla@arm.com
 
-Hi Mark,
-
-On 03/14/2014 07:35 PM, Mark Rutland wrote:
-> On Fri, Mar 14, 2014 at 07:14:37AM +0000, Chanwoo Choi wrote:
->> Hi Mark,
->>
->> On 03/14/2014 02:53 AM, Mark Rutland wrote:
->>> On Thu, Mar 13, 2014 at 08:17:29AM +0000, Chanwoo Choi wrote:
->>>> This patch add busfreq driver for Exynos4210/Exynos4x12 memory interface
->>>> and bus to support DVFS(Dynamic Voltage Frequency Scaling) according to PPMU
->>>> counters. PPMU (Performance Profiling Monitorings Units) of Exynos4 SoC provides
->>>> PPMU counters for DMC(Dynamic Memory Controller) to check memory bus utilization
->>>> and then busfreq driver adjusts dynamically the operating frequency/voltage
->>>> by using DEVFREQ Subsystem.
->>>>
->>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>> ---
->>>>  .../devicetree/bindings/devfreq/exynos4_bus.txt    | 49 ++++++++++++++++++++++
->>>>  1 file changed, 49 insertions(+)
->>>>  create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>> new file mode 100644
->>>> index 0000000..2a83fcc
->>>> --- /dev/null
->>>> +++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>> @@ -0,0 +1,49 @@
->>>> +
->>>> +Exynos4210/4x12 busfreq driver
->>>> +-----------------------------
->>>> +
->>>> +Exynos4210/4x12 Soc busfreq driver with devfreq for Memory bus frequency/voltage
->>>> +scaling according to PPMU counters of memory controllers
->>>> +
->>>> +Required properties:
->>>> +- compatible	: should contain Exynos4 SoC type as follwoing:
->>>> +		  - "samsung,exynos4x12-busfreq" for Exynos4x12
->>>> +		  - "samsung,exynos4210-busfreq" for Exynos4210
->>>
->>> Is there a device called "busfreq"? What device does this binding
->>> describe?
->>
->> I'll add detailed description of busfreq as following:
->>
->> "busfreq(bus frequendcy)" driver means that busfreq driver control dynamically
->> memory bus frequency/voltage by checking memory bus utilization to optimize
->> power-consumption. When checking memeory bus utilization, exynos4_busfreq driver
->> would use PPMU(Performance Profiling Monitoring Units).
+On Friday, March 14, 2014 12:10:54 PM Viresh Kumar wrote:
+> Currently vexpress big LITTLE driver selects ARM_BIG_LITTLE_CPUFREQ and so if
+> CONFIG_BIG_LITTLE isn't enabled and CONFIG_ARM_VEXPRESS_SPC_CPUFREQ is enabled
+> we get below warnings while compiling:
 > 
-> This still sounds like a description of the _driver_, not the _device_.
-> The binding should describe the hardware, now the high level abstraction
-> that software is going to build atop of it.
+> warning: (ARM_VEXPRESS_SPC_CPUFREQ) selects ARM_BIG_LITTLE_CPUFREQ which has
+> unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && (ARM || ARM64) && ARM
+> && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK)
 > 
-> It sounds like this is a binding for the DMC PPMU?
+> To fix this make ARM_VEXPRESS_SPC_CPUFREQ dependent on ARM_BIG_LITTLE_CPUFREQ
+> instead of selecting it.
 > 
-> Is the PPMU a component of the DMC, or is it bolted on the side?
-
-PPMU(Performance Profiling Monitoring Unit) is to profile performance event of
-various IP on Exynos4. Each PPMU provide perforamnce event for each IP.
-We can check various PPMU as following:
-
-PPMU_3D
-PPMU_ACP
-PPMU_CAMIF
-PPMU_CPU
-PPMU_DMC0
-PPMU_DMC1
-PPMU_FSYS
-PPMU_IMAGE
-PPMU_LCD0
-PPMU_LCD1
-PPMU_MFC_L
-PPMU_MFC_R
-PPMU_TV
-PPMU_LEFT_BUS
-PPMU_RIGHT_BUS
-
-DMC (Dynamic Memory Controller) control the operation of DRAM in Exynos4 SoC.
-If we need to get memory bust utilization of DMC, we can get memory bus utilization
-from PPMU_DMC0/PPMU_DMC1.
-
-So, Exynos4's busfreq used two(PPMU_DMC0/PPMU_DMC1) among upper various PPMU list.
-
+> This also moves entry for ARM_VEXPRESS_SPC_CPUFREQ along with other big LITTLE
+> config entries.
 > 
->>
->>
->>>
->>>> +- reg		: offset and length of the ppmudmc0/1
->>>> +		  - PPMU (Performance Profiling Monitoring Units)
->>>
->>> You seem to require a particular order here. It would be good to be
->>> explicit about it.
->>
->> OK, I'll modify it as following:
->> the offset and length of the PPMU_DMC0 / PPMU_DMC1
->> PPMU_DMC0/PPMU_DMC1 show memory buy utilization to exynos4_bus driver.
->>
->>>
->>>> +		  : It is to profile performance event of DMC(Dynamic Memory
->>>> +		  Controller) So, exynos4_bus.c can check memory bus utilization
->>>> +		  by using PPMU of Exynos4 SoC.
->>>
->>> This is superfluous, and Linux-specific. The binding document shouldn't
->>> need to refer to drivers.
->>
->> I'll remove this description.
->>
->>>
->>>> +- clocks	: clock number of ppmudmc0/1
->>>> +- clock-names	: clock name of ppmudmc0/1
->>>
->>> Are these two clocks, or one clock with a slash in the name?
->>>
->>> Please list each name separately.
->>
->> I'll expalin clocks as following:
->> 	"ppmudmc0", "ppmudmc1"
->>
->>>
->>>> +- vdd_int-supply: regulator for interface block of Exynos4
-> 
-> How does the interface block relate to the DMC / PPMU?
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Hi Rafael,
 
-If vdd_int is connected to buck3 of PMIC(Power Management IC),
+Hi,
 
-We can see the flow of provided power as following:
-: external power --> buck3 pin of PMIC --> vdd_int pin of Exynos4 SoC --> DMC IP and PPMU IP of Exynos4 SoC
+> Both of these are fixes, please see if they can make it to 3.14 only.
+
+Quite frankly, I'm afraid they won't make it.
+
+I'm sending a pull request for -rc7 in a while and I won't add anything to it
+without running it through linux-next at least for a day.
+
+And since I'm expecting no -rc8 in this cycle, I have no plans for any pull
+requests next week.  At least not for 3.14.
+
+Also I'm going to travel during the last week of March, so probably I'll send
+my first pull request for the 3.15 merge window before departure.
 
 Thanks,
-Chanwoo Choi
+Rafael
+
+
+>  drivers/cpufreq/Kconfig.arm | 17 +++++++++--------
+>  1 file changed, 9 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 3129749..9fb6270 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -2,6 +2,7 @@
+>  # ARM CPU Frequency scaling drivers
+>  #
+>  
+> +# big LITTLE core layer and glue drivers
+>  config ARM_BIG_LITTLE_CPUFREQ
+>  	tristate "Generic ARM big LITTLE CPUfreq driver"
+>  	depends on ARM && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK
+> @@ -16,6 +17,14 @@ config ARM_DT_BL_CPUFREQ
+>  	  This enables probing via DT for Generic CPUfreq driver for ARM
+>  	  big.LITTLE platform. This gets frequency tables from DT.
+>  
+> +config ARM_VEXPRESS_SPC_CPUFREQ
+> +        tristate "Versatile Express SPC based CPUfreq driver"
+> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
+> +        help
+> +          This add the CPUfreq driver support for Versatile Express
+> +	  big.LITTLE platforms using SPC for power management.
+> +
+> +
+>  config ARM_EXYNOS_CPUFREQ
+>  	bool
+>  
+> @@ -241,11 +250,3 @@ config ARM_TEGRA_CPUFREQ
+>  	default y
+>  	help
+>  	  This adds the CPUFreq driver support for TEGRA SOCs.
+> -
+> -config ARM_VEXPRESS_SPC_CPUFREQ
+> -        tristate "Versatile Express SPC based CPUfreq driver"
+> -        select ARM_BIG_LITTLE_CPUFREQ
+> -        depends on ARCH_VEXPRESS_SPC
+> -        help
+> -          This add the CPUfreq driver support for Versatile Express
+> -	  big.LITTLE platforms using SPC for power management.
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
