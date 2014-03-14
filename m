@@ -1,51 +1,80 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC] cpufreq-cpu0: allow OPP table supplied by platform
-Date: Fri, 14 Mar 2014 10:36:27 -0500
-Message-ID: <532321FB.7080106@ti.com>
-References: <20140313184859.7d6f6512@xhacker> <CAKohpokLv0m+Cky7nCUOgP-djTMrA6jyka_EZ07+_exCAexXXg@mail.gmail.com> <CAKohpoke1i8xmKProgF+ki7Q=Q+YxbPnewdtbyPqu7857DLLWA@mail.gmail.com> <20140313194424.122ec572@xhacker> <20140314123205.GC813@S2101-09.ap.freescale.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for v3.14-rc7
+Date: Fri, 14 Mar 2014 17:17:48 +0100
+Message-ID: <CAJZ5v0jzME8pYhfRLheOKVgo9beeYk9wnG6-N=kdVNM2e9LJCA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140314123205.GC813@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@freescale.com>, Jisheng Zhang <jszhang@marvell.com>, Dave Gerlach <d-gerlach@ti.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/14/2014 07:32 AM, Shawn Guo wrote:
-> On Thu, Mar 13, 2014 at 07:44:24PM +0800, Jisheng Zhang wrote:
->>> On 13 March 2014 16:25, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>>> On 13 March 2014 16:18, Jisheng Zhang <jszhang@marvell.com> wrote:
->>>>> Hi all,
->>>>>
->>>>> cpufreq-cpu0 is suitable for Marvell Berlin SoC. But there's one issue
->>>>> to address. The opp is different between chips even on the same step
->>>>> SoC, BG2Q for example. we can calculate the OPP table from the value of
->>>>> one OTP register. We have two solutions:
->>>>>
->>>>> 1. bootloader reads OTP register and calculate the OPP table then change
->>>>> dtb danamically
->>>>>
->>>>> 2. supply one driver in mach-berlin to initialize the OPP table; and
->>>>> modify cpufreq-cpu0 to allow platform supply OPP table, fall back to
->>>>> of_init_opp_table() if there's no OPP table.
->>>>>
->>>>> Which solution is better?
->>>>
->>>> I think we can go ahead with second option here. We can just check if opp
->>>> tables are already initialized or not. In case they are, don't probe from
->>>> dt..
->>>>
->>>> But lets see with others have to say here..
-> 
-> Yea, we had gone for the second option on imx6q-cpufreq driver with
-> commit 20b7cbe (cpufreq: imx6q: add of_init_opp_table).
+Hi Linus,
 
-There might be a better alternative here given the scope of potential
-reuse cross SoCs - a generic opp modifier logic which'd work for all
-of us. I will let Dave Gerlach post his series to give an idea.
+Please pull from the git repository at
 
--- 
-Regards,
-Nishanth Menon
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.14-rc7
+
+to receive ACPI and power management fixes for v3.14-rc7
+with top-most commit d5af40d6b34d9d1ba39a27f657948cbce4e0b0e7
+
+  Merge branches 'pnp', 'acpi-init', 'acpi-sleep' and 'pm-cpufreq'
+
+on top of commit fa389e220254c69ffae0d403eac4146171062d08
+
+  Linux 3.14-rc6
+
+Three of these are regression fixes, for two recent regressions and one
+introduced during the 3.13 cycle, and the fourth one is a working version
+of the fix that had to be reverted last time.
+
+Specifics:
+
+ - A recent ACPI resources handling fix overlooked the fact that it had
+   to update the ACPI PNP subsystem's resources parsing too and caused
+   confusing warning messages to be printed during system intialization
+   on some systems (with arguably buggy ACPI tables).  Fix from Zhang Rui.
+
+ - Moving the early ACPI initialization before timekeeping_init() earlier
+   in this cycle broke fast TSC calibration on at least one system, so it
+   needs to be done later, but still before efi_enter_virtual_mode() to
+   allow the EFI initialization to refer to ACPI.
+
+ - A change related to code duplication reduction in the cpufreq core
+   inadvertently caused cpufreq intialization to fail for some CPUs
+   handled by intel_pstate by adding checks that may fail for that
+   driver, but aren't even necessary when it is used.  The issue is
+   addressed by preventing those checks from run in the configurations
+   in which they aren't needed.
+
+ - If the Hardware Reduced ACPI flag is set in the ACPI tables, system
+   suspend, hibernation and ACPI power off will only work when special
+   sleep control and sleep status registeres are provided (their
+   addresses in the ACPI tables are not zero).  If those registers are
+   not available, the features in question have no chances to work,
+   so they shouldn't even be regarded as supported.  That helps with
+   power off in particular, because alternative power off methods may
+   be used then and they may actually work.
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (3):
+      cpufreq: Skip current frequency initialization for ->setpolicy drivers
+      ACPI / init: Invoke early ACPI initialization later
+      ACPI / sleep: Add extra checks for HW Reduced ACPI mode sleep states
+
+Zhang Rui (1):
+      PNP / ACPI: proper handling of ACPI IO/Memory resource parsing failures
+
+---------------
+
+ drivers/acpi/sleep.c           | 32 +++++++++++++++-----------------
+ drivers/cpufreq/cpufreq.c      |  4 ++--
+ drivers/pnp/pnpacpi/rsparser.c | 15 ++++++++++++---
+ init/main.c                    |  2 +-
+ 4 files changed, 30 insertions(+), 23 deletions(-)
