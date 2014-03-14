@@ -1,126 +1,133 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
-Date: Fri, 14 Mar 2014 11:29:04 -0700
-Message-ID: <53234A70.70506@gmail.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>	<CAOh2x==at2PtHRpa=-_V6O5Z9aSog4r9BDb7ixJgBZk_+vfPtg@mail.gmail.com>	<53231BF4.2000308@intel.com> <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com>
+From: Christoffer Dall <christoffer.dall@linaro.org>
+Subject: Re: [PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
+Date: Fri, 14 Mar 2014 12:10:55 -0700
+Message-ID: <20140314191055.GF28661@cbox>
+References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+ <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+ <20140312232127.GC24808@cbox>
+ <53229701.8050405@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:53172 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747AbaCNS3I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 14:29:08 -0400
-In-Reply-To: <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <53229701.8050405@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net, rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com, tj@kernel.org, walken@google.com, ego@linux.vnet.ibm.com, linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, Gleb Natapov <gleb@kernel.org>, kvmarm@lists.cs.columbia.edu, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, marc.zyngier@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>
 
-On 03/14/2014 10:07 AM, Viresh Kumar wrote:
-> On 14 March 2014 20:40, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
->> Are you proposing adding cpufreq_generic_suspend() to the core I can not
->> find
->> it in the mainline code.
->
-> Its already there in linux-next. I am suggesting to reuse that
-> infrastructure with
-> some necessary modification to support both suspend and hotplug.
+On Fri, Mar 14, 2014 at 11:13:29AM +0530, Srivatsa S. Bhat wrote:
+> On 03/13/2014 04:51 AM, Christoffer Dall wrote:
+> > On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
+> >> Subsystems that want to register CPU hotplug callbacks, as well as perform
+> >> initialization for the CPUs that are already online, often do it as shown
+> >> below:
+> >>
+> >> 	get_online_cpus();
+> >>
+> >> 	for_each_online_cpu(cpu)
+> >> 		init_cpu(cpu);
+> >>
+> >> 	register_cpu_notifier(&foobar_cpu_notifier);
+> >>
+> >> 	put_online_cpus();
+> >>
+> >> This is wrong, since it is prone to ABBA deadlocks involving the
+> >> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+> >> with CPU hotplug operations).
+> >>
+> >> Instead, the correct and race-free way of performing the callback
+> >> registration is:
+> >>
+> >> 	cpu_notifier_register_begin();
+> >>
+> >> 	for_each_online_cpu(cpu)
+> >> 		init_cpu(cpu);
+> >>
+> >> 	/* Note the use of the double underscored version of the API */
+> >> 	__register_cpu_notifier(&foobar_cpu_notifier);
+> >>
+> >> 	cpu_notifier_register_done();
+> >>
+> >>
+> >> Fix the kvm code in arm by using this latter form of callback registration.
+> >>
+> >> Cc: Christoffer Dall <christoffer.dall@linaro.org>
+> >> Cc: Gleb Natapov <gleb@kernel.org>
+> >> Cc: Russell King <linux@arm.linux.org.uk>
+> >> Cc: Ingo Molnar <mingo@kernel.org>
+> >> Cc: kvmarm@lists.cs.columbia.edu
+> >> Cc: kvm@vger.kernel.org
+> >> Cc: linux-arm-kernel@lists.infradead.org
+> >> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+> >> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> >> ---
+> >>
+> >>  arch/arm/kvm/arm.c |    7 ++++++-
+> >>  1 file changed, 6 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+> >> index bd18bb8..f0e50a0 100644
+> >> --- a/arch/arm/kvm/arm.c
+> >> +++ b/arch/arm/kvm/arm.c
+> >> @@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
+> >>  		}
+> >>  	}
+> >>  
+> >> +	cpu_notifier_register_begin();
+> >> +
+> >>  	err = init_hyp_mode();
+> >>  	if (err)
+> >>  		goto out_err;
+> >>  
+> >> -	err = register_cpu_notifier(&hyp_init_cpu_nb);
+> >> +	err = __register_cpu_notifier(&hyp_init_cpu_nb);
+> >>  	if (err) {
+> >>  		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+> >>  		goto out_err;
+> >>  	}
+> >>  
+> >> +	cpu_notifier_register_done();
+> >> +
+> >>  	hyp_cpu_pm_init();
+> >>  
+> >>  	kvm_coproc_table_init();
+> >>  	return 0;
+> >>  out_err:
+> >> +	cpu_notifier_register_done();
+> >>  	return err;
+> >>  }
+> >>  
+> >>
+> > 
+> > Just so we're clear, the existing code was simply racy as not prone to
+> > deadlocks, right?
+> > 
+> > This makes it clear that the test above for compatible CPUs can be quite
+> > easily evaded by using CPU hotplug, but we don't really have a good
+> > solution for handling that yet...  Hmmm, grumble grumble, I guess if you
+> > hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
+> > 
+> 
+> In this particular case, there was no deadlock possibility, rather the
+> existing code had insufficient synchronization against CPU hotplug.
+> 
+> init_hyp_mode() would invoke cpu_init_hyp_mode() on currently online CPUs
+> using on_each_cpu(). If a CPU came online after this point and before calling
+> register_cpu_notifier(), that CPU would remain uninitialized because this
+> subsystem would miss the hot-online event. This patch fixes this bug and
+> also uses the new synchronization method (instead of get/put_online_cpus())
+> to ensure that we don't deadlock with CPU hotplug.
+> 
 
-Suspend and hotplug are two very different things and if we start
-crossing those wires bad things are going to happen IMHO.
+Yes, that was my conclusion as well.  Thanks for clarifying.  (It could
+be noted in the commit message as well if you should feel so inclined).
 
-In "normal" operation using the suspend path to do this work could
-work in principal but doesn't handle the case where the user does
-    echo 0 | sudo tee /sys/devices/system/cpu/cpuX/online
-
-Trying force hotplug and suspend into a common mechanism would
-lead to a bunch of special case code or a significant rework of the
-core code IMHO.
-
-
->
->>> Over that I don't think Dirk's solution is going to work if we twist
->>> the systems a bit.
->>
->> Could you explain what "twist the systems a bit" means?
->
-> The one I explained in the below paragraph.
->
->>> For example, Dirk probably wanted to set P-STATE of every core to MIN
->>> when it goes down. But his solution probably doesn't do that right now.
->>>
->>
->> No, I wanted to set the core that was being off-lined to min P state.
->
-> Sorry, probably my words were a bit confusing. I meant exactly what
-> you just wrote. Core going down will set its freq to min.
->
->>> As exit() is called only when the policy expires or all the CPUs of that
->>> policy
->>> are down. Suppose only one CPU out of 4 goes down from a policy, then
->>> pstate driver would never know that happened. And that core wouldn't go
->>> to min state.
->>
->> My patch does not change the semantics of exit() or when it is called.  For
->> intel_pstate their is one cpu per policy so I moved all the cleanup to
->
-> I didn't knew that its guaranteed by pstate driver. I thought it would still be
-> hardware dependent as some cores might share clock line.
-
-This is guaranteed by the hardware.  Each core has its own MSR for P state
-request.  Any coordination that is required between cores to select the
-package P state is handled by the hardware.
-
->
->> exit_prepare() if there were work I needed to do at CPU_POST_DEAD I would
->> have
->> continued to export the *optional* exit callback.
->>
->> The callback name exit_prepare() was probably unfortunate and might be
->> causing
->> some confusion.  I will be changing the name per Rafael's feedback.
->
-> Don't know.. There is another problem here that exit_prepare() would be called
-> for each CPU whereas exit() would be called for each policy.
-
-Granted but I don't see this as a problem in this case there is a 1:1
-relationship.  If a driver chooses to use the *optional* exit_prepare() callback
-and knows that there is a many:1 relationship between the policy and CPUs
-then it would have to deal with it.
-
->
-> And I strongly feel that we shouldn't give another callback here but instead
-> just set core to a specific freq as mentioned by driver with some other field.
->
->>> I think we have two solutions here:
->>> - If its just about setting core a particular freq when it goes down, I
->>> think it
->>> looks a generic enough problem and so better fix core for that. Probably
->>> with
->>> help of flags field/suspend-freq (maybe renamed) and without calling
->>> drivers
->>> exit() at all..
->>
->>
->> ATM the only thing that needs to be done in this case is to allow
->> intel_pstate
->> to set the P state on the core when it is going done.  My solution from the
->> cores point of view is more generic, it allows any driver that needs to do
->> work
->> during CPU_DOWN_PREPARE to do it without adding any new logic to the core.
->
-> Yeah, do we really need to give that freedom right now? Would be better
-> to get this into core as that would be more generic and people looking to set
-> core to some freq at shutdown wouldn't be replicating that code.
-
-IMHO yes and it would be hard to be more generic, if your platform needs to
-do architecture specific during the PREPARE phase of cpu hotplug use this
-callback or not.
-
-BTW now that you have added a path where the cpufreq_suspend() could fail
-it return a value and be checked in dpm_suspend() instead of printing an
-error and just continuing.
-
->
-
+> > In any case:
+> > Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
+> > 
+> 
+> Thanks a lot!
+> 
+Thanks,
+-Christoffer
