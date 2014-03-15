@@ -1,82 +1,144 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH v2 01/11] base: power: Add generic OF-based power domain look-up
-Date: Fri, 14 Mar 2014 16:07:05 -0700
-Message-ID: <7h38ikgz1i.fsf@paris.lan>
-References: <1393862536-9842-1-git-send-email-tomasz.figa@gmail.com>
-	<1393862536-9842-2-git-send-email-tomasz.figa@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Sat, 15 Mar 2014 02:59:39 +0100
+Message-ID: <53656551.Rzgh2mDLCG@vostro.rjw.lan>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com> <53234A70.70506@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1393862536-9842-2-git-send-email-tomasz.figa@gmail.com> (Tomasz
-	Figa's message of "Mon, 3 Mar 2014 17:02:06 +0100")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Kumar Gala <gal>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:65529 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754936AbaCOBoP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Mar 2014 21:44:15 -0400
+In-Reply-To: <53234A70.70506@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
 
-Tomasz Figa <tomasz.figa@gmail.com> writes:
+On Friday, March 14, 2014 11:29:04 AM Dirk Brandewie wrote:
+> On 03/14/2014 10:07 AM, Viresh Kumar wrote:
+> > On 14 March 2014 20:40, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> >> Are you proposing adding cpufreq_generic_suspend() to the core I can not
+> >> find
+> >> it in the mainline code.
+> >
+> > Its already there in linux-next. I am suggesting to reuse that
+> > infrastructure with
+> > some necessary modification to support both suspend and hotplug.
+> 
+> Suspend and hotplug are two very different things and if we start
+> crossing those wires bad things are going to happen IMHO.
+> 
+> In "normal" operation using the suspend path to do this work could
+> work in principal but doesn't handle the case where the user does
+>     echo 0 | sudo tee /sys/devices/system/cpu/cpuX/online
+> 
+> Trying force hotplug and suspend into a common mechanism would
+> lead to a bunch of special case code or a significant rework of the
+> core code IMHO.
+> 
+> 
+> >
+> >>> Over that I don't think Dirk's solution is going to work if we twist
+> >>> the systems a bit.
+> >>
+> >> Could you explain what "twist the systems a bit" means?
+> >
+> > The one I explained in the below paragraph.
+> >
+> >>> For example, Dirk probably wanted to set P-STATE of every core to MIN
+> >>> when it goes down. But his solution probably doesn't do that right now.
+> >>>
+> >>
+> >> No, I wanted to set the core that was being off-lined to min P state.
+> >
+> > Sorry, probably my words were a bit confusing. I meant exactly what
+> > you just wrote. Core going down will set its freq to min.
+> >
+> >>> As exit() is called only when the policy expires or all the CPUs of that
+> >>> policy
+> >>> are down. Suppose only one CPU out of 4 goes down from a policy, then
+> >>> pstate driver would never know that happened. And that core wouldn't go
+> >>> to min state.
+> >>
+> >> My patch does not change the semantics of exit() or when it is called.  For
+> >> intel_pstate their is one cpu per policy so I moved all the cleanup to
+> >
+> > I didn't knew that its guaranteed by pstate driver. I thought it would still be
+> > hardware dependent as some cores might share clock line.
+> 
+> This is guaranteed by the hardware.  Each core has its own MSR for P state
+> request.  Any coordination that is required between cores to select the
+> package P state is handled by the hardware.
+> 
+> >
+> >> exit_prepare() if there were work I needed to do at CPU_POST_DEAD I would
+> >> have
+> >> continued to export the *optional* exit callback.
+> >>
+> >> The callback name exit_prepare() was probably unfortunate and might be
+> >> causing
+> >> some confusion.  I will be changing the name per Rafael's feedback.
+> >
+> > Don't know.. There is another problem here that exit_prepare() would be called
+> > for each CPU whereas exit() would be called for each policy.
+> 
+> Granted but I don't see this as a problem in this case there is a 1:1
+> relationship.  If a driver chooses to use the *optional* exit_prepare() callback
+> and knows that there is a many:1 relationship between the policy and CPUs
+> then it would have to deal with it.
 
-> This patch introduces generic code to perform power domain look-up using
-> device tree and automatically bind devices to their power domains.
-> Generic device tree binding is introduced to specify power domains of
-> devices in their device tree nodes.
->
-> Backwards compatibility with legacy Samsung-specific power domain
-> bindings is provided, but for now the new code is not compiled when
-> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
-> will change as soon as Exynos power domain code gets converted to use
-> the generic framework in further patch.
->
-> Signed-off-by: Tomasz Figa <tomasz.figa@gmail.com>
+Actually, I think we should make it clear that the new callback is for
+->setpolicy drivers only, which will make things a bit clearer.
 
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
+We seem to get caught by the difference between ->setpolicy and ->target
+drivers on a regular basis, so it might be a good idea to make the distinction
+more clear in the code.  I have an idea how to do that, but need some time
+to prototype it.
 
-The approach and binding both look good to me, other than a few minor
-nits on comments and question on the locking below...
+> > And I strongly feel that we shouldn't give another callback here but instead
+> > just set core to a specific freq as mentioned by driver with some other field.
+> >
+> >>> I think we have two solutions here:
+> >>> - If its just about setting core a particular freq when it goes down, I
+> >>> think it
+> >>> looks a generic enough problem and so better fix core for that. Probably
+> >>> with
+> >>> help of flags field/suspend-freq (maybe renamed) and without calling
+> >>> drivers
+> >>> exit() at all..
+> >>
+> >>
+> >> ATM the only thing that needs to be done in this case is to allow
+> >> intel_pstate
+> >> to set the P state on the core when it is going done.  My solution from the
+> >> cores point of view is more generic, it allows any driver that needs to do
+> >> work
+> >> during CPU_DOWN_PREPARE to do it without adding any new logic to the core.
+> >
+> > Yeah, do we really need to give that freedom right now? Would be better
+> > to get this into core as that would be more generic and people looking to set
+> > core to some freq at shutdown wouldn't be replicating that code.
 
-[...]
+Question is if it needs to be more generic.
 
-> @@ -2177,3 +2181,297 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
->  	list_add(&genpd->gpd_list_node, &gpd_list);
->  	mutex_unlock(&gpd_list_lock);
->  }
-> +
-> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-> +/*
-> + * DEVICE TREE BASED POWER DOMAIN PROVIDERS
+I honestly don't think that ->target drivers will ever do anything like it,
+because they need the governor to "exit" before.  So we are talking about the
+only two ->setpolicy drivers in the tree here.
 
-why all caps?
+> IMHO yes and it would be hard to be more generic, if your platform needs to
+> do architecture specific during the PREPARE phase of cpu hotplug use this
+> callback or not.
+> 
+> BTW now that you have added a path where the cpufreq_suspend() could fail
+> it return a value and be checked in dpm_suspend() instead of printing an
+> error and just continuing.
 
-[...]
+I'm not sure what you mean?  Are you saying that it might be a good idea
+to allow cpufreq_suspend() to return error codes on failure?
 
-> +/* See of_genpd_get_from_provider(). */
-> +static struct generic_pm_domain *__of_genpd_get_from_provider(
-> +					struct of_phandle_args *genpdspec)
-> +{
-> +	struct of_genpd_provider *provider;
-> +	struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
-> +
-> +	/* Check if we have such a provider in our array */
-
-I think you want to take the mutex here...
-
-> +	list_for_each_entry(provider, &of_genpd_providers, link) {
-> +		if (provider->node == genpdspec->np)
-> +			genpd = provider->xlate(genpdspec, provider->data);
-> +		if (!IS_ERR(genpd))
-> +			break;
-> +	}
-
-...and release it here, right?
-
-[...]
-
-> +/*
-> + * DEVICE<->DOMAIN BINDING USING DEVICE TREE LOOK-UP
-
-hmm, more yelling?
-
-
-Otherwise, looks good to me.
-
-Kevin
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
