@@ -1,185 +1,67 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCHv2 8/8] devfreq: exynos4: Add busfreq driver for exynos4210/exynos4x12
-Date: Sat, 15 Mar 2014 13:41:44 +0100
-Message-ID: <53244A88.9070806@gmail.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>	<1394698649-20996-9-git-send-email-cw00.choi@samsung.com>	<20140313175308.GE25870@e106331-lin.cambridge.arm.com>	<5322AC5D.9070200@samsung.com>	<20140314103552.GK25870@e106331-lin.cambridge.arm.com>	<5322E04D.2060801@samsung.com>	<53233DE7.2030902@samsung.com> <CAH9JG2WV-y+9wMyu0_6WSRXMWZmCWmxHnWot9APKUo6eFkZS5A@mail.gmail.com>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
+Date: Sun, 16 Mar 2014 04:09:17 -0300
+Message-ID: <20140316070917.GA3094@arch.cereza>
+References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
+ <1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAH9JG2WV-y+9wMyu0_6WSRXMWZmCWmxHnWot9APKUo6eFkZS5A@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kyungmin Park <kmpark@infradead.org>, Tomasz Figa <t.figa@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "nm@ti.com" <nm@ti.com>, "b.zolnierkie@samsaung.com" <b.zolnierkie@samsaung.com>, Pawel Moll <Pawel.Moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Len Brown <len.brown@intel.com>, linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <jonathan.austin@arm.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Victor Kamensky <victor.kamensky@linaro.org>, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, Sricharan R <r.sricharan@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, Nicolas Pitre <nico@linaro.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Laura Abbott <lauraa@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-arm-kernel@lists.infradead.org, Jiang Liu <liuj97@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 15.03.2014 12:36, Kyungmin Park wrote:
-> On Sat, Mar 15, 2014 at 2:35 AM, Tomasz Figa <t.figa@samsung.com> wrote:
->> Hi Chanwoo, Mark,
->>
->>
->> On 14.03.2014 11:56, Chanwoo Choi wrote:
->>>
->>> Hi Mark,
->>>
->>> On 03/14/2014 07:35 PM, Mark Rutland wrote:
->>>>
->>>> On Fri, Mar 14, 2014 at 07:14:37AM +0000, Chanwoo Choi wrote:
->>>>>
->>>>> Hi Mark,
->>>>>
->>>>> On 03/14/2014 02:53 AM, Mark Rutland wrote:
->>>>>>
->>>>>> On Thu, Mar 13, 2014 at 08:17:29AM +0000, Chanwoo Choi wrote:
->>>>>>>
->>>>>>> This patch add busfreq driver for Exynos4210/Exynos4x12 memory
->>>>>>> interface
->>>>>>> and bus to support DVFS(Dynamic Voltage Frequency Scaling) according
->>>>>>> to PPMU
->>>>>>> counters. PPMU (Performance Profiling Monitorings Units) of Exynos4
->>>>>>> SoC provides
->>>>>>> PPMU counters for DMC(Dynamic Memory Controller) to check memory bus
->>>>>>> utilization
->>>>>>> and then busfreq driver adjusts dynamically the operating
->>>>>>> frequency/voltage
->>>>>>> by using DEVFREQ Subsystem.
->>>>>>>
->>>>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>>>> ---
->>>>>>>    .../devicetree/bindings/devfreq/exynos4_bus.txt    | 49
->>>>>>> ++++++++++++++++++++++
->>>>>>>    1 file changed, 49 insertions(+)
->>>>>>>    create mode 100644
->>>>>>> Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>>>>
->>>>>>> diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>>>> b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>>>> new file mode 100644
->>>>>>> index 0000000..2a83fcc
->>>>>>> --- /dev/null
->>>>>>> +++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>>>>> @@ -0,0 +1,49 @@
->>>>>>> +
->>>>>>> +Exynos4210/4x12 busfreq driver
->>>>>>> +-----------------------------
->>>>>>> +
->>>>>>> +Exynos4210/4x12 Soc busfreq driver with devfreq for Memory bus
->>>>>>> frequency/voltage
->>>>>>> +scaling according to PPMU counters of memory controllers
->>>>>>> +
->>>>>>> +Required properties:
->>>>>>> +- compatible   : should contain Exynos4 SoC type as follwoing:
->>>>>>> +                 - "samsung,exynos4x12-busfreq" for Exynos4x12
->>>>>>> +                 - "samsung,exynos4210-busfreq" for Exynos4210
->>>>>>
->>>>>>
->>>>>> Is there a device called "busfreq"? What device does this binding
->>>>>> describe?
->>>>>
->>>>>
->>>>> I'll add detailed description of busfreq as following:
->>>>>
->>>>> "busfreq(bus frequendcy)" driver means that busfreq driver control
->>>>> dynamically
->>>>> memory bus frequency/voltage by checking memory bus utilization to
->>>>> optimize
->>>>> power-consumption. When checking memeory bus utilization,
->>>>> exynos4_busfreq driver
->>>>> would use PPMU(Performance Profiling Monitoring Units).
->>>>
->>>>
->>>> This still sounds like a description of the _driver_, not the _device_.
->>>> The binding should describe the hardware, now the high level abstraction
->>>> that software is going to build atop of it.
->>>>
->>>> It sounds like this is a binding for the DMC PPMU?
->>>>
->>>> Is the PPMU a component of the DMC, or is it bolted on the side?
->>>
->>>
->>> PPMU(Performance Profiling Monitoring Unit) is to profile performance
->>> event of
->>> various IP on Exynos4. Each PPMU provide perforamnce event for each IP.
->>> We can check various PPMU as following:
->>>
->>> PPMU_3D
->>> PPMU_ACP
->>> PPMU_CAMIF
->>> PPMU_CPU
->>> PPMU_DMC0
->>> PPMU_DMC1
->>> PPMU_FSYS
->>> PPMU_IMAGE
->>> PPMU_LCD0
->>> PPMU_LCD1
->>> PPMU_MFC_L
->>> PPMU_MFC_R
->>> PPMU_TV
->>> PPMU_LEFT_BUS
->>> PPMU_RIGHT_BUS
->>>
->>> DMC (Dynamic Memory Controller) control the operation of DRAM in Exynos4
->>> SoC.
->>> If we need to get memory bust utilization of DMC, we can get memory bus
->>> utilization
->>> from PPMU_DMC0/PPMU_DMC1.
->>>
->>> So, Exynos4's busfreq used two(PPMU_DMC0/PPMU_DMC1) among upper various
->>> PPMU list.
->>
->>
->> Well, PPMUs and DMCs are separate hardware blocks found inside Exynos SoCs.
->> Busfreq/devfreq is just a Linux-specific abstraction responsible for
->> collecting data using PPMUs and controlling frequencies and voltages of
->> appropriate power planes, vdd_int responsible for powering DMC0 and DMC1
->> blocks in this case.
->>
->> I'm afraid that the binding you're proposing is unfortunately incorrect,
->> because it represents the software abstraction, not the real hardware.
->>
->> Instead, this should be separated into several independent bindings:
->>
->>   - PPMU bindings to list all the PPMU instances present in the SoC and
->> resources they need,
->>
->>   - power plane bindings, which define a power plane in which multiple IP
->> blocks might reside, can be monitored by one or more PPMU units and
->> frequency and voltage of which can be configured according to determined
->> performance level. Needed resources will be clocks and regulators to scale
->> and probably also operating points.
->>
->> Then, exynos-busfreq driver should bind to such power planes, parse
->> necessary data from DT (list of PPMUs and IP blocks, clocks, regulators and
->> operating points) and register a devfreq entity.
->
-> How about to use component DT like DRM?
+On Mar 05, Sebastian Capella wrote:
+[..]
+> diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+> index 1f8fed9..83707702 100644
+> --- a/arch/arm/mm/Kconfig
+> +++ b/arch/arm/mm/Kconfig
+> @@ -611,6 +611,11 @@ config CPU_USE_DOMAINS
+>  config IO_36
+>  	bool
+>  =
 
-Well, basically this is what I proposed. Each "power plane" would be a 
-"subsystem" built from components - PPMUs, IP blocks, clocks, 
-regulators, etc, specified in DT by existing means, e.g.
+> +config ARCH_HIBERNATION_POSSIBLE
+> +	bool
+> +	depends on MMU
+> +	default y if CPU_ARM920T || CPU_ARM926T || CPU_SA1100 || CPU_XSCALE || =
+CPU_XSC3 || CPU_V6 || CPU_V6K || CPU_V7
+> +
+>  comment "Processor Features"
+>  =
 
-ppmu_disp: ppmu@12340000 {
-	/* Resources of PPMU */
-}
 
-fimd: fimd@23450000 {
-	/* Resources of FIMD */
-};
+Is there any reason why CPU_FEROCEON is not listed here? FWIW, I've just bu=
+ilt
+(but not really tested) a Kirkwood kernel with CONFIG_HIBERNATION=3Dy.
 
-power-plane-display {
-	compatible = "samsung,power-plane";
-	samsung,ppmus = <&ppmu_disp>, ...;
-	samsung,devices = <&fimd>, ...;
-	clock-names = "aclk_xxx", "sclk_xxx", ...;
-	clocks = ...;
-	vdd_xxx-supply = ...;
-};
+And is there any reason to put this config in arch/arm/mm/Kconfig, instead =
+of
+in arch/arm/Kconfig, below ARCH_SUSPEND_POSSIBLE? =
 
-However I'm still wondering whether there shouldn't be a relation 
-between power planes and power domains and simply existing power domain 
-nodes shouldn't be extended with the data I put above in 
-power-plane-display node. I need to check this in the documentation back 
-at work on Monday.
 
-Best regards,
-Tomasz
+I'm also puzzled about having two separate options for suspend and hibernat=
+e,
+maybe someone can explain me why a given CPU would support the former but n=
+ot
+the latter?
+
+Thanks!
+-- =
+
+Ezequiel Garc=EDa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
