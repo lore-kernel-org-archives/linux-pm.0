@@ -1,132 +1,141 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv2 4/8] devfreq: exynos4: Fix bug of resource leak and code
- clean on probe()
-Date: Mon, 17 Mar 2014 14:05:44 +0900
-Message-ID: <532682A8.2030300@samsung.com>
+Subject: Re: [PATCHv2 8/8] devfreq: exynos4: Add busfreq driver for
+ exynos4210/exynos4x12
+Date: Mon, 17 Mar 2014 14:19:28 +0900
+Message-ID: <532685E0.6040405@samsung.com>
 References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <1394698649-20996-5-git-send-email-cw00.choi@samsung.com>
- <53234132.8080202@samsung.com>
+ <1394698649-20996-9-git-send-email-cw00.choi@samsung.com>
+ <20140313175308.GE25870@e106331-lin.cambridge.arm.com>
+ <5322AC5D.9070200@samsung.com>
+ <20140314103552.GK25870@e106331-lin.cambridge.arm.com>
+ <5322E04D.2060801@samsung.com> <53233DE7.2030902@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <53234132.8080202@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:45187 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbaCQFTn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Mar 2014 01:19:43 -0400
+In-reply-to: <53233DE7.2030902@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "nm@ti.com" <nm@ti.com>, "b.zolnierkie@samsaung.com" <b.zolnierkie@samsaung.com>, Pawel Moll <Pawel.Moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
 Hi Tomasz,
 
-On 03/15/2014 02:49 AM, Tomasz Figa wrote:
-> Hi Chanwoo,
+On 03/15/2014 02:35 AM, Tomasz Figa wrote:
+> Hi Chanwoo, Mark,
 > 
-> On 13.03.2014 09:17, Chanwoo Choi wrote:
->> This patch fix bug about resource leak when happening probe fail and code clean
->> to add debug message.
+> On 14.03.2014 11:56, Chanwoo Choi wrote:
+>> Hi Mark,
 >>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>   drivers/devfreq/exynos/exynos4_bus.c | 32 ++++++++++++++++++++++++++------
->>   1 file changed, 26 insertions(+), 6 deletions(-)
+>> On 03/14/2014 07:35 PM, Mark Rutland wrote:
+>>> On Fri, Mar 14, 2014 at 07:14:37AM +0000, Chanwoo Choi wrote:
+>>>> Hi Mark,
+>>>>
+>>>> On 03/14/2014 02:53 AM, Mark Rutland wrote:
+>>>>> On Thu, Mar 13, 2014 at 08:17:29AM +0000, Chanwoo Choi wrote:
+>>>>>> This patch add busfreq driver for Exynos4210/Exynos4x12 memory interface
+>>>>>> and bus to support DVFS(Dynamic Voltage Frequency Scaling) according to PPMU
+>>>>>> counters. PPMU (Performance Profiling Monitorings Units) of Exynos4 SoC provides
+>>>>>> PPMU counters for DMC(Dynamic Memory Controller) to check memory bus utilization
+>>>>>> and then busfreq driver adjusts dynamically the operating frequency/voltage
+>>>>>> by using DEVFREQ Subsystem.
+>>>>>>
+>>>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>>> ---
+>>>>>>   .../devicetree/bindings/devfreq/exynos4_bus.txt    | 49 ++++++++++++++++++++++
+>>>>>>   1 file changed, 49 insertions(+)
+>>>>>>   create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>>>
+>>>>>> diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>>> new file mode 100644
+>>>>>> index 0000000..2a83fcc
+>>>>>> --- /dev/null
+>>>>>> +++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>>> @@ -0,0 +1,49 @@
+>>>>>> +
+>>>>>> +Exynos4210/4x12 busfreq driver
+>>>>>> +-----------------------------
+>>>>>> +
+>>>>>> +Exynos4210/4x12 Soc busfreq driver with devfreq for Memory bus frequency/voltage
+>>>>>> +scaling according to PPMU counters of memory controllers
+>>>>>> +
+>>>>>> +Required properties:
+>>>>>> +- compatible    : should contain Exynos4 SoC type as follwoing:
+>>>>>> +          - "samsung,exynos4x12-busfreq" for Exynos4x12
+>>>>>> +          - "samsung,exynos4210-busfreq" for Exynos4210
+>>>>>
+>>>>> Is there a device called "busfreq"? What device does this binding
+>>>>> describe?
+>>>>
+>>>> I'll add detailed description of busfreq as following:
+>>>>
+>>>> "busfreq(bus frequendcy)" driver means that busfreq driver control dynamically
+>>>> memory bus frequency/voltage by checking memory bus utilization to optimize
+>>>> power-consumption. When checking memeory bus utilization, exynos4_busfreq driver
+>>>> would use PPMU(Performance Profiling Monitoring Units).
+>>>
+>>> This still sounds like a description of the _driver_, not the _device_.
+>>> The binding should describe the hardware, now the high level abstraction
+>>> that software is going to build atop of it.
+>>>
+>>> It sounds like this is a binding for the DMC PPMU?
+>>>
+>>> Is the PPMU a component of the DMC, or is it bolted on the side?
 >>
->> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
->> index a2a3a47..152a3e9 100644
->> --- a/drivers/devfreq/exynos/exynos4_bus.c
->> +++ b/drivers/devfreq/exynos/exynos4_bus.c
->> @@ -1152,8 +1152,11 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>           dev_err(dev, "Cannot determine the device id %d\n", data->type);
->>           err = -EINVAL;
->>       }
->> -    if (err)
->> +    if (err) {
->> +        dev_err(dev, "Cannot initialize busfreq table %d\n",
->> +                 data->type);
->>           return err;
->> +    }
+>> PPMU(Performance Profiling Monitoring Unit) is to profile performance event of
+>> various IP on Exynos4. Each PPMU provide perforamnce event for each IP.
+>> We can check various PPMU as following:
 >>
->>       rcu_read_lock();
->>       opp = dev_pm_opp_find_freq_floor(dev,
->> @@ -1176,7 +1179,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>       if (IS_ERR(data->devfreq)) {
->>           dev_err(dev, "Failed to add devfreq device\n");
->>           err = PTR_ERR(data->devfreq);
->> -        goto err_opp;
->> +        goto err_devfreq;
->>       }
+>> PPMU_3D
+>> PPMU_ACP
+>> PPMU_CAMIF
+>> PPMU_CPU
+>> PPMU_DMC0
+>> PPMU_DMC1
+>> PPMU_FSYS
+>> PPMU_IMAGE
+>> PPMU_LCD0
+>> PPMU_LCD1
+>> PPMU_MFC_L
+>> PPMU_MFC_R
+>> PPMU_TV
+>> PPMU_LEFT_BUS
+>> PPMU_RIGHT_BUS
 >>
->>       /*
->> @@ -1185,18 +1188,35 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>        */
->>       busfreq_mon_reset(data);
+>> DMC (Dynamic Memory Controller) control the operation of DRAM in Exynos4 SoC.
+>> If we need to get memory bust utilization of DMC, we can get memory bus utilization
+>> from PPMU_DMC0/PPMU_DMC1.
 >>
->> -    devfreq_register_opp_notifier(dev, data->devfreq);
->> +    /* Register opp_notifier for Exynos4 busfreq */
->> +    err = devfreq_register_opp_notifier(dev, data->devfreq);
->> +    if (err < 0) {
->> +        dev_err(dev, "Failed to register opp notifier\n");
->> +        goto err_notifier_opp;
->> +    }
->>
->> +    /* Register pm_notifier for Exynos4 busfreq */
->>       err = register_pm_notifier(&data->pm_notifier);
->>       if (err) {
->>           dev_err(dev, "Failed to setup pm notifier\n");
->> -        devfreq_remove_device(data->devfreq);
->> -        return err;
->> +        goto err_notifier_pm;
->>       }
->>
->>       return 0;
->>
->> -err_opp:
->> +err_notifier_pm:
->> +    devfreq_unregister_opp_notifier(dev, data->devfreq);
->> +err_notifier_opp:
->> +    /*
->> +     * The devfreq_remove_device() would execute finally devfreq->profile
->> +     * ->exit(). To avoid duplicate resource free operation, return directly
->> +     * before executing resource free below 'err_devfreq' goto statement.
->> +     */
+>> So, Exynos4's busfreq used two(PPMU_DMC0/PPMU_DMC1) among upper various PPMU list.
 > 
-> I'm not quite sure about this. I believe that in this case devfreq->profile->exit() would be exynos4_bus_exit() and all it does is devfreq_unregister_opp_notifier(dev, data->devfreq), so all remaining resources (regulators, clocks, etc.) would get leaked.
+> Well, PPMUs and DMCs are separate hardware blocks found inside Exynos SoCs. Busfreq/devfreq is just a Linux-specific abstraction responsible for collecting data using PPMUs and controlling frequencies and voltages of appropriate power planes, vdd_int responsible for powering DMC0 and DMC1 blocks in this case.
+> 
 
-This patch execute following sequence to probe exynos4_busfreq.c:
+I knew already.
 
-1. Parse dt node to get resource(regulator/clock/memory address).
-2. Enable regulator/clock and map memory.
-3. Add devfreq device using devfreq_add_device().
-   The devfreq_add_device() return devfreq instance(data->devfreq).
-4. Register opp_notifier using devfreq instance(data->devfreq) which is created in sequence #3.
+> I'm afraid that the binding you're proposing is unfortunately incorrect, because it represents the software abstraction, not the real hardware.
 
-Case 1,
-If an error happens in sequence #3 for registering devfreq_add_device(),
-
-this case can't execute devfreq->profile->exit() to free resource
-because this case has failed to register devfreq->profile to devfreq_list.
-
-So, must goto 'err_devfreq' statement to free resource(regulator/clock/memory).
-
-
-Case 2,
-If an error happens in sequence #4 for registering opp_notifier,
-
-In contrast
-this case can execute devfreq->profile->exit() to free resource.
-But, After executed devfreq->profile->exit(),
-should not execute 'err_devfreq' statement to free resource.
-In case, will operate twice of resource.
-
-If my explanation is wrong, please reply your comment.
+What is exactly incorrect part of this patch?
 
 > 
-> I believe the correct thing to do would be to remove the .exit() callback from exynos4_devfreq_profile struct and handle all the clean-up here in error path.
+> Instead, this should be separated into several independent bindings:
 > 
+>  - PPMU bindings to list all the PPMU instances present in the SoC and resources they need,
+> 
+>  - power plane bindings, which define a power plane in which multiple IP blocks might reside, can be monitored by one or more PPMU units and frequency and voltage of which can be configured according to determined performance level. Needed resources will be clocks and regulators to scale and probably also operating points.
+> 
+> Then, exynos-busfreq driver should bind to such power planes, parse necessary data from DT (list of PPMUs and IP blocks, clocks, regulators and operating points) and register a devfreq entity.
+
+What is 'power plane'? I don't know 'power plane'.
+If you suggest 'power plane' concept and then merge this concept to mainline,
+After merged 'power plane' concept, I will apply 'power plane' concept to Exynos4's busfreq driver.
+
+I prefer to handle 'power plane' concept on other patchset for Exynos4's busfreq driver.
 
 Best Regards,
 Chanwoo Choi
-
-
-
-
 
