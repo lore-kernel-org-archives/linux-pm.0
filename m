@@ -1,71 +1,129 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH v2 2/2] intel_pstate: Set core to min P state during core
- offline
-Date: Tue, 18 Mar 2014 12:44:28 -0700
-Message-ID: <5328A21C.3010909@intel.com>
-References: <16035918.jZXKnQ3yiq@vostro.rjw.lan> <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com> <1394831037-15553-3-git-send-email-dirk.j.brandewie@intel.com> <CAOh2x=kFC5cwdYVgFCwNgqZAwWaE-CFQoyYizBuv1W6MOnQ9DA@mail.gmail.com> <53285FDB.40102@gmail.com> <532895DF.2090100@linux.vnet.ibm.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 0/2] Add stop callback to the cpufreq_driver interface.
+Date: Wed, 19 Mar 2014 01:34:41 +0530
+Message-ID: <5328A6D9.1080506@linux.vnet.ibm.com>
+References: <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com> <1395163361-26380-1-git-send-email-dirk.j.brandewie@intel.com> <532899B2.2060106@linux.vnet.ibm.com> <53289D9A.8070805@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:45843 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751590AbaCRToc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 15:44:32 -0400
-In-Reply-To: <532895DF.2090100@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:48176 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756173AbaCRUFA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 16:05:00 -0400
+Received: from /spool/local
+	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 19 Mar 2014 06:04:57 +1000
+In-Reply-To: <53289D9A.8070805@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, viresh.kumar@linaro.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 03/18/2014 11:52 AM, Srivatsa S. Bhat wrote:
-> On 03/18/2014 08:31 PM, Dirk Brandewie wrote:
->> On 03/17/2014 10:44 PM, Viresh Kumar wrote:
->>> On Sat, Mar 15, 2014 at 2:33 AM,  <dirk.brandewie@gmail.com> wrote:
->>>> +
->>>>    static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->>>>    {
->>>>           struct cpudata *cpu;
->>>> @@ -818,7 +824,7 @@ static struct cpufreq_driver intel_pstate_driver = {
->>>>           .setpolicy      = intel_pstate_set_policy,
->>>>           .get            = intel_pstate_get,
->>>>           .init           = intel_pstate_cpu_init,
->>>> -       .exit           = intel_pstate_cpu_exit,
->>>> +       .stop           = intel_pstate_cpu_stop,
+On 03/19/2014 12:55 AM, Dirk Brandewie wrote:
+> On 03/18/2014 12:08 PM, Srivatsa S. Bhat wrote:
+>> On 03/18/2014 10:52 PM, dirk.brandewie@gmail.com wrote:
+>>> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 >>>
->>> Probably, keep exit as is and only change P-state in stop(). So that
->>> allocation of resources happen in init() and they are freed in exit()?
->>>
->> I looked at doing just that but it junked up the code.  if stop() is called
->> during PREPARE then init() will be called via __cpufreq_add_dev() in the
->> ONLINE
->> and DOWN_FAILED case. So once stop() is called the driver will be ready for
->> init() to be called exactly like when exit() is called.
 >>
+>> I don't mean to nitpick, but generally its easier to deal with
+>> patchsets if you post the subsequent versions in fresh email threads.
+>> Otherwise it can get a bit muddled along with too many other email
+>> discussions in the same thread :-(
+>>
+>>> Changes:
+>>> v2->v3
+>>> Changed the calling of the ->stop() callback to be conditional on the
+>>> core being the last core controlled by a given policy.
+>>>
+>>
+>> Wait, why? I'm sorry if I am not catching up with the discussions on
+>> this issue quickly enough, but I don't see why we should make it
+>> conditional on _that_. I thought we agreed that we should make it
+>> conditional in the sense that ->stop() should be invoked only for
+>> ->setpolicy drivers, right?
+> 
+> This was done at Viresh's suggestion since thought there might be value
+> for ->target drivers.
+> 
+> Any of the options work for me
+>    called only for set_policy scaling drivers
+>    called unconditionally for all scaling drivers
+>    called for last core controlled by a given policy
+> 
+>>
+>> The way I look at it, ->stop() gives you a chance to stop managing
+>> the CPU going offline. As in "stop this CPU". ->exit() is your chance
+>> to cleanup the policy, since all its users have gone offline (or this
+>> is the last CPU belonging to that policy which is going offline).
+>>
+>> With this in mind, we should invoke ->stop() every time we take a
+>> CPU offline, and invoke ->exit() only when the last CPU in the policy
+>> goes offline.
+> 
+> This is exactly what will happen for intel_pstate since the policies cover
+> a single core.
+> 
+> I will defer to you and Viresh how policies that affect more that one
+> cpu should be handled.
+> 
+> What intel_pstate needs it to be called during the PREPARE phase of the
+> offline process.
 >
-> I'm sorry, but that didn't make much sense to me. Can you be a little
-> more specific as to what problems you hit while trying to have a
-> ->stop() which sets min P state and a separate ->exit() which frees
-> the resources? I think we can achieve this with almost no trouble.
->
 
-There was no problem per se.  In stop() all I really needed to do is stop the
-timer and set the P state to MIN.
+Sure, so here are my thoughts:
 
-At init time I need to allocate memory and start timer.  If stopping the timer
-and deallocating memory are separated then I need code in init() to detect
-this case.
+1. ->target() and ->setpolicy() drivers are mutually exclusive. Rafael
+   had sent a patch to enforce this, and Viresh acked this patch.
 
-Moving all the clean up to stop() make my code simpler, covers the
-failure case and maintains the behaviour expected by the core.
+   http://marc.info/?l=linux-pm&m=139458107925911&w=2
+   http://marc.info/?l=linux-pm&m=139460177829875&w=2
 
-> If you ignore the failure case (such as DOWN_FAILED) for now, do you
-> still see any serious roadblocks?
+2. The way I understand, ->target() drivers use one of the defined governors,
+   and hence have a way to stop managing the CPUs upon CPU offline events.
+   This is done via the GOV_STOP mechanism (in the DOWN_PREPARE stage).
 
-Why would I ignore a valid failure case?
+   On the other hand, the ->setpolicy() drivers don't have any equivalent
+   mechanism at all, and all they have today is the ->exit() callback which
+   is invoked way too late in the offline process, for it to be of any use.
 
->
-> Regards,
-> Srivatsa S. Bhat
->
+So the goal here is to introduce a new mechanism or callback to help those
+->setpolicy drivers to do whatever they wish to do, while taking the CPU
+offline. In the case of intel_pstate, the driver wants to set the outgoing
+CPU's frequency to the min P state.
+
+With this reasoning, the cpufreq core should invoke the ->stop() callback
+only for the ->setpolicy() drivers. Let us not over-generalize interfaces
+unless they are actually going to be useful in broader scenarios.
+
+
+Now let's focus on the second issue - how often should we call ->stop()?
+Should we call it on every CPU offline or only upon the last CPU going
+offline in a given policy?
+
+If we look back at the ->target() drivers who use the defined governors,
+we _effectively_ call GOV_STOP during every CPU offline event. That is,
+the policy needs to stop governing the CPU going offline from this point
+onwards, hence the GOV_STOP (and subsequent GOV_START without the offline
+CPU) makes sense.
+
+Similarly, I believe that we should call ->stop() on every CPU offline.
+We already have ->exit() that gets called when the last CPU goes offline
+in that policy. With this scheme, we give 2 unique properties to ->stop()
+as compared to ->exit():
+
+a. ->stop() gets called during the CPU_DOWN_PREPARE stage, which lets
+   the ->setpolicy driver actually take some action on the CPU's frequency.
+
+b. ->stop() gets called for every CPU offline. The driver can use this
+   fact if useful. Otherwise, the driver can still ignore some of these
+   calls and do the actual work when the last CPU goes offline in that
+   policy. From what I know, the former case is much more useful, and
+   hence this semantics of invoking it on every CPU offline makes sense.
+
+Thoughts?
+
+Regards,
+Srivatsa S. Bhat
 
