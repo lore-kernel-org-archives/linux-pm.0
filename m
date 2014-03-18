@@ -1,85 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/2] intel_pstate: Set core to min P state during core offline
-Date: Tue, 18 Mar 2014 11:14:12 +0530
-Message-ID: <CAOh2x=kFC5cwdYVgFCwNgqZAwWaE-CFQoyYizBuv1W6MOnQ9DA@mail.gmail.com>
-References: <16035918.jZXKnQ3yiq@vostro.rjw.lan>
-	<1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
-	<1394831037-15553-3-git-send-email-dirk.j.brandewie@intel.com>
+From: "Zhuoyu.Zhang@freescale.com" <Zhuoyu.Zhang@freescale.com>
+Subject: RE: [PATCH] cpufreq: powerpc: add cpufreq transition latency for
+ FSL e500mc Socs
+Date: Tue, 18 Mar 2014 05:58:46 +0000
+Message-ID: <059015c0cc9647d0a881847291679a05@BN1PR03MB154.namprd03.prod.outlook.com>
+References: <1395037497-5737-1-git-send-email-Zhuoyu.Zhang@freescale.com>
+ <CAKohpondZpWryz4VWYQM=ym7VKmORkoXWvhfDswAb6hnPceSyQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f179.google.com ([209.85.128.179]:57161 "EHLO
-	mail-ve0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbaCRFoN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 01:44:13 -0400
-In-Reply-To: <1394831037-15553-3-git-send-email-dirk.j.brandewie@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpondZpWryz4VWYQM=ym7VKmORkoXWvhfDswAb6hnPceSyQ@mail.gmail.com>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang <Yuantian.Tang@freescale.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Sat, Mar 15, 2014 at 2:33 AM,  <dirk.brandewie@gmail.com> wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
->
-> Change to use ->stop() callback to do clean up during CPU
-> hotplug. The requested P state for an offline core will be used by the
-> hardware coordination function to select the package P state. If the
-> core is under load when it is offlined it will fix the package P state
-> floor to the requested P state of offline core.
->
-> Reported-by: Patrick Marlier <patrick.marlier@gmail.com>
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 20 +++++++++++++-------
->  1 file changed, 13 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 2cd36b9..e9092fd 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -447,7 +447,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
->         if (limits.no_turbo)
->                 val |= (u64)1 << 32;
->
-> -       wrmsrl(MSR_IA32_PERF_CTL, val);
-> +       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
->  }
->
->  static struct cpu_defaults core_params = {
-> @@ -773,16 +773,22 @@ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
->         return 0;
->  }
->
-> -static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-> +static int intel_pstate_cpu_stop(struct cpufreq_policy *policy)
->  {
-> -       int cpu = policy->cpu;
-> +       int cpu_num = policy->cpu;
-> +       struct cpudata *cpu = all_cpu_data[cpu_num];
-> +
-> +       pr_info("intel_pstate CPU %d exiting\n", cpu_num);
-> +
-> +       del_timer(&all_cpu_data[cpu_num]->timer);
-> +       intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
-> +       kfree(all_cpu_data[cpu_num]);
-> +       all_cpu_data[cpu_num] = NULL;
->
-> -       del_timer(&all_cpu_data[cpu]->timer);
-> -       kfree(all_cpu_data[cpu]);
-> -       all_cpu_data[cpu] = NULL;
->         return 0;
->  }
->
-> +
->  static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->  {
->         struct cpudata *cpu;
-> @@ -818,7 +824,7 @@ static struct cpufreq_driver intel_pstate_driver = {
->         .setpolicy      = intel_pstate_set_policy,
->         .get            = intel_pstate_get,
->         .init           = intel_pstate_cpu_init,
-> -       .exit           = intel_pstate_cpu_exit,
-> +       .stop           = intel_pstate_cpu_stop,
 
-Probably, keep exit as is and only change P-state in stop(). So that
-allocation of resources happen in init() and they are freed in exit()?
+
+> -----Original Message-----
+> From: Viresh Kumar [mailto:viresh.kumar@linaro.org]
+> Sent: Tuesday, March 18, 2014 12:27 PM
+> To: Zhang Zhuoyu-B46552
+> Cc: Rafael J. Wysocki; cpufreq@vger.kernel.org; linux-pm@vger.kernel.org;
+> Tang Yuantian-B29983
+> Subject: Re: [PATCH] cpufreq: powerpc: add cpufreq transition latency for
+> FSL e500mc Socs
+> 
+> On 17 March 2014 11:54, Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com> wrote:
+> > According to the data provided by HW Team, at least 12 internal
+> > platform clock cycles are required to stabilize a DFS clock switch on
+> FSL e500mc Socs.
+> > This patch replaces the CPUFREQ_ETERNAL with appropriate HW clock
+> > transition latency to make DFS governors work normally on Freescale
+> e500mc boards.
+> >
+> > Signed-off-by: Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
+> > ---
+> >  drivers/cpufreq/ppc-corenet-cpufreq.c | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c
+> > b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> > index 051000f..88f08a6 100644
+> > --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
+> > +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+> > @@ -21,6 +21,7 @@
+> >  #include <linux/of.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/smp.h>
+> > +#include <sysdev/fsl_soc.h>
+> >
+> >  /**
+> >   * struct cpu_data - per CPU data struct @@ -133,7 +134,7 @@ static
+> > int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)  {
+> >         struct device_node *np;
+> >         int i, count, ret;
+> > -       u32 freq, mask;
+> > +       u32 freq, sysclk, mask;
+> >         struct clk *clk;
+> >         struct cpufreq_frequency_table *table;
+> >         struct cpu_data *data;
+> > @@ -205,7 +206,8 @@ static int corenet_cpufreq_cpu_init(struct
+> cpufreq_policy *policy)
+> >         for_each_cpu(i, per_cpu(cpu_mask, cpu))
+> >                 per_cpu(cpu_data, i) = data;
+> >
+> > -       policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+> > +       sysclk = fsl_get_sys_freq();
+> 
+> You don't need this extra variable. Simply use fsl_get_sys_freq() in the
+> below equation..
+
+OK, I will rewrite it. 
+Thanks, Viresh.
+
+Zhuoyu
+> 
+> > +       policy->cpuinfo.transition_latency = (12 * NSEC_PER_SEC) /
+> > + sysclk;
+> >         of_node_put(np);
+> 
+> Other than that: Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+
