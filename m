@@ -1,252 +1,97 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v9 2/2] ARM hibernation / suspend-to-disk
-Date: Tue, 18 Mar 2014 14:40:58 -0700
-Message-ID: <1395178858-27343-3-git-send-email-sebastian.capella@linaro.org>
-References: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
+Subject: [PATCH v9 0/2] hibernation support on ARM
+Date: Tue, 18 Mar 2014 14:40:56 -0700
+Message-ID: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Victor Kamensky <victor.kamensky@linaro.org>, Sricharan R <r.sricharan@ti.com>, Jiang Liu <liuj97@gmail.com>, Laura Abbott <lauraa@codeaurora.org>
+Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Sricharan R <r.sricharan@ti.com>, Pavel Machek <pavel@ucw.cz>, Steven Capper <steve.capper@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Stephen Warren <swarren@nvidia.com>, Nicolas Pitre <nico@linaro.org>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Jiang Liu <liuj97@gmail.com>, Len Brown <len.brown@intel.com>, Laura Abbott <lauraa@codeaurora.org>, Victor Kamensky <victor.kamensky@linaro.org>, Russell King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Jonathan Austin <jonathan.austin@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.>
 List-Id: linux-pm@vger.kernel.org
 
-=46rom: Russ Dill <Russ.Dill@ti.com>
-
-Enable hibernation for ARM architectures and provide ARM
-architecture specific calls used during hibernation.
-
-The swsusp hibernation framework depends on the
-platform first having functional suspend/resume.
-
-Then, in order to enable hibernation on a given platform, a
-platform_hibernation_ops structure may need to be registered with
-the system in order to save/restore any SoC-specific / cpu specific
-state needing (re)init over a suspend-to-disk/resume-from-disk cycle.
-
-=46or example:
-
-     - "secure" SoCs that have different sets of control registers
-       and/or different CR reg access patterns.
-
-     - SoCs with L2 caches as the activation sequence there is
-       SoC-dependent; a full off-on cycle for L2 is not done
-       by the hibernation support code.
-
-     - SoCs requiring steps on wakeup _before_ the "generic" parts
-       done by cpu_suspend / cpu_resume can work correctly.
-
-     - SoCs having persistent state which is maintained during suspend
-       and resume, but will be lost during the power off cycle after
-       suspend-to-disk.
-
-This is a rebase/rework of Frank Hofmann's v5 hibernation patchset.
-
-Acked-by: Russ Dill <Russ.Dill@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Nicolas Pitre <nico@linaro.org>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Jonathan Austin <jonathan.austin@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Uwe Kleine-K=C3=B6nig" <u.kleine-koenig@pengutronix.de>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com
-Cc: Victor Kamensky <victor.kamensky@linaro.org>
-Cc: Sricharan R <r.sricharan@ti.com>
-Cc: Jiang Liu <liuj97@gmail.com>
-Cc: Laura Abbott <lauraa@codeaurora.org>
----
- arch/arm/Kconfig              |    5 ++
- arch/arm/include/asm/memory.h |    1 +
- arch/arm/kernel/Makefile      |    1 +
- arch/arm/kernel/hibernate.c   |  107 +++++++++++++++++++++++++++++++++=
-++++++++
- include/linux/suspend.h       |    2 +
- 5 files changed, 116 insertions(+)
- create mode 100644 arch/arm/kernel/hibernate.c
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 1594945..d204231 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -2279,6 +2279,11 @@ config ARCH_SUSPEND_POSSIBLE
- config ARM_CPU_SUSPEND
- 	def_bool PM_SLEEP
-=20
-+config ARCH_HIBERNATION_POSSIBLE
-+	bool
-+	depends on MMU
-+	default y if ARCH_SUSPEND_POSSIBLE
-+
- endmenu
-=20
- source "net/Kconfig"
-diff --git a/arch/arm/include/asm/memory.h b/arch/arm/include/asm/memor=
-y.h
-index 4afb376..47347dd 100644
---- a/arch/arm/include/asm/memory.h
-+++ b/arch/arm/include/asm/memory.h
-@@ -289,6 +289,7 @@ static inline void *phys_to_virt(phys_addr_t x)
- #define __pa(x)			__virt_to_phys((unsigned long)(x))
- #define __va(x)			((void *)__phys_to_virt((phys_addr_t)(x)))
- #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
-+#define virt_to_pfn(kaddr)      (__pa(kaddr) >> PAGE_SHIFT)
-=20
- extern phys_addr_t (*arch_virt_to_idmap)(unsigned long x);
-=20
-diff --git a/arch/arm/kernel/Makefile b/arch/arm/kernel/Makefile
-index a30fc9b..8afa848 100644
---- a/arch/arm/kernel/Makefile
-+++ b/arch/arm/kernel/Makefile
-@@ -39,6 +39,7 @@ obj-$(CONFIG_ARTHUR)		+=3D arthur.o
- obj-$(CONFIG_ISA_DMA)		+=3D dma-isa.o
- obj-$(CONFIG_PCI)		+=3D bios32.o isa.o
- obj-$(CONFIG_ARM_CPU_SUSPEND)	+=3D sleep.o suspend.o
-+obj-$(CONFIG_HIBERNATION)	+=3D hibernate.o
- obj-$(CONFIG_SMP)		+=3D smp.o
- ifdef CONFIG_MMU
- obj-$(CONFIG_SMP)		+=3D smp_tlb.o
-diff --git a/arch/arm/kernel/hibernate.c b/arch/arm/kernel/hibernate.c
-new file mode 100644
-index 0000000..bb8b796
---- /dev/null
-+++ b/arch/arm/kernel/hibernate.c
-@@ -0,0 +1,107 @@
-+/*
-+ * Hibernation support specific for ARM
-+ *
-+ * Derived from work on ARM hibernation support by:
-+ *
-+ * Ubuntu project, hibernation support for mach-dove
-+ * Copyright (C) 2010 Nokia Corporation (Hiroshi Doyu)
-+ * Copyright (C) 2010 Texas Instruments, Inc. (Teerth Reddy et al.)
-+ *  https://lkml.org/lkml/2010/6/18/4
-+ *  https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/02=
-7422.html
-+ *  https://patchwork.kernel.org/patch/96442/
-+ *
-+ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ *
-+ * License terms: GNU General Public License (GPL) version 2
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/suspend.h>
-+#include <asm/system_misc.h>
-+#include <asm/idmap.h>
-+#include <asm/suspend.h>
-+#include <asm/memory.h>
-+
-+extern const void __nosave_begin, __nosave_end;
-+
-+int pfn_is_nosave(unsigned long pfn)
-+{
-+	unsigned long nosave_begin_pfn =3D virt_to_pfn(&__nosave_begin);
-+	unsigned long nosave_end_pfn =3D virt_to_pfn(&__nosave_end - 1);
-+
-+	return (pfn >=3D nosave_begin_pfn) && (pfn <=3D nosave_end_pfn);
-+}
-+
-+void notrace save_processor_state(void)
-+{
-+	WARN_ON(num_online_cpus() !=3D 1);
-+	local_fiq_disable();
-+}
-+
-+void notrace restore_processor_state(void)
-+{
-+	local_fiq_enable();
-+}
-+
-+/*
-+ * Snapshot kernel memory and reset the system.
-+ *
-+ * swsusp_save() is executed in the suspend finisher so that the CPU
-+ * context pointer and memory are part of the saved image, which is
-+ * required by the resume kernel image to restart execution from
-+ * swsusp_arch_suspend().
-+ *
-+ * soft_restart is not technically needed, but is used to get success
-+ * returned from cpu_suspend.
-+ *
-+ * When soft reboot completes, the hibernation snapshot is written out=
-=2E
-+ */
-+static int notrace arch_save_image(unsigned long unused)
-+{
-+	int ret;
-+
-+	ret =3D swsusp_save();
-+	if (ret =3D=3D 0)
-+		soft_restart(virt_to_phys(cpu_resume));
-+	return ret;
-+}
-+
-+/*
-+ * Save the current CPU state before suspend / poweroff.
-+ */
-+int notrace swsusp_arch_suspend(void)
-+{
-+	return cpu_suspend(0, arch_save_image);
-+}
-+
-+/*
-+ * Restore page contents for physical pages that were in use during lo=
-ading
-+ * hibernation image.  Switch to idmap_pgd so the physical page tables
-+ * are overwritten with the same contents.
-+ */
-+static void notrace arch_restore_image(void *unused)
-+{
-+	struct pbe *pbe;
-+
-+	cpu_switch_mm(idmap_pgd, &init_mm);
-+	for (pbe =3D restore_pblist; pbe; pbe =3D pbe->next)
-+		copy_page(pbe->orig_address, pbe->address);
-+
-+	soft_restart(virt_to_phys(cpu_resume));
-+}
-+
-+static u64 resume_stack[PAGE_SIZE/2/sizeof(u64)] __nosavedata;
-+
-+/*
-+ * Resume from the hibernation image.
-+ * Due to the kernel heap / data restore, stack contents change undern=
-eath
-+ * and that would make function calls impossible; switch to a temporar=
-y
-+ * stack within the nosave region to avoid that problem.
-+ */
-+int swsusp_arch_resume(void)
-+{
-+	extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
-+	call_with_stack(arch_restore_image, 0,
-+		resume_stack + ARRAY_SIZE(resume_stack));
-+	return 0;
-+}
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index f73cabf..38bbf95 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -320,6 +320,8 @@ extern unsigned long get_safe_page(gfp_t gfp_mask);
- extern void hibernation_set_ops(const struct platform_hibernation_ops =
-*ops);
- extern int hibernate(void);
- extern bool system_entering_hibernation(void);
-+asmlinkage int swsusp_save(void);
-+extern struct pbe *restore_pblist;
- #else /* CONFIG_HIBERNATION */
- static inline void register_nosave_region(unsigned long b, unsigned lo=
-ng e) {}
- static inline void register_nosave_region_late(unsigned long b, unsign=
-ed long e) {}
---=20
-1.7.9.5
+CkNjOiBSdXNzIERpbGwgPFJ1c3MuRGlsbEB0aS5jb20+CkNjOiAiUmFmYWVsIEouIFd5c29ja2ki
+IDxyandAcmp3eXNvY2tpLm5ldD4KQ2M6IFJ1c3NlbGwgS2luZyA8bGludXhAYXJtLmxpbnV4Lm9y
+Zy51az4KQ2M6IFBhdmVsIE1hY2hlayA8cGF2ZWxAdWN3LmN6PgpDYzogTG9yZW56byBQaWVyYWxp
+c2kgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+CkNjOiBTdGVwaGVuIFdhcnJlbiA8c3dhcnJl
+bkBudmlkaWEuY29tPgpDYzogTGVuIEJyb3duIDxsZW4uYnJvd25AaW50ZWwuY29tPgpDYzogTmlj
+b2xhcyBQaXRyZSA8bmljb0BsaW5hcm8ub3JnPgpDYzogU2FudG9zaCBTaGlsaW1rYXIgPHNhbnRv
+c2guc2hpbGlta2FyQHRpLmNvbT4KQ2M6IFdpbGwgRGVhY29uIDx3aWxsLmRlYWNvbkBhcm0uY29t
+PgpDYzogSm9uYXRoYW4gQXVzdGluIDxqb25hdGhhbi5hdXN0aW5AYXJtLmNvbT4KQ2M6IENhdGFs
+aW4gTWFyaW5hcyA8Y2F0YWxpbi5tYXJpbmFzQGFybS5jb20+CkNjOiAiVXdlIEtsZWluZS1Lw7Zu
+aWciIDx1LmtsZWluZS1rb2VuaWdAcGVuZ3V0cm9uaXguZGU+CkNjOiBTdGVwaGVuIEJveWQgPHNi
+b3lkQGNvZGVhdXJvcmEub3JnPgpDYzogTGF1cmEgQWJib3R0IDxsYXVyYWFAY29kZWF1cm9yYS5v
+cmc+CkNjOiBKaWFuZyBMaXUgPGxpdWo5N0BnbWFpbC5jb20+CkNjOiBTcmljaGFyYW4gUiA8ci5z
+cmljaGFyYW5AdGkuY29tPgpDYzogVmljdG9yIEthbWVuc2t5IDx2aWN0b3Iua2FtZW5za3lAbGlu
+YXJvLm9yZz4KQ2M6IFN0ZWZhbm8gU3RhYmVsbGluaSA8c3RlZmFuby5zdGFiZWxsaW5pQGV1LmNp
+dHJpeC5jb20+CkNjOiBCZW4gRG9va3MgPGJlbi5kb29rc0Bjb2RldGhpbmsuY28udWs+CkNjOiBB
+bmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnPgpDYzogVGhvbWFzIEdsZWl4
+bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+CkNjOiBSb2JpbiBIb2x0IDxyb2Jpbi5tLmhvbHRAZ21h
+aWwuY29tPgpDYzogS29uc3RhbnRpbiBLaGxlYm5pa292IDxrLmtobGVibmlrb3ZAc2Ftc3VuZy5j
+b20+CkNjOiBTdGV2ZW4gQ2FwcGVyIDxzdGV2ZS5jYXBwZXJAbGluYXJvLm9yZz4KQ2M6IFRlanVu
+IEhlbyA8dGpAa2VybmVsLm9yZz4KCgpQYXRjaGVzIGFkZGluZyBzdXBwb3J0IGZvciBoaWJlcm5h
+dGlvbiBvbiBBUk0KIC0gQVJNIGhpYmVybmF0aW9uIC8gc3VzcGVuZC10by1kaXNrCiAtIENoYW5n
+ZSBzb2Z0X3Jlc3RhcnQgdG8gdXNlIG5vbi10cmFjaW5nIHJhd19sb2NhbF9pcnFfZGlzYWJsZQoK
+UGF0Y2hlcyBiYXNlZCBvbiB2My4xNC1yYzcgdGFnLCB2ZXJpZmllZCBoaWJlcm5hdGlvbiBvbiBi
+ZWFnbGVib25lIGJsYWNrIG9uIGEKYnJhbmNoIGJhc2VkIG9uIDMuMTMgbWVyZ2VkIHdpdGggaW5p
+dGlhbCBvbWFwIHN1cHBvcnQgZnJvbSBSdXNzIERpbGwgd2hpY2gKY2FuIGJlIGZvdW5kIGhlcmUg
+KGluY2x1ZGVzIHYxIHBhdGNoc2V0KToKaHR0cDovL2dpdC5saW5hcm8ub3JnL2dpdC1yby9wZW9w
+bGUvc2ViYXN0aWFuLmNhcGVsbGEvbGludXguZ2l0IGhpYmVybmF0aW9uXzMuMTNfcnVzc01lcmdl
+CgpbUEFUQ0ggdjkgMS8yXSBBUk06IGF2b2lkIHRyYWNlcnMgaW4gc29mdF9yZXN0YXJ0CiBhcmNo
+L2FybS9rZXJuZWwvcHJvY2Vzcy5jIHwgICAgMiArLQogMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0
+aW9uKCspLCAxIGRlbGV0aW9uKC0pCgogVXNlIHJhd19sb2NhbF9pcnFfZGlzYWJsZSBpbiBwbGFj
+ZSBvZiBsb2NhbF9pcnFfZGlzYWJsZSB0byBhdm9pZAogaW5maW5pdGUgYWJvcnQgcmVjdXJzaW9u
+IHdoaWxlIHRyYWNpbmcuICh1bmNoYW5nZWQgc2luY2UgdjMpCgpbUEFUQ0ggdjkgMi8yXSBBUk0g
+aGliZXJuYXRpb24gLyBzdXNwZW5kLXRvLWRpc2sKIGFyY2gvYXJtL0tjb25maWcgICAgICAgICAg
+ICAgIHwgICAgNSArKwogYXJjaC9hcm0vaW5jbHVkZS9hc20vbWVtb3J5LmggfCAgICAxICsKIGFy
+Y2gvYXJtL2tlcm5lbC9NYWtlZmlsZSAgICAgIHwgICAgMSArCiBhcmNoL2FybS9rZXJuZWwvaGli
+ZXJuYXRlLmMgICB8ICAxMDcgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysKIGluY2x1ZGUvbGludXgvc3VzcGVuZC5oICAgICAgIHwgICAgMiArCiA1IGZpbGVzIGNoYW5n
+ZWQsIDExNiBpbnNlcnRpb25zKCspCgogQWRkcyBzdXBwb3J0IGZvciBBUk0gYmFzZWQgaGliZXJu
+YXRpb24KCgpBZGRpdGlvbmFsIG5vdGVzOgotLS0tLS0tLS0tLS0tLS0tLQoKVGhlcmUgYXJlIHR3
+byBjaGVja3BhdGNoIHdhcm5pbmdzIGFkZGVkIGJ5IHRoaXMgcGF0Y2guICBUaGVzZSBmb2xsb3cK
+YmVoYXZpb3IgaW4gZXhpc3RpbmcgaGliZXJuYXRpb24gaW1wbGVtZW50YXRpb25zIG9uIG90aGVy
+IHBsYXRmb3Jtcy4KCgogICAgV0FSTklORzogZXh0ZXJucyBzaG91bGQgYmUgYXZvaWRlZCBpbiAu
+YyBmaWxlcwogICAgIzEzMTogRklMRTogYXJjaC9hcm0va2VybmVsL2hpYmVybmF0ZS5jOjI1Ogog
+ICAgK2V4dGVybiBjb25zdCB2b2lkIF9fbm9zYXZlX2JlZ2luLCBfX25vc2F2ZV9lbmQ7CgogIFRo
+aXMgZXh0ZXJuIGlzIHBpY2tpbmcgdXAgdGhlIGxpbmtlciBub3NhdmUgcmVnaW9uIGRlZmluaXRp
+b25zLCBvbmx5CiAgdXNlZCBpbiBoaWJlcm5hdGUuICBGb2xsb3dzIHNhbWUgZXh0ZXJuIGxpbmUg
+dXNlZCBtaXBzLCBwb3dlcnBjLCBzMzkwLAogIHNoLCBzcGFyYywgeDg2ICYgdW5pY29yZTMyCgog
+ICAgV0FSTklORzogZXh0ZXJucyBzaG91bGQgYmUgYXZvaWRlZCBpbiAuYyBmaWxlcwogICAgIzIw
+OTogRklMRTogYXJjaC9hcm0va2VybmVsL2hpYmVybmF0ZS5jOjEwMzoKICAgICsJZXh0ZXJuIHZv
+aWQgY2FsbF93aXRoX3N0YWNrKHZvaWQgKCpmbikodm9pZCAqKSwgdm9pZCAqYXJnLCB2b2lkICpz
+cCk7CgogIFRoaXMgZXh0ZXJuIGlzIHVzZWQgaW4gdGhlIGFyY2gvYXJtLyBpbiBoaWJlcm5hdGUs
+IHByb2Nlc3MgYW5kIGJMX3N3aXRjaGVyCgoKQ2hhbmdlcyBpbiB2OToKLS0tLS0tLS0tLS0tLS0K
+KiByZXBsYWNlIHBmbiBjYWxjdWxhdGlvbndpdGggdmlydF90b19wZm4KKiBhdXRvbWF0aWNhbGx5
+IGFsbG93IEFSQ0hfSElCRVJOQVRJT05fUE9TU0lCTEUgaWYgU1VTUEVORCBwZXJtaXR0ZWQKKiBt
+b3ZlIGhhbmRsaW5nIG9mIEFSQ0ggY29uZmlnIGZsYWcgdG8gYXJjaC9hcm0vS2NvbmZpZwoKQ2hh
+bmdlcyBpbiB2ODoKLS0tLS0tLS0tLS0tLS0KKiByZW1vdmUgZGVmaW5pdGlvbiBhbmQgdXNlIG9m
+IF9fcGFfc3ltYm9sCgpDaGFuZ2VzIGluIHY3OgotLS0tLS0tLS0tLS0tLQoqIHJlbW92ZSB1c2Ug
+b2YgUkVMT0NfSElERSBtYWNybwoqIHJlbW92ZSB1bnVzZWQgI2luY2x1ZGVzCiogZml4dXAgY29t
+bWVudCBmb3IgYXJjaF9yZXN0b3JlX2ltYWdlCiogZW5zdXJlIGFsaWdubWVudCBvZiByZXN1bWUg
+c3RhY2sgb24gOCBieXRlIGJvdW5kYXJ5CgpDaGFuZ2VzIGluIHY2OgotLS0tLS0tLS0tLS0tLQoq
+IFNpbXBsaWZ5IHN0YXRpYyB2YXJpYWJsZSBuYW1lcwoKQ2hhbmdlcyBpbiB2NToKLS0tLS0tLS0t
+LS0tLS0KKiBGaXhlZCBjaGVja3BhdGNoIHdhcm5pbmcgb24gdHJhaWxpbmcgd2hpdGVzcGFjZQoK
+Q2hhbmdlcyBpbiB2NDoKLS0tLS0tLS0tLS0tLS0KKiB1cGRhdGVkIGNvbW1lbnQgZm9yIHNvZnRf
+cmVzdGFydCB3aXRoIHJldmlldyBmZWVkYmFjawoqIGRyb3BwZWQgZnJlZXplX3Byb2Nlc3NlcyBw
+YXRjaCB3aGljaCB3YXMgcXVldWVkIHNlcGFyYXRlbHkgCiAgdG8gMy4xNCBieSBSYWZhZWwgV3lz
+b2NraToKICBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxNC8yLzI1LzY4MwoKQ2hhbmdlcyBpbiB2
+MzoKLS0tLS0tLS0tLS0tLS0KKiBhZGRlZCBjb21tZW50IHRvIHVzZSBvZiBzb2Z0X3Jlc3RhcnQK
+KiBkcm9wIGlycSBkaXNhYmxlIHNvZnRfcmVzdGFydCBwYXRjaAoqIGFkZCBwYXRjaCB0byBhdm9p
+ZCB0cmFjZXJzIGluIHNvZnRfcmVzdGFydCBieSB1c2luZyByYXdfbG9jYWxfaXJxXyoKCkNoYW5n
+ZXMgaW4gdjI6Ci0tLS0tLS0tLS0tLS0tCiogUmVtb3ZlZCB1bm5lZWRlZCBmbHVzaF90aHJlYWQs
+IHVzZSBvZiBfX25ha2VkIGFuZCBjcHVfaW5pdC4KKiBkcm9wcGVkIEN5cmlsIENoZW1wYXJhdGh5
+IDxjeXJpbEB0aS5jb20+IGZyb20gQ2M6IGxpc3QgYXMgCiAgZW1haWxzIGFyZSBib3VuY2luZy4K
+ClRoYW5rcywKClNlYmFzdGlhbiBDYXBlbGxhCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgt
+YXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3Jn
+L21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
