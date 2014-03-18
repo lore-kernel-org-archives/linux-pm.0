@@ -1,54 +1,52 @@
-From: Tomas Winkler <tomas.winkler@intel.com>
-Subject: [char-misc-next 02/13] mei: me: introduce power gating registers
-Date: Tue, 18 Mar 2014 22:51:56 +0200
-Message-ID: <1395175927-10562-3-git-send-email-tomas.winkler@intel.com>
-References: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org
-Cc: arnd@arndb.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v9 1/2] ARM: avoid tracers in soft_restart
+Date: Tue, 18 Mar 2014 14:40:57 -0700
+Message-ID: <1395178858-27343-2-git-send-email-sebastian.capella@linaro.org>
+References: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34308 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755936AbaCRVlB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 17:41:01 -0400
+Received: by mail-pa0-f42.google.com with SMTP id fb1so7962122pad.29
+        for <linux-pm@vger.kernel.org>; Tue, 18 Mar 2014 14:41:01 -0700 (PDT)
+In-Reply-To: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will.deacon@arm.com>, Robin Holt <holt@sgi.com>, Thomas Gleixner <tglx@linutronix.de>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Steven Capper <steve.capper@linaro.org>, Stephen Warren <swarren@nvidia.com>, Tejun Heo <tj@kernel.org>
 
-LPT devices have internal power gating handled
-through registers and hbm calls
+Use of tracers in local_irq_disable is causes abort loops when called
+with irqs disabled using a temporary stack.  Replace local_irq_disable
+with raw_local_irq_disable instead to avoid tracers.
 
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Robin Holt <holt@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>
+Cc: Steven Capper <steve.capper@linaro.org>
+Cc: Stephen Warren <swarren@nvidia.com>
+Cc: Tejun Heo <tj@kernel.org>
 ---
- drivers/misc/mei/hw-me-regs.h | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm/kernel/process.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/misc/mei/hw-me-regs.h b/drivers/misc/mei/hw-me-regs.h
-index 66f411a..72ba4d5 100644
---- a/drivers/misc/mei/hw-me-regs.h
-+++ b/drivers/misc/mei/hw-me-regs.h
-@@ -128,6 +128,8 @@
- #define ME_CB_RW   8
- /* ME_CSR_HA - ME Control Status Host Access register (read only) */
- #define ME_CSR_HA  0xC
-+/* H_HGC_CSR - PGI register */
-+#define H_HPG_CSR  0x10
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index 92f7b15..f58b723 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -100,7 +100,7 @@ void soft_restart(unsigned long addr)
+ 	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
  
+ 	/* Disable interrupts first */
+-	local_irq_disable();
++	raw_local_irq_disable();
+ 	local_fiq_disable();
  
- /* register bits of H_CSR (Host Control Status register) */
-@@ -157,6 +159,8 @@ access to ME_CBD */
- #define ME_CBWP_HRA       0x00FF0000
- /* ME CB Read Pointer HRA - host read only access to ME_CBRP */
- #define ME_CBRP_HRA       0x0000FF00
-+/* ME Power Gate Isolation Capability HRA  - host ready only access */
-+#define ME_PGIC_HRA       0x00000040
- /* ME Reset HRA - host read only access to ME_RST */
- #define ME_RST_HRA        0x00000010
- /* ME Ready HRA - host read only access to ME_RDY */
-@@ -168,4 +172,9 @@ access to ME_CBD */
- /* ME Interrupt Enable HRA - host read only access to ME_IE */
- #define ME_IE_HRA         0x00000001
- 
-+
-+/* register bits - H_HPG_CSR */
-+#define H_HPG_CSR_PGIHEXR       0x00000001
-+#define H_HPG_CSR_PGI           0x00000002
-+
- #endif /* _MEI_HW_MEI_REGS_H_ */
+ 	/* Disable the L2 if we're the last man standing. */
 -- 
-1.8.5.3
+1.7.9.5
+
