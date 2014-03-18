@@ -1,127 +1,155 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] cpufreq: Add exit_prepare callback to cpufreq_driver
- interface
-Date: Tue, 18 Mar 2014 17:42:27 +0530
-Message-ID: <5328382B.7020203@linux.vnet.ibm.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <1394732168-12638-2-git-send-email-dirk.j.brandewie@intel.com>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Tue, 18 Mar 2014 17:46:19 +0530
+Message-ID: <53283913.1070003@linux.vnet.ibm.com>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com> <53234A70.70506@gmail.com> <53656551.Rzgh2mDLCG@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:56506 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754745AbaCRMMw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 08:12:52 -0400
+Received: from e28smtp03.in.ibm.com ([122.248.162.3]:56202 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbaCRMQf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 08:16:35 -0400
 Received: from /spool/local
-	by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 18 Mar 2014 22:12:49 +1000
-In-Reply-To: <1394732168-12638-2-git-send-email-dirk.j.brandewie@intel.com>
+	Tue, 18 Mar 2014 17:46:32 +0530
+In-Reply-To: <53656551.Rzgh2mDLCG@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dirk.brandewie@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
 
-On 03/13/2014 11:06 PM, dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 03/15/2014 07:29 AM, Rafael J. Wysocki wrote:
+> On Friday, March 14, 2014 11:29:04 AM Dirk Brandewie wrote:
+>> On 03/14/2014 10:07 AM, Viresh Kumar wrote:
+>>> On 14 March 2014 20:40, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+>>>> Are you proposing adding cpufreq_generic_suspend() to the core I can not
+>>>> find
+>>>> it in the mainline code.
+>>>
+>>> Its already there in linux-next. I am suggesting to reuse that
+>>> infrastructure with
+>>> some necessary modification to support both suspend and hotplug.
+>>
+>> Suspend and hotplug are two very different things and if we start
+>> crossing those wires bad things are going to happen IMHO.
+>>
+>> In "normal" operation using the suspend path to do this work could
+>> work in principal but doesn't handle the case where the user does
+>>     echo 0 | sudo tee /sys/devices/system/cpu/cpuX/online
+>>
+>> Trying force hotplug and suspend into a common mechanism would
+>> lead to a bunch of special case code or a significant rework of the
+>> core code IMHO.
+>>
+>>
+>>>
+>>>>> Over that I don't think Dirk's solution is going to work if we twist
+>>>>> the systems a bit.
+>>>>
+>>>> Could you explain what "twist the systems a bit" means?
+>>>
+>>> The one I explained in the below paragraph.
+>>>
+>>>>> For example, Dirk probably wanted to set P-STATE of every core to MIN
+>>>>> when it goes down. But his solution probably doesn't do that right now.
+>>>>>
+>>>>
+>>>> No, I wanted to set the core that was being off-lined to min P state.
+>>>
+>>> Sorry, probably my words were a bit confusing. I meant exactly what
+>>> you just wrote. Core going down will set its freq to min.
+>>>
+>>>>> As exit() is called only when the policy expires or all the CPUs of that
+>>>>> policy
+>>>>> are down. Suppose only one CPU out of 4 goes down from a policy, then
+>>>>> pstate driver would never know that happened. And that core wouldn't go
+>>>>> to min state.
+>>>>
+>>>> My patch does not change the semantics of exit() or when it is called.  For
+>>>> intel_pstate their is one cpu per policy so I moved all the cleanup to
+>>>
+>>> I didn't knew that its guaranteed by pstate driver. I thought it would still be
+>>> hardware dependent as some cores might share clock line.
+>>
+>> This is guaranteed by the hardware.  Each core has its own MSR for P state
+>> request.  Any coordination that is required between cores to select the
+>> package P state is handled by the hardware.
+>>
+>>>
+>>>> exit_prepare() if there were work I needed to do at CPU_POST_DEAD I would
+>>>> have
+>>>> continued to export the *optional* exit callback.
+>>>>
+>>>> The callback name exit_prepare() was probably unfortunate and might be
+>>>> causing
+>>>> some confusion.  I will be changing the name per Rafael's feedback.
+>>>
+>>> Don't know.. There is another problem here that exit_prepare() would be called
+>>> for each CPU whereas exit() would be called for each policy.
+>>
+>> Granted but I don't see this as a problem in this case there is a 1:1
+>> relationship.  If a driver chooses to use the *optional* exit_prepare() callback
+>> and knows that there is a many:1 relationship between the policy and CPUs
+>> then it would have to deal with it.
 > 
-> This callback allows the driver to do clean up before the CPU is
-> completely down and its state cannot be modified.  This is used
-> by the intel_pstate driver to reduce the requested P state prior to
-> the core going away.  This is required because the requested P state
-> of the offline core is used to select the package P state. This
-> effectively sets the floor package P state to the requested P state on
-> the offline core.
-> 
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
->  Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
->  drivers/cpufreq/cpufreq.c              | 3 +++
->  include/linux/cpufreq.h                | 1 +
->  3 files changed, 11 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-> index 8b1a445..935f274 100644
-> --- a/Documentation/cpu-freq/cpu-drivers.txt
-> +++ b/Documentation/cpu-freq/cpu-drivers.txt
-> @@ -61,7 +61,13 @@ target_index		-	See below on the differences.
-> 
->  And optionally
-> 
-> -cpufreq_driver.exit -		A pointer to a per-CPU cleanup function.
-> +cpufreq_driver.exit -		A pointer to a per-CPU cleanup
-> +		    		function called during CPU_POST_DEAD
-> +		    		phase of cpu hotplug process.
-> +
-> +cpufreq_driver.exit_prepare -	A pointer to a per-CPU cleanup function 
-> +			    	called during CPU_DOWN_PREPARE phase of 
-> +				cpu hotplug process.
-> 
->  cpufreq_driver.resume -		A pointer to a per-CPU resume function
->  				which is called with interrupts disabled
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index cf485d9..5c9bbfa 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1338,6 +1338,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->  		}
->  	}
-> 
-> +	if (cpufreq_driver->exit_prepare)
-> +		cpufreq_driver->exit_prepare(policy);
-> +
+> Actually, I think we should make it clear that the new callback is for
+> ->setpolicy drivers only, which will make things a bit clearer.
+>
 
-The placement of this hunk doesn't feel right. IMHO we should place it
-right next to the code which stops the governor.
+Agreed. As far as I understand, for ->target drivers, today we use GOV_STOP
+to stop managing the CPU going offline. And for ->setpolicy drivers, we will
+use this new callback to achieve the same goal. 
 
-Something like this:
-
-        if (has_target()) {
-                ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-                if (ret) {
-                        pr_err("%s: Failed to stop governor\n", __func__);
-                        return ret; 
-                }    
-        } else if (cpufreq_driver->setpolicy) {
-		if (cpufreq_driver->exit_prepare)
-			cpufreq_driver->exit_prepare(policy);
-	}
-
-This makes it clear that GOV_STOP is used to stop managing the CPUs
-for platforms that have ->target defined, and ->exit_prepare() is used
-for similar purposes for platforms that have ->setpolicy() defined.
-
-By the way, I like the name ->stop more than ->exit_prepare, because:
-->exit() is done once per policy, which implies that ->exit_prepare
-also shares similar semantics. However, what we really want the new
-callback to do is to provide a way for the driver to stop managing the
-CPU that is going offline, just like GOV_STOP. So naturally, this
-new callback should be invoked during every CPU offline, and not just
-once per policy. Hence the name "stop" (this CPU) makes perfect sense
-for that IMHO. 
-
-[Of course, I understand that GOV_STOP actually stops the entire
-policy for all affected cpus and then we use GOV_START in
-_remove_dev_finish() to restart the governor for the other online
-CPUs in that policy. This is somewhat round-about, but conceptually
-this is equivalent to asking the governor to let go control of only
-the CPU going offline. The new ->stop callback should have the same
-"stop only this CPU" semantics.]
-
->  	return 0;
->  }
+Regards,
+Srivatsa S. Bhat
+ 
+> We seem to get caught by the difference between ->setpolicy and ->target
+> drivers on a regular basis, so it might be a good idea to make the distinction
+> more clear in the code.  I have an idea how to do that, but need some time
+> to prototype it.
+>  
+>>> And I strongly feel that we shouldn't give another callback here but instead
+>>> just set core to a specific freq as mentioned by driver with some other field.
+>>>
+>>>>> I think we have two solutions here:
+>>>>> - If its just about setting core a particular freq when it goes down, I
+>>>>> think it
+>>>>> looks a generic enough problem and so better fix core for that. Probably
+>>>>> with
+>>>>> help of flags field/suspend-freq (maybe renamed) and without calling
+>>>>> drivers
+>>>>> exit() at all..
+>>>>
+>>>>
+>>>> ATM the only thing that needs to be done in this case is to allow
+>>>> intel_pstate
+>>>> to set the P state on the core when it is going done.  My solution from the
+>>>> cores point of view is more generic, it allows any driver that needs to do
+>>>> work
+>>>> during CPU_DOWN_PREPARE to do it without adding any new logic to the core.
+>>>
+>>> Yeah, do we really need to give that freedom right now? Would be better
+>>> to get this into core as that would be more generic and people looking to set
+>>> core to some freq at shutdown wouldn't be replicating that code.
 > 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 4d89e0e..5fa94ad 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -224,6 +224,7 @@ struct cpufreq_driver {
->  	int	(*bios_limit)	(int cpu, unsigned int *limit);
+> Question is if it needs to be more generic.
 > 
->  	int	(*exit)		(struct cpufreq_policy *policy);
-> +	int	(*exit_prepare)	(struct cpufreq_policy *policy);
->  	int	(*suspend)	(struct cpufreq_policy *policy);
->  	int	(*resume)	(struct cpufreq_policy *policy);
->  	struct freq_attr	**attr;
+> I honestly don't think that ->target drivers will ever do anything like it,
+> because they need the governor to "exit" before.  So we are talking about the
+> only two ->setpolicy drivers in the tree here.
+> 
+>> IMHO yes and it would be hard to be more generic, if your platform needs to
+>> do architecture specific during the PREPARE phase of cpu hotplug use this
+>> callback or not.
+>>
+>> BTW now that you have added a path where the cpufreq_suspend() could fail
+>> it return a value and be checked in dpm_suspend() instead of printing an
+>> error and just continuing.
+> 
+> I'm not sure what you mean?  Are you saying that it might be a good idea
+> to allow cpufreq_suspend() to return error codes on failure?
 > 
 
