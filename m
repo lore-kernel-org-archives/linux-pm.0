@@ -1,95 +1,171 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] intel_pstate: Set core to min P state during core
- offline
-Date: Wed, 19 Mar 2014 01:45:18 +0530
-Message-ID: <5328A956.1050808@linux.vnet.ibm.com>
-References: <16035918.jZXKnQ3yiq@vostro.rjw.lan> <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com> <1394831037-15553-3-git-send-email-dirk.j.brandewie@intel.com> <CAOh2x=kFC5cwdYVgFCwNgqZAwWaE-CFQoyYizBuv1W6MOnQ9DA@mail.gmail.com> <53285FDB.40102@gmail.com> <532895DF.2090100@linux.vnet.ibm.com> <5328A21C.3010909@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Tomas Winkler <tomas.winkler@intel.com>
+Subject: [char-misc-next 01/13] mei: implement power gating isolation hbm layer
+Date: Tue, 18 Mar 2014 22:51:55 +0200
+Message-ID: <1395175927-10562-2-git-send-email-tomas.winkler@intel.com>
+References: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:37014 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756280AbaCRUPf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 16:15:35 -0400
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 19 Mar 2014 01:45:33 +0530
-In-Reply-To: <5328A21C.3010909@intel.com>
+Received: from mga09.intel.com ([134.134.136.24]:13521 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932132AbaCRUxd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 18 Mar 2014 16:53:33 -0400
+In-Reply-To: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>
+To: gregkh@linuxfoundation.org
+Cc: arnd@arndb.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Alexander Usyskin <alexander.usyskin@intel.com>
 
-On 03/19/2014 01:14 AM, Dirk Brandewie wrote:
-> On 03/18/2014 11:52 AM, Srivatsa S. Bhat wrote:
->> On 03/18/2014 08:31 PM, Dirk Brandewie wrote:
->>> On 03/17/2014 10:44 PM, Viresh Kumar wrote:
->>>> On Sat, Mar 15, 2014 at 2:33 AM,  <dirk.brandewie@gmail.com> wrote:
->>>>> +
->>>>>    static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->>>>>    {
->>>>>           struct cpudata *cpu;
->>>>> @@ -818,7 +824,7 @@ static struct cpufreq_driver
->>>>> intel_pstate_driver = {
->>>>>           .setpolicy      = intel_pstate_set_policy,
->>>>>           .get            = intel_pstate_get,
->>>>>           .init           = intel_pstate_cpu_init,
->>>>> -       .exit           = intel_pstate_cpu_exit,
->>>>> +       .stop           = intel_pstate_cpu_stop,
->>>>
->>>> Probably, keep exit as is and only change P-state in stop(). So that
->>>> allocation of resources happen in init() and they are freed in exit()?
->>>>
->>> I looked at doing just that but it junked up the code.  if stop() is
->>> called
->>> during PREPARE then init() will be called via __cpufreq_add_dev() in the
->>> ONLINE
->>> and DOWN_FAILED case. So once stop() is called the driver will be
->>> ready for
->>> init() to be called exactly like when exit() is called.
->>>
->>
->> I'm sorry, but that didn't make much sense to me. Can you be a little
->> more specific as to what problems you hit while trying to have a
->> ->stop() which sets min P state and a separate ->exit() which frees
->> the resources? I think we can achieve this with almost no trouble.
->>
-> 
-> There was no problem per se.  In stop() all I really needed to do is
-> stop the
-> timer and set the P state to MIN.
-> 
-> At init time I need to allocate memory and start timer.  If stopping the
-> timer
-> and deallocating memory are separated then I need code in init() to detect
-> this case.
-> 
-> Moving all the clean up to stop() make my code simpler, covers the
-> failure case and maintains the behaviour expected by the core.
-> 
->> If you ignore the failure case (such as DOWN_FAILED) for now, do you
->> still see any serious roadblocks?
-> 
-> Why would I ignore a valid failure case?
-> 
+Add send message functions and receive dispatch stubs
+for power gating isolation hbm protocol.
 
-Of course you shouldn't ignore it. I was just trying to make it easier
-to think about the design without complicating it with arcane failure
-cases right at the outset, that's all.
+The protocol consist of requests for entering and exiting
+the power gating isolation state and their responses.
 
-Now that I looked at it again, I see your point. The problem is that
-by the DOWN_PREPARE stage, the core would have completed only half the
-tear-down (via __cpufreq_remove_dev_prepare()), but on failure, it tries
-to do a full init (via __cpufreq_add_dev()). I would say that's actually
-not a great design from the cpufreq core perspective, but perhaps we can
-fix it at a later point in time if it is that painful to endure.
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
+---
+ drivers/misc/mei/hbm.c     | 41 +++++++++++++++++++++++++++++++++++++++++
+ drivers/misc/mei/hbm.h     |  1 +
+ drivers/misc/mei/hw.h      | 16 ++++++++++++++++
+ drivers/misc/mei/init.c    |  1 +
+ drivers/misc/mei/mei_dev.h |  1 +
+ 5 files changed, 60 insertions(+)
 
-So yes, now I understand see why you do all the teardown in ->stop(),
-to workaround the somewhat inconvenient rollback performed by the
-cpufreq core. Your approach looks good to me.
-
-Regards,
-Srivatsa S. Bhat
+diff --git a/drivers/misc/mei/hbm.c b/drivers/misc/mei/hbm.c
+index 4960288..a16b47c 100644
+--- a/drivers/misc/mei/hbm.c
++++ b/drivers/misc/mei/hbm.c
+@@ -14,6 +14,7 @@
+  *
+  */
+ 
++#include <linux/export.h>
+ #include <linux/pci.h>
+ #include <linux/sched.h>
+ #include <linux/wait.h>
+@@ -289,6 +290,34 @@ static int mei_hbm_prop_req(struct mei_device *dev)
+ 	return 0;
+ }
+ 
++/*
++ * mei_hbm_pg - sends pg command
++ *
++ * @dev: the device structure
++ * @pg_cmd: the pg command code
++ *
++ * This function returns -EIO on write failure
++ */
++int mei_hbm_pg(struct mei_device *dev, u8 pg_cmd)
++{
++	struct mei_msg_hdr *mei_hdr = &dev->wr_msg.hdr;
++	struct hbm_power_gate *req;
++	const size_t len = sizeof(struct hbm_power_gate);
++	int ret;
++
++	mei_hbm_hdr(mei_hdr, len);
++
++	req = (struct hbm_power_gate *)dev->wr_msg.data;
++	memset(req, 0, len);
++	req->hbm_cmd = pg_cmd;
++
++	ret = mei_write_message(dev, mei_hdr, dev->wr_msg.data);
++	if (ret)
++		dev_err(&dev->pdev->dev, "power gate command write failed.\n");
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mei_hbm_pg);
++
+ /**
+  * mei_hbm_stop_req - send stop request message
+  *
+@@ -701,6 +730,18 @@ int mei_hbm_dispatch(struct mei_device *dev, struct mei_msg_hdr *hdr)
+ 		mei_hbm_cl_flow_control_res(dev, flow_control);
+ 		break;
+ 
++	case MEI_PG_ISOLATION_ENTRY_RES_CMD:
++		dev_dbg(&dev->pdev->dev, "power gate isolation entry response received\n");
++		if (waitqueue_active(&dev->wait_pg))
++			wake_up(&dev->wait_pg);
++		break;
++
++	case MEI_PG_ISOLATION_EXIT_REQ_CMD:
++		dev_dbg(&dev->pdev->dev, "power gate isolation exit request received\n");
++		if (waitqueue_active(&dev->wait_pg))
++			wake_up(&dev->wait_pg);
++		break;
++
+ 	case HOST_CLIENT_PROPERTIES_RES_CMD:
+ 		dev_dbg(&dev->pdev->dev, "hbm: properties response: message received.\n");
+ 
+diff --git a/drivers/misc/mei/hbm.h b/drivers/misc/mei/hbm.h
+index 20e8782..8e39cee 100644
+--- a/drivers/misc/mei/hbm.h
++++ b/drivers/misc/mei/hbm.h
+@@ -57,6 +57,7 @@ int mei_hbm_cl_disconnect_req(struct mei_device *dev, struct mei_cl *cl);
+ int mei_hbm_cl_disconnect_rsp(struct mei_device *dev, struct mei_cl *cl);
+ int mei_hbm_cl_connect_req(struct mei_device *dev, struct mei_cl *cl);
+ bool mei_hbm_version_is_supported(struct mei_device *dev);
++int mei_hbm_pg(struct mei_device *dev, u8 pg_cmd);
+ 
+ #endif /* _MEI_HBM_H_ */
+ 
+diff --git a/drivers/misc/mei/hw.h b/drivers/misc/mei/hw.h
+index 6b476ab..1d70968 100644
+--- a/drivers/misc/mei/hw.h
++++ b/drivers/misc/mei/hw.h
+@@ -69,6 +69,11 @@
+ 
+ #define MEI_FLOW_CONTROL_CMD                0x08
+ 
++#define MEI_PG_ISOLATION_ENTRY_REQ_CMD      0x0a
++#define MEI_PG_ISOLATION_ENTRY_RES_CMD      0x8a
++#define MEI_PG_ISOLATION_EXIT_REQ_CMD       0x0b
++#define MEI_PG_ISOLATION_EXIT_RES_CMD       0x8b
++
+ /*
+  * MEI Stop Reason
+  * used by hbm_host_stop_request.reason
+@@ -208,6 +213,17 @@ struct hbm_props_response {
+ } __packed;
+ 
+ /**
++ * struct hbm_power_gate - power gate request/response
++ *
++ * @hbm_cmd - bus message command header
++ * @reserved[3]
++ */
++struct hbm_power_gate {
++	u8 hbm_cmd;
++	u8 reserved[3];
++} __packed;
++
++/**
+  * struct hbm_client_connect_request - connect/disconnect request
+  *
+  * @hbm_cmd - bus message command header
+diff --git a/drivers/misc/mei/init.c b/drivers/misc/mei/init.c
+index 4460975..cc604e1 100644
+--- a/drivers/misc/mei/init.c
++++ b/drivers/misc/mei/init.c
+@@ -312,6 +312,7 @@ void mei_device_init(struct mei_device *dev)
+ 	INIT_LIST_HEAD(&dev->device_list);
+ 	mutex_init(&dev->device_lock);
+ 	init_waitqueue_head(&dev->wait_hw_ready);
++	init_waitqueue_head(&dev->wait_pg);
+ 	init_waitqueue_head(&dev->wait_recvd_msg);
+ 	init_waitqueue_head(&dev->wait_stop_wd);
+ 	dev->dev_state = MEI_DEV_INITIALIZING;
+diff --git a/drivers/misc/mei/mei_dev.h b/drivers/misc/mei/mei_dev.h
+index 94a5167..4d4c041 100644
+--- a/drivers/misc/mei/mei_dev.h
++++ b/drivers/misc/mei/mei_dev.h
+@@ -371,6 +371,7 @@ struct mei_device {
+ 	 * waiting queue for receive message from FW
+ 	 */
+ 	wait_queue_head_t wait_hw_ready;
++	wait_queue_head_t wait_pg;
+ 	wait_queue_head_t wait_recvd_msg;
+ 	wait_queue_head_t wait_stop_wd;
+ 
+-- 
+1.8.5.3
 
