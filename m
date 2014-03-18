@@ -1,215 +1,175 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC 2/9] opp-modifier: Add opp-modifier-reg driver
-Date: Tue, 18 Mar 2014 10:36:45 -0500
-Message-ID: <5328680D.9050103@ti.com>
-References: <1394825135-60110-1-git-send-email-d-gerlach@ti.com>	<1394825135-60110-3-git-send-email-d-gerlach@ti.com>	<CAL_Jsq+BzJeaiPwJsH5bFmtsxCPOspEjnmMLdAVyLAriQTF+kw@mail.gmail.com>	<53270710.4060206@ti.com>
- <CAL_JsqLSq+ZhwgOoH7uvh-Otod6iECWTkDMyEvO6MjmdnJ-3Kw@mail.gmail.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCHv2 8/8] devfreq: exynos4: Add busfreq driver for
+ exynos4210/exynos4x12
+Date: Tue, 18 Mar 2014 16:46:52 +0100
+Message-ID: <53286A6C.5090108@samsung.com>
+References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
+ <1394698649-20996-9-git-send-email-cw00.choi@samsung.com>
+ <20140313175308.GE25870@e106331-lin.cambridge.arm.com>
+ <5322AC5D.9070200@samsung.com>
+ <20140314103552.GK25870@e106331-lin.cambridge.arm.com>
+ <5322E04D.2060801@samsung.com> <53233DE7.2030902@samsung.com>
+ <532685E0.6040405@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAL_JsqLSq+ZhwgOoH7uvh-Otod6iECWTkDMyEvO6MjmdnJ-3Kw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Jisheng Zhang <jszhang@marvell.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Anson Huang <Anson.Huang@freescale.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:36995 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbaCRPq7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 11:46:59 -0400
+In-reply-to: <532685E0.6040405@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "nm@ti.com" <nm@ti.com>, "b.zolnierkie@samsaung.com" <b.zolnierkie@samsaung.com>, Pawel Moll <Pawel.Moll@arm.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
-On 03/17/2014 01:37 PM, Rob Herring wrote:
-> On Mon, Mar 17, 2014 at 9:30 AM, Nishanth Menon <nm@ti.com> wrote:
->> On 03/14/2014 04:00 PM, Rob Herring wrote:
->>> On Fri, Mar 14, 2014 at 2:25 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
->>>> Driver to read from a register and depending on either set bits or
->>>> a specific known selectively enable or disable OPPs based on DT node.
->>>>
->>>> Can support opp-modifier-reg-bit where single bits within the register
->>>> determine the availability of an OPP or opp-modifier-reg-val where a
->>>> certain value inside the register or a portion of it determine what the
->>>> maximum allowed OPP is.
->>>>
->>>> The driver expects a device that has already has its OPPs loaded
->>>> and then will disable the OPPs not matching the criteria specified in
->>>> the opp-modifier table.
->>>>
->>>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->>>> ---
->>>>  .../devicetree/bindings/power/opp-modifier.txt     | 111 +++++++++
->>>>  drivers/power/opp/Makefile                         |   1 +
->>>>  drivers/power/opp/opp-modifier-reg.c               | 259 +++++++++++++++++++++
->>>>  3 files changed, 371 insertions(+)
->>>>  create mode 100644 Documentation/devicetree/bindings/power/opp-modifier.txt
->>>>  create mode 100644 drivers/power/opp/opp-modifier-reg.c
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/power/opp-modifier.txt b/Documentation/devicetree/bindings/power/opp-modifier.txt
->>>> new file mode 100644
->>>> index 0000000..af8a2e9
->>>> --- /dev/null
->>>> +++ b/Documentation/devicetree/bindings/power/opp-modifier.txt
->>>> @@ -0,0 +1,111 @@
->>>> +* OPP-Modifier - opp modifier to selectively enable operating points
->>>> +
->>>> +Many SoCs that have selectively modifiable OPPs can specify
->>>> +all available OPPs in their operating-points listing and then define
->>>> +opp_modifiers to enable or disable the OPPs that are actually available
->>>> +on the specific hardware.
->>>> +
->>>> +* OPP Modifier Provider
+On 17.03.2014 06:19, Chanwoo Choi wrote:
+> Hi Tomasz,
+>
+> On 03/15/2014 02:35 AM, Tomasz Figa wrote:
+>> Hi Chanwoo, Mark,
+>>
+>> On 14.03.2014 11:56, Chanwoo Choi wrote:
+>>> Hi Mark,
 >>>
->>> Uggg. Please stop designing around the current OPP binding which has
->>> the problem that the OPP table is not extensible to add more data.
->>> Define a new OPP binding that solves these problems. This is at least
->> Generically, there are three different issues with current OPP bindings:
->> a) ability to enable disable certain OPPs depending on SoC OTP/Efuse
->> settings.
-> 
-> More generically: ...depending on variety of factors.
-
-Agreed.
-
-> 
->> b) ability to reuse OPPs defined for one device node for another (cpu1
->> to reuse OPP definitions of cpu0)
->> c) ability to add additional information per OPP. we can argue this is
->> a superset of (a), but really, the problems are different.
-> 
-> It is all additional data per OPP. Additional different information is
-> of course for different problems. That doesn't mean we need different
-> solutions.
-> 
->> Previous proposals include making each OPP as a phandle, but there
->> does not seem much traction in that direction either. - proposal here
->> has nothing to do with (b) or (c).
-> 
-> They may have nothing to do with each other, but they all have to do
-> with the OPP binding. If we're going to change/extend the binding,
-> then all issues need to be taken into account.
-
-We aren't extending the existing binding in this series. We are just
-defining how hardware description of which OPPs are valid here.
-
->>> the 3rd OPP related binding addition I've seen recently. But I
->>> wouldn't spend a lot of effort on a new OPP binding just to add the
->>> functionality you are adding here because I don't like the whole
->>> concept in general. This might be a common way to determine valid OPPs
->>> on TI chips, but I think it is too low level and I don't want to see
+>>> On 03/14/2014 07:35 PM, Mark Rutland wrote:
+>>>> On Fri, Mar 14, 2014 at 07:14:37AM +0000, Chanwoo Choi wrote:
+>>>>> Hi Mark,
+>>>>>
+>>>>> On 03/14/2014 02:53 AM, Mark Rutland wrote:
+>>>>>> On Thu, Mar 13, 2014 at 08:17:29AM +0000, Chanwoo Choi wrote:
+>>>>>>> This patch add busfreq driver for Exynos4210/Exynos4x12 memory interface
+>>>>>>> and bus to support DVFS(Dynamic Voltage Frequency Scaling) according to PPMU
+>>>>>>> counters. PPMU (Performance Profiling Monitorings Units) of Exynos4 SoC provides
+>>>>>>> PPMU counters for DMC(Dynamic Memory Controller) to check memory bus utilization
+>>>>>>> and then busfreq driver adjusts dynamically the operating frequency/voltage
+>>>>>>> by using DEVFREQ Subsystem.
+>>>>>>>
+>>>>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>>>> ---
+>>>>>>>    .../devicetree/bindings/devfreq/exynos4_bus.txt    | 49 ++++++++++++++++++++++
+>>>>>>>    1 file changed, 49 insertions(+)
+>>>>>>>    create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>>>>
+>>>>>>> diff --git a/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>>>> new file mode 100644
+>>>>>>> index 0000000..2a83fcc
+>>>>>>> --- /dev/null
+>>>>>>> +++ b/Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+>>>>>>> @@ -0,0 +1,49 @@
+>>>>>>> +
+>>>>>>> +Exynos4210/4x12 busfreq driver
+>>>>>>> +-----------------------------
+>>>>>>> +
+>>>>>>> +Exynos4210/4x12 Soc busfreq driver with devfreq for Memory bus frequency/voltage
+>>>>>>> +scaling according to PPMU counters of memory controllers
+>>>>>>> +
+>>>>>>> +Required properties:
+>>>>>>> +- compatible    : should contain Exynos4 SoC type as follwoing:
+>>>>>>> +          - "samsung,exynos4x12-busfreq" for Exynos4x12
+>>>>>>> +          - "samsung,exynos4210-busfreq" for Exynos4210
+>>>>>>
+>>>>>> Is there a device called "busfreq"? What device does this binding
+>>>>>> describe?
+>>>>>
+>>>>> I'll add detailed description of busfreq as following:
+>>>>>
+>>>>> "busfreq(bus frequendcy)" driver means that busfreq driver control dynamically
+>>>>> memory bus frequency/voltage by checking memory bus utilization to optimize
+>>>>> power-consumption. When checking memeory bus utilization, exynos4_busfreq driver
+>>>>> would use PPMU(Performance Profiling Monitoring Units).
+>>>>
+>>>> This still sounds like a description of the _driver_, not the _device_.
+>>>> The binding should describe the hardware, now the high level abstraction
+>>>> that software is going to build atop of it.
+>>>>
+>>>> It sounds like this is a binding for the DMC PPMU?
+>>>>
+>>>> Is the PPMU a component of the DMC, or is it bolted on the side?
+>>>
+>>> PPMU(Performance Profiling Monitoring Unit) is to profile performance event of
+>>> various IP on Exynos4. Each PPMU provide perforamnce event for each IP.
+>>> We can check various PPMU as following:
+>>>
+>>> PPMU_3D
+>>> PPMU_ACP
+>>> PPMU_CAMIF
+>>> PPMU_CPU
+>>> PPMU_DMC0
+>>> PPMU_DMC1
+>>> PPMU_FSYS
+>>> PPMU_IMAGE
+>>> PPMU_LCD0
+>>> PPMU_LCD1
+>>> PPMU_MFC_L
+>>> PPMU_MFC_R
+>>> PPMU_TV
+>>> PPMU_LEFT_BUS
+>>> PPMU_RIGHT_BUS
+>>>
+>>> DMC (Dynamic Memory Controller) control the operation of DRAM in Exynos4 SoC.
+>>> If we need to get memory bust utilization of DMC, we can get memory bus utilization
+>>> from PPMU_DMC0/PPMU_DMC1.
+>>>
+>>> So, Exynos4's busfreq used two(PPMU_DMC0/PPMU_DMC1) among upper various PPMU list.
 >>
->> Not just TI chips, but iMX, now, Marvell, Xilinx as well. potentially
->> more as well. doing OTP/Efuse based decision on which OPPs are valid
->> on a chip is not a TI specific thing. This was the reason for us to
->> try to define something generic enough to be reused by more SoCs than
->> just TI.
-> 
-> Agreed, but I'm not convinced how different SOCs determine valid OPPs
-> is common enough. Certainly how to mark an entry disabled is common
-> though.
-
-Fair enough, without procuring NDA documents for all the SoCs, I
-cannot comment much either, all we can do is see threads such as
-http://marc.info/?t=139470791100003&r=1&w=2 and propose.
-
-This series does include iMx as well which seems to have equivalent
-challenges.
-
-I have given examples here on how the current driver at least tries to
-make generic the instances of SoCs that we have today, further, the
-driver in no way constraints us from using opp_modifier_register with
-proper ops in case we do something weirdly different (example: use non
-memory mapped operations) - it is just a simple framework.
-
-> 
->>> bindings for every different possible way. Just add platform code to
->>> do the OPP setup you need.
->> Errr.. adding platform code means the hardware description goes back
->> to kernel. is'nt that giving up on device tree binding for describing
->> hardware?
-> 
-> We're always going to have some platform code. I'm not saying you have
-> to in this case. I'm saying either come up with an OPP binding
-> addressing all these issues or live with the existing one and fix it
-> up in the kernel or bootloader.
-
-bootloader is out of the picture considering most of the platforms
-need to deal with legacy bootloaders.
-
-then tying part of the data in kernel and part in dts!
-> 
->>> Frankly, I prefer the bootloader/firmware fixup the OPP table approach
->>> mentioned in the cpufreq-cpu0 thread. Somewhat less desirable, but the
->>> kernel could do the fixups as well (via of_update_property).
+>> Well, PPMUs and DMCs are separate hardware blocks found inside Exynos SoCs. Busfreq/devfreq is just a Linux-specific abstraction responsible for collecting data using PPMUs and controlling frequencies and voltages of appropriate power planes, vdd_int responsible for powering DMC0 and DMC1 blocks in this case.
 >>
->> a) Trying to move the hardware definition away from device tree seems
->> to me a major step backwards.
->> b) Allowing for definitions in platform code is a step backwards again
->> for a generic solution that works for more than 1 vendor.
->> c) moving the logic away to bootloader when it can easily be done in
->> kernel again is adding burden to bootloader for data it does need to
->> handle.
-> 
-> The burden has to be somewhere. Maintaining a binding forever in the
-> kernel is a burden as well if it is poorly designed.
+>
+> I knew already.
+>
+>> I'm afraid that the binding you're proposing is unfortunately incorrect, because it represents the software abstraction, not the real hardware.
+>
+> What is exactly incorrect part of this patch?
+>
 
-> 
-> Valid OPPs are not going to just be random. There's probably on a few
-> combinations and they'll be based on part# or speed grade or something
-> (which in turn defines the efuses in your case). While a dev board may
-> have random parts on it, an actual product would not. I could argue
-> that your DTB just needs to be correct to begin with for a given
-> part/design. Obviously, managing minor differences in a DTB like this
-> can be a pain. This is why firmware or bootloaders do adjustments to
-> the DTB at runtime and it is quite common.
-Bootloaders may not always be capable of doing things or may just be
-legacy bootloader that were created in a world where kernel was self
-sustaining (opp data was in the kernel previously in OMAP as an
-example). asking bootloader to change to ensure dtbs are proper is
-just opening up another can of worms here.
+Device tree contains information about hardware, not about OS-specific 
+drivers or subsystems. Busfreq/devfreq is not a hardware block, but a 
+Linux-specific driver, so it's not suitable to be described by DT 
+directly, especially considering the fact that in future it might be 
+replaced by or merged with another subsystem.
 
-> 
->> OPP is a hardware behavior, which OPPs are enabled are described in
->> hardware on certain SoCs. the current proposal is to provide a generic
->> solution for those devices that allow for dynamic definition of OPPs
->> based on SoC efuse definition.
-> 
-> What if the decision is not based on a single register bit? Perhaps
-> efuses are not directly memory mapped. Maybe it is based on Si
-> revision. Or you need to limit frequency because a certain board can't
-> supply adequate current. You call this generic, but it is not. It
-> doesn't even solve the part that is generic which is marking some OPPs
-> disabled.
+Only PPMUs are real hardware blocks present in the SoC. In addition, a 
+SoC-level aspect of hardware description may be added, such as a list of 
+power planes. See below for explanation.
 
-Are we saying that having a generic layer which may decide on which
-OPPs are valid and which are not is a no-no? the RFC has a few issues,
-I agree, but that is part of our review process to help improve if we
-think the over all concept is good enough to carry forward for next
-patch iteration. You dont seem convinced enough to think that makes
-sense here.
+>>
+>> Instead, this should be separated into several independent bindings:
+>>
+>>   - PPMU bindings to list all the PPMU instances present in the SoC and resources they need,
+>>
+>>   - power plane bindings, which define a power plane in which multiple IP blocks might reside, can be monitored by one or more PPMU units and frequency and voltage of which can be configured according to determined performance level. Needed resources will be clocks and regulators to scale and probably also operating points.
+>>
+>> Then, exynos-busfreq driver should bind to such power planes, parse necessary data from DT (list of PPMUs and IP blocks, clocks, regulators and operating points) and register a devfreq entity.
+>
+> What is 'power plane'? I don't know 'power plane'.
 
-As I mentioned, patch #1 is the framework, patch #2 is a specific
-implementation(and there are improvements possible)-> if we need to
-add sil revision based logic OR have current supply based
-implementation OR have non memory mapped based decision making,
-there'd be specific drivers for them.
+Power plane is a part of the SoC (set of IP blocks and buses) that is 
+powered by the same power source. For example in Exynos4412 a power 
+plane would be VDD_ARM, containing 4 Cortex A9 cores, two L2 cache 
+blocks, L2 cache controller, SCU, and several other blocks. Another 
+example in Exynos4412 would be VDD_INT plane, which contains MFC, 
+AudioSS, LCD0, ISP, TV, CAM and several other blocks.
 
-The key question is this: do we have an conceptual agreement that
-making the decision on which OPPs are valid is a decision for the
-kernel? if yes, lets make that as the standard, if kernel should not
-do it, then we enforce discipline that bootloaders will mandatorily
-implement dtb modification for OPP entries for all SoCs. If I
-understand your thought, I think your push is for dtbs containing the
-right OPP entries always.
+In addition, such power plane might contain certain facilities, such as 
+PPMU blocks, that let you estimate bus bandwidth utilization and scale 
+certain performance and power parameters of such power plane, e.g. 
+frequencies of internal buses and voltage of external regulator used to 
+power it.
 
-If we agree that kernel should be standalone capable of handling valid
-OPPs (which happens to be my view), then lets debate if a generic
-layer such as the one proposed should be created helping all SoCs to
-operate generically. So far, none of the arguments you have presented
-seems to indicate such a generic layer is impossible to do.
+> If you suggest 'power plane' concept and then merge this concept to mainline,
+> After merged 'power plane' concept, I will apply 'power plane' concept to Exynos4's busfreq driver.
+>
+> I prefer to handle 'power plane' concept on other patchset for Exynos4's busfreq driver.
 
--- 
-Regards,
-Nishanth Menon
+This is a necessary prerequisite for having Exynos busfreq facilities 
+described properly in device tree. This is not a concept of high level 
+generic framework, but just a concept of hardware description that can 
+be parsed by Linux drivers, such as Exynos busfreq.
+
+As I said above, a requirement is that DT does not describe 
+Linux-specific internals, but the hardware that is used by them.
+
+Best regards,
+Tomasz
