@@ -1,105 +1,127 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: Skip current frequency initialization for ->setpolicy
- drivers
-Date: Tue, 18 Mar 2014 17:23:15 +0530
-Message-ID: <532833AB.4020407@linux.vnet.ibm.com>
-References: <CAA7pwKNmosWaWPR0x3kNzL7eNLk8vdCB=NknU9ayLT9s1fJQYA@mail.gmail.com> <CAA7pwKOgtx8dBSzdu2iBS_f1Xck0MkmHYjQOvsS-8W+HxFkYmg@mail.gmail.com> <CAA7pwKN2Rn2y9TaEYLtwVmJ0_7Syx0kVQHUNga5ga2BwB=q1fQ@mail.gmail.com> <2460637.PSm5Ca8pqs@vostro.rjw.lan>
+Subject: Re: [PATCH 1/2] cpufreq: Add exit_prepare callback to cpufreq_driver
+ interface
+Date: Tue, 18 Mar 2014 17:42:27 +0530
+Message-ID: <5328382B.7020203@linux.vnet.ibm.com>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <1394732168-12638-2-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2460637.PSm5Ca8pqs@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Patrik Lundquist <patrik.lundquist@gmail.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:56506 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754745AbaCRMMw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 08:12:52 -0400
+Received: from /spool/local
+	by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 18 Mar 2014 22:12:49 +1000
+In-Reply-To: <1394732168-12638-2-git-send-email-dirk.j.brandewie@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 03/13/2014 05:00 AM, Rafael J. Wysocki wrote:
-> On Wednesday, March 12, 2014 03:14:51 PM Patrik Lundquist wrote:
->> On 12 March 2014 12:42, Patrik Lundquist <patrik.lundquist@gmail.com> wrote:
->>> On 12 March 2014 00:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>>
->>>> So Patrik, please test this one (resending, so that it gets to linux-pm):
->>>
->>> Will do. Might take a couple of days.
->>
->> Come to think of it, there's not much to test besides verifying that
->> cpufreq_driver->get() isn't called like before (i.e. no need to test
->> on the server).
->>
->> So I inserted pr_err()s and they aren't printed when booting my Intel
->> Xeon CPU E3-1240 V2 while the intel_pstate driver still is used.
->>
->> The patch works for me.
+On 03/13/2014 11:06 PM, dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > 
-> Awesome, thanks!  Appended again with a proper changelog and tags.
+> This callback allows the driver to do clean up before the CPU is
+> completely down and its state cannot be modified.  This is used
+> by the intel_pstate driver to reduce the requested P state prior to
+> the core going away.  This is required because the requested P state
+> of the offline core is used to select the package P state. This
+> effectively sets the floor package P state to the requested P state on
+> the offline core.
 > 
-> Dirk, please let me know if you're fine with it.
-> 
-> Rafael
-> 
-> 
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpufreq: Skip current frequency initialization for ->setpolicy drivers
+>  Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
+>  drivers/cpufreq/cpufreq.c              | 3 +++
+>  include/linux/cpufreq.h                | 1 +
+>  3 files changed, 11 insertions(+), 1 deletion(-)
 > 
-> After commit da60ce9f2fac (cpufreq: call cpufreq_driver->get() after
-> calling ->init()) __cpufreq_add_dev() sometimes fails for CPUs handled
-> by intel_pstate, because that driver may return 0 from its ->get()
-> callback if it has not run long enough to collect enough samples on the
-> given CPU.  That didn't happen before commit da60ce9f2fac which added
-> policy->cur initialization to __cpufreq_add_dev() to help reduce code
-> duplication in other cpufreq drivers.
+> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+> index 8b1a445..935f274 100644
+> --- a/Documentation/cpu-freq/cpu-drivers.txt
+> +++ b/Documentation/cpu-freq/cpu-drivers.txt
+> @@ -61,7 +61,13 @@ target_index		-	See below on the differences.
 > 
-> However, the code added by commit da60ce9f2fac need not be executed
-> for cpufreq drivers having the ->setpolicy callback defined, because
-> the subsequent invocation of cpufreq_set_policy() will use that
-> callback to initialize the policy anyway and it doesn't need
-> policy->cur to be initialized upfront.  The analogous code in
-> cpufreq_update_policy() is also unnecessary for cpufreq drivers
-> having ->setpolicy set and may be skipped for them as well.
+>  And optionally
 > 
-> Since intel_pstate provides ->setpolicy, skipping the upfront
-> policy->cur initialization for cpufreq drivers with that callback
-> set will cover intel_pstate and the problem it's been having after
-> commit da60ce9f2fac will be addressed.
+> -cpufreq_driver.exit -		A pointer to a per-CPU cleanup function.
+> +cpufreq_driver.exit -		A pointer to a per-CPU cleanup
+> +		    		function called during CPU_POST_DEAD
+> +		    		phase of cpu hotplug process.
+> +
+> +cpufreq_driver.exit_prepare -	A pointer to a per-CPU cleanup function 
+> +			    	called during CPU_DOWN_PREPARE phase of 
+> +				cpu hotplug process.
 > 
-> Fixes: da60ce9f2fac (cpufreq: call cpufreq_driver->get() after calling ->init())
-> References: https://bugzilla.kernel.org/show_bug.cgi?id=71931
-> Reported-and-tested-by: Patrik Lundquist <patrik.lundquist@gmail.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: 3.13+ <stable@vger.kernel.org> # 3.13+
-> ---
+>  cpufreq_driver.resume -		A pointer to a per-CPU resume function
+>  				which is called with interrupts disabled
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index cf485d9..5c9bbfa 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1338,6 +1338,9 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>  		}
+>  	}
+> 
+> +	if (cpufreq_driver->exit_prepare)
+> +		cpufreq_driver->exit_prepare(policy);
+> +
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+The placement of this hunk doesn't feel right. IMHO we should place it
+right next to the code which stops the governor.
 
-Regards,
-Srivatsa S. Bhat
+Something like this:
 
->  drivers/cpufreq/cpufreq.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+        if (has_target()) {
+                ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+                if (ret) {
+                        pr_err("%s: Failed to stop governor\n", __func__);
+                        return ret; 
+                }    
+        } else if (cpufreq_driver->setpolicy) {
+		if (cpufreq_driver->exit_prepare)
+			cpufreq_driver->exit_prepare(policy);
+	}
+
+This makes it clear that GOV_STOP is used to stop managing the CPUs
+for platforms that have ->target defined, and ->exit_prepare() is used
+for similar purposes for platforms that have ->setpolicy() defined.
+
+By the way, I like the name ->stop more than ->exit_prepare, because:
+->exit() is done once per policy, which implies that ->exit_prepare
+also shares similar semantics. However, what we really want the new
+callback to do is to provide a way for the driver to stop managing the
+CPU that is going offline, just like GOV_STOP. So naturally, this
+new callback should be invoked during every CPU offline, and not just
+once per policy. Hence the name "stop" (this CPU) makes perfect sense
+for that IMHO. 
+
+[Of course, I understand that GOV_STOP actually stops the entire
+policy for all affected cpus and then we use GOV_START in
+_remove_dev_finish() to restart the governor for the other online
+CPUs in that policy. This is somewhat round-about, but conceptually
+this is equivalent to asking the governor to let go control of only
+the CPU going offline. The new ->stop callback should have the same
+"stop only this CPU" semantics.]
+
+>  	return 0;
+>  }
 > 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -1129,7 +1129,7 @@ static int __cpufreq_add_dev(struct devi
->  		per_cpu(cpufreq_cpu_data, j) = policy;
->  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 4d89e0e..5fa94ad 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -224,6 +224,7 @@ struct cpufreq_driver {
+>  	int	(*bios_limit)	(int cpu, unsigned int *limit);
 > 
-> -	if (cpufreq_driver->get) {
-> +	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
->  		policy->cur = cpufreq_driver->get(policy->cpu);
->  		if (!policy->cur) {
->  			pr_err("%s: ->get() failed\n", __func__);
-> @@ -2143,7 +2143,7 @@ int cpufreq_update_policy(unsigned int c
->  	 * BIOS might change freq behind our back
->  	 * -> ask driver for current freq and notify governors about a change
->  	 */
-> -	if (cpufreq_driver->get) {
-> +	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
->  		new_policy.cur = cpufreq_driver->get(cpu);
->  		if (!policy->cur) {
->  			pr_debug("Driver did not initialize current freq");
+>  	int	(*exit)		(struct cpufreq_policy *policy);
+> +	int	(*exit_prepare)	(struct cpufreq_policy *policy);
+>  	int	(*suspend)	(struct cpufreq_policy *policy);
+>  	int	(*resume)	(struct cpufreq_policy *policy);
+>  	struct freq_attr	**attr;
 > 
 
