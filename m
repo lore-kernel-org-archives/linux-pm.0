@@ -1,7 +1,7 @@
 From: Tomas Winkler <tomas.winkler@intel.com>
-Subject: [char-misc-next 04/13] mei: condition PGI support on HW and HBM version
-Date: Tue, 18 Mar 2014 22:51:58 +0200
-Message-ID: <1395175927-10562-5-git-send-email-tomas.winkler@intel.com>
+Subject: [char-misc-next 10/13] mei: use runtime pm in write and read flow
+Date: Tue, 18 Mar 2014 22:52:04 +0200
+Message-ID: <1395175927-10562-11-git-send-email-tomas.winkler@intel.com>
 References: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
@@ -10,160 +10,207 @@ To: gregkh@linuxfoundation.org
 Cc: arnd@arndb.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Alexander Usyskin <alexander.usyskin@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Enable power gating isolation only if hw and fw support it.
-This is indicated by ME_PGIC_HRA bit in ME_CSR_HA register
-and on HBM protocol version.
-
-The information is exported to MEI layer through
-new pg_is_enabled hw op.
+Take rpm token on operation start to initiate rpm resume if needed.
+Mark last busy time, release token and advice rpm framework
+to try to autosuspend on operation end.
 
 Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
 Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 ---
- drivers/misc/mei/hw-me.c   | 37 +++++++++++++++++++++++++++++++++++++
- drivers/misc/mei/hw-txe.c  | 14 ++++++++++++++
- drivers/misc/mei/hw.h      |  6 ++++++
- drivers/misc/mei/mei_dev.h | 10 ++++++++++
- 4 files changed, 67 insertions(+)
+ drivers/misc/mei/client.c | 84 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 71 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/misc/mei/hw-me.c b/drivers/misc/mei/hw-me.c
-index fc5d001..7a7e662 100644
---- a/drivers/misc/mei/hw-me.c
-+++ b/drivers/misc/mei/hw-me.c
-@@ -460,6 +460,41 @@ static void mei_me_pg_exit(struct mei_device *dev)
+diff --git a/drivers/misc/mei/client.c b/drivers/misc/mei/client.c
+index 36eca54..0c70459 100644
+--- a/drivers/misc/mei/client.c
++++ b/drivers/misc/mei/client.c
+@@ -18,6 +18,7 @@
+ #include <linux/sched.h>
+ #include <linux/wait.h>
+ #include <linux/delay.h>
++#include <linux/pm_runtime.h>
+ 
+ #include <linux/mei.h>
+ 
+@@ -415,6 +416,10 @@ void mei_host_client_init(struct work_struct *work)
+ 	dev->reset_count = 0;
+ 
+ 	mutex_unlock(&dev->device_lock);
++
++	pm_runtime_mark_last_busy(&dev->pdev->dev);
++	dev_dbg(&dev->pdev->dev, "rpm: autosuspend\n");
++	pm_runtime_autosuspend(&dev->pdev->dev);
  }
  
  /**
-+ * mei_me_pg_is_enabled - detect if PG is supported by HW
-+ *
-+ * @dev: the device structure
-+ *
-+ * returns: true is pg supported, false otherwise
-+ */
-+static bool mei_me_pg_is_enabled(struct mei_device *dev)
-+{
-+	struct mei_me_hw *hw = to_me_hw(dev);
-+	u32 reg = mei_me_reg_read(hw, ME_CSR_HA);
+@@ -425,6 +430,12 @@ void mei_host_client_init(struct work_struct *work)
+  */
+ bool mei_hbuf_acquire(struct mei_device *dev)
+ {
++	if (mei_pg_state(dev) == MEI_PG_ON ||
++	    dev->pg_event == MEI_PG_EVENT_WAIT) {
++		dev_dbg(&dev->pdev->dev, "device is in pg\n");
++		return false;
++	}
 +
-+	if ((reg & ME_PGIC_HRA) == 0)
-+		goto notsupported;
-+
-+	if (dev->version.major_version < HBM_MAJOR_VERSION_PGI)
-+		goto notsupported;
-+
-+	if (dev->version.major_version == HBM_MAJOR_VERSION_PGI &&
-+	    dev->version.minor_version < HBM_MINOR_VERSION_PGI)
-+		goto notsupported;
-+
-+	return true;
-+
-+notsupported:
-+	dev_dbg(&dev->pdev->dev, "pg: not supported: HGP = %d hbm version %d.%d ?= %d.%d\n",
-+		!!(reg & ME_PGIC_HRA),
-+		dev->version.major_version,
-+		dev->version.minor_version,
-+		HBM_MAJOR_VERSION_PGI,
-+		HBM_MINOR_VERSION_PGI);
-+
-+	return false;
-+}
-+
-+/**
-  * mei_me_irq_quick_handler - The ISR of the MEI device
-  *
-  * @irq: The irq number
-@@ -573,6 +608,8 @@ static const struct mei_hw_ops mei_me_hw_ops = {
- 	.hw_config = mei_me_hw_config,
- 	.hw_start = mei_me_hw_start,
+ 	if (!dev->hbuf_is_ready) {
+ 		dev_dbg(&dev->pdev->dev, "hbuf is not ready\n");
+ 		return false;
+@@ -460,9 +471,18 @@ int mei_cl_disconnect(struct mei_cl *cl)
+ 	if (cl->state != MEI_FILE_DISCONNECTING)
+ 		return 0;
  
-+	.pg_is_enabled = mei_me_pg_is_enabled,
++	rets = pm_runtime_get(&dev->pdev->dev);
++	if (rets < 0 && rets != -EINPROGRESS) {
++		pm_runtime_put_noidle(&dev->pdev->dev);
++		cl_err(dev, cl, "rpm: get failed %d\n", rets);
++		return rets;
++	}
 +
- 	.intr_clear = mei_me_intr_clear,
- 	.intr_enable = mei_me_intr_enable,
- 	.intr_disable = mei_me_intr_disable,
-diff --git a/drivers/misc/mei/hw-txe.c b/drivers/misc/mei/hw-txe.c
-index f60182a..49f197a 100644
---- a/drivers/misc/mei/hw-txe.c
-+++ b/drivers/misc/mei/hw-txe.c
-@@ -280,6 +280,18 @@ int mei_txe_aliveness_set_sync(struct mei_device *dev, u32 req)
+ 	cb = mei_io_cb_init(cl, NULL);
+-	if (!cb)
+-		return -ENOMEM;
++	if (!cb) {
++		rets = -ENOMEM;
++		goto free;
++	}
+ 
+ 	cb->fop_type = MEI_FOP_CLOSE;
+ 	if (mei_hbuf_acquire(dev)) {
+@@ -494,8 +514,7 @@ int mei_cl_disconnect(struct mei_cl *cl)
+ 			cl_err(dev, cl, "wrong status client disconnect.\n");
+ 
+ 		if (err)
+-			cl_dbg(dev, cl, "wait failed disconnect err=%08x\n",
+-					err);
++			cl_dbg(dev, cl, "wait failed disconnect err=%d\n", err);
+ 
+ 		cl_err(dev, cl, "failed to disconnect from FW client.\n");
+ 	}
+@@ -503,6 +522,10 @@ int mei_cl_disconnect(struct mei_cl *cl)
+ 	mei_io_list_flush(&dev->ctrl_rd_list, cl);
+ 	mei_io_list_flush(&dev->ctrl_wr_list, cl);
+ free:
++	cl_dbg(dev, cl, "rpm: autosuspend\n");
++	pm_runtime_mark_last_busy(&dev->pdev->dev);
++	pm_runtime_put_autosuspend(&dev->pdev->dev);
++
+ 	mei_io_cb_free(cb);
+ 	return rets;
+ }
+@@ -557,6 +580,13 @@ int mei_cl_connect(struct mei_cl *cl, struct file *file)
+ 
+ 	dev = cl->dev;
+ 
++	rets = pm_runtime_get(&dev->pdev->dev);
++	if (rets < 0 && rets != -EINPROGRESS) {
++		pm_runtime_put_noidle(&dev->pdev->dev);
++		cl_err(dev, cl, "rpm: get failed %d\n", rets);
++		return rets;
++	}
++
+ 	cb = mei_io_cb_init(cl, file);
+ 	if (!cb) {
+ 		rets = -ENOMEM;
+@@ -596,6 +626,10 @@ int mei_cl_connect(struct mei_cl *cl, struct file *file)
+ 	rets = cl->status;
+ 
+ out:
++	cl_dbg(dev, cl, "rpm: autosuspend\n");
++	pm_runtime_mark_last_busy(&dev->pdev->dev);
++	pm_runtime_put_autosuspend(&dev->pdev->dev);
++
+ 	mei_io_cb_free(cb);
+ 	return rets;
+ }
+@@ -713,23 +747,32 @@ int mei_cl_read_start(struct mei_cl *cl, size_t length)
+ 		return  -ENOTTY;
+ 	}
+ 
++	rets = pm_runtime_get(&dev->pdev->dev);
++	if (rets < 0 && rets != -EINPROGRESS) {
++		pm_runtime_put_noidle(&dev->pdev->dev);
++		cl_err(dev, cl, "rpm: get failed %d\n", rets);
++		return rets;
++	}
++
+ 	cb = mei_io_cb_init(cl, NULL);
+-	if (!cb)
+-		return -ENOMEM;
++	if (!cb) {
++		rets = -ENOMEM;
++		goto out;
++	}
+ 
+ 	/* always allocate at least client max message */
+ 	length = max_t(size_t, length, dev->me_clients[i].props.max_msg_length);
+ 	rets = mei_io_cb_alloc_resp_buf(cb, length);
+ 	if (rets)
+-		goto err;
++		goto out;
+ 
+ 	cb->fop_type = MEI_FOP_READ;
+ 	if (mei_hbuf_acquire(dev)) {
+ 		if (mei_hbm_cl_flow_control_req(dev, cl)) {
+-			cl_err(dev, cl, "flow control send failed\n");
+ 			rets = -ENODEV;
+-			goto err;
++			goto out;
+ 		}
++
+ 		list_add_tail(&cb->list, &dev->read_list.list);
+ 	} else {
+ 		list_add_tail(&cb->list, &dev->ctrl_wr_list.list);
+@@ -737,9 +780,14 @@ int mei_cl_read_start(struct mei_cl *cl, size_t length)
+ 
+ 	cl->read_cb = cb;
+ 
+-	return rets;
+-err:
+-	mei_io_cb_free(cb);
++out:
++	cl_dbg(dev, cl, "rpm: autosuspend\n");
++	pm_runtime_mark_last_busy(&dev->pdev->dev);
++	pm_runtime_put_autosuspend(&dev->pdev->dev);
++
++	if (rets)
++		mei_io_cb_free(cb);
++
+ 	return rets;
  }
  
- /**
-+ * mei_txe_pg_is_enabled - detect if PG is supported by HW
-+ *
-+ * @dev: the device structure
-+ *
-+ * returns: true is pg supported, false otherwise
-+ */
-+static bool mei_txe_pg_is_enabled(struct mei_device *dev)
-+{
-+	return true;
-+}
-+
-+/**
-  * mei_txe_input_ready_interrupt_enable - sets the Input Ready Interrupt
-  *
-  * @dev: the device structure
-@@ -1017,6 +1029,8 @@ static const struct mei_hw_ops mei_txe_hw_ops = {
- 	.hw_config = mei_txe_hw_config,
- 	.hw_start = mei_txe_hw_start,
+@@ -776,7 +824,7 @@ int mei_cl_irq_write(struct mei_cl *cl, struct mei_cl_cb *cb,
+ 		return rets;
  
-+	.pg_is_enabled = mei_txe_pg_is_enabled,
-+
- 	.intr_clear = mei_txe_intr_clear,
- 	.intr_enable = mei_txe_intr_enable,
- 	.intr_disable = mei_txe_intr_disable,
-diff --git a/drivers/misc/mei/hw.h b/drivers/misc/mei/hw.h
-index 1d70968..ec4a91a 100644
---- a/drivers/misc/mei/hw.h
-+++ b/drivers/misc/mei/hw.h
-@@ -39,6 +39,12 @@
- #define HBM_MINOR_VERSION                   0
- #define HBM_MAJOR_VERSION                   1
+ 	if (rets == 0) {
+-		cl_dbg(dev, cl,	"No flow control credentials: not sending.\n");
++		cl_dbg(dev, cl, "No flow control credentials: not sending.\n");
+ 		return 0;
+ 	}
  
-+/*
-+ * MEI version with PGI support
-+ */
-+#define HBM_MINOR_VERSION_PGI               1
-+#define HBM_MAJOR_VERSION_PGI               1
-+
- /* Host bus message command opcode */
- #define MEI_HBM_CMD_OP_MSK                  0x7f
- /* Host bus message command RESPONSE */
-diff --git a/drivers/misc/mei/mei_dev.h b/drivers/misc/mei/mei_dev.h
-index 4d4c041..ca7581c 100644
---- a/drivers/misc/mei/mei_dev.h
-+++ b/drivers/misc/mei/mei_dev.h
-@@ -220,6 +220,8 @@ struct mei_cl {
-  * @hw_start         - start hw after reset
-  * @hw_config        - configure hw
+@@ -856,6 +904,12 @@ int mei_cl_write(struct mei_cl *cl, struct mei_cl_cb *cb, bool blocking)
  
-+ * @pg_is_enabled    - is power gating enabled
-+
-  * @intr_clear       - clear pending interrupts
-  * @intr_enable      - enable interrupts
-  * @intr_disable     - disable interrupts
-@@ -244,6 +246,8 @@ struct mei_hw_ops {
- 	int (*hw_start)(struct mei_device *dev);
- 	void (*hw_config)(struct mei_device *dev);
+ 	cl_dbg(dev, cl, "mei_cl_write %d\n", buf->size);
  
-+	bool (*pg_is_enabled)(struct mei_device *dev);
++	rets = pm_runtime_get(&dev->pdev->dev);
++	if (rets < 0 && rets != -EINPROGRESS) {
++		pm_runtime_put_noidle(&dev->pdev->dev);
++		cl_err(dev, cl, "rpm: get failed %d\n", rets);
++		return rets;
++	}
+ 
+ 	cb->fop_type = MEI_FOP_WRITE;
+ 	cb->buf_idx = 0;
+@@ -926,6 +980,10 @@ out:
+ 
+ 	rets = buf->size;
+ err:
++	cl_dbg(dev, cl, "rpm: autosuspend\n");
++	pm_runtime_mark_last_busy(&dev->pdev->dev);
++	pm_runtime_put_autosuspend(&dev->pdev->dev);
 +
- 	void (*intr_clear)(struct mei_device *dev);
- 	void (*intr_enable)(struct mei_device *dev);
- 	void (*intr_disable)(struct mei_device *dev);
-@@ -558,6 +562,12 @@ static inline void mei_hw_config(struct mei_device *dev)
- {
- 	dev->ops->hw_config(dev);
+ 	return rets;
  }
-+
-+static inline bool mei_pg_is_enabled(struct mei_device *dev)
-+{
-+	return dev->ops->pg_is_enabled(dev);
-+}
-+
- static inline int mei_hw_reset(struct mei_device *dev, bool enable)
- {
- 	return dev->ops->hw_reset(dev, enable);
+ 
 -- 
 1.8.5.3
