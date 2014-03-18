@@ -1,137 +1,225 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [UPDATED PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
-Date: Tue, 18 Mar 2014 15:53:05 +0530
-Message-ID: <53281E89.7080201@linux.vnet.ibm.com>
-References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com> <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com> <20140312232127.GC24808@cbox> <53229701.8050405@linux.vnet.ibm.com> <20140314191055.GF28661@cbox>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCHv2 3/8] devfreq: exynos4: Add ppmu's clock control and code
+ clean about regulator control
+Date: Tue, 18 Mar 2014 12:13:36 +0100
+Message-ID: <53282A60.2010301@samsung.com>
+References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
+ <1394698649-20996-4-git-send-email-cw00.choi@samsung.com>
+ <53233F78.8020500@samsung.com> <5326632A.8030801@samsung.com>
+ <53268F48.8060704@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <20140314191055.GF28661@cbox>
-Sender: linux-arch-owner@vger.kernel.org
-To: Christoffer Dall <christoffer.dall@linaro.org>
-Cc: ego@linux.vnet.ibm.com, kvm@vger.kernel.org, peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org, walken@google.com, kvmarm@lists.cs.columbia.edu, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, mingo@kernel.org, marc.zyngier@arm.com, paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, oleg@redhat.com, tj@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, akpm@linux-foundation.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <53268F48.8060704@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/15/2014 12:40 AM, Christoffer Dall wrote:
-> On Fri, Mar 14, 2014 at 11:13:29AM +0530, Srivatsa S. Bhat wrote:
->> On 03/13/2014 04:51 AM, Christoffer Dall wrote:
->>> On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
->>>> Subsystems that want to register CPU hotplug callbacks, as well as perform
->>>> initialization for the CPUs that are already online, often do it as shown
->>>> below:
+Hi Chanwoo,
+
+On 17.03.2014 06:59, Chanwoo Choi wrote:
+> Hi Tomasz,
+>
+> On 03/17/2014 11:51 AM, Chanwoo Choi wrote:
+>> Hi Tomasz,
+>>
+>> On 03/15/2014 02:42 AM, Tomasz Figa wrote:
+>>> Hi Chanwoo,
+>>>
+>>> On 13.03.2014 09:17, Chanwoo Choi wrote:
+>>>> There are not the clock controller of ppmudmc0/1. This patch control the clock
+>>>> of ppmudmc0/1 which is used for monitoring memory bus utilization.
 >>>>
-[...]
->>> Just so we're clear, the existing code was simply racy as not prone to
->>> deadlocks, right?
->>>
->>> This makes it clear that the test above for compatible CPUs can be quite
->>> easily evaded by using CPU hotplug, but we don't really have a good
->>> solution for handling that yet...  Hmmm, grumble grumble, I guess if you
->>> hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
->>>
->>
->> In this particular case, there was no deadlock possibility, rather the
->> existing code had insufficient synchronization against CPU hotplug.
->>
->> init_hyp_mode() would invoke cpu_init_hyp_mode() on currently online CPUs
->> using on_each_cpu(). If a CPU came online after this point and before calling
->> register_cpu_notifier(), that CPU would remain uninitialized because this
->> subsystem would miss the hot-online event. This patch fixes this bug and
->> also uses the new synchronization method (instead of get/put_online_cpus())
->> to ensure that we don't deadlock with CPU hotplug.
->>
-> 
-> Yes, that was my conclusion as well.  Thanks for clarifying.  (It could
-> be noted in the commit message as well if you should feel so inclined).
-> 
+>>>> Also, this patch code clean about regulator control and free resource
+>>>> when calling exit/remove function.
+>>>>
+>>>> For example,
+>>>> busfreq@106A0000 {
+>>>>      compatible = "samsung,exynos4x12-busfreq";
+>>>>
+>>>>      /* Clock for PPMUDMC0/1 */
+>>>>      clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
+>>>>      clock-names = "ppmudmc0", "ppmudmc1";
+>>>>
+>>>>      /* Regulator for MIF/INT block */
+>>>>      vdd_mif-supply = <&buck1_reg>;
+>>>>      vdd_int-supply = <&buck3_reg>;
+>>>> };
+>>>>
+>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>
+> I modify this patch according your comment as following:
+>
+> Best Regards,
+> Chanwoo Choi
+>
+>>From c8f2fbc4c1166ec02fb2ad46164bc7ed9118721b Mon Sep 17 00:00:00 2001
+> From: Chanwoo Choi <cw00.choi@samsung.com>
+> Date: Fri, 14 Mar 2014 12:05:54 +0900
+> Subject: [PATCH] devfreq: exynos4: Add ppmu's clock control and code clean
+>   about regulator control
+>
+> There are not the clock controller of ppmudmc0/1. This patch control the clock
+> of ppmudmc0/1 which is used for monitoring memory bus utilization.
+>
+> Also, this patch code clean about regulator control and free resource
+> when calling exit/remove function.
+>
+> For example,
+> busfreq@106A0000 {
+> 	compatible = "samsung,exynos4x12-busfreq";
+>
+> 	/* Clock for PPMUDMC0/1 */
+> 	clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
+> 	clock-names = "ppmudmc0", "ppmudmc1";
+>
+> 	/* Regulator for MIF/INT block */
+> 	vdd_mif-supply = <&buck1_reg>;
+> 	vdd_int-supply = <&buck3_reg>;
+> };
+>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>   drivers/devfreq/exynos/exynos4_bus.c | 97 +++++++++++++++++++++++++++++++-----
+>   1 file changed, 84 insertions(+), 13 deletions(-)
+>
+> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+> index 4c630fb..3956bcc 100644
+> --- a/drivers/devfreq/exynos/exynos4_bus.c
+> +++ b/drivers/devfreq/exynos/exynos4_bus.c
+> @@ -62,6 +62,11 @@ enum exynos_ppmu_idx {
+>   	PPMU_END,
+>   };
+>
+> +static const char *exynos_ppmu_clk_name[] = {
+> +	[PPMU_DMC0]	= "ppmudmc0",
+> +	[PPMU_DMC1]	= "ppmudmc1",
+> +};
+> +
+>   #define EX4210_LV_MAX	LV_2
+>   #define EX4x12_LV_MAX	LV_4
+>   #define EX4210_LV_NUM	(LV_2 + 1)
+> @@ -86,6 +91,7 @@ struct busfreq_data {
+>   	struct regulator *vdd_mif; /* Exynos4412/4212 only */
+>   	struct busfreq_opp_info curr_oppinfo;
+>   	struct exynos_ppmu ppmu[PPMU_END];
+> +	struct clk *clk_ppmu[PPMU_END];
+>
+>   	struct notifier_block pm_notifier;
+>   	struct mutex lock;
+> @@ -724,6 +730,17 @@ static void exynos4_bus_exit(struct device *dev)
+>   	struct busfreq_data *data = dev_get_drvdata(dev);
+>   	int i;
+>
+> +	/*
+> +	 * Un-map memory map and disable regulator/clocks
+> +	 * to prevent power leakage.
+> +	 */
+> +	regulator_disable(data->vdd_int);
+> +	if (data->type == TYPE_BUSF_EXYNOS4x12)
+> +		regulator_disable(data->vdd_mif);
+> +
+> +	for (i = 0; i < PPMU_END; i++)
+> +		clk_disable_unprepare(data->clk_ppmu[i]);
+> +
+>   	for (i = 0; i < PPMU_END; i++)
+>   		iounmap(data->ppmu[i].hw_base);
+>   }
+> @@ -989,6 +1006,7 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
+>   {
+>   	struct device *dev = data->dev;
+>   	struct device_node *np = dev->of_node;
+> +	const char **clk_name = exynos_ppmu_clk_name;
+>   	int i, ret = 0;
+>
+>   	if (!np) {
+> @@ -1006,8 +1024,67 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
+>   		}
+>   	}
+>
+> +	for (i = 0; i < PPMU_END; i++) {
+> +		data->clk_ppmu[i] = devm_clk_get(dev, clk_name[i]);
+> +		if (IS_ERR(data->clk_ppmu[i])) {
+> +			dev_warn(dev, "Failed to get %s clock\n", clk_name[i]);
 
-Please find the patch with updated changelog (and your Ack) below.
-(No changes in code).
+dev_err() since this is an error.
 
-From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] arm, kvm: Fix CPU hotplug callback registration
+> +			goto err_clocks;
+> +		}
+> +
+> +		ret = clk_prepare_enable(data->clk_ppmu[i]);
+> +		if (ret < 0) {
+> +			dev_warn(dev, "Failed to enable %s clock\n", clk_name[i]);
 
-Subsystems that want to register CPU hotplug callbacks, as well as perform
-initialization for the CPUs that are already online, often do it as shown
-below:
+Ditto.
 
-	get_online_cpus();
+> +			data->clk_ppmu[i] = NULL;
+> +			goto err_clocks;
+> +		}
+> +	}
+> +
+> +	/* Get regulator to control voltage of int block */
+> +	data->vdd_int = devm_regulator_get(dev, "vdd_int");
+> +	if (IS_ERR(data->vdd_int)) {
+> +		dev_err(dev, "Failed to get the regulator of vdd_int\n");
+> +		ret = PTR_ERR(data->vdd_int);
+> +		goto err_clocks;
+> +	}
+> +	ret = regulator_enable(data->vdd_int);
+> +	if (ret < 0) {
+> +		dev_err(dev, "Failed to enable regulator of vdd_int\n");
+> +		goto err_clocks;
+> +	}
+> +
+> +	switch (data->type) {
+> +	case TYPE_BUSF_EXYNOS4210:
+> +		break;
 
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
+Do you need to use switch here? Wouldn't a simple if (data->type == 
+TYPE_BUSF_EXYNOS4x12) work as well, resulting with simpler code?
 
-	register_cpu_notifier(&foobar_cpu_notifier);
+However I would expect this code to be completely removed, after 
+defining DT bindings in a way allowing you to completely drop such SoC 
+type enums. Please see my other reply for explanation of Exynos power 
+plane DT bindings concept.
 
-	put_online_cpus();
+> +	case TYPE_BUSF_EXYNOS4x12:
+> +		/* Get regulator to control voltage of mif blk if Exynos4x12 */
+> +		data->vdd_mif = devm_regulator_get(dev, "vdd_mif");
+> +		if (IS_ERR(data->vdd_mif)) {
+> +			dev_err(dev, "Failed to get the regulator vdd_mif\n");
+> +			ret = PTR_ERR(data->vdd_mif);
+> +			goto err_regulator;
+> +		}
+> +		ret = regulator_enable(data->vdd_mif);
+> +		if (ret < 0) {
+> +			dev_err(dev, "Failed to enable regulator of vdd_mif\n");
+> +			goto err_regulator;
+> +		}
+> +		break;
+> +	default:
+> +		dev_err(dev, "Unknown device type : %d\n", data->type);
+> +		return -EINVAL;
+> +	};
+> +
+>   	return 0;
+>
+> +err_regulator:
+> +	regulator_disable(data->vdd_int);
+> +err_clocks:
+> +	for (i = 0; i < PPMU_END; i++) {
+> +		if (IS_ERR(data->clk_ppmu[i]))
+> +			continue;
+> +		else
 
-This is wrong, since it is prone to ABBA deadlocks involving the
-cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-with CPU hotplug operations).
+if (!IS_ERR(...))
 
-Instead, the correct and race-free way of performing the callback
-registration is:
+> +			clk_disable_unprepare(data->clk_ppmu[i]);
+> +	}
 
-	cpu_notifier_register_begin();
+Otherwise looks good.
 
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	/* Note the use of the double underscored version of the API */
-	__register_cpu_notifier(&foobar_cpu_notifier);
-
-	cpu_notifier_register_done();
-
-
-In the existing arm kvm code, there is no synchronization with CPU hotplug
-to avoid missing the hotplug events that might occur after invoking
-init_hyp_mode() and before calling register_cpu_notifier(). Fix this bug
-and also use the new synchronization method (instead of get/put_online_cpus())
-to ensure that we don't deadlock with CPU hotplug.
-
-Cc: Gleb Natapov <gleb@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: kvmarm@lists.cs.columbia.edu
-Cc: kvm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-
- arch/arm/kvm/arm.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
-index bd18bb8..f0e50a0 100644
---- a/arch/arm/kvm/arm.c
-+++ b/arch/arm/kvm/arm.c
-@@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
- 		}
- 	}
- 
-+	cpu_notifier_register_begin();
-+
- 	err = init_hyp_mode();
- 	if (err)
- 		goto out_err;
- 
--	err = register_cpu_notifier(&hyp_init_cpu_nb);
-+	err = __register_cpu_notifier(&hyp_init_cpu_nb);
- 	if (err) {
- 		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
- 		goto out_err;
- 	}
- 
-+	cpu_notifier_register_done();
-+
- 	hyp_cpu_pm_init();
- 
- 	kvm_coproc_table_init();
- 	return 0;
- out_err:
-+	cpu_notifier_register_done();
- 	return err;
- }
- 
+Best regards,
+Tomasz
