@@ -1,85 +1,43 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCHv2 0/8] devfreq: exynos4: Support dt and use common ppmu
- driver
-Date: Tue, 18 Mar 2014 16:47:38 +0100
-Message-ID: <53286A9A.1040207@samsung.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <5323432E.5060005@samsung.com> <532656B1.2010907@samsung.com>
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: No suspend to RAM support
+Date: Tue, 18 Mar 2014 17:18:35 +0000
+Message-ID: <20140318171834.GA21342@sucs.org>
+References: <20140317205302.GA14066@sucs.org>
+ <20140318095945.GA11429@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <532656B1.2010907@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:35528 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754194AbaCRRSm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 13:18:42 -0400
+Content-Disposition: inline
+In-Reply-To: <20140318095945.GA11429@amd.pavel.ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
+Hello!
 
+On Tue, Mar 18, 2014 at 10:59:45AM +0100, Pavel Machek wrote:
+> 
+> > I have an (old) Athlon II Neo N36L but I've noticed that with the 3.2
+> > Debian stable kernel only disk is present in /sys/power/state so
+> > suspend to RAM can't be used (but hibernating and resuming work fine).
+> > 
+> > The machine seemingly supports S5 ACPI so I'm guessing there's a reason
+> > suspend has been disabled but does anyone know what it is?
+> > 
+> > The same issue happens with the 3.11 kernel on a Fedora LiveCD. dmesg
+> > below:
+> 
+> Has suspend-to-RAM ever worked on that machine? If BIOS does not
+> support it, there's little we can do...
 
-On 17.03.2014 02:58, Chanwoo Choi wrote:
-> Hi Tomasz,
->
-> On 03/15/2014 02:58 AM, Tomasz Figa wrote:
->> Hi Chanwoo,
->>
->> On 13.03.2014 09:17, Chanwoo Choi wrote:
->>> This patchset support devicetree and use common ppmu driver instead of
->>> individual code of exynos4_bus.c to remove duplicate code. Also this patchset
->>> get the resources for busfreq from dt data by using DT helper function.
->>> - PPMU register address
->>> - PPMU clock
->>> - Regulator for INT/MIF block
->>>
->>> This patchset use SET_SYSTEM_SLEEP_PM_OPS macro intead of legacy method.
->>> To remove power-leakage in suspend state, before entering suspend state,
->>> disable ppmu clocks.
->>>
->>> Changes from v1:
->>> - Add exynos4_bus.txt documentation for devicetree guide
->>> - Fix probe failure if CONFIG_PM_OPP is disabled
->>> - Fix typo and resource leak(regulator/clock/memory) when happening probe failure
->>> - Add additionally comment for PPMU usage instead of previous PPC
->>> - Split separate patch to remove ambiguous of patch
->>>
->>> Chanwoo Choi (8):
->>>     devfreq: exynos4: Support devicetree to get device id of Exynos4 SoC
->>>     devfreq: exynos4: Use common ppmu driver and get ppmu address from dt data
->>>     devfreq: exynos4: Add ppmu's clock control and code clean about regulator control
->>>     devfreq: exynos4: Fix bug of resource leak and code clean on probe()
->>>     devfreq: exynos4: Use SET_SYSTEM_SLEEP_PM_OPS macro
->>>     devfreq: exynos4: Fix power-leakage of clock on suspend state
->>>     devfreq: exynos4: Add CONFIG_PM_OPP dependency to fix probe fail
->>>     devfreq: exynos4: Add busfreq driver for exynos4210/exynos4x12
->>>
->>>    .../devicetree/bindings/devfreq/exynos4_bus.txt    |  49 +++
->>>    drivers/devfreq/Kconfig                            |   1 +
->>>    drivers/devfreq/exynos/Makefile                    |   2 +-
->>>    drivers/devfreq/exynos/exynos4_bus.c               | 415 ++++++++++++++-------
->>>    4 files changed, 341 insertions(+), 126 deletions(-)
->>>    create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
->>>
->>
->> I have reviewed this series and there are several comments that I'd like to ask you to address. Please see my replies to particular patches.
->
-> OK, I'll fix it about your comment.
->
->>
->> However, this driver, even after applying your series, is still far from a state that would allow it to be enabled. The most important issue is direct access to CMU registers, based on static mapping, which is not allowed on multiplatform kernels and multiplatform-awareness for drivers is currently a must.
->>
->> To allow this driver to be enabled, it needs to be converted to use common clock framework functions to configure all clocks, e.g. clk_set_rate(), clk_set_parent(), etc., without accessing CMU registers directly.
->>
->> Of course as long as the driver is effectively unusable, to keep development, we can proceed with refactoring it step-by-step and your series would be basically the first step, after addressing the review comments.
->>
->
-> I agree your opinion. When setting frequency of memory bus, this driver access
-> directly to CMU registers. I know it should be modified by using common clk
-> framework as your comment.
->
-> I'll send patch set about using common clk framework instead of CMU register
-> based on static mapping after finished the review and apply of this patch set as next step.
+I've never run older Linux distros on the machine so I have no way to
+know. How can I tell that the BIOS does not support it - is there going
+to be anything in dmesg?
 
-OK. I'm looking forward for patches sorting this out.
-
-Best regards,
-Tomasz
+-- 
+Sitsofe | http://sucs.org/~sits/
