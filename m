@@ -1,142 +1,137 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH RFC 3/4] drivers: cpuidle: CPU idle ARM64 driver
-Date: Tue, 18 Mar 2014 10:20:27 +0000
-Message-ID: <1395138028-19630-4-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1395138028-19630-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54473 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753780AbaCRKTS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 06:19:18 -0400
-In-Reply-To: <1395138028-19630-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [UPDATED PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
+Date: Tue, 18 Mar 2014 15:53:05 +0530
+Message-ID: <53281E89.7080201@linux.vnet.ibm.com>
+References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com> <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com> <20140312232127.GC24808@cbox> <53229701.8050405@linux.vnet.ibm.com> <20140314191055.GF28661@cbox>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arch-owner@vger.kernel.org>
+In-Reply-To: <20140314191055.GF28661@cbox>
+Sender: linux-arch-owner@vger.kernel.org
+To: Christoffer Dall <christoffer.dall@linaro.org>
+Cc: ego@linux.vnet.ibm.com, kvm@vger.kernel.org, peterz@infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org, walken@google.com, kvmarm@lists.cs.columbia.edu, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, mingo@kernel.org, marc.zyngier@arm.com, paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, oleg@redhat.com, tj@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebastian.capella@linaro.org>, Tomasz Figa <t.figa@samsung.com>
 
-This patch implements a generic CPU idle driver for ARM64 machines.
+On 03/15/2014 12:40 AM, Christoffer Dall wrote:
+> On Fri, Mar 14, 2014 at 11:13:29AM +0530, Srivatsa S. Bhat wrote:
+>> On 03/13/2014 04:51 AM, Christoffer Dall wrote:
+>>> On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
+>>>> Subsystems that want to register CPU hotplug callbacks, as well as perform
+>>>> initialization for the CPUs that are already online, often do it as shown
+>>>> below:
+>>>>
+[...]
+>>> Just so we're clear, the existing code was simply racy as not prone to
+>>> deadlocks, right?
+>>>
+>>> This makes it clear that the test above for compatible CPUs can be quite
+>>> easily evaded by using CPU hotplug, but we don't really have a good
+>>> solution for handling that yet...  Hmmm, grumble grumble, I guess if you
+>>> hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
+>>>
+>>
+>> In this particular case, there was no deadlock possibility, rather the
+>> existing code had insufficient synchronization against CPU hotplug.
+>>
+>> init_hyp_mode() would invoke cpu_init_hyp_mode() on currently online CPUs
+>> using on_each_cpu(). If a CPU came online after this point and before calling
+>> register_cpu_notifier(), that CPU would remain uninitialized because this
+>> subsystem would miss the hot-online event. This patch fixes this bug and
+>> also uses the new synchronization method (instead of get/put_online_cpus())
+>> to ensure that we don't deadlock with CPU hotplug.
+>>
+> 
+> Yes, that was my conclusion as well.  Thanks for clarifying.  (It could
+> be noted in the commit message as well if you should feel so inclined).
+> 
 
-It relies on the ARM idle states infrastructure to initialize idle
-states count and respective parameters. Current code assumes the driver
-is managing idle states on all possible CPUs but can be easily
-generalized to support heterogenous systems and build cpumasks at
-runtime using MIDRs or DT cpu nodes compatible properties.
+Please find the patch with updated changelog (and your Ack) below.
+(No changes in code).
 
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] arm, kvm: Fix CPU hotplug callback registration
+
+Subsystems that want to register CPU hotplug callbacks, as well as perform
+initialization for the CPUs that are already online, often do it as shown
+below:
+
+	get_online_cpus();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	register_cpu_notifier(&foobar_cpu_notifier);
+
+	put_online_cpus();
+
+This is wrong, since it is prone to ABBA deadlocks involving the
+cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+with CPU hotplug operations).
+
+Instead, the correct and race-free way of performing the callback
+registration is:
+
+	cpu_notifier_register_begin();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	/* Note the use of the double underscored version of the API */
+	__register_cpu_notifier(&foobar_cpu_notifier);
+
+	cpu_notifier_register_done();
+
+
+In the existing arm kvm code, there is no synchronization with CPU hotplug
+to avoid missing the hotplug events that might occur after invoking
+init_hyp_mode() and before calling register_cpu_notifier(). Fix this bug
+and also use the new synchronization method (instead of get/put_online_cpus())
+to ensure that we don't deadlock with CPU hotplug.
+
+Cc: Gleb Natapov <gleb@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: kvmarm@lists.cs.columbia.edu
+Cc: kvm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/Kconfig         |  5 +++++
- drivers/cpuidle/Kconfig.arm64   | 13 +++++++++++++
- drivers/cpuidle/Makefile        |  4 ++++
- drivers/cpuidle/cpuidle-arm64.c | 41 +++++++++++++++++++++++++++++++++++++=
-++++
- 4 files changed, 63 insertions(+)
- create mode 100644 drivers/cpuidle/Kconfig.arm64
- create mode 100644 drivers/cpuidle/cpuidle-arm64.c
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index f04e25f..9b3f613 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -35,6 +35,11 @@ depends on ARM
- source "drivers/cpuidle/Kconfig.arm"
- endmenu
-=20
-+menu "ARM64 CPU Idle Drivers"
-+depends on ARM64
-+source "drivers/cpuidle/Kconfig.arm64"
-+endmenu
-+
- menu "POWERPC CPU Idle Drivers"
- depends on PPC
- source "drivers/cpuidle/Kconfig.powerpc"
-diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.arm64
-new file mode 100644
-index 0000000..42af83a
---- /dev/null
-+++ b/drivers/cpuidle/Kconfig.arm64
-@@ -0,0 +1,13 @@
-+#
-+# ARM64 CPU Idle drivers
-+#
-+
-+config ARM64_CPUIDLE
-+=09bool "Generic ARM64 CPU idle Driver"
-+=09select ARM64_IDLE_STATES
-+=09help
-+=09  Select this to enable generic cpuidle driver for ARM v8.
-+=09  It provides a generic idle driver whose idle states are configured
-+=09  at run-time through DT nodes. Idle protocol backends are initialized
-+=09  by the device tree parsing code on matching the entry method for
-+=09  the respective protocol.
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index f71ae1b..4051b37 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -15,6 +15,10 @@ obj-$(CONFIG_ARM_U8500_CPUIDLE)         +=3D cpuidle-ux5=
-00.o
- obj-$(CONFIG_ARM_AT91_CPUIDLE)          +=3D cpuidle-at91.o
-=20
- ##########################################################################=
-#####
-+# ARM64 drivers
-+obj-$(CONFIG_ARM64_CPUIDLE)=09=09+=3D cpuidle-arm64.o
-+
-+##########################################################################=
-#####
- # POWERPC drivers
- obj-$(CONFIG_PSERIES_CPUIDLE)=09=09+=3D cpuidle-pseries.o
- obj-$(CONFIG_POWERNV_CPUIDLE)=09=09+=3D cpuidle-powernv.o
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm6=
-4.c
-new file mode 100644
-index 0000000..08ffe16
---- /dev/null
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -0,0 +1,41 @@
-+/*
-+ * ARM64 generic CPU idle driver.
-+ *
-+ * Copyright (C) 2014 ARM Ltd.
-+ * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+#include <asm/idle_states.h>
-+
-+struct cpuidle_driver arm64_idle_driver =3D {
-+=09.name =3D "arm64_idle",
-+=09.owner =3D THIS_MODULE,
-+};
-+
-+/*
-+ * arm64_idle_init
-+ *
-+ * Registers the arm specific cpuidle driver with the cpuidle
-+ * framework. It relies on core code to parse the idle states
-+ * and initialize them in the driver accordingly.
-+ */
-+static int __init arm64_idle_init(void)
-+{
-+=09int ret;
-+
-+=09arm64_idle_driver.cpumask =3D (struct cpumask *) cpu_possible_mask;
-+=09ret =3D arm_init_idle_driver(&arm64_idle_driver);
-+=09if (ret)
-+=09=09return ret;
-+=09return cpuidle_register(&arm64_idle_driver, NULL);
-+}
-+device_initcall(arm64_idle_init);
---=20
-1.8.4
+ arch/arm/kvm/arm.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-
+diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+index bd18bb8..f0e50a0 100644
+--- a/arch/arm/kvm/arm.c
++++ b/arch/arm/kvm/arm.c
+@@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
+ 		}
+ 	}
+ 
++	cpu_notifier_register_begin();
++
+ 	err = init_hyp_mode();
+ 	if (err)
+ 		goto out_err;
+ 
+-	err = register_cpu_notifier(&hyp_init_cpu_nb);
++	err = __register_cpu_notifier(&hyp_init_cpu_nb);
+ 	if (err) {
+ 		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+ 		goto out_err;
+ 	}
+ 
++	cpu_notifier_register_done();
++
+ 	hyp_cpu_pm_init();
+ 
+ 	kvm_coproc_table_init();
+ 	return 0;
+ out_err:
++	cpu_notifier_register_done();
+ 	return err;
+ }
+ 
