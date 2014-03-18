@@ -1,225 +1,68 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCHv2 3/8] devfreq: exynos4: Add ppmu's clock control and code
- clean about regulator control
-Date: Tue, 18 Mar 2014 12:13:36 +0100
-Message-ID: <53282A60.2010301@samsung.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <1394698649-20996-4-git-send-email-cw00.choi@samsung.com>
- <53233F78.8020500@samsung.com> <5326632A.8030801@samsung.com>
- <53268F48.8060704@samsung.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH RFC v5 1/3] Documentation: devicetree: psci: define CPU
+ suspend parameter
+Date: Tue, 18 Mar 2014 11:28:50 +0000
+Message-ID: <1395142132-20788-2-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1395142132-20788-1-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <53268F48.8060704@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1395142132-20788-1-git-send-email-lorenzo.pieralisi@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: devicetree@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Sebastian Capella <sebastian.capella@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, Grant Likely <grant.likely@linaro.org>, Dave Martin <dave.martin@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>Mark
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+OS layers built on top of PSCI to enter low-power states require the
+power_state parameter to be passed to the PSCI CPU suspend method.
 
-On 17.03.2014 06:59, Chanwoo Choi wrote:
-> Hi Tomasz,
->
-> On 03/17/2014 11:51 AM, Chanwoo Choi wrote:
->> Hi Tomasz,
->>
->> On 03/15/2014 02:42 AM, Tomasz Figa wrote:
->>> Hi Chanwoo,
->>>
->>> On 13.03.2014 09:17, Chanwoo Choi wrote:
->>>> There are not the clock controller of ppmudmc0/1. This patch control the clock
->>>> of ppmudmc0/1 which is used for monitoring memory bus utilization.
->>>>
->>>> Also, this patch code clean about regulator control and free resource
->>>> when calling exit/remove function.
->>>>
->>>> For example,
->>>> busfreq@106A0000 {
->>>>      compatible = "samsung,exynos4x12-busfreq";
->>>>
->>>>      /* Clock for PPMUDMC0/1 */
->>>>      clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
->>>>      clock-names = "ppmudmc0", "ppmudmc1";
->>>>
->>>>      /* Regulator for MIF/INT block */
->>>>      vdd_mif-supply = <&buck1_reg>;
->>>>      vdd_int-supply = <&buck3_reg>;
->>>> };
->>>>
->>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->
-> I modify this patch according your comment as following:
->
-> Best Regards,
-> Chanwoo Choi
->
->>From c8f2fbc4c1166ec02fb2ad46164bc7ed9118721b Mon Sep 17 00:00:00 2001
-> From: Chanwoo Choi <cw00.choi@samsung.com>
-> Date: Fri, 14 Mar 2014 12:05:54 +0900
-> Subject: [PATCH] devfreq: exynos4: Add ppmu's clock control and code clean
->   about regulator control
->
-> There are not the clock controller of ppmudmc0/1. This patch control the clock
-> of ppmudmc0/1 which is used for monitoring memory bus utilization.
->
-> Also, this patch code clean about regulator control and free resource
-> when calling exit/remove function.
->
-> For example,
-> busfreq@106A0000 {
-> 	compatible = "samsung,exynos4x12-busfreq";
->
-> 	/* Clock for PPMUDMC0/1 */
-> 	clocks = <&clock CLK_PPMUDMC0>, <&clock CLK_PPMUDMC1>;
-> 	clock-names = "ppmudmc0", "ppmudmc1";
->
-> 	/* Regulator for MIF/INT block */
-> 	vdd_mif-supply = <&buck1_reg>;
-> 	vdd_int-supply = <&buck3_reg>;
-> };
->
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->   drivers/devfreq/exynos/exynos4_bus.c | 97 +++++++++++++++++++++++++++++++-----
->   1 file changed, 84 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-> index 4c630fb..3956bcc 100644
-> --- a/drivers/devfreq/exynos/exynos4_bus.c
-> +++ b/drivers/devfreq/exynos/exynos4_bus.c
-> @@ -62,6 +62,11 @@ enum exynos_ppmu_idx {
->   	PPMU_END,
->   };
->
-> +static const char *exynos_ppmu_clk_name[] = {
-> +	[PPMU_DMC0]	= "ppmudmc0",
-> +	[PPMU_DMC1]	= "ppmudmc1",
-> +};
-> +
->   #define EX4210_LV_MAX	LV_2
->   #define EX4x12_LV_MAX	LV_4
->   #define EX4210_LV_NUM	(LV_2 + 1)
-> @@ -86,6 +91,7 @@ struct busfreq_data {
->   	struct regulator *vdd_mif; /* Exynos4412/4212 only */
->   	struct busfreq_opp_info curr_oppinfo;
->   	struct exynos_ppmu ppmu[PPMU_END];
-> +	struct clk *clk_ppmu[PPMU_END];
->
->   	struct notifier_block pm_notifier;
->   	struct mutex lock;
-> @@ -724,6 +730,17 @@ static void exynos4_bus_exit(struct device *dev)
->   	struct busfreq_data *data = dev_get_drvdata(dev);
->   	int i;
->
-> +	/*
-> +	 * Un-map memory map and disable regulator/clocks
-> +	 * to prevent power leakage.
-> +	 */
-> +	regulator_disable(data->vdd_int);
-> +	if (data->type == TYPE_BUSF_EXYNOS4x12)
-> +		regulator_disable(data->vdd_mif);
-> +
-> +	for (i = 0; i < PPMU_END; i++)
-> +		clk_disable_unprepare(data->clk_ppmu[i]);
-> +
->   	for (i = 0; i < PPMU_END; i++)
->   		iounmap(data->ppmu[i].hw_base);
->   }
-> @@ -989,6 +1006,7 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
->   {
->   	struct device *dev = data->dev;
->   	struct device_node *np = dev->of_node;
-> +	const char **clk_name = exynos_ppmu_clk_name;
->   	int i, ret = 0;
->
->   	if (!np) {
-> @@ -1006,8 +1024,67 @@ static int exynos4_busfreq_parse_dt(struct busfreq_data *data)
->   		}
->   	}
->
-> +	for (i = 0; i < PPMU_END; i++) {
-> +		data->clk_ppmu[i] = devm_clk_get(dev, clk_name[i]);
-> +		if (IS_ERR(data->clk_ppmu[i])) {
-> +			dev_warn(dev, "Failed to get %s clock\n", clk_name[i]);
+This parameter is specific to a power state and platform specific,
+therefore must be provided by firmware to the OS in order to enable
+proper call sequence.
 
-dev_err() since this is an error.
+This patch adds a property in the PSCI bindings that describes how
+the CPU suspend power_state parameter should be defined in DT in
+all device nodes that rely on PSCI CPU suspend method usage.
 
-> +			goto err_clocks;
-> +		}
-> +
-> +		ret = clk_prepare_enable(data->clk_ppmu[i]);
-> +		if (ret < 0) {
-> +			dev_warn(dev, "Failed to enable %s clock\n", clk_name[i]);
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ Documentation/devicetree/bindings/arm/psci.txt | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Ditto.
-
-> +			data->clk_ppmu[i] = NULL;
-> +			goto err_clocks;
-> +		}
-> +	}
-> +
-> +	/* Get regulator to control voltage of int block */
-> +	data->vdd_int = devm_regulator_get(dev, "vdd_int");
-> +	if (IS_ERR(data->vdd_int)) {
-> +		dev_err(dev, "Failed to get the regulator of vdd_int\n");
-> +		ret = PTR_ERR(data->vdd_int);
-> +		goto err_clocks;
-> +	}
-> +	ret = regulator_enable(data->vdd_int);
-> +	if (ret < 0) {
-> +		dev_err(dev, "Failed to enable regulator of vdd_int\n");
-> +		goto err_clocks;
-> +	}
-> +
-> +	switch (data->type) {
-> +	case TYPE_BUSF_EXYNOS4210:
-> +		break;
-
-Do you need to use switch here? Wouldn't a simple if (data->type == 
-TYPE_BUSF_EXYNOS4x12) work as well, resulting with simpler code?
-
-However I would expect this code to be completely removed, after 
-defining DT bindings in a way allowing you to completely drop such SoC 
-type enums. Please see my other reply for explanation of Exynos power 
-plane DT bindings concept.
-
-> +	case TYPE_BUSF_EXYNOS4x12:
-> +		/* Get regulator to control voltage of mif blk if Exynos4x12 */
-> +		data->vdd_mif = devm_regulator_get(dev, "vdd_mif");
-> +		if (IS_ERR(data->vdd_mif)) {
-> +			dev_err(dev, "Failed to get the regulator vdd_mif\n");
-> +			ret = PTR_ERR(data->vdd_mif);
-> +			goto err_regulator;
-> +		}
-> +		ret = regulator_enable(data->vdd_mif);
-> +		if (ret < 0) {
-> +			dev_err(dev, "Failed to enable regulator of vdd_mif\n");
-> +			goto err_regulator;
-> +		}
-> +		break;
-> +	default:
-> +		dev_err(dev, "Unknown device type : %d\n", data->type);
-> +		return -EINVAL;
-> +	};
-> +
->   	return 0;
->
-> +err_regulator:
-> +	regulator_disable(data->vdd_int);
-> +err_clocks:
-> +	for (i = 0; i < PPMU_END; i++) {
-> +		if (IS_ERR(data->clk_ppmu[i]))
-> +			continue;
-> +		else
-
-if (!IS_ERR(...))
-
-> +			clk_disable_unprepare(data->clk_ppmu[i]);
-> +	}
-
-Otherwise looks good.
-
-Best regards,
-Tomasz
+diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
+index 433afe9..797c48f 100644
+--- a/Documentation/devicetree/bindings/arm/psci.txt
++++ b/Documentation/devicetree/bindings/arm/psci.txt
+@@ -42,6 +42,14 @@ Main node optional properties:
+ 
+  - migrate       : Function ID for MIGRATE operation
+ 
++Device tree nodes that require usage of PSCI CPU_SUSPEND function (ie idle
++states bindings[1]) must specify the following properties:
++
++- entry-method-param
++		Usage: Required for idle states bindings [1].
++		Value type: <u32>
++		Definition: power_state parameter to pass to the PSCI
++			    suspend call.
+ 
+ Example:
+ 
+@@ -53,3 +61,6 @@ Example:
+ 		cpu_on		= <0x95c10002>;
+ 		migrate		= <0x95c10003>;
+ 	};
++
++[1] Kernel documentation - ARM idle states bindings
++    Documentation/devicetree/bindings/arm/idle-states.txt
+-- 
+1.8.4
