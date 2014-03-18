@@ -1,184 +1,70 @@
 From: Tomas Winkler <tomas.winkler@intel.com>
-Subject: [char-misc-next 09/13] mei: txe: add runtime pm framework
-Date: Tue, 18 Mar 2014 22:52:03 +0200
-Message-ID: <1395175927-10562-10-git-send-email-tomas.winkler@intel.com>
+Subject: [char-misc-next 07/13] mei: add function to check write queues
+Date: Tue, 18 Mar 2014 22:52:01 +0200
+Message-ID: <1395175927-10562-8-git-send-email-tomas.winkler@intel.com>
 References: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: gregkh@linuxfoundation.org
-Cc: arnd@arndb.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexander Usyskin <alexander.usyskin@intel.com>, Tomas Winkler <tomas.winkler@intel.com>
+Cc: arnd@arndb.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Alexander Usyskin <alexander.usyskin@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Alexander Usyskin <alexander.usyskin@intel.com>
+The driver needs to check whether the write
+queue idle before entering power gating
 
-Add runtime pm framework for TXE devices.
-The runtime pm handlers are used to run
-txe power gating isolation protocol.
-
-Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 ---
- drivers/misc/mei/hw-txe.h  |   2 +
- drivers/misc/mei/pci-txe.c | 101 +++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 99 insertions(+), 4 deletions(-)
+ drivers/misc/mei/init.c    | 21 +++++++++++++++++++++
+ drivers/misc/mei/mei_dev.h |  2 ++
+ 2 files changed, 23 insertions(+)
 
-diff --git a/drivers/misc/mei/hw-txe.h b/drivers/misc/mei/hw-txe.h
-index 799f9f2..e8dd2d1 100644
---- a/drivers/misc/mei/hw-txe.h
-+++ b/drivers/misc/mei/hw-txe.h
-@@ -22,6 +22,8 @@
- #include "hw.h"
- #include "hw-txe-regs.h"
- 
-+#define MEI_TXI_RPM_TIMEOUT    500 /* ms */
-+
- /* Flatten Hierarchy interrupt cause */
- #define TXE_INTR_READINESS_BIT  0 /* HISR_INT_0_STS */
- #define TXE_INTR_READINESS      HISR_INT_0_STS
-diff --git a/drivers/misc/mei/pci-txe.c b/drivers/misc/mei/pci-txe.c
-index ad3adb0..31d86e7 100644
---- a/drivers/misc/mei/pci-txe.c
-+++ b/drivers/misc/mei/pci-txe.c
-@@ -27,6 +27,7 @@
- #include <linux/jiffies.h>
- #include <linux/interrupt.h>
- #include <linux/workqueue.h>
-+#include <linux/pm_runtime.h>
- 
- #include <linux/mei.h>
- 
-@@ -137,12 +138,17 @@ static int mei_txe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto release_irq;
- 	}
- 
-+	pm_runtime_set_autosuspend_delay(&pdev->dev, MEI_TXI_RPM_TIMEOUT);
-+	pm_runtime_use_autosuspend(&pdev->dev);
-+
- 	err = mei_register(dev);
- 	if (err)
- 		goto release_irq;
- 
- 	pci_set_drvdata(pdev, dev);
- 
-+	pm_runtime_put_noidle(&pdev->dev);
-+
- 	return 0;
- 
- release_irq:
-@@ -187,6 +193,8 @@ static void mei_txe_remove(struct pci_dev *pdev)
- 		return;
- 	}
- 
-+	pm_runtime_get_noresume(&pdev->dev);
-+
- 	hw = to_txe_hw(dev);
- 
- 	mei_stop(dev);
-@@ -265,15 +273,100 @@ static int mei_txe_pci_resume(struct device *device)
- 
- 	return err;
+diff --git a/drivers/misc/mei/init.c b/drivers/misc/mei/init.c
+index 4b1eb37..abc5ea0 100644
+--- a/drivers/misc/mei/init.c
++++ b/drivers/misc/mei/init.c
+@@ -303,7 +303,28 @@ void mei_stop(struct mei_device *dev)
  }
-+#endif /* CONFIG_PM_SLEEP */
-+
-+#ifdef CONFIG_PM_RUNTIME
-+static int mei_txe_pm_runtime_idle(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct mei_device *dev;
-+
-+	dev_dbg(&pdev->dev, "rpm: txe: runtime_idle\n");
-+
-+	dev = pci_get_drvdata(pdev);
-+	if (!dev)
-+		return -ENODEV;
-+	if (mei_write_is_idle(dev))
-+		pm_schedule_suspend(device, MEI_TXI_RPM_TIMEOUT * 2);
-+
-+	return -EBUSY;
-+}
-+static int mei_txe_pm_runtime_suspend(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct mei_device *dev;
-+	int ret;
-+
-+	dev_dbg(&pdev->dev, "rpm: txe: runtime suspend\n");
-+
-+	dev = pci_get_drvdata(pdev);
-+	if (!dev)
-+		return -ENODEV;
+ EXPORT_SYMBOL_GPL(mei_stop);
  
--static SIMPLE_DEV_PM_OPS(mei_txe_pm_ops,
--			 mei_txe_pci_suspend,
--			 mei_txe_pci_resume);
-+	mutex_lock(&dev->device_lock);
-+
-+	if (mei_write_is_idle(dev))
-+		ret = mei_txe_aliveness_set_sync(dev, 0);
-+	else
-+		ret = -EAGAIN;
-+
-+	/*
-+	 * If everything is okay we're about to enter PCI low
-+	 * power state (D3) therefor we need to disable the
-+	 * interrupts towards host.
-+	 * However if device is not wakeable we do not enter
-+	 * D-low state and we need to keep the interrupt kicking
-+	 */
-+	 if (!ret && pci_dev_run_wake(pdev))
-+		mei_disable_interrupts(dev);
-+
-+	dev_dbg(&pdev->dev, "rpm: txe: runtime suspend ret=%d\n", ret);
-+
-+	mutex_unlock(&dev->device_lock);
-+	return ret;
-+}
-+
-+static int mei_txe_pm_runtime_resume(struct device *device)
++/**
++ * mei_write_is_idle - check if the write queues are idle
++ *
++ * @dev: the device structure
++ *
++ * returns true of there is no pending write
++ */
++bool mei_write_is_idle(struct mei_device *dev)
 +{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct mei_device *dev;
-+	int ret;
-+
-+	dev_dbg(&pdev->dev, "rpm: txe: runtime resume\n");
-+
-+	dev = pci_get_drvdata(pdev);
-+	if (!dev)
-+		return -ENODEV;
-+
-+	mutex_lock(&dev->device_lock);
-+
-+	mei_enable_interrupts(dev);
-+
-+	ret = mei_txe_aliveness_set_sync(dev, 1);
-+
-+	mutex_unlock(&dev->device_lock);
-+
-+	dev_dbg(&pdev->dev, "rpm: txe: runtime resume ret = %d\n", ret);
-+
-+	return ret;
-+}
-+#endif /* CONFIG_PM_RUNTIME */
-+
-+#ifdef CONFIG_PM
-+static const struct dev_pm_ops mei_txe_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(mei_txe_pci_suspend,
-+				mei_txe_pci_resume)
-+	SET_RUNTIME_PM_OPS(
-+		mei_txe_pm_runtime_suspend,
-+		mei_txe_pm_runtime_resume,
-+		mei_txe_pm_runtime_idle)
-+};
++	bool idle = (dev->dev_state == MEI_DEV_ENABLED &&
++		list_empty(&dev->ctrl_wr_list.list) &&
++		list_empty(&dev->write_list.list));
  
- #define MEI_TXE_PM_OPS	(&mei_txe_pm_ops)
- #else
- #define MEI_TXE_PM_OPS	NULL
--#endif /* CONFIG_PM_SLEEP */
-+#endif /* CONFIG_PM */
++	dev_dbg(&dev->pdev->dev, "write pg: is idle[%d] state=%s ctrl=%d write=%d\n",
++		idle,
++		mei_dev_state_str(dev->dev_state),
++		list_empty(&dev->ctrl_wr_list.list),
++		list_empty(&dev->write_list.list));
 +
- /*
-  *  PCI driver structure
-  */
++	return idle;
++}
++EXPORT_SYMBOL_GPL(mei_write_is_idle);
+ 
+ void mei_device_init(struct mei_device *dev)
+ {
+diff --git a/drivers/misc/mei/mei_dev.h b/drivers/misc/mei/mei_dev.h
+index bec6ade..fe76e5b 100644
+--- a/drivers/misc/mei/mei_dev.h
++++ b/drivers/misc/mei/mei_dev.h
+@@ -680,6 +680,8 @@ static inline int mei_count_full_read_slots(struct mei_device *dev)
+ 
+ bool mei_hbuf_acquire(struct mei_device *dev);
+ 
++bool mei_write_is_idle(struct mei_device *dev);
++
+ #if IS_ENABLED(CONFIG_DEBUG_FS)
+ int mei_dbgfs_register(struct mei_device *dev, const char *name);
+ void mei_dbgfs_deregister(struct mei_device *dev);
 -- 
 1.8.5.3
