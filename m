@@ -1,63 +1,54 @@
 From: Tomas Winkler <tomas.winkler@intel.com>
-Subject: [char-misc-next 03/13] mei: me: add power gating isolation register write wrappers
-Date: Tue, 18 Mar 2014 22:51:57 +0200
-Message-ID: <1395175927-10562-4-git-send-email-tomas.winkler@intel.com>
+Subject: [char-misc-next 02/13] mei: me: introduce power gating registers
+Date: Tue, 18 Mar 2014 22:51:56 +0200
+Message-ID: <1395175927-10562-3-git-send-email-tomas.winkler@intel.com>
 References: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1395175927-10562-1-git-send-email-tomas.winkler@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: gregkh@linuxfoundation.org
-Cc: arnd@arndb.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Alexander Usyskin <alexander.usyskin@intel.com>
+Cc: arnd@arndb.de, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add entry and exit power gating isolation register
-write handler.
+LPT devices have internal power gating handled
+through registers and hbm calls
 
 Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-Signed-off-by: Alexander Usyskin <alexander.usyskin@intel.com>
 ---
- drivers/misc/mei/hw-me.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+ drivers/misc/mei/hw-me-regs.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/misc/mei/hw-me.c b/drivers/misc/mei/hw-me.c
-index 8dbdaae..fc5d001 100644
---- a/drivers/misc/mei/hw-me.c
-+++ b/drivers/misc/mei/hw-me.c
-@@ -431,6 +431,35 @@ static int mei_me_read_slots(struct mei_device *dev, unsigned char *buffer,
- }
+diff --git a/drivers/misc/mei/hw-me-regs.h b/drivers/misc/mei/hw-me-regs.h
+index 66f411a..72ba4d5 100644
+--- a/drivers/misc/mei/hw-me-regs.h
++++ b/drivers/misc/mei/hw-me-regs.h
+@@ -128,6 +128,8 @@
+ #define ME_CB_RW   8
+ /* ME_CSR_HA - ME Control Status Host Access register (read only) */
+ #define ME_CSR_HA  0xC
++/* H_HGC_CSR - PGI register */
++#define H_HPG_CSR  0x10
  
- /**
-+ * mei_me_pg_enter - write pg enter register to mei device.
-+ *
-+ * @dev: the device structure
-+ */
-+static void mei_me_pg_enter(struct mei_device *dev)
-+{
-+	struct mei_me_hw *hw = to_me_hw(dev);
-+	u32 reg = mei_me_reg_read(hw, H_HPG_CSR);
-+	reg |= H_HPG_CSR_PGI;
-+	mei_me_reg_write(hw, H_HPG_CSR, reg);
-+}
+ 
+ /* register bits of H_CSR (Host Control Status register) */
+@@ -157,6 +159,8 @@ access to ME_CBD */
+ #define ME_CBWP_HRA       0x00FF0000
+ /* ME CB Read Pointer HRA - host read only access to ME_CBRP */
+ #define ME_CBRP_HRA       0x0000FF00
++/* ME Power Gate Isolation Capability HRA  - host ready only access */
++#define ME_PGIC_HRA       0x00000040
+ /* ME Reset HRA - host read only access to ME_RST */
+ #define ME_RST_HRA        0x00000010
+ /* ME Ready HRA - host read only access to ME_RDY */
+@@ -168,4 +172,9 @@ access to ME_CBD */
+ /* ME Interrupt Enable HRA - host read only access to ME_IE */
+ #define ME_IE_HRA         0x00000001
+ 
 +
-+/**
-+ * mei_me_pg_enter - write pg enter register to mei device.
-+ *
-+ * @dev: the device structure
-+ */
-+static void mei_me_pg_exit(struct mei_device *dev)
-+{
-+	struct mei_me_hw *hw = to_me_hw(dev);
-+	u32 reg = mei_me_reg_read(hw, H_HPG_CSR);
++/* register bits - H_HPG_CSR */
++#define H_HPG_CSR_PGIHEXR       0x00000001
++#define H_HPG_CSR_PGI           0x00000002
 +
-+	WARN(!(reg & H_HPG_CSR_PGI), "PGI is not set\n");
-+
-+	reg |= H_HPG_CSR_PGIHEXR;
-+	mei_me_reg_write(hw, H_HPG_CSR, reg);
-+}
-+
-+/**
-  * mei_me_irq_quick_handler - The ISR of the MEI device
-  *
-  * @irq: The irq number
+ #endif /* _MEI_HW_MEI_REGS_H_ */
 -- 
 1.8.5.3
