@@ -1,43 +1,46 @@
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: No suspend to RAM support
-Date: Tue, 18 Mar 2014 17:18:35 +0000
-Message-ID: <20140318171834.GA21342@sucs.org>
-References: <20140317205302.GA14066@sucs.org>
- <20140318095945.GA11429@amd.pavel.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:35528 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754194AbaCRRSm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 13:18:42 -0400
-Content-Disposition: inline
-In-Reply-To: <20140318095945.GA11429@amd.pavel.ucw.cz>
-Sender: linux-pm-owner@vger.kernel.org
+From: dirk.brandewie@gmail.com
+Subject: [PATCH v3 0/2] Add stop callback to the cpufreq_driver interface.
+Date: Tue, 18 Mar 2014 10:22:39 -0700
+Message-ID: <1395163361-26380-1-git-send-email-dirk.j.brandewie@intel.com>
+References: <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-Hello!
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Tue, Mar 18, 2014 at 10:59:45AM +0100, Pavel Machek wrote:
-> 
-> > I have an (old) Athlon II Neo N36L but I've noticed that with the 3.2
-> > Debian stable kernel only disk is present in /sys/power/state so
-> > suspend to RAM can't be used (but hibernating and resuming work fine).
-> > 
-> > The machine seemingly supports S5 ACPI so I'm guessing there's a reason
-> > suspend has been disabled but does anyone know what it is?
-> > 
-> > The same issue happens with the 3.11 kernel on a Fedora LiveCD. dmesg
-> > below:
-> 
-> Has suspend-to-RAM ever worked on that machine? If BIOS does not
-> support it, there's little we can do...
+Changes: 
+v2->v3
+Changed the calling of the ->stop() callback to be conditional on the
+core being the last core controlled by a given policy.
 
-I've never run older Linux distros on the machine so I have no way to
-know. How can I tell that the BIOS does not support it - is there going
-to be anything in dmesg?
+v1->2
+Change name of callback function added to cpufreq_driver interface.
+
+Some drivers (intel_pstate) need to modify state on a core before it
+is completely offline.  The ->exit() callback is executed during the
+CPU_POST_DEAD phase of the cpu offline process which is too late to
+change the state of the core.
+
+Patch 1 adds an optional callback function to the cpufreq_driver
+interface which is called by the core during the CPU_DOWN_PREPARE
+phase of cpu offline in __cpufreq_remove_dev_prepare().
+
+Patch 2 changes intel_pstate to use the ->stop callback to do
+its cleanup during cpu offline. 
+
+Dirk Brandewie (2):
+  cpufreq: Add exit_prepare callback to cpufreq_driver interface
+  intel_pstate: Set core to min P state during core offline
+
+ Documentation/cpu-freq/cpu-drivers.txt |  8 +++++++-
+ drivers/cpufreq/cpufreq.c              |  3 +++
+ drivers/cpufreq/intel_pstate.c         | 20 +++++++++++++-------
+ include/linux/cpufreq.h                |  1 +
+ 4 files changed, 24 insertions(+), 8 deletions(-)
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+1.8.3.1
