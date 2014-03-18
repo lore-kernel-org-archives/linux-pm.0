@@ -1,137 +1,156 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCHv2 4/8] devfreq: exynos4: Fix bug of resource leak and code
- clean on probe()
-Date: Tue, 18 Mar 2014 13:18:45 +0100
-Message-ID: <532839A5.8020505@samsung.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <1394698649-20996-5-git-send-email-cw00.choi@samsung.com>
- <53234132.8080202@samsung.com> <532682A8.2030300@samsung.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC V2] cpufreq: make sure frequency transitions are serialized
+Date: Tue, 18 Mar 2014 18:20:05 +0530
+Message-ID: <532840FD.308@linux.vnet.ibm.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <532682A8.2030300@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp03.in.ibm.com ([122.248.162.3]:57260 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754155AbaCRMuV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 08:50:21 -0400
+Received: from /spool/local
+	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 18 Mar 2014 18:20:20 +0530
+In-Reply-To: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 17.03.2014 06:05, Chanwoo Choi wrote:
-> Hi Tomasz,
->
-> On 03/15/2014 02:49 AM, Tomasz Figa wrote:
->> Hi Chanwoo,
->>
->> On 13.03.2014 09:17, Chanwoo Choi wrote:
->>> This patch fix bug about resource leak when happening probe fail and code clean
->>> to add debug message.
->>>
->>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>> ---
->>>    drivers/devfreq/exynos/exynos4_bus.c | 32 ++++++++++++++++++++++++++------
->>>    1 file changed, 26 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
->>> index a2a3a47..152a3e9 100644
->>> --- a/drivers/devfreq/exynos/exynos4_bus.c
->>> +++ b/drivers/devfreq/exynos/exynos4_bus.c
->>> @@ -1152,8 +1152,11 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>>            dev_err(dev, "Cannot determine the device id %d\n", data->type);
->>>            err = -EINVAL;
->>>        }
->>> -    if (err)
->>> +    if (err) {
->>> +        dev_err(dev, "Cannot initialize busfreq table %d\n",
->>> +                 data->type);
->>>            return err;
->>> +    }
->>>
->>>        rcu_read_lock();
->>>        opp = dev_pm_opp_find_freq_floor(dev,
->>> @@ -1176,7 +1179,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>>        if (IS_ERR(data->devfreq)) {
->>>            dev_err(dev, "Failed to add devfreq device\n");
->>>            err = PTR_ERR(data->devfreq);
->>> -        goto err_opp;
->>> +        goto err_devfreq;
->>>        }
->>>
->>>        /*
->>> @@ -1185,18 +1188,35 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>>         */
->>>        busfreq_mon_reset(data);
->>>
->>> -    devfreq_register_opp_notifier(dev, data->devfreq);
->>> +    /* Register opp_notifier for Exynos4 busfreq */
->>> +    err = devfreq_register_opp_notifier(dev, data->devfreq);
->>> +    if (err < 0) {
->>> +        dev_err(dev, "Failed to register opp notifier\n");
->>> +        goto err_notifier_opp;
->>> +    }
->>>
->>> +    /* Register pm_notifier for Exynos4 busfreq */
->>>        err = register_pm_notifier(&data->pm_notifier);
->>>        if (err) {
->>>            dev_err(dev, "Failed to setup pm notifier\n");
->>> -        devfreq_remove_device(data->devfreq);
->>> -        return err;
->>> +        goto err_notifier_pm;
->>>        }
->>>
->>>        return 0;
->>>
->>> -err_opp:
->>> +err_notifier_pm:
->>> +    devfreq_unregister_opp_notifier(dev, data->devfreq);
->>> +err_notifier_opp:
->>> +    /*
->>> +     * The devfreq_remove_device() would execute finally devfreq->profile
->>> +     * ->exit(). To avoid duplicate resource free operation, return directly
->>> +     * before executing resource free below 'err_devfreq' goto statement.
->>> +     */
->>
->> I'm not quite sure about this. I believe that in this case devfreq->profile->exit() would be exynos4_bus_exit() and all it does is devfreq_unregister_opp_notifier(dev, data->devfreq), so all remaining resources (regulators, clocks, etc.) would get leaked.
->
-> This patch execute following sequence to probe exynos4_busfreq.c:
->
-> 1. Parse dt node to get resource(regulator/clock/memory address).
-> 2. Enable regulator/clock and map memory.
-> 3. Add devfreq device using devfreq_add_device().
->     The devfreq_add_device() return devfreq instance(data->devfreq).
-> 4. Register opp_notifier using devfreq instance(data->devfreq) which is created in sequence #3.
->
-> Case 1,
-> If an error happens in sequence #3 for registering devfreq_add_device(),
->
-> this case can't execute devfreq->profile->exit() to free resource
-> because this case has failed to register devfreq->profile to devfreq_list.
->
-> So, must goto 'err_devfreq' statement to free resource(regulator/clock/memory).
->
->
-> Case 2,
-> If an error happens in sequence #4 for registering opp_notifier,
->
-> In contrast
-> this case can execute devfreq->profile->exit() to free resource.
-> But, After executed devfreq->profile->exit(),
-> should not execute 'err_devfreq' statement to free resource.
-> In case, will operate twice of resource.
->
-> If my explanation is wrong, please reply your comment.
->
+On 03/14/2014 01:13 PM, Viresh Kumar wrote:
+> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
+> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
+> shouldn't be called twice continuously. Following examples show why this is
+> important:
+> 
+[...] 
+> This was discussed earlier here:
+> https://lkml.org/lkml/2013/9/25/402
+> 
+> Where Rafael asked for better fix, as he called the V1 fixes: "quick and dirty".
+> This is another approach, much simpler than previous one. Please see if this
+> looks fine. There is a TODO note in there as I wanted some suggestions on how
+> exactly should we wait for a transition to get over.
+> 
+>  drivers/cpufreq/cpufreq.c | 39 +++++++++++++++++++++++++++++++++++++--
+>  include/linux/cpufreq.h   |  2 ++
+>  2 files changed, 39 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 2677ff1..66bdfff 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -324,6 +324,13 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  	}
+>  }
+> 
+> +static void notify_transition_for_each_cpu(struct cpufreq_policy *policy,
+> +		struct cpufreq_freqs *freqs, unsigned int state)
+> +{
+> +	for_each_cpu(freqs->cpu, policy->cpus)
+> +		__cpufreq_notify_transition(policy, freqs, state);
+> +}
+> +
+>  /**
+>   * cpufreq_notify_transition - call notifier chain and adjust_jiffies
+>   * on frequency transition.
+> @@ -335,8 +342,35 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  void cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  		struct cpufreq_freqs *freqs, unsigned int state)
+>  {
+> -	for_each_cpu(freqs->cpu, policy->cpus)
+> -		__cpufreq_notify_transition(policy, freqs, state);
+> +	if ((state != CPUFREQ_PRECHANGE) && (state != CPUFREQ_POSTCHANGE))
 
-OK, it will work indeed, however the code is barely readable with this.
+Wait a min, when is this condition ever true? I mean, what else can
+'state' ever be, apart from CPUFREQ_PRECHANGE and POSTCHANGE?
 
-For consistency (and readability), resources acquired in platform 
-driver's .probe() should be freed in .remove() and error path of 
-.probe() should not rely on external code to do the clean-up.
+> +		return notify_transition_for_each_cpu(policy, freqs, state);
+> +
+> +	/* Serialize pre-post notifications */
+> +	mutex_lock(&policy->transition_lock);
 
-So, as I proposed in my previous reply:
+Nope, this is definitely not the way to go, IMHO. We should enforce that
+the *callers* serialize the transitions, something like this:
 
->>
->> I believe the correct thing to do would be to remove the .exit() callback from exynos4_devfreq_profile struct and handle all the clean-up here in error path.
->>
+	cpufreq_transition_lock();
 
-Best regards,
-Tomasz
+	cpufreq_notify_transition(CPUFREQ_PRECHANGE);
+
+	//Perform the frequency change
+
+	cpufreq_notify_transition(CPUFREQ_POSTCHANGE);
+
+	cpufreq_transition_unlock();
+
+That's it!
+
+[ We can either introduce a new "transition" lock or perhaps even reuse
+the cpufreq_driver_lock if it fits... but the point is, the _caller_ has
+to perform the locking; trying to be smart inside cpufreq_notify_transition()
+is a recipe for headache :-( ]
+
+Is there any problem with this approach due to which you didn't take
+this route?
+
+> +	if (unlikely(WARN_ON(!policy->transition_ongoing &&
+> +				(state == CPUFREQ_POSTCHANGE)))) {
+> +		mutex_unlock(&policy->transition_lock);
+> +		return;
+> +	}
+> +
+> +	if (state == CPUFREQ_PRECHANGE) {
+> +		while (policy->transition_ongoing) {
+> +			mutex_unlock(&policy->transition_lock);
+> +			/* TODO: Can we do something better here? */
+> +			cpu_relax();
+> +			mutex_lock(&policy->transition_lock);
+
+If the caller takes care of the synchronization, we can avoid
+these sorts of acrobatics ;-)
+
+Regards,
+Srivatsa S. Bhat
+
+> +		}
+> +
+> +		policy->transition_ongoing = true;
+> +		mutex_unlock(&policy->transition_lock);
+> +	}
+> +
+> +	notify_transition_for_each_cpu(policy, freqs, state);
+> +
+> +	if (state == CPUFREQ_POSTCHANGE) {
+> +		policy->transition_ongoing = false;
+> +		mutex_unlock(&policy->transition_lock);
+> +	}
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
+> 
+> @@ -983,6 +1017,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
+> 
+>  	INIT_LIST_HEAD(&policy->policy_list);
+>  	init_rwsem(&policy->rwsem);
+> +	mutex_init(&policy->transition_lock);
+> 
+>  	return policy;
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 31c431e..e5cebce 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -104,6 +104,8 @@ struct cpufreq_policy {
+>  	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+>  	 */
+>  	struct rw_semaphore	rwsem;
+> +	bool			transition_ongoing; /* Tracks transition status */
+> +	struct mutex		transition_lock;
+>  };
+> 
+>  /* Only for ACPI */
+> 
+
