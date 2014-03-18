@@ -1,73 +1,148 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC 1/4] arm64: kernel: implement DT based idle states infrastructure
-Date: Tue, 18 Mar 2014 14:49:12 -0700
-Message-ID: <CADHgK6uwUDndVHQaWU=3R7A16hc4PYJCAfMLi3uBnrDjYidPXg@mail.gmail.com>
-References: <1395138028-19630-1-git-send-email-lorenzo.pieralisi@arm.com>
-	<1395138028-19630-2-git-send-email-lorenzo.pieralisi@arm.com>
-	<CAL_Jsq+M8fCreXrd7R1m=3_LKD_+jma3Pha06hRoTPMpcOb1_g@mail.gmail.com>
-	<20140318180856.GB792@e102568-lin.cambridge.arm.com>
+From: Christoffer Dall <christoffer.dall@linaro.org>
+Subject: Re: [UPDATED PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
+Date: Tue, 18 Mar 2014 15:08:06 -0700
+Message-ID: <CAMJs5B9kVX9urC2PCXY2kbH-j1fA8bge0KQa1z0nK+A689SNYg@mail.gmail.com>
+References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+	<20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+	<20140312232127.GC24808@cbox>
+	<53229701.8050405@linux.vnet.ibm.com>
+	<20140314191055.GF28661@cbox>
+	<53281E89.7080201@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f177.google.com ([209.85.212.177]:65338 "EHLO
-	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbaCRVtN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 17:49:13 -0400
-Received: by mail-wi0-f177.google.com with SMTP id cc10so4321427wib.16
-        for <linux-pm@vger.kernel.org>; Tue, 18 Mar 2014 14:49:12 -0700 (PDT)
-In-Reply-To: <20140318180856.GB792@e102568-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53281E89.7080201@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: ego@linux.vnet.ibm.com, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, peterz@infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, Michel Lespinasse <walken@google.com>, "kvmarm@lists.cs.columbia.edu" <kvmarm@lists.cs.columbia.edu>, linux-arch@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, mingo@kernel.org, Marc Zyngier <marc.zyngier@arm.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, rjw@rjwysocki.net, oleg@redhat.com, tj@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Rob Herring <robherring2@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsu>
 
-On 18 March 2014 11:08, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
->> > +        * When we reach the max number of CPU idle states or
->> > +        * head_idx == curr_idx (empty nodes queue) we are done.
->> > +        */
->> > +       head_idx = curr_idx = cnt;
->> > +
->> > +       do {
->> > +               curr_idx = parse_idle_states_node(curr, curr_idx, cpus);
->> > +               if (curr_idx == CPUIDLE_STATE_MAX || head_idx == curr_idx)
->> > +                       break;
->> > +               /*
->> > +                * idle_states array is updated by parse_idle_states_node(),
->> > +                * we can use the initialized states as a queue of nodes
->> > +                * that need to be checked for their idle states siblings.
->> > +                * head_idx works as a pointer into the queue to get the
->> > +                * next node to be parsed.
->> > +                */
->> > +               curr = idle_states[head_idx++].node;
->> > +       } while (curr);
+On 18 March 2014 03:23, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> On 03/15/2014 12:40 AM, Christoffer Dall wrote:
+>> On Fri, Mar 14, 2014 at 11:13:29AM +0530, Srivatsa S. Bhat wrote:
+>>> On 03/13/2014 04:51 AM, Christoffer Dall wrote:
+>>>> On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
+>>>>> Subsystems that want to register CPU hotplug callbacks, as well as perform
+>>>>> initialization for the CPUs that are already online, often do it as shown
+>>>>> below:
+>>>>>
+> [...]
+>>>> Just so we're clear, the existing code was simply racy as not prone to
+>>>> deadlocks, right?
+>>>>
+>>>> This makes it clear that the test above for compatible CPUs can be quite
+>>>> easily evaded by using CPU hotplug, but we don't really have a good
+>>>> solution for handling that yet...  Hmmm, grumble grumble, I guess if you
+>>>> hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
+>>>>
+>>>
+>>> In this particular case, there was no deadlock possibility, rather the
+>>> existing code had insufficient synchronization against CPU hotplug.
+>>>
+>>> init_hyp_mode() would invoke cpu_init_hyp_mode() on currently online CPUs
+>>> using on_each_cpu(). If a CPU came online after this point and before calling
+>>> register_cpu_notifier(), that CPU would remain uninitialized because this
+>>> subsystem would miss the hot-online event. This patch fixes this bug and
+>>> also uses the new synchronization method (instead of get/put_online_cpus())
+>>> to ensure that we don't deadlock with CPU hotplug.
+>>>
 >>
->> I still object to index property and this is why. You need to be able
->> to determine state order by actual h/w properties. That is what you
->> are doing in your head when you define the indexes.
+>> Yes, that was my conclusion as well.  Thanks for clarifying.  (It could
+>> be noted in the commit message as well if you should feel so inclined).
 >>
->> You really want a linked list here that you can sort as you go and not
->> care what order you parse DT nodes. Not to mention you don't know how
->> many states you will have.
 >
-> This code does not care about the order of nodes, the index is just there
-> to keep track of nodes that have still to be parsed. Sorting is done later,
-> using the index property (totally unrelated to the {head/curr}_idx) which I
-> understand is frowned upon in DT world (but in this case I think it could be
-> accepted, certainly it would make my life easier).
+> Please find the patch with updated changelog (and your Ack) below.
+> (No changes in code).
 >
-> Having said that, I like the idea of implementing it with a linked list and
-> sorting states while parsing them. I will remove that index property and
-> replace it with an actual hw property: power_consumption ? Or should I just
-> use min_residency (the higher the required residency the deeper the idle
-> state) ? Defining the power consumption (or better savings) for a state is
-> an _outright_ can of worms, that's why using an index is easier.
+
+perfect, thanks!
+
+> From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Subject: [PATCH] arm, kvm: Fix CPU hotplug callback registration
 >
-> Thoughts ?
-
-How about something like rank, power_rank or power_score since it's
-neither an index nor a physical value but a value for sorting states
-relative to each other?
-
-Thanks,
-
-Sebastian
+> Subsystems that want to register CPU hotplug callbacks, as well as perform
+> initialization for the CPUs that are already online, often do it as shown
+> below:
+>
+>         get_online_cpus();
+>
+>         for_each_online_cpu(cpu)
+>                 init_cpu(cpu);
+>
+>         register_cpu_notifier(&foobar_cpu_notifier);
+>
+>         put_online_cpus();
+>
+> This is wrong, since it is prone to ABBA deadlocks involving the
+> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+> with CPU hotplug operations).
+>
+> Instead, the correct and race-free way of performing the callback
+> registration is:
+>
+>         cpu_notifier_register_begin();
+>
+>         for_each_online_cpu(cpu)
+>                 init_cpu(cpu);
+>
+>         /* Note the use of the double underscored version of the API */
+>         __register_cpu_notifier(&foobar_cpu_notifier);
+>
+>         cpu_notifier_register_done();
+>
+>
+> In the existing arm kvm code, there is no synchronization with CPU hotplug
+> to avoid missing the hotplug events that might occur after invoking
+> init_hyp_mode() and before calling register_cpu_notifier(). Fix this bug
+> and also use the new synchronization method (instead of get/put_online_cpus())
+> to ensure that we don't deadlock with CPU hotplug.
+>
+> Cc: Gleb Natapov <gleb@kernel.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: kvmarm@lists.cs.columbia.edu
+> Cc: kvm@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+> Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
+>
+>  arch/arm/kvm/arm.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+> index bd18bb8..f0e50a0 100644
+> --- a/arch/arm/kvm/arm.c
+> +++ b/arch/arm/kvm/arm.c
+> @@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
+>                 }
+>         }
+>
+> +       cpu_notifier_register_begin();
+> +
+>         err = init_hyp_mode();
+>         if (err)
+>                 goto out_err;
+>
+> -       err = register_cpu_notifier(&hyp_init_cpu_nb);
+> +       err = __register_cpu_notifier(&hyp_init_cpu_nb);
+>         if (err) {
+>                 kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+>                 goto out_err;
+>         }
+>
+> +       cpu_notifier_register_done();
+> +
+>         hyp_cpu_pm_init();
+>
+>         kvm_coproc_table_init();
+>         return 0;
+>  out_err:
+> +       cpu_notifier_register_done();
+>         return err;
+>  }
+>
+>
+>
