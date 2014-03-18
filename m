@@ -1,59 +1,85 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] intel_pstate: Set core to min P state during core
- offline
-Date: Wed, 19 Mar 2014 00:22:15 +0530
-Message-ID: <532895DF.2090100@linux.vnet.ibm.com>
-References: <16035918.jZXKnQ3yiq@vostro.rjw.lan> <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com> <1394831037-15553-3-git-send-email-dirk.j.brandewie@intel.com> <CAOh2x=kFC5cwdYVgFCwNgqZAwWaE-CFQoyYizBuv1W6MOnQ9DA@mail.gmail.com> <53285FDB.40102@gmail.com>
+Subject: Re: [PATCH v3 0/2] Add stop callback to the cpufreq_driver interface.
+Date: Wed, 19 Mar 2014 00:38:34 +0530
+Message-ID: <532899B2.2060106@linux.vnet.ibm.com>
+References: <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com> <1395163361-26380-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:59378 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754315AbaCRSwl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 14:52:41 -0400
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:42905 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756549AbaCRTIv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 15:08:51 -0400
 Received: from /spool/local
-	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 19 Mar 2014 04:52:39 +1000
-In-Reply-To: <53285FDB.40102@gmail.com>
+	Wed, 19 Mar 2014 00:38:50 +0530
+In-Reply-To: <1395163361-26380-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, viresh.kumar@linaro.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 03/18/2014 08:31 PM, Dirk Brandewie wrote:
-> On 03/17/2014 10:44 PM, Viresh Kumar wrote:
->> On Sat, Mar 15, 2014 at 2:33 AM,  <dirk.brandewie@gmail.com> wrote:
->>> +
->>>   static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->>>   {
->>>          struct cpudata *cpu;
->>> @@ -818,7 +824,7 @@ static struct cpufreq_driver intel_pstate_driver = {
->>>          .setpolicy      = intel_pstate_set_policy,
->>>          .get            = intel_pstate_get,
->>>          .init           = intel_pstate_cpu_init,
->>> -       .exit           = intel_pstate_cpu_exit,
->>> +       .stop           = intel_pstate_cpu_stop,
->>
->> Probably, keep exit as is and only change P-state in stop(). So that
->> allocation of resources happen in init() and they are freed in exit()?
->>
-> I looked at doing just that but it junked up the code.  if stop() is called
-> during PREPARE then init() will be called via __cpufreq_add_dev() in the
-> ONLINE
-> and DOWN_FAILED case. So once stop() is called the driver will be ready for
-> init() to be called exactly like when exit() is called.
+On 03/18/2014 10:52 PM, dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 >
 
-I'm sorry, but that didn't make much sense to me. Can you be a little
-more specific as to what problems you hit while trying to have a
-->stop() which sets min P state and a separate ->exit() which frees
-the resources? I think we can achieve this with almost no trouble.
+I don't mean to nitpick, but generally its easier to deal with
+patchsets if you post the subsequent versions in fresh email threads.
+Otherwise it can get a bit muddled along with too many other email
+discussions in the same thread :-(
+ 
+> Changes: 
+> v2->v3
+> Changed the calling of the ->stop() callback to be conditional on the
+> core being the last core controlled by a given policy.
+> 
 
-If you ignore the failure case (such as DOWN_FAILED) for now, do you
-still see any serious roadblocks?
+Wait, why? I'm sorry if I am not catching up with the discussions on
+this issue quickly enough, but I don't see why we should make it
+conditional on _that_. I thought we agreed that we should make it
+conditional in the sense that ->stop() should be invoked only for
+->setpolicy drivers, right?
+
+The way I look at it, ->stop() gives you a chance to stop managing
+the CPU going offline. As in "stop this CPU". ->exit() is your chance
+to cleanup the policy, since all its users have gone offline (or this
+is the last CPU belonging to that policy which is going offline).
+
+With this in mind, we should invoke ->stop() every time we take a
+CPU offline, and invoke ->exit() only when the last CPU in the policy
+goes offline.
+
+What am I missing?
 
 Regards,
 Srivatsa S. Bhat
+
+> v1->2
+> Change name of callback function added to cpufreq_driver interface.
+> 
+> Some drivers (intel_pstate) need to modify state on a core before it
+> is completely offline.  The ->exit() callback is executed during the
+> CPU_POST_DEAD phase of the cpu offline process which is too late to
+> change the state of the core.
+> 
+> Patch 1 adds an optional callback function to the cpufreq_driver
+> interface which is called by the core during the CPU_DOWN_PREPARE
+> phase of cpu offline in __cpufreq_remove_dev_prepare().
+> 
+> Patch 2 changes intel_pstate to use the ->stop callback to do
+> its cleanup during cpu offline. 
+> 
+> Dirk Brandewie (2):
+>   cpufreq: Add exit_prepare callback to cpufreq_driver interface
+>   intel_pstate: Set core to min P state during core offline
+> 
+>  Documentation/cpu-freq/cpu-drivers.txt |  8 +++++++-
+>  drivers/cpufreq/cpufreq.c              |  3 +++
+>  drivers/cpufreq/intel_pstate.c         | 20 +++++++++++++-------
+>  include/linux/cpufreq.h                |  1 +
+>  4 files changed, 24 insertions(+), 8 deletions(-)
+> 
+
 
