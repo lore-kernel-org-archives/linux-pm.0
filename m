@@ -1,97 +1,73 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: [PATCH v9 0/2] hibernation support on ARM
-Date: Tue, 18 Mar 2014 14:40:56 -0700
-Message-ID: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC 1/4] arm64: kernel: implement DT based idle states infrastructure
+Date: Tue, 18 Mar 2014 14:49:12 -0700
+Message-ID: <CADHgK6uwUDndVHQaWU=3R7A16hc4PYJCAfMLi3uBnrDjYidPXg@mail.gmail.com>
+References: <1395138028-19630-1-git-send-email-lorenzo.pieralisi@arm.com>
+	<1395138028-19630-2-git-send-email-lorenzo.pieralisi@arm.com>
+	<CAL_Jsq+M8fCreXrd7R1m=3_LKD_+jma3Pha06hRoTPMpcOb1_g@mail.gmail.com>
+	<20140318180856.GB792@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Sricharan R <r.sricharan@ti.com>, Pavel Machek <pavel@ucw.cz>, Steven Capper <steve.capper@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Stephen Warren <swarren@nvidia.com>, Nicolas Pitre <nico@linaro.org>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Jiang Liu <liuj97@gmail.com>, Len Brown <len.brown@intel.com>, Laura Abbott <lauraa@codeaurora.org>, Victor Kamensky <victor.kamensky@linaro.org>, Russell King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Jonathan Austin <jonathan.austin@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:65338 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbaCRVtN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Mar 2014 17:49:13 -0400
+Received: by mail-wi0-f177.google.com with SMTP id cc10so4321427wib.16
+        for <linux-pm@vger.kernel.org>; Tue, 18 Mar 2014 14:49:12 -0700 (PDT)
+In-Reply-To: <20140318180856.GB792@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Rob Herring <robherring2@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsu>
 
-CkNjOiBSdXNzIERpbGwgPFJ1c3MuRGlsbEB0aS5jb20+CkNjOiAiUmFmYWVsIEouIFd5c29ja2ki
-IDxyandAcmp3eXNvY2tpLm5ldD4KQ2M6IFJ1c3NlbGwgS2luZyA8bGludXhAYXJtLmxpbnV4Lm9y
-Zy51az4KQ2M6IFBhdmVsIE1hY2hlayA8cGF2ZWxAdWN3LmN6PgpDYzogTG9yZW56byBQaWVyYWxp
-c2kgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+CkNjOiBTdGVwaGVuIFdhcnJlbiA8c3dhcnJl
-bkBudmlkaWEuY29tPgpDYzogTGVuIEJyb3duIDxsZW4uYnJvd25AaW50ZWwuY29tPgpDYzogTmlj
-b2xhcyBQaXRyZSA8bmljb0BsaW5hcm8ub3JnPgpDYzogU2FudG9zaCBTaGlsaW1rYXIgPHNhbnRv
-c2guc2hpbGlta2FyQHRpLmNvbT4KQ2M6IFdpbGwgRGVhY29uIDx3aWxsLmRlYWNvbkBhcm0uY29t
-PgpDYzogSm9uYXRoYW4gQXVzdGluIDxqb25hdGhhbi5hdXN0aW5AYXJtLmNvbT4KQ2M6IENhdGFs
-aW4gTWFyaW5hcyA8Y2F0YWxpbi5tYXJpbmFzQGFybS5jb20+CkNjOiAiVXdlIEtsZWluZS1Lw7Zu
-aWciIDx1LmtsZWluZS1rb2VuaWdAcGVuZ3V0cm9uaXguZGU+CkNjOiBTdGVwaGVuIEJveWQgPHNi
-b3lkQGNvZGVhdXJvcmEub3JnPgpDYzogTGF1cmEgQWJib3R0IDxsYXVyYWFAY29kZWF1cm9yYS5v
-cmc+CkNjOiBKaWFuZyBMaXUgPGxpdWo5N0BnbWFpbC5jb20+CkNjOiBTcmljaGFyYW4gUiA8ci5z
-cmljaGFyYW5AdGkuY29tPgpDYzogVmljdG9yIEthbWVuc2t5IDx2aWN0b3Iua2FtZW5za3lAbGlu
-YXJvLm9yZz4KQ2M6IFN0ZWZhbm8gU3RhYmVsbGluaSA8c3RlZmFuby5zdGFiZWxsaW5pQGV1LmNp
-dHJpeC5jb20+CkNjOiBCZW4gRG9va3MgPGJlbi5kb29rc0Bjb2RldGhpbmsuY28udWs+CkNjOiBB
-bmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnPgpDYzogVGhvbWFzIEdsZWl4
-bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+CkNjOiBSb2JpbiBIb2x0IDxyb2Jpbi5tLmhvbHRAZ21h
-aWwuY29tPgpDYzogS29uc3RhbnRpbiBLaGxlYm5pa292IDxrLmtobGVibmlrb3ZAc2Ftc3VuZy5j
-b20+CkNjOiBTdGV2ZW4gQ2FwcGVyIDxzdGV2ZS5jYXBwZXJAbGluYXJvLm9yZz4KQ2M6IFRlanVu
-IEhlbyA8dGpAa2VybmVsLm9yZz4KCgpQYXRjaGVzIGFkZGluZyBzdXBwb3J0IGZvciBoaWJlcm5h
-dGlvbiBvbiBBUk0KIC0gQVJNIGhpYmVybmF0aW9uIC8gc3VzcGVuZC10by1kaXNrCiAtIENoYW5n
-ZSBzb2Z0X3Jlc3RhcnQgdG8gdXNlIG5vbi10cmFjaW5nIHJhd19sb2NhbF9pcnFfZGlzYWJsZQoK
-UGF0Y2hlcyBiYXNlZCBvbiB2My4xNC1yYzcgdGFnLCB2ZXJpZmllZCBoaWJlcm5hdGlvbiBvbiBi
-ZWFnbGVib25lIGJsYWNrIG9uIGEKYnJhbmNoIGJhc2VkIG9uIDMuMTMgbWVyZ2VkIHdpdGggaW5p
-dGlhbCBvbWFwIHN1cHBvcnQgZnJvbSBSdXNzIERpbGwgd2hpY2gKY2FuIGJlIGZvdW5kIGhlcmUg
-KGluY2x1ZGVzIHYxIHBhdGNoc2V0KToKaHR0cDovL2dpdC5saW5hcm8ub3JnL2dpdC1yby9wZW9w
-bGUvc2ViYXN0aWFuLmNhcGVsbGEvbGludXguZ2l0IGhpYmVybmF0aW9uXzMuMTNfcnVzc01lcmdl
-CgpbUEFUQ0ggdjkgMS8yXSBBUk06IGF2b2lkIHRyYWNlcnMgaW4gc29mdF9yZXN0YXJ0CiBhcmNo
-L2FybS9rZXJuZWwvcHJvY2Vzcy5jIHwgICAgMiArLQogMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0
-aW9uKCspLCAxIGRlbGV0aW9uKC0pCgogVXNlIHJhd19sb2NhbF9pcnFfZGlzYWJsZSBpbiBwbGFj
-ZSBvZiBsb2NhbF9pcnFfZGlzYWJsZSB0byBhdm9pZAogaW5maW5pdGUgYWJvcnQgcmVjdXJzaW9u
-IHdoaWxlIHRyYWNpbmcuICh1bmNoYW5nZWQgc2luY2UgdjMpCgpbUEFUQ0ggdjkgMi8yXSBBUk0g
-aGliZXJuYXRpb24gLyBzdXNwZW5kLXRvLWRpc2sKIGFyY2gvYXJtL0tjb25maWcgICAgICAgICAg
-ICAgIHwgICAgNSArKwogYXJjaC9hcm0vaW5jbHVkZS9hc20vbWVtb3J5LmggfCAgICAxICsKIGFy
-Y2gvYXJtL2tlcm5lbC9NYWtlZmlsZSAgICAgIHwgICAgMSArCiBhcmNoL2FybS9rZXJuZWwvaGli
-ZXJuYXRlLmMgICB8ICAxMDcgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysKIGluY2x1ZGUvbGludXgvc3VzcGVuZC5oICAgICAgIHwgICAgMiArCiA1IGZpbGVzIGNoYW5n
-ZWQsIDExNiBpbnNlcnRpb25zKCspCgogQWRkcyBzdXBwb3J0IGZvciBBUk0gYmFzZWQgaGliZXJu
-YXRpb24KCgpBZGRpdGlvbmFsIG5vdGVzOgotLS0tLS0tLS0tLS0tLS0tLQoKVGhlcmUgYXJlIHR3
-byBjaGVja3BhdGNoIHdhcm5pbmdzIGFkZGVkIGJ5IHRoaXMgcGF0Y2guICBUaGVzZSBmb2xsb3cK
-YmVoYXZpb3IgaW4gZXhpc3RpbmcgaGliZXJuYXRpb24gaW1wbGVtZW50YXRpb25zIG9uIG90aGVy
-IHBsYXRmb3Jtcy4KCgogICAgV0FSTklORzogZXh0ZXJucyBzaG91bGQgYmUgYXZvaWRlZCBpbiAu
-YyBmaWxlcwogICAgIzEzMTogRklMRTogYXJjaC9hcm0va2VybmVsL2hpYmVybmF0ZS5jOjI1Ogog
-ICAgK2V4dGVybiBjb25zdCB2b2lkIF9fbm9zYXZlX2JlZ2luLCBfX25vc2F2ZV9lbmQ7CgogIFRo
-aXMgZXh0ZXJuIGlzIHBpY2tpbmcgdXAgdGhlIGxpbmtlciBub3NhdmUgcmVnaW9uIGRlZmluaXRp
-b25zLCBvbmx5CiAgdXNlZCBpbiBoaWJlcm5hdGUuICBGb2xsb3dzIHNhbWUgZXh0ZXJuIGxpbmUg
-dXNlZCBtaXBzLCBwb3dlcnBjLCBzMzkwLAogIHNoLCBzcGFyYywgeDg2ICYgdW5pY29yZTMyCgog
-ICAgV0FSTklORzogZXh0ZXJucyBzaG91bGQgYmUgYXZvaWRlZCBpbiAuYyBmaWxlcwogICAgIzIw
-OTogRklMRTogYXJjaC9hcm0va2VybmVsL2hpYmVybmF0ZS5jOjEwMzoKICAgICsJZXh0ZXJuIHZv
-aWQgY2FsbF93aXRoX3N0YWNrKHZvaWQgKCpmbikodm9pZCAqKSwgdm9pZCAqYXJnLCB2b2lkICpz
-cCk7CgogIFRoaXMgZXh0ZXJuIGlzIHVzZWQgaW4gdGhlIGFyY2gvYXJtLyBpbiBoaWJlcm5hdGUs
-IHByb2Nlc3MgYW5kIGJMX3N3aXRjaGVyCgoKQ2hhbmdlcyBpbiB2OToKLS0tLS0tLS0tLS0tLS0K
-KiByZXBsYWNlIHBmbiBjYWxjdWxhdGlvbndpdGggdmlydF90b19wZm4KKiBhdXRvbWF0aWNhbGx5
-IGFsbG93IEFSQ0hfSElCRVJOQVRJT05fUE9TU0lCTEUgaWYgU1VTUEVORCBwZXJtaXR0ZWQKKiBt
-b3ZlIGhhbmRsaW5nIG9mIEFSQ0ggY29uZmlnIGZsYWcgdG8gYXJjaC9hcm0vS2NvbmZpZwoKQ2hh
-bmdlcyBpbiB2ODoKLS0tLS0tLS0tLS0tLS0KKiByZW1vdmUgZGVmaW5pdGlvbiBhbmQgdXNlIG9m
-IF9fcGFfc3ltYm9sCgpDaGFuZ2VzIGluIHY3OgotLS0tLS0tLS0tLS0tLQoqIHJlbW92ZSB1c2Ug
-b2YgUkVMT0NfSElERSBtYWNybwoqIHJlbW92ZSB1bnVzZWQgI2luY2x1ZGVzCiogZml4dXAgY29t
-bWVudCBmb3IgYXJjaF9yZXN0b3JlX2ltYWdlCiogZW5zdXJlIGFsaWdubWVudCBvZiByZXN1bWUg
-c3RhY2sgb24gOCBieXRlIGJvdW5kYXJ5CgpDaGFuZ2VzIGluIHY2OgotLS0tLS0tLS0tLS0tLQoq
-IFNpbXBsaWZ5IHN0YXRpYyB2YXJpYWJsZSBuYW1lcwoKQ2hhbmdlcyBpbiB2NToKLS0tLS0tLS0t
-LS0tLS0KKiBGaXhlZCBjaGVja3BhdGNoIHdhcm5pbmcgb24gdHJhaWxpbmcgd2hpdGVzcGFjZQoK
-Q2hhbmdlcyBpbiB2NDoKLS0tLS0tLS0tLS0tLS0KKiB1cGRhdGVkIGNvbW1lbnQgZm9yIHNvZnRf
-cmVzdGFydCB3aXRoIHJldmlldyBmZWVkYmFjawoqIGRyb3BwZWQgZnJlZXplX3Byb2Nlc3NlcyBw
-YXRjaCB3aGljaCB3YXMgcXVldWVkIHNlcGFyYXRlbHkgCiAgdG8gMy4xNCBieSBSYWZhZWwgV3lz
-b2NraToKICBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxNC8yLzI1LzY4MwoKQ2hhbmdlcyBpbiB2
-MzoKLS0tLS0tLS0tLS0tLS0KKiBhZGRlZCBjb21tZW50IHRvIHVzZSBvZiBzb2Z0X3Jlc3RhcnQK
-KiBkcm9wIGlycSBkaXNhYmxlIHNvZnRfcmVzdGFydCBwYXRjaAoqIGFkZCBwYXRjaCB0byBhdm9p
-ZCB0cmFjZXJzIGluIHNvZnRfcmVzdGFydCBieSB1c2luZyByYXdfbG9jYWxfaXJxXyoKCkNoYW5n
-ZXMgaW4gdjI6Ci0tLS0tLS0tLS0tLS0tCiogUmVtb3ZlZCB1bm5lZWRlZCBmbHVzaF90aHJlYWQs
-IHVzZSBvZiBfX25ha2VkIGFuZCBjcHVfaW5pdC4KKiBkcm9wcGVkIEN5cmlsIENoZW1wYXJhdGh5
-IDxjeXJpbEB0aS5jb20+IGZyb20gQ2M6IGxpc3QgYXMgCiAgZW1haWxzIGFyZSBib3VuY2luZy4K
-ClRoYW5rcywKClNlYmFzdGlhbiBDYXBlbGxhCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgt
-YXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+On 18 March 2014 11:08, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+>> > +        * When we reach the max number of CPU idle states or
+>> > +        * head_idx == curr_idx (empty nodes queue) we are done.
+>> > +        */
+>> > +       head_idx = curr_idx = cnt;
+>> > +
+>> > +       do {
+>> > +               curr_idx = parse_idle_states_node(curr, curr_idx, cpus);
+>> > +               if (curr_idx == CPUIDLE_STATE_MAX || head_idx == curr_idx)
+>> > +                       break;
+>> > +               /*
+>> > +                * idle_states array is updated by parse_idle_states_node(),
+>> > +                * we can use the initialized states as a queue of nodes
+>> > +                * that need to be checked for their idle states siblings.
+>> > +                * head_idx works as a pointer into the queue to get the
+>> > +                * next node to be parsed.
+>> > +                */
+>> > +               curr = idle_states[head_idx++].node;
+>> > +       } while (curr);
+>>
+>> I still object to index property and this is why. You need to be able
+>> to determine state order by actual h/w properties. That is what you
+>> are doing in your head when you define the indexes.
+>>
+>> You really want a linked list here that you can sort as you go and not
+>> care what order you parse DT nodes. Not to mention you don't know how
+>> many states you will have.
+>
+> This code does not care about the order of nodes, the index is just there
+> to keep track of nodes that have still to be parsed. Sorting is done later,
+> using the index property (totally unrelated to the {head/curr}_idx) which I
+> understand is frowned upon in DT world (but in this case I think it could be
+> accepted, certainly it would make my life easier).
+>
+> Having said that, I like the idea of implementing it with a linked list and
+> sorting states while parsing them. I will remove that index property and
+> replace it with an actual hw property: power_consumption ? Or should I just
+> use min_residency (the higher the required residency the deeper the idle
+> state) ? Defining the power consumption (or better savings) for a state is
+> an _outright_ can of worms, that's why using an index is easier.
+>
+> Thoughts ?
+
+How about something like rank, power_rank or power_score since it's
+neither an index nor a physical value but a value for sorting states
+relative to each other?
+
+Thanks,
+
+Sebastian
