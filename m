@@ -1,61 +1,71 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
-Date: Wed, 19 Mar 2014 15:30:48 +0530
-Message-ID: <53296AD0.5090908@linux.vnet.ibm.com>
-References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com> <53234A70.70506@gmail.com>	<53656551.Rzgh2mDLCG@vostro.rjw.lan> <53283913.1070003@linux.vnet.ibm.com> <CAKohpomLW17B=Sk42tczzDF+VGwn7hT521osWPi5TcgqpCPZ_w@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC V2] cpufreq: make sure frequency transitions are serialized
+Date: Wed, 19 Mar 2014 15:39:16 +0530
+Message-ID: <CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+	<532840FD.308@linux.vnet.ibm.com>
+	<CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
+	<53296870.5010505@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:35088 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933656AbaCSKBF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 06:01:05 -0400
-Received: from /spool/local
-	by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 19 Mar 2014 20:01:02 +1000
-In-Reply-To: <CAKohpomLW17B=Sk42tczzDF+VGwn7hT521osWPi5TcgqpCPZ_w@mail.gmail.com>
+Received: from mail-qa0-f43.google.com ([209.85.216.43]:51475 "EHLO
+	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759082AbaCSKJR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 06:09:17 -0400
+Received: by mail-qa0-f43.google.com with SMTP id j15so8226307qaq.2
+        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 03:09:17 -0700 (PDT)
+In-Reply-To: <53296870.5010505@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
 
-On 03/19/2014 10:33 AM, Viresh Kumar wrote:
-> On 18 March 2014 17:46, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Agreed. As far as I understand, for ->target drivers, today we use GOV_STOP
->> to stop managing the CPU going offline. And for ->setpolicy drivers, we will
->> use this new callback to achieve the same goal.
-> 
-> So a better question would be: What's the purpose of ->stop() call for a policy?
+On 19 March 2014 15:20, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> No, its not about burden. Its about the elegance of the design. We should
+> not be overly "smart" in the cpufreq core. Hiding the synchronization inside
+> the cpufreq core only encourages people to write buggy code in their drivers.
 
-Ideally, it should remove the outgoing CPU from the policy and "stop managing
-that CPU", whatever that means to the driver (for intel_pstate, it means
-setting it to min P state and destroying the timer).
+What kind of buggy code can be there? They are supposed to call notifiers
+in the order mentioned and so it shouldn't be a problem at all.. Don't know..
 
-> Stop managing CPUs of that policy?
+> Why don't we go with what Rafael suggested? We can have dedicated
+> begin_transition() and end_transition() calls to demarcate the frequency
+> transitions. That way, it makes it very clear how the synchronization is
+> done. Of course, these functions would be provided (exported) by the cpufreq
+> core, by implementing them using locks/counters/whatever.
+>
+> Basically what I'm arguing against, is the idea of having the cpufreq
+> core figure out what the driver _intended_ to do, from inside the
+> cpufreq_notify_transition() call.
+>
+> What I would prefer instead is to have the cpufreq driver do something
+> like this:
+>
+> cpufreq_freq_transition_begin();
+>
+> cpufreq_notify_transition(CPUFREQ_PRECHANGE);
 
-Stop managing only the particular CPU going offline. IOW, we should somehow
-communicate to the ->stop() callback that we are taking CPU 'x' offline.
+Why do we need two routines then? What about doing notification from
+inside cpufreq_freq_transition_begin()?
 
-If adding a ->stop() callback in the cpufreq_driver is not the best way to
-achieve it, then lets think of an alternative. The way I look at it, this
-new mechanism what we want, should allow ->setpolicy drivers to do what the
-GOV_STOP will do for regular drivers. That is, allow it to "shutdown the
-CPU from a cpufreq perspective", whatever that means to the driver.
-We can think of a completely different way of achieving it, if ->stop()
-is not suitable for that purpose.
+This is a burden for driver writers, who don't normally understand the
+relevance of these calls in detail and may think, only the first one is
+enough or the second one is..
 
-> Or even do something on CPUs of a policy
-> before CPUs are offlined?
-> 
-> Probably in the current solution Dirk is doing both these things..
-> 
-> And so I thought maybe its better not to restrict ->stop() to just
-> setpolicy() drivers.
+Its better if they simply let the core that they are starting to do transitions,
+i.e. cpufreq_freq_transition_begin() and then the core should send
+notifications.
 
+> //perform the frequency change
+>
+> cpufreq_notify_transition(CPUFREQ_POSTCHANGE);
+>
+> cpufreq_freq_transition_end();
+>
+> [ASYNC_NOTIFICATION drivers will invoke the last two functions in a
+> separate context/thread.]
 
-Regards,
-Srivatsa S. Bhat
-
+Same for the last two routines and yes they would be called from
+separate thread for ASYNC_NOTIFICATION drivers..
