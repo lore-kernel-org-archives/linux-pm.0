@@ -1,53 +1,32 @@
-From: "Zhuoyu.Zhang@freescale.com" <Zhuoyu.Zhang@freescale.com>
-Subject: RE: [PATCH] cpufreq: powerpc: replace CPUFREQ_ETERNAL with cpufreq
- transition latency for FSL e500mc Socs
-Date: Wed, 19 Mar 2014 03:51:59 +0000
-Message-ID: <9ac578cdc68c41ef98e1639a57f2772f@BN1PR03MB154.namprd03.prod.outlook.com>
-References: <1395034168-7342-1-git-send-email-Zhuoyu.Zhang@freescale.com>
- <2143464.l2G8tITm4N@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Wed, 19 Mar 2014 10:33:59 +0530
+Message-ID: <CAKohpomLW17B=Sk42tczzDF+VGwn7hT521osWPi5TcgqpCPZ_w@mail.gmail.com>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com>
+	<CAKohponGN4JNwLKLjvFOPkru0=6JajOKKH=oJneDkKp=PyAmRA@mail.gmail.com>
+	<53234A70.70506@gmail.com>
+	<53656551.Rzgh2mDLCG@vostro.rjw.lan>
+	<53283913.1070003@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2143464.l2G8tITm4N@vostro.rjw.lan>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang <Yuantian.Tang@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53283913.1070003@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
-a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogV2VkbmVzZGF5LCBNYXJjaCAx
-OSwgMjAxNCA5OjQyIEFNDQo+IFRvOiBaaGFuZyBaaHVveXUtQjQ2NTUyDQo+IENjOiB2aXJlc2gu
-a3VtYXJAbGluYXJvLm9yZzsgY3B1ZnJlcUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBwbUB2
-Z2VyLmtlcm5lbC5vcmc7IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0hdIGNwdWZyZXE6IHBvd2VycGM6IHJlcGxhY2UgQ1BVRlJFUV9FVEVSTkFMIHdpdGgNCj4gY3B1
-ZnJlcSB0cmFuc2l0aW9uIGxhdGVuY3kgZm9yIEZTTCBlNTAwbWMgU29jcw0KPiANCj4gT24gTW9u
-ZGF5LCBNYXJjaCAxNywgMjAxNCAwMToyOToyOCBQTSBaaHVveXUgWmhhbmcgd3JvdGU6DQo+ID4g
-QWNjb3JkaW5nIHRvIHRoZSBkYXRhIHByb3ZpZGVkIGJ5IEhXIFRlYW0sIGF0IGxlYXN0IDEyIGlu
-dGVybmFsDQo+ID4gcGxhdGZvcm0gY2xvY2sgY3ljbGVzIGFyZSByZXF1aXJlZCB0byBzdGFiaWxp
-emUgYSBERlMgY2xvY2sgc3dpdGNoIG9uDQo+ID4gRlNMIGU1MDBtYyBTb2NzLiBUaGlzIHBhdGNo
-IHJlcGxhY2VzIHRoZSBDUFVGUkVRX0VURVJOQUwgd2l0aA0KPiBhcHByb3ByaWF0ZSBIVyBjbG9j
-ayB0cmFuc2l0aW9uIGxhdGVuY3kgdG8gbWFrZSBERlMgZ292ZXJub3JzIHdvcmsNCj4gbm9ybWFs
-bHkgb24gRnJlZXNjYWxlIGU1MDBtYyBib2FyZHMuDQo+IA0KPiBQbGVhc2Ugc2lnbiBvZmYgdGhl
-IHBhdGNoLiAgSSBjYW4ndCBhcHBseSBpdCB3aXRob3V0IHlvdXIgc2lnbi1vZmYuDQoNClNvcnJ5
-IHRvIG1pc3MgdGhlICJzaWduLW9mZiIsIEkgYWxyZWFkeSBzZW50IGFub3RoZXIgdmVyc2lvbiBm
-b3IgeW91ciByZXZpZXcuDQoNCi0tWmh1b3l1DQoNCj4gDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMv
-Y3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAzICsrLQ0KPiA+ICAxIGZpbGUgY2hhbmdl
-ZCwgMiBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVm
-cmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+IGluZGV4IDA1MTAwMGYuLmZmN2I2MjUgMTAw
-NjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+
-ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMNCj4gPiBAQCAtMjEs
-NiArMjEsNyBAQA0KPiA+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gPiAgI2luY2x1ZGUgPGxp
-bnV4L3NsYWIuaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L3NtcC5oPg0KPiA+ICsjaW5jbHVkZSA8
-c3lzZGV2L2ZzbF9zb2MuaD4NCj4gPg0KPiA+ICAvKioNCj4gPiAgICogc3RydWN0IGNwdV9kYXRh
-IC0gcGVyIENQVSBkYXRhIHN0cnVjdCBAQCAtMjA1LDcgKzIwNiw3IEBAIHN0YXRpYw0KPiA+IGlu
-dCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kp
-DQo+ID4gIAlmb3JfZWFjaF9jcHUoaSwgcGVyX2NwdShjcHVfbWFzaywgY3B1KSkNCj4gPiAgCQlw
-ZXJfY3B1KGNwdV9kYXRhLCBpKSA9IGRhdGE7DQo+ID4NCj4gPiAtCXBvbGljeS0+Y3B1aW5mby50
-cmFuc2l0aW9uX2xhdGVuY3kgPSBDUFVGUkVRX0VURVJOQUw7DQo+ID4gKwlwb2xpY3ktPmNwdWlu
-Zm8udHJhbnNpdGlvbl9sYXRlbmN5ID0gKDEyICogTlNFQ19QRVJfU0VDKSAvDQo+ID4gK2ZzbF9n
-ZXRfc3lzX2ZyZXEoKTsNCj4gPiAgCW9mX25vZGVfcHV0KG5wKTsNCj4gPg0KPiA+ICAJcmV0dXJu
-IDA7DQo+ID4NCj4gDQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZhZWwg
-Si4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo+IA0KDQo=
+On 18 March 2014 17:46, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> Agreed. As far as I understand, for ->target drivers, today we use GOV_STOP
+> to stop managing the CPU going offline. And for ->setpolicy drivers, we will
+> use this new callback to achieve the same goal.
+
+So a better question would be: What's the purpose of ->stop() call for a policy?
+Stop managing CPUs of that policy? Or even do something on CPUs of a policy
+before CPUs are offlined?
+
+Probably in the current solution Dirk is doing both these things..
+
+And so I thought maybe its better not to restrict ->stop() to just
+setpolicy() drivers.
