@@ -1,53 +1,73 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
-Date: Wed, 19 Mar 2014 14:06:54 -0700
-Message-ID: <CADHgK6vkwjXyJxRcOXjJpJJaR0-YR869NpPZ+CBBS8kEdE0qCQ@mail.gmail.com>
-References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
-	<1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
-	<20140316070917.GA3094@arch.cereza>
-	<CADHgK6s58EJyJxB-47K8w26H8ZCBFQ2zu7PGAQU9O+2g7=fPwA@mail.gmail.com>
-	<20140317204410.GA1118@arch.cereza>
-	<CADHgK6tHngKVZS=jo=VYt3Nt3dhiEmiWr28iDy7q_uR9goBj=Q@mail.gmail.com>
-	<20140319154434.GA3488@arch.cereza>
-	<CADHgK6vLB3h0zrdpve=ZyjNu2pe1VYsGxrYgv=2C-JV37vE9tQ@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: Fix checkpatch errors and warnings
+Date: Wed, 19 Mar 2014 23:29:17 +0200
+Message-ID: <532A0C2D.9010600@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CADHgK6vLB3h0zrdpve=ZyjNu2pe1VYsGxrYgv=2C-JV37vE9tQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <jonathan.austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Victor Kamensky <victor.kamensky@linaro.org>, Will Deacon <will.deacon@arm.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Sricharan R <r.sricharan@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, Nicolas Pitre <nico@linaro.org>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Laura Abbott <lauraa@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Boyd <sboyd@codeaurora.org>"linux-arm-kernel@lists.infradead.org" <linux>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 March 2014 13:47, Sebastian Capella <sebastian.capella@linaro.org> wrote:
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index a5f702a..d96b910 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -594,7 +594,8 @@ static void power_down(void)
->         case HIBERNATION_PLATFORM:
->                 hibernation_platform_enter();
->         case HIBERNATION_SHUTDOWN:
-> -               kernel_power_off();
-> +               if (pm_power_off)
-> +                       kernel_power_off();
->                 break;
->  #ifdef CONFIG_SUSPEND
->         case HIBERNATION_SUSPEND:
->
->
-> This follows the behavior in the reboot syscall which does it this way
-> also.  I'm testing this now, and it seems work fine.  If this looks
-> good, I can add it as an additional patch.
+Fix 2 checkpatch errors about using assignment in if condition,
+1 checkpatch error about a required space after comma
+and 3 warnings about line over 80 characters.
 
-BTW, one thing I would point out is that kernel_power_off and
-kernel_halt call the same notifier but with different parameters
-(SYS_POWER_OFF and SYS_HALT).
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/cpufreq.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
-If pm_power_down is null, I dont see why we'd want to notify
-SYS_POWER_OFF before SYS_HALT.  With the previous change I'm assuming
-there's no benefit, so please chime in if you know a reason.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e3aa9de..1eafd8c 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -939,8 +939,10 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+ 	up_write(&policy->rwsem);
+ 
+ 	if (has_target()) {
+-		if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
+-			(ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
++		if (!ret)
++			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++		if (ret) {
+ 			pr_err("%s: Failed to start governor\n", __func__);
+ 			return ret;
+ 		}
+@@ -1394,14 +1396,13 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+ 
+ 		if (!cpufreq_suspended)
+ 			cpufreq_policy_free(policy);
+-	} else {
+-		if (has_target()) {
+-			if ((ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)) ||
+-					(ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))) {
+-				pr_err("%s: Failed to start governor\n",
+-				       __func__);
+-				return ret;
+-			}
++	} else if (has_target()) {
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
++		if (!ret)
++			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++		if (ret) {
++			pr_err("%s: Failed to start governor\n", __func__);
++			return ret;
+ 		}
+ 	}
+ 
+@@ -2086,7 +2087,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 	if (old_gov) {
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		up_write(&policy->rwsem);
+-		__cpufreq_governor(policy,CPUFREQ_GOV_POLICY_EXIT);
++		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+ 		down_write(&policy->rwsem);
+ 	}
+ 
+-- 
+1.8.5.3
 
-Thanks,
-
-Sebastian
