@@ -1,87 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Add stop callback to cpufreq_driver interface
-Date: Wed, 19 Mar 2014 10:34:45 +0530
-Message-ID: <CAKohpo=zbtuHfNwbKFgfoNgn3c+bBfZYMBBWenCac2=gk2AWqw@mail.gmail.com>
-References: <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
-	<1395163361-26380-1-git-send-email-dirk.j.brandewie@intel.com>
-	<1395163361-26380-2-git-send-email-dirk.j.brandewie@intel.com>
+Subject: Re: [PATCH v2 2/2] intel_pstate: Set core to min P state during core offline
+Date: Wed, 19 Mar 2014 10:50:44 +0530
+Message-ID: <CAKohpomM5s0v+442Pyg2HFguJs3tXKTNWFnHCfJmRJpTPvY=3A@mail.gmail.com>
+References: <16035918.jZXKnQ3yiq@vostro.rjw.lan>
+	<1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
+	<1394831037-15553-3-git-send-email-dirk.j.brandewie@intel.com>
+	<CAOh2x=kFC5cwdYVgFCwNgqZAwWaE-CFQoyYizBuv1W6MOnQ9DA@mail.gmail.com>
+	<53285FDB.40102@gmail.com>
+	<532895DF.2090100@linux.vnet.ibm.com>
+	<5328A21C.3010909@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f172.google.com ([209.85.216.172]:52682 "EHLO
-	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbaCSFEp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 01:04:45 -0400
-Received: by mail-qc0-f172.google.com with SMTP id i8so9070178qcq.17
-        for <linux-pm@vger.kernel.org>; Tue, 18 Mar 2014 22:04:45 -0700 (PDT)
-In-Reply-To: <1395163361-26380-2-git-send-email-dirk.j.brandewie@intel.com>
+Received: from mail-qa0-f46.google.com ([209.85.216.46]:54976 "EHLO
+	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753328AbaCSFUp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 01:20:45 -0400
+Received: by mail-qa0-f46.google.com with SMTP id i13so7876143qae.5
+        for <linux-pm@vger.kernel.org>; Tue, 18 Mar 2014 22:20:44 -0700 (PDT)
+In-Reply-To: <5328A21C.3010909@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>
 
-On 18 March 2014 22:52,  <dirk.brandewie@gmail.com> wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 19 March 2014 01:14, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> There was no problem per se.  In stop() all I really needed to do is stop
+> the
+> timer and set the P state to MIN.
 >
-> This callback allows the driver to do clean up before the CPU is
-> completely down and its state cannot be modified.  This is used
-> by the intel_pstate driver to reduce the requested P state prior to
-> the core going away.  This is required because the requested P state
-> of the offline core is used to select the package P state. This
-> effectively sets the floor package P state to the requested P state on
-> the offline core.
->
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
->  Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
->  drivers/cpufreq/cpufreq.c              | 3 ++-
->  include/linux/cpufreq.h                | 1 +
->  3 files changed, 10 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-> index 8b1a445..79def80 100644
-> --- a/Documentation/cpu-freq/cpu-drivers.txt
-> +++ b/Documentation/cpu-freq/cpu-drivers.txt
-> @@ -61,7 +61,13 @@ target_index         -       See below on the differences.
->
->  And optionally
->
-> -cpufreq_driver.exit -          A pointer to a per-CPU cleanup function.
-> +cpufreq_driver.exit -          A pointer to a per-CPU cleanup
-> +                               function called during CPU_POST_DEAD
-> +                               phase of cpu hotplug process.
-> +
-> +cpufreq_driver.stop -          A pointer to a per-CPU stop function
-> +                               called during CPU_DOWN_PREPARE phase of
-> +                               cpu hotplug process.
->
->  cpufreq_driver.resume -                A pointer to a per-CPU resume function
->                                 which is called with interrupts disabled
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index cf485d9..6e6beae 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1336,7 +1336,8 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->                                                 __func__, new_cpu, cpu);
->                         }
->                 }
-> -       }
-> +       } else if (cpufreq_driver->stop)
-> +               cpufreq_driver->stop(policy);
->
->         return 0;
->  }
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 4d89e0e..ff8db19 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -224,6 +224,7 @@ struct cpufreq_driver {
->         int     (*bios_limit)   (int cpu, unsigned int *limit);
->
->         int     (*exit)         (struct cpufreq_policy *policy);
-> +       int     (*stop)         (struct cpufreq_policy *policy);
->         int     (*suspend)      (struct cpufreq_policy *policy);
->         int     (*resume)       (struct cpufreq_policy *policy);
->         struct freq_attr        **attr;
+> At init time I need to allocate memory and start timer.  If stopping the
+> timer
+> and deallocating memory are separated then I need code in init() to detect
+> this case.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Sorry, I didn't understood what exactly is special here :(
+
+If we return failure from CPU_POST_DEAD for some reason without
+calling exit() then you will have memory leak in your init() as we are
+allocating memory without checking if we already have that (nothing wrong
+in it though as other parts of kernel should handle things properly here).
+
+Probably the situation would be exactly same if we divide the exit path into
+stop and exit routines, which I still feel is the right way forward. Because
+ideally cpufreq shouldn't call init() if it hasn't called exit() (If
+it is doing that
+right now then its wrong and can be fixed). And so you must do the cleanup
+in exit()..
