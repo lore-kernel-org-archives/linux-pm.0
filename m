@@ -1,81 +1,30 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 1/2] cpufreq: Add stop callback to cpufreq_driver interface
-Date: Wed, 19 Mar 2014 08:45:53 -0700
-Message-ID: <1395243954-28262-2-git-send-email-dirk.j.brandewie@intel.com>
-References: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:44940 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965160AbaCSPqH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 11:46:07 -0400
-In-Reply-To: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCH v11 0/4] thermal: samsung: Clean up and add support for
+ Exynos5420
+Date: Wed, 19 Mar 2014 16:58:04 +0100
+Message-ID: <5329BE8C.8000508@samsung.com>
+References: <1384238132-24515-1-git-send-email-ch.naveen@samsung.com>
+ <1386657640-21481-1-git-send-email-ch.naveen@samsung.com>
+ <CAL1wa8fj+pYN7EOkh0nggkwss2U9pJhGEoaA7TG+7oy0LK3zFQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAL1wa8fj+pYN7EOkh0nggkwss2U9pJhGEoaA7TG+7oy0LK3zFQ@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Leela Krishna Amudala <leelakrishna.a@gmail.com>, Naveen Krishna Chatradhi <ch.naveen@samsung.com>
+Cc: linux-pm@vger.kernel.org, Naveen Krishna <naveenkrishna.ch@gmail.com>, rui.zhang@intel.com, eduardo.valentin@ti.com, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, amit.daniel@samsung.com, Kukjin Kim <kgene.kim@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "cpgs ." <cpgs@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, patrick.marlier@gmail.com, viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Hi Leela,
 
-This callback allows the driver to do clean up before the CPU is
-completely down and its state cannot be modified.  This is used
-by the intel_pstate driver to reduce the requested P state prior to
-the core going away.  This is required because the requested P state
-of the offline core is used to select the package P state. This
-effectively sets the floor package P state to the requested P state on
-the offline core.
+On 19.03.2014 12:19, Leela Krishna Amudala wrote:
+> Hi All,
+>
+> I didn't see this series in mainline, Any comments for this ?
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
- drivers/cpufreq/cpufreq.c              | 3 ++-
- include/linux/cpufreq.h                | 1 +
- 3 files changed, 10 insertions(+), 2 deletions(-)
+Naveen had posted v12 of this series and I believe all the patches got 
+my Reviewed-by.
 
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-index 8b1a445..79def80 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.txt
-@@ -61,7 +61,13 @@ target_index		-	See below on the differences.
- 
- And optionally
- 
--cpufreq_driver.exit -		A pointer to a per-CPU cleanup function.
-+cpufreq_driver.exit -		A pointer to a per-CPU cleanup
-+		    		function called during CPU_POST_DEAD
-+		    		phase of cpu hotplug process.
-+
-+cpufreq_driver.stop -		A pointer to a per-CPU stop function
-+			    	called during CPU_DOWN_PREPARE phase of
-+				cpu hotplug process.
- 
- cpufreq_driver.resume -		A pointer to a per-CPU resume function
- 				which is called with interrupts disabled
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index cf485d9..bb20292 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1336,7 +1336,8 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 						__func__, new_cpu, cpu);
- 			}
- 		}
--	}
-+	} else if (cpufreq_driver->stop && cpufreq_driver->setpolicy)
-+		cpufreq_driver->stop(policy);
- 
- 	return 0;
- }
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 4d89e0e..ff8db19 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -224,6 +224,7 @@ struct cpufreq_driver {
- 	int	(*bios_limit)	(int cpu, unsigned int *limit);
- 
- 	int	(*exit)		(struct cpufreq_policy *policy);
-+	int	(*stop)		(struct cpufreq_policy *policy);
- 	int	(*suspend)	(struct cpufreq_policy *policy);
- 	int	(*resume)	(struct cpufreq_policy *policy);
- 	struct freq_attr	**attr;
--- 
-1.8.3.1
-
+Best regards,
+Tomasz
