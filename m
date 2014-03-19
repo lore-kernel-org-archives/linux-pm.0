@@ -1,60 +1,87 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH] cpufreq: Remove unnecessary braces
-Date: Wed, 19 Mar 2014 23:33:00 +0200
-Message-ID: <532A0D0C.50507@semaphore.gr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] cpufreq: Add stop callback to cpufreq_driver interface
+Date: Wed, 19 Mar 2014 23:31:31 +0100
+Message-ID: <3686462.d0rjfgiuqO@vostro.rjw.lan>
+References: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com> <1395243954-28262-2-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1395243954-28262-2-git-send-email-dirk.j.brandewie@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: dirk.brandewie@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, patrick.marlier@gmail.com, viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Remove 3 sets of unnecessary braces
+On Wednesday, March 19, 2014 08:45:53 AM dirk.brandewie@gmail.com wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> 
+> This callback allows the driver to do clean up before the CPU is
+> completely down and its state cannot be modified.  This is used
+> by the intel_pstate driver to reduce the requested P state prior to
+> the core going away.  This is required because the requested P state
+> of the offline core is used to select the package P state. This
+> effectively sets the floor package P state to the requested P state on
+> the offline core.
+> 
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> ---
+>  Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
+>  drivers/cpufreq/cpufreq.c              | 3 ++-
+>  include/linux/cpufreq.h                | 1 +
+>  3 files changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+> index 8b1a445..79def80 100644
+> --- a/Documentation/cpu-freq/cpu-drivers.txt
+> +++ b/Documentation/cpu-freq/cpu-drivers.txt
+> @@ -61,7 +61,13 @@ target_index		-	See below on the differences.
+>  
+>  And optionally
+>  
+> -cpufreq_driver.exit -		A pointer to a per-CPU cleanup function.
+> +cpufreq_driver.exit -		A pointer to a per-CPU cleanup
+> +		    		function called during CPU_POST_DEAD
+> +		    		phase of cpu hotplug process.
+> +
+> +cpufreq_driver.stop -		A pointer to a per-CPU stop function
+> +			    	called during CPU_DOWN_PREPARE phase of
+> +				cpu hotplug process.
+>  
+>  cpufreq_driver.resume -		A pointer to a per-CPU resume function
+>  				which is called with interrupts disabled
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index cf485d9..bb20292 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1336,7 +1336,8 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>  						__func__, new_cpu, cpu);
+>  			}
+>  		}
+> -	}
+> +	} else if (cpufreq_driver->stop && cpufreq_driver->setpolicy)
+> +		cpufreq_driver->stop(policy);
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/cpufreq.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+Nit: Why is it an int function if the only caller doesn't check the
+return value?  It should be void.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1eafd8c..ca3c01f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1325,17 +1325,16 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 	cpus = cpumask_weight(policy->cpus);
- 	up_read(&policy->rwsem);
- 
--	if (cpu != policy->cpu) {
-+	if (cpu != policy->cpu)
- 		sysfs_remove_link(&dev->kobj, "cpufreq");
--	} else if (cpus > 1) {
-+	else if (cpus > 1) {
- 		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
- 		if (new_cpu >= 0) {
- 			update_policy_cpu(policy, new_cpu);
- 
--			if (!cpufreq_suspended) {
-+			if (!cpufreq_suspended)
- 				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
- 					 __func__, new_cpu, cpu);
--			}
- 		}
- 	}
- 
-@@ -2158,11 +2157,9 @@ int cpufreq_update_policy(unsigned int cpu)
- 		if (!policy->cur) {
- 			pr_debug("Driver did not initialize current freq\n");
- 			policy->cur = new_policy.cur;
--		} else {
--			if (policy->cur != new_policy.cur && has_target())
-+		} else if (policy->cur != new_policy.cur && has_target())
- 				cpufreq_out_of_sync(cpu, policy->cur,
- 								new_policy.cur);
--		}
- 	}
- 
- 	ret = cpufreq_set_policy(policy, &new_policy);
+>  
+>  	return 0;
+>  }
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 4d89e0e..ff8db19 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -224,6 +224,7 @@ struct cpufreq_driver {
+>  	int	(*bios_limit)	(int cpu, unsigned int *limit);
+>  
+>  	int	(*exit)		(struct cpufreq_policy *policy);
+> +	int	(*stop)		(struct cpufreq_policy *policy);
+>  	int	(*suspend)	(struct cpufreq_policy *policy);
+>  	int	(*resume)	(struct cpufreq_policy *policy);
+>  	struct freq_attr	**attr;
+> 
+
 -- 
-1.8.5.3
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
