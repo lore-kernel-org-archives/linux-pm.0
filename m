@@ -1,110 +1,49 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: Remove unnecessary braces
-Date: Thu, 20 Mar 2014 01:25:13 +0200
-Message-ID: <532A2759.1000708@semaphore.gr>
-References: <532A0D0C.50507@semaphore.gr> <93042283.W9rbzHbJB2@vostro.rjw.lan>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v7 1/2] ARM: avoid tracers in soft_restart
+Date: Wed, 19 Mar 2014 16:26:52 -0700
+Message-ID: <CADHgK6ssL=0XcM_shGmb9z1T3w5L5OWEJgs-v9VyT3=USwY4FQ@mail.gmail.com>
+References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
+	<1394016605-24120-2-git-send-email-sebastian.capella@linaro.org>
+	<531908b6.44f8440a.03ab.0cce@mx.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <93042283.W9rbzHbJB2@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f177.google.com ([74.125.82.177]:46939 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756109AbaCSX0x (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 19:26:53 -0400
+Received: by mail-we0-f177.google.com with SMTP id u57so33351wes.22
+        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 16:26:52 -0700 (PDT)
+In-Reply-To: <531908b6.44f8440a.03ab.0cce@mx.google.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <tj@kernel.org>, Stephen Warren <swarren@nvidia.com>, Steven Capper <steve.capper@linaro.org>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Robin Holt <robin.m.holt@gmail.com>, Will Deacon <will.deacon@arm.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Russell King <linux@arm.linux.org.uk>
 
-On 20/03/2014 12:45 =CF=80=CE=BC, Rafael J. Wysocki wrote:
-> On Wednesday, March 19, 2014 11:33:00 PM Stratos Karafotis wrote:
->> Remove 3 sets of unnecessary braces
->>
->> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
->> ---
->>  drivers/cpufreq/cpufreq.c | 11 ++++-------
->>  1 file changed, 4 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 1eafd8c..ca3c01f 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -1325,17 +1325,16 @@ static int __cpufreq_remove_dev_prepare(stru=
-ct device *dev,
->>  	cpus =3D cpumask_weight(policy->cpus);
->>  	up_read(&policy->rwsem);
->> =20
->> -	if (cpu !=3D policy->cpu) {
->> +	if (cpu !=3D policy->cpu)
->>  		sysfs_remove_link(&dev->kobj, "cpufreq");
->> -	} else if (cpus > 1) {
->=20
-> These braces aren't in fact unnecessary, they are in accordance with =
-CodingStyle.
->=20
->> +	else if (cpus > 1) {
->>  		new_cpu =3D cpufreq_nominate_new_policy_cpu(policy, cpu);
->>  		if (new_cpu >=3D 0) {
->>  			update_policy_cpu(policy, new_cpu);
->> =20
->> -			if (!cpufreq_suspended) {
->> +			if (!cpufreq_suspended)
->>  				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
->>  					 __func__, new_cpu, cpu);
->> -			}
->>  		}
->>  	}
->> =20
->> @@ -2158,11 +2157,9 @@ int cpufreq_update_policy(unsigned int cpu)
->>  		if (!policy->cur) {
->>  			pr_debug("Driver did not initialize current freq\n");
->>  			policy->cur =3D new_policy.cur;
->> -		} else {
->> -			if (policy->cur !=3D new_policy.cur && has_target())
->> +		} else if (policy->cur !=3D new_policy.cur && has_target())
->=20
-> And here too.
->=20
->>  				cpufreq_out_of_sync(cpu, policy->cur,
->>  								new_policy.cur);
->> -		}
->>  	}
->> =20
->>  	ret =3D cpufreq_set_policy(policy, &new_policy);
->>
->=20
+On 6 March 2014 15:45, Sebastian Capella <sebastian.capella@linaro.org> wrote:
+> Quoting Sebastian Capella (2014-03-05 02:50:04)
+>> Use of tracers in local_irq_disable is causes recursive aborts when
+>> called with irqs disabled and using a temporary stack (hibernation).
+>> Replace local_irq_disable with raw_local_irq_disable instead to
+>> avoid tracers.
 
-I'm sorry for the inconvenience. I read again the CodingStyle (more car=
-efully :) ).
-I'm sending the corrected patch with the single case of unnecessary bra=
-ces.
+> I have not heard any feedback on this change, since V3 of the
+> patchset.
+> Is everyone ok with this as it is?
+> Thomas, thanks for proposing this, is this looking ok to you?
+
+ping
+
+I haven't received any further communication / acks on this particular
+patch, since Russell's ~approval below:
+
+On 26 February 2014 15:37, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> Great, I'm happy with this now.  I assume that the plan is to submit this
+>  to my patch system when everyone's given their fill of acks?
+
+Is this ok as it is?
 
 Thanks,
-Stratos
 
-------------------------8<-----------------------
-Remove unnecessary braces from a single statement.
-
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/cpufreq.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e3aa9de..220c4a9 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1330,10 +1330,9 @@ static int __cpufreq_remove_dev_prepare(struct d=
-evice *dev,
- 		if (new_cpu >=3D 0) {
- 			update_policy_cpu(policy, new_cpu);
-=20
--			if (!cpufreq_suspended) {
-+			if (!cpufreq_suspended)
- 				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
- 					 __func__, new_cpu, cpu);
--			}
- 		}
- 	}
-=20
---=20
-1.8.5.3
-
-
+Sebastian
