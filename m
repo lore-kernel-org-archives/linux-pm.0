@@ -1,88 +1,64 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC v3] cpufreq: Make sure frequency transitions are serialized
-Date: Wed, 19 Mar 2014 23:08:49 +0530
-Message-ID: <5329D629.6000004@linux.vnet.ibm.com>
-References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org> <532840FD.308@linux.vnet.ibm.com> <CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com> <53296870.5010505@linux.vnet.ibm.com> <CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com> <53298A7D.3080400@linux.vnet.ibm.com> <CAKohpomQjvkAaty-nBSb=Qyxvk0RhvkwNXC9194gmYr6Vpw5WA@mail.gmail.com> <5329AE56.8080204@linux.vnet.ibm.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
+Date: Wed, 19 Mar 2014 13:47:38 -0700
+Message-ID: <CADHgK6vLB3h0zrdpve=ZyjNu2pe1VYsGxrYgv=2C-JV37vE9tQ@mail.gmail.com>
+References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
+	<1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
+	<20140316070917.GA3094@arch.cereza>
+	<CADHgK6s58EJyJxB-47K8w26H8ZCBFQ2zu7PGAQU9O+2g7=fPwA@mail.gmail.com>
+	<20140317204410.GA1118@arch.cereza>
+	<CADHgK6tHngKVZS=jo=VYt3Nt3dhiEmiWr28iDy7q_uR9goBj=Q@mail.gmail.com>
+	<20140319154434.GA3488@arch.cereza>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp04.in.ibm.com ([122.248.162.4]:57071 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbaCSRjH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 13:39:07 -0400
-Received: from /spool/local
-	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 19 Mar 2014 23:09:04 +0530
-In-Reply-To: <5329AE56.8080204@linux.vnet.ibm.com>
+Received: from mail-wi0-f169.google.com ([209.85.212.169]:33310 "EHLO
+	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbaCSUrj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 16:47:39 -0400
+Received: by mail-wi0-f169.google.com with SMTP id hm4so5346317wib.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 13:47:38 -0700 (PDT)
+In-Reply-To: <20140319154434.GA3488@arch.cereza>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <jonathan.austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Victor Kamensky <victor.kamensky@linaro.org>, Will Deacon <will.deacon@arm.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Sricharan R <r.sricharan@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, Nicolas Pitre <nico@linaro.org>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Laura Abbott <lauraa@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Boyd <sboyd@codeaurora.org>"linux-arm-kernel@lists.infradead.org" <linux>
 
-On 03/19/2014 08:18 PM, Srivatsa S. Bhat wrote:
-> On 03/19/2014 07:05 PM, Viresh Kumar wrote:
->> On 19 March 2014 17:45, Srivatsa S. Bhat
->> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->>> +       bool                    transition_ongoing; /* Tracks transition status */
->>> +       struct mutex            transition_lock;
->>> +       wait_queue_head_t       transition_wait;
->>
->> Similar to what I have done in my last version, why do you need
->> transition_ongoing and transition_wait? Simply work with
->> transition_lock? i.e. Acquire it for the complete transition sequence.
->>
-> 
-> We *can't* acquire it for the complete transition sequence
-> in case of drivers that do asynchronous notification, because
-> PRECHANGE is done in one thread and POSTCHANGE is done in a
-> totally different thread! You can't acquire a lock in one
-> task and release it in a different task. That would be a
-> fundamental violation of locking.
-> 
-> That's why I introduced the wait queue to help us create
-> a "flow" which encompasses 2 different, but co-ordinating
-> tasks. You simply can't do that elegantly by using plain
-> locks alone.
-> 
+On 19 March 2014 08:44, Ezequiel Garcia
+<ezequiel.garcia@free-electrons.com> wrote:
+> Tested-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Thanks!
+> On the other side, this board has no pm_power_off() support, which means
+> kernel_halt() is called after kernel_power_off().
+>
+> I'm not sure if a NULL pm_power_off() is supported, but this makes my kernel
+> crash in a reboot notifier that's called twice (first in kernel_power_off
+> and then in kernel_halt):
 
-By the way, note the updated changelog in my patch. It includes a brief
-overview of the synchronization design, which is copy-pasted below for
-reference. I forgot to mention this earlier!
+The omap board I'm using has a null pm_power_off.  I added code to
+bypass kernel_power_off in the event pm_power_off is null like this:
 
------
 
-This patch introduces a set of synchronization primitives to serialize
-frequency transitions, which are to be used as shown below:
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index a5f702a..d96b910 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -594,7 +594,8 @@ static void power_down(void)
+        case HIBERNATION_PLATFORM:
+                hibernation_platform_enter();
+        case HIBERNATION_SHUTDOWN:
+-               kernel_power_off();
++               if (pm_power_off)
++                       kernel_power_off();
+                break;
+ #ifdef CONFIG_SUSPEND
+        case HIBERNATION_SUSPEND:
 
-cpufreq_freq_transition_begin();
 
-//Perform the frequency change
+This follows the behavior in the reboot syscall which does it this way
+also.  I'm testing this now, and it seems work fine.  If this looks
+good, I can add it as an additional patch.
 
-cpufreq_freq_transition_end();
+Thanks,
 
-The _begin() call sends the PRECHANGE notification whereas the _end() call
-sends the POSTCHANGE notification. Also, all the necessary synchronization
-is handled within these calls. In particular, even drivers which set the
-ASYNC_NOTIFICATION flag can also use these APIs for performing frequency
-transitions (ie., you can call _begin() from one task, and call the
-corresponding _end() from a different task).
-
-The actual synchronization underneath is not that complicated:
-
-The key challenge is to allow drivers to begin the transition from one thread
-and end it in a completely different thread (this is to enable drivers that do
-asynchronous POSTCHANGE notification from bottom-halves, to also use the same
-interface).
-
-To achieve this, a 'transition_ongoing' flag, a 'transition_lock' mutex and a
-wait-queue are added per-policy. The flag and the wait-queue are used in
-conjunction to create an "uninterrupted flow" from _begin() to _end(). The
-mutex-lock is used to ensure that only one such "flow" is in flight at any
-given time. Put together, this provides us all the necessary synchronization.
-
-Regards,
-Srivatsa S. Bhat
-
+Sebastian
