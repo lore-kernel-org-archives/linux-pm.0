@@ -1,81 +1,73 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [RFC PATCH 3/6] PM / Voltagedomain: introduce voltage domain driver
- support
-Date: Wed, 19 Mar 2014 15:35:36 -0700
-Message-ID: <20140319223536.31449.32103@quantum>
-References: <1392755543-28335-1-git-send-email-nm@ti.com>
- <1392755543-28335-4-git-send-email-nm@ti.com>
- <20140224015826.GU25940@sirena.org.uk> <530B594F.2030500@ti.com>
- <20140303035426.GC2411@sirena.org.uk> <531DF250.5060100@ti.com>
- <20140310172221.GT28112@sirena.org.uk> <531DF931.1060108@ti.com>
- <20140310180131.GZ28112@sirena.org.uk> <531E11B7.6080109@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] MAINTAINERS: Reorder maintainer addresses for PM and ACPI
+Date: Thu, 20 Mar 2014 00:00:14 +0100
+Message-ID: <1744772.yf52reTAmC@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <531E11B7.6080109@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, devicetree@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Nishanth Menon (2014-03-10 12:25:43)
-> On 03/10/2014 01:01 PM, Mark Brown wrote:
-> > On Mon, Mar 10, 2014 at 12:41:05PM -0500, Nishanth Menon wrote:
-> > 
-> >> The only other options are:
-> >> a) Abstract it at a higher level at "user drivers", since they are
-> >> aware of the sequencing needs - but this partially defeats the
-> >> purpose, unless ofcourse, we do a tricky implementation such as:
-> >> clk a, b, c -> prenotifiers in a, postnotifiers in c (which as you
-> >> mentioned is a little trickier to get right).
-> >> b) introduce a higher level generic dvfs function[1] which does not
-> >> seem very attractive either.
+From: Rafael J. Wysocki <rjw@rjwysocki.net>
 
-I disagree that a higher level DVFS interface is unattractive. I think
-it has taken a while to get there but people are finally interested in
-this. A small amount of discussion about this took place at Linaro
-Connect earlier this month (just hallway talk) but we shouldn't rule out
-the idea of a general framework for managing DVFS, which frankly is
-complex enough to merit not being shoved into the clock layer.
+For a few subsystems I am the person who actually applies patches
+and people don't CC me on patch submissions, because my address is
+not the first one in the given MAINTAINERS item.
 
-> > 
-> >> Any other suggestions other than limiting the usage(and documenting it
-> >> so) and hoping for a future evolution to take this into consideration?
-> > 
-> > Something might be doable with telling the clock API about maintianing
-> > ratios between clocks?  I do think we should have an idea where we'd go
-> > with such requirements, even if we don't currently handle it, so that we
-> > can hopefully avoid another round of refactoring everything but it
-> > doesn't seem 100% essential, just very nice to have.
+Reorder PM and ACPI maintainer addresses in MAINTAINERS to make
+the probability of that a bit smaller.
 
-This sounds reasonable but I must point out that the clock framework
-today (based on the existing clk.h api) does not have a single instance
-of constraint-based logic. For instance there is no clk_set_min_rate or
-clk_set_max_rate or clk_set_rate_range. These have been discussed before
-but I feel that pushing something before now would have been premature
-given that the level of discussion around those features never hit
-critical mass.
+Signed-off-by: Rafael J. Wysocki <rjw@rjwysocki.net>
+---
+ MAINTAINERS |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-So the ratio thing is sensible, but it would be the first
-constraint-like mechanism in the clock framework so what that looks like
-bares careful consideration.
+Index: linux-pm/MAINTAINERS
+===================================================================
+--- linux-pm.orig/MAINTAINERS
++++ linux-pm/MAINTAINERS
+@@ -242,8 +242,8 @@ S:	Maintained
+ F:	drivers/platform/x86/acer-wmi.c
+ 
+ ACPI
+-M:	Len Brown <lenb@kernel.org>
+ M:	Rafael J. Wysocki <rjw@rjwysocki.net>
++M:	Len Brown <lenb@kernel.org>
+ L:	linux-acpi@vger.kernel.org
+ W:	https://01.org/linux-acpi
+ Q:	https://patchwork.kernel.org/project/linux-acpi/list/
+@@ -3657,8 +3657,8 @@ S:	Maintained
+ F:	fs/freevxfs/
+ 
+ FREEZER
++M:	Rafael J. Wysocki <rjw@rjwysocki.net>
+ M:	Pavel Machek <pavel@ucw.cz>
+-M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+ L:	linux-pm@vger.kernel.org
+ S:	Supported
+ F:	Documentation/power/freezing-of-tasks.txt
+@@ -4022,8 +4022,8 @@ S:	Maintained
+ F:	drivers/video/hgafb.c
+ 
+ HIBERNATION (aka Software Suspend, aka swsusp)
++M:	Rafael J. Wysocki <rjw@rjwysocki.net>
+ M:	Pavel Machek <pavel@ucw.cz>
+-M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+ L:	linux-pm@vger.kernel.org
+ S:	Supported
+ F:	arch/x86/power/
+@@ -8425,9 +8425,9 @@ F:	arch/sh/
+ F:	drivers/sh/
+ 
+ SUSPEND TO RAM
++M:	Rafael J. Wysocki <rjw@rjwysocki.net>
+ M:	Len Brown <len.brown@intel.com>
+ M:	Pavel Machek <pavel@ucw.cz>
+-M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+ L:	linux-pm@vger.kernel.org
+ S:	Supported
+ F:	Documentation/power/
 
-> > 
-> Mike,
-> Any suggestions about the above? could we use composite clocks in some
-> manner here(even though I think the original intent of the same was
-> not the same)?
-
-NACK. Let's just model the hardware in the clock framework, please. If
-you need to invent fake clocks to represent other constructs then it
-means the framework is missing something (or we're missing an entire
-framework, e.g. DVFS).
-
-Regards,
-Mike
-
-> 
-> -- 
-> Regards,
-> Nishanth Menon
