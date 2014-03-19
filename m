@@ -1,201 +1,35 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: remove unused notifier: CPUFREQ_{SUSPENDCHANGE|RESUMECHANGE}
-Date: Wed, 19 Mar 2014 14:27:01 +0100
-Message-ID: <3412995.vP12DfufVI@vostro.rjw.lan>
-References: <6ccbcafd3e17a4c34a9ed7f4f1927205512aa180.1395208441.git.viresh.kumar@linaro.org> <53293E91.9020901@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC v3] cpufreq: Make sure frequency transitions are serialized
+Date: Wed, 19 Mar 2014 19:05:45 +0530
+Message-ID: <CAKohpomQjvkAaty-nBSb=Qyxvk0RhvkwNXC9194gmYr6Vpw5WA@mail.gmail.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+	<532840FD.308@linux.vnet.ibm.com>
+	<CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
+	<53296870.5010505@linux.vnet.ibm.com>
+	<CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
+	<53298A7D.3080400@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51917 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965089AbaCSNLb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 09:11:31 -0400
-In-Reply-To: <53293E91.9020901@linux.vnet.ibm.com>
+Received: from mail-qc0-f180.google.com ([209.85.216.180]:61200 "EHLO
+	mail-qc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933804AbaCSNfq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 09:35:46 -0400
+Received: by mail-qc0-f180.google.com with SMTP id w7so3261366qcr.11
+        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 06:35:46 -0700 (PDT)
+In-Reply-To: <53298A7D.3080400@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
 
-On Wednesday, March 19, 2014 12:22:01 PM Srivatsa S. Bhat wrote:
-> On 03/19/2014 11:24 AM, Viresh Kumar wrote:
-> > Two cpufreq notifiers CPUFREQ_RESUMECHANGE and CPUFREQ_SUSPENDCHANGE were unused
-> > since sometime. And so better remove them to clean code a bit.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+On 19 March 2014 17:45, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> +       bool                    transition_ongoing; /* Tracks transition status */
+> +       struct mutex            transition_lock;
+> +       wait_queue_head_t       transition_wait;
 
-Queued up for 3.15, thanks!
-
-
-> > ---
-> >  Documentation/cpu-freq/core.txt       | 4 ----
-> >  arch/arm/kernel/smp.c                 | 3 +--
-> >  arch/arm/kernel/smp_twd.c             | 2 +-
-> >  arch/arm/mach-pxa/viper.c             | 3 ---
-> >  arch/powerpc/oprofile/op_model_cell.c | 3 +--
-> >  arch/sparc/kernel/time_64.c           | 3 +--
-> >  arch/x86/kernel/tsc.c                 | 3 +--
-> >  drivers/cpufreq/cpufreq.c             | 3 +--
-> >  drivers/pcmcia/sa11xx_base.c          | 3 ---
-> >  drivers/tty/serial/sh-sci.c           | 3 +--
-> >  include/linux/cpufreq.h               | 2 --
-> >  11 files changed, 7 insertions(+), 25 deletions(-)
-> > 
-> > diff --git a/Documentation/cpu-freq/core.txt b/Documentation/cpu-freq/core.txt
-> > index ce0666e..0060d76 100644
-> > --- a/Documentation/cpu-freq/core.txt
-> > +++ b/Documentation/cpu-freq/core.txt
-> > @@ -92,7 +92,3 @@ values:
-> >  cpu	- number of the affected CPU
-> >  old	- old frequency
-> >  new	- new frequency
-> > -
-> > -If the cpufreq core detects the frequency has changed while the system
-> > -was suspended, these notifiers are called with CPUFREQ_RESUMECHANGE as
-> > -second argument.
-> > diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-> > index b7b4c86..7c4fada 100644
-> > --- a/arch/arm/kernel/smp.c
-> > +++ b/arch/arm/kernel/smp.c
-> > @@ -674,8 +674,7 @@ static int cpufreq_callback(struct notifier_block *nb,
-> >  	}
-> > 
-> >  	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
-> > -	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
-> > -	    (val == CPUFREQ_RESUMECHANGE || val == CPUFREQ_SUSPENDCHANGE)) {
-> > +	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-> >  		loops_per_jiffy = cpufreq_scale(global_l_p_j_ref,
-> >  						global_l_p_j_ref_freq,
-> >  						freq->new);
-> > diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
-> > index 6591e26..dfc3213 100644
-> > --- a/arch/arm/kernel/smp_twd.c
-> > +++ b/arch/arm/kernel/smp_twd.c
-> > @@ -166,7 +166,7 @@ static int twd_cpufreq_transition(struct notifier_block *nb,
-> >  	 * frequency.  The timer is local to a cpu, so cross-call to the
-> >  	 * changing cpu.
-> >  	 */
-> > -	if (state == CPUFREQ_POSTCHANGE || state == CPUFREQ_RESUMECHANGE)
-> > +	if (state == CPUFREQ_POSTCHANGE)
-> >  		smp_call_function_single(freqs->cpu, twd_update_frequency,
-> >  			NULL, 1);
-> > 
-> > diff --git a/arch/arm/mach-pxa/viper.c b/arch/arm/mach-pxa/viper.c
-> > index 29905b1..41f27f6 100644
-> > --- a/arch/arm/mach-pxa/viper.c
-> > +++ b/arch/arm/mach-pxa/viper.c
-> > @@ -885,9 +885,6 @@ static int viper_cpufreq_notifier(struct notifier_block *nb,
-> >  			viper_set_core_cpu_voltage(freq->new, 0);
-> >  		}
-> >  		break;
-> > -	case CPUFREQ_RESUMECHANGE:
-> > -		viper_set_core_cpu_voltage(freq->new, 0);
-> > -		break;
-> >  	default:
-> >  		/* ignore */
-> >  		break;
-> > diff --git a/arch/powerpc/oprofile/op_model_cell.c b/arch/powerpc/oprofile/op_model_cell.c
-> > index 1f0ebde..863d893 100644
-> > --- a/arch/powerpc/oprofile/op_model_cell.c
-> > +++ b/arch/powerpc/oprofile/op_model_cell.c
-> > @@ -1121,8 +1121,7 @@ oprof_cpufreq_notify(struct notifier_block *nb, unsigned long val, void *data)
-> >  	int ret = 0;
-> >  	struct cpufreq_freqs *frq = data;
-> >  	if ((val == CPUFREQ_PRECHANGE && frq->old < frq->new) ||
-> > -	    (val == CPUFREQ_POSTCHANGE && frq->old > frq->new) ||
-> > -	    (val == CPUFREQ_RESUMECHANGE || val == CPUFREQ_SUSPENDCHANGE))
-> > +	    (val == CPUFREQ_POSTCHANGE && frq->old > frq->new))
-> >  		set_spu_profiling_frequency(frq->new, spu_cycle_reset);
-> >  	return ret;
-> >  }
-> > diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
-> > index c3d82b5..b397e05 100644
-> > --- a/arch/sparc/kernel/time_64.c
-> > +++ b/arch/sparc/kernel/time_64.c
-> > @@ -659,8 +659,7 @@ static int sparc64_cpufreq_notifier(struct notifier_block *nb, unsigned long val
-> >  		ft->clock_tick_ref = cpu_data(cpu).clock_tick;
-> >  	}
-> >  	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
-> > -	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
-> > -	    (val == CPUFREQ_RESUMECHANGE)) {
-> > +	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-> >  		cpu_data(cpu).clock_tick =
-> >  			cpufreq_scale(ft->clock_tick_ref,
-> >  				      ft->ref_freq,
-> > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> > index cfbe99f..7a9296a 100644
-> > --- a/arch/x86/kernel/tsc.c
-> > +++ b/arch/x86/kernel/tsc.c
-> > @@ -914,8 +914,7 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> >  		tsc_khz_ref = tsc_khz;
-> >  	}
-> >  	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
-> > -			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
-> > -			(val == CPUFREQ_RESUMECHANGE)) {
-> > +			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-> >  		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
-> > 
-> >  		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index bf7f9c2..d0f0b7b 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -264,8 +264,7 @@ static void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
-> >  		pr_debug("saving %lu as reference value for loops_per_jiffy; freq is %u kHz\n",
-> >  			 l_p_j_ref, l_p_j_ref_freq);
-> >  	}
-> > -	if ((val == CPUFREQ_POSTCHANGE && ci->old != ci->new) ||
-> > -	    (val == CPUFREQ_RESUMECHANGE || val == CPUFREQ_SUSPENDCHANGE)) {
-> > +	if (val == CPUFREQ_POSTCHANGE && ci->old != ci->new) {
-> >  		loops_per_jiffy = cpufreq_scale(l_p_j_ref, l_p_j_ref_freq,
-> >  								ci->new);
-> >  		pr_debug("scaling loops_per_jiffy to %lu for frequency %u kHz\n",
-> > diff --git a/drivers/pcmcia/sa11xx_base.c b/drivers/pcmcia/sa11xx_base.c
-> > index 6eecd7c..54d3089 100644
-> > --- a/drivers/pcmcia/sa11xx_base.c
-> > +++ b/drivers/pcmcia/sa11xx_base.c
-> > @@ -125,9 +125,6 @@ sa1100_pcmcia_frequency_change(struct soc_pcmcia_socket *skt,
-> >  		if (freqs->new < freqs->old)
-> >  			sa1100_pcmcia_set_mecr(skt, freqs->new);
-> >  		break;
-> > -	case CPUFREQ_RESUMECHANGE:
-> > -		sa1100_pcmcia_set_mecr(skt, freqs->new);
-> > -		break;
-> >  	}
-> > 
-> >  	return 0;
-> > diff --git a/drivers/tty/serial/sh-sci.c b/drivers/tty/serial/sh-sci.c
-> > index be33d2b..7e0b626 100644
-> > --- a/drivers/tty/serial/sh-sci.c
-> > +++ b/drivers/tty/serial/sh-sci.c
-> > @@ -1041,8 +1041,7 @@ static int sci_notifier(struct notifier_block *self,
-> > 
-> >  	sci_port = container_of(self, struct sci_port, freq_transition);
-> > 
-> > -	if ((phase == CPUFREQ_POSTCHANGE) ||
-> > -	    (phase == CPUFREQ_RESUMECHANGE)) {
-> > +	if (phase == CPUFREQ_POSTCHANGE) {
-> >  		struct uart_port *port = &sci_port->port;
-> > 
-> >  		spin_lock_irqsave(&port->lock, flags);
-> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > index e5cebce..4c3bcdc 100644
-> > --- a/include/linux/cpufreq.h
-> > +++ b/include/linux/cpufreq.h
-> > @@ -320,8 +320,6 @@ static inline void cpufreq_resume(void) {}
-> >  /* Transition notifiers */
-> >  #define CPUFREQ_PRECHANGE		(0)
-> >  #define CPUFREQ_POSTCHANGE		(1)
-> > -#define CPUFREQ_RESUMECHANGE		(8)
-> > -#define CPUFREQ_SUSPENDCHANGE		(9)
-> > 
-> >  /* Policy Notifiers  */
-> >  #define CPUFREQ_ADJUST			(0)
-> > 
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Similar to what I have done in my last version, why do you need
+transition_ongoing and transition_wait? Simply work with
+transition_lock? i.e. Acquire it for the complete transition sequence.
