@@ -1,143 +1,53 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCHv2 4/8] devfreq: exynos4: Fix bug of resource leak and code
- clean on probe()
-Date: Wed, 19 Mar 2014 11:46:04 +0900
-Message-ID: <532904EC.3090101@samsung.com>
-References: <1394698649-20996-1-git-send-email-cw00.choi@samsung.com>
- <1394698649-20996-5-git-send-email-cw00.choi@samsung.com>
- <53234132.8080202@samsung.com> <532682A8.2030300@samsung.com>
- <532839A5.8020505@samsung.com>
+From: "Zhuoyu.Zhang@freescale.com" <Zhuoyu.Zhang@freescale.com>
+Subject: RE: [PATCH] cpufreq: powerpc: replace CPUFREQ_ETERNAL with cpufreq
+ transition latency for FSL e500mc Socs
+Date: Wed, 19 Mar 2014 03:51:59 +0000
+Message-ID: <9ac578cdc68c41ef98e1639a57f2772f@BN1PR03MB154.namprd03.prod.outlook.com>
+References: <1395034168-7342-1-git-send-email-Zhuoyu.Zhang@freescale.com>
+ <2143464.l2G8tITm4N@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <532839A5.8020505@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, nm@ti.com, b.zolnierkie@samsaung.com, pawel.moll@arm.com, mark.rutland@arm.com, swarren@wwwdotorg.org, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-doc@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2143464.l2G8tITm4N@vostro.rjw.lan>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang <Yuantian.Tang@freescale.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tomasz,
-
-On 03/18/2014 09:18 PM, Tomasz Figa wrote:
-> On 17.03.2014 06:05, Chanwoo Choi wrote:
->> Hi Tomasz,
->>
->> On 03/15/2014 02:49 AM, Tomasz Figa wrote:
->>> Hi Chanwoo,
->>>
->>> On 13.03.2014 09:17, Chanwoo Choi wrote:
->>>> This patch fix bug about resource leak when happening probe fail and code clean
->>>> to add debug message.
->>>>
->>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>> ---
->>>>    drivers/devfreq/exynos/exynos4_bus.c | 32 ++++++++++++++++++++++++++------
->>>>    1 file changed, 26 insertions(+), 6 deletions(-)
->>>>
->>>> diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
->>>> index a2a3a47..152a3e9 100644
->>>> --- a/drivers/devfreq/exynos/exynos4_bus.c
->>>> +++ b/drivers/devfreq/exynos/exynos4_bus.c
->>>> @@ -1152,8 +1152,11 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>>>            dev_err(dev, "Cannot determine the device id %d\n", data->type);
->>>>            err = -EINVAL;
->>>>        }
->>>> -    if (err)
->>>> +    if (err) {
->>>> +        dev_err(dev, "Cannot initialize busfreq table %d\n",
->>>> +                 data->type);
->>>>            return err;
->>>> +    }
->>>>
->>>>        rcu_read_lock();
->>>>        opp = dev_pm_opp_find_freq_floor(dev,
->>>> @@ -1176,7 +1179,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>>>        if (IS_ERR(data->devfreq)) {
->>>>            dev_err(dev, "Failed to add devfreq device\n");
->>>>            err = PTR_ERR(data->devfreq);
->>>> -        goto err_opp;
->>>> +        goto err_devfreq;
->>>>        }
->>>>
->>>>        /*
->>>> @@ -1185,18 +1188,35 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
->>>>         */
->>>>        busfreq_mon_reset(data);
->>>>
->>>> -    devfreq_register_opp_notifier(dev, data->devfreq);
->>>> +    /* Register opp_notifier for Exynos4 busfreq */
->>>> +    err = devfreq_register_opp_notifier(dev, data->devfreq);
->>>> +    if (err < 0) {
->>>> +        dev_err(dev, "Failed to register opp notifier\n");
->>>> +        goto err_notifier_opp;
->>>> +    }
->>>>
->>>> +    /* Register pm_notifier for Exynos4 busfreq */
->>>>        err = register_pm_notifier(&data->pm_notifier);
->>>>        if (err) {
->>>>            dev_err(dev, "Failed to setup pm notifier\n");
->>>> -        devfreq_remove_device(data->devfreq);
->>>> -        return err;
->>>> +        goto err_notifier_pm;
->>>>        }
->>>>
->>>>        return 0;
->>>>
->>>> -err_opp:
->>>> +err_notifier_pm:
->>>> +    devfreq_unregister_opp_notifier(dev, data->devfreq);
->>>> +err_notifier_opp:
->>>> +    /*
->>>> +     * The devfreq_remove_device() would execute finally devfreq->profile
->>>> +     * ->exit(). To avoid duplicate resource free operation, return directly
->>>> +     * before executing resource free below 'err_devfreq' goto statement.
->>>> +     */
->>>
->>> I'm not quite sure about this. I believe that in this case devfreq->profile->exit() would be exynos4_bus_exit() and all it does is devfreq_unregister_opp_notifier(dev, data->devfreq), so all remaining resources (regulators, clocks, etc.) would get leaked.
->>
->> This patch execute following sequence to probe exynos4_busfreq.c:
->>
->> 1. Parse dt node to get resource(regulator/clock/memory address).
->> 2. Enable regulator/clock and map memory.
->> 3. Add devfreq device using devfreq_add_device().
->>     The devfreq_add_device() return devfreq instance(data->devfreq).
->> 4. Register opp_notifier using devfreq instance(data->devfreq) which is created in sequence #3.
->>
->> Case 1,
->> If an error happens in sequence #3 for registering devfreq_add_device(),
->>
->> this case can't execute devfreq->profile->exit() to free resource
->> because this case has failed to register devfreq->profile to devfreq_list.
->>
->> So, must goto 'err_devfreq' statement to free resource(regulator/clock/memory).
->>
->>
->> Case 2,
->> If an error happens in sequence #4 for registering opp_notifier,
->>
->> In contrast
->> this case can execute devfreq->profile->exit() to free resource.
->> But, After executed devfreq->profile->exit(),
->> should not execute 'err_devfreq' statement to free resource.
->> In case, will operate twice of resource.
->>
->> If my explanation is wrong, please reply your comment.
->>
-> 
-> OK, it will work indeed, however the code is barely readable with this.
-> 
-> For consistency (and readability), resources acquired in platform driver's .probe() should be freed in .remove() and error path of .probe() should not rely on external code to do the clean-up.
-> 
-> So, as I proposed in my previous reply:
-
-OK, I'll modify it according to your previous comment.
-
-> 
->>>
->>> I believe the correct thing to do would be to remove the .exit() callback from exynos4_devfreq_profile struct and handle all the clean-up here in error path.
->>>
-
-Best Regards,
-Chanwoo Choi
- 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogV2VkbmVzZGF5LCBNYXJjaCAx
+OSwgMjAxNCA5OjQyIEFNDQo+IFRvOiBaaGFuZyBaaHVveXUtQjQ2NTUyDQo+IENjOiB2aXJlc2gu
+a3VtYXJAbGluYXJvLm9yZzsgY3B1ZnJlcUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBwbUB2
+Z2VyLmtlcm5lbC5vcmc7IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0hdIGNwdWZyZXE6IHBvd2VycGM6IHJlcGxhY2UgQ1BVRlJFUV9FVEVSTkFMIHdpdGgNCj4gY3B1
+ZnJlcSB0cmFuc2l0aW9uIGxhdGVuY3kgZm9yIEZTTCBlNTAwbWMgU29jcw0KPiANCj4gT24gTW9u
+ZGF5LCBNYXJjaCAxNywgMjAxNCAwMToyOToyOCBQTSBaaHVveXUgWmhhbmcgd3JvdGU6DQo+ID4g
+QWNjb3JkaW5nIHRvIHRoZSBkYXRhIHByb3ZpZGVkIGJ5IEhXIFRlYW0sIGF0IGxlYXN0IDEyIGlu
+dGVybmFsDQo+ID4gcGxhdGZvcm0gY2xvY2sgY3ljbGVzIGFyZSByZXF1aXJlZCB0byBzdGFiaWxp
+emUgYSBERlMgY2xvY2sgc3dpdGNoIG9uDQo+ID4gRlNMIGU1MDBtYyBTb2NzLiBUaGlzIHBhdGNo
+IHJlcGxhY2VzIHRoZSBDUFVGUkVRX0VURVJOQUwgd2l0aA0KPiBhcHByb3ByaWF0ZSBIVyBjbG9j
+ayB0cmFuc2l0aW9uIGxhdGVuY3kgdG8gbWFrZSBERlMgZ292ZXJub3JzIHdvcmsNCj4gbm9ybWFs
+bHkgb24gRnJlZXNjYWxlIGU1MDBtYyBib2FyZHMuDQo+IA0KPiBQbGVhc2Ugc2lnbiBvZmYgdGhl
+IHBhdGNoLiAgSSBjYW4ndCBhcHBseSBpdCB3aXRob3V0IHlvdXIgc2lnbi1vZmYuDQoNClNvcnJ5
+IHRvIG1pc3MgdGhlICJzaWduLW9mZiIsIEkgYWxyZWFkeSBzZW50IGFub3RoZXIgdmVyc2lvbiBm
+b3IgeW91ciByZXZpZXcuDQoNCi0tWmh1b3l1DQoNCj4gDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMv
+Y3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAzICsrLQ0KPiA+ICAxIGZpbGUgY2hhbmdl
+ZCwgMiBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVm
+cmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+IGluZGV4IDA1MTAwMGYuLmZmN2I2MjUgMTAw
+NjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYw0KPiA+
+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMNCj4gPiBAQCAtMjEs
+NiArMjEsNyBAQA0KPiA+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gPiAgI2luY2x1ZGUgPGxp
+bnV4L3NsYWIuaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L3NtcC5oPg0KPiA+ICsjaW5jbHVkZSA8
+c3lzZGV2L2ZzbF9zb2MuaD4NCj4gPg0KPiA+ICAvKioNCj4gPiAgICogc3RydWN0IGNwdV9kYXRh
+IC0gcGVyIENQVSBkYXRhIHN0cnVjdCBAQCAtMjA1LDcgKzIwNiw3IEBAIHN0YXRpYw0KPiA+IGlu
+dCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kp
+DQo+ID4gIAlmb3JfZWFjaF9jcHUoaSwgcGVyX2NwdShjcHVfbWFzaywgY3B1KSkNCj4gPiAgCQlw
+ZXJfY3B1KGNwdV9kYXRhLCBpKSA9IGRhdGE7DQo+ID4NCj4gPiAtCXBvbGljeS0+Y3B1aW5mby50
+cmFuc2l0aW9uX2xhdGVuY3kgPSBDUFVGUkVRX0VURVJOQUw7DQo+ID4gKwlwb2xpY3ktPmNwdWlu
+Zm8udHJhbnNpdGlvbl9sYXRlbmN5ID0gKDEyICogTlNFQ19QRVJfU0VDKSAvDQo+ID4gK2ZzbF9n
+ZXRfc3lzX2ZyZXEoKTsNCj4gPiAgCW9mX25vZGVfcHV0KG5wKTsNCj4gPg0KPiA+ICAJcmV0dXJu
+IDA7DQo+ID4NCj4gDQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZhZWwg
+Si4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo+IA0KDQo=
