@@ -1,70 +1,102 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Remove unnecessary braces
-Date: Wed, 19 Mar 2014 23:45:35 +0100
-Message-ID: <93042283.W9rbzHbJB2@vostro.rjw.lan>
-References: <532A0D0C.50507@semaphore.gr>
+Subject: Re: [PATCH 1/2] PM: Correct whitespace errors in <linux/pm.h>
+Date: Wed, 19 Mar 2014 23:50:56 +0100
+Message-ID: <6636992.81rGEKjTqL@vostro.rjw.lan>
+References: <1395087971-31897-1-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <532A0D0C.50507@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:56233 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753890AbaCSWfY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 18:35:24 -0400
+In-Reply-To: <1395087971-31897-1-git-send-email-geert@linux-m68k.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
 
-On Wednesday, March 19, 2014 11:33:00 PM Stratos Karafotis wrote:
-> Remove 3 sets of unnecessary braces
-> 
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+On Monday, March 17, 2014 09:26:10 PM Geert Uytterhoeven wrote:
+> From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+
+Why exactly are they errors?
+
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
 > ---
->  drivers/cpufreq/cpufreq.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
+>  include/linux/pm.h |   32 ++++++++++++++++----------------
+>  1 file changed, 16 insertions(+), 16 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 1eafd8c..ca3c01f 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1325,17 +1325,16 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->  	cpus = cpumask_weight(policy->cpus);
->  	up_read(&policy->rwsem);
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 8c6583a53a06..22ba7338d48c 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -379,7 +379,7 @@ const struct dev_pm_ops name = { \
+>   *
+>   * ON		No transition.
+>   *
+> - * FREEZE 	System is going to hibernate, call ->prepare() and ->freeze()
+> + * FREEZE	System is going to hibernate, call ->prepare() and ->freeze()
+>   *		for all devices.
+>   *
+>   * SUSPEND	System is going to suspend, call ->prepare() and ->suspend()
+> @@ -423,7 +423,7 @@ const struct dev_pm_ops name = { \
 >  
-> -	if (cpu != policy->cpu) {
-> +	if (cpu != policy->cpu)
->  		sysfs_remove_link(&dev->kobj, "cpufreq");
-> -	} else if (cpus > 1) {
-
-These braces aren't in fact unnecessary, they are in accordance with CodingStyle.
-
-> +	else if (cpus > 1) {
->  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
->  		if (new_cpu >= 0) {
->  			update_policy_cpu(policy, new_cpu);
->  
-> -			if (!cpufreq_suspended) {
-> +			if (!cpufreq_suspended)
->  				pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
->  					 __func__, new_cpu, cpu);
-> -			}
->  		}
->  	}
->  
-> @@ -2158,11 +2157,9 @@ int cpufreq_update_policy(unsigned int cpu)
->  		if (!policy->cur) {
->  			pr_debug("Driver did not initialize current freq\n");
->  			policy->cur = new_policy.cur;
-> -		} else {
-> -			if (policy->cur != new_policy.cur && has_target())
-> +		} else if (policy->cur != new_policy.cur && has_target())
-
-And here too.
-
->  				cpufreq_out_of_sync(cpu, policy->cur,
->  								new_policy.cur);
-> -		}
->  	}
->  
->  	ret = cpufreq_set_policy(policy, &new_policy);
+>  #define PM_EVENT_INVALID	(-1)
+>  #define PM_EVENT_ON		0x0000
+> -#define PM_EVENT_FREEZE 	0x0001
+> +#define PM_EVENT_FREEZE		0x0001
+>  #define PM_EVENT_SUSPEND	0x0002
+>  #define PM_EVENT_HIBERNATE	0x0004
+>  #define PM_EVENT_QUIESCE	0x0008
+> @@ -612,11 +612,11 @@ struct dev_pm_domain {
+>   * message is implicit:
+>   *
+>   * ON		Driver starts working again, responding to hardware events
+> - * 		and software requests.  The hardware may have gone through
+> - * 		a power-off reset, or it may have maintained state from the
+> - * 		previous suspend() which the driver will rely on while
+> - * 		resuming.  On most platforms, there are no restrictions on
+> - * 		availability of resources like clocks during resume().
+> + *		and software requests.  The hardware may have gone through
+> + *		a power-off reset, or it may have maintained state from the
+> + *		previous suspend() which the driver will rely on while
+> + *		resuming.  On most platforms, there are no restrictions on
+> + *		availability of resources like clocks during resume().
+>   *
+>   * Other transitions are triggered by messages sent using suspend().  All
+>   * these transitions quiesce the driver, so that I/O queues are inactive.
+> @@ -626,21 +626,21 @@ struct dev_pm_domain {
+>   * differ according to the message:
+>   *
+>   * SUSPEND	Quiesce, enter a low power device state appropriate for
+> - * 		the upcoming system state (such as PCI_D3hot), and enable
+> - * 		wakeup events as appropriate.
+> + *		the upcoming system state (such as PCI_D3hot), and enable
+> + *		wakeup events as appropriate.
+>   *
+>   * HIBERNATE	Enter a low power device state appropriate for the hibernation
+> - * 		state (eg. ACPI S4) and enable wakeup events as appropriate.
+> + *		state (eg. ACPI S4) and enable wakeup events as appropriate.
+>   *
+>   * FREEZE	Quiesce operations so that a consistent image can be saved;
+> - * 		but do NOT otherwise enter a low power device state, and do
+> - * 		NOT emit system wakeup events.
+> + *		but do NOT otherwise enter a low power device state, and do
+> + *		NOT emit system wakeup events.
+>   *
+>   * PRETHAW	Quiesce as if for FREEZE; additionally, prepare for restoring
+> - * 		the system from a snapshot taken after an earlier FREEZE.
+> - * 		Some drivers will need to reset their hardware state instead
+> - * 		of preserving it, to ensure that it's never mistaken for the
+> - * 		state which that earlier snapshot had set up.
+> + *		the system from a snapshot taken after an earlier FREEZE.
+> + *		Some drivers will need to reset their hardware state instead
+> + *		of preserving it, to ensure that it's never mistaken for the
+> + *		state which that earlier snapshot had set up.
+>   *
+>   * A minimally power-aware driver treats all messages as SUSPEND, fully
+>   * reinitializes its device during resume() -- whether or not it was reset
 > 
 
 -- 
