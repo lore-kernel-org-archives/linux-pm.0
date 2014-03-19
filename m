@@ -1,85 +1,88 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC 1/4] arm64: kernel: implement DT based idle states
- infrastructure
-Date: Wed, 19 Mar 2014 17:23:39 +0000
-Message-ID: <20140319172338.GA31368@e102568-lin.cambridge.arm.com>
-References: <1395138028-19630-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1395138028-19630-2-git-send-email-lorenzo.pieralisi@arm.com>
- <CAL_Jsq+M8fCreXrd7R1m=3_LKD_+jma3Pha06hRoTPMpcOb1_g@mail.gmail.com>
- <20140318180856.GB792@e102568-lin.cambridge.arm.com>
- <CADHgK6uwUDndVHQaWU=3R7A16hc4PYJCAfMLi3uBnrDjYidPXg@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC v3] cpufreq: Make sure frequency transitions are serialized
+Date: Wed, 19 Mar 2014 23:08:49 +0530
+Message-ID: <5329D629.6000004@linux.vnet.ibm.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org> <532840FD.308@linux.vnet.ibm.com> <CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com> <53296870.5010505@linux.vnet.ibm.com> <CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com> <53298A7D.3080400@linux.vnet.ibm.com> <CAKohpomQjvkAaty-nBSb=Qyxvk0RhvkwNXC9194gmYr6Vpw5WA@mail.gmail.com> <5329AE56.8080204@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:44490 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759340AbaCSRXr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 13:23:47 -0400
-In-Reply-To: <CADHgK6uwUDndVHQaWU=3R7A16hc4PYJCAfMLi3uBnrDjYidPXg@mail.gmail.com>
-Content-Disposition: inline
+Received: from e28smtp04.in.ibm.com ([122.248.162.4]:57071 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbaCSRjH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 13:39:07 -0400
+Received: from /spool/local
+	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 19 Mar 2014 23:09:04 +0530
+In-Reply-To: <5329AE56.8080204@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Rob Herring <robherring2@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsu>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
 
-On Tue, Mar 18, 2014 at 09:49:12PM +0000, Sebastian Capella wrote:
-> On 18 March 2014 11:08, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> >> > +        * When we reach the max number of CPU idle states or
-> >> > +        * head_idx == curr_idx (empty nodes queue) we are done.
-> >> > +        */
-> >> > +       head_idx = curr_idx = cnt;
-> >> > +
-> >> > +       do {
-> >> > +               curr_idx = parse_idle_states_node(curr, curr_idx, cpus);
-> >> > +               if (curr_idx == CPUIDLE_STATE_MAX || head_idx == curr_idx)
-> >> > +                       break;
-> >> > +               /*
-> >> > +                * idle_states array is updated by parse_idle_states_node(),
-> >> > +                * we can use the initialized states as a queue of nodes
-> >> > +                * that need to be checked for their idle states siblings.
-> >> > +                * head_idx works as a pointer into the queue to get the
-> >> > +                * next node to be parsed.
-> >> > +                */
-> >> > +               curr = idle_states[head_idx++].node;
-> >> > +       } while (curr);
-> >>
-> >> I still object to index property and this is why. You need to be able
-> >> to determine state order by actual h/w properties. That is what you
-> >> are doing in your head when you define the indexes.
-> >>
-> >> You really want a linked list here that you can sort as you go and not
-> >> care what order you parse DT nodes. Not to mention you don't know how
-> >> many states you will have.
-> >
-> > This code does not care about the order of nodes, the index is just there
-> > to keep track of nodes that have still to be parsed. Sorting is done later,
-> > using the index property (totally unrelated to the {head/curr}_idx) which I
-> > understand is frowned upon in DT world (but in this case I think it could be
-> > accepted, certainly it would make my life easier).
-> >
-> > Having said that, I like the idea of implementing it with a linked list and
-> > sorting states while parsing them. I will remove that index property and
-> > replace it with an actual hw property: power_consumption ? Or should I just
-> > use min_residency (the higher the required residency the deeper the idle
-> > state) ? Defining the power consumption (or better savings) for a state is
-> > an _outright_ can of worms, that's why using an index is easier.
-> >
-> > Thoughts ?
+On 03/19/2014 08:18 PM, Srivatsa S. Bhat wrote:
+> On 03/19/2014 07:05 PM, Viresh Kumar wrote:
+>> On 19 March 2014 17:45, Srivatsa S. Bhat
+>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+>>> +       bool                    transition_ongoing; /* Tracks transition status */
+>>> +       struct mutex            transition_lock;
+>>> +       wait_queue_head_t       transition_wait;
+>>
+>> Similar to what I have done in my last version, why do you need
+>> transition_ongoing and transition_wait? Simply work with
+>> transition_lock? i.e. Acquire it for the complete transition sequence.
+>>
 > 
-> How about something like rank, power_rank or power_score since it's
-> neither an index nor a physical value but a value for sorting states
-> relative to each other?
+> We *can't* acquire it for the complete transition sequence
+> in case of drivers that do asynchronous notification, because
+> PRECHANGE is done in one thread and POSTCHANGE is done in a
+> totally different thread! You can't acquire a lock in one
+> task and release it in a different task. That would be a
+> fundamental violation of locking.
+> 
+> That's why I introduced the wait queue to help us create
+> a "flow" which encompasses 2 different, but co-ordinating
+> tasks. You simply can't do that elegantly by using plain
+> locks alone.
+> 
 
-Well, if it is just a renaming issue we can use index just as well.
+By the way, note the updated changelog in my patch. It includes a brief
+overview of the synchronization design, which is copy-pasted below for
+reference. I forgot to mention this earlier!
 
-I hope that by now it is understood that the index property is not
-the state index, it is a value representing relative power consumption.
+-----
 
-Rob is asking a property describing hw, and honestly unless we define
-a power consumption property value (defining what it means will be rather
-complicated though) I'd rather remove index altogether and use min_residency
-as a comparison value instead.
+This patch introduces a set of synchronization primitives to serialize
+frequency transitions, which are to be used as shown below:
 
-Lorenzo
+cpufreq_freq_transition_begin();
+
+//Perform the frequency change
+
+cpufreq_freq_transition_end();
+
+The _begin() call sends the PRECHANGE notification whereas the _end() call
+sends the POSTCHANGE notification. Also, all the necessary synchronization
+is handled within these calls. In particular, even drivers which set the
+ASYNC_NOTIFICATION flag can also use these APIs for performing frequency
+transitions (ie., you can call _begin() from one task, and call the
+corresponding _end() from a different task).
+
+The actual synchronization underneath is not that complicated:
+
+The key challenge is to allow drivers to begin the transition from one thread
+and end it in a completely different thread (this is to enable drivers that do
+asynchronous POSTCHANGE notification from bottom-halves, to also use the same
+interface).
+
+To achieve this, a 'transition_ongoing' flag, a 'transition_lock' mutex and a
+wait-queue are added per-policy. The flag and the wait-queue are used in
+conjunction to create an "uninterrupted flow" from _begin() to _end(). The
+mutex-lock is used to ensure that only one such "flow" is in flight at any
+given time. Put together, this provides us all the necessary synchronization.
+
+Regards,
+Srivatsa S. Bhat
 
