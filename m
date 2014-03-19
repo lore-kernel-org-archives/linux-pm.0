@@ -1,28 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/2] Add stop callback to the cpufreq_driver interface.
-Date: Wed, 19 Mar 2014 19:19:13 +0530
-Message-ID: <CAKohpomkFQ0PhYja8eKC_NvX+Jc7JpDp8gpHFCDHWeeUQADwcQ@mail.gmail.com>
-References: <1394831037-15553-1-git-send-email-dirk.j.brandewie@intel.com>
-	<5240506.FBRh89S9Lg@vostro.rjw.lan>
-	<CAKohpomc9YrBrG2SJFUuixDTNY6qVhq6X39Qv+=j73dFGxQTdQ@mail.gmail.com>
-	<2106941.8EeNr4veQS@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/2] Add exit_prepare callback to the cpufreq_driver interface.
+Date: Wed, 19 Mar 2014 15:19:36 +0100
+Message-ID: <19131121.D211TBerqb@vostro.rjw.lan>
+References: <1394732168-12638-1-git-send-email-dirk.j.brandewie@intel.com> <CAKohpomLW17B=Sk42tczzDF+VGwn7hT521osWPi5TcgqpCPZ_w@mail.gmail.com> <53296AD0.5090908@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f43.google.com ([209.85.216.43]:53705 "EHLO
-	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933886AbaCSNtO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 09:49:14 -0400
-Received: by mail-qa0-f43.google.com with SMTP id j15so8502160qaq.2
-        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 06:49:13 -0700 (PDT)
-In-Reply-To: <2106941.8EeNr4veQS@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:58532 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934025AbaCSOEH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 10:04:07 -0400
+In-Reply-To: <53296AD0.5090908@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Patrick Marlier <patrick.marlier@gmail.com>
 
-On 19 March 2014 19:31, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Let's add ->stop() (or whatever to call it) *specifically* for ->setpolicy
-> drivers
+On Wednesday, March 19, 2014 03:30:48 PM Srivatsa S. Bhat wrote:
+> On 03/19/2014 10:33 AM, Viresh Kumar wrote:
+> > On 18 March 2014 17:46, Srivatsa S. Bhat
+> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> >> Agreed. As far as I understand, for ->target drivers, today we use GOV_STOP
+> >> to stop managing the CPU going offline. And for ->setpolicy drivers, we will
+> >> use this new callback to achieve the same goal.
+> > 
+> > So a better question would be: What's the purpose of ->stop() call for a policy?
+> 
+> Ideally, it should remove the outgoing CPU from the policy and "stop managing
+> that CPU", whatever that means to the driver (for intel_pstate, it means
+> setting it to min P state and destroying the timer).
+> 
+> > Stop managing CPUs of that policy?
+> 
+> Stop managing only the particular CPU going offline. IOW, we should somehow
+> communicate to the ->stop() callback that we are taking CPU 'x' offline.
+> 
+> If adding a ->stop() callback in the cpufreq_driver is not the best way to
+> achieve it, then lets think of an alternative. The way I look at it, this
+> new mechanism what we want, should allow ->setpolicy drivers to do what the
+> GOV_STOP will do for regular drivers. That is, allow it to "shutdown the
+> CPU from a cpufreq perspective", whatever that means to the driver.
+> We can think of a completely different way of achieving it, if ->stop()
+> is not suitable for that purpose.
 
-setpolicy_stop() ? I know that's a bad name :)
+I agree.
+
+That said, for the intel_pstate case ->stop() as proposed by Dirk is demonstrably
+sufficient and there are no other ->setpolicy drivers in sight wanting or needing
+anything else.
+
+So to me, (1) the new ->stop() should *only* be called for ->setpolicy drivers,
+because the purpose of it should be to "allow ->setpolicy drivers to do what the
+GOV_STOP will do for regular drivers" as you put it above, and (2) some code in
+the original intel_pstate's ->exit() may/should stay in there (instead of being
+moved to the new ->stop()), which is the only possibly remaining issue here.
+
+The whole discussion about possibly re-using ->stop() for ->target drivers goes
+in a totally wrong direction, because *if* ->target drivers need a new callback
+to be executed around where ->stop() is called for ->setpolicy drivers, *then*
+that has to be a *different* callback.
+
+And by the way, ->get() in fact has a different meaning for ->setpolicy drivers,
+so it would be good to consider logical separation of ->setpolicy and ->target
+drivers so that each kind has its own separate set of callbacks with no overlaps.
+That would make it easier to avoid breakage resulting from changes made with
+->setpolicy drivers that also affect ->target drivers in unpredictable ways and
+the other way around.
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
