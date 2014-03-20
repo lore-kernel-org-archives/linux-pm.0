@@ -1,41 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] MAINTAINERS: Reorder maintainer addresses for PM and ACPI
-Date: Thu, 20 Mar 2014 03:18:31 +0100
-Message-ID: <1951615.ZARZL5D0Yx@vostro.rjw.lan>
-References: <1744772.yf52reTAmC@vostro.rjw.lan> <20140319225409.GA22342@amd.pavel.ucw.cz>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] MAINTAINERS: Reorder maintainer addresses for PM and
+ ACPI
+Date: Wed, 19 Mar 2014 19:21:45 -0700
+Message-ID: <1395282105.8649.55.camel@joe-AO722>
+References: <1744772.yf52reTAmC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61499 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751290AbaCTCDA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 22:03:00 -0400
-In-Reply-To: <20140319225409.GA22342@amd.pavel.ucw.cz>
+Received: from smtprelay0221.hostedemail.com ([216.40.44.221]:52078 "EHLO
+	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750737AbaCTCVt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 22:21:49 -0400
+In-Reply-To: <1744772.yf52reTAmC@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <lenb@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On Wednesday, March 19, 2014 11:54:10 PM Pavel Machek wrote:
-> On Thu 2014-03-20 00:00:14, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > 
-> > For a few subsystems I am the person who actually applies patches
-> > and people don't CC me on patch submissions, because my address is
-> > not the first one in the given MAINTAINERS item.
-> > 
-> > Reorder PM and ACPI maintainer addresses in MAINTAINERS to make
-> > the probability of that a bit smaller.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> 
-> (And keep up good work :-).
+On Thu, 2014-03-20 at 00:00 +0100, Rafael J. Wysocki wrote:
 
-Thanks!
+> Reorder PM and ACPI maintainer addresses in MAINTAINERS to make
+> the probability of that a bit smaller.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>  FREEZER
+> +M:	Rafael J. Wysocki <rjw@rjwysocki.net>
+> -M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+[]
+>  HIBERNATION (aka Software Suspend, aka swsusp)
+> +M:	Rafael J. Wysocki <rjw@rjwysocki.net>
+> -M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+[]
+>  SUSPEND TO RAM
+> +M:	Rafael J. Wysocki <rjw@rjwysocki.net>
+> -M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+
+Please keep the quotes around your name.
+
+It makes it easier for some systems to accept
+names with periods via copy/paste.
+
+
