@@ -1,49 +1,93 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 1/2] ARM: avoid tracers in soft_restart
-Date: Wed, 19 Mar 2014 16:26:52 -0700
-Message-ID: <CADHgK6ssL=0XcM_shGmb9z1T3w5L5OWEJgs-v9VyT3=USwY4FQ@mail.gmail.com>
-References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
-	<1394016605-24120-2-git-send-email-sebastian.capella@linaro.org>
-	<531908b6.44f8440a.03ab.0cce@mx.google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] intel_pstate: Set core to min P state during core offline
+Date: Thu, 20 Mar 2014 05:31:33 +0530
+Message-ID: <CAKohpomh5hjituqNCSiPB5cN8Sn6OOKGYcz1a=O7AYPY_sBhoQ@mail.gmail.com>
+References: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com>
+	<1395243954-28262-3-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f177.google.com ([74.125.82.177]:46939 "EHLO
-	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756109AbaCSX0x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 19:26:53 -0400
-Received: by mail-we0-f177.google.com with SMTP id u57so33351wes.22
-        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 16:26:52 -0700 (PDT)
-In-Reply-To: <531908b6.44f8440a.03ab.0cce@mx.google.com>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:49685 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755935AbaCTABe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 20:01:34 -0400
+Received: by mail-oa0-f42.google.com with SMTP id i4so95997oah.29
+        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 17:01:33 -0700 (PDT)
+In-Reply-To: <1395243954-28262-3-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <tj@kernel.org>, Stephen Warren <swarren@nvidia.com>, Steven Capper <steve.capper@linaro.org>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Robin Holt <robin.m.holt@gmail.com>, Will Deacon <will.deacon@arm.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Russell King <linux@arm.linux.org.uk>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 6 March 2014 15:45, Sebastian Capella <sebastian.capella@linaro.org> wrote:
-> Quoting Sebastian Capella (2014-03-05 02:50:04)
->> Use of tracers in local_irq_disable is causes recursive aborts when
->> called with irqs disabled and using a temporary stack (hibernation).
->> Replace local_irq_disable with raw_local_irq_disable instead to
->> avoid tracers.
+On 19 March 2014 21:15,  <dirk.brandewie@gmail.com> wrote:
+> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>
+> Change to use ->exit_prepare() callback to do clean up during CPU
 
-> I have not heard any feedback on this change, since V3 of the
-> patchset.
-> Is everyone ok with this as it is?
-> Thomas, thanks for proposing this, is this looking ok to you?
+exit_prepare() ?? Probably rename it to cpu_stop as well, as Rafael
+suggested in another thread.
 
-ping
-
-I haven't received any further communication / acks on this particular
-patch, since Russell's ~approval below:
-
-On 26 February 2014 15:37, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> Great, I'm happy with this now.  I assume that the plan is to submit this
->  to my patch system when everyone's given their fill of acks?
-
-Is this ok as it is?
-
-Thanks,
-
-Sebastian
+> hotplug. The requested P state for an offline core will be used by the
+> hardware coordination function to select the package P state. If the
+> core is under load when it is offlined it will fix the package P state
+> floor to the requested P state of offline core.
+>
+> Reported-by: Patrick Marlier <patrick.marlier@gmail.com>
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 20 +++++++++++++-------
+>  1 file changed, 13 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 2cd36b9..e9092fd 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -447,7 +447,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
+>         if (limits.no_turbo)
+>                 val |= (u64)1 << 32;
+>
+> -       wrmsrl(MSR_IA32_PERF_CTL, val);
+> +       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+>  }
+>
+>  static struct cpu_defaults core_params = {
+> @@ -773,16 +773,22 @@ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+>         return 0;
+>  }
+>
+> -static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
+> +static int intel_pstate_cpu_stop(struct cpufreq_policy *policy)
+>  {
+> -       int cpu = policy->cpu;
+> +       int cpu_num = policy->cpu;
+> +       struct cpudata *cpu = all_cpu_data[cpu_num];
+> +
+> +       pr_info("intel_pstate CPU %d exiting\n", cpu_num);
+> +
+> +       del_timer(&all_cpu_data[cpu_num]->timer);
+> +       intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
+> +       kfree(all_cpu_data[cpu_num]);
+> +       all_cpu_data[cpu_num] = NULL;
+>
+> -       del_timer(&all_cpu_data[cpu]->timer);
+> -       kfree(all_cpu_data[cpu]);
+> -       all_cpu_data[cpu] = NULL;
+>         return 0;
+>  }
+>
+> +
+>  static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+>  {
+>         struct cpudata *cpu;
+> @@ -818,7 +824,7 @@ static struct cpufreq_driver intel_pstate_driver = {
+>         .setpolicy      = intel_pstate_set_policy,
+>         .get            = intel_pstate_get,
+>         .init           = intel_pstate_cpu_init,
+> -       .exit           = intel_pstate_cpu_exit,
+> +       .stop           = intel_pstate_cpu_stop,
+>         .name           = "intel_pstate",
+>  };
+>
+> --
+> 1.8.3.1
+>
