@@ -1,41 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC v3] cpufreq: Make sure frequency transitions are serialized
-Date: Thu, 20 Mar 2014 15:03:28 +0530
-Message-ID: <CAKohpokiDYqpTj0AbR17KDbE26E=5usRuLWg0+pLR0xR5e5xTg@mail.gmail.com>
-References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
-	<532840FD.308@linux.vnet.ibm.com>
-	<CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
-	<53296870.5010505@linux.vnet.ibm.com>
-	<CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
-	<53298A7D.3080400@linux.vnet.ibm.com>
-	<CAKohpon=VLfPiukzrtQOSVAQg-Z-Aq3+AkZ1myrE6XtVRMY8mQ@mail.gmail.com>
-	<532AA7A8.3040508@linux.vnet.ibm.com>
-	<CAKohpon-i7LUqALr3Bi1Sn02m93YZpBn3sjmDdo3VQCuW5bNYw@mail.gmail.com>
-	<532AB3E7.3090503@linux.vnet.ibm.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] MAINTAINERS: Reorder maintainer addresses for PM and
+ ACPI
+Date: Thu, 20 Mar 2014 02:36:15 -0700
+Message-ID: <1395308175.8649.67.camel@joe-AO722>
+References: <1744772.yf52reTAmC@vostro.rjw.lan>
+	 <1395282105.8649.55.camel@joe-AO722>
+	 <CAMuHMdXFkf0g15vY=PkeMgxhr4G2=tWhK+jd8ejiqT0bJVaxQQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <532AB3E7.3090503@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay0025.hostedemail.com ([216.40.44.25]:45945 "EHLO
+	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750960AbaCTJgU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 05:36:20 -0400
+In-Reply-To: <CAMuHMdXFkf0g15vY=PkeMgxhr4G2=tWhK+jd8ejiqT0bJVaxQQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 20 March 2014 14:54, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> On 03/20/2014 02:07 PM, Viresh Kumar wrote:
->>     WARN_ON(policy->transition_ongoing);
->>
->
-> I guess you meant WARN_ON(!policy->transition_ongoing)
-> perhaps?
+On Thu, 2014-03-20 at 08:58 +0100, Geert Uytterhoeven wrote:
+> Hi Joe,
+> 
+> On Thu, Mar 20, 2014 at 3:21 AM, Joe Perches <joe@perches.com> wrote:
+> >>  SUSPEND TO RAM
+> >> +M:   Rafael J. Wysocki <rjw@rjwysocki.net>
+> >> -M:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> >
+> > Please keep the quotes around your name.
+> >
+> > It makes it easier for some systems to accept
+> > names with periods via copy/paste.
+> 
+> While for "git send-email", it's easier if I don't have to remove the one in
+> the middle manually...
+> 
+> Anyway, scripts/get_maintainer.pl re-adds them.
 
-Ooops!!
+A lot of people just open MAINTAINERS, root around
+for sections of interest, and copy/paste.
 
-> I'm not sure whether its really worth it, because it kinda looks
-> obvious. Not sure what kind of bugs it would catch. I can't think of any
-> such scenario :-(
 
-Just to catch if somebody is sending a POSTCHANGE one without first
-sending a PRECHANGE one.. Just another check to make sure things are
-in order.
