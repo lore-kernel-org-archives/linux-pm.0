@@ -1,83 +1,61 @@
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v3 4/5] powernv:cpufreq: Export nominal frequency via sysfs.
-Date: Thu, 20 Mar 2014 17:40:59 +0530
-Message-ID: <1395317460-14811-5-git-send-email-ego@linux.vnet.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:37236 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbaCTMLQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 08:11:16 -0400
-Received: from /spool/local
-	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Thu, 20 Mar 2014 22:11:14 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
-	by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6474C2BB0052
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:12 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2KCAvch11403664
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:10:58 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2KCBA2Z004137
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:11 +1100
-In-Reply-To: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v3 0/5] powernv: Enable Dynamic Frequency
+Date: Thu, 20 Mar 2014 17:40:55 +0530
+Message-ID: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org
-Cc: benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+List-Id: linux-pm@vger.kernel.org
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-
-Create a driver attribute named cpuinfo_nominal_freq which
-creates a sysfs read-only file named cpuinfo_nominal_freq. Export
-the frequency corresponding to the nominal_pstate through this
-interface.
-
-Nominal frequency is the highest non-turbo frequency for the
-platform.  This is generally used for setting governor policies from
-user space for optimal energy efficiency.
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index e7b0292..46bee8a 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -142,8 +142,30 @@ static unsigned int pstate_id_to_freq(int pstate_id)
- 	return powernv_freqs[i].frequency;
- }
- 
-+/**
-+ * show_cpuinfo_nominal_freq - Show the nominal CPU frequency as indicated by
-+ * the firmware
-+ */
-+static ssize_t show_cpuinfo_nominal_freq(struct cpufreq_policy *policy,
-+					char *buf)
-+{
-+	int nominal_freq;
-+	nominal_freq = pstate_id_to_freq(powernv_pstate_info.pstate_nominal_id);
-+	return sprintf(buf, "%u\n", nominal_freq);
-+}
-+
-+
-+struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq = {
-+	.attr = { .name = "cpuinfo_nominal_freq",
-+		  .mode = 0444,
-+		},
-+	.show = show_cpuinfo_nominal_freq,
-+};
-+
-+
- static struct freq_attr *powernv_cpu_freq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
-+	&cpufreq_freq_attr_cpuinfo_nominal_freq,
- 	NULL,
- };
- 
--- 
-1.8.3.1
-
+RnJvbTogIkdhdXRoYW0gUi4gU2hlbm95IiA8ZWdvQGxpbnV4LnZuZXQuaWJtLmNvbT4KCkhpLAoK
+VGhpcyBpcyB0aGUgdjMgb2YgdGhlIGNvbnNvbGlkYXRlZCBwYXRjaHNldCBjb25zaXN0aW5nCnBh
+dGNoZXMgZm9yIGVuYWJsaW5nIGNwdWZyZXEgb24gSUJNIFBPV0VSTlYgcGxhdGZvcm1zCmFsb25n
+IHdpdGggc29tZSBlbmhhbmNlbWVudHMuIEkgaGF2ZSBpbmNvcnBvcmF0ZWQgdGhlIHJldmlldyAK
+Zm9yIHYyICh3aGljaCBjYW4gYmUgZm91bmQgYXQgWzFdKS4KCi0gVGhpcyBwYXRjaHNldCBjb250
+YWlucyBjb2RlIGZvciB0aGUgcGxhdGZvcm0gZHJpdmVyIHRvIHN1cHBvcnQgQ1BVCiAgZnJlcXVl
+bmN5IHNjYWxpbmcgb24gSUJNIFBPV0VSTlYgcGxhdGZvcm1zLgoKLSBJbiBhZGRpdGlvbiB0byB0
+aGUgc3RhbmRhcmQgY29udHJvbCBhbmQgc3RhdHVzIGZpbGVzIGV4cG9zZWQgYnkgdGhlCiAgY3B1
+ZnJlcSBjb3JlLCB0aGUgcGF0Y2hzZXQgZXhwb3NlcyB0aGUgbm9taW5hbCBmcmVxdWVuY3kgdGhy
+b3VnaCB0aGUKICBmaWxlIG5hbWVkICJjcHVpbmZvX25vbWluYWxfZnJlcSIuCgoKVGhlIGNoYW5n
+ZXMgZnJvbSBmcm9tIHYyOgogIC0gVXBkYXRlZCB0aGUgY2hhbmdlbG9nIGZvciAicG93ZXJudjog
+Y3B1ZnJlcSBkcml2ZXIgZm9yIHBvd2VybnYgcGxhdGZvcm0iCiAgICB0byByZWNvcmQgdGhlIGZh
+Y3QgdGhhdCBwb2xpY3ktPmNwdXMgbXVzdCBiZSBwb3B1bGF0ZWQgd2l0aCBhIHNpYmxpbmcgbWFz
+awogICAgdGhhdCBpbmNsdWRlcyBldmVuIHRoZSBvZmZsaW5lZCBzaWJsaW5ncy4KCiAgLSBEcm9w
+cGVkIHRoZSBwYXRjaCBuYW1lZCAKICAgICJwb3dlcm52OmNwdWZyZXE6IENyZWF0ZSBhIHBvd2Vy
+bnZfY3B1X3RvX2NvcmVfbWFzaygpIGhlbHBlciIKICAgICBzaW5jZSB0aGUgZHJpdmVyLT5nZXQo
+KSBtZXRob2QgY2FuIHVzZSBjcHVfc2libGluZ19tYXNrKCkuCiAgCiAgLSAgVXBkYXRlZCAicG93
+ZXJudjpjcHVmcmVxOiBJbXBsZW1lbnQgdGhlIGRyaXZlci0+Z2V0KCkgbWV0aG9kIiB0byAKICAg
+ICB1c2UgY3B1X3NpYmxpbmdfbWFzaygpIGluIHBvd2VybnZfY3B1ZnJlcV9nZXQoKQoKVGhlIHBh
+dGNoc2V0IGlzIGJhc2VkIGFnYWluc3QgY29tbWl0IDQ5MDdjZGNhNzIxMGM1ODk1MzExYmRkY2Yw
+NWE0Yzg1YjY3ZDg1NjYKb2YgdGhlIG1haW5saW5lIHRyZWUuCgpbMV06IGh0dHBzOi8vbGlzdHMu
+b3psYWJzLm9yZy9waXBlcm1haWwvbGludXhwcGMtZGV2LzIwMTQtTWFyY2gvMTE1ODYxLmh0bWwK
+CgpHYXV0aGFtIFIuIFNoZW5veSAoMyk6CiAgcG93ZXJudjpjcHVmcmVxOiBDcmVhdGUgcHN0YXRl
+X2lkX3RvX2ZyZXEoKSBoZWxwZXIKICBwb3dlcm52OmNwdWZyZXE6IEV4cG9ydCBub21pbmFsIGZy
+ZXF1ZW5jeSB2aWEgc3lzZnMuCiAgcG93ZXJudjpjcHVmcmVxOiBJbXBsZW1lbnQgdGhlIGRyaXZl
+ci0+Z2V0KCkgbWV0aG9kCgpTcml2YXRzYSBTLiBCaGF0ICgxKToKICBwb3dlcm52LGNwdWZyZXE6
+QWRkIHBlci1jb3JlIGxvY2tpbmcgdG8gc2VyaWFsaXplIGZyZXF1ZW5jeQogICAgdHJhbnNpdGlv
+bnMKClZhaWR5YW5hdGhhbiBTcmluaXZhc2FuICgxKToKICBwb3dlcm52OiBjcHVmcmVxIGRyaXZl
+ciBmb3IgcG93ZXJudiBwbGF0Zm9ybQoKIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9yZWcuaCAg
+ICAgICAgIHwgICA0ICsKIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcG93ZXJudi9LY29uZmlnIHwg
+ICAxICsKIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnICAgICAgICAgICAgICAgIHwgICAxICsKIGRy
+aXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBvd2VycGMgICAgICAgIHwgIDEzICsrCiBkcml2ZXJzL2Nw
+dWZyZXEvTWFrZWZpbGUgICAgICAgICAgICAgICB8ICAgMSArCiBkcml2ZXJzL2NwdWZyZXEvcG93
+ZXJudi1jcHVmcmVxLmMgICAgICB8IDM3NSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysKIDYgZmlsZXMgY2hhbmdlZCwgMzk1IGluc2VydGlvbnMoKykKIGNyZWF0ZSBtb2RlIDEwMDY0
+NCBkcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVxLmMKCi0tIAoxLjguMy4xCgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFp
+bGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3ps
+YWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
