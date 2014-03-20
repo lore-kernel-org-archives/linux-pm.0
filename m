@@ -1,36 +1,118 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] PM: Correct whitespace errors in <linux/pm.h>
-Date: Thu, 20 Mar 2014 13:22:05 +0100
-Message-ID: <9150659.AE7ZjEGHLS@vostro.rjw.lan>
-References: <1395087971-31897-1-git-send-email-geert@linux-m68k.org> <6636992.81rGEKjTqL@vostro.rjw.lan> <CAMuHMdVZ6VS3zfZ0Li6MEd7tkTdxfRz96L74z0GsfXvxj+cDVA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v3 2/5] powernv,cpufreq:Add per-core locking to serialize frequency transitions
+Date: Thu, 20 Mar 2014 17:40:57 +0530
+Message-ID: <1395317460-14811-3-git-send-email-ego@linux.vnet.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64262 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758285AbaCTMGf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 08:06:35 -0400
-In-Reply-To: <CAMuHMdVZ6VS3zfZ0Li6MEd7tkTdxfRz96L74z0GsfXvxj+cDVA@mail.gmail.com>
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:44356 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbaCTMLO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 08:11:14 -0400
+Received: from /spool/local
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Thu, 20 Mar 2014 22:11:12 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+	by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2D7B52CE8047
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:09 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2KBomoU5177792
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 22:50:48 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2KCB8VA004064
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:08 +1100
+In-Reply-To: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+To: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org
+Cc: benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On Thursday, March 20, 2014 08:54:39 AM Geert Uytterhoeven wrote:
-> Hi Rafael,
-> 
-> On Wed, Mar 19, 2014 at 11:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Monday, March 17, 2014 09:26:10 PM Geert Uytterhoeven wrote:
-> >> From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
-> >
-> > Why exactly are they errors?
-> 
-> checkpatch.pl says: "WARNING: please, no space before tabs",
-> Vim (with "let c_space_errors=1") shows them in red.
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-Fair enough.
+On POWER systems, the CPU frequency is controlled at a core-level and
+hence we need to serialize so that only one of the threads in the core
+switches the core's frequency at a time.
 
+Using a global mutex lock would needlessly serialize _all_ frequency
+transitions in the system (across all cores). So introduce per-core
+locking to enable finer-grained synchronization and thereby enhance
+the speed and responsiveness of the cpufreq driver to varying workload
+demands.
+
+The design of per-core locking is very simple and straight-forward: we
+first define a Per-CPU lock and use the ones that belongs to the first
+thread sibling of the core.
+
+cpu_first_thread_sibling() macro is used to find the *common* lock for
+all thread siblings belonging to a core.
+
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index ab1551f..66dae0d 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -24,8 +24,15 @@
+ #include <linux/of.h>
+ #include <asm/cputhreads.h>
+ 
+-/* FIXME: Make this per-core */
+-static DEFINE_MUTEX(freq_switch_mutex);
++/* Per-Core locking for frequency transitions */
++static DEFINE_PER_CPU(struct mutex, freq_switch_lock);
++
++#define lock_core_freq(cpu)				\
++			mutex_lock(&per_cpu(freq_switch_lock,\
++				cpu_first_thread_sibling(cpu)));
++#define unlock_core_freq(cpu)				\
++			mutex_unlock(&per_cpu(freq_switch_lock,\
++				cpu_first_thread_sibling(cpu)));
+ 
+ #define POWERNV_MAX_PSTATES	256
+ 
+@@ -221,7 +228,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+ 	freqs.new = powernv_freqs[new_index].frequency;
+ 	freqs.cpu = policy->cpu;
+ 
+-	mutex_lock(&freq_switch_mutex);
++	lock_core_freq(policy->cpu);
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+ 
+ 	pr_debug("setting frequency for cpu %d to %d kHz index %d pstate %d",
+@@ -233,7 +240,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+ 	rc = powernv_set_freq(policy->cpus, new_index);
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-	mutex_unlock(&freq_switch_mutex);
++	unlock_core_freq(policy->cpu);
+ 
+ 	return rc;
+ }
+@@ -250,7 +257,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 
+ static int __init powernv_cpufreq_init(void)
+ {
+-	int rc = 0;
++	int cpu, rc = 0;
+ 
+ 	/* Discover pstates from device tree and init */
+ 
+@@ -260,6 +267,10 @@ static int __init powernv_cpufreq_init(void)
+ 		pr_info("powernv-cpufreq disabled\n");
+ 		return rc;
+ 	}
++	/* Init per-core mutex */
++	for_each_possible_cpu(cpu) {
++		mutex_init(&per_cpu(freq_switch_lock, cpu));
++	}
+ 
+ 	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
+ 	return rc;
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.3.1
+
