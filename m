@@ -1,61 +1,105 @@
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v3 0/5] powernv: Enable Dynamic Frequency
-Date: Thu, 20 Mar 2014 17:40:55 +0530
-Message-ID: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
+Date: Thu, 20 Mar 2014 17:41:00 +0530
+Message-ID: <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:60656 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757211AbaCTMLq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 08:11:46 -0400
+Received: from /spool/local
+	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Thu, 20 Mar 2014 22:11:44 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+	by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5D2A03578055
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:13 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2KCAx3211993504
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:10:59 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2KCBCXZ004168
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:13 +1100
+In-Reply-To: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org
+Cc: benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-RnJvbTogIkdhdXRoYW0gUi4gU2hlbm95IiA8ZWdvQGxpbnV4LnZuZXQuaWJtLmNvbT4KCkhpLAoK
-VGhpcyBpcyB0aGUgdjMgb2YgdGhlIGNvbnNvbGlkYXRlZCBwYXRjaHNldCBjb25zaXN0aW5nCnBh
-dGNoZXMgZm9yIGVuYWJsaW5nIGNwdWZyZXEgb24gSUJNIFBPV0VSTlYgcGxhdGZvcm1zCmFsb25n
-IHdpdGggc29tZSBlbmhhbmNlbWVudHMuIEkgaGF2ZSBpbmNvcnBvcmF0ZWQgdGhlIHJldmlldyAK
-Zm9yIHYyICh3aGljaCBjYW4gYmUgZm91bmQgYXQgWzFdKS4KCi0gVGhpcyBwYXRjaHNldCBjb250
-YWlucyBjb2RlIGZvciB0aGUgcGxhdGZvcm0gZHJpdmVyIHRvIHN1cHBvcnQgQ1BVCiAgZnJlcXVl
-bmN5IHNjYWxpbmcgb24gSUJNIFBPV0VSTlYgcGxhdGZvcm1zLgoKLSBJbiBhZGRpdGlvbiB0byB0
-aGUgc3RhbmRhcmQgY29udHJvbCBhbmQgc3RhdHVzIGZpbGVzIGV4cG9zZWQgYnkgdGhlCiAgY3B1
-ZnJlcSBjb3JlLCB0aGUgcGF0Y2hzZXQgZXhwb3NlcyB0aGUgbm9taW5hbCBmcmVxdWVuY3kgdGhy
-b3VnaCB0aGUKICBmaWxlIG5hbWVkICJjcHVpbmZvX25vbWluYWxfZnJlcSIuCgoKVGhlIGNoYW5n
-ZXMgZnJvbSBmcm9tIHYyOgogIC0gVXBkYXRlZCB0aGUgY2hhbmdlbG9nIGZvciAicG93ZXJudjog
-Y3B1ZnJlcSBkcml2ZXIgZm9yIHBvd2VybnYgcGxhdGZvcm0iCiAgICB0byByZWNvcmQgdGhlIGZh
-Y3QgdGhhdCBwb2xpY3ktPmNwdXMgbXVzdCBiZSBwb3B1bGF0ZWQgd2l0aCBhIHNpYmxpbmcgbWFz
-awogICAgdGhhdCBpbmNsdWRlcyBldmVuIHRoZSBvZmZsaW5lZCBzaWJsaW5ncy4KCiAgLSBEcm9w
-cGVkIHRoZSBwYXRjaCBuYW1lZCAKICAgICJwb3dlcm52OmNwdWZyZXE6IENyZWF0ZSBhIHBvd2Vy
-bnZfY3B1X3RvX2NvcmVfbWFzaygpIGhlbHBlciIKICAgICBzaW5jZSB0aGUgZHJpdmVyLT5nZXQo
-KSBtZXRob2QgY2FuIHVzZSBjcHVfc2libGluZ19tYXNrKCkuCiAgCiAgLSAgVXBkYXRlZCAicG93
-ZXJudjpjcHVmcmVxOiBJbXBsZW1lbnQgdGhlIGRyaXZlci0+Z2V0KCkgbWV0aG9kIiB0byAKICAg
-ICB1c2UgY3B1X3NpYmxpbmdfbWFzaygpIGluIHBvd2VybnZfY3B1ZnJlcV9nZXQoKQoKVGhlIHBh
-dGNoc2V0IGlzIGJhc2VkIGFnYWluc3QgY29tbWl0IDQ5MDdjZGNhNzIxMGM1ODk1MzExYmRkY2Yw
-NWE0Yzg1YjY3ZDg1NjYKb2YgdGhlIG1haW5saW5lIHRyZWUuCgpbMV06IGh0dHBzOi8vbGlzdHMu
-b3psYWJzLm9yZy9waXBlcm1haWwvbGludXhwcGMtZGV2LzIwMTQtTWFyY2gvMTE1ODYxLmh0bWwK
-CgpHYXV0aGFtIFIuIFNoZW5veSAoMyk6CiAgcG93ZXJudjpjcHVmcmVxOiBDcmVhdGUgcHN0YXRl
-X2lkX3RvX2ZyZXEoKSBoZWxwZXIKICBwb3dlcm52OmNwdWZyZXE6IEV4cG9ydCBub21pbmFsIGZy
-ZXF1ZW5jeSB2aWEgc3lzZnMuCiAgcG93ZXJudjpjcHVmcmVxOiBJbXBsZW1lbnQgdGhlIGRyaXZl
-ci0+Z2V0KCkgbWV0aG9kCgpTcml2YXRzYSBTLiBCaGF0ICgxKToKICBwb3dlcm52LGNwdWZyZXE6
-QWRkIHBlci1jb3JlIGxvY2tpbmcgdG8gc2VyaWFsaXplIGZyZXF1ZW5jeQogICAgdHJhbnNpdGlv
-bnMKClZhaWR5YW5hdGhhbiBTcmluaXZhc2FuICgxKToKICBwb3dlcm52OiBjcHVmcmVxIGRyaXZl
-ciBmb3IgcG93ZXJudiBwbGF0Zm9ybQoKIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9yZWcuaCAg
-ICAgICAgIHwgICA0ICsKIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvcG93ZXJudi9LY29uZmlnIHwg
-ICAxICsKIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnICAgICAgICAgICAgICAgIHwgICAxICsKIGRy
-aXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBvd2VycGMgICAgICAgIHwgIDEzICsrCiBkcml2ZXJzL2Nw
-dWZyZXEvTWFrZWZpbGUgICAgICAgICAgICAgICB8ICAgMSArCiBkcml2ZXJzL2NwdWZyZXEvcG93
-ZXJudi1jcHVmcmVxLmMgICAgICB8IDM3NSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysKIDYgZmlsZXMgY2hhbmdlZCwgMzk1IGluc2VydGlvbnMoKykKIGNyZWF0ZSBtb2RlIDEwMDY0
-NCBkcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVxLmMKCi0tIAoxLjguMy4xCgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFp
-bGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3ps
-YWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+
+The current frequency of a cpu is reported through the sysfs file
+cpuinfo_cur_freq. This requires the driver to implement a
+"->get(unsigned int cpu)" method which will return the current
+operating frequency.
+
+Implement a function named powernv_cpufreq_get() which reads the local
+pstate from the PMSR and returns the corresponding frequency.
+
+Set the powernv_cpufreq_driver.get hook to powernv_cpufreq_get().
+
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 38 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 46bee8a..ef6ed8c 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -206,6 +206,43 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
+ 	BUG();
+ }
+ 
++/*
++ * Computes the current frequency on this cpu
++ * and stores the result in *ret_freq.
++ */
++static void powernv_read_cpu_freq(void *ret_freq)
++{
++	unsigned long pmspr_val;
++	s8 local_pstate_id;
++	int *cur_freq, freq, pstate_id;
++
++	cur_freq = (int *)ret_freq;
++	pmspr_val = get_pmspr(SPRN_PMSR);
++
++	/* The local pstate id corresponds bits 48..55 in the PMSR.
++         * Note: Watch out for the sign! */
++	local_pstate_id = (pmspr_val >> 48) & 0xFF;
++	pstate_id = local_pstate_id;
++
++	freq = pstate_id_to_freq(pstate_id);
++	pr_debug("cpu %d pmsr %lx pstate_id %d frequency %d \n",
++		smp_processor_id(), pmspr_val, pstate_id, freq);
++	*cur_freq = freq;
++}
++
++/*
++ * Returns the cpu frequency as reported by the firmware for 'cpu'.
++ * This value is reported through the sysfs file cpuinfo_cur_freq.
++ */
++unsigned int powernv_cpufreq_get(unsigned int cpu)
++{
++	int ret_freq;
++
++	smp_call_function_any(cpu_sibling_mask(cpu), powernv_read_cpu_freq,
++			&ret_freq, 1);
++	return ret_freq;
++}
++
+ static void set_pstate(void *pstate)
+ {
+ 	unsigned long val;
+@@ -297,6 +334,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.verify		= powernv_cpufreq_verify,
+ 	.target		= powernv_cpufreq_target,
++	.get		= powernv_cpufreq_get,
+ 	.init		= powernv_cpufreq_cpu_init,
+ 	.exit		= powernv_cpufreq_cpu_exit,
+ 	.name		= "powernv-cpufreq",
+-- 
+1.8.3.1
+
