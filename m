@@ -1,93 +1,25 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] intel_pstate: Set core to min P state during core offline
-Date: Thu, 20 Mar 2014 05:31:33 +0530
-Message-ID: <CAKohpomh5hjituqNCSiPB5cN8Sn6OOKGYcz1a=O7AYPY_sBhoQ@mail.gmail.com>
-References: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com>
-	<1395243954-28262-3-git-send-email-dirk.j.brandewie@intel.com>
+Subject: Re: [PATCH] cpufreq: Fix checkpatch errors and warnings
+Date: Thu, 20 Mar 2014 05:35:31 +0530
+Message-ID: <CAKohpomOqfeKsn=q-G9MM0QtokQgo5Dju48kUEs-imExT9CcfQ@mail.gmail.com>
+References: <532A0C2D.9010600@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:49685 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755935AbaCTABe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 20:01:34 -0400
-Received: by mail-oa0-f42.google.com with SMTP id i4so95997oah.29
-        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 17:01:33 -0700 (PDT)
-In-Reply-To: <1395243954-28262-3-git-send-email-dirk.j.brandewie@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <532A0C2D.9010600@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Patrick Marlier <patrick.marlier@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 19 March 2014 21:15,  <dirk.brandewie@gmail.com> wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 20 March 2014 02:59, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> Fix 2 checkpatch errors about using assignment in if condition,
+> 1 checkpatch error about a required space after comma
+> and 3 warnings about line over 80 characters.
 >
-> Change to use ->exit_prepare() callback to do clean up during CPU
-
-exit_prepare() ?? Probably rename it to cpu_stop as well, as Rafael
-suggested in another thread.
-
-> hotplug. The requested P state for an offline core will be used by the
-> hardware coordination function to select the package P state. If the
-> core is under load when it is offlined it will fix the package P state
-> floor to the requested P state of offline core.
->
-> Reported-by: Patrick Marlier <patrick.marlier@gmail.com>
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 > ---
->  drivers/cpufreq/intel_pstate.c | 20 +++++++++++++-------
->  1 file changed, 13 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 2cd36b9..e9092fd 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -447,7 +447,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
->         if (limits.no_turbo)
->                 val |= (u64)1 << 32;
->
-> -       wrmsrl(MSR_IA32_PERF_CTL, val);
-> +       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
->  }
->
->  static struct cpu_defaults core_params = {
-> @@ -773,16 +773,22 @@ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
->         return 0;
->  }
->
-> -static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-> +static int intel_pstate_cpu_stop(struct cpufreq_policy *policy)
->  {
-> -       int cpu = policy->cpu;
-> +       int cpu_num = policy->cpu;
-> +       struct cpudata *cpu = all_cpu_data[cpu_num];
-> +
-> +       pr_info("intel_pstate CPU %d exiting\n", cpu_num);
-> +
-> +       del_timer(&all_cpu_data[cpu_num]->timer);
-> +       intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
-> +       kfree(all_cpu_data[cpu_num]);
-> +       all_cpu_data[cpu_num] = NULL;
->
-> -       del_timer(&all_cpu_data[cpu]->timer);
-> -       kfree(all_cpu_data[cpu]);
-> -       all_cpu_data[cpu] = NULL;
->         return 0;
->  }
->
-> +
->  static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->  {
->         struct cpudata *cpu;
-> @@ -818,7 +824,7 @@ static struct cpufreq_driver intel_pstate_driver = {
->         .setpolicy      = intel_pstate_set_policy,
->         .get            = intel_pstate_get,
->         .init           = intel_pstate_cpu_init,
-> -       .exit           = intel_pstate_cpu_exit,
-> +       .stop           = intel_pstate_cpu_stop,
->         .name           = "intel_pstate",
->  };
->
-> --
-> 1.8.3.1
->
+>  drivers/cpufreq/cpufreq.c | 23 ++++++++++++-----------
+>  1 file changed, 12 insertions(+), 11 deletions(-)
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
