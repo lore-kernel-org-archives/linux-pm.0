@@ -1,109 +1,43 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 1/2] cpufreq: Add stop callback to cpufreq_driver interface
-Date: Thu, 20 Mar 2014 08:01:48 -0700
-Message-ID: <532B02DC.5000306@gmail.com>
-References: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com> <1395243954-28262-2-git-send-email-dirk.j.brandewie@intel.com> <3686462.d0rjfgiuqO@vostro.rjw.lan> <2400024.pvKZSBQzVt@vostro.rjw.lan>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
+Date: Thu, 20 Mar 2014 10:26:17 -0700
+Message-ID: <CADHgK6uDEb88P-r_7CnYAOBxkNF9yd7ir6WqEPFZrbGdc1tHOQ@mail.gmail.com>
+References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
+ <1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
+ <20140316070917.GA3094@arch.cereza>
+ <CADHgK6s58EJyJxB-47K8w26H8ZCBFQ2zu7PGAQU9O+2g7=fPwA@mail.gmail.com>
+ <20140317204410.GA1118@arch.cereza>
+ <CADHgK6tHngKVZS=jo=VYt3Nt3dhiEmiWr28iDy7q_uR9goBj=Q@mail.gmail.com>
+ <20140319154434.GA3488@arch.cereza> <532A5A62.5020303@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:52585 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757146AbaCTPBv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 11:01:51 -0400
-In-Reply-To: <2400024.pvKZSBQzVt@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <532A5A62.5020303@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: TonyHo <tonyho.profession@gmail.com>
+Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Victor Kamensky <victor.kamensky@linaro.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jiang Liu <liuj97@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: dirk.brandewie@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, patrick.marlier@gmail.com, viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 03/19/2014 08:28 PM, Rafael J. Wysocki wrote:
-> On Wednesday, March 19, 2014 11:31:31 PM Rafael J. Wysocki wrote:
->> On Wednesday, March 19, 2014 08:45:53 AM dirk.brandewie@gmail.com wrote:
->>> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>>
->>> This callback allows the driver to do clean up before the CPU is
->>> completely down and its state cannot be modified.  This is used
->>> by the intel_pstate driver to reduce the requested P state prior to
->>> the core going away.  This is required because the requested P state
->>> of the offline core is used to select the package P state. This
->>> effectively sets the floor package P state to the requested P state on
->>> the offline core.
->>>
->>> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
->
-> To speed up things a bit I changed the name of the new callback to ->stop_cpu
-> and made it void.
->
-> I also modified patch [2/2] accordingly and queued the both of them up for 3.15.
->
-> Please check the bleeding-edge branch.
->
-> I wouldn't like to need to do anything like that any more in the future, though.
+Hi Tony,
 
-Sorry had appointments yesterday afternoon.
+I have not used the tux-on-ice solution.  The patchset I've sent is to
+add initial support for swsusp based hibernation for ARM.
 
-bleeding-edge looks good
+Can you please begin a new, separate thread for this?  Ie. separate
+from the review for the swsusp hibernation patches I've submitted?
+I'm not sure where the right list/forum is for this, perhaps someone
+can make a recommendation, but I am not sure it should go on LKML.
+Please copy me on your new thread.
 
+Thanks!
 
->
->>> ---
->>>   Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
->>>   drivers/cpufreq/cpufreq.c              | 3 ++-
->>>   include/linux/cpufreq.h                | 1 +
->>>   3 files changed, 10 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
->>> index 8b1a445..79def80 100644
->>> --- a/Documentation/cpu-freq/cpu-drivers.txt
->>> +++ b/Documentation/cpu-freq/cpu-drivers.txt
->>> @@ -61,7 +61,13 @@ target_index		-	See below on the differences.
->>>
->>>   And optionally
->>>
->>> -cpufreq_driver.exit -		A pointer to a per-CPU cleanup function.
->>> +cpufreq_driver.exit -		A pointer to a per-CPU cleanup
->>> +		    		function called during CPU_POST_DEAD
->>> +		    		phase of cpu hotplug process.
->>> +
->>> +cpufreq_driver.stop -		A pointer to a per-CPU stop function
->>> +			    	called during CPU_DOWN_PREPARE phase of
->>> +				cpu hotplug process.
->>>
->>>   cpufreq_driver.resume -		A pointer to a per-CPU resume function
->>>   				which is called with interrupts disabled
->>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>> index cf485d9..bb20292 100644
->>> --- a/drivers/cpufreq/cpufreq.c
->>> +++ b/drivers/cpufreq/cpufreq.c
->>> @@ -1336,7 +1336,8 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->>>   						__func__, new_cpu, cpu);
->>>   			}
->>>   		}
->>> -	}
->>> +	} else if (cpufreq_driver->stop && cpufreq_driver->setpolicy)
->>> +		cpufreq_driver->stop(policy);
->>
->> Nit: Why is it an int function if the only caller doesn't check the
->> return value?  It should be void.
->>
->>>
->>>   	return 0;
->>>   }
->>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->>> index 4d89e0e..ff8db19 100644
->>> --- a/include/linux/cpufreq.h
->>> +++ b/include/linux/cpufreq.h
->>> @@ -224,6 +224,7 @@ struct cpufreq_driver {
->>>   	int	(*bios_limit)	(int cpu, unsigned int *limit);
->>>
->>>   	int	(*exit)		(struct cpufreq_policy *policy);
->>> +	int	(*stop)		(struct cpufreq_policy *policy);
->>>   	int	(*suspend)	(struct cpufreq_policy *policy);
->>>   	int	(*resume)	(struct cpufreq_policy *policy);
->>>   	struct freq_attr	**attr;
->>>
->>
->>
->
-
+Sebastian
