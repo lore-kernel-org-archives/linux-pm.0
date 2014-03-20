@@ -1,94 +1,109 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v3 3/5] powernv:cpufreq: Create pstate_id_to_freq() helper
-Date: Thu, 20 Mar 2014 17:40:58 +0530
-Message-ID: <1395317460-14811-4-git-send-email-ego@linux.vnet.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 1/2] cpufreq: Add stop callback to cpufreq_driver interface
+Date: Thu, 20 Mar 2014 08:01:48 -0700
+Message-ID: <532B02DC.5000306@gmail.com>
+References: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com> <1395243954-28262-2-git-send-email-dirk.j.brandewie@intel.com> <3686462.d0rjfgiuqO@vostro.rjw.lan> <2400024.pvKZSBQzVt@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:44385 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757165AbaCTMLo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 08:11:44 -0400
-Received: from /spool/local
-	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Thu, 20 Mar 2014 22:11:43 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
-	by d23dlp01.au.ibm.com (Postfix) with ESMTP id 436DF2CE8052
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:10 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2KCAuUS7143778
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:10:56 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2KCB9oY004099
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:10 +1100
-In-Reply-To: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+Received: from mail-pd0-f181.google.com ([209.85.192.181]:52585 "EHLO
+	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757146AbaCTPBv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 11:01:51 -0400
+In-Reply-To: <2400024.pvKZSBQzVt@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org
-Cc: benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: dirk.brandewie@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, patrick.marlier@gmail.com, viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On 03/19/2014 08:28 PM, Rafael J. Wysocki wrote:
+> On Wednesday, March 19, 2014 11:31:31 PM Rafael J. Wysocki wrote:
+>> On Wednesday, March 19, 2014 08:45:53 AM dirk.brandewie@gmail.com wrote:
+>>> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>>>
+>>> This callback allows the driver to do clean up before the CPU is
+>>> completely down and its state cannot be modified.  This is used
+>>> by the intel_pstate driver to reduce the requested P state prior to
+>>> the core going away.  This is required because the requested P state
+>>> of the offline core is used to select the package P state. This
+>>> effectively sets the floor package P state to the requested P state on
+>>> the offline core.
+>>>
+>>> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>
+> To speed up things a bit I changed the name of the new callback to ->stop_cpu
+> and made it void.
+>
+> I also modified patch [2/2] accordingly and queued the both of them up for 3.15.
+>
+> Please check the bleeding-edge branch.
+>
+> I wouldn't like to need to do anything like that any more in the future, though.
 
-Create a helper routine that can return the cpu-frequency for the
-corresponding pstate_id.
+Sorry had appointments yesterday afternoon.
 
-Also, cache the values of the pstate_max, pstate_min and
-pstate_nominal and nr_pstates in a static structure so that they can
-be reused in the future to perform any validations.
+bleeding-edge looks good
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 66dae0d..e7b0292 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -39,6 +39,14 @@ static DEFINE_PER_CPU(struct mutex, freq_switch_lock);
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static int powernv_pstate_ids[POWERNV_MAX_PSTATES+1];
- 
-+struct powernv_pstate_info {
-+	int pstate_min_id;
-+	int pstate_max_id;
-+	int pstate_nominal_id;
-+	int nr_pstates;
-+};
-+static struct powernv_pstate_info powernv_pstate_info;
-+
- /*
-  * Initialize the freq table based on data obtained
-  * from the firmware passed via device-tree
-@@ -112,9 +120,28 @@ static int init_powernv_pstates(void)
- 	for (i = 0; powernv_freqs[i].frequency != CPUFREQ_TABLE_END; i++)
- 		pr_debug("%d: %d\n", i, powernv_freqs[i].frequency);
- 
-+	powernv_pstate_info.pstate_min_id = pstate_min;
-+	powernv_pstate_info.pstate_max_id = pstate_max;
-+	powernv_pstate_info.pstate_nominal_id = pstate_nominal;
-+	powernv_pstate_info.nr_pstates = nr_pstates;
-+
- 	return 0;
- }
- 
-+/**
-+ * Returns the cpu frequency corresponding to the pstate_id.
-+ */
-+static unsigned int pstate_id_to_freq(int pstate_id)
-+{
-+	int i;
-+
-+	i = powernv_pstate_info.pstate_max_id - pstate_id;
-+
-+	BUG_ON(i >= powernv_pstate_info.nr_pstates || i < 0);
-+	WARN_ON(powernv_pstate_ids[i] != pstate_id);
-+	return powernv_freqs[i].frequency;
-+}
-+
- static struct freq_attr *powernv_cpu_freq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
- 	NULL,
--- 
-1.8.3.1
+>
+>>> ---
+>>>   Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
+>>>   drivers/cpufreq/cpufreq.c              | 3 ++-
+>>>   include/linux/cpufreq.h                | 1 +
+>>>   3 files changed, 10 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+>>> index 8b1a445..79def80 100644
+>>> --- a/Documentation/cpu-freq/cpu-drivers.txt
+>>> +++ b/Documentation/cpu-freq/cpu-drivers.txt
+>>> @@ -61,7 +61,13 @@ target_index		-	See below on the differences.
+>>>
+>>>   And optionally
+>>>
+>>> -cpufreq_driver.exit -		A pointer to a per-CPU cleanup function.
+>>> +cpufreq_driver.exit -		A pointer to a per-CPU cleanup
+>>> +		    		function called during CPU_POST_DEAD
+>>> +		    		phase of cpu hotplug process.
+>>> +
+>>> +cpufreq_driver.stop -		A pointer to a per-CPU stop function
+>>> +			    	called during CPU_DOWN_PREPARE phase of
+>>> +				cpu hotplug process.
+>>>
+>>>   cpufreq_driver.resume -		A pointer to a per-CPU resume function
+>>>   				which is called with interrupts disabled
+>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>> index cf485d9..bb20292 100644
+>>> --- a/drivers/cpufreq/cpufreq.c
+>>> +++ b/drivers/cpufreq/cpufreq.c
+>>> @@ -1336,7 +1336,8 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>>>   						__func__, new_cpu, cpu);
+>>>   			}
+>>>   		}
+>>> -	}
+>>> +	} else if (cpufreq_driver->stop && cpufreq_driver->setpolicy)
+>>> +		cpufreq_driver->stop(policy);
+>>
+>> Nit: Why is it an int function if the only caller doesn't check the
+>> return value?  It should be void.
+>>
+>>>
+>>>   	return 0;
+>>>   }
+>>> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+>>> index 4d89e0e..ff8db19 100644
+>>> --- a/include/linux/cpufreq.h
+>>> +++ b/include/linux/cpufreq.h
+>>> @@ -224,6 +224,7 @@ struct cpufreq_driver {
+>>>   	int	(*bios_limit)	(int cpu, unsigned int *limit);
+>>>
+>>>   	int	(*exit)		(struct cpufreq_policy *policy);
+>>> +	int	(*stop)		(struct cpufreq_policy *policy);
+>>>   	int	(*suspend)	(struct cpufreq_policy *policy);
+>>>   	int	(*resume)	(struct cpufreq_policy *policy);
+>>>   	struct freq_attr	**attr;
+>>>
+>>
+>>
+>
 
