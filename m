@@ -1,60 +1,40 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 3/5] thermal: dove: prepare new Dove DT Kconfig
- variable
-Date: Thu, 20 Mar 2014 13:57:45 +0800
-Message-ID: <1395295065.3571.10.camel@rzhang1-mobl4>
-References: <1393536486-3827-3-git-send-email-sebastian.hesselbarth@gmail.com>
-	 <1393662801-17950-3-git-send-email-sebastian.hesselbarth@gmail.com>
-	 <20140304040318.GG1872@titan.lakedaemon.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/2] PM: Correct whitespace errors in <linux/pm.h>
+Date: Thu, 20 Mar 2014 08:54:39 +0100
+Message-ID: <CAMuHMdVZ6VS3zfZ0Li6MEd7tkTdxfRz96L74z0GsfXvxj+cDVA@mail.gmail.com>
+References: <1395087971-31897-1-git-send-email-geert@linux-m68k.org>
+	<6636992.81rGEKjTqL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:12371 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755088AbaCTF5x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 20 Mar 2014 01:57:53 -0400
-In-Reply-To: <20140304040318.GG1872@titan.lakedaemon.net>
+Received: from mail-pb0-f43.google.com ([209.85.160.43]:62243 "EHLO
+	mail-pb0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbaCTHyk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 03:54:40 -0400
+In-Reply-To: <6636992.81rGEKjTqL@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@linux-m68k.org>
 
-On Mon, 2014-03-03 at 23:03 -0500, Jason Cooper wrote:
-> On Sat, Mar 01, 2014 at 09:33:19AM +0100, Sebastian Hesselbarth wrote:
-> > DT-enabled Dove will move over from ARCH_DOVE in mach-dove to MACH_DOVE in
-> > mach-mvebu. As non-DT ARCH_DOVE will stay to rot for a while, add a new
-> > DT-only MACH_DOVE Kconfig.
-> > 
-> > Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> > ---
-> > Rui, Eduardo,
-> > 
-> > Mark Brown requested to take the corresponding ASoC patch through
-> > his tree. Therefore, I have split the former patch into individual subsystem
-> > patches.              
-> > 
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-> > Cc: Jason Cooper <jason@lakedaemon.net>
-> > Cc: Andrew Lunn <andrew@lunn.ch>
-> > Cc: Gregory Clement <gregory.clement@free-electrons.com>
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Cc: linux-kernel@vger.kernel.org
-> > ---
-> >  drivers/thermal/Kconfig | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Acked-by: Jason Cooper <jason@lakedaemon.net>
+Hi Rafael,
 
-applied.
+On Wed, Mar 19, 2014 at 11:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, March 17, 2014 09:26:10 PM Geert Uytterhoeven wrote:
+>> From: Geert Uytterhoeven <geert+renesas@linux-m68k.org>
+>
+> Why exactly are they errors?
 
-thanks,
-rui
-> 
-> thx,
-> 
-> Jason.
+checkpatch.pl says: "WARNING: please, no space before tabs",
+Vim (with "let c_space_errors=1") shows them in red.
 
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
