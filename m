@@ -1,104 +1,61 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: Add stop callback to cpufreq_driver interface
-Date: Thu, 20 Mar 2014 04:28:20 +0100
-Message-ID: <2400024.pvKZSBQzVt@vostro.rjw.lan>
-References: <1395243954-28262-1-git-send-email-dirk.j.brandewie@intel.com> <1395243954-28262-2-git-send-email-dirk.j.brandewie@intel.com> <3686462.d0rjfgiuqO@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC v3] cpufreq: Make sure frequency transitions are serialized
+Date: Thu, 20 Mar 2014 10:09:26 +0530
+Message-ID: <CAKohpon=VLfPiukzrtQOSVAQg-Z-Aq3+AkZ1myrE6XtVRMY8mQ@mail.gmail.com>
+References: <2efc621827cbd96a05a3d34075154974b4816ecd.1394782795.git.viresh.kumar@linaro.org>
+	<532840FD.308@linux.vnet.ibm.com>
+	<CAKohpomhTJa06a1LSi9tK1+=6Y2MyidJSbYWuffAsU5KxVf7zw@mail.gmail.com>
+	<53296870.5010505@linux.vnet.ibm.com>
+	<CAKohpomr1s3SLs-K8+-BKguX4PyfHvSjyzd5PFjM4mJeyTj3-A@mail.gmail.com>
+	<53298A7D.3080400@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61450 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751064AbaCTDMu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Mar 2014 23:12:50 -0400
-In-Reply-To: <3686462.d0rjfgiuqO@vostro.rjw.lan>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:34913 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbaCTEj1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 00:39:27 -0400
+Received: by mail-ob0-f182.google.com with SMTP id uz6so337448obc.13
+        for <linux-pm@vger.kernel.org>; Wed, 19 Mar 2014 21:39:27 -0700 (PDT)
+In-Reply-To: <53298A7D.3080400@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dirk.brandewie@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, patrick.marlier@gmail.com, viresh.kumar@linaro.org, srivatsa.bhat@linux.vnet.ibm.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Daniel <amit.daniel@samsung.com>
 
-On Wednesday, March 19, 2014 11:31:31 PM Rafael J. Wysocki wrote:
-> On Wednesday, March 19, 2014 08:45:53 AM dirk.brandewie@gmail.com wrote:
-> > From: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> > 
-> > This callback allows the driver to do clean up before the CPU is
-> > completely down and its state cannot be modified.  This is used
-> > by the intel_pstate driver to reduce the requested P state prior to
-> > the core going away.  This is required because the requested P state
-> > of the offline core is used to select the package P state. This
-> > effectively sets the floor package P state to the requested P state on
-> > the offline core.
-> > 
-> > Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On 19 March 2014 17:45, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 199b52b..e90388f 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -349,6 +349,38 @@ void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+>  EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
+>
+>
+> +void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
+> +               struct cpufreq_freqs *freqs, unsigned int state)
+> +{
+> +wait:
+> +       wait_event(&policy->transition_wait, !policy->transition_ongoing);
 
-To speed up things a bit I changed the name of the new callback to ->stop_cpu
-and made it void.
+I think its broken here. At this point another thread can come take lock,
+update transition_ongoing, send notification and finally unlock..
 
-I also modified patch [2/2] accordingly and queued the both of them up for 3.15.
+And after that we can take the lock and send another notification..
 
-Please check the bleeding-edge branch.
+Correct?
 
-I wouldn't like to need to do anything like that any more in the future, though.
+> +       if (!mutex_trylock(&policy->transition_lock))
+> +               goto wait;
+> +
+> +       policy->transition_ongoing++;
 
-> > ---
-> >  Documentation/cpu-freq/cpu-drivers.txt | 8 +++++++-
-> >  drivers/cpufreq/cpufreq.c              | 3 ++-
-> >  include/linux/cpufreq.h                | 1 +
-> >  3 files changed, 10 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-> > index 8b1a445..79def80 100644
-> > --- a/Documentation/cpu-freq/cpu-drivers.txt
-> > +++ b/Documentation/cpu-freq/cpu-drivers.txt
-> > @@ -61,7 +61,13 @@ target_index		-	See below on the differences.
-> >  
-> >  And optionally
-> >  
-> > -cpufreq_driver.exit -		A pointer to a per-CPU cleanup function.
-> > +cpufreq_driver.exit -		A pointer to a per-CPU cleanup
-> > +		    		function called during CPU_POST_DEAD
-> > +		    		phase of cpu hotplug process.
-> > +
-> > +cpufreq_driver.stop -		A pointer to a per-CPU stop function
-> > +			    	called during CPU_DOWN_PREPARE phase of
-> > +				cpu hotplug process.
-> >  
-> >  cpufreq_driver.resume -		A pointer to a per-CPU resume function
-> >  				which is called with interrupts disabled
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index cf485d9..bb20292 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1336,7 +1336,8 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
-> >  						__func__, new_cpu, cpu);
-> >  			}
-> >  		}
-> > -	}
-> > +	} else if (cpufreq_driver->stop && cpufreq_driver->setpolicy)
-> > +		cpufreq_driver->stop(policy);
-> 
-> Nit: Why is it an int function if the only caller doesn't check the
-> return value?  It should be void.
-> 
-> >  
-> >  	return 0;
-> >  }
-> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > index 4d89e0e..ff8db19 100644
-> > --- a/include/linux/cpufreq.h
-> > +++ b/include/linux/cpufreq.h
-> > @@ -224,6 +224,7 @@ struct cpufreq_driver {
-> >  	int	(*bios_limit)	(int cpu, unsigned int *limit);
-> >  
-> >  	int	(*exit)		(struct cpufreq_policy *policy);
-> > +	int	(*stop)		(struct cpufreq_policy *policy);
-> >  	int	(*suspend)	(struct cpufreq_policy *policy);
-> >  	int	(*resume)	(struct cpufreq_policy *policy);
-> >  	struct freq_attr	**attr;
-> > 
-> 
-> 
+s/++/ = true
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> +       cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
+> +
+> +       mutex_unlock(&policy->transition_lock);
+
+We can release the lock before sending notifications, its there just to
+protect transition_ongoing.
