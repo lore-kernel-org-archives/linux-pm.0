@@ -1,26 +1,26 @@
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
-Date: Thu, 20 Mar 2014 17:41:00 +0530
-Message-ID: <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH v3 3/5] powernv:cpufreq: Create pstate_id_to_freq() helper
+Date: Thu, 20 Mar 2014 17:40:58 +0530
+Message-ID: <1395317460-14811-4-git-send-email-ego@linux.vnet.ibm.com>
 References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:60656 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757211AbaCTMLq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 08:11:46 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:44385 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757165AbaCTMLo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Mar 2014 08:11:44 -0400
 Received: from /spool/local
-	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Thu, 20 Mar 2014 22:11:44 +1000
+	Thu, 20 Mar 2014 22:11:43 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
-	by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5D2A03578055
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:13 +1100 (EST)
+	by d23dlp01.au.ibm.com (Postfix) with ESMTP id 436DF2CE8052
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:10 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2KCAx3211993504
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:10:59 +1100
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2KCAuUS7143778
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:10:56 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2KCBCXZ004168
-	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:13 +1100
+	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2KCB9oY004099
+	for <linux-pm@vger.kernel.org>; Thu, 20 Mar 2014 23:11:10 +1100
 In-Reply-To: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -29,77 +29,66 @@ Cc: benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, "Gautham R. Shenoy" <eg
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-The current frequency of a cpu is reported through the sysfs file
-cpuinfo_cur_freq. This requires the driver to implement a
-"->get(unsigned int cpu)" method which will return the current
-operating frequency.
+Create a helper routine that can return the cpu-frequency for the
+corresponding pstate_id.
 
-Implement a function named powernv_cpufreq_get() which reads the local
-pstate from the PMSR and returns the corresponding frequency.
-
-Set the powernv_cpufreq_driver.get hook to powernv_cpufreq_get().
+Also, cache the values of the pstate_max, pstate_min and
+pstate_nominal and nr_pstates in a static structure so that they can
+be reused in the future to perform any validations.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ drivers/cpufreq/powernv-cpufreq.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 46bee8a..ef6ed8c 100644
+index 66dae0d..e7b0292 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -206,6 +206,43 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
- 	BUG();
+@@ -39,6 +39,14 @@ static DEFINE_PER_CPU(struct mutex, freq_switch_lock);
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static int powernv_pstate_ids[POWERNV_MAX_PSTATES+1];
+ 
++struct powernv_pstate_info {
++	int pstate_min_id;
++	int pstate_max_id;
++	int pstate_nominal_id;
++	int nr_pstates;
++};
++static struct powernv_pstate_info powernv_pstate_info;
++
+ /*
+  * Initialize the freq table based on data obtained
+  * from the firmware passed via device-tree
+@@ -112,9 +120,28 @@ static int init_powernv_pstates(void)
+ 	for (i = 0; powernv_freqs[i].frequency != CPUFREQ_TABLE_END; i++)
+ 		pr_debug("%d: %d\n", i, powernv_freqs[i].frequency);
+ 
++	powernv_pstate_info.pstate_min_id = pstate_min;
++	powernv_pstate_info.pstate_max_id = pstate_max;
++	powernv_pstate_info.pstate_nominal_id = pstate_nominal;
++	powernv_pstate_info.nr_pstates = nr_pstates;
++
+ 	return 0;
  }
  
-+/*
-+ * Computes the current frequency on this cpu
-+ * and stores the result in *ret_freq.
++/**
++ * Returns the cpu frequency corresponding to the pstate_id.
 + */
-+static void powernv_read_cpu_freq(void *ret_freq)
++static unsigned int pstate_id_to_freq(int pstate_id)
 +{
-+	unsigned long pmspr_val;
-+	s8 local_pstate_id;
-+	int *cur_freq, freq, pstate_id;
++	int i;
 +
-+	cur_freq = (int *)ret_freq;
-+	pmspr_val = get_pmspr(SPRN_PMSR);
++	i = powernv_pstate_info.pstate_max_id - pstate_id;
 +
-+	/* The local pstate id corresponds bits 48..55 in the PMSR.
-+         * Note: Watch out for the sign! */
-+	local_pstate_id = (pmspr_val >> 48) & 0xFF;
-+	pstate_id = local_pstate_id;
-+
-+	freq = pstate_id_to_freq(pstate_id);
-+	pr_debug("cpu %d pmsr %lx pstate_id %d frequency %d \n",
-+		smp_processor_id(), pmspr_val, pstate_id, freq);
-+	*cur_freq = freq;
++	BUG_ON(i >= powernv_pstate_info.nr_pstates || i < 0);
++	WARN_ON(powernv_pstate_ids[i] != pstate_id);
++	return powernv_freqs[i].frequency;
 +}
 +
-+/*
-+ * Returns the cpu frequency as reported by the firmware for 'cpu'.
-+ * This value is reported through the sysfs file cpuinfo_cur_freq.
-+ */
-+unsigned int powernv_cpufreq_get(unsigned int cpu)
-+{
-+	int ret_freq;
-+
-+	smp_call_function_any(cpu_sibling_mask(cpu), powernv_read_cpu_freq,
-+			&ret_freq, 1);
-+	return ret_freq;
-+}
-+
- static void set_pstate(void *pstate)
- {
- 	unsigned long val;
-@@ -297,6 +334,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.verify		= powernv_cpufreq_verify,
- 	.target		= powernv_cpufreq_target,
-+	.get		= powernv_cpufreq_get,
- 	.init		= powernv_cpufreq_cpu_init,
- 	.exit		= powernv_cpufreq_cpu_exit,
- 	.name		= "powernv-cpufreq",
+ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	NULL,
 -- 
 1.8.3.1
 
