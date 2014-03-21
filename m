@@ -1,52 +1,29 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 2/5] powernv,cpufreq:Add per-core locking to serialize
- frequency transitions
-Date: Fri, 21 Mar 2014 15:26:13 +0530
-Message-ID: <532C0CBD.1060904@linux.vnet.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com> <1395317460-14811-3-git-send-email-ego@linux.vnet.ibm.com> <CAOh2x==Lzeatp=7BoxuSH4PfxXqWqpHJ_KcwWdXXsFAftxTMCQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 4/5] powernv:cpufreq: Export nominal frequency via sysfs.
+Date: Fri, 21 Mar 2014 15:27:19 +0530
+Message-ID: <CAKohponhtLO1o6Dmr+=8-PM90tPMfJzPO_vr_bh5-xLphb-=MA@mail.gmail.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+	<1395317460-14811-5-git-send-email-ego@linux.vnet.ibm.com>
+	<CAOh2x=kLwDGFtHR5sBKhE-9L=3=npV4_i+B+BVm+yBocmmMvzQ@mail.gmail.com>
+	<20140321095534.GF27293@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:44311 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755061AbaCUJ4f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 05:56:35 -0400
-Received: from /spool/local
-	by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 21 Mar 2014 19:56:32 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
-	by d23dlp02.au.ibm.com (Postfix) with ESMTP id 690642BB0054
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 20:56:29 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2L9aGse41222278
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 20:36:16 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2L9uSrq026493
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 20:56:28 +1100
-In-Reply-To: <CAOh2x==Lzeatp=7BoxuSH4PfxXqWqpHJ_KcwWdXXsFAftxTMCQ@mail.gmail.com>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:64285 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755061AbaCUJ5T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 05:57:19 -0400
+Received: by mail-ob0-f170.google.com with SMTP id uz6so2221388obc.15
+        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 02:57:19 -0700 (PDT)
+In-Reply-To: <20140321095534.GF27293@in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com
+To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-On 03/21/2014 02:12 PM, Viresh Kumar wrote:
-> On Thu, Mar 20, 2014 at 5:40 PM, Gautham R. Shenoy
-> <ego@linux.vnet.ibm.com> wrote:
->> From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
->>
->> On POWER systems, the CPU frequency is controlled at a core-level and
->> hence we need to serialize so that only one of the threads in the core
->> switches the core's frequency at a time.
-> 
-> Probably you don't need this anymore.
-> 
-> https://lkml.org/lkml/2014/3/21/23
-> 
+On 21 March 2014 15:25, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> Probably the use of ATTR_RO(cpuinfo_nominal_freq) and renaming
+> show_cpuinfo_nominal_freq to cpuinfo_nominal_freq_show() would be even
+> better. What do you think ?
 
-Agreed.
-
-Regards,
-Srivatsa S. Bhat
-
++1
