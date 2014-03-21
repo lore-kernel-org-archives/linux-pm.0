@@ -1,68 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request
-Date: Fri, 21 Mar 2014 23:16:40 +0100
-Message-ID: <6984230.es0GY7P0qj@vostro.rjw.lan>
-References: <1395369289-6416-1-git-send-email-myungjoo.ham@samsung.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get()
+ method
+Date: Sat, 22 Mar 2014 09:56:30 +1100
+Message-ID: <1395442590.3460.85.camel@pasglop>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+	 <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+	 <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+	 <20140321110445.GB2493@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57088 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750858AbaCUWBI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 18:01:08 -0400
-In-Reply-To: <1395369289-6416-1-git-send-email-myungjoo.ham@samsung.com>
+Received: from gate.crashing.org ([63.228.1.57]:32866 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752079AbaCUW5R (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Mar 2014 18:57:17 -0400
+In-Reply-To: <20140321110445.GB2493@in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, myungjoo.ham@gmail.com
+To: ego@linux.vnet.ibm.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com
 
-On Friday, March 21, 2014 11:34:49 AM MyungJoo Ham wrote:
-> 
-> Dear Rafael,
+On Fri, 2014-03-21 at 16:34 +0530, Gautham R Shenoy wrote:
 
-Hi,
- 
-> Here goes bugfix devfreq patch.
+> > >
+> > > +/*
+> > > + * Computes the current frequency on this cpu
+> > > + * and stores the result in *ret_freq.
+> > > + */
+> > > +static void powernv_read_cpu_freq(void *ret_freq)
+> > > +{
+> > > +       unsigned long pmspr_val;
+> > > +       s8 local_pstate_id;
+> > > +       int *cur_freq, freq, pstate_id;
+> > > +
+> > > +       cur_freq = (int *)ret_freq;
+> > 
+> > You don't need cur_freq variable at all..
 > 
-> Recent patchset of device-tree support / exynos driver updates is omitted in this pull request
-> as there could be further updates on the patchset.
+> I don't like it either. But the compiler complains without this hack
+> :-(
 
-OK, pulled, but only because this is a fix.
+Casting integers into void * is a recipe for disaster... what is that
+supposed to be about ? We lose all type checking and get exposed
+to endian issues etc... the day somebody uses a different type on both
+sides.
 
-For new material, please do not send pull requests after -rc6 in the current
-cycle.  That is, a pull request with new material for 3.15 should have been
-send around 2 weeks ago.
+Also is "freq" a frequency ? In this case an int isn't big enough.
+
+Cheers,
+Ben.
 
 
-> The following changes since commit dcb99fd9b08cfe1afe426af4d8d3cbc429190f15:
-> 
->   Linux 3.14-rc7 (2014-03-16 18:51:24 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
-> 
-> for you to fetch changes up to e35d35a1c0b3a7317d77e03e686a4a205cdd4eed:
-> 
->   PM / devfreq: Rewrite devfreq_update_status() to fix multiple bugs (2014-03-21 11:16:30 +0900)
-> 
-> ----------------------------------------------------------------
-> Pull request for Rafael. Bugfix only.
-> (recence changes of DT/Exynos drivers need further work)
-> 
-> ----------------------------------------------------------------
-> Saravana Kannan (1):
->       PM / devfreq: Rewrite devfreq_update_status() to fix multiple bugs
-> 
->  drivers/devfreq/devfreq.c | 31 ++++++++++++++++++++-----------
->  1 file changed, 20 insertions(+), 11 deletions(-)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
