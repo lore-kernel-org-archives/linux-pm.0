@@ -1,14 +1,18 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 2/4] devfreq: exynos4: introduce struct busfreq_ppmu_data
-Date: Fri, 21 Mar 2014 18:31:44 +0100
-Message-ID: <1395423106-30458-3-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 3/4] devfreq: exynos5: introduce struct busfreq_ppmu_data
+Date: Fri, 21 Mar 2014 18:31:45 +0100
+Message-ID: <1395423106-30458-4-git-send-email-b.zolnierkie@samsung.com>
 References: <1395423106-30458-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:31765 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754428AbaCURcO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 13:32:14 -0400
 In-reply-to: <1395423106-30458-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: cw00.choi@samsung.com, myungjoo.ham@samsung.com
 Cc: kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, t.figa@samsung.com, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
-List-Id: linux-pm@vger.kernel.org
 
 This is a preparation for making more PPMU code common for
 EXYNOS devfreq drivers.
@@ -17,15 +21,15 @@ There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/devfreq/exynos/exynos4_bus.c | 74 ++++++++++++++++++++++--------------
- 1 file changed, 46 insertions(+), 28 deletions(-)
+ drivers/devfreq/exynos/exynos5_bus.c | 72 ++++++++++++++++++++++--------------
+ 1 file changed, 45 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-index 228c658..d99ef9e 100644
---- a/drivers/devfreq/exynos/exynos4_bus.c
-+++ b/drivers/devfreq/exynos/exynos4_bus.c
-@@ -75,6 +75,11 @@ struct busfreq_opp_info {
- 	unsigned long volt;
+diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
+index af6213f..b8ab32a 100644
+--- a/drivers/devfreq/exynos/exynos5_bus.c
++++ b/drivers/devfreq/exynos/exynos5_bus.c
+@@ -46,11 +46,16 @@ enum exynos_ppmu_list {
+ 	PPMU_END,
  };
  
 +struct busfreq_ppmu_data {
@@ -33,28 +37,25 @@ index 228c658..d99ef9e 100644
 +	int ppmu_end;
 +};
 +
- struct busfreq_data {
- 	enum exynos4_busf_type type;
+ struct busfreq_data_int {
  	struct device *dev;
-@@ -83,7 +88,7 @@ struct busfreq_data {
+ 	struct devfreq *devfreq;
  	struct regulator *vdd_int;
- 	struct regulator *vdd_mif; /* Exynos4412/4212 only */
- 	struct busfreq_opp_info curr_oppinfo;
 -	struct exynos_ppmu ppmu[PPMU_END];
 +	struct busfreq_ppmu_data ppmu_data;
+ 	unsigned long curr_freq;
+ 	bool disabled;
  
- 	struct notifier_block pm_notifier;
- 	struct mutex lock;
-@@ -510,47 +515,47 @@ static int exynos4x12_set_busclk(struct busfreq_data *data,
- 	return 0;
- }
+@@ -75,47 +80,47 @@ static struct int_bus_opp_table exynos5_int_opp_table[] = {
+ 	{0, 0, 0},
+ };
  
--static void busfreq_mon_reset(struct busfreq_data *data)
+-static void busfreq_mon_reset(struct busfreq_data_int *data)
 +static void busfreq_mon_reset(struct busfreq_ppmu_data *ppmu_data)
  {
  	unsigned int i;
  
--	for (i = 0; i < PPMU_END; i++) {
+-	for (i = PPMU_RIGHT; i < PPMU_END; i++) {
 -		void __iomem *ppmu_base = data->ppmu[i].hw_base;
 +	for (i = 0; i < ppmu_data->ppmu_end; i++) {
 +		void __iomem *ppmu_base = ppmu_data->ppmu[i].hw_base;
@@ -73,12 +74,12 @@ index 228c658..d99ef9e 100644
  	}
  }
  
--static void exynos4_read_ppmu(struct busfreq_data *data)
-+static void exynos4_read_ppmu(struct busfreq_ppmu_data *ppmu_data)
+-static void exynos5_read_ppmu(struct busfreq_data_int *data)
++static void exynos5_read_ppmu(struct busfreq_ppmu_data *ppmu_data)
  {
  	int i, j;
  
--	for (i = 0; i < PPMU_END; i++) {
+-	for (i = PPMU_RIGHT; i < PPMU_END; i++) {
 -		void __iomem *ppmu_base = data->ppmu[i].hw_base;
 +	for (i = 0; i < ppmu_data->ppmu_end; i++) {
 +		void __iomem *ppmu_base = ppmu_data->ppmu[i].hw_base;
@@ -105,19 +106,19 @@ index 228c658..d99ef9e 100644
 +	busfreq_mon_reset(ppmu_data);
  }
  
- static int exynos4x12_get_intspec(unsigned long mifclk)
-@@ -676,16 +681,16 @@ out:
+ static int exynos5_int_setvolt(struct busfreq_data_int *data,
+@@ -185,16 +190,16 @@ out:
  	return err;
  }
  
--static int exynos4_get_busier_ppmu(struct busfreq_data *data)
-+static int exynos4_get_busier_ppmu(struct busfreq_ppmu_data *ppmu_data)
+-static int exynos5_get_busier_dmc(struct busfreq_data_int *data)
++static int exynos5_get_busier_dmc(struct busfreq_ppmu_data *ppmu_data)
  {
  	int i, j;
  	int busy = 0;
  	unsigned int temp = 0;
  
--	for (i = 0; i < PPMU_END; i++) {
+-	for (i = PPMU_RIGHT; i < PPMU_END; i++) {
 +	for (i = 0; i < ppmu_data->ppmu_end; i++) {
  		for (j = PPMU_PMNCNT0; j < PPMU_PMNCNT_MAX; j++) {
 -			if (data->ppmu[i].count[j] > temp) {
@@ -127,43 +128,38 @@ index 228c658..d99ef9e 100644
  				busy = i;
  			}
  		}
-@@ -698,20 +703,21 @@ static int exynos4_bus_get_dev_status(struct device *dev,
- 				      struct devfreq_dev_status *stat)
- {
- 	struct busfreq_data *data = dev_get_drvdata(dev);
+@@ -209,17 +214,18 @@ static int exynos5_int_get_dev_status(struct device *dev,
+ 	struct platform_device *pdev = container_of(dev, struct platform_device,
+ 						    dev);
+ 	struct busfreq_data_int *data = platform_get_drvdata(pdev);
 +	struct busfreq_ppmu_data *ppmu_data = &data->ppmu_data;
- 	int busier;
+ 	int busier_dmc;
  
--	exynos4_read_ppmu(data);
--	busier = exynos4_get_busier_ppmu(data);
-+	exynos4_read_ppmu(ppmu_data);
-+	busier = exynos4_get_busier_ppmu(ppmu_data);
- 	stat->current_frequency = data->curr_oppinfo.rate;
+-	exynos5_read_ppmu(data);
+-	busier_dmc = exynos5_get_busier_dmc(data);
++	exynos5_read_ppmu(ppmu_data);
++	busier_dmc = exynos5_get_busier_dmc(ppmu_data);
+ 
+ 	stat->current_frequency = data->curr_freq;
  
  	/* Number of cycles spent on memory access */
--	stat->busy_time = data->ppmu[busier].count[PPMU_PMNCNT3];
-+	stat->busy_time = ppmu_data->ppmu[busier].count[PPMU_PMNCNT3];
- 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
--	stat->total_time = data->ppmu[busier].ccnt;
-+	stat->total_time = ppmu_data->ppmu[busier].ccnt;
- 
- 	/* If the counters have overflown, retry */
--	if (data->ppmu[busier].ccnt_overflow ||
--	    data->ppmu[busier].count_overflow[0])
-+	if (ppmu_data->ppmu[busier].ccnt_overflow ||
-+	    ppmu_data->ppmu[busier].count_overflow[0])
- 		return -EAGAIN;
+-	stat->busy_time = data->ppmu[busier_dmc].count[PPMU_PMNCNT3];
++	stat->busy_time = ppmu_data->ppmu[busier_dmc].count[PPMU_PMNCNT3];
+ 	stat->busy_time *= 100 / INT_BUS_SATURATION_RATIO;
+-	stat->total_time = data->ppmu[busier_dmc].ccnt;
++	stat->total_time = ppmu_data->ppmu[busier_dmc].ccnt;
  
  	return 0;
-@@ -966,6 +972,7 @@ unlock:
- static int exynos4_busfreq_probe(struct platform_device *pdev)
+ }
+@@ -315,6 +321,7 @@ unlock:
+ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
  {
- 	struct busfreq_data *data;
+ 	struct busfreq_data_int *data;
 +	struct busfreq_ppmu_data *ppmu_data;
  	struct dev_pm_opp *opp;
  	struct device *dev = &pdev->dev;
- 	int err = 0;
-@@ -976,9 +983,19 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+ 	struct device_node *np;
+@@ -330,16 +337,26 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
  		return -ENOMEM;
  	}
  
@@ -177,33 +173,42 @@ index 228c658..d99ef9e 100644
 +		return -ENOMEM;
 +	}
 +
- 	data->type = pdev->id_entry->driver_data;
--	data->ppmu[PPMU_DMC0].hw_base = S5P_VA_DMC0;
--	data->ppmu[PPMU_DMC1].hw_base = S5P_VA_DMC1;
-+	ppmu_data->ppmu[PPMU_DMC0].hw_base = S5P_VA_DMC0;
-+	ppmu_data->ppmu[PPMU_DMC1].hw_base = S5P_VA_DMC1;
- 	data->pm_notifier.notifier_call = exynos4_busfreq_pm_notifier_event;
- 	data->dev = dev;
- 	mutex_init(&data->lock);
-@@ -1037,7 +1054,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
- 	 * Start PPMU (Performance Profiling Monitoring Unit) to check
- 	 * utilization of each IP in the Exynos4 SoC.
- 	 */
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,exynos5250-ppmu");
+ 	if (np == NULL) {
+ 		pr_err("Unable to find PPMU node\n");
+ 		return -ENOENT;
+ 	}
+ 
+-	for (i = PPMU_RIGHT; i < PPMU_END; i++) {
++	for (i = 0; i < ppmu_data->ppmu_end; i++) {
+ 		/* map PPMU memory region */
+-		data->ppmu[i].hw_base = of_iomap(np, i);
+-		if (data->ppmu[i].hw_base == NULL) {
++		ppmu_data->ppmu[i].hw_base = of_iomap(np, i);
++		if (ppmu_data->ppmu[i].hw_base == NULL) {
+ 			dev_err(&pdev->dev, "failed to map memory region\n");
+ 			return -ENOMEM;
+ 		}
+@@ -390,7 +407,7 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, data);
+ 
 -	busfreq_mon_reset(data);
 +	busfreq_mon_reset(ppmu_data);
  
- 	/* Register opp_notifier for Exynos4 busfreq */
- 	err = devfreq_register_opp_notifier(dev, data->devfreq);
-@@ -1081,8 +1098,9 @@ static int exynos4_busfreq_remove(struct platform_device *pdev)
- static int exynos4_busfreq_resume(struct device *dev)
- {
- 	struct busfreq_data *data = dev_get_drvdata(dev);
+ 	data->devfreq = devfreq_add_device(dev, &exynos5_devfreq_int_profile,
+ 					   "simple_ondemand", NULL);
+@@ -435,8 +452,9 @@ static int exynos5_busfreq_int_resume(struct device *dev)
+ 	struct platform_device *pdev = container_of(dev, struct platform_device,
+ 						    dev);
+ 	struct busfreq_data_int *data = platform_get_drvdata(pdev);
 +	struct busfreq_ppmu_data *ppmu_data = &data->ppmu_data;
  
 -	busfreq_mon_reset(data);
 +	busfreq_mon_reset(ppmu_data);
  	return 0;
  }
- #endif
+ static const struct dev_pm_ops exynos5_busfreq_int_pm = {
 -- 
 1.8.2.3
+
