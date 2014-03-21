@@ -1,129 +1,49 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get()
- method
-Date: Fri, 21 Mar 2014 16:34:45 +0530
-Message-ID: <20140321110445.GB2493@in.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
- <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
- <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are
+ serialized
+Date: Fri, 21 Mar 2014 11:05:59 +0000
+Message-ID: <20140321110559.GB13596@arm.com>
+References: <cover.1395379422.git.viresh.kumar@linaro.org>
+ <f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org>
+ <532BEE64.3090501@linux.vnet.ibm.com>
+ <CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
+ <532BFB77.5060107@linux.vnet.ibm.com>
+ <CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e35.co.us.ibm.com ([32.97.110.153]:57610 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759943AbaCULEz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 07:04:55 -0400
-Received: from /spool/local
-	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Fri, 21 Mar 2014 05:04:54 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
-	by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 54C6F1FF003D
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 05:04:52 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2LB4qQv8716704
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 12:04:52 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2LB4pP7025916
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 05:04:52 -0600
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 21, 2014 at 03:01:29PM +0530, Viresh Kumar wrote:
-> On Thu, Mar 20, 2014 at 5:41 PM, Gautham R. Shenoy
-> <ego@linux.vnet.ibm.com> wrote:
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >
-> > The current frequency of a cpu is reported through the sysfs file
-> > cpuinfo_cur_freq. This requires the driver to implement a
-> > "->get(unsigned int cpu)" method which will return the current
-> > operating frequency.
-> >
-> > Implement a function named powernv_cpufreq_get() which reads the local
-> > pstate from the PMSR and returns the corresponding frequency.
-> >
-> > Set the powernv_cpufreq_driver.get hook to powernv_cpufreq_get().
-> >
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > ---
-> >  drivers/cpufreq/powernv-cpufreq.c | 38 ++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 38 insertions(+)
+On Fri, Mar 21, 2014 at 09:21:02AM +0000, Viresh Kumar wrote:
+> @Catalin: We have a problem here and need your expert advice. After changing
+> CPU frequency we need to call this code:
 > 
-> Please merge these fixups with the first patch which is creating the driver.
-> I understand that a different guy has created this patch and so wanted
-> to have a patch on his name but its really difficult to review this
-way.
-
-Heh! Well, that wasn't the reason why this was sent out as a separate
-patch, but never mind. Though I don't understand why it would be
-difficult to review the patch though.
-
-> Better add your signed-off in the first patch instead. Sending such changes
-> once the driver is mainlined looks fine.
-
-Sure, this makes sense.
-
+> cpufreq_notify_post_transition();
+> policy->transition_ongoing = false;
 > 
-> > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> > index 46bee8a..ef6ed8c 100644
-> > --- a/drivers/cpufreq/powernv-cpufreq.c
-> > +++ b/drivers/cpufreq/powernv-cpufreq.c
-> > @@ -206,6 +206,43 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
-> >         BUG();
-> >  }
-> >
-> > +/*
-> > + * Computes the current frequency on this cpu
-> > + * and stores the result in *ret_freq.
-> > + */
-> > +static void powernv_read_cpu_freq(void *ret_freq)
-> > +{
-> > +       unsigned long pmspr_val;
-> > +       s8 local_pstate_id;
-> > +       int *cur_freq, freq, pstate_id;
-> > +
-> > +       cur_freq = (int *)ret_freq;
-> 
-> You don't need cur_freq variable at all..
+> And the sequence must be like this only. Is this guaranteed without any
+> memory barriers? cpufreq_notify_post_transition() isn't touching
+> transition_ongoing at all..
 
-I don't like it either. But the compiler complains without this hack
-:-(
+The above sequence doesn't say much. As rmk said, the compiler wouldn't
+reorder the transition_ongoing write before the function call. I think
+most architectures (not sure about Alpha) don't do speculative stores,
+so hardware wouldn't reorder them either. However, other stores inside
+the cpufreq_notify_post_transition() could be reordered after
+transition_ongoing store. The same for memory accesses after the
+transition_ongoing update, they could be reordered before.
 
-> 
-> > +       pmspr_val = get_pmspr(SPRN_PMSR);
-> > +
-> > +       /* The local pstate id corresponds bits 48..55 in the PMSR.
-> > +         * Note: Watch out for the sign! */
-> > +       local_pstate_id = (pmspr_val >> 48) & 0xFF;
-> > +       pstate_id = local_pstate_id;
-> 
-> similarly local_pstate_id
+So what we actually need to know is what are the other relevant memory
+accesses that require strict ordering with transition_ongoing.
 
-well, I am interested in the bits 48..55 of pmspr_val. That's the
-pstate_id which can be negative. So I'll like to keep
-local_pstate_id. 
-> 
-> > +
-> > +       freq = pstate_id_to_freq(pstate_id);
-> > +       pr_debug("cpu %d pmsr %lx pstate_id %d frequency %d \n",
-> > +               smp_processor_id(), pmspr_val, pstate_id, freq);
-> > +       *cur_freq = freq;
-> 
-> Move above print here after a blank line. Also remove freq variable as
-> well and use *cur_freq directly.. And then you can rename it to freq
-as well.
+What I find strange in your patch is that
+cpufreq_freq_transition_begin() uses spinlocks around transition_ongoing
+update but cpufreq_freq_transition_end() doesn't.
 
-We can get rid of freq and use *cur_freq in its place.
-
-
-Thanks for the detailed review.
-
---
-Regards
-gautham.
-
+-- 
+Catalin
