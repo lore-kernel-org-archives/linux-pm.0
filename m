@@ -1,65 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
-Date: Fri, 21 Mar 2014 17:15:34 +0530
-Message-ID: <CAKohpo=k-e1GLiLRNtJ3Xi3+NUWW1+gvtCNr_4Ag60j49dZvdQ@mail.gmail.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-	<1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
-	<CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
-	<20140321110445.GB2493@in.ibm.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
+Date: Fri, 21 Mar 2014 17:15:03 +0530
+Message-ID: <532C263F.4090504@linux.vnet.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com> <1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com> <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:35288 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758075AbaCULpe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 07:45:34 -0400
-Received: by mail-oa0-f45.google.com with SMTP id eb12so2055099oac.32
-        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 04:45:34 -0700 (PDT)
-In-Reply-To: <20140321110445.GB2493@in.ibm.com>
+Received: from e28smtp07.in.ibm.com ([122.248.162.7]:44460 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758075AbaCULpY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 07:45:24 -0400
+Received: from /spool/local
+	by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Fri, 21 Mar 2014 17:15:21 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+	by d28dlp02.in.ibm.com (Postfix) with ESMTP id 07884394004E
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 17:15:19 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2LBjMN666781424
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 17:15:22 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2LBjGOm019705
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 17:15:17 +0530
+In-Reply-To: <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>
 
-On 21 March 2014 16:34, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> Heh! Well, that wasn't the reason why this was sent out as a separate
-> patch, but never mind. Though I don't understand why it would be
-> difficult to review the patch though.
-
-Because the initial driver wasn't complete earlier. There were 2-3 patches
-after the first one which are changing what the first patch has added.
-Nothing else :)
-
->> > +static void powernv_read_cpu_freq(void *ret_freq)
->> > +{
->> > +       unsigned long pmspr_val;
->> > +       s8 local_pstate_id;
->> > +       int *cur_freq, freq, pstate_id;
->> > +
->> > +       cur_freq = (int *)ret_freq;
->>
->> You don't need cur_freq variable at all..
+On 03/21/2014 02:11 PM, Viresh Kumar wrote:
+> On Thu, Mar 20, 2014 at 5:40 PM, Gautham R. Shenoy
+> <ego@linux.vnet.ibm.com> wrote:
+>> From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> 
+> Hi Vaidy,
+> 
+>> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+>> index 4b029c0..4ba1632 100644
+>> --- a/drivers/cpufreq/Kconfig
+>> +++ b/drivers/cpufreq/Kconfig
+>> @@ -48,6 +48,7 @@ config CPU_FREQ_STAT_DETAILS
+>>  choice
+[...]
+>> +static struct cpufreq_driver powernv_cpufreq_driver = {
+>> +       .verify         = powernv_cpufreq_verify,
+>> +       .target         = powernv_cpufreq_target,
+> 
+> I think you have Srivatsa there who has seen lots of cpufreq code and
+> could have helped you a lot :)
 >
-> I don't like it either. But the compiler complains without this hack
-> :-(
 
-Why would the compiler warn for doing this?:
+:-)
 
-*(int *)ret_freq = freq;
+I have followed the locking and synchronization aspects of cpufreq
+closely, but unfortunately, I haven't been able to keep up with some of
+the other details that well :-( Besides, its hard to keep up with the
+rate of your changes, you are way too fast! ;-)
 
->> > +       pmspr_val = get_pmspr(SPRN_PMSR);
->> > +
->> > +       /* The local pstate id corresponds bits 48..55 in the PMSR.
->> > +         * Note: Watch out for the sign! */
->> > +       local_pstate_id = (pmspr_val >> 48) & 0xFF;
->> > +       pstate_id = local_pstate_id;
->>
->> similarly local_pstate_id
->
-> well, I am interested in the bits 48..55 of pmspr_val. That's the
-> pstate_id which can be negative. So I'll like to keep
-> local_pstate_id.
+Regards,
+Srivatsa S. Bhat
 
-Can you please explain at bit level how getting the value in a s8
-first and then into a s32 will help you here? Instead of getting it
-directly into s32.
