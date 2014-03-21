@@ -1,75 +1,68 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are
- serialized
-Date: Fri, 21 Mar 2014 18:07:23 +0000
-Message-ID: <20140321180723.GM13596@arm.com>
-References: <cover.1395379422.git.viresh.kumar@linaro.org>
- <f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org>
- <532BEE64.3090501@linux.vnet.ibm.com>
- <CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
- <532BFB77.5060107@linux.vnet.ibm.com>
- <CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
- <20140321110559.GB13596@arm.com>
- <532C2160.4030909@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request
+Date: Fri, 21 Mar 2014 23:16:40 +0100
+Message-ID: <6984230.es0GY7P0qj@vostro.rjw.lan>
+References: <1395369289-6416-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <532C2160.4030909@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57088 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750858AbaCUWBI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 18:01:08 -0400
+In-Reply-To: <1395369289-6416-1-git-send-email-myungjoo.ham@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, myungjoo.ham@gmail.com
 
-On Fri, Mar 21, 2014 at 11:24:16AM +0000, Srivatsa S. Bhat wrote:
-> On 03/21/2014 04:35 PM, Catalin Marinas wrote:
-> > On Fri, Mar 21, 2014 at 09:21:02AM +0000, Viresh Kumar wrote:
-> >> @Catalin: We have a problem here and need your expert advice. After changing
-> >> CPU frequency we need to call this code:
-> >>
-> >> cpufreq_notify_post_transition();
-> >> policy->transition_ongoing = false;
-> >>
-> >> And the sequence must be like this only. Is this guaranteed without any
-> >> memory barriers? cpufreq_notify_post_transition() isn't touching
-> >> transition_ongoing at all..
-> > 
-> > The above sequence doesn't say much. As rmk said, the compiler wouldn't
-> > reorder the transition_ongoing write before the function call. I think
-> > most architectures (not sure about Alpha) don't do speculative stores,
-> > so hardware wouldn't reorder them either. However, other stores inside
-> > the cpufreq_notify_post_transition() could be reordered after
-> > transition_ongoing store. The same for memory accesses after the
-> > transition_ongoing update, they could be reordered before.
-> > 
-> > So what we actually need to know is what are the other relevant memory
-> > accesses that require strict ordering with transition_ongoing.
+On Friday, March 21, 2014 11:34:49 AM MyungJoo Ham wrote:
 > 
-> Hmm.. The thing is, _everything_ inside the post_transition() function
-> should complete before writing to transition_ongoing. Because, setting the
-> flag to 'false' indicates the end of the critical section, and the next
-> contending task can enter the critical section.
+> Dear Rafael,
 
-smp_mb() is all about relative ordering. So if you want memory accesses
-in post_transition() to be visible to other observers before
-transition_ongoing = false, you also need to make sure that the readers
-of transition_ongoing have a barrier before subsequent memory accesses.
-
-> > What I find strange in your patch is that
-> > cpufreq_freq_transition_begin() uses spinlocks around transition_ongoing
-> > update but cpufreq_freq_transition_end() doesn't.
+Hi,
+ 
+> Here goes bugfix devfreq patch.
 > 
-> The reason is that, by the time we drop the spinlock, we would have set
-> the transition_ongoing flag to true, which prevents any other task from
-> entering the critical section. Hence, when we call the _end() function,
-> we are 100% sure that only one task is executing it. Hence locks are not
-> necessary around that second update. In fact, that very update marks the
-> end of the critical section (which acts much like a spin_unlock(&lock)
-> in a "regular" critical section).
+> Recent patchset of device-tree support / exynos driver updates is omitted in this pull request
+> as there could be further updates on the patchset.
 
-OK, I start to get it. Is there a risk of missing a wake_up event? E.g.
-one thread waking up earlier, noticing that transition is in progress
-and waiting indefinitely?
+OK, pulled, but only because this is a fix.
+
+For new material, please do not send pull requests after -rc6 in the current
+cycle.  That is, a pull request with new material for 3.15 should have been
+send around 2 weeks ago.
+
+
+> The following changes since commit dcb99fd9b08cfe1afe426af4d8d3cbc429190f15:
+> 
+>   Linux 3.14-rc7 (2014-03-16 18:51:24 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
+> 
+> for you to fetch changes up to e35d35a1c0b3a7317d77e03e686a4a205cdd4eed:
+> 
+>   PM / devfreq: Rewrite devfreq_update_status() to fix multiple bugs (2014-03-21 11:16:30 +0900)
+> 
+> ----------------------------------------------------------------
+> Pull request for Rafael. Bugfix only.
+> (recence changes of DT/Exynos drivers need further work)
+> 
+> ----------------------------------------------------------------
+> Saravana Kannan (1):
+>       PM / devfreq: Rewrite devfreq_update_status() to fix multiple bugs
+> 
+>  drivers/devfreq/devfreq.c | 31 ++++++++++++++++++++-----------
+>  1 file changed, 20 insertions(+), 11 deletions(-)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
 -- 
-Catalin
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
