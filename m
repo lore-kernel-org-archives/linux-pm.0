@@ -1,71 +1,65 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
-Date: Fri, 21 Mar 2014 17:10:11 +0530
-Message-ID: <532C251B.1020306@linux.vnet.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com> <1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com> <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com> <20140321104317.GA2493@in.ibm.com> <CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
+Date: Fri, 21 Mar 2014 17:15:34 +0530
+Message-ID: <CAKohpo=k-e1GLiLRNtJ3Xi3+NUWW1+gvtCNr_4Ag60j49dZvdQ@mail.gmail.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+	<1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+	<CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+	<20140321110445.GB2493@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:54746 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbaCULkh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 07:40:37 -0400
-Received: from /spool/local
-	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 21 Mar 2014 21:40:35 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
-	by d23dlp02.au.ibm.com (Postfix) with ESMTP id F1B6A2BB0054
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 22:40:32 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2LBKJgR59244740
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 22:20:20 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2LBeVwv009636
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 22:40:32 +1100
-In-Reply-To: <CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:35288 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758075AbaCULpe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 07:45:34 -0400
+Received: by mail-oa0-f45.google.com with SMTP id eb12so2055099oac.32
+        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 04:45:34 -0700 (PDT)
+In-Reply-To: <20140321110445.GB2493@in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, Linux PM list <linux-pm@vger.kernel.org>, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-On 03/21/2014 04:24 PM, Viresh Kumar wrote:
-> On 21 March 2014 16:13, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
->> On Fri, Mar 21, 2014 at 02:11:32PM +0530, Viresh Kumar wrote:
-> 
->>>> +               pr_debug("PState id %d freq %d MHz\n", id, freq);
->>>> +               powernv_freqs[i].driver_data = i;
->>>
-[...] 
->>>> +static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>>> +{
->>>> +       int base, i;
->>>> +
->>>> +#ifdef CONFIG_SMP
->>>
->>> What will break if you don't have this ifdef here? Without that as well
->>> below code should work?
-> 
-> Missed this one?
-> 
+On 21 March 2014 16:34, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> Heh! Well, that wasn't the reason why this was sent out as a separate
+> patch, but never mind. Though I don't understand why it would be
+> difficult to review the patch though.
 
-Nothing will break, its just that the code size will be a tiny bit
-lesser on UP configs, that's all :-) Anyway, I think removing the ifdef
-improves the readability (and doesn't add any noticeable overhead on UP
-kernels), so let's get rid of it.
+Because the initial driver wasn't complete earlier. There were 2-3 patches
+after the first one which are changing what the first patch has added.
+Nothing else :)
 
-Regards,
-Srivatsa S. Bhat
+>> > +static void powernv_read_cpu_freq(void *ret_freq)
+>> > +{
+>> > +       unsigned long pmspr_val;
+>> > +       s8 local_pstate_id;
+>> > +       int *cur_freq, freq, pstate_id;
+>> > +
+>> > +       cur_freq = (int *)ret_freq;
+>>
+>> You don't need cur_freq variable at all..
+>
+> I don't like it either. But the compiler complains without this hack
+> :-(
 
->>>> +       base = cpu_first_thread_sibling(policy->cpu);
->>>> +
->>>> +       for (i = 0; i < threads_per_core; i++)
->>>> +               cpumask_set_cpu(base + i, policy->cpus);
->>>> +#endif
->>>> +       policy->cpuinfo.transition_latency = 25000;
->>>> +
->>>> +       policy->cur = powernv_freqs[0].frequency;
->>>> +       cpufreq_frequency_table_get_attr(powernv_freqs, policy->cpu);
->>>
+Why would the compiler warn for doing this?:
 
+*(int *)ret_freq = freq;
+
+>> > +       pmspr_val = get_pmspr(SPRN_PMSR);
+>> > +
+>> > +       /* The local pstate id corresponds bits 48..55 in the PMSR.
+>> > +         * Note: Watch out for the sign! */
+>> > +       local_pstate_id = (pmspr_val >> 48) & 0xFF;
+>> > +       pstate_id = local_pstate_id;
+>>
+>> similarly local_pstate_id
+>
+> well, I am interested in the bits 48..55 of pmspr_val. That's the
+> pstate_id which can be negative. So I'll like to keep
+> local_pstate_id.
+
+Can you please explain at bit level how getting the value in a s8
+first and then into a s32 will help you here? Instead of getting it
+directly into s32.
