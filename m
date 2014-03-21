@@ -1,137 +1,144 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
-Date: Fri, 21 Mar 2014 18:53:26 +0530
-Message-ID: <20140321132326.GE2493@in.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
- <1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com>
- <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
- <20140321104317.GA2493@in.ibm.com>
- <CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] sh_eth: pm_runtime should not need null operations
+Date: Fri, 21 Mar 2014 14:24:51 +0100
+Message-ID: <CAMuHMdVhUwX0DO2+TBhG31HB2sx3_XRW3xPfZ+wH2d8b=RywLQ@mail.gmail.com>
+References: <1395396913-24354-1-git-send-email-ben.dooks@codethink.co.uk>
+	<CAMuHMdWO-kNdWT_AxzAmCTrx3NerWpTG+auFNZTcL5hsbN+++A@mail.gmail.com>
+	<532C1B13.7000805@codethink.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38571 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965502AbaCUNXg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 09:23:36 -0400
-Received: from /spool/local
-	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Fri, 21 Mar 2014 07:23:36 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
-	by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 1D6FC3E40045
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 07:23:33 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2LDNX3W62259256
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 14:23:33 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2LDNV7A031926
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 07:23:32 -0600
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:38054 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965138AbaCUNYw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 09:24:52 -0400
+In-Reply-To: <532C1B13.7000805@codethink.co.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
+To: Ben Dooks <ben.dooks@codethink.co.uk>
+Cc: linux-kernel@lists.codethink.co.uk, Linux-sh list <linux-sh@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Viresh,
+Hi Ben,
 
-On Fri, Mar 21, 2014 at 04:24:27PM +0530, Viresh Kumar wrote:
-> On 21 March 2014 16:13, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> > On Fri, Mar 21, 2014 at 02:11:32PM +0530, Viresh Kumar wrote:
-> 
-> >> > +               pr_debug("PState id %d freq %d MHz\n", id, freq);
-> >> > +               powernv_freqs[i].driver_data = i;
-> >>
-> >> I don't think you are using this field at all and this is the field you can
-> >> use for driver_data and so you can get rid of powernv_pstate_ids[ ].
-> >
-> > Using driver_data to record powernv_pstate_ids won't work since
-> > powernv_pstate_ids can be negative. So a pstate_id -3 can be confused
-> > with CPUFREQ_BOOST_FREQ thereby not displaying the frequency
-> > corresponding to pstate id -3. So for now I think we will be retaining
-> > powernv_pstate_ids.
-> 
-> As I said earlier, this field is only used by cpufreq drivers and cpufreq core
-> isn't supposed to touch it. CPUFREQ_BOOST_FREQ and other macros
-> are there for .frequency field and not this one.
-> 
+(dropping netdev and davem, adding Felipe, Kevin, linux-pm, and
+linux-arm-kernel)
 
-Ok, I had based my code on linus's git tree. I checked the 'pm-cpufreq'
-branch of Rafael's 'linux-pm' tree and freq_table.c contains the
-following code snippet in show_available_frequencies:
+On Fri, Mar 21, 2014 at 11:57 AM, Ben Dooks <ben.dooks@codethink.co.uk> wrote:
+> On 21/03/14 11:30, Geert Uytterhoeven wrote:
+>> On Fri, Mar 21, 2014 at 11:15 AM, Ben Dooks <ben.dooks@codethink.co.uk>
+>> wrote:
+>>> The driver has a no-op for the pm_runtime callbacks but
+>>> the pm_runtime core should correctly ignore drivers without
+>>> any pm_rumtime callback ops.
+>>
+>> The pm_runtime core doesn't ignore non-existing runtime_{suspend,resume}
+>> callbacks, it turns them into a failure withv -ENOSYS.
+>> Only non-existing runtime_idle callbacks are ignored.
+>
+> I've added Rafael Wysocki as he may be able to add better
+> feedback to this issue.
+>
+> [snip rpm_susend code block]
+>
+> I got very confused here. The clock_ops sets dev->pm_domain
+> which over-rides the use of the dev->driver->pm entry as the
+> primary pm for the device. The code above the bit you snipped
+> does a ladder looking for the pm_runtime entry it calls and
+> would stop at finding dev->pm_domain as so:
+>
+> from drivers/base/power/runtime.c:
+>     495         if (dev->pm_domain)
+>     496                 callback = dev->pm_domain->ops.runtime_suspend;
+>  ...
+>     502                 callback = dev->bus->pm->runtime_suspend;
+>     503         else
+>     504                 callback = NULL;
+>
+>
+> So for drivers on shmobile with drivers/sh/pm_runtime.c enabled
+> we would never call the drivers' entry as the ops that this code
+> introduces just calls the pm_clk calls and does not send the
+> events on.
 
-	if (show_boost ^ (table[i].driver_data == CPUFREQ_BOOST_FREQ))
-			continue;
+Yes, that's also my understanding.
 
-I suspect we're talking about different code bases. So could you
-please tell me which one should I be looking at ?
+Commit 4d27e9dcff00a6425d779b065ec8892e4f391661 ("PM: Make
+power domain callbacks take precedence over subsystem ones") explains
+the rationale behind this.
 
-> 
-> >> > +static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> >> > +{
-> >> > +       int base, i;
-> >> > +
-> >> > +#ifdef CONFIG_SMP
-> >>
-> >> What will break if you don't have this ifdef here? Without that as well
-> >> below code should work?
-> 
-> Missed this one?
-> 
-> >> > +       base = cpu_first_thread_sibling(policy->cpu);
-> >> > +
-> >> > +       for (i = 0; i < threads_per_core; i++)
-> >> > +               cpumask_set_cpu(base + i, policy->cpus);
-> >> > +#endif
-> >> > +       policy->cpuinfo.transition_latency = 25000;
-> >> > +
-> >> > +       policy->cur = powernv_freqs[0].frequency;
-> >> > +       cpufreq_frequency_table_get_attr(powernv_freqs, policy->cpu);
-> >>
-> >> This doesn't exist anymore.
-> >
-> > Didn't get this comment!
-> 
-> cpufreq_frequency_table_get_attr() routine doesn't exist anymore.
-> 
-> >> > +static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> >> > +{
-> >> > +       cpufreq_frequency_table_put_attr(policy->cpu);
-> >> > +       return 0;
-> >> > +}
-> >>
-> >> You don't need this..
-> >
-> > Why not ?
-> 
-> Because cpufreq_frequency_table_get_attr() and
-> cpufreq_frequency_table_put_attr() don't exist anymore :)
+Now, this doesn't prevent your power domain from delegating to other
+callbacks...
 
-Well, it does in the codebases that I was looking at. May be I've been
-looking at the wrong place.
+> If we send the events on, then we would use pm_generic_runtime_suspend()
+> to send it. This call treats the lack of runtime_pm driver entry as a
+> do nothing and return 0 which means in this case the code in sh_eth
+> is not necessary to have any pm_runtime functions.
 
-> 
-> >> > +module_init(powernv_cpufreq_init);
-> >> > +module_exit(powernv_cpufreq_exit);
-> >>
-> >> Place these right after the routines without any blank lines in
-> > between.
-> >
-> > Is this the new convention ?
-> 
-> Don't know I have been following this since long time, probably from the
-> time I started with Mainline stuff.. I have seen many maintainers advising this
-> as it make code more readable, specially if these routines are quite big..
-> 
-> Probably it isn't mentioned in coding guidelines but people follow it most of
-> the times.
+If the power domain just calls pm_generic_runtime_suspend(), it will only
+consider the driver-specific callback, bypassing type, class, and
+bus-specific callbacks.
 
-Ok. I was not aware of this. Good to know :-)
-> 
+So should the power domain delegate it further using a similar ladder
+strategy like RPM_GET_CALLBACK() at the core pm level, i.e.
+try type/class/bus/driver?
+And type should delegate to class/bus/driver, class to bus/driver, bus to
+driver?
+
+> This means depending on if we have a pm_domain in the path we get
+> different treatment of NULL runtime pm ops pointer. I am not sure
+> how to handle this, as IIRC a number of other drivers for Renesas
+> currently assume that the NULL case is going to be fine for them.
+>
+> Changing pm_generic_runtime_suspend() to return ENOSYS would end
+> up breaking davinci and probably a number of other platforms.
+>
+> So questions:
+>
+> - Should rpm_suspend() ignore the lack of pm_runtime operations?
+> - Do we need to add a generic `ignore pm runtime callback`
+> - Are any other shmobile drivers similarly affected?
+
+The code indeed looks a bit like a mix of:
+  - Lack of callback means it's safe to suspend,
+  - Lack of callback means it's not safe to suspend.
+
+BTW, I also looked a bit into history, and added asterisks in front of the
+most interesting parts:
+
+ 1. drivers/sh/pm_runtime.c
+    Initial version by Magnus, reworked by Rafael
+
+ 2. This approach was applied to omap1, "to allow code sharing with shmobile",
+    in commit 600b776eb39a13a28b090ba9efceb0c69d4508aa
+    ("OMAP1 / PM: Use generic clock manipulation routines for runtime PM")
+    by Rafael, acked-by Kevin Hilman.
+*   This one is interesting, as it moves omap1 away from the
+*   fck/ick-centric approach Felipe proposed to generalize in
+*   https://lkml.org/lkml/2014/1/31/290
+
+ 3. Kevin converted omap2 in commit
+    commit 638080c37ae08fd0c44cec13d7948ca5385ae851 ("OMAP2+ / PM: move
+    runtime PM implementation to use device power domains")
+*   and fixed it for power domain callbacks taking precedence in commit
+*   345f79b3de7f6d651e4dba794af7c7303bdfd649 ("OMAP: PM: omap_device: fix
+*   device power domain callbacks").
+*   This is what Ben is proposing to add to drivers/sh/pm_runtime.c.
+
+ 4. Kevin converted davinci in commit
+    ce9dcb8784611c50974d1c6b600c71f5c0a29308 ("ARM: davinci: add runtime PM
+    support for clock management").
+
+ 5. which got copied by Santosh Shilimkar for keystone in commit
+    fc20ffe1213beb09bb7fb6687b404fe48183a55e ("ARM: keystone: add PM domain
+    support for clock management").
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 --
-Thanks and Regards
-gautham.
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
