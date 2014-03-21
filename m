@@ -1,115 +1,101 @@
-From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: Re: [PATCH] sh_eth: pm_runtime should not need null operations
-Date: Fri, 21 Mar 2014 14:46:00 +0100
-Message-ID: <532C4298.2050200@codethink.co.uk>
-References: <1395396913-24354-1-git-send-email-ben.dooks@codethink.co.uk> <CAMuHMdWO-kNdWT_AxzAmCTrx3NerWpTG+auFNZTcL5hsbN+++A@mail.gmail.com> <532C1B13.7000805@codethink.co.uk> <CAMuHMdVhUwX0DO2+TBhG31HB2sx3_XRW3xPfZ+wH2d8b=RywLQ@mail.gmail.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get()
+ method
+Date: Fri, 21 Mar 2014 19:55:55 +0530
+Message-ID: <20140321142555.GF2493@in.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+ <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+ <20140321110445.GB2493@in.ibm.com>
+ <CAKohpo=k-e1GLiLRNtJ3Xi3+NUWW1+gvtCNr_4Ag60j49dZvdQ@mail.gmail.com>
+ <20140321130450.GD2493@in.ibm.com>
+ <CAKohpomHHToqOND=ZtMeqBd11X3VA=PeZ2K6Tyj31y2V4G9-uA@mail.gmail.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdVhUwX0DO2+TBhG31HB2sx3_XRW3xPfZ+wH2d8b=RywLQ@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-kernel@lists.codethink.co.uk, Linux-sh list <linux-sh@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:57769 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751948AbaCUO0E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Mar 2014 10:26:04 -0400
+Received: from /spool/local
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Fri, 21 Mar 2014 10:26:03 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com [9.57.198.24])
+	by d01dlp03.pok.ibm.com (Postfix) with ESMTP id CB623C90042
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 10:25:58 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2LEQ2kt15990900
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 14:26:02 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2LEQ1dl010349
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 10:26:02 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpomHHToqOND=ZtMeqBd11X3VA=PeZ2K6Tyj31y2V4G9-uA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-On 21/03/14 14:24, Geert Uytterhoeven wrote:
-> Hi Ben,
->
-> (dropping netdev and davem, adding Felipe, Kevin, linux-pm, and
-> linux-arm-kernel)
->
-> On Fri, Mar 21, 2014 at 11:57 AM, Ben Dooks <ben.dooks@codethink.co.uk> wrote:
->> On 21/03/14 11:30, Geert Uytterhoeven wrote:
->>> On Fri, Mar 21, 2014 at 11:15 AM, Ben Dooks <ben.dooks@codethink.co.uk>
->>> wrote:
->>>> The driver has a no-op for the pm_runtime callbacks but
->>>> the pm_runtime core should correctly ignore drivers without
->>>> any pm_rumtime callback ops.
->>>
->>> The pm_runtime core doesn't ignore non-existing runtime_{suspend,resume}
->>> callbacks, it turns them into a failure withv -ENOSYS.
->>> Only non-existing runtime_idle callbacks are ignored.
->>
->> I've added Rafael Wysocki as he may be able to add better
->> feedback to this issue.
->>
->> [snip rpm_susend code block]
->>
->> I got very confused here. The clock_ops sets dev->pm_domain
->> which over-rides the use of the dev->driver->pm entry as the
->> primary pm for the device. The code above the bit you snipped
->> does a ladder looking for the pm_runtime entry it calls and
->> would stop at finding dev->pm_domain as so:
->>
->> from drivers/base/power/runtime.c:
->>      495         if (dev->pm_domain)
->>      496                 callback = dev->pm_domain->ops.runtime_suspend;
->>   ...
->>      502                 callback = dev->bus->pm->runtime_suspend;
->>      503         else
->>      504                 callback = NULL;
->>
->>
->> So for drivers on shmobile with drivers/sh/pm_runtime.c enabled
->> we would never call the drivers' entry as the ops that this code
->> introduces just calls the pm_clk calls and does not send the
->> events on.
->
-> Yes, that's also my understanding.
->
-> Commit 4d27e9dcff00a6425d779b065ec8892e4f391661 ("PM: Make
-> power domain callbacks take precedence over subsystem ones") explains
-> the rationale behind this.
->
-> Now, this doesn't prevent your power domain from delegating to other
-> callbacks...
->
->> If we send the events on, then we would use pm_generic_runtime_suspend()
->> to send it. This call treats the lack of runtime_pm driver entry as a
->> do nothing and return 0 which means in this case the code in sh_eth
->> is not necessary to have any pm_runtime functions.
->
-> If the power domain just calls pm_generic_runtime_suspend(), it will only
-> consider the driver-specific callback, bypassing type, class, and
-> bus-specific callbacks.
->
-> So should the power domain delegate it further using a similar ladder
-> strategy like RPM_GET_CALLBACK() at the core pm level, i.e.
-> try type/class/bus/driver?
-> And type should delegate to class/bus/driver, class to bus/driver, bus to
-> driver?
->
->> This means depending on if we have a pm_domain in the path we get
->> different treatment of NULL runtime pm ops pointer. I am not sure
->> how to handle this, as IIRC a number of other drivers for Renesas
->> currently assume that the NULL case is going to be fine for them.
->>
->> Changing pm_generic_runtime_suspend() to return ENOSYS would end
->> up breaking davinci and probably a number of other platforms.
->>
->> So questions:
->>
->> - Should rpm_suspend() ignore the lack of pm_runtime operations?
->> - Do we need to add a generic `ignore pm runtime callback`
->> - Are any other shmobile drivers similarly affected?
->
-> The code indeed looks a bit like a mix of:
->    - Lack of callback means it's safe to suspend,
->    - Lack of callback means it's not safe to suspend.
+On Fri, Mar 21, 2014 at 06:42:50PM +0530, Viresh Kumar wrote:
+> On 21 March 2014 18:34, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> > Consider the case when pmspr = 0x00feffffffffffff;
+> >
+> > We are interested in extracting the value 'fe'. And ensure that when
+> > we store this value into an int, we get the sign extension right.
+> >
+> > So the following doesn't work:
+> >
+> >    pstate_id = (pmspr_val >> 48) & 0xFFFFFFFF;
+> 
+> What about pstate_id = (pmspr_val >> 48) & 0xFF; ??
 
-I thought historically NULL tended to mean it did not care about
-this.
+Nope. 
 
-The whole thing is giving me a headache as I would expect the
-suspend to start with device and then work down the layers and
-resume to do the opposite. However currently rpm_resume will also
-start at the dev->pm_domain.
+Suppose the pmspr_val is contained in the register 
+%rax, and pstate_id corresponds to the address -20(%rbp) then:
 
-Should the rpm_resume start with the dev->bus->pm and then work
-its way up to the dev->driver->pm callback? If so then the current
-davinci code is also going to be wrong...
+	pstate_id = (pmspr_val >> 48) & 0xFF;
 
--- 
-Ben Dooks				http://www.codethink.co.uk/
-Senior Engineer				Codethink - Providing Genius
+would corrspond to 
+
+        shrq    $48, %rax        // Left shift by 48 bits
+        andl    $255, %eax       // Mask the lower 32 bits of %rax with 0x000000FF
+        movl    %eax, -20(%rbp)  // Store the lower 32 bits of %rax
+                                    into pstate_id
+
+
+On the other hand, 
+
+   pstate_id = (int)((s8)((pmspr_val >> 48) & 0xFF));
+
+would correspond to:
+
+        shrq    $48, %rax  // Left shift by 48 bits.
+        movsbl  %al, %eax  // Move the lower 8 bits of %rax to %eax
+                              with sign-extension. 
+        movl    %eax, -20(%rbp) // store the result in pstate_id;
+
+So with this, we are getting the sign extension due to the use of movsbl.
+
+And if local_pstate_id corresponds to the address -1(%rbp) then:
+
+       local_pstate_id = (pmspr_val >> 48) & 0xFF;
+       pstate_id = local_pstate_id;
+
+would correspond to:
+
+        shrq    $48, %rax        // Left shift by 48 bits
+        movb    %al, -1(%rbp)    //copy the lower 8 bits to local_pstate_id
+        movsbl  -1(%rbp), %eax   //move the contents of
+                                   local_pstate_id to %eax with sign extension.
+        movl    %eax, -20(%rbp)  // Store the result in pstate_id
+
+
+Hope this helps :-)
+
+--
+Thanks and Regards
+gautham.
+
