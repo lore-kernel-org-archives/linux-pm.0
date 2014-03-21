@@ -1,56 +1,86 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get()
- method
-Date: Fri, 21 Mar 2014 15:01:09 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6E5677@AcuExch.aculab.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-	<1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
-	<CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
-	<20140321110445.GB2493@in.ibm.com>
-	<CAKohpo=k-e1GLiLRNtJ3Xi3+NUWW1+gvtCNr_4Ag60j49dZvdQ@mail.gmail.com>
-	<063D6719AE5E284EB5DD2968C1650D6D0F6E5386@AcuExch.aculab.com>
- <CAKohpo=E1UEcLhbZHtmBJcD3S3trm8ypT7++quF_t6XHDXAvHA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: ACPI and PM material for v3.15-rc1 (current queue)
+Date: Fri, 21 Mar 2014 17:40:26 +0100
+Message-ID: <4752174.DIeOl6EhdE@vostro.rjw.lan>
+References: <2611540.GrpzWjVQ7v@vostro.rjw.lan> <532B8A4B.9000808@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0.aculab.com ([213.249.233.131]:32825 "HELO mx0.aculab.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752673AbaCUPCg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 11:02:36 -0400
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 28225-04 for <linux-pm@vger.kernel.org>;
- Fri, 21 Mar 2014 15:02:35 +0000 (GMT)
-In-Reply-To: <CAKohpo=E1UEcLhbZHtmBJcD3S3trm8ypT7++quF_t6XHDXAvHA@mail.gmail.com>
-Content-Language: en-US
+Received: from v094114.home.net.pl ([79.96.170.134]:59943 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751594AbaCUQYz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 12:24:55 -0400
+In-Reply-To: <532B8A4B.9000808@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Viresh Kumar' <viresh.kumar@linaro.org>
-Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Hanjun Guo <hanjun.guo@linaro.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
 
-From: Viresh Kumar [mailto:viresh.kumar@linaro.org]
-> On 21 March 2014 17:31, David Laight <David.Laight@aculab.com> wrote:
-> >> *(int *)ret_freq = freq;
+On Friday, March 21, 2014 08:39:39 AM Hanjun Guo wrote:
+> Hi Rafael,
+
+Hi,
+
+> On 2014=E5=B9=B403=E6=9C=8821=E6=97=A5 08:23, Rafael J. Wysocki wrote=
+:
+> > Hi All,
 > >
-> > Because it is very likely to be wrong.
-> > In general casts of pointers to integer types are dangerous.
-> 
-> Where are we converting pointers to integers? We are doing a
-> cast from 'void * ' to 'int *' and then using indirection operator
-> to set its value.
+> > My queue for the first pull request during the upcoming 3.15 merge =
+window
+> > contains the material below.  Following the rule that everything I =
+send
+> > pull requests for should spend at least one day in linux-next, I'm =
+not
+> > going to add any more new commits to it at this point.
+> >
+> > Most likely, there will be more ACPI+PM pull request during the 3.1=
+5 cycle,
+> > so if I missed something, it still may be possible to get that into=
+ that
+> > kernel, but there has to be a good reason for it.
+> >
+> > Kind regards,
+> > Rafael
+> >
+> >
+> > ---------------
+> >
+> > Hanjun Guo (2):
+> >        ACPI / tables: Replace printk with pr_*
+> >        ACPI: Remove duplicate definitions of PREFIX
+>=20
+> It seems that you missed some of my patches:
+> ACPI: Move BAD_MADT_ENTRY() to linux/acpi.h
+> ACPI / idle: Make idle_boot_override depend on x86 and ia64
+> ACPI / trivial: Fix the return value type of acpi_processor_eval_pdc(=
+)
+> ACPI / processor: Replace hard-coded "ACPI0007" with=20
+> ACPI_PROCESSOR_DEVICE_HID
+>=20
+> I think those 4 patches can be merged in 3.15 and you already accepte=
+d them.
 
-You mis-parsed what I wrote, try:
-In general casts of 'pointer to integer' types are dangerous.
+Yes, I did not include the acpi-processor branch, sorry about that and =
+thanks
+for spotting it!
 
-Somewhere, much higher up the call stack, the address of an integer
-variable is being taken and then passed as the 'void *' parameter.
+That branch was in linux-next before, though, so I'll push it for 3.15-=
+rc1.
 
-The 'problem' is that it is quite easily to pass the address of
-a 'long' instead. On 32bit and LE systems this won't always
-be a problem. On 64bit BE it all goes wrong.
+> and this patch still need more acks and then you will accept it:
+> ACPI / processor_core: Rework _PDC related stuff to make it more=20
+> arch-independent
+>=20
+> and this patch was reverted from your tree suggested by Catalin and S=
+udeep,
+> ACPI / processor: Introduce map_gic_id() to get apic id from MADT or=20
+> _MAT method
+>=20
+> Sorry for the confusion if I missed something.
 
-	David
+I don't think you missed anything, thanks!
 
-
-
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
