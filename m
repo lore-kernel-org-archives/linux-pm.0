@@ -1,437 +1,100 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
-Date: Fri, 21 Mar 2014 14:11:32 +0530
-Message-ID: <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-	<1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are serialized
+Date: Fri, 21 Mar 2014 14:12:31 +0530
+Message-ID: <532BFB77.5060107@linux.vnet.ibm.com>
+References: <cover.1395379422.git.viresh.kumar@linaro.org> <f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org> <532BEE64.3090501@linux.vnet.ibm.com> <CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f169.google.com ([209.85.220.169]:47848 "EHLO
-	mail-vc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754689AbaCUIld (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 04:41:33 -0400
-Received: by mail-vc0-f169.google.com with SMTP id ik5so2300428vcb.28
-        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 01:41:32 -0700 (PDT)
-In-Reply-To: <1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-On Thu, Mar 20, 2014 at 5:40 PM, Gautham R. Shenoy
-<ego@linux.vnet.ibm.com> wrote:
-> From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+On 03/21/2014 01:28 PM, Viresh Kumar wrote:
+> On 21 March 2014 13:16, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>> We need this assignment to happen exactly at this point, that is, *after*
+>> the call to post_transition() completes and before calling wake_up().
+>>
+>> If the compiler or the CPU reorders the instructions and moves this
+>> assignment to some other place, then we will be in trouble!
+>>
+>> We might need memory barriers to ensure this doesn't get reordered.
+>> Alternatively, we can simply hold the spin-lock around this assignment,
+>> since locks automatically imply memory barriers. As an added advantage,
+>> the code will then look more intuitive and easier to understand as well.
+>>
+>> Thoughts?
+> 
+> I may be wrong but this is how I understand locks. Yes, spinlocks have
+> memory barriers implemented but it wouldn't guarantee what you are
+> asking for in the above explanation.
+> 
+> It will guarantee that transition_ongoing will be updated after the lock
+> is taken but the notification() can happen after the lock is taken and
+> also after the variable is modified.
+>
 
-Hi Vaidy,
+Actually, yes, that's true. The lock and unlock act as one-way barriers,
+hence they ensure that the critical section doesn't seep outside of the
+locks, but don't necessarily ensure that pieces of code outside the
+critical section don't seep -into- the critical section. IOW, my reasoning
+was not quite correct, but see below.
+ 
+> You can find some information on this in
+> Documentation/memory-barriers.txt
+>
 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 4b029c0..4ba1632 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -48,6 +48,7 @@ config CPU_FREQ_STAT_DETAILS
->  choice
->         prompt "Default CPUFreq governor"
->         default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
-> +       default CPU_FREQ_DEFAULT_GOV_ONDEMAND if POWERNV_CPUFREQ
+Yep, I know, I have read it several times, but I'm no expert ;-)
 
-Probably we should remove SA1100's entry as well from here. This is
-not the right way of doing it. Imagine 100 platforms having entries here.
-If you want it, then select it from your platforms Kconfig.
+I found this interesting section on "SLEEP AND WAKE-UP FUNCTIONS". It
+says that doing:
 
-> diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-> index ca0021a..93f8689 100644
-> --- a/drivers/cpufreq/Kconfig.powerpc
-> +++ b/drivers/cpufreq/Kconfig.powerpc
-> @@ -54,3 +54,16 @@ config PPC_PASEMI_CPUFREQ
->         help
->           This adds the support for frequency switching on PA Semi
->           PWRficient processors.
-> +
-> +config POWERNV_CPUFREQ
-> +       tristate "CPU frequency scaling for IBM POWERNV platform"
-> +       depends on PPC_POWERNV
-> +       select CPU_FREQ_GOV_PERFORMANCE
-> +       select CPU_FREQ_GOV_POWERSAVE
-> +       select CPU_FREQ_GOV_USERSPACE
-> +       select CPU_FREQ_GOV_ONDEMAND
-> +       select CPU_FREQ_GOV_CONSERVATIVE
+policy->transition_ongoing = false;
+wake_up(&policy->transition_wait);
 
-Nice :)
+is safe (as long as some tasks are woken up). So we don't have to worry
+about that part. So only the first part remains to be solved: ensuring
+that the assignment occurs _after_ completing the invocation of the
+POSTCHANGE notifiers.
 
-People normally do this from the defconfigs instead. And logically speaking
-we might better have only dependencies here, isn't it? And obviously
-governors aren't a dependency for this driver. :)
+For that, we can do:
 
-> +       default y
-> +       help
-> +        This adds support for CPU frequency switching on IBM POWERNV
-> +        platform
+cpufreq_notify_post_transition();
 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> new file mode 100644
-> index 0000000..ab1551f
-> --- /dev/null
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -0,0 +1,277 @@
-> +/*
-> + * POWERNV cpufreq driver for the IBM POWER processors
-> + *
-> + * (C) Copyright IBM 2014
-> + *
-> + * Author: Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2, or (at your option)
-> + * any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#define pr_fmt(fmt)    "powernv-cpufreq: " fmt
-> +
-> +#include <linux/module.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/of.h>
-> +#include <asm/cputhreads.h>
+smp_mb();
 
-That's it? Sure?
+policy->transition_ongoing = false;
 
-Even if things compile for you, you must explicitly include all the
-files on which
-you depend.
+That should take care of everything.
 
-> +/* FIXME: Make this per-core */
-> +static DEFINE_MUTEX(freq_switch_mutex);
-> +
-> +#define POWERNV_MAX_PSTATES    256
-> +
-> +static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-> +static int powernv_pstate_ids[POWERNV_MAX_PSTATES+1];
-> +
-> +/*
-> + * Initialize the freq table based on data obtained
-> + * from the firmware passed via device-tree
-> + */
-> +
-> +static int init_powernv_pstates(void)
-> +{
-> +       struct device_node *power_mgt;
-> +       int nr_pstates = 0;
-> +       int pstate_min, pstate_max, pstate_nominal;
-> +       const __be32 *pstate_ids, *pstate_freqs;
-> +       int i;
-> +       u32 len_ids, len_freqs;
-> +
-> +       power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-> +       if (!power_mgt) {
-> +               pr_warn("power-mgt node not found\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       if (of_property_read_u32(power_mgt, "ibm,pstate-min", &pstate_min)) {
-> +               pr_warn("ibm,pstate-min node not found\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       if (of_property_read_u32(power_mgt, "ibm,pstate-max", &pstate_max)) {
-> +               pr_warn("ibm,pstate-max node not found\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       if (of_property_read_u32(power_mgt, "ibm,pstate-nominal",
-> +                                &pstate_nominal)) {
-> +               pr_warn("ibm,pstate-nominal not found\n");
-> +               return -ENODEV;
-> +       }
-> +       pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
-> +               pstate_nominal, pstate_max);
-> +
-> +       pstate_ids = of_get_property(power_mgt, "ibm,pstate-ids", &len_ids);
-> +       if (!pstate_ids) {
-> +               pr_warn("ibm,pstate-ids not found\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       pstate_freqs = of_get_property(power_mgt, "ibm,pstate-frequencies-mhz",
-> +                                     &len_freqs);
-> +       if (!pstate_freqs) {
-> +               pr_warn("ibm,pstate-frequencies-mhz not found\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       WARN_ON(len_ids != len_freqs);
-> +       nr_pstates = min(len_ids, len_freqs) / sizeof(u32);
-> +       WARN_ON(!nr_pstates);
+> I don't think compiler or CPU will reorder calls to a function and
+> updates of a variable.
 
-Why do you want to continue here?
+I'm not sure about that. I think it is free to do so if it finds
+that there is no dependency that prevents it from reordering. In this
+case the update to the flag has no "visible" dependency on the call
+to post_transition().
 
-> +       pr_debug("NR PStates %d\n", nr_pstates);
-> +       for (i = 0; i < nr_pstates; i++) {
-> +               u32 id = be32_to_cpu(pstate_ids[i]);
-> +               u32 freq = be32_to_cpu(pstate_freqs[i]);
-> +
-> +               pr_debug("PState id %d freq %d MHz\n", id, freq);
-> +               powernv_freqs[i].driver_data = i;
+> And so this code might simply work. And
+> I hope there would be plenty of such code in kernel.
+> 
 
-I don't think you are using this field at all and this is the field you can
-use for driver_data and so you can get rid of powernv_pstate_ids[ ].
+Sure, there are plenty of examples in the kernel where we call functions
+and update variables. But in this particular case, our synchronization
+_depends_ on those operations happening in a particular order. Hence
+we need to ensure the ordering is right. Otherwise the synchronization
+might get broken.
 
-> +               powernv_freqs[i].frequency = freq * 1000; /* kHz */
-> +               powernv_pstate_ids[i] = id;
-> +       }
-> +       /* End of list marker entry */
-> +       powernv_freqs[i].driver_data = 0;
+Here are some examples where memory barriers are inserted to avoid
+reordering of variable updates and function calls:
 
-Not required.
+kernel/rcu/torture.c: rcu_torture_barrier_cbs()
+kernel/smp.c: kick_all_cpus_sync()
 
-> +       powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
-> +
-> +       /* Print frequency table */
-> +       for (i = 0; powernv_freqs[i].frequency != CPUFREQ_TABLE_END; i++)
-> +               pr_debug("%d: %d\n", i, powernv_freqs[i].frequency);
+Regards,
+Srivatsa S. Bhat
 
-You have already printed this table earlier..
-
-> +
-> +       return 0;
-> +}
-> +
-> +static struct freq_attr *powernv_cpu_freq_attr[] = {
-> +       &cpufreq_freq_attr_scaling_available_freqs,
-> +       NULL,
-> +};
-
-Can use this instead: cpufreq_generic_attr?
-
-> +/* Helper routines */
-> +
-> +/* Access helpers to power mgt SPR */
-> +
-> +static inline unsigned long get_pmspr(unsigned long sprn)
-
-Looks big enough not be inlined?
-
-> +{
-> +       switch (sprn) {
-> +       case SPRN_PMCR:
-> +               return mfspr(SPRN_PMCR);
-> +
-> +       case SPRN_PMICR:
-> +               return mfspr(SPRN_PMICR);
-> +
-> +       case SPRN_PMSR:
-> +               return mfspr(SPRN_PMSR);
-> +       }
-> +       BUG();
-> +}
-> +
-> +static inline void set_pmspr(unsigned long sprn, unsigned long val)
-> +{
-
-Same here..
-
-> +       switch (sprn) {
-> +       case SPRN_PMCR:
-> +               mtspr(SPRN_PMCR, val);
-> +               return;
-> +
-> +       case SPRN_PMICR:
-> +               mtspr(SPRN_PMICR, val);
-> +               return;
-> +
-> +       case SPRN_PMSR:
-> +               mtspr(SPRN_PMSR, val);
-> +               return;
-> +       }
-> +       BUG();
-> +}
-> +
-> +static void set_pstate(void *pstate)
-> +{
-> +       unsigned long val;
-> +       unsigned long pstate_ul = *(unsigned long *) pstate;
-
-Why not sending value only to this routine instead of pointer?
-
-> +
-> +       val = get_pmspr(SPRN_PMCR);
-> +       val = val & 0x0000ffffffffffffULL;
-
-Maybe a blank line here?
-
-> +       /* Set both global(bits 56..63) and local(bits 48..55) PStates */
-> +       val = val | (pstate_ul << 56) | (pstate_ul << 48);
-
-here as well?
-
-> +       pr_debug("Setting cpu %d pmcr to %016lX\n", smp_processor_id(), val);
-> +       set_pmspr(SPRN_PMCR, val);
-> +}
-> +
-> +static int powernv_set_freq(cpumask_var_t cpus, unsigned int new_index)
-> +{
-> +       unsigned long val = (unsigned long) powernv_pstate_ids[new_index];
-
-I think automatic type conversion will happen here.
-
-> +
-> +       /*
-> +        * Use smp_call_function to send IPI and execute the
-> +        * mtspr on target cpu.  We could do that without IPI
-> +        * if current CPU is within policy->cpus (core)
-> +        */
-
-Hmm, interesting I also feel there are cases where this routine can
-get called from other CPUs. Can you list those use cases where it can
-happen? Governors will mostly call this from one of the CPUs present
-in policy->cpus.
-
-> +       val = val & 0xFF;
-> +       smp_call_function_any(cpus, set_pstate, &val, 1);
-> +       return 0;
-> +}
-> +
-> +static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +       int base, i;
-> +
-> +#ifdef CONFIG_SMP
-
-What will break if you don't have this ifdef here? Without that as well
-below code should work?
-
-> +       base = cpu_first_thread_sibling(policy->cpu);
-> +
-> +       for (i = 0; i < threads_per_core; i++)
-> +               cpumask_set_cpu(base + i, policy->cpus);
-> +#endif
-> +       policy->cpuinfo.transition_latency = 25000;
-> +
-> +       policy->cur = powernv_freqs[0].frequency;
-> +       cpufreq_frequency_table_get_attr(powernv_freqs, policy->cpu);
-
-This doesn't exist anymore.
-
-> +       return cpufreq_frequency_table_cpuinfo(policy, powernv_freqs);
-
-Have you written this driver long time back? CPUFreq core has been
-cleaned up heavily since last few kernel releases and I think there are
-better helper routines available now.
-
-> +}
-> +
-> +static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> +{
-> +       cpufreq_frequency_table_put_attr(policy->cpu);
-> +       return 0;
-> +}
-
-You don't need this..
-
-> +static int powernv_cpufreq_verify(struct cpufreq_policy *policy)
-> +{
-> +       return cpufreq_frequency_table_verify(policy, powernv_freqs);
-> +}
-
-use generic verify function pointer instead..
-
-> +static int powernv_cpufreq_target(struct cpufreq_policy *policy,
-> +                             unsigned int target_freq,
-> +                             unsigned int relation)
-
-use target_index() instead..
-
-> +{
-> +       int rc;
-> +       struct cpufreq_freqs freqs;
-> +       unsigned int new_index;
-> +
-> +       cpufreq_frequency_table_target(policy, powernv_freqs, target_freq,
-> +                                      relation, &new_index);
-> +
-> +       freqs.old = policy->cur;
-> +       freqs.new = powernv_freqs[new_index].frequency;
-> +       freqs.cpu = policy->cpu;
-> +
-> +       mutex_lock(&freq_switch_mutex);
-
-Why do you need this lock for?
-
-> +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-> +
-> +       pr_debug("setting frequency for cpu %d to %d kHz index %d pstate %d",
-> +                policy->cpu,
-> +                powernv_freqs[new_index].frequency,
-> +                new_index,
-> +                powernv_pstate_ids[new_index]);
-> +
-> +       rc = powernv_set_freq(policy->cpus, new_index);
-> +
-> +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-> +       mutex_unlock(&freq_switch_mutex);
-> +
-> +       return rc;
-> +}
-> +
-> +static struct cpufreq_driver powernv_cpufreq_driver = {
-> +       .verify         = powernv_cpufreq_verify,
-> +       .target         = powernv_cpufreq_target,
-
-I think you have Srivatsa there who has seen lots of cpufreq code and
-could have helped you a lot :)
-
-> +       .init           = powernv_cpufreq_cpu_init,
-> +       .exit           = powernv_cpufreq_cpu_exit,
-> +       .name           = "powernv-cpufreq",
-> +       .flags          = CPUFREQ_CONST_LOOPS,
-> +       .attr           = powernv_cpu_freq_attr,
-
-Would be better if you keep these callbacks in the order they are declared
-in cpufreq.h..
-
-> +};
-> +
-> +static int __init powernv_cpufreq_init(void)
-> +{
-> +       int rc = 0;
-> +
-> +       /* Discover pstates from device tree and init */
-> +
-
-Remove blank line.
-
-> +       rc = init_powernv_pstates();
-> +
-
-same here..
-
-> +       if (rc) {
-> +               pr_info("powernv-cpufreq disabled\n");
-> +               return rc;
-> +       }
-> +
-> +       rc = cpufreq_register_driver(&powernv_cpufreq_driver);
-> +       return rc;
-
-Merge above two lines.
-
-> +}
-> +
-> +static void __exit powernv_cpufreq_exit(void)
-> +{
-> +       cpufreq_unregister_driver(&powernv_cpufreq_driver);
-> +}
-> +
-> +module_init(powernv_cpufreq_init);
-> +module_exit(powernv_cpufreq_exit);
-
-Place these right after the routines without any blank lines in between.
-
-> +MODULE_LICENSE("GPL");
-> +MODULE_AUTHOR("Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>");
