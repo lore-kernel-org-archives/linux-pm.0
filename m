@@ -1,80 +1,34 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get()
- method
-Date: Fri, 21 Mar 2014 18:01:06 +0530
-Message-ID: <20140321123106.GC2493@in.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
+Date: Fri, 21 Mar 2014 18:04:08 +0530
+Message-ID: <CAKohpo=E1UEcLhbZHtmBJcD3S3trm8ypT7++quF_t6XHDXAvHA@mail.gmail.com>
 References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
- <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
- <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
- <20140321110445.GB2493@in.ibm.com>
- <CAKohpo=k-e1GLiLRNtJ3Xi3+NUWW1+gvtCNr_4Ag60j49dZvdQ@mail.gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6D0F6E5386@AcuExch.aculab.com>
-Reply-To: ego@linux.vnet.ibm.com
+	<1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+	<CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+	<20140321110445.GB2493@in.ibm.com>
+	<CAKohpo=k-e1GLiLRNtJ3Xi3+NUWW1+gvtCNr_4Ag60j49dZvdQ@mail.gmail.com>
+	<063D6719AE5E284EB5DD2968C1650D6D0F6E5386@AcuExch.aculab.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e36.co.us.ibm.com ([32.97.110.154]:39232 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754078AbaCUMbQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 08:31:16 -0400
-Received: from /spool/local
-	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Fri, 21 Mar 2014 06:31:15 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
-	by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 467131FF003D
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 06:31:13 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2LASMfo8323378
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 11:28:22 +0100
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2LCVCbA021204
-	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 06:31:13 -0600
-Content-Disposition: inline
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:63589 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbaCUMeJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 08:34:09 -0400
+Received: by mail-ob0-f173.google.com with SMTP id gq1so2359858obb.4
+        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 05:34:09 -0700 (PDT)
 In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6E5386@AcuExch.aculab.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: David Laight <David.Laight@aculab.com>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Mar 21, 2014 at 12:01:07PM +0000, David Laight wrote:
-> From: Viresh Kumar
->  
-> > On 21 March 2014 16:34, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> > > Heh! Well, that wasn't the reason why this was sent out as a separate
-> > > patch, but never mind. Though I don't understand why it would be
-> > > difficult to review the patch though.
-> > 
-> > Because the initial driver wasn't complete earlier. There were 2-3 patches
-> > after the first one which are changing what the first patch has added.
-> > Nothing else :)
-> > 
-> > >> > +static void powernv_read_cpu_freq(void *ret_freq)
-> > >> > +{
-> > >> > +       unsigned long pmspr_val;
-> > >> > +       s8 local_pstate_id;
-> > >> > +       int *cur_freq, freq, pstate_id;
-> > >> > +
-> > >> > +       cur_freq = (int *)ret_freq;
-> > >>
-> > >> You don't need cur_freq variable at all..
-> > >
-> > > I don't like it either. But the compiler complains without this hack
-> > > :-(
-> > 
-> > Why would the compiler warn for doing this?:
-> > 
-> > *(int *)ret_freq = freq;
-> 
+On 21 March 2014 17:31, David Laight <David.Laight@aculab.com> wrote:
+>> *(int *)ret_freq = freq;
+>
 > Because it is very likely to be wrong.
 > In general casts of pointers to integer types are dangerous.
-> In this case why not make the function return the value?
 
-Because this function is called via an smp_call_function(). And we
-need a way of returning the value to the caller.
-
-> 
-> 	David
-> 
-> 
-
+Where are we converting pointers to integers? We are doing a
+cast from 'void * ' to 'int *' and then using indirection operator
+to set its value.
