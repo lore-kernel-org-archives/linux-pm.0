@@ -1,49 +1,115 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
-Date: Fri, 21 Mar 2014 19:04:27 +0530
-Message-ID: <CAKohpom9MFsWjionC0S7zyZ479s8tsK150hhZ0frdJ-QKN_ZNg@mail.gmail.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-	<1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com>
-	<CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
-	<20140321104317.GA2493@in.ibm.com>
-	<CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
-	<20140321132326.GE2493@in.ibm.com>
+From: Ben Dooks <ben.dooks@codethink.co.uk>
+Subject: Re: [PATCH] sh_eth: pm_runtime should not need null operations
+Date: Fri, 21 Mar 2014 14:46:00 +0100
+Message-ID: <532C4298.2050200@codethink.co.uk>
+References: <1395396913-24354-1-git-send-email-ben.dooks@codethink.co.uk> <CAMuHMdWO-kNdWT_AxzAmCTrx3NerWpTG+auFNZTcL5hsbN+++A@mail.gmail.com> <532C1B13.7000805@codethink.co.uk> <CAMuHMdVhUwX0DO2+TBhG31HB2sx3_XRW3xPfZ+wH2d8b=RywLQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:54511 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761018AbaCUNe2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 09:34:28 -0400
-Received: by mail-ob0-f173.google.com with SMTP id gq1so2438479obb.4
-        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 06:34:27 -0700 (PDT)
-In-Reply-To: <20140321132326.GE2493@in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdVhUwX0DO2+TBhG31HB2sx3_XRW3xPfZ+wH2d8b=RywLQ@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-kernel@lists.codethink.co.uk, Linux-sh list <linux-sh@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-On 21 March 2014 18:53, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> Ok, I had based my code on linus's git tree. I checked the 'pm-cpufreq'
-
-Always check his bleeding-edge or linux-next branch.
-
-> branch of Rafael's 'linux-pm' tree and freq_table.c contains the
-> following code snippet in show_available_frequencies:
+On 21/03/14 14:24, Geert Uytterhoeven wrote:
+> Hi Ben,
 >
->         if (show_boost ^ (table[i].driver_data == CPUFREQ_BOOST_FREQ))
->                         continue;
+> (dropping netdev and davem, adding Felipe, Kevin, linux-pm, and
+> linux-arm-kernel)
 >
-> I suspect we're talking about different code bases. So could you
-> please tell me which one should I be looking at ?
-
-Okay, there is some problem here. I will check how can I simplify this..
-And yes, you were correct.
-
->> Because cpufreq_frequency_table_get_attr() and
->> cpufreq_frequency_table_put_attr() don't exist anymore :)
+> On Fri, Mar 21, 2014 at 11:57 AM, Ben Dooks <ben.dooks@codethink.co.uk> wrote:
+>> On 21/03/14 11:30, Geert Uytterhoeven wrote:
+>>> On Fri, Mar 21, 2014 at 11:15 AM, Ben Dooks <ben.dooks@codethink.co.uk>
+>>> wrote:
+>>>> The driver has a no-op for the pm_runtime callbacks but
+>>>> the pm_runtime core should correctly ignore drivers without
+>>>> any pm_rumtime callback ops.
+>>>
+>>> The pm_runtime core doesn't ignore non-existing runtime_{suspend,resume}
+>>> callbacks, it turns them into a failure withv -ENOSYS.
+>>> Only non-existing runtime_idle callbacks are ignored.
+>>
+>> I've added Rafael Wysocki as he may be able to add better
+>> feedback to this issue.
+>>
+>> [snip rpm_susend code block]
+>>
+>> I got very confused here. The clock_ops sets dev->pm_domain
+>> which over-rides the use of the dev->driver->pm entry as the
+>> primary pm for the device. The code above the bit you snipped
+>> does a ladder looking for the pm_runtime entry it calls and
+>> would stop at finding dev->pm_domain as so:
+>>
+>> from drivers/base/power/runtime.c:
+>>      495         if (dev->pm_domain)
+>>      496                 callback = dev->pm_domain->ops.runtime_suspend;
+>>   ...
+>>      502                 callback = dev->bus->pm->runtime_suspend;
+>>      503         else
+>>      504                 callback = NULL;
+>>
+>>
+>> So for drivers on shmobile with drivers/sh/pm_runtime.c enabled
+>> we would never call the drivers' entry as the ops that this code
+>> introduces just calls the pm_clk calls and does not send the
+>> events on.
 >
-> Well, it does in the codebases that I was looking at. May be I've been
-> looking at the wrong place.
+> Yes, that's also my understanding.
+>
+> Commit 4d27e9dcff00a6425d779b065ec8892e4f391661 ("PM: Make
+> power domain callbacks take precedence over subsystem ones") explains
+> the rationale behind this.
+>
+> Now, this doesn't prevent your power domain from delegating to other
+> callbacks...
+>
+>> If we send the events on, then we would use pm_generic_runtime_suspend()
+>> to send it. This call treats the lack of runtime_pm driver entry as a
+>> do nothing and return 0 which means in this case the code in sh_eth
+>> is not necessary to have any pm_runtime functions.
+>
+> If the power domain just calls pm_generic_runtime_suspend(), it will only
+> consider the driver-specific callback, bypassing type, class, and
+> bus-specific callbacks.
+>
+> So should the power domain delegate it further using a similar ladder
+> strategy like RPM_GET_CALLBACK() at the core pm level, i.e.
+> try type/class/bus/driver?
+> And type should delegate to class/bus/driver, class to bus/driver, bus to
+> driver?
+>
+>> This means depending on if we have a pm_domain in the path we get
+>> different treatment of NULL runtime pm ops pointer. I am not sure
+>> how to handle this, as IIRC a number of other drivers for Renesas
+>> currently assume that the NULL case is going to be fine for them.
+>>
+>> Changing pm_generic_runtime_suspend() to return ENOSYS would end
+>> up breaking davinci and probably a number of other platforms.
+>>
+>> So questions:
+>>
+>> - Should rpm_suspend() ignore the lack of pm_runtime operations?
+>> - Do we need to add a generic `ignore pm runtime callback`
+>> - Are any other shmobile drivers similarly affected?
+>
+> The code indeed looks a bit like a mix of:
+>    - Lack of callback means it's safe to suspend,
+>    - Lack of callback means it's not safe to suspend.
 
-Check the one I mentioned.
+I thought historically NULL tended to mean it did not care about
+this.
+
+The whole thing is giving me a headache as I would expect the
+suspend to start with device and then work down the layers and
+resume to do the opposite. However currently rpm_resume will also
+start at the dev->pm_domain.
+
+Should the rpm_resume start with the dev->bus->pm and then work
+its way up to the dev->driver->pm callback? If so then the current
+davinci code is also going to be wrong...
+
+-- 
+Ben Dooks				http://www.codethink.co.uk/
+Senior Engineer				Codethink - Providing Genius
