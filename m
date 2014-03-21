@@ -1,51 +1,393 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are serialized
-Date: Fri, 21 Mar 2014 15:36:09 +0530
-Message-ID: <CAKohpo=ugBphZ2cz6FwOgsMPkPGRo-H2OSRPBbDbTqj=fn_kHw@mail.gmail.com>
-References: <cover.1395379422.git.viresh.kumar@linaro.org>
-	<f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org>
-	<532BEE64.3090501@linux.vnet.ibm.com>
-	<CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
-	<532BFB77.5060107@linux.vnet.ibm.com>
-	<CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
+Date: Fri, 21 Mar 2014 16:13:17 +0530
+Message-ID: <20140321104317.GA2493@in.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com>
+ <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f52.google.com ([209.85.219.52]:58989 "EHLO
-	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759943AbaCUKGK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 06:06:10 -0400
-Received: by mail-oa0-f52.google.com with SMTP id l6so2283731oag.11
-        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 03:06:09 -0700 (PDT)
-In-Reply-To: <CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:54041 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964951AbaCUKnh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Mar 2014 06:43:37 -0400
+Received: from /spool/local
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Fri, 21 Mar 2014 06:43:36 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com [9.57.198.24])
+	by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D338CC90041
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 06:43:29 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2LAhXEh9109858
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 10:43:33 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2LAhWJj030781
+	for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 06:43:33 -0400
+Content-Disposition: inline
+In-Reply-To: <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-On 21 March 2014 14:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> @Catalin: We have a problem here and need your expert advice. After changing
-> CPU frequency we need to call this code:
->
-> cpufreq_notify_post_transition();
-> policy->transition_ongoing = false;
->
-> And the sequence must be like this only. Is this guaranteed without any
-> memory barriers? cpufreq_notify_post_transition() isn't touching
-> transition_ongoing at all..
+Hi Viresh,
 
-For others this is what we discussed on IRC (rmk: Russell King)
+On Fri, Mar 21, 2014 at 02:11:32PM +0530, Viresh Kumar wrote:
+> On Thu, Mar 20, 2014 at 5:40 PM, Gautham R. Shenoy
+> <ego@linux.vnet.ibm.com> wrote:
+> > From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> 
+> Hi Vaidy,
+> 
+> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> > index 4b029c0..4ba1632 100644
+> > --- a/drivers/cpufreq/Kconfig
+> > +++ b/drivers/cpufreq/Kconfig
+> > @@ -48,6 +48,7 @@ config CPU_FREQ_STAT_DETAILS
+> >  choice
+> >         prompt "Default CPUFreq governor"
+> >         default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+> > +       default CPU_FREQ_DEFAULT_GOV_ONDEMAND if POWERNV_CPUFREQ
+> 
+> Probably we should remove SA1100's entry as well from here. This is
+> not the right way of doing it. Imagine 100 platforms having entries here.
+> If you want it, then select it from your platforms Kconfig.
 
-<rmk> I'm no barrier expert, but the compiler can't reorder that assignment
-across a function call which it knows nothing about (which it can't
-know anything
-about because it calls other functions through function pointers)
+Sure. Will move these bits and the other governor related bits to the
+Powernv Kconfig.
 
-<rmk> however, the CPU could re-order the effects with respect to other agents
-(cpus/devices) when they look at the memory
+> > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> > new file mode 100644
+> > index 0000000..ab1551f
+> > --- /dev/null
+> > +
+> > +#define pr_fmt(fmt)    "powernv-cpufreq: " fmt
+> > +
+> > +#include <linux/module.h>
+> > +#include <linux/cpufreq.h>
+> > +#include <linux/of.h>
+> > +#include <asm/cputhreads.h>
+> 
+> That's it? Sure?
+> 
+> Even if things compile for you, you must explicitly include all the
+> files on which
+> you depend.
 
-<rmk> for the local CPU, the question is really: what does the C
-language virtual
-machine say about this - that's what really matters.  If the CPU does
-speculative
-stuff, it still has to make the machine behaviour fit that model.
+Ok. 
+
+> 
+> > +
+> > +       WARN_ON(len_ids != len_freqs);
+> > +       nr_pstates = min(len_ids, len_freqs) / sizeof(u32);
+> > +       WARN_ON(!nr_pstates);
+> 
+> Why do you want to continue here?
+
+Good point. We might be better off exiting at this point. 
+
+> 
+> > +       pr_debug("NR PStates %d\n", nr_pstates);
+> > +       for (i = 0; i < nr_pstates; i++) {
+> > +               u32 id = be32_to_cpu(pstate_ids[i]);
+> > +               u32 freq = be32_to_cpu(pstate_freqs[i]);
+> > +
+> > +               pr_debug("PState id %d freq %d MHz\n", id, freq);
+> > +               powernv_freqs[i].driver_data = i;
+> 
+> I don't think you are using this field at all and this is the field you can
+> use for driver_data and so you can get rid of powernv_pstate_ids[ ].
+
+Using driver_data to record powernv_pstate_ids won't work since
+powernv_pstate_ids can be negative. So a pstate_id -3 can be confused
+with CPUFREQ_BOOST_FREQ thereby not displaying the frequency
+corresponding to pstate id -3. So for now I think we will be retaining
+powernv_pstate_ids.
+
+> 
+> > +               powernv_freqs[i].frequency = freq * 1000; /* kHz */
+> > +               powernv_pstate_ids[i] = id;
+> > +       }
+> > +       /* End of list marker entry */
+> > +       powernv_freqs[i].driver_data = 0;
+> 
+> Not required.
+
+Ok.
+> 
+> > +       powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
+> > +
+> > +       /* Print frequency table */
+> > +       for (i = 0; powernv_freqs[i].frequency != CPUFREQ_TABLE_END; i++)
+> > +               pr_debug("%d: %d\n", i, powernv_freqs[i].frequency);
+> 
+> You have already printed this table earlier..
+
+Fair enough.
+
+> 
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static struct freq_attr *powernv_cpu_freq_attr[] = {
+> > +       &cpufreq_freq_attr_scaling_available_freqs,
+> > +       NULL,
+> > +};
+> 
+> Can use this instead: cpufreq_generic_attr?
+
+In this patch yes. But later patch introduces an additional attribute
+for displaying the nominal frequency. Will handle that part in a clean
+way in the next version.
+
+> 
+> > +/* Helper routines */
+> > +
+> > +/* Access helpers to power mgt SPR */
+> > +
+> > +static inline unsigned long get_pmspr(unsigned long sprn)
+> 
+> Looks big enough not be inlined?
+
+It is called from one function. It has been defined separately for
+readability. 
+
+> 
+> > +{
+> > +       switch (sprn) {
+> > +       case SPRN_PMCR:
+> > +               return mfspr(SPRN_PMCR);
+> > +
+> > +       case SPRN_PMICR:
+> > +               return mfspr(SPRN_PMICR);
+> > +
+> > +       case SPRN_PMSR:
+> > +               return mfspr(SPRN_PMSR);
+> > +       }
+> > +       BUG();
+> > +}
+> > +
+> > +static inline void set_pmspr(unsigned long sprn, unsigned long val)
+> > +{
+> 
+> Same here..
+
+Same reason as above.
+
+> 
+> > +       switch (sprn) {
+> > +       case SPRN_PMCR:
+> > +               mtspr(SPRN_PMCR, val);
+> > +               return;
+> > +
+> > +       case SPRN_PMICR:
+> > +               mtspr(SPRN_PMICR, val);
+> > +               return;
+> > +
+> > +       case SPRN_PMSR:
+> > +               mtspr(SPRN_PMSR, val);
+> > +               return;
+> > +       }
+> > +       BUG();
+> > +}
+> > +
+> > +static void set_pstate(void *pstate)
+> > +{
+> > +       unsigned long val;
+> > +       unsigned long pstate_ul = *(unsigned long *) pstate;
+> 
+> Why not sending value only to this routine instead of pointer?
+
+Well this function is called via an smp_call_function. so, cannot send
+a value :(
+
+> 
+> > +
+> > +       val = get_pmspr(SPRN_PMCR);
+> > +       val = val & 0x0000ffffffffffffULL;
+> 
+> Maybe a blank line here?
+
+Ok.
+
+> 
+> > +       /* Set both global(bits 56..63) and local(bits 48..55) PStates */
+> > +       val = val | (pstate_ul << 56) | (pstate_ul << 48);
+> 
+> here as well?
+
+Ok.
+> 
+
+> > +       pr_debug("Setting cpu %d pmcr to %016lX\n", smp_processor_id(), val);
+> > +       set_pmspr(SPRN_PMCR, val);
+> > +}
+> > +
+> > +static int powernv_set_freq(cpumask_var_t cpus, unsigned int new_index)
+> > +{
+> > +       unsigned long val = (unsigned long) powernv_pstate_ids[new_index];
+> 
+> I think automatic type conversion will happen here.
+
+Ok. Will fix this.
+
+> 
+> > +
+> > +       /*
+> > +        * Use smp_call_function to send IPI and execute the
+> > +        * mtspr on target cpu.  We could do that without IPI
+> > +        * if current CPU is within policy->cpus (core)
+> > +        */
+> 
+> Hmm, interesting I also feel there are cases where this routine can
+> get called from other CPUs. Can you list those use cases where it can
+> happen? Governors will mostly call this from one of the CPUs present
+> in policy->cpus.
+
+Consider the case when the governor is userspace and we are executing 
+
+    # echo freqvalue  > 
+         /sys/devices/system/cpu/cpu<i>/cpufreq/scaling_setspeed 
+
+from a cpu <j> which is not in policy->cpus of cpu i. 
+
+
+> > +static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> > +{
+> > +       int base, i;
+> > +
+> > +#ifdef CONFIG_SMP
+> 
+> What will break if you don't have this ifdef here? Without that as well
+> below code should work?
+> 
+> > +       base = cpu_first_thread_sibling(policy->cpu);
+> > +
+> > +       for (i = 0; i < threads_per_core; i++)
+> > +               cpumask_set_cpu(base + i, policy->cpus);
+> > +#endif
+> > +       policy->cpuinfo.transition_latency = 25000;
+> > +
+> > +       policy->cur = powernv_freqs[0].frequency;
+> > +       cpufreq_frequency_table_get_attr(powernv_freqs, policy->cpu);
+> 
+> This doesn't exist anymore.
+
+Didn't get this comment!
+
+> 
+> > +       return cpufreq_frequency_table_cpuinfo(policy, powernv_freqs);
+> 
+> Have you written this driver long time back? CPUFreq core has been
+> cleaned up heavily since last few kernel releases and I think there are
+> better helper routines available now.
+
+Yup it was written quite a while ago. And yeah, CPUFreq has changed
+quite a bit since the last time I saw it :-)
+
+> 
+> > +}
+> > +
+> > +static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+> > +{
+> > +       cpufreq_frequency_table_put_attr(policy->cpu);
+> > +       return 0;
+> > +}
+> 
+> You don't need this..
+
+Why not ?
+
+> 
+> > +static int powernv_cpufreq_verify(struct cpufreq_policy *policy)
+> > +{
+> > +       return cpufreq_frequency_table_verify(policy, powernv_freqs);
+> > +}
+> 
+> use generic verify function pointer instead..
+> 
+> > +static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+> > +                             unsigned int target_freq,
+> > +                             unsigned int relation)
+> 
+> use target_index() instead..
+> 
+> > +{
+> > +       int rc;
+> > +       struct cpufreq_freqs freqs;
+> > +       unsigned int new_index;
+> > +
+> > +       cpufreq_frequency_table_target(policy, powernv_freqs, target_freq,
+> > +                                      relation, &new_index);
+> > +
+> > +       freqs.old = policy->cur;
+> > +       freqs.new = powernv_freqs[new_index].frequency;
+> > +       freqs.cpu = policy->cpu;
+> > +
+> > +       mutex_lock(&freq_switch_mutex);
+> 
+> Why do you need this lock for?
+
+I guess it was to serialize accesses to PMCR. But Srivatsa's patch
+converts this to a per-core lock which probably is no longer required
+after your cpufreq_freq_transition_begin/end() patch series.
+
+> 
+> > +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+> > +
+> > +       pr_debug("setting frequency for cpu %d to %d kHz index %d pstate %d",
+> > +                policy->cpu,
+> > +                powernv_freqs[new_index].frequency,
+> > +                new_index,
+> > +                powernv_pstate_ids[new_index]);
+> > +
+> > +       rc = powernv_set_freq(policy->cpus, new_index);
+> > +
+> > +       cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+> > +       mutex_unlock(&freq_switch_mutex);
+> > +
+> > +       return rc;
+> > +}
+> > +
+> > +static struct cpufreq_driver powernv_cpufreq_driver = {
+> > +       .verify         = powernv_cpufreq_verify,
+> > +       .target         = powernv_cpufreq_target,
+> 
+> I think you have Srivatsa there who has seen lots of cpufreq code and
+> could have helped you a lot :)
+> 
+> > +       .init           = powernv_cpufreq_cpu_init,
+> > +       .exit           = powernv_cpufreq_cpu_exit,
+> > +       .name           = "powernv-cpufreq",
+> > +       .flags          = CPUFREQ_CONST_LOOPS,
+> > +       .attr           = powernv_cpu_freq_attr,
+> 
+> Would be better if you keep these callbacks in the order they are declared
+> in cpufreq.h..
+
+Sure.
+
+> 
+> > +module_init(powernv_cpufreq_init);
+> > +module_exit(powernv_cpufreq_exit);
+> 
+> Place these right after the routines without any blank lines in
+between.
+
+Is this the new convention ?
+
+> 
+> > +MODULE_LICENSE("GPL");
+> > +MODULE_AUTHOR("Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>");
+> 
+
+Thanks for the detailed review.
+
+--
+Regards
+gautham.
+
