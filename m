@@ -1,98 +1,119 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are serialized
-Date: Fri, 21 Mar 2014 14:51:02 +0530
-Message-ID: <CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
-References: <cover.1395379422.git.viresh.kumar@linaro.org>
-	<f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org>
-	<532BEE64.3090501@linux.vnet.ibm.com>
-	<CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
-	<532BFB77.5060107@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
+Date: Fri, 21 Mar 2014 15:01:29 +0530
+Message-ID: <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+	<1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <532BFB77.5060107@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f178.google.com ([209.85.220.178]:45584 "EHLO
+	mail-vc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965519AbaCUJba (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 05:31:30 -0400
+Received: by mail-vc0-f178.google.com with SMTP id im17so2267501vcb.23
+        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 02:31:29 -0700 (PDT)
+In-Reply-To: <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com
 
-On 21 March 2014 14:12, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> You can find some information on this in
->> Documentation/memory-barriers.txt
+On Thu, Mar 20, 2014 at 5:41 PM, Gautham R. Shenoy
+<ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 >
-> Yep, I know, I have read it several times, but I'm no expert ;-)
-
-Not me either :) .. That file has so complex stuff in there that its
-difficult to
-understand what's all it says.. I read it several times the last time I went for
-a interview (Almost 2 years back) and don't remember anything now :)
-
-> I found this interesting section on "SLEEP AND WAKE-UP FUNCTIONS". It
-> says that doing:
+> The current frequency of a cpu is reported through the sysfs file
+> cpuinfo_cur_freq. This requires the driver to implement a
+> "->get(unsigned int cpu)" method which will return the current
+> operating frequency.
 >
-> policy->transition_ongoing = false;
-> wake_up(&policy->transition_wait);
+> Implement a function named powernv_cpufreq_get() which reads the local
+> pstate from the PMSR and returns the corresponding frequency.
 >
-> is safe (as long as some tasks are woken up). So we don't have to worry
-> about that part.
-
-Okay..
-
-> So only the first part remains to be solved: ensuring
-> that the assignment occurs _after_ completing the invocation of the
-> POSTCHANGE notifiers.
+> Set the powernv_cpufreq_driver.get hook to powernv_cpufreq_get().
 >
-> For that, we can do:
->
-> cpufreq_notify_post_transition();
->
-> smp_mb();
->
-> policy->transition_ongoing = false;
->
-> That should take care of everything.
->
->> I don't think compiler or CPU will reorder calls to a function and
->> updates of a variable.
->
-> I'm not sure about that. I think it is free to do so if it finds
-> that there is no dependency that prevents it from reordering. In this
-> case the update to the flag has no "visible" dependency on the call
-> to post_transition().
->
->> And so this code might simply work. And
->> I hope there would be plenty of such code in kernel.
->>
->
-> Sure, there are plenty of examples in the kernel where we call functions
-> and update variables. But in this particular case, our synchronization
-> _depends_ on those operations happening in a particular order. Hence
-> we need to ensure the ordering is right. Otherwise the synchronization
-> might get broken.
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 38 ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 38 insertions(+)
 
-I still don't buy that.. Lets call an expert :)
+Please merge these fixups with the first patch which is creating the driver.
+I understand that a different guy has created this patch and so wanted
+to have a patch on his name but its really difficult to review this way.
+Better add your signed-off in the first patch instead. Sending such changes
+once the driver is mainlined looks fine.
 
-> Here are some examples where memory barriers are inserted to avoid
-> reordering of variable updates and function calls:
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 46bee8a..ef6ed8c 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -206,6 +206,43 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
+>         BUG();
+>  }
 >
-> kernel/rcu/torture.c: rcu_torture_barrier_cbs()
+> +/*
+> + * Computes the current frequency on this cpu
+> + * and stores the result in *ret_freq.
+> + */
+> +static void powernv_read_cpu_freq(void *ret_freq)
+> +{
+> +       unsigned long pmspr_val;
+> +       s8 local_pstate_id;
+> +       int *cur_freq, freq, pstate_id;
+> +
+> +       cur_freq = (int *)ret_freq;
 
-rcutorture.c instead.
+You don't need cur_freq variable at all..
 
-> kernel/smp.c: kick_all_cpus_sync()
+> +       pmspr_val = get_pmspr(SPRN_PMSR);
+> +
+> +       /* The local pstate id corresponds bits 48..55 in the PMSR.
+> +         * Note: Watch out for the sign! */
+> +       local_pstate_id = (pmspr_val >> 48) & 0xFF;
+> +       pstate_id = local_pstate_id;
 
-These examples are a bit different than what we have here..
+similarly local_pstate_id
 
-@Catalin: We have a problem here and need your expert advice. After changing
-CPU frequency we need to call this code:
+> +
+> +       freq = pstate_id_to_freq(pstate_id);
+> +       pr_debug("cpu %d pmsr %lx pstate_id %d frequency %d \n",
+> +               smp_processor_id(), pmspr_val, pstate_id, freq);
+> +       *cur_freq = freq;
 
-cpufreq_notify_post_transition();
-policy->transition_ongoing = false;
+Move above print here after a blank line. Also remove freq variable as
+well and use *cur_freq directly.. And then you can rename it to freq as well.
 
-And the sequence must be like this only. Is this guaranteed without any
-memory barriers? cpufreq_notify_post_transition() isn't touching
-transition_ongoing at all..
-
---
-thanks..
+> +}
+> +
+> +/*
+> + * Returns the cpu frequency as reported by the firmware for 'cpu'.
+> + * This value is reported through the sysfs file cpuinfo_cur_freq.
+> + */
+> +unsigned int powernv_cpufreq_get(unsigned int cpu)
+> +{
+> +       int ret_freq;
+> +
+> +       smp_call_function_any(cpu_sibling_mask(cpu), powernv_read_cpu_freq,
+> +                       &ret_freq, 1);
+> +       return ret_freq;
+> +}
+> +
+>  static void set_pstate(void *pstate)
+>  {
+>         unsigned long val;
+> @@ -297,6 +334,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+>  static struct cpufreq_driver powernv_cpufreq_driver = {
+>         .verify         = powernv_cpufreq_verify,
+>         .target         = powernv_cpufreq_target,
+> +       .get            = powernv_cpufreq_get,
+>         .init           = powernv_cpufreq_cpu_init,
+>         .exit           = powernv_cpufreq_cpu_exit,
+>         .name           = "powernv-cpufreq",
+> --
+> 1.8.3.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
