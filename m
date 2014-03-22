@@ -1,33 +1,38 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
-Date: Sat, 22 Mar 2014 09:13:53 +0530
-Message-ID: <CAKohponk-attkX9O+Q2y_YcKYsNRHc6TQz5MZeQe_VPXzKR2wA@mail.gmail.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
-	<1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com>
-	<CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
-	<20140321104317.GA2493@in.ibm.com>
-	<CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
-	<20140321145452.GA8755@in.ibm.com>
+Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are serialized
+Date: Sat, 22 Mar 2014 09:18:37 +0530
+Message-ID: <CAKohpokYbnt0Yv2txN6qfHcdeaLeE5owsMWsTsKbz7cv63S2bQ@mail.gmail.com>
+References: <cover.1395379422.git.viresh.kumar@linaro.org>
+	<f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org>
+	<532BEE64.3090501@linux.vnet.ibm.com>
+	<CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
+	<532BFB77.5060107@linux.vnet.ibm.com>
+	<CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
+	<20140321110559.GB13596@arm.com>
+	<532C2160.4030909@linux.vnet.ibm.com>
+	<20140321180723.GM13596@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f43.google.com ([209.85.219.43]:37073 "EHLO
-	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbaCVDny (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Mar 2014 23:43:54 -0400
-Received: by mail-oa0-f43.google.com with SMTP id eb12so3528291oac.30
-        for <linux-pm@vger.kernel.org>; Fri, 21 Mar 2014 20:43:54 -0700 (PDT)
-In-Reply-To: <20140321145452.GA8755@in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140321180723.GM13596@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-On 21 March 2014 20:24, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> Ok, I guess the right thing to do at this point is call
->
->    cpufreq_table_validate_and_show(policy, powernv_freqs);
->
-> Will fix the code to take care of this.
+On 21 March 2014 23:37, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> smp_mb() is all about relative ordering. So if you want memory accesses
+> in post_transition() to be visible to other observers before
+> transition_ongoing = false, you also need to make sure that the readers
+> of transition_ongoing have a barrier before subsequent memory accesses.
 
-Yes.
+I don't think this is a requirement in our case. We are just trying to serialize
+frequency transitions here and just want to make sure that second one
+start after first one is over. And so this query.
+
+> OK, I start to get it. Is there a risk of missing a wake_up event? E.g.
+> one thread waking up earlier, noticing that transition is in progress
+> and waiting indefinitely?
+
+I don't think so. The only requirement is that second thread wakes up
+after this variable is set to false.
