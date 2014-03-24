@@ -1,87 +1,70 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH] cpufreq: set value of CPUFREQ_BOOST_FREQ to 0xABABABAB
-Date: Mon, 24 Mar 2014 09:21:12 +0100
-Message-ID: <20140324092112.74f930d3@amdc2363>
-References: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH V5 0/3] cpufreq: Introduce cpufreq_freq_transition_{begin|end}()
+Date: Mon, 24 Mar 2014 13:53:12 +0530
+Message-ID: <532FEB70.3030206@linux.vnet.ibm.com>
+References: <cover.1395644073.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1395644073.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-> Ideally, .driver_data field of struct cpufreq_frequency_table must
-> not be used by core at all. But during a recent change if its value
-> is same as CPUFREQ_BOOST_FREQ macro, then it is treated specially by
-> core.
+On 03/24/2014 01:35 PM, Viresh Kumar wrote:
+> Whenever we change the frequency of a CPU, we call the PRECHANGE and POSTCHANGE
+> notifiers. They must be serialized, i.e. PRECHANGE and POSTCHANGE notifiers
+> should strictly alternate, thereby preventing two different sets of PRECHANGE or
+> POSTCHANGE notifiers from interleaving arbitrarily.
 > 
-> The value of this macro was set to ~2 earlier, i.e. 0xFFFFFFFD. In
-> case some driver is using this field for its own data and sets this
-> field to -3, then with two's complement that value will also become
-> 0xFFFFFFFD.
-> 
-> To fix this issue, lets change value of this flag to a very uncommon
-> value which shouldn't be used by any driver unless they want to use
-> BOOST feature.
-> 
-> Along with this update comments to make this more clear.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> 
-> Gautham/Vaidy: I hope this fixes the problem we discussed for your
-> patchset.
+> The following examples illustrate why this is important:
+[...] 
+> This patchset introduces a new set of routines cpufreq_freq_transition_begin()
+> and cpufreq_freq_transition_end(), which will guarantee that calls to frequency
+> transition routines are serialized. Later patches force other drivers to use
+> these new routines.
 > 
 
-I think that a name of the patchset, for which the current setting
-causes problem would be welcome here.
+All the patches in this version look good to me.
 
-Otherwise, I can only ask why it is not possible to add 
-#define SPECIAL_SETTING ~3 ?
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
+Regards,
+Srivatsa S. Bhat
 
->  include/linux/cpufreq.h | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
 > 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index c48e595..9f25d9d 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -455,12 +455,18 @@ extern struct cpufreq_governor
-> cpufreq_gov_conservative;
->   *                     FREQUENCY TABLE HELPERS
-> *
-> *********************************************************************/ 
-> +/* Special Values of .frequency field */
->  #define CPUFREQ_ENTRY_INVALID ~0
->  #define CPUFREQ_TABLE_END     ~1
-> -#define CPUFREQ_BOOST_FREQ    ~2
-> +/* Special Values of .driver_data field */
-> +#define CPUFREQ_BOOST_FREQ    0xABABABAB
->  
->  struct cpufreq_frequency_table {
-> -	unsigned int	driver_data; /* driver specific data,
-> not used by core */
-> +	/*
-> +	 * driver specific data, not used by core unless it is set to
-> +	 * CPUFREQ_BOOST_FREQ.
-> +	 */
-> +	unsigned int	driver_data;
->  	unsigned int	frequency; /* kHz - doesn't need to be
-> in ascending
->  				    * order */
->  };
+> V4: https://lkml.org/lkml/2014/3/21/23
+> 
+> V4->V5:
+> - Replaced false with 0 as the variable was of int type instead of bool.
+> - There were some discussions about requirement of a barrier, but it looks like
+>   overkill for now. So, leaving that unless we have a real problem.
+> 
+> Srivatsa S. Bhat (1):
+>   cpufreq: Make sure frequency transitions are serialized
+> 
+> Viresh Kumar (2):
+>   cpufreq: Convert existing drivers to use
+>     cpufreq_freq_transition_{begin|end}
+>   cpufreq: Make cpufreq_notify_transition &
+>     cpufreq_notify_post_transition static
+> 
+>  drivers/cpufreq/cpufreq-nforce2.c    |  4 +--
+>  drivers/cpufreq/cpufreq.c            | 52 +++++++++++++++++++++++++++++-------
+>  drivers/cpufreq/exynos5440-cpufreq.c |  4 +--
+>  drivers/cpufreq/gx-suspmod.c         |  4 +--
+>  drivers/cpufreq/integrator-cpufreq.c |  4 +--
+>  drivers/cpufreq/longhaul.c           |  4 +--
+>  drivers/cpufreq/pcc-cpufreq.c        |  4 +--
+>  drivers/cpufreq/powernow-k6.c        |  4 +--
+>  drivers/cpufreq/powernow-k7.c        |  4 +--
+>  drivers/cpufreq/powernow-k8.c        |  4 +--
+>  drivers/cpufreq/s3c24xx-cpufreq.c    |  4 +--
+>  drivers/cpufreq/sh-cpufreq.c         |  4 +--
+>  drivers/cpufreq/unicore2-cpufreq.c   |  4 +--
+>  include/linux/cpufreq.h              | 12 ++++++---
+>  14 files changed, 76 insertions(+), 36 deletions(-)
+> 
 
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
