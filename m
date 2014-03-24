@@ -1,73 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 3/3] cpufreq: Make cpufreq_notify_transition & cpufreq_notify_post_transition static
-Date: Mon, 24 Mar 2014 13:35:46 +0530
-Message-ID: <a7bf44e4b32bd4fd91fa0ebc23fd590f4bfd5573.1395644073.git.viresh.kumar@linaro.org>
-References: <cover.1395644073.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1395644073.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1395644073.git.viresh.kumar@linaro.org>
-References: <cover.1395644073.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH] cpufreq: set value of CPUFREQ_BOOST_FREQ to 0xABABABAB
+Date: Mon, 24 Mar 2014 09:21:12 +0100
+Message-ID: <20140324092112.74f930d3@amdc2363>
+References: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-cpufreq_notify_transition() and cpufreq_notify_post_transition() shouldn't be
-called directly by cpufreq drivers anymore and so these should be marked static.
+Hi Viresh,
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 6 ++----
- include/linux/cpufreq.h   | 4 ----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+> Ideally, .driver_data field of struct cpufreq_frequency_table must
+> not be used by core at all. But during a recent change if its value
+> is same as CPUFREQ_BOOST_FREQ macro, then it is treated specially by
+> core.
+> 
+> The value of this macro was set to ~2 earlier, i.e. 0xFFFFFFFD. In
+> case some driver is using this field for its own data and sets this
+> field to -3, then with two's complement that value will also become
+> 0xFFFFFFFD.
+> 
+> To fix this issue, lets change value of this flag to a very uncommon
+> value which shouldn't be used by any driver unless they want to use
+> BOOST feature.
+> 
+> Along with this update comments to make this more clear.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> 
+> Gautham/Vaidy: I hope this fixes the problem we discussed for your
+> patchset.
+> 
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index eb562d0..abda660 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -331,16 +331,15 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
-  * function. It is called twice on all CPU frequency changes that have
-  * external effects.
-  */
--void cpufreq_notify_transition(struct cpufreq_policy *policy,
-+static void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, unsigned int state)
- {
- 	for_each_cpu(freqs->cpu, policy->cpus)
- 		__cpufreq_notify_transition(policy, freqs, state);
- }
--EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
- 
- /* Do post notifications when there are chances that transition has failed */
--void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
-+static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, int transition_failed)
- {
- 	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
-@@ -351,7 +350,6 @@ void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
- 	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
- 	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
- }
--EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
- 
- void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs)
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e337602..c48e595 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -339,10 +339,6 @@ static inline void cpufreq_resume(void) {}
- int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
- int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
- 
--void cpufreq_notify_transition(struct cpufreq_policy *policy,
--		struct cpufreq_freqs *freqs, unsigned int state);
--void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
--		struct cpufreq_freqs *freqs, int transition_failed);
- void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs);
- void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
+I think that a name of the patchset, for which the current setting
+causes problem would be welcome here.
+
+Otherwise, I can only ask why it is not possible to add 
+#define SPECIAL_SETTING ~3 ?
+
+
+>  include/linux/cpufreq.h | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index c48e595..9f25d9d 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -455,12 +455,18 @@ extern struct cpufreq_governor
+> cpufreq_gov_conservative;
+>   *                     FREQUENCY TABLE HELPERS
+> *
+> *********************************************************************/ 
+> +/* Special Values of .frequency field */
+>  #define CPUFREQ_ENTRY_INVALID ~0
+>  #define CPUFREQ_TABLE_END     ~1
+> -#define CPUFREQ_BOOST_FREQ    ~2
+> +/* Special Values of .driver_data field */
+> +#define CPUFREQ_BOOST_FREQ    0xABABABAB
+>  
+>  struct cpufreq_frequency_table {
+> -	unsigned int	driver_data; /* driver specific data,
+> not used by core */
+> +	/*
+> +	 * driver specific data, not used by core unless it is set to
+> +	 * CPUFREQ_BOOST_FREQ.
+> +	 */
+> +	unsigned int	driver_data;
+>  	unsigned int	frequency; /* kHz - doesn't need to be
+> in ascending
+>  				    * order */
+>  };
+
+
+
 -- 
-1.7.12.rc2.18.g61b472e
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
