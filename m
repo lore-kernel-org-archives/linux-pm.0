@@ -1,47 +1,31 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH RFC 1/4] arm64: kernel: implement DT based idle states infrastructure
-Date: Mon, 24 Mar 2014 12:46:47 -0500
-Message-ID: <CAL_JsqJikdsna7KUjEwZ0qj-fdcC50M7e3e1D0LgfQuUuJQ0SA@mail.gmail.com>
-References: <1395138028-19630-1-git-send-email-lorenzo.pieralisi@arm.com>
-	<1395138028-19630-2-git-send-email-lorenzo.pieralisi@arm.com>
-	<CAL_Jsq+M8fCreXrd7R1m=3_LKD_+jma3Pha06hRoTPMpcOb1_g@mail.gmail.com>
-	<20140318180856.GB792@e102568-lin.cambridge.arm.com>
-	<CADHgK6uwUDndVHQaWU=3R7A16hc4PYJCAfMLi3uBnrDjYidPXg@mail.gmail.com>
-	<20140319172338.GA31368@e102568-lin.cambridge.arm.com>
-	<CADHgK6vGf0gfVoAWO2FiXzCf-Sf_P_u+d7Dg04xn1O5t2LeKwg@mail.gmail.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
+Date: Mon, 24 Mar 2014 11:06:39 -0700
+Message-ID: <CADHgK6tmb2LU0br=80EKMKP8eNjRnMBDyDdmYdq+Yg+uhSQ78g@mail.gmail.com>
+References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
+	<1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
+	<20140316070917.GA3094@arch.cereza>
+	<CADHgK6s58EJyJxB-47K8w26H8ZCBFQ2zu7PGAQU9O+2g7=fPwA@mail.gmail.com>
+	<20140317204410.GA1118@arch.cereza>
+	<CADHgK6tHngKVZS=jo=VYt3Nt3dhiEmiWr28iDy7q_uR9goBj=Q@mail.gmail.com>
+	<20140319154434.GA3488@arch.cereza>
+	<CADHgK6vLB3h0zrdpve=ZyjNu2pe1VYsGxrYgv=2C-JV37vE9tQ@mail.gmail.com>
+	<CADHgK6vkwjXyJxRcOXjJpJJaR0-YR869NpPZ+CBBS8kEdE0qCQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f178.google.com ([209.85.220.178]:36548 "EHLO
-	mail-vc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbaCXRqt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 13:46:49 -0400
-In-Reply-To: <CADHgK6vGf0gfVoAWO2FiXzCf-Sf_P_u+d7Dg04xn1O5t2LeKwg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CADHgK6vkwjXyJxRcOXjJpJJaR0-YR869NpPZ+CBBS8kEdE0qCQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <jonathan.austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Victor Kamensky <victor.kamensky@linaro.org>, Will Deacon <will.deacon@arm.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Sricharan R <r.sricharan@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, Nicolas Pitre <nico@linaro.org>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Laura Abbott <lauraa@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Boyd <sboyd@codeaurora.org>"linux-arm-kernel@lists.infradead.org" <linux>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>Tomasz Figa <t.>
 
-On Thu, Mar 20, 2014 at 1:19 PM, Sebastian Capella
-<sebastian.capella@linaro.org> wrote:
-> On 19 March 2014 10:23, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
->> Rob is asking a property describing hw, and honestly unless we define
->> a power consumption property value (defining what it means will be rather
->> complicated though) I'd rather remove index altogether and use min_residency
->> as a comparison value instead.
->
-> I like having a separate ranking for power to sort the states.  To me
-> it seems that min residency could be ambiguous for this.  We could
-> have states with inverted min_residencies: where a lower consumption
-> state has a lower target residency because the cost is recovered more
-> quickly.  Such a state might have higher latency for exit, so even
-> though the lower min_residency/lower power state is clearly
-> preferable, selection of the lower power state may be prevented by
-> kernel latency constraints.
+Hi,
 
-Perhaps you can add the min residency and exit latency times.
+I have no further changes here..  I will submit a separate patch to
+cover Ezequiel's concern.  Any final comments?  Otherwise, I'll submit
+to Russell's system.
 
-Another piece to consider is the affinity level of the state should
-probably be the basis for 1st order sorting.
+Thanks for the review!
 
-Rob
+Sebastian
