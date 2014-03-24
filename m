@@ -1,60 +1,93 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC v3 0/5] cpufreq:LAB: Support for LAB governor.
-Date: Mon, 24 Mar 2014 14:18:10 +0530
-Message-ID: <CAKohpok1zBsX7n70r=geCOaP-9ONx2QdaUMK6cJeqhFrO1PkUg@mail.gmail.com>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
-	<1393928852-22725-1-git-send-email-l.majewski@samsung.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: set value of CPUFREQ_BOOST_FREQ to 0xABABABAB
+Date: Mon, 24 Mar 2014 14:22:39 +0530
+Message-ID: <20140324085239.GA30828@in.ibm.com>
+References: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1393928852-22725-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, l.majewski@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On 4 March 2014 15:57, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Despite this patch set is working and applicable on top of 3.14-rc5,
-> please regard it solely as a pure RFC.
+On Mon, Mar 24, 2014 at 12:18:14PM +0530, Viresh Kumar wrote:
+> Ideally, .driver_data field of struct cpufreq_frequency_table must not be used
+> by core at all. But during a recent change if its value is same as
+> CPUFREQ_BOOST_FREQ macro, then it is treated specially by core.
+> 
+> The value of this macro was set to ~2 earlier, i.e. 0xFFFFFFFD. In case some
+> driver is using this field for its own data and sets this field to -3, then with
+> two's complement that value will also become 0xFFFFFFFD.
+> 
+> To fix this issue, lets change value of this flag to a very uncommon value which
+> shouldn't be used by any driver unless they want to use BOOST
+> feature
+> 
+> Along with this update comments to make this more clear.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> 
+> Gautham/Vaidy: I hope this fixes the problem we discussed for your
+> patchset.
 
-Okay, I am trying to do a review here and because you have mentioned
-how different it is from the earlier versions, I am trying with a fresh mind.
-i.e. with zero memories of earlier discussions :)
+Since the type of .driver_data is "unsigned int", the cpufreq core
+seems to be assuming that the value cannot be -ve. So, drivers should
+be storing -ve values in these fields at their own risk. Because apart
+from determining whether the corresponding frequency is a boost
+frequency or not, the cpufreq core seems to be using the .driver_data
+field in pr_debugs(). The value of .driver_data formatted as "%u" is
+not useful in these pr_debugs, if the driver stores -ve value in this
+field.
 
-LAB was: Legacy Application Boost ??
+On the other hand, if we change the type of .driver_data to "int" then
+restricting the driver to not use specific values is unreasonable
+since .driver_data field is supposed to be private to the driver and
+the core is not supposed to intepret it. In which case we should
+be having a separate field for determining if the frequency is a BOOST
+frequency or not.
 
-Probably mention that in your new threads as well, so that new readers
-know the details. Also, like other governors, just name it "boost" governor.
+So while it fixes the problem for us, I don't think this patch fixes
+the problem in general for the reasons mentioned above.
 
-> This patch provides support for LAB governor build on top of ondemand.
-> Previous version of LAB can be found here:
-> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
->
-> LAB short reminder:
->
-> LAB uses information about how many cores are in "idle" state (the core
-> idleness is represented as the value between 0 and 100) and the overall
-> load of the system (from 0 to 100) to decide about frequency to be set.
-> It is extremely useful with SoCs like Exynos4412, which can set only one
-> frequency for all cores.
+--
+Thanks and Regards
+gautham.
 
-Probably a description of how exactly these two values come into play
-would have been more interesting here for all. Always think of new followers
-of your patchset and so add all interesting things about it when you resend
-it.
+> 
+>  include/linux/cpufreq.h | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index c48e595..9f25d9d 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -455,12 +455,18 @@ extern struct cpufreq_governor cpufreq_gov_conservative;
+>   *                     FREQUENCY TABLE HELPERS                       *
+>   *********************************************************************/
+> 
+> +/* Special Values of .frequency field */
+>  #define CPUFREQ_ENTRY_INVALID ~0
+>  #define CPUFREQ_TABLE_END     ~1
+> -#define CPUFREQ_BOOST_FREQ    ~2
+> +/* Special Values of .driver_data field */
+> +#define CPUFREQ_BOOST_FREQ    0xABABABAB
+> 
+>  struct cpufreq_frequency_table {
+> -	unsigned int	driver_data; /* driver specific data, not used by core */
+> +	/*
+> +	 * driver specific data, not used by core unless it is set to
+> +	 * CPUFREQ_BOOST_FREQ.
+> +	 */
+> +	unsigned int	driver_data;
+>  	unsigned int	frequency; /* kHz - doesn't need to be in ascending
+>  				    * order */
+>  };
+> -- 
+> 1.7.12.rc2.18.g61b472e
+> 
 
-If I remember well the logic was more or less like this:
-- More idle cores means run few running cores at high frequency
-- Less idle cores means don't run them at very high frequencies
-
-Right?
-
-What about making it as simple as:
-- changing the ondemand governor only instead of adding a new governor
-- Keeping the bahavior as is for all platforms not publishing boost frequencies
-- If more cores are idle, enable switching to boost frequencies and take them
-into consideration all the time.
-- If less cores are idle, disable boost frequencies..
-
-Lets discuss this first and then I will get into the very details of your
-implementation.
