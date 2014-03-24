@@ -1,48 +1,41 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] thermal: Fix KELVIN_TO_CELSIUS macro
-Date: Sun, 23 Mar 2014 22:30:47 -0700
-Message-ID: <532FC307.7050202@roeck-us.net>
-References: <1395634496-25040-1-git-send-email-linux@roeck-us.net> <1395635132.13968.40.camel@joe-AO722>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 1/3] cpufreq: Make sure frequency transitions are serialized
+Date: Mon, 24 Mar 2014 11:49:26 +0530
+Message-ID: <CAKohpomnGrfmLPJS17KnpZfqCXbvZ5S6KFDikzpqn80TFGwt5w@mail.gmail.com>
+References: <cover.1395379422.git.viresh.kumar@linaro.org>
+	<f6116069b730c0c3a74ff627fa818b98dc4f1491.1395379422.git.viresh.kumar@linaro.org>
+	<532BEE64.3090501@linux.vnet.ibm.com>
+	<CAKohpom8ZHXxVmuSHYL5nyZzNrK8EFNVdx5XJdJxiHWPb13aeg@mail.gmail.com>
+	<532BFB77.5060107@linux.vnet.ibm.com>
+	<CAKohpomY4xf4tOFTGt-ykE7sUi4ks7vW5qp8ytgopm6CiY9QRg@mail.gmail.com>
+	<20140321110559.GB13596@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.active-venture.com ([67.228.131.205]:55055 "EHLO
-	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbaCXFav (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 01:30:51 -0400
-In-Reply-To: <1395635132.13968.40.camel@joe-AO722>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140321110559.GB13596@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 03/23/2014 09:25 PM, Joe Perches wrote:
-> On Sun, 2014-03-23 at 21:14 -0700, Guenter Roeck wrote:
->> It is always a good idea to use paranthesis around macro parameters
->> to avoid undesired side effects.
->>
->> In this specific case, KELVIN_TO_CELSIUS() is used in
->> drivers/platform/x86/asus-wmi.c with parameter "value & 0xFFFF",
->> which due to operator evaluation order causes more or less random
->> results.
->
-> Maybe it's better to use a statement expression to avoid
-> multiple calculations of t
->
-> Maybe;
->
-> #define KELVIN_TO_CELSIUS(t)				\
-> ({							\
-> 	long _t = (long)(t) - 2732;			\
-> 	_t >= 0 ? (_t + 5) / 10 : (_t - 5) / 10;	\
-> })
->
->
+On 21 March 2014 16:35, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> The above sequence doesn't say much. As rmk said, the compiler wouldn't
+> reorder the transition_ongoing write before the function call. I think
+> most architectures (not sure about Alpha) don't do speculative stores,
+> so hardware wouldn't reorder them either. However, other stores inside
+> the cpufreq_notify_post_transition() could be reordered after
+> transition_ongoing store. The same for memory accesses after the
+> transition_ongoing update, they could be reordered before.
 
-Possibly, but I only want to have a bug fixed which should possibly be applied
-to -stable at some point. As such, I prefer the minimalistic approach.
-Anything more fancy on top of that can be submitted as separate patch.
+I got confused again. If we see what cpufreq_notify_post_transition() does:
+Just calling a list of routines from a notifiers chain. And going by the above
+statements from you, we aren't going to reorder this with function calls or
+a branch instructions.
 
-Guenter
+And even if for some reason, there is a bit of reorder, it doesn't look harmless
+at all to me.
 
+We are more concerned about serialization of frequency translations here. And
+it still looks to me like we don't really need a barrier at all..
+
+Probably we can keep it as is for now and maybe later add a barrier if required.
