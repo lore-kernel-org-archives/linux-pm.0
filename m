@@ -1,147 +1,59 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v3 0/5] cpufreq:LAB: Support for LAB governor.
-Date: Mon, 24 Mar 2014 07:47:42 +0100
-Message-ID: <20140324074742.00181c21@amdc2363>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <1393928852-22725-1-git-send-email-l.majewski@samsung.com>
- <20140317163824.3c5480b3@amdc2363>
- <CAKohpokz9SknhPH_sgGE6Q8DB+QtaJKSwMG4WgfmWet9skMKUA@mail.gmail.com>
- <20140318101736.501844d1@amdc2363>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: set value of CPUFREQ_BOOST_FREQ to 0xABABABAB
+Date: Mon, 24 Mar 2014 12:18:14 +0530
+Message-ID: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <20140318101736.501844d1@amdc2363>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
+Ideally, .driver_data field of struct cpufreq_frequency_table must not be used
+by core at all. But during a recent change if its value is same as
+CPUFREQ_BOOST_FREQ macro, then it is treated specially by core.
 
-> Hi Viresh,
-> 
-> > On 17 March 2014 21:08, Lukasz Majewski <l.majewski@samsung.com>
-> > wrote:
-> > >> Despite this patch set is working and applicable on top of
-> > >> 3.14-rc5, please regard it solely as a pure RFC.
-> > >>
-> > >> This patch provides support for LAB governor build on top of
-> > >> ondemand. Previous version of LAB can be found here:
-> > >> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> > >>
-> > >> LAB short reminder:
-> > >>
-> > >> LAB uses information about how many cores are in "idle" state
-> > >> (the core idleness is represented as the value between 0 and
-> > >> 100) and the overall load of the system (from 0 to 100) to
-> > >> decide about frequency to be set. It is extremely useful with
-> > >> SoCs like Exynos4412, which can set only one frequency for all
-> > >> cores.
-> > >>
-> > >> Important design decisions:
-> > >>
-> > >> - Reuse well established ondemand governor's internal code. To do
-> > >> this I had to expose some previously static internal ondemand
-> > >> code. This allowed smaller LAB code when compared to previous
-> > >> version.
-> > >>
-> > >> - LAB works on top of ondemand, which means that one via device
-> > >> tree attributes can specify if and when e.g. BOOST shall be
-> > >> enabled or if any particular frequency shall be imposed. For
-> > >> situation NOT important from the power consumption reduction
-> > >> viewpoint the ondemand is used to set proper frequency.
-> > >>
-> > >> - It is only possible to either compile in or not the LAB into
-> > >> the kernel. There is no "M" option for Kconfig. It is done on
-> > >> purpose, since ondemand itself can be also compiled as a module
-> > >> and then it would be possible to remove ondemand when LAB is
-> > >> working on top of it.
-> > >>
-> > >> - The LAB operation is specified (and thereof extendable) via
-> > >> device tree lab-ctrl-freq attribute defined at /cpus/cpu0.
-> > >>
-> > >>
-> > >> Problems:
-> > >> - How the governor will work for big.LITTLE systems (especially
-> > >> Global Task Scheduling).
-> > >> - Will there be agreement to expose internal ondemand code to be
-> > >> reused for more specialized governors.
-> > >>
-> > >> Test HW:
-> > >>       Exynos4412 - Trats2 board.
-> > >> Above patches were posted on top of Linux 3.14-rc5
-> > >> (SHA1: 3f9590c281c66162bf8ae9b7b2d987f0a89043c6)
-> > >>
-> > >
-> > > Any comments about those patches?
-> > 
-> > Sorry for being late on reviewing these..
-> > 
-> > I tried to go through the patches but didn't looked at the minutest
-> > of the details. Its been a long time when you first sent this
-> > patchset. And the memories have corrupted by now :) ..
-> 
-> Unfortunately memory is volatile ... since LAB governor is a follow up
-> of BOOST, which review and inclusion took considerable time, some
-> details could be forgotten. 
-> 
-> > 
-> > To get context back, can we discuss again the fundamentals behind
-> > this new governor you are proposing. And then we can discuss about
-> > it again, its pros/cons, etc..
-> 
-> Please consider following links:
-> 
-> The original implementation - threads:
-> http://thread.gmane.org/gmane.linux.power-management.general/32523/match=lab
-> http://thread.gmane.org/gmane.linux.kernel/1484746/match=lab
-> 
-> 
-> LAB justification data:
-> http://article.gmane.org/gmane.linux.kernel/1472381
-> 
-> 
-> > People are reluctant in getting another governor in and want to give
-> > existing governors a try if possible.
-> 
-> As I've stated in the covering letter, this code is an extension of
-> Ondemand.
-> 
-> This is totally different from what have been posted previously (v1,
-> v2).
-> The first LAB proposal was written with some parts copied from
-> Ondemand. It was a separate, standalone governor.
-> 
-> 
-> The approach proposed in those patches is very different. It simply
-> reuses Ondemand code as much as possible (timers, default attributes
-> exported to sysfs, etc.).
-> 
-> On top of the Ondemand we have the LAB, which thereof is its optional
-> extension. The existing code is reused and can be easily extracted as
-> a common code.
-> 
-> > 
-> > So, please explain the basics behind your governor again and then
-> > we can put our arguments again..
-> > 
-> 
-> I hope that provided overview is sufficient. More in depth
-> information can be found in posted patches or provided LKML archives.
-> 
+The value of this macro was set to ~2 earlier, i.e. 0xFFFFFFFD. In case some
+driver is using this field for its own data and sets this field to -3, then with
+two's complement that value will also become 0xFFFFFFFD.
 
-Viresh, will you find time for reviewing this RFC in a near future?
+To fix this issue, lets change value of this flag to a very uncommon value which
+shouldn't be used by any driver unless they want to use BOOST feature.
 
-> > --
-> > viresh
-> 
+Along with this update comments to make this more clear.
 
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
 
+Gautham/Vaidy: I hope this fixes the problem we discussed for your patchset.
 
+ include/linux/cpufreq.h | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index c48e595..9f25d9d 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -455,12 +455,18 @@ extern struct cpufreq_governor cpufreq_gov_conservative;
+  *                     FREQUENCY TABLE HELPERS                       *
+  *********************************************************************/
+ 
++/* Special Values of .frequency field */
+ #define CPUFREQ_ENTRY_INVALID ~0
+ #define CPUFREQ_TABLE_END     ~1
+-#define CPUFREQ_BOOST_FREQ    ~2
++/* Special Values of .driver_data field */
++#define CPUFREQ_BOOST_FREQ    0xABABABAB
+ 
+ struct cpufreq_frequency_table {
+-	unsigned int	driver_data; /* driver specific data, not used by core */
++	/*
++	 * driver specific data, not used by core unless it is set to
++	 * CPUFREQ_BOOST_FREQ.
++	 */
++	unsigned int	driver_data;
+ 	unsigned int	frequency; /* kHz - doesn't need to be in ascending
+ 				    * order */
+ };
 -- 
-Best regards,
+1.7.12.rc2.18.g61b472e
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
