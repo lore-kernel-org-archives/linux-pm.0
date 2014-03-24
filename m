@@ -1,45 +1,34 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH] thermal: Fix KELVIN_TO_CELSIUS macro
-Date: Sun, 23 Mar 2014 21:14:56 -0700
-Message-ID: <1395634496-25040-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:53264 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbaCXEPL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 00:15:11 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] thermal: Fix KELVIN_TO_CELSIUS macro
+Date: Sun, 23 Mar 2014 21:25:32 -0700
+Message-ID: <1395635132.13968.40.camel@joe-AO722>
+References: <1395634496-25040-1-git-send-email-linux@roeck-us.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1395634496-25040-1-git-send-email-linux@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Guenter Roeck <linux@roeck-us.net>
 
-It is always a good idea to use paranthesis around macro parameters
-to avoid undesired side effects.
+On Sun, 2014-03-23 at 21:14 -0700, Guenter Roeck wrote:
+> It is always a good idea to use paranthesis around macro parameters
+> to avoid undesired side effects.
+> 
+> In this specific case, KELVIN_TO_CELSIUS() is used in
+> drivers/platform/x86/asus-wmi.c with parameter "value & 0xFFFF",
+> which due to operator evaluation order causes more or less random
+> results.
 
-In this specific case, KELVIN_TO_CELSIUS() is used in
-drivers/platform/x86/asus-wmi.c with parameter "value & 0xFFFF",
-which due to operator evaluation order causes more or less random
-results.
+Maybe it's better to use a statement expression to avoid
+multiple calculations of t
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- include/linux/thermal.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Maybe;
 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index f7e11c7..02488c9 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -41,8 +41,8 @@
- #define THERMAL_NO_LIMIT	THERMAL_CSTATE_INVALID
- 
- /* Unit conversion macros */
--#define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
--				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
-+#define KELVIN_TO_CELSIUS(t)	(long)(((long)(t)-2732 >= 0) ?	\
-+				((long)(t)-2732+5)/10 : ((long)(t)-2732-5)/10)
- #define CELSIUS_TO_KELVIN(t)	((t)*10+2732)
- 
- /* Adding event notification support elements */
--- 
-1.7.9.7
-
+#define KELVIN_TO_CELSIUS(t)				\
+({							\
+	long _t = (long)(t) - 2732;			\
+	_t >= 0 ? (_t + 5) / 10 : (_t - 5) / 10;	\
+})
