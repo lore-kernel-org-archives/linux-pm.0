@@ -1,18 +1,18 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 0/3] cpufreq: Introduce cpufreq_freq_transition_{begin|end}()
-Date: Mon, 24 Mar 2014 13:35:43 +0530
-Message-ID: <cover.1395644073.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f45.google.com ([74.125.82.45]:35495 "EHLO
-	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbaCXIF4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 04:05:56 -0400
-Received: by mail-wg0-f45.google.com with SMTP id l18so3138678wgh.4
-        for <linux-pm@vger.kernel.org>; Mon, 24 Mar 2014 01:05:55 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V5 1/3] cpufreq: Make sure frequency transitions are serialized
+Date: Mon, 24 Mar 2014 13:35:44 +0530
+Message-ID: <adc762b52dea18c3e1a8d4fa5238f9a43fea4cae.1395644073.git.viresh.kumar@linaro.org>
+References: <cover.1395644073.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1395644073.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1395644073.git.viresh.kumar@linaro.org>
+References: <cover.1395644073.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
+
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
 Whenever we change the frequency of a CPU, we call the PRECHANGE and POSTCHANGE
 notifiers. They must be serialized, i.e. PRECHANGE and POSTCHANGE notifiers
@@ -73,45 +73,132 @@ Thus we can end up setting a freq which is not supported by the voltage we have
 set. That will probably make the clock to the CPU unstable and the system might
 not work properly anymore.
 
+This patch introduces a set of synchronization primitives to serialize frequency
+transitions, which are to be used as shown below:
 
-This patchset introduces a new set of routines cpufreq_freq_transition_begin()
-and cpufreq_freq_transition_end(), which will guarantee that calls to frequency
-transition routines are serialized. Later patches force other drivers to use
-these new routines.
+cpufreq_freq_transition_begin();
 
+//Perform the frequency change
 
-V4: https://lkml.org/lkml/2014/3/21/23
+cpufreq_freq_transition_end();
 
-V4->V5:
-- Replaced false with 0 as the variable was of int type instead of bool.
-- There were some discussions about requirement of a barrier, but it looks like
-  overkill for now. So, leaving that unless we have a real problem.
+The _begin() call sends the PRECHANGE notification whereas the _end() call sends
+the POSTCHANGE notification. Also, all the necessary synchronization is handled
+within these calls. In particular, even drivers which set the ASYNC_NOTIFICATION
+flag can also use these APIs for performing frequency transitions (ie., you can
+call _begin() from one task, and call the corresponding _end() from a different
+task).
 
-Srivatsa S. Bhat (1):
-  cpufreq: Make sure frequency transitions are serialized
+The actual synchronization underneath is not that complicated:
 
-Viresh Kumar (2):
-  cpufreq: Convert existing drivers to use
-    cpufreq_freq_transition_{begin|end}
-  cpufreq: Make cpufreq_notify_transition &
-    cpufreq_notify_post_transition static
+The key challenge is to allow drivers to begin the transition from one thread
+and end it in a completely different thread (this is to enable drivers that do
+asynchronous POSTCHANGE notification from bottom-halves, to also use the same
+interface).
 
- drivers/cpufreq/cpufreq-nforce2.c    |  4 +--
- drivers/cpufreq/cpufreq.c            | 52 +++++++++++++++++++++++++++++-------
- drivers/cpufreq/exynos5440-cpufreq.c |  4 +--
- drivers/cpufreq/gx-suspmod.c         |  4 +--
- drivers/cpufreq/integrator-cpufreq.c |  4 +--
- drivers/cpufreq/longhaul.c           |  4 +--
- drivers/cpufreq/pcc-cpufreq.c        |  4 +--
- drivers/cpufreq/powernow-k6.c        |  4 +--
- drivers/cpufreq/powernow-k7.c        |  4 +--
- drivers/cpufreq/powernow-k8.c        |  4 +--
- drivers/cpufreq/s3c24xx-cpufreq.c    |  4 +--
- drivers/cpufreq/sh-cpufreq.c         |  4 +--
- drivers/cpufreq/unicore2-cpufreq.c   |  4 +--
- include/linux/cpufreq.h              | 12 ++++++---
- 14 files changed, 76 insertions(+), 36 deletions(-)
+To achieve this, a 'transition_ongoing' flag, a 'transition_lock' spinlock and a
+wait-queue are added per-policy. The flag and the wait-queue are used in
+conjunction to create an "uninterrupted flow" from _begin() to _end(). The
+spinlock is used to ensure that only one such "flow" is in flight at any given
+time. Put together, this provides us all the necessary synchronization.
 
+Based-on-patch-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 37 +++++++++++++++++++++++++++++++++++++
+ include/linux/cpufreq.h   | 10 ++++++++++
+ 2 files changed, 47 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index d8d6bc9..d57806a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -353,6 +353,41 @@ void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_notify_post_transition);
+ 
++void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
++		struct cpufreq_freqs *freqs)
++{
++wait:
++	wait_event(policy->transition_wait, !policy->transition_ongoing);
++
++	spin_lock(&policy->transition_lock);
++
++	if (unlikely(policy->transition_ongoing)) {
++		spin_unlock(&policy->transition_lock);
++		goto wait;
++	}
++
++	policy->transition_ongoing = true;
++
++	spin_unlock(&policy->transition_lock);
++
++	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
++}
++EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
++
++void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
++		struct cpufreq_freqs *freqs, int transition_failed)
++{
++	if (unlikely(WARN_ON(!policy->transition_ongoing)))
++		return;
++
++	cpufreq_notify_post_transition(policy, freqs, transition_failed);
++
++	policy->transition_ongoing = false;
++
++	wake_up(&policy->transition_wait);
++}
++EXPORT_SYMBOL_GPL(cpufreq_freq_transition_end);
++
+ 
+ /*********************************************************************
+  *                          SYSFS INTERFACE                          *
+@@ -985,6 +1020,8 @@ static struct cpufreq_policy *cpufreq_policy_alloc(void)
+ 
+ 	INIT_LIST_HEAD(&policy->policy_list);
+ 	init_rwsem(&policy->rwsem);
++	spin_lock_init(&policy->transition_lock);
++	init_waitqueue_head(&policy->transition_wait);
+ 
+ 	return policy;
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 2d2e62c..e337602 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -16,6 +16,7 @@
+ #include <linux/completion.h>
+ #include <linux/kobject.h>
+ #include <linux/notifier.h>
++#include <linux/spinlock.h>
+ #include <linux/sysfs.h>
+ 
+ /*********************************************************************
+@@ -104,6 +105,11 @@ struct cpufreq_policy {
+ 	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+ 	 */
+ 	struct rw_semaphore	rwsem;
++
++	/* Synchronization for frequency transitions */
++	bool			transition_ongoing; /* Tracks transition status */
++	spinlock_t		transition_lock;
++	wait_queue_head_t	transition_wait;
+ };
+ 
+ /* Only for ACPI */
+@@ -337,6 +343,10 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		struct cpufreq_freqs *freqs, unsigned int state);
+ void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+ 		struct cpufreq_freqs *freqs, int transition_failed);
++void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
++		struct cpufreq_freqs *freqs);
++void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
++		struct cpufreq_freqs *freqs, int transition_failed);
+ 
+ #else /* CONFIG_CPU_FREQ */
+ static inline int cpufreq_register_notifier(struct notifier_block *nb,
 -- 
 1.7.12.rc2.18.g61b472e
-
