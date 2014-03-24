@@ -1,61 +1,51 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] ARM: clps711x: Add cpuidle driver
-Date: Mon, 24 Mar 2014 18:15:02 +0100
-Message-ID: <53306816.1090809@linaro.org>
-References: <1395467076-29462-1-git-send-email-shc_work@mail.ru> <53305094.8010008@linaro.org> <1395679441.129942365@f386.i.mail.ru>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: how to trigger pcieport runtime suspend?
+Date: Mon, 24 Mar 2014 13:19:43 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1403241316280.1197-100000@iolanthe.rowland.org>
+References: <CAErSpo5yOEqHZmWZ3j8NQs_DapmkegDTm8uLJCS2uCKvTvtT6Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f41.google.com ([209.85.214.41]:44324 "EHLO
-	mail-bk0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752200AbaCXROx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 13:14:53 -0400
-Received: by mail-bk0-f41.google.com with SMTP id d7so592658bkh.14
-        for <linux-pm@vger.kernel.org>; Mon, 24 Mar 2014 10:14:51 -0700 (PDT)
-In-Reply-To: <1395679441.129942365@f386.i.mail.ru>
+Received: from iolanthe.rowland.org ([192.131.102.54]:42756 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753601AbaCXRTo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 13:19:44 -0400
+In-Reply-To: <CAErSpo5yOEqHZmWZ3j8NQs_DapmkegDTm8uLJCS2uCKvTvtT6Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Andreas Noever <andreas.noever@gmail.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 03/24/2014 05:44 PM, Alexander Shiyan wrote:
-> Mon, 24 Mar 2014 16:34:44 +0100 =D0=BE=D1=82 Daniel Lezcano <daniel.l=
-ezcano@linaro.org>:
->> On 03/22/2014 06:44 AM, Alexander Shiyan wrote:
->>> Add cpuidle support for ARM Cirrus Logic CLPS711X CPUs.
->>> This CPU has an unique internal register and write to this location
->>> will put the system into the Idle State by halting the clock to the
->>> processor until an interrupt is generated.
->>>
->>> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
->>> ---
-> ...
->>> +static struct cpuidle_driver clps711x_idle_driver =3D {
->>> +	.name		=3D CLPS711X_CPUIDLE_NAME,
->>> +	.owner		=3D THIS_MODULE,
->>> +	.states[0]	=3D {
->>> +		.name		=3D "HALT",
->>> +		.desc		=3D "CLPS711X HALT",
->>> +		.enter		=3D clps711x_cpuidle_halt,
->>> +		.exit_latency	=3D 1,
->>
->> Did you forget target_residency ? Or just not defined it as it is 0 =
-?
->
-> Yes, zero value.
+On Mon, 24 Mar 2014, Bjorn Helgaas wrote:
 
-Ok, thanks. The driver looks good. I will pick it for 3.16.
+> [+cc Rafael, Pavel, linux-pm]
+> 
+> On Sun, Mar 23, 2014 at 12:16 PM, Andreas Noever
+> <andreas.noever@gmail.com> wrote:
+> > The pcieport driver defines runtime_suspend and runtime_resume methods
+> > (pcie_port_runtime_suspend/resume in portdrv_pci.c). I am trying to
+> > trigger that code. But I cannot get power/runtime_usage to drop to
+> > zero.
+> >
+> > Initially power/runtime_usage is set to 2. The 2 comes (imho) from:
+> > pci_pm_init -> pm_runtime_forbid
+> > local_pci_probe -> pm_runtime_get_sync
+> >
+> > The pm_runtime_forbid can be undone with echo auto > power/control,
+> > but the second one seems to never go away. local_pci_probe spots the
+> > following comment:
+> > "If the driver supports runtime PM, it should call
+> > pm_runtime_put_noidle() in its probe routine and
+> > pm_runtime_get_noresume() in its remove routine." I cannot find any
+> > such calls in the pcieport driver (or in the port service drivers).
+> >
+> > What am I missing?
 
-Thanks
-   -- Daniel
+You're not missing anything, but apparently the people who added
+runtime PM support to the pcieport driver missed the comment you 
+quoted.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+If you add those calls to the driver, does it do what you want?
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Alan Stern
 
