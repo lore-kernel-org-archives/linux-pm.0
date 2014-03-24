@@ -1,50 +1,117 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: resume drivers before enabling governors
-Date: Mon, 24 Mar 2014 12:30:29 +0530
-Message-ID: <f067d833e8aded9d83fc4869121afdc78e96c544.1395644255.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V5 0/3] cpufreq: Introduce cpufreq_freq_transition_{begin|end}()
+Date: Mon, 24 Mar 2014 13:35:43 +0530
+Message-ID: <cover.1395644073.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f45.google.com ([74.125.82.45]:35495 "EHLO
+	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbaCXIF4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 04:05:56 -0400
+Received: by mail-wg0-f45.google.com with SMTP id l18so3138678wgh.4
+        for <linux-pm@vger.kernel.org>; Mon, 24 Mar 2014 01:05:55 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-During suspend, we first stop governors and then suspend cpufreq drivers and
-resume must be exactly opposite of that. i.e. resume drivers first and then
-start governors.
+Whenever we change the frequency of a CPU, we call the PRECHANGE and POSTCHANGE
+notifiers. They must be serialized, i.e. PRECHANGE and POSTCHANGE notifiers
+should strictly alternate, thereby preventing two different sets of PRECHANGE or
+POSTCHANGE notifiers from interleaving arbitrarily.
 
-But the current code in resume enables governors first and then resume drivers.
-Fix it be changing code sequence there.
+The following examples illustrate why this is important:
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-For 3.15-rc2 ..
+Scenario 1:
+-----------
+A thread reading the value of cpuinfo_cur_freq, will call
+__cpufreq_cpu_get()->cpufreq_out_of_sync()->cpufreq_notify_transition()
 
- drivers/cpufreq/cpufreq.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+The ondemand governor can decide to change the frequency of the CPU at the same
+time and hence it can end up sending the notifications via ->target().
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 3aa7a7a..d8d6bc9 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1652,14 +1652,13 @@ void cpufreq_resume(void)
- 	cpufreq_suspended = false;
- 
- 	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
--		if (__cpufreq_governor(policy, CPUFREQ_GOV_START)
-+		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
-+			pr_err("%s: Failed to resume driver: %p\n", __func__,
-+				policy);
-+		else if (__cpufreq_governor(policy, CPUFREQ_GOV_START)
- 		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
- 			pr_err("%s: Failed to start governor for policy: %p\n",
- 				__func__, policy);
--		else if (cpufreq_driver->resume
--		    && cpufreq_driver->resume(policy))
--			pr_err("%s: Failed to resume driver: %p\n", __func__,
--				policy);
- 
- 		/*
- 		 * schedule call cpufreq_update_policy() for boot CPU, i.e. last
+If the notifiers are not serialized, the following sequence can occur:
+- PRECHANGE Notification for freq A (from cpuinfo_cur_freq)
+- PRECHANGE Notification for freq B (from target())
+- Freq changed by target() to B
+- POSTCHANGE Notification for freq B
+- POSTCHANGE Notification for freq A
+
+We can see from the above that the last POSTCHANGE Notification happens for freq
+A but the hardware is set to run at freq B.
+
+Where would we break then?: adjust_jiffies() in cpufreq.c & cpufreq_callback()
+in arch/arm/kernel/smp.c (which also adjusts the jiffies). All the
+loops_per_jiffy calculations will get messed up.
+
+Scenario 2:
+-----------
+The governor calls __cpufreq_driver_target() to change the frequency. At the
+same time, if we change scaling_{min|max}_freq from sysfs, it will end up
+calling the governor's CPUFREQ_GOV_LIMITS notification, which will also call
+__cpufreq_driver_target(). And hence we end up issuing concurrent calls to
+->target().
+
+Typically, platforms have the following logic in their ->target() routines:
+(Eg: cpufreq-cpu0, omap, exynos, etc)
+
+A. If new freq is more than old: Increase voltage
+B. Change freq
+C. If new freq is less than old: decrease voltage
+
+Now, if the two concurrent calls to ->target() are X and Y, where X is trying to
+increase the freq and Y is trying to decrease it, we get the following race
+condition:
+
+X.A: voltage gets increased for larger freq
+Y.A: nothing happens
+Y.B: freq gets decreased
+Y.C: voltage gets decreased
+X.B: freq gets increased
+X.C: nothing happens
+
+Thus we can end up setting a freq which is not supported by the voltage we have
+set. That will probably make the clock to the CPU unstable and the system might
+not work properly anymore.
+
+
+This patchset introduces a new set of routines cpufreq_freq_transition_begin()
+and cpufreq_freq_transition_end(), which will guarantee that calls to frequency
+transition routines are serialized. Later patches force other drivers to use
+these new routines.
+
+
+V4: https://lkml.org/lkml/2014/3/21/23
+
+V4->V5:
+- Replaced false with 0 as the variable was of int type instead of bool.
+- There were some discussions about requirement of a barrier, but it looks like
+  overkill for now. So, leaving that unless we have a real problem.
+
+Srivatsa S. Bhat (1):
+  cpufreq: Make sure frequency transitions are serialized
+
+Viresh Kumar (2):
+  cpufreq: Convert existing drivers to use
+    cpufreq_freq_transition_{begin|end}
+  cpufreq: Make cpufreq_notify_transition &
+    cpufreq_notify_post_transition static
+
+ drivers/cpufreq/cpufreq-nforce2.c    |  4 +--
+ drivers/cpufreq/cpufreq.c            | 52 +++++++++++++++++++++++++++++-------
+ drivers/cpufreq/exynos5440-cpufreq.c |  4 +--
+ drivers/cpufreq/gx-suspmod.c         |  4 +--
+ drivers/cpufreq/integrator-cpufreq.c |  4 +--
+ drivers/cpufreq/longhaul.c           |  4 +--
+ drivers/cpufreq/pcc-cpufreq.c        |  4 +--
+ drivers/cpufreq/powernow-k6.c        |  4 +--
+ drivers/cpufreq/powernow-k7.c        |  4 +--
+ drivers/cpufreq/powernow-k8.c        |  4 +--
+ drivers/cpufreq/s3c24xx-cpufreq.c    |  4 +--
+ drivers/cpufreq/sh-cpufreq.c         |  4 +--
+ drivers/cpufreq/unicore2-cpufreq.c   |  4 +--
+ include/linux/cpufreq.h              | 12 ++++++---
+ 14 files changed, 76 insertions(+), 36 deletions(-)
+
 -- 
 1.7.12.rc2.18.g61b472e
 
