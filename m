@@ -1,41 +1,41 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 5/5] PM / Runtime: s/foo_process_requests/foo_process_next_request/
-Date: Mon, 24 Mar 2014 21:31:31 +0100
-Message-ID: <1395693091-4813-5-git-send-email-geert@linux-m68k.org>
-References: <1395693091-4813-1-git-send-email-geert@linux-m68k.org>
+Subject: [PATCH trivial 3/3] PM / Runtime: Spelling s/competing/completing/
+Date: Mon, 24 Mar 2014 21:37:03 +0100
+Message-ID: <1395693423-5134-3-git-send-email-geert@linux-m68k.org>
+References: <1395693423-5134-1-git-send-email-geert@linux-m68k.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:34332 "EHLO
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:41705 "EHLO
 	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754135AbaCXUbo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 16:31:44 -0400
-In-Reply-To: <1395693091-4813-1-git-send-email-geert@linux-m68k.org>
+	with ESMTP id S1754065AbaCXUhR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 16:37:17 -0400
+In-Reply-To: <1395693423-5134-1-git-send-email-geert@linux-m68k.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: Ben Dooks <ben.dooks@codethink.co.uk>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Jiri Kosina <trivial@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 
-The example uses foo_process_next_request() everywhere else.
-
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 ---
- Documentation/power/runtime_pm.txt |    2 +-
+ drivers/base/power/generic_ops.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index 0c1c4124d23a..5f96daf8566a 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -870,7 +870,7 @@ Here is a schematic pseudo-code example:
- 		foo->is_suspended = 0;
- 		pm_runtime_mark_last_busy(&foo->dev);
- 		if (foo->num_pending_requests > 0)
--			foo_process_requests(foo);
-+			foo_process_next_request(foo);
- 		unlock(&foo->private_lock);
- 		return 0;
- 	}
+diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+index a2e55bfdf572..96a92db83cad 100644
+--- a/drivers/base/power/generic_ops.c
++++ b/drivers/base/power/generic_ops.c
+@@ -285,7 +285,7 @@ int pm_generic_restore(struct device *dev)
+ EXPORT_SYMBOL_GPL(pm_generic_restore);
+ 
+ /**
+- * pm_generic_complete - Generic routine competing a device power transition.
++ * pm_generic_complete - Generic routine completing a device power transition.
+  * @dev: Device to handle.
+  *
+  * Complete a device power transition during a system-wide power transition.
 -- 
 1.7.9.5
 
