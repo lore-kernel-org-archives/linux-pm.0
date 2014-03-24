@@ -1,158 +1,44 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] ARM: clps711x: Add cpuidle driver
-Date: Mon, 24 Mar 2014 16:34:44 +0100
-Message-ID: <53305094.8010008@linaro.org>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Subject: =?UTF-8?B?UmU6IFtQQVRDSCAxLzJdIEFSTTogY2xwczcxMXg6IEFkZCBjcHVpZGxlIGRy?=
+ =?UTF-8?B?aXZlcg==?=
+Date: Mon, 24 Mar 2014 20:44:01 +0400
+Message-ID: <1395679441.129942365@f386.i.mail.ru>
 References: <1395467076-29462-1-git-send-email-shc_work@mail.ru>
+ <53305094.8010008@linaro.org>
+Reply-To: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:58090 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbaCXPef (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 11:34:35 -0400
-Received: by mail-bk0-f46.google.com with SMTP id v15so555246bkz.19
-        for <linux-pm@vger.kernel.org>; Mon, 24 Mar 2014 08:34:34 -0700 (PDT)
-In-Reply-To: <1395467076-29462-1-git-send-email-shc_work@mail.ru>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <53305094.8010008@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?UTF-8?B?RGFuaWVsIExlemNhbm8=?= <daniel.lezcano@linaro.org>
+Cc: =?UTF-8?B?S2V2aW4gSGlsbWFu?= <khilman@linaro.org>, =?UTF-8?B?UnVzc2VsbCBLaW5n?= <linux@arm.linux.org.uk>, =?UTF-8?B?QXJuZCBCZXJnbWFubg==?= <arnd@arndb.de>, linux-pm@vger.kernel.org, =?UTF-8?B?UmFmYWVsIEouIFd5c29ja2k=?= <rjw@rjwysocki.net>, =?UTF-8?B?T2xvZiBKb2hhbnNzb24=?= <olof@lixom.net>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexander Shiyan <shc_work@mail.ru>, linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>
 
-On 03/22/2014 06:44 AM, Alexander Shiyan wrote:
-> Add cpuidle support for ARM Cirrus Logic CLPS711X CPUs.
-> This CPU has an unique internal register and write to this location
-> will put the system into the Idle State by halting the clock to the
-> processor until an interrupt is generated.
->
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> ---
->   drivers/cpuidle/Kconfig.arm        |  6 ++++
->   drivers/cpuidle/Makefile           |  1 +
->   drivers/cpuidle/cpuidle-clps711x.c | 64 +++++++++++++++++++++++++++=
-+++++++++++
->   3 files changed, 71 insertions(+)
->   create mode 100644 drivers/cpuidle/cpuidle-clps711x.c
->
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
-m
-> index 97ccc31..371e75d 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -13,6 +13,12 @@ config ARM_BIG_LITTLE_CPUIDLE
->   	  define different C-states for little and big cores through the
->   	  multiple CPU idle drivers infrastructure.
->
-> +config ARM_CLPS711X_CPUIDLE
-> +	bool "CPU Idle Driver for CLPS711X processors"
-> +	depends on ARCH_CLPS711X || COMPILE_TEST
-> +	help
-> +	  Select this to enable cpuidle on Cirrus Logic CLPS711X SOCs.
-> +
->   config ARM_HIGHBANK_CPUIDLE
->   	bool "CPU Idle Driver for Calxeda processors"
->   	depends on ARM_PSCI
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index f71ae1b..534fff5 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -8,6 +8,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D couple=
-d.o
->   ###################################################################=
-###############
->   # ARM SoC drivers
->   obj-$(CONFIG_ARM_BIG_LITTLE_CPUIDLE)	+=3D cpuidle-big_little.o
-> +obj-$(CONFIG_ARM_CLPS711X_CPUIDLE)	+=3D cpuidle-clps711x.o
->   obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+=3D cpuidle-calxeda.o
->   obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+=3D cpuidle-kirkwood.o
->   obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+=3D cpuidle-zynq.o
-> diff --git a/drivers/cpuidle/cpuidle-clps711x.c b/drivers/cpuidle/cpu=
-idle-clps711x.c
-> new file mode 100644
-> index 0000000..5243811
-> --- /dev/null
-> +++ b/drivers/cpuidle/cpuidle-clps711x.c
-> @@ -0,0 +1,64 @@
-> +/*
-> + *  CLPS711X CPU idle driver
-> + *
-> + *  Copyright (C) 2014 Alexander Shiyan <shc_work@mail.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License as published=
- by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#include <linux/cpuidle.h>
-> +#include <linux/err.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +
-> +#define CLPS711X_CPUIDLE_NAME	"clps711x-cpuidle"
-> +
-> +static void __iomem *clps711x_halt;
-> +
-> +static int clps711x_cpuidle_halt(struct cpuidle_device *dev,
-> +				 struct cpuidle_driver *drv, int index)
-> +{
-> +	writel(0xaa, clps711x_halt);
-> +
-> +	return index;
-> +}
-> +
-> +static struct cpuidle_driver clps711x_idle_driver =3D {
-> +	.name		=3D CLPS711X_CPUIDLE_NAME,
-> +	.owner		=3D THIS_MODULE,
-> +	.states[0]	=3D {
-> +		.name		=3D "HALT",
-> +		.desc		=3D "CLPS711X HALT",
-> +		.enter		=3D clps711x_cpuidle_halt,
-> +		.exit_latency	=3D 1,
-
-Did you forget target_residency ? Or just not defined it as it is 0 ?
-
-> +	},
-> +	.state_count	=3D 1,
-> +};
-> +
-> +static int __init clps711x_cpuidle_probe(struct platform_device *pde=
-v)
-> +{
-> +	struct resource *res;
-> +
-> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	clps711x_halt =3D devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(clps711x_halt))
-> +		return PTR_ERR(clps711x_halt);
-> +
-> +	return cpuidle_register(&clps711x_idle_driver, NULL);
-> +}
-> +
-> +static struct platform_driver clps711x_cpuidle_driver =3D {
-> +	.driver	=3D {
-> +		.name	=3D CLPS711X_CPUIDLE_NAME,
-> +		.owner	=3D THIS_MODULE,
-> +	},
-> +};
-> +module_platform_driver_probe(clps711x_cpuidle_driver, clps711x_cpuid=
-le_probe);
-> +
-> +MODULE_AUTHOR("Alexander Shiyan <shc_work@mail.ru>");
-> +MODULE_DESCRIPTION("CLPS711X CPU idle driver");
-> +MODULE_LICENSE("GPL");
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+TW9uLCAyNCBNYXIgMjAxNCAxNjozNDo0NCArMDEwMCDQvtGCIERhbmllbCBMZXpjYW5vIDxkYW5p
+ZWwubGV6Y2Fub0BsaW5hcm8ub3JnPjoKPiBPbiAwMy8yMi8yMDE0IDA2OjQ0IEFNLCBBbGV4YW5k
+ZXIgU2hpeWFuIHdyb3RlOgo+ID4gQWRkIGNwdWlkbGUgc3VwcG9ydCBmb3IgQVJNIENpcnJ1cyBM
+b2dpYyBDTFBTNzExWCBDUFVzLgo+ID4gVGhpcyBDUFUgaGFzIGFuIHVuaXF1ZSBpbnRlcm5hbCBy
+ZWdpc3RlciBhbmQgd3JpdGUgdG8gdGhpcyBsb2NhdGlvbgo+ID4gd2lsbCBwdXQgdGhlIHN5c3Rl
+bSBpbnRvIHRoZSBJZGxlIFN0YXRlIGJ5IGhhbHRpbmcgdGhlIGNsb2NrIHRvIHRoZQo+ID4gcHJv
+Y2Vzc29yIHVudGlsIGFuIGludGVycnVwdCBpcyBnZW5lcmF0ZWQuCj4gPgo+ID4gU2lnbmVkLW9m
+Zi1ieTogQWxleGFuZGVyIFNoaXlhbiA8c2hjX3dvcmtAbWFpbC5ydT4KPiA+IC0tLQouLi4KPiA+
+ICtzdGF0aWMgc3RydWN0IGNwdWlkbGVfZHJpdmVyIGNscHM3MTF4X2lkbGVfZHJpdmVyID0gewo+
+ID4gKwkubmFtZQkJPSBDTFBTNzExWF9DUFVJRExFX05BTUUsCj4gPiArCS5vd25lcgkJPSBUSElT
+X01PRFVMRSwKPiA+ICsJLnN0YXRlc1swXQk9IHsKPiA+ICsJCS5uYW1lCQk9ICJIQUxUIiwKPiA+
+ICsJCS5kZXNjCQk9ICJDTFBTNzExWCBIQUxUIiwKPiA+ICsJCS5lbnRlcgkJPSBjbHBzNzExeF9j
+cHVpZGxlX2hhbHQsCj4gPiArCQkuZXhpdF9sYXRlbmN5CT0gMSwKPiAKPiBEaWQgeW91IGZvcmdl
+dCB0YXJnZXRfcmVzaWRlbmN5ID8gT3IganVzdCBub3QgZGVmaW5lZCBpdCBhcyBpdCBpcyAwID8K
+ClllcywgemVybyB2YWx1ZS4KCi0tLQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtl
+cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxt
+YW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
