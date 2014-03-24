@@ -1,67 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC v3 0/5] cpufreq:LAB: Support for LAB governor.
-Date: Mon, 24 Mar 2014 15:45:34 +0530
-Message-ID: <CAKohpo=6F_d3WF6TuNODDhhig5oDjC2dhAjqXp4E+c6VJyCiFw@mail.gmail.com>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
-	<1393928852-22725-1-git-send-email-l.majewski@samsung.com>
-	<CAKohpok1zBsX7n70r=geCOaP-9ONx2QdaUMK6cJeqhFrO1PkUg@mail.gmail.com>
-	<20140324110032.7aeae15e@amdc2363>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [patch 15/16] cpufreq: intel-pstate: Use del_timer_sync in intel_pstate_cpu_exit()
+Date: Mon, 24 Mar 2014 07:18:01 -0700
+Message-ID: <53303E99.70509@gmail.com>
+References: <20140323150557.288925975@linutronix.de> <20140323150754.272874059@linutronix.de> <2311758.L3eN8OTkba@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:60399 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbaCXKPf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 06:15:35 -0400
-Received: by mail-ob0-f169.google.com with SMTP id va2so5530363obc.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Mar 2014 03:15:34 -0700 (PDT)
-In-Reply-To: <20140324110032.7aeae15e@amdc2363>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2311758.L3eN8OTkba@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, dirk.j.brandewie@intel.com
+Cc: dirk.brandewie@gmail.com, LKML <linux-kernel@vger.kernel.org>, Julia Lawall <Julia.Lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, cpufreq <cpufreq@vger.kernel.org>, pm <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Thomas Abraham <ta.omasab@gmail.com>, Thomas Abraham <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-[Adding Linaro lists in cc as there are few people here working on power/thermal
-stuff.]
+Hi Thomas,
+On 03/23/2014 06:56 PM, Rafael J. Wysocki wrote:
+> On Sunday, March 23, 2014 03:09:32 PM Thomas Gleixner wrote:
+>> We are about to free the data structure. Make sure no timer callback
+>> is running. I might be paranoid, but the ->exit callback can be
+>> invoked from so many places, that it is not entirely clear whether
+>> del_timer is always called on the cpu on which it is enqueued.
+>>
+>> While looking through the call sites I noticed, that
+>> cpufreq_init_policy() can fail and invoke cpufreq_driver->exit() but
+>> it does not return the failure and the callsite happily proceeds.
+>>
 
-On 24 March 2014 15:30, Lukasz Majewski <l.majewski@samsung.com> wrote:
->> On 4 March 2014 15:57, Lukasz Majewski <l.majewski@samsung.com> wrote:
+The call to del_timer() has been moved to a new callback in material
+in Rafaels pull request for v3.15.
 
-> I think, that "LAB" name is with us for some time, so it would be a
-> pity to discard it.
+I will send a patch adding this change to the v3.15 material.
 
-It doesn't matter with Mainline how you do naming initially for your code :)
-We need to pick the right name now, and the decision should be made
-now (after discussions obviously) :)
-
->> What about making it as simple as:
->> - changing the ondemand governor only instead of adding a new governor
+--Dirk
+>> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: cpufreq <cpufreq@vger.kernel.org>
+>> Cc: pm <linux-pm@vger.kernel.org>
 >
-> My goal is to not touch the ondemand code. It has matured, so I would
-> like to leave it as it is.
-
-Because the boost feature is already part of CPUFreq core, I think its
-better if we enhance current governors to use it. So, I would like to
-make this part of existing governors. Not only ondemand but maybe
-conservative as well..
-
-Also, I feel we maynot necessarily move this piece of code into cpufreq.
-All you are doing is thermal management here :)
-
-If we are sure we will not burn out our SoC (When many cores are idle),
-run at max freq (if there is enough load of course :))..
-
-And if there are chances that we might burn our chip (when very few
-cores are idle), don't run on boost frequencies..
-
-This is actually a 'cooling' device :)
-
-Think of it this way: CPUFreq will provide a range of frequency which
-SoC's can use. And then based on some conditions we may or may not
-want to run on these frequencies.
-
-@Zhang/Eduardo: Can we have your inputs here as well ?
-
-This may look hard but we need to design things in the best possible
-way for managing things better in future. Lets see what others have
-to say on this.
+> Dirk?
+>
+>> ---
+>>
+>>   drivers/cpufreq/intel_pstate.c |    2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> Index: tip/drivers/cpufreq/intel_pstate.c
+>> ===================================================================
+>> --- tip.orig/drivers/cpufreq/intel_pstate.c
+>> +++ tip/drivers/cpufreq/intel_pstate.c
+>> @@ -777,7 +777,7 @@ static int intel_pstate_cpu_exit(struct
+>>   {
+>>   	int cpu = policy->cpu;
+>>
+>> -	del_timer(&all_cpu_data[cpu]->timer);
+>> +	del_timer_sync(&all_cpu_data[cpu]->timer);
+>>   	kfree(all_cpu_data[cpu]);
+>>   	all_cpu_data[cpu] = NULL;
+>>   	return 0;
+>>
+>>
+>
