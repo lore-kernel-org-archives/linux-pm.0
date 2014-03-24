@@ -1,34 +1,55 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] thermal: Fix KELVIN_TO_CELSIUS macro
-Date: Sun, 23 Mar 2014 21:25:32 -0700
-Message-ID: <1395635132.13968.40.camel@joe-AO722>
-References: <1395634496-25040-1-git-send-email-linux@roeck-us.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [patch 15/16] cpufreq: intel-pstate: Use del_timer_sync in intel_pstate_cpu_exit()
+Date: Mon, 24 Mar 2014 10:15:02 +0530
+Message-ID: <CAOh2x==n-TW4DizybTA5Y_b4Xfc_bX5ArnNjg4HhtaBBT2P98g@mail.gmail.com>
+References: <20140323150557.288925975@linutronix.de>
+	<20140323150754.272874059@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1395634496-25040-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f172.google.com ([209.85.128.172]:64980 "EHLO
+	mail-ve0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbaCXEpE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Mar 2014 00:45:04 -0400
+In-Reply-To: <20140323150754.272874059@linutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Julia Lawall <Julia.Lawall@lip6.fr>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, pm <linux-pm@vger.kernel.org>
 
-On Sun, 2014-03-23 at 21:14 -0700, Guenter Roeck wrote:
-> It is always a good idea to use paranthesis around macro parameters
-> to avoid undesired side effects.
-> 
-> In this specific case, KELVIN_TO_CELSIUS() is used in
-> drivers/platform/x86/asus-wmi.c with parameter "value & 0xFFFF",
-> which due to operator evaluation order causes more or less random
-> results.
+On Sun, Mar 23, 2014 at 8:39 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> We are about to free the data structure. Make sure no timer callback
+> is running. I might be paranoid, but the ->exit callback can be
+> invoked from so many places, that it is not entirely clear whether
+> del_timer is always called on the cpu on which it is enqueued.
 
-Maybe it's better to use a statement expression to avoid
-multiple calculations of t
+In normal cases it will be called only when CPU goes offline and I
+hope that isn't called on the dying CPU.
 
-Maybe;
+> While looking through the call sites I noticed, that
+> cpufreq_init_policy() can fail and invoke cpufreq_driver->exit() but
+> it does not return the failure and the callsite happily proceeds.
 
-#define KELVIN_TO_CELSIUS(t)				\
-({							\
-	long _t = (long)(t) - 2732;			\
-	_t >= 0 ? (_t + 5) / 10 : (_t - 5) / 10;	\
-})
+Thanks for reporting this, will get it fixed.
+
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: cpufreq <cpufreq@vger.kernel.org>
+> Cc: pm <linux-pm@vger.kernel.org>
+> ---
+>
+>  drivers/cpufreq/intel_pstate.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: tip/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- tip.orig/drivers/cpufreq/intel_pstate.c
+> +++ tip/drivers/cpufreq/intel_pstate.c
+> @@ -777,7 +777,7 @@ static int intel_pstate_cpu_exit(struct
+>  {
+>         int cpu = policy->cpu;
+>
+> -       del_timer(&all_cpu_data[cpu]->timer);
+> +       del_timer_sync(&all_cpu_data[cpu]->timer);
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
