@@ -1,74 +1,57 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v5 01/14] ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
-Date: Tue, 25 Mar 2014 23:48:12 +0100
-Message-ID: <1395787705-31061-2-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v5 12/14] ARM: mvebu: Register notifier callback for the cpuidle transition
+Date: Tue, 25 Mar 2014 23:48:23 +0100
+Message-ID: <1395787705-31061-13-git-send-email-gregory.clement@free-electrons.com>
 References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Russell King <linux@arm.linux.org.uk>, Tawfik Bayouk <tawfik@marvell.com>, linux-kernel@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-PJ4B needs extra instructions for suspend and resume, so instead of
-using the armv7 version, this commit introduces specific versions for
-PJ4B.
+In order to have well encapsulated code, we use notifier callbacks for
+CPU_PM_ENTER and CPU_PM_EXIT inside the mvebu power management code.
 
-Cc: Russell King <linux@arm.linux.org.uk>
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mm/proc-v7.S | 28 +++++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
+ arch/arm/mach-mvebu/pmsu.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
-index bd1781979a39..3c49ac86d9d2 100644
---- a/arch/arm/mm/proc-v7.S
-+++ b/arch/arm/mm/proc-v7.S
-@@ -169,9 +169,31 @@ ENDPROC(cpu_pj4b_do_idle)
- 	globl_equ	cpu_pj4b_do_idle,  	cpu_v7_do_idle
- #endif
- 	globl_equ	cpu_pj4b_dcache_clean_area,	cpu_v7_dcache_clean_area
--	globl_equ	cpu_pj4b_do_suspend,	cpu_v7_do_suspend
--	globl_equ	cpu_pj4b_do_resume,	cpu_v7_do_resume
--	globl_equ	cpu_pj4b_suspend_size,	cpu_v7_suspend_size
-+#ifdef CONFIG_ARM_CPU_SUSPEND
-+ENTRY(cpu_pj4b_do_suspend)
-+	stmfd	sp!, {r6 - r10}
-+	mrc	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
-+	mrc	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
-+	mrc	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
-+	mrc	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
-+	mrc	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
-+	stmia	r0!, {r6 - r10}
-+	ldmfd	sp!, {r6 - r10}
-+	b cpu_v7_do_suspend
-+ENDPROC(cpu_pj4b_do_suspend)
+diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+index 3fc25d94e893..5812ff4a9b63 100644
+--- a/arch/arm/mach-mvebu/pmsu.c
++++ b/arch/arm/mach-mvebu/pmsu.c
+@@ -16,6 +16,7 @@
+  * other SOC units
+  */
+ 
++#include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/of_address.h>
+@@ -266,4 +267,22 @@ static noinline void armada_370_xp_pmsu_idle_restore(void)
+ 	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
+ }
+ 
++static int armada_370_xp_cpu_pm_notify(struct notifier_block *self,
++				    unsigned long action, void *hcpu)
++{
++	if (action == CPU_PM_ENTER) {
++		unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
++		armada_370_xp_pmsu_set_start_addr(armada_370_xp_cpu_resume,
++						hw_cpu);
++	} else if (action == CPU_PM_EXIT) {
++		armada_370_xp_pmsu_idle_restore();
++	}
 +
-+ENTRY(cpu_pj4b_do_resume)
-+	ldmia	r0!, {r6 - r10}
-+	mcr	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
-+	mcr	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
-+	mcr	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
-+	mcr	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
-+	mcr	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
-+	b cpu_v7_do_resume
-+ENDPROC(cpu_pj4b_do_resume)
-+#endif
-+.globl	cpu_pj4b_suspend_size
-+.equ	cpu_pj4b_suspend_size, 4 * 14
- 
- #endif
- 
++	return NOTIFY_OK;
++}
++
++static struct notifier_block armada_370_xp_cpu_pm_notifier = {
++	.notifier_call = armada_370_xp_cpu_pm_notify,
++};
++
+ early_initcall(armada_370_xp_pmsu_init);
 -- 
 1.8.1.2
