@@ -1,28 +1,71 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
 Subject: Re: [PATCH v4 12/13] cpuidle: mvebu: Add initial CPU idle support
  for Armada 370/XP SoC
-Date: Tue, 25 Mar 2014 23:57:11 +0100
-Message-ID: <533209C7.6060302@free-electrons.com>
-References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com> <1392312816-17657-13-git-send-email-gregory.clement@free-electrons.com> <20140214170046.GA32564@e102568-lin.cambridge.arm.com>
+Date: Tue, 25 Mar 2014 23:57:16 +0100
+Message-ID: <533209CC.4060908@free-electrons.com>
+References: <1392312816-17657-1-git-send-email-gregory.clement@free-electrons.com> <1392312816-17657-13-git-send-email-gregory.clement@free-electrons.com> <5301CD15.7080807@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:50012 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:50025 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755351AbaCYW62 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Mar 2014 18:58:28 -0400
-In-Reply-To: <20140214170046.GA32564@e102568-lin.cambridge.arm.com>
+	with ESMTP id S1755138AbaCYW6d (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Mar 2014 18:58:33 -0400
+In-Reply-To: <5301CD15.7080807@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-On 14/02/2014 18:00, Lorenzo Pieralisi wrote:
-> On Thu, Feb 13, 2014 at 05:33:35PM +0000, Gregory CLEMENT wrote:
-> 
-> [...]
-> 
+On 17/02/2014 09:49, Daniel Lezcano wrote:
+> On 02/13/2014 06:33 PM, Gregory CLEMENT wrote:
+>> Add the wfi, cpu idle and cpu deep idle power states support for the
+>> Armada XP SoCs.
+>>
+>> All the latencies and the power consumption values used at the
+>> "armada_370_xp_idle_driver" structure are preliminary and will be
+>> modified in the future after running some measurements and analysis.
+>>
+>> Based on the work of Nadav Haklai.
+>>
+>> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
+>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>> ---
+>>   drivers/cpuidle/Kconfig.arm             |   5 ++
+>>   drivers/cpuidle/Makefile                |   1 +
+>>   drivers/cpuidle/cpuidle-armada-370-xp.c | 120 ++++++++++++++++++++++++++++++++
+>>   3 files changed, 126 insertions(+)
+>>   create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
+>>
+>> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+>> index d988948a89a0..f377eb0840e3 100644
+>> --- a/drivers/cpuidle/Kconfig.arm
+>> +++ b/drivers/cpuidle/Kconfig.arm
+>> @@ -1,6 +1,11 @@
+>>   #
+>>   # ARM CPU Idle drivers
+>>   #
+>> +config ARM_ARMADA_370_XP_CPUIDLE
+>> +	bool "CPU Idle Driver for Armada 370/XP family processors"
+>> +	depends on ARCH_MVEBU
+>> +	help
+>> +	  Select this to enable cpuidle on Armada 370/XP processors.
+>>
+>>   config ARM_BIG_LITTLE_CPUIDLE
+>>   	bool "Support for ARM big.LITTLE processors"
+>> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+>> index f71ae1b373c5..9902d052bd87 100644
+>> --- a/drivers/cpuidle/Makefile
+>> +++ b/drivers/cpuidle/Makefile
+>> @@ -7,6 +7,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
+>>
+>>   ##################################################################################
+>>   # ARM SoC drivers
+>> +obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) += cpuidle-armada-370-xp.o
+>>   obj-$(CONFIG_ARM_BIG_LITTLE_CPUIDLE)	+= cpuidle-big_little.o
+>>   obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
+>>   obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
 >> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidle/cpuidle-armada-370-xp.c
 >> new file mode 100644
 >> index 000000000000..57c69812e79d
@@ -43,7 +86,9 @@ On 14/02/2014 18:00, Lorenzo Pieralisi wrote:
 >> + *
 >> + * Maintainer: Gregory CLEMENT <gregory.clement@free-electrons.com>
 >> + */
->> +
+> 
+> Hi Gregory,
+> 
 >> +#include <linux/cpu_pm.h>
 >> +#include <linux/cpuidle.h>
 >> +#include <linux/module.h>
@@ -58,63 +103,46 @@ On 14/02/2014 18:00, Lorenzo Pieralisi wrote:
 >> +#include <asm/cp15.h>
 >> +#include <asm/cacheflush.h>
 > 
-> You should order them <linux/...>, then <asm/...>
+> the convention for the drivers inside this directory is to not include 
+> <asm/*>.
 
-OK done in v5
+Well it is not the case yet:
+
+git grep asm drivers/cpuidle/cpuidle-* | wc -l
+25
+
+Most of the time it was asm/cpuidle.h which was needed for using
+ARM_CPUIDLE_WFI_STATE. However I try to remove most of the header from
+asm/ by following your other advises.
 
 > 
->> +
 >> +#define ARMADA_370_XP_MAX_STATES	3
-> 
-> Is this macro really needed ?
-
-Well most of the other driver use it. And instead of having
-this number directly written in the state_count field I prefer
-to using a name for this value. But I think it is more a matter
-of taste here.
-
-> 
 >> +#define ARMADA_370_XP_FLAG_DEEP_IDLE	0x10000
 >> +extern void armada_370_xp_pmsu_idle_prepare(bool deepidle);
 >> +extern void ll_clear_cpu_coherent(void);
 >> +extern void ll_set_cpu_coherent(void);
->> +
+> 
+> Here you have to declare three low level functions which should not be 
+> visible in this driver.
+> 
+> I think you can go one step more in the code encapsulation by doing like 
+> the cpuidle-at91 driver:
+> 	* Move armada_370_xp_cpu_suspend inside arch/arm/mach-mvebu/pm.c or 
+> whereever you want
+> 	* Assign the suspend function to the platform device data file
+> 	* Get the suspend function as a callback for suspend from the field above
+
+Ok I have done it in the 5th version.
+
+> 
+> 
 >> +noinline static int armada_370_xp_cpu_suspend(unsigned long deepidle)
 >> +{
 >> +	armada_370_xp_pmsu_idle_prepare(deepidle);
 >> +
 >> +	v7_exit_coherency_flush(all);
-> 
-> The macro above clears the C bit in SCTLR and exit coherency (clears SMP
-> bit in SCTLR), let's keep this in mind, see below.
-> 
+>> +
 >> +	ll_clear_cpu_coherent();
-> 
-> And the macro above uses ldr/str exclusives, and this is done with MMU
-> on and off (on cold-boot before jumping to secondary_startup and also
-> before jumping to cpu_resume in armada_370_xp_cpu_resume).
-> 
-> Can you explain to me how load/store exclusives work on this platform ?
-> 
-> ARM ARM A3.4.5
-> 
-> "It is IMPLEMENTATION DEFINED whether LDREX and STREX operations can be
-> performed to a memory region with the Device or Strongly-ordered memory
-> attribute. Unless the implementation documentation explicitly states that
-> LDREX and STREX operations to a memory region with the Device or
-> Strongly-ordered attribute are permitted, the effect of such operations is
-> UNPREDICTABLE."
-> 
-
-Armada XP has an exclusive monitor that can track transactions to Device and/or
-SO and as such also when MMU is disabled the exclusive transactions will be
-functional.
-
-> At least code must be commented and an explanation on why this works has
-> to be given.
-
-I have added this information in comment for the v5.
-> 
 >> +
 >> +	dsb();
 >> +
@@ -129,21 +157,6 @@ I have added this information in comment for the v5.
 >> +	"mcreq	p15, 0, %0, c1, c0, 0 \n\t"
 >> +	"isb	"
 >> +	: : "r" (0));
-> 
-> First of all, complex code like this must be commented.
-> 
-> Moreover, this sequence is wrong. If wfi completes the kernel would explode.
-> 
-> 1) where is the SMP bit in SCTLR restored ?
-It is restored in this uncommeted piece of code. I added comment
-now in the v5.
-
-> 2) where are tlbs flushed (ie processors run out of coherency for _some_
->    time, so tlbs might be stale) ?
-
-Right it was missing, I added it.
-
-> 
 >> +
 >> +	return 0;
 >> +}
@@ -163,15 +176,53 @@ Right it was missing, I added it.
 >> +	cpu_pm_exit();
 >> +
 >> +	return index;
+>> +}
+>> +
+>> +static struct cpuidle_driver armada_370_xp_idle_driver = {
+>> +	.name			= "armada_370_xp_idle",
+>> +	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+>> +	.states[1]		= {
+>> +		.enter			= armada_370_xp_enter_idle,
+>> +		.exit_latency		= 10,
+>> +		.power_usage		= 50,
+>> +		.target_residency	= 100,
+>> +		.flags			= CPUIDLE_FLAG_TIME_VALID,
+>> +		.name			= "MV CPU IDLE",
+>> +		.desc			= "CPU power down",
+>> +	},
+>> +	.states[2]		= {
+>> +		.enter			= armada_370_xp_enter_idle,
+>> +		.exit_latency		= 100,
+>> +		.power_usage		= 5,
+>> +		.target_residency	= 1000,
+>> +		.flags			= CPUIDLE_FLAG_TIME_VALID |
+>> +						ARMADA_370_XP_FLAG_DEEP_IDLE,
+>> +		.name			= "MV CPU DEEP IDLE",
+>> +		.desc			= "CPU and L2 Fabric power down",
+>> +	},
+>> +	.state_count = ARMADA_370_XP_MAX_STATES,
+>> +};
+>> +
+>> +static int armada_370_xp_cpuidle_probe(struct platform_device *pdev)
+>> +{
+>> +	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
+>> +}
+>> +
+>> +static struct platform_driver armada_370_xp_cpuidle_plat_driver = {
+>> +	.driver = {
+>> +		.name = "cpuidle-armada-370-xp",
+>> +		.owner = THIS_MODULE,
+>> +	},
+>> +	.probe = armada_370_xp_cpuidle_probe,
+>> +};
+>> +
+>> +module_platform_driver(armada_370_xp_cpuidle_plat_driver);
+>> +
+>> +MODULE_AUTHOR("Gregory CLEMENT <gregory.clement@free-electrons.com>");
+>> +MODULE_DESCRIPTION("Armada 370/XP cpu idle driver");
+>> +MODULE_LICENSE("GPL");
+>>
 > 
-> You should check the cpu_suspend return value and demote the idle state
-> accordingly, if it failed.
-
-Done in v5.
-
-> 
-> Thanks,
-> Lorenzo
 > 
 
 
