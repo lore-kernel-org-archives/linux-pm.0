@@ -1,146 +1,66 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v5 03/14] ARM: mvebu: ll_set_cpu_coherent always uses the
- current CPU
-Date: Tue, 25 Mar 2014 23:48:14 +0100
-Message-ID: <1395787705-31061-4-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v5 09/14] ARM: mvebu: Allow to power down L2 cache controller in idle mode
+Date: Tue, 25 Mar 2014 23:48:20 +0100
+Message-ID: <1395787705-31061-10-git-send-email-gregory.clement@free-electrons.com>
 References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, linux-kernel@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-ll_set_cpu_coherent is always used on the current CPU, so instead of
-passing the CPU id as argument, ll_set_cpu_coherent() can find it by
-itself.
+This commit adds a function which adjusts the PMSU configuration to
+automatically power down the L2 and coherency fabric when we enter a
+certain idle state.
+
+This feature is part of the Power Management Service Unit of the
+Armada 370 and Armada XP SoCs.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Acked-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- arch/arm/mach-mvebu/coherency.c    | 10 +++++-----
- arch/arm/mach-mvebu/coherency.h    |  2 +-
- arch/arm/mach-mvebu/coherency_ll.S | 12 ++++++------
- arch/arm/mach-mvebu/headsmp.S      |  4 ----
- arch/arm/mach-mvebu/platsmp.c      |  2 +-
- 5 files changed, 13 insertions(+), 17 deletions(-)
+ arch/arm/mach-mvebu/pmsu.c | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
-index 88dd507221fc..51010dbbf7e4 100644
---- a/arch/arm/mach-mvebu/coherency.c
-+++ b/arch/arm/mach-mvebu/coherency.c
-@@ -44,17 +44,17 @@ static struct of_device_id of_coherency_table[] = {
- };
+diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+index 865bcb651e01..3cfb56f980f3 100644
+--- a/arch/arm/mach-mvebu/pmsu.c
++++ b/arch/arm/mach-mvebu/pmsu.c
+@@ -30,8 +30,15 @@ static void __iomem *pmsu_reset_base;
+ #define PMSU_BASE_OFFSET    0x100
+ #define PMSU_REG_SIZE	    0x1000
  
- /* Function defined in coherency_ll.S */
--int ll_set_cpu_coherent(unsigned int hw_cpu_id);
-+int ll_set_cpu_coherent(void);
+-#define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu)	((cpu * 0x100) + 0x124)
+-#define PMSU_RESET_CTL_OFFSET(cpu)		(cpu * 0x8)
++/* PMSU MP registers */
++#define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu) ((cpu * 0x100) + 0x124)
++
++/* PMSU reset registers */
++#define PMSU_RESET_CTL_OFFSET(cpu)	    (cpu * 0x8)
++
++/* PMSU fabric registers */
++#define L2C_NFABRIC_PM_CTL		    0x4
++#define L2C_NFABRIC_PM_CTL_PWR_DOWN		BIT(20)
  
--int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
-+int set_cpu_coherent(int smp_group_id)
- {
- 	if (!coherency_base) {
--		pr_warn("Can't make CPU %d cache coherent.\n", hw_cpu_id);
-+		pr_warn("Can't make current CPU cache coherent.\n");
- 		pr_warn("Coherency fabric is not initialized\n");
- 		return 1;
- 	}
- 
--	return ll_set_cpu_coherent(hw_cpu_id);
-+	return ll_set_cpu_coherent();
+ static struct of_device_id of_pmsu_table[] = {
+ 	{
+@@ -111,4 +118,17 @@ static int __init armada_370_xp_pmsu_init(void)
+ 	return 0;
  }
  
- static inline void mvebu_hwcc_sync_io_barrier(void)
-@@ -140,7 +140,7 @@ int __init coherency_init(void)
- 		sync_cache_w(&coherency_phys_base);
- 		coherency_base = of_iomap(np, 0);
- 		coherency_cpu_base = of_iomap(np, 1);
--		set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
-+		set_cpu_coherent(0);
- 		of_node_put(np);
- 	}
- 
-diff --git a/arch/arm/mach-mvebu/coherency.h b/arch/arm/mach-mvebu/coherency.h
-index 760226c41353..c7e5df368d98 100644
---- a/arch/arm/mach-mvebu/coherency.h
-+++ b/arch/arm/mach-mvebu/coherency.h
-@@ -16,7 +16,7 @@
- 
- extern unsigned long coherency_phys_base;
- 
--int set_cpu_coherent(unsigned int cpu_id, int smp_group_id);
-+int set_cpu_coherent(int smp_group_id);
- int coherency_init(void);
- 
- #endif	/* __MACH_370_XP_COHERENCY_H */
-diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-index 1f2bcd4b5424..6cb26b919787 100644
---- a/arch/arm/mach-mvebu/coherency_ll.S
-+++ b/arch/arm/mach-mvebu/coherency_ll.S
-@@ -24,9 +24,7 @@
- #include <asm/cp15.h>
- 
- 	.text
--/*
-- * r0: HW CPU id
-- */
++static void armada_370_xp_pmsu_enable_l2_powerdown_onidle(void)
++{
++	u32 reg;
 +
- ENTRY(ll_set_cpu_coherent)
- 	mrc	p15, 0, r1, c1, c0, 0
- 	tst	r1, #CR_M @ Check MMU bit enabled
-@@ -43,9 +41,11 @@ ENTRY(ll_set_cpu_coherent)
- 	ldr	r0, [r0]
- 2:
- 	/* Create bit by cpu index */
--	mov	r3, #(1 << 24)
--	lsl	r1, r3, r1
--ARM_BE8(rev	r1, r1)
-+	mrc	15, 0, r1, cr0, cr0, 5
-+	and	r1, r1, #15
-+	mov	r2, #(1 << 24)
-+	lsl	r1, r2, r1
-+	ARM_BE8(rev	r1, r1)
- 
- 	/* Add CPU to SMP group - Atomic */
- 	add	r3, r0, #ARMADA_XP_CFB_CTL_REG_OFFSET
-diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
-index f30bc8d78871..cf7abe6554f7 100644
---- a/arch/arm/mach-mvebu/headsmp.S
-+++ b/arch/arm/mach-mvebu/headsmp.S
-@@ -31,10 +31,6 @@
- ENTRY(armada_xp_secondary_startup)
-  ARM_BE8(setend	be )			@ go BE8 if entered LE
- 
--	/* Read CPU id */
--	mrc     p15, 0, r1, c0, c0, 5
--	and     r1, r1, #0xF
--
- 	/* Add CPU to coherency fabric */
- 	bl	ll_set_cpu_coherent
- 	b	secondary_startup
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index a6da03f5b24e..a99d71a747f0 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -102,7 +102,7 @@ static void __init armada_xp_smp_prepare_cpus(unsigned int max_cpus)
- 
- 	set_secondary_cpus_clock();
- 	flush_cache_all();
--	set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
-+	set_cpu_coherent(0);
- 
- 	/*
- 	 * In order to boot the secondary CPUs we need to ensure
++	if (pmsu_mp_base == NULL)
++		return;
++
++	/* Enable L2 & Fabric powerdown in Deep-Idle mode - Fabric */
++	reg = readl(pmsu_mp_base + L2C_NFABRIC_PM_CTL);
++	reg |= L2C_NFABRIC_PM_CTL_PWR_DOWN;
++	writel(reg, pmsu_mp_base + L2C_NFABRIC_PM_CTL);
++}
++
+ early_initcall(armada_370_xp_pmsu_init);
 -- 
 1.8.1.2
