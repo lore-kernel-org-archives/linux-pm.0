@@ -1,64 +1,183 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [RFC 0/2] pm,net: Introduce QoS requests per CPU
-Date: Tue, 25 Mar 2014 08:14:07 -0700
-Message-ID: <1395760447.12610.132.camel@edumazet-glaptop2.roam.corp.google.com>
-References: <1395753505-13180-1-git-send-email-amirv@mellanox.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] thermal: provide a way for the governors to have private
+ data for each thermal zone
+Date: Tue, 25 Mar 2014 16:11:44 +0000
+Message-ID: <20140325161144.GB3953@e102654-lin.cambridge.arm.com>
+References: <1394638735-31540-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f42.google.com ([209.85.160.42]:53906 "EHLO
-	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbaCYPOL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Mar 2014 11:14:11 -0400
-In-Reply-To: <1395753505-13180-1-git-send-email-amirv@mellanox.com>
+Received: from service87.mimecast.com ([91.220.42.44]:47560 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753357AbaCYQLv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Mar 2014 12:11:51 -0400
+In-Reply-To: <1394638735-31540-1-git-send-email-javi.merino@arm.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amir Vadai <amirv@mellanox.com>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, yuvali@mellanox.com, Or Gerlitz <ogerlitz@mellanox.com>, Yevgeny Petrilin <yevgenyp@mellanox.com>, idos@mellanox.com
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Punit Agrawal <Punit.Agrawal@arm.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Tue, 2014-03-25 at 15:18 +0200, Amir Vadai wrote:
+On Wed, Mar 12, 2014 at 03:38:55PM +0000, Javi Merino wrote:
+> A governor may need to store its current state between calls to
+> throttle().  That state depends on the thermal zone, so store it as
+> private data in struct thermal_zone_device.
+> 
+> The governors may have two new ops: bind_to_tz() and unbind_from_tz().
+> When provided, these functions allow a governor to do some
+> initialization when it is bound to a tz and possibly store that
+> information in the governor_data field of the struct
+> thermal_zone_device.
+> 
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> 
+> ---
+> Hi,
+> 
+> We are working[1] on a new governor that has a Proportional Integral
+> Derivative (PID) controller in it so we need a way to store its
+> current state.  We're sending this as an RFC as there isn't any user
+> for this in the kernel yet.  Our plan is to include it as part of the
+> series of the governor.  This is an RFC to gather comments and see if
+> this is a valid solution to the problem.
+> 
+> [1] http://article.gmane.org/gmane.linux.power-management.general/43243
+> 
+>  drivers/thermal/thermal_core.c |   49 +++++++++++++++++++++++++++++++++-------
+>  include/linux/thermal.h        |    3 +++
+>  2 files changed, 44 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 71b0ec0..d937083 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -72,6 +72,27 @@ static struct thermal_governor *__find_governor(const char *name)
+>  	return NULL;
+>  }
+>  
+> +static int thermal_set_governor(struct thermal_zone_device *tz,
+> +				struct thermal_governor *gov)
+> +{
+> +	int ret = 0;
+> +
+> +	if (tz->governor && tz->governor->unbind_from_tz)
+> +		tz->governor->unbind_from_tz(tz);
+> +
+> +	if (gov && gov->bind_to_tz) {
+> +		ret = gov->bind_to_tz(tz);
+> +		if (ret) {
+> +			tz->governor = NULL;
+> +			return ret;
+> +		}
+> +	}
+> +
+> +	tz->governor = gov;
+> +
+> +	return ret;
+> +}
+> +
+>  int thermal_register_governor(struct thermal_governor *governor)
+>  {
+>  	int err;
+> @@ -104,8 +125,12 @@ int thermal_register_governor(struct thermal_governor *governor)
+>  
+>  		name = pos->tzp->governor_name;
+>  
+> -		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
+> -			pos->governor = governor;
+> +		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
+> +			int ret = thermal_set_governor(pos, governor);
+> +			if (ret)
+> +				pr_warn("Failed to set governor %s for zone %d: %d\n",
+> +					governor->name, pos->id, ret);
+> +		}
+>  	}
+>  
+>  	mutex_unlock(&thermal_list_lock);
+> @@ -131,7 +156,7 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+>  	list_for_each_entry(pos, &thermal_tz_list, node) {
+>  		if (!strnicmp(pos->governor->name, governor->name,
+>  						THERMAL_NAME_LENGTH))
+> -			pos->governor = NULL;
+> +			thermal_set_governor(pos, NULL);
+>  	}
+>  
+>  	mutex_unlock(&thermal_list_lock);
+> @@ -756,8 +781,9 @@ policy_store(struct device *dev, struct device_attribute *attr,
+>  	if (!gov)
+>  		goto exit;
+>  
+> -	tz->governor = gov;
+> -	ret = count;
+> +	ret = thermal_set_governor(tz, gov);
+> +	if (!ret)
+> +		ret = count;
+>  
+>  exit:
+>  	mutex_unlock(&thermal_governor_lock);
+> @@ -1452,6 +1478,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  	int result;
+>  	int count;
+>  	int passive = 0;
+> +	struct thermal_governor *governor;
+>  
+>  	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+>  		return ERR_PTR(-EINVAL);
+> @@ -1542,9 +1569,15 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  	mutex_lock(&thermal_governor_lock);
+>  
+>  	if (tz->tzp)
+> -		tz->governor = __find_governor(tz->tzp->governor_name);
+> +		governor = __find_governor(tz->tzp->governor_name);
+>  	else
+> -		tz->governor = def_governor;
+> +		governor = def_governor;
+> +
+> +	result = thermal_set_governor(tz, governor);
+> +	if (result) {
+> +		mutex_unlock(&thermal_governor_lock);
+> +		goto unregister;
+> +	}
+>  
+>  	mutex_unlock(&thermal_governor_lock);
+>  
+> @@ -1634,7 +1667,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+>  		device_remove_file(&tz->device, &dev_attr_mode);
+>  	device_remove_file(&tz->device, &dev_attr_policy);
+>  	remove_trip_attrs(tz);
+> -	tz->governor = NULL;
+> +	thermal_set_governor(tz, NULL);
+>  
+>  	thermal_remove_hwmon_sysfs(tz);
+>  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index f7e11c7..baac212 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -177,6 +177,7 @@ struct thermal_zone_device {
+>  	struct thermal_zone_device_ops *ops;
+>  	const struct thermal_zone_params *tzp;
+>  	struct thermal_governor *governor;
+> +	void *governor_data;
+>  	struct list_head thermal_instances;
+>  	struct idr idr;
+>  	struct mutex lock; /* protect thermal_instances list */
+> @@ -187,6 +188,8 @@ struct thermal_zone_device {
+>  /* Structure that holds thermal governor information */
+>  struct thermal_governor {
+>  	char name[THERMAL_NAME_LENGTH];
+> +	int (*bind_to_tz)(struct thermal_zone_device *tz);
+> +	void (*unbind_from_tz)(struct thermal_zone_device *tz);
+>  	int (*throttle)(struct thermal_zone_device *tz, int trip);
+>  	struct list_head	governor_list;
+>  };
+> -- 
+> 1.7.9.5
 
-> The current pm_qos implementation has a problem. During a short pause in a high
-> bandwidth traffic, the kernel can lower the c-state to preserve energy.
-> When the pause ends, and the traffic resumes, the NIC hardware buffers may be
-> overflowed before the CPU starts to process the traffic due to the CPU wake-up
-> latency.
+I guess that no comments means this is a good patch provided there are
+users for this, right?
 
-This is the point I never understood with mlx4
-
-RX ring buffers should allow NIC to buffer quite a large amount of
-incoming frames. But apparently we miss frames, even in a single TCP
-flow. I really cant understand why, as sender in my case do not have
-more than 90 packets in flight (cwnd is limited to 90)
-
-# ethtool -S eth0 | grep error
-     rx_errors: 268
-     tx_errors: 0
-     rx_length_errors: 0
-     rx_over_errors: 40
-     rx_crc_errors: 0
-     rx_frame_errors: 0
-     rx_fifo_errors: 40
-     rx_missed_errors: 40
-     tx_aborted_errors: 0
-     tx_carrier_errors: 0
-     tx_fifo_errors: 0
-     tx_heartbeat_errors: 0
-     tx_window_errors: 0
-# ethtool -g eth0
-Ring parameters for eth0:
-Pre-set maximums:
-RX:		8192
-RX Mini:	0
-RX Jumbo:	0
-TX:		8192
-Current hardware settings:
-RX:		4096
-RX Mini:	0
-RX Jumbo:	0
-TX:		4096
-
-
-
+Cheers,
+Javi
 
