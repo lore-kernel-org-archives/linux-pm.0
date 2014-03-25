@@ -1,57 +1,139 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v5 12/14] ARM: mvebu: Register notifier callback for the cpuidle transition
-Date: Tue, 25 Mar 2014 23:48:23 +0100
-Message-ID: <1395787705-31061-13-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v5 02/14] ARM: mvebu: remove the address parameter for
+ ll_set_cpu_coherent
+Date: Tue, 25 Mar 2014 23:48:13 +0100
+Message-ID: <1395787705-31061-3-git-send-email-gregory.clement@free-electrons.com>
 References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, linux-kernel@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-In order to have well encapsulated code, we use notifier callbacks for
-CPU_PM_ENTER and CPU_PM_EXIT inside the mvebu power management code.
+In order to be able to deal with the MMU enabled and the MMU disabled
+cases, the base address of the coherency registers was passed to the
+function. The address by itself was not interesting as it can't change
+for a given SoC, the only thing we need is to have a distinction
+between the physical or the virtual address.
+
+This patch add a check of the MMU bit to choose the accurate address,
+then the calling function doesn't have to pass this information.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mach-mvebu/pmsu.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm/mach-mvebu/coherency.c    |  6 +++---
+ arch/arm/mach-mvebu/coherency_ll.S | 22 ++++++++++++++++++++--
+ arch/arm/mach-mvebu/headsmp.S      |  9 ---------
+ 3 files changed, 23 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 3fc25d94e893..5812ff4a9b63 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -16,6 +16,7 @@
-  * other SOC units
-  */
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index 4e9d58148ca7..88dd507221fc 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -30,7 +30,7 @@
+ #include "coherency.h"
  
-+#include <linux/cpu_pm.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/of_address.h>
-@@ -266,4 +267,22 @@ static noinline void armada_370_xp_pmsu_idle_restore(void)
- 	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
+ unsigned long coherency_phys_base;
+-static void __iomem *coherency_base;
++void __iomem *coherency_base;
+ static void __iomem *coherency_cpu_base;
+ 
+ /* Coherency fabric registers */
+@@ -44,7 +44,7 @@ static struct of_device_id of_coherency_table[] = {
+ };
+ 
+ /* Function defined in coherency_ll.S */
+-int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
++int ll_set_cpu_coherent(unsigned int hw_cpu_id);
+ 
+ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ {
+@@ -54,7 +54,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ 		return 1;
+ 	}
+ 
+-	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
++	return ll_set_cpu_coherent(hw_cpu_id);
  }
  
-+static int armada_370_xp_cpu_pm_notify(struct notifier_block *self,
-+				    unsigned long action, void *hcpu)
-+{
-+	if (action == CPU_PM_ENTER) {
-+		unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
-+		armada_370_xp_pmsu_set_start_addr(armada_370_xp_cpu_resume,
-+						hw_cpu);
-+	} else if (action == CPU_PM_EXIT) {
-+		armada_370_xp_pmsu_idle_restore();
-+	}
+ static inline void mvebu_hwcc_sync_io_barrier(void)
+diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
+index ee7598fe75db..1f2bcd4b5424 100644
+--- a/arch/arm/mach-mvebu/coherency_ll.S
++++ b/arch/arm/mach-mvebu/coherency_ll.S
+@@ -21,13 +21,27 @@
+ #define ARMADA_XP_CFB_CFG_REG_OFFSET 0x4
+ 
+ #include <asm/assembler.h>
++#include <asm/cp15.h>
+ 
+ 	.text
+ /*
+- * r0: Coherency fabric base register address
+- * r1: HW CPU id
++ * r0: HW CPU id
+  */
+ ENTRY(ll_set_cpu_coherent)
++	mrc	p15, 0, r1, c1, c0, 0
++	tst	r1, #CR_M @ Check MMU bit enabled
++	bne	1f
 +
-+	return NOTIFY_OK;
-+}
++	/* use physical address of the coherency register*/
++	adr	r0, 3f
++	ldr	r3, [r0]
++	ldr	r0, [r0, r3]
++	b	2f
++1:
++	/* use virtual address of the coherency register*/
++	ldr	r0, =coherency_base
++	ldr	r0, [r0]
++2:
+ 	/* Create bit by cpu index */
+ 	mov	r3, #(1 << 24)
+ 	lsl	r1, r3, r1
+@@ -56,3 +70,7 @@ ARM_BE8(rev	r1, r1)
+ 	mov	r0, #0
+ 	mov	pc, lr
+ ENDPROC(ll_set_cpu_coherent)
 +
-+static struct notifier_block armada_370_xp_cpu_pm_notifier = {
-+	.notifier_call = armada_370_xp_cpu_pm_notify,
-+};
-+
- early_initcall(armada_370_xp_pmsu_init);
++	.align 2
++3:
++	.long	coherency_phys_base - .
+diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
+index 3dd80df428f7..f30bc8d78871 100644
+--- a/arch/arm/mach-mvebu/headsmp.S
++++ b/arch/arm/mach-mvebu/headsmp.S
+@@ -31,11 +31,6 @@
+ ENTRY(armada_xp_secondary_startup)
+  ARM_BE8(setend	be )			@ go BE8 if entered LE
+ 
+-	/* Get coherency fabric base physical address */
+-	adr	r0, 1f
+-	ldr	r1, [r0]
+-	ldr	r0, [r0, r1]
+-
+ 	/* Read CPU id */
+ 	mrc     p15, 0, r1, c0, c0, 5
+ 	and     r1, r1, #0xF
+@@ -45,7 +40,3 @@ ENTRY(armada_xp_secondary_startup)
+ 	b	secondary_startup
+ 
+ ENDPROC(armada_xp_secondary_startup)
+-
+-	.align 2
+-1:
+-	.long	coherency_phys_base - .
 -- 
 1.8.1.2
