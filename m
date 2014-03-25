@@ -1,40 +1,76 @@
-From: rosslagerwall@gmail.com
-Subject: Re: [stable request <=3.7] acpi-cpufreq: set current frequency based
- on target P-State
-Date: Tue, 25 Mar 2014 22:18:03 +0000
-Message-ID: <20140325221803.GA32518@hobo.lan>
-References: <20131220081912.GA13684@hobo.Home>
- <1395785057-28903-1-git-send-email-vlee@twopensource.com>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH] ARM: machine_power_off should not return
+Date: Tue, 25 Mar 2014 19:45:55 -0300
+Message-ID: <20140325224554.GC12185@arch.cereza>
+References: <1395684784-12601-1-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <stable-owner@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:49753 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751806AbaCYWqR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Mar 2014 18:46:17 -0400
 Content-Disposition: inline
-In-Reply-To: <1395785057-28903-1-git-send-email-vlee@twopensource.com>
-Sender: stable-owner@vger.kernel.org
-To: Vinson Lee <vlee@twopensource.com>
-Cc: stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+In-Reply-To: <1395684784-12601-1-git-send-email-sebastian.capella@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>, Russell King <linux@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Mar 25, 2014 at 03:04:16PM -0700, Vinson Lee wrote:
-> Hi.
-> 
-> Please backport upstream commit 8673b83bf2f013379453b4779047bf3c6ae387e4 
-> "acpi-cpufreq: set current frequency based on target P-State" to stable 
-> kernels 3.7 and earlier. This patch enables the kernel to control 
-> P-states on several platforms. Without this patch, the kernel was unable 
-> to control P-states on the same platforms.
-> 
-> The upstream patch cleanly applies to 3.7.
-> 
-> A backported patch is needed with the removal of SYSTEM_AMD_MSR_CAPABLE 
-> for kernels 3.6 and earlier.
-> 
+Let's Cc: LAKML, and To: Russell.
 
-I seem to recall that the problem was a regression introduced by commit
-5a1c0228 (cpufreq: Avoid calling cpufreq driver's target() routine if
-target_freq == policy->cur) which was introduced in the 3.8 cycle.  Are
-you sure it is necessary for kernels < 3.8?
+Russell, any comments on this?
 
-Regards
--- 
-Ross Lagerwall
+Without this patch we got the heartbeat's reboot_notifier called twice =
+while
+testing the recent hibernation patches, which was unexpected and produc=
+ed a
+kernel panic: https://lkml.org/lkml/2014/3/19/363
+
+Instead of fixing the heartbeat LED trigger, or the hibernation code, i=
+t
+seems better to fix the ARM machine_power_off, as it's not supposed to =
+return.
+
+On Mar 24, Sebastian Capella wrote:
+> Add loop to prevent return from machine_power_off if
+> pm_power_off is null or does not halt the system.
+> This caused a panic during hibernation testing on Kirkwood
+> Openblocks A6 board.
+>=20
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> Reported-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> ---
+>  arch/arm/kernel/process.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+> index f58b723..6ffdc2c 100644
+> --- a/arch/arm/kernel/process.c
+> +++ b/arch/arm/kernel/process.c
+> @@ -217,6 +217,8 @@ void machine_power_off(void)
+> =20
+>  	if (pm_power_off)
+>  		pm_power_off();
+> +	while (1)
+> +		cpu_relax();
+>  }
+> =20
+>  /*
+> --=20
+> 1.7.9.5
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--=20
+Ezequiel Garc=EDa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
