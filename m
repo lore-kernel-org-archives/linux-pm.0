@@ -1,55 +1,62 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
-Date: Tue, 25 Mar 2014 11:48:59 -0700
-Message-ID: <CADHgK6tqYH=47LJkJfg3ktormiJHimc3dQxg5vTAJm8H0NO6Wg@mail.gmail.com>
-References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
-	<1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
-	<20140316070917.GA3094@arch.cereza>
-	<CADHgK6s58EJyJxB-47K8w26H8ZCBFQ2zu7PGAQU9O+2g7=fPwA@mail.gmail.com>
-	<20140317204410.GA1118@arch.cereza>
-	<CADHgK6tHngKVZS=jo=VYt3Nt3dhiEmiWr28iDy7q_uR9goBj=Q@mail.gmail.com>
-	<20140319154434.GA3488@arch.cereza>
-	<CADHgK6vLB3h0zrdpve=ZyjNu2pe1VYsGxrYgv=2C-JV37vE9tQ@mail.gmail.com>
-	<CADHgK6vkwjXyJxRcOXjJpJJaR0-YR869NpPZ+CBBS8kEdE0qCQ@mail.gmail.com>
-	<5331CD43.1010601@ahsoftware.de>
+From: Andreas Noever <andreas.noever@gmail.com>
+Subject: Re: how to trigger pcieport runtime suspend?
+Date: Tue, 25 Mar 2014 20:18:47 +0100
+Message-ID: <CAMxnaaUnm0Gez1UOtRP3raBEVbEg7gWXbwDUGOCcMnktKT8xFA@mail.gmail.com>
+References: <CAErSpo5yOEqHZmWZ3j8NQs_DapmkegDTm8uLJCS2uCKvTvtT6Q@mail.gmail.com>
+ <Pine.LNX.4.44L0.1403241316280.1197-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5331CD43.1010601@ahsoftware.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alexander Holler <holler@ahsoftware.de>
-Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Len Brown <len.brown@intel.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Russell King <linux@arm.linux.org.uk>, Jonathan Austin <jonathan.austin@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Victor Kamensky <victor.kamensky@linaro.org>, Will Deacon <will.deacon@arm.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Sricharan R <r.sricharan@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Russ Dill <Russ.Dill@ti.com>, Nicolas Pitre <nico@linaro.org>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Laura Abbott <lauraa@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Boyd <sboyd@codeaurora>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1403241316280.1197-100000@iolanthe.rowland.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alexander,
-
-Thanks for your comments.
-
-I've posted a different solution for arm only here, that just causes a
-while loop in machine_power_off in the event it's called but does not
-halt.
-
-https://lkml.org/lkml/2014/3/24/299
-
-On 25 March 2014 11:38, Alexander Holler <holler@ahsoftware.de> wrote:
-> Both states, power off and sys halt, do sound pretty final and I would
-> assume something is broken, if power off is called before sys halt or vice
-> versa. At least I would never expect that the reboot/poweroff/syshalt
-> notifier may be called twice (and thats why the heartbeat-trigger may
-> crash).
+On Mon, Mar 24, 2014 at 6:19 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 24 Mar 2014, Bjorn Helgaas wrote:
 >
-> But just in case, changing that behaviour in ledtrig-heartbeat.c would be
-> pretty easy, just remove the heartbeat_reboot_notifier (which plays nice and
-> deregisters the trigger on reboot) and use the panic_notifier (which doesn't
-> unregister the trigger but just turns off the led) for reboot too. Another
-> solution would be to unregister the reboot_notifier in the reboot_nofifier
-> itself. I've just seen one watchdog driver (drivers/rtc/rtc-m41t80.c) which
-> does that. But I still think such shouldn't be necessary (and I haven't had
-> a look at other reboot_notifier users).
+>> [+cc Rafael, Pavel, linux-pm]
+>>
+>> On Sun, Mar 23, 2014 at 12:16 PM, Andreas Noever
+>> <andreas.noever@gmail.com> wrote:
+>> > The pcieport driver defines runtime_suspend and runtime_resume methods
+>> > (pcie_port_runtime_suspend/resume in portdrv_pci.c). I am trying to
+>> > trigger that code. But I cannot get power/runtime_usage to drop to
+>> > zero.
+>> >
+>> > Initially power/runtime_usage is set to 2. The 2 comes (imho) from:
+>> > pci_pm_init -> pm_runtime_forbid
+>> > local_pci_probe -> pm_runtime_get_sync
+>> >
+>> > The pm_runtime_forbid can be undone with echo auto > power/control,
+>> > but the second one seems to never go away. local_pci_probe spots the
+>> > following comment:
+>> > "If the driver supports runtime PM, it should call
+>> > pm_runtime_put_noidle() in its probe routine and
+>> > pm_runtime_get_noresume() in its remove routine." I cannot find any
+>> > such calls in the pcieport driver (or in the port service drivers).
+>> >
+>> > What am I missing?
+>
+> You're not missing anything, but apparently the people who added
+> runtime PM support to the pcieport driver missed the comment you
+> quoted.
+>
+> If you add those calls to the driver, does it do what you want?
+If I add that call and remove the pme_poll check in
+pcie_port_runtime_idle (pme_poll seems to be set for all devices) then
+it seems to work. The bridge goes to D3 if no device is present or if
+all devices below it are in D3. It even reacts to hotplug events while
+in D3. I'm not sure that everything *really* works as I cannot see any
+code that would call resume/suspend on the individual port service
+drivers (as compared to the system suspend path). It probably just
+works by accident.
 
-I hope this will all be handled by the loop in machine_power_off, so
-maybe this will not be needed.
+Anyhow, the reason I was trying to do this is, is that I observed
+different behavior from a device in runtime D3 as compared to system
+suspend. I thought it might have something to do with the power status
+of the parent bridge, but that turned out to be not the case... back
+to square one.
 
-Thanks!
-
-Sebastian
+Andreas
