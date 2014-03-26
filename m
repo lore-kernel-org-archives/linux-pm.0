@@ -1,67 +1,57 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: provide a way for the governors to have private
- data for each thermal zone
-Date: Wed, 26 Mar 2014 14:29:17 +0000
-Message-ID: <20140326142917.GD2779@e102654-lin.cambridge.arm.com>
-References: <1394638735-31540-1-git-send-email-javi.merino@arm.com>
- <20140325161144.GB3953@e102654-lin.cambridge.arm.com>
- <1395802562.2330.21.camel@rzhang1-mobl4>
- <20140326094149.GA2779@e102654-lin.cambridge.arm.com>
- <744357E9AAD1214791ACBA4B0B9092630122626D@SHSMSX101.ccr.corp.intel.com>
+From: Amir Vadai <amirv@mellanox.com>
+Subject: Re: [RFC 1/2] pm: Introduce QoS requests per CPU
+Date: Wed, 26 Mar 2014 17:40:15 +0200
+Message-ID: <5332F4DF.2030106@mellanox.com>
+References: <1395753505-13180-1-git-send-email-amirv@mellanox.com> <1395753505-13180-2-git-send-email-amirv@mellanox.com> <2896374.SoOPVJXu9Q@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:55699 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755043AbaCZO3W convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 10:29:22 -0400
-In-Reply-To: <744357E9AAD1214791ACBA4B0B9092630122626D@SHSMSX101.ccr.corp.intel.com>
-Content-Disposition: inline
+Received: from eu1sys200aog106.obsmtp.com ([207.126.144.121]:34937 "EHLO
+	eu1sys200aog106.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753573AbaCZPl3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 11:41:29 -0400
+In-Reply-To: <2896374.SoOPVJXu9Q@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Wei Ni <wni@nvidia.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "David S. Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, yuvali@mellanox.com, Or Gerlitz <ogerlitz@mellanox.com>, Yevgeny Petrilin <yevgenyp@mellanox.com>, idos@mellanox.com, hadarh@mellanox.com
 
-On Wed, Mar 26, 2014 at 02:06:06PM +0000, Zhang, Rui wrote:
-> > diff
-> > > > > --git a/include/linux/thermal.h b/include/linux/thermal.h index
-> > > > > f7e11c7..baac212 100644
-> > > > > --- a/include/linux/thermal.h
-> > > > > +++ b/include/linux/thermal.h
-> > > > > @@ -177,6 +177,7 @@ struct thermal_zone_device {
-> > > > >  	struct thermal_zone_device_ops *ops;
-> > > > >  	const struct thermal_zone_params *tzp;
-> > > > >  	struct thermal_governor *governor;
-> > > > > +	void *governor_data;
-> > >
-> > > I do not see how .governor_data is used in this patch, perhaps it is
-> > > used in .bind_to_tz() callback?
-> > 
-> > Yes, it's meant to be used in bind_to_tz()
-> > 
-> > > If yes, the governor_data is registered by platform thermal zone
-> > > driver, and used by the same driver only, right?
-> > 
-> > No, it's registered by the governor.
-> > 
-> When? Tz->governor_data is set in governor->bind_to_tz(tz)?
+[This mail might be double posted due to problems I have with the mail 
+server]
 
-That's the idea.  The governor can set tz->governor_data if it needs
-to and can initialise it in bind_to_tz()
+On 25/03/14 19:44 +0100, Rafael J. Wysocki wrote:
+> On Tuesday, March 25, 2014 03:18:24 PM Amir Vadai wrote:
+> > Extend the current pm_qos_request API - to have pm_qos_request per core.
+> > When a global request is added, it is added under the global plist.
+> > When a core specific request is added, it is added to the core specific
+> > list.
+> > core number is saved in the request and later modify/delete operations
+> > are using it to access the right list.
+> >
+> > When a cpu specific request is added/removed/updated, the target value
+> > of the specific core is recalculated to be the min/max (according to the
+> > constrain type) value of all the global and the cpu specific
+> > constraints.
+> >
+> > If a global request is added/removed/updated, the target values of all
+> > the cpu's are recalculated.
+> >
+> > During initialization, before the cpu specific data structures are
+> > allocated and initialized, only global target value is begin used.
+>
+> I have to review this in detail (which rather won't be possible before
+> the next week), but in principle I don't really like it, because it
+> assumes that its users will know what's going to run on which CPU cores
+> and I'm not sure where that knowledge is going to come from.
+>
 
-Cheers,
-Javi
+The network driver can use affinity hint and irq balancer to set the
+affinity of IRQ (and rx ring) to a core. A stream is tied to an rx
+ring by RSS/Flow steering. So, if we have an active flow, we can know
+which CPU will be used.
+The feature could be turned off by default and be used only when the
+driver has all the needed information.
 
-> > > Then it is not necessary to have this in struct thermal_zone_device,
-> > > because we can handle the data in the platform thermal driver
-> > > entirely, right?
-> > 
-> > You could store it in the governor but as it's different for each
-> > thermal zone
-> 
-> Okay, I see. then I have no objection.
-> 
-> Thanks,
-> rui
-
+Thank you for your time,
+Amir
