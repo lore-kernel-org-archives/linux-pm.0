@@ -1,97 +1,56 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH] tick,
- broadcast: Prevent false alarm when force mask contains offline cpus
-Date: Wed, 26 Mar 2014 09:26:48 +0530
-Message-ID: <20140326035648.21736.85740.stgit@preeti.in.ibm.com>
+From: Yevgeny Petrilin <yevgenyp@mellanox.com>
+Subject: RE: [RFC 0/2] pm,net: Introduce QoS requests per CPU
+Date: Wed, 26 Mar 2014 07:12:28 +0000
+Message-ID: <953B660C027164448AE903364AC447D2DBE89CEB@MTLDAG01.mtl.com>
+References: <1395753505-13180-1-git-send-email-amirv@mellanox.com>
+	 <1395760447.12610.132.camel@edumazet-glaptop2.roam.corp.google.com>
+ <1395787649.28354.40.camel@deadeye.wl.decadent.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e38.co.us.ibm.com ([32.97.110.159]:56321 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbaCZEAt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 00:00:49 -0400
-Received: from /spool/local
-	by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Tue, 25 Mar 2014 22:00:48 -0600
+Received: from eu1sys200aog123.obsmtp.com ([207.126.144.155]:48978 "EHLO
+	eu1sys200aog123.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753055AbaCZHRW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 03:17:22 -0400
+In-Reply-To: <1395787649.28354.40.camel@deadeye.wl.decadent.org.uk>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, srivatsa.bhat@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, davem@davemloft.net
+To: Ben Hutchings <ben@decadent.org.uk>, Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Amir Vadai <amirv@mellanox.com>, "David S. Miller" <davem@davemloft.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Yuval Itkin <yuvali@mellanox.com>, Or Gerlitz <ogerlitz@mellanox.com>, Ido Shamay <idos@mellanox.com>
 
-Its possible that the tick_broadcast_force_mask contains cpus which are not
-in cpu_online_mask when a broadcast tick occurs. This could happen under the
-following circumstance assuming CPU1 is among the CPUs waiting for broadcast.
-
-CPU0					CPU1
-
-Run CPU_DOWN_PREPARE notifiers
-
-Start stop_machine			Gets woken up by IPI to run
-					stop_machine, sets itself in
-					tick_broadcast_force_mask if the
-					time of broadcast interrupt is around
-					the same time as this IPI.
-
-					Start stop_machine
-					  set_cpu_online(cpu1, false)
-End stop_machine			End stop_machine
-
-Broadcast interrupt
-  Finds that cpu1 in
-  tick_broadcast_force_mask is offline
-  and triggers the WARN_ON in
-  tick_handle_oneshot_broadcast()
-
-Clears all broadcast masks
-in CPU_DEAD stage.
-
-This WARN_ON was added to capture scenarios where the broadcast mask, be it
-oneshot/pending/force_mask contain offline cpus whose tick devices have been
-removed. But here is a case where we trigger the warn on in a valid scenario.
-
-One could argue that the scenario is invalid and ought to be warned against
-because ideally the broadcast masks need to be cleared of the cpus about to
-go offine before clearing them in the online_mask so that we dont hit these
-scenarios.
-
-This would mean clearing the masks in CPU_DOWN_PREPARE stage. But
-it is quite possible that this stage itself will fail and cpu hotplug will
-not go through. We would then end up in a situation where the cpu has not gone
-offline, and continues to wait for the broadcast interrupt like before.
-  However it is cleared in the broadcast masks and this interrupt will never
-be delivered. Hence clearing of masks is best kept off until we are sure that
-the cpu is dead, i.e. in the CPU_DEAD stage.
-
-Hence simply ensure that the tick_broadcast_force_mask is a subset of the
-online cpus to take care of rare occurences such as above. Moreover this is
-not a harmful scenario where the cpu is in the mask but its tick device was
-shutdown. The WARN_ON will then continue to capture cases where we could
-possibly cause a kernel crash.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
-
- kernel/time/tick-broadcast.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index 63c7b2d..30b8731 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -606,7 +606,12 @@ again:
- 	 */
- 	cpumask_clear_cpu(smp_processor_id(), tick_broadcast_pending_mask);
- 
--	/* Take care of enforced broadcast requests */
-+	/* Take care of enforced broadcast requests. We could have offline
-+	 * cpus in the tick_broadcast_force_mask. Thats ok, we got the interrupt
-+	 * before we could clear the mask.
-+	 */
-+	cpumask_and(tick_broadcast_force_mask,
-+			tick_broadcast_force_mask, cpu_online_mask);
- 	cpumask_or(tmpmask, tmpmask, tick_broadcast_force_mask);
- 	cpumask_clear(tick_broadcast_force_mask);
- 
-
+PiA+ID4gVGhlIGN1cnJlbnQgcG1fcW9zIGltcGxlbWVudGF0aW9uIGhhcyBhIHByb2JsZW0uIER1
+cmluZyBhIHNob3J0IHBhdXNlIGluIGEgaGlnaA0KPiA+ID4gYmFuZHdpZHRoIHRyYWZmaWMsIHRo
+ZSBrZXJuZWwgY2FuIGxvd2VyIHRoZSBjLXN0YXRlIHRvIHByZXNlcnZlIGVuZXJneS4NCj4gPiA+
+IFdoZW4gdGhlIHBhdXNlIGVuZHMsIGFuZCB0aGUgdHJhZmZpYyByZXN1bWVzLCB0aGUgTklDIGhh
+cmR3YXJlIGJ1ZmZlcnMgbWF5IGJlDQo+ID4gPiBvdmVyZmxvd2VkIGJlZm9yZSB0aGUgQ1BVIHN0
+YXJ0cyB0byBwcm9jZXNzIHRoZSB0cmFmZmljIGR1ZSB0byB0aGUgQ1BVIHdha2UtdXANCj4gPiA+
+IGxhdGVuY3kuDQo+ID4NCj4gPiBUaGlzIGlzIHRoZSBwb2ludCBJIG5ldmVyIHVuZGVyc3Rvb2Qg
+d2l0aCBtbHg0DQo+ID4NCj4gPiBSWCByaW5nIGJ1ZmZlcnMgc2hvdWxkIGFsbG93IE5JQyB0byBi
+dWZmZXIgcXVpdGUgYSBsYXJnZSBhbW91bnQgb2YNCj4gPiBpbmNvbWluZyBmcmFtZXMuIEJ1dCBh
+cHBhcmVudGx5IHdlIG1pc3MgZnJhbWVzLCBldmVuIGluIGEgc2luZ2xlIFRDUA0KPiA+IGZsb3cu
+IEkgcmVhbGx5IGNhbnQgdW5kZXJzdGFuZCB3aHksIGFzIHNlbmRlciBpbiBteSBjYXNlIGRvIG5v
+dCBoYXZlDQo+ID4gbW9yZSB0aGFuIDkwIHBhY2tldHMgaW4gZmxpZ2h0IChjd25kIGlzIGxpbWl0
+ZWQgdG8gOTApDQo+IFsuLi5dDQo+IA0KPiBUaGUgdGltZSB0YWtlbiBmb3Igc29mdHdhcmUgdG8g
+Y2xlYW4gdGhlIFJYIHJpbmcgaXMgb25seSBoYWxmIHRoZSBzdG9yeS4NCj4gDQo+IEEgRE1BIHdy
+aXRlIHJlcXVpcmVzIGV2ZXJ5IENQVSdzIGNhY2hlIGNvbnRyb2xsZXIgdG8gaW52YWxpZGF0ZSBh
+ZmZlY3RlZA0KPiBjYWNoZSBsaW5lcy4gIEl0IG1heSBhbHNvIHJlcXVpcmUgcmVhZGluZyBmcm9t
+IGNhY2hlLCBpZiB0aGUgd3JpdGUNCj4gY292ZXJzIG9ubHkgcGFydCBvZiBhIGNhY2hlIGxpbmUu
+ICBTbyBhdCBsZWFzdCB0aGUgY2FjaGUgY29udHJvbGxlcnMNCj4gbmVlZCB0byBiZSB3b2tlbiBm
+cm9tIHNsZWVwLCBhbmQgdW50aWwgdGhlbiBhbGwgRE1BIHdyaXRlcyBtdXN0IGJlDQo+IGJ1ZmZl
+cmVkIGluIHNvbWUgY29tYmluYXRpb24gb2YgQ1BVcywgYnJpZGdlcyBhbmQgdGhlIG5ldHdvcmsN
+Cj4gY29udHJvbGxlcidzIFJYIEZJRk9zLiAgSWYgdGhvc2UgYnVmZmVycyBhcmVuJ3QgbG9uZyBl
+bm91Z2ggZm9yIHRoZQ0KPiBkZWxheSwgcGFja2V0cyB3aWxsIGJlIGRyb3BwZWQuICAoRXRoZXJu
+ZXQgZmxvdyBjb250cm9sIG1heSBoZWxwIHdpdGgNCj4gdGhpcywgaWYgZW5hYmxlZC4pDQo+IA0K
+PiBCYWNrIGluIDIwMDcsIGNvbGxlYWd1ZXMgYXQgU29sYXJmbGFyZSBtZWFzdXJlZCBETUEgd3Jp
+dGUgZGVsYXlzIG9mDQo+IGFib3V0IDEwIHVzIHdoZW4gQ1BVcyBoYWQgdG8gYmUgd29rZW4gdXAs
+IHJpc2luZyB0byA0MC01MCB1cyBmb3Igb25lDQo+IGJ1Z2d5IEludGVsIG1vZGVsLiAgVGhpcyBt
+b3RpdmF0ZWQgYSBsYXJnZSBpbmNyZWFzZSB0byBSWCBGSUZPIHNpemUgaW4NCj4gdGhlIFNGQzQw
+MDBCIGFuZCBzdWJzZXF1ZW50IGNvbnRyb2xsZXJzLg0KPiANClRoaXMgaXMgZXhhY3RseSB0aGUg
+c3RvcnkgaGVyZS4NCk5vdCBhbGwgTklDcyBoYXZlIEhXIGJ1ZmZlcnMgd2hpY2ggYXJlIGJpZyBl
+bm91Z2guIEFuZCBmb3IgdGhvc2Ugd2hvIGRvbid0LA0KY2hhbmdpbmcgYy1zdGF0ZXMgd291bGQg
+Y2F1c2UgYSBwYWNrZXQgZHJvcCB3aXRoIGJ1cnN0IHRyYWZmaWMsDQpldmVuIGlmIHRoZSBudW1i
+ZXIgb2YgcGFja2V0cyBpcyBsb3dlciB0aGFuIHRoZSByaW5nIHNpemUuDQpJbmRlZWQsIGZsb3cg
+Y29udHJvbCBjb3VsZCBwcmV2ZW50IHRob3NlIGRyb3BzLCBidXQgaW4gbWFueSBjYXNlcyBpdCBp
+cyBub3QgZW5hYmxlZC4NCg0KWWV2Z2VueSANCg==
