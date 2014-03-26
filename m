@@ -1,67 +1,64 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v5 00/14] CPU idle for Armada XP
-Date: Wed, 26 Mar 2014 10:53:26 +0100
-Message-ID: <5332A396.50802@free-electrons.com>
-References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com> <20140326004223.GL28304@titan.lakedaemon.net>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH] ARM: machine_power_off should not return
+Date: Wed, 26 Mar 2014 07:12:27 -0300
+Message-ID: <20140326101227.GC941@arch.cereza>
+References: <1395684784-12601-1-git-send-email-sebastian.capella@linaro.org>
+ <20140325224554.GC12185@arch.cereza>
+ <20140326005115.GW7528@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:51920 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:52015 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751130AbaCZJxa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 05:53:30 -0400
-In-Reply-To: <20140326004223.GL28304@titan.lakedaemon.net>
+	with ESMTP id S1753545AbaCZKMu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 06:12:50 -0400
+Content-Disposition: inline
+In-Reply-To: <20140326005115.GW7528@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org
 
-On 26/03/2014 01:42, Jason Cooper wrote:
-> Gregory,
-> 
-> On Tue, Mar 25, 2014 at 11:48:11PM +0100, Gregory CLEMENT wrote:
-> ...
->> The first patch should go through ARM subsystem and should be taken by
->> Russell King. I made few change on it following Lorenzo advice and
->> now it will reuse the cpu v7 suspend and resume function and just do
->> specific operation before calling them.
->>
->> The 13th patch 'cpuidle: mvebu: Add initial cpu idle support for
->> Armada 370/XP SoC' is the only one who should go to the cpuidle
->> subsystem. But of course I would like that Daniel Lezcano or Rafael
->> J. Wysocki have a look on the whole series and especially patches 10,
->> 12 and 14.
-> 
-> Ok, I'm tired.  :)  Help me out here.  Patches 1 and 13 are depended on
-> by the other patches and vice-versa, right?  In that case, I'm thinking
-> it's best to seek Acks from the other maintainers and keep the whole
-> branch together.  Please tell me if I'm wrong.
-> 
+Russell,
 
-Actually for the build there is no dependencies between patch 1, 13 and the
-other ones.
+Thanks for the reply!
 
-About running the kernel obviously you need the full series to have the CPU
-idle working, but if patch 13 is not applied or if it is applied alone, the
-kernel won't crash, the only consequence will be that the cpu idle driver won't
-be loaded.
+On Mar 26, Russell King - ARM Linux wrote:
+> On Tue, Mar 25, 2014 at 07:45:55PM -0300, Ezequiel Garcia wrote:
+> >=20
+> > Without this patch we got the heartbeat's reboot_notifier called tw=
+ice while
+> > testing the recent hibernation patches, which was unexpected and pr=
+oduced a
+> > kernel panic: https://lkml.org/lkml/2014/3/19/363
+>=20
+> I don't see why we should make this change.  kernel/reboot.c handles
+> this function returning, so other places should do too.
+>=20
+> Even on x86, this function can return:
+>=20
+[..]
+>=20
+> Therefore, I'd say... it's a bug in the hibernation code - or we prob=
+ably
+> have many buggy architectures.  I'd suggest fixing the hibernation co=
+de
+> rather than stuffing some workaround like an endless loop into every
+> architecture.
+>=20
 
-If all patches are applied except patch 1 then we could experiment some issues.
-However, now the the amount of code is very small in this patch, I planed
-to submit it to Russell King's patch system soon.
+Which is exactly what Sebastian did first:
 
-About patch 13, I agree that if Daniel and Rafael agree to give their acked-by,
-it will be easier to handle if you can take it in a single series, but it is not
-mandatory.
+https://lkml.org/lkml/2014/3/20/605
 
-Thanks,
+But Pavel asked to fix ARM's machine_power_off instead.
 
-Gregory
-
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
+Also, looking at the other architectures, it seems this API is not well
+defined: some of them have an infinite loop, some don't. So it's hard t=
+o
+say the function is supposed to return or not.
+--=20
+Ezequiel Garc=EDa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
 http://free-electrons.com
