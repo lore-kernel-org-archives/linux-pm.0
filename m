@@ -1,56 +1,64 @@
-From: Yevgeny Petrilin <yevgenyp@mellanox.com>
-Subject: RE: [RFC 0/2] pm,net: Introduce QoS requests per CPU
-Date: Wed, 26 Mar 2014 07:12:28 +0000
-Message-ID: <953B660C027164448AE903364AC447D2DBE89CEB@MTLDAG01.mtl.com>
-References: <1395753505-13180-1-git-send-email-amirv@mellanox.com>
-	 <1395760447.12610.132.camel@edumazet-glaptop2.roam.corp.google.com>
- <1395787649.28354.40.camel@deadeye.wl.decadent.org.uk>
+From: rosslagerwall@gmail.com
+Subject: Re: [stable request <=3.7] acpi-cpufreq: set current frequency based
+ on target P-State
+Date: Wed, 26 Mar 2014 07:22:32 +0000
+Message-ID: <20140326072232.GA777@hobo.lan>
+References: <20131220081912.GA13684@hobo.Home>
+ <1395785057-28903-1-git-send-email-vlee@twopensource.com>
+ <20140325221803.GA32518@hobo.lan>
+ <CAHTgTXVEjNUMkrTNSyu+TtXc+Ac5PsD8Sp4m-7Md6UNwQfwkJQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu1sys200aog123.obsmtp.com ([207.126.144.155]:48978 "EHLO
-	eu1sys200aog123.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753055AbaCZHRW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 03:17:22 -0400
-In-Reply-To: <1395787649.28354.40.camel@deadeye.wl.decadent.org.uk>
-Content-Language: en-US
+Received: from mail-we0-f179.google.com ([74.125.82.179]:36947 "EHLO
+	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbaCZHW1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 03:22:27 -0400
+Content-Disposition: inline
+In-Reply-To: <CAHTgTXVEjNUMkrTNSyu+TtXc+Ac5PsD8Sp4m-7Md6UNwQfwkJQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ben Hutchings <ben@decadent.org.uk>, Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Amir Vadai <amirv@mellanox.com>, "David S. Miller" <davem@davemloft.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Yuval Itkin <yuvali@mellanox.com>, Or Gerlitz <ogerlitz@mellanox.com>, Ido Shamay <idos@mellanox.com>
+To: Vinson Lee <vlee@twopensource.com>
+Cc: stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shatil Rafiullah <srafiullah@twopensource.com>
 
-PiA+ID4gVGhlIGN1cnJlbnQgcG1fcW9zIGltcGxlbWVudGF0aW9uIGhhcyBhIHByb2JsZW0uIER1
-cmluZyBhIHNob3J0IHBhdXNlIGluIGEgaGlnaA0KPiA+ID4gYmFuZHdpZHRoIHRyYWZmaWMsIHRo
-ZSBrZXJuZWwgY2FuIGxvd2VyIHRoZSBjLXN0YXRlIHRvIHByZXNlcnZlIGVuZXJneS4NCj4gPiA+
-IFdoZW4gdGhlIHBhdXNlIGVuZHMsIGFuZCB0aGUgdHJhZmZpYyByZXN1bWVzLCB0aGUgTklDIGhh
-cmR3YXJlIGJ1ZmZlcnMgbWF5IGJlDQo+ID4gPiBvdmVyZmxvd2VkIGJlZm9yZSB0aGUgQ1BVIHN0
-YXJ0cyB0byBwcm9jZXNzIHRoZSB0cmFmZmljIGR1ZSB0byB0aGUgQ1BVIHdha2UtdXANCj4gPiA+
-IGxhdGVuY3kuDQo+ID4NCj4gPiBUaGlzIGlzIHRoZSBwb2ludCBJIG5ldmVyIHVuZGVyc3Rvb2Qg
-d2l0aCBtbHg0DQo+ID4NCj4gPiBSWCByaW5nIGJ1ZmZlcnMgc2hvdWxkIGFsbG93IE5JQyB0byBi
-dWZmZXIgcXVpdGUgYSBsYXJnZSBhbW91bnQgb2YNCj4gPiBpbmNvbWluZyBmcmFtZXMuIEJ1dCBh
-cHBhcmVudGx5IHdlIG1pc3MgZnJhbWVzLCBldmVuIGluIGEgc2luZ2xlIFRDUA0KPiA+IGZsb3cu
-IEkgcmVhbGx5IGNhbnQgdW5kZXJzdGFuZCB3aHksIGFzIHNlbmRlciBpbiBteSBjYXNlIGRvIG5v
-dCBoYXZlDQo+ID4gbW9yZSB0aGFuIDkwIHBhY2tldHMgaW4gZmxpZ2h0IChjd25kIGlzIGxpbWl0
-ZWQgdG8gOTApDQo+IFsuLi5dDQo+IA0KPiBUaGUgdGltZSB0YWtlbiBmb3Igc29mdHdhcmUgdG8g
-Y2xlYW4gdGhlIFJYIHJpbmcgaXMgb25seSBoYWxmIHRoZSBzdG9yeS4NCj4gDQo+IEEgRE1BIHdy
-aXRlIHJlcXVpcmVzIGV2ZXJ5IENQVSdzIGNhY2hlIGNvbnRyb2xsZXIgdG8gaW52YWxpZGF0ZSBh
-ZmZlY3RlZA0KPiBjYWNoZSBsaW5lcy4gIEl0IG1heSBhbHNvIHJlcXVpcmUgcmVhZGluZyBmcm9t
-IGNhY2hlLCBpZiB0aGUgd3JpdGUNCj4gY292ZXJzIG9ubHkgcGFydCBvZiBhIGNhY2hlIGxpbmUu
-ICBTbyBhdCBsZWFzdCB0aGUgY2FjaGUgY29udHJvbGxlcnMNCj4gbmVlZCB0byBiZSB3b2tlbiBm
-cm9tIHNsZWVwLCBhbmQgdW50aWwgdGhlbiBhbGwgRE1BIHdyaXRlcyBtdXN0IGJlDQo+IGJ1ZmZl
-cmVkIGluIHNvbWUgY29tYmluYXRpb24gb2YgQ1BVcywgYnJpZGdlcyBhbmQgdGhlIG5ldHdvcmsN
-Cj4gY29udHJvbGxlcidzIFJYIEZJRk9zLiAgSWYgdGhvc2UgYnVmZmVycyBhcmVuJ3QgbG9uZyBl
-bm91Z2ggZm9yIHRoZQ0KPiBkZWxheSwgcGFja2V0cyB3aWxsIGJlIGRyb3BwZWQuICAoRXRoZXJu
-ZXQgZmxvdyBjb250cm9sIG1heSBoZWxwIHdpdGgNCj4gdGhpcywgaWYgZW5hYmxlZC4pDQo+IA0K
-PiBCYWNrIGluIDIwMDcsIGNvbGxlYWd1ZXMgYXQgU29sYXJmbGFyZSBtZWFzdXJlZCBETUEgd3Jp
-dGUgZGVsYXlzIG9mDQo+IGFib3V0IDEwIHVzIHdoZW4gQ1BVcyBoYWQgdG8gYmUgd29rZW4gdXAs
-IHJpc2luZyB0byA0MC01MCB1cyBmb3Igb25lDQo+IGJ1Z2d5IEludGVsIG1vZGVsLiAgVGhpcyBt
-b3RpdmF0ZWQgYSBsYXJnZSBpbmNyZWFzZSB0byBSWCBGSUZPIHNpemUgaW4NCj4gdGhlIFNGQzQw
-MDBCIGFuZCBzdWJzZXF1ZW50IGNvbnRyb2xsZXJzLg0KPiANClRoaXMgaXMgZXhhY3RseSB0aGUg
-c3RvcnkgaGVyZS4NCk5vdCBhbGwgTklDcyBoYXZlIEhXIGJ1ZmZlcnMgd2hpY2ggYXJlIGJpZyBl
-bm91Z2guIEFuZCBmb3IgdGhvc2Ugd2hvIGRvbid0LA0KY2hhbmdpbmcgYy1zdGF0ZXMgd291bGQg
-Y2F1c2UgYSBwYWNrZXQgZHJvcCB3aXRoIGJ1cnN0IHRyYWZmaWMsDQpldmVuIGlmIHRoZSBudW1i
-ZXIgb2YgcGFja2V0cyBpcyBsb3dlciB0aGFuIHRoZSByaW5nIHNpemUuDQpJbmRlZWQsIGZsb3cg
-Y29udHJvbCBjb3VsZCBwcmV2ZW50IHRob3NlIGRyb3BzLCBidXQgaW4gbWFueSBjYXNlcyBpdCBp
-cyBub3QgZW5hYmxlZC4NCg0KWWV2Z2VueSANCg==
+On Tue, Mar 25, 2014 at 03:53:40PM -0700, Vinson Lee wrote:
+> On Tue, Mar 25, 2014 at 3:18 PM,  <rosslagerwall@gmail.com> wrote:
+> > On Tue, Mar 25, 2014 at 03:04:16PM -0700, Vinson Lee wrote:
+> >> Hi.
+> >>
+> >> Please backport upstream commit 8673b83bf2f013379453b4779047bf3c6ae387e4
+> >> "acpi-cpufreq: set current frequency based on target P-State" to stable
+> >> kernels 3.7 and earlier. This patch enables the kernel to control
+> >> P-states on several platforms. Without this patch, the kernel was unable
+> >> to control P-states on the same platforms.
+> >>
+> >> The upstream patch cleanly applies to 3.7.
+> >>
+> >> A backported patch is needed with the removal of SYSTEM_AMD_MSR_CAPABLE
+> >> for kernels 3.6 and earlier.
+> >>
+> >
+> > I seem to recall that the problem was a regression introduced by commit
+> > 5a1c0228 (cpufreq: Avoid calling cpufreq driver's target() routine if
+> > target_freq == policy->cur) which was introduced in the 3.8 cycle.  Are
+> > you sure it is necessary for kernels < 3.8?
+> >
+> > Regards
+> > --
+> > Ross Lagerwall
+> 
+> 
+> This specific patch allows P-states to work with the 3.4 kernel on
+> several hardware platforms.
+> 
+> Perhaps this is not the correct patch to backport. However, P-states
+> are not working properly with the 3.4 kernel, even though it does not
+> have the regression commit 5a1c0228 "cpufreq: Avoid calling cpufreq
+> driver's target() routine if target_freq == policy->cur" backported.
+> 
+
+Fair enough,
+
+Cheers
+-- 
+Ross Lagerwall
