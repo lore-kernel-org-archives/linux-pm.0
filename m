@@ -1,65 +1,76 @@
-From: Jeremy Eder <jeder@redhat.com>
-Subject: Re: [RFC 1/2] pm: Introduce QoS requests per CPU
-Date: Wed, 26 Mar 2014 13:36:37 -0400
-Message-ID: <20140326173637.GB6656@jeder.rdu.redhat.com>
-References: <1395753505-13180-1-git-send-email-amirv@mellanox.com>
- <1395753505-13180-2-git-send-email-amirv@mellanox.com>
- <2896374.SoOPVJXu9Q@vostro.rjw.lan>
+From: Yuyang du <yuyang.du@intel.com>
+Subject: [RFC II] Splitting scheduler into two halves
+Date: Thu, 27 Mar 2014 02:37:21 +0800
+Message-ID: <20140326183721.GC24116@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:46033 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240AbaC0Cgp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Mar 2014 22:36:45 -0400
 Content-Disposition: inline
-In-Reply-To: <2896374.SoOPVJXu9Q@vostro.rjw.lan>
-Sender: netdev-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Amir Vadai <amirv@mellanox.com>, "David S. Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, yuvali@mellanox.com, Or Gerlitz <ogerlitz@mellanox.com>, Yevgeny Petrilin <yevgenyp@mellanox.com>, idos@mellanox.com
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: morten.rasmussen@arm.com, arjan.van.de.ven@intel.com, len.brown@intel.com, rafael.j.wysocki@intel.com, alan.cox@intel.com
 
-On 140325 19:44:53, Rafael J. Wysocki wrote:
-> On Tuesday, March 25, 2014 03:18:24 PM Amir Vadai wrote:
-> > Extend the current pm_qos_request API - to have pm_qos_request per core.
-> > When a global request is added, it is added under the global plist.
-> > When a core specific request is added, it is added to the core specific
-> > list.
-> > core number is saved in the request and later modify/delete operations
-> > are using it to access the right list.
-> > 
-> > When a cpu specific request is added/removed/updated, the target value
-> > of the specific core is recalculated to be the min/max (according to the
-> > constrain type) value of all the global and the cpu specific
-> > constraints.
-> > 
-> > If a global request is added/removed/updated, the target values of all
-> > the cpu's are recalculated.
-> > 
-> > During initialization, before the cpu specific data structures are
-> > allocated and initialized, only global target value is begin used.
-> 
-> I have to review this in detail (which rather won't be possible before
-> the next week), but in principle I don't really like it, because it
-> assumes that its users will know what's going to run on which CPU cores
-> and I'm not sure where that knowledge is going to come from.
+Hi all,
 
-Hi guys,
+This is continued after the first RFC about splitting the scheduler. Still
+work-in-progress, and call for feedback.
 
-I think busy_poll can accomplish the basic goals of this patch
-set.  Stop drops due to c-state transition latency.  Get into more performant
-c-states only on active cores with SO_BUSY_POLL or the sysctl.
+The question addressed here is how load balance should be changed. And I think
+the question then goes to how to *reuse* common code as much as possible and
+meanwhile be able to serve various objectives.
 
-Whether it's system-wide or per-cpu, cpu_dma_latency wastes power and
-worse, it's a static thing.  We need adaptable power management for the
-general case.  I guess that might look like power-aware scheduling, or wiring
-menu.c to incorporate hints from drivers/userspace.
+So these are the basic semantics needed in current load balance:
 
-cpu_dma_latency reduces TDP headroom because non-active cores are in
-unnecessarily high c-states, reduces the amount of turbo boost you can have,
-and thus reduces performance of (i.e.) low-thread-count workloads.
+1. [ At balance point ] on this_cpu push task on that_cpu to [ third_cpu ]
 
-busy_poll has another positive side-effect; it's even more granular (thus
-more power friendly) than the percpu idea:  it will only affect cores that
-have active sockets on them.  When the sockets aren't active, the core can
-settle into a deep c-state, and possibly the socket can settle into a deeper
-package c-state.  There's some data in the blog post that Jesper sent.
+Examples are fork/exec/wakeup. Task is determined by the balance point in
+question. And that_cpu is determined by task.
 
-I also want to mention that this "class" of issue is not particularly
-related to networking.
+2. [ At balance point ] on this_cpu pull [ task/tasks ] on [ that_cpu ] to
+this_cpu
+
+Examples are other idle/periodic/nohz balance, and active_load_balance in
+ASYM_PACKING (pull first and then a push).
+
+3. [ At balance point ] on this_cpu kick [ that_cpu/those_cpus ] to do [ what
+] balance
+
+Examples are nohz idle balance and active balance.
+
+To make the above more general, we need to abstract more:
+
+1. [ At balance point ] on this_cpu push task on that_cpu to [ third_cpu ] in
+[ cpu_mask ]
+
+2. [ At balance point ] on this_cpu [ do | skip ] pull [task/tasks ] on [
+that_cpu ] in [ cpu_mask ] to this_cpu
+
+3. [ At balance point ] on this_cpu kick [ that_cpu/those_cpus ] in [ cpu_mask
+] to do nohz idle balance
+
+So essentially, we give them choice or restrict the scope for them.
+
+Then instead of an all-in-one load_balance class, we define pull or push
+classes:
+
+struct push_class:
+int (*which_third_cpu);
+struct cpumask * (*which_cpu_mask);
+
+struct pull_class:
+int (*skip);
+int (*which_that_cpu);
+struct task_struct * (*which_task);
+struct cpumask* (*which_cpu_mask);
+
+Last but not least, currently we configure domain by flags/parameters, how
+about attaching push/pull classes directly to them as struct members? So those
+classes are responsible specially for its riding domain's "well-being".
+
+Thanks,
+Yuyang
