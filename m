@@ -1,66 +1,90 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] ARM: machine_power_off should not return
-Date: Wed, 26 Mar 2014 00:51:15 +0000
-Message-ID: <20140326005115.GW7528@n2100.arm.linux.org.uk>
-References: <1395684784-12601-1-git-send-email-sebastian.capella@linaro.org> <20140325224554.GC12185@arch.cereza>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 01/19] thermal: allow registering without .get_temp
+Date: Wed, 26 Mar 2014 10:23:51 +0800
+Message-ID: <1395800631.2330.8.camel@rzhang1-mobl4>
+References: <1395744572-20014-1-git-send-email-alex.shi@linaro.org>
+	 <1395744572-20014-2-git-send-email-alex.shi@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:38987 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753818AbaCZAvi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Mar 2014 20:51:38 -0400
-Content-Disposition: inline
-In-Reply-To: <20140325224554.GC12185@arch.cereza>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1395744572-20014-2-git-send-email-alex.shi@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alex Shi <alex.shi@linaro.org>
+Cc: mark.hambleton@broadcom.com, mark.brown@linaro.org, eduardo.valentin@ti.com, mporter@linaro.org, lsk-interest@linaro.org, linaro-kernel@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: Sebastian Capella <sebastian.capella@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Mar 25, 2014 at 07:45:55PM -0300, Ezequiel Garcia wrote:
-> Let's Cc: LAKML, and To: Russell.
+On Tue, 2014-03-25 at 18:49 +0800, Alex Shi wrote:
+> From: Eduardo Valentin <eduardo.valentin@ti.com>
 > 
-> Russell, any comments on this?
+> This patch changes the thermal core driver to allow
+> registration of thermal zones without the .get_temp callback.
 > 
-> Without this patch we got the heartbeat's reboot_notifier called twice while
-> testing the recent hibernation patches, which was unexpected and produced a
-> kernel panic: https://lkml.org/lkml/2014/3/19/363
+> The idea behind this change is to allow lazy registration
+> of sensor callbacks.
+> 
+> The thermal zone will be disabled whenever the ops
+> does not contain a .get_temp callback. The sysfs interface
+> will be returning -EINVAL on any temperature read operation.
+> 
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> (cherry picked from commit 81bd4e1cebed5efb85bd94a15342ee4d6965a416)
+> 
+> Signed-off-by: Alex Shi <alex.shi@linaro.org>
 
-I don't see why we should make this change.  kernel/reboot.c handles
-this function returning, so other places should do too.
+why are you sending this patch series?
+all of the patches have been in upstream already.
+Plus, next time when you send a big patch set, please send with a patch
+00/XX to give a general introduction of the whole patch set.
 
-Even on x86, this function can return:
-
-void machine_power_off(void)
-{
-        machine_ops.power_off();
-}
-
-        .power_off = native_machine_power_off,
-
-static void native_machine_power_off(void)
-{
-        if (pm_power_off) {
-                if (!reboot_force)
-                        machine_shutdown();
-                pm_power_off();
-        }
-        /* A fallback in case there is no PM info available */
-        tboot_shutdown(TB_SHUTDOWN_HALT);
-}
-
-void tboot_shutdown(u32 shutdown_type)
-{
-        void (*shutdown)(void);
-
-        if (!tboot_enabled())
-                return;
-
-Therefore, I'd say... it's a bug in the hibernation code - or we probably
-have many buggy architectures.  I'd suggest fixing the hibernation code
-rather than stuffing some workaround like an endless loop into every
-architecture.
-
--- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+thanks,
+rui
+> ---
+>  drivers/thermal/thermal_core.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index d755440..818cd78 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -388,7 +388,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
+>  	enum thermal_trip_type type;
+>  #endif
+>  
+> -	if (!tz || IS_ERR(tz))
+> +	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
+>  		goto exit;
+>  
+>  	mutex_lock(&tz->lock);
+> @@ -441,6 +441,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+>  {
+>  	int count;
+>  
+> +	if (!tz->ops->get_temp)
+> +		return;
+> +
+>  	update_temperature(tz);
+>  
+>  	for (count = 0; count < tz->trips; count++)
+> @@ -1621,7 +1624,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips)
+>  		return ERR_PTR(-EINVAL);
+>  
+> -	if (!ops || !ops->get_temp)
+> +	if (!ops)
+>  		return ERR_PTR(-EINVAL);
+>  
+>  	if (trips > 0 && !ops->get_trip_type)
+> @@ -1723,6 +1726,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  
+>  	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
+>  
+> +	if (!tz->ops->get_temp)
+> +		thermal_zone_device_set_polling(tz, 0);
+> +
+>  	thermal_zone_device_update(tz);
+>  
+>  	if (!result)
