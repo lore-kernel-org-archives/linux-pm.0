@@ -1,69 +1,66 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v4] powernv: Dynamic Frequency Scaling Enablement
-Date: Wed, 26 Mar 2014 22:25:46 +0530
-Message-ID: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC] PM / Hibernate: no kernel_power_off when pm_power_off NULL
+Date: Wed, 26 Mar 2014 10:22:29 -0700
+Message-ID: <CADHgK6sh6TUc4jBQFQHTQuhze9=r2FBzF6aULUc_c+bbWYjp5w@mail.gmail.com>
+References: <1395348795-8554-1-git-send-email-sebastian.capella@linaro.org>
+	<1395348795-8554-2-git-send-email-sebastian.capella@linaro.org>
+	<20140320212336.GA17368@amd.pavel.ucw.cz>
+	<20140320213502.795a5d3c@alan.etchedpixels.co.uk>
+	<CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:59518 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932121AbaCZQ4K (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 12:56:10 -0400
-Received: from /spool/local
-	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Thu, 27 Mar 2014 02:56:07 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
-	by d23dlp02.au.ibm.com (Postfix) with ESMTP id E98A92BB003F
-	for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 03:56:03 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2QGtmqc65339454
-	for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 03:55:49 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2QGu10t027247
-	for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 03:56:01 +1100
+Received: from mail-we0-f177.google.com ([74.125.82.177]:39590 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbaCZRXE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 13:23:04 -0400
+Received: by mail-we0-f177.google.com with SMTP id u57so1361215wes.36
+        for <linux-pm@vger.kernel.org>; Wed, 26 Mar 2014 10:23:02 -0700 (PDT)
+In-Reply-To: <CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> On 20 March 2014 14:35, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk> wrote:
+>>>       if (pm_power_off)
+>>>                 pm_power_off();
+>>> ## It really should do while (1) here.
+>>         while(1)
+>>                 cpu_relax();
+>> or similar at minimum.
 
-Hi,
+Hi Alan, Pavel,
 
-This is the v4 of the patchset to enable Dynamic Frequency Scaling
-on IBM PowerNV Platforms. I have incorporated the review comments
-from the previous version (can be found at [1]). 
+I prepared the changes suggested for ARM, but Russell disagrees that
+this code must block, and points to the kernel/reboot.c function from
+which I'd taken the original change.
 
-In this version, 
+> On Mar 26, Russell King - ARM Linux wrote:
+>> I don't see why we should make this change.  kernel/reboot.c handles
+>> this function returning, so other places should do too.
+>> Even on x86, this function can return:
+>>
+>> Therefore, I'd say... it's a bug in the hibernation code - or we probably
+>> have many buggy architectures.  I'd suggest fixing the hibernation code
+>> rather than stuffing some workaround like an endless loop into every
+>> architecture.
 
-  * Multiple patches from the previous version have been into a single
-    patch, since the higher numbered patches implemented some helper
-    functions and the driver methods which should have been a part of
-    the first patch to begin with.
+In this case, the hibernation code would need to changed prevent
+calling both sets of notifiers.
 
-  * Use the generic helpers provided by the cpufreq core available in
-    the latest linux-next tree.
+The discussions are very short, but the details are here:
 
-  * Fix the code to avoid casting integer pointers to void.
+https://lkml.org/lkml/2014/3/25/554  -- linux-arm discussion
+https://lkml.org/lkml/2014/3/20/649  -- linux-pm discussion
 
-The patch is based on top of the commit:06ed26d1de59ce7cbbe68378b7e470be169750e5
-of the linux-next tree.
+It doesn't appear definitive that the machine_power_off should block,
+since the reboot call is working around the possibility.
 
+If we go the route Russell proposes, the change would basically be
+this patch.  Are you ok with me trying to adjust the hibernation
+handling here?  Do you have any further thoughts on this?
 
-[1]: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg76675.html
+Thanks!
 
-Vaidyanathan Srinivasan (1):
-  powernv, cpufreq: cpufreq driver for powernv platform
-
- arch/powerpc/configs/pseries_defconfig    |   1 +
- arch/powerpc/configs/pseries_le_defconfig |   1 +
- arch/powerpc/include/asm/reg.h            |   4 +
- arch/powerpc/platforms/powernv/Kconfig    |   6 +
- drivers/cpufreq/Kconfig.powerpc           |   8 +
- drivers/cpufreq/Makefile                  |   1 +
- drivers/cpufreq/powernv-cpufreq.c         | 372 ++++++++++++++++++++++++++++++
- 7 files changed, 393 insertions(+)
- create mode 100644 drivers/cpufreq/powernv-cpufreq.c
-
--- 
-1.8.3.1
-
+Sebastian
