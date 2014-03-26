@@ -1,66 +1,65 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC] PM / Hibernate: no kernel_power_off when pm_power_off NULL
-Date: Wed, 26 Mar 2014 10:22:29 -0700
-Message-ID: <CADHgK6sh6TUc4jBQFQHTQuhze9=r2FBzF6aULUc_c+bbWYjp5w@mail.gmail.com>
-References: <1395348795-8554-1-git-send-email-sebastian.capella@linaro.org>
-	<1395348795-8554-2-git-send-email-sebastian.capella@linaro.org>
-	<20140320212336.GA17368@amd.pavel.ucw.cz>
-	<20140320213502.795a5d3c@alan.etchedpixels.co.uk>
-	<CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com>
+From: Jeremy Eder <jeder@redhat.com>
+Subject: Re: [RFC 1/2] pm: Introduce QoS requests per CPU
+Date: Wed, 26 Mar 2014 13:36:37 -0400
+Message-ID: <20140326173637.GB6656@jeder.rdu.redhat.com>
+References: <1395753505-13180-1-git-send-email-amirv@mellanox.com>
+ <1395753505-13180-2-git-send-email-amirv@mellanox.com>
+ <2896374.SoOPVJXu9Q@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f177.google.com ([74.125.82.177]:39590 "EHLO
-	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbaCZRXE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 13:23:04 -0400
-Received: by mail-we0-f177.google.com with SMTP id u57so1361215wes.36
-        for <linux-pm@vger.kernel.org>; Wed, 26 Mar 2014 10:23:02 -0700 (PDT)
-In-Reply-To: <CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2896374.SoOPVJXu9Q@vostro.rjw.lan>
+Sender: netdev-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Amir Vadai <amirv@mellanox.com>, "David S. Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, yuvali@mellanox.com, Or Gerlitz <ogerlitz@mellanox.com>, Yevgeny Petrilin <yevgenyp@mellanox.com>, idos@mellanox.com
 List-Id: linux-pm@vger.kernel.org
-To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-> On 20 March 2014 14:35, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk> wrote:
->>>       if (pm_power_off)
->>>                 pm_power_off();
->>> ## It really should do while (1) here.
->>         while(1)
->>                 cpu_relax();
->> or similar at minimum.
+On 140325 19:44:53, Rafael J. Wysocki wrote:
+> On Tuesday, March 25, 2014 03:18:24 PM Amir Vadai wrote:
+> > Extend the current pm_qos_request API - to have pm_qos_request per core.
+> > When a global request is added, it is added under the global plist.
+> > When a core specific request is added, it is added to the core specific
+> > list.
+> > core number is saved in the request and later modify/delete operations
+> > are using it to access the right list.
+> > 
+> > When a cpu specific request is added/removed/updated, the target value
+> > of the specific core is recalculated to be the min/max (according to the
+> > constrain type) value of all the global and the cpu specific
+> > constraints.
+> > 
+> > If a global request is added/removed/updated, the target values of all
+> > the cpu's are recalculated.
+> > 
+> > During initialization, before the cpu specific data structures are
+> > allocated and initialized, only global target value is begin used.
+> 
+> I have to review this in detail (which rather won't be possible before
+> the next week), but in principle I don't really like it, because it
+> assumes that its users will know what's going to run on which CPU cores
+> and I'm not sure where that knowledge is going to come from.
 
-Hi Alan, Pavel,
+Hi guys,
 
-I prepared the changes suggested for ARM, but Russell disagrees that
-this code must block, and points to the kernel/reboot.c function from
-which I'd taken the original change.
+I think busy_poll can accomplish the basic goals of this patch
+set.  Stop drops due to c-state transition latency.  Get into more performant
+c-states only on active cores with SO_BUSY_POLL or the sysctl.
 
-> On Mar 26, Russell King - ARM Linux wrote:
->> I don't see why we should make this change.  kernel/reboot.c handles
->> this function returning, so other places should do too.
->> Even on x86, this function can return:
->>
->> Therefore, I'd say... it's a bug in the hibernation code - or we probably
->> have many buggy architectures.  I'd suggest fixing the hibernation code
->> rather than stuffing some workaround like an endless loop into every
->> architecture.
+Whether it's system-wide or per-cpu, cpu_dma_latency wastes power and
+worse, it's a static thing.  We need adaptable power management for the
+general case.  I guess that might look like power-aware scheduling, or wiring
+menu.c to incorporate hints from drivers/userspace.
 
-In this case, the hibernation code would need to changed prevent
-calling both sets of notifiers.
+cpu_dma_latency reduces TDP headroom because non-active cores are in
+unnecessarily high c-states, reduces the amount of turbo boost you can have,
+and thus reduces performance of (i.e.) low-thread-count workloads.
 
-The discussions are very short, but the details are here:
+busy_poll has another positive side-effect; it's even more granular (thus
+more power friendly) than the percpu idea:  it will only affect cores that
+have active sockets on them.  When the sockets aren't active, the core can
+settle into a deep c-state, and possibly the socket can settle into a deeper
+package c-state.  There's some data in the blog post that Jesper sent.
 
-https://lkml.org/lkml/2014/3/25/554  -- linux-arm discussion
-https://lkml.org/lkml/2014/3/20/649  -- linux-pm discussion
-
-It doesn't appear definitive that the machine_power_off should block,
-since the reboot call is working around the possibility.
-
-If we go the route Russell proposes, the change would basically be
-this patch.  Are you ok with me trying to adjust the hibernation
-handling here?  Do you have any further thoughts on this?
-
-Thanks!
-
-Sebastian
+I also want to mention that this "class" of issue is not particularly
+related to networking.
