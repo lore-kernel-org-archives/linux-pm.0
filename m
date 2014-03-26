@@ -1,150 +1,91 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH v5 07/14] ARM: mvebu: Extend the pmsu registers
-Date: Tue, 25 Mar 2014 20:30:27 -0400
-Message-ID: <20140326003027.GJ28304@titan.lakedaemon.net>
+From: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>
+Subject: Re: [PATCH v5 08/14] ARM: dts: mvebu: Introduce a new compatible
+ for the PMSU node
+Date: Tue, 25 Mar 2014 20:32:07 -0400
+Message-ID: <20140326003207.GK28304@titan.lakedaemon.net>
 References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
- <1395787705-31061-8-git-send-email-gregory.clement@free-electrons.com>
+ <1395787705-31061-9-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1395787705-31061-8-git-send-email-gregory.clement@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+In-Reply-To: <1395787705-31061-9-git-send-email-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Lior Amsalem <alior-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Tawfik Bayouk <tawfik-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 25, 2014 at 11:48:18PM +0100, Gregory CLEMENT wrote:
+On Tue, Mar 25, 2014 at 11:48:19PM +0100, Gregory CLEMENT wrote:
 > The initial binding for PMSU were wrong. It didn't take into account
-> all the registers from the PMSU and moreover it referred to registers
-> which are not part of PMSU.
+> all the registers from the PMSU and in the other hand refereed to
+> registers which are not part of PMSU. This commit introduces a new
+> compatible for the PMSU node and annotates the previous one as
+> obsolete. However we still continue to support it during a few
+> releases.
 > 
-> The Power Management Unit Service block also controls the Coherency
-> Fabric subsystem. These registers are needed for the CPU idle
-> implementation for the Armada 370/XP, it allows to enter a deep CPU
-> idle state where the Coherency Fabric and the L2 cache are powered
-> down.
-> 
-> This commit add support for a new compatible for the PMSU node
-> including the block related to the coherency fabric. It also keeps
-> compatibility with the old binding
-> 
-> This patch also adds warnings if one of the base registers set can't
-> be ioremapped.
-> 
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 > ---
->  arch/arm/mach-mvebu/pmsu.c | 47 +++++++++++++++++++++++++++++++++++++++++-----
->  1 file changed, 42 insertions(+), 5 deletions(-)
+>  .../devicetree/bindings/arm/armada-370-xp-pmsu.txt         | 14 ++++++--------
+>  arch/arm/boot/dts/armada-xp.dtsi                           | 11 ++++++++---
+>  2 files changed, 14 insertions(+), 11 deletions(-)
 > 
-> diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-> index d71ef53107c4..865bcb651e01 100644
-> --- a/arch/arm/mach-mvebu/pmsu.c
-> +++ b/arch/arm/mach-mvebu/pmsu.c
-> @@ -27,11 +27,21 @@
->  static void __iomem *pmsu_mp_base;
->  static void __iomem *pmsu_reset_base;
+> diff --git a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+> index 926b4d6aae7e..976188770079 100644
+> --- a/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+> +++ b/Documentation/devicetree/bindings/arm/armada-370-xp-pmsu.txt
+> @@ -4,17 +4,15 @@ Available on Marvell SOCs: Armada 370 and Armada XP
 >  
-> -#define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu)	((cpu * 0x100) + 0x24)
-> +#define PMSU_BASE_OFFSET    0x100
-> +#define PMSU_REG_SIZE	    0x1000
-> +
-> +#define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu)	((cpu * 0x100) + 0x124)
->  #define PMSU_RESET_CTL_OFFSET(cpu)		(cpu * 0x8)
+>  Required properties:
 >  
->  static struct of_device_id of_pmsu_table[] = {
-> -	{.compatible = "marvell,armada-370-xp-pmsu"},
-> +	{
-> +		.compatible = "marvell,armada-370-pmsu",
-> +		.data = (void *) false,
+> -- compatible: "marvell,armada-370-xp-pmsu"
+> +- compatible: should be "marvell,armada-370-pmsu", whereas
+> +  "marvell,armada-370-xp-pmsu" is deprecated and will be removed
 
-This looks sketchy to me.
+:)  ignore my comment on the previous patch.
 
-> +	},
-> +	{
-> +		.compatible = "marvell,armada-370-xp-pmsu",
-> +		.data = (void *) true, /* legacy */
-
-Same.
-
-> +	},
->  	{ /* end of list */ },
+> -- reg: Should contain PMSU registers location and length. First pair
+> -  for the per-CPU SW Reset Control registers, second pair for the
+> -  Power Management Service Unit.
+> +- reg: Should contain PMSU registers location and length.
+>  
+>  Example:
+>  
+> -armada-370-xp-pmsu@d0022000 {
+> -	compatible = "marvell,armada-370-xp-pmsu";
+> -	reg = <0xd0022100 0x430>,
+> -	      <0xd0020800 0x20>;
+> +armada-370-xp-pmsu@22000 {
+> +	compatible = "marvell,armada-370-pmsu";
+> +	reg = <0x22000 0x1000>;
 >  };
 >  
-> @@ -59,15 +69,42 @@ int armada_xp_boot_cpu(unsigned int cpu_id, void *boot_addr)
->  }
->  #endif
+> diff --git a/arch/arm/boot/dts/armada-xp.dtsi b/arch/arm/boot/dts/armada-xp.dtsi
+> index abb9f9dcc525..0c455f5458df 100644
+> --- a/arch/arm/boot/dts/armada-xp.dtsi
+> +++ b/arch/arm/boot/dts/armada-xp.dtsi
+> @@ -117,9 +117,14 @@
+>  				clock-names = "nbclk", "fixed";
+>  			};
 >  
-> +static void __init armada_370_xp_pmsu_legacy_init(struct device_node *np)
-> +{
-> +	u32 addr;
-> +	pr_warn("*** Warning ***  Using an old binding which will be deprecated\n");
-
-This should be noted in the binding docs...
-
-> +	/* We just need the adress, we already know the size */
-
-nit. s/adress/address/
-
-> +	addr = be32_to_cpu(*of_get_address(np, 0, NULL, NULL));
-> +	addr -= PMSU_BASE_OFFSET;
-> +	pmsu_mp_base = ioremap(addr, PMSU_REG_SIZE);
-> +	of_node_put(np);
-> +}
+> -			armada-370-xp-pmsu@22000 {
+> -				compatible = "marvell,armada-370-xp-pmsu";
+> -				reg = <0x22100 0x400>, <0x20800 0x20>;
+> +			cpurst@20800 {
+> +				compatible = "marvell,armada-xp-cpu-reset";
+> +				reg = <0x20800 0x20>;
+> +			};
 > +
->  static int __init armada_370_xp_pmsu_init(void)
->  {
->  	struct device_node *np;
-> -
-
-Please leave this empty line.
-
->  	np = of_find_matching_node(NULL, of_pmsu_table);
->  	if (np) {
-> +		const struct of_device_id *match =
-> +			of_match_node(of_pmsu_table, np);
-> +		BUG_ON(!match);
-> +
->  		pr_info("Initializing Power Management Service Unit\n");
-> -		pmsu_mp_base = of_iomap(np, 0);
-> -		pmsu_reset_base = of_iomap(np, 1);
-> +
-> +		if (match->data) /* legacy */
-> +			armada_370_xp_pmsu_legacy_init(np);
-
-And if a new compatible string actually needs data passed?
-
-> +		else
-> +			pmsu_mp_base = of_iomap(np, 0);
-> +		WARN_ON(!pmsu_mp_base);
-> +		of_node_put(np);
-> +
-> +		/*
-> +		 * This temporaty hack will be removed as soon as we
-
-nit. s/temporaty/temporary/
-
-thx,
-
-Jason.
-
-> +		 * get the proper reset controler support
-> +		 */
-> +		np = of_find_compatible_node(NULL, NULL, "marvell,armada-xp-cpu-reset");
-> +		pmsu_reset_base = of_iomap(np, 0);
-> +		WARN_ON(!pmsu_reset_base);
->  		of_node_put(np);
->  	}
+> +			armada-370-pmsu@22000 {
+> +				compatible = "marvell,armada-370-pmsu";
+> +				reg = <0x22000 0x400>;
+>  			};
 >  
+>  			eth2: ethernet@30000 {
 > -- 
 > 1.8.1.2
 > 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
