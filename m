@@ -1,39 +1,54 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCAyLzJdIEFSTTogY2xwczcxMXg6IFN3aXRjaCBDTFBTNzEx?=
- =?UTF-8?B?WCBzdWJhcmNoIHRvIHVzZSBjcHVpZGxlIGRyaXZlcg==?=
-Date: Wed, 26 Mar 2014 15:09:31 +0400
-Message-ID: <1395832171.565939937@f148.i.mail.ru>
-References: <1395467076-29462-1-git-send-email-shc_work@mail.ru>
- <1395467076-29462-2-git-send-email-shc_work@mail.ru>
- <5332B3F4.4010408@linaro.org>
-Reply-To: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] ARM: clps711x: Switch CLPS711X subarch to use cpuidle
+ driver
+Date: Wed, 26 Mar 2014 12:23:16 +0100
+Message-ID: <5332B8A4.2010802@linaro.org>
+References: <1395467076-29462-1-git-send-email-shc_work@mail.ru> <1395467076-29462-2-git-send-email-shc_work@mail.ru> <5332B3F4.4010408@linaro.org> <1395832171.565939937@f148.i.mail.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <5332B3F4.4010408@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?UTF-8?B?RGFuaWVsIExlemNhbm8=?= <daniel.lezcano@linaro.org>
-Cc: =?UTF-8?B?S2V2aW4gSGlsbWFu?= <khilman@linaro.org>, =?UTF-8?B?UnVzc2VsbCBLaW5n?= <linux@arm.linux.org.uk>, =?UTF-8?B?QXJuZCBCZXJnbWFubg==?= <arnd@arndb.de>, linux-pm@vger.kernel.org, =?UTF-8?B?UmFmYWVsIEouIFd5c29ja2k=?= <rjw@rjwysocki.net>, =?UTF-8?B?T2xvZiBKb2hhbnNzb24=?= <olof@lixom.net>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f42.google.com ([209.85.214.42]:63732 "EHLO
+	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753939AbaCZLXH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 07:23:07 -0400
+Received: by mail-bk0-f42.google.com with SMTP id mx12so485716bkb.29
+        for <linux-pm@vger.kernel.org>; Wed, 26 Mar 2014 04:23:05 -0700 (PDT)
+In-Reply-To: <1395832171.565939937@f148.i.mail.ru>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexander Shiyan <shc_work@mail.ru>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org
 
-V2VkLCAyNiBNYXIgMjAxNCAxMjowMzoxNiArMDEwMCDQvtGCIERhbmllbCBMZXpjYW5vIDxkYW5p
-ZWwubGV6Y2Fub0BsaW5hcm8ub3JnPjoKPiBPbiAwMy8yMi8yMDE0IDA2OjQ0IEFNLCBBbGV4YW5k
-ZXIgU2hpeWFuIHdyb3RlOgo+ID4gVGhpcyBwYXRjaCByZW1vdmVzIG9sZCBzdXBwb3J0IGZvciBj
-cHVpZGxlIGFuZCBzd2l0Y2hlcyBhbGwgY3VycmVudAo+ID4gdXNlcnMgdG8gdXNlIG5ldyBjcHVp
-ZGxlIGRyaXZlci4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBBbGV4YW5kZXIgU2hpeWFuIDxzaGNf
-d29ya0BtYWlsLnJ1Pgo+IAo+IEhpIEFsZXhhbmRlciwKPiAKPiB0aGlzIHBhdGNoIGRvZXMgbm90
-IGFwcGx5LiBDb3VsZCB5b3UgcmVzcGluIGl0IGFnYWluc3QgMy4xNC1yYzguCgpUaGlzIHBhcnQg
-KDIvMikgY2FuIGJlIGFwcGxpZWQgbGF0ZXIsIEkgY2FuIHJlc2VuZCB0aGlzIG9uZSBwYXJ0IHRo
-cm91Z2ggYXJtLXNvYyB0cmVlLgoKLS0tCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0t
-a2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 03/26/2014 12:09 PM, Alexander Shiyan wrote:
+> Wed, 26 Mar 2014 12:03:16 +0100 =D0=BE=D1=82 Daniel Lezcano <daniel.l=
+ezcano@linaro.org>:
+>> On 03/22/2014 06:44 AM, Alexander Shiyan wrote:
+>>> This patch removes old support for cpuidle and switches all current
+>>> users to use new cpuidle driver.
+>>>
+>>> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+>>
+>> Hi Alexander,
+>>
+>> this patch does not apply. Could you respin it against 3.14-rc8.
+>
+> This part (2/2) can be applied later, I can resend this one part thro=
+ugh arm-soc tree.
+
+Ok, I applied the patch 1/2 for 3.16 on my tree.
+
+Thanks
+
+   -- Daniel
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
