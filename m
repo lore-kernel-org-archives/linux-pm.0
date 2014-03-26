@@ -1,77 +1,67 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v5 14/14] ARM: mvebu: register the cpuidle driver for
- the Armada XP SoCs
-Date: Wed, 26 Mar 2014 11:38:32 +0100
-Message-ID: <5332AE28.3040403@free-electrons.com>
-References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com> <1395787705-31061-15-git-send-email-gregory.clement@free-electrons.com> <20140326113159.48c3c405@skate>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] ARM: machine_power_off should not return
+Date: Wed, 26 Mar 2014 10:59:40 +0000
+Message-ID: <20140326105940.GX7528@n2100.arm.linux.org.uk>
+References: <1395684784-12601-1-git-send-email-sebastian.capella@linaro.org> <20140325224554.GC12185@arch.cereza> <20140326005115.GW7528@n2100.arm.linux.org.uk> <20140326101227.GC941@arch.cereza>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:52265 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751616AbaCZKig (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 06:38:36 -0400
-In-Reply-To: <20140326113159.48c3c405@skate>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:39245 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751360AbaCZLAE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 07:00:04 -0400
+Content-Disposition: inline
+In-Reply-To: <20140326101227.GC941@arch.cereza>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org
 
-On 26/03/2014 11:31, Thomas Petazzoni wrote:
-> Dear Gregory CLEMENT,
+On Wed, Mar 26, 2014 at 07:12:27AM -0300, Ezequiel Garcia wrote:
+> On Mar 26, Russell King - ARM Linux wrote:
+> > On Tue, Mar 25, 2014 at 07:45:55PM -0300, Ezequiel Garcia wrote:
+> > > 
+> > > Without this patch we got the heartbeat's reboot_notifier called twice while
+> > > testing the recent hibernation patches, which was unexpected and produced a
+> > > kernel panic: https://lkml.org/lkml/2014/3/19/363
+> > 
+> > I don't see why we should make this change.  kernel/reboot.c handles
+> > this function returning, so other places should do too.
+> > 
+> > Even on x86, this function can return:
+> > 
+> [..]
+> > 
+> > Therefore, I'd say... it's a bug in the hibernation code - or we probably
+> > have many buggy architectures.  I'd suggest fixing the hibernation code
+> > rather than stuffing some workaround like an endless loop into every
+> > architecture.
+> > 
 > 
-> On Tue, 25 Mar 2014 23:48:25 +0100, Gregory CLEMENT wrote:
+> Which is exactly what Sebastian did first:
 > 
->> +int __init armada_370_xp_cpu_pm_init(void)
->> +{
->> +	if (!((of_find_compatible_node(NULL, NULL, "marvell,armada-370-xp-pmsu") ||
->> +				of_find_compatible_node(NULL, NULL, "marvell,armada-370-pmsu"))
->> +			&& of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric")
->> +			&& of_machine_is_compatible("marvell,armadaxp")))
->> +		return 0;
+> https://lkml.org/lkml/2014/3/20/605
 > 
-> Instead of this big single condition, maybe it could be split in a
-> nicer way:
+> But Pavel asked to fix ARM's machine_power_off instead.
 > 
-> 	/*
-> 	 * Check that all the requirements are available to enable
-> 	 * cpuidle. So far, it is only supported on Armada XP, cpuidle
-> 	 * needs the coherency fabric and the PMSU enabled
->          */
-> 
-> 	if (!of_machine_is_compatible("marvell,armadaxp"))
-> 		return 0;
-> 
-> 	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
-> 	if (!np)
-> 		return 0;
-> 	of_node_put(np);
-> 
-> 	np = of_find_matching_node(NULL, of_pmsu_table);
+> Also, looking at the other architectures, it seems this API is not well
+> defined: some of them have an infinite loop, some don't. So it's hard to
+> say the function is supposed to return or not.
 
-Oh yes the pmsu table! I was concerned by this big condition, yesterday but
-I didn't find a proper solution due to the test to the 2 comaptible string:
-I forgot the pmsu table.
+I'm going by x86 (which I regard as definitive) and the generic power-off
+kernel code (which I've looked at all the way back to 2.6.12-rc2).
 
-I will do this change (I mean using the pmsu table but also splitting the
-condition in small chunk).
+The hibernation code path should really be fixed - the paths in
+kernel/reboot.c have coped for 9+ with all of these platform hooks
+returning, and it's only the silly switch() in the hibernation code
+that doesn't use a "default" case to handle the kernel_halt() case
+which is the real cause of the problem.
 
-Thanks,
-
-Gregory
-
-
-> 	if (!np)
-> 		return 0;
-> 	of_node_put(np);
-> 
-> Thomas
-> 
-
+As you've found, calling kernel_power_off() followed by kernel_halt()
+leads to bugs in drivers: this is not an architecture thing, it's partly
+a hibernation code failure for doing that, and partly a driver bug for
+trying to unregister something that it's already unregistered.
 
 -- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
