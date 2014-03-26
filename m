@@ -1,54 +1,96 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] ARM: clps711x: Switch CLPS711X subarch to use cpuidle
- driver
-Date: Wed, 26 Mar 2014 12:23:16 +0100
-Message-ID: <5332B8A4.2010802@linaro.org>
-References: <1395467076-29462-1-git-send-email-shc_work@mail.ru> <1395467076-29462-2-git-send-email-shc_work@mail.ru> <5332B3F4.4010408@linaro.org> <1395832171.565939937@f148.i.mail.ru>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] tick, broadcast: Prevent false alarm when force mask
+ contains offline cpus
+Date: Wed, 26 Mar 2014 16:51:23 +0530
+Message-ID: <5332B833.2030701@linux.vnet.ibm.com>
+References: <20140326035648.21736.85740.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f42.google.com ([209.85.214.42]:63732 "EHLO
-	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753939AbaCZLXH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 07:23:07 -0400
-Received: by mail-bk0-f42.google.com with SMTP id mx12so485716bkb.29
-        for <linux-pm@vger.kernel.org>; Wed, 26 Mar 2014 04:23:05 -0700 (PDT)
-In-Reply-To: <1395832171.565939937@f148.i.mail.ru>
+Received: from e28smtp04.in.ibm.com ([122.248.162.4]:47071 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbaCZLVt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 07:21:49 -0400
+Received: from /spool/local
+	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Wed, 26 Mar 2014 16:51:46 +0530
+In-Reply-To: <20140326035648.21736.85740.stgit@preeti.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, paulmck@linux.vnet.ibm.com, davem@davemloft.net
 
-On 03/26/2014 12:09 PM, Alexander Shiyan wrote:
-> Wed, 26 Mar 2014 12:03:16 +0100 =D0=BE=D1=82 Daniel Lezcano <daniel.l=
-ezcano@linaro.org>:
->> On 03/22/2014 06:44 AM, Alexander Shiyan wrote:
->>> This patch removes old support for cpuidle and switches all current
->>> users to use new cpuidle driver.
->>>
->>> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
->>
->> Hi Alexander,
->>
->> this patch does not apply. Could you respin it against 3.14-rc8.
->
-> This part (2/2) can be applied later, I can resend this one part thro=
-ugh arm-soc tree.
+On 03/26/2014 09:26 AM, Preeti U Murthy wrote:
+> Its possible that the tick_broadcast_force_mask contains cpus which are not
+> in cpu_online_mask when a broadcast tick occurs. This could happen under the
+> following circumstance assuming CPU1 is among the CPUs waiting for broadcast.
+> 
+> CPU0					CPU1
+> 
+> Run CPU_DOWN_PREPARE notifiers
+> 
+> Start stop_machine			Gets woken up by IPI to run
+> 					stop_machine, sets itself in
+> 					tick_broadcast_force_mask if the
+> 					time of broadcast interrupt is around
+> 					the same time as this IPI.
+> 
+> 					Start stop_machine
+> 					  set_cpu_online(cpu1, false)
+> End stop_machine			End stop_machine
+> 
+> Broadcast interrupt
+>   Finds that cpu1 in
+>   tick_broadcast_force_mask is offline
+>   and triggers the WARN_ON in
+>   tick_handle_oneshot_broadcast()
+> 
+> Clears all broadcast masks
+> in CPU_DEAD stage.
+> 
+> This WARN_ON was added to capture scenarios where the broadcast mask, be it
+> oneshot/pending/force_mask contain offline cpus whose tick devices have been
+> removed. But here is a case where we trigger the warn on in a valid scenario.
+> 
+> One could argue that the scenario is invalid and ought to be warned against
+> because ideally the broadcast masks need to be cleared of the cpus about to
+> go offine before clearing them in the online_mask so that we dont hit these
+> scenarios.
+> 
+> This would mean clearing the masks in CPU_DOWN_PREPARE stage.
 
-Ok, I applied the patch 1/2 for 3.16 on my tree.
+Not necessarily. We could clear the mask in the CPU_DYING stage. That way,
+offline CPUs will automatically get cleared from the force_mask and hence
+the tick-broadcast code will not need to have a special case to deal with
+this scenario. What do you think?
 
-Thanks
+Regards,
+Srivatsa S. Bhat
 
-   -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> ---
+> 
+>  kernel/time/tick-broadcast.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+> index 63c7b2d..30b8731 100644
+> --- a/kernel/time/tick-broadcast.c
+> +++ b/kernel/time/tick-broadcast.c
+> @@ -606,7 +606,12 @@ again:
+>  	 */
+>  	cpumask_clear_cpu(smp_processor_id(), tick_broadcast_pending_mask);
+> 
+> -	/* Take care of enforced broadcast requests */
+> +	/* Take care of enforced broadcast requests. We could have offline
+> +	 * cpus in the tick_broadcast_force_mask. Thats ok, we got the interrupt
+> +	 * before we could clear the mask.
+> +	 */
+> +	cpumask_and(tick_broadcast_force_mask,
+> +			tick_broadcast_force_mask, cpu_online_mask);
+>  	cpumask_or(tmpmask, tmpmask, tick_broadcast_force_mask);
+>  	cpumask_clear(tick_broadcast_force_mask);
+> 
+> 
 
