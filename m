@@ -1,77 +1,97 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH v5 07/14] ARM: mvebu: Extend the pmsu registers
-Date: Wed, 26 Mar 2014 13:59:48 +0100
-Message-ID: <20140326135948.3f2669fc@skate>
-References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com>
-	<1395787705-31061-8-git-send-email-gregory.clement@free-electrons.com>
-	<5332C267.3080908@gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH] tick, broadcast: Prevent false alarm when force mask
+ contains offline cpus
+Date: Wed, 26 Mar 2014 18:52:03 +0530
+Message-ID: <5332D47B.3010809@linux.vnet.ibm.com>
+References: <20140326035648.21736.85740.stgit@preeti.in.ibm.com> <5332B833.2030701@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:52905 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752018AbaCZM7v (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 08:59:51 -0400
-In-Reply-To: <5332C267.3080908@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5332B833.2030701@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, paulmck@linux.vnet.ibm.com, davem@davemloft.net
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 
-Dear Sebastian Hesselbarth,
-
-On Wed, 26 Mar 2014 13:04:55 +0100, Sebastian Hesselbarth wrote:
-> On 03/25/2014 11:48 PM, Gregory CLEMENT wrote:
-> > The initial binding for PMSU were wrong. It didn't take into account
-> > all the registers from the PMSU and moreover it referred to registers
-> > which are not part of PMSU.
-> >
-> > The Power Management Unit Service block also controls the Coherency
-> > Fabric subsystem. These registers are needed for the CPU idle
-> > implementation for the Armada 370/XP, it allows to enter a deep CPU
-> > idle state where the Coherency Fabric and the L2 cache are powered
-> > down.
-> >
-> > This commit add support for a new compatible for the PMSU node
-> > including the block related to the coherency fabric. It also keeps
-> > compatibility with the old binding
-> >
-> > This patch also adds warnings if one of the base registers set can't
-> > be ioremapped.
-> >
-> > Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> > ---
-> >   arch/arm/mach-mvebu/pmsu.c | 47 +++++++++++++++++++++++++++++++++++++++++-----
-> >   1 file changed, 42 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-> > index d71ef53107c4..865bcb651e01 100644
-> > --- a/arch/arm/mach-mvebu/pmsu.c
-> > +++ b/arch/arm/mach-mvebu/pmsu.c
-> [...]
-> > +static void __init armada_370_xp_pmsu_legacy_init(struct device_node *np)
-> > +{
-> > +	u32 addr;
-> > +	pr_warn("*** Warning ***  Using an old binding which will be deprecated\n");
-> > +	/* We just need the adress, we already know the size */
-> > +	addr = be32_to_cpu(*of_get_address(np, 0, NULL, NULL));
-> > +	addr -= PMSU_BASE_OFFSET;
-> > +	pmsu_mp_base = ioremap(addr, PMSU_REG_SIZE);
-> > +	of_node_put(np);
+On 03/26/2014 04:51 PM, Srivatsa S. Bhat wrote:
+> On 03/26/2014 09:26 AM, Preeti U Murthy wrote:
+>> Its possible that the tick_broadcast_force_mask contains cpus which are not
+>> in cpu_online_mask when a broadcast tick occurs. This could happen under the
+>> following circumstance assuming CPU1 is among the CPUs waiting for broadcast.
+>>
+>> CPU0					CPU1
+>>
+>> Run CPU_DOWN_PREPARE notifiers
+>>
+>> Start stop_machine			Gets woken up by IPI to run
+>> 					stop_machine, sets itself in
+>> 					tick_broadcast_force_mask if the
+>> 					time of broadcast interrupt is around
+>> 					the same time as this IPI.
+>>
+>> 					Start stop_machine
+>> 					  set_cpu_online(cpu1, false)
+>> End stop_machine			End stop_machine
+>>
+>> Broadcast interrupt
+>>   Finds that cpu1 in
+>>   tick_broadcast_force_mask is offline
+>>   and triggers the WARN_ON in
+>>   tick_handle_oneshot_broadcast()
+>>
+>> Clears all broadcast masks
+>> in CPU_DEAD stage.
+>>
+>> This WARN_ON was added to capture scenarios where the broadcast mask, be it
+>> oneshot/pending/force_mask contain offline cpus whose tick devices have been
+>> removed. But here is a case where we trigger the warn on in a valid scenario.
+>>
+>> One could argue that the scenario is invalid and ought to be warned against
+>> because ideally the broadcast masks need to be cleared of the cpus about to
+>> go offine before clearing them in the online_mask so that we dont hit these
+>> scenarios.
+>>
+>> This would mean clearing the masks in CPU_DOWN_PREPARE stage.
 > 
-> When messing with OF passed resources, I suggest to use
-> of_address_to_resource() and work on the struct resource
-> instead. The be32_to_cpu pointing to an immediate just looks
-> strange.
+> Not necessarily. We could clear the mask in the CPU_DYING stage. That way,
+> offline CPUs will automatically get cleared from the force_mask and hence
+> the tick-broadcast code will not need to have a special case to deal with
+> this scenario. What do you think?
 
-I'm working on a revised patch set for these PMSU changes, as I also
-need them as a preparation for the SMP support on Armada 375/38x. And
-my revised patch set makes the manipulations on the 'struct resource',
-as you suggest.
+Hmm yeah. Let me confirm this by verifying if we could miss something by
+clearing masks in CPU_DYING stage.
 
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Thanks!
+
+Regards
+Preeti U Murthy
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
+>> ---
+>>
+>>  kernel/time/tick-broadcast.c |    7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+>> index 63c7b2d..30b8731 100644
+>> --- a/kernel/time/tick-broadcast.c
+>> +++ b/kernel/time/tick-broadcast.c
+>> @@ -606,7 +606,12 @@ again:
+>>  	 */
+>>  	cpumask_clear_cpu(smp_processor_id(), tick_broadcast_pending_mask);
+>>
+>> -	/* Take care of enforced broadcast requests */
+>> +	/* Take care of enforced broadcast requests. We could have offline
+>> +	 * cpus in the tick_broadcast_force_mask. Thats ok, we got the interrupt
+>> +	 * before we could clear the mask.
+>> +	 */
+>> +	cpumask_and(tick_broadcast_force_mask,
+>> +			tick_broadcast_force_mask, cpu_online_mask);
+>>  	cpumask_or(tmpmask, tmpmask, tick_broadcast_force_mask);
+>>  	cpumask_clear(tick_broadcast_force_mask);
+>>
+>>
+> 
