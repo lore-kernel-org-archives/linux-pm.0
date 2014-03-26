@@ -1,64 +1,177 @@
-From: rosslagerwall@gmail.com
-Subject: Re: [stable request <=3.7] acpi-cpufreq: set current frequency based
- on target P-State
-Date: Wed, 26 Mar 2014 07:22:32 +0000
-Message-ID: <20140326072232.GA777@hobo.lan>
-References: <20131220081912.GA13684@hobo.Home>
- <1395785057-28903-1-git-send-email-vlee@twopensource.com>
- <20140325221803.GA32518@hobo.lan>
- <CAHTgTXVEjNUMkrTNSyu+TtXc+Ac5PsD8Sp4m-7Md6UNwQfwkJQ@mail.gmail.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v5 07/14] ARM: mvebu: Extend the pmsu registers
+Date: Wed, 26 Mar 2014 10:33:50 +0100
+Message-ID: <53329EFE.4040705@free-electrons.com>
+References: <1395787705-31061-1-git-send-email-gregory.clement@free-electrons.com> <1395787705-31061-8-git-send-email-gregory.clement@free-electrons.com> <20140326003027.GJ28304@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f179.google.com ([74.125.82.179]:36947 "EHLO
-	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbaCZHW1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 03:22:27 -0400
-Content-Disposition: inline
-In-Reply-To: <CAHTgTXVEjNUMkrTNSyu+TtXc+Ac5PsD8Sp4m-7Md6UNwQfwkJQ@mail.gmail.com>
+Received: from top.free-electrons.com ([176.31.233.9]:51804 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751130AbaCZJdy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Mar 2014 05:33:54 -0400
+In-Reply-To: <20140326003027.GJ28304@titan.lakedaemon.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vinson Lee <vlee@twopensource.com>
-Cc: stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shatil Rafiullah <srafiullah@twopensource.com>
+To: Jason Cooper <jason@lakedaemon.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 
-On Tue, Mar 25, 2014 at 03:53:40PM -0700, Vinson Lee wrote:
-> On Tue, Mar 25, 2014 at 3:18 PM,  <rosslagerwall@gmail.com> wrote:
-> > On Tue, Mar 25, 2014 at 03:04:16PM -0700, Vinson Lee wrote:
-> >> Hi.
-> >>
-> >> Please backport upstream commit 8673b83bf2f013379453b4779047bf3c6ae387e4
-> >> "acpi-cpufreq: set current frequency based on target P-State" to stable
-> >> kernels 3.7 and earlier. This patch enables the kernel to control
-> >> P-states on several platforms. Without this patch, the kernel was unable
-> >> to control P-states on the same platforms.
-> >>
-> >> The upstream patch cleanly applies to 3.7.
-> >>
-> >> A backported patch is needed with the removal of SYSTEM_AMD_MSR_CAPABLE
-> >> for kernels 3.6 and earlier.
-> >>
-> >
-> > I seem to recall that the problem was a regression introduced by commit
-> > 5a1c0228 (cpufreq: Avoid calling cpufreq driver's target() routine if
-> > target_freq == policy->cur) which was introduced in the 3.8 cycle.  Are
-> > you sure it is necessary for kernels < 3.8?
-> >
-> > Regards
-> > --
-> > Ross Lagerwall
+Hi Jason,
+
+On 26/03/2014 01:30, Jason Cooper wrote:
+> On Tue, Mar 25, 2014 at 11:48:18PM +0100, Gregory CLEMENT wrote:
+>> The initial binding for PMSU were wrong. It didn't take into account
+>> all the registers from the PMSU and moreover it referred to registers
+>> which are not part of PMSU.
+>>
+>> The Power Management Unit Service block also controls the Coherency
+>> Fabric subsystem. These registers are needed for the CPU idle
+>> implementation for the Armada 370/XP, it allows to enter a deep CPU
+>> idle state where the Coherency Fabric and the L2 cache are powered
+>> down.
+>>
+>> This commit add support for a new compatible for the PMSU node
+>> including the block related to the coherency fabric. It also keeps
+>> compatibility with the old binding
+>>
+>> This patch also adds warnings if one of the base registers set can't
+>> be ioremapped.
+>>
+>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>> ---
+>>  arch/arm/mach-mvebu/pmsu.c | 47 +++++++++++++++++++++++++++++++++++++++++-----
+>>  1 file changed, 42 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+>> index d71ef53107c4..865bcb651e01 100644
+>> --- a/arch/arm/mach-mvebu/pmsu.c
+>> +++ b/arch/arm/mach-mvebu/pmsu.c
+>> @@ -27,11 +27,21 @@
+>>  static void __iomem *pmsu_mp_base;
+>>  static void __iomem *pmsu_reset_base;
+>>  
+>> -#define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu)	((cpu * 0x100) + 0x24)
+>> +#define PMSU_BASE_OFFSET    0x100
+>> +#define PMSU_REG_SIZE	    0x1000
+>> +
+>> +#define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu)	((cpu * 0x100) + 0x124)
+>>  #define PMSU_RESET_CTL_OFFSET(cpu)		(cpu * 0x8)
+>>  
+>>  static struct of_device_id of_pmsu_table[] = {
+>> -	{.compatible = "marvell,armada-370-xp-pmsu"},
+>> +	{
+>> +		.compatible = "marvell,armada-370-pmsu",
+>> +		.data = (void *) false,
 > 
+> This looks sketchy to me.
+
+Could you elaborate it?
+
+For a boolean I didn't saw the point to use a pointer.
+
 > 
-> This specific patch allows P-states to work with the 3.4 kernel on
-> several hardware platforms.
+>> +	},
+>> +	{
+>> +		.compatible = "marvell,armada-370-xp-pmsu",
+>> +		.data = (void *) true, /* legacy */
 > 
-> Perhaps this is not the correct patch to backport. However, P-states
-> are not working properly with the 3.4 kernel, even though it does not
-> have the regression commit 5a1c0228 "cpufreq: Avoid calling cpufreq
-> driver's target() routine if target_freq == policy->cur" backported.
+> Same.
+> 
+>> +	},
+>>  	{ /* end of list */ },
+>>  };
+>>  
+>> @@ -59,15 +69,42 @@ int armada_xp_boot_cpu(unsigned int cpu_id, void *boot_addr)
+>>  }
+>>  #endif
+>>  
+>> +static void __init armada_370_xp_pmsu_legacy_init(struct device_node *np)
+>> +{
+>> +	u32 addr;
+>> +	pr_warn("*** Warning ***  Using an old binding which will be deprecated\n");
+> 
+> This should be noted in the binding docs...
+> 
+>> +	/* We just need the adress, we already know the size */
+> 
+> nit. s/adress/address/
+
+Thanks
+
+> 
+>> +	addr = be32_to_cpu(*of_get_address(np, 0, NULL, NULL));
+>> +	addr -= PMSU_BASE_OFFSET;
+>> +	pmsu_mp_base = ioremap(addr, PMSU_REG_SIZE);
+>> +	of_node_put(np);
+>> +}
+>> +
+>>  static int __init armada_370_xp_pmsu_init(void)
+>>  {
+>>  	struct device_node *np;
+>> -
+> 
+> Please leave this empty line.
 > 
 
-Fair enough,
+OK
 
-Cheers
+
+>>  	np = of_find_matching_node(NULL, of_pmsu_table);
+>>  	if (np) {
+>> +		const struct of_device_id *match =
+>> +			of_match_node(of_pmsu_table, np);
+>> +		BUG_ON(!match);
+>> +
+>>  		pr_info("Initializing Power Management Service Unit\n");
+>> -		pmsu_mp_base = of_iomap(np, 0);
+>> -		pmsu_reset_base = of_iomap(np, 1);
+>> +
+>> +		if (match->data) /* legacy */
+>> +			armada_370_xp_pmsu_legacy_init(np);
+> 
+> And if a new compatible string actually needs data passed?
+
+in this case we would have to update the of_pmsu_table, so this
+code could be also updated if needed in the same time. So I don't
+see the problem, maybe I miss something.
+
+But the plan is really to remove this legacy part later (after a
+few kernel release)
+
+> 
+>> +		else
+>> +			pmsu_mp_base = of_iomap(np, 0);
+>> +		WARN_ON(!pmsu_mp_base);
+>> +		of_node_put(np);
+>> +
+>> +		/*
+>> +		 * This temporaty hack will be removed as soon as we
+> 
+> nit. s/temporaty/temporary/
+
+Thanks
+
+> 
+> thx,
+> 
+> Jason.
+> 
+>> +		 * get the proper reset controler support
+>> +		 */
+>> +		np = of_find_compatible_node(NULL, NULL, "marvell,armada-xp-cpu-reset");
+>> +		pmsu_reset_base = of_iomap(np, 0);
+>> +		WARN_ON(!pmsu_reset_base);
+>>  		of_node_put(np);
+>>  	}
+>>  
+>> -- 
+>> 1.8.1.2
+>>
+
+
 -- 
-Ross Lagerwall
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
