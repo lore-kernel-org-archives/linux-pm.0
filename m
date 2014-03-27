@@ -1,69 +1,53 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: don't print value of .driver_data from core
-Date: Thu, 27 Mar 2014 16:56:03 +0530
-Message-ID: <20140327112602.GD27777@in.ibm.com>
-References: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
- <20140327104842.GB27777@in.ibm.com>
- <CAKohpombz9jzAs-_mpBNJyTJrrvvXVQ1L0V8fyKmB1vXpSPjmQ@mail.gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
+Date: Thu, 27 Mar 2014 16:59:24 +0530
+Message-ID: <CAKohpom7TekvQmAO6yPqSrPQ2yz10vOezKrWh=aA5vWCE=jS+A@mail.gmail.com>
+References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
+	<1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
+	<CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
+	<20140327093050.GA27777@in.ibm.com>
+	<CAKohponOe9Au+pe5u9FpddW3+f5pegZB953+5fmYBDusE9j0HA@mail.gmail.com>
+	<20140327112031.GC27777@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e36.co.us.ibm.com ([32.97.110.154]:55163 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755221AbaC0L0P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Mar 2014 07:26:15 -0400
-Received: from /spool/local
-	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Thu, 27 Mar 2014 05:26:15 -0600
-Content-Disposition: inline
-In-Reply-To: <CAKohpombz9jzAs-_mpBNJyTJrrvvXVQ1L0V8fyKmB1vXpSPjmQ@mail.gmail.com>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:56046 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbaC0L3Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Mar 2014 07:29:25 -0400
+Received: by mail-ob0-f172.google.com with SMTP id wm4so4101824obc.17
+        for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 04:29:24 -0700 (PDT)
+In-Reply-To: <20140327112031.GC27777@in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-On Thu, Mar 27, 2014 at 04:29:37PM +0530, Viresh Kumar wrote:
-> On 27 March 2014 16:18, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> > So after this patch, driver_data is only going to be used by drivers
-> > which want an "unsigned int" value to be saved along with the
-> > frequency in the frequency_table and for those who want to overload
-> > its interpretation to indicate BOOST.
-> >
-> > From the core's stand point, it is useful only for determining whether
-> > a frequency is BOOST frequency or not.
-> 
-> Yes.
-> 
-> > So, wouldn't it be logical to allow drivers maintain their own driver
-> > data since the core is anyway not interested in it, and change this
-> > .driver_data to "flags" or some such which can indicate boost ?
-> 
-> We can add another field .flags in case Rafael doesn't accept the
-> other proposal I sent for fixing BOOST issue.
+On 27 March 2014 16:50, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> (That said, in the future if we want to export additional
+> information, say pertaining to the voltage, we will have to keep a
+> separate array anyway :-) )
 
-Even with that patch, the .driver_data won't be opaque. And that's not
-good. Because, while some driver might not be explicitly setting the
-value of .driver_data to 0xABABABAB, it might want to store the value
-obtained at runtime into this field. And it could so happen
-that at runtime this value is 0xABABABAB.
+Lets handle that once it comes.
 
-> 
-> But the point behind keeping .driver_data field here was: many drivers
-> have some information attached to each frequency and they are closely
-> bound to each other. And so it made more sense to keep them together.
-> This is still used by many drivers and I wouldn't like them to maintain
-> separate arrays for keeping this information. They are so much bound
-> to the frequencies at the same index, that keeping them separately
-> wouldn't be a good idea.
+> However, as of now, I am wary about reusing a variable provided by
+> the core, whose type is fixed (which is not the type I am interested
+> in) and whose interpretation is ambiguous (since it is also being used
+> as a BOOST indicator).
 
-I understand this part. However there might be more data than an
-"unsigned int" that the drivers would like to be bound at the same
-index. Voltage information, for instance.
+I understand that..
 
-> 
---
-Thanks and Regards
-gautham.
+> When we have a .is_boost field, or a flags field in the cpufreq_table,
 
+Probably we might keep it as is and take the patch which I already
+sent. In that case as well your stuff will continue to work..
+
+> and once the .driver_data field is completely opaque, I would be
+> comfortable making use of .driver_data to store the pstate_ids. So
+> I'll send out those patches once the fixes are present in the
+> core. For now, let this code stay as it is. I think we should be ok
+> with the additional overhead of 1kb as of now.
+
+Chances are more that all my changes would make it before this
+driver and then you would be required to update this driver
+before submission.
