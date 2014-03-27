@@ -1,48 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: don't print value of .driver_data from core
-Date: Thu, 27 Mar 2014 15:37:22 +0530
-Message-ID: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 0/4] devfreq: exynos: generalize PPMU code
+Date: Thu, 27 Mar 2014 10:08:09 +0000 (GMT)
+Message-ID: <14716616.146541395914888684.JavaMail.weblogic@epml10>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:23966 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752785AbaC0KIU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Mar 2014 06:08:20 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N3300M0XATN2610@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 27 Mar 2014 19:08:11 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, =?euc-kr?Q?=C3=D6=C2=F9=BF=EC?= <cw00.choi@samsung.com>
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, Tomasz Figa <t.figa@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-CPUFreq core doesn't control value of .driver_data and this field is completely
-driver specific. This can contain any value and not only indexes. For most of
-the drivers, which aren't using this field, its value is zero. So, printing this
-from core doesn't make any sense. Don't print it.
+DQoNCk9uIFNhdCwgTWFyIDIyLCAyMDE0IGF0IDI6MzEgQU0sIEJhcnRsb21pZWogWm9sbmllcmtp
+ZXdpY3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbT4gd3JvdGU6DQo+IEhpLA0KPg0KPiBUaGlz
+IHBhdGNoIHNlcmllcyBnZW5lcmFsaXplcyBQUE1VIHN1cHBvcnQgZm9yIEV4eW5vcyBkZXZmcmVx
+DQo+IGRyaXZlcnMuDQo+DQo+IEl0IGlzIGJhc2VkIG9uIHRvcCBvZiAiZGV2ZnJlcTogZXh5bm9z
+OiBGaXggbWlub3IgaXNzdWUgYW5kIGNvZGUNCj4gY2xlYW4gdG8gcmVtb3ZlIGxlZ2FjeSBtZXRo
+b2QiIHBhdGNoIHNlcmllcyBmcm9tIENoYW53b28gQ2hvaQ0KPiAoaHR0cHM6Ly9sa21sLm9yZy9s
+a21sLzIwMTQvMy8xOS83MTMpLg0KPg0KPiBQbGVhc2Ugbm90ZSB0aGF0IHRoZSBwYXRjaGVzIHdl
+cmUgb25seSBjb21waWxlIHRlc3RlZCBiZWNhdXNlDQo+IEV4eW5vcyBkZXZmcmVxIGRyaXZlcnMg
+ZG9uJ3Qgd29yayB5ZXQgaW4gdGhlIHVwc3RyZWFtIGtlcm5lbHMNCj4gKEZXSVcgdGhlc2UgY2hh
+bmdlcyB3ZXJlIGJyaWVmbHkgdGVzdGVkIHdpdGggdGhlIGludGVybmFsIHRyZWUNCj4gd2hpY2gg
+aGFzIHdvcmtpbmcgZGV2ZnJlcSBkcml2ZXJzKS4NCg0KSGkgQmxhcnRsb21pZWosDQoNCg0KVGhh
+bmsgeW91Lg0KDQpJJ2xsIG1lcmdlIHRoaXMgaW50byBkZXZmcmVxJ3MgZm9yLW5leHQuDQoNCg0K
+QW55d2F5LCBkYXlzIGFnbywgSSBoYWQgYSBzaG9ydCBkaXNjdXNzaW9uIHdpdGggQ2hhbndvbyBh
+Ym91dA0KcHJvdmlkaW5nIHNvbWUgY29tbW9uIGludGVyZmFjZSBmb3IgUFBNVS1saWtlIGRldmlj
+ZXMNCihzb3J0IG9mIHN1YiBkZXZpY2Ugb2YgZGV2ZnJlcSBkZXZpY2UpIHRoYXQgcHJvdmlkZSB1
+c2FnZSBzdGF0aXN0aWNzLiANCg0KQXQgdGhpcyBzdGFnZSwgSSByb3VnaGx5IGd1ZXNzIHRoYXQg
+c3VjaCBhIGRldmljZSBkcml2ZXIgKG9yIHdoYXRldmVyDQplbnRpdHkgaXQgaXMpIG1heSBiZSBz
+aW1wbHkgYSBoZWxwZXIgZm9yIGZpbGxpbmcgb3V0IHRoZSAiZ2V0X2Rldl9zdGF0dXMiIGNhbGxi
+YWNrLg0KSXQgaXMgYmVjYXVzZSBkZXZmcmVxJ3MgUFBNVSB1c2FnZSBpcyBsaW1pdGVkIHRvIGdl
+dHRpbmcgZ2V0X2Rldl9zdGF0dXMoKS4NCkFzIHlvdSBoYWQgZG9uZSBzb21ldGhpbmcgb24gUFBN
+VSwgSSBndWVzcyB5b3UgbWF5IGhhdmUgc29tZQ0KaWRlYSBvbiB0aGlzLg0KDQpDaGVlcnMsDQpN
+eXVuZ0pvby4NCj4NCj4gQmVzdCByZWdhcmRzLA0KPiAtLQ0KPiBCYXJ0bG9taWVqIFpvbG5pZXJr
+aWV3aWN6DQo+IFNhbXN1bmcgUiZEIEluc3RpdHV0ZSBQb2xhbmQNCj4gU2Ftc3VuZyBFbGVjdHJv
+bmljcw0KPg0KPg0KPiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6ICgzKToNCj4gICBkZXZmcmVx
+OiBleHlub3M0OiBpbnRyb2R1Y2Ugc3RydWN0IGJ1c2ZyZXFfcHBtdV9kYXRhDQo+ICAgZGV2ZnJl
+cTogZXh5bm9zNTogaW50cm9kdWNlIHN0cnVjdCBidXNmcmVxX3BwbXVfZGF0YQ0KPiAgIGRldmZy
+ZXE6IGV4eW5vczogbWFrZSBtb3JlIFBQTVUgY29kZSBjb21tb24NCj4NCj4gQ2hhbndvbyBDaG9p
+ICgxKToNCj4gICBkZXZmcmVxOiBleHlub3M0OiB1c2UgY29tbW9uIFBQTVUgY29kZQ0KPg0KPiAg
+ZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9NYWtlZmlsZSAgICAgIHwgICAyICstDQo+ICBkcml2ZXJz
+L2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLmMgfCAxNzYgKysrKysrKysrLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5bm9zNV9idXMuYyB8
+ICA5NCArKysrKy0tLS0tLS0tLS0tLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5v
+c19wcG11LmMgfCAgNjAgKysrKysrKysrKysrDQo+ICBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4
+eW5vc19wcG11LmggfCAgIDggKysNCj4gIDUgZmlsZXMgY2hhbmdlZCwgMTM1IGluc2VydGlvbnMo
+KyksIDIwNSBkZWxldGlvbnMoLSkNCj4NCj4gLS0NCj4gMS44LjIuMw0KPg0KPiAtLQ0KPiBUbyB1
+bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGlu
+dXgtcG0iIGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJu
+ZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcv
+bWFqb3Jkb21vLWluZm8uaHRtbA0KDQoNCg0KLS0gDQpNeXVuZ0pvbyBIYW0sIFBoLkQuDQpTeXN0
+ZW0gUy9XIExhYiwgUy9XIENlbnRlciwgU2Ftc3VuZyBFbGVjdHJvbmljcw0KIA==
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/freq_table.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 8e54f97..f002272 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -36,8 +36,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
- 		    && table[i].driver_data == CPUFREQ_BOOST_FREQ)
- 			continue;
- 
--		pr_debug("table entry %u: %u kHz, %u driver_data\n",
--					i, freq, table[i].driver_data);
-+		pr_debug("table entry %u: %u kHz\n", i, freq);
- 		if (freq < min_freq)
- 			min_freq = freq;
- 		if (freq > max_freq)
-@@ -175,8 +174,8 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 	} else
- 		*index = optimal.driver_data;
- 
--	pr_debug("target is %u (%u kHz, %u)\n", *index, table[*index].frequency,
--		table[*index].driver_data);
-+	pr_debug("target index is %u, freq is:%u kHz\n", *index,
-+		 table[*index].frequency);
- 
- 	return 0;
- }
--- 
-1.7.12.rc2.18.g61b472e
 
