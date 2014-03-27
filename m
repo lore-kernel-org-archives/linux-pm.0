@@ -1,33 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
-Date: Thu, 27 Mar 2014 15:53:36 +0530
-Message-ID: <CAKohponoSP2s3BYNb04mZOxCegcQHua1Pz7=dWN2nGo70OJOjw@mail.gmail.com>
-References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
-	<1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
-	<CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
-	<20140327093050.GA27777@in.ibm.com>
-	<CAKohponOe9Au+pe5u9FpddW3+f5pegZB953+5fmYBDusE9j0HA@mail.gmail.com>
-	<5333FBA8.1040107@linux.vnet.ibm.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: don't print value of .driver_data from core
+Date: Thu, 27 Mar 2014 16:18:42 +0530
+Message-ID: <20140327104842.GB27777@in.ibm.com>
+References: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f46.google.com ([209.85.219.46]:47462 "EHLO
-	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754182AbaC0KXh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Mar 2014 06:23:37 -0400
-Received: by mail-oa0-f46.google.com with SMTP id i7so4077507oag.33
-        for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 03:23:37 -0700 (PDT)
-In-Reply-To: <5333FBA8.1040107@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-On 27 March 2014 15:51, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> smp_processor_id() maps to debug_smp_processor_id() only if
-> CONFIG_DEBUG_PREEMPT is set. Otherwise, it is same as raw_smp_processor_id().
-> So I think its best to keep it as it is.
 
-That was the case in .configs and so suggested raw_* variant. Keep it
-as you want to :)
+On Thu, Mar 27, 2014 at 03:37:22PM +0530, Viresh Kumar wrote:
+> CPUFreq core doesn't control value of .driver_data and this field is completely
+> driver specific. This can contain any value and not only indexes. For most of
+> the drivers, which aren't using this field, its value is zero. So, printing this
+> from core doesn't make any sense. Don't print it.
+
+So after this patch, driver_data is only going to be used by drivers
+which want an "unsigned int" value to be saved along with the
+frequency in the frequency_table and for those who want to overload
+its interpretation to indicate BOOST.
+
+>From the core's stand point, it is useful only for determining whether
+a frequency is BOOST frequency or not. 
+
+So, wouldn't it be logical to allow drivers maintain their own driver
+data since the core is anyway not interested in it, and change this
+.driver_data to "flags" or some such which can indicate boost ?
+
+--
+Thanks and Regards
+gautham.
+
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/freq_table.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+> index 8e54f97..f002272 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -36,8 +36,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+>  		    && table[i].driver_data == CPUFREQ_BOOST_FREQ)
+>  			continue;
+> 
+> -		pr_debug("table entry %u: %u kHz, %u driver_data\n",
+> -					i, freq, table[i].driver_data);
+> +		pr_debug("table entry %u: %u kHz\n", i, freq);
+>  		if (freq < min_freq)
+>  			min_freq = freq;
+>  		if (freq > max_freq)
+> @@ -175,8 +174,8 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+>  	} else
+>  		*index = optimal.driver_data;
+> 
+> -	pr_debug("target is %u (%u kHz, %u)\n", *index, table[*index].frequency,
+> -		table[*index].driver_data);
+> +	pr_debug("target index is %u, freq is:%u kHz\n", *index,
+> +		 table[*index].frequency);
+> 
+>  	return 0;
+>  }
+> -- 
+> 1.7.12.rc2.18.g61b472e
+> 
+
