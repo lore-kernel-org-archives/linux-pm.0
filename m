@@ -1,67 +1,75 @@
-From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 0/4] devfreq: exynos: generalize PPMU code
-Date: Thu, 27 Mar 2014 10:08:09 +0000 (GMT)
-Message-ID: <14716616.146541395914888684.JavaMail.weblogic@epml10>
-Reply-To: myungjoo.ham@samsung.com
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
+Date: Thu, 27 Mar 2014 15:41:37 +0530
+Message-ID: <20140327101137.GA8747@dirshya.in.ibm.com>
+References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
+ <20140327093050.GA27777@in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=iso-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:23966 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752785AbaC0KIU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Mar 2014 06:08:20 -0400
-Received: from epcpsbgr1.samsung.com
- (u141.gpu120.samsung.co.kr [203.254.230.141])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0N3300M0XATN2610@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 27 Mar 2014 19:08:11 +0900 (KST)
-MIME-version: 1.0
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:40164 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753834AbaC0KLt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Mar 2014 06:11:49 -0400
+Received: from /spool/local
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <svaidy@linux.vnet.ibm.com>;
+	Thu, 27 Mar 2014 15:41:43 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4C86AE0056
+	for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 15:45:42 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id s2RABlXR45351134
+	for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 15:41:47 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id s2RABdTg012790
+	for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 15:41:41 +0530
+Content-Disposition: inline
+In-Reply-To: <20140327093050.GA27777@in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, =?euc-kr?Q?=C3=D6=C2=F9=BF=EC?= <cw00.choi@samsung.com>
-Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, Tomasz Figa <t.figa@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-DQoNCk9uIFNhdCwgTWFyIDIyLCAyMDE0IGF0IDI6MzEgQU0sIEJhcnRsb21pZWogWm9sbmllcmtp
-ZXdpY3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbT4gd3JvdGU6DQo+IEhpLA0KPg0KPiBUaGlz
-IHBhdGNoIHNlcmllcyBnZW5lcmFsaXplcyBQUE1VIHN1cHBvcnQgZm9yIEV4eW5vcyBkZXZmcmVx
-DQo+IGRyaXZlcnMuDQo+DQo+IEl0IGlzIGJhc2VkIG9uIHRvcCBvZiAiZGV2ZnJlcTogZXh5bm9z
-OiBGaXggbWlub3IgaXNzdWUgYW5kIGNvZGUNCj4gY2xlYW4gdG8gcmVtb3ZlIGxlZ2FjeSBtZXRo
-b2QiIHBhdGNoIHNlcmllcyBmcm9tIENoYW53b28gQ2hvaQ0KPiAoaHR0cHM6Ly9sa21sLm9yZy9s
-a21sLzIwMTQvMy8xOS83MTMpLg0KPg0KPiBQbGVhc2Ugbm90ZSB0aGF0IHRoZSBwYXRjaGVzIHdl
-cmUgb25seSBjb21waWxlIHRlc3RlZCBiZWNhdXNlDQo+IEV4eW5vcyBkZXZmcmVxIGRyaXZlcnMg
-ZG9uJ3Qgd29yayB5ZXQgaW4gdGhlIHVwc3RyZWFtIGtlcm5lbHMNCj4gKEZXSVcgdGhlc2UgY2hh
-bmdlcyB3ZXJlIGJyaWVmbHkgdGVzdGVkIHdpdGggdGhlIGludGVybmFsIHRyZWUNCj4gd2hpY2gg
-aGFzIHdvcmtpbmcgZGV2ZnJlcSBkcml2ZXJzKS4NCg0KSGkgQmxhcnRsb21pZWosDQoNCg0KVGhh
-bmsgeW91Lg0KDQpJJ2xsIG1lcmdlIHRoaXMgaW50byBkZXZmcmVxJ3MgZm9yLW5leHQuDQoNCg0K
-QW55d2F5LCBkYXlzIGFnbywgSSBoYWQgYSBzaG9ydCBkaXNjdXNzaW9uIHdpdGggQ2hhbndvbyBh
-Ym91dA0KcHJvdmlkaW5nIHNvbWUgY29tbW9uIGludGVyZmFjZSBmb3IgUFBNVS1saWtlIGRldmlj
-ZXMNCihzb3J0IG9mIHN1YiBkZXZpY2Ugb2YgZGV2ZnJlcSBkZXZpY2UpIHRoYXQgcHJvdmlkZSB1
-c2FnZSBzdGF0aXN0aWNzLiANCg0KQXQgdGhpcyBzdGFnZSwgSSByb3VnaGx5IGd1ZXNzIHRoYXQg
-c3VjaCBhIGRldmljZSBkcml2ZXIgKG9yIHdoYXRldmVyDQplbnRpdHkgaXQgaXMpIG1heSBiZSBz
-aW1wbHkgYSBoZWxwZXIgZm9yIGZpbGxpbmcgb3V0IHRoZSAiZ2V0X2Rldl9zdGF0dXMiIGNhbGxi
-YWNrLg0KSXQgaXMgYmVjYXVzZSBkZXZmcmVxJ3MgUFBNVSB1c2FnZSBpcyBsaW1pdGVkIHRvIGdl
-dHRpbmcgZ2V0X2Rldl9zdGF0dXMoKS4NCkFzIHlvdSBoYWQgZG9uZSBzb21ldGhpbmcgb24gUFBN
-VSwgSSBndWVzcyB5b3UgbWF5IGhhdmUgc29tZQ0KaWRlYSBvbiB0aGlzLg0KDQpDaGVlcnMsDQpN
-eXVuZ0pvby4NCj4NCj4gQmVzdCByZWdhcmRzLA0KPiAtLQ0KPiBCYXJ0bG9taWVqIFpvbG5pZXJr
-aWV3aWN6DQo+IFNhbXN1bmcgUiZEIEluc3RpdHV0ZSBQb2xhbmQNCj4gU2Ftc3VuZyBFbGVjdHJv
-bmljcw0KPg0KPg0KPiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6ICgzKToNCj4gICBkZXZmcmVx
-OiBleHlub3M0OiBpbnRyb2R1Y2Ugc3RydWN0IGJ1c2ZyZXFfcHBtdV9kYXRhDQo+ICAgZGV2ZnJl
-cTogZXh5bm9zNTogaW50cm9kdWNlIHN0cnVjdCBidXNmcmVxX3BwbXVfZGF0YQ0KPiAgIGRldmZy
-ZXE6IGV4eW5vczogbWFrZSBtb3JlIFBQTVUgY29kZSBjb21tb24NCj4NCj4gQ2hhbndvbyBDaG9p
-ICgxKToNCj4gICBkZXZmcmVxOiBleHlub3M0OiB1c2UgY29tbW9uIFBQTVUgY29kZQ0KPg0KPiAg
-ZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9NYWtlZmlsZSAgICAgIHwgICAyICstDQo+ICBkcml2ZXJz
-L2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLmMgfCAxNzYgKysrKysrKysrLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5bm9zNV9idXMuYyB8
-ICA5NCArKysrKy0tLS0tLS0tLS0tLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5v
-c19wcG11LmMgfCAgNjAgKysrKysrKysrKysrDQo+ICBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4
-eW5vc19wcG11LmggfCAgIDggKysNCj4gIDUgZmlsZXMgY2hhbmdlZCwgMTM1IGluc2VydGlvbnMo
-KyksIDIwNSBkZWxldGlvbnMoLSkNCj4NCj4gLS0NCj4gMS44LjIuMw0KPg0KPiAtLQ0KPiBUbyB1
-bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGlu
-dXgtcG0iIGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJu
-ZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcv
-bWFqb3Jkb21vLWluZm8uaHRtbA0KDQoNCg0KLS0gDQpNeXVuZ0pvbyBIYW0sIFBoLkQuDQpTeXN0
-ZW0gUy9XIExhYiwgUy9XIENlbnRlciwgU2Ftc3VuZyBFbGVjdHJvbmljcw0KIA==
+* Gautham R Shenoy <ego@linux.vnet.ibm.com> [2014-03-27 15:00:50]:
 
+[snip]
+ 
+> > > +       u32 len_ids, len_freqs;
+> > > +
+> > > +       power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+> > > +       if (!power_mgt) {
+> > > +               pr_warn("power-mgt node not found\n");
+> > > +               return -ENODEV;
+> > > +       }
+> > > +
+> > > +       if (of_property_read_u32(power_mgt, "ibm,pstate-min", &pstate_min)) {
+> > > +               pr_warn("ibm,pstate-min node not found\n");
+> > > +               return -ENODEV;
+> > > +       }
+> > > +
+> > > +       if (of_property_read_u32(power_mgt, "ibm,pstate-max", &pstate_max)) {
+> > > +               pr_warn("ibm,pstate-max node not found\n");
+> > > +               return -ENODEV;
+> > > +       }
+> > 
+> > Why do you need to get these from DT? And not find that yourself here instead?
+> >
+> 
+> Well, I think we can obtain a more accurate value from the DT which
+> would have already computed it. But I'll let vaidy answer this.
+
+DT provides the values that we should use.  Ideally these are the
+upper and lower limits of the PState table,  however as per the
+platform spec, we should use the PState IDs between these limits.  We
+would like to parse it and keep it in the driver for debug purposes.
+
+The platform exports this info in the DT to be more explicit and not
+have a strong dependency on the PState numbering or PState table
+itself.  In the driver we parse it for debug/validation purpose.
+
+--Vaidy
 
