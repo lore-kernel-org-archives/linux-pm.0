@@ -1,76 +1,125 @@
-From: Yuyang du <yuyang.du@intel.com>
-Subject: [RFC II] Splitting scheduler into two halves
-Date: Thu, 27 Mar 2014 02:37:21 +0800
-Message-ID: <20140326183721.GC24116@intel.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH] tick, broadcast: Prevent false alarm when force mask
+ contains offline cpus
+Date: Thu, 27 Mar 2014 08:32:31 +0530
+Message-ID: <533394C7.1000702@linux.vnet.ibm.com>
+References: <20140326035648.21736.85740.stgit@preeti.in.ibm.com> <5332B833.2030701@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:46033 "EHLO mga02.intel.com"
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:33603 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbaC0Cgp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 26 Mar 2014 22:36:45 -0400
-Content-Disposition: inline
+	id S1751658AbaC0DGn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Mar 2014 23:06:43 -0400
+Received: from /spool/local
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Wed, 26 Mar 2014 23:06:42 -0400
+In-Reply-To: <5332B833.2030701@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: morten.rasmussen@arm.com, arjan.van.de.ven@intel.com, len.brown@intel.com, rafael.j.wysocki@intel.com, alan.cox@intel.com
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, paulmck@linux.vnet.ibm.com, davem@davemloft.net
 
-Hi all,
+On 03/26/2014 04:51 PM, Srivatsa S. Bhat wrote:
+> On 03/26/2014 09:26 AM, Preeti U Murthy wrote:
+>> Its possible that the tick_broadcast_force_mask contains cpus which are not
+>> in cpu_online_mask when a broadcast tick occurs. This could happen under the
+>> following circumstance assuming CPU1 is among the CPUs waiting for broadcast.
+>>
+>> CPU0					CPU1
+>>
+>> Run CPU_DOWN_PREPARE notifiers
+>>
+>> Start stop_machine			Gets woken up by IPI to run
+>> 					stop_machine, sets itself in
+>> 					tick_broadcast_force_mask if the
+>> 					time of broadcast interrupt is around
+>> 					the same time as this IPI.
+>>
+>> 					Start stop_machine
+>> 					  set_cpu_online(cpu1, false)
+>> End stop_machine			End stop_machine
+>>
+>> Broadcast interrupt
+>>   Finds that cpu1 in
+>>   tick_broadcast_force_mask is offline
+>>   and triggers the WARN_ON in
+>>   tick_handle_oneshot_broadcast()
+>>
+>> Clears all broadcast masks
+>> in CPU_DEAD stage.
+>>
+>> This WARN_ON was added to capture scenarios where the broadcast mask, be it
+>> oneshot/pending/force_mask contain offline cpus whose tick devices have been
+>> removed. But here is a case where we trigger the warn on in a valid scenario.
+>>
+>> One could argue that the scenario is invalid and ought to be warned against
+>> because ideally the broadcast masks need to be cleared of the cpus about to
+>> go offine before clearing them in the online_mask so that we dont hit these
+>> scenarios.
+>>
+>> This would mean clearing the masks in CPU_DOWN_PREPARE stage.
+> 
+> Not necessarily. We could clear the mask in the CPU_DYING stage. That way,
+> offline CPUs will automatically get cleared from the force_mask and hence
+> the tick-broadcast code will not need to have a special case to deal with
+> this scenario. What do you think?
 
-This is continued after the first RFC about splitting the scheduler. Still
-work-in-progress, and call for feedback.
+Ok I gave some thought to this. This will not work with the hrtimer mode
+of broadcast framework going in. This is the feature that was added for
+implementations of such archs which do not have an external clock device
+to wake them up in deep idle states when the local timers stop. They
+assign one of the CPUs as an agent to wake them up. When this designated
+CPU gets hotplugged out, we need to assign this duty to some other CPU.
 
-The question addressed here is how load balance should be changed. And I think
-the question then goes to how to *reuse* common code as much as possible and
-meanwhile be able to serve various objectives.
+The way this is being done now is in
+tick_shutdown_broadcast_oneshot_control() which is also responsible for
+clearing the broadcast masks. When the hrtimer mode of broadcast is
+active, then in addition to clearing masks in this function we make the
+CPU executing this function take on the task of waking up CPUs in deep
+idle state if the hotplugged CPU was doing this earlier.
 
-So these are the basic semantics needed in current load balance:
+Currently tick_shutdown_broadcast_oneshot_control() is being executed in
+the CPU_DEAD notification and this is guarenteed to run on a CPU *other
+than* the dying CPU. Hence we can safely do this.
 
-1. [ At balance point ] on this_cpu push task on that_cpu to [ third_cpu ]
+However if we move this function underneath CPU_DYING notifier, this
+will turn out to be a disaster since IIUC the dying CPU is running this
+notifier and will end up re-assigning the duty of waking up CPUs to itself.
 
-Examples are fork/exec/wakeup. Task is determined by the balance point in
-question. And that_cpu is determined by task.
+Does this make sense?
 
-2. [ At balance point ] on this_cpu pull [ task/tasks ] on [ that_cpu ] to
-this_cpu
+Regards
+Preeti U Murthy
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
+>> ---
+>>
+>>  kernel/time/tick-broadcast.c |    7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+>> index 63c7b2d..30b8731 100644
+>> --- a/kernel/time/tick-broadcast.c
+>> +++ b/kernel/time/tick-broadcast.c
+>> @@ -606,7 +606,12 @@ again:
+>>  	 */
+>>  	cpumask_clear_cpu(smp_processor_id(), tick_broadcast_pending_mask);
+>>
+>> -	/* Take care of enforced broadcast requests */
+>> +	/* Take care of enforced broadcast requests. We could have offline
+>> +	 * cpus in the tick_broadcast_force_mask. Thats ok, we got the interrupt
+>> +	 * before we could clear the mask.
+>> +	 */
+>> +	cpumask_and(tick_broadcast_force_mask,
+>> +			tick_broadcast_force_mask, cpu_online_mask);
+>>  	cpumask_or(tmpmask, tmpmask, tick_broadcast_force_mask);
+>>  	cpumask_clear(tick_broadcast_force_mask);
+>>
+>>
+> 
 
-Examples are other idle/periodic/nohz balance, and active_load_balance in
-ASYM_PACKING (pull first and then a push).
-
-3. [ At balance point ] on this_cpu kick [ that_cpu/those_cpus ] to do [ what
-] balance
-
-Examples are nohz idle balance and active balance.
-
-To make the above more general, we need to abstract more:
-
-1. [ At balance point ] on this_cpu push task on that_cpu to [ third_cpu ] in
-[ cpu_mask ]
-
-2. [ At balance point ] on this_cpu [ do | skip ] pull [task/tasks ] on [
-that_cpu ] in [ cpu_mask ] to this_cpu
-
-3. [ At balance point ] on this_cpu kick [ that_cpu/those_cpus ] in [ cpu_mask
-] to do nohz idle balance
-
-So essentially, we give them choice or restrict the scope for them.
-
-Then instead of an all-in-one load_balance class, we define pull or push
-classes:
-
-struct push_class:
-int (*which_third_cpu);
-struct cpumask * (*which_cpu_mask);
-
-struct pull_class:
-int (*skip);
-int (*which_that_cpu);
-struct task_struct * (*which_task);
-struct cpumask* (*which_cpu_mask);
-
-Last but not least, currently we configure domain by flags/parameters, how
-about attaching push/pull classes directly to them as struct members? So those
-classes are responsible specially for its riding domain's "well-being".
-
-Thanks,
-Yuyang
