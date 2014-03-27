@@ -1,74 +1,46 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: don't print value of .driver_data from core
-Date: Thu, 27 Mar 2014 16:18:42 +0530
-Message-ID: <20140327104842.GB27777@in.ibm.com>
+Date: Thu, 27 Mar 2014 16:29:37 +0530
+Message-ID: <CAKohpombz9jzAs-_mpBNJyTJrrvvXVQ1L0V8fyKmB1vXpSPjmQ@mail.gmail.com>
 References: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
-Reply-To: ego@linux.vnet.ibm.com
+	<20140327104842.GB27777@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2490cd0aaeaaeb88131c8089d491c485f08da5da.1395914766.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:41949 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755443AbaC0K7i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Mar 2014 06:59:38 -0400
+Received: by mail-ob0-f174.google.com with SMTP id wo20so4003914obc.19
+        for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 03:59:38 -0700 (PDT)
+In-Reply-To: <20140327104842.GB27777@in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
+On 27 March 2014 16:18, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> So after this patch, driver_data is only going to be used by drivers
+> which want an "unsigned int" value to be saved along with the
+> frequency in the frequency_table and for those who want to overload
+> its interpretation to indicate BOOST.
+>
+> From the core's stand point, it is useful only for determining whether
+> a frequency is BOOST frequency or not.
 
-On Thu, Mar 27, 2014 at 03:37:22PM +0530, Viresh Kumar wrote:
-> CPUFreq core doesn't control value of .driver_data and this field is completely
-> driver specific. This can contain any value and not only indexes. For most of
-> the drivers, which aren't using this field, its value is zero. So, printing this
-> from core doesn't make any sense. Don't print it.
+Yes.
 
-So after this patch, driver_data is only going to be used by drivers
-which want an "unsigned int" value to be saved along with the
-frequency in the frequency_table and for those who want to overload
-its interpretation to indicate BOOST.
+> So, wouldn't it be logical to allow drivers maintain their own driver
+> data since the core is anyway not interested in it, and change this
+> .driver_data to "flags" or some such which can indicate boost ?
 
->From the core's stand point, it is useful only for determining whether
-a frequency is BOOST frequency or not. 
+We can add another field .flags in case Rafael doesn't accept the
+other proposal I sent for fixing BOOST issue.
 
-So, wouldn't it be logical to allow drivers maintain their own driver
-data since the core is anyway not interested in it, and change this
-.driver_data to "flags" or some such which can indicate boost ?
-
---
-Thanks and Regards
-gautham.
-
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/freq_table.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index 8e54f97..f002272 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -36,8 +36,7 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
->  		    && table[i].driver_data == CPUFREQ_BOOST_FREQ)
->  			continue;
-> 
-> -		pr_debug("table entry %u: %u kHz, %u driver_data\n",
-> -					i, freq, table[i].driver_data);
-> +		pr_debug("table entry %u: %u kHz\n", i, freq);
->  		if (freq < min_freq)
->  			min_freq = freq;
->  		if (freq > max_freq)
-> @@ -175,8 +174,8 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
->  	} else
->  		*index = optimal.driver_data;
-> 
-> -	pr_debug("target is %u (%u kHz, %u)\n", *index, table[*index].frequency,
-> -		table[*index].driver_data);
-> +	pr_debug("target index is %u, freq is:%u kHz\n", *index,
-> +		 table[*index].frequency);
-> 
->  	return 0;
->  }
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
-
+But the point behind keeping .driver_data field here was: many drivers
+have some information attached to each frequency and they are closely
+bound to each other. And so it made more sense to keep them together.
+This is still used by many drivers and I wouldn't like them to maintain
+separate arrays for keeping this information. They are so much bound
+to the frequencies at the same index, that keeping them separately
+wouldn't be a good idea.
