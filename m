@@ -1,72 +1,827 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v5 1/3] powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
-Date: Sat, 29 Mar 2014 01:41:22 +0530
-Message-ID: <1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
-References: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCHC 1/3] cpuidle: encapsulate power info in a separate structure
+Date: Fri, 28 Mar 2014 21:42:04 +0100
+Message-ID: <CAKnoXLz13V-xd7Vi9ahF02tT86jshGmzPAL5C0_mvcnpZB=ExQ@mail.gmail.com>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
+	<1396009796-31598-2-git-send-email-daniel.lezcano@linaro.org>
+	<alpine.LFD.2.11.1403281356220.1571@knanqh.ubzr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:41790 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbaC1ULs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 16:11:48 -0400
-Received: from /spool/local
-	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Sat, 29 Mar 2014 01:41:45 +0530
-In-Reply-To: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+Received: from mail-qc0-f171.google.com ([209.85.216.171]:57758 "EHLO
+	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751921AbaC1UmF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 16:42:05 -0400
+Received: by mail-qc0-f171.google.com with SMTP id c9so6535250qcz.16
+        for <linux-pm@vger.kernel.org>; Fri, 28 Mar 2014 13:42:04 -0700 (PDT)
+In-Reply-To: <alpine.LFD.2.11.1403281356220.1571@knanqh.ubzr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alex Shi <alex.shi@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Hi Nicolas,
 
-Enable CPUFreq for PowerNV. Select "performance", "powersave",
-"userspace" and "ondemand" governors. Choose "ondemand" to be the
-default governor.
+thanks for reviewing the patchset.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
- arch/powerpc/configs/pseries_defconfig    | 1 +
- arch/powerpc/configs/pseries_le_defconfig | 1 +
- arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
- 3 files changed, 8 insertions(+)
+On 03/28/2014 07:17 PM, Nicolas Pitre wrote:
+> On Fri, 28 Mar 2014, Daniel Lezcano wrote:
+>
+>> The scheduler needs some information from cpuidle to know the timing=
+ for a
+>> specific idle state a cpu is.
+>>
+>> This patch creates a separate structure to group the cpuidle power i=
+nfo in
+>> order to share it with the scheduler. It improves the encapsulation =
+of the
+>> code.
+>
+> Having cpuidle_power as a structure name, or worse, 'power' as a stru=
+ct
+> member, is a really bad choice.
 
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 9ea8342b..a905063 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -306,3 +306,4 @@ CONFIG_KVM_BOOK3S_64=m
- CONFIG_KVM_BOOK3S_64_HV=y
- CONFIG_TRANSPARENT_HUGEPAGE=y
- CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-index 3c84f9d..58e3dbf 100644
---- a/arch/powerpc/configs/pseries_le_defconfig
-+++ b/arch/powerpc/configs/pseries_le_defconfig
-@@ -301,3 +301,4 @@ CONFIG_CRYPTO_LZO=m
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- CONFIG_CRYPTO_DEV_NX=y
- CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index 895e8a2..c252ee9 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -11,6 +11,12 @@ config PPC_POWERNV
- 	select PPC_UDBG_16550
- 	select PPC_SCOM
- 	select ARCH_RANDOM
-+	select CPU_FREQ
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	select CPU_FREQ_GOV_POWERSAVE
-+	select CPU_FREQ_GOV_USERSPACE
-+	select CPU_FREQ_GOV_ONDEMAND
-+	select CPU_FREQ_GOV_CONSERVATIVE
- 	default y
- 
- config PPC_POWERNV_RTAS
--- 
-1.8.3.1
+Yes, I was asking myself if this name was a good choice or not. I
+assumed 'power' could have been a good name because 'target_residency'
+is a time conversion of the power needed to enter this state.
 
+> Amongst the fields this struct
+> contains, only 1 out of 3 is about power.  The word "power" is alread=
+y
+> abused quite significantly to mean too many different things already.
+>
+> I'd suggest something inspired by your own patch log message i.e.
+> 'struct cpuidle_info' instead, and use 'info' as a field name within
+> struct cpuidle_state.  Having 'params" instead of "info" could be a g=
+ood
+> alternative too, although slightly longer.
+
+Hmm 'info' or 'param' sound too vague. What about:
+
+cpuidle_attr
+or
+cpuidle_property
+
+?
+
+> And with struct rq in patch 2/3 I'd simply use:
+>
+> struct cpuidle_info *cpuidle;
+>
+> This way you'll have rq->cpuidle->exit_latency to refer to from the
+> scheduler context which is IMHO much more self explanatory.
+
+Ok, sounds good.
+
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>   arch/arm/include/asm/cpuidle.h       |    6 +-
+>>   arch/arm/mach-exynos/cpuidle.c       |    4 +-
+>>   drivers/acpi/processor_idle.c        |    4 +-
+>>   drivers/base/power/domain.c          |    6 +-
+>>   drivers/cpuidle/cpuidle-at91.c       |    4 +-
+>>   drivers/cpuidle/cpuidle-big_little.c |    9 +--
+>>   drivers/cpuidle/cpuidle-calxeda.c    |    6 +-
+>>   drivers/cpuidle/cpuidle-kirkwood.c   |    4 +-
+>>   drivers/cpuidle/cpuidle-powernv.c    |    8 +--
+>>   drivers/cpuidle/cpuidle-pseries.c    |   12 ++--
+>>   drivers/cpuidle/cpuidle-ux500.c      |   14 ++---
+>>   drivers/cpuidle/cpuidle-zynq.c       |    4 +-
+>>   drivers/cpuidle/driver.c             |    6 +-
+>>   drivers/cpuidle/governors/ladder.c   |   14 +++--
+>>   drivers/cpuidle/governors/menu.c     |    8 +--
+>>   drivers/cpuidle/sysfs.c              |    2 +-
+>>   drivers/idle/intel_idle.c            |  112 +++++++++++++++++-----=
+------------
+>>   include/linux/cpuidle.h              |   10 ++-
+>>   18 files changed, 120 insertions(+), 113 deletions(-)
+>>
+>> diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/c=
+puidle.h
+>> index 2fca60a..987ee53 100644
+>> --- a/arch/arm/include/asm/cpuidle.h
+>> +++ b/arch/arm/include/asm/cpuidle.h
+>> @@ -12,9 +12,9 @@ static inline int arm_cpuidle_simple_enter(struct =
+cpuidle_device *dev,
+>>   /* Common ARM WFI state */
+>>   #define ARM_CPUIDLE_WFI_STATE_PWR(p) {\
+>>   .enter                  =3D arm_cpuidle_simple_enter,\
+>> - .exit_latency           =3D 1,\
+>> - .target_residency       =3D 1,\
+>> - .power_usage =3D p,\
+>> + .power.exit_latency     =3D 1,\
+>> + .power.target_residency =3D 1,\
+>> + .power.power_usage =3D p,\
+>>   .flags                  =3D CPUIDLE_FLAG_TIME_VALID,\
+>>   .name                   =3D "WFI",\
+>>   .desc                   =3D "ARM WFI",\
+>> diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/c=
+puidle.c
+>> index f57cb91..f6275cb 100644
+>> --- a/arch/arm/mach-exynos/cpuidle.c
+>> +++ b/arch/arm/mach-exynos/cpuidle.c
+>> @@ -73,8 +73,8 @@ static struct cpuidle_driver exynos4_idle_driver =3D=
+ {
+>>   [0] =3D ARM_CPUIDLE_WFI_STATE,
+>>   [1] =3D {
+>>   .enter =3D exynos4_enter_lowpower,
+>> - .exit_latency =3D 300,
+>> - .target_residency =3D 100000,
+>> + .power.exit_latency =3D 300,
+>> + .power.target_residency =3D 100000,
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>   .name =3D "C1",
+>>   .desc =3D "ARM power down",
+>> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_=
+idle.c
+>> index 3dca36d..05fa991 100644
+>> --- a/drivers/acpi/processor_idle.c
+>> +++ b/drivers/acpi/processor_idle.c
+>> @@ -979,8 +979,8 @@ static int acpi_processor_setup_cpuidle_states(s=
+truct acpi_processor *pr)
+>>   state =3D &drv->states[count];
+>>   snprintf(state->name, CPUIDLE_NAME_LEN, "C%d", i);
+>>   strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
+>> - state->exit_latency =3D cx->latency;
+>> - state->target_residency =3D cx->latency * latency_factor;
+>> + state->power.exit_latency =3D cx->latency;
+>> + state->power.target_residency =3D cx->latency * latency_factor;
+>>
+>>   state->flags =3D 0;
+>>   switch (cx->type) {
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain=
+=2Ec
+>> index bfb8955..6bcb1e8 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -154,7 +154,7 @@ static void genpd_recalc_cpu_exit_latency(struct=
+ generic_pm_domain *genpd)
+>>   usecs64 =3D genpd->power_on_latency_ns;
+>>   do_div(usecs64, NSEC_PER_USEC);
+>>   usecs64 +=3D genpd->cpu_data->saved_exit_latency;
+>> - genpd->cpu_data->idle_state->exit_latency =3D usecs64;
+>> + genpd->cpu_data->idle_state->power.exit_latency =3D usecs64;
+>>   }
+>>
+>>   /**
+>> @@ -1882,7 +1882,7 @@ int pm_genpd_attach_cpuidle(struct generic_pm_=
+domain *genpd, int state)
+>>   goto err;
+>>   }
+>>   cpu_data->idle_state =3D idle_state;
+>> - cpu_data->saved_exit_latency =3D idle_state->exit_latency;
+>> + cpu_data->saved_exit_latency =3D idle_state->power.exit_latency;
+>>   genpd->cpu_data =3D cpu_data;
+>>   genpd_recalc_cpu_exit_latency(genpd);
+>>
+>> @@ -1936,7 +1936,7 @@ int pm_genpd_detach_cpuidle(struct generic_pm_=
+domain *genpd)
+>>   ret =3D -EAGAIN;
+>>   goto out;
+>>   }
+>> - idle_state->exit_latency =3D cpu_data->saved_exit_latency;
+>> + idle_state->power.exit_latency =3D cpu_data->saved_exit_latency;
+>>   cpuidle_driver_unref();
+>>   genpd->cpu_data =3D NULL;
+>>   kfree(cpu_data);
+>> diff --git a/drivers/cpuidle/cpuidle-at91.c b/drivers/cpuidle/cpuidl=
+e-at91.c
+>> index a077437..48c7063 100644
+>> --- a/drivers/cpuidle/cpuidle-at91.c
+>> +++ b/drivers/cpuidle/cpuidle-at91.c
+>> @@ -40,9 +40,9 @@ static struct cpuidle_driver at91_idle_driver =3D =
+{
+>>   .owner =3D THIS_MODULE,
+>>   .states[0] =3D ARM_CPUIDLE_WFI_STATE,
+>>   .states[1] =3D {
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 10000,
+>>   .enter =3D at91_enter_idle,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 10000,
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>   .name =3D "RAM_SR",
+>>   .desc =3D "WFI and DDR Self Refresh",
+>> diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/=
+cpuidle-big_little.c
+>> index b45fc62..5a0af4b 100644
+>> --- a/drivers/cpuidle/cpuidle-big_little.c
+>> +++ b/drivers/cpuidle/cpuidle-big_little.c
+>> @@ -62,9 +62,9 @@ static struct cpuidle_driver bl_idle_little_driver=
+ =3D {
+>>   .owner =3D THIS_MODULE,
+>>   .states[0] =3D ARM_CPUIDLE_WFI_STATE,
+>>   .states[1] =3D {
+>> + .power.exit_latency =3D 700,
+>> + .power.target_residency =3D 2500,
+>>   .enter =3D bl_enter_powerdown,
+>> - .exit_latency =3D 700,
+>> - .target_residency =3D 2500,
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID |
+>>    CPUIDLE_FLAG_TIMER_STOP,
+>>   .name =3D "C1",
+>> @@ -78,9 +78,10 @@ static struct cpuidle_driver bl_idle_big_driver =3D=
+ {
+>>   .owner =3D THIS_MODULE,
+>>   .states[0] =3D ARM_CPUIDLE_WFI_STATE,
+>>   .states[1] =3D {
+>> +
+>> + .power.exit_latency =3D 500,
+>> + .power.target_residency =3D 2000,
+>>   .enter =3D bl_enter_powerdown,
+>> - .exit_latency =3D 500,
+>> - .target_residency =3D 2000,
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID |
+>>    CPUIDLE_FLAG_TIMER_STOP,
+>>   .name =3D "C1",
+>> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpu=
+idle-calxeda.c
+>> index 6e51114..8357a20 100644
+>> --- a/drivers/cpuidle/cpuidle-calxeda.c
+>> +++ b/drivers/cpuidle/cpuidle-calxeda.c
+>> @@ -56,9 +56,9 @@ static struct cpuidle_driver calxeda_idle_driver =3D=
+ {
+>>   .name =3D "PG",
+>>   .desc =3D "Power Gate",
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 30,
+>> - .power_usage =3D 50,
+>> - .target_residency =3D 200,
+>> + .power.exit_latency =3D 30,
+>> + .power.power_usage =3D 50,
+>> + .power.target_residency =3D 200,
+>>   .enter =3D calxeda_pwrdown_idle,
+>>   },
+>>   },
+>> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cp=
+uidle-kirkwood.c
+>> index 41ba843..0ae4138 100644
+>> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+>> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+>> @@ -44,9 +44,9 @@ static struct cpuidle_driver kirkwood_idle_driver =
+=3D {
+>>   .owner =3D THIS_MODULE,
+>>   .states[0] =3D ARM_CPUIDLE_WFI_STATE,
+>>   .states[1] =3D {
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 100000,
+>>   .enter =3D kirkwood_enter_idle,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 100000,
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>>   .name =3D "DDR SR",
+>>   .desc =3D "WFI and DDR Self Refresh",
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpu=
+idle-powernv.c
+>> index f48607c..c47cc02 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -62,15 +62,15 @@ static struct cpuidle_state powernv_states[] =3D=
+ {
+>>   .name =3D "snooze",
+>>   .desc =3D "snooze",
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 0,
+>> - .target_residency =3D 0,
+>> + .power.exit_latency =3D 0,
+>> + .power.target_residency =3D 0,
+>>   .enter =3D &snooze_loop },
+>>   { /* NAP */
+>>   .name =3D "NAP",
+>>   .desc =3D "NAP",
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 100,
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 100,
+>>   .enter =3D &nap_loop },
+>>   };
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpu=
+idle-pseries.c
+>> index 6f7b019..483d7e7 100644
+>> --- a/drivers/cpuidle/cpuidle-pseries.c
+>> +++ b/drivers/cpuidle/cpuidle-pseries.c
+>> @@ -143,15 +143,15 @@ static struct cpuidle_state dedicated_states[]=
+ =3D {
+>>   .name =3D "snooze",
+>>   .desc =3D "snooze",
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 0,
+>> - .target_residency =3D 0,
+>> + .power.exit_latency =3D 0,
+>> + .power.target_residency =3D 0,
+>>   .enter =3D &snooze_loop },
+>>   { /* CEDE */
+>>   .name =3D "CEDE",
+>>   .desc =3D "CEDE",
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 100,
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 100,
+>>   .enter =3D &dedicated_cede_loop },
+>>   };
+>>
+>> @@ -163,8 +163,8 @@ static struct cpuidle_state shared_states[] =3D =
+{
+>>   .name =3D "Shared Cede",
+>>   .desc =3D "Shared Cede",
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 0,
+>> - .target_residency =3D 0,
+>> + .power.exit_latency =3D 0,
+>> + .power.target_residency =3D 0,
+>>   .enter =3D &shared_cede_loop },
+>>   };
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-ux500.c b/drivers/cpuidle/cpuid=
+le-ux500.c
+>> index 5e35804..3261eb2 100644
+>> --- a/drivers/cpuidle/cpuidle-ux500.c
+>> +++ b/drivers/cpuidle/cpuidle-ux500.c
+>> @@ -98,13 +98,13 @@ static struct cpuidle_driver ux500_idle_driver =3D=
+ {
+>>   .states =3D {
+>>   ARM_CPUIDLE_WFI_STATE,
+>>   {
+>> - .enter  =3D ux500_enter_idle,
+>> - .exit_latency  =3D 70,
+>> - .target_residency =3D 260,
+>> - .flags  =3D CPUIDLE_FLAG_TIME_VALID |
+>> -                    CPUIDLE_FLAG_TIMER_STOP,
+>> - .name  =3D "ApIdle",
+>> - .desc  =3D "ARM Retention",
+>> + .power.exit_latency =3D 70,
+>> + .power.target_residency =3D 260,
+>> + .enter =3D ux500_enter_idle,
+>> + .flags =3D CPUIDLE_FLAG_TIME_VALID |
+>> + CPUIDLE_FLAG_TIMER_STOP,
+>> + .name =3D "ApIdle",
+>> + .desc =3D "ARM Retention",
+>>   },
+>>   },
+>>   .safe_state_index =3D 0,
+>> diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidl=
+e-zynq.c
+>> index aded759..dddefb8 100644
+>> --- a/drivers/cpuidle/cpuidle-zynq.c
+>> +++ b/drivers/cpuidle/cpuidle-zynq.c
+>> @@ -56,9 +56,9 @@ static struct cpuidle_driver zynq_idle_driver =3D =
+{
+>>   .states =3D {
+>>   ARM_CPUIDLE_WFI_STATE,
+>>   {
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 10000,
+>>   .enter =3D zynq_enter_idle,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 10000,
+>>   .flags =3D CPUIDLE_FLAG_TIME_VALID |
+>>    CPUIDLE_FLAG_TIMER_STOP,
+>>   .name =3D "RAM_SR",
+>> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+>> index 06dbe7c..40ddd3c 100644
+>> --- a/drivers/cpuidle/driver.c
+>> +++ b/drivers/cpuidle/driver.c
+>> @@ -206,9 +206,9 @@ static void poll_idle_init(struct cpuidle_driver=
+ *drv)
+>>
+>>   snprintf(state->name, CPUIDLE_NAME_LEN, "POLL");
+>>   snprintf(state->desc, CPUIDLE_DESC_LEN, "CPUIDLE CORE POLL IDLE");
+>> - state->exit_latency =3D 0;
+>> - state->target_residency =3D 0;
+>> - state->power_usage =3D -1;
+>> + state->power.exit_latency =3D 0;
+>> + state->power.target_residency =3D 0;
+>> + state->power.power_usage =3D -1;
+>>   state->flags =3D 0;
+>>   state->enter =3D poll_idle;
+>>   state->disabled =3D false;
+>> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/go=
+vernors/ladder.c
+>> index 9f08e8c..4837880 100644
+>> --- a/drivers/cpuidle/governors/ladder.c
+>> +++ b/drivers/cpuidle/governors/ladder.c
+>> @@ -81,7 +81,7 @@ static int ladder_select_state(struct cpuidle_driv=
+er *drv,
+>>
+>>   if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+>>   last_residency =3D cpuidle_get_last_residency(dev) - \
+>> - drv->states[last_idx].exit_latency;
+>> + drv->states[last_idx].power.exit_latency;
+>>   }
+>>   else
+>>   last_residency =3D last_state->threshold.promotion_time + 1;
+>> @@ -91,7 +91,7 @@ static int ladder_select_state(struct cpuidle_driv=
+er *drv,
+>>      !drv->states[last_idx + 1].disabled &&
+>>      !dev->states_usage[last_idx + 1].disable &&
+>>      last_residency > last_state->threshold.promotion_time &&
+>> -    drv->states[last_idx + 1].exit_latency <=3D latency_req) {
+>> +    drv->states[last_idx + 1].power.exit_latency <=3D latency_req) =
+{
+>>   last_state->stats.promotion_count++;
+>>   last_state->stats.demotion_count =3D 0;
+>>   if (last_state->stats.promotion_count >=3D last_state->threshold.p=
+romotion_count) {
+>> @@ -104,11 +104,11 @@ static int ladder_select_state(struct cpuidle_=
+driver *drv,
+>>   if (last_idx > CPUIDLE_DRIVER_STATE_START &&
+>>      (drv->states[last_idx].disabled ||
+>>      dev->states_usage[last_idx].disable ||
+>> -    drv->states[last_idx].exit_latency > latency_req)) {
+>> +    drv->states[last_idx].power.exit_latency > latency_req)) {
+>>   int i;
+>>
+>>   for (i =3D last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
+>> - if (drv->states[i].exit_latency <=3D latency_req)
+>> + if (drv->states[i].power.exit_latency <=3D latency_req)
+>>   break;
+>>   }
+>>   ladder_do_selection(ldev, last_idx, i);
+>> @@ -155,9 +155,11 @@ static int ladder_enable_device(struct cpuidle_=
+driver *drv,
+>>   lstate->threshold.demotion_count =3D DEMOTION_COUNT;
+>>
+>>   if (i < drv->state_count - 1)
+>> - lstate->threshold.promotion_time =3D state->exit_latency;
+>> + lstate->threshold.promotion_time =3D
+>> + state->power.exit_latency;
+>>   if (i > 0)
+>> - lstate->threshold.demotion_time =3D state->exit_latency;
+>> + lstate->threshold.demotion_time =3D
+>> + state->power.exit_latency;
+>>   }
+>>
+>>   return 0;
+>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gove=
+rnors/menu.c
+>> index cf7f2f0..34bd463 100644
+>> --- a/drivers/cpuidle/governors/menu.c
+>> +++ b/drivers/cpuidle/governors/menu.c
+>> @@ -351,15 +351,15 @@ static int menu_select(struct cpuidle_driver *=
+drv, struct cpuidle_device *dev)
+>>
+>>   if (s->disabled || su->disable)
+>>   continue;
+>> - if (s->target_residency > data->predicted_us)
+>> + if (s->power.target_residency > data->predicted_us)
+>>   continue;
+>> - if (s->exit_latency > latency_req)
+>> + if (s->power.exit_latency > latency_req)
+>>   continue;
+>> - if (s->exit_latency * multiplier > data->predicted_us)
+>> + if (s->power.exit_latency * multiplier > data->predicted_us)
+>>   continue;
+>>
+>>   data->last_state_idx =3D i;
+>> - data->exit_us =3D s->exit_latency;
+>> + data->exit_us =3D s->power.exit_latency;
+>>   }
+>>
+>>   return data->last_state_idx;
+>> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+>> index e918b6d..1a45541 100644
+>> --- a/drivers/cpuidle/sysfs.c
+>> +++ b/drivers/cpuidle/sysfs.c
+>> @@ -252,7 +252,7 @@ static struct cpuidle_state_attr attr_##_name =3D=
+ __ATTR(_name, 0644, show, store)
+>>   static ssize_t show_state_##_name(struct cpuidle_state *state, \
+>>   struct cpuidle_state_usage *state_usage, char *buf) \
+>>   { \
+>> - return sprintf(buf, "%u\n", state->_name);\
+>> + return sprintf(buf, "%u\n", state->power._name);\
+>>   }
+>>
+>>   #define define_store_state_ull_function(_name) \
+>> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+>> index 8e1939f..4f0533e 100644
+>> --- a/drivers/idle/intel_idle.c
+>> +++ b/drivers/idle/intel_idle.c
+>> @@ -128,29 +128,29 @@ static struct cpuidle_state nehalem_cstates[] =
+=3D {
+>>   .name =3D "C1-NHM",
+>>   .desc =3D "MWAIT 0x00",
+>>   .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 3,
+>> - .target_residency =3D 6,
+>> + .power.exit_latency =3D 3,
+>> + .power.target_residency =3D 6,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C1E-NHM",
+>>   .desc =3D "MWAIT 0x01",
+>>   .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 20,
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 20,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C3-NHM",
+>>   .desc =3D "MWAIT 0x10",
+>>   .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 20,
+>> - .target_residency =3D 80,
+>> + .power.exit_latency =3D 20,
+>> + .power.target_residency =3D 80,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C6-NHM",
+>>   .desc =3D "MWAIT 0x20",
+>>   .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 200,
+>> - .target_residency =3D 800,
+>> + .power.exit_latency =3D 200,
+>> + .power.target_residency =3D 800,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .enter =3D NULL }
+>> @@ -161,36 +161,36 @@ static struct cpuidle_state snb_cstates[] =3D =
+{
+>>   .name =3D "C1-SNB",
+>>   .desc =3D "MWAIT 0x00",
+>>   .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 2,
+>> - .target_residency =3D 2,
+>> + .power.exit_latency =3D 2,
+>> + .power.target_residency =3D 2,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C1E-SNB",
+>>   .desc =3D "MWAIT 0x01",
+>>   .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 20,
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 20,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C3-SNB",
+>>   .desc =3D "MWAIT 0x10",
+>>   .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 80,
+>> - .target_residency =3D 211,
+>> + .power.exit_latency =3D 80,
+>> + .power.target_residency =3D 211,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C6-SNB",
+>>   .desc =3D "MWAIT 0x20",
+>>   .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 104,
+>> - .target_residency =3D 345,
+>> + .power.exit_latency =3D 104,
+>> + .power.target_residency =3D 345,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C7-SNB",
+>>   .desc =3D "MWAIT 0x30",
+>>   .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 109,
+>> - .target_residency =3D 345,
+>> + .power.exit_latency =3D 109,
+>> + .power.target_residency =3D 345,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .enter =3D NULL }
+>> @@ -201,36 +201,36 @@ static struct cpuidle_state ivb_cstates[] =3D =
+{
+>>   .name =3D "C1-IVB",
+>>   .desc =3D "MWAIT 0x00",
+>>   .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 1,
+>> - .target_residency =3D 1,
+>> + .power.exit_latency =3D 1,
+>> + .power.target_residency =3D 1,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C1E-IVB",
+>>   .desc =3D "MWAIT 0x01",
+>>   .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 20,
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 20,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C3-IVB",
+>>   .desc =3D "MWAIT 0x10",
+>>   .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 59,
+>> - .target_residency =3D 156,
+>> + .power.exit_latency =3D 59,
+>> + .power.target_residency =3D 156,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C6-IVB",
+>>   .desc =3D "MWAIT 0x20",
+>>   .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 80,
+>> - .target_residency =3D 300,
+>> + .power.exit_latency =3D 80,
+>> + .power.target_residency =3D 300,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C7-IVB",
+>>   A .desc =3D "MWAIT 0x30",
+>>   .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 87,
+>> - .target_residency =3D 300,
+>> + .power.exit_latency =3D 87,
+>> + .power.target_residency =3D 300,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .enter =3D NULL }
+>> @@ -241,57 +241,57 @@ static struct cpuidle_state hsw_cstates[] =3D =
+{
+>>   .name =3D "C1-HSW",
+>>   .desc =3D "MWAIT 0x00",
+>>   .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 2,
+>> - .target_residency =3D 2,
+>> + .power.exit_latency =3D 2,
+>> + .power.target_residency =3D 2,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C1E-HSW",
+>>   .desc =3D "MWAIT 0x01",
+>>   .flags =3D MWAIT2flg(0x01) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 20,
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 20,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C3-HSW",
+>>   .desc =3D "MWAIT 0x10",
+>>   .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 33,
+>> - .target_residency =3D 100,
+>> + .power.exit_latency =3D 33,
+>> + .power.target_residency =3D 100,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C6-HSW",
+>>   .desc =3D "MWAIT 0x20",
+>>   .flags =3D MWAIT2flg(0x20) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 133,
+>> - .target_residency =3D 400,
+>> + .power.exit_latency =3D 133,
+>> + .power.target_residency =3D 400,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C7s-HSW",
+>>   .desc =3D "MWAIT 0x32",
+>>   .flags =3D MWAIT2flg(0x32) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 166,
+>> - .target_residency =3D 500,
+>> + .power.exit_latency =3D 166,
+>> + .power.target_residency =3D 500,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C8-HSW",
+>>   .desc =3D "MWAIT 0x40",
+>>   .flags =3D MWAIT2flg(0x40) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 300,
+>> - .target_residency =3D 900,
+>> + .power.exit_latency =3D 300,
+>> + .power.target_residency =3D 900,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C9-HSW",
+>>   .desc =3D "MWAIT 0x50",
+>>   .flags =3D MWAIT2flg(0x50) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 600,
+>> - .target_residency =3D 1800,
+>> + .power.exit_latency =3D 600,
+>> + .power.target_residency =3D 1800,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C10-HSW",
+>>   .desc =3D "MWAIT 0x60",
+>>   .flags =3D MWAIT2flg(0x60) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 2600,
+>> - .target_residency =3D 7700,
+>> + .power.exit_latency =3D 2600,
+>> + .power.target_residency =3D 7700,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .enter =3D NULL }
+>> @@ -302,29 +302,29 @@ static struct cpuidle_state atom_cstates[] =3D=
+ {
+>>   .name =3D "C1E-ATM",
+>>   .desc =3D "MWAIT 0x00",
+>>   .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 10,
+>> - .target_residency =3D 20,
+>> + .power.exit_latency =3D 10,
+>> + .power.target_residency =3D 20,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C2-ATM",
+>>   .desc =3D "MWAIT 0x10",
+>>   .flags =3D MWAIT2flg(0x10) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 20,
+>> - .target_residency =3D 80,
+>> + .power.exit_latency =3D 20,
+>> + .power.target_residency =3D 80,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C4-ATM",
+>>   .desc =3D "MWAIT 0x30",
+>>   .flags =3D MWAIT2flg(0x30) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 100,
+>> - .target_residency =3D 400,
+>> + .power.exit_latency =3D 100,
+>> + .power.target_residency =3D 400,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C6-ATM",
+>>   .desc =3D "MWAIT 0x52",
+>>   .flags =3D MWAIT2flg(0x52) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 140,
+>> - .target_residency =3D 560,
+>> + .power.exit_latency =3D 140,
+>> + .power.target_residency =3D 560,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .enter =3D NULL }
+>> @@ -334,15 +334,15 @@ static struct cpuidle_state avn_cstates[] =3D =
+{
+>>   .name =3D "C1-AVN",
+>>   .desc =3D "MWAIT 0x00",
+>>   .flags =3D MWAIT2flg(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>> - .exit_latency =3D 2,
+>> - .target_residency =3D 2,
+>> + .power.exit_latency =3D 2,
+>> + .power.target_residency =3D 2,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .name =3D "C6-AVN",
+>>   .desc =3D "MWAIT 0x51",
+>>   .flags =3D MWAIT2flg(0x51) | CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLA=
+G_TLB_FLUSHED,
+>> - .exit_latency =3D 15,
+>> - .target_residency =3D 45,
+>> + .power.exit_latency =3D 15,
+>> + .power.target_residency =3D 45,
+>>   .enter =3D &intel_idle },
+>>   {
+>>   .enter =3D NULL }
+>> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+>> index b0238cb..eb58ab3 100644
+>> --- a/include/linux/cpuidle.h
+>> +++ b/include/linux/cpuidle.h
+>> @@ -35,14 +35,18 @@ struct cpuidle_state_usage {
+>>   unsigned long long time; /* in US */
+>>   };
+>>
+>> +struct cpuidle_power {
+>> + unsigned int exit_latency; /* in US */
+>> + unsigned int target_residency; /* in US */
+>> + int power_usage; /* in mW */
+>> +};
+>> +
+>>   struct cpuidle_state {
+>>   char name[CPUIDLE_NAME_LEN];
+>>   char desc[CPUIDLE_DESC_LEN];
+>>
+>>   unsigned int flags;
+>> - unsigned int exit_latency; /* in US */
+>> - int power_usage; /* in mW */
+>> - unsigned int target_residency; /* in US */
+>> + struct cpuidle_power power;
+>>   bool disabled; /* disabled on all CPUs */
+>>
+>>   int (*enter) (struct cpuidle_device *dev,
+>> --
+>> 1.7.9.5
+>>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
