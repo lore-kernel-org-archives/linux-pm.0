@@ -1,90 +1,54 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH] cpufreq: create another field .flags in
- cpufreq_frequency_table
-Date: Fri, 28 Mar 2014 11:19:43 +0100
-Message-ID: <20140328111943.272d0bea@amdc2363>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: create another field .flags in cpufreq_frequency_table
+Date: Fri, 28 Mar 2014 16:03:12 +0530
+Message-ID: <CAKohpokNNN94pejJTXJR0txc3-THY7TdQ3Q2UNZEZPynNM-CHA@mail.gmail.com>
 References: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
- <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
+	<b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
+	<20140328111943.272d0bea@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:64629 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbaC1KdM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 06:33:12 -0400
+Received: by mail-ob0-f177.google.com with SMTP id wo20so5546959obc.22
+        for <linux-pm@vger.kernel.org>; Fri, 28 Mar 2014 03:33:12 -0700 (PDT)
+In-Reply-To: <20140328111943.272d0bea@amdc2363>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
 
-Hi Viresh,
+On 28 March 2014 15:49, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> One little remark - since cpufreq_frequency_tables are defined as
+> static it seems like we don't need to explicitly specify the 0, for
+> flags field.
+>
+> Something like {, L13, 200 * 1000}, shall be enough.
 
-> diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c
-> b/drivers/cpufreq/exynos4x12-cpufreq.c index 7c11ace..8c4c6a5 100644
-> --- a/drivers/cpufreq/exynos4x12-cpufreq.c
-> +++ b/drivers/cpufreq/exynos4x12-cpufreq.c
-> @@ -30,21 +30,21 @@ static unsigned int exynos4x12_volt_table[] = {
->  };
-> 
->  static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
-> -       {CPUFREQ_BOOST_FREQ, 1500 * 1000},
-> -       {L1, 1400 * 1000},
-> -       {L2, 1300 * 1000},
-> -       {L3, 1200 * 1000},
-> -       {L4, 1100 * 1000},
-> -       {L5, 1000 * 1000},
-> -       {L6,  900 * 1000},
-> -       {L7,  800 * 1000},
-> -       {L8,  700 * 1000},
-> -       {L9,  600 * 1000},
-> -       {L10, 500 * 1000},
-> -       {L11, 400 * 1000},
-> -       {L12, 300 * 1000},
-> -       {L13, 200 * 1000},
-> -       {0, CPUFREQ_TABLE_END},
-> +       {CPUFREQ_BOOST_FREQ, 0, 1500 * 1000},
-> +       {0, L1, 1400 * 1000},
-> +       {0, L2, 1300 * 1000},
-> +       {0, L3, 1200 * 1000},
-> +       {0, L4, 1100 * 1000},
-> +       {0, L5, 1000 * 1000},
-> +       {0, L6,  900 * 1000},
-> +       {0, L7,  800 * 1000},
-> +       {0, L8,  700 * 1000},
-> +       {0, L9,  600 * 1000},
-> +       {0, L10, 500 * 1000},
-> +       {0, L11, 400 * 1000},
-> +       {0, L12, 300 * 1000},
-> +       {0, L13, 200 * 1000},
-> +       {0, 0, CPUFREQ_TABLE_END},
->  };
+This looks awkward, writing zero is better. The other option was to do
+it like this:
 
-Looks correct for me.
+{.driver_data = L13, .frequency = 200 * 1000}
 
-One little remark - since cpufreq_frequency_tables are defined as
-static it seems like we don't need to explicitly specify the 0, for
-flags field.
+But I didn't wanted to make such changes in this patch.
 
-Something like {, L13, 200 * 1000}, shall be enough.
+>> +/* Special Values of .flags field */
+>> +#define CPUFREQ_BOOST_FREQ     0x1
+>
+> Maybe (1 << 0) to explicitly show that those are flags.
 
-> +/* Special Values of .flags field */
-> +#define CPUFREQ_BOOST_FREQ     0x1
+Will do that in case I resend this patch, otherwise it wouldn't
+harm for now.
 
-Maybe (1 << 0) to explicitly show that those are flags.
+>>  struct cpufreq_frequency_table {
+>> +       unsigned int    flags;
+>>         unsigned int    driver_data; /* driver specific data, not
+>
+> The driver_data shall be changed to int. However I suppose that it will
+> be done at separate patch.
 
-> 
->  struct cpufreq_frequency_table {
-> +       unsigned int    flags;
->         unsigned int    driver_data; /* driver specific data, not
-
-The driver_data shall be changed to int. However I suppose that it will
-be done at separate patch.
-
-> used by core */ unsigned int    frequency; /* kHz - doesn't need to
-> be in ascending
->                                     * order */
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+I am not planning to change it for now. People storing 'int' into this
+field would read it back into 'int' and so things would work as normal
+I suppose.
