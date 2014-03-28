@@ -1,154 +1,174 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/4] cpufreq: use kzalloc() to allocate memory for cpufreq_frequency_table
-Date: Fri, 28 Mar 2014 19:11:46 +0530
-Message-ID: <8530d601eec1fc25f128116ae29a6164e55eb66f.1396013927.git.viresh.kumar@linaro.org>
-References: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
-In-Reply-To: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
-References: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: Felipe Balbi <balbi@ti.com>
+Subject: Re: [RFC/PATCH] base: platform: add generic clock handling for
+ platform-bus
+Date: Fri, 28 Mar 2014 09:41:10 -0500
+Message-ID: <20140328144110.GC17820@saruman.home>
+References: <1391191965-31102-1-git-send-email-balbi@ti.com>
+ <2775124.TXohNNxBKa@avalon>
+ <CAMuHMdWMiEnpdMgFtAuq70TUxDGWje6thc_Rnaptnua0XTBOMw@mail.gmail.com>
+Reply-To: balbi@ti.com
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7169815839562359531=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAMuHMdWMiEnpdMgFtAuq70TUxDGWje6thc_Rnaptnua0XTBOMw@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Greg KH <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Felipe Balbi <balbi@ti.com>, Tero Kristo <t-kristo@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Few drivers are using kmalloc() to allocate memory for frequency tables and once
-we have an additional field '.flags' in 'struct cpufreq_frequency_table', these
-might become unstable. Better get these fixed by replacing kmalloc() by
-kzalloc() instead.
+--===============7169815839562359531==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="5QAgd0e35j3NYeGe"
+Content-Disposition: inline
 
-Along with that we also remove use of .driver_data from SPEAr driver as it
-doesn't use it at all. Also, writing zero to .driver_data is not required for
-powernow-k8 as it is already zero.
+--5QAgd0e35j3NYeGe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reported-and-reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2: No Change
+Hi,
 
- drivers/cpufreq/acpi-cpufreq.c      | 2 +-
- drivers/cpufreq/ia64-acpi-cpufreq.c | 2 +-
- drivers/cpufreq/longhaul.c          | 2 +-
- drivers/cpufreq/powernow-k8.c       | 5 ++---
- drivers/cpufreq/s3c24xx-cpufreq.c   | 4 ++--
- drivers/cpufreq/spear-cpufreq.c     | 7 ++-----
- 6 files changed, 9 insertions(+), 13 deletions(-)
+On Fri, Mar 28, 2014 at 02:20:24PM +0100, Geert Uytterhoeven wrote:
+> Hi Felipe,
+>=20
+> On Wed, Mar 12, 2014 at 4:37 PM, Laurent Pinchart
+> <laurent.pinchart@ideasonboard.com> wrote:
+> > On Friday 31 January 2014 12:12:45 Felipe Balbi wrote:
+> >> Still TODO a commit log. Not for merging!!!!!
+> >>
+> >> NYET-Signed-off-by: Felipe Balbi <balbi@ti.com>
+> >> ---
+> >>
+> >> This patch is an idea I've had recently in order to combine several
+> >> different PM implementations into the platform-bus.
+> >>
+> >> This patch is bare minimum for platforms which need to handle function=
+al and
+> >> interface clocks but the whole thing is made optional.
+> >>
+> >> Note that this patch makes sure that by the time a platform_driver's p=
+robe
+> >> is called, we already have clocks enabled and pm_runtime_set_active() =
+has
+> >> been called, thus making sure that a device driver's pm_runtime_get_sy=
+nc()
+> >> will solely increase the pm usage counter.
+> >>
+> >> I have *NOT* tested this anywhere *YET*, but I suppose it shouldn't ca=
+use
+> >> any issues since the clock API has ref counting too.
+> >>
+> >> Would really like to get some review from several folks involved with =
+ARM
+> >> SoC PM so that's the reason for the wide audience. If I have missed
+> >> anybody, please add them to Cc.
+> >>
+> >> As mentioned above, this is *NOT* meant for merging, but serves as a
+> >> starting point for discussing some convergence of several PM domain
+> >> implementations on different arch/arm/mach-* directories.
+> >>
+> >> For OMAP, this has the added benefit of removing clock handling from
+> >> omap_device/omap_hwmod and, thus, dropping the need for so many DT_CLK=
+()
+> >> tables under drivers/clk/ti/
+> >>
+> >>  drivers/base/platform.c         | 169 +++++++++++++++++++++++++++++++=
+++++--
+> >>  include/linux/platform_device.h |   9 +++
+> >>  2 files changed, 173 insertions(+), 5 deletions(-)
+> >>
+> >> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> >> index 3a94b79..86aeb5b 100644
+> >> --- a/drivers/base/platform.c
+> >> +++ b/drivers/base/platform.c
+> >> @@ -484,6 +484,21 @@ static int platform_drv_probe(struct device *_dev)
+> >>       if (ACPI_HANDLE(_dev))
+> >>               acpi_dev_pm_attach(_dev, true);
+> >>
+> >> +     dev->fck =3D devm_clk_get(_dev, "fck");
+> >> +     dev->ick =3D devm_clk_get(_dev, "ick");
+> >
+> > My concern with this that some devices might want to handle their funct=
+ional
+> > and interface clocks manually if they have exotic requirements. They wo=
+uld
+> > thus need a way to signal that the platform bus core should not try to =
+perform
+> > clock management on its own.
+> >
+> > One possible way would be to name the clocks differently for those devi=
+ces,
+> > but we might then have a backward compatibility issue with DT.
+> >
+> > Another concern is how to handle the DT backward compatibility for devi=
+ces
+> > that would benefit from core management of their functional and interfa=
+ce
+> > clocks, but that currently don't name those clocks "fck" and "ick". Ren=
+aming
+> > those clocks in DT wouldn't be a problem for the future, but backward
+> > compatibility needs to be handled. Maybe platforms could provide aliase=
+s in
+> > that case.
+>=20
+> IIUC, on OMAP the "fck" and "ick" clock names are also not present in DT.
+>=20
+> Device nodes have "ti,hwmods" properties, while the board code uses
+> struct omap_hwmod to match the "ti,hwmods" values with clock names, and
+> creates fck aliases for them, right?
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index d5eaedb..000e4e0 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -754,7 +754,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_unreg;
- 	}
- 
--	data->freq_table = kmalloc(sizeof(*data->freq_table) *
-+	data->freq_table = kzalloc(sizeof(*data->freq_table) *
- 		    (perf->state_count+1), GFP_KERNEL);
- 	if (!data->freq_table) {
- 		result = -ENOMEM;
-diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-index beb191b..c30aaa6 100644
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -254,7 +254,7 @@ acpi_cpufreq_cpu_init (
- 	}
- 
- 	/* alloc freq_table */
--	data->freq_table = kmalloc(sizeof(*data->freq_table) *
-+	data->freq_table = kzalloc(sizeof(*data->freq_table) *
- 	                           (data->acpi_data.state_count + 1),
- 	                           GFP_KERNEL);
- 	if (!data->freq_table) {
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index 5c440f8..d00e5d1 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -475,7 +475,7 @@ static int longhaul_get_ranges(void)
- 		return -EINVAL;
- 	}
- 
--	longhaul_table = kmalloc((numscales + 1) * sizeof(*longhaul_table),
-+	longhaul_table = kzalloc((numscales + 1) * sizeof(*longhaul_table),
- 			GFP_KERNEL);
- 	if (!longhaul_table)
- 		return -ENOMEM;
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 770a9e1..1b6ae6b 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -623,7 +623,7 @@ static int fill_powernow_table(struct powernow_k8_data *data,
- 	if (check_pst_table(data, pst, maxvid))
- 		return -EINVAL;
- 
--	powernow_table = kmalloc((sizeof(*powernow_table)
-+	powernow_table = kzalloc((sizeof(*powernow_table)
- 		* (data->numps + 1)), GFP_KERNEL);
- 	if (!powernow_table) {
- 		printk(KERN_ERR PFX "powernow_table memory alloc failure\n");
-@@ -793,7 +793,7 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
- 	}
- 
- 	/* fill in data->powernow_table */
--	powernow_table = kmalloc((sizeof(*powernow_table)
-+	powernow_table = kzalloc((sizeof(*powernow_table)
- 		* (data->acpi_data.state_count + 1)), GFP_KERNEL);
- 	if (!powernow_table) {
- 		pr_debug("powernow_table memory alloc failure\n");
-@@ -810,7 +810,6 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
- 
- 	powernow_table[data->acpi_data.state_count].frequency =
- 		CPUFREQ_TABLE_END;
--	powernow_table[data->acpi_data.state_count].driver_data = 0;
- 	data->powernow_table = powernow_table;
- 
- 	if (cpumask_first(cpu_core_mask(data->cpu)) == data->cpu)
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index a3dc192..be1b2b5 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -586,7 +586,7 @@ static int s3c_cpufreq_build_freq(void)
- 	size = cpu_cur.info->calc_freqtable(&cpu_cur, NULL, 0);
- 	size++;
- 
--	ftab = kmalloc(sizeof(*ftab) * size, GFP_KERNEL);
-+	ftab = kzalloc(sizeof(*ftab) * size, GFP_KERNEL);
- 	if (!ftab) {
- 		printk(KERN_ERR "%s: no memory for tables\n", __func__);
- 		return -ENOMEM;
-@@ -664,7 +664,7 @@ int __init s3c_plltab_register(struct cpufreq_frequency_table *plls,
- 
- 	size = sizeof(*vals) * (plls_no + 1);
- 
--	vals = kmalloc(size, GFP_KERNEL);
-+	vals = kzalloc(size, GFP_KERNEL);
- 	if (vals) {
- 		memcpy(vals, plls, size);
- 		pll_reg = vals;
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 4cfdcff..3867839 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -195,18 +195,15 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
- 	cnt = prop->length / sizeof(u32);
- 	val = prop->value;
- 
--	freq_tbl = kmalloc(sizeof(*freq_tbl) * (cnt + 1), GFP_KERNEL);
-+	freq_tbl = kzalloc(sizeof(*freq_tbl) * (cnt + 1), GFP_KERNEL);
- 	if (!freq_tbl) {
- 		ret = -ENOMEM;
- 		goto out_put_node;
- 	}
- 
--	for (i = 0; i < cnt; i++) {
--		freq_tbl[i].driver_data = i;
-+	for (i = 0; i < cnt; i++)
- 		freq_tbl[i].frequency = be32_to_cpup(val++);
--	}
- 
--	freq_tbl[i].driver_data = i;
- 	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
- 
- 	spear_cpufreq.freq_tbl = freq_tbl;
--- 
-1.7.12.rc2.18.g61b472e
+right, the idea was to move clock handling away from that, because that
+has been creating a few issues for drivers the biggest of which is the
+fact that we can't know, by probe() time, if the device is active or
+suspended. Ideally, by probe() the device would be fully active with is
+runtime pm usage counter incremented so that the first pm_runtime_get*
+in our probe() doesn't try to call ->runtime_resume().
+
+--=20
+balbi
+
+--5QAgd0e35j3NYeGe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJTNYoGAAoJEIaOsuA1yqREToUQAIJLWMWc5mPMmJFdol2FMsLg
+3IUC4i4b3qhx5aXg28N4f72WzpfijW6hNef8i12lsSJCFBqb/+0ph6oRkvHu0lnO
+H/39T5cKUztmG32bc7fM1/egC3b8LjinjxkVhNUsKmgGtDw7Z76/jg/Tc36dKyw4
+rfQKo+ggKAnbT3RaCa0uvPMXx8Dv/21PuLZL2y6k7BB/GXNpc4NoSHSkqEBeK7lU
+lEaSIhEPVbztVasr/7UJmepVtFkFIe6jbgubF9Sv2jKFXO17SXwCPG+/OUqEw7G8
+cHpLmomVctZHmQ01sepmbbjaOU009SO87zBhSWrdL1fIEXlc84X5YohyyKKIdGiH
+d+yFouT0FHLH5y2VO+4Kea/EahR1aL70lO+xZxgeoJuBXMvLj/k/oJl1m3HzXRks
+b3hGFuZ79JznDcmgi1TfiY0nOslLEA5CDa+w9B/hfpmYfuzI2i46EtI0Ffq44NE6
+23R2g9ggy8N+xk48IWwxq/rLmXEtT83fouCgzLdi6ZrrsXXJT7m3hag3V8oA1/Us
+r/wMhwfX0Y0g/A0UfTXopYgtBphuIedmiitHM3Bxaltt+mZ6PxDUKoEiy3tfaDt2
+1yQozdahWRDD5U3iYXnxdWPyul0dVRN71yJ3cnTtkg3gL8IwtBGP5tdp5utoGWPG
+XkxZU0DX//jkn9ui/efA
+=cioi
+-----END PGP SIGNATURE-----
+
+--5QAgd0e35j3NYeGe--
+
+
+--===============7169815839562359531==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============7169815839562359531==--
