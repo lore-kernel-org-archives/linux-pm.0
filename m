@@ -1,75 +1,29 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Subject: [PATCH 1/2] PM / Domains: Add pd_ignore_unused to keep power domains enabled
-Date: Fri, 28 Mar 2014 10:50:21 +0530
-Message-ID: <1395984022-8284-2-git-send-email-tushar.behera@linaro.org>
-References: <1395984022-8284-1-git-send-email-tushar.behera@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1395984022-8284-1-git-send-email-tushar.behera@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: rob@landley.net, olof@lixom.net, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
+Date: Fri, 28 Mar 2014 10:55:12 +0530
+Message-ID: <CAKohpomuwkVVOgEbk4ARE+N6eo_tii9Msd1FbTgZfFK8Dvm9Uw@mail.gmail.com>
+References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
+	<1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
+	<CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
+	<20140327093050.GA27777@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:33510 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbaC1FZN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 01:25:13 -0400
+Received: by mail-ob0-f175.google.com with SMTP id uy5so5398280obc.34
+        for <linux-pm@vger.kernel.org>; Thu, 27 Mar 2014 22:25:12 -0700 (PDT)
+In-Reply-To: <20140327093050.GA27777@in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 
-Keep all power-domains already enabled by bootloader on, even if no
-driver has claimed them. This is useful for debug and development, but
-should not be needed on a platform with proper driver support.
+On 27 March 2014 15:00, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> As of now, I prefer this patch be based on code that is in the -next
+> tree. I'll get rid of the per-core locking once the serialization
+> patch of the core is accepted.
 
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
-CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-CC: linux-pm@vger.kernel.org
----
- Documentation/kernel-parameters.txt |    7 +++++++
- drivers/base/power/domain.c         |   13 +++++++++++++
- 2 files changed, 20 insertions(+)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 50a001a..96bb532 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2557,6 +2557,13 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 
- 	pcmv=		[HW,PCMCIA] BadgePAD 4
- 
-+	pd_ignore_unused
-+			[PM]
-+			Keep all power-domains already enabled by bootloader on,
-+			even if no driver has claimed them. This is useful
-+			for debug and development, but should not be
-+			needed on a platform with proper driver support.
-+
- 	pd.		[PARIDE]
- 			See Documentation/blockdev/paride.txt.
- 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 6f54962..ae098a2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -705,6 +705,14 @@ static int pm_genpd_runtime_resume(struct device *dev)
- 	return 0;
- }
- 
-+static bool pd_ignore_unused;
-+static int __init pd_ignore_unused_setup(char *__unused)
-+{
-+	pd_ignore_unused = true;
-+	return 1;
-+}
-+__setup("pd_ignore_unused", pd_ignore_unused_setup);
-+
- /**
-  * pm_genpd_poweroff_unused - Power off all PM domains with no devices in use.
-  */
-@@ -712,6 +720,11 @@ void pm_genpd_poweroff_unused(void)
- {
- 	struct generic_pm_domain *genpd;
- 
-+	if (pd_ignore_unused) {
-+		pr_warn("genpd: Not disabling unused power domains\n");
-+		return;
-+	}
-+
- 	mutex_lock(&gpd_list_lock);
- 
- 	list_for_each_entry(genpd, &gpd_list, gpd_list_node)
--- 
-1.7.9.5
+Okay, its pushed in -next now :)
