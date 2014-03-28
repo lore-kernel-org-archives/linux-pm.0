@@ -1,74 +1,127 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v6 01/11] ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
-Date: Fri, 28 Mar 2014 12:13:21 +0100
-Message-ID: <1396005211-15573-2-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v6 02/11] ARM: mvebu: remove the address parameter for ll_set_cpu_coherent
+Date: Fri, 28 Mar 2014 12:13:22 +0100
+Message-ID: <1396005211-15573-3-git-send-email-gregory.clement@free-electrons.com>
 References: <1396005211-15573-1-git-send-email-gregory.clement@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1396005211-15573-1-git-send-email-gregory.clement@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Russell King <linux@arm.linux.org.uk>, Tawfik Bayouk <tawfik@marvell.com>, linux-kernel@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-PJ4B needs extra instructions for suspend and resume, so instead of
-using the armv7 version, this commit introduces specific versions for
-PJ4B.
+In order to be able to deal with the MMU enabled and the MMU disabled
+cases, the base address of the coherency registers was passed to the
+function. The address by itself was not interesting as it can't change
+for a given SoC, the only thing we need is to have a distinction
+between the physical or the virtual address.
 
-Cc: Russell King <linux@arm.linux.org.uk>
+This patch add a check of the MMU bit to choose the accurate address,
+then the calling function doesn't have to pass this information.
+
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mm/proc-v7.S | 28 +++++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
+ arch/arm/mach-mvebu/coherency.c    |  6 +++---
+ arch/arm/mach-mvebu/coherency_ll.S | 22 ++++++++++++++++++++--
+ arch/arm/mach-mvebu/headsmp.S      |  9 ---------
+ 3 files changed, 23 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
-index bd1781979a39..3c49ac86d9d2 100644
---- a/arch/arm/mm/proc-v7.S
-+++ b/arch/arm/mm/proc-v7.S
-@@ -169,9 +169,31 @@ ENDPROC(cpu_pj4b_do_idle)
- 	globl_equ	cpu_pj4b_do_idle,  	cpu_v7_do_idle
- #endif
- 	globl_equ	cpu_pj4b_dcache_clean_area,	cpu_v7_dcache_clean_area
--	globl_equ	cpu_pj4b_do_suspend,	cpu_v7_do_suspend
--	globl_equ	cpu_pj4b_do_resume,	cpu_v7_do_resume
--	globl_equ	cpu_pj4b_suspend_size,	cpu_v7_suspend_size
-+#ifdef CONFIG_ARM_CPU_SUSPEND
-+ENTRY(cpu_pj4b_do_suspend)
-+	stmfd	sp!, {r6 - r10}
-+	mrc	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
-+	mrc	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
-+	mrc	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
-+	mrc	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
-+	mrc	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
-+	stmia	r0!, {r6 - r10}
-+	ldmfd	sp!, {r6 - r10}
-+	b cpu_v7_do_suspend
-+ENDPROC(cpu_pj4b_do_suspend)
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index 4e9d58148ca7..88dd507221fc 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -30,7 +30,7 @@
+ #include "coherency.h"
+ 
+ unsigned long coherency_phys_base;
+-static void __iomem *coherency_base;
++void __iomem *coherency_base;
+ static void __iomem *coherency_cpu_base;
+ 
+ /* Coherency fabric registers */
+@@ -44,7 +44,7 @@ static struct of_device_id of_coherency_table[] = {
+ };
+ 
+ /* Function defined in coherency_ll.S */
+-int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
++int ll_set_cpu_coherent(unsigned int hw_cpu_id);
+ 
+ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ {
+@@ -54,7 +54,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ 		return 1;
+ 	}
+ 
+-	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
++	return ll_set_cpu_coherent(hw_cpu_id);
+ }
+ 
+ static inline void mvebu_hwcc_sync_io_barrier(void)
+diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
+index ee7598fe75db..1f2bcd4b5424 100644
+--- a/arch/arm/mach-mvebu/coherency_ll.S
++++ b/arch/arm/mach-mvebu/coherency_ll.S
+@@ -21,13 +21,27 @@
+ #define ARMADA_XP_CFB_CFG_REG_OFFSET 0x4
+ 
+ #include <asm/assembler.h>
++#include <asm/cp15.h>
+ 
+ 	.text
+ /*
+- * r0: Coherency fabric base register address
+- * r1: HW CPU id
++ * r0: HW CPU id
+  */
+ ENTRY(ll_set_cpu_coherent)
++	mrc	p15, 0, r1, c1, c0, 0
++	tst	r1, #CR_M @ Check MMU bit enabled
++	bne	1f
 +
-+ENTRY(cpu_pj4b_do_resume)
-+	ldmia	r0!, {r6 - r10}
-+	mcr	p15, 1, r6, c15, c1, 0  @ save CP15 - extra features
-+	mcr	p15, 1, r7, c15, c2, 0	@ save CP15 - Aux Func Modes Ctrl 0
-+	mcr	p15, 1, r8, c15, c1, 2	@ save CP15 - Aux Debug Modes Ctrl 2
-+	mcr	p15, 1, r9, c15, c1, 1  @ save CP15 - Aux Debug Modes Ctrl 1
-+	mcr	p15, 0, r10, c9, c14, 0  @ save CP15 - PMC
-+	b cpu_v7_do_resume
-+ENDPROC(cpu_pj4b_do_resume)
-+#endif
-+.globl	cpu_pj4b_suspend_size
-+.equ	cpu_pj4b_suspend_size, 4 * 14
++	/* use physical address of the coherency register*/
++	adr	r0, 3f
++	ldr	r3, [r0]
++	ldr	r0, [r0, r3]
++	b	2f
++1:
++	/* use virtual address of the coherency register*/
++	ldr	r0, =coherency_base
++	ldr	r0, [r0]
++2:
+ 	/* Create bit by cpu index */
+ 	mov	r3, #(1 << 24)
+ 	lsl	r1, r3, r1
+@@ -56,3 +70,7 @@ ARM_BE8(rev	r1, r1)
+ 	mov	r0, #0
+ 	mov	pc, lr
+ ENDPROC(ll_set_cpu_coherent)
++
++	.align 2
++3:
++	.long	coherency_phys_base - .
+diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
+index 3dd80df428f7..f30bc8d78871 100644
+--- a/arch/arm/mach-mvebu/headsmp.S
++++ b/arch/arm/mach-mvebu/headsmp.S
+@@ -31,11 +31,6 @@
+ ENTRY(armada_xp_secondary_startup)
+  ARM_BE8(setend	be )			@ go BE8 if entered LE
  
- #endif
+-	/* Get coherency fabric base physical address */
+-	adr	r0, 1f
+-	ldr	r1, [r0]
+-	ldr	r0, [r0, r1]
+-
+ 	/* Read CPU id */
+ 	mrc     p15, 0, r1, c0, c0, 5
+ 	and     r1, r1, #0xF
+@@ -45,7 +40,3 @@ ENTRY(armada_xp_secondary_startup)
+ 	b	secondary_startup
  
+ ENDPROC(armada_xp_secondary_startup)
+-
+-	.align 2
+-1:
+-	.long	coherency_phys_base - .
 -- 
 1.8.1.2
