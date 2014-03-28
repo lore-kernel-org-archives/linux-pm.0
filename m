@@ -1,101 +1,103 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose the idlest cpu
-Date: Fri, 28 Mar 2014 13:29:56 +0100
-Message-ID: <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org
-Cc: rjw@rjwysocki.net, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC/PATCH] base: platform: add generic clock handling for platform-bus
+Date: Fri, 28 Mar 2014 14:20:24 +0100
+Message-ID: <CAMuHMdWMiEnpdMgFtAuq70TUxDGWje6thc_Rnaptnua0XTBOMw@mail.gmail.com>
+References: <1391191965-31102-1-git-send-email-balbi@ti.com>
+	<2775124.TXohNNxBKa@avalon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:35056 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbaC1NUZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 09:20:25 -0400
+In-Reply-To: <2775124.TXohNNxBKa@avalon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@linaro.org>, Tero Kristo <t-kristo@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-As we know in which idle state the cpu is, we can investigate the following:
+Hi Felipe,
 
-1. when did the cpu entered the idle state ? the longer the cpu is idle, the
-deeper it is idle
-2. what exit latency is ? the greater the exit latency is, the deeper it is
+On Wed, Mar 12, 2014 at 4:37 PM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Friday 31 January 2014 12:12:45 Felipe Balbi wrote:
+>> Still TODO a commit log. Not for merging!!!!!
+>>
+>> NYET-Signed-off-by: Felipe Balbi <balbi@ti.com>
+>> ---
+>>
+>> This patch is an idea I've had recently in order to combine several
+>> different PM implementations into the platform-bus.
+>>
+>> This patch is bare minimum for platforms which need to handle functional and
+>> interface clocks but the whole thing is made optional.
+>>
+>> Note that this patch makes sure that by the time a platform_driver's probe
+>> is called, we already have clocks enabled and pm_runtime_set_active() has
+>> been called, thus making sure that a device driver's pm_runtime_get_sync()
+>> will solely increase the pm usage counter.
+>>
+>> I have *NOT* tested this anywhere *YET*, but I suppose it shouldn't cause
+>> any issues since the clock API has ref counting too.
+>>
+>> Would really like to get some review from several folks involved with ARM
+>> SoC PM so that's the reason for the wide audience. If I have missed
+>> anybody, please add them to Cc.
+>>
+>> As mentioned above, this is *NOT* meant for merging, but serves as a
+>> starting point for discussing some convergence of several PM domain
+>> implementations on different arch/arm/mach-* directories.
+>>
+>> For OMAP, this has the added benefit of removing clock handling from
+>> omap_device/omap_hwmod and, thus, dropping the need for so many DT_CLK()
+>> tables under drivers/clk/ti/
+>>
+>>  drivers/base/platform.c         | 169 +++++++++++++++++++++++++++++++++++--
+>>  include/linux/platform_device.h |   9 +++
+>>  2 files changed, 173 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+>> index 3a94b79..86aeb5b 100644
+>> --- a/drivers/base/platform.c
+>> +++ b/drivers/base/platform.c
+>> @@ -484,6 +484,21 @@ static int platform_drv_probe(struct device *_dev)
+>>       if (ACPI_HANDLE(_dev))
+>>               acpi_dev_pm_attach(_dev, true);
+>>
+>> +     dev->fck = devm_clk_get(_dev, "fck");
+>> +     dev->ick = devm_clk_get(_dev, "ick");
+>
+> My concern with this that some devices might want to handle their functional
+> and interface clocks manually if they have exotic requirements. They would
+> thus need a way to signal that the platform bus core should not try to perform
+> clock management on its own.
+>
+> One possible way would be to name the clocks differently for those devices,
+> but we might then have a backward compatibility issue with DT.
+>
+> Another concern is how to handle the DT backward compatibility for devices
+> that would benefit from core management of their functional and interface
+> clocks, but that currently don't name those clocks "fck" and "ick". Renaming
+> those clocks in DT wouldn't be a problem for the future, but backward
+> compatibility needs to be handled. Maybe platforms could provide aliases in
+> that case.
 
-With both information, when all cpus are idle, we can choose the idlest cpu.
+IIUC, on OMAP the "fck" and "ick" clock names are also not present in DT.
 
-When one cpu is not idle, the old check against weighted load applies.
+Device nodes have "ti,hwmods" properties, while the board code uses
+struct omap_hwmod to match the "ti,hwmods" values with clock names, and
+creates fck aliases for them, right?
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- kernel/sched/fair.c |   46 ++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 40 insertions(+), 6 deletions(-)
+Thanks for your answer!
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 16042b5..068e503 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -23,6 +23,7 @@
- #include <linux/latencytop.h>
- #include <linux/sched.h>
- #include <linux/cpumask.h>
-+#include <linux/cpuidle.h>
- #include <linux/slab.h>
- #include <linux/profile.h>
- #include <linux/interrupt.h>
-@@ -4336,20 +4337,53 @@ static int
- find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
- {
- 	unsigned long load, min_load = ULONG_MAX;
--	int idlest = -1;
-+	unsigned int min_exit_latency = UINT_MAX;
-+	u64 idle_stamp, min_idle_stamp = ULONG_MAX;
-+
-+	struct rq *rq;
-+	struct cpuidle_power *power;
-+
-+	int cpu_idle = -1;
-+	int cpu_busy = -1;
- 	int i;
- 
- 	/* Traverse only the allowed CPUs */
- 	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
--		load = weighted_cpuload(i);
- 
--		if (load < min_load || (load == min_load && i == this_cpu)) {
--			min_load = load;
--			idlest = i;
-+		if (idle_cpu(i)) {
-+
-+			rq = cpu_rq(i);
-+			power = rq->power;
-+			idle_stamp = rq->idle_stamp;
-+
-+			/* The cpu is idle since a shorter time */
-+			if (idle_stamp < min_idle_stamp) {
-+				min_idle_stamp = idle_stamp;
-+				cpu_idle = i;
-+				continue;
-+			}
-+
-+			/* The cpu is idle but the exit_latency is shorter */
-+			if (power && power->exit_latency < min_exit_latency) {
-+				min_exit_latency = power->exit_latency;
-+				cpu_idle = i;
-+				continue;
-+			}
-+		} else {
-+
-+			load = weighted_cpuload(i);
-+
-+			if (load < min_load ||
-+			    (load == min_load && i == this_cpu)) {
-+				min_load = load;
-+				cpu_busy = i;
-+				continue;
-+			}
- 		}
- 	}
- 
--	return idlest;
-+	/* Busy cpus are considered less idle than idle cpus ;) */
-+	return cpu_busy != -1 ? cpu_busy : cpu_idle;
- }
- 
- /*
--- 
-1.7.9.5
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
