@@ -1,169 +1,179 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: use kzalloc() to allocate memory for
- cpufreq_frequency_table
-Date: Fri, 28 Mar 2014 16:14:39 +0530
-Message-ID: <20140328104439.GB28960@in.ibm.com>
-References: <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
- <f6aa622dc5acfd3ab9b1360973c0d15b3972c6b6.1396001532.git.viresh.kumar@linaro.org>
-Reply-To: ego@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <f6aa622dc5acfd3ab9b1360973c0d15b3972c6b6.1396001532.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: [PATCH v6 00/11] CPU idle for Armada XP
+Date: Fri, 28 Mar 2014 12:13:20 +0100
+Message-ID: <1396005211-15573-1-git-send-email-gregory.clement@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:35341 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751156AbaC1LOF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 07:14:05 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 
-On Fri, Mar 28, 2014 at 03:44:24PM +0530, Viresh Kumar wrote:
-> Few drivers are using kmalloc() to allocate memory for frequency tables and once
-> we have an additional field '.flags' in 'struct cpufreq_frequency_table', these
-> might become unstable. Better get these fixed by replacing kmalloc() by
-> kzalloc() instead.
-> 
-> Along with that we also remove use of .driver_data from SPEAr driver as it
-> doesn't use it at all. Also, writing zero to .driver_data is not required for
-> powernow-k8 as it is already zero.
-> 
-> Reported-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch set adds the CPU idle support for Armada XP and prepares
+the support for Armada 370. This was based on the work of Nadav
+Haklai.
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+The main change in this new version is a rebasing onto the PMSU
+reworked series sent by Thomas Petazzoni:
+http://www.spinics.net/lists/arm-kernel/msg318534.html
 
-> ---
-> @Rafael: Please apply this one before:
-> 
-> http://permalink.gmane.org/gmane.linux.kernel/1673994
-> 
-> so that git bisect doesn't break. Though the chances of this field getting
-> initialized to a value equal to BOOST, i.e. 0x1 are very rare.
-> 
->  drivers/cpufreq/acpi-cpufreq.c      | 2 +-
->  drivers/cpufreq/ia64-acpi-cpufreq.c | 2 +-
->  drivers/cpufreq/longhaul.c          | 2 +-
->  drivers/cpufreq/powernow-k8.c       | 5 ++---
->  drivers/cpufreq/s3c24xx-cpufreq.c   | 4 ++--
->  drivers/cpufreq/spear-cpufreq.c     | 7 ++-----
->  6 files changed, 9 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index d5eaedb..000e4e0 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -754,7 +754,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  		goto err_unreg;
->  	}
-> 
-> -	data->freq_table = kmalloc(sizeof(*data->freq_table) *
-> +	data->freq_table = kzalloc(sizeof(*data->freq_table) *
->  		    (perf->state_count+1), GFP_KERNEL);
->  	if (!data->freq_table) {
->  		result = -ENOMEM;
-> diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-> index beb191b..c30aaa6 100644
-> --- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-> +++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-> @@ -254,7 +254,7 @@ acpi_cpufreq_cpu_init (
->  	}
-> 
->  	/* alloc freq_table */
-> -	data->freq_table = kmalloc(sizeof(*data->freq_table) *
-> +	data->freq_table = kzalloc(sizeof(*data->freq_table) *
->  	                           (data->acpi_data.state_count + 1),
->  	                           GFP_KERNEL);
->  	if (!data->freq_table) {
-> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-> index 5c440f8..d00e5d1 100644
-> --- a/drivers/cpufreq/longhaul.c
-> +++ b/drivers/cpufreq/longhaul.c
-> @@ -475,7 +475,7 @@ static int longhaul_get_ranges(void)
->  		return -EINVAL;
->  	}
-> 
-> -	longhaul_table = kmalloc((numscales + 1) * sizeof(*longhaul_table),
-> +	longhaul_table = kzalloc((numscales + 1) * sizeof(*longhaul_table),
->  			GFP_KERNEL);
->  	if (!longhaul_table)
->  		return -ENOMEM;
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index 770a9e1..1b6ae6b 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -623,7 +623,7 @@ static int fill_powernow_table(struct powernow_k8_data *data,
->  	if (check_pst_table(data, pst, maxvid))
->  		return -EINVAL;
-> 
-> -	powernow_table = kmalloc((sizeof(*powernow_table)
-> +	powernow_table = kzalloc((sizeof(*powernow_table)
->  		* (data->numps + 1)), GFP_KERNEL);
->  	if (!powernow_table) {
->  		printk(KERN_ERR PFX "powernow_table memory alloc failure\n");
-> @@ -793,7 +793,7 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
->  	}
-> 
->  	/* fill in data->powernow_table */
-> -	powernow_table = kmalloc((sizeof(*powernow_table)
-> +	powernow_table = kzalloc((sizeof(*powernow_table)
->  		* (data->acpi_data.state_count + 1)), GFP_KERNEL);
->  	if (!powernow_table) {
->  		pr_debug("powernow_table memory alloc failure\n");
-> @@ -810,7 +810,6 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
-> 
->  	powernow_table[data->acpi_data.state_count].frequency =
->  		CPUFREQ_TABLE_END;
-> -	powernow_table[data->acpi_data.state_count].driver_data = 0;
->  	data->powernow_table = powernow_table;
-> 
->  	if (cpumask_first(cpu_core_mask(data->cpu)) == data->cpu)
-> diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-> index a3dc192..be1b2b5 100644
-> --- a/drivers/cpufreq/s3c24xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-> @@ -586,7 +586,7 @@ static int s3c_cpufreq_build_freq(void)
->  	size = cpu_cur.info->calc_freqtable(&cpu_cur, NULL, 0);
->  	size++;
-> 
-> -	ftab = kmalloc(sizeof(*ftab) * size, GFP_KERNEL);
-> +	ftab = kzalloc(sizeof(*ftab) * size, GFP_KERNEL);
->  	if (!ftab) {
->  		printk(KERN_ERR "%s: no memory for tables\n", __func__);
->  		return -ENOMEM;
-> @@ -664,7 +664,7 @@ int __init s3c_plltab_register(struct cpufreq_frequency_table *plls,
-> 
->  	size = sizeof(*vals) * (plls_no + 1);
-> 
-> -	vals = kmalloc(size, GFP_KERNEL);
-> +	vals = kzalloc(size, GFP_KERNEL);
->  	if (vals) {
->  		memcpy(vals, plls, size);
->  		pll_reg = vals;
-> diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-> index 4cfdcff..3867839 100644
-> --- a/drivers/cpufreq/spear-cpufreq.c
-> +++ b/drivers/cpufreq/spear-cpufreq.c
-> @@ -195,18 +195,15 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
->  	cnt = prop->length / sizeof(u32);
->  	val = prop->value;
-> 
-> -	freq_tbl = kmalloc(sizeof(*freq_tbl) * (cnt + 1), GFP_KERNEL);
-> +	freq_tbl = kzalloc(sizeof(*freq_tbl) * (cnt + 1), GFP_KERNEL);
->  	if (!freq_tbl) {
->  		ret = -ENOMEM;
->  		goto out_put_node;
->  	}
-> 
-> -	for (i = 0; i < cnt; i++) {
-> -		freq_tbl[i].driver_data = i;
-> +	for (i = 0; i < cnt; i++)
->  		freq_tbl[i].frequency = be32_to_cpup(val++);
-> -	}
-> 
-> -	freq_tbl[i].driver_data = i;
->  	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
-> 
->  	spear_cpufreq.freq_tbl = freq_tbl;
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
+I also took into account the comments I received, see the changelog
+for the details.
+
+The first patch should go through ARM subsystem and should be taken by
+Russell King. There was no change since the last version, so I am
+submitting it to Russell's patch system.
+
+All the other patches can go to mvebu subsystem (and then arm-soc)
+even the patch 10, if the PM maintainers agree, of course in this case
+we need an acked-by from them.
+
+I would like also to have a acked-by (or at least a reviewed-by) from
+the PM maintainers for the patches 8 and 9.
+
+The whole series (and the pmsu patches needed) is also available in
+the branch CPU-idle-ArmadaXP-v6 at
+https://github.com/MISL-EBU-System-SW/mainline-public.git
+
+Thanks,
+
+Changelog:
+
+v5 -> v6:
+
+ * rebased onto the pmsu reworked patch set
+
+ * fixed the wrong indent for ARM_BE8 in coherency_ll.S
+
+ * Improved the tests done in armada_370_xp_cpu_pm_init as suggested
+   by Thomas Petazzoni. Each condition is tested separately then it
+   will be more readable.
+
+v4 -> v5:
+
+* Call v7 version of suspend and resume from the pj4b callback instead
+  of copying the code, following Lorenzo advice.
+
+* Split the low level functions to manipulate HW coherency
+
+* Reorder the included headers in cpuidle-armada-370-xp.c
+
+* Added comment in the inline asm part of armada_370_xp_cpu_suspend
+  function where the CR_C is restored.
+
+* Added comment about the fact that Armada XP can us ldrex/strex
+  without MMU enabled
+
+* Fixed commit logs
+
+* Added the acked-by from Thomas Petazzoni
+
+* Extend the pmsu registers instead of adding a new set of register
+
+* Move the pm initialization outside of the board file in a
+  arch_initcall
+
+* Move most of the architecture specific code in arch/arm/mach-mvebu
+  and use platform device data file to pass the callback as suggested
+  by Daniel.
+
+* Added the tlb flush if the wfi failed.
+
+* Check the cpu_suspend return value
+
+* rebased on mvebu/for-next to be in sync all the change made in mach-mvebu
+
+v3 -> v4:
+
+* factorized the code in coherency_ll.S and make it autodetect as mush
+  as possible
+
+* reordered the introduction of the device tree binding
+
+* removed all the EXPORT_SYMBOL_GPL as the driver can only be built
+  into the kernel and never be built as a module.
+
+* moved the armada_370_xp_pmsu_enable_l2_powerdown_onidle function in
+  armada_370_cp.c file during the initialization of the platform.
+
+* fixed various coding style issue and typos pointed by Thomas
+
+* fixed all the coding issue style, made the comments more coherent
+  and add more comment in the suspend-armada-370-xp.S file.
+
+* moved all the device tree related check from
+  armada_370_xp_cpuidle_probe to armada_370_xp_dt_init.
+
+* used cpu_pm_enter() instead of directly calling platform code in
+  Armada_370_xp_enter_idle.
+
+* convert the sequence to disable the coherency to the one used in
+  TC2.
+
+* Rebased on v3.14-rc1
+
+v2 -> v3:
+
+* Converted the driver to use module_platform_driver. This lead to the
+  introduction of a new patch (PATCH 11). Pointed by Daniel Lezcano.
+
+* Used PUIDLE_DRIVER_FLAGS_MASK to store the deep idle information,
+  suggested by Daniel Lezcano.
+
+* Removed cpu_init call from armada_370_xp_enter_idle
+  function. Pointed by Lorenzo Pieralisi.
+
+* Rebased on v3.12-rc5
+
+
+v1 -> v2:
+
+* Removed the pm_level kernel parameter. As Kevin Hilman pointed, its
+  usage can be replaced by using
+  /sys/devices/system/cpu/cpu*/cpuidle/state*/disable or the kernel
+  parameter cpuidle.off.
+
+* Used BIT() macro (reported by Ezequiel)
+
+* Made the function more readable the
+  armada_370_xp_pmsu_idle_prepare() function (reported by Thomas)
+
+* Moved the config entry in Kconfig.arm, and rename the config symbol
+  according the pattern used by other arm cpu: ARM_"soc name"_CPUIDLE
+
+* Moved the build rule under the new ARM SoC section in the Makefile
+
+* Rebased on Linus Torvalds master branch of Thursday September 12
+
+Gregory CLEMENT (11):
+  ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
+  ARM: mvebu: remove the address parameter for ll_set_cpu_coherent
+  ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
+  ARM: mvebu: Remove the unused argument of set_cpu_coherent()
+  ARM: mvebu: Split low level functions to manipulate HW coherency
+  ARM: mvebu: Low level function to disable HW coherency support
+  ARM: mvebu: Allow to power down L2 cache controller in idle mode
+  ARM: mvebu: Add the PMSU related part of the cpu idle functions
+  ARM: mvebu: Register notifier callback for the cpuidle transition
+  cpuidle: mvebu: Add initial CPU idle support for Armada 370/XP SoC
+  ARM: mvebu: register the cpuidle driver for the Armada XP SoCs
+
+ arch/arm/mach-mvebu/coherency.c         |  16 +--
+ arch/arm/mach-mvebu/coherency.h         |   2 +-
+ arch/arm/mach-mvebu/coherency_ll.S      | 122 +++++++++++++++----
+ arch/arm/mach-mvebu/headsmp.S           |  15 +--
+ arch/arm/mach-mvebu/platsmp.c           |   2 +-
+ arch/arm/mach-mvebu/pmsu.c              | 207 +++++++++++++++++++++++++++++++-
+ arch/arm/mm/proc-v7.S                   |  28 ++++-
+ drivers/cpuidle/Kconfig.arm             |   5 +
+ drivers/cpuidle/Makefile                |   1 +
+ drivers/cpuidle/cpuidle-armada-370-xp.c |  93 ++++++++++++++
+ 10 files changed, 438 insertions(+), 53 deletions(-)
+ create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
+
+-- 
+1.8.1.2
 
