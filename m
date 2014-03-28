@@ -1,192 +1,164 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH] thermal: provide a way for the governors to have private
- data for each thermal zone
-Date: Fri, 28 Mar 2014 16:32:05 +0800
-Message-ID: <53353385.2030806@nvidia.com>
-References: <1394638735-31540-1-git-send-email-javi.merino@arm.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] tick, broadcast: Prevent false alarm when force mask
+ contains offline cpus
+Date: Fri, 28 Mar 2014 14:17:31 +0530
+Message-ID: <53353723.2040000@linux.vnet.ibm.com>
+References: <20140326035648.21736.85740.stgit@preeti.in.ibm.com> <5332B833.2030701@linux.vnet.ibm.com> <533394C7.1000702@linux.vnet.ibm.com> <5333C521.10901@linux.vnet.ibm.com> <5333FA02.3090402@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:15819 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbaC1IcI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 04:32:08 -0400
-In-Reply-To: <1394638735-31540-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5333FA02.3090402@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, paulmck@linux.vnet.ibm.com, davem@davemloft.net
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Punit.Agrawal@arm.com" <Punit.Agrawal@arm.com>
 
-On 03/12/2014 11:38 PM, Javi Merino wrote:
-> A governor may need to store its current state between calls to
-> throttle().  That state depends on the thermal zone, so store it as
-> private data in struct thermal_zone_device.
+On 03/27/2014 03:44 PM, Preeti U Murthy wrote:
+> On 03/27/2014 11:58 AM, Srivatsa S. Bhat wrote:
+>>
+>> Actually, my suggestion was to remove the dying CPU from the force_mask alone,
+>> in the CPU_DYING notifier. The rest of the cleanup (removing it from the other
+>> masks, moving the broadcast duty to someone else etc can still be done at
+>> the CPU_DEAD stage). Also, note that the CPU which is set in force_mask is
+>> definitely not the one doing the broadcast.
+>>
+>> Basically, my reasoning was this:
+>>
+>> If we look at how the 3 broadcast masks (oneshot, pending and force) are
+>> set and cleared during idle entry/exit, we see this pattern:
+>>
+>> oneshot_mask: This is set at BROADCAST_ENTER and cleared at EXIT.
+>> pending_mask: This is set at tick_handle_oneshot_broadcast and cleared at
+>>               EXIT.
+>> force_mask:   This is set at EXIT and cleared at the next call to
+>>               tick_handle_oneshot_broadcast. (Also, if the CPU is set in this
+>>               mask, the CPU doesn't enter deep idle states in subsequent
+>>               idle durations, and keeps polling instead, until it gets the
+>>               broadcast interrupt).
+>>
+>> What we can derive from this is that force_mask is the only mask that can
+>> remain set across an idle ENTER/EXIT sequence. Both of the other 2 masks
+>> can never remain set across a full idle ENTER/EXIT sequence. And a CPU going
+>> offline certainly goes through EXIT if it had gone through ENTER, before
+>> entering stop_machine().
+>>
+>> That means, force_mask is the only odd one out here, which can remain set
+>> when entering stop_machine() for CPU offline. So that's the only mask that
+>> needs to be cleared separately. The other 2 masks take care of themselves
+>> automatically. So, we can have a CPU_DYING callback which just clears the
+>> dying CPU from the force_mask (and does nothing more). That should work, no?
 > 
-> The governors may have two new ops: bind_to_tz() and unbind_from_tz().
-> When provided, these functions allow a governor to do some
-> initialization when it is bound to a tz and possibly store that
-> information in the governor_data field of the struct
-> thermal_zone_device.
+> Yep I think this will work. Find the modified patch below:
 > 
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> Thanks.
 > 
+> Regards
+> Preeti U Murthy
+> 
+> 
+> tick,broadcast:Clear hotplugged cpu in broadcast masks during CPU_DYING notification
+> 
+> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> 
+> Its possible that the tick_broadcast_force_mask contains cpus which are not
+> in cpu_online_mask when a broadcast tick occurs. This could happen under the
+> following circumstance assuming CPU1 is among the CPUs waiting for broadcast.
+> 
+> CPU0					CPU1
+> 
+> Run CPU_DOWN_PREPARE notifiers
+> 
+> Start stop_machine			Gets woken up by IPI to run
+> 					stop_machine, sets itself in
+> 					tick_broadcast_force_mask if the
+> 					time of broadcast interrupt is around
+> 					the same time as this IPI.
+> 
+> 					Start stop_machine
+> 					  set_cpu_online(cpu1, false)
+> End stop_machine			End stop_machine
+> 
+> Broadcast interrupt
+>   Finds that cpu1 in
+>   tick_broadcast_force_mask is offline
+>   and triggers the WARN_ON in
+>   tick_handle_oneshot_broadcast()
+> 
+> Clears all broadcast masks
+> in CPU_DEAD stage.
+> 
+> While the hotplugged cpu clears its bit in the tick_broadcast_oneshot_mask
+> and tick_broadcast_pending mask during BROADCAST_EXIT, it *sets* its bit
+> in the tick_broadcast_force_mask if the broadcast interrupt is found to be
+> around the same time as the present time. Today we clear all the broadcast
+> masks and shutdown tick devices in the CPU_DEAD stage. But as shown above
+> the broadcast interrupt could occur before this stage is reached and the
+> WARN_ON() gets triggered when it is found that the tick_broadcast_force_mask
+> contains an offline cpu.
+> 
+> This WARN_ON was added to capture scenarios where the broadcast mask, be it
+> oneshot/pending/force_mask contain offline cpus whose tick devices have been
+> removed. But here is a case where we trigger the WARN_ON() when the tick
+> device of the hotplugged cpu is still around but we are delaying the clearing
+> of the broadcast masks. This has not been a problem for
+> tick_broadcastoneshot_mask and tick_broadcast_pending_mask since they get
+> cleared on exit from broadcast.
+>    But since the force_mask gets set at the same time on certain occasions
+> it is necessary to move the clearing of masks to a stage during cpu hotplug
+> before the hotplugged cpu clears itself in the online_mask.
+>
+
+That last sentence is not entirely accurate. During stop-machine in the CPU
+offline path, the CPU removes itself from the cpu_online_mask at the very
+beginning, in the __cpu_disable() call. Only after that the CPU_DYING notifiers
+are invoked. But the advantage of clearing the CPU from the force_mask at
+the CPU_DYING stage is that no other CPU is "noticing" this event, since
+everybody is busy spinning in stop-machine. So, by the time stop-machine
+completes and the CPU is officially offline, it would have "magically" cleared
+itself from the force_mask as well, making things look very consistent for
+the rest of the CPUs (i.e., an offline CPU will never remain set in the
+force_mask).
+ 
+> Hence move the clearing of broadcast masks to the CPU_DYING notification stage
+> so that they remain consistent with the cpu_online_mask at the time of
+> broadcast delivery at all times.
+>
+
+This last paragraph sums it up perfectly.
+ 
+> Suggested-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+
+You might want to alter the changelog a bit as mentioned above. Other than
+that, everything looks fine to me. (But see one minor whitespace nitpick
+below).
+
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+
 > ---
-> Hi,
+>  kernel/time/clockevents.c    |    1 +
+>  kernel/time/tick-broadcast.c |   20 +++++++++++++++-----
+>  kernel/time/tick-internal.h  |    3 +++
+>  3 files changed, 19 insertions(+), 5 deletions(-)
+>
+[...]
+> @@ -912,11 +925,8 @@ void tick_shutdown_broadcast_oneshot(unsigned int *cpup)
+>  	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
+>  	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
 > 
-> We are working[1] on a new governor that has a Proportional Integral
-> Derivative (PID) controller in it so we need a way to store its
-> current state.  We're sending this as an RFC as there isn't any user
-> for this in the kernel yet.  Our plan is to include it as part of the
-> series of the governor.  This is an RFC to gather comments and see if
-> this is a valid solution to the problem.
-> 
-> [1] http://article.gmane.org/gmane.linux.power-management.general/43243
-> 
->  drivers/thermal/thermal_core.c |   49 +++++++++++++++++++++++++++++++++-------
->  include/linux/thermal.h        |    3 +++
->  2 files changed, 44 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 71b0ec0..d937083 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -72,6 +72,27 @@ static struct thermal_governor *__find_governor(const char *name)
->  	return NULL;
+> -	broadcast_move_bc(cpu);
+> -
+>  	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
 >  }
->  
-> +static int thermal_set_governor(struct thermal_zone_device *tz,
-> +				struct thermal_governor *gov)
+> -
 
-In the of-thermal framework, we can't set the governor_name in the DT,
-so it mean we only can use the default governor in the initialization.
-I think we can export this function, so the platform driver can use it
-to change the governor to what he want.
-Such as:
-static int thermal_set_governor(struct thermal_zone_device *tz,
-				const char *name)
-I think it's better to pass the "name", not the pointer of "gov".
+I guess you removed that newline by mistake. Please add it back, it improves
+readability.
 
-> +{
-> +	int ret = 0;
-> +
-> +	if (tz->governor && tz->governor->unbind_from_tz)
-> +		tz->governor->unbind_from_tz(tz);
-> +
-> +	if (gov && gov->bind_to_tz) {
-> +		ret = gov->bind_to_tz(tz);
-> +		if (ret) {
-> +			tz->governor = NULL;
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	tz->governor = gov;
-> +
-> +	return ret;
-> +}
-> +
->  int thermal_register_governor(struct thermal_governor *governor)
->  {
->  	int err;
-> @@ -104,8 +125,12 @@ int thermal_register_governor(struct thermal_governor *governor)
->  
->  		name = pos->tzp->governor_name;
->  
-> -		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
-> -			pos->governor = governor;
-> +		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
-> +			int ret = thermal_set_governor(pos, governor);
-> +			if (ret)
-> +				pr_warn("Failed to set governor %s for zone %d: %d\n",
-> +					governor->name, pos->id, ret);
-> +		}
->  	}
->  
->  	mutex_unlock(&thermal_list_lock);
-> @@ -131,7 +156,7 @@ void thermal_unregister_governor(struct thermal_governor *governor)
->  	list_for_each_entry(pos, &thermal_tz_list, node) {
->  		if (!strnicmp(pos->governor->name, governor->name,
->  						THERMAL_NAME_LENGTH))
-> -			pos->governor = NULL;
-> +			thermal_set_governor(pos, NULL);
->  	}
->  
->  	mutex_unlock(&thermal_list_lock);
-> @@ -756,8 +781,9 @@ policy_store(struct device *dev, struct device_attribute *attr,
->  	if (!gov)
->  		goto exit;
->  
-> -	tz->governor = gov;
-> -	ret = count;
-> +	ret = thermal_set_governor(tz, gov);
-> +	if (!ret)
-> +		ret = count;
->  
->  exit:
->  	mutex_unlock(&thermal_governor_lock);
-> @@ -1452,6 +1478,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
->  	int result;
->  	int count;
->  	int passive = 0;
-> +	struct thermal_governor *governor;
->  
->  	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
->  		return ERR_PTR(-EINVAL);
-> @@ -1542,9 +1569,15 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
->  	mutex_lock(&thermal_governor_lock);
->  
->  	if (tz->tzp)
-> -		tz->governor = __find_governor(tz->tzp->governor_name);
-> +		governor = __find_governor(tz->tzp->governor_name);
->  	else
-> -		tz->governor = def_governor;
-> +		governor = def_governor;
-> +
-> +	result = thermal_set_governor(tz, governor);
-> +	if (result) {
-> +		mutex_unlock(&thermal_governor_lock);
-> +		goto unregister;
-> +	}
->  
->  	mutex_unlock(&thermal_governor_lock);
->  
-> @@ -1634,7 +1667,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
->  		device_remove_file(&tz->device, &dev_attr_mode);
->  	device_remove_file(&tz->device, &dev_attr_policy);
->  	remove_trip_attrs(tz);
-> -	tz->governor = NULL;
-> +	thermal_set_governor(tz, NULL);
->  
->  	thermal_remove_hwmon_sysfs(tz);
->  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index f7e11c7..baac212 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -177,6 +177,7 @@ struct thermal_zone_device {
->  	struct thermal_zone_device_ops *ops;
->  	const struct thermal_zone_params *tzp;
->  	struct thermal_governor *governor;
-> +	void *governor_data;
->  	struct list_head thermal_instances;
->  	struct idr idr;
->  	struct mutex lock; /* protect thermal_instances list */
-> @@ -187,6 +188,8 @@ struct thermal_zone_device {
->  /* Structure that holds thermal governor information */
->  struct thermal_governor {
->  	char name[THERMAL_NAME_LENGTH];
-> +	int (*bind_to_tz)(struct thermal_zone_device *tz);
-> +	void (*unbind_from_tz)(struct thermal_zone_device *tz);
->  	int (*throttle)(struct thermal_zone_device *tz, int trip);
->  	struct list_head	governor_list;
->  };
-> 
+Regards,
+Srivatsa S. Bhat
 
-
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+>  /*
+>   * Check, whether the broadcast device is in one shot mode
+>   */
