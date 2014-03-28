@@ -1,146 +1,90 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] PM / Wakeup: Correct presence vs. emptiness of wakeup_* attributes
-Date: Fri, 28 Mar 2014 11:15:14 +0100
-Message-ID: <1396001714-17824-1-git-send-email-geert@linux-m68k.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:57943 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751720AbaC1KPW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 06:15:22 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH] cpufreq: create another field .flags in
+ cpufreq_frequency_table
+Date: Fri, 28 Mar 2014 11:19:43 +0100
+Message-ID: <20140328111943.272d0bea@amdc2363>
+References: <78187ea173460c871eef31432ec2a80ec657fe30.1395643393.git.viresh.kumar@linaro.org>
+ <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <b5bc276cdd34b039de2aa640ec0bb5dff195f832.1395996386.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
+Hi Viresh,
 
-According to the documentation, the various wakeup_* attributes in sysfs
-are not present if the device is not enabled to wake up the system.
+> diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c
+> b/drivers/cpufreq/exynos4x12-cpufreq.c index 7c11ace..8c4c6a5 100644
+> --- a/drivers/cpufreq/exynos4x12-cpufreq.c
+> +++ b/drivers/cpufreq/exynos4x12-cpufreq.c
+> @@ -30,21 +30,21 @@ static unsigned int exynos4x12_volt_table[] = {
+>  };
+> 
+>  static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
+> -       {CPUFREQ_BOOST_FREQ, 1500 * 1000},
+> -       {L1, 1400 * 1000},
+> -       {L2, 1300 * 1000},
+> -       {L3, 1200 * 1000},
+> -       {L4, 1100 * 1000},
+> -       {L5, 1000 * 1000},
+> -       {L6,  900 * 1000},
+> -       {L7,  800 * 1000},
+> -       {L8,  700 * 1000},
+> -       {L9,  600 * 1000},
+> -       {L10, 500 * 1000},
+> -       {L11, 400 * 1000},
+> -       {L12, 300 * 1000},
+> -       {L13, 200 * 1000},
+> -       {0, CPUFREQ_TABLE_END},
+> +       {CPUFREQ_BOOST_FREQ, 0, 1500 * 1000},
+> +       {0, L1, 1400 * 1000},
+> +       {0, L2, 1300 * 1000},
+> +       {0, L3, 1200 * 1000},
+> +       {0, L4, 1100 * 1000},
+> +       {0, L5, 1000 * 1000},
+> +       {0, L6,  900 * 1000},
+> +       {0, L7,  800 * 1000},
+> +       {0, L8,  700 * 1000},
+> +       {0, L9,  600 * 1000},
+> +       {0, L10, 500 * 1000},
+> +       {0, L11, 400 * 1000},
+> +       {0, L12, 300 * 1000},
+> +       {0, L13, 200 * 1000},
+> +       {0, 0, CPUFREQ_TABLE_END},
+>  };
 
-This is not correct: the attributes are not present if the device is not
-capable to wake up the system. They are empty if the device is not enabled
-to wake up the system.
+Looks correct for me.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- Documentation/ABI/testing/sysfs-devices-power |   46 ++++++++++++++++---------
- 1 file changed, 30 insertions(+), 16 deletions(-)
+One little remark - since cpufreq_frequency_tables are defined as
+static it seems like we don't need to explicitly specify the 0, for
+flags field.
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-power b/Documentation/ABI/testing/sysfs-devices-power
-index efe449bdf811..39b7b39b352e 100644
---- a/Documentation/ABI/testing/sysfs-devices-power
-+++ b/Documentation/ABI/testing/sysfs-devices-power
-@@ -83,8 +83,10 @@ Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
- Description:
- 		The /sys/devices/.../wakeup_count attribute contains the number
- 		of signaled wakeup events associated with the device.  This
--		attribute is read-only.  If the device is not enabled to wake up
-+		attribute is read-only.  If the device is not capable to wake up
- 		the system from sleep states, this attribute is not present.
-+		If the device is not enabled to wake up the system from sleep
-+		states, this attribute is empty.
- 
- What:		/sys/devices/.../power/wakeup_active_count
- Date:		September 2010
-@@ -93,8 +95,10 @@ Description:
- 		The /sys/devices/.../wakeup_active_count attribute contains the
- 		number of times the processing of wakeup events associated with
- 		the device was completed (at the kernel level).  This attribute
--		is read-only.  If the device is not enabled to wake up the
--		system from sleep states, this attribute is not present.
-+		is read-only.  If the device is not capable to wake up the
-+		system from sleep states, this attribute is not present.  If
-+		the device is not enabled to wake up the system from sleep
-+		states, this attribute is empty.
- 
- What:		/sys/devices/.../power/wakeup_abort_count
- Date:		February 2012
-@@ -104,8 +108,9 @@ Description:
- 		number of times the processing of a wakeup event associated with
- 		the device might have aborted system transition into a sleep
- 		state in progress.  This attribute is read-only.  If the device
--		is not enabled to wake up the system from sleep states, this
--		attribute is not present.
-+		is not capable to wake up the system from sleep states, this
-+		attribute is not present.  If the device is not enabled to wake
-+		up the system from sleep states, this attribute is empty.
- 
- What:		/sys/devices/.../power/wakeup_expire_count
- Date:		February 2012
-@@ -114,8 +119,10 @@ Description:
- 		The /sys/devices/.../wakeup_expire_count attribute contains the
- 		number of times a wakeup event associated with the device has
- 		been reported with a timeout that expired.  This attribute is
--		read-only.  If the device is not enabled to wake up the system
--		from sleep states, this attribute is not present.
-+		read-only.  If the device is not capable to wake up the system
-+		from sleep states, this attribute is not present.  If the
-+		device is not enabled to wake up the system from sleep states,
-+		this attribute is empty.
- 
- What:		/sys/devices/.../power/wakeup_active
- Date:		September 2010
-@@ -124,8 +131,10 @@ Description:
- 		The /sys/devices/.../wakeup_active attribute contains either 1,
- 		or 0, depending on whether or not a wakeup event associated with
- 		the device is being processed (1).  This attribute is read-only.
--		If the device is not enabled to wake up the system from sleep
--		states, this attribute is not present.
-+		If the device is not capable to wake up the system from sleep
-+		states, this attribute is not present.  If the device is not
-+		enabled to wake up the system from sleep states, this attribute
-+		is empty.
- 
- What:		/sys/devices/.../power/wakeup_total_time_ms
- Date:		September 2010
-@@ -134,8 +143,9 @@ Description:
- 		The /sys/devices/.../wakeup_total_time_ms attribute contains
- 		the total time of processing wakeup events associated with the
- 		device, in milliseconds.  This attribute is read-only.  If the
--		device is not enabled to wake up the system from sleep states,
--		this attribute is not present.
-+		device is not capable to wake up the system from sleep states,
-+		this attribute is not present.  If the device is not enabled to
-+		wake up the system from sleep states, this attribute is empty.
- 
- What:		/sys/devices/.../power/wakeup_max_time_ms
- Date:		September 2010
-@@ -144,8 +154,10 @@ Description:
- 		The /sys/devices/.../wakeup_max_time_ms attribute contains
- 		the maximum time of processing a single wakeup event associated
- 		with the device, in milliseconds.  This attribute is read-only.
--		If the device is not enabled to wake up the system from sleep
--		states, this attribute is not present.
-+		If the device is not capable to wake up the system from sleep
-+		states, this attribute is not present.  If the device is not
-+		enabled to wake up the system from sleep states, this attribute
-+		is empty.
- 
- What:		/sys/devices/.../power/wakeup_last_time_ms
- Date:		September 2010
-@@ -156,7 +168,8 @@ Description:
- 		signaling the last wakeup event associated with the device, in
- 		milliseconds.  This attribute is read-only.  If the device is
- 		not enabled to wake up the system from sleep states, this
--		attribute is not present.
-+		attribute is not present.  If the device is not enabled to wake
-+		up the system from sleep states, this attribute is empty.
- 
- What:		/sys/devices/.../power/wakeup_prevent_sleep_time_ms
- Date:		February 2012
-@@ -165,9 +178,10 @@ Description:
- 		The /sys/devices/.../wakeup_prevent_sleep_time_ms attribute
- 		contains the total time the device has been preventing
- 		opportunistic transitions to sleep states from occurring.
--		This attribute is read-only.  If the device is not enabled to
-+		This attribute is read-only.  If the device is not capable to
- 		wake up the system from sleep states, this attribute is not
--		present.
-+		present.  If the device is not enabled to wake up the system
-+		from sleep states, this attribute is empty.
- 
- What:		/sys/devices/.../power/autosuspend_delay_ms
- Date:		September 2010
+Something like {, L13, 200 * 1000}, shall be enough.
+
+> +/* Special Values of .flags field */
+> +#define CPUFREQ_BOOST_FREQ     0x1
+
+Maybe (1 << 0) to explicitly show that those are flags.
+
+> 
+>  struct cpufreq_frequency_table {
+> +       unsigned int    flags;
+>         unsigned int    driver_data; /* driver specific data, not
+
+The driver_data shall be changed to int. However I suppose that it will
+be done at separate patch.
+
+> used by core */ unsigned int    frequency; /* kHz - doesn't need to
+> be in ascending
+>                                     * order */
+
 -- 
-1.7.9.5
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
