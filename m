@@ -1,132 +1,298 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v6 03/11] ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
-Date: Fri, 28 Mar 2014 12:13:23 +0100
-Message-ID: <1396005211-15573-4-git-send-email-gregory.clement@free-electrons.com>
-References: <1396005211-15573-1-git-send-email-gregory.clement@free-electrons.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1396005211-15573-1-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle info
+Date: Fri, 28 Mar 2014 13:29:53 +0100
+Message-ID: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f42.google.com ([74.125.82.42]:38363 "EHLO
+	mail-wg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbaC1M3p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Mar 2014 08:29:45 -0400
+Received: by mail-wg0-f42.google.com with SMTP id y10so3431850wgg.25
+        for <linux-pm@vger.kernel.org>; Fri, 28 Mar 2014 05:29:44 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org
+Cc: rjw@rjwysocki.net, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-ll_set_cpu_coherent is always used on the current CPU, so instead of
-passing the CPU id as argument, ll_set_cpu_coherent() can find it by
-itself.
+The following patchset provides an interaction between cpuidle and the scheduler.
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Acked-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
----
- arch/arm/mach-mvebu/coherency.c    | 10 +++++-----
- arch/arm/mach-mvebu/coherency.h    |  2 +-
- arch/arm/mach-mvebu/coherency_ll.S | 10 +++++-----
- arch/arm/mach-mvebu/headsmp.S      |  4 ----
- arch/arm/mach-mvebu/platsmp.c      |  2 +-
- 5 files changed, 12 insertions(+), 16 deletions(-)
+The first patch encapsulate the needed information for the scheduler in a
+separate cpuidle structure. The second one stores the pointer to this structure
+when entering idle. The third one, use this information to take the decision to
+find the idlest cpu.
 
-diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
-index 88dd507221fc..51010dbbf7e4 100644
---- a/arch/arm/mach-mvebu/coherency.c
-+++ b/arch/arm/mach-mvebu/coherency.c
-@@ -44,17 +44,17 @@ static struct of_device_id of_coherency_table[] = {
- };
- 
- /* Function defined in coherency_ll.S */
--int ll_set_cpu_coherent(unsigned int hw_cpu_id);
-+int ll_set_cpu_coherent(void);
- 
--int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
-+int set_cpu_coherent(int smp_group_id)
- {
- 	if (!coherency_base) {
--		pr_warn("Can't make CPU %d cache coherent.\n", hw_cpu_id);
-+		pr_warn("Can't make current CPU cache coherent.\n");
- 		pr_warn("Coherency fabric is not initialized\n");
- 		return 1;
- 	}
- 
--	return ll_set_cpu_coherent(hw_cpu_id);
-+	return ll_set_cpu_coherent();
- }
- 
- static inline void mvebu_hwcc_sync_io_barrier(void)
-@@ -140,7 +140,7 @@ int __init coherency_init(void)
- 		sync_cache_w(&coherency_phys_base);
- 		coherency_base = of_iomap(np, 0);
- 		coherency_cpu_base = of_iomap(np, 1);
--		set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
-+		set_cpu_coherent(0);
- 		of_node_put(np);
- 	}
- 
-diff --git a/arch/arm/mach-mvebu/coherency.h b/arch/arm/mach-mvebu/coherency.h
-index 760226c41353..c7e5df368d98 100644
---- a/arch/arm/mach-mvebu/coherency.h
-+++ b/arch/arm/mach-mvebu/coherency.h
-@@ -16,7 +16,7 @@
- 
- extern unsigned long coherency_phys_base;
- 
--int set_cpu_coherent(unsigned int cpu_id, int smp_group_id);
-+int set_cpu_coherent(int smp_group_id);
- int coherency_init(void);
- 
- #endif	/* __MACH_370_XP_COHERENCY_H */
-diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-index 1f2bcd4b5424..98a0b73f909b 100644
---- a/arch/arm/mach-mvebu/coherency_ll.S
-+++ b/arch/arm/mach-mvebu/coherency_ll.S
-@@ -24,9 +24,7 @@
- #include <asm/cp15.h>
- 
- 	.text
--/*
-- * r0: HW CPU id
-- */
-+
- ENTRY(ll_set_cpu_coherent)
- 	mrc	p15, 0, r1, c1, c0, 0
- 	tst	r1, #CR_M @ Check MMU bit enabled
-@@ -43,8 +41,10 @@ ENTRY(ll_set_cpu_coherent)
- 	ldr	r0, [r0]
- 2:
- 	/* Create bit by cpu index */
--	mov	r3, #(1 << 24)
--	lsl	r1, r3, r1
-+	mrc	15, 0, r1, cr0, cr0, 5
-+	and	r1, r1, #15
-+	mov	r2, #(1 << 24)
-+	lsl	r1, r2, r1
- ARM_BE8(rev	r1, r1)
- 
- 	/* Add CPU to SMP group - Atomic */
-diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
-index f30bc8d78871..cf7abe6554f7 100644
---- a/arch/arm/mach-mvebu/headsmp.S
-+++ b/arch/arm/mach-mvebu/headsmp.S
-@@ -31,10 +31,6 @@
- ENTRY(armada_xp_secondary_startup)
-  ARM_BE8(setend	be )			@ go BE8 if entered LE
- 
--	/* Read CPU id */
--	mrc     p15, 0, r1, c0, c0, 5
--	and     r1, r1, #0xF
--
- 	/* Add CPU to coherency fabric */
- 	bl	ll_set_cpu_coherent
- 	b	secondary_startup
-diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
-index a6da03f5b24e..a99d71a747f0 100644
---- a/arch/arm/mach-mvebu/platsmp.c
-+++ b/arch/arm/mach-mvebu/platsmp.c
-@@ -102,7 +102,7 @@ static void __init armada_xp_smp_prepare_cpus(unsigned int max_cpus)
- 
- 	set_secondary_cpus_clock();
- 	flush_cache_all();
--	set_cpu_coherent(cpu_logical_map(smp_processor_id()), 0);
-+	set_cpu_coherent(0);
- 
- 	/*
- 	 * In order to boot the secondary CPUs we need to ensure
+After some basic testing with hackbench, it appears there is an improvement for
+the performances (small) and for the duration of the idle states (which provides
+a better power saving).
+
+The measurement has been done with the 'idlestat' tool previously posted in this
+mailing list.
+
+So the benefit is good for both sides performance and power saving.
+
+The select_idle_sibling could be also improved in the same way.
+
+====================== test with hackbench 3.14-rc8 =========================
+
+/usr/bin/hackbench -l 10000 -s 4096
+
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 10000 messages of 4096 bytes
+
+Time: 44.433
+
+Total trace buffer: 1846688 kB
+clusterA@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	0	           0.00	           0.00	0.00	0.00
+         C1E-VB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	0	           0.00	           0.00	0.00	0.00
+  core0@state	hits	      total(us)		avg(us)	min(us)	max(us)
+        POLL	0	           0.00	           0.00	0.00	0.00
+        C1-IVB	0	           0.00	           0.00	0.00	0.00
+        C1E-IVB	0	           0.00	           0.00	0.00	0.00
+        C3-IVB	0	           0.00	           0.00	0.00	0.00
+        C6-IVB	0	           0.00	           0.00	0.00	0.00
+        C7-IVB	1396	    87932131.00	       62988.63	0.00	320146.00
+    cpu0@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	1	          14.00	          14.00	14.00	14.00
+         C1E-VB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	1	         262.00	         262.00	262.00	262.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	1180	    87938177.00	       74523.88	1.00	320147.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	0	           0.00	           0.00	0.00	0.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	0	           0.00	           0.00	0.00	0.00
+    cpu0 wakeups 	name 		count
+         irq009	acpi           	1
+    cpu1@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	0	           0.00	           0.00	0.00	0.00
+         C1E-VB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	475	    87941356.00	      185139.70	322.00	1500690.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	0	           0.00	           0.00	0.00	0.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	0	           0.00	           0.00	0.00	0.00
+    cpu1 wakeups 	name 		count
+         irq009	acpi           	3
+  core1@state	hits	      total(us)		avg(us)	min(us)	max(us)
+        POLL	0	           0.00	           0.00	0.00	0.00
+        C1-IVB	0	           0.00	           0.00	0.00	0.00
+        C1E-IVB	0	           0.00	           0.00	0.00	0.00
+        C3-IVB	0	           0.00	           0.00	0.00	0.00
+        C6-IVB	0	           0.00	           0.00	0.00	0.00
+        C7-IVB	0	           0.00	           0.00	0.00	0.00
+    cpu2@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	11	      288157.00	       26196.09	16.00	200060.00
+         C1E-VB	6	      221601.00	       36933.50	79.00	200066.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	950	    87417466.00	       92018.39	19.00	200074.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	2	          34.00	          17.00	11.00	23.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	745	       18800.00	          25.23	2.00	156.00
+    cpu2 wakeups 	name 		count
+         irq019	ahci           	50
+         irq009	acpi           	17
+    cpu3@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	0	           0.00	           0.00	0.00	0.00
+         C1E-VB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	0	           0.00	           0.00	0.00	0.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	0	           0.00	           0.00	0.00	0.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	0	           0.00	           0.00	0.00	0.00
+    cpu3 wakeups 	name 		count
+
+================ test with hackbench 3.14-rc8 + patchset ====================
+
+/usr/bin/hackbench -l 10000 -s 4096
+
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 10000 messages of 4096 bytes
+
+Time: 42.179
+
+Total trace buffer: 1846688 kB
+clusterA@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	0	           0.00	           0.00	0.00	0.00
+         C1E-VB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	0	           0.00	           0.00	0.00	0.00
+  core0@state	hits	      total(us)		avg(us)	min(us)	max(us)
+        POLL	0	           0.00	           0.00	0.00	0.00
+        C1-IVB	0	           0.00	           0.00	0.00	0.00
+        C1E-IVB	0	           0.00	           0.00	0.00	0.00
+        C3-IVB	0	           0.00	           0.00	0.00	0.00
+        C6-IVB	0	           0.00	           0.00	0.00	0.00
+        C7-IVB	880	    89157590.00	      101315.44	0.00	400184.00
+    cpu0@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	0	           0.00	           0.00	0.00	0.00
+         C1E-VB	1	         233.00	         233.00	233.00	233.00
+         C3-IVB	1	         260.00	         260.00	260.00	260.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	700	    89162006.00	      127374.29	182.00	400187.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	0	           0.00	           0.00	0.00	0.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	0	           0.00	           0.00	0.00	0.00
+    cpu0 wakeups 	name 		count
+         irq009	acpi           	2
+    cpu1@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	0	           0.00	           0.00	0.00	0.00
+         C1E-VB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	334	    89164805.00	      266960.49	1.00	1500677.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	0	           0.00	           0.00	0.00	0.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	0	           0.00	           0.00	0.00	0.00
+    cpu1 wakeups 	name 		count
+         irq009	acpi           	6
+  core1@state	hits	      total(us)		avg(us)	min(us)	max(us)
+        POLL	0	           0.00	           0.00	0.00	0.00
+        C1-IVB	0	           0.00	           0.00	0.00	0.00
+        C1E-IVB	0	           0.00	           0.00	0.00	0.00
+        C3-IVB	0	           0.00	           0.00	0.00	0.00
+        C6-IVB	0	           0.00	           0.00	0.00	0.00
+        C7-IVB	0	           0.00	           0.00	0.00	0.00
+    cpu2@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	19	     2169047.00	      114160.37	18.00	999129.00
+         C1E-IB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	376	    86993307.00	      231365.18	20.00	1500682.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	0	           0.00	           0.00	0.00	0.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	0	           0.00	           0.00	0.00	0.00
+    cpu2 wakeups 	name 		count
+         irq009	acpi           	32
+         irq019	ahci           	45
+    cpu3@state	hits	      total(us)		avg(us)	min(us)	max(us)
+         POLL	0	           0.00	           0.00	0.00	0.00
+         C1-IVB	0	           0.00	           0.00	0.00	0.00
+         C1E-VB	0	           0.00	           0.00	0.00	0.00
+         C3-IVB	0	           0.00	           0.00	0.00	0.00
+         C6-IVB	0	           0.00	           0.00	0.00	0.00
+         C7-IVB	0	           0.00	           0.00	0.00	0.00
+         1701	0	           0.00	           0.00	0.00	0.00
+         1700	0	           0.00	           0.00	0.00	0.00
+         1600	0	           0.00	           0.00	0.00	0.00
+         1500	0	           0.00	           0.00	0.00	0.00
+         1400	0	           0.00	           0.00	0.00	0.00
+         1300	0	           0.00	           0.00	0.00	0.00
+         1200	0	           0.00	           0.00	0.00	0.00
+         1100	0	           0.00	           0.00	0.00	0.00
+         1000	0	           0.00	           0.00	0.00	0.00
+         900	0	           0.00	           0.00	0.00	0.00
+         800	0	           0.00	           0.00	0.00	0.00
+         782	0	           0.00	           0.00	0.00	0.00
+    cpu3 wakeups 	name 		count
+
+
+Daniel Lezcano (3):
+  cpuidle: encapsulate power info in a separate structure
+  idle: store the idle state the cpu is
+  sched/fair: use the idle state info to choose the idlest cpu
+
+ arch/arm/include/asm/cpuidle.h       |    6 +-
+ arch/arm/mach-exynos/cpuidle.c       |    4 +-
+ drivers/acpi/processor_idle.c        |    4 +-
+ drivers/base/power/domain.c          |    6 +-
+ drivers/cpuidle/cpuidle-at91.c       |    4 +-
+ drivers/cpuidle/cpuidle-big_little.c |    9 +--
+ drivers/cpuidle/cpuidle-calxeda.c    |    6 +-
+ drivers/cpuidle/cpuidle-kirkwood.c   |    4 +-
+ drivers/cpuidle/cpuidle-powernv.c    |    8 +--
+ drivers/cpuidle/cpuidle-pseries.c    |   12 ++--
+ drivers/cpuidle/cpuidle-ux500.c      |   14 ++---
+ drivers/cpuidle/cpuidle-zynq.c       |    4 +-
+ drivers/cpuidle/driver.c             |    6 +-
+ drivers/cpuidle/governors/ladder.c   |   14 +++--
+ drivers/cpuidle/governors/menu.c     |    8 +--
+ drivers/cpuidle/sysfs.c              |    2 +-
+ drivers/idle/intel_idle.c            |  112 +++++++++++++++++-----------------
+ include/linux/cpuidle.h              |   10 ++-
+ kernel/sched/fair.c                  |   46 ++++++++++++--
+ kernel/sched/idle.c                  |   17 +++++-
+ kernel/sched/sched.h                 |    5 ++
+ 21 files changed, 180 insertions(+), 121 deletions(-)
+
 -- 
-1.8.1.2
+1.7.9.5
+
