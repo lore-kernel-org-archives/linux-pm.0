@@ -1,15 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 1/3] powernv, cpufreq: Select CPUFreq related Kconfig
- options for powernv
-Date: Mon, 31 Mar 2014 09:51:03 +0530
-Message-ID: <CAKohpokvHYH7xcQyQyKmbu_xqfX8dbwnBNhQ3y9ZyAm7i0z0Qg@mail.gmail.com>
+Subject: Re: [PATCH v5 0/3] powernv,cpufreq: Dynamic Frequency Scaling support
+Date: Mon, 31 Mar 2014 09:55:40 +0530
+Message-ID: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
 References: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
-	<1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
@@ -17,17 +15,60 @@ List-Id: linux-pm@vger.kernel.org
 On 29 March 2014 01:41, Gautham R. Shenoy <ego@linux.vnet.ibm.com> wrote:
 > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 >
-> Enable CPUFreq for PowerNV. Select "performance", "powersave",
-> "userspace" and "ondemand" governors. Choose "ondemand" to be the
-> default governor.
+> Hi,
 >
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/configs/pseries_defconfig    | 1 +
->  arch/powerpc/configs/pseries_le_defconfig | 1 +
->  arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
->  3 files changed, 8 insertions(+)
+> This is v5 of the patchset to enable dynamic frequency scaling on IBM
+> PowerNV platforms. This patchset does address all the review comments
+> obtained for v4 (which can be found at [1]).
+>
+> Changes from v4:
+>
+>     * Created a separate patch to select the CPUFreq related Config
+>       options for PowerNV
+>
+>     * Dropped the per-core locking hunks in
+>       drivers/cpufreq/powernv-cpufreq.c since the CPUFreq core takes
+>       care of the for us after the following commit which is present in
+>       linux-next:
+>
+>         commit 12478cf0c55e5969f740bb38a24b1a0104ae18d8
+>         Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>         Date:   Mon Mar 24 13:35:44 2014 +0530
+>
+>         cpufreq: Make sure frequency transitions are serialized
+>
+>     * [PATCH v5 3/3] gets rid of the powernv_pstate_ids[] array that
+>       was being used to record the pstate ids. After the following
+>       patch it is safe to use cpufreq_frequency_table.driver_data
+>       since it is opaque to the cpufreq core:
+>
+>         From: Viresh Kumar <viresh.kumar@linaro.org>
+>         Date: 2014-03-28 13:53:47
+>         url: http://marc.info/?l=linux-pm&m=139601416804702&w=2
+>
+>         cpufreq: create another field .flags in cpufreq_frequency_table
+>
+> The patchset is based on the commit
+> 201544be8c37dffbf069bb5fc9edb5674f8c1754 of the linux-next tree.
+>
+> While all the patches in the patchset apply cleanly on linux-next,
+> [PATCH v5 3/3] requires the Viresh's patch that was mentioned
+> above. Otherwise, the frequency corresponding to pstate id -3 will be
+> omited while reporting the "scaling_available_frequencies" in sysfs.
+>
+> [1]: http://marc.info/?l=linux-pm&m=139585297620612&w=2
+>
+> Gautham R. Shenoy (2):
+>   powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
 
-Probably it doesn't make much sense to keep this as the first patch
-as you still don't have the driver available yet.
+Make this patch 3/3 (Probably Rafael can do this while applying)
+
+>   powernv,cpufreq: Use cpufreq_frequency_table.driver_data to store
+>     pstate ids
+>
+> Vaidyanathan Srinivasan (1):
+>   powernv, cpufreq: cpufreq driver for powernv platform
+
+Otherwise,
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
