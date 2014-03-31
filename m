@@ -1,40 +1,33 @@
-From: zhouzhouyi@gmail.com
-Subject: [PATCH RFC] ACPI: (x86) remove useless initial assignment in gsi_to_irq
-Date: Mon, 31 Mar 2014 10:30:55 +0800
-Message-ID: <5338d375.45ac440a.2163.3105@mx.google.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:62418 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752264AbaCaCbT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Mar 2014 22:31:19 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/3] powernv, cpufreq: Select CPUFreq related Kconfig
+ options for powernv
+Date: Mon, 31 Mar 2014 09:51:03 +0530
+Message-ID: <CAKohpokvHYH7xcQyQyKmbu_xqfX8dbwnBNhQ3y9ZyAm7i0z0Qg@mail.gmail.com>
+References: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+	<1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: len.brown@intel.com, pavel@ucw.cz, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Zhouyi Zhou <zhouzhouyi@gmail.com>, Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 
-From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+On 29 March 2014 01:41, Gautham R. Shenoy <ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> Enable CPUFreq for PowerNV. Select "performance", "powersave",
+> "userspace" and "ondemand" governors. Choose "ondemand" to be the
+> default governor.
+>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/configs/pseries_defconfig    | 1 +
+>  arch/powerpc/configs/pseries_le_defconfig | 1 +
+>  arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
+>  3 files changed, 8 insertions(+)
 
-I think in function gsi_to_irq, initial assignment to irq is useless although compiler
-may eliminate it during the compilng. 
-
-Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
----
- arch/x86/kernel/acpi/boot.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 1dac942..b93d61e 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -103,7 +103,7 @@ static u32 isa_irq_to_gsi[NR_IRQS_LEGACY] __read_mostly = {
- 
- static unsigned int gsi_to_irq(unsigned int gsi)
- {
--	unsigned int irq = gsi + NR_IRQS_LEGACY;
-+	unsigned int irq;
- 	unsigned int i;
- 
- 	for (i = 0; i < NR_IRQS_LEGACY; i++) {
--- 
-1.7.10.4
-
+Probably it doesn't make much sense to keep this as the first patch
+as you still don't have the driver available yet.
