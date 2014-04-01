@@ -1,199 +1,469 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] tick, broadcast: Prevent false alarm when force mask
- contains offline cpus
-Date: Tue, 01 Apr 2014 11:02:20 +0530
-Message-ID: <533A4F64.4080609@linux.vnet.ibm.com>
-References: <20140326035648.21736.85740.stgit@preeti.in.ibm.com> <5332B833.2030701@linux.vnet.ibm.com> <533394C7.1000702@linux.vnet.ibm.com> <5333C521.10901@linux.vnet.ibm.com> <5333FA02.3090402@linux.vnet.ibm.com> <53353723.2040000@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e39.co.us.ibm.com ([32.97.110.160]:37896 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946AbaDAFgW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Apr 2014 01:36:22 -0400
-Received: from /spool/local
-	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Mon, 31 Mar 2014 23:36:21 -0600
-In-Reply-To: <53353723.2040000@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH REPOST v5 2/3] powernv, cpufreq: cpufreq driver for powernv platform
+Date: Tue,  1 Apr 2014 12:43:26 +0530
+Message-ID: <1396336408-20954-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tglx@linutronix.de
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, paulmck@linux.vnet.ibm.com, davem@davemloft.net
 
-On 03/28/2014 02:17 PM, Srivatsa S. Bhat wrote:
-> On 03/27/2014 03:44 PM, Preeti U Murthy wrote:
->> On 03/27/2014 11:58 AM, Srivatsa S. Bhat wrote:
->>>
->>> Actually, my suggestion was to remove the dying CPU from the force_mask alone,
->>> in the CPU_DYING notifier. The rest of the cleanup (removing it from the other
->>> masks, moving the broadcast duty to someone else etc can still be done at
->>> the CPU_DEAD stage). Also, note that the CPU which is set in force_mask is
->>> definitely not the one doing the broadcast.
->>>
->>> Basically, my reasoning was this:
->>>
->>> If we look at how the 3 broadcast masks (oneshot, pending and force) are
->>> set and cleared during idle entry/exit, we see this pattern:
->>>
->>> oneshot_mask: This is set at BROADCAST_ENTER and cleared at EXIT.
->>> pending_mask: This is set at tick_handle_oneshot_broadcast and cleared at
->>>               EXIT.
->>> force_mask:   This is set at EXIT and cleared at the next call to
->>>               tick_handle_oneshot_broadcast. (Also, if the CPU is set in this
->>>               mask, the CPU doesn't enter deep idle states in subsequent
->>>               idle durations, and keeps polling instead, until it gets the
->>>               broadcast interrupt).
->>>
->>> What we can derive from this is that force_mask is the only mask that can
->>> remain set across an idle ENTER/EXIT sequence. Both of the other 2 masks
->>> can never remain set across a full idle ENTER/EXIT sequence. And a CPU going
->>> offline certainly goes through EXIT if it had gone through ENTER, before
->>> entering stop_machine().
->>>
->>> That means, force_mask is the only odd one out here, which can remain set
->>> when entering stop_machine() for CPU offline. So that's the only mask that
->>> needs to be cleared separately. The other 2 masks take care of themselves
->>> automatically. So, we can have a CPU_DYING callback which just clears the
->>> dying CPU from the force_mask (and does nothing more). That should work, no?
->>
->> Yep I think this will work. Find the modified patch below:
->>
->> Thanks.
->>
->> Regards
->> Preeti U Murthy
->>
->>
->> tick,broadcast:Clear hotplugged cpu in broadcast masks during CPU_DYING notification
->>
->> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->>
->> Its possible that the tick_broadcast_force_mask contains cpus which are not
->> in cpu_online_mask when a broadcast tick occurs. This could happen under the
->> following circumstance assuming CPU1 is among the CPUs waiting for broadcast.
->>
->> CPU0					CPU1
->>
->> Run CPU_DOWN_PREPARE notifiers
->>
->> Start stop_machine			Gets woken up by IPI to run
->> 					stop_machine, sets itself in
->> 					tick_broadcast_force_mask if the
->> 					time of broadcast interrupt is around
->> 					the same time as this IPI.
->>
->> 					Start stop_machine
->> 					  set_cpu_online(cpu1, false)
->> End stop_machine			End stop_machine
->>
->> Broadcast interrupt
->>   Finds that cpu1 in
->>   tick_broadcast_force_mask is offline
->>   and triggers the WARN_ON in
->>   tick_handle_oneshot_broadcast()
->>
->> Clears all broadcast masks
->> in CPU_DEAD stage.
->>
->> While the hotplugged cpu clears its bit in the tick_broadcast_oneshot_mask
->> and tick_broadcast_pending mask during BROADCAST_EXIT, it *sets* its bit
->> in the tick_broadcast_force_mask if the broadcast interrupt is found to be
->> around the same time as the present time. Today we clear all the broadcast
->> masks and shutdown tick devices in the CPU_DEAD stage. But as shown above
->> the broadcast interrupt could occur before this stage is reached and the
->> WARN_ON() gets triggered when it is found that the tick_broadcast_force_mask
->> contains an offline cpu.
->>
->> This WARN_ON was added to capture scenarios where the broadcast mask, be it
->> oneshot/pending/force_mask contain offline cpus whose tick devices have been
->> removed. But here is a case where we trigger the WARN_ON() when the tick
->> device of the hotplugged cpu is still around but we are delaying the clearing
->> of the broadcast masks. This has not been a problem for
->> tick_broadcastoneshot_mask and tick_broadcast_pending_mask since they get
->> cleared on exit from broadcast.
->>    But since the force_mask gets set at the same time on certain occasions
->> it is necessary to move the clearing of masks to a stage during cpu hotplug
->> before the hotplugged cpu clears itself in the online_mask.
->>
-> 
-> That last sentence is not entirely accurate. During stop-machine in the CPU
-> offline path, the CPU removes itself from the cpu_online_mask at the very
-> beginning, in the __cpu_disable() call. Only after that the CPU_DYING notifiers
-> are invoked. But the advantage of clearing the CPU from the force_mask at
-> the CPU_DYING stage is that no other CPU is "noticing" this event, since
-> everybody is busy spinning in stop-machine. So, by the time stop-machine
-> completes and the CPU is officially offline, it would have "magically" cleared
-> itself from the force_mask as well, making things look very consistent for
-> the rest of the CPUs (i.e., an offline CPU will never remain set in the
-> force_mask).
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Hmm right. Besides this,like we discussed offline, this WARN_ON() is
-unlikely to be hit in the scenario described in the change log because
-the force_mask will be set only when the broadcast interrupt is expected
-to be delivered anytime now. There is time before the hotplugged CPU
-clears its bit in the cpu_online_mask for the broadcast interrupt to
-arrive and see that the force_mask is still a subset of the cpu_online_mask.
+Backend driver to dynamically set voltage and frequency on
+IBM POWER non-virtualized platforms.  Power management SPRs
+are used to set the required PState.
 
-But I still think that this patch would be required for the reason
-mentioned in the changelog in the last paragraph.
-> 
->> Hence move the clearing of broadcast masks to the CPU_DYING notification stage
->> so that they remain consistent with the cpu_online_mask at the time of
->> broadcast delivery at all times.
+This driver works in conjunction with cpufreq governors
+like 'ondemand' to provide a demand based frequency and
+voltage setting on IBM POWER non-virtualized platforms.
 
-   ^^^ this is the reason why we will need to move the clearing of mask
-from CPU_DEAD to CPU_DYING stage so as to avoid hitting the WARN_ON()
-unnecessarily in some valid scenario in the future.
+PState table is obtained from OPAL v3 firmware through device
+tree.
 
-I can send out a V2 patch with the modified changelog with just the last
-paragraph. What do you think?
+powernv_cpufreq back-end driver would parse the relevant device-tree
+nodes and initialise the cpufreq subsystem on powernv platform.
 
-Thomas, do you think this patch will make sense for the reason mentioned
-above?
+The code was originally written by svaidy@linux.vnet.ibm.com. Over
+time it was modified to accomodate bug-fixes as well as updates to the
+the cpu-freq core. Relevant portions of the change logs corresponding
+to those modifications are noted below:
 
-Thanks
+ * The policy->cpus needs to be populated in a hotplug-invariant
+   manner instead of using cpu_sibling_mask() which varies with
+   cpu-hotplug. This is because the cpufreq core code copies this
+   content into policy->related_cpus mask which should not vary on
+   cpu-hotplug. [Authored by srivatsa.bhat@linux.vnet.ibm.com]
 
-Regards
-Preeti U Murthy
->>
-> 
-> This last paragraph sums it up perfectly.
-> 
->> Suggested-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> 
-> You might want to alter the changelog a bit as mentioned above. Other than
-> that, everything looks fine to me. (But see one minor whitespace nitpick
-> below).
-> 
-> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> 
->> ---
->>  kernel/time/clockevents.c    |    1 +
->>  kernel/time/tick-broadcast.c |   20 +++++++++++++++-----
->>  kernel/time/tick-internal.h  |    3 +++
->>  3 files changed, 19 insertions(+), 5 deletions(-)
->>
-> [...]
->> @@ -912,11 +925,8 @@ void tick_shutdown_broadcast_oneshot(unsigned int *cpup)
->>  	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
->>  	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
->>
->> -	broadcast_move_bc(cpu);
->> -
->>  	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
->>  }
->> -
-> 
-> I guess you removed that newline by mistake. Please add it back, it improves
-> readability.
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
->>  /*
->>   * Check, whether the broadcast device is in one shot mode
->>   */
+ * Create a helper routine that can return the cpu-frequency for the
+   corresponding pstate_id. Also, cache the values of the pstate_max,
+   pstate_min and pstate_nominal and nr_pstates in a static structure
+   so that they can be reused in the future to perform any
+   validations. [Authored by ego@linux.vnet.ibm.com]
+
+ * Create a driver attribute named cpuinfo_nominal_freq which creates
+   a sysfs read-only file named cpuinfo_nominal_freq. Export the
+   frequency corresponding to the nominal_pstate through this
+   interface.
+
+     Nominal frequency is the highest non-turbo frequency for the
+   platform.  This is generally used for setting governor policies
+   from user space for optimal energy efficiency. [Authored by
+   ego@linux.vnet.ibm.com]
+
+ * Implement a powernv_cpufreq_get(unsigned int cpu) method which will
+   return the current operating frequency. Export this via the sysfs
+   interface cpuinfo_cur_freq by setting powernv_cpufreq_driver.get to
+   powernv_cpufreq_get(). [Authored by ego@linux.vnet.ibm.com]
+
+[Change log updated by ego@linux.vnet.ibm.com]
+
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/reg.h    |   4 +
+ drivers/cpufreq/Kconfig.powerpc   |   8 +
+ drivers/cpufreq/Makefile          |   1 +
+ drivers/cpufreq/powernv-cpufreq.c | 342 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 355 insertions(+)
+ create mode 100644 drivers/cpufreq/powernv-cpufreq.c
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 1a36b8e..2189f8f 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -271,6 +271,10 @@
+ #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
+ #define SPRN_IC		0x350	/* Virtual Instruction Count */
+ #define SPRN_VTB	0x351	/* Virtual Time Base */
++#define SPRN_PMICR	0x354   /* Power Management Idle Control Reg */
++#define SPRN_PMSR	0x355   /* Power Management Status Reg */
++#define SPRN_PMCR	0x374	/* Power Management Control Register */
++
+ /* HFSCR and FSCR bit numbers are the same */
+ #define FSCR_TAR_LG	8	/* Enable Target Address Register */
+ #define FSCR_EBB_LG	7	/* Enable Event Based Branching */
+diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
+index ca0021a..72564b7 100644
+--- a/drivers/cpufreq/Kconfig.powerpc
++++ b/drivers/cpufreq/Kconfig.powerpc
+@@ -54,3 +54,11 @@ config PPC_PASEMI_CPUFREQ
+ 	help
+ 	  This adds the support for frequency switching on PA Semi
+ 	  PWRficient processors.
++
++config POWERNV_CPUFREQ
++       tristate "CPU frequency scaling for IBM POWERNV platform"
++       depends on PPC_POWERNV
++       default y
++       help
++	 This adds support for CPU frequency switching on IBM POWERNV
++	 platform
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 7494565..0dbb963 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -86,6 +86,7 @@ obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
+ obj-$(CONFIG_CPU_FREQ_PMAC)		+= pmac32-cpufreq.o
+ obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
+ obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+= pasemi-cpufreq.o
++obj-$(CONFIG_POWERNV_CPUFREQ)		+= powernv-cpufreq.o
+ 
+ ##################################################################################
+ # Other platform drivers
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+new file mode 100644
+index 0000000..e1e5197
+--- /dev/null
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -0,0 +1,342 @@
++/*
++ * POWERNV cpufreq driver for the IBM POWER processors
++ *
++ * (C) Copyright IBM 2014
++ *
++ * Author: Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#define pr_fmt(fmt)	"powernv-cpufreq: " fmt
++
++#include <linux/kernel.h>
++#include <linux/sysfs.h>
++#include <linux/cpumask.h>
++#include <linux/module.h>
++#include <linux/cpufreq.h>
++#include <linux/smp.h>
++#include <linux/of.h>
++
++#include <asm/cputhreads.h>
++#include <asm/reg.h>
++
++#define POWERNV_MAX_PSTATES	256
++
++static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
++static int powernv_pstate_ids[POWERNV_MAX_PSTATES+1];
++
++/*
++ * Note: The set of pstates consists of contiguous integers, the
++ * smallest of which is indicated by powernv_pstate_info.min, the
++ * largest of which is indicated by powernv_pstate_info.max.
++ *
++ * The nominal pstate is the highest non-turbo pstate in this
++ * platform. This is indicated by powernv_pstate_info.nominal.
++ */
++static struct powernv_pstate_info {
++	int min;
++	int max;
++	int nominal;
++	int nr_pstates;
++} powernv_pstate_info;
++
++/*
++ * Initialize the freq table based on data obtained
++ * from the firmware passed via device-tree
++ */
++static int init_powernv_pstates(void)
++{
++	struct device_node *power_mgt;
++	int i, pstate_min, pstate_max, pstate_nominal, nr_pstates = 0;
++	const __be32 *pstate_ids, *pstate_freqs;
++	u32 len_ids, len_freqs;
++
++	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
++	if (!power_mgt) {
++		pr_warn("power-mgt node not found\n");
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-min", &pstate_min)) {
++		pr_warn("ibm,pstate-min node not found\n");
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-max", &pstate_max)) {
++		pr_warn("ibm,pstate-max node not found\n");
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-nominal",
++				 &pstate_nominal)) {
++		pr_warn("ibm,pstate-nominal not found\n");
++		return -ENODEV;
++	}
++	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
++		pstate_nominal, pstate_max);
++
++	pstate_ids = of_get_property(power_mgt, "ibm,pstate-ids", &len_ids);
++	if (!pstate_ids) {
++		pr_warn("ibm,pstate-ids not found\n");
++		return -ENODEV;
++	}
++
++	pstate_freqs = of_get_property(power_mgt, "ibm,pstate-frequencies-mhz",
++				      &len_freqs);
++	if (!pstate_freqs) {
++		pr_warn("ibm,pstate-frequencies-mhz not found\n");
++		return -ENODEV;
++	}
++
++	WARN_ON(len_ids != len_freqs);
++	nr_pstates = min(len_ids, len_freqs) / sizeof(u32);
++	if (!nr_pstates) {
++		pr_warn("No PStates found\n");
++		return -ENODEV;
++	}
++
++	pr_debug("NR PStates %d\n", nr_pstates);
++	for (i = 0; i < nr_pstates; i++) {
++		u32 id = be32_to_cpu(pstate_ids[i]);
++		u32 freq = be32_to_cpu(pstate_freqs[i]);
++
++		pr_debug("PState id %d freq %d MHz\n", id, freq);
++		powernv_freqs[i].frequency = freq * 1000; /* kHz */
++		powernv_pstate_ids[i] = id;
++	}
++	/* End of list marker entry */
++	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
++
++	powernv_pstate_info.min = pstate_min;
++	powernv_pstate_info.max = pstate_max;
++	powernv_pstate_info.nominal = pstate_nominal;
++	powernv_pstate_info.nr_pstates = nr_pstates;
++
++	return 0;
++}
++
++/* Returns the CPU frequency corresponding to the pstate_id. */
++static unsigned int pstate_id_to_freq(int pstate_id)
++{
++	int i;
++
++	i = powernv_pstate_info.max - pstate_id;
++	BUG_ON(i >= powernv_pstate_info.nr_pstates || i < 0);
++
++	return powernv_freqs[i].frequency;
++}
++
++/*
++ * cpuinfo_nominal_freq_show - Show the nominal CPU frequency as indicated by
++ * the firmware
++ */
++static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
++					char *buf)
++{
++	return sprintf(buf, "%u\n",
++		pstate_id_to_freq(powernv_pstate_info.nominal));
++}
++
++struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
++	__ATTR_RO(cpuinfo_nominal_freq);
++
++static struct freq_attr *powernv_cpu_freq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	&cpufreq_freq_attr_cpuinfo_nominal_freq,
++	NULL,
++};
++
++/* Helper routines */
++
++/* Access helpers to power mgt SPR */
++
++static inline unsigned long get_pmspr(unsigned long sprn)
++{
++	switch (sprn) {
++	case SPRN_PMCR:
++		return mfspr(SPRN_PMCR);
++
++	case SPRN_PMICR:
++		return mfspr(SPRN_PMICR);
++
++	case SPRN_PMSR:
++		return mfspr(SPRN_PMSR);
++	}
++	BUG();
++}
++
++static inline void set_pmspr(unsigned long sprn, unsigned long val)
++{
++	switch (sprn) {
++	case SPRN_PMCR:
++		mtspr(SPRN_PMCR, val);
++		return;
++
++	case SPRN_PMICR:
++		mtspr(SPRN_PMICR, val);
++		return;
++	}
++	BUG();
++}
++
++/*
++ * Use objects of this type to query/update
++ * pstates on a remote CPU via smp_call_function.
++ */
++struct powernv_smp_call_data {
++	unsigned int freq;
++	int pstate_id;
++};
++
++/*
++ * powernv_read_cpu_freq: Reads the current frequency on this CPU.
++ *
++ * Called via smp_call_function.
++ *
++ * Note: The caller of the smp_call_function should pass an argument of
++ * the type 'struct powernv_smp_call_data *' along with this function.
++ *
++ * The current frequency on this CPU will be returned via
++ * ((struct powernv_smp_call_data *)arg)->freq;
++ */
++static void powernv_read_cpu_freq(void *arg)
++{
++	unsigned long pmspr_val;
++	s8 local_pstate_id;
++	struct powernv_smp_call_data *freq_data = arg;
++
++	pmspr_val = get_pmspr(SPRN_PMSR);
++
++	/*
++	 * The local pstate id corresponds bits 48..55 in the PMSR.
++	 * Note: Watch out for the sign!
++	 */
++	local_pstate_id = (pmspr_val >> 48) & 0xFF;
++	freq_data->pstate_id = local_pstate_id;
++	freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
++
++	pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
++		raw_smp_processor_id(), pmspr_val, freq_data->pstate_id,
++		freq_data->freq);
++}
++
++/*
++ * powernv_cpufreq_get: Returns the CPU frequency as reported by the
++ * firmware for CPU 'cpu'. This value is reported through the sysfs
++ * file cpuinfo_cur_freq.
++ */
++unsigned int powernv_cpufreq_get(unsigned int cpu)
++{
++	struct powernv_smp_call_data freq_data;
++
++	smp_call_function_any(cpu_sibling_mask(cpu), powernv_read_cpu_freq,
++			&freq_data, 1);
++
++	return freq_data.freq;
++}
++
++/*
++ * set_pstate: Sets the pstate on this CPU.
++ *
++ * This is called via an smp_call_function.
++ *
++ * The caller must ensure that freq_data is of the type
++ * (struct powernv_smp_call_data *) and the pstate_id which needs to be set
++ * on this CPU should be present in freq_data->pstate_id.
++ */
++static void set_pstate(void *freq_data)
++{
++	unsigned long val;
++	unsigned long pstate_ul =
++		((struct powernv_smp_call_data *) freq_data)->pstate_id;
++
++	val = get_pmspr(SPRN_PMCR);
++	val = val & 0x0000FFFFFFFFFFFFULL;
++
++	pstate_ul = pstate_ul & 0xFF;
++
++	/* Set both global(bits 56..63) and local(bits 48..55) PStates */
++	val = val | (pstate_ul << 56) | (pstate_ul << 48);
++
++	pr_debug("Setting cpu %d pmcr to %016lX\n",
++			raw_smp_processor_id(), val);
++	set_pmspr(SPRN_PMCR, val);
++}
++
++/*
++ * powernv_cpufreq_target_index: Sets the frequency corresponding to
++ * the cpufreq table entry indexed by new_index on the cpus in the
++ * mask policy->cpus
++ */
++static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
++					unsigned int new_index)
++{
++	struct powernv_smp_call_data freq_data;
++
++	freq_data.pstate_id = powernv_pstate_ids[new_index];
++
++	/*
++	 * Use smp_call_function to send IPI and execute the
++	 * mtspr on target CPU.  We could do that without IPI
++	 * if current CPU is within policy->cpus (core)
++	 */
++	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
++
++	return 0;
++}
++
++static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	int base, i;
++
++	base = cpu_first_thread_sibling(policy->cpu);
++
++	for (i = 0; i < threads_per_core; i++)
++		cpumask_set_cpu(base + i, policy->cpus);
++
++	return cpufreq_table_validate_and_show(policy, powernv_freqs);
++}
++
++static struct cpufreq_driver powernv_cpufreq_driver = {
++	.name		= "powernv-cpufreq",
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.init		= powernv_cpufreq_cpu_init,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= powernv_cpufreq_target_index,
++	.get		= powernv_cpufreq_get,
++	.attr		= powernv_cpu_freq_attr,
++};
++
++static int __init powernv_cpufreq_init(void)
++{
++	int rc = 0;
++
++	/* Discover pstates from device tree and init */
++	rc = init_powernv_pstates();
++	if (rc) {
++		pr_info("powernv-cpufreq disabled. System does not support PState control\n");
++		return rc;
++	}
++
++	return cpufreq_register_driver(&powernv_cpufreq_driver);
++}
++module_init(powernv_cpufreq_init);
++
++static void __exit powernv_cpufreq_exit(void)
++{
++	cpufreq_unregister_driver(&powernv_cpufreq_driver);
++}
++module_exit(powernv_cpufreq_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>");
+-- 
+1.8.3.1
 
