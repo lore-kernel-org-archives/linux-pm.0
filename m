@@ -1,160 +1,626 @@
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-Subject: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-Date: Tue, 1 Apr 2014 16:33:54 +0800
-Message-ID: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle info
+Date: Tue, 1 Apr 2014 11:05:16 +0200
+Message-ID: <CAKfTPtCH0AhxM8TUeqjnnFVmpLd1D39B4gV2SaWmHX21iLNVuA@mail.gmail.com>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
+ <CAKfTPtC4E=7DxnXZy8bSpeAqyLwsr-oXodXBod2aMc_x4VyqGg@mail.gmail.com>
+ <53398FE6.1090203@linaro.org> <CAKfTPtBiFUM90igrhz=VnvSkt9MQ2E-xxnzDf=wSKdK+qA4EQA@mail.gmail.com>
+ <533A6E3D.4040002@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: daniel.lezcano@linaro.org, scottwood@freescale.com
-Cc: chenhui.zhao@freescale.com, linux-pm@vger.kernel.org, Wang Dongsheng <dongsheng.wang@freescale.com>, rjw@sisk.pl, jason.jin@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:35862 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbaDAJFh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Apr 2014 05:05:37 -0400
+Received: by mail-ob0-f172.google.com with SMTP id wm4so10638643obc.3
+        for <linux-pm@vger.kernel.org>; Tue, 01 Apr 2014 02:05:36 -0700 (PDT)
+In-Reply-To: <533A6E3D.4040002@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alex Shi <alex.shi@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-RnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+CgpBZGQg
-Y3B1aWRsZSBzdXBwb3J0IGZvciBlNTAwIGZhbWlseSwgdXNpbmcgY3B1aWRsZSBmcmFtZXdvcmsg
-dG8KbWFuYWdlIHZhcmlvdXMgbG93IHBvd2VyIG1vZGVzLiBUaGUgbmV3IGltcGxlbWVudGF0aW9u
-IHdpbGwgcmVtYWluCmNvbXBhdGlibGUgd2l0aCBvcmlnaW5hbCBpZGxlIG1ldGhvZC4KCkkgaGF2
-ZSBkb25lIHRlc3QgYWJvdXQgcG93ZXIgY29uc3VtcHRpb24gYW5kIGxhdGVuY3kuIENwdWlkbGUg
-ZnJhbWV3b3JrCndpbGwgbWFrZSBDUFUgcmVzcG9uc2UgdGltZSBmYXN0ZXIgdGhhbiBvcmlnaW5h
-bCBtZXRob2QsIGJ1dCBwb3dlcgpjb25zdW1wdGlvbiBpcyBoaWdoZXIgdGhhbiBvcmlnaW5hbCBt
-ZXRob2QuCgpQb3dlciBjb25zdW1wdGlvbjoKVGhlIG9yaWdpbmFsIG1ldGhvZCwgcG93ZXIgY29u
-c3VtcHRpb24gaXMgMTAuNTEyMDIgKFcpLgpUaGUgY3B1aWRsZSBmcmFtZXdvcmssIHBvd2VyIGNv
-bnN1bXB0aW9uIGlzIDEwLjUzMTEgKFcpLgoKTGF0ZW5jeToKVGhlIG9yaWdpbmFsIG1ldGhvZCwg
-YXZnIGxhdGVuY3kgaXMgNjc4MiAodXMpLgpUaGUgY3B1aWRsZSBmcmFtZXdvcmssIGF2ZyBsYXRl
-bmN5IGlzIDY0ODIgKHVzKS4KCkluaXRpYWxseSwgdGhpcyBzdXBwb3J0cyBQVzEwLCBQVzIwIGFu
-ZCBzdWJzZXF1ZW50IHBhdGNoZXMgd2lsbCBzdXBwb3J0CkRPWkUvTkFQIGFuZCBQSDEwLCBQSDIw
-LgoKU2lnbmVkLW9mZi1ieTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2Fs
-ZS5jb20+CgpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21hY2hkZXAuaCBi
-L2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tYWNoZGVwLmgKaW5kZXggNWI2YzAzZi4uOTMwMTQy
-MCAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21hY2hkZXAuaAorKysgYi9h
-cmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbWFjaGRlcC5oCkBAIC0yOTQsNiArMjk0LDE1IEBAIGV4
-dGVybiB2b2lkIHBvd2VyN19pZGxlKHZvaWQpOwogZXh0ZXJuIHZvaWQgcHBjNnh4X2lkbGUodm9p
-ZCk7CiBleHRlcm4gdm9pZCBib29rM2VfaWRsZSh2b2lkKTsKIAorc3RhdGljIGlubGluZSB2b2lk
-IGNwdWlkbGVfd2FpdCh2b2lkKQoreworI2lmZGVmIENPTkZJR19QUEM2NAorCWJvb2szZV9pZGxl
-KCk7CisjZWxzZQorCWU1MDBfaWRsZSgpOworI2VuZGlmCit9CisKIC8qCiAgKiBwcGNfbWQgY29u
-dGFpbnMgYSBjb3B5IG9mIHRoZSBtYWNoaW5lIGRlc2NyaXB0aW9uIHN0cnVjdHVyZSBmb3IgdGhl
-CiAgKiBjdXJyZW50IHBsYXRmb3JtLiBtYWNoaW5lX2lkIGNvbnRhaW5zIHRoZSBpbml0aWFsIGFk
-ZHJlc3Mgd2hlcmUgdGhlCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMg
-Yi9hcmNoL3Bvd2VycGMva2VybmVsL3N5c2ZzLmMKaW5kZXggOTdlMWRjOS4uZWRkMTkzZiAxMDA2
-NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jCisrKyBiL2FyY2gvcG93ZXJwYy9r
-ZXJuZWwvc3lzZnMuYwpAQCAtMTkwLDYgKzE5MCw5IEBAIHN0YXRpYyBzc2l6ZV90IHNob3dfcHcy
-MF93YWl0X3RpbWUoc3RydWN0IGRldmljZSAqZGV2LAogCXJldHVybiBzcHJpbnRmKGJ1ZiwgIiVs
-bHVcbiIsIHRpbWUgPiAwID8gdGltZSA6IDApOwogfQogCisjaWZkZWYgQ09ORklHX0NQVV9JRExF
-X0U1MDAKK3UzMiBjcHVpZGxlX2VudHJ5X2JpdDsKKyNlbmRpZgogc3RhdGljIHZvaWQgc2V0X3B3
-MjBfd2FpdF9lbnRyeV9iaXQodm9pZCAqdmFsKQogewogCXUzMiAqdmFsdWUgPSB2YWw7CkBAIC0y
-MDQsNyArMjA3LDExIEBAIHN0YXRpYyB2b2lkIHNldF9wdzIwX3dhaXRfZW50cnlfYml0KHZvaWQg
-KnZhbCkKIAkvKiBzZXQgY291bnQgKi8KIAlwdzIwX2lkbGUgfD0gKChNQVhfQklUIC0gKnZhbHVl
-KSA8PCBQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQpOwogCisjaWZkZWYgQ09ORklHX0NQVV9JRExF
-X0U1MDAKKwljcHVpZGxlX2VudHJ5X2JpdCA9ICp2YWx1ZTsKKyNlbHNlCiAJbXRzcHIoU1BSTl9Q
-V1JNR1RDUjAsIHB3MjBfaWRsZSk7CisjZW5kaWYKIH0KIAogc3RhdGljIHNzaXplX3Qgc3RvcmVf
-cHcyMF93YWl0X3RpbWUoc3RydWN0IGRldmljZSAqZGV2LApkaWZmIC0tZ2l0IGEvZHJpdmVycy9j
-cHVpZGxlL0tjb25maWcucG93ZXJwYyBiL2RyaXZlcnMvY3B1aWRsZS9LY29uZmlnLnBvd2VycGMK
-aW5kZXggNjZjM2EwOS4uMDk0OWRiZiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVpZGxlL0tjb25m
-aWcucG93ZXJwYworKysgYi9kcml2ZXJzL2NwdWlkbGUvS2NvbmZpZy5wb3dlcnBjCkBAIC0xOCwz
-ICsxOCwxMCBAQCBjb25maWcgUE9XRVJOVl9DUFVJRExFCiAJaGVscAogCSAgU2VsZWN0IHRoaXMg
-b3B0aW9uIHRvIGVuYWJsZSBwcm9jZXNzb3IgaWRsZSBzdGF0ZSBtYW5hZ2VtZW50CiAJICB0aHJv
-dWdoIGNwdWlkbGUgc3Vic3lzdGVtLgorCitjb25maWcgQ1BVX0lETEVfRTUwMAorCWJvb2wgIkNQ
-VSBJZGxlIERyaXZlciBmb3IgRTUwMCBmYW1pbHkgcHJvY2Vzc29ycyIKKwlkZXBlbmRzIG9uIENQ
-VV9JRExFCisJZGVwZW5kcyBvbiBGU0xfU09DX0JPT0tFCisJaGVscAorCSAgU2VsZWN0IHRoaXMg
-dG8gZW5hYmxlIGNwdWlkbGUgb24gZTUwMCBmYW1pbHkgcHJvY2Vzc29ycy4KZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvY3B1aWRsZS9NYWtlZmlsZSBiL2RyaXZlcnMvY3B1aWRsZS9NYWtlZmlsZQppbmRl
-eCBmNzFhZTFiLi43ZTZhZGVhIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWlkbGUvTWFrZWZpbGUK
-KysrIGIvZHJpdmVycy9jcHVpZGxlL01ha2VmaWxlCkBAIC0xOCwzICsxOCw0IEBAIG9iai0kKENP
-TkZJR19BUk1fQVQ5MV9DUFVJRExFKSAgICAgICAgICArPSBjcHVpZGxlLWF0OTEubwogIyBQT1dF
-UlBDIGRyaXZlcnMKIG9iai0kKENPTkZJR19QU0VSSUVTX0NQVUlETEUpCQkrPSBjcHVpZGxlLXBz
-ZXJpZXMubwogb2JqLSQoQ09ORklHX1BPV0VSTlZfQ1BVSURMRSkJCSs9IGNwdWlkbGUtcG93ZXJu
-di5vCitvYmotJChDT05GSUdfQ1BVX0lETEVfRTUwMCkJCSs9IGNwdWlkbGUtZTUwMC5vCmRpZmYg
-LS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1lNTAwLmMgYi9kcml2ZXJzL2NwdWlkbGUv
-Y3B1aWRsZS1lNTAwLmMKbmV3IGZpbGUgbW9kZSAxMDA2NDQKaW5kZXggMDAwMDAwMC4uZGRjMGRl
-ZgotLS0gL2Rldi9udWxsCisrKyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLWU1MDAuYwpAQCAt
-MCwwICsxLDE5NCBAQAorLyoKKyAqIENQVSBJZGxlIGRyaXZlciBmb3IgRnJlZXNjYWxlIFBvd2Vy
-UEMgZTUwMCBmYW1pbHkgcHJvY2Vzc29ycy4KKyAqCisgKiBDb3B5cmlnaHQgMjAxNCBGcmVlc2Nh
-bGUgU2VtaWNvbmR1Y3RvciwgSW5jLgorICoKKyAqIEF1dGhvcjogRG9uZ3NoZW5nIFdhbmcgPGRv
-bmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+CisgKgorICogVGhpcyBwcm9ncmFtIGlzIGZyZWUg
-c29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkKKyAqIGl0IHVu
-ZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAy
-IGFzCisgKiBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbi4KKyAqLwor
-CisjaW5jbHVkZSA8bGludXgvY3B1Lmg+CisjaW5jbHVkZSA8bGludXgvY3B1aWRsZS5oPgorI2lu
-Y2x1ZGUgPGxpbnV4L2luaXQuaD4KKyNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4KKyNpbmNsdWRl
-IDxsaW51eC9ub3RpZmllci5oPgorCisjaW5jbHVkZSA8YXNtL2NwdXRhYmxlLmg+CisjaW5jbHVk
-ZSA8YXNtL21hY2hkZXAuaD4KKyNpbmNsdWRlIDxhc20vbXBjODV4eC5oPgorCitzdGF0aWMgdW5z
-aWduZWQgaW50IG1heF9pZGxlX3N0YXRlOworc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlICpj
-cHVpZGxlX3N0YXRlX3RhYmxlOworCitzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgZTUwMF9pZGxlX2Ry
-aXZlciA9IHsKKwkubmFtZSA9ICJlNTAwX2lkbGUiLAorCS5vd25lciA9IFRISVNfTU9EVUxFLAor
-fTsKKworc3RhdGljIHZvaWQgZTUwMF9jcHVpZGxlKHZvaWQpCit7CisJaWYgKGNwdWlkbGVfaWRs
-ZV9jYWxsKCkpCisJCWNwdWlkbGVfd2FpdCgpOworfQorCitzdGF0aWMgaW50IHB3MTBfZW50ZXIo
-c3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsCisJCQlzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRy
-diwgaW50IGluZGV4KQoreworCWNwdWlkbGVfd2FpdCgpOworCXJldHVybiBpbmRleDsKK30KKwor
-I2RlZmluZSBNQVhfQklUCTYzCisjZGVmaW5lIE1JTl9CSVQJMQorZXh0ZXJuIHUzMiBjcHVpZGxl
-X2VudHJ5X2JpdDsKK3N0YXRpYyBpbnQgcHcyMF9lbnRlcihzdHJ1Y3QgY3B1aWRsZV9kZXZpY2Ug
-KmRldiwKKwkJc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsIGludCBpbmRleCkKK3sKKwl1MzIg
-cHcyMF9pZGxlOworCXUzMiBlbnRyeV9iaXQ7CisJcHcyMF9pZGxlID0gbWZzcHIoU1BSTl9QV1JN
-R1RDUjApOworCWlmICgocHcyMF9pZGxlICYgUFdSTUdUQ1IwX1BXMjBfRU5UKSAhPSBQV1JNR1RD
-UjBfUFcyMF9FTlQpIHsKKwkJcHcyMF9pZGxlICY9IH5QV1JNR1RDUjBfUFcyMF9FTlQ7CisJCWVu
-dHJ5X2JpdCA9IE1BWF9CSVQgLSBjcHVpZGxlX2VudHJ5X2JpdDsKKwkJcHcyMF9pZGxlIHw9IChl
-bnRyeV9iaXQgPDwgUFdSTUdUQ1IwX1BXMjBfRU5UX1NISUZUKTsKKwkJbXRzcHIoU1BSTl9QV1JN
-R1RDUjAsIHB3MjBfaWRsZSk7CisJfQorCisJY3B1aWRsZV93YWl0KCk7CisKKwlwdzIwX2lkbGUg
-Jj0gflBXUk1HVENSMF9QVzIwX0VOVDsKKwlwdzIwX2lkbGUgfD0gKE1JTl9CSVQgPDwgUFdSTUdU
-Q1IwX1BXMjBfRU5UX1NISUZUKTsKKwltdHNwcihTUFJOX1BXUk1HVENSMCwgcHcyMF9pZGxlKTsK
-KworCXJldHVybiBpbmRleDsKK30KKworc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIHB3X2lk
-bGVfc3RhdGVzW10gPSB7CisJeworCQkubmFtZSA9ICJwdzEwIiwKKwkJLmRlc2MgPSAicHcxMCIs
-CisJCS5mbGFncyA9IENQVUlETEVfRkxBR19USU1FX1ZBTElELAorCQkuZXhpdF9sYXRlbmN5ID0g
-MCwKKwkJLnRhcmdldF9yZXNpZGVuY3kgPSAwLAorCQkuZW50ZXIgPSAmcHcxMF9lbnRlcgorCX0s
-CisKKwl7CisJCS5uYW1lID0gInB3MjAiLAorCQkuZGVzYyA9ICJwdzIwLWNvcmUtaWRsZSIsCisJ
-CS5mbGFncyA9IENQVUlETEVfRkxBR19USU1FX1ZBTElELAorCQkuZXhpdF9sYXRlbmN5ID0gMSwK
-KwkJLnRhcmdldF9yZXNpZGVuY3kgPSA1MCwKKwkJLmVudGVyID0gJnB3MjBfZW50ZXIKKwl9LAor
-fTsKKworc3RhdGljIGludCBjcHVfaG90cGx1Z19ub3RpZnkoc3RydWN0IG5vdGlmaWVyX2Jsb2Nr
-ICpuLAorCQkJdW5zaWduZWQgbG9uZyBhY3Rpb24sIHZvaWQgKmhjcHUpCit7CisJdW5zaWduZWQg
-bG9uZyBob3RjcHUgPSAodW5zaWduZWQgbG9uZyloY3B1OworCXN0cnVjdCBjcHVpZGxlX2Rldmlj
-ZSAqZGV2ID0KKwkJCXBlcl9jcHVfcHRyKGNwdWlkbGVfZGV2aWNlcywgaG90Y3B1KTsKKworCWlm
-IChkZXYgJiYgY3B1aWRsZV9nZXRfZHJpdmVyKCkpIHsKKwkJc3dpdGNoIChhY3Rpb24pIHsKKwkJ
-Y2FzZSBDUFVfT05MSU5FOgorCQljYXNlIENQVV9PTkxJTkVfRlJPWkVOOgorCQkJY3B1aWRsZV9w
-YXVzZV9hbmRfbG9jaygpOworCQkJY3B1aWRsZV9lbmFibGVfZGV2aWNlKGRldik7CisJCQljcHVp
-ZGxlX3Jlc3VtZV9hbmRfdW5sb2NrKCk7CisJCQlicmVhazsKKworCQljYXNlIENQVV9ERUFEOgor
-CQljYXNlIENQVV9ERUFEX0ZST1pFTjoKKwkJCWNwdWlkbGVfcGF1c2VfYW5kX2xvY2soKTsKKwkJ
-CWNwdWlkbGVfZGlzYWJsZV9kZXZpY2UoZGV2KTsKKwkJCWNwdWlkbGVfcmVzdW1lX2FuZF91bmxv
-Y2soKTsKKwkJCWJyZWFrOworCisJCWRlZmF1bHQ6CisJCQlyZXR1cm4gTk9USUZZX0RPTkU7CisJ
-CX0KKwl9CisKKwlyZXR1cm4gTk9USUZZX09LOworfQorCitzdGF0aWMgc3RydWN0IG5vdGlmaWVy
-X2Jsb2NrIGNwdV9ob3RwbHVnX25vdGlmaWVyID0geworCS5ub3RpZmllcl9jYWxsID0gY3B1X2hv
-dHBsdWdfbm90aWZ5LAorfTsKKworc3RhdGljIHZvaWQgZTUwMF9jcHVpZGxlX2RyaXZlcl9pbml0
-KHZvaWQpCit7CisJaW50IGlkbGVfc3RhdGU7CisJc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYg
-PSAmZTUwMF9pZGxlX2RyaXZlcjsKKworCWRydi0+c3RhdGVfY291bnQgPSAwOworCisJZm9yIChp
-ZGxlX3N0YXRlID0gMDsgaWRsZV9zdGF0ZSA8IG1heF9pZGxlX3N0YXRlOyArK2lkbGVfc3RhdGUp
-IHsKKwkJaWYgKCFjcHVpZGxlX3N0YXRlX3RhYmxlW2lkbGVfc3RhdGVdLmVudGVyKQorCQkJYnJl
-YWs7CisKKwkJZHJ2LT5zdGF0ZXNbZHJ2LT5zdGF0ZV9jb3VudF0gPSBjcHVpZGxlX3N0YXRlX3Rh
-YmxlW2lkbGVfc3RhdGVdOworCQlkcnYtPnN0YXRlX2NvdW50Kys7CisJfQorfQorCitzdGF0aWMg
-aW50IGU1MDBfaWRsZV9zdGF0ZV9wcm9iZSh2b2lkKQoreworCWlmIChjcHVpZGxlX2Rpc2FibGUg
-IT0gSURMRV9OT19PVkVSUklERSkKKwkJcmV0dXJuIC1FTk9ERVY7CisKKwljcHVpZGxlX3N0YXRl
-X3RhYmxlID0gcHdfaWRsZV9zdGF0ZXM7CisJbWF4X2lkbGVfc3RhdGUgPSBBUlJBWV9TSVpFKHB3
-X2lkbGVfc3RhdGVzKTsKKworCS8qIERpc2FibGUgUFcyMCBmZWF0dXJlIGZvciBlNTAwbWMsIGU1
-NTAwICovCisJaWYgKFBWUl9WRVIoY3VyX2NwdV9zcGVjLT5wdnJfdmFsdWUpICE9IFBWUl9WRVJf
-RTY1MDApCisJCWNwdWlkbGVfc3RhdGVfdGFibGVbMV0uZW50ZXIgPSBOVUxMOworCisJaWYgKCFj
-cHVpZGxlX3N0YXRlX3RhYmxlIHx8ICFtYXhfaWRsZV9zdGF0ZSkKKwkJcmV0dXJuIC1FTk9ERVY7
-CisKKwlyZXR1cm4gMDsKK30KKworc3RhdGljIHZvaWQgcmVwbGFjZV9vcmlnX2lkbGUodm9pZCAq
-ZHVtbXkpCit7CisJcmV0dXJuOworfQorCitzdGF0aWMgaW50IF9faW5pdCBlNTAwX2lkbGVfaW5p
-dCh2b2lkKQoreworCXN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2ID0gJmU1MDBfaWRsZV9kcml2
-ZXI7CisJaW50IGVycjsKKworCWlmIChlNTAwX2lkbGVfc3RhdGVfcHJvYmUoKSkKKwkJcmV0dXJu
-IC1FTk9ERVY7CisKKwllNTAwX2NwdWlkbGVfZHJpdmVyX2luaXQoKTsKKwlpZiAoIWRydi0+c3Rh
-dGVfY291bnQpCisJCXJldHVybiAtRU5PREVWOworCisJZXJyID0gY3B1aWRsZV9yZWdpc3Rlcihk
-cnYsIE5VTEwpOworCWlmIChlcnIpIHsKKwkJcHJfZXJyKCJSZWdpc3RlciBlNTAwIGZhbWlseSBj
-cHVpZGxlIGRyaXZlciBmYWlsZWQuXG4iKTsKKworCQlyZXR1cm4gZXJyOworCX0KKworCWVyciA9
-IHJlZ2lzdGVyX2NwdV9ub3RpZmllcigmY3B1X2hvdHBsdWdfbm90aWZpZXIpOworCWlmIChlcnIp
-CisJCXByX3dhcm4oIkNwdWlkbGUgZHJpdmVyOiByZWdpc3RlciBjcHUgbm90aWZpZXIgZmFpbGVk
-LlxuIik7CisKKwkvKiBSZXBsYWNlIHRoZSBvcmlnaW5hbCB3YXkgb2YgaWRsZSBhZnRlciBjcHVp
-ZGxlIHJlZ2lzdGVyZWQuICovCisJcHBjX21kLnBvd2VyX3NhdmUgPSBlNTAwX2NwdWlkbGU7CisJ
-b25fZWFjaF9jcHUocmVwbGFjZV9vcmlnX2lkbGUsIE5VTEwsIDEpOworCisJcHJfaW5mbygiZTUw
-MF9pZGxlX2RyaXZlciByZWdpc3RlcmVkLlxuIik7CisKKwlyZXR1cm4gMDsKK30KK2xhdGVfaW5p
-dGNhbGwoZTUwMF9pZGxlX2luaXQpOwotLSAKMS44LjUKCgpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5m
-by9saW51eHBwYy1kZXY=
+On 1 April 2014 09:43, Daniel Lezcano <daniel.lezcano@linaro.org> wrote=
+:
+> On 04/01/2014 09:16 AM, Vincent Guittot wrote:
+>>
+>> On 31 March 2014 17:55, Daniel Lezcano <daniel.lezcano@linaro.org> w=
+rote:
+>>>
+>>> On 03/31/2014 03:52 PM, Vincent Guittot wrote:
+>>>>
+>>>>
+>>>> On 28 March 2014 13:29, Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>> wrote:
+>>>>>
+>>>>>
+>>>>> The following patchset provides an interaction between cpuidle an=
+d the
+>>>>> scheduler.
+>>>>>
+>>>>> The first patch encapsulate the needed information for the schedu=
+ler in
+>>>>> a
+>>>>> separate cpuidle structure. The second one stores the pointer to =
+this
+>>>>> structure
+>>>>> when entering idle. The third one, use this information to take t=
+he
+>>>>> decision to
+>>>>> find the idlest cpu.
+>>>>>
+>>>>> After some basic testing with hackbench, it appears there is an
+>>>>> improvement for
+>>>>> the performances (small) and for the duration of the idle states =
+(which
+>>>>> provides
+>>>>> a better power saving).
+>>>>>
+>>>>> The measurement has been done with the 'idlestat' tool previously
+>>>>> posted
+>>>>> in this
+>>>>> mailing list.
+>>>>>
+>>>>> So the benefit is good for both sides performance and power savin=
+g.
+>>>>
+>>>>
+>>>>
+>>>> Hi Daniel,
+>>>>
+>>>> I have looked at your results and i'm a bit surprised that you hav=
+e so
+>>>> much time in C-state with a test that involved 400 tasks on a dual
+>>>> cores HT system. You shouldn't have any CPUs in idle state when
+>>>> running hackbench; the total time of core0state in C7-IVB is
+>>>> 87932131.00(us), which is quite huge for a bench that runs 44sec. =
+Or
+>>>> i'm doing something wrong in the interpretation of the results ?
+>>>
+>>>
+>>>
+>>> No, actually I mixed the output of hackbench without being run with
+>>> idlestat
+>>> or with idlestat.
+>>>
+>>> The hackbench's results below are without idlestat.
+>>>
+>>> The idlestat results are consistent and effectively it adds a non
+>>> negligeable overhead as it impacts the hackbench results.
+>>>
+>>> So to summarize, hackbench has been run 4 times.
+>>>
+>>> 1, 2 : without idlestat, with and without the patchset - hackbench
+>>> results
+>>> ~42 secs
+>>>
+>>> 3, 4 : with idlestat, with and without the patchset - hackbench res=
+ults
+>>> ~87
+>>> secs
+>>>
+>>> At the first the glance, the results are consistent but I will doub=
+le
+>>> check
+>>> them.
+>>>
+>>> Do you have a suggestion for a benchmarking program ?
+>>
+>>
+>> We are working on a bench which can generate middle load pattern wit=
+h
+>> idle CPUs but it's not available yet. In the mean time, one bench th=
+at
+>> plays with idle time is cyclictest, it will not give you performance
+>> results but only scheduling latency which might be what you are
+>> looking for.
+>
+>
+> Yeah, thanks. I believe I know what is in the rt-tests package :)
+>
+> What I meant is what kind of values would you like to see with this p=
+atchset
+> ?
+
+IIUC, you patch tries to improve the wake up latency of a task by
+selecting the CPUs with the shallowest C-state, so this metrics seems
+to be a good candidate
+
+>
+>
+>
+>
+>>>>> The select_idle_sibling could be also improved in the same way.
+>>>>>
+>>>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+ test with hackbench 3.14-rc8
+>>>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+>>>>>
+>>>>> /usr/bin/hackbench -l 10000 -s 4096
+>>>>>
+>>>>> Running in process mode with 10 groups using 40 file descriptors =
+each
+>>>>> (=3D=3D
+>>>>> 400 tasks)
+>>>>> Each sender will pass 10000 messages of 4096 bytes
+>>>>>
+>>>>> Time: 44.433
+>>>>>
+>>>>> Total trace buffer: 1846688 kB
+>>>>> clusterA@state  hits          total(us)         avg(us) min(us) m=
+ax(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1E-VB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>     core0@state   hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>           POLL    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1E-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C3-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C6-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C7-IVB  1396        87932131.00        62988.63 0.00
+>>>>> 320146.00
+>>>>>       cpu0@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 1                 14.00           14.00 14.00  =
+ 14.00
+>>>>>            C1E-VB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 1                262.00          262.00 262.00
+>>>>> 262.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 1180        87938177.00        74523.88 1.00
+>>>>> 320147.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.0
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu0 wakeups        name            count
+>>>>>            irq009 acpi            1
+>>>>>       cpu1@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1E-VB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 475         87941356.00       185139.70 322.00
+>>>>> 1500690.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu1 wakeups        name            count
+>>>>>            irq009 acpi            3
+>>>>>     core1@state   hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>           POLL    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1E-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C3-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C6-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C7-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu2@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 11            288157.00        26196.09 16.00
+>>>>> 200060.00
+>>>>>            C1E-VB 6             221601.00        36933.50 79.00
+>>>>> 200066.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 950         87417466.00        92018.39 19.00
+>>>>> 200074.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   2                 34.00           17.00 11.00  =
+ 23.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    745            18800.00           25.23 2.00
+>>>>> 156.00
+>>>>>       cpu2 wakeups        name            count
+>>>>>            irq019 ahci            50
+>>>>>            irq009 acpi            17
+>>>>>       cpu3@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1E-VB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu3 wakeups        name            count
+>>>>>
+>>>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D test with hackbe=
+nch 3.14-rc8 + patchset
+>>>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>>>>
+>>>>> /usr/bin/hackbench -l 10000 -s 4096
+>>>>>
+>>>>> Running in process mode with 10 groups using 40 file descriptors =
+each
+>>>>> (=3D=3D
+>>>>> 400 tasks)
+>>>>> Each sender will pass 10000 messages of 4096 bytes
+>>>>>
+>>>>> Time: 42.179
+>>>>>
+>>>>> Total trace buffer: 1846688 kB
+>>>>> clusterA@state  hits          total(us)         avg(us) min(us) m=
+ax(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1E-VB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>     core0@state   hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>           POLL    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1E-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C3-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C6-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C7-IVB  880         89157590.00       101315.44 0.00
+>>>>> 400184.00
+>>>>>       cpu0@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1E-VB 1                233.00          233.00 233.00
+>>>>> 233.00
+>>>>>            C3-IVB 1                260.00          260.00 260.00
+>>>>> 260.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 700         89162006.00       127374.29 182.00
+>>>>> 400187.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu0 wakeups        name            count
+>>>>>            irq009 acpi            2
+>>>>>       cpu1@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1E-VB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 334         89164805.00       266960.49 1.00
+>>>>> 1500677.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu1 wakeups        name            count
+>>>>>            irq009 acpi            6
+>>>>>     core1@state   hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>           POLL    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C1E-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C3-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C6-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>           C7-IVB  0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu2@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 19           2169047.00       114160.37 18.00
+>>>>> 999129.00
+>>>>>            C1E-IB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 376         86993307.00       231365.18 20.00
+>>>>> 1500682.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu2 wakeups        name            count
+>>>>>            irq009 acpi            32
+>>>>>            irq019 ahci            45
+>>>>>       cpu3@state  hits          total(us)         avg(us) min(us)
+>>>>> max(us)
+>>>>>            POLL   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C1E-VB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C3-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C6-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            C7-IVB 0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1701   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1700   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1600   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1500   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1400   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1300   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1200   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1100   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            1000   0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            900    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            800    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>            782    0                  0.00            0.00 0.00   =
+ 0.00
+>>>>>       cpu3 wakeups        name            count
+>>>>>
+>>>>>
+>>>>> Daniel Lezcano (3):
+>>>>>     cpuidle: encapsulate power info in a separate structure
+>>>>>     idle: store the idle state the cpu is
+>>>>>     sched/fair: use the idle state info to choose the idlest cpu
+>>>>>
+>>>>>    arch/arm/include/asm/cpuidle.h       |    6 +-
+>>>>>    arch/arm/mach-exynos/cpuidle.c       |    4 +-
+>>>>>    drivers/acpi/processor_idle.c        |    4 +-
+>>>>>    drivers/base/power/domain.c          |    6 +-
+>>>>>    drivers/cpuidle/cpuidle-at91.c       |    4 +-
+>>>>>    drivers/cpuidle/cpuidle-big_little.c |    9 +--
+>>>>>    drivers/cpuidle/cpuidle-calxeda.c    |    6 +-
+>>>>>    drivers/cpuidle/cpuidle-kirkwood.c   |    4 +-
+>>>>>    drivers/cpuidle/cpuidle-powernv.c    |    8 +--
+>>>>>    drivers/cpuidle/cpuidle-pseries.c    |   12 ++--
+>>>>>    drivers/cpuidle/cpuidle-ux500.c      |   14 ++---
+>>>>>    drivers/cpuidle/cpuidle-zynq.c       |    4 +-
+>>>>>    drivers/cpuidle/driver.c             |    6 +-
+>>>>>    drivers/cpuidle/governors/ladder.c   |   14 +++--
+>>>>>    drivers/cpuidle/governors/menu.c     |    8 +--
+>>>>>    drivers/cpuidle/sysfs.c              |    2 +-
+>>>>>    drivers/idle/intel_idle.c            |  112
+>>>>> +++++++++++++++++-----------------
+>>>>>    include/linux/cpuidle.h              |   10 ++-
+>>>>>    kernel/sched/fair.c                  |   46 ++++++++++++--
+>>>>>    kernel/sched/idle.c                  |   17 +++++-
+>>>>>    kernel/sched/sched.h                 |    5 ++
+>>>>>    21 files changed, 180 insertions(+), 121 deletions(-)
+>>>>>
+>>>>> --
+>>>>> 1.7.9.5
+>>>>>
+>>>
+>>>
+>>> --
+>>>   <http://www.linaro.org/> Linaro.org =E2=94=82 Open source softwar=
+e for ARM SoCs
+>>>
+>>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>>> <http://twitter.com/#!/linaroorg> Twitter |
+>>> <http://www.linaro.org/linaro-blog/> Blog
+>>>
+>
+>
+> --
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+>
