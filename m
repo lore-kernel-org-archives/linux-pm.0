@@ -1,55 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle info
-Date: Wed, 02 Apr 2014 01:01:11 +0200
-Message-ID: <22904760.5rGZuP5nsx@vostro.rjw.lan>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL][Update] ACPI and power management updates for v3.15-rc1
+Date: Tue, 1 Apr 2014 16:00:29 -0700
+Message-ID: <CA+55aFwL7JxY72NF3FEVV5Cz4DE6GKyxUVTfn1wz4-oY-hQv8A@mail.gmail.com>
+References: <CAJZ5v0jh5=K4F2hkVXSkGQzf3-v1T8cGKBT3Kz48Bswh7donOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <CAJZ5v0jh5=K4F2hkVXSkGQzf3-v1T8cGKBT3Kz48Bswh7donOQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 28, 2014 01:29:53 PM Daniel Lezcano wrote:
-> The following patchset provides an interaction between cpuidle and the scheduler.
-> 
-> The first patch encapsulate the needed information for the scheduler in a
-> separate cpuidle structure. The second one stores the pointer to this structure
-> when entering idle. The third one, use this information to take the decision to
-> find the idlest cpu.
-> 
-> After some basic testing with hackbench, it appears there is an improvement for
-> the performances (small) and for the duration of the idle states (which provides
-> a better power saving).
-> 
-> The measurement has been done with the 'idlestat' tool previously posted in this
-> mailing list.
-> 
-> So the benefit is good for both sides performance and power saving.
-> 
-> The select_idle_sibling could be also improved in the same way.
+On Tue, Apr 1, 2014 at 1:43 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> There is a number of additional commits that were not quite ready when I sent
+> the original pull request for 3.15-rc1 several days ago, but they have spent
+> some time in linux-next since then and appear to be good to go, so here's
+> an update.
 
-Well, quite frankly, I don't really like this series.  Not the idea itself, but
-the way it has been implemented.
+Uhhuh. I pulled your previous pull request apparently just an hour
+before you sent this new one.
 
-First off, if the scheduler is to access idle state data stored in struct
-cpuidle_state, I'm not sure why we need a separate new structure for that?
-Couldn't there be a pointer to a whole struct cpuidle_state from struct rq
-instead?  [->exit_latency is the only field that find_idlest_cpu() in your
-third patch seems to be using anyway.]
+Mind doing an updated pull request with explanation for just the
+incremental parts?
 
-Second, is accessing the idle state information for all CPUs from find_idlest_cpu()
-guaranteed to be non-racy?  I mean, what if a CPU changes its state from idle to
-non-idle while another one is executing find_idlest_cpu()?  In other words,
-where's the read memory barrier corresponding to the write ones in the modified
-cpu_idle_call()?  And is the memory barrier actually sufficient?  After all,
-you need to guarantee that the CPU is still idle after you have evaluated
-idle_cpu() on it.
-
-Finally, is really the heuristics used by find_idlest_cpu() to select the "idlest"
-CPU the best one?  What about deeper vs shallower idle states, for example?
-
-Rafael
+              Linus
