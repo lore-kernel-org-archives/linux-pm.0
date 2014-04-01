@@ -1,80 +1,64 @@
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH REPOST v5 3/3] powernv,cpufreq: Use cpufreq_frequency_table.driver_data to store pstate ids
-Date: Tue,  1 Apr 2014 12:43:27 +0530
-Message-ID: <1396336408-20954-2-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
+Date: Tue,  1 Apr 2014 12:43:28 +0530
+Message-ID: <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com>
 References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
  <1396336408-20954-1-git-send-email-ego@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp05.in.ibm.com ([122.248.162.5]:54446 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbaDAHNp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Apr 2014 03:13:45 -0400
-Received: from /spool/local
-	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Tue, 1 Apr 2014 12:43:43 +0530
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1396336408-20954-1-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>, svaidy@linux.vnet.ibm.com, srivatsa.bhat@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-The .driver_data field in the cpufreq_frequency_table was supposed to
-be private to the drivers. However at some later point, it was being
-used to indicate if the particular frequency in the table is the
-BOOST_FREQUENCY. After patches [1] and [2], the .driver_data is once
-again private to the driver. Thus we can safely use
-cpufreq_frequency_table.driver_data to store pstate_ids instead of
-having to maintain a separate array powernv_pstate_ids[] for this
-purpose.
-
-[1]:
-  Subject: cpufreq: don't print value of .driver_data from core
-  From   : Viresh Kumar <viresh.kumar@ linaro.org>
-  url    : http://marc.info/?l=linux-pm&m=139601421504709&w=2
-
-[2]:
-  Subject: cpufreq: create another field .flags in cpufreq_frequency_table
-  From   : Viresh Kumar <viresh.kumar@linaro.org>
-  url    : http://marc.info/?l=linux-pm&m=139601416804702&w=2
+Enable CPUFreq for PowerNV. Select "performance", "powersave",
+"userspace" and "ondemand" governors. Choose "ondemand" to be the
+default governor.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/configs/pseries_defconfig    | 1 +
+ arch/powerpc/configs/pseries_le_defconfig | 1 +
+ arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
+ 3 files changed, 8 insertions(+)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index e1e5197..9edccc6 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -33,7 +33,6 @@
- #define POWERNV_MAX_PSTATES	256
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 9ea8342b..a905063 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -306,3 +306,4 @@ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=y
+ CONFIG_TRANSPARENT_HUGEPAGE=y
+ CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
+index 3c84f9d..58e3dbf 100644
+--- a/arch/powerpc/configs/pseries_le_defconfig
++++ b/arch/powerpc/configs/pseries_le_defconfig
+@@ -301,3 +301,4 @@ CONFIG_CRYPTO_LZO=m
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
++CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 895e8a2..c252ee9 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -11,6 +11,12 @@ config PPC_POWERNV
+ 	select PPC_UDBG_16550
+ 	select PPC_SCOM
+ 	select ARCH_RANDOM
++	select CPU_FREQ
++	select CPU_FREQ_GOV_PERFORMANCE
++	select CPU_FREQ_GOV_POWERSAVE
++	select CPU_FREQ_GOV_USERSPACE
++	select CPU_FREQ_GOV_ONDEMAND
++	select CPU_FREQ_GOV_CONSERVATIVE
+ 	default y
  
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
--static int powernv_pstate_ids[POWERNV_MAX_PSTATES+1];
- 
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -112,7 +111,7 @@ static int init_powernv_pstates(void)
- 
- 		pr_debug("PState id %d freq %d MHz\n", id, freq);
- 		powernv_freqs[i].frequency = freq * 1000; /* kHz */
--		powernv_pstate_ids[i] = id;
-+		powernv_freqs[i].driver_data = id;
- 	}
- 	/* End of list marker entry */
- 	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
-@@ -283,7 +282,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- {
- 	struct powernv_smp_call_data freq_data;
- 
--	freq_data.pstate_id = powernv_pstate_ids[new_index];
-+	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
- 
- 	/*
- 	 * Use smp_call_function to send IPI and execute the
+ config PPC_POWERNV_RTAS
 -- 
 1.8.3.1
-
