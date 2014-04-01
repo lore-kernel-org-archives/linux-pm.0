@@ -1,92 +1,30 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: 3.13.?: Strange / dangerous fan policy...
-Date: Mon, 31 Mar 2014 16:47:16 -0700
-Message-ID: <5339FE84.80503@roeck-us.net>
-References: <531A1EEE.9090101@netscape.net> <531B3E4C.2040105@roeck-us.net> <531BB171.1060208@netscape.net> <2833205.f1U4jaAo8e@vostro.rjw.lan> <531D1A3A.4040500@netscape.net> <531F8735.1010203@netscape.net> <532B4DC5.4010705@netscape.net> <5339FC31.3040601@netscape.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Why are the file perns of /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
+ much more rigide ?
+Date: Tue, 1 Apr 2014 09:53:20 +0530
+Message-ID: <CAOh2x=kSuDxpuBgHGwcRwykPthB1GZ_UVBvxe2s-M-nD7z3ciQ@mail.gmail.com>
+References: <5339BF43.4060908@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.active-venture.com ([67.228.131.205]:61061 "EHLO
-	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbaCaXrU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 31 Mar 2014 19:47:20 -0400
-In-Reply-To: <5339FC31.3040601@netscape.net>
+Received: from mail-vc0-f177.google.com ([209.85.220.177]:49576 "EHLO
+	mail-vc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbaDAEXV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Apr 2014 00:23:21 -0400
+In-Reply-To: <5339BF43.4060908@gmx.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Manuel Krause <manuelkrause@netscape.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com
-Cc: Jean Delvare <jdelvare@suse.de>, lm-sensors@lm-sensors.org
+To: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 03/31/2014 04:37 PM, Manuel Krause wrote:
-> On 2014-03-20 21:21, Manuel Krause wrote:
->> On 2014-03-11 22:59, Manuel Krause wrote:
->>> On 2014-03-10 02:49, Manuel Krause wrote:
->>>> On 2014-03-09 18:58, Rafael J. Wysocki wrote:
->>>>> On Sunday, March 09, 2014 01:10:25 AM Manuel Krause wrote:
->>>>>> On 2014-03-08 16:59, Guenter Roeck wrote:
->>>>>>> On 03/08/2014 03:08 AM, Jean Delvare wrote:
->>>>>>>> On Fri, 7 Mar 2014 14:52:30 -0800, Guenter Roeck wrote:
->>>>>>>>> On Fri, Mar 07, 2014 at 11:04:29PM +0100, Manuel Krause
->>>>>>>>> wrote:
->> [SNIP]
->>
->> Long time no reply from you... Have I overseen a unwritten
->> convention? Or were my charts that unusable for your analysis/work?
->>
->> Two days ago, I tried the 3.14.0-rc7-vanilla. And the problem
->> persists. "Strange / dangerous fan policy..."
->>
->> Since kernel 3.13.6 I've managed to 'fix' the potential
->> overheating problem by manually issuing a:
->> "echo 1 > /sys/class/thermal/cooling_device3/cur_state" *)
->> _before_ obviously critical temperatures occur. Remind: This
->> particular setting may only work for my system! ...and keeps
->> working for 3.14-rc.
->>
->> In the following I'd like to present you a modified output of my
->> /sys/class/thermal, that I've written a script for (for my
->> system), that shows the results in the way of
->> linux/Documentation/thermal/sysfs-api.txt, point 3:
->> {I've uploded the files to pastebin, to not swamp you and the
->> lists with so many lines of logs.}
->>
->> For the last good kernel -- 3.12.14 -- in-use:
->>   http://pastebin.com/HL1PNcda
->> For my first bad kernel revision 3.13 -- at critical temp:
->>   http://pastebin.com/98hgf1a9
->> For the last bad kernel -- 3.14.0-rc7 -- at critical temp:
->>   http://pastebin.com/MuTwTnjD
->> For the last bad kernel -- 3.14.0-rc7 -- after issuing the
->>   *) command:
->>   http://pastebin.com/2peda54z
->>
->> Please, have a look at them! And maybe, give me hints on how I
->> can help you to further debug this issue, as my manual method
->> works but it's annoying.
->>
->> And, PLEASE CC: ME, as I'm not on the lists. Or lead this
->> Email-thread to someone in charge.
->>
->> Thank you for your work && best regards,
->> Manuel Krause
->>
+On Tue, Apr 1, 2014 at 12:47 AM, Toralf F=F6rster <toralf.foerster@gmx.=
+de> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA256
 >
-> This is still BUG 71711
-> https://bugzilla.kernel.org/show_bug.cgi?id=71711
+> all other files in that directory are 644 , but that file has 400 ?
 >
-> 3.12.15 works very well
-> 3.13.7 fails
-> 3.14.0-rc8 fails
->
+> Kernel is v3.14
 
-Best you can do would really be to bisect the problem.
-Unfortunately only you (or someone else with an affected system)
-can do that. Once the culprit is known it would be much easier
-to get it fixed.
-
-To answer your earlier question: I don't think you did anything wrong.
-I guess everyone else is just as clueless as I am (if not, speak up
-and help ;-).
-
-Guenter
-
+https://bugzilla.kernel.org/show_bug.cgi?id=3D65611
