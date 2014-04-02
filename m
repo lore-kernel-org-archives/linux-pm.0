@@ -1,125 +1,131 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 1/2] cpufreq: Fix governor start/stop race condition
-Date: Wed, 02 Apr 2014 16:19:37 +0200
-Message-ID: <1396448378-22487-2-git-send-email-k.kozlowski@samsung.com>
-References: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Xiaoguang Chen <chenxg@marvell.com>, Stephen Boyd <sboyd@codeaurora.org>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle
+ info
+Date: Wed, 02 Apr 2014 10:26:31 +0200
+Message-ID: <533BC9B7.3010501@linaro.org>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <22904760.5rGZuP5nsx@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f174.google.com ([209.85.212.174]:59552 "EHLO
+	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757478AbaDBI0R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Apr 2014 04:26:17 -0400
+Received: by mail-wi0-f174.google.com with SMTP id d1so6602437wiv.7
+        for <linux-pm@vger.kernel.org>; Wed, 02 Apr 2014 01:26:16 -0700 (PDT)
+In-Reply-To: <22904760.5rGZuP5nsx@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-From: Xiaoguang Chen <chenxg@marvell.com>
+On 04/02/2014 01:01 AM, Rafael J. Wysocki wrote:
+> On Friday, March 28, 2014 01:29:53 PM Daniel Lezcano wrote:
+>> The following patchset provides an interaction between cpuidle and t=
+he scheduler.
+>>
+>> The first patch encapsulate the needed information for the scheduler=
+ in a
+>> separate cpuidle structure. The second one stores the pointer to thi=
+s structure
+>> when entering idle. The third one, use this information to take the =
+decision to
+>> find the idlest cpu.
+>>
+>> After some basic testing with hackbench, it appears there is an impr=
+ovement for
+>> the performances (small) and for the duration of the idle states (wh=
+ich provides
+>> a better power saving).
+>>
+>> The measurement has been done with the 'idlestat' tool previously po=
+sted in this
+>> mailing list.
+>>
+>> So the benefit is good for both sides performance and power saving.
+>>
+>> The select_idle_sibling could be also improved in the same way.
+>
+> Well, quite frankly, I don't really like this series.  Not the idea i=
+tself, but
+> the way it has been implemented.
+>
+> First off, if the scheduler is to access idle state data stored in st=
+ruct
+> cpuidle_state, I'm not sure why we need a separate new structure for =
+that?
+> Couldn't there be a pointer to a whole struct cpuidle_state from stru=
+ct rq
+> instead?  [->exit_latency is the only field that find_idlest_cpu() in=
+ your
+> third patch seems to be using anyway.]
 
-Cpufreq governors' stop and start operations should be carried out
-in sequence.  Otherwise, there will be unexpected behavior, like in
-the example below.
+Hi Rafael,
 
-Suppose there are 4 CPUs and policy->cpu=CPU0, CPU1/2/3 are linked
-to CPU0.  The normal sequence is:
+thank you very much for reviewing the patchset.
 
- 1) Current governor is userspace.  An application tries to set the
-    governor to ondemand.  It will call __cpufreq_set_policy() in
-    which it will stop the userspace governor and then start the
-    ondemand governor.
+I created a specific structure to encapsulate the informations needed=20
+for the scheduler and to prevent to export unneeded data. This is purel=
+y=20
+for code design. Also it was to separate the idle's energy=20
+characteristics from the cpuidle framework data (flags, name, etc ...).
 
- 2) Current governor is userspace.  The online of CPU3 runs on CPU0.
-    It will call cpufreq_add_policy_cpu() in which it will first
-    stop the userspace governor, and then start it again.
+The exit_latency field is only used in this patchset but the=20
+target_residency will be used also (eg. prevent to wakeup a cpu before=20
+the minimum idle time target residency).
 
-If the sequence of the above two cases interleaves, it becomes:
+The power field is ... hum ... not filled by any board (except for=20
+calxeda). Vendors do not like to share this information, so very likely=
+=20
+that would be changed to a normalized value, I don't know.
 
- 1) Application stops userspace governor
- 2)                                  Hotplug stops userspace governor
+I agree we can put a pointer to the struct cpuidle_state instead if tha=
+t=20
+reduce the impact of the patchset.
 
-which is a problem, because the governor shouldn't be stopped twice
-in a row.  What happens next is:
+> Second, is accessing the idle state information for all CPUs from fin=
+d_idlest_cpu()
+> guaranteed to be non-racy?  I mean, what if a CPU changes its state f=
+rom idle to
+> non-idle while another one is executing find_idlest_cpu()?  In other =
+words,
+> where's the read memory barrier corresponding to the write ones in th=
+e modified
+> cpu_idle_call()?  And is the memory barrier actually sufficient?  Aft=
+er all,
+> you need to guarantee that the CPU is still idle after you have evalu=
+ated
+> idle_cpu() on it.
 
- 3) Application starts ondemand governor
- 4)                                  Hotplug starts a governor
+Well, as Nicolas mentioned it in another mail, we can live with races,=20
+the scheduler will take a wrong decision but nothing worth than what we=
+=20
+have today. In any case we want to prevent any lock in the code.
 
-In step 4, the hotplug is supposed to start the userspace governor,
-but now the governor has been changed by the application to ondemand,
-so the ondemand governor is started once again, which is incorrect.
+> Finally, is really the heuristics used by find_idlest_cpu() to select=
+ the "idlest"
+> CPU the best one?  What about deeper vs shallower idle states, for ex=
+ample?
 
-The solution is to prevent policy governors from being stopped
-multiple times in a row.  A governor should only be stopped once for
-one policy.  After it has been stopped, no more governor stop
-operations should be executed.
+I believe it is what is supposed to do the patchset. 1. if the cpu is=20
+idle, pick the shallower, 2. if the cpu is not idle pick the less=20
+loaded. But may be there is something wrong in the routine as pointed=20
+Nico, I have to double check it.
 
-Also add a mutex to serialize governor operations.
+Thanks !
 
-[rjw: Changelog.  And you owe me a beverage of my choice.]
-Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: <stable@vger.kernel.org>
----
- drivers/cpufreq/cpufreq.c |   24 ++++++++++++++++++++++++
- include/linux/cpufreq.h   |    1 +
- 2 files changed, 25 insertions(+)
+   -- Daniel
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f8c28607ccd6..43cf60832468 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -49,6 +49,7 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
- static DEFINE_RWLOCK(cpufreq_driver_lock);
-+static DEFINE_MUTEX(cpufreq_governor_lock);
- 
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-@@ -1635,6 +1636,21 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 
- 	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
- 						policy->cpu, event);
-+
-+	mutex_lock(&cpufreq_governor_lock);
-+	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
-+	    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
-+		mutex_unlock(&cpufreq_governor_lock);
-+		return -EBUSY;
-+	}
-+
-+	if (event == CPUFREQ_GOV_STOP)
-+		policy->governor_enabled = false;
-+	else if (event == CPUFREQ_GOV_START)
-+		policy->governor_enabled = true;
-+
-+	mutex_unlock(&cpufreq_governor_lock);
-+
- 	ret = policy->governor->governor(policy, event);
- 
- 	if (!ret) {
-@@ -1642,6 +1658,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor->initialized++;
- 		else if (event == CPUFREQ_GOV_POLICY_EXIT)
- 			policy->governor->initialized--;
-+	} else {
-+		/* Restore original values */
-+		mutex_lock(&cpufreq_governor_lock);
-+		if (event == CPUFREQ_GOV_STOP)
-+			policy->governor_enabled = true;
-+		else if (event == CPUFREQ_GOV_START)
-+			policy->governor_enabled = false;
-+		mutex_unlock(&cpufreq_governor_lock);
- 	}
- 
- 	/* we keep one module reference alive for
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index d93905633dc7..125719d41285 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -111,6 +111,7 @@ struct cpufreq_policy {
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
-+	bool			governor_enabled; /* governor start/stop flag */
- 
- 	struct work_struct	update; /* if update_policy() needs to be
- 					 * called, but you're in IRQ context */
--- 
-1.7.9.5
+
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
