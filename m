@@ -1,144 +1,66 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose
- the idlest cpu
-Date: Tue, 1 Apr 2014 23:05:49 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/1] cpufreq: exynos: Disable on multiplatform build
+Date: Wed, 2 Apr 2014 16:35:37 +0530
+Message-ID: <CAKohpo=wVHubLTyR1oX_HPLrGvrg+YsqO0kbPSKYB9wEyhXb2w@mail.gmail.com>
+References: <1396436627-22744-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f173.google.com ([209.85.216.173]:65049 "EHLO
-	mail-qc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523AbaDBDGO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Apr 2014 23:06:14 -0400
-Received: by mail-qc0-f173.google.com with SMTP id r5so11500493qcx.4
-        for <linux-pm@vger.kernel.org>; Tue, 01 Apr 2014 20:06:13 -0700 (PDT)
-In-Reply-To: <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:43448 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758552AbaDBLFi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Apr 2014 07:05:38 -0400
+Received: by mail-ob0-f170.google.com with SMTP id uz6so27737obc.1
+        for <linux-pm@vger.kernel.org>; Wed, 02 Apr 2014 04:05:37 -0700 (PDT)
+In-Reply-To: <1396436627-22744-1-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>
 
-On Fri, 28 Mar 2014, Daniel Lezcano wrote:
+On 2 April 2014 16:33, Sachin Kamat <sachin.kamat@linaro.org> wrote:
+> The current exynos cpufreq drivers are not multiplatform compliant
+> and give build errors as they refer to header files from machine
+> directory. Work to migrate them to generic cpufreq framework is under
+> progress. Till such time disable the build on multiplatform so that
+> other multiplatform ready features get tested.
+>
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/cpufreq/Kconfig.arm |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 1e2b9db563ec..0e9cce82844b 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -30,7 +30,7 @@ config ARM_EXYNOS_CPUFREQ
+>
+>  config ARM_EXYNOS4210_CPUFREQ
+>         bool "SAMSUNG EXYNOS4210"
+> -       depends on CPU_EXYNOS4210
+> +       depends on CPU_EXYNOS4210 && !ARCH_MULTIPLATFORM
+>         default y
+>         select ARM_EXYNOS_CPUFREQ
+>         help
+> @@ -41,7 +41,7 @@ config ARM_EXYNOS4210_CPUFREQ
+>
+>  config ARM_EXYNOS4X12_CPUFREQ
+>         bool "SAMSUNG EXYNOS4x12"
+> -       depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412)
+> +       depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
+>         default y
+>         select ARM_EXYNOS_CPUFREQ
+>         help
+> @@ -52,7 +52,7 @@ config ARM_EXYNOS4X12_CPUFREQ
+>
+>  config ARM_EXYNOS5250_CPUFREQ
+>         bool "SAMSUNG EXYNOS5250"
+> -       depends on SOC_EXYNOS5250
+> +       depends on SOC_EXYNOS5250 && !ARCH_MULTIPLATFORM
+>         default y
+>         select ARM_EXYNOS_CPUFREQ
+>         help
 
-> As we know in which idle state the cpu is, we can investigate the following:
-> 
-> 1. when did the cpu entered the idle state ? the longer the cpu is idle, the
-> deeper it is idle
-> 2. what exit latency is ? the greater the exit latency is, the deeper it is
-> 
-> With both information, when all cpus are idle, we can choose the idlest cpu.
-> 
-> When one cpu is not idle, the old check against weighted load applies.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-There seems to be some problems with the implementation.
-
-> @@ -4336,20 +4337,53 @@ static int
->  find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
->  {
->  	unsigned long load, min_load = ULONG_MAX;
-> -	int idlest = -1;
-> +	unsigned int min_exit_latency = UINT_MAX;
-> +	u64 idle_stamp, min_idle_stamp = ULONG_MAX;
-
-I don't think you really meant to assign an u64 variable with ULONG_MAX.
-You probably want ULLONG_MAX here.  And probably not in fact (more 
-later).
-
-> +
-> +	struct rq *rq;
-> +	struct cpuidle_power *power;
-> +
-> +	int cpu_idle = -1;
-> +	int cpu_busy = -1;
->  	int i;
->  
->  	/* Traverse only the allowed CPUs */
->  	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
-> -		load = weighted_cpuload(i);
->  
-> -		if (load < min_load || (load == min_load && i == this_cpu)) {
-> -			min_load = load;
-> -			idlest = i;
-> +		if (idle_cpu(i)) {
-> +
-> +			rq = cpu_rq(i);
-> +			power = rq->power;
-> +			idle_stamp = rq->idle_stamp;
-> +
-> +			/* The cpu is idle since a shorter time */
-> +			if (idle_stamp < min_idle_stamp) {
-> +				min_idle_stamp = idle_stamp;
-> +				cpu_idle = i;
-> +				continue;
-
-Don't you want the highest time stamp in order to select the most 
-recently idled CPU?  Favoring the CPU which has been idle the longest 
-makes little sense.
-
-> +			}
-> +
-> +			/* The cpu is idle but the exit_latency is shorter */
-> +			if (power && power->exit_latency < min_exit_latency) {
-> +				min_exit_latency = power->exit_latency;
-> +				cpu_idle = i;
-> +				continue;
-> +			}
-
-I think this is wrong.  This gives priority to CPUs which have been idle 
-for a (longer... although this should have been) shorter period of time 
-over those with a shallower idle state.  I think this should rather be:
-
-	if (power && power->exit_latency < min_exit_latency) {
-		min_exit_latency = power->exit_latency;
-		latest_idle_stamp = idle_stamp;
-	       	cpu_idle = i;
-	} else if ((!power || power->exit_latency == min_exit_latency) &&
-		   idle_stamp > latest_idle_stamp) {
-		latest_idle_stamp = idle_stamp;
-		cpu_idle = i;
-	}
-
-So the CPU with the shallowest idle state is selected in priority, and 
-if many CPUs are in the same state then the time stamp is used to 
-select the most recent one. Whenever 
-a shallower idle state is found then the latest_idle_stamp is reset for 
-that state even if it is further in the past.
-
-> +		} else {
-> +
-> +			load = weighted_cpuload(i);
-> +
-> +			if (load < min_load ||
-> +			    (load == min_load && i == this_cpu)) {
-> +				min_load = load;
-> +				cpu_busy = i;
-> +				continue;
-> +			}
->  		}
-
-I think this is wrong to do an if-else based on idle_cpu() here.  What 
-if a CPU is heavily loaded, but for some reason it happens to be idle at 
-this very moment?  With your patch it could be selected as an idle CPU 
-while it would be discarded as being too busy otherwise.
-
-It is important to determine both cpu_busy and cpu_idle for all CPUs.
-
-And cpu_busy is a bad name for this.  Something like least_loaded would 
-be more self explanatory.  Same thing for cpu_idle which could be 
-clearer if named shalloest_idle.
-
-> -	return idlest;
-> +	/* Busy cpus are considered less idle than idle cpus ;) */
-> +	return cpu_busy != -1 ? cpu_busy : cpu_idle;
-
-And finally it is a policy decision whether or not we want to return 
-least_loaded over shallowest_idle e.g do we pack tasks on non idle CPUs 
-first or not.  That in itself needs more investigation.  To keep the 
-existing policy unchanged for now the above condition should have its 
-variables swapped.
-
-
-Nicolas
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
