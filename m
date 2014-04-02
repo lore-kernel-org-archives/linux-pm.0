@@ -1,155 +1,144 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] linux/thermal.h: Rename KELVIN_TO_CELSIUS to
- DECI_KELVIN_TO_CELSIUS
-Date: Thu, 03 Apr 2014 10:42:11 +0800
-Message-ID: <1396492931.2357.22.camel@rzhang1-mobl4>
-References: <1395682149-16563-1-git-send-email-linux@rasmusvillemoes.dk>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose
+ the idlest cpu
+Date: Tue, 1 Apr 2014 23:05:49 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1395682149-16563-1-git-send-email-linux@rasmusvillemoes.dk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Corentin Chary <corentin.chary@gmail.com>, Matthew Garrett <matthew.garrett@nebula.com>, Sujith Thomas <sujith.thomas@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f173.google.com ([209.85.216.173]:65049 "EHLO
+	mail-qc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbaDBDGO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Apr 2014 23:06:14 -0400
+Received: by mail-qc0-f173.google.com with SMTP id r5so11500493qcx.4
+        for <linux-pm@vger.kernel.org>; Tue, 01 Apr 2014 20:06:13 -0700 (PDT)
+In-Reply-To: <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-On Mon, 2014-03-24 at 18:29 +0100, Rasmus Villemoes wrote:
-> The macros KELVIN_TO_CELSIUS and CELSIUS_TO_KELVIN actually work on
-> decikelvins, so rename them to reflect their actual semantics.
+On Fri, 28 Mar 2014, Daniel Lezcano wrote:
+
+> As we know in which idle state the cpu is, we can investigate the following:
 > 
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-
-applied on top of Guenter' "Fix KELVIN_TO_CELSIUS macro" patch.
-
-thanks,
-rui
-> ---
->  drivers/acpi/thermal.c              | 12 ++++++------
->  drivers/platform/x86/asus-wmi.c     |  2 +-
->  drivers/platform/x86/intel_menlow.c |  8 ++++----
->  include/linux/thermal.h             |  6 +++---
->  4 files changed, 14 insertions(+), 14 deletions(-)
+> 1. when did the cpu entered the idle state ? the longer the cpu is idle, the
+> deeper it is idle
+> 2. what exit latency is ? the greater the exit latency is, the deeper it is
 > 
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 08626c8..3742e64 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -313,7 +313,7 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
->  			if (crt == -1) {
->  				tz->trips.critical.flags.valid = 0;
->  			} else if (crt > 0) {
-> -				unsigned long crt_k = CELSIUS_TO_KELVIN(crt);
-> +				unsigned long crt_k = CELSIUS_TO_DECI_KELVIN(crt);
->  				/*
->  				 * Allow override critical threshold
->  				 */
-> @@ -349,7 +349,7 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
->  		if (psv == -1) {
->  			status = AE_SUPPORT;
->  		} else if (psv > 0) {
-> -			tmp = CELSIUS_TO_KELVIN(psv);
-> +			tmp = CELSIUS_TO_DECI_KELVIN(psv);
->  			status = AE_OK;
->  		} else {
->  			status = acpi_evaluate_integer(tz->device->handle,
-> @@ -429,7 +429,7 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
->  					break;
->  				if (i == 1)
->  					tz->trips.active[0].temperature =
-> -						CELSIUS_TO_KELVIN(act);
-> +						CELSIUS_TO_DECI_KELVIN(act);
->  				else
->  					/*
->  					 * Don't allow override higher than
-> @@ -437,9 +437,9 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
->  					 */
->  					tz->trips.active[i - 1].temperature =
->  						(tz->trips.active[i - 2].temperature <
-> -						CELSIUS_TO_KELVIN(act) ?
-> +						CELSIUS_TO_DECI_KELVIN(act) ?
->  						tz->trips.active[i - 2].temperature :
-> -						CELSIUS_TO_KELVIN(act));
-> +						CELSIUS_TO_DECI_KELVIN(act));
->  				break;
->  			} else {
->  				tz->trips.active[i].temperature = tmp;
-> @@ -1094,7 +1094,7 @@ static int acpi_thermal_add(struct acpi_device *device)
->  		goto free_memory;
+> With both information, when all cpus are idle, we can choose the idlest cpu.
+> 
+> When one cpu is not idle, the old check against weighted load applies.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+There seems to be some problems with the implementation.
+
+> @@ -4336,20 +4337,53 @@ static int
+>  find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+>  {
+>  	unsigned long load, min_load = ULONG_MAX;
+> -	int idlest = -1;
+> +	unsigned int min_exit_latency = UINT_MAX;
+> +	u64 idle_stamp, min_idle_stamp = ULONG_MAX;
+
+I don't think you really meant to assign an u64 variable with ULONG_MAX.
+You probably want ULLONG_MAX here.  And probably not in fact (more 
+later).
+
+> +
+> +	struct rq *rq;
+> +	struct cpuidle_power *power;
+> +
+> +	int cpu_idle = -1;
+> +	int cpu_busy = -1;
+>  	int i;
 >  
->  	pr_info(PREFIX "%s [%s] (%ld C)\n", acpi_device_name(device),
-> -		acpi_device_bid(device), KELVIN_TO_CELSIUS(tz->temperature));
-> +		acpi_device_bid(device), DECI_KELVIN_TO_CELSIUS(tz->temperature));
->  	goto end;
+>  	/* Traverse only the allowed CPUs */
+>  	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
+> -		load = weighted_cpuload(i);
 >  
->  free_memory:
-> diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
-> index c5e082f..2d81d5a 100644
-> --- a/drivers/platform/x86/asus-wmi.c
-> +++ b/drivers/platform/x86/asus-wmi.c
-> @@ -1066,7 +1066,7 @@ static ssize_t asus_hwmon_temp1(struct device *dev,
->  	if (err < 0)
->  		return err;
->  
-> -	value = KELVIN_TO_CELSIUS((value & 0xFFFF)) * 1000;
-> +	value = DECI_KELVIN_TO_CELSIUS((value & 0xFFFF)) * 1000;
->  
->  	return sprintf(buf, "%d\n", value);
->  }
-> diff --git a/drivers/platform/x86/intel_menlow.c b/drivers/platform/x86/intel_menlow.c
-> index e8b46d2..0a919d8 100644
-> --- a/drivers/platform/x86/intel_menlow.c
-> +++ b/drivers/platform/x86/intel_menlow.c
-> @@ -315,7 +315,7 @@ static ssize_t aux0_show(struct device *dev,
->  
->  	result = sensor_get_auxtrip(attr->handle, 0, &value);
->  
-> -	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
-> +	return result ? result : sprintf(buf, "%lu", DECI_KELVIN_TO_CELSIUS(value));
->  }
->  
->  static ssize_t aux1_show(struct device *dev,
-> @@ -327,7 +327,7 @@ static ssize_t aux1_show(struct device *dev,
->  
->  	result = sensor_get_auxtrip(attr->handle, 1, &value);
->  
-> -	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
-> +	return result ? result : sprintf(buf, "%lu", DECI_KELVIN_TO_CELSIUS(value));
->  }
->  
->  static ssize_t aux0_store(struct device *dev,
-> @@ -345,7 +345,7 @@ static ssize_t aux0_store(struct device *dev,
->  	if (value < 0)
->  		return -EINVAL;
->  
-> -	result = sensor_set_auxtrip(attr->handle, 0, CELSIUS_TO_KELVIN(value));
-> +	result = sensor_set_auxtrip(attr->handle, 0, CELSIUS_TO_DECI_KELVIN(value));
->  	return result ? result : count;
->  }
->  
-> @@ -364,7 +364,7 @@ static ssize_t aux1_store(struct device *dev,
->  	if (value < 0)
->  		return -EINVAL;
->  
-> -	result = sensor_set_auxtrip(attr->handle, 1, CELSIUS_TO_KELVIN(value));
-> +	result = sensor_set_auxtrip(attr->handle, 1, CELSIUS_TO_DECI_KELVIN(value));
->  	return result ? result : count;
->  }
->  
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index f7e11c7..c978aa3 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -41,9 +41,9 @@
->  #define THERMAL_NO_LIMIT	THERMAL_CSTATE_INVALID
->  
->  /* Unit conversion macros */
-> -#define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
-> -				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
-> -#define CELSIUS_TO_KELVIN(t)	((t)*10+2732)
-> +#define DECI_KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
-> +					((long)t-2732+5)/10 : ((long)t-2732-5)/10)
-> +#define CELSIUS_TO_DECI_KELVIN(t)	((t)*10+2732)
->  
->  /* Adding event notification support elements */
->  #define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+> -		if (load < min_load || (load == min_load && i == this_cpu)) {
+> -			min_load = load;
+> -			idlest = i;
+> +		if (idle_cpu(i)) {
+> +
+> +			rq = cpu_rq(i);
+> +			power = rq->power;
+> +			idle_stamp = rq->idle_stamp;
+> +
+> +			/* The cpu is idle since a shorter time */
+> +			if (idle_stamp < min_idle_stamp) {
+> +				min_idle_stamp = idle_stamp;
+> +				cpu_idle = i;
+> +				continue;
+
+Don't you want the highest time stamp in order to select the most 
+recently idled CPU?  Favoring the CPU which has been idle the longest 
+makes little sense.
+
+> +			}
+> +
+> +			/* The cpu is idle but the exit_latency is shorter */
+> +			if (power && power->exit_latency < min_exit_latency) {
+> +				min_exit_latency = power->exit_latency;
+> +				cpu_idle = i;
+> +				continue;
+> +			}
+
+I think this is wrong.  This gives priority to CPUs which have been idle 
+for a (longer... although this should have been) shorter period of time 
+over those with a shallower idle state.  I think this should rather be:
+
+	if (power && power->exit_latency < min_exit_latency) {
+		min_exit_latency = power->exit_latency;
+		latest_idle_stamp = idle_stamp;
+	       	cpu_idle = i;
+	} else if ((!power || power->exit_latency == min_exit_latency) &&
+		   idle_stamp > latest_idle_stamp) {
+		latest_idle_stamp = idle_stamp;
+		cpu_idle = i;
+	}
+
+So the CPU with the shallowest idle state is selected in priority, and 
+if many CPUs are in the same state then the time stamp is used to 
+select the most recent one. Whenever 
+a shallower idle state is found then the latest_idle_stamp is reset for 
+that state even if it is further in the past.
+
+> +		} else {
+> +
+> +			load = weighted_cpuload(i);
+> +
+> +			if (load < min_load ||
+> +			    (load == min_load && i == this_cpu)) {
+> +				min_load = load;
+> +				cpu_busy = i;
+> +				continue;
+> +			}
+>  		}
+
+I think this is wrong to do an if-else based on idle_cpu() here.  What 
+if a CPU is heavily loaded, but for some reason it happens to be idle at 
+this very moment?  With your patch it could be selected as an idle CPU 
+while it would be discarded as being too busy otherwise.
+
+It is important to determine both cpu_busy and cpu_idle for all CPUs.
+
+And cpu_busy is a bad name for this.  Something like least_loaded would 
+be more self explanatory.  Same thing for cpu_idle which could be 
+clearer if named shalloest_idle.
+
+> -	return idlest;
+> +	/* Busy cpus are considered less idle than idle cpus ;) */
+> +	return cpu_busy != -1 ? cpu_busy : cpu_idle;
+
+And finally it is a policy decision whether or not we want to return 
+least_loaded over shallowest_idle e.g do we pack tasks on non idle CPUs 
+first or not.  That in itself needs more investigation.  To keep the 
+existing policy unchanged for now the above condition should have its 
+variables swapped.
+
+
+Nicolas
