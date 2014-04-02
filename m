@@ -1,59 +1,42 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/1] MAINTAINER: Update email address on thermal
- subsystem
-Date: Thu, 03 Apr 2014 11:01:28 +0800
-Message-ID: <1396494088.2357.32.camel@rzhang1-mobl4>
-References: <1396389834-52268-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:60511 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932701AbaDCDBe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 2 Apr 2014 23:01:34 -0400
-In-Reply-To: <1396389834-52268-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: loongson2_cpufreq: don't declare local variable as static
+Date: Wed,  2 Apr 2014 10:14:24 +0530
+Message-ID: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lxoliva@fsfla.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On Tue, 2014-04-01 at 18:03 -0400, Eduardo Valentin wrote:
-> I am updating my contact email address. For now on, patches
-> on non ACPI / SoC thermal must be sent to edubezval@gmail.com.
-> 
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Earlier commit:
+	commit 652ed95d5fa6074b3c4ea245deb0691f1acb6656
+	Author: Viresh Kumar <viresh.kumar@linaro.org>
+	Date:   Thu Jan 9 20:38:43 2014 +0530
 
-applied.
+	    cpufreq: introduce cpufreq_generic_get() routine
 
-thanks,
-rui
-> ---
->  MAINTAINERS | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 79031a5..79d7981 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -8741,7 +8741,7 @@ F:	drivers/media/radio/radio-raremono.c
->  
->  THERMAL
->  M:	Zhang Rui <rui.zhang@intel.com>
-> -M:	Eduardo Valentin <eduardo.valentin@ti.com>
-> +M:	Eduardo Valentin <edubezval@gmail.com>
->  L:	linux-pm@vger.kernel.org
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
-> @@ -8768,7 +8768,7 @@ S:	Maintained
->  F:	drivers/platform/x86/thinkpad_acpi.c
->  
->  TI BANDGAP AND THERMAL DRIVER
-> -M:	Eduardo Valentin <eduardo.valentin@ti.com>
-> +M:	Eduardo Valentin <edubezval@gmail.com>
->  L:	linux-pm@vger.kernel.org
->  S:	Supported
->  F:	drivers/thermal/ti-soc-thermal/
+did some changes to driver and by mistake made cpuclk as a 'static' local
+variable, which wasn't actually required. Fix it.
 
+Reported-by: Alexandre Oliva <lxoliva@fsfla.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/loongson2_cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+index a3588d61..f0bc31f 100644
+--- a/drivers/cpufreq/loongson2_cpufreq.c
++++ b/drivers/cpufreq/loongson2_cpufreq.c
+@@ -69,7 +69,7 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+ 
+ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	static struct clk *cpuclk;
++	struct clk *cpuclk;
+ 	int i;
+ 	unsigned long rate;
+ 	int ret;
+-- 
+1.7.12.rc2.18.g61b472e
 
