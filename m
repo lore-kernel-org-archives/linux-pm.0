@@ -1,105 +1,83 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 2/2] cpufreq: Fix timer/workqueue corruption due to double
- queueing
-Date: Wed, 02 Apr 2014 16:19:38 +0200
-Message-ID: <1396448378-22487-3-git-send-email-k.kozlowski@samsung.com>
-References: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <1396448378-22487-1-git-send-email-k.kozlowski@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: stable@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Xiaoguang Chen <chenxg@marvell.com>, Stephen Boyd <sboyd@codeaurora.org>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle
+ info
+Date: Tue, 1 Apr 2014 23:14:33 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1404012141580.1571@knanqh.ubzr>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <22904760.5rGZuP5nsx@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <22904760.5rGZuP5nsx@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+On Wed, 2 Apr 2014, Rafael J. Wysocki wrote:
 
-When a CPU is hot removed we'll cancel all the delayed work items
-via gov_cancel_work(). Normally this will just cancels a delayed
-timer on each CPU that the policy is managing and the work won't
-run, but if the work is already running the workqueue code will
-wait for the work to finish before continuing to prevent the
-work items from re-queuing themselves like they normally do. This
-scheme will work most of the time, except for the case where the
-work function determines that it should adjust the delay for all
-other CPUs that the policy is managing. If this scenario occurs,
-the canceling CPU will cancel its own work but queue up the other
-CPUs works to run. For example:
+> On Friday, March 28, 2014 01:29:53 PM Daniel Lezcano wrote:
+> > The following patchset provides an interaction between cpuidle and the scheduler.
+> > 
+> > The first patch encapsulate the needed information for the scheduler in a
+> > separate cpuidle structure. The second one stores the pointer to this structure
+> > when entering idle. The third one, use this information to take the decision to
+> > find the idlest cpu.
+> > 
+> > After some basic testing with hackbench, it appears there is an improvement for
+> > the performances (small) and for the duration of the idle states (which provides
+> > a better power saving).
+> > 
+> > The measurement has been done with the 'idlestat' tool previously posted in this
+> > mailing list.
+> > 
+> > So the benefit is good for both sides performance and power saving.
+> > 
+> > The select_idle_sibling could be also improved in the same way.
+> 
+> Well, quite frankly, I don't really like this series.  Not the idea itself, but
+> the way it has been implemented.
+> 
+> First off, if the scheduler is to access idle state data stored in struct
+> cpuidle_state, I'm not sure why we need a separate new structure for that?
+> Couldn't there be a pointer to a whole struct cpuidle_state from struct rq
+> instead?  [->exit_latency is the only field that find_idlest_cpu() in your
+> third patch seems to be using anyway.]
 
- CPU0                                        CPU1
- ----                                        ----
- cpu_down()
-  ...
-  __cpufreq_remove_dev()
-   cpufreq_governor_dbs()
-    case CPUFREQ_GOV_STOP:
-     gov_cancel_work(dbs_data, policy);
-      cpu0 work is canceled
-       timer is canceled
-       cpu1 work is canceled                    <work runs>
-       <waits for cpu1>                         od_dbs_timer()
-                                                 gov_queue_work(*, *, true);
- 						  cpu0 work queued
- 						  cpu1 work queued
-						  cpu2 work queued
-						  ...
-       cpu1 work is canceled
-       cpu2 work is canceled
-       ...
+Future patches are likely to use the other fields.  I presume that's why 
+Daniel put them there.
 
-At the end of the GOV_STOP case cpu0 still has a work queued to
-run although the code is expecting all of the works to be
-canceled. __cpufreq_remove_dev() will then proceed to
-re-initialize all the other CPUs works except for the CPU that is
-going down. The CPUFREQ_GOV_START case in cpufreq_governor_dbs()
-will trample over the queued work and debugobjects will spit out
-a warning:
+But I admit being on the fence about this i.e whether or not we should 
+encapsulate shared fields into a separate structure or not.
 
-WARNING: at lib/debugobjects.c:260 debug_print_object+0x94/0xbc()
-ODEBUG: init active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x10
-Modules linked in:
-CPU: 0 PID: 1491 Comm: sh Tainted: G        W    3.10.0 #19
-[<c010c178>] (unwind_backtrace+0x0/0x11c) from [<c0109dec>] (show_stack+0x10/0x14)
-[<c0109dec>] (show_stack+0x10/0x14) from [<c01904cc>] (warn_slowpath_common+0x4c/0x6c)
-[<c01904cc>] (warn_slowpath_common+0x4c/0x6c) from [<c019056c>] (warn_slowpath_fmt+0x2c/0x3c)
-[<c019056c>] (warn_slowpath_fmt+0x2c/0x3c) from [<c0388a7c>] (debug_print_object+0x94/0xbc)
-[<c0388a7c>] (debug_print_object+0x94/0xbc) from [<c0388e34>] (__debug_object_init+0x2d0/0x340)
-[<c0388e34>] (__debug_object_init+0x2d0/0x340) from [<c019e3b0>] (init_timer_key+0x14/0xb0)
-[<c019e3b0>] (init_timer_key+0x14/0xb0) from [<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8)
-[<c0635f78>] (cpufreq_governor_dbs+0x3e8/0x5f8) from [<c06325a0>] (__cpufreq_governor+0xdc/0x1a4)
-[<c06325a0>] (__cpufreq_governor+0xdc/0x1a4) from [<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434)
-[<c0633704>] (__cpufreq_remove_dev.isra.10+0x3b4/0x434) from [<c08989f4>] (cpufreq_cpu_callback+0x60/0x80)
-[<c08989f4>] (cpufreq_cpu_callback+0x60/0x80) from [<c08a43c0>] (notifier_call_chain+0x38/0x68)
-[<c08a43c0>] (notifier_call_chain+0x38/0x68) from [<c01938e0>] (__cpu_notify+0x28/0x40)
-[<c01938e0>] (__cpu_notify+0x28/0x40) from [<c0892ad4>] (_cpu_down+0x7c/0x2c0)
-[<c0892ad4>] (_cpu_down+0x7c/0x2c0) from [<c0892d3c>] (cpu_down+0x24/0x40)
-[<c0892d3c>] (cpu_down+0x24/0x40) from [<c0893ea8>] (store_online+0x2c/0x74)
-[<c0893ea8>] (store_online+0x2c/0x74) from [<c04519d8>] (dev_attr_store+0x18/0x24)
-[<c04519d8>] (dev_attr_store+0x18/0x24) from [<c02a69d4>] (sysfs_write_file+0x100/0x148)
-[<c02a69d4>] (sysfs_write_file+0x100/0x148) from [<c0255c18>] (vfs_write+0xcc/0x174)
-[<c0255c18>] (vfs_write+0xcc/0x174) from [<c0255f70>] (SyS_write+0x38/0x64)
-[<c0255f70>] (SyS_write+0x38/0x64) from [<c0106120>] (ret_fast_syscall+0x0/0x30)
+> Second, is accessing the idle state information for all CPUs from find_idlest_cpu()
+> guaranteed to be non-racy?  I mean, what if a CPU changes its state from idle to
+> non-idle while another one is executing find_idlest_cpu()?  In other words,
+> where's the read memory barrier corresponding to the write ones in the modified
+> cpu_idle_call()?  And is the memory barrier actually sufficient?  After all,
+> you need to guarantee that the CPU is still idle after you have evaluated
+> idle_cpu() on it.
 
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: <stable@vger.kernel.org>
----
- drivers/cpufreq/cpufreq_governor.c |    3 +++
- 1 file changed, 3 insertions(+)
+I don't think avoiding races is all that important here.  Right now any 
+idle CPU is selected regardless of its idle state depth.  What this 
+patch should do (considering my previous comments on it) is to favor the 
+idle CPU with the shalloest idle state.  If once in a while the 
+selection is wrong because of a race we're not going to make it any 
+worse than what we have today without this patch.
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 87427360c77f..bce2cd216423 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -119,6 +119,9 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- {
- 	int i;
- 
-+	if (!policy->governor_enabled)
-+		return;
-+
- 	if (!all_cpus) {
- 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
- 	} else {
--- 
-1.7.9.5
+That probably means the write barrier could potentially be omitted as 
+well if it implies a useless cost.
+
+We need to ensure the cpuidle data structure is not going away (e.g. 
+cpuidle driver module removal) while another CPU looks at it though.  
+The timing would have to be awfully weird for this to happen but still.
+
+> Finally, is really the heuristics used by find_idlest_cpu() to select the "idlest"
+> CPU the best one?  What about deeper vs shallower idle states, for example?
+
+That's what this patch series is about.  The find_idlest_cpu code should 
+look for the idle CPU with the shallowest idle state, or the one with 
+the smallest load.  In this context "find_idlest_cpu" might become a 
+misnomer.
+
+
+Nicolas
