@@ -1,223 +1,143 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-Date: Wed, 02 Apr 2014 11:39:21 +0200
-Message-ID: <533BDAC9.6090702@linaro.org>
-References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
- <533BDA11.9080905@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] More ACPI and power management updates for v3.15-rc1
+Date: Wed, 2 Apr 2014 02:47:12 +0200
+Message-ID: <CAJZ5v0htHJ6_eX4eNKB5PrKXx+1BebcEeO9Jt-EQXiEj9hNuEw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <533BDA11.9080905@linaro.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>, scottwood@freescale.com
-Cc: chenhui.zhao@freescale.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, jason.jin@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:64668 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756913AbaDBArO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Apr 2014 20:47:14 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-T24gMDQvMDIvMjAxNCAxMTozNiBBTSwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cgo+IE9uIDA0LzAx
-LzIwMTQgMTA6MzMgQU0sIERvbmdzaGVuZyBXYW5nIHdyb3RlOgo+PiBGcm9tOiBXYW5nIERvbmdz
-aGVuZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4KPj4KPj4gQWRkIGNwdWlkbGUgc3Vw
-cG9ydCBmb3IgZTUwMCBmYW1pbHksIHVzaW5nIGNwdWlkbGUgZnJhbWV3b3JrIHRvCj4+IG1hbmFn
-ZSB2YXJpb3VzIGxvdyBwb3dlciBtb2Rlcy4gVGhlIG5ldyBpbXBsZW1lbnRhdGlvbiB3aWxsIHJl
-bWFpbgo+PiBjb21wYXRpYmxlIHdpdGggb3JpZ2luYWwgaWRsZSBtZXRob2QuCj4+Cj4+IEkgaGF2
-ZSBkb25lIHRlc3QgYWJvdXQgcG93ZXIgY29uc3VtcHRpb24gYW5kIGxhdGVuY3kuIENwdWlkbGUg
-ZnJhbWV3b3JrCj4+IHdpbGwgbWFrZSBDUFUgcmVzcG9uc2UgdGltZSBmYXN0ZXIgdGhhbiBvcmln
-aW5hbCBtZXRob2QsIGJ1dCBwb3dlcgo+PiBjb25zdW1wdGlvbiBpcyBoaWdoZXIgdGhhbiBvcmln
-aW5hbCBtZXRob2QuCj4+Cj4+IFBvd2VyIGNvbnN1bXB0aW9uOgo+PiBUaGUgb3JpZ2luYWwgbWV0
-aG9kLCBwb3dlciBjb25zdW1wdGlvbiBpcyAxMC41MTIwMiAoVykuCj4+IFRoZSBjcHVpZGxlIGZy
-YW1ld29yaywgcG93ZXIgY29uc3VtcHRpb24gaXMgMTAuNTMxMSAoVykuCj4+Cj4+IExhdGVuY3k6
-Cj4+IFRoZSBvcmlnaW5hbCBtZXRob2QsIGF2ZyBsYXRlbmN5IGlzIDY3ODIgKHVzKS4KPj4gVGhl
-IGNwdWlkbGUgZnJhbWV3b3JrLCBhdmcgbGF0ZW5jeSBpcyA2NDgyICh1cykuCj4+Cj4+IEluaXRp
-YWxseSwgdGhpcyBzdXBwb3J0cyBQVzEwLCBQVzIwIGFuZCBzdWJzZXF1ZW50IHBhdGNoZXMgd2ls
-bCBzdXBwb3J0Cj4+IERPWkUvTkFQIGFuZCBQSDEwLCBQSDIwLgo+Pgo+PiBTaWduZWQtb2ZmLWJ5
-OiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4KClBsZWFzZSBm
-aXggUmFmYWVsJ3MgZW1haWwgd2hlbiByZXNlbmRpbmcvYW5zd2VyaW5nLgoKVGhhbmtzCgogICAt
-LSBEYW5pZWwKCj4+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbWFjaGRl
-cC5oCj4+IGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21hY2hkZXAuaAo+PiBpbmRleCA1YjZj
-MDNmLi45MzAxNDIwIDEwMDY0NAo+PiAtLS0gYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vbWFj
-aGRlcC5oCj4+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tYWNoZGVwLmgKPj4gQEAg
-LTI5NCw2ICsyOTQsMTUgQEAgZXh0ZXJuIHZvaWQgcG93ZXI3X2lkbGUodm9pZCk7Cj4+ICAgZXh0
-ZXJuIHZvaWQgcHBjNnh4X2lkbGUodm9pZCk7Cj4+ICAgZXh0ZXJuIHZvaWQgYm9vazNlX2lkbGUo
-dm9pZCk7Cj4+Cj4+ICtzdGF0aWMgaW5saW5lIHZvaWQgY3B1aWRsZV93YWl0KHZvaWQpCj4+ICt7
-Cj4+ICsjaWZkZWYgQ09ORklHX1BQQzY0Cj4+ICsgICAgYm9vazNlX2lkbGUoKTsKPj4gKyNlbHNl
-Cj4+ICsgICAgZTUwMF9pZGxlKCk7Cj4+ICsjZW5kaWYKPj4gK30KPj4gKwo+PiAgIC8qCj4+ICAg
-ICogcHBjX21kIGNvbnRhaW5zIGEgY29weSBvZiB0aGUgbWFjaGluZSBkZXNjcmlwdGlvbiBzdHJ1
-Y3R1cmUgZm9yIHRoZQo+PiAgICAqIGN1cnJlbnQgcGxhdGZvcm0uIG1hY2hpbmVfaWQgY29udGFp
-bnMgdGhlIGluaXRpYWwgYWRkcmVzcyB3aGVyZSB0aGUKPj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93
-ZXJwYy9rZXJuZWwvc3lzZnMuYyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc3lzZnMuYwo+PiBpbmRl
-eCA5N2UxZGM5Li5lZGQxOTNmIDEwMDY0NAo+PiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL3N5
-c2ZzLmMKPj4gKysrIGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9zeXNmcy5jCj4+IEBAIC0xOTAsNiAr
-MTkwLDkgQEAgc3RhdGljIHNzaXplX3Qgc2hvd19wdzIwX3dhaXRfdGltZShzdHJ1Y3QgZGV2aWNl
-Cj4+ICpkZXYsCj4+ICAgICAgIHJldHVybiBzcHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHRpbWUgPiAw
-ID8gdGltZSA6IDApOwo+PiAgIH0KPj4KPj4gKyNpZmRlZiBDT05GSUdfQ1BVX0lETEVfRTUwMAo+
-PiArdTMyIGNwdWlkbGVfZW50cnlfYml0Owo+PiArI2VuZGlmCj4+ICAgc3RhdGljIHZvaWQgc2V0
-X3B3MjBfd2FpdF9lbnRyeV9iaXQodm9pZCAqdmFsKQo+PiAgIHsKPj4gICAgICAgdTMyICp2YWx1
-ZSA9IHZhbDsKPj4gQEAgLTIwNCw3ICsyMDcsMTEgQEAgc3RhdGljIHZvaWQgc2V0X3B3MjBfd2Fp
-dF9lbnRyeV9iaXQodm9pZCAqdmFsKQo+PiAgICAgICAvKiBzZXQgY291bnQgKi8KPj4gICAgICAg
-cHcyMF9pZGxlIHw9ICgoTUFYX0JJVCAtICp2YWx1ZSkgPDwgUFdSTUdUQ1IwX1BXMjBfRU5UX1NI
-SUZUKTsKPj4KPj4gKyNpZmRlZiBDT05GSUdfQ1BVX0lETEVfRTUwMAo+PiArICAgIGNwdWlkbGVf
-ZW50cnlfYml0ID0gKnZhbHVlOwo+PiArI2Vsc2UKPj4gICAgICAgbXRzcHIoU1BSTl9QV1JNR1RD
-UjAsIHB3MjBfaWRsZSk7Cj4+ICsjZW5kaWYKPj4gICB9Cj4+Cj4+ICAgc3RhdGljIHNzaXplX3Qg
-c3RvcmVfcHcyMF93YWl0X3RpbWUoc3RydWN0IGRldmljZSAqZGV2LAo+PiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9jcHVpZGxlL0tjb25maWcucG93ZXJwYwo+PiBiL2RyaXZlcnMvY3B1aWRsZS9LY29u
-ZmlnLnBvd2VycGMKPj4gaW5kZXggNjZjM2EwOS4uMDk0OWRiZiAxMDA2NDQKPj4gLS0tIGEvZHJp
-dmVycy9jcHVpZGxlL0tjb25maWcucG93ZXJwYwo+PiArKysgYi9kcml2ZXJzL2NwdWlkbGUvS2Nv
-bmZpZy5wb3dlcnBjCj4+IEBAIC0xOCwzICsxOCwxMCBAQCBjb25maWcgUE9XRVJOVl9DUFVJRExF
-Cj4+ICAgICAgIGhlbHAKPj4gICAgICAgICBTZWxlY3QgdGhpcyBvcHRpb24gdG8gZW5hYmxlIHBy
-b2Nlc3NvciBpZGxlIHN0YXRlIG1hbmFnZW1lbnQKPj4gICAgICAgICB0aHJvdWdoIGNwdWlkbGUg
-c3Vic3lzdGVtLgo+PiArCj4+ICtjb25maWcgQ1BVX0lETEVfRTUwMAo+PiArICAgIGJvb2wgIkNQ
-VSBJZGxlIERyaXZlciBmb3IgRTUwMCBmYW1pbHkgcHJvY2Vzc29ycyIKPj4gKyAgICBkZXBlbmRz
-IG9uIENQVV9JRExFCj4+ICsgICAgZGVwZW5kcyBvbiBGU0xfU09DX0JPT0tFCj4+ICsgICAgaGVs
-cAo+PiArICAgICAgU2VsZWN0IHRoaXMgdG8gZW5hYmxlIGNwdWlkbGUgb24gZTUwMCBmYW1pbHkg
-cHJvY2Vzc29ycy4KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9NYWtlZmlsZSBiL2Ry
-aXZlcnMvY3B1aWRsZS9NYWtlZmlsZQo+PiBpbmRleCBmNzFhZTFiLi43ZTZhZGVhIDEwMDY0NAo+
-PiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUvTWFrZWZpbGUKPj4gKysrIGIvZHJpdmVycy9jcHVpZGxl
-L01ha2VmaWxlCj4+IEBAIC0xOCwzICsxOCw0IEBAIG9iai0kKENPTkZJR19BUk1fQVQ5MV9DUFVJ
-RExFKSAgICAgICAgICArPQo+PiBjcHVpZGxlLWF0OTEubwo+PiAgICMgUE9XRVJQQyBkcml2ZXJz
-Cj4+ICAgb2JqLSQoQ09ORklHX1BTRVJJRVNfQ1BVSURMRSkgICAgICAgICs9IGNwdWlkbGUtcHNl
-cmllcy5vCj4+ICAgb2JqLSQoQ09ORklHX1BPV0VSTlZfQ1BVSURMRSkgICAgICAgICs9IGNwdWlk
-bGUtcG93ZXJudi5vCj4+ICtvYmotJChDT05GSUdfQ1BVX0lETEVfRTUwMCkgICAgICAgICs9IGNw
-dWlkbGUtZTUwMC5vCj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1lNTAw
-LmMKPj4gYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1lNTAwLmMKPj4gbmV3IGZpbGUgbW9kZSAx
-MDA2NDQKPj4gaW5kZXggMDAwMDAwMC4uZGRjMGRlZgo+PiAtLS0gL2Rldi9udWxsCj4+ICsrKyBi
-L2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLWU1MDAuYwo+PiBAQCAtMCwwICsxLDE5NCBAQAo+PiAr
-LyoKPj4gKyAqIENQVSBJZGxlIGRyaXZlciBmb3IgRnJlZXNjYWxlIFBvd2VyUEMgZTUwMCBmYW1p
-bHkgcHJvY2Vzc29ycy4KPj4gKyAqCj4+ICsgKiBDb3B5cmlnaHQgMjAxNCBGcmVlc2NhbGUgU2Vt
-aWNvbmR1Y3RvciwgSW5jLgo+PiArICoKPj4gKyAqIEF1dGhvcjogRG9uZ3NoZW5nIFdhbmcgPGRv
-bmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+Cj4+ICsgKgo+PiArICogVGhpcyBwcm9ncmFtIGlz
-IGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkKPj4g
-KyAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2Ug
-dmVyc2lvbiAyIGFzCj4+ICsgKiBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRh
-dGlvbi4KPj4gKyAqLwo+PiArCj4+ICsjaW5jbHVkZSA8bGludXgvY3B1Lmg+Cj4+ICsjaW5jbHVk
-ZSA8bGludXgvY3B1aWRsZS5oPgo+PiArI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4KPj4gKyNpbmNs
-dWRlIDxsaW51eC9rZXJuZWwuaD4KPj4gKyNpbmNsdWRlIDxsaW51eC9ub3RpZmllci5oPgo+PiAr
-Cj4+ICsjaW5jbHVkZSA8YXNtL2NwdXRhYmxlLmg+Cj4+ICsjaW5jbHVkZSA8YXNtL21hY2hkZXAu
-aD4KPj4gKyNpbmNsdWRlIDxhc20vbXBjODV4eC5oPgo+PiArCj4+ICtzdGF0aWMgdW5zaWduZWQg
-aW50IG1heF9pZGxlX3N0YXRlOwo+PiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlICpjcHVp
-ZGxlX3N0YXRlX3RhYmxlOwo+PiArCj4+ICtzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgZTUwMF9pZGxl
-X2RyaXZlciA9IHsKPj4gKyAgICAubmFtZSA9ICJlNTAwX2lkbGUiLAo+PiArICAgIC5vd25lciA9
-IFRISVNfTU9EVUxFLAo+PiArfTsKPj4gKwo+PiArc3RhdGljIHZvaWQgZTUwMF9jcHVpZGxlKHZv
-aWQpCj4+ICt7Cj4+ICsgICAgaWYgKGNwdWlkbGVfaWRsZV9jYWxsKCkpCj4+ICsgICAgICAgIGNw
-dWlkbGVfd2FpdCgpOwo+PiArfQo+Cj4gTm9wZSwgdGhhdCBoYXMgYmVlbiBjaGFuZ2VkLiBObyBt
-b3JlIGNhbGwgdG8gY3B1aWRsZV9pZGxlX2NhbGwgaW4gYSBkcml2ZXIuCj4KPj4gKwo+PiArc3Rh
-dGljIGludCBwdzEwX2VudGVyKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LAo+PiArICAgICAg
-ICAgICAgc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsIGludCBpbmRleCkKPj4gK3sKPj4gKyAg
-ICBjcHVpZGxlX3dhaXQoKTsKPj4gKyAgICByZXR1cm4gaW5kZXg7Cj4+ICt9Cj4+ICsKPj4gKyNk
-ZWZpbmUgTUFYX0JJVCAgICA2Mwo+PiArI2RlZmluZSBNSU5fQklUICAgIDEKPj4gK2V4dGVybiB1
-MzIgY3B1aWRsZV9lbnRyeV9iaXQ7Cj4+ICtzdGF0aWMgaW50IHB3MjBfZW50ZXIoc3RydWN0IGNw
-dWlkbGVfZGV2aWNlICpkZXYsCj4+ICsgICAgICAgIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2
-LCBpbnQgaW5kZXgpCj4+ICt7Cj4+ICsgICAgdTMyIHB3MjBfaWRsZTsKPj4gKyAgICB1MzIgZW50
-cnlfYml0Owo+PiArICAgIHB3MjBfaWRsZSA9IG1mc3ByKFNQUk5fUFdSTUdUQ1IwKTsKPj4gKyAg
-ICBpZiAoKHB3MjBfaWRsZSAmIFBXUk1HVENSMF9QVzIwX0VOVCkgIT0gUFdSTUdUQ1IwX1BXMjBf
-RU5UKSB7Cj4+ICsgICAgICAgIHB3MjBfaWRsZSAmPSB+UFdSTUdUQ1IwX1BXMjBfRU5UOwo+PiAr
-ICAgICAgICBlbnRyeV9iaXQgPSBNQVhfQklUIC0gY3B1aWRsZV9lbnRyeV9iaXQ7Cj4+ICsgICAg
-ICAgIHB3MjBfaWRsZSB8PSAoZW50cnlfYml0IDw8IFBXUk1HVENSMF9QVzIwX0VOVF9TSElGVCk7
-Cj4+ICsgICAgICAgIG10c3ByKFNQUk5fUFdSTUdUQ1IwLCBwdzIwX2lkbGUpOwo+PiArICAgIH0K
-Pj4gKwo+PiArICAgIGNwdWlkbGVfd2FpdCgpOwo+PiArCj4+ICsgICAgcHcyMF9pZGxlICY9IH5Q
-V1JNR1RDUjBfUFcyMF9FTlQ7Cj4+ICsgICAgcHcyMF9pZGxlIHw9IChNSU5fQklUIDw8IFBXUk1H
-VENSMF9QVzIwX0VOVF9TSElGVCk7Cj4+ICsgICAgbXRzcHIoU1BSTl9QV1JNR1RDUjAsIHB3MjBf
-aWRsZSk7Cj4+ICsKPj4gKyAgICByZXR1cm4gaW5kZXg7Cj4+ICt9Cj4KPiBJcyBpdCBwb3NzaWJs
-ZSB0byBnaXZlIHNvbWUgY29tbWVudHMgYW5kIGVuY2Fwc3VsYXRlIHRoZSBjb2RlIHdpdGgKPiBl
-eHBsaWNpdCBmdW5jdGlvbiBuYW1lcyB0byBiZSBpbXBsZW1lbnRlZCBpbiBhbiBhcmNoIHNwZWNp
-ZmljIGRpcmVjdG9yeQo+IGZpbGUgKGVnLiBwbS5jKSBhbmQgZXhwb3J0IHRoZXNlIGZ1bmN0aW9u
-cyBpbiBhIGxpbnV4LyBoZWFkZXIgPyBXZSB0cnkKPiB0byBwcmV2ZW50IHRvIGluY2x1ZGUgYXNt
-IGlmIHBvc3NpYmxlLgo+Cj4+ICsKPj4gK3N0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSBwd19p
-ZGxlX3N0YXRlc1tdID0gewo+PiArICAgIHsKPj4gKyAgICAgICAgLm5hbWUgPSAicHcxMCIsCj4+
-ICsgICAgICAgIC5kZXNjID0gInB3MTAiLAo+PiArICAgICAgICAuZmxhZ3MgPSBDUFVJRExFX0ZM
-QUdfVElNRV9WQUxJRCwKPj4gKyAgICAgICAgLmV4aXRfbGF0ZW5jeSA9IDAsCj4+ICsgICAgICAg
-IC50YXJnZXRfcmVzaWRlbmN5ID0gMCwKPj4gKyAgICAgICAgLmVudGVyID0gJnB3MTBfZW50ZXIK
-Pj4gKyAgICB9LAo+PiArCj4+ICsgICAgewo+PiArICAgICAgICAubmFtZSA9ICJwdzIwIiwKPj4g
-KyAgICAgICAgLmRlc2MgPSAicHcyMC1jb3JlLWlkbGUiLAo+PiArICAgICAgICAuZmxhZ3MgPSBD
-UFVJRExFX0ZMQUdfVElNRV9WQUxJRCwKPj4gKyAgICAgICAgLmV4aXRfbGF0ZW5jeSA9IDEsCj4+
-ICsgICAgICAgIC50YXJnZXRfcmVzaWRlbmN5ID0gNTAsCj4+ICsgICAgICAgIC5lbnRlciA9ICZw
-dzIwX2VudGVyCj4+ICsgICAgfSwKPj4gK307Cj4KPiBObyBuZWVkIHRvIGRlZmluZSB0aGlzIGlu
-dGVybWVkaWF0ZSBzdHJ1Y3R1cmUgaGVyZSwgeW91IGNhbiBkaXJlY3RseQo+IGluaXRpYWxpemUg
-dGhlIGNwdWlkbGVfZHJpdmVyOgo+Cj4KPiBzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgZTUwMF9pZGxl
-X2RyaXZlciA9IHsKPiAgICAgIC5uYW1lID0gImU1MDBfaWRsZSIsCj4gICAgICAub3duZXIgPSBU
-SElTX01PRFVMRSwKPiAgICAgIC5zdGF0ZXMgPSB7Cj4gICAgICAgICAgLm5hbWUgPSAicHcxMCIs
-Cj4gICAgICAgICAgLmRlc2MgPSAicHcxMCIsCj4gICAgICAgICAgLmZsYWdzID0gQ1BVSURMRV9G
-TEFHX1RJTUVfVkFMSUQsCj4gICAgICAgICAgLnRhcmdldF9yZXNpZGVuY3kgPSAwLAo+ICAgICAg
-ICAgIC5lbnRlciA9ICZwdzEwX2VudGVyLAo+ICAgICAgfSwKPgo+ICAgICAgLi4uLgo+Cj4gICAg
-ICAuc3RhdGVfY291bnQgPSAyLAo+IH07Cj4KPiBUaGVuIGluIHRoZSBpbml0IGZ1bmN0aW9uIHlv
-dSBpbml0aWFsaXplIHRoZSBzdGF0ZV9jb3VudCBjb25zZXF1ZW50bHk6Cj4KPiBpZiAoUFZSX1ZF
-UihjdXJfY3B1X3NwZWMtPnB2cl92YWx1ZSkgIT0gUFZSX1ZFUl9FNjUwMCkKPiAgICAgIGRydi0+
-c3RhdGVfY291bnQgPSAxOwo+Cj4gVGhlbiB5b3UgY2FuIGtpbGw6Cj4KPiBtYXhfaWRsZV9zdGF0
-ZSwgY3B1aWRsZV9zdGF0ZV90YWJsZSwgZTUwMF9pZGxlX3N0YXRlX3Byb2JlIGFuZAo+IHB3X2lk
-bGVfc3RhdGVzLgo+Cj4+ICsKPj4gK3N0YXRpYyBpbnQgY3B1X2hvdHBsdWdfbm90aWZ5KHN0cnVj
-dCBub3RpZmllcl9ibG9jayAqbiwKPj4gKyAgICAgICAgICAgIHVuc2lnbmVkIGxvbmcgYWN0aW9u
-LCB2b2lkICpoY3B1KQo+PiArewo+PiArICAgIHVuc2lnbmVkIGxvbmcgaG90Y3B1ID0gKHVuc2ln
-bmVkIGxvbmcpaGNwdTsKPj4gKyAgICBzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiA9Cj4+ICsg
-ICAgICAgICAgICBwZXJfY3B1X3B0cihjcHVpZGxlX2RldmljZXMsIGhvdGNwdSk7Cj4+ICsKPj4g
-KyAgICBpZiAoZGV2ICYmIGNwdWlkbGVfZ2V0X2RyaXZlcigpKSB7Cj4+ICsgICAgICAgIHN3aXRj
-aCAoYWN0aW9uKSB7Cj4+ICsgICAgICAgIGNhc2UgQ1BVX09OTElORToKPj4gKyAgICAgICAgY2Fz
-ZSBDUFVfT05MSU5FX0ZST1pFTjoKPj4gKyAgICAgICAgICAgIGNwdWlkbGVfcGF1c2VfYW5kX2xv
-Y2soKTsKPj4gKyAgICAgICAgICAgIGNwdWlkbGVfZW5hYmxlX2RldmljZShkZXYpOwo+PiArICAg
-ICAgICAgICAgY3B1aWRsZV9yZXN1bWVfYW5kX3VubG9jaygpOwo+PiArICAgICAgICAgICAgYnJl
-YWs7Cj4+ICsKPj4gKyAgICAgICAgY2FzZSBDUFVfREVBRDoKPj4gKyAgICAgICAgY2FzZSBDUFVf
-REVBRF9GUk9aRU46Cj4+ICsgICAgICAgICAgICBjcHVpZGxlX3BhdXNlX2FuZF9sb2NrKCk7Cj4+
-ICsgICAgICAgICAgICBjcHVpZGxlX2Rpc2FibGVfZGV2aWNlKGRldik7Cj4+ICsgICAgICAgICAg
-ICBjcHVpZGxlX3Jlc3VtZV9hbmRfdW5sb2NrKCk7Cj4+ICsgICAgICAgICAgICBicmVhazsKPj4g
-Kwo+PiArICAgICAgICBkZWZhdWx0Ogo+PiArICAgICAgICAgICAgcmV0dXJuIE5PVElGWV9ET05F
-Owo+PiArICAgICAgICB9Cj4+ICsgICAgfQo+PiArCj4+ICsgICAgcmV0dXJuIE5PVElGWV9PSzsK
-Pj4gK30KPj4gKwo+PiArc3RhdGljIHN0cnVjdCBub3RpZmllcl9ibG9jayBjcHVfaG90cGx1Z19u
-b3RpZmllciA9IHsKPj4gKyAgICAubm90aWZpZXJfY2FsbCA9IGNwdV9ob3RwbHVnX25vdGlmeSwK
-Pj4gK307Cj4KPiBDYW4geW91IGV4cGxhaW4gd2h5IHRoaXMgaXMgbmVlZGVkID8KPgo+PiArc3Rh
-dGljIHZvaWQgZTUwMF9jcHVpZGxlX2RyaXZlcl9pbml0KHZvaWQpCj4+ICt7Cj4+ICsgICAgaW50
-IGlkbGVfc3RhdGU7Cj4+ICsgICAgc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYgPSAmZTUwMF9p
-ZGxlX2RyaXZlcjsKPgo+IFBhc3MgdGhlIGNwdWlkbGVfZHJpdmVyIGFzIHBhcmFtZXRlciB0byB0
-aGUgZnVuY3Rpb24uCj4KPj4gKwo+PiArICAgIGRydi0+c3RhdGVfY291bnQgPSAwOwo+PiArCj4+
-ICsgICAgZm9yIChpZGxlX3N0YXRlID0gMDsgaWRsZV9zdGF0ZSA8IG1heF9pZGxlX3N0YXRlOyAr
-K2lkbGVfc3RhdGUpIHsKPj4gKyAgICAgICAgaWYgKCFjcHVpZGxlX3N0YXRlX3RhYmxlW2lkbGVf
-c3RhdGVdLmVudGVyKQo+PiArICAgICAgICAgICAgYnJlYWs7Cj4+ICsKPj4gKyAgICAgICAgZHJ2
-LT5zdGF0ZXNbZHJ2LT5zdGF0ZV9jb3VudF0gPSBjcHVpZGxlX3N0YXRlX3RhYmxlW2lkbGVfc3Rh
-dGVdOwo+PiArICAgICAgICBkcnYtPnN0YXRlX2NvdW50Kys7Cj4+ICsgICAgfQo+Cj4gVGhpcyBj
-b2RlIHNob3VsZCBkaXNhcHBlYXIuCj4KPiBBcyB0aGlzIGZ1bmN0aW9uIHdpbGwganVzdCBpbml0
-aWFsaXplIHN0YXRlX2NvdW50LCB5b3UgY2FuIG1vdmUgaXQgaW4KPiBjYWxsZXIgYW5kIGtpbGwg
-dGhpcyBmdW5jdGlvbi4KPgo+PiArfQo+PiArCj4+ICtzdGF0aWMgaW50IGU1MDBfaWRsZV9zdGF0
-ZV9wcm9iZSh2b2lkKQo+PiArewo+PiArICAgIGlmIChjcHVpZGxlX2Rpc2FibGUgIT0gSURMRV9O
-T19PVkVSUklERSkKPj4gKyAgICAgICAgcmV0dXJuIC1FTk9ERVY7Cj4+ICsKPj4gKyAgICBjcHVp
-ZGxlX3N0YXRlX3RhYmxlID0gcHdfaWRsZV9zdGF0ZXM7Cj4+ICsgICAgbWF4X2lkbGVfc3RhdGUg
-PSBBUlJBWV9TSVpFKHB3X2lkbGVfc3RhdGVzKTsKPj4gKwo+PiArICAgIC8qIERpc2FibGUgUFcy
-MCBmZWF0dXJlIGZvciBlNTAwbWMsIGU1NTAwICovCj4+ICsgICAgaWYgKFBWUl9WRVIoY3VyX2Nw
-dV9zcGVjLT5wdnJfdmFsdWUpICE9IFBWUl9WRVJfRTY1MDApCj4+ICsgICAgICAgIGNwdWlkbGVf
-c3RhdGVfdGFibGVbMV0uZW50ZXIgPSBOVUxMOwo+PiArCj4+ICsgICAgaWYgKCFjcHVpZGxlX3N0
-YXRlX3RhYmxlIHx8ICFtYXhfaWRsZV9zdGF0ZSkKPj4gKyAgICAgICAgcmV0dXJuIC1FTk9ERVY7
-Cj4+ICsKPj4gKyAgICByZXR1cm4gMDsKPj4gK30KPgo+IFRoaXMgY29kZSBzaG91bGQgZGlzYXBw
-ZWFyLgo+Cj4+ICtzdGF0aWMgdm9pZCByZXBsYWNlX29yaWdfaWRsZSh2b2lkICpkdW1teSkKPj4g
-K3sKPj4gKyAgICByZXR1cm47Cj4+ICt9Cj4+ICsKPj4gK3N0YXRpYyBpbnQgX19pbml0IGU1MDBf
-aWRsZV9pbml0KHZvaWQpCj4+ICt7Cj4+ICsgICAgc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYg
-PSAmZTUwMF9pZGxlX2RyaXZlcjsKPj4gKyAgICBpbnQgZXJyOwo+PiArCj4+ICsgICAgaWYgKGU1
-MDBfaWRsZV9zdGF0ZV9wcm9iZSgpKQo+PiArICAgICAgICByZXR1cm4gLUVOT0RFVjsKPj4gKwo+
-PiArICAgIGU1MDBfY3B1aWRsZV9kcml2ZXJfaW5pdCgpOwo+PiArICAgIGlmICghZHJ2LT5zdGF0
-ZV9jb3VudCkKPj4gKyAgICAgICAgcmV0dXJuIC1FTk9ERVY7Cj4KPiBObyBuZWVkIG9mIHRoaXMg
-Y2hlY2ssIGJlY2F1c2U6Cj4KPiAxLiB5b3Uga25vdyBob3cgeW91IGluaXRpYWxpemVkIHRoZSBk
-cml2ZXIgKDEgb3IgMiBzdGF0ZXMpCj4gMi4gdGhpcyBpcyBhbHJlYWR5IGJ5IHRoZSBjcHVpZGxl
-IGZyYW1ld29yawo+Cj4+ICsKPj4gKyAgICBlcnIgPSBjcHVpZGxlX3JlZ2lzdGVyKGRydiwgTlVM
-TCk7Cj4+ICsgICAgaWYgKGVycikgewo+PiArICAgICAgICBwcl9lcnIoIlJlZ2lzdGVyIGU1MDAg
-ZmFtaWx5IGNwdWlkbGUgZHJpdmVyIGZhaWxlZC5cbiIpOwo+Cj4gZXh0cmEgY2FycmlhZ2UgcmV0
-dXJuLgo+PiArCj4+ICsgICAgICAgIHJldHVybiBlcnI7Cj4+ICsgICAgfQo+PiArCj4+ICsgICAg
-ZXJyID0gcmVnaXN0ZXJfY3B1X25vdGlmaWVyKCZjcHVfaG90cGx1Z19ub3RpZmllcik7Cj4+ICsg
-ICAgaWYgKGVycikKPj4gKyAgICAgICAgcHJfd2FybigiQ3B1aWRsZSBkcml2ZXI6IHJlZ2lzdGVy
-IGNwdSBub3RpZmllciBmYWlsZWQuXG4iKTsKPj4gKwo+PiArICAgIC8qIFJlcGxhY2UgdGhlIG9y
-aWdpbmFsIHdheSBvZiBpZGxlIGFmdGVyIGNwdWlkbGUgcmVnaXN0ZXJlZC4gKi8KPj4gKyAgICBw
-cGNfbWQucG93ZXJfc2F2ZSA9IGU1MDBfY3B1aWRsZTsKPj4gKyAgICBvbl9lYWNoX2NwdShyZXBs
-YWNlX29yaWdfaWRsZSwgTlVMTCwgMSk7Cj4KPiBXaHkgPwo+Cj4+ICsgICAgcHJfaW5mbygiZTUw
-MF9pZGxlX2RyaXZlciByZWdpc3RlcmVkLlxuIik7Cj4+ICsKPj4gKyAgICByZXR1cm4gMDsKPj4g
-K30KPj4gK2xhdGVfaW5pdGNhbGwoZTUwMF9pZGxlX2luaXQpOwo+Pgo+Cj4gVGhhbmtzCj4KPiAg
-ICAtLSBEYW5pZWwKPgo+CgoKLS0gCiAgPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5v
-cmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFybzog
-IDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6
-Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8u
-b3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZwpodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMt
-ZGV2
+Hi Linus,
+
+Please pull from
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.15-rc1-2
+
+to receive more ACPI and power management updates for v3.15-rc1 with
+top-most commit 7b5c39389c86063e86fe8f2e0093c7197ddfa60a
+
+ Merge branch 'pm-runtime'
+
+on top of commit 0ecfe310f4517d7505599be738158087c165be7c
+
+ Merge branch 'pm-devfreq'
+
+These are commits that were not quite ready when I sent the original pull
+request for 3.15-rc1 several days ago, but they have spent some time in
+linux-next since then and appear to be good to go.  All of them are fixes
+and cleanups.
+
+Specifics:
+
+ - Remaining changes from upstream ACPICA release 20140214 that introduce
+   code to automatically serialize the execution of methods creating any
+   named objects which really cannot be executed in parallel with each
+   other anyway (previously ACPICA attempted to address that by aborting
+   methods upon conflict detection, but that wasn't reliable enough and
+   led to other issues).  From Bob Moore and Lv Zheng.
+
+ - intel_pstate fix to use del_timer_sync() instead of del_timer() in
+   the exit path before freeing the timer structure from Dirk Brandewie
+   (original patch from Thomas Gleixner).
+
+ - cpufreq fix related to system resume from Viresh Kumar.
+
+ - Serialization of frequency transitions in cpufreq that involve
+   PRECHANGE and POSTCHANGE notifications to avoid ordering issues
+   resulting from race conditions.  From Srivatsa S Bhat and Viresh Kumar.
+
+ - Revert of an ACPI processor driver change that was based on a specific
+   interpretation of the ACPI spec which may not be correct (the relevant
+   part of the spec appears to be incomplete).  From Hanjun Guo.
+
+ - Runtime PM core cleanups and documentation updates from Geert Uytterhoeven.
+
+ - PNP core cleanup from Michael Opdenacker.
+
+Thanks!
+
+---------------
+
+Bob Moore (2):
+      ACPICA: Add auto-serialization support for ill-behaved control methods.
+      ACPICA: Ignore sync_level for methods that have been auto-serialized.
+
+Dirk Brandewie (1):
+      intel_pstate: Use del_timer_sync in intel_pstate_cpu_stop
+
+Geert Uytterhoeven (6):
+      PM / Runtime: dev_pm_info.runtime_error is signed
+      PM / Runtime: Split line longer than 80 characters
+      PM / Runtime: Correct documented return values for generic PM callbacks
+      PM / Runtime: GENERIC_SUBSYS_PM_OPS is gone
+      PM / Runtime: s/foo_process_requests/foo_process_next_request/
+      PM / Runtime: Spelling s/competing/completing/
+
+Hanjun Guo (1):
+      Revert "ACPI / processor: Make it possible to get APIC ID via GIC"
+
+Lv Zheng (3):
+      ACPICA: Remove global option to serialize all control methods.
+      ACPICA: Add additional named objects for the auto-serialize method scan.
+      ACPICA: Enable auto-serialization as a default kernel behavior.
+
+Michael Opdenacker (1):
+      PNP: remove deprecated IRQF_DISABLED
+
+Srivatsa S. Bhat (1):
+      cpufreq: Make sure frequency transitions are serialized
+
+Viresh Kumar (3):
+      cpufreq: resume drivers before enabling governors
+      cpufreq: Convert existing drivers to use
+cpufreq_freq_transition_{begin|end}
+      cpufreq: Make cpufreq_notify_transition &
+cpufreq_notify_post_transition static
+
+---------------
+
+ Documentation/kernel-parameters.txt  |  10 ++-
+ Documentation/power/runtime_pm.txt   |  29 +++----
+ drivers/acpi/acpica/acdispat.h       |  13 +--
+ drivers/acpi/acpica/acglobal.h       |  11 +--
+ drivers/acpi/acpica/acinterp.h       |   4 -
+ drivers/acpi/acpica/acobject.h       |   3 +-
+ drivers/acpi/acpica/acstruct.h       |   3 +
+ drivers/acpi/acpica/dsinit.c         |  59 ++++++++++---
+ drivers/acpi/acpica/dsmethod.c       | 156 +++++++++++++++++++++++++++++++++--
+ drivers/acpi/acpica/dswload.c        |  16 ++++
+ drivers/acpi/acpica/exsystem.c       |  12 +--
+ drivers/acpi/acpica/exutils.c        |  80 +++---------------
+ drivers/acpi/acpica/nsinit.c         |   5 +-
+ drivers/acpi/acpica/nsload.c         |   4 +-
+ drivers/acpi/acpica/psloop.c         |   4 +
+ drivers/acpi/acpica/psobject.c       |   7 +-
+ drivers/acpi/osl.c                   |  16 ++--
+ drivers/acpi/processor_core.c        |  27 ------
+ drivers/base/power/generic_ops.c     |   2 +-
+ drivers/cpufreq/cpufreq-nforce2.c    |   4 +-
+ drivers/cpufreq/cpufreq.c            |  61 ++++++++++----
+ drivers/cpufreq/exynos5440-cpufreq.c |   4 +-
+ drivers/cpufreq/gx-suspmod.c         |   4 +-
+ drivers/cpufreq/integrator-cpufreq.c |   4 +-
+ drivers/cpufreq/intel_pstate.c       |   2 +-
+ drivers/cpufreq/longhaul.c           |   4 +-
+ drivers/cpufreq/pcc-cpufreq.c        |   4 +-
+ drivers/cpufreq/powernow-k6.c        |   4 +-
+ drivers/cpufreq/powernow-k7.c        |   4 +-
+ drivers/cpufreq/powernow-k8.c        |   4 +-
+ drivers/cpufreq/s3c24xx-cpufreq.c    |   4 +-
+ drivers/cpufreq/sh-cpufreq.c         |   4 +-
+ drivers/cpufreq/unicore2-cpufreq.c   |   4 +-
+ drivers/pnp/resource.c               |   2 +-
+ include/acpi/acpixf.h                |   2 +-
+ include/linux/cpufreq.h              |  12 ++-
+ 36 files changed, 377 insertions(+), 211 deletions(-)
