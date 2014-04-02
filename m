@@ -1,40 +1,56 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related
- Kconfig options for powernv
-Date: Wed, 02 Apr 2014 22:29:20 +1100
-Message-ID: <1396438160.19206.23.camel@pasglop>
-References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
- <1506880.SKUfks4BOU@vostro.rjw.lan> <1396412608.1394.15.camel@pasglop>
- <1621325.cz1O3Ng49e@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1621325.cz1O3Ng49e@vostro.rjw.lan>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] cpufreq: exynos: Disable on multiplatform build
+Date: Wed,  2 Apr 2014 16:33:47 +0530
+Message-ID: <1396436627-22744-1-git-send-email-sachin.kamat@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, sachin.kamat@linaro.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDE0LTA0LTAyIGF0IDEzOjAzICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiA+IFRvIGJlIGhvbmVzdCBwcmV0dHkgdXJnZW50LiBJdCdzIGEgbmV3IGRyb3AtaW4gZHJp
-dmVyIHNvIGl0Cj4gc2hvdWxkbid0Cj4gPiBiZSBhIGh1Z2UgZGVhbC4KPiA+IAo+ID4gV2UgaGF2
-ZSBkaXN0cm9zIHJlYWxseSB3YWl0aW5nIGZvciB0aGlzIHRvIGhpdCB1cHN0cmVhbS4uLiBCdXQg
-SSdsbAo+ID4gbGVhdmUgdGhhdCBkZWNpc2lvbiB0byB5b3UgOi0pCj4gCj4gV2VsbCwgSSd2ZSBh
-bHJlYWR5IHNlbnQgYSBzZWNvbmQgcHVsbCByZXF1ZXN0IGZvciB0aGlzIG1lcmdlIHdpbmRvdwo+
-IGFuZCBJJ20gbm90IGdvaW5nIHRvIHNlbmQgdGhlIG5leHQgb25lIGJlZm9yZSBpdCBpcyBtZXJn
-ZWQuCj4gCj4gU28sIEkgY2FuIHB1c2ggdGhlbSBuZXh0IHdlZWsgcmVhbGlzdGljYWxseS4KClRo
-YW5rcy4gWW91IGNhbiBibGFtZSBtZSBmb3IgdGhlIGxhdGVuZXNzIGlmIHlvdSB3YW50IChhbmQg
-dGhlIGRlYmF0ZSBhcwp0byB3aGljaCB0cmVlIHNob3VsZCBjYXJyeSB0aGVtIDotKQoKQ2hlZXJz
-LApCZW4uCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-TGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwpo
-dHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
+The current exynos cpufreq drivers are not multiplatform compliant
+and give build errors as they refer to header files from machine
+directory. Work to migrate them to generic cpufreq framework is under
+progress. Till such time disable the build on multiplatform so that
+other multiplatform ready features get tested.
+
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/cpufreq/Kconfig.arm |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 1e2b9db563ec..0e9cce82844b 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -30,7 +30,7 @@ config ARM_EXYNOS_CPUFREQ
+ 
+ config ARM_EXYNOS4210_CPUFREQ
+ 	bool "SAMSUNG EXYNOS4210"
+-	depends on CPU_EXYNOS4210
++	depends on CPU_EXYNOS4210 && !ARCH_MULTIPLATFORM
+ 	default y
+ 	select ARM_EXYNOS_CPUFREQ
+ 	help
+@@ -41,7 +41,7 @@ config ARM_EXYNOS4210_CPUFREQ
+ 
+ config ARM_EXYNOS4X12_CPUFREQ
+ 	bool "SAMSUNG EXYNOS4x12"
+-	depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412)
++	depends on (SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
+ 	default y
+ 	select ARM_EXYNOS_CPUFREQ
+ 	help
+@@ -52,7 +52,7 @@ config ARM_EXYNOS4X12_CPUFREQ
+ 
+ config ARM_EXYNOS5250_CPUFREQ
+ 	bool "SAMSUNG EXYNOS5250"
+-	depends on SOC_EXYNOS5250
++	depends on SOC_EXYNOS5250 && !ARCH_MULTIPLATFORM
+ 	default y
+ 	select ARM_EXYNOS_CPUFREQ
+ 	help
+-- 
+1.7.9.5
+
