@@ -1,117 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-Date: Thu, 03 Apr 2014 08:28:55 +0200
-Message-ID: <533CFFA7.6000907@linaro.org>
-References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
- <533BDA11.9080905@linaro.org>
- <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/1] MAINTAINER: Update email address on thermal
+ subsystem
+Date: Thu, 03 Apr 2014 11:01:28 +0800
+Message-ID: <1396494088.2357.32.camel@rzhang1-mobl4>
+References: <1396389834-52268-1-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>, Scott Wood <scottwood@freescale.com>
-Cc: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:60511 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932701AbaDCDBe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 2 Apr 2014 23:01:34 -0400
+In-Reply-To: <1396389834-52268-1-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-T24gMDQvMDMvMjAxNCAwNToyMCBBTSwgRG9uZ3NoZW5nLldhbmdAZnJlZXNjYWxlLmNvbSB3cm90
-ZToKPiBIaSBEYW5pZWwsCj4KPiBUaGFua3MgZm9yIHlvdXIgcmV2aWV3LiBJIHdpbGwgZml4IHlv
-dXIgY29tbWVudHMuCj4KPiBCVFcsIGZpeCBSYWZhZWwncyBlbWFpbC4gOikKPgo+Pj4gKyNpbmNs
-dWRlIDxsaW51eC9jcHUuaD4KPj4+ICsjaW5jbHVkZSA8bGludXgvY3B1aWRsZS5oPgo+Pj4gKyNp
-bmNsdWRlIDxsaW51eC9pbml0Lmg+Cj4+PiArI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgo+Pj4g
-KyNpbmNsdWRlIDxsaW51eC9ub3RpZmllci5oPgo+Pj4gKwo+Pj4gKyNpbmNsdWRlIDxhc20vY3B1
-dGFibGUuaD4KPj4+ICsjaW5jbHVkZSA8YXNtL21hY2hkZXAuaD4KPj4+ICsjaW5jbHVkZSA8YXNt
-L21wYzg1eHguaD4KPj4+ICsKPj4+ICtzdGF0aWMgdW5zaWduZWQgaW50IG1heF9pZGxlX3N0YXRl
-Owo+Pj4gK3N0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSAqY3B1aWRsZV9zdGF0ZV90YWJsZTsK
-Pj4+ICsKPj4+ICtzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgZTUwMF9pZGxlX2RyaXZlciA9IHsKPj4+
-ICsJLm5hbWUgPSAiZTUwMF9pZGxlIiwKPj4+ICsJLm93bmVyID0gVEhJU19NT0RVTEUsCj4+PiAr
-fTsKPj4+ICsKPj4+ICtzdGF0aWMgdm9pZCBlNTAwX2NwdWlkbGUodm9pZCkKPj4+ICt7Cj4+PiAr
-CWlmIChjcHVpZGxlX2lkbGVfY2FsbCgpKQo+Pj4gKwkJY3B1aWRsZV93YWl0KCk7Cj4+PiArfQo+
-Pgo+PiBOb3BlLCB0aGF0IGhhcyBiZWVuIGNoYW5nZWQuIE5vIG1vcmUgY2FsbCB0byBjcHVpZGxl
-X2lkbGVfY2FsbCBpbiBhIGRyaXZlci4KPj4KPgo+IFRoYW5rcy4KPgo+Pj4gKwo+Pj4gK3N0YXRp
-YyBpbnQgcHcxMF9lbnRlcihzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiwKPj4+ICsJCQlzdHJ1
-Y3QgY3B1aWRsZV9kcml2ZXIgKmRydiwgaW50IGluZGV4KQo+Pj4gK3sKPj4+ICsJY3B1aWRsZV93
-YWl0KCk7Cj4+PiArCXJldHVybiBpbmRleDsKPj4+ICt9Cj4+PiArCj4+PiArI2RlZmluZSBNQVhf
-QklUCTYzCj4+PiArI2RlZmluZSBNSU5fQklUCTEKPj4+ICtleHRlcm4gdTMyIGNwdWlkbGVfZW50
-cnlfYml0Owo+Pj4gK3N0YXRpYyBpbnQgcHcyMF9lbnRlcihzdHJ1Y3QgY3B1aWRsZV9kZXZpY2Ug
-KmRldiwKPj4+ICsJCXN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBpbnQgaW5kZXgpCj4+PiAr
-ewo+Pj4gKwl1MzIgcHcyMF9pZGxlOwo+Pj4gKwl1MzIgZW50cnlfYml0Owo+Pj4gKwlwdzIwX2lk
-bGUgPSBtZnNwcihTUFJOX1BXUk1HVENSMCk7Cj4+PiArCWlmICgocHcyMF9pZGxlICYgUFdSTUdU
-Q1IwX1BXMjBfRU5UKSAhPSBQV1JNR1RDUjBfUFcyMF9FTlQpIHsKPj4+ICsJCXB3MjBfaWRsZSAm
-PSB+UFdSTUdUQ1IwX1BXMjBfRU5UOwo+Pj4gKwkJZW50cnlfYml0ID0gTUFYX0JJVCAtIGNwdWlk
-bGVfZW50cnlfYml0Owo+Pj4gKwkJcHcyMF9pZGxlIHw9IChlbnRyeV9iaXQgPDwgUFdSTUdUQ1Iw
-X1BXMjBfRU5UX1NISUZUKTsKPj4+ICsJCW10c3ByKFNQUk5fUFdSTUdUQ1IwLCBwdzIwX2lkbGUp
-Owo+Pj4gKwl9Cj4+PiArCj4+PiArCWNwdWlkbGVfd2FpdCgpOwo+Pj4gKwo+Pj4gKwlwdzIwX2lk
-bGUgJj0gflBXUk1HVENSMF9QVzIwX0VOVDsKPj4+ICsJcHcyMF9pZGxlIHw9IChNSU5fQklUIDw8
-IFBXUk1HVENSMF9QVzIwX0VOVF9TSElGVCk7Cj4+PiArCW10c3ByKFNQUk5fUFdSTUdUQ1IwLCBw
-dzIwX2lkbGUpOwo+Pj4gKwo+Pj4gKwlyZXR1cm4gaW5kZXg7Cj4+PiArfQo+Pgo+PiBJcyBpdCBw
-b3NzaWJsZSB0byBnaXZlIHNvbWUgY29tbWVudHMgYW5kIGVuY2Fwc3VsYXRlIHRoZSBjb2RlIHdp
-dGgKPj4gZXhwbGljaXQgZnVuY3Rpb24gbmFtZXMgdG8gYmUgaW1wbGVtZW50ZWQgaW4gYW4gYXJj
-aCBzcGVjaWZpYyBkaXJlY3RvcnkKPj4gZmlsZSAoZWcuIHBtLmMpIGFuZCBleHBvcnQgdGhlc2Ug
-ZnVuY3Rpb25zIGluIGEgbGludXgvIGhlYWRlciA/IFdlIHRyeQo+PiB0byBwcmV2ZW50IHRvIGlu
-Y2x1ZGUgYXNtIGlmIHBvc3NpYmxlLgo+Pgo+Cj4gWWVwLCBMb29rcyBiZXR0ZXIuIFRoYW5rcy4K
-Pgo+Pj4gKwo+Pj4gK3N0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSBwd19pZGxlX3N0YXRlc1td
-ID0gewo+Pj4gKwl7Cj4+PiArCQkubmFtZSA9ICJwdzEwIiwKPj4+ICsJCS5kZXNjID0gInB3MTAi
-LAo+Pj4gKwkJLmZsYWdzID0gQ1BVSURMRV9GTEFHX1RJTUVfVkFMSUQsCj4+PiArCQkuZXhpdF9s
-YXRlbmN5ID0gMCwKPj4+ICsJCS50YXJnZXRfcmVzaWRlbmN5ID0gMCwKPj4+ICsJCS5lbnRlciA9
-ICZwdzEwX2VudGVyCj4+PiArCX0sCj4+PiArCj4+PiArCXsKPj4+ICsJCS5uYW1lID0gInB3MjAi
-LAo+Pj4gKwkJLmRlc2MgPSAicHcyMC1jb3JlLWlkbGUiLAo+Pj4gKwkJLmZsYWdzID0gQ1BVSURM
-RV9GTEFHX1RJTUVfVkFMSUQsCj4+PiArCQkuZXhpdF9sYXRlbmN5ID0gMSwKPj4+ICsJCS50YXJn
-ZXRfcmVzaWRlbmN5ID0gNTAsCj4+PiArCQkuZW50ZXIgPSAmcHcyMF9lbnRlcgo+Pj4gKwl9LAo+
-Pj4gK307Cj4+Cj4+IE5vIG5lZWQgdG8gZGVmaW5lIHRoaXMgaW50ZXJtZWRpYXRlIHN0cnVjdHVy
-ZSBoZXJlLCB5b3UgY2FuIGRpcmVjdGx5Cj4+IGluaXRpYWxpemUgdGhlIGNwdWlkbGVfZHJpdmVy
-Ogo+Pgo+Cj4gVGhhbmtzLiA6KQo+Cj4+PiArc3RhdGljIGludCBjcHVfaG90cGx1Z19ub3RpZnko
-c3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuLAo+Pj4gKwkJCXVuc2lnbmVkIGxvbmcgYWN0aW9uLCB2
-b2lkICpoY3B1KQo+Pj4gK3sKPj4+ICsJdW5zaWduZWQgbG9uZyBob3RjcHUgPSAodW5zaWduZWQg
-bG9uZyloY3B1Owo+Pj4gKwlzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiA9Cj4+PiArCQkJcGVy
-X2NwdV9wdHIoY3B1aWRsZV9kZXZpY2VzLCBob3RjcHUpOwo+Pj4gKwo+Pj4gKwlpZiAoZGV2ICYm
-IGNwdWlkbGVfZ2V0X2RyaXZlcigpKSB7Cj4+PiArCQlzd2l0Y2ggKGFjdGlvbikgewo+Pj4gKwkJ
-Y2FzZSBDUFVfT05MSU5FOgo+Pj4gKwkJY2FzZSBDUFVfT05MSU5FX0ZST1pFTjoKPj4+ICsJCQlj
-cHVpZGxlX3BhdXNlX2FuZF9sb2NrKCk7Cj4+PiArCQkJY3B1aWRsZV9lbmFibGVfZGV2aWNlKGRl
-dik7Cj4+PiArCQkJY3B1aWRsZV9yZXN1bWVfYW5kX3VubG9jaygpOwo+Pj4gKwkJCWJyZWFrOwo+
-Pj4gKwo+Pj4gKwkJY2FzZSBDUFVfREVBRDoKPj4+ICsJCWNhc2UgQ1BVX0RFQURfRlJPWkVOOgo+
-Pj4gKwkJCWNwdWlkbGVfcGF1c2VfYW5kX2xvY2soKTsKPj4+ICsJCQljcHVpZGxlX2Rpc2FibGVf
-ZGV2aWNlKGRldik7Cj4+PiArCQkJY3B1aWRsZV9yZXN1bWVfYW5kX3VubG9jaygpOwo+Pj4gKwkJ
-CWJyZWFrOwo+Pj4gKwo+Pj4gKwkJZGVmYXVsdDoKPj4+ICsJCQlyZXR1cm4gTk9USUZZX0RPTkU7
-Cj4+PiArCQl9Cj4+PiArCX0KPj4+ICsKPj4+ICsJcmV0dXJuIE5PVElGWV9PSzsKPj4+ICt9Cj4+
-PiArCj4+PiArc3RhdGljIHN0cnVjdCBub3RpZmllcl9ibG9jayBjcHVfaG90cGx1Z19ub3RpZmll
-ciA9IHsKPj4+ICsJLm5vdGlmaWVyX2NhbGwgPSBjcHVfaG90cGx1Z19ub3RpZnksCj4+PiArfTsK
-Pj4KPj4gQ2FuIHlvdSBleHBsYWluIHdoeSB0aGlzIGlzIG5lZWRlZCA/Cj4+Cj4KPiBJZiBhIGNw
-dSB3aWxsIGJlIHBsdWdnZWQgb3V0L2luLCBXZSBzaG91bGQgYmUgbGV0IENwdWlkbGUga25vdyB0
-byByZW1vdmUKPiBjb3JyZXNwb25kaW5nIHN5cyBpbnRlcmZhY2UgYW5kIGRpc2FibGUvZW5hYmxl
-IGNwdWRpbGUtZ292ZXJub3IgZm9yIGN1cnJlbnQgY3B1LgoKT2ssIHRoaXMgY29kZSBpcyBhIGNv
-cHktcGFzdGUgb2YgdGhlIHBvd2VycycgY3B1aWRsZSBkcml2ZXIuCgpJSVJDLCBJIHBvc3RlZCBh
-IHBhdGNoc2V0IHRvIG1vdmUgdGhpcyBwb3J0aW9uIG9mIGNvZGUgaW4gdGhlIGNwdWlkbGUgCmNv
-bW1vbiBmcmFtZXdvcmsgc29tZSB0aW1lIGFnby4KCkNvdWxkIHlvdSBwbGVhc2UgZ2V0IHJpZCBv
-ZiB0aGlzIHBhcnQgb2YgY29kZSA/CgoKPj4+ICsJZXJyID0gcmVnaXN0ZXJfY3B1X25vdGlmaWVy
-KCZjcHVfaG90cGx1Z19ub3RpZmllcik7Cj4+PiArCWlmIChlcnIpCj4+PiArCQlwcl93YXJuKCJD
-cHVpZGxlIGRyaXZlcjogcmVnaXN0ZXIgY3B1IG5vdGlmaWVyIGZhaWxlZC5cbiIpOwo+Pj4gKwo+
-Pj4gKwkvKiBSZXBsYWNlIHRoZSBvcmlnaW5hbCB3YXkgb2YgaWRsZSBhZnRlciBjcHVpZGxlIHJl
-Z2lzdGVyZWQuICovCj4+PiArCXBwY19tZC5wb3dlcl9zYXZlID0gZTUwMF9jcHVpZGxlOwo+Pj4g
-Kwlvbl9lYWNoX2NwdShyZXBsYWNlX29yaWdfaWRsZSwgTlVMTCwgMSk7Cj4+Cj4+IFdoeSA/Cj4+
-Cj4KPiBJIGNoZWNrZWQgYWdhaW4sIGlmIHdlIHB1dCBjcHVpZGxlX2lkbGVfY2FsbCBpbiBhc20s
-IHRoaXMgaXMgbm90IG5lZWQuCj4KPiBSZWdhcmRzLAo+IC1Eb25nc2hlbmcKPgo+Pj4gKwlwcl9p
-bmZvKCJlNTAwX2lkbGVfZHJpdmVyIHJlZ2lzdGVyZWQuXG4iKTsKPj4+ICsKPj4+ICsJcmV0dXJu
-IDA7Cj4+PiArfQo+Pj4gK2xhdGVfaW5pdGNhbGwoZTUwMF9pZGxlX2luaXQpOwo+Pj4KPj4KPj4g
-VGhhbmtzCj4+Cj4+ICAgICAtLSBEYW5pZWwKPj4KPj4KPj4gLS0KPj4gICAgPGh0dHA6Ly93d3cu
-bGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0g
-U29Dcwo+Pgo+PiBGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3BhZ2Vz
-L0xpbmFybz4gRmFjZWJvb2sgfAo+PiA8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4g
-VHdpdHRlciB8Cj4+IDxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCj4+
-Cj4+Cj4KCgotLSAKICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3Bl
-biBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93
-d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIu
-Y29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJv
-LWJsb2cvPiBCbG9nCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+On Tue, 2014-04-01 at 18:03 -0400, Eduardo Valentin wrote:
+> I am updating my contact email address. For now on, patches
+> on non ACPI / SoC thermal must be sent to edubezval@gmail.com.
+> 
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
+applied.
+
+thanks,
+rui
+> ---
+>  MAINTAINERS | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 79031a5..79d7981 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -8741,7 +8741,7 @@ F:	drivers/media/radio/radio-raremono.c
+>  
+>  THERMAL
+>  M:	Zhang Rui <rui.zhang@intel.com>
+> -M:	Eduardo Valentin <eduardo.valentin@ti.com>
+> +M:	Eduardo Valentin <edubezval@gmail.com>
+>  L:	linux-pm@vger.kernel.org
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+> @@ -8768,7 +8768,7 @@ S:	Maintained
+>  F:	drivers/platform/x86/thinkpad_acpi.c
+>  
+>  TI BANDGAP AND THERMAL DRIVER
+> -M:	Eduardo Valentin <eduardo.valentin@ti.com>
+> +M:	Eduardo Valentin <edubezval@gmail.com>
+>  L:	linux-pm@vger.kernel.org
+>  S:	Supported
+>  F:	drivers/thermal/ti-soc-thermal/
+
+
