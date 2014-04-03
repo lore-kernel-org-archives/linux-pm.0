@@ -1,40 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: loongson2_cpufreq: don't declare local variable
- as static
-Date: Thu, 3 Apr 2014 20:14:24 +0530
-Message-ID: <CAKohpo=HfZMmSsHdNyZ5cGhOAyMHkHNH8bBrOwk7kC9eBK_VbQ@mail.gmail.com>
-References: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
-	<or61mqio12.fsf@livre.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH] cpufreq: at32ap: don't declare local variable as static
+Date: Thu,  3 Apr 2014 20:20:36 +0530
+Message-ID: <e71944f195507806ad06d0fe60615486dd2c1757.1396536599.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f43.google.com ([209.85.219.43]:46908 "EHLO
-	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752146AbaDCOoY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Apr 2014 10:44:24 -0400
-Received: by mail-oa0-f43.google.com with SMTP id eb12so2059876oac.16
-        for <linux-pm@vger.kernel.org>; Thu, 03 Apr 2014 07:44:24 -0700 (PDT)
-In-Reply-To: <or61mqio12.fsf@livre.home>
+Received: from mail-pd0-f173.google.com ([209.85.192.173]:62611 "EHLO
+	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752613AbaDCOuq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Apr 2014 10:50:46 -0400
+Received: by mail-pd0-f173.google.com with SMTP id z10so1895438pdj.4
+        for <linux-pm@vger.kernel.org>; Thu, 03 Apr 2014 07:50:46 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Oliva <oliva@gnu.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, egtvedt@samfundet.no, lxoliva@fsfla.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 3 April 2014 18:10, Alexandre Oliva <oliva@gnu.org> wrote:
-> FWIW, the same mistake is present in at32.
+Earlier commit:
+	commit 652ed95d5fa6074b3c4ea245deb0691f1acb6656
+	Author: Viresh Kumar <viresh.kumar@linaro.org>
+	Date:   Thu Jan 9 20:38:43 2014 +0530
 
-I will check others as well now :)
+	    cpufreq: introduce cpufreq_generic_get() routine
 
-> I've just finished bisecting the cpufreq regression on loongson2.
-> Indeed, this s/static// patch does not fix it, but it was 652ed95d5fa,
-> the patch that moved cpuclk into loongson2_cpufreq_cpu_init, that caused
-> the regression.
->
-> Reverting all the changes to loongson2_cpufreq.c in 652ed95d5fa makes
-> cpufreq work again, as opposed to printing nan% in all cpufreq stats in
-> cpufreq-info's output, and freezing shortly thereafter.
+did some changes to driver and by mistake made cpuclk as a 'static' local
+variable, which wasn't actually required. Fix it.
 
-You must have a look at this:
+Reported-by: Alexandre Oliva <lxoliva@fsfla.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/at32ap-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-https://lkml.org/lkml/2014/4/2/426 : [PATCH] MIPS/loongson2_cpufreq:
-fix CPU clock rate setting
+diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
+index a1c79f5..7b612c8 100644
+--- a/drivers/cpufreq/at32ap-cpufreq.c
++++ b/drivers/cpufreq/at32ap-cpufreq.c
+@@ -52,7 +52,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
+ static int at32_cpufreq_driver_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned int frequency, rate, min_freq;
+-	static struct clk *cpuclk;
++	struct clk *cpuclk;
+ 	int retval, steps, i;
+ 
+ 	if (policy->cpu != 0)
+-- 
+1.7.12.rc2.18.g61b472e
+
