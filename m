@@ -1,39 +1,27 @@
-From: Alexandre Oliva <oliva@gnu.org>
-Subject: Re: [PATCH] cpufreq: loongson2_cpufreq: don't declare local variable as static
-Date: Thu, 03 Apr 2014 09:40:57 -0300
-Message-ID: <or61mqio12.fsf@livre.home>
-References: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
-	(Viresh Kumar's message of "Wed, 2 Apr 2014 10:14:24 +0530")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: "Valerio Vanni" <valerio@valeriovanni.com>
+Subject: Re: serial console does not wake from S3 suspend
+Date: Thu, 3 Apr 2014 13:47:43 +0200
+Message-ID: <lhjhpg$o2e$1@ger.gmane.org>
+References: <lg9etc$9fl$1@ger.gmane.org>
+Return-path: <linux-serial-owner@vger.kernel.org>
+Sender: linux-serial-owner@vger.kernel.org
+To: linux-serial@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Apr  2, 2014, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+"Valerio Vanni" <valerio@valeriovanni.com> ha scritto nel messaggio
+news:lg9etc$9fl$1@ger.gmane.org
+> When resuming from S3 suspend, serial console starts sending garbage
+> on the serial port.
+> Not continuously, it sends garbage only when in local console prints a
+> text.
+> It stops only when the (sending) machine is shut down, or if some
+> text is sent manually (i.e. with "cat txtfile > /dev/ttyS0").
+>
+> Full details are here:
+> https://bugzilla.kernel.org/show_bug.cgi?id=69751
 
-> did some changes to driver and by mistake made cpuclk as a 'static' local
-> variable, which wasn't actually required. Fix it.
+The problem is still present in final 3.14 (and in linux-next).
 
-FWIW, the same mistake is present in at32.
 
-I've just finished bisecting the cpufreq regression on loongson2.
-Indeed, this s/static// patch does not fix it, but it was 652ed95d5fa,
-the patch that moved cpuclk into loongson2_cpufreq_cpu_init, that caused
-the regression.
 
-Reverting all the changes to loongson2_cpufreq.c in 652ed95d5fa makes
-cpufreq work again, as opposed to printing nan% in all cpufreq stats in
-cpufreq-info's output, and freezing shortly thereafter.
-
-> -	static struct clk *cpuclk;
-> +	struct clk *cpuclk;
-
--- 
-Alexandre Oliva, freedom fighter    http://FSFLA.org/~lxoliva/
-You must be the change you wish to see in the world. -- Gandhi
-Be Free! -- http://FSFLA.org/   FSF Latin America board member
-Free Software Evangelist|Red Hat Brasil GNU Toolchain Engineer
