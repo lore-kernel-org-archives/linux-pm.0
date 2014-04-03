@@ -1,83 +1,186 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle
- info
-Date: Tue, 1 Apr 2014 23:14:33 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1404012141580.1571@knanqh.ubzr>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <22904760.5rGZuP5nsx@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v6 10/11] cpuidle: mvebu: Add initial CPU idle support
+ for Armada 370/XP SoC
+Date: Thu, 03 Apr 2014 10:16:56 +0200
+Message-ID: <533D18F8.3040102@linaro.org>
+References: <1396005211-15573-1-git-send-email-gregory.clement@free-electrons.com> <1396005211-15573-11-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <22904760.5rGZuP5nsx@vostro.rjw.lan>
+In-Reply-To: <1396005211-15573-11-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2 Apr 2014, Rafael J. Wysocki wrote:
+On 03/28/2014 12:13 PM, Gregory CLEMENT wrote:
+> Add the wfi, cpu idle and cpu deep idle power states support for the
+> Armada XP SoCs.
+>
+> All the latencies and the power consumption values used at the
+> "armada_370_xp_idle_driver" structure are preliminary and will be
+> modified in the future after running some measurements and analysis.
+>
+> Based on the work of Nadav Haklai.
+>
+> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-> On Friday, March 28, 2014 01:29:53 PM Daniel Lezcano wrote:
-> > The following patchset provides an interaction between cpuidle and the scheduler.
-> > 
-> > The first patch encapsulate the needed information for the scheduler in a
-> > separate cpuidle structure. The second one stores the pointer to this structure
-> > when entering idle. The third one, use this information to take the decision to
-> > find the idlest cpu.
-> > 
-> > After some basic testing with hackbench, it appears there is an improvement for
-> > the performances (small) and for the duration of the idle states (which provides
-> > a better power saving).
-> > 
-> > The measurement has been done with the 'idlestat' tool previously posted in this
-> > mailing list.
-> > 
-> > So the benefit is good for both sides performance and power saving.
-> > 
-> > The select_idle_sibling could be also improved in the same way.
-> 
-> Well, quite frankly, I don't really like this series.  Not the idea itself, but
-> the way it has been implemented.
-> 
-> First off, if the scheduler is to access idle state data stored in struct
-> cpuidle_state, I'm not sure why we need a separate new structure for that?
-> Couldn't there be a pointer to a whole struct cpuidle_state from struct rq
-> instead?  [->exit_latency is the only field that find_idlest_cpu() in your
-> third patch seems to be using anyway.]
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Future patches are likely to use the other fields.  I presume that's why 
-Daniel put them there.
+> ---
+>   drivers/cpuidle/Kconfig.arm             |  5 ++
+>   drivers/cpuidle/Makefile                |  1 +
+>   drivers/cpuidle/cpuidle-armada-370-xp.c | 93 ++++++++++++++++++++++=
++++++++++++
+>   3 files changed, 99 insertions(+)
+>   create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
+>
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
+m
+> index 97ccc31dbdd8..5bb94780d377 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -1,6 +1,11 @@
+>   #
+>   # ARM CPU Idle drivers
+>   #
+> +config ARM_ARMADA_370_XP_CPUIDLE
+> +	bool "CPU Idle Driver for Armada 370/XP family processors"
+> +	depends on ARCH_MVEBU
+> +	help
+> +	  Select this to enable cpuidle on Armada 370/XP processors.
+>
+>   config ARM_BIG_LITTLE_CPUIDLE
+>   	bool "Support for ARM big.LITTLE processors"
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index f71ae1b373c5..9902d052bd87 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -7,6 +7,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D couple=
+d.o
+>
+>   ###################################################################=
+###############
+>   # ARM SoC drivers
+> +obj-$(CONFIG_ARM_ARMADA_370_XP_CPUIDLE) +=3D cpuidle-armada-370-xp.o
+>   obj-$(CONFIG_ARM_BIG_LITTLE_CPUIDLE)	+=3D cpuidle-big_little.o
+>   obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+=3D cpuidle-calxeda.o
+>   obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+=3D cpuidle-kirkwood.o
+> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidl=
+e/cpuidle-armada-370-xp.c
+> new file mode 100644
+> index 000000000000..6b98608c222e
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-armada-370-xp.c
+> @@ -0,0 +1,93 @@
+> +/*
+> + * Marvell Armada 370 and Armada XP SoC cpuidle driver
+> + *
+> + * Copyright (C) 2013 Marvell
 
-But I admit being on the fence about this i.e whether or not we should 
-encapsulate shared fields into a separate structure or not.
+2014 ?
 
-> Second, is accessing the idle state information for all CPUs from find_idlest_cpu()
-> guaranteed to be non-racy?  I mean, what if a CPU changes its state from idle to
-> non-idle while another one is executing find_idlest_cpu()?  In other words,
-> where's the read memory barrier corresponding to the write ones in the modified
-> cpu_idle_call()?  And is the memory barrier actually sufficient?  After all,
-> you need to guarantee that the CPU is still idle after you have evaluated
-> idle_cpu() on it.
+> + *
+> + * Nadav Haklai <nadavh@marvell.com>
+> + * Gregory CLEMENT <gregory.clement@free-electrons.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without any
+> + * warranty of any kind, whether express or implied.
+> + *
+> + * Maintainer: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> + */
+> +
+> +#include <linux/cpu_pm.h>
+> +#include <linux/cpuidle.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/suspend.h>
+> +#include <linux/platform_device.h>
+> +#include <asm/cpuidle.h>
+> +
+> +#define ARMADA_370_XP_MAX_STATES	3
+> +#define ARMADA_370_XP_FLAG_DEEP_IDLE	0x10000
+> +
+> +static int (*armada_370_xp_cpu_suspend)(int);
+> +
+> +static int armada_370_xp_enter_idle(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv,
+> +				int index)
+> +{
+> +	int ret;
+> +	bool deepidle =3D false;
+> +	cpu_pm_enter();
+> +
+> +	if (drv->states[index].flags & ARMADA_370_XP_FLAG_DEEP_IDLE)
+> +		deepidle =3D true;
+> +
+> +	ret =3D armada_370_xp_cpu_suspend(deepidle);
+> +	if (ret)
+> +		return ret;
+> +
+> +	cpu_pm_exit();
+> +
+> +	return index;
+> +}
+> +
+> +static struct cpuidle_driver armada_370_xp_idle_driver =3D {
+> +	.name			=3D "armada_370_xp_idle",
+> +	.states[0]		=3D ARM_CPUIDLE_WFI_STATE,
+> +	.states[1]		=3D {
+> +		.enter			=3D armada_370_xp_enter_idle,
+> +		.exit_latency		=3D 10,
+> +		.power_usage		=3D 50,
+> +		.target_residency	=3D 100,
+> +		.flags			=3D CPUIDLE_FLAG_TIME_VALID,
+> +		.name			=3D "MV CPU IDLE",
+> +		.desc			=3D "CPU power down",
+> +	},
+> +	.states[2]		=3D {
+> +		.enter			=3D armada_370_xp_enter_idle,
+> +		.exit_latency		=3D 100,
+> +		.power_usage		=3D 5,
+> +		.target_residency	=3D 1000,
+> +		.flags			=3D CPUIDLE_FLAG_TIME_VALID |
+> +						ARMADA_370_XP_FLAG_DEEP_IDLE,
+> +		.name			=3D "MV CPU DEEP IDLE",
+> +		.desc			=3D "CPU and L2 Fabric power down",
+> +	},
+> +	.state_count =3D ARMADA_370_XP_MAX_STATES,
+> +};
+> +
+> +static int armada_370_xp_cpuidle_probe(struct platform_device *pdev)
+> +{
+> +
+> +	armada_370_xp_cpu_suspend =3D (void *)(pdev->dev.platform_data);
+> +	return cpuidle_register(&armada_370_xp_idle_driver, NULL);
+> +}
+> +
+> +static struct platform_driver armada_370_xp_cpuidle_plat_driver =3D =
+{
+> +	.driver =3D {
+> +		.name =3D "cpuidle-armada-370-xp",
+> +		.owner =3D THIS_MODULE,
+> +	},
+> +	.probe =3D armada_370_xp_cpuidle_probe,
+> +};
+> +
+> +module_platform_driver(armada_370_xp_cpuidle_plat_driver);
+> +
+> +MODULE_AUTHOR("Gregory CLEMENT <gregory.clement@free-electrons.com>"=
+);
+> +MODULE_DESCRIPTION("Armada 370/XP cpu idle driver");
+> +MODULE_LICENSE("GPL");
+>
 
-I don't think avoiding races is all that important here.  Right now any 
-idle CPU is selected regardless of its idle state depth.  What this 
-patch should do (considering my previous comments on it) is to favor the 
-idle CPU with the shalloest idle state.  If once in a while the 
-selection is wrong because of a race we're not going to make it any 
-worse than what we have today without this patch.
 
-That probably means the write barrier could potentially be omitted as 
-well if it implies a useless cost.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-We need to ensure the cpuidle data structure is not going away (e.g. 
-cpuidle driver module removal) while another CPU looks at it though.  
-The timing would have to be awfully weird for this to happen but still.
-
-> Finally, is really the heuristics used by find_idlest_cpu() to select the "idlest"
-> CPU the best one?  What about deeper vs shallower idle states, for example?
-
-That's what this patch series is about.  The find_idlest_cpu code should 
-look for the idle CPU with the shallowest idle state, or the one with 
-the smallest load.  In this context "find_idlest_cpu" might become a 
-misnomer.
-
-
-Nicolas
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
