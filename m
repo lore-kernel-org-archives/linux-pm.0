@@ -1,76 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle info
-Date: Fri, 04 Apr 2014 13:23:17 +0200
-Message-ID: <1529331.DNJJHlmQ1T@vostro.rjw.lan>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <22904760.5rGZuP5nsx@vostro.rjw.lan> <533BC9B7.3010501@linaro.org>
+Date: Fri, 04 Apr 2014 13:43 +0200
+Message-ID: <1930679.LtC4HPqI3x@vostro.rjw.lan>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <22904760.5rGZuP5nsx@vostro.rjw.lan> <alpine.LFD.2.11.1404012141580.1571@knanqh.ubzr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <533BC9B7.3010501@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55873 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752591AbaDDL1I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Apr 2014 07:27:08 -0400
+In-Reply-To: <alpine.LFD.2.11.1404012141580.1571@knanqh.ubzr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-On Wednesday, April 02, 2014 10:26:31 AM Daniel Lezcano wrote:
-> On 04/02/2014 01:01 AM, Rafael J. Wysocki wrote:
+On Tuesday, April 01, 2014 11:14:33 PM Nicolas Pitre wrote:
+> On Wed, 2 Apr 2014, Rafael J. Wysocki wrote:
+> 
 > > On Friday, March 28, 2014 01:29:53 PM Daniel Lezcano wrote:
-> >> The following patchset provides an interaction between cpuidle and the scheduler.
-> >>
-> >> The first patch encapsulate the needed information for the scheduler in a
-> >> separate cpuidle structure. The second one stores the pointer to this structure
-> >> when entering idle. The third one, use this information to take the decision to
-> >> find the idlest cpu.
-> >>
-> >> After some basic testing with hackbench, it appears there is an improvement for
-> >> the performances (small) and for the duration of the idle states (which provides
-> >> a better power saving).
-> >>
-> >> The measurement has been done with the 'idlestat' tool previously posted in this
-> >> mailing list.
-> >>
-> >> So the benefit is good for both sides performance and power saving.
-> >>
-> >> The select_idle_sibling could be also improved in the same way.
-> >
+> > > The following patchset provides an interaction between cpuidle and the scheduler.
+> > > 
+> > > The first patch encapsulate the needed information for the scheduler in a
+> > > separate cpuidle structure. The second one stores the pointer to this structure
+> > > when entering idle. The third one, use this information to take the decision to
+> > > find the idlest cpu.
+> > > 
+> > > After some basic testing with hackbench, it appears there is an improvement for
+> > > the performances (small) and for the duration of the idle states (which provides
+> > > a better power saving).
+> > > 
+> > > The measurement has been done with the 'idlestat' tool previously posted in this
+> > > mailing list.
+> > > 
+> > > So the benefit is good for both sides performance and power saving.
+> > > 
+> > > The select_idle_sibling could be also improved in the same way.
+> > 
 > > Well, quite frankly, I don't really like this series.  Not the idea itself, but
 > > the way it has been implemented.
-> >
+> > 
 > > First off, if the scheduler is to access idle state data stored in struct
 > > cpuidle_state, I'm not sure why we need a separate new structure for that?
 > > Couldn't there be a pointer to a whole struct cpuidle_state from struct rq
 > > instead?  [->exit_latency is the only field that find_idlest_cpu() in your
 > > third patch seems to be using anyway.]
 > 
-> Hi Rafael,
+> Future patches are likely to use the other fields.  I presume that's why 
+> Daniel put them there.
 > 
-> thank you very much for reviewing the patchset.
-> 
-> I created a specific structure to encapsulate the informations needed 
-> for the scheduler and to prevent to export unneeded data. This is purely 
-> for code design. Also it was to separate the idle's energy 
-> characteristics from the cpuidle framework data (flags, name, etc ...).
-> 
-> The exit_latency field is only used in this patchset but the 
-> target_residency will be used also (eg. prevent to wakeup a cpu before 
-> the minimum idle time target residency).
+> But I admit being on the fence about this i.e whether or not we should 
+> encapsulate shared fields into a separate structure or not.
 
-OK
-
-It would be good to add that heuristics upfront so that we can see the full
-picture.
-
-> The power field is ... hum ... not filled by any board (except for 
-> calxeda). Vendors do not like to share this information, so very likely 
-> that would be changed to a normalized value, I don't know.
-
-I'm not sure if that field is ever going to be used by everyone to be honest.
-
-> I agree we can put a pointer to the struct cpuidle_state instead if that 
-> reduce the impact of the patchset.
-
-Yes, it will, in my opinion.
+Quite frankly, I don't see a point in using a separate structure here.
 
 > > Second, is accessing the idle state information for all CPUs from find_idlest_cpu()
 > > guaranteed to be non-racy?  I mean, what if a CPU changes its state from idle to
@@ -80,26 +64,38 @@ Yes, it will, in my opinion.
 > > you need to guarantee that the CPU is still idle after you have evaluated
 > > idle_cpu() on it.
 > 
-> Well, as Nicolas mentioned it in another mail, we can live with races, 
-> the scheduler will take a wrong decision but nothing worth than what we 
+> I don't think avoiding races is all that important here.  Right now any 
+> idle CPU is selected regardless of its idle state depth.  What this 
+> patch should do (considering my previous comments on it) is to favor the 
+> idle CPU with the shalloest idle state.  If once in a while the 
+> selection is wrong because of a race we're not going to make it any 
+> worse than what we have today without this patch.
+> 
+> That probably means the write barrier could potentially be omitted as 
+> well if it implies a useless cost.
 
-I guess you mean "worse"?  I'm not sure about that.
+Yes, the write barriers don't seem to serve any real purpose.
 
-> have today. In any case we want to prevent any lock in the code.
+> We need to ensure the cpuidle data structure is not going away (e.g. 
+> cpuidle driver module removal) while another CPU looks at it though.  
+> The timing would have to be awfully weird for this to happen but still.
 
-Of course. :-)
+Well, I'm not sure if that is a real concern.  Only a couple of drivers try
+to implement module unloading and I guess this isn't tested too much, so
+perhaps we should just make it impossible to unload a cpuidle driver?
 
 > > Finally, is really the heuristics used by find_idlest_cpu() to select the "idlest"
 > > CPU the best one?  What about deeper vs shallower idle states, for example?
 > 
-> I believe it is what is supposed to do the patchset. 1. if the cpu is 
-> idle, pick the shallower, 2. if the cpu is not idle pick the less 
-> loaded. But may be there is something wrong in the routine as pointed 
-> Nico, I have to double check it.
+> That's what this patch series is about.  The find_idlest_cpu code should 
+> look for the idle CPU with the shallowest idle state, or the one with 
+> the smallest load.  In this context "find_idlest_cpu" might become a 
+> misnomer.
 
-Yes, that routine doesn't look entirely correct then.
+Yes, clearly.  It should be called find_best_cpu or something like that.
 
 Thanks!
+
 
 -- 
 I speak only for myself.
