@@ -1,218 +1,207 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC v5 3/3] Documentation: arm: define DT idle states
- bindings
-Date: Fri, 4 Apr 2014 16:56:27 +0100
-Message-ID: <20140404155622.GA4061@e102568-lin.cambridge.arm.com>
-References: <1395142132-20788-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1395142132-20788-4-git-send-email-lorenzo.pieralisi@arm.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose
+ the idlest cpu
+Date: Fri, 4 Apr 2014 12:56:52 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1404041223330.1571@knanqh.ubzr>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr> <1967882.uTPDmTW56C@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1395142132-20788-4-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Disposition: inline
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Sebastian Capella <sebastian.capella@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f44.google.com ([209.85.192.44]:41838 "EHLO
+	mail-qg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036AbaDDQ44 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Apr 2014 12:56:56 -0400
+Received: by mail-qg0-f44.google.com with SMTP id a108so3595653qge.17
+        for <linux-pm@vger.kernel.org>; Fri, 04 Apr 2014 09:56:55 -0700 (PDT)
+In-Reply-To: <1967882.uTPDmTW56C@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-[replying to self, since I have a query]
+On Fri, 4 Apr 2014, Rafael J. Wysocki wrote:
 
-[...]
+> On Tuesday, April 01, 2014 11:05:49 PM Nicolas Pitre wrote:
+> > On Fri, 28 Mar 2014, Daniel Lezcano wrote:
+> > 
+> > > As we know in which idle state the cpu is, we can investigate the following:
+> > > 
+> > > 1. when did the cpu entered the idle state ? the longer the cpu is idle, the
+> > > deeper it is idle
+> > > 2. what exit latency is ? the greater the exit latency is, the deeper it is
+> > > 
+> > > With both information, when all cpus are idle, we can choose the idlest cpu.
+> > > 
+> > > When one cpu is not idle, the old check against weighted load applies.
+> > > 
+> > > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > 
+> > There seems to be some problems with the implementation.
+> > 
+> > > @@ -4336,20 +4337,53 @@ static int
+> > >  find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+> > >  {
+> > >  	unsigned long load, min_load = ULONG_MAX;
+> > > -	int idlest = -1;
+> > > +	unsigned int min_exit_latency = UINT_MAX;
+> > > +	u64 idle_stamp, min_idle_stamp = ULONG_MAX;
+> > 
+> > I don't think you really meant to assign an u64 variable with ULONG_MAX.
+> > You probably want ULLONG_MAX here.  And probably not in fact (more 
+> > later).
+> > 
+> > > +
+> > > +	struct rq *rq;
+> > > +	struct cpuidle_power *power;
+> > > +
+> > > +	int cpu_idle = -1;
+> > > +	int cpu_busy = -1;
+> > >  	int i;
+> > >  
+> > >  	/* Traverse only the allowed CPUs */
+> > >  	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
+> > > -		load = weighted_cpuload(i);
+> > >  
+> > > -		if (load < min_load || (load == min_load && i == this_cpu)) {
+> > > -			min_load = load;
+> > > -			idlest = i;
+> > > +		if (idle_cpu(i)) {
+> > > +
+> > > +			rq = cpu_rq(i);
+> > > +			power = rq->power;
+> > > +			idle_stamp = rq->idle_stamp;
+> > > +
+> > > +			/* The cpu is idle since a shorter time */
+> > > +			if (idle_stamp < min_idle_stamp) {
+> > > +				min_idle_stamp = idle_stamp;
+> > > +				cpu_idle = i;
+> > > +				continue;
+> > 
+> > Don't you want the highest time stamp in order to select the most 
+> > recently idled CPU?  Favoring the CPU which has been idle the longest 
+> > makes little sense.
+> 
+> It may make sense if the hardware can auto-promote CPUs to deeper C-states.
 
-> +===========================================
-> +4 - Examples
-> +===========================================
-> +
-> +Example 1 (ARM 64-bit, 16-cpu system):
-> +
-> +pd_clusters: power-domain-clusters@80002000 {
-> +       compatible = "arm,power-controller";
-> +       reg = <0x0 0x80002000 0x0 0x1000>;
-> +       #power-domain-cells = <1>;
-> +       #address-cells = <2>;
-> +       #size-cells = <2>;
-> +
-> +       pd_cores: power-domain-cores@80000000 {
-> +               compatible = "arm,power-controller";
-> +               reg = <0x0 0x80000000 0x0 0x1000>;
-> +               #power-domain-cells = <1>;
-> +       };
-> +};
-> +
-> +cpus {
-> +       #size-cells = <0>;
-> +       #address-cells = <2>;
-> +
-> +       idle-states {
-> +               entry-method = "arm,psci-cpu-suspend";
-> +
-> +               CLUSTER_RETENTION_0: cluster-retention-0 {
-> +                       compatible = "arm,idle-state";
-> +                       index = <2>;
-> +                       logic-state-retained;
-> +                       cache-state-retained;
-> +                       entry-method-param = <0x1010000>;
-> +                       entry-latency-us = <50>;
-> +                       exit-latency-us = <100>;
-> +                       min-residency-us = <250>;
-> +                       power-domains = <&pd_clusters 0>;
-> +                       CPU_RETENTION_0_0: cpu-retention-0 {
-> +                               compatible = "arm,idle-state";
-> +                               index = <0>;
-> +                               cache-state-retained;
-> +                               entry-method-param = <0x0010000>;
-> +                               entry-latency-us = <20>;
-> +                               exit-latency-us = <40>;
-> +                               min-residency-us = <30>;
-> +                               power-domains = <&pd_cores 0>,
-> +                                               <&pd_cores 1>,
-> +                                               <&pd_cores 2>,
-> +                                               <&pd_cores 3>,
-> +                                               <&pd_cores 4>,
-> +                                               <&pd_cores 5>,
-> +                                               <&pd_cores 6>,
-> +                                               <&pd_cores 7>;
-> +                       };
-> +               };
-> +
-> +               CLUSTER_SLEEP_0: cluster-sleep-0 {
-> +                       compatible = "arm,idle-state";
-> +                       index = <3>;
-> +                       entry-method-param = <0x1010000>;
-> +                       entry-latency-us = <600>;
-> +                       exit-latency-us = <1100>;
-> +                       min-residency-us = <2700>;
-> +                       power-domains = <&pd_clusters 0>;
-> +                       CPU_SLEEP_0_0: cpu-sleep-0 {
-> +                               /* cpu sleep */
-> +                               compatible = "arm,idle-state";
-> +                               index = <1>;
-> +                               entry-method-param = <0x0010000>;
-> +                               entry-latency-us = <250>;
-> +                               exit-latency-us = <500>;
-> +                               min-residency-us = <350>;
-> +                               power-domains = <&pd_cores 0>,
-> +                                               <&pd_cores 1>,
-> +                                               <&pd_cores 2>,
-> +                                               <&pd_cores 3>,
-> +                                               <&pd_cores 4>,
-> +                                               <&pd_cores 5>,
-> +                                               <&pd_cores 6>,
-> +                                               <&pd_cores 7>;
-> +                       };
-> +               };
+If so the promotion will happen over time, no?  What I'm saying here is 
+that those CPUs which have been idle longer should not be favored when 
+it is time to select a CPU for a task to run. More recently idled CPUs 
+are more likely to be in a shallower C-state.
 
-I noticed while developing the CPUidle generic driver, that by using this
-representation I might end up requiring duplicated states.
+> Something like that happens with package C-states that are only entered when
+> all cores have entered a particular core C-state already.  In that case the
+> probability of the core being in a deeper state grows with time.
 
-For instance, a cluster-retention state and a cluster-sleep state might
-want to have cpu-sleep state as substate, and this would require an
-idle state node duplication.
+Exactly what I'm saying.
 
-I think it is better to have a single flat (and ordered...that would
-kill two birds with one stone) list of nodes in the idle-states node and
-every state might have a list of phandles to subnodes (substates), something
-like the following example.
+Also here it is worth remembering that the scheduling domains should 
+represent those packages that share common C-states at a higher level.  
+The scheduler can then be told not to balance across domains if it 
+doesn't need to in order to favor the conditions for those package 
+C-states to be used.  That's what the task packing patch series is 
+about, independently of this one.
 
-This simplifies parsing  and I think it solves the last issue I
-came across (the need for duplicate states - in the bindings below,
-CPU_SLEEP_0 is a substate of both CLUSTER_RETENTION_0 and
-CLUSTER_SLEEP_0, through phandles).
+> That said I would just drop this heuristics for the time being.  If auto-promotion
+> is disregarded, it doesn't really matter how much time the given CPU has been idle
+> except for one case: When the target residency of its idle state hasn't been
+> reached yet, waking up the CPU may be a mistake (depending on how deep the state
+> actually is, but for the majority of drivers in the tree we don't have any measure
+> of that).
 
-Thoughts very appreciated, thanks.
+There is one reason for considering the time a CPU has been idle, 
+assuming equivalent C-state, and that is cache snooping.  The longer a 
+CPU is idle, the more likely its cache content will have been claimed 
+and migrated by other CPUs.  Of course that doesn't make much difference 
+for deeper C-states where the cache isn't preserved, but it is probably 
+simpler and cheaper to apply this heuristic in all cases.
 
-Lorenzo
+> > > +			}
+> > > +
+> > > +			/* The cpu is idle but the exit_latency is shorter */
+> > > +			if (power && power->exit_latency < min_exit_latency) {
+> > > +				min_exit_latency = power->exit_latency;
+> > > +				cpu_idle = i;
+> > > +				continue;
+> > > +			}
+> > 
+> > I think this is wrong.  This gives priority to CPUs which have been idle 
+> > for a (longer... although this should have been) shorter period of time 
+> > over those with a shallower idle state.  I think this should rather be:
+> > 
+> > 	if (power && power->exit_latency < min_exit_latency) {
+> > 		min_exit_latency = power->exit_latency;
+> > 		latest_idle_stamp = idle_stamp;
+> > 	       	cpu_idle = i;
+> > 	} else if ((!power || power->exit_latency == min_exit_latency) &&
+> > 		   idle_stamp > latest_idle_stamp) {
+> > 		latest_idle_stamp = idle_stamp;
+> > 		cpu_idle = i;
+> > 	}
+> > 
+> > So the CPU with the shallowest idle state is selected in priority, and 
+> > if many CPUs are in the same state then the time stamp is used to 
+> > select the most recent one.
+> 
+> Again, if auto-promotion is disregarded, it doesn't really matter which of them
+> is woken up.
 
-idle-states {
-       entry-method = "arm,psci-cpu-suspend";
+If it doesn't matter then it doesn't hurt.  But in some cases it 
+matters.
 
-	CPU_RETENTION_0: cpu-retention-0 {
-		       compatible = "arm,idle-state";
-		       cache-state-retained;
-		       entry-method-param = <0x0010000>;
-		       entry-latency-us = <20>;
-		       exit-latency-us = <40>;
-		       min-residency-us = <30>;
-		       power-domains = <&pd_cores 0>,
-				       <&pd_cores 1>,
-				       <&pd_cores 2>,
-				       <&pd_cores 3>,
-	};
+> > Whenever a shallower idle state is found then the latest_idle_stamp is reset for 
+> > that state even if it is further in the past.
+> > 
+> > > +		} else {
+> > > +
+> > > +			load = weighted_cpuload(i);
+> > > +
+> > > +			if (load < min_load ||
+> > > +			    (load == min_load && i == this_cpu)) {
+> > > +				min_load = load;
+> > > +				cpu_busy = i;
+> > > +				continue;
+> > > +			}
+> > >  		}
+> > 
+> > I think this is wrong to do an if-else based on idle_cpu() here.  What 
+> > if a CPU is heavily loaded, but for some reason it happens to be idle at 
+> > this very moment?  With your patch it could be selected as an idle CPU 
+> > while it would be discarded as being too busy otherwise.
+> 
+> But see below ->
+> 
+> > It is important to determine both cpu_busy and cpu_idle for all CPUs.
+> > 
+> > And cpu_busy is a bad name for this.  Something like least_loaded would 
+> > be more self explanatory.  Same thing for cpu_idle which could be 
+> > clearer if named shalloest_idle.
+> 
+> shallowest_idle?
 
-	CPU_SLEEP_0: cpu-sleep-0 {
-		       /* cpu sleep */
-		       compatible = "arm,idle-state";
-		       entry-method-param = <0x0010000>;
-		       entry-latency-us = <250>;
-		       exit-latency-us = <500>;
-		       min-residency-us = <350>;
-		       power-domains = <&pd_cores 0>,
-				       <&pd_cores 1>,
-				       <&pd_cores 2>,
-				       <&pd_cores 3>,
-	};
+Something that means the CPU with the shallowest C-state.  Using 
+"cpu_idle" for this variable doesn't cut it.
 
-	CPU_SLEEP_1: cpu-sleep-1 {
-		       /* cpu sleep */
-		       compatible = "arm,idle-state";
-		       entry-method-param = <0x0010000>;
-		       entry-latency-us = <250>;
-		       exit-latency-us = <500>;
-		       min-residency-us = <350>;
-				       <&pd_cores 4>,
-				       <&pd_cores 5>,
-				       <&pd_cores 6>,
-				       <&pd_cores 7>;
-	};
+> > > -	return idlest;
+> > > +	/* Busy cpus are considered less idle than idle cpus ;) */
+> > > +	return cpu_busy != -1 ? cpu_busy : cpu_idle;
+> > 
+> > And finally it is a policy decision whether or not we want to return 
+> > least_loaded over shallowest_idle e.g do we pack tasks on non idle CPUs 
+> > first or not.  That in itself needs more investigation.  To keep the 
+> > existing policy unchanged for now the above condition should have its 
+> > variables swapped.
+> 
+> Which means that once we've find the first idle CPU, it is not useful to
+> continue computing least_loaded, because we will return the idle one anyway,
+> right?
 
-	CLUSTER_RETENTION_0: cluster-retention-0 {
-	       compatible = "arm,idle-state";
-	       logic-state-retained;
-	       cache-state-retained;
-	       entry-method-param = <0x1010000>;
-	       entry-latency-us = <50>;
-	       exit-latency-us = <800>;
-	       min-residency-us = <2400>;
-	       power-domains = <&pd_clusters 0>;
-	       substates = <&CPU_SLEEP_0>;
-	};
+Good point.  Currently, that should be the case.
 
-	CLUSTER_SLEEP_0: cluster-sleep-0 {
-	       compatible = "arm,idle-state";
-	       entry-method-param = <0x1010000>;
-	       entry-latency-us = <600>;
-	       exit-latency-us = <1100>;
-	       min-residency-us = <2700>;
-	       power-domains = <&pd_clusters 0>;
-	       substates = <&CPU_SLEEP_0>;
-	};
+Eventually we'll want to put new tasks on lightly loaded CPUs instead of 
+waking up a fully idle CPU in order to favor deeper C-states. But that 
+requires a patch series of its own just to determine how loaded a CPU is 
+and how much work it can still accommodate before being oversubscribed, 
+etc.
 
-	CLUSTER_SLEEP_1: cluster-sleep-1 {
-	       compatible = "arm,idle-state";
-	       entry-method-param = <0x1010000>;
-	       entry-latency-us = <600>;
-	       exit-latency-us = <1100>;
-	       min-residency-us = <2700>;
-	       power-domains = <&pd_clusters 1>;
-	       substates = <&CPU_SLEEP_1>;
-	};
 
-	SYSTEM_SLEEP_0: system-sleep-0 {
-	       compatible = "arm,idle-state";
-	       entry-method-param = <0x2010000>;
-	       entry-latency-us = <6000>;
-	       exit-latency-us = <10000>;
-	       min-residency-us = <30000>;
-	       power-domains = <&pd_system 0>;
-	       substates = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
-	};
-};
+Nicolas
