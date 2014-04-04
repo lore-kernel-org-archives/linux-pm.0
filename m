@@ -1,40 +1,87 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v5 3/3] Documentation: arm: define DT idle states
- bindings
-Date: Fri, 4 Apr 2014 15:01:06 -0700
-Message-ID: <CADHgK6v-t69qLYTcez+m2rE1tRecVsKfgwDdPrNPJOKPbmL-nA@mail.gmail.com>
-References: <1395142132-20788-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1395142132-20788-4-git-send-email-lorenzo.pieralisi@arm.com>
- <20140404155622.GA4061@e102568-lin.cambridge.arm.com>
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle
+ support
+Date: Fri, 4 Apr 2014 18:00:30 -0500
+Message-ID: <1396652430.32034.122.camel@snotra.buserror.net>
+References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140404155622.GA4061@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bl2lp0207.outbound.protection.outlook.com ([207.46.163.207]:8370
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752155AbaDDXA5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Apr 2014 19:00:57 -0400
+In-Reply-To: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Cc: daniel.lezcano@linaro.org, rjw@sisk.pl, leoli@freescale.com, jason.jin@freescale.com, chenhui.zhao@freescale.com, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-Hi Lorenzo,
+On Tue, 2014-04-01 at 16:33 +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> Add cpuidle support for e500 family, using cpuidle framework to
+> manage various low power modes. The new implementation will remain
+> compatible with original idle method.
+> 
+> I have done test about power consumption and latency. Cpuidle framework
+> will make CPU response time faster than original method, but power
+> consumption is higher than original method.
+> 
+> Power consumption:
+> The original method, power consumption is 10.51202 (W).
+> The cpuidle framework, power consumption is 10.5311 (W).
+> 
+> Latency:
+> The original method, avg latency is 6782 (us).
+> The cpuidle framework, avg latency is 6482 (us).
+> 
+> Initially, this supports PW10, PW20 and subsequent patches will support
+> DOZE/NAP and PH10, PH20.
 
-I like this :)
+Have you tried tuning the timebase bit for the original method, to match
+what you're doing in cpuidle and/or for general optimization?
 
-I was going to suggest linking the tree upside down (starting with the
-leaves such that walking the list takes you back to the root node
-(system sleep), but I don't think it matters as long as the
-relationship is established (which this does).  I tend to think of
-these states in that order, starting from the leaf(shallowest idle
-state) and working back to the root(system sleep) since it provides a
-simple linear view of the sleep states from the cpu perspective, yet
-keeps the heirarchy.
+Do you get similar results for a variety of workloads?
 
-Sebastian
+> +static struct cpuidle_state pw_idle_states[] = {
+> +	{
+> +		.name = "pw10",
+> +		.desc = "pw10",
+> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+> +		.exit_latency = 0,
+> +		.target_residency = 0,
+> +		.enter = &pw10_enter
+> +	},
+> +
+> +	{
+> +		.name = "pw20",
+> +		.desc = "pw20-core-idle",
+> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+> +		.exit_latency = 1,
+> +		.target_residency = 50,
+> +		.enter = &pw20_enter
+> +	},
+> +};
+
+Where did exit_latency and target_residency come from?  It looks rather
+different from the ~1ms delay before entering PW20 with the original
+method.
+
+Though, I'd have expected a shorter PW20 delay to have longer wake
+latency, due to entering the lower power state more often...
+
+> +static void replace_orig_idle(void *dummy)
+> +{
+> +	return;
+> +}
+
+Why?  If you're using this as some sort of barrier to ensure that all
+CPUs have done something before continuing, explain that, along with why
+it matters.
+
+-Scott
+
+
