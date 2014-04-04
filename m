@@ -1,101 +1,168 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle info
-Date: Fri, 04 Apr 2014 13:43 +0200
-Message-ID: <1930679.LtC4HPqI3x@vostro.rjw.lan>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <22904760.5rGZuP5nsx@vostro.rjw.lan> <alpine.LFD.2.11.1404012141580.1571@knanqh.ubzr>
+Subject: Re: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose the idlest cpu
+Date: Fri, 04 Apr 2014 13:57:52 +0200
+Message-ID: <1967882.uTPDmTW56C@vostro.rjw.lan>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55873 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56263 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752591AbaDDL1I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Apr 2014 07:27:08 -0400
-In-Reply-To: <alpine.LFD.2.11.1404012141580.1571@knanqh.ubzr>
+	with SMTP id S1752688AbaDDLmA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Apr 2014 07:42:00 -0400
+In-Reply-To: <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Nicolas Pitre <nicolas.pitre@linaro.org>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-On Tuesday, April 01, 2014 11:14:33 PM Nicolas Pitre wrote:
-> On Wed, 2 Apr 2014, Rafael J. Wysocki wrote:
+On Tuesday, April 01, 2014 11:05:49 PM Nicolas Pitre wrote:
+> On Fri, 28 Mar 2014, Daniel Lezcano wrote:
 > 
-> > On Friday, March 28, 2014 01:29:53 PM Daniel Lezcano wrote:
-> > > The following patchset provides an interaction between cpuidle and the scheduler.
-> > > 
-> > > The first patch encapsulate the needed information for the scheduler in a
-> > > separate cpuidle structure. The second one stores the pointer to this structure
-> > > when entering idle. The third one, use this information to take the decision to
-> > > find the idlest cpu.
-> > > 
-> > > After some basic testing with hackbench, it appears there is an improvement for
-> > > the performances (small) and for the duration of the idle states (which provides
-> > > a better power saving).
-> > > 
-> > > The measurement has been done with the 'idlestat' tool previously posted in this
-> > > mailing list.
-> > > 
-> > > So the benefit is good for both sides performance and power saving.
-> > > 
-> > > The select_idle_sibling could be also improved in the same way.
+> > As we know in which idle state the cpu is, we can investigate the following:
 > > 
-> > Well, quite frankly, I don't really like this series.  Not the idea itself, but
-> > the way it has been implemented.
+> > 1. when did the cpu entered the idle state ? the longer the cpu is idle, the
+> > deeper it is idle
+> > 2. what exit latency is ? the greater the exit latency is, the deeper it is
 > > 
-> > First off, if the scheduler is to access idle state data stored in struct
-> > cpuidle_state, I'm not sure why we need a separate new structure for that?
-> > Couldn't there be a pointer to a whole struct cpuidle_state from struct rq
-> > instead?  [->exit_latency is the only field that find_idlest_cpu() in your
-> > third patch seems to be using anyway.]
+> > With both information, when all cpus are idle, we can choose the idlest cpu.
+> > 
+> > When one cpu is not idle, the old check against weighted load applies.
+> > 
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
-> Future patches are likely to use the other fields.  I presume that's why 
-> Daniel put them there.
+> There seems to be some problems with the implementation.
 > 
-> But I admit being on the fence about this i.e whether or not we should 
-> encapsulate shared fields into a separate structure or not.
-
-Quite frankly, I don't see a point in using a separate structure here.
-
-> > Second, is accessing the idle state information for all CPUs from find_idlest_cpu()
-> > guaranteed to be non-racy?  I mean, what if a CPU changes its state from idle to
-> > non-idle while another one is executing find_idlest_cpu()?  In other words,
-> > where's the read memory barrier corresponding to the write ones in the modified
-> > cpu_idle_call()?  And is the memory barrier actually sufficient?  After all,
-> > you need to guarantee that the CPU is still idle after you have evaluated
-> > idle_cpu() on it.
+> > @@ -4336,20 +4337,53 @@ static int
+> >  find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+> >  {
+> >  	unsigned long load, min_load = ULONG_MAX;
+> > -	int idlest = -1;
+> > +	unsigned int min_exit_latency = UINT_MAX;
+> > +	u64 idle_stamp, min_idle_stamp = ULONG_MAX;
 > 
-> I don't think avoiding races is all that important here.  Right now any 
-> idle CPU is selected regardless of its idle state depth.  What this 
-> patch should do (considering my previous comments on it) is to favor the 
-> idle CPU with the shalloest idle state.  If once in a while the 
-> selection is wrong because of a race we're not going to make it any 
-> worse than what we have today without this patch.
+> I don't think you really meant to assign an u64 variable with ULONG_MAX.
+> You probably want ULLONG_MAX here.  And probably not in fact (more 
+> later).
 > 
-> That probably means the write barrier could potentially be omitted as 
-> well if it implies a useless cost.
-
-Yes, the write barriers don't seem to serve any real purpose.
-
-> We need to ensure the cpuidle data structure is not going away (e.g. 
-> cpuidle driver module removal) while another CPU looks at it though.  
-> The timing would have to be awfully weird for this to happen but still.
-
-Well, I'm not sure if that is a real concern.  Only a couple of drivers try
-to implement module unloading and I guess this isn't tested too much, so
-perhaps we should just make it impossible to unload a cpuidle driver?
-
-> > Finally, is really the heuristics used by find_idlest_cpu() to select the "idlest"
-> > CPU the best one?  What about deeper vs shallower idle states, for example?
+> > +
+> > +	struct rq *rq;
+> > +	struct cpuidle_power *power;
+> > +
+> > +	int cpu_idle = -1;
+> > +	int cpu_busy = -1;
+> >  	int i;
+> >  
+> >  	/* Traverse only the allowed CPUs */
+> >  	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
+> > -		load = weighted_cpuload(i);
+> >  
+> > -		if (load < min_load || (load == min_load && i == this_cpu)) {
+> > -			min_load = load;
+> > -			idlest = i;
+> > +		if (idle_cpu(i)) {
+> > +
+> > +			rq = cpu_rq(i);
+> > +			power = rq->power;
+> > +			idle_stamp = rq->idle_stamp;
+> > +
+> > +			/* The cpu is idle since a shorter time */
+> > +			if (idle_stamp < min_idle_stamp) {
+> > +				min_idle_stamp = idle_stamp;
+> > +				cpu_idle = i;
+> > +				continue;
 > 
-> That's what this patch series is about.  The find_idlest_cpu code should 
-> look for the idle CPU with the shallowest idle state, or the one with 
-> the smallest load.  In this context "find_idlest_cpu" might become a 
-> misnomer.
+> Don't you want the highest time stamp in order to select the most 
+> recently idled CPU?  Favoring the CPU which has been idle the longest 
+> makes little sense.
 
-Yes, clearly.  It should be called find_best_cpu or something like that.
+It may make sense if the hardware can auto-promote CPUs to deeper C-states.
 
-Thanks!
+Something like that happens with package C-states that are only entered when
+all cores have entered a particular core C-state already.  In that case the
+probability of the core being in a deeper state grows with time.
 
+That said I would just drop this heuristics for the time being.  If auto-promotion
+is disregarded, it doesn't really matter how much time the given CPU has been idle
+except for one case: When the target residency of its idle state hasn't been
+reached yet, waking up the CPU may be a mistake (depending on how deep the state
+actually is, but for the majority of drivers in the tree we don't have any measure
+of that).
+
+> > +			}
+> > +
+> > +			/* The cpu is idle but the exit_latency is shorter */
+> > +			if (power && power->exit_latency < min_exit_latency) {
+> > +				min_exit_latency = power->exit_latency;
+> > +				cpu_idle = i;
+> > +				continue;
+> > +			}
+> 
+> I think this is wrong.  This gives priority to CPUs which have been idle 
+> for a (longer... although this should have been) shorter period of time 
+> over those with a shallower idle state.  I think this should rather be:
+> 
+> 	if (power && power->exit_latency < min_exit_latency) {
+> 		min_exit_latency = power->exit_latency;
+> 		latest_idle_stamp = idle_stamp;
+> 	       	cpu_idle = i;
+> 	} else if ((!power || power->exit_latency == min_exit_latency) &&
+> 		   idle_stamp > latest_idle_stamp) {
+> 		latest_idle_stamp = idle_stamp;
+> 		cpu_idle = i;
+> 	}
+> 
+> So the CPU with the shallowest idle state is selected in priority, and 
+> if many CPUs are in the same state then the time stamp is used to 
+> select the most recent one.
+
+Again, if auto-promotion is disregarded, it doesn't really matter which of them
+is woken up.
+
+> Whenever a shallower idle state is found then the latest_idle_stamp is reset for 
+> that state even if it is further in the past.
+> 
+> > +		} else {
+> > +
+> > +			load = weighted_cpuload(i);
+> > +
+> > +			if (load < min_load ||
+> > +			    (load == min_load && i == this_cpu)) {
+> > +				min_load = load;
+> > +				cpu_busy = i;
+> > +				continue;
+> > +			}
+> >  		}
+> 
+> I think this is wrong to do an if-else based on idle_cpu() here.  What 
+> if a CPU is heavily loaded, but for some reason it happens to be idle at 
+> this very moment?  With your patch it could be selected as an idle CPU 
+> while it would be discarded as being too busy otherwise.
+
+But see below ->
+
+> It is important to determine both cpu_busy and cpu_idle for all CPUs.
+> 
+> And cpu_busy is a bad name for this.  Something like least_loaded would 
+> be more self explanatory.  Same thing for cpu_idle which could be 
+> clearer if named shalloest_idle.
+
+shallowest_idle?
+
+> > -	return idlest;
+> > +	/* Busy cpus are considered less idle than idle cpus ;) */
+> > +	return cpu_busy != -1 ? cpu_busy : cpu_idle;
+> 
+> And finally it is a policy decision whether or not we want to return 
+> least_loaded over shallowest_idle e.g do we pack tasks on non idle CPUs 
+> first or not.  That in itself needs more investigation.  To keep the 
+> existing policy unchanged for now the above condition should have its 
+> variables swapped.
+
+Which means that once we've find the first idle CPU, it is not useful to
+continue computing least_loaded, because we will return the idle one anyway,
+right?
 
 -- 
 I speak only for myself.
