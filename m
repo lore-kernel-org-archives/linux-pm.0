@@ -1,43 +1,218 @@
-From: Alexandre Oliva <oliva@gnu.org>
-Subject: Re: [PATCH] cpufreq: loongson2_cpufreq: don't declare local variable as static
-Date: Fri, 04 Apr 2014 11:34:51 -0300
-Message-ID: <or1txd88ok.fsf@livre.home>
-References: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
-	<or61mqio12.fsf@livre.home>
-	<CAKohpo=HfZMmSsHdNyZ5cGhOAyMHkHNH8bBrOwk7kC9eBK_VbQ@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v5 3/3] Documentation: arm: define DT idle states
+ bindings
+Date: Fri, 4 Apr 2014 16:56:27 +0100
+Message-ID: <20140404155622.GA4061@e102568-lin.cambridge.arm.com>
+References: <1395142132-20788-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1395142132-20788-4-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=HfZMmSsHdNyZ5cGhOAyMHkHNH8bBrOwk7kC9eBK_VbQ@mail.gmail.com>
-	(Viresh Kumar's message of "Thu, 3 Apr 2014 20:14:24 +0530")
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1395142132-20788-4-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Mike Turquette <mturquette@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Hambleton <mark.hambleton@broadcom.com>, Russell King <linux@arm.linux.org.uk>, Sebastian Capella <sebastian.capella@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Dave P Martin <Dave.Martin@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Apr  3, 2014, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+[replying to self, since I have a query]
 
-> On 3 April 2014 18:10, Alexandre Oliva <oliva@gnu.org> wrote:
->> FWIW, the same mistake is present in at32.
+[...]
 
-> I will check others as well now :)
+> +===========================================
+> +4 - Examples
+> +===========================================
+> +
+> +Example 1 (ARM 64-bit, 16-cpu system):
+> +
+> +pd_clusters: power-domain-clusters@80002000 {
+> +       compatible = "arm,power-controller";
+> +       reg = <0x0 0x80002000 0x0 0x1000>;
+> +       #power-domain-cells = <1>;
+> +       #address-cells = <2>;
+> +       #size-cells = <2>;
+> +
+> +       pd_cores: power-domain-cores@80000000 {
+> +               compatible = "arm,power-controller";
+> +               reg = <0x0 0x80000000 0x0 0x1000>;
+> +               #power-domain-cells = <1>;
+> +       };
+> +};
+> +
+> +cpus {
+> +       #size-cells = <0>;
+> +       #address-cells = <2>;
+> +
+> +       idle-states {
+> +               entry-method = "arm,psci-cpu-suspend";
+> +
+> +               CLUSTER_RETENTION_0: cluster-retention-0 {
+> +                       compatible = "arm,idle-state";
+> +                       index = <2>;
+> +                       logic-state-retained;
+> +                       cache-state-retained;
+> +                       entry-method-param = <0x1010000>;
+> +                       entry-latency-us = <50>;
+> +                       exit-latency-us = <100>;
+> +                       min-residency-us = <250>;
+> +                       power-domains = <&pd_clusters 0>;
+> +                       CPU_RETENTION_0_0: cpu-retention-0 {
+> +                               compatible = "arm,idle-state";
+> +                               index = <0>;
+> +                               cache-state-retained;
+> +                               entry-method-param = <0x0010000>;
+> +                               entry-latency-us = <20>;
+> +                               exit-latency-us = <40>;
+> +                               min-residency-us = <30>;
+> +                               power-domains = <&pd_cores 0>,
+> +                                               <&pd_cores 1>,
+> +                                               <&pd_cores 2>,
+> +                                               <&pd_cores 3>,
+> +                                               <&pd_cores 4>,
+> +                                               <&pd_cores 5>,
+> +                                               <&pd_cores 6>,
+> +                                               <&pd_cores 7>;
+> +                       };
+> +               };
+> +
+> +               CLUSTER_SLEEP_0: cluster-sleep-0 {
+> +                       compatible = "arm,idle-state";
+> +                       index = <3>;
+> +                       entry-method-param = <0x1010000>;
+> +                       entry-latency-us = <600>;
+> +                       exit-latency-us = <1100>;
+> +                       min-residency-us = <2700>;
+> +                       power-domains = <&pd_clusters 0>;
+> +                       CPU_SLEEP_0_0: cpu-sleep-0 {
+> +                               /* cpu sleep */
+> +                               compatible = "arm,idle-state";
+> +                               index = <1>;
+> +                               entry-method-param = <0x0010000>;
+> +                               entry-latency-us = <250>;
+> +                               exit-latency-us = <500>;
+> +                               min-residency-us = <350>;
+> +                               power-domains = <&pd_cores 0>,
+> +                                               <&pd_cores 1>,
+> +                                               <&pd_cores 2>,
+> +                                               <&pd_cores 3>,
+> +                                               <&pd_cores 4>,
+> +                                               <&pd_cores 5>,
+> +                                               <&pd_cores 6>,
+> +                                               <&pd_cores 7>;
+> +                       };
+> +               };
 
-Thanks!
+I noticed while developing the CPUidle generic driver, that by using this
+representation I might end up requiring duplicated states.
 
->> Reverting all the changes to loongson2_cpufreq.c in 652ed95d5fa makes
->> cpufreq work again, as opposed to printing nan% in all cpufreq stats in
->> cpufreq-info's output, and freezing shortly thereafter.
+For instance, a cluster-retention state and a cluster-sleep state might
+want to have cpu-sleep state as substate, and this would require an
+idle state node duplication.
 
-> You must have a look at this:
+I think it is better to have a single flat (and ordered...that would
+kill two birds with one stone) list of nodes in the idle-states node and
+every state might have a list of phandles to subnodes (substates), something
+like the following example.
 
-> https://lkml.org/lkml/2014/4/2/426 : [PATCH] MIPS/loongson2_cpufreq:
-> fix CPU clock rate setting
+This simplifies parsing  and I think it solves the last issue I
+came across (the need for duplicate states - in the bindings below,
+CPU_SLEEP_0 is a substate of both CLUSTER_RETENTION_0 and
+CLUSTER_SLEEP_0, through phandles).
 
-Thanks, I confirm that patch is enough to avoid the symptoms I'd
-described.
+Thoughts very appreciated, thanks.
 
--- 
-Alexandre Oliva, freedom fighter    http://FSFLA.org/~lxoliva/
-You must be the change you wish to see in the world. -- Gandhi
-Be Free! -- http://FSFLA.org/   FSF Latin America board member
-Free Software Evangelist|Red Hat Brasil GNU Toolchain Engineer
+Lorenzo
+
+idle-states {
+       entry-method = "arm,psci-cpu-suspend";
+
+	CPU_RETENTION_0: cpu-retention-0 {
+		       compatible = "arm,idle-state";
+		       cache-state-retained;
+		       entry-method-param = <0x0010000>;
+		       entry-latency-us = <20>;
+		       exit-latency-us = <40>;
+		       min-residency-us = <30>;
+		       power-domains = <&pd_cores 0>,
+				       <&pd_cores 1>,
+				       <&pd_cores 2>,
+				       <&pd_cores 3>,
+	};
+
+	CPU_SLEEP_0: cpu-sleep-0 {
+		       /* cpu sleep */
+		       compatible = "arm,idle-state";
+		       entry-method-param = <0x0010000>;
+		       entry-latency-us = <250>;
+		       exit-latency-us = <500>;
+		       min-residency-us = <350>;
+		       power-domains = <&pd_cores 0>,
+				       <&pd_cores 1>,
+				       <&pd_cores 2>,
+				       <&pd_cores 3>,
+	};
+
+	CPU_SLEEP_1: cpu-sleep-1 {
+		       /* cpu sleep */
+		       compatible = "arm,idle-state";
+		       entry-method-param = <0x0010000>;
+		       entry-latency-us = <250>;
+		       exit-latency-us = <500>;
+		       min-residency-us = <350>;
+				       <&pd_cores 4>,
+				       <&pd_cores 5>,
+				       <&pd_cores 6>,
+				       <&pd_cores 7>;
+	};
+
+	CLUSTER_RETENTION_0: cluster-retention-0 {
+	       compatible = "arm,idle-state";
+	       logic-state-retained;
+	       cache-state-retained;
+	       entry-method-param = <0x1010000>;
+	       entry-latency-us = <50>;
+	       exit-latency-us = <800>;
+	       min-residency-us = <2400>;
+	       power-domains = <&pd_clusters 0>;
+	       substates = <&CPU_SLEEP_0>;
+	};
+
+	CLUSTER_SLEEP_0: cluster-sleep-0 {
+	       compatible = "arm,idle-state";
+	       entry-method-param = <0x1010000>;
+	       entry-latency-us = <600>;
+	       exit-latency-us = <1100>;
+	       min-residency-us = <2700>;
+	       power-domains = <&pd_clusters 0>;
+	       substates = <&CPU_SLEEP_0>;
+	};
+
+	CLUSTER_SLEEP_1: cluster-sleep-1 {
+	       compatible = "arm,idle-state";
+	       entry-method-param = <0x1010000>;
+	       entry-latency-us = <600>;
+	       exit-latency-us = <1100>;
+	       min-residency-us = <2700>;
+	       power-domains = <&pd_clusters 1>;
+	       substates = <&CPU_SLEEP_1>;
+	};
+
+	SYSTEM_SLEEP_0: system-sleep-0 {
+	       compatible = "arm,idle-state";
+	       entry-method-param = <0x2010000>;
+	       entry-latency-us = <6000>;
+	       exit-latency-us = <10000>;
+	       min-residency-us = <30000>;
+	       power-domains = <&pd_system 0>;
+	       substates = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
+	};
+};
