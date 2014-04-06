@@ -1,215 +1,122 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose the idlest cpu
-Date: Sat, 05 Apr 2014 04:01:30 +0200
-Message-ID: <1467113.xvylJ8MU4I@vostro.rjw.lan>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <1967882.uTPDmTW56C@vostro.rjw.lan> <alpine.LFD.2.11.1404041223330.1571@knanqh.ubzr>
+From: Manuel Krause <manuelkrause@netscape.net>
+Subject: Re: 3.13.?: Strange / dangerous fan policy...
+Date: Sun, 06 Apr 2014 04:37:03 +0200
+Message-ID: <5340BDCF.6030200@netscape.net>
+References: <531A1EEE.9090101@netscape.net> <531B3E4C.2040105@roeck-us.net> <531BB171.1060208@netscape.net> <2833205.f1U4jaAo8e@vostro.rjw.lan> <531D1A3A.4040500@netscape.net> <531F8735.1010203@netscape.net> <532B4DC5.4010705@netscape.net> <5339FC31.3040601@netscape.net> <5339FE84.80503@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61923 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753309AbaDEBph (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Apr 2014 21:45:37 -0400
-In-Reply-To: <alpine.LFD.2.11.1404041223330.1571@knanqh.ubzr>
+Received: from omr-m06.mx.aol.com ([64.12.143.80]:61795 "EHLO
+	omr-m06.mx.aol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753991AbaDFChd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Apr 2014 22:37:33 -0400
+In-Reply-To: <5339FE84.80503@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
+To: Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, Jean Delvare <jdelvare@suse.de>, lm-sensors@lm-sensors.org
 
-On Friday, April 04, 2014 12:56:52 PM Nicolas Pitre wrote:
-> On Fri, 4 Apr 2014, Rafael J. Wysocki wrote:
-> 
-> > On Tuesday, April 01, 2014 11:05:49 PM Nicolas Pitre wrote:
-> > > On Fri, 28 Mar 2014, Daniel Lezcano wrote:
-> > > 
-> > > > As we know in which idle state the cpu is, we can investigate the following:
-> > > > 
-> > > > 1. when did the cpu entered the idle state ? the longer the cpu is idle, the
-> > > > deeper it is idle
-> > > > 2. what exit latency is ? the greater the exit latency is, the deeper it is
-> > > > 
-> > > > With both information, when all cpus are idle, we can choose the idlest cpu.
-> > > > 
-> > > > When one cpu is not idle, the old check against weighted load applies.
-> > > > 
-> > > > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > > 
-> > > There seems to be some problems with the implementation.
-> > > 
-> > > > @@ -4336,20 +4337,53 @@ static int
-> > > >  find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
-> > > >  {
-> > > >  	unsigned long load, min_load = ULONG_MAX;
-> > > > -	int idlest = -1;
-> > > > +	unsigned int min_exit_latency = UINT_MAX;
-> > > > +	u64 idle_stamp, min_idle_stamp = ULONG_MAX;
-> > > 
-> > > I don't think you really meant to assign an u64 variable with ULONG_MAX.
-> > > You probably want ULLONG_MAX here.  And probably not in fact (more 
-> > > later).
-> > > 
-> > > > +
-> > > > +	struct rq *rq;
-> > > > +	struct cpuidle_power *power;
-> > > > +
-> > > > +	int cpu_idle = -1;
-> > > > +	int cpu_busy = -1;
-> > > >  	int i;
-> > > >  
-> > > >  	/* Traverse only the allowed CPUs */
-> > > >  	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
-> > > > -		load = weighted_cpuload(i);
-> > > >  
-> > > > -		if (load < min_load || (load == min_load && i == this_cpu)) {
-> > > > -			min_load = load;
-> > > > -			idlest = i;
-> > > > +		if (idle_cpu(i)) {
-> > > > +
-> > > > +			rq = cpu_rq(i);
-> > > > +			power = rq->power;
-> > > > +			idle_stamp = rq->idle_stamp;
-> > > > +
-> > > > +			/* The cpu is idle since a shorter time */
-> > > > +			if (idle_stamp < min_idle_stamp) {
-> > > > +				min_idle_stamp = idle_stamp;
-> > > > +				cpu_idle = i;
-> > > > +				continue;
-> > > 
-> > > Don't you want the highest time stamp in order to select the most 
-> > > recently idled CPU?  Favoring the CPU which has been idle the longest 
-> > > makes little sense.
-> > 
-> > It may make sense if the hardware can auto-promote CPUs to deeper C-states.
-> 
-> If so the promotion will happen over time, no?  What I'm saying here is 
-> that those CPUs which have been idle longer should not be favored when 
-> it is time to select a CPU for a task to run. More recently idled CPUs 
-> are more likely to be in a shallower C-state.
-> 
-> > Something like that happens with package C-states that are only entered when
-> > all cores have entered a particular core C-state already.  In that case the
-> > probability of the core being in a deeper state grows with time.
-> 
-> Exactly what I'm saying.
+On 2014-04-01 01:47, Guenter Roeck wrote:
+> On 03/31/2014 04:37 PM, Manuel Krause wrote:
+>> On 2014-03-20 21:21, Manuel Krause wrote:
+>>> On 2014-03-11 22:59, Manuel Krause wrote:
+>>>> On 2014-03-10 02:49, Manuel Krause wrote:
+>>>>> On 2014-03-09 18:58, Rafael J. Wysocki wrote:
+>>>>>> On Sunday, March 09, 2014 01:10:25 AM Manuel Krause wrote:
+>>>>>>> On 2014-03-08 16:59, Guenter Roeck wrote:
+>>>>>>>> On 03/08/2014 03:08 AM, Jean Delvare wrote:
+>>>>>>>>> On Fri, 7 Mar 2014 14:52:30 -0800, Guenter Roeck wrote:
+>>>>>>>>>> On Fri, Mar 07, 2014 at 11:04:29PM +0100, Manuel Krause
+>>>>>>>>>> wrote:
+>>> [SNIP]
+>>>
+>>> Long time no reply from you... Have I overseen a unwritten
+>>> convention? Or were my charts that unusable for your
+>>> analysis/work?
+>>>
+>>> Two days ago, I tried the 3.14.0-rc7-vanilla. And the problem
+>>> persists. "Strange / dangerous fan policy..."
+>>>
+>>> Since kernel 3.13.6 I've managed to 'fix' the potential
+>>> overheating problem by manually issuing a:
+>>> "echo 1 > /sys/class/thermal/cooling_device3/cur_state" *)
+>>> _before_ obviously critical temperatures occur. Remind: This
+>>> particular setting may only work for my system! ...and keeps
+>>> working for 3.14-rc.
+>>>
+>>> In the following I'd like to present you a modified output of my
+>>> /sys/class/thermal, that I've written a script for (for my
+>>> system), that shows the results in the way of
+>>> linux/Documentation/thermal/sysfs-api.txt, point 3:
+>>> {I've uploded the files to pastebin, to not swamp you and the
+>>> lists with so many lines of logs.}
+>>>
+>>> For the last good kernel -- 3.12.14 -- in-use:
+>>>   http://pastebin.com/HL1PNcda
+>>> For my first bad kernel revision 3.13 -- at critical temp:
+>>>   http://pastebin.com/98hgf1a9
+>>> For the last bad kernel -- 3.14.0-rc7 -- at critical temp:
+>>>   http://pastebin.com/MuTwTnjD
+>>> For the last bad kernel -- 3.14.0-rc7 -- after issuing the
+>>>   *) command:
+>>>   http://pastebin.com/2peda54z
+>>>
+>>> Please, have a look at them! And maybe, give me hints on how I
+>>> can help you to further debug this issue, as my manual method
+>>> works but it's annoying.
+>>>
+>>> And, PLEASE CC: ME, as I'm not on the lists. Or lead this
+>>> Email-thread to someone in charge.
+>>>
+>>> Thank you for your work && best regards,
+>>> Manuel Krause
+>>>
+>>
+>> This is still BUG 71711
+>> https://bugzilla.kernel.org/show_bug.cgi?id=71711
+>>
+>> 3.12.15 works very well
+>> 3.13.7 fails
+>> 3.14.0-rc8 fails
+>>
+>
+> Best you can do would really be to bisect the problem.
+> Unfortunately only you (or someone else with an affected system)
+> can do that. Once the culprit is known it would be much easier
+> to get it fixed.
+>
+> To answer your earlier question: I don't think you did anything
+> wrong.
+> I guess everyone else is just as clueless as I am (if not, speak up
+> and help ;-).
+>
+> Guenter
+>
 
-Right, I got that the other way around by mistake.
+I've now bisected two times. From two different kernel origins, 
+just to be sure, as I'm new to this stupid-and-lengthy method, 
+and, to be sure, I haven't given a false positive inbetween due 
+to boredom.
 
-> Also here it is worth remembering that the scheduling domains should 
-> represent those packages that share common C-states at a higher level.  
-> The scheduler can then be told not to balance across domains if it 
-> doesn't need to in order to favor the conditions for those package 
-> C-states to be used.  That's what the task packing patch series is 
-> about, independently of this one.
-> 
-> > That said I would just drop this heuristics for the time being.  If auto-promotion
-> > is disregarded, it doesn't really matter how much time the given CPU has been idle
-> > except for one case: When the target residency of its idle state hasn't been
-> > reached yet, waking up the CPU may be a mistake (depending on how deep the state
-> > actually is, but for the majority of drivers in the tree we don't have any measure
-> > of that).
-> 
-> There is one reason for considering the time a CPU has been idle, 
-> assuming equivalent C-state, and that is cache snooping.  The longer a 
-> CPU is idle, the more likely its cache content will have been claimed 
-> and migrated by other CPUs.  Of course that doesn't make much difference 
-> for deeper C-states where the cache isn't preserved, but it is probably 
-> simpler and cheaper to apply this heuristic in all cases.
+In the end it says each time:
+# git bisect bad | tee -a /var/log/bisect.log
+cc8ef52707341e67a12067d6ead991d56ea017ca is the first bad commit
+commit cc8ef52707341e67a12067d6ead991d56ea017ca
+Author: Zhang Rui <rui.zhang@intel.com>
+Date:   Wed Sep 25 20:39:45 2013 +0800
 
-Yes, that sounds like it might be a reason, but I'd like to see numbers
-confirming that to be honest.
+     ACPI / AC: convert ACPI ac driver to platform bus
 
-> > > > +			}
-> > > > +
-> > > > +			/* The cpu is idle but the exit_latency is shorter */
-> > > > +			if (power && power->exit_latency < min_exit_latency) {
-> > > > +				min_exit_latency = power->exit_latency;
-> > > > +				cpu_idle = i;
-> > > > +				continue;
-> > > > +			}
-> > > 
-> > > I think this is wrong.  This gives priority to CPUs which have been idle 
-> > > for a (longer... although this should have been) shorter period of time 
-> > > over those with a shallower idle state.  I think this should rather be:
-> > > 
-> > > 	if (power && power->exit_latency < min_exit_latency) {
-> > > 		min_exit_latency = power->exit_latency;
-> > > 		latest_idle_stamp = idle_stamp;
-> > > 	       	cpu_idle = i;
-> > > 	} else if ((!power || power->exit_latency == min_exit_latency) &&
-> > > 		   idle_stamp > latest_idle_stamp) {
-> > > 		latest_idle_stamp = idle_stamp;
-> > > 		cpu_idle = i;
-> > > 	}
-> > > 
-> > > So the CPU with the shallowest idle state is selected in priority, and 
-> > > if many CPUs are in the same state then the time stamp is used to 
-> > > select the most recent one.
-> > 
-> > Again, if auto-promotion is disregarded, it doesn't really matter which of them
-> > is woken up.
-> 
-> If it doesn't matter then it doesn't hurt.  But in some cases it 
-> matters.
-> 
-> > > Whenever a shallower idle state is found then the latest_idle_stamp is reset for 
-> > > that state even if it is further in the past.
-> > > 
-> > > > +		} else {
-> > > > +
-> > > > +			load = weighted_cpuload(i);
-> > > > +
-> > > > +			if (load < min_load ||
-> > > > +			    (load == min_load && i == this_cpu)) {
-> > > > +				min_load = load;
-> > > > +				cpu_busy = i;
-> > > > +				continue;
-> > > > +			}
-> > > >  		}
-> > > 
-> > > I think this is wrong to do an if-else based on idle_cpu() here.  What 
-> > > if a CPU is heavily loaded, but for some reason it happens to be idle at 
-> > > this very moment?  With your patch it could be selected as an idle CPU 
-> > > while it would be discarded as being too busy otherwise.
-> > 
-> > But see below ->
-> > 
-> > > It is important to determine both cpu_busy and cpu_idle for all CPUs.
-> > > 
-> > > And cpu_busy is a bad name for this.  Something like least_loaded would 
-> > > be more self explanatory.  Same thing for cpu_idle which could be 
-> > > clearer if named shalloest_idle.
-> > 
-> > shallowest_idle?
-> 
-> Something that means the CPU with the shallowest C-state.  Using 
-> "cpu_idle" for this variable doesn't cut it.
+     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Yes, that was about the typo above only. :-)
+:040000 040000 5a0d397cfcbf53c03390f2805b83754cb7837d84 
+4a2af1454f65d67f1d1a507c08e3b9ef3ffe57e7 M      drivers
 
-> > > > -	return idlest;
-> > > > +	/* Busy cpus are considered less idle than idle cpus ;) */
-> > > > +	return cpu_busy != -1 ? cpu_busy : cpu_idle;
-> > > 
-> > > And finally it is a policy decision whether or not we want to return 
-> > > least_loaded over shallowest_idle e.g do we pack tasks on non idle CPUs 
-> > > first or not.  That in itself needs more investigation.  To keep the 
-> > > existing policy unchanged for now the above condition should have its 
-> > > variables swapped.
-> > 
-> > Which means that once we've find the first idle CPU, it is not useful to
-> > continue computing least_loaded, because we will return the idle one anyway,
-> > right?
-> 
-> Good point.  Currently, that should be the case.
-> 
-> Eventually we'll want to put new tasks on lightly loaded CPUs instead of 
-> waking up a fully idle CPU in order to favor deeper C-states. But that 
-> requires a patch series of its own just to determine how loaded a CPU is 
-> and how much work it can still accommodate before being oversubscribed, 
-> etc.
 
-Wouldn't we need power consumption numbers for that realistically?
+Please help me, on how I can help debug this more, and please 
+also read the newest from
+https://bugzilla.kernel.org/show_bug.cgi?id=71711
 
-Rafael
+Manuel Krause
 
