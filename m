@@ -1,37 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] cpufreq: exynos: Disable on multiplatform build
-Date: Tue, 08 Apr 2014 14:13:57 +0200
-Message-ID: <2111902.UpDYE9Wpx2@vostro.rjw.lan>
-References: <1396436627-22744-1-git-send-email-sachin.kamat@linaro.org> <CAKohpo=wVHubLTyR1oX_HPLrGvrg+YsqO0kbPSKYB9wEyhXb2w@mail.gmail.com> <CAK9yfHxq7P1ngF9c-3P=HefoLrn3oZ9UngRc9DT_6g-xC0OtQg@mail.gmail.com>
+Subject: Re: [PATCH V2 1/4] cpufreq: ia64: don't set .driver_data to index
+Date: Tue, 08 Apr 2014 14:14:59 +0200
+Message-ID: <2698524.P4nWCs3Rzq@vostro.rjw.lan>
+References: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAK9yfHxq7P1ngF9c-3P=HefoLrn3oZ9UngRc9DT_6g-xC0OtQg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59465 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756523AbaDHL7A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Apr 2014 07:59:00 -0400
+In-Reply-To: <57f831e4e1d45b7d81bc4cf4a94946db57360366.1396013927.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, l.majewski@samsung.com
 
-On Thursday, April 03, 2014 05:13:58 PM Sachin Kamat wrote:
-> On 2 April 2014 16:35, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 2 April 2014 16:33, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> >> The current exynos cpufreq drivers are not multiplatform compliant
-> >> and give build errors as they refer to header files from machine
-> >> directory. Work to migrate them to generic cpufreq framework is under
-> >> progress. Till such time disable the build on multiplatform so that
-> >> other multiplatform ready features get tested.
-> >>
-> >> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> >> Cc: Arnd Bergmann <arnd@arndb.de>
+On Friday, March 28, 2014 07:11:44 PM Viresh Kumar wrote:
+> .driver_data field is only required to be filled if drivers want to preserve
+> some data in there which they can use according to the value of .frequency
+> field. But this driver isn't using this field at all, but just setting it equal
+> to the index value. Which isn't required. Fix it.
 > 
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Rafael,
-> Please queue this patch for your upcoming pull request to Linus.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I will, thanks!
+All four queued up for the next pull request, thanks!
+
+> ---
+> V1->V2: No Change
+> 
+> Hi Rafael,
+> 
+> To avoid confusion I am sending all related cpufreq patches again.
+> 
+>  drivers/cpufreq/ia64-acpi-cpufreq.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+> index a22b5d1..beb191b 100644
+> --- a/drivers/cpufreq/ia64-acpi-cpufreq.c
+> +++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+> @@ -275,7 +275,6 @@ acpi_cpufreq_cpu_init (
+>  	/* table init */
+>  	for (i = 0; i <= data->acpi_data.state_count; i++)
+>  	{
+> -		data->freq_table[i].driver_data = i;
+>  		if (i < data->acpi_data.state_count) {
+>  			data->freq_table[i].frequency =
+>  			      data->acpi_data.states[i].core_frequency * 1000;
+> 
 
 -- 
 I speak only for myself.
