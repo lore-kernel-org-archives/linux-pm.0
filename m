@@ -1,83 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: remove sysfs link when a cpu != policy->cpu, is removed
-Date: Tue, 08 Apr 2014 14:09:30 +0200
-Message-ID: <15697860.oRc14V0bPd@vostro.rjw.lan>
-References: <bcb8fe6997d1a8a32e49901e20d428fcff032895.1396930795.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: loongson2_cpufreq: don't declare local variable as static
+Date: Tue, 08 Apr 2014 14:11:59 +0200
+Message-ID: <14553349.srUCJdXInT@vostro.rjw.lan>
+References: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <bcb8fe6997d1a8a32e49901e20d428fcff032895.1396930795.git.viresh.kumar@linaro.org>
-Sender: stable-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <254471b8cee296f860d24368cc467c00b5a07336.1396413826.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: stable@vger.kernel.org, soren.brinkmann@xilinx.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lxoliva@fsfla.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 08, 2014 09:51:28 AM Viresh Kumar wrote:
-> From: viresh kumar <viresh.kumar@linaro.org>
-
-The original commit hash has to be provided here too.
-
-> Commit 42f921a (cpufreq: remove sysfs files for CPUs which failed to
-> come back after resume) tried to do this but missed this piece of code
-> to fix.
+On Wednesday, April 02, 2014 10:14:24 AM Viresh Kumar wrote:
+> Earlier commit:
+> 	commit 652ed95d5fa6074b3c4ea245deb0691f1acb6656
+> 	Author: Viresh Kumar <viresh.kumar@linaro.org>
+> 	Date:   Thu Jan 9 20:38:43 2014 +0530
 > 
-> Currently we are getting this on suspend/resume:
+> 	    cpufreq: introduce cpufreq_generic_get() routine
 > 
-> ------------[ cut here ]------------
-> WARNING: CPU: 0 PID: 877 at fs/sysfs/dir.c:52 sysfs_warn_dup+0x68/0x84()
-> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
-> Modules linked in: brcmfmac brcmutil
-> CPU: 0 PID: 877 Comm: test-rtc-resume Not tainted 3.14.0-rc2-00259-g9398a10cd964 #12
-> [<c0015bac>] (unwind_backtrace) from [<c0011850>] (show_stack+0x10/0x14)
-> [<c0011850>] (show_stack) from [<c056e018>] (dump_stack+0x80/0xcc)
-> [<c056e018>] (dump_stack) from [<c0025e44>] (warn_slowpath_common+0x64/0x88)
-> [<c0025e44>] (warn_slowpath_common) from [<c0025efc>] (warn_slowpath_fmt+0x30/0x40)
-> [<c0025efc>] (warn_slowpath_fmt) from [<c012776c>] (sysfs_warn_dup+0x68/0x84)
-> [<c012776c>] (sysfs_warn_dup) from [<c0127a54>] (sysfs_do_create_link_sd+0xb0/0xb8)
-> [<c0127a54>] (sysfs_do_create_link_sd) from [<c038ef64>] (__cpufreq_add_dev.isra.27+0x2a8/0x814)
-> [<c038ef64>] (__cpufreq_add_dev.isra.27) from [<c038f548>] (cpufreq_cpu_callback+0x70/0x8c)
-> [<c038f548>] (cpufreq_cpu_callback) from [<c0043864>] (notifier_call_chain+0x44/0x84)
-> [<c0043864>] (notifier_call_chain) from [<c0025f60>] (__cpu_notify+0x28/0x44)
-> [<c0025f60>] (__cpu_notify) from [<c00261e8>] (_cpu_up+0xf0/0x140)
-> [<c00261e8>] (_cpu_up) from [<c0569eb8>] (enable_nonboot_cpus+0x68/0xb0)
-> [<c0569eb8>] (enable_nonboot_cpus) from [<c006339c>] (suspend_devices_and_enter+0x198/0x2dc)
-> [<c006339c>] (suspend_devices_and_enter) from [<c0063654>] (pm_suspend+0x174/0x1e8)
-> [<c0063654>] (pm_suspend) from [<c00624e0>] (state_store+0x6c/0xbc)
-> [<c00624e0>] (state_store) from [<c01fc200>] (kobj_attr_store+0x14/0x20)
-> [<c01fc200>] (kobj_attr_store) from [<c0126e50>] (sysfs_kf_write+0x44/0x48)
-> [<c0126e50>] (sysfs_kf_write) from [<c012a274>] (kernfs_fop_write+0xb4/0x14c)
-> [<c012a274>] (kernfs_fop_write) from [<c00d4818>] (vfs_write+0xa8/0x180)
-> [<c00d4818>] (vfs_write) from [<c00d4bb8>] (SyS_write+0x3c/0x70)
-> [<c00d4bb8>] (SyS_write) from [<c000e620>] (ret_fast_syscall+0x0/0x30)
-> ---[ end trace 76969904b614c18f ]---
+> did some changes to driver and by mistake made cpuclk as a 'static' local
+> variable, which wasn't actually required. Fix it.
 > 
-> Fix this by removing sysfs link for cpufreq directory when cpu removed
-> isn't policy->cpu.
-> 
-> Cc: <stable@vger.kernel.org> # 3.13.x
-> Revamps: 42f921a (cpufreq: remove sysfs files for CPUs which failed to come back after resume)
-> Reported-and-tested-by: Stephen Warren <swarren@nvidia.com>
+> Reported-by: Alexandre Oliva <lxoliva@fsfla.org>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Queued up for the next pull request, thanks!
+
 > ---
->  drivers/cpufreq/cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>  drivers/cpufreq/loongson2_cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 99a443e..2aaa6cf 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1223,8 +1223,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->  	up_read(&policy->rwsem);
+> diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+> index a3588d61..f0bc31f 100644
+> --- a/drivers/cpufreq/loongson2_cpufreq.c
+> +++ b/drivers/cpufreq/loongson2_cpufreq.c
+> @@ -69,7 +69,7 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
 >  
->  	if (cpu != policy->cpu) {
-> -		if (!frozen)
-> -			sysfs_remove_link(&dev->kobj, "cpufreq");
-> +		sysfs_remove_link(&dev->kobj, "cpufreq");
->  	} else if (cpus > 1) {
->  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu);
->  		if (new_cpu >= 0) {
+>  static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  {
+> -	static struct clk *cpuclk;
+> +	struct clk *cpuclk;
+>  	int i;
+>  	unsigned long rate;
+>  	int ret;
 > 
 
 -- 
