@@ -1,187 +1,43 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 4/4] PM / Domains: Remove system PM callbacks from gpd_dev_ops
-Date: Fri, 11 Apr 2014 17:26:44 +0200
-Message-ID: <1397230004-22306-5-git-send-email-ulf.hansson@linaro.org>
-References: <1397230004-22306-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f175.google.com ([209.85.217.175]:46250 "EHLO
-	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756751AbaDKP06 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Apr 2014 11:26:58 -0400
-Received: by mail-lb0-f175.google.com with SMTP id w7so3643782lbi.34
-        for <linux-pm@vger.kernel.org>; Fri, 11 Apr 2014 08:26:57 -0700 (PDT)
-In-Reply-To: <1397230004-22306-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Greg KH <greg@kroah.com>
+Subject: Re: [stable request <=3.7] acpi-cpufreq: set current frequency based
+ on target P-State
+Date: Fri, 11 Apr 2014 09:05:43 -0700
+Message-ID: <20140411160543.GC31676@kroah.com>
+References: <20131220081912.GA13684@hobo.Home>
+ <1395785057-28903-1-git-send-email-vlee@twopensource.com>
+ <20140325221803.GA32518@hobo.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140325221803.GA32518@hobo.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: rosslagerwall@gmail.com
+Cc: Vinson Lee <vlee@twopensource.com>, stable@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-There no users of these callbacks, let's simplify the generic power
-domain by removing them.
+On Tue, Mar 25, 2014 at 10:18:03PM +0000, rosslagerwall@gmail.com wrote:
+> On Tue, Mar 25, 2014 at 03:04:16PM -0700, Vinson Lee wrote:
+> > Hi.
+> > 
+> > Please backport upstream commit 8673b83bf2f013379453b4779047bf3c6ae387e4 
+> > "acpi-cpufreq: set current frequency based on target P-State" to stable 
+> > kernels 3.7 and earlier. This patch enables the kernel to control 
+> > P-states on several platforms. Without this patch, the kernel was unable 
+> > to control P-states on the same platforms.
+> > 
+> > The upstream patch cleanly applies to 3.7.
+> > 
+> > A backported patch is needed with the removal of SYSTEM_AMD_MSR_CAPABLE 
+> > for kernels 3.6 and earlier.
+> > 
+> 
+> I seem to recall that the problem was a regression introduced by commit
+> 5a1c0228 (cpufreq: Avoid calling cpufreq driver's target() routine if
+> target_freq == policy->cur) which was introduced in the 3.8 cycle.  Are
+> you sure it is necessary for kernels < 3.8?
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c |   64 ++++++-------------------------------------
- include/linux/pm_domain.h   |    8 ------
- 2 files changed, 8 insertions(+), 64 deletions(-)
+Given the lack of response here, I'm dropping these from my queue.  If
+someone wants them back in, please resend after responding to this...
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 06d86f3..e155023 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -761,46 +761,6 @@ static bool genpd_dev_active_wakeup(struct generic_pm_domain *genpd,
- 	return GENPD_DEV_CALLBACK(genpd, bool, active_wakeup, dev);
- }
- 
--static int genpd_suspend_dev(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, suspend, dev);
--}
--
--static int genpd_suspend_late(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, suspend_late, dev);
--}
--
--static int genpd_resume_early(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, resume_early, dev);
--}
--
--static int genpd_resume_dev(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, resume, dev);
--}
--
--static int genpd_freeze_dev(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, freeze, dev);
--}
--
--static int genpd_freeze_late(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, freeze_late, dev);
--}
--
--static int genpd_thaw_early(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, thaw_early, dev);
--}
--
--static int genpd_thaw_dev(struct generic_pm_domain *genpd, struct device *dev)
--{
--	return GENPD_DEV_CALLBACK(genpd, int, thaw, dev);
--}
--
- /**
-  * pm_genpd_sync_poweroff - Synchronously power off a PM domain and its masters.
-  * @genpd: PM domain to power off, if possible.
-@@ -982,7 +942,7 @@ static int pm_genpd_suspend(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_suspend_dev(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_suspend(dev);
- }
- 
- /**
-@@ -1003,7 +963,7 @@ static int pm_genpd_suspend_late(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_suspend_late(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_suspend_late(dev);
- }
- 
- /**
-@@ -1090,7 +1050,7 @@ static int pm_genpd_resume_early(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_resume_early(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_resume_early(dev);
- }
- 
- /**
-@@ -1111,7 +1071,7 @@ static int pm_genpd_resume(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_resume_dev(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_resume(dev);
- }
- 
- /**
-@@ -1132,7 +1092,7 @@ static int pm_genpd_freeze(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_freeze_dev(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_freeze(dev);
- }
- 
- /**
-@@ -1154,7 +1114,7 @@ static int pm_genpd_freeze_late(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_freeze_late(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_freeze_late(dev);
- }
- 
- /**
-@@ -1218,7 +1178,7 @@ static int pm_genpd_thaw_early(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_thaw_early(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_thaw_early(dev);
- }
- 
- /**
-@@ -1239,7 +1199,7 @@ static int pm_genpd_thaw(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	return genpd->suspend_power_off ? 0 : genpd_thaw_dev(genpd, dev);
-+	return genpd->suspend_power_off ? 0 : pm_generic_thaw(dev);
- }
- 
- /**
-@@ -1947,14 +1907,6 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->domain.ops.complete = pm_genpd_complete;
- 	genpd->dev_ops.save_state = pm_genpd_default_save_state;
- 	genpd->dev_ops.restore_state = pm_genpd_default_restore_state;
--	genpd->dev_ops.suspend = pm_generic_suspend;
--	genpd->dev_ops.suspend_late = pm_generic_suspend_late;
--	genpd->dev_ops.resume_early = pm_generic_resume_early;
--	genpd->dev_ops.resume = pm_generic_resume;
--	genpd->dev_ops.freeze = pm_generic_freeze;
--	genpd->dev_ops.freeze_late = pm_generic_freeze_late;
--	genpd->dev_ops.thaw_early = pm_generic_thaw_early;
--	genpd->dev_ops.thaw = pm_generic_thaw;
- 	mutex_lock(&gpd_list_lock);
- 	list_add(&genpd->gpd_list_node, &gpd_list);
- 	mutex_unlock(&gpd_list_lock);
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 983efdc..87810a7 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -35,14 +35,6 @@ struct gpd_dev_ops {
- 	int (*stop)(struct device *dev);
- 	int (*save_state)(struct device *dev);
- 	int (*restore_state)(struct device *dev);
--	int (*suspend)(struct device *dev);
--	int (*suspend_late)(struct device *dev);
--	int (*resume_early)(struct device *dev);
--	int (*resume)(struct device *dev);
--	int (*freeze)(struct device *dev);
--	int (*freeze_late)(struct device *dev);
--	int (*thaw_early)(struct device *dev);
--	int (*thaw)(struct device *dev);
- 	bool (*active_wakeup)(struct device *dev);
- };
- 
--- 
-1.7.9.5
-
+greg k-h
