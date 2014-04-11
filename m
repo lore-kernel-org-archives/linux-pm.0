@@ -1,43 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: unicore32: replace IS_ERR and PTR_ERR with PTR_ERR_OR_ZERO
-Date: Fri, 11 Apr 2014 13:45:55 +0530
-Message-ID: <CAKohpomaPtvxFXKcCm-pF+xSXrbN6Fg=QvfHSYkzDhWcWX005w@mail.gmail.com>
-References: <1397203178-16780-1-git-send-email-duanj.fnst@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/4] PM / Domains: Remove some code and APIs to simplify genpd
+Date: Fri, 11 Apr 2014 17:26:40 +0200
+Message-ID: <1397230004-22306-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:40680 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755893AbaDKIP4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Apr 2014 04:15:56 -0400
-Received: by mail-oa0-f45.google.com with SMTP id eb12so5740340oac.4
-        for <linux-pm@vger.kernel.org>; Fri, 11 Apr 2014 01:15:56 -0700 (PDT)
-In-Reply-To: <1397203178-16780-1-git-send-email-duanj.fnst@cn.fujitsu.com>
+Received: from mail-la0-f44.google.com ([209.85.215.44]:48573 "EHLO
+	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758686AbaDKP0u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Apr 2014 11:26:50 -0400
+Received: by mail-la0-f44.google.com with SMTP id c6so3649406lan.31
+        for <linux-pm@vger.kernel.org>; Fri, 11 Apr 2014 08:26:48 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Duan Jiong <duanj.fnst@cn.fujitsu.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 11 April 2014 13:29, Duan Jiong <duanj.fnst@cn.fujitsu.com> wrote:
-> This patch fixes coccinelle error regarding usage of IS_ERR and
-> PTR_ERR instead of PTR_ERR_OR_ZERO.
->
-> Signed-off-by: Duan Jiong <duanj.fnst@cn.fujitsu.com>
-> ---
->  drivers/cpufreq/unicore2-cpufreq.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/unicore2-cpufreq.c b/drivers/cpufreq/unicore2-cpufreq.c
-> index 8d045af..6f9dfa8 100644
-> --- a/drivers/cpufreq/unicore2-cpufreq.c
-> +++ b/drivers/cpufreq/unicore2-cpufreq.c
-> @@ -60,9 +60,7 @@ static int __init ucv2_cpu_init(struct cpufreq_policy *policy)
->         policy->max = policy->cpuinfo.max_freq = 1000000;
->         policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
->         policy->clk = clk_get(NULL, "MAIN_CLK");
-> -       if (IS_ERR(policy->clk))
-> -               return PTR_ERR(policy->clk);
-> -       return 0;
-> +       return PTR_ERR_OR_ZERO(policy->clk);
+Some parts in the generic power domain seems just too generic. Simplify the code
+by removing it, which also happens to include two APIs.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+For the SOC specific patch for shmobile, I am seeking an ack since it needs to
+go together with the rest of patches.
+
+Ulf Hansson (4):
+  ARM: shmobile: Ignore callbacks for subsys generic_pm_domain_data
+  PM / Domains: Ignore callbacks for subsys generic_pm_domain_data
+  PM / Domains: Remove the pm_genpd_add|remove_callbacks APIs
+  PM / Domains: Remove system PM callbacks from gpd_dev_ops
+
+ arch/arm/mach-shmobile/pm-rmobile.c |   38 +----
+ drivers/base/power/domain.c         |  285 +----------------------------------
+ include/linux/pm_domain.h           |   28 ----
+ 3 files changed, 11 insertions(+), 340 deletions(-)
+
+-- 
+1.7.9.5
+
