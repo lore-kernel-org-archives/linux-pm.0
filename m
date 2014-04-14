@@ -1,22 +1,65 @@
-From: "John A. John" <john@smeh.com.sa>
-Subject: Send your Name, Address,Mobile No & Country to:-  paydraft@live.com
-Date: Mon, 14 Apr 2014 11:49:41 +0300
-Message-ID: <640051DCC5FD724DA9C8A7381CB12A59C665D99E93@ARIFIMAIL.rawabi.com.sa>
+From: Will Deacon <will.deacon@arm.com>
+Subject: Re: [PATCH v9 1/2] ARM: avoid tracers in soft_restart
+Date: Mon, 14 Apr 2014 11:53:14 +0100
+Message-ID: <20140414105314.GB3530@arm.com>
+References: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
+ <1395178858-27343-2-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.rawabi.com.sa ([212.116.215.195]:2118 "EHLO
-	multitasksvr.arifi.com.sa" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750790AbaDNJ3r convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Apr 2014 05:29:47 -0400
-Content-Language: en-US
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:34237 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751803AbaDNLDF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Apr 2014 07:03:05 -0400
+Content-Disposition: inline
+In-Reply-To: <1395178858-27343-2-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Robin Holt <holt@sgi.com>, Thomas Gleixner <tglx@linutronix.de>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Steven Capper <steve.capper@linaro.org>, Stephen Warren <swarren@nvidia.com>, Tejun Heo <tj@kernel.org>
 
+Hi Sebastian,
 
+On Tue, Mar 18, 2014 at 09:40:57PM +0000, Sebastian Capella wrote:
+> Use of tracers in local_irq_disable is causes abort loops when called
+> with irqs disabled using a temporary stack.  Replace local_irq_disable
+> with raw_local_irq_disable instead to avoid tracers.
 
+Do you have any more information about these aborts? At the time we call
+local_irq_disable, the stack is still intact, so if the issue is simply
+related to having any tracers active at the call_with_stack invocation, we'd
+be better off disabling tracing here altogether.
 
-Your Email ID has been picked for a lump sum of =A35000,000.00 GBP. To =
-claim send your information to Mr. Scott email:- paydraft@live.com
+Will
+
+> Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Robin Holt <holt@sgi.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Konstantin Khlebnikov <k.khlebnikov@samsung.com>
+> Cc: Steven Capper <steve.capper@linaro.org>
+> Cc: Stephen Warren <swarren@nvidia.com>
+> Cc: Tejun Heo <tj@kernel.org>
+> ---
+>  arch/arm/kernel/process.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+> index 92f7b15..f58b723 100644
+> --- a/arch/arm/kernel/process.c
+> +++ b/arch/arm/kernel/process.c
+> @@ -100,7 +100,7 @@ void soft_restart(unsigned long addr)
+>  	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
+>  
+>  	/* Disable interrupts first */
+> -	local_irq_disable();
+> +	raw_local_irq_disable();
+>  	local_fiq_disable();
+>  
+>  	/* Disable the L2 if we're the last man standing. */
+> -- 
+> 1.7.9.5
+> 
+> 
