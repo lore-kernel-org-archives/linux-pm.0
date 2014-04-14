@@ -1,7 +1,7 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v7 02/11] ARM: mvebu: remove the address parameter for ll_set_cpu_coherent
-Date: Mon, 14 Apr 2014 17:10:05 +0200
-Message-ID: <1397488214-20685-3-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v7 11/11] ARM: mvebu: register the cpuidle driver for the Armada XP SoCs
+Date: Mon, 14 Apr 2014 17:10:14 +0200
+Message-ID: <1397488214-20685-12-git-send-email-gregory.clement@free-electrons.com>
 References: <1397488214-20685-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1397488214-20685-1-git-send-email-gregory.clement@free-electrons.com>
@@ -10,118 +10,73 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysoc
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In order to be able to deal with the MMU enabled and the MMU disabled
-cases, the base address of the coherency registers was passed to the
-function. The address by itself was not interesting as it can't change
-for a given SoC, the only thing we need is to have a distinction
-between the physical or the virtual address.
-
-This patch add a check of the MMU bit to choose the accurate address,
-then the calling function doesn't have to pass this information.
+The cpuidle is a platform driver so we register the device just after
+the initialization of the board in an arch_initcall.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mach-mvebu/coherency.c    |  6 +++---
- arch/arm/mach-mvebu/coherency_ll.S | 22 ++++++++++++++++++++--
- arch/arm/mach-mvebu/headsmp.S      |  9 ---------
- 3 files changed, 23 insertions(+), 14 deletions(-)
+ arch/arm/mach-mvebu/pmsu.c | 37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
-diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
-index 4e9d58148ca7..88dd507221fc 100644
---- a/arch/arm/mach-mvebu/coherency.c
-+++ b/arch/arm/mach-mvebu/coherency.c
-@@ -30,7 +30,7 @@
- #include "coherency.h"
+diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+index 9ea2bb44d573..e105e33cf3f0 100644
+--- a/arch/arm/mach-mvebu/pmsu.c
++++ b/arch/arm/mach-mvebu/pmsu.c
+@@ -23,6 +23,7 @@
+ #include <linux/init.h>
+ #include <linux/of_address.h>
+ #include <linux/io.h>
++#include <linux/platform_device.h>
+ #include <linux/smp.h>
+ #include <linux/resource.h>
+ #include <asm/cacheflush.h>
+@@ -65,6 +66,10 @@ static void __iomem *pmsu_mp_base;
+ extern void ll_disable_coherency(void);
+ extern void ll_enable_coherency(void);
  
- unsigned long coherency_phys_base;
--static void __iomem *coherency_base;
-+void __iomem *coherency_base;
- static void __iomem *coherency_cpu_base;
- 
- /* Coherency fabric registers */
-@@ -44,7 +44,7 @@ static struct of_device_id of_coherency_table[] = {
++static struct platform_device armada_xp_cpuidle_device = {
++	.name = "cpuidle-armada-370-xp",
++};
++
+ static struct of_device_id of_pmsu_table[] = {
+ 	{ .compatible = "marvell,armada-370-pmsu", },
+ 	{ .compatible = "marvell,armada-370-xp-pmsu", },
+@@ -281,4 +286,36 @@ static struct notifier_block armada_370_xp_cpu_pm_notifier = {
+ 	.notifier_call = armada_370_xp_cpu_pm_notify,
  };
  
- /* Function defined in coherency_ll.S */
--int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
-+int ll_set_cpu_coherent(unsigned int hw_cpu_id);
- 
- int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
- {
-@@ -54,7 +54,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
- 		return 1;
- 	}
- 
--	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
-+	return ll_set_cpu_coherent(hw_cpu_id);
- }
- 
- static inline void mvebu_hwcc_sync_io_barrier(void)
-diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
-index ee7598fe75db..1f2bcd4b5424 100644
---- a/arch/arm/mach-mvebu/coherency_ll.S
-+++ b/arch/arm/mach-mvebu/coherency_ll.S
-@@ -21,13 +21,27 @@
- #define ARMADA_XP_CFB_CFG_REG_OFFSET 0x4
- 
- #include <asm/assembler.h>
-+#include <asm/cp15.h>
- 
- 	.text
- /*
-- * r0: Coherency fabric base register address
-- * r1: HW CPU id
-+ * r0: HW CPU id
-  */
- ENTRY(ll_set_cpu_coherent)
-+	mrc	p15, 0, r1, c1, c0, 0
-+	tst	r1, #CR_M @ Check MMU bit enabled
-+	bne	1f
++int __init armada_370_xp_cpu_pm_init(void)
++{
++	struct device_node *np;
 +
-+	/* use physical address of the coherency register*/
-+	adr	r0, 3f
-+	ldr	r3, [r0]
-+	ldr	r0, [r0, r3]
-+	b	2f
-+1:
-+	/* use virtual address of the coherency register*/
-+	ldr	r0, =coherency_base
-+	ldr	r0, [r0]
-+2:
- 	/* Create bit by cpu index */
- 	mov	r3, #(1 << 24)
- 	lsl	r1, r3, r1
-@@ -56,3 +70,7 @@ ARM_BE8(rev	r1, r1)
- 	mov	r0, #0
- 	mov	pc, lr
- ENDPROC(ll_set_cpu_coherent)
++	/*
++	 * Check that all the requirements are available to enable
++	 * cpuidle. So far, it is only supported on Armada XP, cpuidle
++	 * needs the coherency fabric and the PMSU enabled
++	 */
 +
-+	.align 2
-+3:
-+	.long	coherency_phys_base - .
-diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
-index 3dd80df428f7..f30bc8d78871 100644
---- a/arch/arm/mach-mvebu/headsmp.S
-+++ b/arch/arm/mach-mvebu/headsmp.S
-@@ -31,11 +31,6 @@
- ENTRY(armada_xp_secondary_startup)
-  ARM_BE8(setend	be )			@ go BE8 if entered LE
- 
--	/* Get coherency fabric base physical address */
--	adr	r0, 1f
--	ldr	r1, [r0]
--	ldr	r0, [r0, r1]
--
- 	/* Read CPU id */
- 	mrc     p15, 0, r1, c0, c0, 5
- 	and     r1, r1, #0xF
-@@ -45,7 +40,3 @@ ENTRY(armada_xp_secondary_startup)
- 	b	secondary_startup
- 
- ENDPROC(armada_xp_secondary_startup)
--
--	.align 2
--1:
--	.long	coherency_phys_base - .
++	if (!of_machine_is_compatible("marvell,armadaxp"))
++		return 0;
++
++	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
++	if (!np)
++		return 0;
++	of_node_put(np);
++
++	np = of_find_matching_node(NULL, of_pmsu_table);
++	if (!np)
++		return 0;
++	of_node_put(np);
++
++	armada_370_xp_pmsu_enable_l2_powerdown_onidle();
++	armada_xp_cpuidle_device.dev.platform_data = armada_370_xp_cpu_suspend;
++	platform_device_register(&armada_xp_cpuidle_device);
++	cpu_pm_register_notifier(&armada_370_xp_cpu_pm_notifier);
++
++	return 0;
++}
++
++arch_initcall(armada_370_xp_cpu_pm_init);
+ early_initcall(armada_370_xp_pmsu_init);
 -- 
 1.8.1.2
