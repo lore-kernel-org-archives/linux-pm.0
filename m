@@ -1,59 +1,73 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: ARM: Zynq: CPUFreq issues in setting frequencies (Was: Re: Help
- about PetaLinux)
-Date: Mon, 14 Apr 2014 10:05:28 -0700
-Message-ID: <671c307a-813b-41d8-9839-09265df019df@AM1EHSMHS005.ehs.local>
-References: <CAOh2x=n5NzPCMiZfWhQ4tFhPE+4TA_tqsOkkeeA87Q0VqECXog@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] PM / devfreq: Use freq_table for available_frequencies
+Date: Mon, 14 Apr 2014 13:51:37 -0700
+Message-ID: <534C4A59.8040507@codeaurora.org>
+References: <1397184881-12223-1-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from am1ehsobe005.messaging.microsoft.com ([213.199.154.208]:51171
-	"EHLO am1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755508AbaDNRFi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Apr 2014 13:05:38 -0400
-Content-Disposition: inline
-In-Reply-To: <CAOh2x=n5NzPCMiZfWhQ4tFhPE+4TA_tqsOkkeeA87Q0VqECXog@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1397184881-12223-1-git-send-email-skannan@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mokhtar Bouain <mokhtar.bouain@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, michal.simek@xilinx.com
 
-On Sat, 2014-04-12 at 02:14PM +0530, Viresh Kumar wrote:
-> On Sat, Apr 12, 2014 at 3:02 AM, Mokhtar Bouain
-> <mokhtar.bouain@gmail.com> wrote:
-> > Hi Viresh,
-> > Please, I have a problem with the PetaLinux and Zynq board.
-> > I posted my probem here :
-> > http://forums.xilinx.com/t5/Embedded-Linux/clk-set-rate-failed-to-s=
-et-i2c0-aper-rate-zc702-board-and/td-p/438352
-> > There is a member of the xilinx forum who you mentioned that you fo=
-und the
-> > solution.
-> > Can you help me please?
->=20
-> Hi Mokhtar,
->=20
-> I don't have a clue what's going on here as I haven't been looking
-> at platform internals at all..
->=20
-> Soren/Michal are probably working on those things, they might help.
->=20
+MyungJoo/Kyungmin,
 
-All the information is actually in the forum and referenced topics
-there...
-Unfortunately, Zynq has plenty inter dependencies between clocks.
-That results in all kinds of limitations, because Zynq's timers are
-driven by their bus clock which is derived from the CPU clock.
-And also other peripherals are clocked by this clock. So, a solution
-needs to take all these dependencies into account, which means that
-certain operations may fail.
+Bump. Can we accept this patch please?
 
-Also, the issue described affects (an outdated version of) our vendor
-tree only. We just merged cpufreq support into mainline. We'll see
-how that goes.
-
-	S=C3=B6ren
+-Saravana
 
 
+On 04/10/2014 07:54 PM, Saravana Kannan wrote:
+> Some devices use freq_table instead of OPP. For those devices, the
+> available_frequencies file shows up empty. Fix that by using freq_table to
+> generate the available_frequencies data when OPP is not present.
+>
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> ---
+>   drivers/devfreq/devfreq.c | 15 +++++++++++----
+>   1 file changed, 11 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 2042ec3..a715d15 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -912,19 +912,26 @@ static ssize_t available_frequencies_show(struct device *d,
+>   	struct devfreq *df = to_devfreq(d);
+>   	struct device *dev = df->dev.parent;
+>   	struct dev_pm_opp *opp;
+> +	unsigned int i = 0, max_state = df->profile->max_state;
+> +	bool use_opp;
+>   	ssize_t count = 0;
+>   	unsigned long freq = 0;
+>
+>   	rcu_read_lock();
+> +	use_opp = dev_pm_opp_get_opp_count(dev) > 0;
+>   	do {
+> -		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+> -		if (IS_ERR(opp))
+> -			break;
+> +		if (use_opp) {
+> +			opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+> +			if (IS_ERR(opp))
+> +				break;
+> +		} else {
+> +			freq = df->profile->freq_table[i++];
+> +		}
+>
+>   		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+>   				   "%lu ", freq);
+>   		freq++;
+> -	} while (1);
+> +	} while (use_opp || (!use_opp && i < max_state));
+>   	rcu_read_unlock();
+>
+>   	/* Truncate the trailing space */
+>
+
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
