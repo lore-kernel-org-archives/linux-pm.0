@@ -1,7 +1,7 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v7 08/11] ARM: mvebu: Add the PMSU related part of the cpu idle functions
-Date: Mon, 14 Apr 2014 17:10:11 +0200
-Message-ID: <1397488214-20685-9-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH v7 02/11] ARM: mvebu: remove the address parameter for ll_set_cpu_coherent
+Date: Mon, 14 Apr 2014 17:10:05 +0200
+Message-ID: <1397488214-20685-3-git-send-email-gregory.clement@free-electrons.com>
 References: <1397488214-20685-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1397488214-20685-1-git-send-email-gregory.clement@free-electrons.com>
@@ -10,177 +10,118 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysoc
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The cpu idle support will need to access to Power Management Service
-Unit. This commit adds the architecture related functions that will be
-used in the idle path of the cpuidle driver.
+In order to be able to deal with the MMU enabled and the MMU disabled
+cases, the base address of the coherency registers was passed to the
+function. The address by itself was not interesting as it can't change
+for a given SoC, the only thing we need is to have a distinction
+between the physical or the virtual address.
+
+This patch add a check of the MMU bit to choose the accurate address,
+then the calling function doesn't have to pass this information.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mach-mvebu/pmsu.c | 132 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 131 insertions(+), 1 deletion(-)
+ arch/arm/mach-mvebu/coherency.c    |  6 +++---
+ arch/arm/mach-mvebu/coherency_ll.S | 22 ++++++++++++++++++++--
+ arch/arm/mach-mvebu/headsmp.S      |  9 ---------
+ 3 files changed, 23 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index db5011f98df3..968c8c02c126 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -24,9 +24,12 @@
- #include <linux/io.h>
- #include <linux/smp.h>
- #include <linux/resource.h>
-+#include <asm/cacheflush.h>
-+#include <asm/cp15.h>
- #include <asm/smp_plat.h>
-+#include <asm/suspend.h>
-+#include <asm/tlbflush.h>
- #include "common.h"
--#include "pmsu.h"
+diff --git a/arch/arm/mach-mvebu/coherency.c b/arch/arm/mach-mvebu/coherency.c
+index 4e9d58148ca7..88dd507221fc 100644
+--- a/arch/arm/mach-mvebu/coherency.c
++++ b/arch/arm/mach-mvebu/coherency.c
+@@ -30,7 +30,7 @@
+ #include "coherency.h"
  
- static void __iomem *pmsu_mp_base;
+ unsigned long coherency_phys_base;
+-static void __iomem *coherency_base;
++void __iomem *coherency_base;
+ static void __iomem *coherency_cpu_base;
  
-@@ -34,12 +37,33 @@ static void __iomem *pmsu_mp_base;
- #define PMSU_REG_SIZE	    0x1000
+ /* Coherency fabric registers */
+@@ -44,7 +44,7 @@ static struct of_device_id of_coherency_table[] = {
+ };
  
- /* PMSU MP registers */
-+#define PMSU_CONTROL_AND_CONFIG(cpu)	    ((cpu * 0x100) + 0x104)
-+#define PMSU_CONTROL_AND_CONFIG_DFS_REQ		BIT(18)
-+#define PMSU_CONTROL_AND_CONFIG_PWDDN_REQ	BIT(16)
-+#define PMSU_CONTROL_AND_CONFIG_L2_PWDDN	BIT(20)
-+
-+#define PMSU_CPU_POWER_DOWN_CONTROL(cpu)    ((cpu * 0x100) + 0x108)
-+
-+#define PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP	BIT(0)
-+
-+#define PMSU_STATUS_AND_MASK(cpu)	    ((cpu * 0x100) + 0x10c)
-+#define PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT	BIT(16)
-+#define PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT	BIT(17)
-+#define PMSU_STATUS_AND_MASK_IRQ_WAKEUP		BIT(20)
-+#define PMSU_STATUS_AND_MASK_FIQ_WAKEUP		BIT(21)
-+#define PMSU_STATUS_AND_MASK_DBG_WAKEUP		BIT(22)
-+#define PMSU_STATUS_AND_MASK_IRQ_MASK		BIT(24)
-+#define PMSU_STATUS_AND_MASK_FIQ_MASK		BIT(25)
-+
- #define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu) ((cpu * 0x100) + 0x124)
+ /* Function defined in coherency_ll.S */
+-int ll_set_cpu_coherent(void __iomem *base_addr, unsigned int hw_cpu_id);
++int ll_set_cpu_coherent(unsigned int hw_cpu_id);
  
- /* PMSU fabric registers */
- #define L2C_NFABRIC_PM_CTL		    0x4
- #define L2C_NFABRIC_PM_CTL_PWR_DOWN		BIT(20)
+ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ {
+@@ -54,7 +54,7 @@ int set_cpu_coherent(unsigned int hw_cpu_id, int smp_group_id)
+ 		return 1;
+ 	}
  
-+extern void ll_disable_coherency(void);
-+extern void ll_enable_coherency(void);
-+
- static struct of_device_id of_pmsu_table[] = {
- 	{ .compatible = "marvell,armada-370-pmsu", },
- 	{ .compatible = "marvell,armada-370-xp-pmsu", },
-@@ -133,4 +157,110 @@ static void armada_370_xp_pmsu_enable_l2_powerdown_onidle(void)
- 	writel(reg, pmsu_mp_base + L2C_NFABRIC_PM_CTL);
+-	return ll_set_cpu_coherent(coherency_base, hw_cpu_id);
++	return ll_set_cpu_coherent(hw_cpu_id);
  }
  
-+static void armada_370_xp_cpu_resume(void)
-+{
-+	asm volatile("bl    ll_add_cpu_to_smp_group\n\t"
-+		     "bl    ll_enable_coherency\n\t"
-+		     "b	    cpu_resume\n\t");
-+}
+ static inline void mvebu_hwcc_sync_io_barrier(void)
+diff --git a/arch/arm/mach-mvebu/coherency_ll.S b/arch/arm/mach-mvebu/coherency_ll.S
+index ee7598fe75db..1f2bcd4b5424 100644
+--- a/arch/arm/mach-mvebu/coherency_ll.S
++++ b/arch/arm/mach-mvebu/coherency_ll.S
+@@ -21,13 +21,27 @@
+ #define ARMADA_XP_CFB_CFG_REG_OFFSET 0x4
+ 
+ #include <asm/assembler.h>
++#include <asm/cp15.h>
+ 
+ 	.text
+ /*
+- * r0: Coherency fabric base register address
+- * r1: HW CPU id
++ * r0: HW CPU id
+  */
+ ENTRY(ll_set_cpu_coherent)
++	mrc	p15, 0, r1, c1, c0, 0
++	tst	r1, #CR_M @ Check MMU bit enabled
++	bne	1f
 +
-+/* No locking is needed because we only access per-CPU registers */
-+void armada_370_xp_pmsu_idle_prepare(bool deepidle)
-+{
-+	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
-+	u32 reg;
++	/* use physical address of the coherency register*/
++	adr	r0, 3f
++	ldr	r3, [r0]
++	ldr	r0, [r0, r3]
++	b	2f
++1:
++	/* use virtual address of the coherency register*/
++	ldr	r0, =coherency_base
++	ldr	r0, [r0]
++2:
+ 	/* Create bit by cpu index */
+ 	mov	r3, #(1 << 24)
+ 	lsl	r1, r3, r1
+@@ -56,3 +70,7 @@ ARM_BE8(rev	r1, r1)
+ 	mov	r0, #0
+ 	mov	pc, lr
+ ENDPROC(ll_set_cpu_coherent)
 +
-+	if (pmsu_mp_base == NULL)
-+		return;
-+
-+	/*
-+	 * Adjust the PMSU configuration to wait for WFI signal, enable
-+	 * IRQ and FIQ as wakeup events, set wait for snoop queue empty
-+	 * indication and mask IRQ and FIQ from CPU
-+	 */
-+	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+	reg |= PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT    |
-+	       PMSU_STATUS_AND_MASK_IRQ_WAKEUP       |
-+	       PMSU_STATUS_AND_MASK_FIQ_WAKEUP       |
-+	       PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT |
-+	       PMSU_STATUS_AND_MASK_IRQ_MASK         |
-+	       PMSU_STATUS_AND_MASK_FIQ_MASK;
-+	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+
-+	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+	/* ask HW to power down the L2 Cache if needed */
-+	if (deepidle)
-+		reg |= PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
-+
-+	/* request power down */
-+	reg |= PMSU_CONTROL_AND_CONFIG_PWDDN_REQ;
-+	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+
-+	/* Disable snoop disable by HW - SW is taking care of it */
-+	reg = readl(pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
-+	reg |= PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP;
-+	writel(reg, pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
-+}
-+
-+static noinline int do_armada_370_xp_cpu_suspend(unsigned long deepidle)
-+{
-+	armada_370_xp_pmsu_idle_prepare(deepidle);
-+
-+	v7_exit_coherency_flush(all);
-+
-+	ll_disable_coherency();
-+
-+	dsb();
-+
-+	wfi();
-+
-+	/* If we are here, wfi failed. As processors run out of
-+	 * coherency for some time, tlbs might be stale, so flush them
-+	 */
-+	local_flush_tlb_all();
-+
-+	ll_enable_coherency();
-+
-+	/* Test the CR_C bit and set it if it was cleared */
-+	asm volatile(
-+	"mrc	p15, 0, %0, c1, c0, 0 \n\t"
-+	"tst	%0, #(1 << 2) \n\t"
-+	"orreq	%0, %0, #(1 << 2) \n\t"
-+	"mcreq	p15, 0, %0, c1, c0, 0 \n\t"
-+	"isb	"
-+	: : "r" (0));
-+
-+	pr_warn("Failed to suspend the system\n");
-+
-+	return 0;
-+}
-+
-+static int armada_370_xp_cpu_suspend(unsigned long deepidle)
-+{
-+	return cpu_suspend(deepidle, do_armada_370_xp_cpu_suspend);
-+}
-+
-+/* No locking is needed because we only access per-CPU registers */
-+static noinline void armada_370_xp_pmsu_idle_restore(void)
-+{
-+	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
-+	u32 reg;
-+
-+	if (pmsu_mp_base == NULL)
-+		return;
-+
-+	/* cancel ask HW to power down the L2 Cache if possible */
-+	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+	reg &= ~PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
-+	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-+
-+	/* cancel Enable wakeup events and mask interrupts */
-+	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_WAKEUP | PMSU_STATUS_AND_MASK_FIQ_WAKEUP);
-+	reg &= ~PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT;
-+	reg &= ~PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT;
-+	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_MASK | PMSU_STATUS_AND_MASK_FIQ_MASK);
-+	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-+}
-+
- early_initcall(armada_370_xp_pmsu_init);
++	.align 2
++3:
++	.long	coherency_phys_base - .
+diff --git a/arch/arm/mach-mvebu/headsmp.S b/arch/arm/mach-mvebu/headsmp.S
+index 3dd80df428f7..f30bc8d78871 100644
+--- a/arch/arm/mach-mvebu/headsmp.S
++++ b/arch/arm/mach-mvebu/headsmp.S
+@@ -31,11 +31,6 @@
+ ENTRY(armada_xp_secondary_startup)
+  ARM_BE8(setend	be )			@ go BE8 if entered LE
+ 
+-	/* Get coherency fabric base physical address */
+-	adr	r0, 1f
+-	ldr	r1, [r0]
+-	ldr	r0, [r0, r1]
+-
+ 	/* Read CPU id */
+ 	mrc     p15, 0, r1, c0, c0, 5
+ 	and     r1, r1, #0xF
+@@ -45,7 +40,3 @@ ENTRY(armada_xp_secondary_startup)
+ 	b	secondary_startup
+ 
+ ENDPROC(armada_xp_secondary_startup)
+-
+-	.align 2
+-1:
+-	.long	coherency_phys_base - .
 -- 
 1.8.1.2
