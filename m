@@ -1,73 +1,79 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] PM / devfreq: Use freq_table for available_frequencies
-Date: Mon, 14 Apr 2014 13:51:37 -0700
-Message-ID: <534C4A59.8040507@codeaurora.org>
-References: <1397184881-12223-1-git-send-email-skannan@codeaurora.org>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH 00/20] Introduce new cpufreq helper macros
+Date: Tue, 15 Apr 2014 00:07:32 +0300
+Message-ID: <534C4E14.3080509@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1397184881-12223-1-git-send-email-skannan@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "David S. Miller" <davem@davemloft.net>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Randy Dunlap <rdunlap@infradead.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-MyungJoo/Kyungmin,
+Hi all,
 
-Bump. Can we accept this patch please?
+This patch set introduces two freq_table helper macros which
+can be used for iteration over cpufreq_frequency_table and
+makes the necessary changes to cpufreq core and drivers that
+use such an iteration procedure.
 
--Saravana
+The motivation was a usage of common procedure to iterate over
+cpufreq_frequency_table across all drivers and cpufreq core.
+
+This was tested on a x86_64 platform.
+Patches 4-17 compiled successfully but unfortunately I was not
+able to compile test patches 18-20.
 
 
-On 04/10/2014 07:54 PM, Saravana Kannan wrote:
-> Some devices use freq_table instead of OPP. For those devices, the
-> available_frequencies file shows up empty. Fix that by using freq_table to
-> generate the available_frequencies data when OPP is not present.
->
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->   drivers/devfreq/devfreq.c | 15 +++++++++++----
->   1 file changed, 11 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 2042ec3..a715d15 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -912,19 +912,26 @@ static ssize_t available_frequencies_show(struct device *d,
->   	struct devfreq *df = to_devfreq(d);
->   	struct device *dev = df->dev.parent;
->   	struct dev_pm_opp *opp;
-> +	unsigned int i = 0, max_state = df->profile->max_state;
-> +	bool use_opp;
->   	ssize_t count = 0;
->   	unsigned long freq = 0;
->
->   	rcu_read_lock();
-> +	use_opp = dev_pm_opp_get_opp_count(dev) > 0;
->   	do {
-> -		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
-> -		if (IS_ERR(opp))
-> -			break;
-> +		if (use_opp) {
-> +			opp = dev_pm_opp_find_freq_ceil(dev, &freq);
-> +			if (IS_ERR(opp))
-> +				break;
-> +		} else {
-> +			freq = df->profile->freq_table[i++];
-> +		}
->
->   		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
->   				   "%lu ", freq);
->   		freq++;
-> -	} while (1);
-> +	} while (use_opp || (!use_opp && i < max_state));
->   	rcu_read_unlock();
->
->   	/* Truncate the trailing space */
->
+Stratos Karafotis (20):
+  cpufreq: Introduce macros for cpufreq_frequency_table iteration
+  cpufreq: acpi-cpufreq: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: stats: Use cpufreq_for_each_valid_entry macro for iteration
+  cpufreq: arm_big_little: Use cpufreq_for_each_entry macro for
+    iteration
+  cpufreq: dbx500: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: elanfreq: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: exynos: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: exynos5440: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: longhaul: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: powernow-k6: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: s3c2416: Use cpufreq_for_each_valid_entry macro for iteration
+  cpufreq: s3c64xx: Use cpufreq_for_each_valid_entry macro for iteration
+  sh: clk: Use cpufreq_for_each_valid_entry macro for iteration
+  thermal: cpu_cooling: Use cpufreq_for_each_valid_entry macro for
+    iteration
+  mfd: db8500-prcmu: Use cpufreq_for_each_entry macro for iteration
+  mips: lemote 2f: se cpufreq_for_each_entry macro for iteration
+  davinci: da850: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: pasemi: Use cpufreq_for_each_entry macro for iteration
+  cpufreq: pcc_cbe: Use cpufreq_for_each_entry macro for iteration
+  irda: sh_sir: Use cpufreq_for_each_valid_entry macro for iteration
 
+ Documentation/cpu-freq/cpu-drivers.txt | 16 ++++++++++
+ arch/arm/mach-davinci/da850.c          |  9 +++---
+ arch/mips/loongson/lemote-2f/clock.c   | 15 ++++------
+ drivers/cpufreq/acpi-cpufreq.c         | 10 +++----
+ drivers/cpufreq/arm_big_little.c       | 18 ++++++-----
+ drivers/cpufreq/cpufreq.c              | 11 +++++++
+ drivers/cpufreq/cpufreq_stats.c        | 22 +++++---------
+ drivers/cpufreq/dbx500-cpufreq.c       |  7 ++---
+ drivers/cpufreq/elanfreq.c             |  8 ++---
+ drivers/cpufreq/exynos-cpufreq.c       | 14 ++++-----
+ drivers/cpufreq/exynos5440-cpufreq.c   | 30 +++++++++----------
+ drivers/cpufreq/freq_table.c           | 55 ++++++++++++++++------------------
+ drivers/cpufreq/longhaul.c             | 13 ++++----
+ drivers/cpufreq/pasemi-cpufreq.c       | 10 +++----
+ drivers/cpufreq/powernow-k6.c          | 13 ++++----
+ drivers/cpufreq/ppc_cbe_cpufreq.c      |  9 +++---
+ drivers/cpufreq/s3c2416-cpufreq.c      | 40 +++++++++++--------------
+ drivers/cpufreq/s3c64xx-cpufreq.c      | 15 ++++------
+ drivers/mfd/db8500-prcmu.c             | 18 +++++------
+ drivers/net/irda/sh_sir.c              | 14 ++++-----
+ drivers/sh/clk/core.c                  | 19 ++++--------
+ drivers/thermal/cpu_cooling.c          | 33 ++++++++------------
+ include/linux/cpufreq.h                | 21 +++++++++++++
+ 23 files changed, 211 insertions(+), 209 deletions(-)
 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+1.9.0
