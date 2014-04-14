@@ -1,77 +1,106 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH 12/20] cpufreq: s3c64xx: Use cpufreq_for_each_valid_entry
+Subject: [PATCH 14/20] thermal: cpu_cooling: Use cpufreq_for_each_valid_entry
  macro for iteration
-Date: Tue, 15 Apr 2014 00:09:57 +0300
-Message-ID: <534C4EA5.3090204@semaphore.gr>
+Date: Tue, 15 Apr 2014 00:10:26 +0300
+Message-ID: <534C4EC2.5080008@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq core supports the cpufreq_for_each_entry and
-cpufreq_for_each_valid_entry macros helpers for iteration over the
-cpufreq_frequency_table, so use them.
+The cpufreq core supports the cpufreq_for_each_valid_entry macro
+helper for iteration over the cpufreq_frequency_table, so use it.
 
 It should have no functional changes.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
- drivers/cpufreq/s3c64xx-cpufreq.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+ drivers/thermal/cpu_cooling.c | 33 +++++++++++++--------------------
+ 1 file changed, 13 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-index ff7d3ec..176e84c 100644
---- a/drivers/cpufreq/s3c64xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-@@ -118,11 +118,10 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
- 		pr_err("Unable to check supported voltages\n");
- 	}
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 4246262..3040629 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -144,11 +144,11 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 			unsigned int *output,
+ 			enum cpufreq_cooling_property property)
+ {
+-	int i, j;
++	int i;
+ 	unsigned long max_level = 0, level = 0;
+ 	unsigned int freq = CPUFREQ_ENTRY_INVALID;
+ 	int descend = -1;
+-	struct cpufreq_frequency_table *table =
++	struct cpufreq_frequency_table *pos, *table =
+ 					cpufreq_frequency_get_table(cpu);
  
--	freq = s3c64xx_freq_table;
--	while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
--		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
+ 	if (!output)
+@@ -157,20 +157,16 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 	if (!table)
+ 		return -EINVAL;
+ 
+-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		/* ignore invalid entries */
+-		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
 -			continue;
-+	if (!count)
-+		goto out;
+-
++	cpufreq_for_each_valid_entry(pos, table) {
+ 		/* ignore duplicate entry */
+-		if (freq == table[i].frequency)
++		if (freq == pos->frequency)
+ 			continue;
  
-+	cpufreq_for_each_valid_entry(freq, s3c64xx_freq_table) {
- 		dvfs = &s3c64xx_dvfs_table[freq->driver_data];
- 		found = 0;
+ 		/* get the frequency order */
+ 		if (freq != CPUFREQ_ENTRY_INVALID && descend == -1)
+-			descend = !!(freq > table[i].frequency);
++			descend = !!(freq > pos->frequency);
  
-@@ -137,10 +136,9 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
- 				 freq->frequency);
- 			freq->frequency = CPUFREQ_ENTRY_INVALID;
+-		freq = table[i].frequency;
++		freq = pos->frequency;
+ 		max_level++;
+ 	}
+ 
+@@ -190,29 +186,26 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 	if (property == GET_FREQ)
+ 		level = descend ? input : (max_level - input);
+ 
+-	for (i = 0, j = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		/* ignore invalid entry */
+-		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+-			continue;
+-
++	i = 0;
++	cpufreq_for_each_valid_entry(pos, table) {
+ 		/* ignore duplicate entry */
+-		if (freq == table[i].frequency)
++		if (freq == pos->frequency)
+ 			continue;
+ 
+ 		/* now we have a valid frequency entry */
+-		freq = table[i].frequency;
++		freq = pos->frequency;
+ 
+ 		if (property == GET_LEVEL && (unsigned int)input == freq) {
+ 			/* get level by frequency */
+-			*output = descend ? j : (max_level - j);
++			*output = descend ? i : (max_level - i);
+ 			return 0;
  		}
--
--		freq++;
+-		if (property == GET_FREQ && level == j) {
++		if (property == GET_FREQ && level == i) {
+ 			/* get frequency by level */
+ 			*output = freq;
+ 			return 0;
+ 		}
+-		j++;
++		i++;
  	}
  
-+out:
- 	/* Guess based on having to do an I2C/SPI write; in future we
- 	 * will be able to query the regulator performance here. */
- 	regulator_latency = 1 * 1000 * 1000;
-@@ -179,8 +177,7 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	}
- #endif
- 
--	freq = s3c64xx_freq_table;
--	while (freq->frequency != CPUFREQ_TABLE_END) {
-+	cpufreq_for_each_entry(freq, s3c64xx_freq_table) {
- 		unsigned long r;
- 
- 		/* Check for frequencies we can generate */
-@@ -196,8 +193,6 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 		 * frequency is the maximum we can support. */
- 		if (!vddarm && freq->frequency > clk_get_rate(policy->clk) / 1000)
- 			freq->frequency = CPUFREQ_ENTRY_INVALID;
--
--		freq++;
- 	}
- 
- 	/* Datasheet says PLL stabalisation time (if we were to use
+ 	return -EINVAL;
 -- 
 1.9.0
