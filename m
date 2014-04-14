@@ -1,180 +1,186 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v7 00/11]  CPU idle for Armada XP
-Date: Mon, 14 Apr 2014 17:10:03 +0200
-Message-ID: <1397488214-20685-1-git-send-email-gregory.clement@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:60677 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750983AbaDNPKW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Apr 2014 11:10:22 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v7 08/11] ARM: mvebu: Add the PMSU related part of the cpu idle functions
+Date: Mon, 14 Apr 2014 17:10:11 +0200
+Message-ID: <1397488214-20685-9-git-send-email-gregory.clement@free-electrons.com>
+References: <1397488214-20685-1-git-send-email-gregory.clement@free-electrons.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1397488214-20685-1-git-send-email-gregory.clement@free-electrons.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch set adds the CPU idle support for Armada XP and prepares
-the support for Armada 370. This was based on the work of Nadav
-Haklai.
+The cpu idle support will need to access to Power Management Service
+Unit. This commit adds the architecture related functions that will be
+used in the idle path of the cpuidle driver.
 
-The main change in this new version is a rebasing onto the v3.15-rc1
-and the last PMSU reworked series sent by Thomas Petazzoni:
-http://www.spinics.net/lists/arm-kernel/msg322113.html
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+---
+ arch/arm/mach-mvebu/pmsu.c | 132 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 131 insertions(+), 1 deletion(-)
 
-The first patch should go through ARM subsystem and should be taken by
-Russell King. It was alreadu submitted to Russell's patch system.
-
-All the other patches can go to mvebu subsystem (and then arm-soc), as
-the PM related patches have received the acked-by from Daniel
-Lezcano. From my point of view this series is ready to be pulled.
-
-The whole series (and the pmsu patches needed) is also available in
-the branch CPU-idle-ArmadaXP-v7 at
-https://github.com/MISL-EBU-System-SW/mainline-public.git
-
-Thanks,
-
-Changelog:
-
-v6 -> v7:
-
- * Rebased onto v3.15-rc1
-
- * Added the acked-by from Daniel Lezcano
-
- * Fix the copyright year in cpuidle-armada-370-xp.c
-
-v5 -> v6:
-
- * rebased onto the pmsu reworked patch set
-
- * fixed the wrong indent for ARM_BE8 in coherency_ll.S
-
- * Improved the tests done in armada_370_xp_cpu_pm_init as suggested
-   by Thomas Petazzoni. Each condition is tested separately then it
-   will be more readable.
-
-v4 -> v5:
-
-* Call v7 version of suspend and resume from the pj4b callback instead
-  of copying the code, following Lorenzo advice.
-
-* Split the low level functions to manipulate HW coherency
-
-* Reorder the included headers in cpuidle-armada-370-xp.c
-
-* Added comment in the inline asm part of armada_370_xp_cpu_suspend
-  function where the CR_C is restored.
-
-* Added comment about the fact that Armada XP can us ldrex/strex
-  without MMU enabled
-
-* Fixed commit logs
-
-* Added the acked-by from Thomas Petazzoni
-
-* Extend the pmsu registers instead of adding a new set of register
-
-* Move the pm initialization outside of the board file in a
-  arch_initcall
-
-* Move most of the architecture specific code in arch/arm/mach-mvebu
-  and use platform device data file to pass the callback as suggested
-  by Daniel.
-
-* Added the tlb flush if the wfi failed.
-
-* Check the cpu_suspend return value
-
-* rebased on mvebu/for-next to be in sync all the change made in mach-mvebu
-
-v3 -> v4:
-
-* factorized the code in coherency_ll.S and make it autodetect as mush
-  as possible
-
-* reordered the introduction of the device tree binding
-
-* removed all the EXPORT_SYMBOL_GPL as the driver can only be built
-  into the kernel and never be built as a module.
-
-* moved the armada_370_xp_pmsu_enable_l2_powerdown_onidle function in
-  armada_370_cp.c file during the initialization of the platform.
-
-* fixed various coding style issue and typos pointed by Thomas
-
-* fixed all the coding issue style, made the comments more coherent
-  and add more comment in the suspend-armada-370-xp.S file.
-
-* moved all the device tree related check from
-  armada_370_xp_cpuidle_probe to armada_370_xp_dt_init.
-
-* used cpu_pm_enter() instead of directly calling platform code in
-  Armada_370_xp_enter_idle.
-
-* convert the sequence to disable the coherency to the one used in
-  TC2.
-
-* Rebased on v3.14-rc1
-
-v2 -> v3:
-
-* Converted the driver to use module_platform_driver. This lead to the
-  introduction of a new patch (PATCH 11). Pointed by Daniel Lezcano.
-
-* Used PUIDLE_DRIVER_FLAGS_MASK to store the deep idle information,
-  suggested by Daniel Lezcano.
-
-* Removed cpu_init call from armada_370_xp_enter_idle
-  function. Pointed by Lorenzo Pieralisi.
-
-* Rebased on v3.12-rc5
-
-
-v1 -> v2:
-
-* Removed the pm_level kernel parameter. As Kevin Hilman pointed, its
-  usage can be replaced by using
-  /sys/devices/system/cpu/cpu*/cpuidle/state*/disable or the kernel
-  parameter cpuidle.off.
-
-* Used BIT() macro (reported by Ezequiel)
-
-* Made the function more readable the
-  armada_370_xp_pmsu_idle_prepare() function (reported by Thomas)
-
-* Moved the config entry in Kconfig.arm, and rename the config symbol
-  according the pattern used by other arm cpu: ARM_"soc name"_CPUIDLE
-
-* Moved the build rule under the new ARM SoC section in the Makefile
-
-* Rebased on Linus Torvalds master branch of Thursday September 12
-
-Gregory CLEMENT (11):
-  ARM: PJ4B: Add cpu_suspend/cpu_resume hooks for PJ4B
-  ARM: mvebu: remove the address parameter for ll_set_cpu_coherent
-  ARM: mvebu: ll_set_cpu_coherent always uses the current CPU
-  ARM: mvebu: Remove the unused argument of set_cpu_coherent()
-  ARM: mvebu: Split low level functions to manipulate HW coherency
-  ARM: mvebu: Low level function to disable HW coherency support
-  ARM: mvebu: Allow to power down L2 cache controller in idle mode
-  ARM: mvebu: Add the PMSU related part of the cpu idle functions
-  ARM: mvebu: Register notifier callback for the cpuidle transition
-  cpuidle: mvebu: Add initial CPU idle support for Armada 370/XP SoC
-  ARM: mvebu: register the cpuidle driver for the Armada XP SoCs
-
- arch/arm/mach-mvebu/coherency.c         |  16 +--
- arch/arm/mach-mvebu/coherency.h         |   2 +-
- arch/arm/mach-mvebu/coherency_ll.S      | 122 +++++++++++++++----
- arch/arm/mach-mvebu/headsmp.S           |  15 +--
- arch/arm/mach-mvebu/platsmp.c           |   2 +-
- arch/arm/mach-mvebu/pmsu.c              | 207 +++++++++++++++++++++++++++++++-
- arch/arm/mm/proc-v7.S                   |  28 ++++-
- drivers/cpuidle/Kconfig.arm             |   5 +
- drivers/cpuidle/Makefile                |   1 +
- drivers/cpuidle/cpuidle-armada-370-xp.c |  93 ++++++++++++++
- 10 files changed, 438 insertions(+), 53 deletions(-)
- create mode 100644 drivers/cpuidle/cpuidle-armada-370-xp.c
-
+diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+index db5011f98df3..968c8c02c126 100644
+--- a/arch/arm/mach-mvebu/pmsu.c
++++ b/arch/arm/mach-mvebu/pmsu.c
+@@ -24,9 +24,12 @@
+ #include <linux/io.h>
+ #include <linux/smp.h>
+ #include <linux/resource.h>
++#include <asm/cacheflush.h>
++#include <asm/cp15.h>
+ #include <asm/smp_plat.h>
++#include <asm/suspend.h>
++#include <asm/tlbflush.h>
+ #include "common.h"
+-#include "pmsu.h"
+ 
+ static void __iomem *pmsu_mp_base;
+ 
+@@ -34,12 +37,33 @@ static void __iomem *pmsu_mp_base;
+ #define PMSU_REG_SIZE	    0x1000
+ 
+ /* PMSU MP registers */
++#define PMSU_CONTROL_AND_CONFIG(cpu)	    ((cpu * 0x100) + 0x104)
++#define PMSU_CONTROL_AND_CONFIG_DFS_REQ		BIT(18)
++#define PMSU_CONTROL_AND_CONFIG_PWDDN_REQ	BIT(16)
++#define PMSU_CONTROL_AND_CONFIG_L2_PWDDN	BIT(20)
++
++#define PMSU_CPU_POWER_DOWN_CONTROL(cpu)    ((cpu * 0x100) + 0x108)
++
++#define PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP	BIT(0)
++
++#define PMSU_STATUS_AND_MASK(cpu)	    ((cpu * 0x100) + 0x10c)
++#define PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT	BIT(16)
++#define PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT	BIT(17)
++#define PMSU_STATUS_AND_MASK_IRQ_WAKEUP		BIT(20)
++#define PMSU_STATUS_AND_MASK_FIQ_WAKEUP		BIT(21)
++#define PMSU_STATUS_AND_MASK_DBG_WAKEUP		BIT(22)
++#define PMSU_STATUS_AND_MASK_IRQ_MASK		BIT(24)
++#define PMSU_STATUS_AND_MASK_FIQ_MASK		BIT(25)
++
+ #define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu) ((cpu * 0x100) + 0x124)
+ 
+ /* PMSU fabric registers */
+ #define L2C_NFABRIC_PM_CTL		    0x4
+ #define L2C_NFABRIC_PM_CTL_PWR_DOWN		BIT(20)
+ 
++extern void ll_disable_coherency(void);
++extern void ll_enable_coherency(void);
++
+ static struct of_device_id of_pmsu_table[] = {
+ 	{ .compatible = "marvell,armada-370-pmsu", },
+ 	{ .compatible = "marvell,armada-370-xp-pmsu", },
+@@ -133,4 +157,110 @@ static void armada_370_xp_pmsu_enable_l2_powerdown_onidle(void)
+ 	writel(reg, pmsu_mp_base + L2C_NFABRIC_PM_CTL);
+ }
+ 
++static void armada_370_xp_cpu_resume(void)
++{
++	asm volatile("bl    ll_add_cpu_to_smp_group\n\t"
++		     "bl    ll_enable_coherency\n\t"
++		     "b	    cpu_resume\n\t");
++}
++
++/* No locking is needed because we only access per-CPU registers */
++void armada_370_xp_pmsu_idle_prepare(bool deepidle)
++{
++	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
++	u32 reg;
++
++	if (pmsu_mp_base == NULL)
++		return;
++
++	/*
++	 * Adjust the PMSU configuration to wait for WFI signal, enable
++	 * IRQ and FIQ as wakeup events, set wait for snoop queue empty
++	 * indication and mask IRQ and FIQ from CPU
++	 */
++	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
++	reg |= PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT    |
++	       PMSU_STATUS_AND_MASK_IRQ_WAKEUP       |
++	       PMSU_STATUS_AND_MASK_FIQ_WAKEUP       |
++	       PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT |
++	       PMSU_STATUS_AND_MASK_IRQ_MASK         |
++	       PMSU_STATUS_AND_MASK_FIQ_MASK;
++	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
++
++	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
++	/* ask HW to power down the L2 Cache if needed */
++	if (deepidle)
++		reg |= PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
++
++	/* request power down */
++	reg |= PMSU_CONTROL_AND_CONFIG_PWDDN_REQ;
++	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
++
++	/* Disable snoop disable by HW - SW is taking care of it */
++	reg = readl(pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
++	reg |= PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP;
++	writel(reg, pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
++}
++
++static noinline int do_armada_370_xp_cpu_suspend(unsigned long deepidle)
++{
++	armada_370_xp_pmsu_idle_prepare(deepidle);
++
++	v7_exit_coherency_flush(all);
++
++	ll_disable_coherency();
++
++	dsb();
++
++	wfi();
++
++	/* If we are here, wfi failed. As processors run out of
++	 * coherency for some time, tlbs might be stale, so flush them
++	 */
++	local_flush_tlb_all();
++
++	ll_enable_coherency();
++
++	/* Test the CR_C bit and set it if it was cleared */
++	asm volatile(
++	"mrc	p15, 0, %0, c1, c0, 0 \n\t"
++	"tst	%0, #(1 << 2) \n\t"
++	"orreq	%0, %0, #(1 << 2) \n\t"
++	"mcreq	p15, 0, %0, c1, c0, 0 \n\t"
++	"isb	"
++	: : "r" (0));
++
++	pr_warn("Failed to suspend the system\n");
++
++	return 0;
++}
++
++static int armada_370_xp_cpu_suspend(unsigned long deepidle)
++{
++	return cpu_suspend(deepidle, do_armada_370_xp_cpu_suspend);
++}
++
++/* No locking is needed because we only access per-CPU registers */
++static noinline void armada_370_xp_pmsu_idle_restore(void)
++{
++	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
++	u32 reg;
++
++	if (pmsu_mp_base == NULL)
++		return;
++
++	/* cancel ask HW to power down the L2 Cache if possible */
++	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
++	reg &= ~PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
++	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
++
++	/* cancel Enable wakeup events and mask interrupts */
++	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
++	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_WAKEUP | PMSU_STATUS_AND_MASK_FIQ_WAKEUP);
++	reg &= ~PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT;
++	reg &= ~PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT;
++	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_MASK | PMSU_STATUS_AND_MASK_FIQ_MASK);
++	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
++}
++
+ early_initcall(armada_370_xp_pmsu_init);
 -- 
 1.8.1.2
-
