@@ -1,112 +1,124 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH 08/20] cpufreq: exynos5440: Use cpufreq_for_each_entry macro
- for iteration
-Date: Tue, 15 Apr 2014 00:09:18 +0300
-Message-ID: <534C4E7E.4090806@semaphore.gr>
+Subject: [PATCH 11/20] cpufreq: s3c2416: Use cpufreq_for_each_valid_entry
+ macro for iteration
+Date: Tue, 15 Apr 2014 00:09:44 +0300
+Message-ID: <534C4E98.5080302@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq core supports the cpufreq_for_each_entry macro helper
-for iteration over the cpufreq_frequency_table, so use it.
+The cpufreq core supports the cpufreq_for_each_entry and
+cpufreq_for_each_valid_entry macros helpers for iteration over the
+cpufreq_frequency_table, so use them.
 
 It should have no functional changes.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
- drivers/cpufreq/exynos5440-cpufreq.c | 30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+ drivers/cpufreq/s3c2416-cpufreq.c | 40 +++++++++++++++++----------------------
+ 1 file changed, 17 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index a6b8214..3e3dd0c 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -114,25 +114,23 @@ static struct cpufreq_freqs freqs;
- 
- static int init_div_table(void)
+diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
+index 4626f90..3fcc7b1 100644
+--- a/drivers/cpufreq/s3c2416-cpufreq.c
++++ b/drivers/cpufreq/s3c2416-cpufreq.c
+@@ -265,8 +265,8 @@ out:
+ #ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
+ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
  {
--	struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
-+	struct cpufreq_frequency_table *pos, *freq_tbl = dvfs_info->freq_table;
- 	unsigned int tmp, clk_div, ema_div, freq, volt_id;
--	int i = 0;
- 	struct dev_pm_opp *opp;
++	struct cpufreq_frequency_table *pos;
+ 	int count, v, i, found;
+-	struct cpufreq_frequency_table *freq;
+ 	struct s3c2416_dvfs *dvfs;
  
- 	rcu_read_lock();
--	for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 	count = regulator_count_voltages(s3c_freq->vddarm);
+@@ -275,12 +275,11 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
+ 		return;
+ 	}
+ 
+-	freq = s3c_freq->freq_table;
+-	while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
+-		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
+-			continue;
++	if (!count)
++		goto out;
+ 
+-		dvfs = &s3c2416_dvfs_table[freq->driver_data];
++	cpufreq_for_each_valid_entry(pos, s3c_freq->freq_table) {
++		dvfs = &s3c2416_dvfs_table[pos->driver_data];
+ 		found = 0;
+ 
+ 		/* Check only the min-voltage, more is always ok on S3C2416 */
+@@ -292,13 +291,12 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
+ 
+ 		if (!found) {
+ 			pr_debug("cpufreq: %dkHz unsupported by regulator\n",
+-				 freq->frequency);
+-			freq->frequency = CPUFREQ_ENTRY_INVALID;
++				 pos->frequency);
++			pos->frequency = CPUFREQ_ENTRY_INVALID;
+ 		}
 -
-+	cpufreq_for_each_entry(pos, freq_tbl) {
- 		opp = dev_pm_opp_find_freq_exact(dvfs_info->dev,
--					freq_tbl[i].frequency * 1000, true);
-+					pos->frequency * 1000, true);
- 		if (IS_ERR(opp)) {
- 			rcu_read_unlock();
- 			dev_err(dvfs_info->dev,
- 				"failed to find valid OPP for %u KHZ\n",
--				freq_tbl[i].frequency);
-+				pos->frequency);
- 			return PTR_ERR(opp);
+-		freq++;
+ 	}
+ 
++out:
+ 	/* Guessed */
+ 	s3c_freq->regulator_latency = 1 * 1000 * 1000;
+ }
+@@ -338,7 +336,7 @@ static struct notifier_block s3c2416_cpufreq_reboot_notifier = {
+ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
+ {
+ 	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
+-	struct cpufreq_frequency_table *freq;
++	struct cpufreq_frequency_table *pos;
+ 	struct clk *msysclk;
+ 	unsigned long rate;
+ 	int ret;
+@@ -427,31 +425,27 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 	s3c_freq->regulator_latency = 0;
+ #endif
+ 
+-	freq = s3c_freq->freq_table;
+-	while (freq->frequency != CPUFREQ_TABLE_END) {
++	cpufreq_for_each_entry(pos, s3c_freq->freq_table) {
+ 		/* special handling for dvs mode */
+-		if (freq->driver_data == 0) {
++		if (pos->driver_data == 0) {
+ 			if (!s3c_freq->hclk) {
+ 				pr_debug("cpufreq: %dkHz unsupported as it would need unavailable dvs mode\n",
+-					 freq->frequency);
+-				freq->frequency = CPUFREQ_ENTRY_INVALID;
++					 pos->frequency);
++				pos->frequency = CPUFREQ_ENTRY_INVALID;
+ 			} else {
+-				freq++;
+ 				continue;
+ 			}
  		}
  
--		freq = freq_tbl[i].frequency / 1000; /* In MHZ */
-+		freq = pos->frequency / 1000; /* In MHZ */
- 		clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
- 					<< P0_7_CPUCLKDEV_SHIFT;
- 		clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
-@@ -157,7 +155,8 @@ static int init_div_table(void)
- 		tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
- 			| ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
- 
--		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
-+		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
-+						(pos - freq_tbl));
+ 		/* Check for frequencies we can generate */
+ 		rate = clk_round_rate(s3c_freq->armdiv,
+-				      freq->frequency * 1000);
++				      pos->frequency * 1000);
+ 		rate /= 1000;
+-		if (rate != freq->frequency) {
++		if (rate != pos->frequency) {
+ 			pr_debug("cpufreq: %dkHz unsupported by clock (clk_round_rate return %lu)\n",
+-				 freq->frequency, rate);
+-			freq->frequency = CPUFREQ_ENTRY_INVALID;
++				pos->frequency, rate);
++			pos->frequency = CPUFREQ_ENTRY_INVALID;
+ 		}
+-
+-		freq++;
  	}
  
- 	rcu_read_unlock();
-@@ -166,8 +165,9 @@ static int init_div_table(void)
- 
- static void exynos_enable_dvfs(unsigned int cur_frequency)
- {
--	unsigned int tmp, i, cpu;
-+	unsigned int tmp, cpu;
- 	struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
-+	struct cpufreq_frequency_table *pos;
- 	/* Disable DVFS */
- 	__raw_writel(0,	dvfs_info->base + XMU_DVFS_CTRL);
- 
-@@ -182,15 +182,15 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
- 	 __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
- 
- 	/* Set initial performance index */
--	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
--		if (freq_table[i].frequency == cur_frequency)
-+	cpufreq_for_each_entry(pos, freq_table) {
-+		if (pos->frequency == cur_frequency)
- 			break;
-+	}
- 
--	if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
-+	if (pos->frequency == CPUFREQ_TABLE_END) {
- 		dev_crit(dvfs_info->dev, "Boot up frequency not supported\n");
- 		/* Assign the highest frequency */
--		i = 0;
--		cur_frequency = freq_table[i].frequency;
-+		cur_frequency = freq_table->frequency;
- 	}
- 
- 	dev_info(dvfs_info->dev, "Setting dvfs initial frequency = %uKHZ",
-@@ -199,7 +199,7 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
- 	for (cpu = 0; cpu < CONFIG_NR_CPUS; cpu++) {
- 		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
- 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
--		tmp |= (i << C0_3_PSTATE_NEW_SHIFT);
-+		tmp |= ((pos - freq_table) << C0_3_PSTATE_NEW_SHIFT);
- 		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
- 	}
- 
+ 	/* Datasheet says PLL stabalisation time must be at least 300us,
 -- 
 1.9.0
