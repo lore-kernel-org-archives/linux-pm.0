@@ -1,15 +1,15 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH 07/20] cpufreq: exynos: Use cpufreq_for_each_entry macro for
- iteration
-Date: Tue, 15 Apr 2014 00:09:10 +0300
-Message-ID: <534C4E76.6000905@semaphore.gr>
+Subject: [PATCH 09/20] cpufreq: longhaul: Use cpufreq_for_each_entry macro
+ for iteration
+Date: Tue, 15 Apr 2014 00:09:26 +0300
+Message-ID: <534C4E86.4060304@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 The cpufreq core supports the cpufreq_for_each_entry macro helper
@@ -19,38 +19,44 @@ It should have no functional changes.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
- drivers/cpufreq/exynos-cpufreq.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/cpufreq/longhaul.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index f99cfe2..0e19bce 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -28,18 +28,18 @@ static unsigned int locking_frequency;
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index d00e5d1..6de99c4 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -528,6 +528,7 @@ static int longhaul_get_ranges(void)
  
- static int exynos_cpufreq_get_index(unsigned int freq)
+ static void longhaul_setup_voltagescaling(void)
  {
--	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
--	int index;
-+	struct cpufreq_frequency_table *pos, *freq_table;
++	struct cpufreq_frequency_table *freq;
+ 	union msr_longhaul longhaul;
+ 	struct mV_pos minvid, maxvid, vid;
+ 	unsigned int j, speed, pos, kHz_step, numvscales;
+@@ -606,18 +607,16 @@ static void longhaul_setup_voltagescaling(void)
+ 	/* Calculate kHz for one voltage step */
+ 	kHz_step = (highest_speed - min_vid_speed) / numvscales;
  
--	for (index = 0;
--		freq_table[index].frequency != CPUFREQ_TABLE_END; index++)
--		if (freq_table[index].frequency == freq)
-+	freq_table = exynos_info->freq_table;
-+	cpufreq_for_each_entry(pos, freq_table) {
-+		if (pos->frequency == freq)
- 			break;
-+	}
+-	j = 0;
+-	while (longhaul_table[j].frequency != CPUFREQ_TABLE_END) {
+-		speed = longhaul_table[j].frequency;
++	cpufreq_for_each_entry(freq, longhaul_table) {
++		speed = freq->frequency;
+ 		if (speed > min_vid_speed)
+ 			pos = (speed - min_vid_speed) / kHz_step + minvid.pos;
+ 		else
+ 			pos = minvid.pos;
+-		longhaul_table[j].driver_data |= mV_vrm_table[pos] << 8;
++		freq->driver_data |= mV_vrm_table[pos] << 8;
+ 		vid = vrm_mV_table[mV_vrm_table[pos]];
+-		printk(KERN_INFO PFX "f: %d kHz, index: %d, vid: %d mV\n",
+-				speed, j, vid.mV);
+-		j++;
++		printk(KERN_INFO PFX "f: %d kHz, index: %lu, vid: %d mV\n",
++				speed, freq - longhaul_table, vid.mV);
+ 	}
  
--	if (freq_table[index].frequency == CPUFREQ_TABLE_END)
-+	if (pos->frequency == CPUFREQ_TABLE_END)
- 		return -EINVAL;
- 
--	return index;
-+	return pos - freq_table;
- }
- 
- static int exynos_cpufreq_scale(unsigned int target_freq)
+ 	can_scale_voltage = 1;
 -- 
 1.9.0
