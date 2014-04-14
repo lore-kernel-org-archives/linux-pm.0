@@ -1,63 +1,57 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH 04/20] cpufreq: arm_big_little: Use cpufreq_for_each_entry
- macro for iteration
-Date: Tue, 15 Apr 2014 00:08:34 +0300
-Message-ID: <534C4E52.2010103@semaphore.gr>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v9 1/2] ARM: avoid tracers in soft_restart
+Date: Mon, 14 Apr 2014 15:37:58 -0700
+Message-ID: <CADHgK6vY4tzb3fJRZyTDZ=e7e9sEhDDc5_ja28qna-AhXwaFEA@mail.gmail.com>
+References: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
+	<1395178858-27343-2-git-send-email-sebastian.capella@linaro.org>
+	<20140414105314.GB3530@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:59617 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754223AbaDNWh7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Apr 2014 18:37:59 -0400
+Received: by mail-wi0-f177.google.com with SMTP id cc10so4791983wib.16
+        for <linux-pm@vger.kernel.org>; Mon, 14 Apr 2014 15:37:58 -0700 (PDT)
+In-Reply-To: <20140414105314.GB3530@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Will Deacon <will.deacon@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Robin Holt <holt@sgi.com>, Thomas Gleixner <tglx@linutronix.de>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Steven Capper <steve.capper@linaro.org>, Stephen Warren <swarren@nvidia.com>, Tejun Heo <tj@kernel.org>
 
-The cpufreq core supports the cpufreq_for_each_entry macro helper
-for iteration over the cpufreq_frequency_table, so use it.
+Hi Will,
 
-It should have no functional changes.
+On 14 April 2014 03:53, Will Deacon <will.deacon@arm.com> wrote:
+> On Tue, Mar 18, 2014 at 09:40:57PM +0000, Sebastian Capella wrote:
+>> Use of tracers in local_irq_disable is causes abort loops when called
+>> with irqs disabled using a temporary stack.  Replace local_irq_disable
+>> with raw_local_irq_disable instead to avoid tracers.
+>
+> Do you have any more information about these aborts? At the time we call
+> local_irq_disable, the stack is still intact, so if the issue is simply
+> related to having any tracers active at the call_with_stack invocation, we'd
+> be better off disabling tracing here altogether.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/arm_big_little.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+This is specifically for when soft_restart is called in the
+hibernation path with tracers enabled.  At that point, we've already
+switched to a temporary stack, and when we call local_irq_disable,
+we'll see this:
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index bad2ed3..59c87f8 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -226,22 +226,24 @@ static inline u32 get_table_count(struct cpufreq_frequency_table *table)
- /* get the minimum frequency in the cpufreq_frequency_table */
- static inline u32 get_table_min(struct cpufreq_frequency_table *table)
- {
--	int i;
-+	struct cpufreq_frequency_table *pos;
- 	uint32_t min_freq = ~0;
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++)
--		if (table[i].frequency < min_freq)
--			min_freq = table[i].frequency;
-+	cpufreq_for_each_entry(pos, table) {
-+		if (pos->frequency < min_freq)
-+			min_freq = pos->frequency;
-+	}
- 	return min_freq;
- }
- 
- /* get the maximum frequency in the cpufreq_frequency_table */
- static inline u32 get_table_max(struct cpufreq_frequency_table *table)
- {
--	int i;
-+	struct cpufreq_frequency_table *pos;
- 	uint32_t max_freq = 0;
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++)
--		if (table[i].frequency > max_freq)
--			max_freq = table[i].frequency;
-+	cpufreq_for_each_entry(pos, table) {
-+		if (pos->frequency > max_freq)
-+			max_freq = pos->frequency;
-+	}
- 	return max_freq;
- }
- 
--- 
-1.9.0
+In the local_irq_disable, it ends up calling trace_hardirqs_off
+(CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled), which calls
+trace_hardirqs_off_caller which checks lockdep_recursion in the
+current task, but we've switched to a temporary stack with the
+call_with_stack, and get_current is returning NULL.  This
+triggers a data abort, which calls trace_hardirqs_off
+again and so on.
+
+We originally had a patch which added a soft restart called
+soft_restart_noirq which avoided the irq disable.
+
+You can see the discussion here:
+https://patchwork.kernel.org/patch/3677591/
+
+Thanks!
+
+Sebastian
