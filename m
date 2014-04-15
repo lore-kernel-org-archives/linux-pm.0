@@ -1,39 +1,35 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFC PATCHC 0/3] sched/idle : find the idlest cpu with cpuidle
  info
-Date: Tue, 15 Apr 2014 15:13:11 +0200
-Message-ID: <20140415131311.GM11182@twins.programming.kicks-ass.net>
+Date: Tue, 15 Apr 2014 15:17:45 +0200
+Message-ID: <20140415131745.GN11182@twins.programming.kicks-ass.net>
 References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
- <CAKfTPtC4E=7DxnXZy8bSpeAqyLwsr-oXodXBod2aMc_x4VyqGg@mail.gmail.com>
- <53398FE6.1090203@linaro.org>
- <CAKfTPtBiFUM90igrhz=VnvSkt9MQ2E-xxnzDf=wSKdK+qA4EQA@mail.gmail.com>
- <533A6E3D.4040002@linaro.org>
- <CAKfTPtCH0AhxM8TUeqjnnFVmpLd1D39B4gV2SaWmHX21iLNVuA@mail.gmail.com>
+ <22904760.5rGZuP5nsx@vostro.rjw.lan>
+ <alpine.LFD.2.11.1404012141580.1571@knanqh.ubzr>
+ <1930679.LtC4HPqI3x@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:54906 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbaDONRz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Apr 2014 09:17:55 -0400
 Content-Disposition: inline
-In-Reply-To: <CAKfTPtCH0AhxM8TUeqjnnFVmpLd1D39B4gV2SaWmHX21iLNVuA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alex Shi <alex.shi@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+In-Reply-To: <1930679.LtC4HPqI3x@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-On Tue, Apr 01, 2014 at 11:05:16AM +0200, Vincent Guittot wrote:
-> >> We are working on a bench which can generate middle load pattern with
-> >> idle CPUs but it's not available yet. In the mean time, one bench that
-> >> plays with idle time is cyclictest, it will not give you performance
-> >> results but only scheduling latency which might be what you are
-> >> looking for.
-> >
-> >
-> > Yeah, thanks. I believe I know what is in the rt-tests package :)
-> >
-> > What I meant is what kind of values would you like to see with this patchset
-> > ?
+On Fri, Apr 04, 2014 at 01:43:00PM +0200, Rafael J. Wysocki wrote:
+> > We need to ensure the cpuidle data structure is not going away (e.g. 
+> > cpuidle driver module removal) while another CPU looks at it though.  
+> > The timing would have to be awfully weird for this to happen but still.
 > 
-> IIUC, you patch tries to improve the wake up latency of a task by
-> selecting the CPUs with the shallowest C-state, so this metrics seems
-> to be a good candidate
+> Well, I'm not sure if that is a real concern.  Only a couple of drivers try
+> to implement module unloading and I guess this isn't tested too much, so
+> perhaps we should just make it impossible to unload a cpuidle driver?
 
-cyclic-test might be too regular to really measure anything though.
+The 'easy' solution is to mandate the use of rcu_read_lock() around the
+dereference and make all cpuidle drivers put an rcu_barrier() in their
+module unload path.
