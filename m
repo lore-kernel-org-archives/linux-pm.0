@@ -1,73 +1,50 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH v2] PM / devfreq: Use freq_table for available_frequencies
-Date: Tue, 15 Apr 2014 12:29:58 -0700
-Message-ID: <1397590198-4965-1-git-send-email-skannan@codeaurora.org>
-References: <1368716.232331397543409452.JavaMail.weblogic@epv6ml06>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1368716.232331397543409452.JavaMail.weblogic@epv6ml06>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Saravana Kannan <skannan@codeaurora.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH RFC] PM / Hibernate: no kernel_power_off when
+	pm_power_off NULL
+Date: Tue, 15 Apr 2014 21:54:53 +0100
+Message-ID: <20140415205453.GX24070@n2100.arm.linux.org.uk>
+References: <1395348795-8554-1-git-send-email-sebastian.capella@linaro.org> <1395348795-8554-2-git-send-email-sebastian.capella@linaro.org> <20140320212336.GA17368@amd.pavel.ucw.cz> <20140320213502.795a5d3c@alan.etchedpixels.co.uk> <CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com> <CADHgK6sh6TUc4jBQFQHTQuhze9=r2FBzF6aULUc_c+bbWYjp5w@mail.gmail.com> <CADHgK6sCmPVZ--eyEnqnjfs_4C_PfHTgAUQ_Nb4oJP0mBDnQUw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:35652 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751192AbaDOUzj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Apr 2014 16:55:39 -0400
+Content-Disposition: inline
+In-Reply-To: <CADHgK6sCmPVZ--eyEnqnjfs_4C_PfHTgAUQ_Nb4oJP0mBDnQUw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-Some devices use freq_table instead of OPP. For those devices, the
-available_frequencies file shows up empty. Fix that by using freq_table to
-generate the available_frequencies data when it's available.
+On Tue, Apr 15, 2014 at 11:34:52AM -0700, Sebastian Capella wrote:
+> Ping..
+> 
+> There appears to be disagreement on the correct path to take on this.
+> 
+> Pavel and Alan recommend that arm's machine_power_off shall never return
+> 
+> Russell suggests hibernation be modified to handle machine_power_off
+> returning; that x86 architecture (and others as well) can have
+> machine_power_off returning.
+> 
+> Discussions available at the links below:
+> https://lkml.org/lkml/2014/3/25/554  -- linux-arm discussion
+> https://lkml.org/lkml/2014/3/20/649  -- linux-pm discussion
+> 
+> Should I continue with the original hibernation patch from the
+> linux-pm discussion?
+> 
+> Does anyone have any response to Russel's commentsl?
 
-OPP find frequency APIs also skips frequencies that have been temporarily
-disabled (say, due to thermal, etc). Since available_frequencies is
-supposed to show the entire list of available frequencies without taking
-temporary limits into consideration, preference is given to freq_table when
-available.
+What I'm basically saying is that I see no reason for ARM to do something
+different to what x86 does.
 
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
----
- drivers/devfreq/devfreq.c | 29 ++++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 11 deletions(-)
+What is pretty clear to me is that ARM is compatible with x86, which is
+compatible with kernel/reboot.c, and it's the hibernate code which is
+the odd one out.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 2042ec3..527cbe2 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -912,20 +912,27 @@ static ssize_t available_frequencies_show(struct device *d,
- 	struct devfreq *df = to_devfreq(d);
- 	struct device *dev = df->dev.parent;
- 	struct dev_pm_opp *opp;
-+	unsigned int i = 0;
- 	ssize_t count = 0;
- 	unsigned long freq = 0;
- 
--	rcu_read_lock();
--	do {
--		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
--		if (IS_ERR(opp))
--			break;
--
--		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
--				   "%lu ", freq);
--		freq++;
--	} while (1);
--	rcu_read_unlock();
-+	if (df->profile->freq_table) {
-+		for (i = 0; i < df->profile->max_state; i++)
-+			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
-+					   "%u ", df->profile->freq_table[i]);
-+	} else {
-+		rcu_read_lock();
-+		do {
-+			opp = dev_pm_opp_find_freq_ceil(dev, &freq);
-+			if (IS_ERR(opp))
-+				break;
-+
-+			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
-+					   "%lu ", freq);
-+			freq++;
-+		} while (1);
-+		rcu_read_unlock();
-+	}
- 
- 	/* Truncate the trailing space */
- 	if (count)
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
