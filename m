@@ -1,57 +1,67 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v9 1/2] ARM: avoid tracers in soft_restart
-Date: Mon, 14 Apr 2014 15:37:58 -0700
-Message-ID: <CADHgK6vY4tzb3fJRZyTDZ=e7e9sEhDDc5_ja28qna-AhXwaFEA@mail.gmail.com>
-References: <1395178858-27343-1-git-send-email-sebastian.capella@linaro.org>
-	<1395178858-27343-2-git-send-email-sebastian.capella@linaro.org>
-	<20140414105314.GB3530@arm.com>
+From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH] PM / devfreq: Use freq_table for available_frequencies
+Date: Tue, 15 Apr 2014 01:36:00 +0000 (GMT)
+Message-ID: <8568895.444151397525760132.JavaMail.weblogic@epml02>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f177.google.com ([209.85.212.177]:59617 "EHLO
-	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754223AbaDNWh7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Apr 2014 18:37:59 -0400
-Received: by mail-wi0-f177.google.com with SMTP id cc10so4791983wib.16
-        for <linux-pm@vger.kernel.org>; Mon, 14 Apr 2014 15:37:58 -0700 (PDT)
-In-Reply-To: <20140414105314.GB3530@arm.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:54003 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbaDOBgD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Apr 2014 21:36:03 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N4100ASJTS04PA0@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 15 Apr 2014 10:36:00 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Will Deacon <will.deacon@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Robin Holt <holt@sgi.com>, Thomas Gleixner <tglx@linutronix.de>, Konstantin Khlebnikov <k.khlebnikov@samsung.com>, Steven Capper <steve.capper@linaro.org>, Stephen Warren <swarren@nvidia.com>, Tejun Heo <tj@kernel.org>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Will,
+PiBNeXVuZ0pvby9LeXVuZ21pbiwNCj4gDQo+IEJ1bXAuIENhbiB3ZSBhY2NlcHQgdGhpcyBwYXRj
+aCBwbGVhc2U/DQo+IA0KPiAtU2FyYXZhbmENCg0KTmFjay4NCg0KUGxlYXNlIG5vdGUgdGhhdCBm
+cmVxX3RhYmxlIGlzIGFsc28gYW4gb3B0aW9uYWwgdmFsdWUsIHdoaWNoIG1heQ0KYmUgbnVsbC4N
+Cg0KQmVzaWRlcywgcGxlYXNlIGJlIGF3YXJlIHRoYXQgeW91ciBjb2RlIGlzIHVuZGVyIHJjdV9y
+ZWFkX2xvY2soKS4NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvby4NCg0KcHMuIEknbGwgc2VuZCBhIHJl
+bGF0ZWQgcGF0Y2ggKGF2b2lkIGFjY2Vzc2luZyBudWxsIGJ1dCBub3QtYW4tZXJyb3INCnBvaW50
+ZXIgYXQgb3RoZXIgc3lzZnMgbm9kZXMpLiBUaGFuayB5b3UgZm9yIGxldHRpbmcgbWUgY2F0Y2gg
+c3VjaCBidWdzIGFueXdheS4NCg0KPiANCj4gDQo+IE9uIDA0LzEwLzIwMTQgMDc6NTQgUE0sIFNh
+cmF2YW5hIEthbm5hbiB3cm90ZToNCj4gPiBTb21lIGRldmljZXMgdXNlIGZyZXFfdGFibGUgaW5z
+dGVhZCBvZiBPUFAuIEZvciB0aG9zZSBkZXZpY2VzLCB0aGUNCj4gPiBhdmFpbGFibGVfZnJlcXVl
+bmNpZXMgZmlsZSBzaG93cyB1cCBlbXB0eS4gRml4IHRoYXQgYnkgdXNpbmcgZnJlcV90YWJsZSB0
+bw0KPiA+IGdlbmVyYXRlIHRoZSBhdmFpbGFibGVfZnJlcXVlbmNpZXMgZGF0YSB3aGVuIE9QUCBp
+cyBub3QgcHJlc2VudC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFNhcmF2YW5hIEthbm5hbiA8
+c2thbm5hbkBjb2RlYXVyb3JhLm9yZz4NCj4gPiAtLS0NCj4gPiAgIGRyaXZlcnMvZGV2ZnJlcS9k
+ZXZmcmVxLmMgfCAxNSArKysrKysrKysrKy0tLS0NCj4gPiAgIDEgZmlsZSBjaGFuZ2VkLCAxMSBp
+bnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvZGV2ZnJlcS9kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+ID4gaW5k
+ZXggMjA0MmVjMy4uYTcxNWQxNSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvZGV2
+ZnJlcS5jDQo+ID4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiA+IEBAIC05MTIs
+MTkgKzkxMiwyNiBAQCBzdGF0aWMgc3NpemVfdCBhdmFpbGFibGVfZnJlcXVlbmNpZXNfc2hvdyhz
+dHJ1Y3QgZGV2aWNlICpkLA0KPiA+ICAgCXN0cnVjdCBkZXZmcmVxICpkZiA9IHRvX2RldmZyZXEo
+ZCk7DQo+ID4gICAJc3RydWN0IGRldmljZSAqZGV2ID0gZGYtPmRldi5wYXJlbnQ7DQo+ID4gICAJ
+c3RydWN0IGRldl9wbV9vcHAgKm9wcDsNCj4gPiArCXVuc2lnbmVkIGludCBpID0gMCwgbWF4X3N0
+YXRlID0gZGYtPnByb2ZpbGUtPm1heF9zdGF0ZTsNCj4gPiArCWJvb2wgdXNlX29wcDsNCj4gPiAg
+IAlzc2l6ZV90IGNvdW50ID0gMDsNCj4gPiAgIAl1bnNpZ25lZCBsb25nIGZyZXEgPSAwOw0KPiA+
+DQo+ID4gICAJcmN1X3JlYWRfbG9jaygpOw0KPiA+ICsJdXNlX29wcCA9IGRldl9wbV9vcHBfZ2V0
+X29wcF9jb3VudChkZXYpID4gMDsNCj4gPiAgIAlkbyB7DQo+ID4gLQkJb3BwID0gZGV2X3BtX29w
+cF9maW5kX2ZyZXFfY2VpbChkZXYsICZmcmVxKTsNCj4gPiAtCQlpZiAoSVNfRVJSKG9wcCkpDQo+
+ID4gLQkJCWJyZWFrOw0KPiA+ICsJCWlmICh1c2Vfb3BwKSB7DQo+ID4gKwkJCW9wcCA9IGRldl9w
+bV9vcHBfZmluZF9mcmVxX2NlaWwoZGV2LCAmZnJlcSk7DQo+ID4gKwkJCWlmIChJU19FUlIob3Bw
+KSkNCj4gPiArCQkJCWJyZWFrOw0KPiA+ICsJCX0gZWxzZSB7DQo+ID4gKwkJCWZyZXEgPSBkZi0+
+cHJvZmlsZS0+ZnJlcV90YWJsZVtpKytdOw0KPiA+ICsJCX0NCj4gPg0KPiA+ICAgCQljb3VudCAr
+PSBzY25wcmludGYoJmJ1Zltjb3VudF0sIChQQUdFX1NJWkUgLSBjb3VudCAtIDIpLA0KPiA+ICAg
+CQkJCSAgICIlbHUgIiwgZnJlcSk7DQo+ID4gICAJCWZyZXErKzsNCj4gPiAtCX0gd2hpbGUgKDEp
+Ow0KPiA+ICsJfSB3aGlsZSAodXNlX29wcCB8fCAoIXVzZV9vcHAgJiYgaSA8IG1heF9zdGF0ZSkp
+Ow0KPiA+ICAgCXJjdV9yZWFkX3VubG9jaygpOw0KPiA+DQo+ID4gICAJLyogVHJ1bmNhdGUgdGhl
+IHRyYWlsaW5nIHNwYWNlICovDQo+ID4NCj4gDQo+IA0KPiAtLSANCj4gVGhlIFF1YWxjb21tIElu
+bm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyIG9mIHRoZSBDb2RlIEF1cm9yYSBGb3J1
+bSwNCj4gaG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uDQo+IA0KPiANCj4gDQo+ICAgICAg
+ICANCj4gICANCj4gICAgICAgICAgDQo+IA0K
 
-On 14 April 2014 03:53, Will Deacon <will.deacon@arm.com> wrote:
-> On Tue, Mar 18, 2014 at 09:40:57PM +0000, Sebastian Capella wrote:
->> Use of tracers in local_irq_disable is causes abort loops when called
->> with irqs disabled using a temporary stack.  Replace local_irq_disable
->> with raw_local_irq_disable instead to avoid tracers.
->
-> Do you have any more information about these aborts? At the time we call
-> local_irq_disable, the stack is still intact, so if the issue is simply
-> related to having any tracers active at the call_with_stack invocation, we'd
-> be better off disabling tracing here altogether.
 
-This is specifically for when soft_restart is called in the
-hibernation path with tracers enabled.  At that point, we've already
-switched to a temporary stack, and when we call local_irq_disable,
-we'll see this:
-
-In the local_irq_disable, it ends up calling trace_hardirqs_off
-(CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled), which calls
-trace_hardirqs_off_caller which checks lockdep_recursion in the
-current task, but we've switched to a temporary stack with the
-call_with_stack, and get_current is returning NULL.  This
-triggers a data abort, which calls trace_hardirqs_off
-again and so on.
-
-We originally had a patch which added a soft restart called
-soft_restart_noirq which avoided the irq disable.
-
-You can see the discussion here:
-https://patchwork.kernel.org/patch/3677591/
-
-Thanks!
-
-Sebastian
