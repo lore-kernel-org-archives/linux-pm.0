@@ -1,67 +1,53 @@
-From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH] PM / devfreq: Use freq_table for available_frequencies
-Date: Tue, 15 Apr 2014 01:36:00 +0000 (GMT)
-Message-ID: <8568895.444151397525760132.JavaMail.weblogic@epml02>
-Reply-To: myungjoo.ham@samsung.com
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] PM / devfreq: Use freq_table for available_frequencies
+Date: Mon, 14 Apr 2014 22:16:10 -0700
+Message-ID: <534CC09A.30200@codeaurora.org>
+References: <8568895.444151397525760132.JavaMail.weblogic@epml02>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:54003 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbaDOBgD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Apr 2014 21:36:03 -0400
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0N4100ASJTS04PA0@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 15 Apr 2014 10:36:00 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <8568895.444151397525760132.JavaMail.weblogic@epml02>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-PiBNeXVuZ0pvby9LeXVuZ21pbiwNCj4gDQo+IEJ1bXAuIENhbiB3ZSBhY2NlcHQgdGhpcyBwYXRj
-aCBwbGVhc2U/DQo+IA0KPiAtU2FyYXZhbmENCg0KTmFjay4NCg0KUGxlYXNlIG5vdGUgdGhhdCBm
-cmVxX3RhYmxlIGlzIGFsc28gYW4gb3B0aW9uYWwgdmFsdWUsIHdoaWNoIG1heQ0KYmUgbnVsbC4N
-Cg0KQmVzaWRlcywgcGxlYXNlIGJlIGF3YXJlIHRoYXQgeW91ciBjb2RlIGlzIHVuZGVyIHJjdV9y
-ZWFkX2xvY2soKS4NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvby4NCg0KcHMuIEknbGwgc2VuZCBhIHJl
-bGF0ZWQgcGF0Y2ggKGF2b2lkIGFjY2Vzc2luZyBudWxsIGJ1dCBub3QtYW4tZXJyb3INCnBvaW50
-ZXIgYXQgb3RoZXIgc3lzZnMgbm9kZXMpLiBUaGFuayB5b3UgZm9yIGxldHRpbmcgbWUgY2F0Y2gg
-c3VjaCBidWdzIGFueXdheS4NCg0KPiANCj4gDQo+IE9uIDA0LzEwLzIwMTQgMDc6NTQgUE0sIFNh
-cmF2YW5hIEthbm5hbiB3cm90ZToNCj4gPiBTb21lIGRldmljZXMgdXNlIGZyZXFfdGFibGUgaW5z
-dGVhZCBvZiBPUFAuIEZvciB0aG9zZSBkZXZpY2VzLCB0aGUNCj4gPiBhdmFpbGFibGVfZnJlcXVl
-bmNpZXMgZmlsZSBzaG93cyB1cCBlbXB0eS4gRml4IHRoYXQgYnkgdXNpbmcgZnJlcV90YWJsZSB0
-bw0KPiA+IGdlbmVyYXRlIHRoZSBhdmFpbGFibGVfZnJlcXVlbmNpZXMgZGF0YSB3aGVuIE9QUCBp
-cyBub3QgcHJlc2VudC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFNhcmF2YW5hIEthbm5hbiA8
-c2thbm5hbkBjb2RlYXVyb3JhLm9yZz4NCj4gPiAtLS0NCj4gPiAgIGRyaXZlcnMvZGV2ZnJlcS9k
-ZXZmcmVxLmMgfCAxNSArKysrKysrKysrKy0tLS0NCj4gPiAgIDEgZmlsZSBjaGFuZ2VkLCAxMSBp
-bnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZl
-cnMvZGV2ZnJlcS9kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+ID4gaW5k
-ZXggMjA0MmVjMy4uYTcxNWQxNSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvZGV2
-ZnJlcS5jDQo+ID4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiA+IEBAIC05MTIs
-MTkgKzkxMiwyNiBAQCBzdGF0aWMgc3NpemVfdCBhdmFpbGFibGVfZnJlcXVlbmNpZXNfc2hvdyhz
-dHJ1Y3QgZGV2aWNlICpkLA0KPiA+ICAgCXN0cnVjdCBkZXZmcmVxICpkZiA9IHRvX2RldmZyZXEo
-ZCk7DQo+ID4gICAJc3RydWN0IGRldmljZSAqZGV2ID0gZGYtPmRldi5wYXJlbnQ7DQo+ID4gICAJ
-c3RydWN0IGRldl9wbV9vcHAgKm9wcDsNCj4gPiArCXVuc2lnbmVkIGludCBpID0gMCwgbWF4X3N0
-YXRlID0gZGYtPnByb2ZpbGUtPm1heF9zdGF0ZTsNCj4gPiArCWJvb2wgdXNlX29wcDsNCj4gPiAg
-IAlzc2l6ZV90IGNvdW50ID0gMDsNCj4gPiAgIAl1bnNpZ25lZCBsb25nIGZyZXEgPSAwOw0KPiA+
-DQo+ID4gICAJcmN1X3JlYWRfbG9jaygpOw0KPiA+ICsJdXNlX29wcCA9IGRldl9wbV9vcHBfZ2V0
-X29wcF9jb3VudChkZXYpID4gMDsNCj4gPiAgIAlkbyB7DQo+ID4gLQkJb3BwID0gZGV2X3BtX29w
-cF9maW5kX2ZyZXFfY2VpbChkZXYsICZmcmVxKTsNCj4gPiAtCQlpZiAoSVNfRVJSKG9wcCkpDQo+
-ID4gLQkJCWJyZWFrOw0KPiA+ICsJCWlmICh1c2Vfb3BwKSB7DQo+ID4gKwkJCW9wcCA9IGRldl9w
-bV9vcHBfZmluZF9mcmVxX2NlaWwoZGV2LCAmZnJlcSk7DQo+ID4gKwkJCWlmIChJU19FUlIob3Bw
-KSkNCj4gPiArCQkJCWJyZWFrOw0KPiA+ICsJCX0gZWxzZSB7DQo+ID4gKwkJCWZyZXEgPSBkZi0+
-cHJvZmlsZS0+ZnJlcV90YWJsZVtpKytdOw0KPiA+ICsJCX0NCj4gPg0KPiA+ICAgCQljb3VudCAr
-PSBzY25wcmludGYoJmJ1Zltjb3VudF0sIChQQUdFX1NJWkUgLSBjb3VudCAtIDIpLA0KPiA+ICAg
-CQkJCSAgICIlbHUgIiwgZnJlcSk7DQo+ID4gICAJCWZyZXErKzsNCj4gPiAtCX0gd2hpbGUgKDEp
-Ow0KPiA+ICsJfSB3aGlsZSAodXNlX29wcCB8fCAoIXVzZV9vcHAgJiYgaSA8IG1heF9zdGF0ZSkp
-Ow0KPiA+ICAgCXJjdV9yZWFkX3VubG9jaygpOw0KPiA+DQo+ID4gICAJLyogVHJ1bmNhdGUgdGhl
-IHRyYWlsaW5nIHNwYWNlICovDQo+ID4NCj4gDQo+IA0KPiAtLSANCj4gVGhlIFF1YWxjb21tIElu
-bm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyIG9mIHRoZSBDb2RlIEF1cm9yYSBGb3J1
-bSwNCj4gaG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uDQo+IA0KPiANCj4gDQo+ICAgICAg
-ICANCj4gICANCj4gICAgICAgICAgDQo+IA0K
+On 04/14/2014 06:36 PM, =C7=D4=B8=ED=C1=D6 wrote:
+>> MyungJoo/Kyungmin,
+>>
+>> Bump. Can we accept this patch please?
+>>
+>> -Saravana
+>=20
+> Nack.
+>=20
+> Please note that freq_table is also an optional value, which may
+> be null.
 
+Ah, I saw that the max_freq would be zero if freq_table was NULL and I
+assumed that it can't be NULL. But I see that the max_freq limit is not
+applied if it's zero. Thanks for catching it.
 
+> Besides, please be aware that your code is under rcu_read_lock().
+
+Valid point. I was just trying to keep the diff simple. No one's really
+going to be catting this file often when performance matters.
+
+>=20
+>=20
+> Cheers,
+> MyungJoo.
+>=20
+> ps. I'll send a related patch (avoid accessing null but not-an-error
+> pointer at other sysfs nodes). Thank you for letting me catch such bu=
+gs anyway.
+
+I can go ahead and do this myself if you don't mind.
+
+-Saravana
+
+--=20
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora For=
+um,
+hosted by The Linux Foundation
