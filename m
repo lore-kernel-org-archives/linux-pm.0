@@ -1,48 +1,34 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH 00/20] Introduce new cpufreq helper macros
-Date: Tue, 15 Apr 2014 14:03:57 +0300
-Message-ID: <534D121D.9030304@semaphore.gr>
-References: <534C4E14.3080509@semaphore.gr> <CAKohpomB5fSDS4inMrxfE57r+N22yVJskgK+wUXL8UGcXqdZow@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCHC 2/3] idle: store the idle state the cpu is
+Date: Tue, 15 Apr 2014 14:43:30 +0200
+Message-ID: <20140415124330.GK11182@twins.programming.kicks-ass.net>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
+ <1396009796-31598-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomB5fSDS4inMrxfE57r+N22yVJskgK+wUXL8UGcXqdZow@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "David S. Miller" <davem@davemloft.net>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Randy Dunlap <rdunlap@infradead.org>, linux-doc@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:54775 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbaDOMnp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Apr 2014 08:43:45 -0400
+Content-Disposition: inline
+In-Reply-To: <1396009796-31598-3-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@rjwysocki.net, nicolas.pitre@linaro.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-On 15/04/2014 09:01 =CF=80=CE=BC, Viresh Kumar wrote:
-> On 15 April 2014 02:37, Stratos Karafotis <stratosk@semaphore.gr> wro=
-te:
->> This patch set introduces two freq_table helper macros which
->> can be used for iteration over cpufreq_frequency_table and
->> makes the necessary changes to cpufreq core and drivers that
->> use such an iteration procedure.
->>
->> The motivation was a usage of common procedure to iterate over
->> cpufreq_frequency_table across all drivers and cpufreq core.
->>
->> This was tested on a x86_64 platform.
->> Patches 4-17 compiled successfully but unfortunately I was not
->> able to compile test patches 18-20.
->=20
-> Mostly okay, just some Nitpicks..
->=20
-> Please rearrange your patches this way:
-> - First patch just adds the wrappers
-> - Second one makes changes to drivers/cpufreq/, i.e. include all core
-> and drivers
->   changes into a single patch here as the logs are exactly same.
-> - Then framework by framework, as we may need Acks/Reviews by them
->   separately..
->=20
-> So, probably just 5-7 would do.
->=20
+On Fri, Mar 28, 2014 at 01:29:55PM +0100, Daniel Lezcano wrote:
+> @@ -143,6 +145,10 @@ static int cpuidle_idle_call(void)
+>  			if (!ret) {
+>  				trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>  
+> +				*power = &drv->states[next_state].power;
+> +
+> +				wmb();
+> +
 
-
-Thanks for your review and your corrections!
-I will prepare and send the v2 according to your suggestions.
-
-Stratos
+I very much suspect you meant: smp_wmb(), as I don't see the hardware
+reading that pointer, therefore UP wouldn't care. Also, any and all
+barriers should come with a comment that describes the data ordering and
+points to the matchin barriers.
