@@ -1,108 +1,110 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH v2 6/8] thermal: cpu_cooling: Use cpufreq_for_each_valid_entry
- macro for iteration
-Date: Wed, 16 Apr 2014 01:26:39 +0300
-Message-ID: <534DB21F.4070005@semaphore.gr>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v2 1/8] cpufreq: Introduce macros for cpufreq_frequency_table
+ iteration
+Date: Tue, 15 Apr 2014 16:47:19 -0700
+Message-ID: <534DC507.3010507@infradead.org>
+References: <534DB1DF.80506@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <534DB1DF.80506@semaphore.gr>
+Sender: linux-doc-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "David S. Miller" <davem@davemloft.net>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Linus Walleij <linus.walleij@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq core now supports the cpufreq_for_each_valid_entry macro
-helper for iteration over the cpufreq_frequency_table, so use it.
+On 04/15/2014 03:25 PM, Stratos Karafotis wrote:
+> Many cpufreq drivers need to iterate over the cpufreq_frequency_table
+> for various tasks.
+> 
+> This patch introduces two macros which can be used for iteration over
+> cpufreq_frequency_table keeping a common coding style across drivers:
+> 
+> - cpufreq_for_each_entry: iterate over each entry of the table
+> - cpufreq_for_each_valid_entry: iterate over each entry that contains
+> a valid frequency.
+> 
+> It should have no functional changes.
+> 
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  Documentation/cpu-freq/cpu-drivers.txt | 16 ++++++++++++++++
+>  drivers/cpufreq/cpufreq.c              | 11 +++++++++++
+>  include/linux/cpufreq.h                | 21 +++++++++++++++++++++
+>  3 files changed, 48 insertions(+)
+> 
+> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+> index 48da5fd..2c9156a 100644
+> --- a/Documentation/cpu-freq/cpu-drivers.txt
+> +++ b/Documentation/cpu-freq/cpu-drivers.txt
+> @@ -228,3 +228,19 @@ is the corresponding frequency table helper for the ->target
+>  stage. Just pass the values to this function, and the unsigned int
+>  index returns the number of the frequency table entry which contains
+>  the frequency the CPU shall be set to.
+> +
+> +The following macros can be used as iterators over cpufreq_frequency_table:
 
-Also remove the redundant !! operator.
+<insert blank line>
 
-It should have no functional changes.
+> +cpufreq_for_each_entry(pos, table) - iterates over all entries of frequency
+> +table.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/thermal/cpu_cooling.c | 33 +++++++++++++--------------------
- 1 file changed, 13 insertions(+), 20 deletions(-)
+<insert blank line>
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 4246262..84a75f8 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -144,11 +144,11 @@ static int get_property(unsigned int cpu, unsigned long input,
- 			unsigned int *output,
- 			enum cpufreq_cooling_property property)
- {
--	int i, j;
-+	int i;
- 	unsigned long max_level = 0, level = 0;
- 	unsigned int freq = CPUFREQ_ENTRY_INVALID;
- 	int descend = -1;
--	struct cpufreq_frequency_table *table =
-+	struct cpufreq_frequency_table *pos, *table =
- 					cpufreq_frequency_get_table(cpu);
- 
- 	if (!output)
-@@ -157,20 +157,16 @@ static int get_property(unsigned int cpu, unsigned long input,
- 	if (!table)
- 		return -EINVAL;
- 
--	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		/* ignore invalid entries */
--		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
--
-+	cpufreq_for_each_valid_entry(pos, table) {
- 		/* ignore duplicate entry */
--		if (freq == table[i].frequency)
-+		if (freq == pos->frequency)
- 			continue;
- 
- 		/* get the frequency order */
- 		if (freq != CPUFREQ_ENTRY_INVALID && descend == -1)
--			descend = !!(freq > table[i].frequency);
-+			descend = freq > pos->frequency;
- 
--		freq = table[i].frequency;
-+		freq = pos->frequency;
- 		max_level++;
- 	}
- 
-@@ -190,29 +186,26 @@ static int get_property(unsigned int cpu, unsigned long input,
- 	if (property == GET_FREQ)
- 		level = descend ? input : (max_level - input);
- 
--	for (i = 0, j = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		/* ignore invalid entry */
--		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
--
-+	i = 0;
-+	cpufreq_for_each_valid_entry(pos, table) {
- 		/* ignore duplicate entry */
--		if (freq == table[i].frequency)
-+		if (freq == pos->frequency)
- 			continue;
- 
- 		/* now we have a valid frequency entry */
--		freq = table[i].frequency;
-+		freq = pos->frequency;
- 
- 		if (property == GET_LEVEL && (unsigned int)input == freq) {
- 			/* get level by frequency */
--			*output = descend ? j : (max_level - j);
-+			*output = descend ? i : (max_level - i);
- 			return 0;
- 		}
--		if (property == GET_FREQ && level == j) {
-+		if (property == GET_FREQ && level == i) {
- 			/* get frequency by level */
- 			*output = freq;
- 			return 0;
- 		}
--		j++;
-+		i++;
- 	}
- 
- 	return -EINVAL;
+> +cpufreq-for_each_valid_entry(pos, table) - iterates over all entries,
+> +excluding CPUFREQ_ENTRY_INVALID frequencies.
+> +Use arguments "pos" - a cpufreq_frequency_table * as a loop cursor and
+> +"table" - the cpufreq_frequency_table * you want to iterate over.
+
+<insert blank line>
+
+> +For example:
+> +
+> +	struct cpufreq_frequency_table *pos, *driver_freq_table;
+> +
+> +	cpufreq_for_each_entry(pos, driver_freq_table) {
+> +		/* Do something with pos */
+> +		pos->frequency = ...
+> +	}
+
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 5ae5100..4f913b5 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -468,6 +468,27 @@ struct cpufreq_frequency_table {
+>  				    * order */
+>  };
+>  
+> +bool cpufreq_next_valid(struct cpufreq_frequency_table **pos);
+> +
+> +/*
+> + * cpufreq_for_each_entry -	iterate over a cpufreq_frequency_table
+> + * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
+> + * @table:	the cpufreq_frequency_table * to iterate over.
+> + */
+> +
+> +#define cpufreq_for_each_entry(pos, table)	\
+> +	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)
+> +
+> +/*
+> + * cpufreq_for_each_valid_entry -     iterate over a cpufreq_frequency_table
+> + *	exluding CPUFREQ_ENTRY_INVALID frequencies.
+
+        excluding
+
+> + * @pos:        the cpufreq_frequency_table * to use as a loop cursor.
+> + * @table:      the cpufreq_frequency_table * to iterate over.
+> + */
+> +
+> +#define cpufreq_for_each_valid_entry(pos, table)	\
+> +	for (pos = table; cpufreq_next_valid(&pos); pos++)
+> +
+>  int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+>  				    struct cpufreq_frequency_table *table);
+>  
+> 
+
+
 -- 
-1.9.0
+~Randy
