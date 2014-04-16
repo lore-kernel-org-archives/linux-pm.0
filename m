@@ -1,234 +1,137 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: 3.13.?: Strange / dangerous fan policy...
-Date: Thu, 17 Apr 2014 02:32:20 +0800
-Message-ID: <1397673140.2495.4.camel@rzhang-toshiba>
-References: <531A1EEE.9090101@netscape.net> <5340BF6E.5040400@roeck-us.net>
-	 <5341E09F.6050402@netscape.net> <1705965.XMmsPN5L3N@vostro.rjw.lan>
-	 <5347206F.6020201@netscape.net> <5349D4D6.9060506@netscape.net>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH RFC] PM / Hibernate: no kernel_power_off when
+	pm_power_off NULL
+Date: Wed, 16 Apr 2014 21:41:19 +0100
+Message-ID: <20140416204119.GJ24070@n2100.arm.linux.org.uk>
+References: <1395348795-8554-1-git-send-email-sebastian.capella@linaro.org> <1395348795-8554-2-git-send-email-sebastian.capella@linaro.org> <20140320212336.GA17368@amd.pavel.ucw.cz> <20140320213502.795a5d3c@alan.etchedpixels.co.uk> <CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com> <CADHgK6sh6TUc4jBQFQHTQuhze9=r2FBzF6aULUc_c+bbWYjp5w@mail.gmail.com> <CADHgK6sCmPVZ--eyEnqnjfs_4C_PfHTgAUQ_Nb4oJP0mBDnQUw@mail.gmail.com> <20140415205453.GX24070@n2100.arm.linux.org.uk> <20140415211832.GA32213@amd.pavel.ucw.cz> <CADHgK6vzagyELYGnVoHvfnK9G57-NSycOaKsNQ53rnU1pOwn=Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:50411 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753304AbaDPScV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Apr 2014 14:32:21 -0400
-In-Reply-To: <5349D4D6.9060506@netscape.net>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:37535 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756397AbaDPUmI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Apr 2014 16:42:08 -0400
+Content-Disposition: inline
+In-Reply-To: <CADHgK6vzagyELYGnVoHvfnK9G57-NSycOaKsNQ53rnU1pOwn=Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Manuel Krause <manuelkrause@netscape.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jean Delvare <jdelvare@suse.de>, lm-sensors@lm-sensors.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-On Sun, 2014-04-13 at 02:05 +0200, Manuel Krause wrote:
-> On 2014-04-11 00:51, Manuel Krause wrote:
-> > On 2014-04-07 13:45, Rafael J. Wysocki wrote:
-> >> On Monday, April 07, 2014 01:17:51 AM Manuel Krause wrote:
-> >>> On 2014-04-06 04:43, Guenter Roeck wrote:
-> >>>> On 04/05/2014 07:37 PM, Manuel Krause wrote:
-> >>>>> On 2014-04-01 01:47, Guenter Roeck wrote:
-> >>>>>> On 03/31/2014 04:37 PM, Manuel Krause wrote:
-> >>>>>>> On 2014-03-20 21:21, Manuel Krause wrote:
-> >>>>>>>> On 2014-03-11 22:59, Manuel Krause wrote:
-> >>>>>>>>> On 2014-03-10 02:49, Manuel Krause wrote:
-> >>>>>>>>>> On 2014-03-09 18:58, Rafael J. Wysocki wrote:
-> >>>>>>>>>>> On Sunday, March 09, 2014 01:10:25 AM Manuel Krause
-> >>>>>>>>>>> wrote:
-> >>>>>>>>>>>> On 2014-03-08 16:59, Guenter Roeck wrote:
-> >>>>>>>>>>>>> On 03/08/2014 03:08 AM, Jean Delvare wrote:
-> >>>>>>>>>>>>>> On Fri, 7 Mar 2014 14:52:30 -0800, Guenter Roeck
-> >>>>>>>>>>>>>> wrote:
-> >>>>>>>>>>>>>>> On Fri, Mar 07, 2014 at 11:04:29PM +0100, Manuel
-> >>>>>>>>>>>>>>> Krause
-> >>>>>>>>>>>>>>> wrote:
-> >>>>>>>> [SNIP]
-> >>>>>>>>
-> >>>>>>>> Long time no reply from you... Have I overseen a unwritten
-> >>>>>>>> convention? Or were my charts that unusable for your
-> >>>>>>>> analysis/work?
-> >>>>>>>>
-> >>>>>>>> Two days ago, I tried the 3.14.0-rc7-vanilla. And the
-> >>>>>>>> problem
-> >>>>>>>> persists. "Strange / dangerous fan policy..."
-> >>>>>>>>
-> >>>>>>>> Since kernel 3.13.6 I've managed to 'fix' the potential
-> >>>>>>>> overheating problem by manually issuing a:
-> >>>>>>>> "echo 1 > /sys/class/thermal/cooling_device3/cur_state" *)
-> >>>>>>>> _before_ obviously critical temperatures occur. Remind: This
-> >>>>>>>> particular setting may only work for my system! ...and keeps
-> >>>>>>>> working for 3.14-rc.
-> >>>>>>>>
-> >>>>>>>> In the following I'd like to present you a modified output
-> >>>>>>>> of my
-> >>>>>>>> /sys/class/thermal, that I've written a script for (for my
-> >>>>>>>> system), that shows the results in the way of
-> >>>>>>>> linux/Documentation/thermal/sysfs-api.txt, point 3:
-> >>>>>>>> {I've uploded the files to pastebin, to not swamp you and
-> >>>>>>>> the
-> >>>>>>>> lists with so many lines of logs.}
-> >>>>>>>>
-> >>>>>>>> For the last good kernel -- 3.12.14 -- in-use:
-> >>>>>>>>    http://pastebin.com/HL1PNcda
-> >>>>>>>> For my first bad kernel revision 3.13 -- at critical temp:
-> >>>>>>>>    http://pastebin.com/98hgf1a9
-> >>>>>>>> For the last bad kernel -- 3.14.0-rc7 -- at critical temp:
-> >>>>>>>>    http://pastebin.com/MuTwTnjD
-> >>>>>>>> For the last bad kernel -- 3.14.0-rc7 -- after issuing the
-> >>>>>>>>    *) command:
-> >>>>>>>>    http://pastebin.com/2peda54z
-> >>>>>>>>
-> >>>>>>>> Please, have a look at them! And maybe, give me hints on
-> >>>>>>>> how I
-> >>>>>>>> can help you to further debug this issue, as my manual
-> >>>>>>>> method
-> >>>>>>>> works but it's annoying.
-> >>>>>>>>
-> >>>>>>>> And, PLEASE CC: ME, as I'm not on the lists. Or lead this
-> >>>>>>>> Email-thread to someone in charge.
-> >>>>>>>>
-> >>>>>>>> Thank you for your work && best regards,
-> >>>>>>>> Manuel Krause
-> >>>>>>>>
-> >>>>>>>
-> >>>>>>> This is still BUG 71711
-> >>>>>>> https://bugzilla.kernel.org/show_bug.cgi?id=71711
-> >>>>>>>
-> >>>>>>> 3.12.15 works very well
-> >>>>>>> 3.13.7 fails
-> >>>>>>> 3.14.0-rc8 fails
-> >>>>>>>
-> >>>>>>
-> >>>>>> Best you can do would really be to bisect the problem.
-> >>>>>> Unfortunately only you (or someone else with an affected
-> >>>>>> system)
-> >>>>>> can do that. Once the culprit is known it would be much easier
-> >>>>>> to get it fixed.
-> >>>>>>
-> >>>>>> To answer your earlier question: I don't think you did
-> >>>>>> anything
-> >>>>>> wrong.
-> >>>>>> I guess everyone else is just as clueless as I am (if not,
-> >>>>>> speak up
-> >>>>>> and help ;-).
-> >>>>>>
-> >>>>>> Guenter
-> >>>>>>
-> >>>>>
-> >>>>> I've now bisected two times. From two different kernel origins,
-> >>>>> just to be sure, as I'm new to this stupid-and-lengthy method,
-> >>>>> and, to be sure, I haven't given a false positive inbetween due
-> >>>>> to boredom.
-> >>>>>
-> >>>>
-> >>>> Not really. Keep in mint that you were able to track down the
-> >>>> bad
-> >>>> commit
-> >>>> among more than 10,000 commits in a reasonably short period
-> >>>> of time.
-> >>>>
-> >>>>> In the end it says each time:
-> >>>>> # git bisect bad | tee -a /var/log/bisect.log
-> >>>>> cc8ef52707341e67a12067d6ead991d56ea017ca is the first bad
-> >>>>> commit
-> >>>>> commit cc8ef52707341e67a12067d6ead991d56ea017ca
-> >>>>> Author: Zhang Rui <rui.zhang@intel.com>
-> >>>>> Date:   Wed Sep 25 20:39:45 2013 +0800
-> >>>>>
-> >>>>>       ACPI / AC: convert ACPI ac driver to platform bus
-> >>>>>
-> >>>>>       Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> >>>>>       Signed-off-by: Rafael J. Wysocki
-> >>>>> <rafael.j.wysocki@intel.com>
-> >>>>>
-> >>>> Off to the two of you...
-> >>>>
-> >>>> Guenter
-> >>>>
-> >>>>> :040000 040000 5a0d397cfcbf53c03390f2805b83754cb7837d84
-> >>>>> 4a2af1454f65d67f1d1a507c08e3b9ef3ffe57e7 M      drivers
-> >>>>>
-> >>>>>
-> >>>>> Please help me, on how I can help debug this more, and please
-> >>>>> also read the newest from
-> >>>>> https://bugzilla.kernel.org/show_bug.cgi?id=71711
-> >>>>>
-> >>>>> Manuel Krause
-> >>>>>
-> >>>>>
-> >>>>>
-> >>>>
-> >>>
-> >>> Sorry, that I've forgotton to add the following last night: After
-> >>> the first bisection round, I was so glad about a result that
-> >>> time, that I reverted this mentioned patch from the 3.13.8
-> >>> kernel, but this didn't fix it.
+On Wed, Apr 16, 2014 at 09:28:28AM -0700, Sebastian Capella wrote:
+> On 15 April 2014 14:18, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Tue 2014-04-15 21:54:53, Russell King - ARM Linux wrote:
+> >> What I'm basically saying is that I see no reason for ARM to do something
+> >> different to what x86 does.
 > >>
-> >> This means that the commit in question didn't introduce the
-> >> problem
-> >> you're seeing.
-> >>
-> >> Please check out commit 7f2dc5c4bcbf (Merge tag
-> >> 'dm-3.13-changes' of
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm),
-> >>
-> >> build a kernel from that and see if you can reprocude the
-> >> problem with it.
-> >> If so, it can be used as your new "first known bad" kernel for
-> >> bisection.
-> >> Otherwise, you can use it as the "first good" one and commit
-> >> cc8ef52707341
-> >> as "first known bad".
-> >>
-> >> Thanks!
-> >>
+> >> What is pretty clear to me is that ARM is compatible with x86, which is
+> >> compatible with kernel/reboot.c, and it's the hibernate code which is
+> >> the odd one out.
 > >
-> > Sorry, for any inconvenience, but you should forget about what
-> > I've written, that reverting the patch in question from 3.13.x
-> > didn't fix it. Of course it didn't fix it, as the patch doesn't
-> > cleanly revert from release-kernels at all. My mistake!
+> > I'm pretty sure the original code did not return. Anyway, the best
+> > solution, given how many platforms are out there, would be to
 > >
-> > I' ve been guided by Guenter Roeck through two more bisecting
-> > sessions/ways on this, that always pointed to the commit in
-> > question.
+> > a) document that it should not return
 > >
-> > Some citation:
-> > Me:
-> >>>> O.k. I've now followed your latest directions:
-> >>>> git checkout -b testing cc8ef52707341e67a12067d6ead991d56ea017ca
-> >>>> => result after rebuild was BAD =>
-> >>>> git revert cc8ef52707341e67a12067d6ead991d56ea017ca
-> >>>> => result after rebuild was GOOD
-> >>>>
-> > [ ...]
-> >>>> Reverting that commit in question from this very git tree
-> >>>> makes the
-> >>>> kernel work as expected.
-> > [ ... ]
-> > Guenter:
-> >>> Report the results you have above. That should show without
-> >>> question
-> >>> that cc8ef52707341e67a12067d6ead991d56ea017ca is the bad commit,
-> >>> and it should be easy to reproduce.
-> >
-> > That seems to be all I can do for you for now. Please let me know
-> > of any preliminary patches to test!
-> > And I want to add special thanks to Guenter Roeck for his
-> > always-just-in-time assistance over so many days,
-> >
-> > Manuel Krause
-> >
+> > b) fix hibernation to handle the returning case, anyway.
 > 
-> BTW -- applying this patch in question to a 3.12.17 kernel, that 
-> worked optimal WITHOUT it, makes it FAIL as described for 3.13.x 
-> kernels. (And, yes, the patch applied cleanly, compiled fine and 
-> boots nicely.)
+> Thanks Russell and Pavel!
 > 
-could you please apply commit 50a2bc5429f07ec4d53df2d287b03bdbceb281bb
-on top of commit cc8ef52707341e67a12067d6ead991d56ea017ca and check if
-the problem still exist in 3.12.17 kernel?
+> This sounds fine to me.  Any objections?
 
-thanks,
-rui
-> Manuel Krause
-> 
+Here is the i386 code from 2.2.20:
 
+void machine_halt(void)
+{
+}
 
+void machine_power_off(void)
+{
+        if (acpi_power_off)
+                acpi_power_off();
+}
+
+Both can return.  On the other hand, machine_restart() can never return as
+the final attempt to perform that action in machine_real_restart is a jump
+to 16-bit code.
+
+2.4 kernels then modified it to this:
+
+void machine_halt(void)
+{
+}
+
+void machine_power_off(void)
+{
+        if (pm_power_off)
+                pm_power_off();
+}
+
+with machine_restart() doing similar to v2.2.
+
+2.6.0 also did the same as 2.4 kernels.  2.6.16 then changed to this:
+
+void machine_restart(char * __unused)
+{
+        machine_shutdown();
+        machine_emergency_restart();
+}
+
+void machine_halt(void)
+{
+}
+
+void machine_power_off(void)
+{
+        if (pm_power_off) {
+                machine_shutdown();
+                pm_power_off();
+        }
+}
+
+which starts adding some extra stuff into the power off hook - but
+again, it's a no-op unless the pm_power_off function pointer is
+initialised.
+
+Today, it's:
+
+void machine_power_off(void)
+{
+        machine_ops.power_off();
+}
+
+which calls native_power_off():
+
+static void native_machine_power_off(void)
+{
+        if (pm_power_off) {
+                if (!reboot_force)
+                        machine_shutdown();
+                pm_power_off();
+        }
+        /* A fallback in case there is no PM info available */
+        tboot_shutdown(TB_SHUTDOWN_HALT);
+}
+
+and tboot_shutdown():
+
+void tboot_shutdown(u32 shutdown_type)
+{
+        void (*shutdown)(void);
+
+        if (!tboot_enabled())
+                return;
+
+so it's entirely possible today for machine_power_off() on x86 to return.
+
+So... the i386 code has had this "machine_power_off() can return"
+behaviour for a significant number of years and persists to this day.
+
+I'd say scrap (a) _unless_ we're going to add while (1) loops to all
+the architectures.  Alternatively, we could just accept that
+machine_power_off() may return and deal with that case (iow, not
+crash) in generic code.
+
+-- 
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
