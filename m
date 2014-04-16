@@ -1,64 +1,42 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v2 0/8] Introduce new cpufreq helper macros
-Date: Wed, 16 Apr 2014 10:04:13 +0300
-Message-ID: <534E2B6D.1000902@semaphore.gr>
-References: <534DB1CC.60407@semaphore.gr> <CAKohpomvmpiYkQAP7Yb=TNxNsXMVh1_MLuK7KQrdEkf15MyvMg@mail.gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
+Date: Wed, 16 Apr 2014 11:12:43 +0100
+Message-ID: <20140416101243.GA6952@n2100.arm.linux.org.uk>
+References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org> <1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomvmpiYkQAP7Yb=TNxNsXMVh1_MLuK7KQrdEkf15MyvMg@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Laura Abbott <lauraa@codeaurora.org>, Jiang Liu <liuj97@gmail.com>, Sricharan R <r.sricharan@ti.com>, Victor Kamensky <victor.kamensky@linaro.org>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Ben Dooks <ben.dooks@codethink.co.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On 16/04/2014 07:01 =CF=80=CE=BC, Viresh Kumar wrote:
-> On 16 April 2014 03:55, Stratos Karafotis <stratosk@semaphore.gr> wro=
-te:
->> Hi all,
->>
->> This patch set introduces two freq_table helper macros which
->> can be used for iteration over cpufreq_frequency_table and
->> makes the necessary changes to cpufreq core and drivers that
->> use such an iteration procedure.
->>
->> The motivation was a usage of common procedure to iterate over
->> cpufreq_frequency_table across all drivers and cpufreq core.
->>
->> This was tested on a x86_64 platform.
->> Most files compiled successfully but unfortunately I was not
->> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
->> due to lack of cross compiler.
->>
->> Changes v1 -> v2
->>         - Rearrange patches
->>         - Remove redundant braces
->>         - Fix a newly introduced bug in exynos5440
->>         - Use cpufreq_for_each_valid_entry instead of
->> cpufreq_for_each_entry in cpufreq_frequency_table_get_index()
->>         - Drop redundant double ! operator in longhaul and change
->=20
-> You dropped this !! in thermal stuff and not longhaul :)
->=20
->> the pos loop cursor variable to freq_pos.
->>         - Declare pos variable on a separate line
->>
->> Stratos Karafotis (8):
->>   cpufreq: Introduce macros for cpufreq_frequency_table iteration
->>   cpufreq: Use cpufreq_for_each_* macros for frequency table iterati=
-on
->>   davinci: da850: Use cpufreq_for_each_entry macro for iteration
->>   mips: lemote 2f: se cpufreq_for_each_entry macro for iteration
->>   mfd: db8500-prcmu: Use cpufreq_for_each_entry macro for iteration
->>   thermal: cpu_cooling: Use cpufreq_for_each_valid_entry macro for
->>     iteration
->>   irda: sh_sir: Use cpufreq_for_each_valid_entry macro for iteration
->>   sh: clk: Use cpufreq_for_each_valid_entry macro for iteration
->=20
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->=20
+On Wed, Mar 05, 2014 at 02:50:05AM -0800, Sebastian Capella wrote:
+> diff --git a/arch/arm/include/asm/memory.h b/arch/arm/include/asm/memory.h
+> index 8756e4b..d32adbb 100644
+> --- a/arch/arm/include/asm/memory.h
+> +++ b/arch/arm/include/asm/memory.h
+> @@ -291,6 +291,7 @@ static inline void *phys_to_virt(phys_addr_t x)
+>   */
+>  #define __pa(x)			__virt_to_phys((unsigned long)(x))
+>  #define __va(x)			((void *)__phys_to_virt((phys_addr_t)(x)))
+> +#define __pa_symbol(x)		__pa((unsigned long)(x))
+>  #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
 
-Thanks!
+I don't see the appropriate version on the mailing list, so I'll comment
+here instead.  In 8011/1, you added here:
 
-Stratos
++#define virt_to_pfn(kaddr)      (__pa(kaddr) >> PAGE_SHIFT)
+
+which conflicts with my solution (which fixes some rather horrid assembly
+code).  You can find my change as e26a9e00afc4 (ARM: Better virt_to_page()
+handling).  I can drop this from your patch, but it would be a good idea
+if you could re-validate against v3.15-rc1.
+
+Thanks.
+
+-- 
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
