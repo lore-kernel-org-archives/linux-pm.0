@@ -1,55 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 0/8] Introduce new cpufreq helper macros
-Date: Wed, 16 Apr 2014 09:31:34 +0530
-Message-ID: <CAKohpomvmpiYkQAP7Yb=TNxNsXMVh1_MLuK7KQrdEkf15MyvMg@mail.gmail.com>
-References: <534DB1CC.60407@semaphore.gr>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq, powernv: Fix build failure on UP
+Date: Wed, 16 Apr 2014 11:18:13 +0530
+Message-ID: <534E199D.2090504@linux.vnet.ibm.com>
+References: <20140415141111.GA28352@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <534DB1CC.60407@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <20140415141111.GA28352@windriver.com>
+Sender: linux-next-owner@vger.kernel.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com, linux-next@vger.kernel.org, rafael.j.wysocki@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq <cpufreq@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 16 April 2014 03:55, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+On 04/15/2014 07:41 PM, Paul Gortmaker wrote:
 > Hi all,
->
-> This patch set introduces two freq_table helper macros which
-> can be used for iteration over cpufreq_frequency_table and
-> makes the necessary changes to cpufreq core and drivers that
-> use such an iteration procedure.
->
-> The motivation was a usage of common procedure to iterate over
-> cpufreq_frequency_table across all drivers and cpufreq core.
->
-> This was tested on a x86_64 platform.
-> Most files compiled successfully but unfortunately I was not
-> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
-> due to lack of cross compiler.
->
-> Changes v1 -> v2
->         - Rearrange patches
->         - Remove redundant braces
->         - Fix a newly introduced bug in exynos5440
->         - Use cpufreq_for_each_valid_entry instead of
-> cpufreq_for_each_entry in cpufreq_frequency_table_get_index()
->         - Drop redundant double ! operator in longhaul and change
+> 
+> This new driver is causing build fails on linux-next for non-SMP.
+> 
+> http://kisskb.ellerman.id.au/kisskb/buildresult/10911507/
+> 
+> I didn't bisect since there are only two commits in total.  :)
+> 
+> Looks like some header foo where <linux/smp.h> is not getting <asm/smp.h>
+> 
 
-You dropped this !! in thermal stuff and not longhaul :)
+Hi Paul,
 
-> the pos loop cursor variable to freq_pos.
->         - Declare pos variable on a separate line
->
-> Stratos Karafotis (8):
->   cpufreq: Introduce macros for cpufreq_frequency_table iteration
->   cpufreq: Use cpufreq_for_each_* macros for frequency table iteration
->   davinci: da850: Use cpufreq_for_each_entry macro for iteration
->   mips: lemote 2f: se cpufreq_for_each_entry macro for iteration
->   mfd: db8500-prcmu: Use cpufreq_for_each_entry macro for iteration
->   thermal: cpu_cooling: Use cpufreq_for_each_valid_entry macro for
->     iteration
->   irda: sh_sir: Use cpufreq_for_each_valid_entry macro for iteration
->   sh: clk: Use cpufreq_for_each_valid_entry macro for iteration
+Thanks a lot for reporting the build failure. Please find the fix
+below.
+ 
+Regards,
+Srivatsa S. Bhat
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---------------------------------------------------------------------------
+
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq, powernv: Fix build failure on UP
+
+Paul Gortmaker reported the following build failure of the powernv cpufreq
+driver on UP configs:
+
+drivers/cpufreq/powernv-cpufreq.c:241:2: error: implicit declaration of
+function 'cpu_sibling_mask' [-Werror=implicit-function-declaration]
+cc1: some warnings being treated as errors
+make[3]: *** [drivers/cpufreq/powernv-cpufreq.o] Error 1
+make[2]: *** [drivers/cpufreq] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
+
+The trouble here is that cpu_sibling_mask is defined only in <asm/smp.h>, and
+<linux/smp.h> includes <asm/smp.h> only in SMP builds.
+
+So fix this build failure by explicitly including <asm/smp.h> in the driver,
+so that we get the definition of cpu_sibling_mask even in UP configurations.
+
+Reported-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
+
+ drivers/cpufreq/powernv-cpufreq.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 9edccc6..ed1c7e5 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -29,6 +29,7 @@
+ 
+ #include <asm/cputhreads.h>
+ #include <asm/reg.h>
++#include <asm/smp.h>
+ 
+ #define POWERNV_MAX_PSTATES	256
+ 
