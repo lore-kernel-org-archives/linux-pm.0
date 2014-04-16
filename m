@@ -1,50 +1,125 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpufreq, powernv: Fix build failure on UP
-Date: Wed, 16 Apr 2014 11:35:38 +0530
-Message-ID: <20140416060521.31321.98737.stgit@srivatsabhat.in.ibm.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH v3 1/8] cpufreq: Introduce macros for cpufreq_frequency_table
+ iteration
+Date: Wed, 16 Apr 2014 10:03:32 +0300
+Message-ID: <534E2B44.7090008@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-next-owner@vger.kernel.org>
-Sender: linux-next-owner@vger.kernel.org
-To: paul.gortmaker@windriver.com, rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, ego@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com, linux-next@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:58500 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752573AbaDPHDh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Apr 2014 03:03:37 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linus Walleij <linus.walleij@linaro.org>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Paul Gortmaker reported the following build failure of the powernv cpufreq
-driver on UP configs:
+Many cpufreq drivers need to iterate over the cpufreq_frequency_table
+for various tasks.
 
-drivers/cpufreq/powernv-cpufreq.c:241:2: error: implicit declaration of
-function 'cpu_sibling_mask' [-Werror=implicit-function-declaration]
-cc1: some warnings being treated as errors
-make[3]: *** [drivers/cpufreq/powernv-cpufreq.o] Error 1
-make[2]: *** [drivers/cpufreq] Error 2
-make[1]: *** [drivers] Error 2
-make: *** [sub-make] Error 2
+This patch introduces two macros which can be used for iteration over
+cpufreq_frequency_table keeping a common coding style across drivers:
 
-The trouble here is that cpu_sibling_mask is defined only in <asm/smp.h>, and
-<linux/smp.h> includes <asm/smp.h> only in SMP builds.
+- cpufreq_for_each_entry: iterate over each entry of the table
+- cpufreq_for_each_valid_entry: iterate over each entry that contains
+a valid frequency.
 
-So fix this build failure by explicitly including <asm/smp.h> in the driver,
-so that we get the definition of cpu_sibling_mask even in UP configurations.
+It should have no functional changes.
 
-Reported-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
 
- drivers/cpufreq/powernv-cpufreq.c |    1 +
- 1 file changed, 1 insertion(+)
+Changes v2 -> v3
+	- Better formatting in Documentation
+	- Fix spell error in comments
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 9edccc6..af49688 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -29,6 +29,7 @@
+ Documentation/cpu-freq/cpu-drivers.txt | 19 +++++++++++++++++++
+ drivers/cpufreq/cpufreq.c              | 11 +++++++++++
+ include/linux/cpufreq.h                | 21 +++++++++++++++++++++
+ 3 files changed, 51 insertions(+)
+
+diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+index 48da5fd..b045fe5 100644
+--- a/Documentation/cpu-freq/cpu-drivers.txt
++++ b/Documentation/cpu-freq/cpu-drivers.txt
+@@ -228,3 +228,22 @@ is the corresponding frequency table helper for the ->target
+ stage. Just pass the values to this function, and the unsigned int
+ index returns the number of the frequency table entry which contains
+ the frequency the CPU shall be set to.
++
++The following macros can be used as iterators over cpufreq_frequency_table:
++
++cpufreq_for_each_entry(pos, table) - iterates over all entries of frequency
++table.
++
++cpufreq-for_each_valid_entry(pos, table) - iterates over all entries,
++excluding CPUFREQ_ENTRY_INVALID frequencies.
++Use arguments "pos" - a cpufreq_frequency_table * as a loop cursor and
++"table" - the cpufreq_frequency_table * you want to iterate over.
++
++For example:
++
++	struct cpufreq_frequency_table *pos, *driver_freq_table;
++
++	cpufreq_for_each_entry(pos, driver_freq_table) {
++		/* Do something with pos */
++		pos->frequency = ...
++	}
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index abda660..a517da9 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -237,6 +237,17 @@ void cpufreq_cpu_put(struct cpufreq_policy *policy)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
  
- #include <asm/cputhreads.h>
- #include <asm/reg.h>
-+#include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
++bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
++{
++	while ((*pos)->frequency != CPUFREQ_TABLE_END)
++		if ((*pos)->frequency != CPUFREQ_ENTRY_INVALID)
++			return true;
++		else
++			(*pos)++;
++	return false;
++}
++EXPORT_SYMBOL_GPL(cpufreq_next_valid);
++
+ /*********************************************************************
+  *            EXTERNALLY AFFECTING FREQUENCY CHANGES                 *
+  *********************************************************************/
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 5ae5100..77a5fa1 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -468,6 +468,27 @@ struct cpufreq_frequency_table {
+ 				    * order */
+ };
  
- #define POWERNV_MAX_PSTATES	256
++bool cpufreq_next_valid(struct cpufreq_frequency_table **pos);
++
++/*
++ * cpufreq_for_each_entry -	iterate over a cpufreq_frequency_table
++ * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
++ * @table:	the cpufreq_frequency_table * to iterate over.
++ */
++
++#define cpufreq_for_each_entry(pos, table)	\
++	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)
++
++/*
++ * cpufreq_for_each_valid_entry -     iterate over a cpufreq_frequency_table
++ *	excluding CPUFREQ_ENTRY_INVALID frequencies.
++ * @pos:        the cpufreq_frequency_table * to use as a loop cursor.
++ * @table:      the cpufreq_frequency_table * to iterate over.
++ */
++
++#define cpufreq_for_each_valid_entry(pos, table)	\
++	for (pos = table; cpufreq_next_valid(&pos); pos++)
++
+ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+ 				    struct cpufreq_frequency_table *table);
  
+-- 
+1.9.0
