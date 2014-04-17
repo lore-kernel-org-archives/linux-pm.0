@@ -1,47 +1,66 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
 Subject: Re: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose
  the idlest cpu
-Date: Thu, 17 Apr 2014 17:03:47 +0200
-Message-ID: <534FED53.2030804@linaro.org>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr> <534FDCDC.6000806@linaro.org> <20140417144707.GL11096@twins.programming.kicks-ass.net>
+Date: Thu, 17 Apr 2014 11:53:11 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1404171138470.980@knanqh.ubzr>
+References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org> <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr> <534FDCDC.6000806@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f182.google.com ([74.125.82.182]:43256 "EHLO
-	mail-we0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbaDQPDZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Apr 2014 11:03:25 -0400
-Received: by mail-we0-f182.google.com with SMTP id p61so566644wes.13
-        for <linux-pm@vger.kernel.org>; Thu, 17 Apr 2014 08:03:24 -0700 (PDT)
-In-Reply-To: <20140417144707.GL11096@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <534FDCDC.6000806@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@rjwysocki.net, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
 
-On 04/17/2014 04:47 PM, Peter Zijlstra wrote:
-> On Thu, Apr 17, 2014 at 03:53:32PM +0200, Daniel Lezcano wrote:
->> Concerning the policy, I would suggest to create an entry in
->> /proc/sys/kernel/sched_power, where a couple of values could be perf=
-ormance
->> - power saving (0 / 1).
->
-> Ingo wanted a sched_balance_policy file with 3 values:
->    "performance, power, auto"
->
-> Where the auto thing switches between them, initially based off of
-> having AC or not.
+On Thu, 17 Apr 2014, Daniel Lezcano wrote:
 
-oh, good. Thanks !
+> Ok, refreshed the patchset but before sending it out I would to discuss about
+> the rational of the changes and the policy, and change the patchset
+> consequently.
+> 
+> What order to choose if the cpu is idle ?
+> 
+> Let's assume all cpus are idle on a dual socket quad core.
+> 
+> Also, we can reasonably do the hypothesis if the cluster is in low power mode,
+> the cpus belonging to the same cluster are in the same idle state (putting
+> apart the auto-promote where we don't have control on).
+> 
+> If the policy you talk above is 'aggressive power saving', we can follow the
+> rules with decreasing priority:
+> 
+> 1. We want to prevent to wakeup the entire cluster
+> 	=> as the cpus are in the same idle state, by choosing a cpu in
+> 	=> shallow 
+> state, we should have the guarantee we won't wakeup a cluster (except if no
+> shallowest idle cpu are found).
+
+This is unclear to me.  Obviously, if an entire cluster is down, that 
+means all the CPUs it contains have been idle for a long time. And 
+therefore they shouldn't be subject to selection unless there is no 
+other CPUs available.  Is that what you mean?
+
+> 2. We want to prevent to wakeup a cpu which did not reach the target residency
+> time (will need some work to unify cpuidle idle time and idle task run time)
+> 	=> with the target residency and, as a first step, with the idle
+> 	=> stamp, 
+> we can determine if the cpu slept enough
+
+Agreed. However, right now, the scheduler does not have any 
+consideration for that.  So this should be done as a separate patch.
+
+> 3. We want to prevent to wakeup a cpu in deep idle state
+> 	=> by looking for the cpu in shallowest idle state
+
+Obvious.
+
+> 4. We want to prevent to wakeup a cpu where the exit latency is longer than
+> the expected run time of the task (and the time to migrate the task ?)
+
+Sure.  That would be a case for using task packing even if the policy is 
+set to performance rather than powersave whereas task packing is 
+normally for powersave.
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Nicolas
