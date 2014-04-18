@@ -1,38 +1,36 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
-Date: Thu, 17 Apr 2014 13:38:03 -0700
-Message-ID: <CADHgK6v43=KSpe2FRG374nbHSMOt9hb+xEhO7z20vhEAQsx0tQ@mail.gmail.com>
-References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
-	<1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
-	<20140416101243.GA6952@n2100.arm.linux.org.uk>
-	<CADHgK6vyWU1HCueN=F5D0JxzknV==h-jOG9JmcXeOrH_RGV4JQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 0/2] Support cpufreq driver for Exynos3250
+Date: Fri, 18 Apr 2014 11:20:32 +0900
+Message-ID: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f51.google.com ([74.125.82.51]:41473 "EHLO
-	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbaDQUiE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Apr 2014 16:38:04 -0400
-Received: by mail-wg0-f51.google.com with SMTP id k14so894375wgh.34
-        for <linux-pm@vger.kernel.org>; Thu, 17 Apr 2014 13:38:03 -0700 (PDT)
-In-Reply-To: <CADHgK6vyWU1HCueN=F5D0JxzknV==h-jOG9JmcXeOrH_RGV4JQ@mail.gmail.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:12182 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbaDRCUd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Apr 2014 22:20:33 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Laura Abbott <lauraa@codeaurora.org>, Jiang Liu <liuj97@gmail.com>, Sricharan R <r.sricharan@ti.com>, Victor Kamensky <victor.kamensky@linaro.org>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Ben Dooks <ben>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: kgene.kim@samsung.com, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-Hi Russell,
+This patchset support cpufreq driver for Exynos3250 which uses the Cortex-A7
+dual cores and has a target speed of 1.0 GHz and code clean using dev_err/info
+instead of pr_err/info function.
 
-It seems to work fine with your virt_to_phys on the 3.13 + OMAP
-patches kernel, and I checked on the 3.15-rc1 kernel + hibernation and
-it compiled and ran fine.  I tried a couple of hibernations on this
-version as well and they worked (aside from the crash in kernel_halt
-we're discussing separately).  I believe this just works by chance
-though because the omap platform has no real hibernation support
-there.
+This patchset has a dependency on following patchset[1] to support Exynos3250:
+[1] https://lkml.org/lkml/2014/4/17/669
 
-I'll try now to merge up the omap patches to 3.15-rc1.
+Chanwoo Choi (2):
+  cpufreq: exynos: Use dev_err/info function instead of pr_err/info
+  cpufreq: exynos: Add new Exynos3250 cpufreq driver
 
-Thanks,
+ drivers/cpufreq/Kconfig.arm          |  11 +++
+ drivers/cpufreq/Makefile             |   1 +
+ drivers/cpufreq/exynos-cpufreq.c     |  25 +++---
+ drivers/cpufreq/exynos-cpufreq.h     |  18 ++++
+ drivers/cpufreq/exynos3250-cpufreq.c | 158 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 203 insertions(+), 10 deletions(-)
+ create mode 100644 drivers/cpufreq/exynos3250-cpufreq.c
 
-Sebastian
+-- 
+1.8.0
+
