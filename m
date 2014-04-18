@@ -1,52 +1,38 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RFC PATCHC 3/3] sched/fair: use the idle state info to choose
- the idlest cpu
-Date: Fri, 18 Apr 2014 10:09:51 +0200
-Message-ID: <20140418080951.GB14280@gmail.com>
-References: <1396009796-31598-1-git-send-email-daniel.lezcano@linaro.org>
- <1396009796-31598-4-git-send-email-daniel.lezcano@linaro.org>
- <alpine.LFD.2.11.1404012208110.1571@knanqh.ubzr>
- <534FDCDC.6000806@linaro.org>
- <20140417144707.GL11096@twins.programming.kicks-ass.net>
- <534FED53.2030804@linaro.org>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 0/2] Support cpufreq driver for Exynos3250
+Date: Fri, 18 Apr 2014 13:44:49 +0530
+Message-ID: <CAK9yfHygoHZ7hnAcLuuaMEsPb8Tqw-QbcTrQ+b=2CD6kK3odmw@mail.gmail.com>
+References: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f43.google.com ([74.125.83.43]:42319 "EHLO
-	mail-ee0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751872AbaDRIJ6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Apr 2014 04:09:58 -0400
-Content-Disposition: inline
-In-Reply-To: <534FED53.2030804@linaro.org>
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:53148 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbaDRIOu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Apr 2014 04:14:50 -0400
+Received: by mail-oa0-f46.google.com with SMTP id i7so1526135oag.33
+        for <linux-pm@vger.kernel.org>; Fri, 18 Apr 2014 01:14:49 -0700 (PDT)
+In-Reply-To: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@rjwysocki.net, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, LKML <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 
+Hi Chanwoo,
 
-* Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+On 18 April 2014 07:50, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> This patchset support cpufreq driver for Exynos3250 which uses the Cortex-A7
+> dual cores and has a target speed of 1.0 GHz and code clean using dev_err/info
+> instead of pr_err/info function.
 
-> On 04/17/2014 04:47 PM, Peter Zijlstra wrote:
-> >On Thu, Apr 17, 2014 at 03:53:32PM +0200, Daniel Lezcano wrote:
-> >>Concerning the policy, I would suggest to create an entry in
-> >>/proc/sys/kernel/sched_power, where a couple of values could be performance
-> >>- power saving (0 / 1).
-> >
-> >Ingo wanted a sched_balance_policy file with 3 values:
-> >   "performance, power, auto"
-> >
-> >Where the auto thing switches between them, initially based off of
-> >having AC or not.
-> 
-> oh, good. Thanks !
+Per SoC cpufreq driver which does not use CCF is no more encouraged for new
+Exynos platforms. Thomas has already posted patches to make use of
+generic cpu freq driver
+on Exynos platforms. Please refer to [1] and try to utilize it for
+this platform as well.
 
-Also, 'auto' should be the default, because the kernel doing TRT is 
-really what users want.
+[1] http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/26886
 
-Userspace can sill tweak it all and make it all user-space controlled, 
-by flipping between 'performance' and 'power'. (and those modes are 
-also helpful for development and debugging.)
-
-Thanks,
-
-	Ingo
+-- 
+With warm regards,
+Sachin
