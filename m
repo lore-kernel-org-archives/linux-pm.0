@@ -1,37 +1,39 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC] PM / Hibernate: no kernel_power_off when pm_power_off NULL
-Date: Fri, 18 Apr 2014 14:38:34 -0700
-Message-ID: <CADHgK6urB0wHFzTXakGqT9GA91=E-rSwnDqY-4xcjQS8Sijs-Q@mail.gmail.com>
-References: <20140320212336.GA17368@amd.pavel.ucw.cz>
-	<20140320213502.795a5d3c@alan.etchedpixels.co.uk>
-	<CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com>
-	<CADHgK6sh6TUc4jBQFQHTQuhze9=r2FBzF6aULUc_c+bbWYjp5w@mail.gmail.com>
-	<CADHgK6sCmPVZ--eyEnqnjfs_4C_PfHTgAUQ_Nb4oJP0mBDnQUw@mail.gmail.com>
-	<20140415205453.GX24070@n2100.arm.linux.org.uk>
-	<20140415211832.GA32213@amd.pavel.ucw.cz>
-	<CADHgK6vzagyELYGnVoHvfnK9G57-NSycOaKsNQ53rnU1pOwn=Q@mail.gmail.com>
-	<20140416204119.GJ24070@n2100.arm.linux.org.uk>
-	<20140416215718.7f58efd8@alan.etchedpixels.co.uk>
-	<20140416210901.GK24070@n2100.arm.linux.org.uk>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH 0/2] Support cpufreq driver for Exynos3250
+Date: Sat, 19 Apr 2014 22:43:20 +0900
+Message-ID: <CAGTfZH1M9h3Sx73wJsD=_vnSyV-+fyOY041PN_7ea718B0mFoQ@mail.gmail.com>
+References: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
+	<CAK9yfHygoHZ7hnAcLuuaMEsPb8Tqw-QbcTrQ+b=2CD6kK3odmw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140416210901.GK24070@n2100.arm.linux.org.uk>
+In-Reply-To: <CAK9yfHygoHZ7hnAcLuuaMEsPb8Tqw-QbcTrQ+b=2CD6kK3odmw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, LKML <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks Russell, Alan!
+Hi Sachin,
 
-So we're OK with the current patch + replacing while(1) after
-kernel_halt at the end of power_down in hibernate.c with a while (1)
-cpu_relax()?
+On Fri, Apr 18, 2014 at 5:14 PM, Sachin Kamat <sachin.kamat@linaro.org> wrote:
+> Hi Chanwoo,
+>
+> On 18 April 2014 07:50, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> This patchset support cpufreq driver for Exynos3250 which uses the Cortex-A7
+>> dual cores and has a target speed of 1.0 GHz and code clean using dev_err/info
+>> instead of pr_err/info function.
+>
+> Per SoC cpufreq driver which does not use CCF is no more encouraged for new
+> Exynos platforms. Thomas has already posted patches to make use of
+> generic cpu freq driver
+> on Exynos platforms. Please refer to [1] and try to utilize it for
+> this platform as well.
+>
+> [1] http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/26886
 
-Any other changes needed?
+OK, I'll refer to this new patch for cpufreq and rebase it.
 
-If not, I'll send a follow up patch with just these.
+Thanks for your reply.
 
-Thanks!
-
-Sebastian
+Best Regards,
+Chanwoo Choi
