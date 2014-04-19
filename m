@@ -1,34 +1,62 @@
-From: "Valerio Vanni" <valerio.vanni@inwind.it>
-Subject: Fw: serial console does not wake from S3 suspend
-Date: Sat, 19 Apr 2014 16:49:18 +0200
-Message-ID: <25D8F77BCF9142DE87B7CDEAB21A4CE2@vanni.it>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Hibernation problem with 3.14 kernel
+Date: Sun, 20 Apr 2014 01:26:13 +0200
+Message-ID: <1438736.ANSVkEtpCM@vostro.rjw.lan>
+References: <534EEE4D.7070203@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="Windows-1252";
-	reply-type=response
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp1.ngi.it ([88.149.128.112]:54231 "EHLO smtp1.ngi.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751059AbaDSOtY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 19 Apr 2014 10:49:24 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <534EEE4D.7070203@gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Faerbit <faerbit@gmail.com>
+Cc: linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, jslaby@suse.cz, baryluk@smp.if.uj.edu.pl, davem@davemloft.net, peter@hurleysoftware.com, rmk@arm.linux.org.uk, tianyu.lan@intel.com
 
-> "Valerio Vanni" <valerio@valeriovanni.com> ha scritto nel messaggio
-> news:lg9etc$9fl$1@ger.gmane.org
-> When resuming from S3 suspend, serial console starts sending garbage
-> on the serial port.
-> Not continuously, it sends garbage only when in local console prints
-> a text.
-> It stops only when the (sending) machine is shut down, or if some
-> text is sent manually (i.e. with "cat txtfile > /dev/ttyS0").
+On Wednesday, April 16, 2014 10:55:41 PM Faerbit wrote:
+> Hi everyone,
+
+Hi,
+
+> I hope I am posting in the right section.
+> Since the upgrade to kernel 3.14 I am unable to hibernate.
+> I am using Archlinux.
+> I am hibernating with "systemctl hibernate".
+> It always fails to freeze device 00:08:
 > 
-> Full details are here:
->> https://bugzilla.kernel.org/show_bug.cgi?id=69751
+> journalctl tells me:
+> kernel: serial 00:08: disable failed
+> kernel: dpm_run_callback(): pnp_bus_freeze+0x0/0x20 returns -5
+> kernel: PM: Device 00:08 failed to freeze: error -5
+> 
+> lspci -v tells me:
+> 
+> 0:08.0 PCI bridge: NVIDIA Corporation MCP78S [GeForce 8200] PCI Bridge
+> (rev a1) (prog-if 01 [Subtractive decode])
+>     Flags: bus master, 66MHz, fast devsel, latency 0
+>     Bus: primary=00, secondary=01, subordinate=01, sec-latency=64
+>     Capabilities: [b8] Subsystem: ASUSTeK Computer Inc. Device 82e7
+>     Capabilities: [8c] HyperTransport: MSI Mapping Enable+ Fixed-
+> 
+> My mainboard is a ASUS M4N98TD EVO.
 
-It's still present in 3.15-rc1 and in actual -next.
+It's not that device, what fails is a serial drvier.
 
+> What does error code -5 mean?
+
+This is an error code returned by the driver, I'm not sure what it means
+for pnp_bus_freeze() from the top of my head (will check later).
+
+> How do I debug this further?
+
+If that's 100% reproducible, you can try to bisect.
+
+> Should I file a bug?
+
+Yes, please.  At bugzilla.kernel.org, against power management (hibernation/suspend).
+
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
