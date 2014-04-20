@@ -1,59 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / suspend: Make cpuidle work in the "freeze" state
-Date: Sun, 20 Apr 2014 23:43:01 +0200
-Message-ID: <4271849.XeOTooWnSN@vostro.rjw.lan>
+Subject: [PATCH] sched / idle: Make cpuidle_idle_call() void
+Date: Mon, 21 Apr 2014 01:26:58 +0200
+Message-ID: <4717784.WmVEpDoliM@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53245 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751039AbaDTV0o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Apr 2014 17:26:44 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The "freeze" system sleep state introduced by commit 7e73c5ae6e79
-(PM: Introduce suspend state PM_SUSPEND_FREEZE) requires cpuidle
-to be functional when freeze_enter() is executed to work correctly
-(that is, to be able to save any more energy than runtime idle),
-but that is impossible after commit 8651f97bd951d (PM / cpuidle:
-System resume hang fix with cpuidle) which caused cpuidle to be
-paused in dpm_suspend_noirq() and resumed in dpm_resume_noirq().
+The only value ever returned by cpuidle_idle_call() is 0 and its
+only caller ignores that value anyway, so make it void.
 
-To avoid that problem, add cpuidle_resume() and cpuidle_pause()
-to the beginning and the end of freeze_enter(), respectively.
-
-Reported-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/power/suspend.c |    3 +++
- 1 file changed, 3 insertions(+)
+ kernel/sched/idle.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Index: linux-pm/kernel/power/suspend.c
+Index: linux-pm/kernel/sched/idle.c
 ===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -14,6 +14,7 @@
- #include <linux/init.h>
- #include <linux/console.h>
- #include <linux/cpu.h>
-+#include <linux/cpuidle.h>
- #include <linux/syscalls.h>
- #include <linux/gfp.h>
- #include <linux/io.h>
-@@ -53,7 +54,9 @@ static void freeze_begin(void)
- 
- static void freeze_enter(void)
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -67,9 +67,8 @@ void __weak arch_cpu_idle(void)
+  * cpuidle_idle_call - the main idle function
+  *
+  * NOTE: no locks or semaphores should be used here
+- * return non-zero on failure
+  */
+-static int cpuidle_idle_call(void)
++static void cpuidle_idle_call(void)
  {
-+	cpuidle_resume();
- 	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
-+	cpuidle_pause();
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+@@ -84,7 +83,7 @@ static int cpuidle_idle_call(void)
+ 	if (current_clr_polling_and_test()) {
+ 		local_irq_enable();
+ 		__current_set_polling();
+-		return 0;
++		return;
+ 	}
+ 
+ 	/*
+@@ -189,8 +188,6 @@ static int cpuidle_idle_call(void)
+ 
+ 	rcu_idle_exit();
+ 	start_critical_timings();
+-
+-	return 0;
  }
  
- void freeze_wake(void)
-
+ /*
