@@ -1,45 +1,59 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH RFC] PM / Hibernate: no kernel_power_off when
- pm_power_off NULL
-Date: Sun, 20 Apr 2014 16:06:12 +0200
-Message-ID: <20140420140612.GB14594@amd.pavel.ucw.cz>
-References: <CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com>
- <CADHgK6sh6TUc4jBQFQHTQuhze9=r2FBzF6aULUc_c+bbWYjp5w@mail.gmail.com>
- <CADHgK6sCmPVZ--eyEnqnjfs_4C_PfHTgAUQ_Nb4oJP0mBDnQUw@mail.gmail.com>
- <20140415205453.GX24070@n2100.arm.linux.org.uk>
- <20140415211832.GA32213@amd.pavel.ucw.cz>
- <CADHgK6vzagyELYGnVoHvfnK9G57-NSycOaKsNQ53rnU1pOwn=Q@mail.gmail.com>
- <20140416204119.GJ24070@n2100.arm.linux.org.uk>
- <20140416215718.7f58efd8@alan.etchedpixels.co.uk>
- <20140416210901.GK24070@n2100.arm.linux.org.uk>
- <CADHgK6urB0wHFzTXakGqT9GA91=E-rSwnDqY-4xcjQS8Sijs-Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / suspend: Make cpuidle work in the "freeze" state
+Date: Sun, 20 Apr 2014 23:43:01 +0200
+Message-ID: <4271849.XeOTooWnSN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52640 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbaDTOGN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Apr 2014 10:06:13 -0400
-Content-Disposition: inline
-In-Reply-To: <CADHgK6urB0wHFzTXakGqT9GA91=E-rSwnDqY-4xcjQS8Sijs-Q@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:53245 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751039AbaDTV0o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Apr 2014 17:26:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-On Fri 2014-04-18 14:38:34, Sebastian Capella wrote:
-> Thanks Russell, Alan!
-> 
-> So we're OK with the current patch + replacing while(1) after
-> kernel_halt at the end of power_down in hibernate.c with a while (1)
-> cpu_relax()?
-> 
-> Any other changes needed?
-> 
-> If not, I'll send a follow up patch with just these.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-That sounds like a plan. Thanks.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The "freeze" system sleep state introduced by commit 7e73c5ae6e79
+(PM: Introduce suspend state PM_SUSPEND_FREEZE) requires cpuidle
+to be functional when freeze_enter() is executed to work correctly
+(that is, to be able to save any more energy than runtime idle),
+but that is impossible after commit 8651f97bd951d (PM / cpuidle:
+System resume hang fix with cpuidle) which caused cpuidle to be
+paused in dpm_suspend_noirq() and resumed in dpm_resume_noirq().
+
+To avoid that problem, add cpuidle_resume() and cpuidle_pause()
+to the beginning and the end of freeze_enter(), respectively.
+
+Reported-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/suspend.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -14,6 +14,7 @@
+ #include <linux/init.h>
+ #include <linux/console.h>
+ #include <linux/cpu.h>
++#include <linux/cpuidle.h>
+ #include <linux/syscalls.h>
+ #include <linux/gfp.h>
+ #include <linux/io.h>
+@@ -53,7 +54,9 @@ static void freeze_begin(void)
+ 
+ static void freeze_enter(void)
+ {
++	cpuidle_resume();
+ 	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
++	cpuidle_pause();
+ }
+ 
+ void freeze_wake(void)
+
