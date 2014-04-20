@@ -1,62 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Hibernation problem with 3.14 kernel
-Date: Sun, 20 Apr 2014 01:26:13 +0200
-Message-ID: <1438736.ANSVkEtpCM@vostro.rjw.lan>
-References: <534EEE4D.7070203@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH RFC] PM / Hibernate: no kernel_power_off when
+ pm_power_off NULL
+Date: Sun, 20 Apr 2014 16:06:12 +0200
+Message-ID: <20140420140612.GB14594@amd.pavel.ucw.cz>
+References: <CADHgK6uXg0CXZC5s5Z5Kpy6dYH58UChL-p9ozCCcoUU=-0KJYw@mail.gmail.com>
+ <CADHgK6sh6TUc4jBQFQHTQuhze9=r2FBzF6aULUc_c+bbWYjp5w@mail.gmail.com>
+ <CADHgK6sCmPVZ--eyEnqnjfs_4C_PfHTgAUQ_Nb4oJP0mBDnQUw@mail.gmail.com>
+ <20140415205453.GX24070@n2100.arm.linux.org.uk>
+ <20140415211832.GA32213@amd.pavel.ucw.cz>
+ <CADHgK6vzagyELYGnVoHvfnK9G57-NSycOaKsNQ53rnU1pOwn=Q@mail.gmail.com>
+ <20140416204119.GJ24070@n2100.arm.linux.org.uk>
+ <20140416215718.7f58efd8@alan.etchedpixels.co.uk>
+ <20140416210901.GK24070@n2100.arm.linux.org.uk>
+ <CADHgK6urB0wHFzTXakGqT9GA91=E-rSwnDqY-4xcjQS8Sijs-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <534EEE4D.7070203@gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Faerbit <faerbit@gmail.com>
-Cc: linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52640 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbaDTOGN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Apr 2014 10:06:13 -0400
+Content-Disposition: inline
+In-Reply-To: <CADHgK6urB0wHFzTXakGqT9GA91=E-rSwnDqY-4xcjQS8Sijs-Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-On Wednesday, April 16, 2014 10:55:41 PM Faerbit wrote:
-> Hi everyone,
-
-Hi,
-
-> I hope I am posting in the right section.
-> Since the upgrade to kernel 3.14 I am unable to hibernate.
-> I am using Archlinux.
-> I am hibernating with "systemctl hibernate".
-> It always fails to freeze device 00:08:
+On Fri 2014-04-18 14:38:34, Sebastian Capella wrote:
+> Thanks Russell, Alan!
 > 
-> journalctl tells me:
-> kernel: serial 00:08: disable failed
-> kernel: dpm_run_callback(): pnp_bus_freeze+0x0/0x20 returns -5
-> kernel: PM: Device 00:08 failed to freeze: error -5
+> So we're OK with the current patch + replacing while(1) after
+> kernel_halt at the end of power_down in hibernate.c with a while (1)
+> cpu_relax()?
 > 
-> lspci -v tells me:
+> Any other changes needed?
 > 
-> 0:08.0 PCI bridge: NVIDIA Corporation MCP78S [GeForce 8200] PCI Bridge
-> (rev a1) (prog-if 01 [Subtractive decode])
->     Flags: bus master, 66MHz, fast devsel, latency 0
->     Bus: primary=00, secondary=01, subordinate=01, sec-latency=64
->     Capabilities: [b8] Subsystem: ASUSTeK Computer Inc. Device 82e7
->     Capabilities: [8c] HyperTransport: MSI Mapping Enable+ Fixed-
-> 
-> My mainboard is a ASUS M4N98TD EVO.
+> If not, I'll send a follow up patch with just these.
 
-It's not that device, what fails is a serial drvier.
-
-> What does error code -5 mean?
-
-This is an error code returned by the driver, I'm not sure what it means
-for pnp_bus_freeze() from the top of my head (will check later).
-
-> How do I debug this further?
-
-If that's 100% reproducible, you can try to bisect.
-
-> Should I file a bug?
-
-Yes, please.  At bugzilla.kernel.org, against power management (hibernation/suspend).
-
-Thanks!
-
+That sounds like a plan. Thanks.
+									Pavel
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
