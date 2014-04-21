@@ -1,41 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] cpufreq: ppc: Add missing #include <asm/smp.h>
-Date: Mon, 21 Apr 2014 11:21:48 +0530
-Message-ID: <CAKohpon6BvgtwrHWQn8va49ZbNF0XbDDHf4ytP=vA5zudRYzgg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] cpufreq: ppc: Fix integer overflow in expression
+Date: Mon, 21 Apr 2014 11:22:45 +0530
+Message-ID: <CAKohpokx2uYH_xC0NZkuD06fQ3QiTLJKwW+YqKHcL-Zw+MGASw@mail.gmail.com>
 References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
+	<1397728407-13909-2-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1397728407-13909-2-git-send-email-geert+renesas@glider.be>
 Sender: cpufreq-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> If CONFIG_SMP=n, <linux/smp.h> does not include <asm/smp.h>, causing:
+> On 32-bit, "12 * NSEC_PER_SEC" doesn't fit in "unsigned long"
+> (NSEC_PER_SEC is a "long" constant), causing an integer overflow:
 >
 > drivers/cpufreq/ppc-corenet-cpufreq.c: In function 'corenet_cpufreq_cpu_init':
-> drivers/cpufreq/ppc-corenet-cpufreq.c:173:3: error: implicit declaration of function 'get_hard_smp_processor_id' [-Werror=implicit-function-declaration]
+> drivers/cpufreq/ppc-corenet-cpufreq.c:211:9: warning: integer overflow in expression [-Woverflow]
+>
+> Force the intermediate to be 64-bit by adding an "ULL" suffix to the
+> constant multiplier to fix this.
 >
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c |    2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/cpufreq/ppc-corenet-cpufreq.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index b7e677be1df0..e78f9c806de4 100644
+> index e78f9c806de4..53881d78a931 100644
 > --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
 > +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -22,6 +22,8 @@
->  #include <linux/smp.h>
->  #include <sysdev/fsl_soc.h>
+> @@ -208,7 +208,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>                 per_cpu(cpu_data, i) = data;
 >
-> +#include <asm/smp.h>
-> +
+>         policy->cpuinfo.transition_latency =
+> -                               (12 * NSEC_PER_SEC) / fsl_get_sys_freq();
+> +                               (12ULL * NSEC_PER_SEC) / fsl_get_sys_freq();
+>         of_node_put(np);
+>
+>         return 0;
 
-Probably similar to what Srivatsa did:
-
-+#include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
-
-??
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
