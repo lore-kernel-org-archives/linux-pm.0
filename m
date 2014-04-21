@@ -1,102 +1,124 @@
-From: Yipeng Yao <ypyao@marvell.com>
-Subject: RE: cpufreq framework questions.
-Date: Sun, 20 Apr 2014 23:04:43 -0700
-Message-ID: <4737A960563B524DA805CA602BE04B30724FDD4392@SC-VEXCH2.marvell.com>
-References: <4737A960563B524DA805CA602BE04B30724FDD3FF9@SC-VEXCH2.marvell.com>
-	<CAKohpo=yc_xRx2+Rp+1Y3U+wPSEzETYa6RKuQmM5dz7hp1hh3w@mail.gmail.com>
-	<4737A960563B524DA805CA602BE04B30724FDD4367@SC-VEXCH2.marvell.com>
- <CAKohpokPfD70+zVgYqU3safWe9mUdzcyQnZT8x5+x2vgdwdVOw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: exynos: Use dev_err/info function instead of pr_err/info
+Date: Mon, 21 Apr 2014 11:35:19 +0530
+Message-ID: <CAKohpo=-Oxu6ZoB4B2H4552meq46iXrVzKbP5ZwnG==sCc2_MA@mail.gmail.com>
+References: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
+	<1397787634-9334-2-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:23664 "EHLO
-	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751176AbaDUGEw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 02:04:52 -0400
-In-Reply-To: <CAKohpokPfD70+zVgYqU3safWe9mUdzcyQnZT8x5+x2vgdwdVOw@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1397787634-9334-2-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-WWVzLiA0IGNhNTMgY29yZSwgb25lIGNsdXN0ZXIuIEFsbCBjb3JlcyBhcmUgc2hhcmluZyBhIHNp
-bmdsZSBjbG9jayBsaW5lLg0KDQpCZXN0IHdpc2hlcywNCllpcGVuZyBZYW8NCg0KLS0tLS1Pcmln
-aW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1h
-ckBsaW5hcm8ub3JnXSANClNlbnQ6IDIwMTTE6jTUwjIxyNUgMTM6NDgNClRvOiBZaXBlbmcgWWFv
-DQpDYzogbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBSYWZhZWwgSi4gV3lzb2NraTsgU3JpdmF0
-c2EgUy4gQmhhdA0KU3ViamVjdDogUmU6IGNwdWZyZXEgZnJhbWV3b3JrIHF1ZXN0aW9ucy4NCg0K
-SnVzdCBmb3IgbXkga25vd2xlZGdlLCB3aGF0J3MgeW91ciBzeXN0ZW1zIGNvbmZpZ3VyYXRpb24/
-DQotIDQgQVJNIFByb2Nlc3NvcnMNCi0gQWxsIHNoYXJpbmcgYSBzaW5nbGUgY2xvY2sgbGluZSA/
-IGkuZS4gYSBzaW5nbGUgY2x1c3Rlcj8NCg0KT24gMjEgQXByaWwgMjAxNCAxMDo1OCwgWWlwZW5n
-IFlhbyA8eXB5YW9AbWFydmVsbC5jb20+IHdyb3RlOg0KPiBIaSBWaXJlc2gsDQo+IFRoYW5rIHlv
-dSBmb3IgeW91ciByZXBseSBhbmQgaGVyZSBpcyB0aGUga2VybmVsIHdhcm5pbmcgYWJvdXQgc3lz
-ZnMgbm9kZSBlcnJvcjoNCj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+IFsgICA5MS45OTU3OTVdIGMxIDM0NTggKHBv
-d2VyX3NfZGV2ZnJlcSkgQ1BVMzogc2h1dGRvd24NCj4gc2g6IGNhbid0IGNyZWF0ZSAvc3lzL2Rl
-dmljZXMvc3lzdGVtL2NwdS9jcHVmcmVxL2NvbnNlcnZhdGl2ZS91cF90aHJlc2hvbGQ6IE5vIHMN
-Cj4gdWNoIGZpbGUgb3IgZGlyZWN0b3J5DQo+IHNoOiBjYW4ndCBjcmVhdGUgL3N5cy9kZXZpY2Vz
-L3N5c3RlbS9jcHUvY3B1ZnJlcS9jb25zZXJ2YXRpdmUvZG93bl90aHJlc2hvbGQ6IE5vDQo+ICBz
-dWNoIGZpbGUgb3IgZGlyZWN0b3J5DQoNCllvdSBhcmUgcHJvYmFibHkgcGxheWluZyBiZXR3ZWVu
-IG9uZGVtYW5kIGFuZCBjb25zZXJ2YXRpdmUgZ292ZXJub3JzDQpoZXJlIGFuZCB5b3Ugc2NyaXB0
-IHRyaWVkIHRvIHByaW50IGZvciBhIGdvdmVybm9yIHdoaWNoIGRvZXNuJ3QgZXhpc3QgYW55bW9y
-ZT8NCg0KPiBbICAgOTIuMDIzOTAzXSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIENQVTI6IHNo
-dXRkb3duDQo+IFsgICA5Mi4wNTkzMTBdIGMwIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgY3B1ZnJl
-cTogX19jcHVmcmVxX3JlbW92ZV9kZXY6IEZhaWxlZCB0DQo+IG8gc3RvcCBnb3Zlcm5vcg0KPiBz
-aDogd3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lbnQNCj4gc2g6IHdyaXRlIGVycm9yOiBJbnZh
-bGlkIGFyZ3VtZW50DQo+IHNoOiB3cml0ZSBlcnJvcjogSW52YWxpZCBhcmd1bWVudA0KPiBzaDog
-d3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lbnQNCg0KRG9udCcga25vdyB3aHkgdGhlc2UgY2Ft
-ZS4NCg0KPiBzaDogd3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lblsgICA5Mi4wODE1MjVdIGMw
-IDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgQ1BVMTogcw0KPiBodXRkb3duDQo+IHQNCj4gc2g6IHdy
-aXRlIGVycm9yOiBJbnZhbGlkIGFyZ3VtZW50DQo+IFsgICA5Mi4xNTQxNjhdIGMxIDM0NTggKHBv
-d2VyX3NfZGV2ZnJlcSkgLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tDQo+IFsg
-ICA5Mi4xNjQ3NDldIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgV0FSTklORzogYXQgZnMvc3lz
-ZnMvZGlyLmM6NTMwIHN5c2ZzX2FkDQo+IGRfb25lKzB4YWMvMHhkMCgpDQo+IFsgICA5Mi4xNzM1
-NDNdIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgc3lzZnM6IGNhbm5vdCBjcmVhdGUgZHVwbGlj
-YXRlIGZpbGVuYW1lDQo+ICAnL2RldmljZXMvc3lzdGVtL2NwdS9jcHUxL2NwdWZyZXEnDQo+IFsg
-ICA5Mi4xODM3OTZdIE1vZHVsZXMgbGlua2VkIGluOiBydW5jYXNlX3N5c2ZzKE8pIGF1ZGlvc3R1
-YiBjaWRhdGF0dHlkZXYgZ3NfbW9kDQo+IGVtIGNjaW5ldGRldiBjY2lfZGF0YXN0dWIgY2l0dHkg
-aW1sX21vZHVsZSBzZWggY3Bsb2FkZGV2IG1zb2NrZXRrIGdhbGNvcmUoTykNCj4gWyAgIDkyLjIw
-MDI0Nl0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBDUFU6IDEgUElEOiAzNDU4IENvbW06IHBv
-d2VyX3NfZGV2ZnJlcQ0KPiBUYWludGVkOiBHICAgICAgICAgICBPIDMuMTAuMzMgIzU5DQo+IFsg
-ICA5Mi4yMTA2NDldIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgQ2FsbCB0cmFjZToNCj4gWyAg
-IDkyLjIxNTU4NV0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAwODdlNTA+
-XSBkdW1wX2JhY2t0cmFjZSsweDANCj4gLzB4MTZjDQo+IFsgICA5Mi4yMjMyOTldIGMxIDM0NTgg
-KHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAwMDg3ZmNjPl0gc2hvd19zdGFjaysweDEwLzB4
-DQo+IDFjDQo+IFsgICA5Mi4yMzE5MDddIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZm
-ZmZjMDAwNzVlOWU0Pl0gZHVtcF9zdGFjaysweDFjLzB4DQo+IDI4DQo+IFsgICA5Mi4yMzkzNzNd
-IGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAwMDliNzE4Pl0gd2Fybl9zbG93
-cGF0aF9jb21tDQo+IG9uKzB4NzQvMHg5Yw0KPiBbICAgOTIuMjQ3NzAwXSBjMSAzNDU4IChwb3dl
-cl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDA5YjgwND5dIHdhcm5fc2xvd3BhdGhfZm10Kw0KPiAw
-eDRjLzB4NTgNCj4gWyAgIDkyLjI1NTgyOF0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZm
-ZmZmZmMwMDAxZmEyMWM+XSBzeXNmc19hZGRfb25lKzB4YTgNCj4gLzB4ZDANCj4gWyAgIDkyLjI2
-MzUxNV0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAxZmFlMTg+XSBzeXNm
-c19kb19jcmVhdGVfbGkNCj4gbmtfc2QrMHhhOC8weDI0MA0KPiBbICAgOTIuMjcyMTg5XSBjMSAz
-NDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDFmYWZjOD5dIHN5c2ZzX2NyZWF0ZV9s
-aW5rKw0KPiAweDE4LzB4MzgNCj4gWyAgIDkyLjI4MDI3MV0gYzEgMzQ1OCAocG93ZXJfc19kZXZm
-cmVxKSBbPGZmZmZmZmMwMDA0NzIzODg+XSBjcHVmcmVxX2FkZF9kZXYrMHgNCj4gMjAwLzB4NWI0
-DQo+IFsgICA5Mi4yODgzMzldIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAw
-NzVhMGMwPl0gY3B1ZnJlcV9jcHVfY2FsbGJhDQo+IGNrKzB4NjQvMHg5NA0KPiBbICAgOTIuMjk3
-NDM3XSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDBjYWE0ND5dIG5vdGlm
-aWVyX2NhbGxfY2hhaQ0KPiBuKzB4NDQvMHg4OA0KPiBbICAgOTIuMzA1NjkzXSBjMSAzNDU4IChw
-b3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDBjYWIyYz5dIF9fcmF3X25vdGlmaWVyX2NhbA0K
-PiBsX2NoYWluKzB4OC8weDE0DQo+IFsgICA5Mi4zMTQyNTNdIGMxIDM0NTggKHBvd2VyX3NfZGV2
-ZnJlcSkgWzxmZmZmZmZjMDAwMDlmNDAwPl0gX19jcHVfbm90aWZ5KzB4MmMvDQo+IDB4NTgNCj4g
-WyAgIDkyLjMyMTg5NF0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAwOWY0
-M2M+XSBjcHVfbm90aWZ5KzB4MTAvMHgNCj4gMWMNCj4gWyAgIDkyLjMyOTM1OF0gYzEgMzQ1OCAo
-cG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAwOWY3MTQ+XSBfY3B1X3VwKzB4MTE4LzB4MTkN
-Cj4gOA0KPiBbICAgOTIuMzM2NzEwXSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZm
-YzAwMDA5Zjg0MD5dIGNwdV91cCsweDY4LzB4ODgNCj4gWyAgIDkyLjM0MzcxMF0gYzEgMzQ1OCAo
-cG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDA3NTdmY2M+XSBzdG9yZV9vbmxpbmUrMHg2NC8N
-Cj4gMHhhNA0KPiBbICAgOTIuMzUxNDM1XSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZm
-ZmZmYzAwMDM1ZTk5MD5dIGRldl9hdHRyX3N0b3JlKzB4MQ0KPiA0LzB4MjgNCj4gWyAgIDkyLjM1
-OTIzNV0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAxZjhkNjQ+XSBzeXNm
-c193cml0ZV9maWxlKzANCj4geGQ0LzB4MTUwDQo+IFsgICA5Mi4zNjcyNzNdIGMxIDM0NTggKHBv
-d2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAwMTk0YTQ0Pl0gdmZzX3dyaXRlKzB4YTgvMHgxDQo+
-IGE0DQo+IFsgICA5Mi4zNzQ2MTZdIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZj
-MDAwMTk0ZTc0Pl0gU3lTX3dyaXRlKzB4NDAvMHg4DQo+IGMNCj4gWyAgIDkyLjM4MTk2OF0gYzEg
-MzQ1OCAocG93ZXJfc19kZXZmcmVxKSAtLS1bIGVuZCB0cmFjZSA1OTFlMjA1NzczMjM0MjY4IF0t
-LS0NCg0KVGhpcyBtdXN0IGJlIGZpeGVkIGluIHVwc3RyZWFtIGtlcm5lbC4uIERvbid0IHJlbWVt
-YmVyIHdoaWNoIGNvbW1pdA0KZGlkIGl0IGFzIHRoZXJlDQp3ZXJlIGxvdHMgb2YgcGF0Y2hlcyBh
-cm91bmQgdGhlc2UgbGluZXMuDQo=
+On 18 April 2014 07:50, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> This patch uses dev_err/info function to show accurate log message with device name
+> instead of pr_err/info function.
+>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>  drivers/cpufreq/exynos-cpufreq.c | 21 ++++++++++++---------
+>  drivers/cpufreq/exynos-cpufreq.h |  1 +
+>  2 files changed, 13 insertions(+), 9 deletions(-)
+
+This still looks fine even if we don't take the new driver ?
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+> index f99cfe2..8b4bb4a 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.c
+> +++ b/drivers/cpufreq/exynos-cpufreq.c
+> @@ -49,6 +49,7 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>         struct cpufreq_policy *policy = cpufreq_cpu_get(0);
+>         unsigned int arm_volt, safe_arm_volt = 0;
+>         unsigned int mpll_freq_khz = exynos_info->mpll_freq_khz;
+> +       struct device *dev = exynos_info->dev;
+>         unsigned int old_freq;
+>         int index, old_index;
+>         int ret = 0;
+> @@ -90,8 +91,8 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>                 /* Firstly, voltage up to increase frequency */
+>                 ret = regulator_set_voltage(arm_regulator, arm_volt, arm_volt);
+>                 if (ret) {
+> -                       pr_err("%s: failed to set cpu voltage to %d\n",
+> -                               __func__, arm_volt);
+> +                       dev_err(dev, "failed to set cpu voltage to %d\n",
+> +                               arm_volt);
+>                         return ret;
+>                 }
+>         }
+> @@ -100,8 +101,8 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>                 ret = regulator_set_voltage(arm_regulator, safe_arm_volt,
+>                                       safe_arm_volt);
+>                 if (ret) {
+> -                       pr_err("%s: failed to set cpu voltage to %d\n",
+> -                               __func__, safe_arm_volt);
+> +                       dev_err(dev, "failed to set cpu voltage to %d\n",
+> +                               safe_arm_volt);
+>                         return ret;
+>                 }
+>         }
+> @@ -115,8 +116,8 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+>                 ret = regulator_set_voltage(arm_regulator, arm_volt,
+>                                 arm_volt);
+>                 if (ret) {
+> -                       pr_err("%s: failed to set cpu voltage to %d\n",
+> -                               __func__, arm_volt);
+> +                       dev_err(dev, "failed to set cpu voltage to %d\n",
+> +                               arm_volt);
+>                         goto out;
+>                 }
+>         }
+> @@ -163,6 +164,8 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+>         if (!exynos_info)
+>                 return -ENOMEM;
+>
+> +       exynos_info->dev = &pdev->dev;
+> +
+>         if (soc_is_exynos4210())
+>                 ret = exynos4210_cpufreq_init(exynos_info);
+>         else if (soc_is_exynos4212() || soc_is_exynos4412())
+> @@ -176,13 +179,13 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+>                 goto err_vdd_arm;
+>
+>         if (exynos_info->set_freq == NULL) {
+> -               pr_err("%s: No set_freq function (ERR)\n", __func__);
+> +               dev_err(&pdev->dev, "No set_freq function (ERR)\n");
+>                 goto err_vdd_arm;
+>         }
+>
+>         arm_regulator = regulator_get(NULL, "vdd_arm");
+>         if (IS_ERR(arm_regulator)) {
+> -               pr_err("%s: failed to get resource vdd_arm\n", __func__);
+> +               dev_err(&pdev->dev, "failed to get resource vdd_arm\n");
+>                 goto err_vdd_arm;
+>         }
+>
+> @@ -192,7 +195,7 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+>         if (!cpufreq_register_driver(&exynos_driver))
+>                 return 0;
+>
+> -       pr_err("%s: failed to register cpufreq driver\n", __func__);
+> +       dev_err(&pdev->dev, "failed to register cpufreq driver\n");
+>         regulator_put(arm_regulator);
+>  err_vdd_arm:
+>         kfree(exynos_info);
+> diff --git a/drivers/cpufreq/exynos-cpufreq.h b/drivers/cpufreq/exynos-cpufreq.h
+> index 3ddade8..b72ff10 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.h
+> +++ b/drivers/cpufreq/exynos-cpufreq.h
+> @@ -34,6 +34,7 @@ struct apll_freq {
+>  };
+>
+>  struct exynos_dvfs_info {
+> +       struct device   *dev;
+>         unsigned long   mpll_freq_khz;
+>         unsigned int    pll_safe_idx;
+>         struct clk      *cpu_clk;
+> --
+> 1.8.0
+>
