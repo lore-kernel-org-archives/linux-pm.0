@@ -1,27 +1,27 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq framework questions.
-Date: Mon, 21 Apr 2014 11:01:21 +0530
-Message-ID: <CAKohpokU1k=LCRv_o8pBMsBEngJHodb94kveYrve5m=o+TC9iw@mail.gmail.com>
-References: <4737A960563B524DA805CA602BE04B30724FDD3FF9@SC-VEXCH2.marvell.com>
-	<CAKohpo=yc_xRx2+Rp+1Y3U+wPSEzETYa6RKuQmM5dz7hp1hh3w@mail.gmail.com>
-	<4737A960563B524DA805CA602BE04B30724FDD436A@SC-VEXCH2.marvell.com>
+Subject: Should we get cpufreq@vger.kernel.org removed?
+Date: Mon, 21 Apr 2014 11:07:00 +0530
+Message-ID: <CAKohpomWwGJA0wyao-7i19Q_63ThRZ4vpVxnToCHU3zpUi3ioA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:50059 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbaDUFbW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 01:31:22 -0400
-Received: by mail-ob0-f174.google.com with SMTP id gq1so3873317obb.19
-        for <linux-pm@vger.kernel.org>; Sun, 20 Apr 2014 22:31:22 -0700 (PDT)
-In-Reply-To: <4737A960563B524DA805CA602BE04B30724FDD436A@SC-VEXCH2.marvell.com>
+Received: from mail-oa0-f51.google.com ([209.85.219.51]:64280 "EHLO
+	mail-oa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbaDUFhB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 01:37:01 -0400
+Received: by mail-oa0-f51.google.com with SMTP id i4so3874450oah.10
+        for <linux-pm@vger.kernel.org>; Sun, 20 Apr 2014 22:37:01 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yipeng Yao <ypyao@marvell.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 21 April 2014 11:00, Yipeng Yao <ypyao@marvell.com> wrote:
-> Oh, BTW, we are using kernel 3.10.
+We always want people to use: linux-pm@vger.kernel.org for
+any cpufreq work. And sometimes people just send mails to
+cpufreq@vger.kernel.org, as MAINTAINERS file tells them to.
 
-Life has changed a lot since then. Can you please try latest one. It
-is very much required.
+Should we get the cpufreq mailing list removed physically and
+from MAINTAINERS file to make life simple?
+
+--
+viresh
