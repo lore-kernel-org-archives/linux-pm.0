@@ -1,66 +1,102 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
-Date: Mon, 21 Apr 2014 11:31:05 +0530
-Message-ID: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
-	<1397728407-13909-3-git-send-email-geert+renesas@glider.be>
+From: Yipeng Yao <ypyao@marvell.com>
+Subject: RE: cpufreq framework questions.
+Date: Sun, 20 Apr 2014 23:04:43 -0700
+Message-ID: <4737A960563B524DA805CA602BE04B30724FDD4392@SC-VEXCH2.marvell.com>
+References: <4737A960563B524DA805CA602BE04B30724FDD3FF9@SC-VEXCH2.marvell.com>
+	<CAKohpo=yc_xRx2+Rp+1Y3U+wPSEzETYa6RKuQmM5dz7hp1hh3w@mail.gmail.com>
+	<4737A960563B524DA805CA602BE04B30724FDD4367@SC-VEXCH2.marvell.com>
+ <CAKohpokPfD70+zVgYqU3safWe9mUdzcyQnZT8x5+x2vgdwdVOw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:59207 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbaDUGBG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 02:01:06 -0400
-Received: by mail-ob0-f179.google.com with SMTP id vb8so1474802obc.10
-        for <linux-pm@vger.kernel.org>; Sun, 20 Apr 2014 23:01:05 -0700 (PDT)
-In-Reply-To: <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
+Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:23664 "EHLO
+	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751176AbaDUGEw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 02:04:52 -0400
+In-Reply-To: <CAKohpokPfD70+zVgYqU3safWe9mUdzcyQnZT8x5+x2vgdwdVOw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Mike Turquette <mike.turquette@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> If the clock doesn't exist, clk_get_rate() returns -EINVAL
-
-You clk_get_rate() isn't written well then, it should return zero.
-@Mike: I didn't see this clearly mentioned in clk.h, should we fix
-that?
-
->, which becomes
-> a large number (freq is u32), failing the "freq < min_cpufreq" test.
-> Explicitly test for "(u32)-EINVAL" to fix this.
-
-That's a bad check. We should have done this instead:
-
-(s32)freq < 0; but that would be true for high values of clock. And that's
-why clk_get_rate() must return zero for errors.
-
-> Update the comment, and fix a grammer issue while we're at it.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index 53881d78a931..7027eab814ce 100644
-> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -179,10 +179,11 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->                 clk = of_clk_get(data->parent, i);
->                 freq = clk_get_rate(clk);
->                 /*
-> -                * the clock is valid if its frequency is not masked
-> -                * and large than minimum allowed frequency.
-> +                * the clock is valid if it exists, its frequency is not
-> +                * masked, and larger than minimum allowed frequency.
->                  */
-> -               if (freq < min_cpufreq || (mask & (1 << i)))
-> +               if (freq == (u32)-EINVAL || freq < min_cpufreq ||
-> +                   (mask & (1 << i)))
->                         table[i].frequency = CPUFREQ_ENTRY_INVALID;
->                 else
->                         table[i].frequency = freq / 1000;
-> --
-> 1.7.9.5
->
+WWVzLiA0IGNhNTMgY29yZSwgb25lIGNsdXN0ZXIuIEFsbCBjb3JlcyBhcmUgc2hhcmluZyBhIHNp
+bmdsZSBjbG9jayBsaW5lLg0KDQpCZXN0IHdpc2hlcywNCllpcGVuZyBZYW8NCg0KLS0tLS1Pcmln
+aW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1h
+ckBsaW5hcm8ub3JnXSANClNlbnQ6IDIwMTTE6jTUwjIxyNUgMTM6NDgNClRvOiBZaXBlbmcgWWFv
+DQpDYzogbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBSYWZhZWwgSi4gV3lzb2NraTsgU3JpdmF0
+c2EgUy4gQmhhdA0KU3ViamVjdDogUmU6IGNwdWZyZXEgZnJhbWV3b3JrIHF1ZXN0aW9ucy4NCg0K
+SnVzdCBmb3IgbXkga25vd2xlZGdlLCB3aGF0J3MgeW91ciBzeXN0ZW1zIGNvbmZpZ3VyYXRpb24/
+DQotIDQgQVJNIFByb2Nlc3NvcnMNCi0gQWxsIHNoYXJpbmcgYSBzaW5nbGUgY2xvY2sgbGluZSA/
+IGkuZS4gYSBzaW5nbGUgY2x1c3Rlcj8NCg0KT24gMjEgQXByaWwgMjAxNCAxMDo1OCwgWWlwZW5n
+IFlhbyA8eXB5YW9AbWFydmVsbC5jb20+IHdyb3RlOg0KPiBIaSBWaXJlc2gsDQo+IFRoYW5rIHlv
+dSBmb3IgeW91ciByZXBseSBhbmQgaGVyZSBpcyB0aGUga2VybmVsIHdhcm5pbmcgYWJvdXQgc3lz
+ZnMgbm9kZSBlcnJvcjoNCj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+IFsgICA5MS45OTU3OTVdIGMxIDM0NTggKHBv
+d2VyX3NfZGV2ZnJlcSkgQ1BVMzogc2h1dGRvd24NCj4gc2g6IGNhbid0IGNyZWF0ZSAvc3lzL2Rl
+dmljZXMvc3lzdGVtL2NwdS9jcHVmcmVxL2NvbnNlcnZhdGl2ZS91cF90aHJlc2hvbGQ6IE5vIHMN
+Cj4gdWNoIGZpbGUgb3IgZGlyZWN0b3J5DQo+IHNoOiBjYW4ndCBjcmVhdGUgL3N5cy9kZXZpY2Vz
+L3N5c3RlbS9jcHUvY3B1ZnJlcS9jb25zZXJ2YXRpdmUvZG93bl90aHJlc2hvbGQ6IE5vDQo+ICBz
+dWNoIGZpbGUgb3IgZGlyZWN0b3J5DQoNCllvdSBhcmUgcHJvYmFibHkgcGxheWluZyBiZXR3ZWVu
+IG9uZGVtYW5kIGFuZCBjb25zZXJ2YXRpdmUgZ292ZXJub3JzDQpoZXJlIGFuZCB5b3Ugc2NyaXB0
+IHRyaWVkIHRvIHByaW50IGZvciBhIGdvdmVybm9yIHdoaWNoIGRvZXNuJ3QgZXhpc3QgYW55bW9y
+ZT8NCg0KPiBbICAgOTIuMDIzOTAzXSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIENQVTI6IHNo
+dXRkb3duDQo+IFsgICA5Mi4wNTkzMTBdIGMwIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgY3B1ZnJl
+cTogX19jcHVmcmVxX3JlbW92ZV9kZXY6IEZhaWxlZCB0DQo+IG8gc3RvcCBnb3Zlcm5vcg0KPiBz
+aDogd3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lbnQNCj4gc2g6IHdyaXRlIGVycm9yOiBJbnZh
+bGlkIGFyZ3VtZW50DQo+IHNoOiB3cml0ZSBlcnJvcjogSW52YWxpZCBhcmd1bWVudA0KPiBzaDog
+d3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lbnQNCg0KRG9udCcga25vdyB3aHkgdGhlc2UgY2Ft
+ZS4NCg0KPiBzaDogd3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lblsgICA5Mi4wODE1MjVdIGMw
+IDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgQ1BVMTogcw0KPiBodXRkb3duDQo+IHQNCj4gc2g6IHdy
+aXRlIGVycm9yOiBJbnZhbGlkIGFyZ3VtZW50DQo+IFsgICA5Mi4xNTQxNjhdIGMxIDM0NTggKHBv
+d2VyX3NfZGV2ZnJlcSkgLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tDQo+IFsg
+ICA5Mi4xNjQ3NDldIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgV0FSTklORzogYXQgZnMvc3lz
+ZnMvZGlyLmM6NTMwIHN5c2ZzX2FkDQo+IGRfb25lKzB4YWMvMHhkMCgpDQo+IFsgICA5Mi4xNzM1
+NDNdIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgc3lzZnM6IGNhbm5vdCBjcmVhdGUgZHVwbGlj
+YXRlIGZpbGVuYW1lDQo+ICAnL2RldmljZXMvc3lzdGVtL2NwdS9jcHUxL2NwdWZyZXEnDQo+IFsg
+ICA5Mi4xODM3OTZdIE1vZHVsZXMgbGlua2VkIGluOiBydW5jYXNlX3N5c2ZzKE8pIGF1ZGlvc3R1
+YiBjaWRhdGF0dHlkZXYgZ3NfbW9kDQo+IGVtIGNjaW5ldGRldiBjY2lfZGF0YXN0dWIgY2l0dHkg
+aW1sX21vZHVsZSBzZWggY3Bsb2FkZGV2IG1zb2NrZXRrIGdhbGNvcmUoTykNCj4gWyAgIDkyLjIw
+MDI0Nl0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBDUFU6IDEgUElEOiAzNDU4IENvbW06IHBv
+d2VyX3NfZGV2ZnJlcQ0KPiBUYWludGVkOiBHICAgICAgICAgICBPIDMuMTAuMzMgIzU5DQo+IFsg
+ICA5Mi4yMTA2NDldIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgQ2FsbCB0cmFjZToNCj4gWyAg
+IDkyLjIxNTU4NV0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAwODdlNTA+
+XSBkdW1wX2JhY2t0cmFjZSsweDANCj4gLzB4MTZjDQo+IFsgICA5Mi4yMjMyOTldIGMxIDM0NTgg
+KHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAwMDg3ZmNjPl0gc2hvd19zdGFjaysweDEwLzB4
+DQo+IDFjDQo+IFsgICA5Mi4yMzE5MDddIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZm
+ZmZjMDAwNzVlOWU0Pl0gZHVtcF9zdGFjaysweDFjLzB4DQo+IDI4DQo+IFsgICA5Mi4yMzkzNzNd
+IGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAwMDliNzE4Pl0gd2Fybl9zbG93
+cGF0aF9jb21tDQo+IG9uKzB4NzQvMHg5Yw0KPiBbICAgOTIuMjQ3NzAwXSBjMSAzNDU4IChwb3dl
+cl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDA5YjgwND5dIHdhcm5fc2xvd3BhdGhfZm10Kw0KPiAw
+eDRjLzB4NTgNCj4gWyAgIDkyLjI1NTgyOF0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZm
+ZmZmZmMwMDAxZmEyMWM+XSBzeXNmc19hZGRfb25lKzB4YTgNCj4gLzB4ZDANCj4gWyAgIDkyLjI2
+MzUxNV0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAxZmFlMTg+XSBzeXNm
+c19kb19jcmVhdGVfbGkNCj4gbmtfc2QrMHhhOC8weDI0MA0KPiBbICAgOTIuMjcyMTg5XSBjMSAz
+NDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDFmYWZjOD5dIHN5c2ZzX2NyZWF0ZV9s
+aW5rKw0KPiAweDE4LzB4MzgNCj4gWyAgIDkyLjI4MDI3MV0gYzEgMzQ1OCAocG93ZXJfc19kZXZm
+cmVxKSBbPGZmZmZmZmMwMDA0NzIzODg+XSBjcHVmcmVxX2FkZF9kZXYrMHgNCj4gMjAwLzB4NWI0
+DQo+IFsgICA5Mi4yODgzMzldIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAw
+NzVhMGMwPl0gY3B1ZnJlcV9jcHVfY2FsbGJhDQo+IGNrKzB4NjQvMHg5NA0KPiBbICAgOTIuMjk3
+NDM3XSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDBjYWE0ND5dIG5vdGlm
+aWVyX2NhbGxfY2hhaQ0KPiBuKzB4NDQvMHg4OA0KPiBbICAgOTIuMzA1NjkzXSBjMSAzNDU4IChw
+b3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZmYzAwMDBjYWIyYz5dIF9fcmF3X25vdGlmaWVyX2NhbA0K
+PiBsX2NoYWluKzB4OC8weDE0DQo+IFsgICA5Mi4zMTQyNTNdIGMxIDM0NTggKHBvd2VyX3NfZGV2
+ZnJlcSkgWzxmZmZmZmZjMDAwMDlmNDAwPl0gX19jcHVfbm90aWZ5KzB4MmMvDQo+IDB4NTgNCj4g
+WyAgIDkyLjMyMTg5NF0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAwOWY0
+M2M+XSBjcHVfbm90aWZ5KzB4MTAvMHgNCj4gMWMNCj4gWyAgIDkyLjMyOTM1OF0gYzEgMzQ1OCAo
+cG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAwOWY3MTQ+XSBfY3B1X3VwKzB4MTE4LzB4MTkN
+Cj4gOA0KPiBbICAgOTIuMzM2NzEwXSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZmZmZm
+YzAwMDA5Zjg0MD5dIGNwdV91cCsweDY4LzB4ODgNCj4gWyAgIDkyLjM0MzcxMF0gYzEgMzQ1OCAo
+cG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDA3NTdmY2M+XSBzdG9yZV9vbmxpbmUrMHg2NC8N
+Cj4gMHhhNA0KPiBbICAgOTIuMzUxNDM1XSBjMSAzNDU4IChwb3dlcl9zX2RldmZyZXEpIFs8ZmZm
+ZmZmYzAwMDM1ZTk5MD5dIGRldl9hdHRyX3N0b3JlKzB4MQ0KPiA0LzB4MjgNCj4gWyAgIDkyLjM1
+OTIzNV0gYzEgMzQ1OCAocG93ZXJfc19kZXZmcmVxKSBbPGZmZmZmZmMwMDAxZjhkNjQ+XSBzeXNm
+c193cml0ZV9maWxlKzANCj4geGQ0LzB4MTUwDQo+IFsgICA5Mi4zNjcyNzNdIGMxIDM0NTggKHBv
+d2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZjMDAwMTk0YTQ0Pl0gdmZzX3dyaXRlKzB4YTgvMHgxDQo+
+IGE0DQo+IFsgICA5Mi4zNzQ2MTZdIGMxIDM0NTggKHBvd2VyX3NfZGV2ZnJlcSkgWzxmZmZmZmZj
+MDAwMTk0ZTc0Pl0gU3lTX3dyaXRlKzB4NDAvMHg4DQo+IGMNCj4gWyAgIDkyLjM4MTk2OF0gYzEg
+MzQ1OCAocG93ZXJfc19kZXZmcmVxKSAtLS1bIGVuZCB0cmFjZSA1OTFlMjA1NzczMjM0MjY4IF0t
+LS0NCg0KVGhpcyBtdXN0IGJlIGZpeGVkIGluIHVwc3RyZWFtIGtlcm5lbC4uIERvbid0IHJlbWVt
+YmVyIHdoaWNoIGNvbW1pdA0KZGlkIGl0IGFzIHRoZXJlDQp3ZXJlIGxvdHMgb2YgcGF0Y2hlcyBh
+cm91bmQgdGhlc2UgbGluZXMuDQo=
