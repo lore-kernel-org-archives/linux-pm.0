@@ -1,62 +1,130 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] kernel/power/hibernate.c: be sure of 'start' is not bigger than 'stop'
-Date: Mon, 21 Apr 2014 22:43:10 +0200
-Message-ID: <1597133.Gff7RjtQZQ@vostro.rjw.lan>
-References: <53551FCB.3030109@gmail.com> <20140421200930.GA9880@amd.pavel.ucw.cz>
+Subject: Re: [PATCH v3 1/8] cpufreq: Introduce macros for cpufreq_frequency_table iteration
+Date: Tue, 22 Apr 2014 00:06:39 +0200
+Message-ID: <26900651.DzFuLa6PAS@vostro.rjw.lan>
+References: <534E2B44.7090008@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55810 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754440AbaDUU0w convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 16:26:52 -0400
-In-Reply-To: <20140421200930.GA9880@amd.pavel.ucw.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <534E2B44.7090008@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Linus Walleij <linus.walleij@linaro.org>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Chen Gang <gang.chen.5i5j@gmail.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>, len.brown@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Monday, April 21, 2014 10:09:30 PM Pavel Machek wrote:
-> On Mon 2014-04-21 21:40:27, Chen Gang wrote:
-> > For do_div(), it need 'u64' type, which means the outside must be s=
-ure
-> > of 'start' is not bigger than 'stop', or it will report warning.
-> >=20
-> > The related warning (with allmodconfig for unicore32):
-> >=20
-> >     CC      kernel/power/hibernate.o
-> >   kernel/power/hibernate.c: In function =E2=80=98swsusp_show_speed=E2=
-=80=99:
-> >   kernel/power/hibernate.c:237: warning: comparison of distinct poi=
-nter types lacks a cast
-> >=20
-> > Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
->=20
-> >  {
-> > -	s64 elapsed_centisecs64;
-> > +	u64 elapsed_centisecs64;
-> >  	int centisecs;
-> >  	int k;
-> >  	int kps;
-> > =20
-> >  	elapsed_centisecs64 =3D timeval_to_ns(stop) - timeval_to_ns(start=
-);
-> > +	if ((s64)elapsed_centisecs64 < 0) {
-> > +		printk(KERN_ERR "PM: stop: %llu < start %llu\n",
-> > +			timeval_to_ns(stop), timeval_to_ns(start));
-> > +		return;
-> > +	}
-> >  	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
-> >  	centisecs =3D elapsed_centisecs64;
-> >  	if (centisecs =3D=3D 0)
->=20
-> Quite a lot of code to shut up warning in mostly debugging
-> function... is there alternative method of shutting it up? Have you
-> seen < 0 values in wild?
+On Wednesday, April 16, 2014 10:03:32 AM Stratos Karafotis wrote:
+> Many cpufreq drivers need to iterate over the cpufreq_frequency_table
+> for various tasks.
+> 
+> This patch introduces two macros which can be used for iteration over
+> cpufreq_frequency_table keeping a common coding style across drivers:
+> 
+> - cpufreq_for_each_entry: iterate over each entry of the table
+> - cpufreq_for_each_valid_entry: iterate over each entry that contains
+> a valid frequency.
+> 
+> It should have no functional changes.
+> 
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 
-No, I don't think so.  This is a purely theoretical problem that never
-happens in practice, because all of the callers do the right thing.
+Can you please resend the entire series as v4 so that it is clear which version
+of each patch is the current one?
 
-Rafael=20
+> ---
+> 
+> Changes v2 -> v3
+> 	- Better formatting in Documentation
+> 	- Fix spell error in comments
+> 
+>  Documentation/cpu-freq/cpu-drivers.txt | 19 +++++++++++++++++++
+>  drivers/cpufreq/cpufreq.c              | 11 +++++++++++
+>  include/linux/cpufreq.h                | 21 +++++++++++++++++++++
+>  3 files changed, 51 insertions(+)
+> 
+> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+> index 48da5fd..b045fe5 100644
+> --- a/Documentation/cpu-freq/cpu-drivers.txt
+> +++ b/Documentation/cpu-freq/cpu-drivers.txt
+> @@ -228,3 +228,22 @@ is the corresponding frequency table helper for the ->target
+>  stage. Just pass the values to this function, and the unsigned int
+>  index returns the number of the frequency table entry which contains
+>  the frequency the CPU shall be set to.
+> +
+> +The following macros can be used as iterators over cpufreq_frequency_table:
+> +
+> +cpufreq_for_each_entry(pos, table) - iterates over all entries of frequency
+> +table.
+> +
+> +cpufreq-for_each_valid_entry(pos, table) - iterates over all entries,
+> +excluding CPUFREQ_ENTRY_INVALID frequencies.
+> +Use arguments "pos" - a cpufreq_frequency_table * as a loop cursor and
+> +"table" - the cpufreq_frequency_table * you want to iterate over.
+> +
+> +For example:
+> +
+> +	struct cpufreq_frequency_table *pos, *driver_freq_table;
+> +
+> +	cpufreq_for_each_entry(pos, driver_freq_table) {
+> +		/* Do something with pos */
+> +		pos->frequency = ...
+> +	}
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index abda660..a517da9 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -237,6 +237,17 @@ void cpufreq_cpu_put(struct cpufreq_policy *policy)
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
+>  
+> +bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
+> +{
+> +	while ((*pos)->frequency != CPUFREQ_TABLE_END)
+> +		if ((*pos)->frequency != CPUFREQ_ENTRY_INVALID)
+> +			return true;
+> +		else
+> +			(*pos)++;
+> +	return false;
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_next_valid);
+> +
+>  /*********************************************************************
+>   *            EXTERNALLY AFFECTING FREQUENCY CHANGES                 *
+>   *********************************************************************/
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 5ae5100..77a5fa1 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -468,6 +468,27 @@ struct cpufreq_frequency_table {
+>  				    * order */
+>  };
+>  
+> +bool cpufreq_next_valid(struct cpufreq_frequency_table **pos);
+> +
+> +/*
+> + * cpufreq_for_each_entry -	iterate over a cpufreq_frequency_table
+> + * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
+> + * @table:	the cpufreq_frequency_table * to iterate over.
+> + */
+> +
+> +#define cpufreq_for_each_entry(pos, table)	\
+> +	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)
+> +
+> +/*
+> + * cpufreq_for_each_valid_entry -     iterate over a cpufreq_frequency_table
+> + *	excluding CPUFREQ_ENTRY_INVALID frequencies.
+> + * @pos:        the cpufreq_frequency_table * to use as a loop cursor.
+> + * @table:      the cpufreq_frequency_table * to iterate over.
+> + */
+> +
+> +#define cpufreq_for_each_valid_entry(pos, table)	\
+> +	for (pos = table; cpufreq_next_valid(&pos); pos++)
+> +
+>  int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+>  				    struct cpufreq_frequency_table *table);
+>  
+> 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
