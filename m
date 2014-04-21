@@ -1,75 +1,39 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
-Date: Mon, 21 Apr 2014 10:01:13 +0200
-Message-ID: <CAMuHMdV7p93j_nbyOtjKo8na02C8YYcL4DcqjY2TP=9x_se+4w@mail.gmail.com>
-References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
- <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
- <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Mike Turquette <mike.turquette@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [PATCH 0/4] add cpuidle support for Exynos5420
+Date: Mon, 21 Apr 2014 17:19:14 +0530
+Message-ID: <1398080958-21677-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgVmlyZXNoLAoKT24gTW9uLCBBcHIgMjEsIDIwMTQgYXQgODowMSBBTSwgVmlyZXNoIEt1bWFy
-IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cj4gT24gMTcgQXByaWwgMjAxNCAxNToy
-MywgR2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydCtyZW5lc2FzQGdsaWRlci5iZT4gd3JvdGU6Cj4+
-IElmIHRoZSBjbG9jayBkb2Vzbid0IGV4aXN0LCBjbGtfZ2V0X3JhdGUoKSByZXR1cm5zIC1FSU5W
-QUwKPgo+IFlvdSBjbGtfZ2V0X3JhdGUoKSBpc24ndCB3cml0dGVuIHdlbGwgdGhlbiwgaXQgc2hv
-dWxkIHJldHVybiB6ZXJvLgoKWW91J3JlIHJpZ2h0LCB0aGFua3MhCk9uY2UgYWdhaW4gSSBsb29r
-ZWQgYXQgdGhlIHdyb25nIGNsa19nZXRfcmF0ZSgpIGltcGxlbWVudGF0aW9uIDotKApUaGVzZSBu
-b24tQ0NGIHZhcmlhbnRzIHNob3VsZCBkaWUgc29vbi4uLgoKU28gdGhlIG9yaWdpbmFsIGNvZGUg
-d2FzIGNvcnJlY3Q6IGlmIHRoZSBjbG9jayBpcyBub3QgdmFsaWQsIGZyZXEgPT0gMCwKYW5kIHRo
-dXMgImZyZXEgPCBtaW5fY3B1ZnJlcSIgaXMgdHJ1ZS4KCj4gQE1pa2U6IEkgZGlkbid0IHNlZSB0
-aGlzIGNsZWFybHkgbWVudGlvbmVkIGluIGNsay5oLCBzaG91bGQgd2UgZml4Cj4gdGhhdD8KPgo+
-Piwgd2hpY2ggYmVjb21lcwo+PiBhIGxhcmdlIG51bWJlciAoZnJlcSBpcyB1MzIpLCBmYWlsaW5n
-IHRoZSAiZnJlcSA8IG1pbl9jcHVmcmVxIiB0ZXN0Lgo+PiBFeHBsaWNpdGx5IHRlc3QgZm9yICIo
-dTMyKS1FSU5WQUwiIHRvIGZpeCB0aGlzLgo+Cj4gVGhhdCdzIGEgYmFkIGNoZWNrLiBXZSBzaG91
-bGQgaGF2ZSBkb25lIHRoaXMgaW5zdGVhZDoKPgo+IChzMzIpZnJlcSA8IDA7IGJ1dCB0aGF0IHdv
-dWxkIGJlIHRydWUgZm9yIGhpZ2ggdmFsdWVzIG9mIGNsb2NrLiBBbmQgdGhhdCdzCj4gd2h5IGNs
-a19nZXRfcmF0ZSgpIG11c3QgcmV0dXJuIHplcm8gZm9yIGVycm9ycy4KPgo+PiBVcGRhdGUgdGhl
-IGNvbW1lbnQsIGFuZCBmaXggYSBncmFtbWVyIGlzc3VlIHdoaWxlIHdlJ3JlIGF0IGl0Lgo+Pgo+
-PiBTaWduZWQtb2ZmLWJ5OiBHZWVydCBVeXR0ZXJob2V2ZW4gPGdlZXJ0K3JlbmVzYXNAZ2xpZGVy
-LmJlPgo+PiAtLS0KPj4gIGRyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAg
-ICA3ICsrKystLS0KPj4gIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDMgZGVsZXRp
-b25zKC0pCj4+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVuZXQtY3B1
-ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYwo+PiBpbmRleCA1
-Mzg4MWQ3OGE5MzEuLjcwMjdlYWI4MTRjZSAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9jcHVmcmVx
-L3BwYy1jb3JlbmV0LWNwdWZyZXEuYwo+PiArKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVu
-ZXQtY3B1ZnJlcS5jCj4+IEBAIC0xNzksMTAgKzE3OSwxMSBAQCBzdGF0aWMgaW50IGNvcmVuZXRf
-Y3B1ZnJlcV9jcHVfaW5pdChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkKPj4gICAgICAg
-ICAgICAgICAgIGNsayA9IG9mX2Nsa19nZXQoZGF0YS0+cGFyZW50LCBpKTsKPj4gICAgICAgICAg
-ICAgICAgIGZyZXEgPSBjbGtfZ2V0X3JhdGUoY2xrKTsKPj4gICAgICAgICAgICAgICAgIC8qCj4+
-IC0gICAgICAgICAgICAgICAgKiB0aGUgY2xvY2sgaXMgdmFsaWQgaWYgaXRzIGZyZXF1ZW5jeSBp
-cyBub3QgbWFza2VkCj4+IC0gICAgICAgICAgICAgICAgKiBhbmQgbGFyZ2UgdGhhbiBtaW5pbXVt
-IGFsbG93ZWQgZnJlcXVlbmN5Lgo+PiArICAgICAgICAgICAgICAgICogdGhlIGNsb2NrIGlzIHZh
-bGlkIGlmIGl0IGV4aXN0cywgaXRzIGZyZXF1ZW5jeSBpcyBub3QKPj4gKyAgICAgICAgICAgICAg
-ICAqIG1hc2tlZCwgYW5kIGxhcmdlciB0aGFuIG1pbmltdW0gYWxsb3dlZCBmcmVxdWVuY3kuCj4+
-ICAgICAgICAgICAgICAgICAgKi8KPj4gLSAgICAgICAgICAgICAgIGlmIChmcmVxIDwgbWluX2Nw
-dWZyZXEgfHwgKG1hc2sgJiAoMSA8PCBpKSkpCj4+ICsgICAgICAgICAgICAgICBpZiAoZnJlcSA9
-PSAodTMyKS1FSU5WQUwgfHwgZnJlcSA8IG1pbl9jcHVmcmVxIHx8Cj4+ICsgICAgICAgICAgICAg
-ICAgICAgKG1hc2sgJiAoMSA8PCBpKSkpCj4+ICAgICAgICAgICAgICAgICAgICAgICAgIHRhYmxl
-W2ldLmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5UUllfSU5WQUxJRDsKPj4gICAgICAgICAgICAgICAg
-IGVsc2UKPj4gICAgICAgICAgICAgICAgICAgICAgICAgdGFibGVbaV0uZnJlcXVlbmN5ID0gZnJl
-cSAvIDEwMDA7CgpHcntvZXRqZSxlZXRpbmd9cywKCiAgICAgICAgICAgICAgICAgICAgICAgIEdl
-ZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9u
-ZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25z
-IHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4g
-SSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29t
-ZXRoaW5nIGxpa2UgdGhhdC4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51
-cyBUb3J2YWxkcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
-Cmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
+
+This patchset adds cpuidle support for Exynos5420 SoC based on
+generic big.little cpuidle driver.
+
+Tested on SMDK5420.
+
+This patch set depends on:
+	1. [PATCH 0/5] MCPM backend for Exynos5420
+	   http://www.spinics.net/lists/arm-kernel/msg321666.html
+
+	2. [PATCH v4] arm: exynos: generalize power register address calculation
+	   http://www.spinics.net/lists/arm-kernel/msg324024.html
+		
+Chander Kashyap (4):
+  cpuidle: config: Add SOC_EXYNOS5420 entry to select
+    cpuidle-big-little driver
+  driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+  exynos: cpuidle: do not allow cpuidle registration for Exynos5420
+  mcpm: exynos: populate suspend and powered_up callbacks
+
+ arch/arm/mach-exynos/cpuidle.c       |    3 ++
+ arch/arm/mach-exynos/mcpm-exynos.c   |   53 ++++++++++++++++++++++++++++++++++
+ drivers/cpuidle/Kconfig.arm          |    2 +-
+ drivers/cpuidle/cpuidle-big_little.c |    3 +-
+ 4 files changed, 59 insertions(+), 2 deletions(-)
+
+-- 
+1.7.9.5
