@@ -1,59 +1,56 @@
-From: Chen Gang <gang.chen.5i5j@gmail.com>
-Subject: [PATCH] kernel/power/hibernate.c: be sure of 'start' is not bigger
- than 'stop'
-Date: Mon, 21 Apr 2014 21:40:27 +0800
-Message-ID: <53551FCB.3030109@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: avoid adding devices without pm_ops to dpm list
+Date: Mon, 21 Apr 2014 10:09:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1404211005230.1201-100000@iolanthe.rowland.org>
+References: <535509EA.2090006@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:62629 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbaDUNki (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 09:40:38 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42503 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751032AbaDUOJA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 10:09:00 -0400
+In-Reply-To: <535509EA.2090006@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guan Xuetao <gxt@mprc.pku.edu.cn>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Sravan <asravan@codeaurora.org>
+Cc: linux-pm@vger.kernel.org
 
-=46or do_div(), it need 'u64' type, which means the outside must be sur=
-e
-of 'start' is not bigger than 'stop', or it will report warning.
+On Mon, 21 Apr 2014, Sravan wrote:
 
-The related warning (with allmodconfig for unicore32):
+> Hello,
+> 
+> I have come across below code which looks can be optimized to reduce 
+> suspend/resume latencies.
+> 
+> During device registration at boot up, device_add() is called.
+> In this device_add() function, device_pm_add() is called without 
+> checking if the device has pm_ops or not.
+> Thus dpm_list is generated with all devices even if some devices don't 
+> have pm_ops.
+> 
+> device_add() -> device_pm_add()-> generate dpm_list
+> 
+> During suspend/resume process, suspend/resume APIs are called for 
+> devices present in dpm_list.
+> due to this, suspend/resume APIs for devices without pm_ops also called 
+> and just return with NULL.
 
-    CC      kernel/power/hibernate.o
-  kernel/power/hibernate.c: In function =91swsusp_show_speed=92:
-  kernel/power/hibernate.c:237: warning: comparison of distinct pointer=
- types lacks a cast
+What are you talking about?  _No_ device has a pm_ops structure; there
+is no such member inside struct device.
 
-Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
----
- kernel/power/hibernate.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+> Can we optimize this code by adding *ONLY* devices with pm_ops to 
+> dpm_list and ignore remaining?
+> It will help reduce suspend/resume latencies. I observed 10mS savings 
+> with my debug code. It may change based on number of devices without pm_ops.
+> 
+> Let me know your opinion/suggestions on this.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index f4f2073..0dec9b7 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -228,12 +228,17 @@ static void platform_recover(int platform_mode)
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
--	s64 elapsed_centisecs64;
-+	u64 elapsed_centisecs64;
- 	int centisecs;
- 	int k;
- 	int kps;
-=20
- 	elapsed_centisecs64 =3D timeval_to_ns(stop) - timeval_to_ns(start);
-+	if ((s64)elapsed_centisecs64 < 0) {
-+		printk(KERN_ERR "PM: stop: %llu < start %llu\n",
-+			timeval_to_ns(stop), timeval_to_ns(start));
-+		return;
-+	}
- 	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
- 	centisecs =3D elapsed_centisecs64;
- 	if (centisecs =3D=3D 0)
---=20
-1.9.2.459.g68773ac
+The suspend and resume routines look at pm_ops structures in the 
+device's power domain, device type, bus type, class, and driver.  Even 
+though most of those remain constant throughout the device's lifetime, 
+the driver can change at any time.  Therefore it is not possible to 
+leave devices off the dpm_list.
+
+Alan Stern
+
