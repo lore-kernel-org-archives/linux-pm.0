@@ -1,59 +1,38 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PM / suspend: Make cpuidle work in the "freeze" state
-Date: Mon, 21 Apr 2014 12:23:54 +0530
-Message-ID: <5354C082.6020908@linux.vnet.ibm.com>
-References: <4271849.XeOTooWnSN@vostro.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 1/2] cpufreq: exynos: Use dev_err/info function instead of
+ pr_err/info
+Date: Mon, 21 Apr 2014 16:03:43 +0900
+Message-ID: <5354C2CF.5020206@samsung.com>
+References: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
+ <1397787634-9334-2-git-send-email-cw00.choi@samsung.com>
+ <CAKohpo=-Oxu6ZoB4B2H4552meq46iXrVzKbP5ZwnG==sCc2_MA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4271849.XeOTooWnSN@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAKohpo=-Oxu6ZoB4B2H4552meq46iXrVzKbP5ZwnG==sCc2_MA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/21/2014 03:13 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 04/21/2014 03:05 PM, Viresh Kumar wrote:
+> On 18 April 2014 07:50, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> This patch uses dev_err/info function to show accurate log message with device name
+>> instead of pr_err/info function.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+>> ---
+>>  drivers/cpufreq/exynos-cpufreq.c | 21 ++++++++++++---------
+>>  drivers/cpufreq/exynos-cpufreq.h |  1 +
+>>  2 files changed, 13 insertions(+), 9 deletions(-)
 > 
-> The "freeze" system sleep state introduced by commit 7e73c5ae6e79
-> (PM: Introduce suspend state PM_SUSPEND_FREEZE) requires cpuidle
-> to be functional when freeze_enter() is executed to work correctly
-> (that is, to be able to save any more energy than runtime idle),
-> but that is impossible after commit 8651f97bd951d (PM / cpuidle:
-> System resume hang fix with cpuidle) which caused cpuidle to be
-> paused in dpm_suspend_noirq() and resumed in dpm_resume_noirq().
+> This still looks fine even if we don't take the new driver ?
 > 
-> To avoid that problem, add cpuidle_resume() and cpuidle_pause()
-> to the beginning and the end of freeze_enter(), respectively.
-> 
-> Reported-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  kernel/power/suspend.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: linux-pm/kernel/power/suspend.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/suspend.c
-> +++ linux-pm/kernel/power/suspend.c
-> @@ -14,6 +14,7 @@
->  #include <linux/init.h>
->  #include <linux/console.h>
->  #include <linux/cpu.h>
-> +#include <linux/cpuidle.h>
->  #include <linux/syscalls.h>
->  #include <linux/gfp.h>
->  #include <linux/io.h>
-> @@ -53,7 +54,9 @@ static void freeze_begin(void)
-> 
->  static void freeze_enter(void)
->  {
-> +	cpuidle_resume();
->  	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
-> +	cpuidle_pause();
->  }
-> 
->  void freeze_wake(void)
-> 
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Thanks for your review.
+
+Best regards,
+Chanwoo Choi
