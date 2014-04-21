@@ -1,39 +1,37 @@
 From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH 0/4] add cpuidle support for Exynos5420
-Date: Mon, 21 Apr 2014 17:19:14 +0530
-Message-ID: <1398080958-21677-1-git-send-email-chander.kashyap@linaro.org>
+Subject: [PATCH 2/4] driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+Date: Mon, 21 Apr 2014 17:19:16 +0530
+Message-ID: <1398080958-21677-3-git-send-email-chander.kashyap@linaro.org>
+References: <1398080958-21677-1-git-send-email-chander.kashyap@linaro.org>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1398080958-21677-1-git-send-email-chander.kashyap@linaro.org>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.org>
 List-Id: linux-pm@vger.kernel.org
 
-Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
+Add "samsung,exynos5420" compatible string to initialize generic
+big-little cpuidle driver for Exynos5420.
 
-This patchset adds cpuidle support for Exynos5420 SoC based on
-generic big.little cpuidle driver.
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.org>
+---
+ drivers/cpuidle/cpuidle-big_little.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Tested on SMDK5420.
-
-This patch set depends on:
-	1. [PATCH 0/5] MCPM backend for Exynos5420
-	   http://www.spinics.net/lists/arm-kernel/msg321666.html
-
-	2. [PATCH v4] arm: exynos: generalize power register address calculation
-	   http://www.spinics.net/lists/arm-kernel/msg324024.html
-		
-Chander Kashyap (4):
-  cpuidle: config: Add SOC_EXYNOS5420 entry to select
-    cpuidle-big-little driver
-  driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
-  exynos: cpuidle: do not allow cpuidle registration for Exynos5420
-  mcpm: exynos: populate suspend and powered_up callbacks
-
- arch/arm/mach-exynos/cpuidle.c       |    3 ++
- arch/arm/mach-exynos/mcpm-exynos.c   |   53 ++++++++++++++++++++++++++++++++++
- drivers/cpuidle/Kconfig.arm          |    2 +-
- drivers/cpuidle/cpuidle-big_little.c |    3 +-
- 4 files changed, 59 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index b45fc62..d0fac53 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -170,7 +170,8 @@ static int __init bl_idle_init(void)
+ 	/*
+ 	 * Initialize the driver just for a compliant set of machines
+ 	 */
+-	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7"))
++	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7") &&
++		(!of_machine_is_compatible("samsung,exynos5420")))
+ 		return -ENODEV;
+ 	/*
+ 	 * For now the differentiation between little and big cores
 -- 
 1.7.9.5
