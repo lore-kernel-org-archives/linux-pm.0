@@ -1,38 +1,75 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 1/2] cpufreq: exynos: Use dev_err/info function instead of
- pr_err/info
-Date: Mon, 21 Apr 2014 16:03:43 +0900
-Message-ID: <5354C2CF.5020206@samsung.com>
-References: <1397787634-9334-1-git-send-email-cw00.choi@samsung.com>
- <1397787634-9334-2-git-send-email-cw00.choi@samsung.com>
- <CAKohpo=-Oxu6ZoB4B2H4552meq46iXrVzKbP5ZwnG==sCc2_MA@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
+Date: Mon, 21 Apr 2014 10:01:13 +0200
+Message-ID: <CAMuHMdV7p93j_nbyOtjKo8na02C8YYcL4DcqjY2TP=9x_se+4w@mail.gmail.com>
+References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
+ <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
+ <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=-Oxu6ZoB4B2H4552meq46iXrVzKbP5ZwnG==sCc2_MA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Mike Turquette <mike.turquette@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/21/2014 03:05 PM, Viresh Kumar wrote:
-> On 18 April 2014 07:50, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> This patch uses dev_err/info function to show accurate log message with device name
->> instead of pr_err/info function.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
->> ---
->>  drivers/cpufreq/exynos-cpufreq.c | 21 ++++++++++++---------
->>  drivers/cpufreq/exynos-cpufreq.h |  1 +
->>  2 files changed, 13 insertions(+), 9 deletions(-)
-> 
-> This still looks fine even if we don't take the new driver ?
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Thanks for your review.
-
-Best regards,
-Chanwoo Choi
+SGkgVmlyZXNoLAoKT24gTW9uLCBBcHIgMjEsIDIwMTQgYXQgODowMSBBTSwgVmlyZXNoIEt1bWFy
+IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cj4gT24gMTcgQXByaWwgMjAxNCAxNToy
+MywgR2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydCtyZW5lc2FzQGdsaWRlci5iZT4gd3JvdGU6Cj4+
+IElmIHRoZSBjbG9jayBkb2Vzbid0IGV4aXN0LCBjbGtfZ2V0X3JhdGUoKSByZXR1cm5zIC1FSU5W
+QUwKPgo+IFlvdSBjbGtfZ2V0X3JhdGUoKSBpc24ndCB3cml0dGVuIHdlbGwgdGhlbiwgaXQgc2hv
+dWxkIHJldHVybiB6ZXJvLgoKWW91J3JlIHJpZ2h0LCB0aGFua3MhCk9uY2UgYWdhaW4gSSBsb29r
+ZWQgYXQgdGhlIHdyb25nIGNsa19nZXRfcmF0ZSgpIGltcGxlbWVudGF0aW9uIDotKApUaGVzZSBu
+b24tQ0NGIHZhcmlhbnRzIHNob3VsZCBkaWUgc29vbi4uLgoKU28gdGhlIG9yaWdpbmFsIGNvZGUg
+d2FzIGNvcnJlY3Q6IGlmIHRoZSBjbG9jayBpcyBub3QgdmFsaWQsIGZyZXEgPT0gMCwKYW5kIHRo
+dXMgImZyZXEgPCBtaW5fY3B1ZnJlcSIgaXMgdHJ1ZS4KCj4gQE1pa2U6IEkgZGlkbid0IHNlZSB0
+aGlzIGNsZWFybHkgbWVudGlvbmVkIGluIGNsay5oLCBzaG91bGQgd2UgZml4Cj4gdGhhdD8KPgo+
+Piwgd2hpY2ggYmVjb21lcwo+PiBhIGxhcmdlIG51bWJlciAoZnJlcSBpcyB1MzIpLCBmYWlsaW5n
+IHRoZSAiZnJlcSA8IG1pbl9jcHVmcmVxIiB0ZXN0Lgo+PiBFeHBsaWNpdGx5IHRlc3QgZm9yICIo
+dTMyKS1FSU5WQUwiIHRvIGZpeCB0aGlzLgo+Cj4gVGhhdCdzIGEgYmFkIGNoZWNrLiBXZSBzaG91
+bGQgaGF2ZSBkb25lIHRoaXMgaW5zdGVhZDoKPgo+IChzMzIpZnJlcSA8IDA7IGJ1dCB0aGF0IHdv
+dWxkIGJlIHRydWUgZm9yIGhpZ2ggdmFsdWVzIG9mIGNsb2NrLiBBbmQgdGhhdCdzCj4gd2h5IGNs
+a19nZXRfcmF0ZSgpIG11c3QgcmV0dXJuIHplcm8gZm9yIGVycm9ycy4KPgo+PiBVcGRhdGUgdGhl
+IGNvbW1lbnQsIGFuZCBmaXggYSBncmFtbWVyIGlzc3VlIHdoaWxlIHdlJ3JlIGF0IGl0Lgo+Pgo+
+PiBTaWduZWQtb2ZmLWJ5OiBHZWVydCBVeXR0ZXJob2V2ZW4gPGdlZXJ0K3JlbmVzYXNAZ2xpZGVy
+LmJlPgo+PiAtLS0KPj4gIGRyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMgfCAg
+ICA3ICsrKystLS0KPj4gIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDMgZGVsZXRp
+b25zKC0pCj4+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVuZXQtY3B1
+ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZyZXEuYwo+PiBpbmRleCA1
+Mzg4MWQ3OGE5MzEuLjcwMjdlYWI4MTRjZSAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9jcHVmcmVx
+L3BwYy1jb3JlbmV0LWNwdWZyZXEuYwo+PiArKysgYi9kcml2ZXJzL2NwdWZyZXEvcHBjLWNvcmVu
+ZXQtY3B1ZnJlcS5jCj4+IEBAIC0xNzksMTAgKzE3OSwxMSBAQCBzdGF0aWMgaW50IGNvcmVuZXRf
+Y3B1ZnJlcV9jcHVfaW5pdChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkKPj4gICAgICAg
+ICAgICAgICAgIGNsayA9IG9mX2Nsa19nZXQoZGF0YS0+cGFyZW50LCBpKTsKPj4gICAgICAgICAg
+ICAgICAgIGZyZXEgPSBjbGtfZ2V0X3JhdGUoY2xrKTsKPj4gICAgICAgICAgICAgICAgIC8qCj4+
+IC0gICAgICAgICAgICAgICAgKiB0aGUgY2xvY2sgaXMgdmFsaWQgaWYgaXRzIGZyZXF1ZW5jeSBp
+cyBub3QgbWFza2VkCj4+IC0gICAgICAgICAgICAgICAgKiBhbmQgbGFyZ2UgdGhhbiBtaW5pbXVt
+IGFsbG93ZWQgZnJlcXVlbmN5Lgo+PiArICAgICAgICAgICAgICAgICogdGhlIGNsb2NrIGlzIHZh
+bGlkIGlmIGl0IGV4aXN0cywgaXRzIGZyZXF1ZW5jeSBpcyBub3QKPj4gKyAgICAgICAgICAgICAg
+ICAqIG1hc2tlZCwgYW5kIGxhcmdlciB0aGFuIG1pbmltdW0gYWxsb3dlZCBmcmVxdWVuY3kuCj4+
+ICAgICAgICAgICAgICAgICAgKi8KPj4gLSAgICAgICAgICAgICAgIGlmIChmcmVxIDwgbWluX2Nw
+dWZyZXEgfHwgKG1hc2sgJiAoMSA8PCBpKSkpCj4+ICsgICAgICAgICAgICAgICBpZiAoZnJlcSA9
+PSAodTMyKS1FSU5WQUwgfHwgZnJlcSA8IG1pbl9jcHVmcmVxIHx8Cj4+ICsgICAgICAgICAgICAg
+ICAgICAgKG1hc2sgJiAoMSA8PCBpKSkpCj4+ICAgICAgICAgICAgICAgICAgICAgICAgIHRhYmxl
+W2ldLmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5UUllfSU5WQUxJRDsKPj4gICAgICAgICAgICAgICAg
+IGVsc2UKPj4gICAgICAgICAgICAgICAgICAgICAgICAgdGFibGVbaV0uZnJlcXVlbmN5ID0gZnJl
+cSAvIDEwMDA7CgpHcntvZXRqZSxlZXRpbmd9cywKCiAgICAgICAgICAgICAgICAgICAgICAgIEdl
+ZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9u
+ZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25z
+IHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4g
+SSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29t
+ZXRoaW5nIGxpa2UgdGhhdC4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51
+cyBUb3J2YWxkcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+Cmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
