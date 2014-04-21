@@ -1,37 +1,50 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH 1/4] cpuidle: config: Add SOC_EXYNOS5420 entry to select cpuidle-big-little driver
-Date: Mon, 21 Apr 2014 17:19:15 +0530
-Message-ID: <1398080958-21677-2-git-send-email-chander.kashyap@linaro.org>
-References: <1398080958-21677-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1398080958-21677-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+From: Sravan <asravan@codeaurora.org>
+Subject: avoid adding devices without pm_ops to dpm list
+Date: Mon, 21 Apr 2014 17:37:06 +0530
+Message-ID: <535509EA.2090006@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:36259 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbaDUMHK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 08:07:10 -0400
+Received: from [10.44.21.154] (unknown [202.46.23.62])
+	(using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+	(No client certificate requested)
+	(Authenticated sender: asravan@smtp.codeaurora.org)
+	by smtp.codeaurora.org (Postfix) with ESMTPSA id 03FB713EDFE
+	for <linux-pm@vger.kernel.org>; Mon, 21 Apr 2014 12:07:08 +0000 (UTC)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 cores.
-In order to use generic cpuidle-big-little driver, this patch adds Exynos5420
-specific check to initialize generic cpuidle driver.
+Hello,
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+I have come across below code which looks can be optimized to reduce 
+suspend/resume latencies.
+
+During device registration at boot up, device_add() is called.
+In this device_add() function, device_pm_add() is called without 
+checking if the device has pm_ops or not.
+Thus dpm_list is generated with all devices even if some devices don't 
+have pm_ops.
+
+device_add() -> device_pm_add()-> generate dpm_list
+
+During suspend/resume process, suspend/resume APIs are called for 
+devices present in dpm_list.
+due to this, suspend/resume APIs for devices without pm_ops also called 
+and just return with NULL.
+
+Can we optimize this code by adding *ONLY* devices with pm_ops to 
+dpm_list and ignore remaining?
+It will help reduce suspend/resume latencies. I observed 10mS savings 
+with my debug code. It may change based on number of devices without pm_ops.
+
+Let me know your opinion/suggestions on this.
+
 ---
- drivers/cpuidle/Kconfig.arm |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 97ccc31..5244d87 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -4,7 +4,7 @@
- 
- config ARM_BIG_LITTLE_CPUIDLE
- 	bool "Support for ARM big.LITTLE processors"
--	depends on ARCH_VEXPRESS_TC2_PM
-+	depends on ARCH_VEXPRESS_TC2_PM || SOC_EXYNOS5420
- 	select ARM_CPU_SUSPEND
- 	select CPU_IDLE_MULTIPLE_DRIVERS
- 	help
--- 
-1.7.9.5
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
