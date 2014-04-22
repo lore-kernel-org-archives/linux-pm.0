@@ -1,60 +1,129 @@
-From: Chen Gang <gang.chen.5i5j@gmail.com>
-Subject: [PATCH v2] kernel/power/hibernate.c: use 'u64' instead of 's64' to
- avoid warning
-Date: Tue, 22 Apr 2014 09:29:20 +0800
-Message-ID: <5355C5F0.6020606@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f41.google.com ([209.85.160.41]:45824 "EHLO
-	mail-pb0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbaDVB31 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 21:29:27 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Make linux-pm@vger.kernel.org official mailing list
+Date: Tue, 22 Apr 2014 10:42:05 +0530
+Message-ID: <b2b1ad7b6c034a1dafc0595507baf50ffc3a4c1a.1398143512.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Guan Xuetao <gxt@mprc.pku.edu.cn>, len.brown@intel.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-=46or do_div(), it need 'u64' type, which means the outside must be sur=
-e
-of 'start' is not bigger than 'stop', or it will report warning.
+There have been confusion all the time about which mailing list to follow for
+cpufreq activities, linux-pm@vger.kernel.org or cpufreq@vger.kernel.org.
+As Maintainers always wanted people to send patches to linux-pm@vger.kernel.org
+and kernel source asked them to use cpufreq@vger.kernel.org.
 
-Even if 'start' was really bigger than 'stop', it would print incorrect
-information, but for kernel, it still can continue, so use WARN_ON() is
-enough.
+Lets make linux-pm@vger.kernel.org the official mailing list for cpufreq stuff
+and remove all references of cpufreq@vger.kernel.org from kernel source.
 
-The related warning (with allmodconfig for unicore32):
+Later, we can remove the list as well from vger.kernel.org.
 
-    CC      kernel/power/hibernate.o
-  kernel/power/hibernate.c: In function =91swsusp_show_speed=92:
-  kernel/power/hibernate.c:237: warning: comparison of distinct pointer=
- types lacks a cast
-
-
-Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- kernel/power/hibernate.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu   | 4 ++--
+ Documentation/cpu-freq/index.txt                     | 4 ++--
+ MAINTAINERS                                          | 2 --
+ drivers/cpufreq/speedstep-centrino.c                 | 2 +-
+ tools/power/cpupower/Makefile                        | 2 +-
+ tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c | 2 +-
+ 6 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index f4f2073..d5117d5 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -228,12 +228,13 @@ static void platform_recover(int platform_mode)
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
--	s64 elapsed_centisecs64;
-+	u64 elapsed_centisecs64;
- 	int centisecs;
- 	int k;
- 	int kps;
-=20
- 	elapsed_centisecs64 =3D timeval_to_ns(stop) - timeval_to_ns(start);
-+	WARN_ON((s64)elapsed_centisecs64 < 0);
- 	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
- 	centisecs =3D elapsed_centisecs64;
- 	if (centisecs =3D=3D 0)
---=20
-1.9.2.459.g68773ac
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index d5a0d33..acb9bfc 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -128,7 +128,7 @@ Description:	Discover cpuidle policy and mechanism
+ 
+ What:		/sys/devices/system/cpu/cpu#/cpufreq/*
+ Date:		pre-git history
+-Contact:	cpufreq@vger.kernel.org
++Contact:	linux-pm@vger.kernel.org
+ Description:	Discover and change clock speed of CPUs
+ 
+ 		Clock scaling allows you to change the clock speed of the
+@@ -146,7 +146,7 @@ Description:	Discover and change clock speed of CPUs
+ 
+ What:		/sys/devices/system/cpu/cpu#/cpufreq/freqdomain_cpus
+ Date:		June 2013
+-Contact:	cpufreq@vger.kernel.org
++Contact:	linux-pm@vger.kernel.org
+ Description:	Discover CPUs in the same CPU frequency coordination domain
+ 
+ 		freqdomain_cpus is the list of CPUs (online+offline) that share
+diff --git a/Documentation/cpu-freq/index.txt b/Documentation/cpu-freq/index.txt
+index 3d0b915..dc024ab 100644
+--- a/Documentation/cpu-freq/index.txt
++++ b/Documentation/cpu-freq/index.txt
+@@ -35,8 +35,8 @@ Mailing List
+ ------------
+ There is a CPU frequency changing CVS commit and general list where
+ you can report bugs, problems or submit patches. To post a message,
+-send an email to cpufreq@vger.kernel.org, to subscribe go to
+-http://vger.kernel.org/vger-lists.html#cpufreq and follow the
++send an email to linux-pm@vger.kernel.org, to subscribe go to
++http://vger.kernel.org/vger-lists.html#linux-pm and follow the
+ instructions there.
+ 
+ Links
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6dc67b1..88b60d9 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2415,7 +2415,6 @@ F:	drivers/net/ethernet/ti/cpmac.c
+ CPU FREQUENCY DRIVERS
+ M:	Rafael J. Wysocki <rjw@rjwysocki.net>
+ M:	Viresh Kumar <viresh.kumar@linaro.org>
+-L:	cpufreq@vger.kernel.org
+ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+@@ -2426,7 +2425,6 @@ F:	include/linux/cpufreq.h
+ CPU FREQUENCY DRIVERS - ARM BIG LITTLE
+ M:	Viresh Kumar <viresh.kumar@linaro.org>
+ M:	Sudeep Holla <sudeep.holla@arm.com>
+-L:	cpufreq@vger.kernel.org
+ L:	linux-pm@vger.kernel.org
+ W:	http://www.arm.com/products/processors/technologies/biglittleprocessing.php
+ S:	Maintained
+diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
+index 6723f03..7d4a315 100644
+--- a/drivers/cpufreq/speedstep-centrino.c
++++ b/drivers/cpufreq/speedstep-centrino.c
+@@ -28,7 +28,7 @@
+ #include <asm/cpu_device_id.h>
+ 
+ #define PFX		"speedstep-centrino: "
+-#define MAINTAINER	"cpufreq@vger.kernel.org"
++#define MAINTAINER	"linux-pm@vger.kernel.org"
+ 
+ #define INTEL_MSR_RANGE	(0xffff)
+ 
+diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
+index cbfec92..3651db7 100644
+--- a/tools/power/cpupower/Makefile
++++ b/tools/power/cpupower/Makefile
+@@ -62,7 +62,7 @@ LIB_MAJ=			0.0.0
+ LIB_MIN=			0
+ 
+ PACKAGE =			cpupower
+-PACKAGE_BUGREPORT =		cpufreq@vger.kernel.org
++PACKAGE_BUGREPORT =		linux-pm@vger.kernel.org
+ LANGUAGES = 			de fr it cs pt
+ 
+ 
+diff --git a/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c b/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c
+index 0f10b81..5224ee5 100644
+--- a/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c
++++ b/tools/power/cpupower/debug/kernel/cpufreq-test_tsc.c
+@@ -18,7 +18,7 @@
+  * 5.) if the third value, "diff_pmtmr", changes between 2. and 4., the
+  *     TSC-based delay routine on the Linux kernel does not correctly
+  *     handle the cpufreq transition. Please report this to
+- *     cpufreq@vger.kernel.org
++ *     linux-pm@vger.kernel.org
+  */
+ 
+ #include <linux/kernel.h>
+-- 
+1.7.12.rc2.18.g61b472e
+
