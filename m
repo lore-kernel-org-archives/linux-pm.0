@@ -1,67 +1,63 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH v4 8/8] sh: clk: Use cpufreq_for_each_valid_entry macro for
- iteration
-Date: Tue, 22 Apr 2014 02:02:37 +0300
-Message-ID: <5355A38D.8090503@semaphore.gr>
-References: <534DB238.5030201@semaphore.gr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <534DB238.5030201@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: [PATCH v2] PM / Hibernate: no kernel_power_off when pm_power_off NULL
+Date: Mon, 21 Apr 2014 17:30:46 -0700
+Message-ID: <1398126646-29518-1-git-send-email-sebastian.capella@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f47.google.com ([209.85.160.47]:40810 "EHLO
+	mail-pb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753252AbaDVAau (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Apr 2014 20:30:50 -0400
+Received: by mail-pb0-f47.google.com with SMTP id up15so4287549pbc.34
+        for <linux-pm@vger.kernel.org>; Mon, 21 Apr 2014 17:30:49 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
 
-The cpufreq core now supports the cpufreq_for_each_valid_entry macro
-helper for iteration over the cpufreq_frequency_table, so use it.
+Reboot logic in kernel/reboot will avoid calling kernel_power_off
+when pm_power_off is null, and instead uses kernel_halt.  Change
+hibernate's power_down to follow the behavior in the reboot call.
 
-It should have no functional changes.
+Calling the notifier twice (once for SYS_POWER_OFF and again for
+SYS_HALT) causes a panic during hibernation on Kirkwood
+Openblocks A6 board.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+Reported-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+
 ---
- drivers/sh/clk/core.c | 20 +++++---------------
- 1 file changed, 5 insertions(+), 15 deletions(-)
+ kernel/power/hibernate.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/sh/clk/core.c b/drivers/sh/clk/core.c
-index 7472785..be56b22 100644
---- a/drivers/sh/clk/core.c
-+++ b/drivers/sh/clk/core.c
-@@ -196,17 +196,11 @@ int clk_rate_table_find(struct clk *clk,
- 			struct cpufreq_frequency_table *freq_table,
- 			unsigned long rate)
- {
--	int i;
--
--	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		unsigned long freq = freq_table[i].frequency;
-+	struct cpufreq_frequency_table *pos;
- 
--		if (freq == CPUFREQ_ENTRY_INVALID)
--			continue;
--
--		if (freq == rate)
--			return i;
--	}
-+	cpufreq_for_each_valid_entry(pos, freq_table)
-+		if (pos->frequency == rate)
-+			return pos - freq_table;
- 
- 	return -ENOENT;
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index f4f2073..7642932 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -595,7 +595,8 @@ static void power_down(void)
+ 	case HIBERNATION_PLATFORM:
+ 		hibernation_platform_enter();
+ 	case HIBERNATION_SHUTDOWN:
+-		kernel_power_off();
++		if (pm_power_off)
++			kernel_power_off();
+ 		break;
+ #ifdef CONFIG_SUSPEND
+ 	case HIBERNATION_SUSPEND:
+@@ -623,7 +624,8 @@ static void power_down(void)
+ 	 * corruption after resume.
+ 	 */
+ 	printk(KERN_CRIT "PM: Please power down manually\n");
+-	while(1);
++	while (1)
++		cpu_relax();
  }
-@@ -575,11 +569,7 @@ long clk_round_parent(struct clk *clk, unsigned long target,
- 		return abs(target - *best_freq);
- 	}
  
--	for (freq = parent->freq_table; freq->frequency != CPUFREQ_TABLE_END;
--	     freq++) {
--		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
--
-+	cpufreq_for_each_valid_entry(freq, parent->freq_table) {
- 		if (unlikely(freq->frequency / target <= div_min - 1)) {
- 			unsigned long freq_max;
- 
+ /**
 -- 
-1.9.0
+1.7.9.5
+
