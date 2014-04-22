@@ -1,67 +1,98 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [RESEND][PATCH] cpuidle: governor: menu: move repeated correction factor check to init
-Date: Tue, 22 Apr 2014 18:08:04 +0530
-Message-ID: <1398170284-7551-1-git-send-email-chander.kashyap@linaro.org>
-References: <CANuQgHFdYhTc8YZ2MbQv0r_CsJGDLwHOqy9NuVDEfVUOTsbRpA@mail.gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f48.google.com ([209.85.160.48]:35301 "EHLO
-	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbaDVMiR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Apr 2014 08:38:17 -0400
-Received: by mail-pb0-f48.google.com with SMTP id md12so4881128pbc.7
-        for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2014 05:38:17 -0700 (PDT)
-In-Reply-To: <CANuQgHFdYhTc8YZ2MbQv0r_CsJGDLwHOqy9NuVDEfVUOTsbRpA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Leela Krishna Amudala <leela.krishna@linaro.org>
+Subject: [PATCH] ARM: EXYNOS: cpu hotplug: use v7_exit_coherency_flush macro for cache disabling
+Date: Tue, 22 Apr 2014 19:48:00 +0530
+Message-ID: <1398176280-7258-1-git-send-email-leela.krishna@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: daniel.lezcano@linaro.org, kgene.kim@samsung.com, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: tuukka.tikkanen@linaro.org, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chander Kashyap <chander.kashyap@linaro.org>
 
-In menu_select function we check for correction factor every time.
-If it is zero we are initializing to unity. Hence move it to init function
-and initialise by unity, hence avoid repeated comparisons.
+Remove the duplicated code for cache disabling and use "v7_exit_coherency_flush"
+macro to do the same job.
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Reviewed-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
+Signed-off-by: Leela Krishna Amudala <leela.krishna@linaro.org>
+
 ---
- drivers/cpuidle/governors/menu.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+cpu hotplug is tested with 3.15-rc1 on Origen(which has cortex A9) and
+Arndale octa(which has cortex A7 and A15) boards.
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 71b5232..9b7918c 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -311,13 +311,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	data->bucket = which_bucket(data->next_timer_us);
+ arch/arm/mach-exynos/hotplug.c |   56 ++--------------------------------------
+ 1 file changed, 2 insertions(+), 54 deletions(-)
+
+diff --git a/arch/arm/mach-exynos/hotplug.c b/arch/arm/mach-exynos/hotplug.c
+index 5eead53..9eb8d1b 100644
+--- a/arch/arm/mach-exynos/hotplug.c
++++ b/arch/arm/mach-exynos/hotplug.c
+@@ -24,56 +24,6 @@
+ #include "common.h"
+ #include "regs-pmu.h"
  
- 	/*
--	 * if the correction factor is 0 (eg first time init or cpu hotplug
--	 * etc), we actually want to start out with a unity factor.
--	 */
--	if (data->correction_factor[data->bucket] == 0)
--		data->correction_factor[data->bucket] = RESOLUTION * DECAY;
+-static inline void cpu_enter_lowpower_a9(void)
+-{
+-	unsigned int v;
 -
+-	asm volatile(
+-	"	mcr	p15, 0, %1, c7, c5, 0\n"
+-	"	mcr	p15, 0, %1, c7, c10, 4\n"
 -	/*
- 	 * Force the result of multiplication to be 64 bits even if both
- 	 * operands are 32 bits.
- 	 * Make sure to round up for half microseconds.
-@@ -466,9 +459,17 @@ static int menu_enable_device(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev)
+-	 * Turn off coherency
+-	 */
+-	"	mrc	p15, 0, %0, c1, c0, 1\n"
+-	"	bic	%0, %0, %3\n"
+-	"	mcr	p15, 0, %0, c1, c0, 1\n"
+-	"	mrc	p15, 0, %0, c1, c0, 0\n"
+-	"	bic	%0, %0, %2\n"
+-	"	mcr	p15, 0, %0, c1, c0, 0\n"
+-	  : "=&r" (v)
+-	  : "r" (0), "Ir" (CR_C), "Ir" (0x40)
+-	  : "cc");
+-}
+-
+-static inline void cpu_enter_lowpower_a15(void)
+-{
+-	unsigned int v;
+-
+-	asm volatile(
+-	"	mrc	p15, 0, %0, c1, c0, 0\n"
+-	"	bic	%0, %0, %1\n"
+-	"	mcr	p15, 0, %0, c1, c0, 0\n"
+-	  : "=&r" (v)
+-	  : "Ir" (CR_C)
+-	  : "cc");
+-
+-	flush_cache_louis();
+-
+-	asm volatile(
+-	/*
+-	* Turn off coherency
+-	*/
+-	"	mrc	p15, 0, %0, c1, c0, 1\n"
+-	"	bic	%0, %0, %1\n"
+-	"	mcr	p15, 0, %0, c1, c0, 1\n"
+-	: "=&r" (v)
+-	: "Ir" (0x40)
+-	: "cc");
+-
+-	isb();
+-	dsb();
+-}
+-
+ static inline void cpu_leave_lowpower(void)
  {
- 	struct menu_device *data = &per_cpu(menu_devices, dev->cpu);
-+	int i;
- 
- 	memset(data, 0, sizeof(struct menu_device));
- 
-+	/*
-+	 * if the correction factor is 0 (eg first time init or cpu hotplug
-+	 * etc), we actually want to start out with a unity factor.
-+	 */
-+	for(i = 0; i < BUCKETS; i++)
-+		data->correction_factor[i] = RESOLUTION * DECAY;
+ 	unsigned int v;
+@@ -141,10 +91,8 @@ void __ref exynos_cpu_die(unsigned int cpu)
+ 	 * appropriate sequence for entering low power.
+ 	 */
+ 	asm("mrc p15, 0, %0, c0, c0, 0" : "=r"(primary_part) : : "cc");
+-	if ((primary_part & 0xfff0) == 0xc0f0)
+-		cpu_enter_lowpower_a15();
+-	else
+-		cpu_enter_lowpower_a9();
 +
- 	return 0;
- }
++	v7_exit_coherency_flush(louis);
+ 
+ 	platform_do_lowpower(cpu, &spurious);
  
 -- 
 1.7.9.5
-
