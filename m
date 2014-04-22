@@ -1,87 +1,105 @@
-From: Chen Gang <gang.chen.5i5j@gmail.com>
-Subject: Re: [PATCH v2] kernel/power/hibernate.c: use 'u64' instead of 's64'
- to avoid warning
-Date: Tue, 22 Apr 2014 17:52:36 +0800
-Message-ID: <53563BE4.6070703@gmail.com>
-References: <5355C5F0.6020606@gmail.com> <20140422072112.GB14108@amd.pavel.ucw.cz> <535620C7.2080700@gmail.com>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [PATCH] cpuidle: governor: menu: move repeated correction factor
+ check to init
+Date: Tue, 22 Apr 2014 15:24:21 +0530
+Message-ID: <CANuQgHGieSC1poZvu906MTHk71akFge_JdSnqyvTd3-Ac-Pd2g@mail.gmail.com>
+References: <1397137433-19106-1-git-send-email-chander.kashyap@linaro.org>
+	<CAG-99FPLOXWnjb_oiDbLmdrYnDnticN9r1drDm_8JHtG=4BSiA@mail.gmail.com>
+	<CANuQgHFGTkT0h6_FmxRxg4kYQA2NWEuzch1pj4Ec+_XnRHV2EQ@mail.gmail.com>
+	<2870361.ixyW1GZfvF@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:50354 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753779AbaDVJwn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Apr 2014 05:52:43 -0400
-In-Reply-To: <535620C7.2080700@gmail.com>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:40268 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754597AbaDVJyV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Apr 2014 05:54:21 -0400
+Received: by mail-oa0-f45.google.com with SMTP id eb12so5345287oac.4
+        for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2014 02:54:21 -0700 (PDT)
+In-Reply-To: <2870361.ixyW1GZfvF@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Guan Xuetao <gxt@mprc.pku.edu.cn>, len.brown@intel.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, rafael.j.wysocki@intel.com, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-On 04/22/2014 03:56 PM, Chen Gang wrote:
-> On 04/22/2014 03:21 PM, Pavel Machek wrote:
->> On Tue 2014-04-22 09:29:20, Chen Gang wrote:
->>> For do_div(), it need 'u64' type, which means the outside must be s=
-ure
->>> of 'start' is not bigger than 'stop', or it will report warning.
->>>
->>> Even if 'start' was really bigger than 'stop', it would print incor=
-rect
->>> information, but for kernel, it still can continue, so use WARN_ON(=
-) is
->>> enough.
->>>
->>> The related warning (with allmodconfig for unicore32):
->>>
->>>     CC      kernel/power/hibernate.o
->>>   kernel/power/hibernate.c: In function =E2=80=98swsusp_show_speed=E2=
-=80=99:
->>>   kernel/power/hibernate.c:237: warning: comparison of distinct poi=
-nter types lacks a cast
->>>
->>>
++cc
+linux-pm@vger.kernel.org.
+
+On 22 April 2014 15:33, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, April 22, 2014 08:27:53 AM Chander Kashyap wrote:
+>> ping
+>
+> Please CC cpuidle patches to linux-pm@vger.kernel.org.
+
++cc to linux-pm@vger.kernel.org.
+Thanks Rafael
+
+>
+> Thanks!
+>
+>> On 10 April 2014 19:57, Tuukka Tikkanen <tuukka.tikkanen@linaro.org> wrote:
+>> > On 10 April 2014 16:43, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+>> >> In menu_select function we check for correction factor every time.
+>> >> If it is zero we are initializing to unity. Hence move it to init function
+>> >> and initialise by unity, hence avoid repeated comparisons.
+>> >>
+>> >> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+>> >> ---
+>> >>  drivers/cpuidle/governors/menu.c |   15 ++++++++-------
+>> >>  1 file changed, 8 insertions(+), 7 deletions(-)
+>> >>
+>> >> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+>> >> index cf7f2f0..048f6d9 100644
+>> >> --- a/drivers/cpuidle/governors/menu.c
+>> >> +++ b/drivers/cpuidle/governors/menu.c
+>> >> @@ -315,13 +315,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>> >>         multiplier = performance_multiplier();
+>> >>
+>> >>         /*
+>> >> -        * if the correction factor is 0 (eg first time init or cpu hotplug
+>> >> -        * etc), we actually want to start out with a unity factor.
+>> >> -        */
+>> >> -       if (data->correction_factor[data->bucket] == 0)
+>> >> -               data->correction_factor[data->bucket] = RESOLUTION * DECAY;
+>> >> -
+>> >> -       /*
+>> >>          * Force the result of multiplication to be 64 bits even if both
+>> >>          * operands are 32 bits.
+>> >>          * Make sure to round up for half microseconds.
+>> >> @@ -453,9 +446,17 @@ static int menu_enable_device(struct cpuidle_driver *drv,
+>> >>                                 struct cpuidle_device *dev)
+>> >>  {
+>> >>         struct menu_device *data = &per_cpu(menu_devices, dev->cpu);
+>> >> +       int i;
+>> >>
+>> >>         memset(data, 0, sizeof(struct menu_device));
+>> >>
+>> >> +       /*
+>> >> +        * if the correction factor is 0 (eg first time init or cpu hotplug
+>> >> +        * etc), we actually want to start out with a unity factor.
+>> >> +        */
+>> >> +       for(i = 0; i < BUCKETS; i++)
+>> >> +               data->correction_factor[i] = RESOLUTION * DECAY;
+>> >> +
+>> >>         return 0;
+>> >>  }
+>> >>
+>> >> --
+>> >> 1.7.9.5
+>> >>
+>> >
+>> > Reviewed-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
 >>
->> Certainly better, but
 >>
->>> -	s64 elapsed_centisecs64;
->>> +	u64 elapsed_centisecs64;
->>>  	int centisecs;
->>>  	int k;
->>>  	int kps;
->>> =20
->>>  	elapsed_centisecs64 =3D timeval_to_ns(stop) - timeval_to_ns(start=
-);
->>> +	WARN_ON((s64)elapsed_centisecs64 < 0);
-
-How about to use one line comments instead of WARN_ON()?
-
-	/*
-	 * If "(s64)elapsed_centisecs64 < 0", it will print long elapsed
-	 * time, it is obvious enough to user for what went wrong.
-	 */
-
->>>  	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
->>>  	centisecs =3D elapsed_centisecs64;
 >>
->> ...do we need to do the WARN_ON()? Only result of underflow will be
->> very long elapsed time reported... that does not sound too
->> bad. ... and it will be quite obvious what went wrong.
->> 									Pavel
 >>
->=20
-> Hmm... that sounds reasonable to me.  If no any other reply within 2
-> days, I shall send patch v3 for it.
->=20
-> BTW: sorry, I guess I can not finish allmodconfig for unicore32 withi=
-n
-> this month (2014-04-30) -- at present I only finish 40-50%, I
-> will/should try to finish it within next month.
->=20
->=20
-> Thanks.
->=20
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
 
---=20
-Chen Gang
 
-Open, share, and attitude like air, water, and life which God blessed
+
+-- 
+with warm regards,
+Chander Kashyap
