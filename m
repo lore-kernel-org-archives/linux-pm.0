@@ -1,153 +1,121 @@
 From: Leela Krishna Amudala <leela.krishna@linaro.org>
-Subject: Re: [PATCH] ARM: EXYNOS: cpu hotplug: use v7_exit_coherency_flush
- macro for cache disabling
-Date: Wed, 23 Apr 2014 11:14:36 +0530
-Message-ID: <CAM7CM0=zVH-zvcAFAnmSWYL3F=ZUZJL0iGp5mRFKmxt-n+i=3w@mail.gmail.com>
-References: <1398176280-7258-1-git-send-email-leela.krishna@linaro.org> <53567E72.1030201@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Subject: [PATCH V2] ARM: EXYNOS: cpu hotplug: use v7_exit_coherency_flush macro for cache disabling
+Date: Wed, 23 Apr 2014 11:22:31 +0530
+Message-ID: <1398232351-16280-1-git-send-email-leela.krishna@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f181.google.com ([74.125.82.181]:38100 "EHLO
-	mail-we0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbaDWFo5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Apr 2014 01:44:57 -0400
-Received: by mail-we0-f181.google.com with SMTP id q58so362726wes.40
-        for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2014 22:44:56 -0700 (PDT)
-In-Reply-To: <53567E72.1030201@linaro.org>
+Received: from mail-pb0-f48.google.com ([209.85.160.48]:62578 "EHLO
+	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbaDWFwL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Apr 2014 01:52:11 -0400
+Received: by mail-pb0-f48.google.com with SMTP id md12so420339pbc.35
+        for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2014 22:52:10 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "kgene.kim" <kgene.kim@samsung.com>, Amit Kucheria <amit.kucheria@linaro.org>
+To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: daniel.lezcano@linaro.org, nicolas.pitre@linaro.org, kgene.kim@samsung.com, amit.kucheria@linaro.org
 
-Hi Daniel,
+A common macro v7_exit_coherency_flush available which does the below tasks in
+the seqeunce.
+-clearing C bit
+-clearing L1 cache
+-exit SMP
+-instruction and data synchronization
 
-Thanks for reviewing the patch.
+So removing the local functions which does the same thing and use the macro instead.
 
-On Tue, Apr 22, 2014 at 8:06 PM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> On 04/22/2014 04:18 PM, Leela Krishna Amudala wrote:
->>
->> Remove the duplicated code for cache disabling and use
->> "v7_exit_coherency_flush"
->> macro to do the same job.
->
->
-> Hi Leela,
->
-> thanks for this patch! It would be nice if you can describe why those=
- macros
-> can be replaced by the generic v7_exit_coherency_flush macro.
->
+Signed-off-by: Leela Krishna Amudala <leela.krishna@linaro.org>
+Acked-by: Nicolas Pitre <nico@linaro.org>
+---
+Changes since V1:
+	- removed unwanted primary_part variable in exynos_cpu_die()
+	- given more description in commit message
+	  suggested by Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Okay, will give the description in commit message
+ arch/arm/mach-exynos/hotplug.c |   63 +---------------------------------------
+ 1 file changed, 1 insertion(+), 62 deletions(-)
 
->
->>
->> Signed-off-by: Leela Krishna Amudala <leela.krishna@linaro.org>
->>
->> ---
->> cpu hotplug is tested with 3.15-rc1 on Origen(which has cortex A9) a=
-nd
->> Arndale octa(which has cortex A7 and A15) boards.
->>
->>   arch/arm/mach-exynos/hotplug.c |   56
->> ++--------------------------------------
->>   1 file changed, 2 insertions(+), 54 deletions(-)
->>
->> diff --git a/arch/arm/mach-exynos/hotplug.c
->> b/arch/arm/mach-exynos/hotplug.c
->> index 5eead53..9eb8d1b 100644
->> --- a/arch/arm/mach-exynos/hotplug.c
->> +++ b/arch/arm/mach-exynos/hotplug.c
->> @@ -24,56 +24,6 @@
->>   #include "common.h"
->>   #include "regs-pmu.h"
->>
->> -static inline void cpu_enter_lowpower_a9(void)
->> -{
->> -       unsigned int v;
->> -
->> -       asm volatile(
->> -       "       mcr     p15, 0, %1, c7, c5, 0\n"
->> -       "       mcr     p15, 0, %1, c7, c10, 4\n"
->> -       /*
->> -        * Turn off coherency
->> -        */
->> -       "       mrc     p15, 0, %0, c1, c0, 1\n"
->> -       "       bic     %0, %0, %3\n"
->> -       "       mcr     p15, 0, %0, c1, c0, 1\n"
->> -       "       mrc     p15, 0, %0, c1, c0, 0\n"
->> -       "       bic     %0, %0, %2\n"
->> -       "       mcr     p15, 0, %0, c1, c0, 0\n"
->> -         : "=3D&r" (v)
->> -         : "r" (0), "Ir" (CR_C), "Ir" (0x40)
->> -         : "cc");
->> -}
->> -
->> -static inline void cpu_enter_lowpower_a15(void)
->> -{
->> -       unsigned int v;
->> -
->> -       asm volatile(
->> -       "       mrc     p15, 0, %0, c1, c0, 0\n"
->> -       "       bic     %0, %0, %1\n"
->> -       "       mcr     p15, 0, %0, c1, c0, 0\n"
->> -         : "=3D&r" (v)
->> -         : "Ir" (CR_C)
->> -         : "cc");
->> -
->> -       flush_cache_louis();
->> -
->> -       asm volatile(
->> -       /*
->> -       * Turn off coherency
->> -       */
->> -       "       mrc     p15, 0, %0, c1, c0, 1\n"
->> -       "       bic     %0, %0, %1\n"
->> -       "       mcr     p15, 0, %0, c1, c0, 1\n"
->> -       : "=3D&r" (v)
->> -       : "Ir" (0x40)
->> -       : "cc");
->> -
->> -       isb();
->> -       dsb();
->> -}
->> -
->>   static inline void cpu_leave_lowpower(void)
->>   {
->>         unsigned int v;
->> @@ -141,10 +91,8 @@ void __ref exynos_cpu_die(unsigned int cpu)
->>          * appropriate sequence for entering low power.
->>          */
->>         asm("mrc p15, 0, %0, c0, c0, 0" : "=3Dr"(primary_part) : : "=
-cc");
->
->
-> Can't you remove this asm line above as well as the primary_part vari=
-able ?
+diff --git a/arch/arm/mach-exynos/hotplug.c b/arch/arm/mach-exynos/hotplug.c
+index 5eead53..9ca692d 100644
+--- a/arch/arm/mach-exynos/hotplug.c
++++ b/arch/arm/mach-exynos/hotplug.c
+@@ -24,56 +24,6 @@
+ #include "common.h"
+ #include "regs-pmu.h"
+ 
+-static inline void cpu_enter_lowpower_a9(void)
+-{
+-	unsigned int v;
+-
+-	asm volatile(
+-	"	mcr	p15, 0, %1, c7, c5, 0\n"
+-	"	mcr	p15, 0, %1, c7, c10, 4\n"
+-	/*
+-	 * Turn off coherency
+-	 */
+-	"	mrc	p15, 0, %0, c1, c0, 1\n"
+-	"	bic	%0, %0, %3\n"
+-	"	mcr	p15, 0, %0, c1, c0, 1\n"
+-	"	mrc	p15, 0, %0, c1, c0, 0\n"
+-	"	bic	%0, %0, %2\n"
+-	"	mcr	p15, 0, %0, c1, c0, 0\n"
+-	  : "=&r" (v)
+-	  : "r" (0), "Ir" (CR_C), "Ir" (0x40)
+-	  : "cc");
+-}
+-
+-static inline void cpu_enter_lowpower_a15(void)
+-{
+-	unsigned int v;
+-
+-	asm volatile(
+-	"	mrc	p15, 0, %0, c1, c0, 0\n"
+-	"	bic	%0, %0, %1\n"
+-	"	mcr	p15, 0, %0, c1, c0, 0\n"
+-	  : "=&r" (v)
+-	  : "Ir" (CR_C)
+-	  : "cc");
+-
+-	flush_cache_louis();
+-
+-	asm volatile(
+-	/*
+-	* Turn off coherency
+-	*/
+-	"	mrc	p15, 0, %0, c1, c0, 1\n"
+-	"	bic	%0, %0, %1\n"
+-	"	mcr	p15, 0, %0, c1, c0, 1\n"
+-	: "=&r" (v)
+-	: "Ir" (0x40)
+-	: "cc");
+-
+-	isb();
+-	dsb();
+-}
+-
+ static inline void cpu_leave_lowpower(void)
+ {
+ 	unsigned int v;
+@@ -132,19 +82,8 @@ static inline void platform_do_lowpower(unsigned int cpu, int *spurious)
+ void __ref exynos_cpu_die(unsigned int cpu)
+ {
+ 	int spurious = 0;
+-	int primary_part = 0;
+ 
+-	/*
+-	 * we're ready for shutdown now, so do it.
+-	 * Exynos4 is A9 based while Exynos5 is A15; check the CPU part
+-	 * number by reading the Main ID register and then perform the
+-	 * appropriate sequence for entering low power.
+-	 */
+-	asm("mrc p15, 0, %0, c0, c0, 0" : "=r"(primary_part) : : "cc");
+-	if ((primary_part & 0xfff0) == 0xc0f0)
+-		cpu_enter_lowpower_a15();
+-	else
+-		cpu_enter_lowpower_a9();
++	v7_exit_coherency_flush(louis);
+ 
+ 	platform_do_lowpower(cpu, &spurious);
+ 
+-- 
+1.7.9.5
 
-Didn't notice it, will remove this.
-
->
->
->> -       if ((primary_part & 0xfff0) =3D=3D 0xc0f0)
->> -               cpu_enter_lowpower_a15();
->> -       else
->> -               cpu_enter_lowpower_a9();
->> +
->> +       v7_exit_coherency_flush(louis);
->>
->>         platform_do_lowpower(cpu, &spurious);
->>
->>
->
->
-> --
->  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
-or ARM SoCs
->
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
->
