@@ -1,8 +1,8 @@
 From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v2 1/4] cpuidle: config: Add SOC_EXYNOS5420 entry to select
- cpuidle-big-little driver
-Date: Wed, 23 Apr 2014 14:55:51 +0530
-Message-ID: <1398245154-18771-2-git-send-email-chander.kashyap@linaro.org>
+Subject: [Patch v2 3/4] exynos: cpuidle: do not allow cpuidle registration for
+ Exynos5420
+Date: Wed, 23 Apr 2014 14:55:53 +0530
+Message-ID: <1398245154-18771-4-git-send-email-chander.kashyap@linaro.org>
 References: <1398080958-21677-5-git-send-email-chander.kashyap@linaro.org>
  <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
 Mime-Version: 1.0
@@ -23,30 +23,29 @@ To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vg
 Cc: Chander Kashyap <k.chander@samsung.com>, kgene.kim@samsung.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, Chander Kashyap <chander.kashyap@linaro.org>, lorenzo.pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 cores.
-In order to use generic cpuidle-big-little driver, this patch adds Exynos5420
-specific check to initialize generic cpuidle driver.
+Exynos5420 is big.Little Soc. It uses cpuidle-big-litle generic cpuidle driver.
+Hence do not allow exynos cpuidle driver registration for Exynos5420.
 
 Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
 Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
-Changes in v2:
-	1. Changed config macro from SOC_EXYNOS5420 to SOC_EXYNOS5420
- drivers/cpuidle/Kconfig.arm |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/mach-exynos/cpuidle.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 97ccc31..d9596e7 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -4,7 +4,7 @@
+diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
+index c57cae0..242f75d 100644
+--- a/arch/arm/mach-exynos/cpuidle.c
++++ b/arch/arm/mach-exynos/cpuidle.c
+@@ -219,6 +219,9 @@ static int exynos_cpuidle_probe(struct platform_device *pdev)
+ 	int cpu_id, ret;
+ 	struct cpuidle_device *device;
  
- config ARM_BIG_LITTLE_CPUIDLE
- 	bool "Support for ARM big.LITTLE processors"
--	depends on ARCH_VEXPRESS_TC2_PM
-+	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
- 	select ARM_CPU_SUSPEND
- 	select CPU_IDLE_MULTIPLE_DRIVERS
- 	help
++	if (soc_is_exynos5420())
++		return -ENODEV;
++
+ 	if (soc_is_exynos5250())
+ 		exynos5_core_down_clk();
+ 
 -- 
 1.7.9.5
