@@ -1,27 +1,77 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH v7 2/2] ARM hibernation / suspend-to-disk
-Date: Wed, 23 Apr 2014 09:39:48 -0700
-Message-ID: <CADHgK6uCQT2iAfL+oQvwN7f65u4musKP-AX-E6j1i2OL6ZMJwA@mail.gmail.com>
-References: <1394016605-24120-1-git-send-email-sebastian.capella@linaro.org>
-	<1394016605-24120-3-git-send-email-sebastian.capella@linaro.org>
-	<20140416101243.GA6952@n2100.arm.linux.org.uk>
-	<CADHgK6vyWU1HCueN=F5D0JxzknV==h-jOG9JmcXeOrH_RGV4JQ@mail.gmail.com>
-	<CADHgK6v43=KSpe2FRG374nbHSMOt9hb+xEhO7z20vhEAQsx0tQ@mail.gmail.com>
-	<CADHgK6tg=7JpYgc0LBmpQzJS-TjK5v_0FQeKRxuFNTqy=QSQzA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CADHgK6tg=7JpYgc0LBmpQzJS-TjK5v_0FQeKRxuFNTqy=QSQzA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russ Dill <Russ.Dill@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Stephen Boyd <sboyd@codeaurora.org>, Laura Abbott <lauraa@codeaurora.org>, Jiang Liu <liuj97@gmail.com>, Sricharan R <r.sricharan@ti.com>, Victor Kamensky <victor.kamensky@linaro.org>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Ben Dooks <ben>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: [PATCH v3 0/3] Generic Device Tree based power domain look-up
+Date: Wed, 23 Apr 2014 18:46:55 +0200
+Message-ID: <1398271618-28932-1-git-send-email-t.figa@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:9002 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbaDWQr1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Apr 2014 12:47:27 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Mark Brown <broonie@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Ke
 
-Hi Russell,
+Up till now there was no single generic method to bind devices to their
+power domains using Device Tree. Each platform has been doing this using
+its own way, example of which are Exynos power domain bindings [1] and
+look-up code [2].
 
-Ran this overnight and no failures on >1000 hibernations.
+This series is intended to change this and provide generic DT bindings for
+power domain specification and generic code performing look-up of power
+domains and binding them to devices.
 
-Looks good.
-Thanks!
+First two patches are the most important part of this series, as they
+introduce $subject. Patch 3 converts mach-exynos to use the new generic
+method. Further patches are adding one more user of the new code,
+mach-s3c64xx, with first 3 patches (4-6) required to clean-up its power
+domain driver a bit and last 3 patches (9-11) adding display support for
+Mini6410 board, including a node for display controller (FIMD) which is
+a power domain consumer.
 
-Sebastian
+The design of DT bindings and provider code is heavily inspired by
+implementation of clock providers in Common Clock Framework, while
+the code binding devices to power domains by my Exynos power domain
+implementation (now removed by this series ;)).
+
+Successfully tested on Exynos4210-based Trats and Exynos4412-based Trats2
+boards using MFC, 
+
+[1] Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+[2] arch/arm/mach-exynos/pm_domains.c
+
+Changes since v2:
+(http://thread.gmane.org/gmane.linux.kernel/1658926)
+ - rebased onto current Rafael's linux-pm bleeding-edge branch,
+ - dropped patches for s3c64xx for now. I will send them in separate series,
+ - do not call pm_genpd_dev_need_restore(true) in genpd_bind_domain(),
+ - fixed various stylistic issues reported in review comments.
+
+Changes since v1 (RFC):
+[https://lkml.org/lkml/2014/1/11/141]
+ - rebased onto current Rafael's linux-pm bleeding-edge branch,
+ - reordered the patches a bit (to have the generic ones first),
+ - dropped renaming of S3C64xx power domains (as suggested by Mark Brown),
+ - added support for deferred probing (as suggested by Stephen Boyd),
+ - fixed several minor issues pointed by Stephen Boyd,
+ - replaced notifiers with direct hooks in driver core to make power domain
+   support independent from specific bus type and allow error handling.
+
+Tomasz Figa (3):
+  base: power: Add generic OF-based power domain look-up
+  drivercore: Bind/unbind power domain on probe/remove
+  ARM: exynos: Move to generic power domain bindings
+
+ .../bindings/arm/exynos/power_domain.txt           |  12 +-
+ .../devicetree/bindings/power/power_domain.txt     |  51 ++++
+ arch/arm/mach-exynos/pm_domains.c                  |  81 +-----
+ drivers/base/dd.c                                  |   9 +-
+ drivers/base/power/domain.c                        | 283 +++++++++++++++++++++
+ include/linux/pm_domain.h                          |  46 ++++
+ kernel/power/Kconfig                               |   4 +
+ 7 files changed, 398 insertions(+), 88 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
+
+-- 
+1.9.2
+
