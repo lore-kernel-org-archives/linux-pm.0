@@ -1,121 +1,82 @@
-From: Leela Krishna Amudala <leela.krishna@linaro.org>
-Subject: [PATCH V2] ARM: EXYNOS: cpu hotplug: use v7_exit_coherency_flush macro for cache disabling
-Date: Wed, 23 Apr 2014 11:22:31 +0530
-Message-ID: <1398232351-16280-1-git-send-email-leela.krishna@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f48.google.com ([209.85.160.48]:62578 "EHLO
-	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbaDWFwL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Apr 2014 01:52:11 -0400
-Received: by mail-pb0-f48.google.com with SMTP id md12so420339pbc.35
-        for <linux-pm@vger.kernel.org>; Tue, 22 Apr 2014 22:52:10 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [PATCH 1/4] cpuidle: config: Add SOC_EXYNOS5420 entry to select
+ cpuidle-big-little driver
+Date: Wed, 23 Apr 2014 11:50:01 +0530
+Message-ID: <CANuQgHHx+EyPXK0joYU-Af4dj+=ikW0SWE6g2-N0=K-dK3nMRw@mail.gmail.com>
+References: <1398080958-21677-1-git-send-email-chander.kashyap@linaro.org>
+	<1398080958-21677-2-git-send-email-chander.kashyap@linaro.org>
+	<5356477C.1070403@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5356477C.1070403@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: daniel.lezcano@linaro.org, nicolas.pitre@linaro.org, kgene.kim@samsung.com, amit.kucheria@linaro.org
 
-A common macro v7_exit_coherency_flush available which does the below tasks in
-the seqeunce.
--clearing C bit
--clearing L1 cache
--exit SMP
--instruction and data synchronization
+Hi Daniel,
 
-So removing the local functions which does the same thing and use the macro instead.
+On 22 April 2014 16:12, Daniel Lezcano <daniel.lezcano@linaro.org> wrot=
+e:
+> On 04/21/2014 01:49 PM, Chander Kashyap wrote:
+>>
+>> Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 c=
+ores.
+>> In order to use generic cpuidle-big-little driver, this patch adds
+>> Exynos5420
+>> specific check to initialize generic cpuidle driver.
+>>
+>> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> ---
+>>   drivers/cpuidle/Kconfig.arm |    2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.a=
+rm
+>> index 97ccc31..5244d87 100644
+>> --- a/drivers/cpuidle/Kconfig.arm
+>> +++ b/drivers/cpuidle/Kconfig.arm
+>> @@ -4,7 +4,7 @@
+>>
+>>   config ARM_BIG_LITTLE_CPUIDLE
+>>         bool "Support for ARM big.LITTLE processors"
+>> -       depends on ARCH_VEXPRESS_TC2_PM
+>> +       depends on ARCH_VEXPRESS_TC2_PM || SOC_EXYNOS5420
+>
+>
+> For the sake of consistency, I would prefer:
+>
+> depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
 
-Signed-off-by: Leela Krishna Amudala <leela.krishna@linaro.org>
-Acked-by: Nicolas Pitre <nico@linaro.org>
----
-Changes since V1:
-	- removed unwanted primary_part variable in exynos_cpu_die()
-	- given more description in commit message
-	  suggested by Daniel Lezcano <daniel.lezcano@linaro.org>
+Yes i will change it.
 
- arch/arm/mach-exynos/hotplug.c |   63 +---------------------------------------
- 1 file changed, 1 insertion(+), 62 deletions(-)
+Thanks
+>
+> and let the current code (and future platform driver) to handle the l=
+oading
+> of the driver.
+>
+>
+>>         select ARM_CPU_SUSPEND
+>>         select CPU_IDLE_MULTIPLE_DRIVERS
+>>         help
+>>
+>
+>
+> --
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+>
 
-diff --git a/arch/arm/mach-exynos/hotplug.c b/arch/arm/mach-exynos/hotplug.c
-index 5eead53..9ca692d 100644
---- a/arch/arm/mach-exynos/hotplug.c
-+++ b/arch/arm/mach-exynos/hotplug.c
-@@ -24,56 +24,6 @@
- #include "common.h"
- #include "regs-pmu.h"
- 
--static inline void cpu_enter_lowpower_a9(void)
--{
--	unsigned int v;
--
--	asm volatile(
--	"	mcr	p15, 0, %1, c7, c5, 0\n"
--	"	mcr	p15, 0, %1, c7, c10, 4\n"
--	/*
--	 * Turn off coherency
--	 */
--	"	mrc	p15, 0, %0, c1, c0, 1\n"
--	"	bic	%0, %0, %3\n"
--	"	mcr	p15, 0, %0, c1, c0, 1\n"
--	"	mrc	p15, 0, %0, c1, c0, 0\n"
--	"	bic	%0, %0, %2\n"
--	"	mcr	p15, 0, %0, c1, c0, 0\n"
--	  : "=&r" (v)
--	  : "r" (0), "Ir" (CR_C), "Ir" (0x40)
--	  : "cc");
--}
--
--static inline void cpu_enter_lowpower_a15(void)
--{
--	unsigned int v;
--
--	asm volatile(
--	"	mrc	p15, 0, %0, c1, c0, 0\n"
--	"	bic	%0, %0, %1\n"
--	"	mcr	p15, 0, %0, c1, c0, 0\n"
--	  : "=&r" (v)
--	  : "Ir" (CR_C)
--	  : "cc");
--
--	flush_cache_louis();
--
--	asm volatile(
--	/*
--	* Turn off coherency
--	*/
--	"	mrc	p15, 0, %0, c1, c0, 1\n"
--	"	bic	%0, %0, %1\n"
--	"	mcr	p15, 0, %0, c1, c0, 1\n"
--	: "=&r" (v)
--	: "Ir" (0x40)
--	: "cc");
--
--	isb();
--	dsb();
--}
--
- static inline void cpu_leave_lowpower(void)
- {
- 	unsigned int v;
-@@ -132,19 +82,8 @@ static inline void platform_do_lowpower(unsigned int cpu, int *spurious)
- void __ref exynos_cpu_die(unsigned int cpu)
- {
- 	int spurious = 0;
--	int primary_part = 0;
- 
--	/*
--	 * we're ready for shutdown now, so do it.
--	 * Exynos4 is A9 based while Exynos5 is A15; check the CPU part
--	 * number by reading the Main ID register and then perform the
--	 * appropriate sequence for entering low power.
--	 */
--	asm("mrc p15, 0, %0, c0, c0, 0" : "=r"(primary_part) : : "cc");
--	if ((primary_part & 0xfff0) == 0xc0f0)
--		cpu_enter_lowpower_a15();
--	else
--		cpu_enter_lowpower_a9();
-+	v7_exit_coherency_flush(louis);
- 
- 	platform_do_lowpower(cpu, &spurious);
- 
--- 
-1.7.9.5
 
+
+--=20
+with warm regards,
+Chander Kashyap
