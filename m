@@ -1,96 +1,52 @@
 From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v2 4/4] mcpm: exynos: populate suspend and powered_up callbacks
-Date: Wed, 23 Apr 2014 14:55:54 +0530
-Message-ID: <1398245154-18771-5-git-send-email-chander.kashyap@linaro.org>
+Subject: [Patch v2 1/4] cpuidle: config: Add SOC_EXYNOS5420 entry to select
+ cpuidle-big-little driver
+Date: Wed, 23 Apr 2014 14:55:51 +0530
+Message-ID: <1398245154-18771-2-git-send-email-chander.kashyap@linaro.org>
 References: <1398080958-21677-5-git-send-email-chander.kashyap@linaro.org>
  <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+Cc: Chander Kashyap <k.chander@samsung.com>, kgene.kim@samsung.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, Chander Kashyap <chander.kashyap@linaro.org>, lorenzo.pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-In order to support cpuidle through mcpm, suspend and powered-up
-callbacks are required in mcpm platform code.
-Hence populate the same callbacks.
+Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 cores.
+In order to use generic cpuidle-big-little driver, this patch adds Exynos5420
+specific check to initialize generic cpuidle driver.
 
 Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
 Signed-off-by: Chander Kashyap <k.chander@samsung.com>
 ---
-changes in v2:
-	1. Fixed typo: enynos_pmu_cpunr to exynos_pmu_cpunr
+Changes in v2:
+	1. Changed config macro from SOC_EXYNOS5420 to SOC_EXYNOS5420
+ drivers/cpuidle/Kconfig.arm |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/arm/mach-exynos/mcpm-exynos.c |   53 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
-
-diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
-index 6c74c82..d53f597 100644
---- a/arch/arm/mach-exynos/mcpm-exynos.c
-+++ b/arch/arm/mach-exynos/mcpm-exynos.c
-@@ -272,10 +272,63 @@ static int exynos_power_down_finish(unsigned int cpu, unsigned int cluster)
- 	return 0; /* success: the CPU is halted */
- }
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index 97ccc31..d9596e7 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -4,7 +4,7 @@
  
-+static void enable_coherency(void)
-+{
-+	unsigned long v, u;
-+
-+	asm volatile(
-+		"mrc	p15, 0, %0, c1, c0, 1\n"
-+		"orr	%0, %0, %2\n"
-+		"ldr	%1, [%3]\n"
-+		"and	%1, %1, #0\n"
-+		"orr	%0, %0, %1\n"
-+		"mcr	p15, 0, %0, c1, c0, 1\n"
-+		: "=&r" (v), "=&r" (u)
-+		: "Ir" (0x40), "Ir" (S5P_INFORM0)
-+		: "cc");
-+}
-+
-+void exynos_powered_up(void)
-+{
-+	unsigned int mpidr, cpu, cluster;
-+
-+	mpidr = read_cpuid_mpidr();
-+	cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
-+	cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
-+
-+	arch_spin_lock(&exynos_mcpm_lock);
-+	if (cpu_use_count[cpu][cluster] == 0)
-+		cpu_use_count[cpu][cluster] = 1;
-+	arch_spin_unlock(&exynos_mcpm_lock);
-+}
-+
-+static void exynos_suspend(u64 residency)
-+{
-+	unsigned int mpidr, cpunr;
-+
-+	mpidr = read_cpuid_mpidr();
-+	cpunr = exynos_pmu_cpunr(mpidr);
-+
-+	__raw_writel(virt_to_phys(mcpm_entry_point), REG_ENTRY_ADDR);
-+
-+	exynos_power_down();
-+
-+	/*
-+	 * Execution reaches here only if cpu did not power down.
-+	 * Hence roll back the changes done in exynos_power_down function.
-+	*/
-+	__raw_writel(EXYNOS_CORE_LOCAL_PWR_EN,
-+			EXYNOS_ARM_CORE_CONFIGURATION(cpunr));
-+	set_cr(get_cr() | CR_C);
-+	enable_coherency();
-+}
-+
- static const struct mcpm_platform_ops exynos_power_ops = {
- 	.power_up		= exynos_power_up,
- 	.power_down		= exynos_power_down,
- 	.power_down_finish	= exynos_power_down_finish,
-+	.suspend		= exynos_suspend,
-+	.powered_up		= exynos_powered_up,
- };
- 
- static void __init exynos_mcpm_usage_count_init(void)
+ config ARM_BIG_LITTLE_CPUIDLE
+ 	bool "Support for ARM big.LITTLE processors"
+-	depends on ARCH_VEXPRESS_TC2_PM
++	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
+ 	select ARM_CPU_SUSPEND
+ 	select CPU_IDLE_MULTIPLE_DRIVERS
+ 	help
 -- 
 1.7.9.5
