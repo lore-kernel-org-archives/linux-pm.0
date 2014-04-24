@@ -1,71 +1,64 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 4/6] ARM: omap: Use generic runtime and clock helpers
-Date: Thu, 24 Apr 2014 12:26:36 +0200
-Message-ID: <1398335198-26555-5-git-send-email-geert+renesas@glider.be>
-References: <1398335198-26555-1-git-send-email-geert+renesas@glider.be>
+From: Leela Krishna Amudala <leela.krishna@linaro.org>
+Subject: Re: [PATCH 0/2] Add generic cpu power control functions for exynos
+Date: Thu, 24 Apr 2014 15:56:50 +0530
+Message-ID: <CAM7CM0kCexA=JjGw4XqhRQ+xPEss60SPpqPgSXgxANcnVh7ZWA@mail.gmail.com>
+References: <1398331919-28321-1-git-send-email-leela.krishna@linaro.org> <5358DF50.9010106@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1398335198-26555-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <5358DF50.9010106@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Ben Dooks <ben.dooks@codethink.co.uk>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "nicolas.pitre" <nicolas.pitre@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Kucheria <amit.kucheria@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- arch/arm/mach-omap1/pm_bus.c |   32 ++------------------------------
- 1 file changed, 2 insertions(+), 30 deletions(-)
+Hi Abhilash,
 
-diff --git a/arch/arm/mach-omap1/pm_bus.c b/arch/arm/mach-omap1/pm_bus.c
-index 3f2d39672393..e2d4b93580d1 100644
---- a/arch/arm/mach-omap1/pm_bus.c
-+++ b/arch/arm/mach-omap1/pm_bus.c
-@@ -12,7 +12,6 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/io.h>
--#include <linux/pm_runtime.h>
- #include <linux/pm_clock.h>
- #include <linux/platform_device.h>
- #include <linux/mutex.h>
-@@ -22,37 +21,10 @@
- #include "soc.h"
- 
- #ifdef CONFIG_PM_RUNTIME
--static int omap1_pm_runtime_suspend(struct device *dev)
--{
--	int ret;
--
--	dev_dbg(dev, "%s\n", __func__);
--
--	ret = pm_generic_runtime_suspend(dev);
--	if (ret)
--		return ret;
--
--	ret = pm_clk_suspend(dev);
--	if (ret) {
--		pm_generic_runtime_resume(dev);
--		return ret;
--	}
--
--	return 0;
--}
--
--static int omap1_pm_runtime_resume(struct device *dev)
--{
--	dev_dbg(dev, "%s\n", __func__);
--
--	pm_clk_resume(dev);
--	return pm_generic_runtime_resume(dev);
--}
--
- static struct dev_pm_domain default_pm_domain = {
- 	.ops = {
--		.runtime_suspend = omap1_pm_runtime_suspend,
--		.runtime_resume = omap1_pm_runtime_resume,
-+		.runtime_suspend = pm_generic_runtime_clk_suspend,
-+		.runtime_resume = pm_generic_clk_runtime_resume,
- 		USE_PLATFORM_PM_SLEEP_OPS
- 	},
- };
--- 
-1.7.9.5
+If you are okay with this patchset you can rebase/merge it with your
+mcpm patches.
+
+Best Wishes,
+Leela Krishna.
+
+On Thu, Apr 24, 2014 at 3:24 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> Hi Abhilash and Leela,
+>
+> FYI I think you are working on similar patches.
+>
+>
+> On 04/24/2014 11:31 AM, Leela Krishna Amudala wrote:
+>> This patchset adds the generic cpu power control functions for
+>>
+>> exynos based SoCs to power up/down and to know the status of the cpu=
+=2E
+>>
+>> Note: This series has been rebased on 3.15-rc1 and tested on
+>> Exynos based Origen(Cortex-A9) and Arndale-octa(Cortex A7,A15) board=
+s.
+>>
+>> Leela Krishna Amudala (2):
+>>    ARM: EXYNOS: Add generic cpu power control functions for all exyn=
+os
+>>      based SoCs
+>>    ARM: EXYNOS: use generic exynos cpu power control functions
+>>
+>>   arch/arm/mach-exynos/common.h   |    3 +++
+>>   arch/arm/mach-exynos/platsmp.c  |    9 +++------
+>>   arch/arm/mach-exynos/pm.c       |   36
+>> ++++++++++++++++++++++++++++++++++++
+>>   arch/arm/mach-exynos/regs-pmu.h |    6 ++++++
+>>   4 files changed, 48 insertions(+), 6 deletions(-)
+>>
+>
+>
+> --
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+>
