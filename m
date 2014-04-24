@@ -1,98 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: 3.15-rc2: longhaul cpufreq stalls tasks for 120s+
-Date: Thu, 24 Apr 2014 15:59:47 +0530
-Message-ID: <CAKohpo=Lzzj5eki3644-ESB+P39+Q-ARFqN-S+_HM5UB802W3g@mail.gmail.com>
-References: <alpine.SOC.1.00.1404241249480.13595@math.ut.ee>
-	<CAKohpoktwh=SgHTfEgT7vYRVWHssXw7==+a9qAdtmJXepjT2Tw@mail.gmail.com>
-	<alpine.SOC.1.00.1404241316290.13595@math.ut.ee>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] thermal: samsung: Only update available threshold limits
+Date: Thu, 24 Apr 2014 12:48:38 +0200
+Message-ID: <1705902.4858U1S3Zd@amdc1032>
+References: <1397453895-6688-1-git-send-email-tushar.behera@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=047d7b33d24413556b04f7c75415
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:56756 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755865AbaDXK3s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Apr 2014 06:29:48 -0400
-Received: by mail-ob0-f171.google.com with SMTP id uy5so2429865obc.2
-        for <linux-pm@vger.kernel.org>; Thu, 24 Apr 2014 03:29:48 -0700 (PDT)
-In-Reply-To: <alpine.SOC.1.00.1404241316290.13595@math.ut.ee>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1397453895-6688-1-git-send-email-tushar.behera@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tushar Behera <tushar.behera@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: Meelis Roos <mroos@linux.ee>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
---047d7b33d24413556b04f7c75415
-Content-Type: text/plain; charset=UTF-8
 
-On 24 April 2014 15:46, Meelis Roos <mroos@linux.ee> wrote:
-> I can add debug to where needed and try it.
+Hi,
 
-I am quite sure below wouldn't fix it, but just wanted to check
-for the corner case :(
+On Monday, April 14, 2014 11:08:15 AM Tushar Behera wrote:
+> Currently the threshold limits are updated in 2 stages, once for all
+> software trigger levels and again for hardware trip point.
+> 
+> While updating the software trigger levels, it overwrites the threshold
+> limit for hardware trip point thereby forcing the Exynos core to issue
+> an emergency shutdown.
 
-Can you please try attached patch (mail's content would be
-broken):
+On what SoC type have you encountered this problem?  It doesn't seem to
+happen on older SoCs (at least Exynos4210 and Exynos4x12 ones).
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index abda660..7198e23 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -355,10 +355,12 @@ void cpufreq_freq_transition_begin(struct
-cpufreq_policy *policy,
-                struct cpufreq_freqs *freqs)
- {
- wait:
-+       smp_mb();
-        wait_event(policy->transition_wait, !policy->transition_ongoing);
+> Updating only the required fields in threshold register fixes this issue.
 
-        spin_lock(&policy->transition_lock);
+With the current code there is indeed a time window during which threshold
+limit for hardware trip point is set to zero so the fix is correct.
 
-+       smp_mb();
-        if (unlikely(policy->transition_ongoing)) {
-                spin_unlock(&policy->transition_lock);
-                goto wait;
-@@ -380,8 +382,11 @@ void cpufreq_freq_transition_end(struct
-cpufreq_policy *policy,
+> Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+> ---
+> Based on v3.15-rc1.
+> 
+>  drivers/thermal/samsung/exynos_tmu.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> index 0d96a51..ffccc89 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -225,6 +225,8 @@ skip_calib_data:
+>  			trigger_levs++;
+>  	}
+>  
+> +	rising_threshold = readl(data->base + reg->threshold_th0);
 
-        cpufreq_notify_post_transition(policy, freqs, transition_failed);
+You may move this inside "} else {" block as rising_threshold
+is not used for data->soc == SOC_ARCH_EXYNOS4210 case.
 
-+       smp_mb();
-+
-        policy->transition_ongoing = false;
+Also rising_threshold initialization to zero at the beginning of
+exynos_tmu_initialize() is not needed anylonger.
 
-+       smp_mb();
-        wake_up(&policy->transition_wait);
- }
- EXPORT_SYMBOL_GPL(cpufreq_freq_transition_end);
+> +
+>  	if (data->soc == SOC_ARCH_EXYNOS4210) {
+>  		/* Write temperature code for threshold */
+>  		threshold_code = temp_to_code(data, pdata->threshold);
+> @@ -249,6 +251,7 @@ skip_calib_data:
+>  				ret = threshold_code;
+>  				goto out;
+>  			}
+> +			rising_threshold &= ~(0xff << 8 * i);
+>  			rising_threshold |= threshold_code << 8 * i;
+>  			if (pdata->threshold_falling) {
+>  				threshold_code = temp_to_code(data,
+> @@ -281,6 +284,7 @@ skip_calib_data:
+>  			}
+>  			if (i == EXYNOS_MAX_TRIGGER_PER_REG - 1) {
+>  				/* 1-4 level to be assigned in th0 reg */
+> +				rising_threshold &= ~(0xff << 8 * i);
+>  				rising_threshold |= threshold_code << 8 * i;
+>  				writel(rising_threshold,
+>  					data->base + reg->threshold_th0);
 
---047d7b33d24413556b04f7c75415
-Content-Type: text/x-patch; charset=US-ASCII;
-	name="0001-cpufreq-add-smp_mb-s-to-cpufreq-transitions.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-add-smp_mb-s-to-cpufreq-transitions.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hudws76k0
-
-RnJvbSAwOGQ0MmYzOWZlZDMyNmE3NGZhMjA2MmNmYzY2M2NhNDFlZTcxMTQ4IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MDhkNDJmMzlmZWQzMjZhNzRmYTIwNjJjZmM2NjNj
-YTQxZWU3MTE0OC4xMzk4MzM1MzMxLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVGh1LCAyNCBBcHIg
-MjAxNCAxNTo1ODo1MCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFkZCBzbXBfbWIo
-KXMgdG8gY3B1ZnJlcSB0cmFuc2l0aW9ucwoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2
-aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwg
-NSArKysrKwogMSBmaWxlIGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKQoKZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCmluZGV4
-IGFiZGE2NjAuLjcxOThlMjMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMK
-KysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwpAQCAtMzU1LDEwICszNTUsMTIgQEAgdm9p
-ZCBjcHVmcmVxX2ZyZXFfdHJhbnNpdGlvbl9iZWdpbihzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBv
-bGljeSwKIAkJc3RydWN0IGNwdWZyZXFfZnJlcXMgKmZyZXFzKQogewogd2FpdDoKKwlzbXBfbWIo
-KTsKIAl3YWl0X2V2ZW50KHBvbGljeS0+dHJhbnNpdGlvbl93YWl0LCAhcG9saWN5LT50cmFuc2l0
-aW9uX29uZ29pbmcpOwogCiAJc3Bpbl9sb2NrKCZwb2xpY3ktPnRyYW5zaXRpb25fbG9jayk7CiAK
-KwlzbXBfbWIoKTsKIAlpZiAodW5saWtlbHkocG9saWN5LT50cmFuc2l0aW9uX29uZ29pbmcpKSB7
-CiAJCXNwaW5fdW5sb2NrKCZwb2xpY3ktPnRyYW5zaXRpb25fbG9jayk7CiAJCWdvdG8gd2FpdDsK
-QEAgLTM4MCw4ICszODIsMTEgQEAgdm9pZCBjcHVmcmVxX2ZyZXFfdHJhbnNpdGlvbl9lbmQoc3Ry
-dWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksCiAKIAljcHVmcmVxX25vdGlmeV9wb3N0X3RyYW5z
-aXRpb24ocG9saWN5LCBmcmVxcywgdHJhbnNpdGlvbl9mYWlsZWQpOwogCisJc21wX21iKCk7CisK
-IAlwb2xpY3ktPnRyYW5zaXRpb25fb25nb2luZyA9IGZhbHNlOwogCisJc21wX21iKCk7CiAJd2Fr
-ZV91cCgmcG9saWN5LT50cmFuc2l0aW9uX3dhaXQpOwogfQogRVhQT1JUX1NZTUJPTF9HUEwoY3B1
-ZnJlcV9mcmVxX3RyYW5zaXRpb25fZW5kKTsKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
---047d7b33d24413556b04f7c75415--
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
