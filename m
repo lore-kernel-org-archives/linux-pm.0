@@ -1,67 +1,44 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Subject: Re: [PATCH] thermal: samsung: Only update available threshold limits
-Date: Thu, 24 Apr 2014 08:47:54 +0530
-Message-ID: <53588262.5020104@linaro.org>
-References: <1397453895-6688-1-git-send-email-tushar.behera@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: CPUFREQ: Try to load pcc driver on HP ProLiants automatically
+Date: Thu, 24 Apr 2014 09:34:40 +0530
+Message-ID: <CAKohpokrtVQP80Go+Y3KX45t6P5Vj0tpDu-7f=84puE+6SfwZg@mail.gmail.com>
+References: <7669060.dKLoxkfpfu@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1397453895-6688-1-git-send-email-tushar.behera@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <7669060.dKLoxkfpfu@skinner>
+Sender: cpufreq-owner@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, thomas.mingarelli@hp.com
 List-Id: linux-pm@vger.kernel.org
 
-On 04/14/2014 11:08 AM, Tushar Behera wrote:
-> Currently the threshold limits are updated in 2 stages, once for all
-> software trigger levels and again for hardware trip point.
-> 
-> While updating the software trigger levels, it overwrites the threshold
-> limit for hardware trip point thereby forcing the Exynos core to issue
-> an emergency shutdown.
-> 
-> Updating only the required fields in threshold register fixes this issue.
-> 
-> Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
-> ---
-> Based on v3.15-rc1.
-> 
->  drivers/thermal/samsung/exynos_tmu.c |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 0d96a51..ffccc89 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -225,6 +225,8 @@ skip_calib_data:
->  			trigger_levs++;
->  	}
->  
-> +	rising_threshold = readl(data->base + reg->threshold_th0);
+As Rafael picks patches from patchworks, you may need to resend it to
+linux-pm, for now I have cc'id it.
+
+On 23 April 2014 19:19, Thomas Renninger <trenn@suse.de> wrote:
+> HP ProLiants are sold with CPU frequency controlled by BIOS by default.
+> The pcc-cpufreq driver still exports some frequency info to userspace and
+> should be tried to get loaded on these platforms.
+>
+> Successfully tested on a recent ProLiant machine:
+>   - without this patch no pcc-cpufreq driver loaded, no frequency info
+>   - with this patch the driver got autoloaded
+>
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
+>
+> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+> index 728a2d8..ff1ebd0 100644
+> --- a/drivers/cpufreq/pcc-cpufreq.c
+> +++ b/drivers/cpufreq/pcc-cpufreq.c
+> @@ -603,6 +603,8 @@ static void __exit pcc_cpufreq_exit(void)
+>         free_percpu(pcc_cpu_info);
+>  }
+>
+> +MODULE_ALIAS("dmi:*:svnHP:pnProLiant*:*");
 > +
->  	if (data->soc == SOC_ARCH_EXYNOS4210) {
->  		/* Write temperature code for threshold */
->  		threshold_code = temp_to_code(data, pdata->threshold);
-> @@ -249,6 +251,7 @@ skip_calib_data:
->  				ret = threshold_code;
->  				goto out;
->  			}
-> +			rising_threshold &= ~(0xff << 8 * i);
->  			rising_threshold |= threshold_code << 8 * i;
->  			if (pdata->threshold_falling) {
->  				threshold_code = temp_to_code(data,
-> @@ -281,6 +284,7 @@ skip_calib_data:
->  			}
->  			if (i == EXYNOS_MAX_TRIGGER_PER_REG - 1) {
->  				/* 1-4 level to be assigned in th0 reg */
-> +				rising_threshold &= ~(0xff << 8 * i);
->  				rising_threshold |= threshold_code << 8 * i;
->  				writel(rising_threshold,
->  					data->base + reg->threshold_th0);
-> 
+>  MODULE_AUTHOR("Matthew Garrett, Naga Chumbalkar");
+>  MODULE_VERSION(PCC_VERSION);
+>  MODULE_DESCRIPTION("Processor Clocking Control interface driver");
+>
 
-Adding Amit to get Samsung specific review.
-
--- 
-Tushar Behera
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
