@@ -1,134 +1,238 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 3/3] sched: idle: Store the idle state the cpu is
-Date: Thu, 24 Apr 2014 14:24:51 +0200
-Message-ID: <1398342291-16322-4-git-send-email-daniel.lezcano@linaro.org>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, linaro-kernel@lists.linaro.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
+ with the PM core
+Date: Thu, 24 Apr 2014 15:11:24 +0200
+Message-ID: <CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f182.google.com ([209.85.216.182]:43072 "EHLO
+	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753477AbaDXNLZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Apr 2014 09:11:25 -0400
+Received: by mail-qc0-f182.google.com with SMTP id e16so2399004qcx.41
+        for <linux-pm@vger.kernel.org>; Thu, 24 Apr 2014 06:11:24 -0700 (PDT)
+In-Reply-To: <1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <tomasz.figa@gmail.com>
 
-When the cpu enters idle it stores the cpuidle state pointer in the struct
-rq which in turn could be used to take a right decision when balancing
-a task.
+On 24 April 2014 12:13, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> When adding a device from DT, check if its clocks are suitable for Runtime
+> PM, and register them with the PM core.
+> If Runtime PM is disabled, just enable the clock.
+>
+> This allows the PM core to automatically manage gate clocks of devices for
+> Runtime PM.
 
-As soon as the cpu exits the idle state, the structure is filled back with the
-NULL pointer.
+Normally I don't think it's a good idea to "automatically" manage
+clocks from PM core or any other place but from the driver (and
+possibly the subsystem).
 
-There are a couple of situations where the idle state pointer could be changed
-while looking at it:
+The reason is simply that we hide things that normally is supposed to
+be handled by the driver. Typically a cross SOC driver should work
+fine both with and without a pm_domain. It should also not rely on
+CONFIG_PM_RUNTIME.
 
-1. For x86/acpi with dynamic c-states, when a laptop switches from battery
-   to AC that could result on removing the deeper idle state. The acpi driver
-   triggers:
-	'acpi_processor_cst_has_changed'
-		'cpuidle_pause_and_lock'
-			'cpuidle_uninstall_idle_handler'
-				'kick_all_cpus_sync'.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/of/Makefile    |    1 +
+>  drivers/of/of_clk.c    |  103 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/of/platform.c  |    3 ++
+>  include/linux/of_clk.h |   18 +++++++++
+>  4 files changed, 125 insertions(+)
+>  create mode 100644 drivers/of/of_clk.c
+>  create mode 100644 include/linux/of_clk.h
+>
+> diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+> index ed9660adad77..49bcd413906f 100644
+> --- a/drivers/of/Makefile
+> +++ b/drivers/of/Makefile
+> @@ -10,3 +10,4 @@ obj-$(CONFIG_OF_PCI)  += of_pci.o
+>  obj-$(CONFIG_OF_PCI_IRQ)  += of_pci_irq.o
+>  obj-$(CONFIG_OF_MTD)   += of_mtd.o
+>  obj-$(CONFIG_OF_RESERVED_MEM) += of_reserved_mem.o
+> +obj-$(CONFIG_COMMON_CLK) += of_clk.o
+> diff --git a/drivers/of/of_clk.c b/drivers/of/of_clk.c
+> new file mode 100644
+> index 000000000000..35f5e9f3dd42
+> --- /dev/null
+> +++ b/drivers/of/of_clk.c
+> @@ -0,0 +1,103 @@
+> +/*
+> + *  Copyright (C) 2014 Glider bvba
+> + */
+> +
+> +#include <linux/clk.h>
+> +#include <linux/err.h>
+> +#include <linux/of.h>
+> +#include <linux/of_clk.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_clock.h>
+> +#include <linux/pm_runtime.h>
+> +
+> +
+> +#ifdef CONFIG_PM_RUNTIME
+> +
+> +static int of_clk_pm_runtime_suspend(struct device *dev)
+> +{
+> +       int ret;
+> +
+> +       ret = pm_generic_runtime_suspend(dev);
+> +       if (ret)
+> +               return ret;
+> +
+> +       ret = pm_clk_suspend(dev);
+> +       if (ret) {
+> +               pm_generic_runtime_resume(dev);
+> +               return ret;
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+> +static int of_clk_pm_runtime_resume(struct device *dev)
+> +{
+> +       pm_clk_resume(dev);
+> +       return pm_generic_runtime_resume(dev);
+> +}
+> +
+> +static struct dev_pm_domain of_clk_pm_domain = {
+> +       .ops = {
+> +               .runtime_suspend = of_clk_pm_runtime_suspend,
+> +               .runtime_resume = of_clk_pm_runtime_resume,
+> +               USE_PLATFORM_PM_SLEEP_OPS
+> +       },
+> +};
+> +
+> +static int of_clk_register(struct device *dev, struct clk *clk)
+> +{
+> +       int error;
+> +
+> +       if (!dev->pm_domain) {
+> +               error = pm_clk_create(dev);
+> +               if (error)
+> +                       return error;
+> +
+> +               dev->pm_domain = &of_clk_pm_domain;
 
-All cpus will exit their idle state and the pointed object will be set to NULL.
+I am concerned about how this will work in conjunction with the
+generic power domain.
 
-2. The cpuidle driver is unloaded. Logically that could happen but not in
-practice because the drivers are always compiled in and 95% of the drivers are
-not coded to unregister the driver. In any case, the unloading code must call
-'cpuidle_unregister_device', that calls 'cpuidle_pause_and_lock' leading to
-'kick_all_cpus_sync' as mentioned above.
+A device can't reside in more than one pm_domain; thus I think it
+would be better to always use the generic power domain and not have a
+specific one for clocks. Typically the genpd should invoke
+pm_clk_resume|suspend from it's runtime PM callbacks.
 
-The race can happen if we use the pointer and then one of these two situations
-occurs at the same moment.
+> +       }
+> +
+> +       dev_dbg(dev, "Setting up clock for runtime PM management\n");
+> +       return pm_clk_add_clk(dev, clk);
+> +}
+> +
+> +#else /* !CONFIG_PM_RUNTIME */
+> +
+> +static int of_clk_register(struct device *dev, struct clk *clk)
+> +{
+> +       dev_dbg(dev, "Runtime PM disabled, enabling clock\n");
+> +       return clk_prepare_enable(clk);
+> +}
+> +
+> +#endif /* !CONFIG_PM_RUNTIME */
+> +
+> +
+> +/**
+> + * of_clk_register_runtime_pm_clocks - Register clocks suitable for Runtime PM
+> + *                                     with the PM core
+> + * @np: pointer to device tree node
+> + * @pdev: pointer to corresponding device to register suitable clocks for
+> + *
+> + * Returns an error code
+> + */
+> +int of_clk_register_runtime_pm_clocks(struct device_node *np,
+> +                                     struct device *dev)
+> +{
+> +       unsigned int i;
+> +       struct clk *clk;
+> +       int error;
+> +
+> +       for (i = 0; (clk = of_clk_get(np, i)) && !IS_ERR(clk); i++) {
+> +               if (!clk_may_runtime_pm(clk)) {
+> +                       clk_put(clk);
+> +                       continue;
+> +               }
+> +
+> +               error = of_clk_register(dev, clk);
+> +               if (error) {
+> +                       clk_put(clk);
+> +                       return error;
+> +               }
+> +       }
+> +
+> +       return 0;
+> +}
+> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+> index 404d1daebefa..29145302b6f8 100644
+> --- a/drivers/of/platform.c
+> +++ b/drivers/of/platform.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/dma-mapping.h>
+>  #include <linux/slab.h>
+>  #include <linux/of_address.h>
+> +#include <linux/of_clk.h>
+>  #include <linux/of_device.h>
+>  #include <linux/of_irq.h>
+>  #include <linux/of_platform.h>
+> @@ -182,6 +183,8 @@ struct platform_device *of_device_alloc(struct device_node *np,
+>         else
+>                 of_device_make_bus_id(&dev->dev);
+>
+> +       of_clk_register_runtime_pm_clocks(np, &dev->dev);
+> +
 
-In order to be safe, the idle state pointer stored in the rq must be used inside
-a rcu_read_lock section where we are protected with the 'rcu_barrier' in the
-'cpuidle_uninstall_idle_handler' function.
+What about other device than platform devices? Could we handle the DT
+binding at driver core at probe instead?
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle.c |    6 ++++++
- kernel/sched/idle.c       |    8 ++++++++
- kernel/sched/sched.h      |    5 +++++
- 3 files changed, 19 insertions(+)
+Kind regards
+Ulf Hansson
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 8236746..6a13f40 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -190,6 +190,12 @@ void cpuidle_install_idle_handler(void)
-  */
- void cpuidle_uninstall_idle_handler(void)
- {
-+	/*
-+	 * Wait for the scheduler to finish to use the idle state he
-+	 * may pointing to when looking for the cpu idle states
-+	 */
-+	rcu_barrier();
-+
- 	if (enabled_devices) {
- 		initialized = 0;
- 		kick_all_cpus_sync();
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index e877dd4..4c14ec0 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -12,6 +12,8 @@
- 
- #include <trace/events/power.h>
- 
-+#include "sched.h"
-+
- static int __read_mostly cpu_idle_force_poll;
- 
- void cpu_idle_poll_ctrl(bool enable)
-@@ -66,6 +68,8 @@ void __weak arch_cpu_idle(void)
- #ifdef CONFIG_CPU_IDLE
- static int __cpuidle_idle_call(void)
- {
-+	struct rq *rq = this_rq();
-+	struct cpuidle_state **idle_state = &rq->idle_state;
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int next_state, entered_state, ret;
-@@ -114,6 +118,8 @@ static int __cpuidle_idle_call(void)
- 		if (!ret) {
- 			trace_cpu_idle_rcuidle(next_state, dev->cpu);
- 
-+			*idle_state = &drv->states[next_state];
-+
- 			/*
- 			 * Enter the idle state previously returned by
- 			 * the governor decision. This function will
-@@ -123,6 +129,8 @@ static int __cpuidle_idle_call(void)
- 			 */
- 			entered_state = cpuidle_enter(drv, dev, next_state);
- 
-+			*idle_state = NULL;
-+
- 			trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
- 
- 			if (broadcast)
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 456e492..bace64a 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -14,6 +14,7 @@
- #include "cpuacct.h"
- 
- struct rq;
-+struct cpuidle_state;
- 
- extern __read_mostly int scheduler_running;
- 
-@@ -643,6 +644,10 @@ struct rq {
- #ifdef CONFIG_SMP
- 	struct llist_head wake_list;
- #endif
-+
-+#ifdef CONFIG_CPU_IDLE
-+	struct cpuidle_state *idle_state;
-+#endif
- };
- 
- static inline int cpu_of(struct rq *rq)
--- 
-1.7.9.5
+
+>         return dev;
+>  }
+>  EXPORT_SYMBOL(of_device_alloc);
+> diff --git a/include/linux/of_clk.h b/include/linux/of_clk.h
+> new file mode 100644
+> index 000000000000..b9b15614e39b
+> --- /dev/null
+> +++ b/include/linux/of_clk.h
+> @@ -0,0 +1,18 @@
+> +#ifndef _LINUX_OF_CLK_H
+> +#define _LINUX_OF_CLK_H
+> +
+> +struct device_node;
+> +struct device;
+> +
+> +#if defined(CONFIG_OF) && defined(CONFIG_COMMON_CLK)
+> +int of_clk_register_runtime_pm_clocks(struct device_node *np,
+> +                                     struct device *dev);
+> +#else
+> +static inline int of_clk_register_runtime_pm_clocks(struct device_node *np,
+> +                                                   struct device *dev)
+> +{
+> +       return 0;
+> +}
+> +#endif /* CONFIG_OF && CONFIG_COMMON_CLK */
+> +
+> +#endif /* _LINUX_OF_CLK_H */
+> --
+> 1.7.9.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
