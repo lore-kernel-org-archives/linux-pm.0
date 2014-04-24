@@ -1,120 +1,165 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC][PATCH 3/3] ACPI / PM: Avoid resuming devices in ACPI PM domain during system suspend
-Date: Fri, 25 Apr 2014 00:40:19 +0200
-Message-ID: <4342989.eRN4reU3Xe@vostro.rjw.lan>
+Subject: [RFC][PATCH 1/3] PM / sleep: Flags to speed up suspend-resume of runtime-suspended devices
+Date: Fri, 25 Apr 2014 00:37:41 +0200
+Message-ID: <2381177.mrXhZ4Wotn@vostro.rjw.lan>
 References: <Pine.LNX.4.44L0.1402271001190.1150-100000@iolanthe.rowland.org> <5039115.7hOuWtlQhG@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65227 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756337AbaDXWYF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Apr 2014 18:24:05 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <5039115.7hOuWtlQhG@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Rework the ACPI PM domain's PM callbacks to avoid resuming devices
-during system suspend (in order to modify their wakeup settings etc.)
-if that isn't necessary.
+Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+resume all runtime-suspended devices during system suspend, mostly
+because those devices may need to be reprogrammed due to different
+wakeup settings for system sleep and for runtime PM.  However, at
+least in some cases, that isn't really necessary, because the wakeup
+settings may not be really different.
+
+The idea here is that subsystems should know whether or not it is
+necessary to reprogram a given device during system suspend and they
+should be able to tell the PM core about that.  For that reason, add
+two new device PM flags, power.resume_not_needed and
+power.use_runtime_resume, such that:
+
+ (1) If power.resume_not_needed is set for the given device and for
+     all of its children and the device is runtime-suspended during
+     device_suspend(), the remaining device's system suspend/resume
+     callbacks need not be executed.
+
+ (2) If power.use_runtime_resume is set for the given device and the
+     device is runtime-suspended in device_suspend_late(), its late/early
+     and noirq system suspend/resume callbacks should be skipped and
+     it should be resumed through pm_runtime_resume() in device_resume().
+
+Those flags are cleared by the PM core in dpm_prepare() for all
+devices.  Next, subsystems (or drivers) are supposed to set
+power.resume_not_needed in their ->prepare() callbacks for devices
+whose remaining system suspend/resume callbacks are generally safe to
+be skipped if they are runtime-suspended already.  Finally, for each
+runtime-suspended device with power.resume_not_needed set during
+device_suspend(), its subsystem (or driver) may set the device's
+power.use_runtime_resume in its ->suspend() callback without changing
+the device's state, in which case the PM core will skip all of the
+subsequent system suspend/resume callbacks for it and will resume it
+in device_resume() using pm_runtime_resume().
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/device_pm.c |   33 ++++++++++++++++++++++++++++++---
- drivers/acpi/scan.c      |    4 ++++
- include/acpi/acpi_bus.h  |    3 ++-
- 3 files changed, 36 insertions(+), 4 deletions(-)
+ drivers/base/power/main.c |   41 ++++++++++++++++++++++++++++++++++-------
+ include/linux/pm.h        |    2 ++
+ 2 files changed, 36 insertions(+), 7 deletions(-)
 
-Index: linux-pm/drivers/acpi/device_pm.c
+Index: linux-pm/include/linux/pm.h
 ===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -907,6 +907,7 @@ int acpi_subsys_prepare(struct device *d
- 	if (dev->power.ignore_children)
- 		pm_runtime_resume(dev);
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -546,6 +546,8 @@ struct dev_pm_info {
+ 	bool			is_late_suspended:1;
+ 	bool			ignore_children:1;
+ 	bool			early_init:1;	/* Owned by the PM core */
++	bool			resume_not_needed:1;
++	bool			use_runtime_resume:1;
+ 	spinlock_t		lock;
+ #ifdef CONFIG_PM_SLEEP
+ 	struct list_head	entry;
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -479,7 +479,7 @@ static int device_resume_noirq(struct de
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
  
-+	dev->power.resume_not_needed = true;
- 	return pm_generic_prepare(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
-@@ -914,13 +915,39 @@ EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
- /**
-  * acpi_subsys_suspend - Run the device driver's suspend callback.
-  * @dev: Device to handle.
-- *
-- * Follow PCI and resume devices suspended at run time before running their
-- * system suspend callbacks.
-  */
- int acpi_subsys_suspend(struct device *dev)
- {
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	u32 sys_target;
-+
-+	if (!adev || !pm_runtime_enabled_and_suspended(dev))
-+		goto out;
-+
-+	if (!dev->power.resume_not_needed
-+	    || device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
-+		goto resume;
-+
-+	sys_target = acpi_target_system_state();
-+	if (sys_target != ACPI_STATE_S0) {
-+		int ret, state;
-+
-+		if (adev->power.flags.dsw_present)
-+			goto resume;
-+
-+		ret = acpi_dev_pm_get_state(dev, adev, sys_target, NULL, &state);
-+		if (ret || state != adev->power.state)
-+			goto resume;
+-	if (dev->power.syscore)
++	if (dev->power.syscore || dev->power.use_runtime_resume)
+ 		goto Out;
+ 
+ 	if (!dev->power.is_noirq_suspended)
+@@ -605,7 +605,7 @@ static int device_resume_early(struct de
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
+ 
+-	if (dev->power.syscore)
++	if (dev->power.syscore || dev->power.use_runtime_resume)
+ 		goto Out;
+ 
+ 	if (!dev->power.is_late_suspended)
+@@ -735,6 +735,11 @@ static int device_resume(struct device *
+ 	if (dev->power.syscore)
+ 		goto Complete;
+ 
++	if (dev->power.use_runtime_resume) {
++		pm_runtime_resume(dev);
++		goto Complete;
 +	}
 +
-+	dev->power.use_runtime_resume = true;
-+	return 0;
-+
-+ resume:
- 	pm_runtime_resume(dev);
-+
-+ out:
-+	dev->power.resume_not_needed = false;
- 	return pm_generic_suspend(dev);
- }
+ 	dpm_wait(dev->parent, async);
+ 	dpm_watchdog_set(&wd, dev);
+ 	device_lock(dev);
+@@ -1007,7 +1012,7 @@ static int __device_suspend_noirq(struct
+ 		goto Complete;
+ 	}
  
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -261,7 +261,8 @@ struct acpi_device_power_flags {
- 	u32 inrush_current:1;	/* Serialize Dx->D0 */
- 	u32 power_removed:1;	/* Optimize Dx->D0 */
- 	u32 ignore_parent:1;	/* Power is independent of parent power state */
--	u32 reserved:27;
-+	u32 dsw_present:1;	/* _DSW present? */
-+	u32 reserved:26;
- };
+-	if (dev->power.syscore)
++	if (dev->power.syscore || dev->power.use_runtime_resume)
+ 		goto Complete;
  
- struct acpi_device_power_state {
-Index: linux-pm/drivers/acpi/scan.c
-===================================================================
---- linux-pm.orig/drivers/acpi/scan.c
-+++ linux-pm/drivers/acpi/scan.c
-@@ -1551,9 +1551,13 @@ static void acpi_bus_get_power_flags(str
- 	 */
- 	if (acpi_has_method(device->handle, "_PSC"))
- 		device->power.flags.explicit_get = 1;
-+
- 	if (acpi_has_method(device->handle, "_IRC"))
- 		device->power.flags.inrush_current = 1;
+ 	dpm_wait_for_children(dev, async);
+@@ -1146,7 +1151,7 @@ static int __device_suspend_late(struct
+ 		goto Complete;
+ 	}
  
-+	if (acpi_has_method(device->handle, "_DSW"))
-+		device->power.flags.dsw_present = 1;
+-	if (dev->power.syscore)
++	if (dev->power.syscore || dev->power.use_runtime_resume)
+ 		goto Complete;
+ 
+ 	dpm_wait_for_children(dev, async);
+@@ -1383,9 +1388,29 @@ static int __device_suspend(struct devic
+  End:
+ 	if (!error) {
+ 		dev->power.is_suspended = true;
+-		if (dev->power.wakeup_path
+-		    && dev->parent && !dev->parent->power.ignore_children)
+-			dev->parent->power.wakeup_path = true;
++		if (dev->parent) {
++			spin_lock_irq(&dev->parent->power.lock);
 +
- 	/*
- 	 * Enumerate supported power management states
- 	 */
-
++			if (dev->power.wakeup_path
++			    && !dev->parent->power.ignore_children)
++				dev->parent->power.wakeup_path = true;
++
++			/*
++			 * Subsystems are supposed to set resume_not_needed in
++			 * their ->prepare() callbacks for devices whose
++			 * remaining system suspend and resume callbacks are
++			 * generally safe to be skipped if the devices are
++			 * runtime-suspended.
++			 *
++			 * If the device's resume_not_needed is not set at this
++			 * point, it has to be cleared for its parent too (even
++			 * if the subsystem has set that flag for it).
++			 */
++			if (!dev->power.resume_not_needed)
++				dev->parent->power.resume_not_needed = false;
++
++			spin_unlock_irq(&dev->parent->power.lock);
++		}
+ 	}
+ 
+ 	device_unlock(dev);
+@@ -1553,6 +1578,8 @@ int dpm_prepare(pm_message_t state)
+ 		struct device *dev = to_device(dpm_list.next);
+ 
+ 		get_device(dev);
++		dev->power.use_runtime_resume = false;
++		dev->power.resume_not_needed = false;
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+ 		error = device_prepare(dev, state);
