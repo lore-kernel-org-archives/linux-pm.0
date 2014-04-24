@@ -1,149 +1,352 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3] sched: idle: Store the idle state the cpu is
-Date: Thu, 24 Apr 2014 18:16:58 +0200
-Message-ID: <8657891.Z8DFcnHIkS@vostro.rjw.lan>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <1398342291-16322-4-git-send-email-daniel.lezcano@linaro.org>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
+Date: Thu, 24 Apr 2014 19:42:47 +0200
+Message-ID: <53594D17.6020107@samsung.com>
+References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1398342291-16322-4-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: peterz@infradead.org, mingo@elte.hu, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, alex.shi@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, linaro-kernel@lists.linaro.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:58663 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755830AbaDXRm4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Apr 2014 13:42:56 -0400
+In-reply-to: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, kgene.kim@samsung.com
+Cc: linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, ccross@google.com
 
-On Thursday, April 24, 2014 02:24:51 PM Daniel Lezcano wrote:
-> When the cpu enters idle it stores the cpuidle state pointer in the struct
-> rq which in turn could be used to take a right decision when balancing
-> a task.
-> 
-> As soon as the cpu exits the idle state, the structure is filled back with the
-> NULL pointer.
-> 
-> There are a couple of situations where the idle state pointer could be changed
-> while looking at it:
-> 
-> 1. For x86/acpi with dynamic c-states, when a laptop switches from battery
->    to AC that could result on removing the deeper idle state. The acpi driver
->    triggers:
-> 	'acpi_processor_cst_has_changed'
-> 		'cpuidle_pause_and_lock'
-> 			'cpuidle_uninstall_idle_handler'
-> 				'kick_all_cpus_sync'.
-> 
-> All cpus will exit their idle state and the pointed object will be set to NULL.
-> 
-> 2. The cpuidle driver is unloaded. Logically that could happen but not in
-> practice because the drivers are always compiled in and 95% of the drivers are
-> not coded to unregister the driver. In any case, the unloading code must call
-> 'cpuidle_unregister_device', that calls 'cpuidle_pause_and_lock' leading to
-> 'kick_all_cpus_sync' as mentioned above.
-> 
-> The race can happen if we use the pointer and then one of these two situations
-> occurs at the same moment.
-> 
-> In order to be safe, the idle state pointer stored in the rq must be used inside
-> a rcu_read_lock section where we are protected with the 'rcu_barrier' in the
-> 'cpuidle_uninstall_idle_handler' function.
-> 
+Hi Daniel,
+
+Please see my comments inline.
+
+Btw. Please fix your e-mail composer to properly wrap your messages 
+around 7xth column, as otherwise they're hard to read.
+
+On 04.04.2014 11:48, Daniel Lezcano wrote:
+> The following driver is for exynos4210. I did not yet finished the other boards, so
+> I created a specific driver for 4210 which could be merged later.
+>
+> The driver is based on Colin Cross's driver found at:
+>
+> https://android.googlesource.com/kernel/exynos/+/e686b1ec67423c40b4fdf811f9a4dfa3b393a010%5E%5E!/
+>
+> This one was based on a 3.4 kernel and an old API.
+>
+> It has been refreshed, simplified and based on the recent code cleanup I sent
+> today.
+>
+> The AFTR could be entered when all the cpus (except cpu0) are down. In order to
+> reach this situation, the couple idle states are used.
+>
+> There is a sync barrier at the entry and the exit of the low power function. So
+> all cpus will enter and exit the function at the same time.
+>
+> At this point, CPU0 knows the other cpu will power down itself. CPU0 waits for
+> the CPU1 to be powered down and then initiate the AFTR power down sequence.
+>
+> No interrupts are handled by CPU1, this is why we switch to the timer broadcast
+> even if the local timer is not impacted by the idle state.
+>
+> When CPU0 wakes up, it powers up CPU1 and waits for it to boot. Then they both
+> exit the idle function.
+>
+> This driver allows the exynos4210 to have the same power consumption at idle
+> time than the one when we have to unplug CPU1 in order to let CPU0 to reach
+> the AFTR state.
+>
+> This patch is a RFC because, we have to find a way to remove the macros
+> definitions and cpu powerdown function without pulling the arch dependent
+> headers.
+>
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > ---
->  drivers/cpuidle/cpuidle.c |    6 ++++++
->  kernel/sched/idle.c       |    8 ++++++++
->  kernel/sched/sched.h      |    5 +++++
->  3 files changed, 19 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 8236746..6a13f40 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -190,6 +190,12 @@ void cpuidle_install_idle_handler(void)
->   */
->  void cpuidle_uninstall_idle_handler(void)
->  {
+>   arch/arm/mach-exynos/common.c        |   11 +-
+>   drivers/cpuidle/Kconfig.arm          |    8 ++
+>   drivers/cpuidle/Makefile             |    1 +
+>   drivers/cpuidle/cpuidle-exynos4210.c |  226 ++++++++++++++++++++++++++++++++++
+>   4 files changed, 245 insertions(+), 1 deletion(-)
+>   create mode 100644 drivers/cpuidle/cpuidle-exynos4210.c
+>
+> diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
+> index d5fa21e..1765a98 100644
+> --- a/arch/arm/mach-exynos/common.c
+> +++ b/arch/arm/mach-exynos/common.c
+> @@ -299,9 +299,18 @@ static struct platform_device exynos_cpuidle = {
+>   	.id                = -1,
+>   };
+>
+> +static struct platform_device exynos4210_cpuidle = {
+> +	.name              = "exynos4210-cpuidle",
+> +	.dev.platform_data = exynos_sys_powerdown_aftr,
+> +	.id                = -1,
+> +};
+> +
+>   void __init exynos_cpuidle_init(void)
+>   {
+> -	platform_device_register(&exynos_cpuidle);
+> +	if (soc_is_exynos4210())
+> +		platform_device_register(&exynos4210_cpuidle);
+> +	else
+> +		platform_device_register(&exynos_cpuidle);
+>   }
+>
+>   void __init exynos_cpufreq_init(void)
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> index 92f0c12..2772130 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -51,3 +51,11 @@ config ARM_EXYNOS_CPUIDLE
+>   	depends on ARCH_EXYNOS
+>   	help
+>   	  Select this to enable cpuidle for Exynos processors
+> +
+> +config ARM_EXYNOS4210_CPUIDLE
+> +	bool "Cpu Idle Driver for the Exynos 4210 processor"
+> +	default y
+> +	depends on ARCH_EXYNOS
+> +	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+> +	help
+> +	  Select this to enable cpuidle for the Exynos 4210 processors
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index 0d1540a..e0ec9bc 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -14,6 +14,7 @@ obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
+>   obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
+>   obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
+>   obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        += cpuidle-exynos.o
+> +obj-$(CONFIG_ARM_EXYNOS4210_CPUIDLE)    += cpuidle-exynos4210.o
+>
+>   ###############################################################################
+>   # POWERPC drivers
+> diff --git a/drivers/cpuidle/cpuidle-exynos4210.c b/drivers/cpuidle/cpuidle-exynos4210.c
+> new file mode 100644
+> index 0000000..56f6d51
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-exynos4210.c
+> @@ -0,0 +1,226 @@
+> +/*
+> + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+> + *		http://www.samsung.com
+> + *
+> + * Copyright (c) 2014 Linaro : Daniel Lezcano <daniel.lezcano@linaro.org>
+> + *		http://www.linaro.org
+> + *
+> + * Based on the work of Colin Cross <ccross@android.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/cpuidle.h>
+> +#include <linux/cpu_pm.h>
+> +#include <linux/io.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <asm/proc-fns.h>
+> +#include <asm/suspend.h>
+> +#include <asm/cpuidle.h>
+> +
+> +#include <plat/pm.h>
+> +#include <plat/cpu.h>
+> +#include <plat/map-base.h>
+> +#include <plat/map-s5p.h>
+
+This won't work with multiplatform.
+
+> +
+> +static atomic_t exynos_idle_barrier;
+> +static atomic_t cpu1_wakeup = ATOMIC_INIT(0);
+> +
+> +#define BOOT_VECTOR S5P_VA_SYSRAM
+> +#define S5P_VA_PMU                  S3C_ADDR(0x02180000)
+> +#define S5P_PMUREG(x)              (S5P_VA_PMU + (x))
+> +#define S5P_ARM_CORE1_CONFIGURATION S5P_PMUREG(0x2080)
+> +#define S5P_ARM_CORE1_STATUS        S5P_PMUREG(0x2084)
+> +
+> +static void (*exynos_aftr)(void);
+
+Could we get rid of those global variables? I know that they won't break 
+anything, but they don't look good. A driver data struct would look much 
+better.
+
+> +
+> +static int cpu_suspend_finish(unsigned long flags)
+
+Name of this function could be more meaningful. Something like 
+exynos_cpu_enter_lpm() could be better. Same goes for the argument. 
+Maybe it could be simply called enter_aftr?
+
+> +{
+> +	if (flags)
+> +		exynos_aftr();
+> +
+> +	cpu_do_idle();
+> +
+> +	return -1;
+> +}
+> +
+> +static int exynos_cpu0_enter_aftr(void)
+> +{
+> +	int ret = -1;
+
+Hmm, wouldn't a real error code be better here?
+
+> +
 > +	/*
-> +	 * Wait for the scheduler to finish to use the idle state he
-> +	 * may pointing to when looking for the cpu idle states
+> +	 * If the other cpu is powered on, we have to power it off, because
+> +	 * the AFTR state won't work otherwise
 > +	 */
-> +	rcu_barrier();
+> +	if (cpu_online(1)) {
 > +
->  	if (enabled_devices) {
->  		initialized = 0;
->  		kick_all_cpus_sync();
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index e877dd4..4c14ec0 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -12,6 +12,8 @@
->  
->  #include <trace/events/power.h>
->  
-> +#include "sched.h"
-> +
->  static int __read_mostly cpu_idle_force_poll;
->  
->  void cpu_idle_poll_ctrl(bool enable)
-> @@ -66,6 +68,8 @@ void __weak arch_cpu_idle(void)
->  #ifdef CONFIG_CPU_IDLE
->  static int __cpuidle_idle_call(void)
->  {
-> +	struct rq *rq = this_rq();
-> +	struct cpuidle_state **idle_state = &rq->idle_state;
->  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
->  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
->  	int next_state, entered_state, ret;
-> @@ -114,6 +118,8 @@ static int __cpuidle_idle_call(void)
->  		if (!ret) {
->  			trace_cpu_idle_rcuidle(next_state, dev->cpu);
->  
-> +			*idle_state = &drv->states[next_state];
+> +		/*
+> +		 * We reach a sync point with the coupled idle state, we know
+> +		 * the other cpu will power down itself or will abort the
+> +		 * sequence, let's wait for one of these to happen
+> +		 */
+> +		while (__raw_readl(S5P_ARM_CORE1_STATUS) & 3) {
 
-What about using rq->idle_state directly here?
+nit: A macro could be used for 3.
 
 > +
->  			/*
->  			 * Enter the idle state previously returned by
->  			 * the governor decision. This function will
-> @@ -123,6 +129,8 @@ static int __cpuidle_idle_call(void)
->  			 */
->  			entered_state = cpuidle_enter(drv, dev, next_state);
->  
-> +			*idle_state = NULL;
+> +			/*
+> +			 * The other cpu may skip idle and boot back
+> +			 * up again
+> +			 */
+> +			if (atomic_read(&cpu1_wakeup))
+> +				goto abort;
+> +
+> +			/*
+> +			 * The other cpu may bounce through idle and
+> +			 * boot back up again, getting stuck in the
+> +			 * boot rom code
+> +			 */
+> +			if (__raw_readl(BOOT_VECTOR) == 0)
 
-And here?
+Is this a reliable behavior? I mean, is this part of some specification 
+or rather a feature specific to a particular Android bootloader this was 
+used with in original kernel tree?
 
-That would be simpler it seems.
+> +				goto abort;
+> +
+> +			cpu_relax();
+> +		}
+> +	}
+> +
+> +	cpu_pm_enter();
+> +
+> +	ret = cpu_suspend(1, cpu_suspend_finish);
+> +
+> +	cpu_pm_exit();
+> +
+> +abort:
+> +	if (cpu_online(1)) {
+> +		/*
+> +		 * Set the boot vector to something non-zero
+> +		 */
+> +		__raw_writel(virt_to_phys(s3c_cpu_resume),
+> +			     BOOT_VECTOR);
+
+Resume address is quite a specific "something non-zero". :)
+
+> +		dsb();
+
+Checkpatch would probably complain about missing comment on why dsb() is 
+needed here (or I'm confusing this with other barriers).
 
 > +
->  			trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
->  
->  			if (broadcast)
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index 456e492..bace64a 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -14,6 +14,7 @@
->  #include "cpuacct.h"
->  
->  struct rq;
-> +struct cpuidle_state;
->  
->  extern __read_mostly int scheduler_running;
->  
-> @@ -643,6 +644,10 @@ struct rq {
->  #ifdef CONFIG_SMP
->  	struct llist_head wake_list;
->  #endif
-> +
-> +#ifdef CONFIG_CPU_IDLE
-> +	struct cpuidle_state *idle_state;
-> +#endif
->  };
->  
->  static inline int cpu_of(struct rq *rq)
-> 
+> +		/*
+> +		 * Turn on cpu1 and wait for it to be on
+> +		 */
+> +		__raw_writel(0x3, S5P_ARM_CORE1_CONFIGURATION);
+> +		while ((__raw_readl(S5P_ARM_CORE1_STATUS) & 3) != 3)
+> +			cpu_relax();
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+nit: Here again 3 could be replaced with a macro.
+
+> +
+> +		/*
+> +		 * Wait for cpu1 to get stuck in the boot rom
+> +		 */
+> +		while ((__raw_readl(BOOT_VECTOR) != 0) &&
+
+Same comment about the assumption about BOOT_VECTOR changing to 0 as above.
+
+> +		       !atomic_read(&cpu1_wakeup))
+> +			cpu_relax();
+> +
+> +		if (!atomic_read(&cpu1_wakeup)) {
+> +			/*
+> +			 * Poke cpu1 out of the boot rom
+> +			 */
+> +			__raw_writel(virt_to_phys(s3c_cpu_resume),
+> +				     BOOT_VECTOR);
+> +			dsb_sev();
+
+Hmm, platsmp code seems to be using an IPI to do this. Again, I wonder 
+if this isn't a behavior implemented only in some specific Android 
+bootloader.
+
+> +		}
+> +
+> +		/*
+> +		 * Wait for cpu1 to finish booting
+> +		 */
+> +		while (!atomic_read(&cpu1_wakeup))
+> +			cpu_relax();
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int exynos_powerdown_cpu1(void)
+> +{
+> +	int ret = -1;
+
+Error code?
+
+> +
+> +	/*
+> +	 * Idle sequence for cpu1
+> +	 */
+> +	if (cpu_pm_enter())
+> +		goto cpu1_aborted;
+> +
+> +	/*
+> +	 * Turn off cpu 1
+> +	 */
+> +	__raw_writel(0, S5P_ARM_CORE1_CONFIGURATION);
+> +
+> +	ret = cpu_suspend(0, cpu_suspend_finish);
+> +
+> +	cpu_pm_exit();
+> +
+> +cpu1_aborted:
+> +	dsb();
+> +	/*
+> +	 * Notify cpu 0 that cpu 1 is awake
+> +	 */
+> +	atomic_set(&cpu1_wakeup, 1);
+> +
+> +	return ret;
+> +}
+> +
+> +static int exynos_enter_aftr(struct cpuidle_device *dev,
+> +			     struct cpuidle_driver *drv, int index)
+> +{
+> +	int ret;
+> +
+> +	__raw_writel(virt_to_phys(s3c_cpu_resume), BOOT_VECTOR);
+
+Why this is being written here, instead of some of the low level 
+functions above?
+
+Otherwise, I quite like the whole idea. I need to play a bit with CPU 
+hotplug and PMU to verify that things couldn't really be simplified a 
+bit, but in general this looks reasonably.
+
+Best regards,
+Tomasz
