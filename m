@@ -1,79 +1,121 @@
-From: Amit Kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH] thermal: samsung: Only update available threshold limits
-Date: Thu, 24 Apr 2014 11:48:36 +0530
-Message-ID: <CADGdYn719UzdPd3fVWrPi=mTnKvKy3O5bPHZcn8xCFjrAWp7yA@mail.gmail.com>
-References: <1397453895-6688-1-git-send-email-tushar.behera@linaro.org>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [Patch v2 4/4] mcpm: exynos: populate suspend and powered_up callbacks
+Date: Thu, 24 Apr 2014 13:14:44 +0530
+Message-ID: <CANuQgHGiNqJHdB70fGeN_ueVDALM=aRPbku91XjO82Cw0uEYEQ@mail.gmail.com>
+References: <1398080958-21677-5-git-send-email-chander.kashyap@linaro.org>
+	<1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
+	<1398245154-18771-5-git-send-email-chander.kashyap@linaro.org>
+	<20140423160256.GA1243@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f50.google.com ([209.85.213.50]:51536 "EHLO
-	mail-yh0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbaDXGSh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Apr 2014 02:18:37 -0400
-In-Reply-To: <1397453895-6688-1-git-send-email-tushar.behera@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20140423160256.GA1243@e102568-lin.cambridge.arm.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>, Nicolas Pitre <nicolas.pitre@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tushar Behera <tushar.behera@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, eduardo.valentin@ti.com
 
-On 4/14/14, Tushar Behera <tushar.behera@linaro.org> wrote:
-> Currently the threshold limits are updated in 2 stages, once for all
-> software trigger levels and again for hardware trip point.
-I guess the first stage is bootloader as could not find this in this file.
-Anyways the changes looks fine to me.
+On 23 April 2014 21:32, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+> [added Nico in CC]
+>
+> On Wed, Apr 23, 2014 at 10:25:54AM +0100, Chander Kashyap wrote:
+>> In order to support cpuidle through mcpm, suspend and powered-up
+>> callbacks are required in mcpm platform code.
+>> Hence populate the same callbacks.
+>>
+>> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> ---
+>> changes in v2:
+>>       1. Fixed typo: enynos_pmu_cpunr to exynos_pmu_cpunr
+>>
+>>  arch/arm/mach-exynos/mcpm-exynos.c |   53 ++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 53 insertions(+)
+>>
+>> diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
+>> index 6c74c82..d53f597 100644
+>> --- a/arch/arm/mach-exynos/mcpm-exynos.c
+>> +++ b/arch/arm/mach-exynos/mcpm-exynos.c
+>> @@ -272,10 +272,63 @@ static int exynos_power_down_finish(unsigned int cpu, unsigned int cluster)
+>>       return 0; /* success: the CPU is halted */
+>>  }
+>>
+>> +static void enable_coherency(void)
+>> +{
+>> +     unsigned long v, u;
+>> +
+>> +     asm volatile(
+>> +             "mrc    p15, 0, %0, c1, c0, 1\n"
+>> +             "orr    %0, %0, %2\n"
+>> +             "ldr    %1, [%3]\n"
+>> +             "and    %1, %1, #0\n"
+>> +             "orr    %0, %0, %1\n"
+>> +             "mcr    p15, 0, %0, c1, c0, 1\n"
+>> +             : "=&r" (v), "=&r" (u)
+>> +             : "Ir" (0x40), "Ir" (S5P_INFORM0)
+>> +             : "cc");
+>> +}
+>> +
+>> +void exynos_powered_up(void)
+>> +{
+>> +     unsigned int mpidr, cpu, cluster;
+>> +
+>> +     mpidr = read_cpuid_mpidr();
+>> +     cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
+>> +     cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+>> +
+>> +     arch_spin_lock(&exynos_mcpm_lock);
+>> +     if (cpu_use_count[cpu][cluster] == 0)
+>> +             cpu_use_count[cpu][cluster] = 1;
+>> +     arch_spin_unlock(&exynos_mcpm_lock);
+>> +}
+>> +
+>> +static void exynos_suspend(u64 residency)
+>> +{
+>> +     unsigned int mpidr, cpunr;
+>> +
+>> +     mpidr = read_cpuid_mpidr();
+>> +     cpunr = exynos_pmu_cpunr(mpidr);
+>> +
+>> +     __raw_writel(virt_to_phys(mcpm_entry_point), REG_ENTRY_ADDR);
+>> +
+>> +     exynos_power_down();
+>> +
+>> +     /*
+>> +      * Execution reaches here only if cpu did not power down.
+>> +      * Hence roll back the changes done in exynos_power_down function.
+>> +     */
+>> +     __raw_writel(EXYNOS_CORE_LOCAL_PWR_EN,
+>> +                     EXYNOS_ARM_CORE_CONFIGURATION(cpunr));
+>> +     set_cr(get_cr() | CR_C);
+>> +     enable_coherency();
+>
+> This is wrong:
+>
+> 1) MCPM would eventually reboot the CPU in question if the suspend call
+>    returns (and restore SCTLR and ACTLR in cpu_resume), so there is 0 point
+>    in doing that here.
 
-Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Yes i missed that. I will correct it.
+
+> 2) The core would have executed out of coherency for a "while" so the
+>    tlbs could be stale and you do not invalidate them. But given (1), (2)
+>    becomes just informational. The register write must be executed
+>    though (I guess...). Now, on restoring the SMP bit in cpu_resume
+>    (errata 799270) I need to verify this is safe and get back to you.
+
+Ok
+
+Thanks Lorenzo.
+
 
 >
-> While updating the software trigger levels, it overwrites the threshold
-> limit for hardware trip point thereby forcing the Exynos core to issue
-> an emergency shutdown.
+> Cheers,
+> Lorenzo
 >
-> Updating only the required fields in threshold register fixes this issue.
->
-> Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
-> ---
-> Based on v3.15-rc1.
->
->  drivers/thermal/samsung/exynos_tmu.c |    4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> b/drivers/thermal/samsung/exynos_tmu.c
-> index 0d96a51..ffccc89 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -225,6 +225,8 @@ skip_calib_data:
->  			trigger_levs++;
->  	}
->
-> +	rising_threshold = readl(data->base + reg->threshold_th0);
-> +
->  	if (data->soc == SOC_ARCH_EXYNOS4210) {
->  		/* Write temperature code for threshold */
->  		threshold_code = temp_to_code(data, pdata->threshold);
-> @@ -249,6 +251,7 @@ skip_calib_data:
->  				ret = threshold_code;
->  				goto out;
->  			}
-> +			rising_threshold &= ~(0xff << 8 * i);
->  			rising_threshold |= threshold_code << 8 * i;
->  			if (pdata->threshold_falling) {
->  				threshold_code = temp_to_code(data,
-> @@ -281,6 +284,7 @@ skip_calib_data:
->  			}
->  			if (i == EXYNOS_MAX_TRIGGER_PER_REG - 1) {
->  				/* 1-4 level to be assigned in th0 reg */
-> +				rising_threshold &= ~(0xff << 8 * i);
->  				rising_threshold |= threshold_code << 8 * i;
->  				writel(rising_threshold,
->  					data->base + reg->threshold_th0);
-> --
-> 1.7.9.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+
+
+
+-- 
+with warm regards,
+Chander Kashyap
