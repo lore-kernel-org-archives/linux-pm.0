@@ -1,65 +1,66 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH v5 8/8] sh: clk: Use cpufreq_for_each_valid_entry macro for
- iteration
-Date: Fri, 25 Apr 2014 23:16:58 +0300
-Message-ID: <535AC2BA.4070909@semaphore.gr>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM with the PM core
+Date: Fri, 25 Apr 2014 16:44:58 -0700
+Message-ID: <7hoazpdldx.fsf@paris.lan>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f42.google.com ([209.85.160.42]:45526 "EHLO
+	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbaDYXpA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 19:45:00 -0400
+Received: by mail-pb0-f42.google.com with SMTP id un15so3730307pbc.15
+        for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2014 16:45:00 -0700 (PDT)
+In-Reply-To: <1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+	(Geert Uytterhoeven's message of "Thu, 24 Apr 2014 12:13:22 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-The cpufreq core now supports the cpufreq_for_each_valid_entry macro
-helper for iteration over the cpufreq_frequency_table, so use it.
+Geert Uytterhoeven <geert+renesas@glider.be> writes:
 
-It should have no functional changes.
+> When adding a device from DT, check if its clocks are suitable for Runtime
+> PM, and register them with the PM core.
+> If Runtime PM is disabled, just enable the clock.
+>
+> This allows the PM core to automatically manage gate clocks of devices for
+> Runtime PM.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/sh/clk/core.c | 20 +++++---------------
- 1 file changed, 5 insertions(+), 15 deletions(-)
+...unless the device is already in an existing pm_domain, right?
 
-diff --git a/drivers/sh/clk/core.c b/drivers/sh/clk/core.c
-index 7472785..be56b22 100644
---- a/drivers/sh/clk/core.c
-+++ b/drivers/sh/clk/core.c
-@@ -196,17 +196,11 @@ int clk_rate_table_find(struct clk *clk,
- 			struct cpufreq_frequency_table *freq_table,
- 			unsigned long rate)
- {
--	int i;
--
--	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		unsigned long freq = freq_table[i].frequency;
-+	struct cpufreq_frequency_table *pos;
+I like this approach, and it extends nicely what we already do on
+platforms using drivers/base/power/clock_ops.c into DT land.
+
+My only concern is how this will interact if it's used along with
+devices that have existing pm_domains.  I don't have any specific
+concerns (yet, because it's Friday, and my brain is turing off), but it
+just made me wonder if this will be potentially confusing.
  
--		if (freq == CPUFREQ_ENTRY_INVALID)
--			continue;
--
--		if (freq == rate)
--			return i;
--	}
-+	cpufreq_for_each_valid_entry(pos, freq_table)
-+		if (pos->frequency == rate)
-+			return pos - freq_table;
- 
- 	return -ENOENT;
- }
-@@ -575,11 +569,7 @@ long clk_round_parent(struct clk *clk, unsigned long target,
- 		return abs(target - *best_freq);
- 	}
- 
--	for (freq = parent->freq_table; freq->frequency != CPUFREQ_TABLE_END;
--	     freq++) {
--		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
--
-+	cpufreq_for_each_valid_entry(freq, parent->freq_table) {
- 		if (unlikely(freq->frequency / target <= div_min - 1)) {
- 			unsigned long freq_max;
- 
--- 
-1.9.0
+Also...
+
+[...]
+
+> +static int of_clk_register(struct device *dev, struct clk *clk)
+> +{
+> +	int error;
+> +
+> +	if (!dev->pm_domain) {
+> +		error = pm_clk_create(dev);
+> +		if (error)
+> +			return error;
+> +
+> +		dev->pm_domain = &of_clk_pm_domain;
+> +	}
+> +
+> +	dev_dbg(dev, "Setting up clock for runtime PM management\n");
+> +	return pm_clk_add_clk(dev, clk);
+
+I would've expected these 2 lines to be inside the pm_domain check.
+
+What's the reason for doing the pm_clk_add() when the pm_domain isn't
+going to be used?  I suppose it's harmless, but it's a bit confusing.
+
+Kevin
