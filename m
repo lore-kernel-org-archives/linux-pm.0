@@ -1,61 +1,38 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: 3.15-rc2: longhaul cpufreq stalls tasks for 120s+
-Date: Fri, 25 Apr 2014 13:45:11 +0530
-Message-ID: <535A198F.3040009@linux.vnet.ibm.com>
-References: <alpine.SOC.1.00.1404241249480.13595@math.ut.ee> <CAKohpoktwh=SgHTfEgT7vYRVWHssXw7==+a9qAdtmJXepjT2Tw@mail.gmail.com> <alpine.SOC.1.00.1404241316290.13595@math.ut.ee> <5358EBB9.3090809@linux.vnet.ibm.com> <alpine.SOC.1.00.1404242201190.6086@math.ut.ee> <CAKohpom5K0ZdCxqyArVNbDSrf824__izwjBNq+Xb9RGB-pqnag@mail.gmail.com>
+Subject: [PATCH 0/3] Cpufreq frequency serialization fixes
+Date: Fri, 25 Apr 2014 13:47:58 +0530
+Message-ID: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:58489 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751780AbaDYIQD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 04:16:03 -0400
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 25 Apr 2014 13:46:00 +0530
-In-Reply-To: <CAKohpom5K0ZdCxqyArVNbDSrf824__izwjBNq+Xb9RGB-pqnag@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Meelis Roos <mroos@linux.ee>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On 04/25/2014 10:11 AM, Viresh Kumar wrote:
-> On 25 April 2014 00:33, Meelis Roos <mroos@linux.ee> wrote:
-> 
->> [  240.140176] INFO: task kworker/0:1:116 blocked for more than 120 seconds.
->> [  240.140353]       Not tainted 3.15.0-rc2-dirty #37
->> [  240.140485] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> [  240.140687] kworker/0:1     D cf6afd50     0   116      2 0x00000000
->> [  240.140938] Workqueue: events od_dbs_timer
->> [  240.141103]  cf6afd98 00000082 00000002 cf6afd50 c1040d91 cf6affec cf6ad310 cf6ad310
->> [  240.142479]  c1286dcb 00000002 cf6afd70 c1040f14 00000000 ce460b30 00000282 00000046
->> [  240.143011]  00000282 ce460b30 cf6afd78 c1040f39 cf6afd88 00000282 cf6afdb0 ce460b30
->> [  240.143544] Call Trace:
->> [  240.143706]  [<c1040d91>] ? mark_held_locks+0x4b/0x61
->> [  240.143883]  [<c1286dcb>] ? _raw_spin_unlock_irqrestore+0x33/0x3f
->> [  240.144043]  [<c1040f14>] ? trace_hardirqs_on_caller+0x16d/0x187
->> [  240.144203]  [<c1040f39>] ? trace_hardirqs_on+0xb/0xd
->> [  240.144358]  [<c1284145>] schedule+0x5d/0x5f
->> [  240.144527]  [<c11eaa67>] cpufreq_freq_transition_begin+0x4a/0x9d
->> [  240.144687]  [<c103e1b0>] ? __wake_up_sync+0x14/0x14
->> [  240.144860]  [<d06722d5>] longhaul_setstate+0x88/0x2f1 [longhaul]
->> [  240.145023]  [<c1036d43>] ? srcu_notifier_call_chain+0x1a/0x1c
->> [  240.145186]  [<c11eaab2>] ? cpufreq_freq_transition_begin+0x95/0x9d
->> [  240.145350]  [<d06725ba>] longhaul_target+0x7c/0x8b [longhaul]
->> [  240.145511]  [<c11eae78>] __cpufreq_driver_target+0xfe/0x148
-> 
-> Am I reading it correctly? It looks like we are starting another transition
-> from notifier chain, but I couldn't figure out how from code.
-> 
 
-Indeed, its a case of double invocation of the _begin() and _end()
-notifiers. I developed a patchset to fix this in longhaul, powernow-k6 and k7
-drivers, before seeing your patchset that does the same thing. However, looking
-closer, I don't completely agree with the approach you used to fix the issue,
-so I'll post my patches as well (which have a different design).
+Hi,
 
-Regards,
+Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
+commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
+The root-cause of this issue is the extra invocation of the
+cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
+longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
+drivers as well. This patchset fixes the issue in all the 3 drivers.
+
+ Srivatsa S. Bhat (3):
+      cpufreq, powernow-k7: Fix double invocation of cpufreq_freq_transition_begin/end
+      cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
+      cpufreq, longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
+
+
+ drivers/cpufreq/longhaul.c    |   12 ++++++++----
+ drivers/cpufreq/powernow-k6.c |   20 +++++++++++---------
+ drivers/cpufreq/powernow-k7.c |    4 ----
+ 3 files changed, 19 insertions(+), 17 deletions(-)
+
+
+Thanks,
 Srivatsa S. Bhat
-
+IBM Linux Technology Center
