@@ -1,49 +1,170 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
-Date: Fri, 25 Apr 2014 15:20:55 +0200
-Message-ID: <20140425132055.GC11096@twins.programming.kicks-ass.net>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
- <535911DC.9050109@linaro.org>
- <CAP245DXFRfARtEfj70XD8D8OiAT_1i_5G2zao+y0DT0Lg_YFJA@mail.gmail.com>
- <2713863.BLQTYQm2Oa@vostro.rjw.lan>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU
+ ConCurrency
+Date: Fri, 25 Apr 2014 15:53:34 +0100
+Message-ID: <20140425145334.GC2639@e103034-lin>
+References: <20140424193004.GA2467@intel.com>
+ <20140425102307.GN2500@e103034-lin>
+ <13348109.c4H00groOp@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:47950 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751334AbaDYOxg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 10:53:36 -0400
 Content-Disposition: inline
-In-Reply-To: <2713863.BLQTYQm2Oa@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <13348109.c4H00groOp@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Yuyang Du <yuyang.du@intel.com>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>
 
-On Fri, Apr 25, 2014 at 01:46:53PM +0200, Rafael J. Wysocki wrote:
+On Fri, Apr 25, 2014 at 01:19:46PM +0100, Rafael J. Wysocki wrote:
+> On Friday, April 25, 2014 11:23:07 AM Morten Rasmussen wrote:
+> > Hi Yuyang,
+> >=20
+> > On Thu, Apr 24, 2014 at 08:30:05PM +0100, Yuyang Du wrote:
+> > > 1)	Divide continuous time into periods of time, and average task =
+concurrency
+> > > in period, for tolerating the transient bursts:
+> > > a =3D sum(concurrency * time) / period
+> > > 2)	Exponentially decay past periods, and synthesize them all, for=
+ hysteresis
+> > > to load drops or resilience to load rises (let f be decaying fact=
+or, and a_x
+> > > the xth period average since period 0):
+> > > s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, =E2=80=A6..,+ f^(n-1) * =
+a_1 + f^n * a_0
+> > >=20
+> > > We name this load indicator as CPU ConCurrency (CC): task concurr=
+ency
+> > > determines how many CPUs are needed to be running concurrently.
+> > >=20
+> > > To track CC, we intercept the scheduler in 1) enqueue, 2) dequeue=
+, 3)
+> > > scheduler tick, and 4) enter/exit idle.
+> > >=20
+> > > By CC, we implemented a Workload Consolidation patch on two Intel=
+ mobile
+> > > platforms (a quad-core composed of two dual-core modules): contai=
+n load and load
+> > > balancing in the first dual-core when aggregated CC low, and if n=
+ot in the
+> > > full quad-core. Results show that we got power savings and no sub=
+stantial
+> > > performance regression (even gains for some).
+> >=20
+> > The idea you present seems quite similar to the task packing propos=
+als
+> > by Vincent and others that were discussed about a year ago. One of =
+the
+> > main issues related to task packing/consolidation is that it is not
+> > always beneficial.
+> >=20
+> > I have spent some time over the last couple of weeks looking into t=
+his
+> > trying to figure out when task consolidation makes sense. The patte=
+rn I
+> > have seen is that it makes most sense when the task energy is domin=
+ated
+> > by wake-up costs. That is short-running tasks. The actual energy sa=
+vings
+> > come from a reduced number of wake-ups if the consolidation cpu is =
+busy
+> > enough to be already awake when another task wakes up, and savings =
+by
+> > keeping the consolidation cpu in a shallower idle state and thereby
+> > reducing the wake-up costs. The wake-up cost savings outweighs the
+> > additional leakage in the shallower idle state in some scenarios. A=
+ll of
+> > this is of course quite platform dependent. Different idle state le=
+akage
+> > power and wake-up costs may change the picture.
+>=20
+> The problem, however, is that it usually is not really known in advan=
+ce
+> whether or not a given task will be short-running.  There simply is n=
+o way
+> to tell.
+>=20
+> The only kinds of information we can possibly use to base decisions o=
+n are
+> (1) things that don't change (or if they change, we know exactly when=
+ and
+> how), such as the system's topology, and (2) information on what happ=
+ened
+> in the past.  So, for example, if there's a task that has been runnin=
+g for
+> some time already and it has behaved in approximately the same way al=
+l the
+> time, it is reasonable to assume that it will behave in this way in t=
+he
+> future.  We need to let it run for a while to collect that informatio=
+n,
+> though.
+>=20
+> Without that kind of information we can only speculate about what's g=
+oing
+> to happen and different methods of speculation may lead to better or =
+worse
+> results in a given situation, but still that's only speculation and t=
+he
+> results are only known after the fact.
+>=20
+> In the reverse, if I know the system topology and I have a particular=
+ workload,
+> I know what's going to happen, so I can find a load balancing method =
+that will
+> be perfect for this particular workload on this particular system.  T=
+hat's not
+> the situation the scheduler has to deal with, though, because the wor=
+kload is
+> unknown to it until it has been measured.
+>=20
+> So in my opinion we need to figure out how to measure workloads while=
+ they are
+> running and then use that information to make load balancing decision=
+s.
+>=20
+> In principle, given the system's topology, task packing may lead to b=
+etter
+> results for some workloads, but not necessarily for all of them.  So =
+we need
+> a way to determine (a) whether or not task packing is an option at al=
+l in the
+> given system (that may change over time due to user policy changes et=
+c.) and
+> if that is the case, then (b) if the current workload is eligible for=
+ task
+> packing.
 
-_trim_ emails!!! one of these days I'm going to write a bot to flame
-your head of if there's excessive quoting.
+I fully agree. My point was that there is more to task consolidation
+than just observing the degree of task parallelism. The system topology
+has a lot to say when deciding whether or not to pack. That was the
+motivation for proposing to have a power model for the system topology
+to help making that decision.
 
-> > I had a offline conversation with Daniel about this since there are
-> > other triggers - thermal constraints and game-like apps being examples
-> > - that might want to override the system policy. He intended
-> > "performance" mode to mean the existing code paths and "power" mode to
-> > mean *additional* new heuristics for energy-efficiency. The power
-> > supply assumption is just the first one of those heuristics.
-> 
-> Well, so now the question is whether or not we relly want to always
-> go to the "power" (or "energy efficiency" if you will) mode if the system
-> is on battery.  That arguably may not be a good thing even for energy
-> efficiency depending on how exactly the modes are defined.
+We do already have some per-task metric available that may be useful fo=
+r
+determining whether a workload is eligible for task packing. The
+load_avg_contrib gives us an indication of the tasks cpu utilization an=
+d
+we also count task wake-ups. If we tracked task wake-ups over time
+(right now we only have the sum) we should be able to reason about the
+number of wake-ups that a task causes. Lots of wake-ups and low
+load_avg_contrib would indicate the task power is likely to be dominate=
+d
+by the wake-up costs if it is placed on a cpu in a deep idle state.
 
-Nobody is talking about always. But in general it seems a good enough
-approach. Hell, many of the AC/BAT switches in todays power management
-crap things are not always right.
+I fully agree that measuring the workloads while they are running is th=
+e
+way to go. I'm just wondering if the proposed cpu concurrency measure
+is sufficient to make the task packing decision for all system
+topologies or if we need something that incorporates more system
+topology information. If the latter, we may want to roll it all into
+something like an energy_diff(src_cpu, dst_cpu, task) helper function
+for use in load-balancing decisions.
 
-Do I want it to dim the LCD further when I unplug the laptop -- mostly
-no, but still it does. And the most annoying one is that it reduces the
-screen blank time to something near 5 seconds or so.
-
-Why would this be any different? If you know what you want you can turn
-the knob.
-
-> So in my opinion it's too early to add things like that at this point.
-
-Meh.. 
+Morten
