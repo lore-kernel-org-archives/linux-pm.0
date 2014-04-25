@@ -1,33 +1,86 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: 3.15-rc2: longhaul cpufreq stalls tasks for 120s+
-Date: Fri, 25 Apr 2014 13:01:26 +0530
-Message-ID: <CAKohpokQ5xHF8ZYs+1RkBCX_J910FWfoKK1gN0KBRf9eUQ+2ug@mail.gmail.com>
-References: <alpine.SOC.1.00.1404241249480.13595@math.ut.ee>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.SOC.1.00.1404241249480.13595@math.ut.ee>
-Sender: cpufreq-owner@vger.kernel.org
-To: Meelis Roos <mroos@linux.ee>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpufreq: Set CPUFREQ_ASYNC_NOTIFICATION for drivers handling notification
+Date: Fri, 25 Apr 2014 13:22:04 +0530
+Message-ID: <c6c53fee017018869c7524a487688edf902c1413.1398412138.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, mroos@linux.ee
+Cc: linaro-kernel@lists.linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 April 2014 15:26, Meelis Roos <mroos@linux.ee> wrote:
-> This is VIA EPIA board with 533 MHz VIA Samuel 2 CPU. Normally, longhaul
-> is not enabled automatically but with longhaul.enable=1. It used to work
-> up to 3.14 but in 3.15-rc, different cpufreq-related codepaths block for
-> long times and cause warnings.
->
-> /usr/bin/cpufreq-set --cpu 0 --governor ondemand
-> is running since boot and hangs in D state.
-> Running cpufreq-info seems to just hang too.
+CPUFREQ_ASYNC_NOTIFICATION was initially designed for drivers which don't want
+core to send notifications for them as they wouldn't finish frequency
+transitions in ->target_index().
 
-Okay, I know WTF is going on here. My mistake, but as I said earlier this
-patch only highlighted the issue by serializing things its there since last
-6-8 months.
+But there were other kinds of drivers as well who don't have straight forward
+implementations of ->target_index() routines and wanted to handle notifications
+themselves.
 
-I will send out patches shortly, please test them. Description of what actually
-happened will be present there in details.
+Patch: 7dbf694 (cpufreq: distinguish drivers that do asynchronous notifications)
+missed addressing these drivers and that caused these drivers to send double
+notifications. Initially cpufreq core sends a notification for these and then
+the drivers themselves.
 
-In short, we are sending double notifications here, once from core and once
-from driver :(
+It might not cause a big problem for kernels (3.13/3.14) which doesn't have this
+patch in: 12478cf (cpufreq: Make sure frequency transitions are serialized), as
+this came in v3.15-rc1. Reason being, we are sending an extra notification for
+the same frequency, and so other kernel code that depends on it shouldn't behave
+badly.
+
+Above patch broke things as it forces serialization of notifications, so that we
+aren't configuring same hardware registers simultaneously.
+
+Reported-by: Meelis Roos <mroos@linux.ee>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Hi Rafael,
+
+This one is for rc3 surely :)
+
+Also, as I mentioned above it might not create any problems for 3.13 and 3.14.
+And so I havne't cc'd stable for those kernels. Please add them in case you feel
+its still better to get it fixed.
+
+ drivers/cpufreq/longhaul.c    | 1 +
+ drivers/cpufreq/powernow-k6.c | 1 +
+ drivers/cpufreq/powernow-k7.c | 1 +
+ 3 files changed, 3 insertions(+)
+
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index d00e5d1..41f3d28 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -909,6 +909,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
+ }
+ 
+ static struct cpufreq_driver longhaul_driver = {
++	.flags	= CPUFREQ_ASYNC_NOTIFICATION,
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+ 	.target_index = longhaul_target,
+ 	.get	= longhaul_get,
+diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
+index 49f120e..080bbb9 100644
+--- a/drivers/cpufreq/powernow-k6.c
++++ b/drivers/cpufreq/powernow-k6.c
+@@ -242,6 +242,7 @@ static unsigned int powernow_k6_get(unsigned int cpu)
+ }
+ 
+ static struct cpufreq_driver powernow_k6_driver = {
++	.flags		= CPUFREQ_ASYNC_NOTIFICATION,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= powernow_k6_target,
+ 	.init		= powernow_k6_cpu_init,
+diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
+index f911645..fccfc25 100644
+--- a/drivers/cpufreq/powernow-k7.c
++++ b/drivers/cpufreq/powernow-k7.c
+@@ -677,6 +677,7 @@ static int powernow_cpu_exit(struct cpufreq_policy *policy)
+ }
+ 
+ static struct cpufreq_driver powernow_driver = {
++	.flags		= CPUFREQ_ASYNC_NOTIFICATION,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= powernow_target,
+ 	.get		= powernow_get,
+-- 
+1.7.12.rc2.18.g61b472e
