@@ -1,81 +1,101 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 1/3] cpufreq,
- longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
-Date: Fri, 25 Apr 2014 13:48:09 +0530
-Message-ID: <20140425081804.10258.8324.stgit@srivatsabhat.in.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/3] cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
+Date: Fri, 25 Apr 2014 13:58:27 +0530
+Message-ID: <CAKohpomVzp7TE6sC0FfC4x9v+pM6R4hLhz-q2E+wWybK4UuV1g@mail.gmail.com>
 References: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
+	<20140425081815.10258.36201.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f48.google.com ([209.85.219.48]:58310 "EHLO
+	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751682AbaDYI22 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 04:28:28 -0400
+Received: by mail-oa0-f48.google.com with SMTP id m1so3821680oag.7
+        for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2014 01:28:27 -0700 (PDT)
+In-Reply-To: <20140425081815.10258.36201.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-During frequency transitions, the cpufreq core takes the responsibility of
-invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
-for those cpufreq drivers that define the ->target_index callback but don't
-set the ASYNC_NOTIFICATION flag.
+On 25 April 2014 13:48, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> During frequency transitions, the cpufreq core takes the responsibility of
+> invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
+> for those cpufreq drivers that define the ->target_index callback but don't
+> set the ASYNC_NOTIFICATION flag.
+>
+> The powernow-k6 cpufreq driver falls under this category, but this driver was
+> invoking the _begin() and _end() APIs itself around frequency transitions,
+> which led to double invocation of the _begin() API. The _begin API makes
+> contending callers wait until the previous invocation is complete. Hence,
+> the powernow-k6 driver ended up waiting on itself, leading to system hangs
+> during boot.
+>
+> Fix this by removing the calls to the _begin() and _end() APIs from the
+> powernow-k6 driver, since they rightly belong to the cpufreq core.
+>
+> (Note that during ->exit(), the powernow-k6 driver sets the frequency
+>  without any help from the cpufreq core. So add explicit calls to the
+>  _begin() and _end() APIs around that frequency transition alone, to take
+>  care of that special case. Also, add a missing 'break' statement there.)
+>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
+>
+>  drivers/cpufreq/powernow-k6.c |   20 +++++++++++---------
+>  1 file changed, 11 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
+> index 49f120e..6a4c34e 100644
+> --- a/drivers/cpufreq/powernow-k6.c
+> +++ b/drivers/cpufreq/powernow-k6.c
+> @@ -138,22 +138,14 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
+>  static int powernow_k6_target(struct cpufreq_policy *policy,
+>                 unsigned int best_i)
+>  {
+> -       struct cpufreq_freqs freqs;
+>
+>         if (clock_ratio[best_i].driver_data > max_multiplier) {
+>                 printk(KERN_ERR PFX "invalid target frequency\n");
+>                 return -EINVAL;
+>         }
+>
+> -       freqs.old = busfreq * powernow_k6_get_cpu_multiplier();
+> -       freqs.new = busfreq * clock_ratio[best_i].driver_data;
+> -
+> -       cpufreq_freq_transition_begin(policy, &freqs);
+> -
+>         powernow_k6_set_cpu_multiplier(best_i);
+>
+> -       cpufreq_freq_transition_end(policy, &freqs, 0);
+> -
+>         return 0;
+>  }
+>
+> @@ -228,8 +220,18 @@ static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
+>  {
+>         unsigned int i;
+>         for (i = 0; i < 8; i++) {
+> -               if (i == max_multiplier)
+> +               if (i == max_multiplier) {
 
-The longhaul cpufreq driver falls under this category, but this driver was
-invoking the _begin() and _end() APIs itself around frequency transitions,
-which led to double invocation of the _begin() API. The _begin API makes
-contending callers wait until the previous invocation is complete. Hence,
-the longhaul driver ended up waiting on itself, leading to system hangs
-during boot.
+This wouldn't work, it has to be: (clock_ratio[i].driver_data == max_multiplier)
 
-Fix this by removing the calls to the _begin() and _end() APIs from the
-longhaul driver, since they rightly belong to the cpufreq core.
+> +                       struct cpufreq_freqs freqs;
+> +
+> +                       freqs.old = policy->cur;
+> +                       freqs.new = clock_ratio[i].frequency;
+> +                       freqs.flags = 0;
+> +
+> +                       cpufreq_freq_transition_begin(policy, &freqs);
+>                         powernow_k6_target(policy, i);
+> +                       cpufreq_freq_transition_end(policy, &freqs, 0);
+> +                       break;
+> +               }
+>         }
+>         return 0;
+>  }
 
-(Note that during module_exit(), the longhaul driver sets the frequency
- without any help from the cpufreq core. So add explicit calls to the
- _begin() and _end() APIs around that frequency transition alone, to take
- care of that special case.)
-
-Reported-by: Meelis Roos <mroos@linux.ee>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-
- drivers/cpufreq/longhaul.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index d00e5d1..9b6dd9a 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -269,8 +269,6 @@ static void longhaul_setstate(struct cpufreq_policy *policy,
- 	freqs.old = calc_speed(longhaul_get_cpu_mult());
- 	freqs.new = speed;
- 
--	cpufreq_freq_transition_begin(policy, &freqs);
--
- 	pr_debug("Setting to FSB:%dMHz Mult:%d.%dx (%s)\n",
- 			fsb, mult/10, mult%10, print_speed(speed/1000));
- retry_loop:
-@@ -385,8 +383,6 @@ retry_loop:
- 			goto retry_loop;
- 		}
- 	}
--	/* Report true CPU frequency */
--	cpufreq_freq_transition_end(policy, &freqs, 0);
- 
- 	if (!bm_timeout)
- 		printk(KERN_INFO PFX "Warning: Timeout while waiting for "
-@@ -968,7 +964,15 @@ static void __exit longhaul_exit(void)
- 
- 	for (i = 0; i < numscales; i++) {
- 		if (mults[i] == maxmult) {
-+			struct cpufreq_freqs freqs;
-+
-+			freqs.old = policy->cur;
-+			freqs.new = longhaul_table[i].frequency;
-+			freqs.flags = 0;
-+
-+			cpufreq_freq_transition_begin(policy, &freqs);
- 			longhaul_setstate(policy, i);
-+			cpufreq_freq_transition_end(policy, &freqs, 0);
- 			break;
- 		}
- 	}
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
