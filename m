@@ -1,109 +1,83 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 1/5] devfreq: Fix devfreq_remove_device() to improve the
- sequence of resource free
-Date: Fri, 25 Apr 2014 18:08:10 +0900
-Message-ID: <1398416894-6782-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 4/5] devfreq: exynos4: Use devm_devfreq_* function using device
+ resource management
+Date: Fri, 25 Apr 2014 18:08:13 +0900
+Message-ID: <1398416894-6782-5-git-send-email-cw00.choi@samsung.com>
 References: <1398416894-6782-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:48805 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbaDYJIT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 05:08:19 -0400
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1398416894-6782-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rafael.j.wysocki@intel.com, nm@ti.com, cw00.choi@samsung.com, jkosina@suse.cz, labbe.montjoie@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, cw00.choi@samsung.com, jkosina@suse.cz, labbe.montjoie@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch modify devfreq_remove_device() to improve the sequence of resource
-free. If executing existing devfreq_remove_device(), this function always
-executes _remove_devfreq() twice. In result, second _remove_devfreq() always
-return error value. So, This patch resolves complicated function sequence
-as following:
-
-[Flow sequence before modification]
-devfreq_remove_device()
-   _remove_devfreq(devfreq, false)
-      kfree(devfreq);  /* Free devfreq */
-      if (!skip ...) { /* skip is false */
-         device_unregister(&devfreq->dev)
-         put_device(&devfreq->dev);
-            ...
-            dev->release()
-               devfreq_dev_release()
-                  _remove_devfreq(devfreq, true) <- Recall to free devfreq
-                  /*
-		   * Always return error without freeing resource because
-		   * already _remove_devfreq() frees the memory of devfreq.
-		   */
-   }
-
-[Flow sequence after modification]
-devfreq_remove_device
-   device_unregister(&devfreq->dev)
-   put_device(&devfreq->dev);
-      ..
-      dev->release()
-         devfreq_dev_release()
-            _remove_devfreq()
-               kfree(devfreq); /* Free devfreq */
+This patch uses devm_devfreq_add_device()/devm_devfreq_register_opp_notifier()
+to control automatically the resource of devfreq.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-samsung-soc@vger.kernel.org
 ---
- drivers/devfreq/devfreq.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/devfreq/exynos/exynos4_bus.c | 19 ++++---------------
+ 1 file changed, 4 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index d32c8b6..e960eb0 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -437,7 +437,7 @@ update:
-  * @devfreq:	the devfreq struct
-  * @skip:	skip calling device_unregister().
-  */
--static void _remove_devfreq(struct devfreq *devfreq, bool skip)
-+static void _remove_devfreq(struct devfreq *devfreq)
- {
- 	mutex_lock(&devfreq_list_lock);
- 	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
-@@ -462,11 +462,6 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
- 	if (devfreq->profile->exit)
- 		devfreq->profile->exit(devfreq->dev.parent);
+diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+index d257f1f..bebb0a4 100644
+--- a/drivers/devfreq/exynos/exynos4_bus.c
++++ b/drivers/devfreq/exynos/exynos4_bus.c
+@@ -979,7 +979,7 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
  
--	if (!skip && get_device(&devfreq->dev)) {
--		device_unregister(&devfreq->dev);
--		put_device(&devfreq->dev);
--	}
+ 	platform_set_drvdata(pdev, data);
+ 
+-	data->devfreq = devfreq_add_device(dev, &exynos4_devfreq_profile,
++	data->devfreq = devm_devfreq_add_device(dev, &exynos4_devfreq_profile,
+ 					   "simple_ondemand", NULL);
+ 	if (IS_ERR(data->devfreq))
+ 		return PTR_ERR(data->devfreq);
+@@ -991,27 +991,20 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+ 	busfreq_mon_reset(ppmu_data);
+ 
+ 	/* Register opp_notifier for Exynos4 busfreq */
+-	err = devfreq_register_opp_notifier(dev, data->devfreq);
++	err = devm_devfreq_register_opp_notifier(dev, data->devfreq);
+ 	if (err < 0) {
+ 		dev_err(dev, "Failed to register opp notifier\n");
+-		goto err_notifier_opp;
++		return err;
+ 	}
+ 
+ 	/* Register pm_notifier for Exynos4 busfreq */
+ 	err = register_pm_notifier(&data->pm_notifier);
+ 	if (err) {
+ 		dev_err(dev, "Failed to setup pm notifier\n");
+-		goto err_notifier_pm;
++		return err;
+ 	}
+ 
+ 	return 0;
 -
- 	mutex_destroy(&devfreq->lock);
- 	kfree(devfreq);
- }
-@@ -476,14 +471,12 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
-  * @dev:	the devfreq device
-  *
-  * This calls _remove_devfreq() if _remove_devfreq() is not called.
-- * Note that devfreq_dev_release() could be called by _remove_devfreq() as
-- * well as by others unregistering the device.
-  */
- static void devfreq_dev_release(struct device *dev)
- {
- 	struct devfreq *devfreq = to_devfreq(dev);
- 
--	_remove_devfreq(devfreq, true);
-+	_remove_devfreq(devfreq);
+-err_notifier_pm:
+-	devfreq_unregister_opp_notifier(dev, data->devfreq);
+-err_notifier_opp:
+-	devfreq_remove_device(data->devfreq);
+-
+-	return err;
  }
  
- static int devfreq_qos_sanity_check(struct device *dev,
-@@ -659,7 +652,8 @@ int devfreq_remove_device(struct devfreq *devfreq)
- 	if (!devfreq)
- 		return -EINVAL;
+ static int exynos4_busfreq_remove(struct platform_device *pdev)
+@@ -1020,10 +1013,6 @@ static int exynos4_busfreq_remove(struct platform_device *pdev)
  
--	_remove_devfreq(devfreq, false);
-+	device_unregister(&devfreq->dev);
-+	put_device(&devfreq->dev);
+ 	/* Unregister all of notifier chain */
+ 	unregister_pm_notifier(&data->pm_notifier);
+-	devfreq_unregister_opp_notifier(data->dev, data->devfreq);
+-
+-	/* Remove devfreq instance */
+-	devfreq_remove_device(data->devfreq);
  
  	return 0;
  }
 -- 
 1.8.0
-
