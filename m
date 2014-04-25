@@ -1,38 +1,60 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 0/3] Cpufreq frequency serialization fixes
-Date: Fri, 25 Apr 2014 13:47:58 +0530
-Message-ID: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 3/3] cpufreq, powernow-k7: Fix double invocation of
+ cpufreq_freq_transition_begin/end
+Date: Fri, 25 Apr 2014 13:48:35 +0530
+Message-ID: <20140425081830.10258.10979.stgit@srivatsabhat.in.ibm.com>
+References: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
+During frequency transitions, the cpufreq core takes the responsibility of
+invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
+for those cpufreq drivers that define the ->target_index callback but don't
+set the ASYNC_NOTIFICATION flag.
 
-Hi,
+The powernow-k7 cpufreq driver falls under this category, but this driver was
+invoking the _begin() and _end() APIs itself around frequency transitions,
+which led to double invocation of the _begin() API. The _begin API makes
+contending callers wait until the previous invocation is complete. Hence,
+the powernow-k7 driver ended up waiting on itself, leading to system hangs
+during boot.
 
-Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
-commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
-The root-cause of this issue is the extra invocation of the
-cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
-longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
-drivers as well. This patchset fixes the issue in all the 3 drivers.
+Fix this by removing the calls to the _begin() and _end() APIs from the
+powernow-k7 driver, since they rightly belong to the cpufreq core.
 
- Srivatsa S. Bhat (3):
-      cpufreq, powernow-k7: Fix double invocation of cpufreq_freq_transition_begin/end
-      cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
-      cpufreq, longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
 
-
- drivers/cpufreq/longhaul.c    |   12 ++++++++----
- drivers/cpufreq/powernow-k6.c |   20 +++++++++++---------
  drivers/cpufreq/powernow-k7.c |    4 ----
- 3 files changed, 19 insertions(+), 17 deletions(-)
+ 1 file changed, 4 deletions(-)
 
+diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
+index f911645..e61e224 100644
+--- a/drivers/cpufreq/powernow-k7.c
++++ b/drivers/cpufreq/powernow-k7.c
+@@ -269,8 +269,6 @@ static int powernow_target(struct cpufreq_policy *policy, unsigned int index)
+ 
+ 	freqs.new = powernow_table[index].frequency;
+ 
+-	cpufreq_freq_transition_begin(policy, &freqs);
+-
+ 	/* Now do the magic poking into the MSRs.  */
+ 
+ 	if (have_a0 == 1)	/* A0 errata 5 */
+@@ -290,8 +288,6 @@ static int powernow_target(struct cpufreq_policy *policy, unsigned int index)
+ 	if (have_a0 == 1)
+ 		local_irq_enable();
+ 
+-	cpufreq_freq_transition_end(policy, &freqs, 0);
+-
+ 	return 0;
+ }
+ 
 
-Thanks,
-Srivatsa S. Bhat
-IBM Linux Technology Center
