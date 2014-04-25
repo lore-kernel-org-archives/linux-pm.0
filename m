@@ -1,105 +1,109 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/3] cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
-Date: Fri, 25 Apr 2014 14:12:10 +0530
-Message-ID: <535A1FE2.3080703@linux.vnet.ibm.com>
-References: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com> <20140425081815.10258.36201.stgit@srivatsabhat.in.ibm.com> <CAKohpomVzp7TE6sC0FfC4x9v+pM6R4hLhz-q2E+wWybK4UuV1g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomVzp7TE6sC0FfC4x9v+pM6R4hLhz-q2E+wWybK4UuV1g@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 1/5] devfreq: Fix devfreq_remove_device() to improve the
+ sequence of resource free
+Date: Fri, 25 Apr 2014 18:08:10 +0900
+Message-ID: <1398416894-6782-2-git-send-email-cw00.choi@samsung.com>
+References: <1398416894-6782-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:48805 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbaDYJIT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 05:08:19 -0400
+In-reply-to: <1398416894-6782-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, cw00.choi@samsung.com, jkosina@suse.cz, labbe.montjoie@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 04/25/2014 01:58 PM, Viresh Kumar wrote:
-> On 25 April 2014 13:48, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> During frequency transitions, the cpufreq core takes the responsibility of
->> invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
->> for those cpufreq drivers that define the ->target_index callback but don't
->> set the ASYNC_NOTIFICATION flag.
->>
->> The powernow-k6 cpufreq driver falls under this category, but this driver was
->> invoking the _begin() and _end() APIs itself around frequency transitions,
->> which led to double invocation of the _begin() API. The _begin API makes
->> contending callers wait until the previous invocation is complete. Hence,
->> the powernow-k6 driver ended up waiting on itself, leading to system hangs
->> during boot.
->>
->> Fix this by removing the calls to the _begin() and _end() APIs from the
->> powernow-k6 driver, since they rightly belong to the cpufreq core.
->>
->> (Note that during ->exit(), the powernow-k6 driver sets the frequency
->>  without any help from the cpufreq core. So add explicit calls to the
->>  _begin() and _end() APIs around that frequency transition alone, to take
->>  care of that special case. Also, add a missing 'break' statement there.)
->>
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> ---
->>
->>  drivers/cpufreq/powernow-k6.c |   20 +++++++++++---------
->>  1 file changed, 11 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
->> index 49f120e..6a4c34e 100644
->> --- a/drivers/cpufreq/powernow-k6.c
->> +++ b/drivers/cpufreq/powernow-k6.c
->> @@ -138,22 +138,14 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
->>  static int powernow_k6_target(struct cpufreq_policy *policy,
->>                 unsigned int best_i)
->>  {
->> -       struct cpufreq_freqs freqs;
->>
->>         if (clock_ratio[best_i].driver_data > max_multiplier) {
->>                 printk(KERN_ERR PFX "invalid target frequency\n");
->>                 return -EINVAL;
->>         }
->>
->> -       freqs.old = busfreq * powernow_k6_get_cpu_multiplier();
->> -       freqs.new = busfreq * clock_ratio[best_i].driver_data;
->> -
->> -       cpufreq_freq_transition_begin(policy, &freqs);
->> -
->>         powernow_k6_set_cpu_multiplier(best_i);
->>
->> -       cpufreq_freq_transition_end(policy, &freqs, 0);
->> -
->>         return 0;
->>  }
->>
->> @@ -228,8 +220,18 @@ static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
->>  {
->>         unsigned int i;
->>         for (i = 0; i < 8; i++) {
->> -               if (i == max_multiplier)
->> +               if (i == max_multiplier) {
-> 
-> This wouldn't work, it has to be: (clock_ratio[i].driver_data == max_multiplier)
->
+This patch modify devfreq_remove_device() to improve the sequence of resource
+free. If executing existing devfreq_remove_device(), this function always
+executes _remove_devfreq() twice. In result, second _remove_devfreq() always
+return error value. So, This patch resolves complicated function sequence
+as following:
 
-Hmm, looks like an existing bug in the driver. Will fix this in the next
-version.
+[Flow sequence before modification]
+devfreq_remove_device()
+   _remove_devfreq(devfreq, false)
+      kfree(devfreq);  /* Free devfreq */
+      if (!skip ...) { /* skip is false */
+         device_unregister(&devfreq->dev)
+         put_device(&devfreq->dev);
+            ...
+            dev->release()
+               devfreq_dev_release()
+                  _remove_devfreq(devfreq, true) <- Recall to free devfreq
+                  /*
+		   * Always return error without freeing resource because
+		   * already _remove_devfreq() frees the memory of devfreq.
+		   */
+   }
 
-Regards,
-Srivatsa S. Bhat
+[Flow sequence after modification]
+devfreq_remove_device
+   device_unregister(&devfreq->dev)
+   put_device(&devfreq->dev);
+      ..
+      dev->release()
+         devfreq_dev_release()
+            _remove_devfreq()
+               kfree(devfreq); /* Free devfreq */
+
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/devfreq.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index d32c8b6..e960eb0 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -437,7 +437,7 @@ update:
+  * @devfreq:	the devfreq struct
+  * @skip:	skip calling device_unregister().
+  */
+-static void _remove_devfreq(struct devfreq *devfreq, bool skip)
++static void _remove_devfreq(struct devfreq *devfreq)
+ {
+ 	mutex_lock(&devfreq_list_lock);
+ 	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
+@@ -462,11 +462,6 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
+ 	if (devfreq->profile->exit)
+ 		devfreq->profile->exit(devfreq->dev.parent);
  
->> +                       struct cpufreq_freqs freqs;
->> +
->> +                       freqs.old = policy->cur;
->> +                       freqs.new = clock_ratio[i].frequency;
->> +                       freqs.flags = 0;
->> +
->> +                       cpufreq_freq_transition_begin(policy, &freqs);
->>                         powernow_k6_target(policy, i);
->> +                       cpufreq_freq_transition_end(policy, &freqs, 0);
->> +                       break;
->> +               }
->>         }
->>         return 0;
->>  }
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
+-	if (!skip && get_device(&devfreq->dev)) {
+-		device_unregister(&devfreq->dev);
+-		put_device(&devfreq->dev);
+-	}
+-
+ 	mutex_destroy(&devfreq->lock);
+ 	kfree(devfreq);
+ }
+@@ -476,14 +471,12 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
+  * @dev:	the devfreq device
+  *
+  * This calls _remove_devfreq() if _remove_devfreq() is not called.
+- * Note that devfreq_dev_release() could be called by _remove_devfreq() as
+- * well as by others unregistering the device.
+  */
+ static void devfreq_dev_release(struct device *dev)
+ {
+ 	struct devfreq *devfreq = to_devfreq(dev);
+ 
+-	_remove_devfreq(devfreq, true);
++	_remove_devfreq(devfreq);
+ }
+ 
+ static int devfreq_qos_sanity_check(struct device *dev,
+@@ -659,7 +652,8 @@ int devfreq_remove_device(struct devfreq *devfreq)
+ 	if (!devfreq)
+ 		return -EINVAL;
+ 
+-	_remove_devfreq(devfreq, false);
++	device_unregister(&devfreq->dev);
++	put_device(&devfreq->dev);
+ 
+ 	return 0;
+ }
+-- 
+1.8.0
 
