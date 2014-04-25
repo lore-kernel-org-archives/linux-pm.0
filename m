@@ -1,232 +1,212 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Sleep: Fall back to subsystem level PM callbacks for PM domains
-Date: Fri, 25 Apr 2014 12:44:55 +0200
-Message-ID: <1398422695-2295-1-git-send-email-ulf.hansson@linaro.org>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
+Date: Fri, 25 Apr 2014 16:24:49 +0530
+Message-ID: <CAP245DXFRfARtEfj70XD8D8OiAT_1i_5G2zao+y0DT0Lg_YFJA@mail.gmail.com>
+References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
+	<1398342291-16322-3-git-send-email-daniel.lezcano@linaro.org>
+	<CAP245DX9wewQFhcyGj5ZuNE7hHC4fRn90POC32HLF6ugja6nJg@mail.gmail.com>
+	<535911DC.9050109@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:62697 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbaDYKpH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 06:45:07 -0400
-Received: by mail-lb0-f178.google.com with SMTP id s7so2986654lbd.9
-        for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2014 03:45:05 -0700 (PDT)
+Received: from mail-ve0-f182.google.com ([209.85.128.182]:63282 "EHLO
+	mail-ve0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbaDYKyu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 06:54:50 -0400
+Received: by mail-ve0-f182.google.com with SMTP id jw12so4415136veb.41
+        for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2014 03:54:49 -0700 (PDT)
+In-Reply-To: <535911DC.9050109@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Previously once the PM core found a PM domain pointer for a device,
-but which didn't have a valid PM callback, it falled back to try the
-driver's PM callback.
+On Thu, Apr 24, 2014 at 7:00 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 04/24/2014 03:13 PM, Amit Kucheria wrote:
+>>
+>> On Thu, Apr 24, 2014 at 5:54 PM, Daniel Lezcano
+>> <daniel.lezcano@linaro.org <mailto:daniel.lezcano@linaro.org>> wrote:
+>>
+>>     This patch adds a sysctl schedule balance option to choose against:
+>>
+>>       * auto        (0)
+>>       * performance (1)
+>>       * power       (2)
+>>
+>>     It relies on the recently added notifier to monitor the power supply
+>>     changes.
+>>     If the scheduler balance option is set to 'auto', then when the
+>>     system switches
+>>     to battery, the balance option change to 'power' and when it goes
+>>     back to AC, it
+>>     switches to 'performance'.
+>>
+>>     The default value is 'auto'.
+>>
+>>     If the kernel is compiled without the CONFIG_POWER_SUPPLY option,
+>>     then any call
+>>     to the 'auto' option will fail and the scheduler will use the
+>>     'performance'
+>>     option as default.
+>>
+>>     Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org
+>>     <mailto:daniel.lezcano@linaro.org>>
+>>
+>>     ---
+>>       include/linux/sched/sysctl.h |   14 +++++++
+>>       kernel/sched/fair.c          |   92
+>>     +++++++++++++++++++++++++++++++++++++++++-
+>>       kernel/sysctl.c              |   11 +++++
+>>       3 files changed, 115 insertions(+), 2 deletions(-)
+>>
+>>     diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
+>>     index 8045a55..f8507bf 100644
+>>     --- a/include/linux/sched/sysctl.h
+>>     +++ b/include/linux/sched/sysctl.h
+>>     @@ -44,6 +44,20 @@ enum sched_tunable_scaling {
+>>       };
+>>       extern enum sched_tunable_scaling sysctl_sched_tunable_scaling;
+>>
+>>     +#ifdef CONFIG_SMP
+>>     +enum sched_balance_option {
+>>
+>>
+>> What do you think of s/option/bias/g ?
+>>
+>> It is essentially biasing the scheduler towards performance or power
+>
+>
+> Yes, could be more adequate.
+>
+>
+>>     +       SCHED_BALANCE_OPTION_PERFORMANCE,
+>>     +       SCHED_BALANCE_OPTION_POWER,
+>>     +       SCHED_BALANCE_OPTION_AUTO,
+>>     +       SCHED_BALANCE_OPTION_END,
+>>     +};
+>>
+>>
+>>     +extern enum sched_balance_option sysctl_sched_balance_option;
+>>     +
+>>     +int sched_proc_balance_option_handler(struct ctl_table *table, int
+>>     write,
+>>     +               void __user *buffer, size_t *length,
+>>     +               loff_t *ppos);
+>>     +#endif
+>>     +
+>>       extern unsigned int sysctl_numa_balancing_scan_delay;
+>>       extern unsigned int sysctl_numa_balancing_scan_period_min;
+>>       extern unsigned int sysctl_numa_balancing_scan_period_max;
+>>     diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+>>     index 7570dd9..7b8e93d 100644
+>>     --- a/kernel/sched/fair.c
+>>     +++ b/kernel/sched/fair.c
+>>     @@ -29,7 +29,7 @@
+>>       #include <linux/mempolicy.h>
+>>       #include <linux/migrate.h>
+>>       #include <linux/task_work.h>
+>>     -
+>>     +#include <linux/power_supply.h>
+>>       #include <trace/events/sched.h>
+>>
+>>       #include "sched.h"
+>>     @@ -61,6 +61,24 @@ unsigned int normalized_sysctl_sched_latency =
+>>     6000000ULL;
+>>       enum sched_tunable_scaling sysctl_sched_tunable_scaling
+>>              = SCHED_TUNABLESCALING_LOG;
+>>
+>>     +#ifdef CONFIG_SMP
+>>     +/*
+>>     + * Scheduler balancing policy:
+>>     + *
+>>     + * Options are:
+>>     + * SCHED_BALANCE_OPTION_PERFORMANCE - full performance
+>>     + * SCHED_BALANCE_OPTION_POWER - power saving aggressive
+>>     + * SCHED_BALANCE_OPTION_AUTO - switches to 'performance' when plugged
+>>     + *                             on or 'power' on battery
+>>     + */
+>>     +enum sched_balance_option sysctl_sched_balance_option
+>>     +       = SCHED_BALANCE_OPTION_AUTO;
+>>     +
+>>     +static int sched_current_balance_option
+>>     +       = SCHED_BALANCE_OPTION_PERFORMANCE;
+>>     +
+>>     +#endif
+>>     +
+>>       /*
+>>        * Minimal preemption granularity for CPU-bound tasks:
+>>        * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
+>>     @@ -555,6 +573,76 @@ static struct sched_entity
+>>     *__pick_next_entity(struct sched_entity *se)
+>>              return rb_entry(next, struct sched_entity, run_node);
+>>       }
+>>
+>>     +#ifdef CONFIG_SMP
+>>     +static int sched_balance_option_update(void)
+>>     +{
+>>     +       int ret;
+>>     +
+>>     +       /*
+>>     +        * Copy the current balance option
+>>     +        */
+>>     +       if (sysctl_sched_balance_option != SCHED_BALANCE_OPTION_AUTO) {
+>>     +               sched_current_balance_option =
+>>     sysctl_sched_balance_option;
+>>     +               return 0;
+>>     +       }
+>>     +
+>>     +       /*
+>>     +        * This call may fail if the kernel is not compiled with
+>>     +        * the POWER_SUPPLY option.
+>>     +        */
+>>     +       ret = power_supply_is_system_supplied();
+>>     +       if (ret < 0) {
+>>     +               sysctl_sched_balance_option =
+>>     sched_current_balance_option;
+>>     +               return ret;
+>>     +       }
+>>     +
+>>     +       /*
+>>     +        * When in 'auto' mode, switch to 'performance if the system
+>>     +        * is plugged on the wall, to 'power' if we are on battery
+>>     +        */
+>>     +       sched_current_balance_option = ret ?
+>>     +               SCHED_BALANCE_OPTION_PERFORMANCE :
+>>     +               SCHED_BALANCE_OPTION_POWER;
+>>     +
+>>     +       return 0;
+>>     +}
+>>     +
+>>
+>>
+>> I understand that this is only meant to kick off discussions and other
+>> criteria besides power being plugged in to bias the scheduler
+>> performance could be added later. But does it make sense to hardcode the
+>> power supply assumption into the scheduler?
+>>
+>> Can't we instead make sched_balance_option_update() a function pointer
+>> (with a default implementation that you've provided) that provide
+>> platforms the ability to override that with their own implementation?
+>
+>
+> I agree if that really hurts, it could be placed somewhere else, for example in a new file:
+>         kernel/sched/energy.c
+>
+> But concerning the callback, I don't see the point to create a specific platform ops for that as the current code is generic. Do you have any use case in mind ?
+>
 
-In this scenario, change the behavior of the PM core to try out the
-other subsystem level PM callbacks, before it moves on to the driver.
+I had a offline conversation with Daniel about this since there are
+other triggers - thermal constraints and game-like apps being examples
+- that might want to override the system policy. He intended
+"performance" mode to mean the existing code paths and "power" mode to
+mean *additional* new heuristics for energy-efficiency. The power
+supply assumption is just the first one of those heuristics.
 
-This gives provision for PM domains to easier re-use subsystem level
-code to handle the needed operations.
+In that case, "performance" should be the default so we don't change
+existing system behavior. And perhaps we want to keep these energy
+heuristics in a separate file, at least until we've gotten them right.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- Documentation/power/devices.txt |    6 +++--
- drivers/base/power/main.c       |   55 +++++++++++++++++++++++++++++++--------
- 2 files changed, 48 insertions(+), 13 deletions(-)
-
-diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
-index 47d46df..c875056 100644
---- a/Documentation/power/devices.txt
-+++ b/Documentation/power/devices.txt
-@@ -303,8 +303,10 @@ The PM domain, type, class and bus callbacks may in turn invoke device- or
- driver-specific methods stored in dev->driver->pm, but they don't have to do
- that.
- 
--If the subsystem callback chosen for execution is not present, the PM core will
--execute the corresponding method from dev->driver->pm instead if there is one.
-+If a PM domain exist, but the callback chosen for execution isn't present, the
-+PM core will fall back to try the other subsystem level callbacks.  Finally, if
-+no subsystem level callback is found, it executes the corresponding method from
-+dev->driver->pm instead if there is one.
- 
- 
- Entering System Suspend
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 86d5e4f..e604db9 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -490,7 +490,11 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
- 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
--	} else if (dev->type && dev->type->pm) {
-+		if (callback)
-+			goto End;
-+	}
-+
-+	if (dev->type && dev->type->pm) {
- 		info = "noirq type ";
- 		callback = pm_noirq_op(dev->type->pm, state);
- 	} else if (dev->class && dev->class->pm) {
-@@ -506,6 +510,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
- 		callback = pm_noirq_op(dev->driver->pm, state);
- 	}
- 
-+ End:
- 	error = dpm_run_callback(callback, dev, state, info);
- 	dev->power.is_noirq_suspended = false;
- 
-@@ -616,7 +621,11 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
- 	if (dev->pm_domain) {
- 		info = "early power domain ";
- 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
--	} else if (dev->type && dev->type->pm) {
-+		if (callback)
-+			goto End;
-+	}
-+
-+	if (dev->type && dev->type->pm) {
- 		info = "early type ";
- 		callback = pm_late_early_op(dev->type->pm, state);
- 	} else if (dev->class && dev->class->pm) {
-@@ -632,6 +641,7 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
- 		callback = pm_late_early_op(dev->driver->pm, state);
- 	}
- 
-+ End:
- 	error = dpm_run_callback(callback, dev, state, info);
- 	dev->power.is_late_suspended = false;
- 
-@@ -751,7 +761,8 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 	if (dev->pm_domain) {
- 		info = "power domain ";
- 		callback = pm_op(&dev->pm_domain->ops, state);
--		goto Driver;
-+		if (callback)
-+			goto End;
- 	}
- 
- 	if (dev->type && dev->type->pm) {
-@@ -889,7 +900,11 @@ static void device_complete(struct device *dev, pm_message_t state)
- 	if (dev->pm_domain) {
- 		info = "completing power domain ";
- 		callback = dev->pm_domain->ops.complete;
--	} else if (dev->type && dev->type->pm) {
-+		if (callback)
-+			goto End;
-+	}
-+
-+	if (dev->type && dev->type->pm) {
- 		info = "completing type ";
- 		callback = dev->type->pm->complete;
- 	} else if (dev->class && dev->class->pm) {
-@@ -905,6 +920,7 @@ static void device_complete(struct device *dev, pm_message_t state)
- 		callback = dev->driver->pm->complete;
- 	}
- 
-+ End:
- 	if (callback) {
- 		pm_dev_dbg(dev, state, info);
- 		callback(dev);
-@@ -1015,7 +1031,11 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
- 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
--	} else if (dev->type && dev->type->pm) {
-+		if (callback)
-+			goto End;
-+	}
-+
-+	if (dev->type && dev->type->pm) {
- 		info = "noirq type ";
- 		callback = pm_noirq_op(dev->type->pm, state);
- 	} else if (dev->class && dev->class->pm) {
-@@ -1031,6 +1051,7 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 		callback = pm_noirq_op(dev->driver->pm, state);
- 	}
- 
-+ End:
- 	error = dpm_run_callback(callback, dev, state, info);
- 	if (!error)
- 		dev->power.is_noirq_suspended = true;
-@@ -1154,7 +1175,11 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 	if (dev->pm_domain) {
- 		info = "late power domain ";
- 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
--	} else if (dev->type && dev->type->pm) {
-+		if (callback)
-+			goto End;
-+	}
-+
-+	if (dev->type && dev->type->pm) {
- 		info = "late type ";
- 		callback = pm_late_early_op(dev->type->pm, state);
- 	} else if (dev->class && dev->class->pm) {
-@@ -1170,6 +1195,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 		callback = pm_late_early_op(dev->driver->pm, state);
- 	}
- 
-+ End:
- 	error = dpm_run_callback(callback, dev, state, info);
- 	if (!error)
- 		dev->power.is_late_suspended = true;
-@@ -1338,20 +1364,21 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->pm_domain) {
- 		info = "power domain ";
- 		callback = pm_op(&dev->pm_domain->ops, state);
--		goto Run;
-+		if (callback)
-+			goto Run;
- 	}
- 
- 	if (dev->type && dev->type->pm) {
- 		info = "type ";
- 		callback = pm_op(dev->type->pm, state);
--		goto Run;
-+		goto Driver;
- 	}
- 
- 	if (dev->class) {
- 		if (dev->class->pm) {
- 			info = "class ";
- 			callback = pm_op(dev->class->pm, state);
--			goto Run;
-+			goto Driver;
- 		} else if (dev->class->suspend) {
- 			pm_dev_dbg(dev, state, "legacy class ");
- 			error = legacy_suspend(dev, state, dev->class->suspend,
-@@ -1372,12 +1399,13 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 		}
- 	}
- 
-- Run:
-+ Driver:
- 	if (!callback && dev->driver && dev->driver->pm) {
- 		info = "driver ";
- 		callback = pm_op(dev->driver->pm, state);
- 	}
- 
-+ Run:
- 	error = dpm_run_callback(callback, dev, state, info);
- 
-  End:
-@@ -1507,7 +1535,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 	if (dev->pm_domain) {
- 		info = "preparing power domain ";
- 		callback = dev->pm_domain->ops.prepare;
--	} else if (dev->type && dev->type->pm) {
-+		if (callback)
-+			goto End;
-+	}
-+
-+	if (dev->type && dev->type->pm) {
- 		info = "preparing type ";
- 		callback = dev->type->pm->prepare;
- 	} else if (dev->class && dev->class->pm) {
-@@ -1523,6 +1555,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 		callback = dev->driver->pm->prepare;
- 	}
- 
-+ End:
- 	if (callback) {
- 		error = callback(dev);
- 		suspend_report_result(callback, error);
--- 
-1.7.9.5
-
+While we're at it, can we attempt to replace power with energy since
+that is what we're trying to save in most cases?
