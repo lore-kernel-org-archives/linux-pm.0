@@ -1,34 +1,33 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: [PATCH 0/3] Cpufreq frequency serialization fixes
-Date: Fri, 25 Apr 2014 20:29:04 +0300 (EEST)
-Message-ID: <alpine.SOC.1.00.1404252028410.11626@math.ut.ee>
-References: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
+Date: Fri, 25 Apr 2014 20:43:27 +0200
+Message-ID: <20140425184327.GH26782@laptop.programming.kicks-ass.net>
+References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
+ <535911DC.9050109@linaro.org>
+ <CAP245DXFRfARtEfj70XD8D8OiAT_1i_5G2zao+y0DT0Lg_YFJA@mail.gmail.com>
+ <2713863.BLQTYQm2Oa@vostro.rjw.lan>
+ <20140425132055.GC11096@twins.programming.kicks-ass.net>
+ <535A94E3.5080004@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp1.it.da.ut.ee ([193.40.5.66]:35638 "EHLO smtp1.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751706AbaDYR3H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 25 Apr 2014 13:29:07 -0400
-In-Reply-To: <20140425081728.10258.63980.stgit@srivatsabhat.in.ibm.com>
+Received: from bombadil.infradead.org ([198.137.202.9]:38689 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbaDYSnk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 14:43:40 -0400
+Content-Disposition: inline
+In-Reply-To: <535A94E3.5080004@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Amit Kucheria <amit.kucheria@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-> Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
-> commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
-> The root-cause of this issue is the extra invocation of the
-> cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
-> longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
-> drivers as well. This patchset fixes the issue in all the 3 drivers.
-> 
->  Srivatsa S. Bhat (3):
->       cpufreq, powernow-k7: Fix double invocation of cpufreq_freq_transition_begin/end
->       cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
->       cpufreq, longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
+On Fri, Apr 25, 2014 at 07:01:23PM +0200, Daniel Lezcano wrote:
+> As the sysctl is some kind of ABI, I would like to make sure we reach a
+> consensus and discuss a bit about that.
 
-This set fixes it for me on VIA EPIA with longhaul.
+We could make it a sysfs file, like /sys/power/state, which when read
+provides the words it takes.
 
--- 
-Meelis Roos (mroos@linux.ee)
+That is more flexible than a numeric sysctl for which we have to keep an
+enumeration.
