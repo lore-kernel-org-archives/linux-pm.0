@@ -1,78 +1,44 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC] A new CPU load metric for power-efficient scheduler: CPU
- ConCurrency
-Date: Fri, 25 Apr 2014 03:30:05 +0800
-Message-ID: <20140424193004.GA2467@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: 3.15-rc2: longhaul cpufreq stalls tasks for 120s+
+Date: Fri, 25 Apr 2014 10:11:10 +0530
+Message-ID: <CAKohpom5K0ZdCxqyArVNbDSrf824__izwjBNq+Xb9RGB-pqnag@mail.gmail.com>
+References: <alpine.SOC.1.00.1404241249480.13595@math.ut.ee>
+	<CAKohpoktwh=SgHTfEgT7vYRVWHssXw7==+a9qAdtmJXepjT2Tw@mail.gmail.com>
+	<alpine.SOC.1.00.1404241316290.13595@math.ut.ee>
+	<5358EBB9.3090809@linux.vnet.ibm.com>
+	<alpine.SOC.1.00.1404242201190.6086@math.ut.ee>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:19839 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbaDYDf1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Apr 2014 23:35:27 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.SOC.1.00.1404242201190.6086@math.ut.ee>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Meelis Roos <mroos@linux.ee>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, rafael.j.wysocki@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, yuyang.du@intel.com
 
-Hi Ingo, PeterZ, and others,
+On 25 April 2014 00:33, Meelis Roos <mroos@linux.ee> wrote:
 
-The current scheduler=E2=80=99s load balancing is completely work-conse=
-rving. In some
-workload, generally low CPU utilization but immersed with CPU bursts of
-transient tasks, migrating task to engage all available CPUs for
-work-conserving can lead to significant overhead: cache locality loss,
-idle/active HW state transitional latency and power, shallower idle sta=
-te,
-etc, which are both power and performance inefficient especially for to=
-day=E2=80=99s
-low power processors in mobile.=20
+> [  240.140176] INFO: task kworker/0:1:116 blocked for more than 120 seconds.
+> [  240.140353]       Not tainted 3.15.0-rc2-dirty #37
+> [  240.140485] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> [  240.140687] kworker/0:1     D cf6afd50     0   116      2 0x00000000
+> [  240.140938] Workqueue: events od_dbs_timer
+> [  240.141103]  cf6afd98 00000082 00000002 cf6afd50 c1040d91 cf6affec cf6ad310 cf6ad310
+> [  240.142479]  c1286dcb 00000002 cf6afd70 c1040f14 00000000 ce460b30 00000282 00000046
+> [  240.143011]  00000282 ce460b30 cf6afd78 c1040f39 cf6afd88 00000282 cf6afdb0 ce460b30
+> [  240.143544] Call Trace:
+> [  240.143706]  [<c1040d91>] ? mark_held_locks+0x4b/0x61
+> [  240.143883]  [<c1286dcb>] ? _raw_spin_unlock_irqrestore+0x33/0x3f
+> [  240.144043]  [<c1040f14>] ? trace_hardirqs_on_caller+0x16d/0x187
+> [  240.144203]  [<c1040f39>] ? trace_hardirqs_on+0xb/0xd
+> [  240.144358]  [<c1284145>] schedule+0x5d/0x5f
+> [  240.144527]  [<c11eaa67>] cpufreq_freq_transition_begin+0x4a/0x9d
+> [  240.144687]  [<c103e1b0>] ? __wake_up_sync+0x14/0x14
+> [  240.144860]  [<d06722d5>] longhaul_setstate+0x88/0x2f1 [longhaul]
+> [  240.145023]  [<c1036d43>] ? srcu_notifier_call_chain+0x1a/0x1c
+> [  240.145186]  [<c11eaab2>] ? cpufreq_freq_transition_begin+0x95/0x9d
+> [  240.145350]  [<d06725ba>] longhaul_target+0x7c/0x8b [longhaul]
+> [  240.145511]  [<c11eae78>] __cpufreq_driver_target+0xfe/0x148
 
-This RFC introduces a sense of idleness-conserving into work-conserving=
- (by
-all means, we really don=E2=80=99t want to be overwhelming in only one =
-way). But to
-what extent the idleness-conserving should be, bearing in mind that we =
-don=E2=80=99t
-want to sacrifice performance? We first need a load/idleness indicator =
-to that
-end.
-
-Thanks to CFS=E2=80=99s =E2=80=9Cmodel an ideal, precise multi-tasking =
-CPU=E2=80=9D, tasks can be seen
-as concurrently running (the tasks in the runqueue). So it is natural t=
-o use
-task concurrency as load indicator. Having said that, we do two things:
-
-1)	Divide continuous time into periods of time, and average task concur=
-rency
-in period, for tolerating the transient bursts:
-a =3D sum(concurrency * time) / period
-2)	Exponentially decay past periods, and synthesize them all, for hyste=
-resis
-to load drops or resilience to load rises (let f be decaying factor, an=
-d a_x
-the xth period average since period 0):
-s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, =E2=80=A6..,+ f^(n-1) * a_1 + =
-f^n * a_0
-
-We name this load indicator as CPU ConCurrency (CC): task concurrency
-determines how many CPUs are needed to be running concurrently.
-
-To track CC, we intercept the scheduler in 1) enqueue, 2) dequeue, 3)
-scheduler tick, and 4) enter/exit idle.
-
-By CC, we implemented a Workload Consolidation patch on two Intel mobil=
-e
-platforms (a quad-core composed of two dual-core modules): contain load=
- and load
-balancing in the first dual-core when aggregated CC low, and if not in =
-the
-full quad-core. Results show that we got power savings and no substanti=
-al
-performance regression (even gains for some).
-
-Thanks,
-Yuyang
+Am I reading it correctly? It looks like we are starting another transition
+from notifier chain, but I couldn't figure out how from code.
