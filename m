@@ -1,222 +1,130 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
-Date: Fri, 25 Apr 2014 13:46:53 +0200
-Message-ID: <2713863.BLQTYQm2Oa@vostro.rjw.lan>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <535911DC.9050109@linaro.org> <CAP245DXFRfARtEfj70XD8D8OiAT_1i_5G2zao+y0DT0Lg_YFJA@mail.gmail.com>
+Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU ConCurrency
+Date: Fri, 25 Apr 2014 14:19:46 +0200
+Message-ID: <13348109.c4H00groOp@vostro.rjw.lan>
+References: <20140424193004.GA2467@intel.com> <20140425102307.GN2500@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50177 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752789AbaDYLab (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 07:30:31 -0400
-In-Reply-To: <CAP245DXFRfARtEfj70XD8D8OiAT_1i_5G2zao+y0DT0Lg_YFJA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140425102307.GN2500@e103034-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Yuyang Du <yuyang.du@intel.com>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday, April 25, 2014 04:24:49 PM Amit Kucheria wrote:
-> On Thu, Apr 24, 2014 at 7:00 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
-> >
-> > On 04/24/2014 03:13 PM, Amit Kucheria wrote:
-> >>
-> >> On Thu, Apr 24, 2014 at 5:54 PM, Daniel Lezcano
-> >> <daniel.lezcano@linaro.org <mailto:daniel.lezcano@linaro.org>> wrote:
-> >>
-> >>     This patch adds a sysctl schedule balance option to choose against:
-> >>
-> >>       * auto        (0)
-> >>       * performance (1)
-> >>       * power       (2)
-> >>
-> >>     It relies on the recently added notifier to monitor the power supply
-> >>     changes.
-> >>     If the scheduler balance option is set to 'auto', then when the
-> >>     system switches
-> >>     to battery, the balance option change to 'power' and when it goes
-> >>     back to AC, it
-> >>     switches to 'performance'.
-> >>
-> >>     The default value is 'auto'.
-> >>
-> >>     If the kernel is compiled without the CONFIG_POWER_SUPPLY option,
-> >>     then any call
-> >>     to the 'auto' option will fail and the scheduler will use the
-> >>     'performance'
-> >>     option as default.
-> >>
-> >>     Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org
-> >>     <mailto:daniel.lezcano@linaro.org>>
-> >>
-> >>     ---
-> >>       include/linux/sched/sysctl.h |   14 +++++++
-> >>       kernel/sched/fair.c          |   92
-> >>     +++++++++++++++++++++++++++++++++++++++++-
-> >>       kernel/sysctl.c              |   11 +++++
-> >>       3 files changed, 115 insertions(+), 2 deletions(-)
-> >>
-> >>     diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
-> >>     index 8045a55..f8507bf 100644
-> >>     --- a/include/linux/sched/sysctl.h
-> >>     +++ b/include/linux/sched/sysctl.h
-> >>     @@ -44,6 +44,20 @@ enum sched_tunable_scaling {
-> >>       };
-> >>       extern enum sched_tunable_scaling sysctl_sched_tunable_scaling;
-> >>
-> >>     +#ifdef CONFIG_SMP
-> >>     +enum sched_balance_option {
-> >>
-> >>
-> >> What do you think of s/option/bias/g ?
-> >>
-> >> It is essentially biasing the scheduler towards performance or power
-> >
-> >
-> > Yes, could be more adequate.
-> >
-> >
-> >>     +       SCHED_BALANCE_OPTION_PERFORMANCE,
-> >>     +       SCHED_BALANCE_OPTION_POWER,
-> >>     +       SCHED_BALANCE_OPTION_AUTO,
-> >>     +       SCHED_BALANCE_OPTION_END,
-> >>     +};
-> >>
-> >>
-> >>     +extern enum sched_balance_option sysctl_sched_balance_option;
-> >>     +
-> >>     +int sched_proc_balance_option_handler(struct ctl_table *table, int
-> >>     write,
-> >>     +               void __user *buffer, size_t *length,
-> >>     +               loff_t *ppos);
-> >>     +#endif
-> >>     +
-> >>       extern unsigned int sysctl_numa_balancing_scan_delay;
-> >>       extern unsigned int sysctl_numa_balancing_scan_period_min;
-> >>       extern unsigned int sysctl_numa_balancing_scan_period_max;
-> >>     diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> >>     index 7570dd9..7b8e93d 100644
-> >>     --- a/kernel/sched/fair.c
-> >>     +++ b/kernel/sched/fair.c
-> >>     @@ -29,7 +29,7 @@
-> >>       #include <linux/mempolicy.h>
-> >>       #include <linux/migrate.h>
-> >>       #include <linux/task_work.h>
-> >>     -
-> >>     +#include <linux/power_supply.h>
-> >>       #include <trace/events/sched.h>
-> >>
-> >>       #include "sched.h"
-> >>     @@ -61,6 +61,24 @@ unsigned int normalized_sysctl_sched_latency =
-> >>     6000000ULL;
-> >>       enum sched_tunable_scaling sysctl_sched_tunable_scaling
-> >>              = SCHED_TUNABLESCALING_LOG;
-> >>
-> >>     +#ifdef CONFIG_SMP
-> >>     +/*
-> >>     + * Scheduler balancing policy:
-> >>     + *
-> >>     + * Options are:
-> >>     + * SCHED_BALANCE_OPTION_PERFORMANCE - full performance
-> >>     + * SCHED_BALANCE_OPTION_POWER - power saving aggressive
-> >>     + * SCHED_BALANCE_OPTION_AUTO - switches to 'performance' when plugged
-> >>     + *                             on or 'power' on battery
-> >>     + */
-> >>     +enum sched_balance_option sysctl_sched_balance_option
-> >>     +       = SCHED_BALANCE_OPTION_AUTO;
-> >>     +
-> >>     +static int sched_current_balance_option
-> >>     +       = SCHED_BALANCE_OPTION_PERFORMANCE;
-> >>     +
-> >>     +#endif
-> >>     +
-> >>       /*
-> >>        * Minimal preemption granularity for CPU-bound tasks:
-> >>        * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
-> >>     @@ -555,6 +573,76 @@ static struct sched_entity
-> >>     *__pick_next_entity(struct sched_entity *se)
-> >>              return rb_entry(next, struct sched_entity, run_node);
-> >>       }
-> >>
-> >>     +#ifdef CONFIG_SMP
-> >>     +static int sched_balance_option_update(void)
-> >>     +{
-> >>     +       int ret;
-> >>     +
-> >>     +       /*
-> >>     +        * Copy the current balance option
-> >>     +        */
-> >>     +       if (sysctl_sched_balance_option != SCHED_BALANCE_OPTION_AUTO) {
-> >>     +               sched_current_balance_option =
-> >>     sysctl_sched_balance_option;
-> >>     +               return 0;
-> >>     +       }
-> >>     +
-> >>     +       /*
-> >>     +        * This call may fail if the kernel is not compiled with
-> >>     +        * the POWER_SUPPLY option.
-> >>     +        */
-> >>     +       ret = power_supply_is_system_supplied();
-> >>     +       if (ret < 0) {
-> >>     +               sysctl_sched_balance_option =
-> >>     sched_current_balance_option;
-> >>     +               return ret;
-> >>     +       }
-> >>     +
-> >>     +       /*
-> >>     +        * When in 'auto' mode, switch to 'performance if the system
-> >>     +        * is plugged on the wall, to 'power' if we are on battery
-> >>     +        */
-> >>     +       sched_current_balance_option = ret ?
-> >>     +               SCHED_BALANCE_OPTION_PERFORMANCE :
-> >>     +               SCHED_BALANCE_OPTION_POWER;
-> >>     +
-> >>     +       return 0;
-> >>     +}
-> >>     +
-> >>
-> >>
-> >> I understand that this is only meant to kick off discussions and other
-> >> criteria besides power being plugged in to bias the scheduler
-> >> performance could be added later. But does it make sense to hardcode the
-> >> power supply assumption into the scheduler?
-> >>
-> >> Can't we instead make sched_balance_option_update() a function pointer
-> >> (with a default implementation that you've provided) that provide
-> >> platforms the ability to override that with their own implementation?
-> >
-> >
-> > I agree if that really hurts, it could be placed somewhere else, for example in a new file:
-> >         kernel/sched/energy.c
-> >
-> > But concerning the callback, I don't see the point to create a specific platform ops for that as the current code is generic. Do you have any use case in mind ?
-> >
-> 
-> I had a offline conversation with Daniel about this since there are
-> other triggers - thermal constraints and game-like apps being examples
-> - that might want to override the system policy. He intended
-> "performance" mode to mean the existing code paths and "power" mode to
-> mean *additional* new heuristics for energy-efficiency. The power
-> supply assumption is just the first one of those heuristics.
+On Friday, April 25, 2014 11:23:07 AM Morten Rasmussen wrote:
+> Hi Yuyang,
+>=20
+> On Thu, Apr 24, 2014 at 08:30:05PM +0100, Yuyang Du wrote:
+> > 1)	Divide continuous time into periods of time, and average task co=
+ncurrency
+> > in period, for tolerating the transient bursts:
+> > a =3D sum(concurrency * time) / period
+> > 2)	Exponentially decay past periods, and synthesize them all, for h=
+ysteresis
+> > to load drops or resilience to load rises (let f be decaying factor=
+, and a_x
+> > the xth period average since period 0):
+> > s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, =E2=80=A6..,+ f^(n-1) * a_=
+1 + f^n * a_0
+> >=20
+> > We name this load indicator as CPU ConCurrency (CC): task concurren=
+cy
+> > determines how many CPUs are needed to be running concurrently.
+> >=20
+> > To track CC, we intercept the scheduler in 1) enqueue, 2) dequeue, =
+3)
+> > scheduler tick, and 4) enter/exit idle.
+> >=20
+> > By CC, we implemented a Workload Consolidation patch on two Intel m=
+obile
+> > platforms (a quad-core composed of two dual-core modules): contain =
+load and load
+> > balancing in the first dual-core when aggregated CC low, and if not=
+ in the
+> > full quad-core. Results show that we got power savings and no subst=
+antial
+> > performance regression (even gains for some).
+>=20
+> The idea you present seems quite similar to the task packing proposal=
+s
+> by Vincent and others that were discussed about a year ago. One of th=
+e
+> main issues related to task packing/consolidation is that it is not
+> always beneficial.
+>=20
+> I have spent some time over the last couple of weeks looking into thi=
+s
+> trying to figure out when task consolidation makes sense. The pattern=
+ I
+> have seen is that it makes most sense when the task energy is dominat=
+ed
+> by wake-up costs. That is short-running tasks. The actual energy savi=
+ngs
+> come from a reduced number of wake-ups if the consolidation cpu is bu=
+sy
+> enough to be already awake when another task wakes up, and savings by
+> keeping the consolidation cpu in a shallower idle state and thereby
+> reducing the wake-up costs. The wake-up cost savings outweighs the
+> additional leakage in the shallower idle state in some scenarios. All=
+ of
+> this is of course quite platform dependent. Different idle state leak=
+age
+> power and wake-up costs may change the picture.
 
-Well, so now the question is whether or not we relly want to always
-go to the "power" (or "energy efficiency" if you will) mode if the system
-is on battery.  That arguably may not be a good thing even for energy
-efficiency depending on how exactly the modes are defined.
+The problem, however, is that it usually is not really known in advance
+whether or not a given task will be short-running.  There simply is no =
+way
+to tell.
 
-So in my opinion it's too early to add things like that at this point.
+The only kinds of information we can possibly use to base decisions on =
+are
+(1) things that don't change (or if they change, we know exactly when a=
+nd
+how), such as the system's topology, and (2) information on what happen=
+ed
+in the past.  So, for example, if there's a task that has been running =
+for
+some time already and it has behaved in approximately the same way all =
+the
+time, it is reasonable to assume that it will behave in this way in the
+future.  We need to let it run for a while to collect that information,
+though.
 
-> In that case, "performance" should be the default so we don't change
-> existing system behavior. And perhaps we want to keep these energy
-> heuristics in a separate file, at least until we've gotten them right.
-> 
-> While we're at it, can we attempt to replace power with energy since
-> that is what we're trying to save in most cases?
+Without that kind of information we can only speculate about what's goi=
+ng
+to happen and different methods of speculation may lead to better or wo=
+rse
+results in a given situation, but still that's only speculation and the
+results are only known after the fact.
 
-That would be a good thing IMO.
+In the reverse, if I know the system topology and I have a particular w=
+orkload,
+I know what's going to happen, so I can find a load balancing method th=
+at will
+be perfect for this particular workload on this particular system.  Tha=
+t's not
+the situation the scheduler has to deal with, though, because the workl=
+oad is
+unknown to it until it has been measured.
 
--- 
+So in my opinion we need to figure out how to measure workloads while t=
+hey are
+running and then use that information to make load balancing decisions.
+
+In principle, given the system's topology, task packing may lead to bet=
+ter
+results for some workloads, but not necessarily for all of them.  So we=
+ need
+a way to determine (a) whether or not task packing is an option at all =
+in the
+given system (that may change over time due to user policy changes etc.=
+) and
+if that is the case, then (b) if the current workload is eligible for t=
+ask
+packing.
+
+--=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
