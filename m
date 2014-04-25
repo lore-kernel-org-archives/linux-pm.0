@@ -1,200 +1,31 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 3/3] ARM: exynos: Move to generic power domain bindings
-Date: Fri, 25 Apr 2014 13:47:34 +0200
-Message-ID: <CAPDyKFog0_8DKrzXcXT8Ztj3eY92EqY4YdKrsP7jkm59=XbKzA@mail.gmail.com>
-References: <1398271618-28932-1-git-send-email-t.figa@samsung.com>
- <1398271618-28932-4-git-send-email-t.figa@samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
+Date: Fri, 25 Apr 2014 15:22:38 +0200
+Message-ID: <20140425132238.GD11096@twins.programming.kicks-ass.net>
+References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
+ <1398342291-16322-3-git-send-email-daniel.lezcano@linaro.org>
+ <CAP245DX9wewQFhcyGj5ZuNE7hHC4fRn90POC32HLF6ugja6nJg@mail.gmail.com>
+ <535911DC.9050109@linaro.org>
+ <CAP245DXFRfARtEfj70XD8D8OiAT_1i_5G2zao+y0DT0Lg_YFJA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1398271618-28932-4-git-send-email-t.figa@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Philipp Zabel <philipp.zabel@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <tomasz.figa@gmail.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rafael J. Wyso
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAP245DXFRfARtEfj70XD8D8OiAT_1i_5G2zao+y0DT0Lg_YFJA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 23 April 2014 18:46, Tomasz Figa <t.figa@samsung.com> wrote:
-> This patch moves Exynos power domain code to use the new generic power
-> domain look-up framework introduced by previous patch, allowing the new
-> code to be compiled with CONFIG_ARCH_EXYNOS selected as well.
->
-> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
 
-Besides that I don't like new Kconfig CONFIG_PM_GENERIC_DOMAINS_OF,
-this looks good to me.
+The infinite wisdom of the original PC keyboard gifted us with backspace
+and delete, use them!
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Fri, Apr 25, 2014 at 04:24:49PM +0530, Amit Kucheria wrote:
+> In that case, "performance" should be the default so we don't change
+> existing system behavior. And perhaps we want to keep these energy
+> heuristics in a separate file, at least until we've gotten them right.
 
-> ---
->  .../bindings/arm/exynos/power_domain.txt           | 12 ++--
->  arch/arm/mach-exynos/pm_domains.c                  | 81 +---------------------
->  kernel/power/Kconfig                               |  2 +-
->  3 files changed, 7 insertions(+), 88 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-> index 5216b41..60f26a8 100644
-> --- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-> @@ -8,6 +8,8 @@ Required Properties:
->      * samsung,exynos4210-pd - for exynos4210 type power domain.
->  - reg: physical base address of the controller and length of memory mapped
->      region.
-> +- #power-domain-cells: number of cells in power domain specifier;
-> +    must be 0.
->
->  Node of a device using power domains must have a samsung,power-domain property
->  defined with a phandle to respective power domain.
-> @@ -17,12 +19,8 @@ Example:
->         lcd0: power-domain-lcd0 {
->                 compatible = "samsung,exynos4210-pd";
->                 reg = <0x10023C00 0x10>;
-> +               #power-domain-cells = <0>;
->         };
->
-> -Example of the node using power domain:
-> -
-> -       node {
-> -               /* ... */
-> -               samsung,power-domain = <&lcd0>;
-> -               /* ... */
-> -       };
-> +See Documentation/devicetree/bindings/power/power_domain.txt for description
-> +of consumer-side bindings.
-> diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
-> index fe6570e..9cad3c6 100644
-> --- a/arch/arm/mach-exynos/pm_domains.c
-> +++ b/arch/arm/mach-exynos/pm_domains.c
-> @@ -73,89 +73,14 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
->         return exynos_pd_power(domain, false);
->  }
->
-> -static void exynos_add_device_to_domain(struct exynos_pm_domain *pd,
-> -                                        struct device *dev)
-> -{
-> -       int ret;
-> -
-> -       dev_dbg(dev, "adding to power domain %s\n", pd->pd.name);
-> -
-> -       while (1) {
-> -               ret = pm_genpd_add_device(&pd->pd, dev);
-> -               if (ret != -EAGAIN)
-> -                       break;
-> -               cond_resched();
-> -       }
-> -
-> -       pm_genpd_dev_need_restore(dev, true);
-> -}
-> -
-> -static void exynos_remove_device_from_domain(struct device *dev)
-> -{
-> -       struct generic_pm_domain *genpd = dev_to_genpd(dev);
-> -       int ret;
-> -
-> -       dev_dbg(dev, "removing from power domain %s\n", genpd->name);
-> -
-> -       while (1) {
-> -               ret = pm_genpd_remove_device(genpd, dev);
-> -               if (ret != -EAGAIN)
-> -                       break;
-> -               cond_resched();
-> -       }
-> -}
-> -
-> -static void exynos_read_domain_from_dt(struct device *dev)
-> -{
-> -       struct platform_device *pd_pdev;
-> -       struct exynos_pm_domain *pd;
-> -       struct device_node *node;
-> -
-> -       node = of_parse_phandle(dev->of_node, "samsung,power-domain", 0);
-> -       if (!node)
-> -               return;
-> -       pd_pdev = of_find_device_by_node(node);
-> -       if (!pd_pdev)
-> -               return;
-> -       pd = platform_get_drvdata(pd_pdev);
-> -       exynos_add_device_to_domain(pd, dev);
-> -}
-> -
-> -static int exynos_pm_notifier_call(struct notifier_block *nb,
-> -                                   unsigned long event, void *data)
-> -{
-> -       struct device *dev = data;
-> -
-> -       switch (event) {
-> -       case BUS_NOTIFY_BIND_DRIVER:
-> -               if (dev->of_node)
-> -                       exynos_read_domain_from_dt(dev);
-> -
-> -               break;
-> -
-> -       case BUS_NOTIFY_UNBOUND_DRIVER:
-> -               exynos_remove_device_from_domain(dev);
-> -
-> -               break;
-> -       }
-> -       return NOTIFY_DONE;
-> -}
-> -
-> -static struct notifier_block platform_nb = {
-> -       .notifier_call = exynos_pm_notifier_call,
-> -};
-> -
->  static __init int exynos4_pm_init_power_domain(void)
->  {
-> -       struct platform_device *pdev;
->         struct device_node *np;
->
->         for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
->                 struct exynos_pm_domain *pd;
->                 int on;
->
-> -               pdev = of_find_device_by_node(np);
-> -
->                 pd = kzalloc(sizeof(*pd), GFP_KERNEL);
->                 if (!pd) {
->                         pr_err("%s: failed to allocate memory for domain\n",
-> @@ -168,17 +93,13 @@ static __init int exynos4_pm_init_power_domain(void)
->                 pd->base = of_iomap(np, 0);
->                 pd->pd.power_off = exynos_pd_power_off;
->                 pd->pd.power_on = exynos_pd_power_on;
-> -               pd->pd.of_node = np;
-> -
-> -               platform_set_drvdata(pdev, pd);
->
->                 on = __raw_readl(pd->base + 0x4) & S5P_INT_LOCAL_PWR_EN;
->
->                 pm_genpd_init(&pd->pd, NULL, !on);
-> +               of_genpd_add_provider(np, of_genpd_xlate_simple, &pd->pd);
->         }
->
-> -       bus_register_notifier(&platform_bus_type, &platform_nb);
-> -
->         return 0;
->  }
->  arch_initcall(exynos4_pm_init_power_domain);
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 45aa98e..b17588c 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -308,7 +308,7 @@ config PM_GENERIC_DOMAINS_RUNTIME
->
->  config PM_GENERIC_DOMAINS_OF
->         def_bool y
-> -       depends on PM_GENERIC_DOMAINS && OF && !ARCH_EXYNOS
-> +       depends on PM_GENERIC_DOMAINS && OF
->
->  config CPU_PM
->         bool
-> --
-> 1.9.2
->
+No, we're not going to make a separate file. Its going to be fully
+integrated in the normal load balancer, no special add on hacks and
+warts.
