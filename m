@@ -1,69 +1,127 @@
-From: Chen Gang <gang.chen.5i5j@gmail.com>
-Subject: [PATCH v3] kernel/power/hibernate.c: use unsigned variables instead
- of signed variables in swsusp_show_speed()
-Date: Fri, 25 Apr 2014 08:44:59 +0800
-Message-ID: <5359B00B.6080900@gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 1/4] ARM: shmobile: Ignore callbacks for subsys
+ generic_pm_domain_data
+Date: Fri, 25 Apr 2014 10:06:51 +0900
+Message-ID: <20140425010651.GC12641@verge.net.au>
+References: <1397230004-22306-1-git-send-email-ulf.hansson@linaro.org>
+ <1397230004-22306-2-git-send-email-ulf.hansson@linaro.org>
+ <20140414012013.GB22411@verge.net.au>
+ <CAPDyKFp76Z93tNhd5vBpTUVzF0Km9oMAmBbg0RCT+91V5J-jzw@mail.gmail.com>
+ <CAPDyKFpbX3cdAgvUx=4FbmNxFLH4VO8JqrQqRB3nxXMxZDyXJQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Guan Xuetao <gxt@mprc.pku.edu.cn>, len.brown@intel.com
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from kirsty.vergenet.net ([202.4.237.240]:42208 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbaDYBGy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Apr 2014 21:06:54 -0400
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFpbX3cdAgvUx=4FbmNxFLH4VO8JqrQqRB3nxXMxZDyXJQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-do_div() needs 'u64' type, or it reports warning. And negative number
-is meaningless for "speed", so change all signed to unsigned within
-swsusp_show_speed().
+On Thu, Apr 24, 2014 at 01:25:14PM +0200, Ulf Hansson wrote:
+> On 14 April 2014 11:22, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > On 14 April 2014 03:20, Simon Horman <horms@verge.net.au> wrote:
+> >> On Fri, Apr 11, 2014 at 05:26:41PM +0200, Ulf Hansson wrote:
+> >>> There are no active users of these callbacks, thus there are no benefit
+> >>> of trying to invoke them.
+> >>>
+> >>> Cc: Simon Horman <horms@verge.net.au>
+> >>> Cc: Magnus Damm <magnus.damm@gmail.com>
+> >>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >>> ---
+> >>>
+> >>> I am seeking ack from the SOC maintainers since this needs to go with the other
+> >>> patches in this patchset on the PM core.
+> >>
+> >> In order to reduce the possibility of conflicts I would prefer
+> >> to take this patch through my tree.
+> >
+> > Okay, go ahead!
+> >
+> 
+> Hi Simon,
+> 
+> Just wanted to know, if you decided to queue this patch in your tree.
+> Or were there anything else you needed me to fix here?
 
-The related warning (with allmodconfig for unicore32):
+Sorry for dropping the ball. I will queue-up this patch.
 
-    CC      kernel/power/hibernate.o
-  kernel/power/hibernate.c: In function =91swsusp_show_speed=92:
-  kernel/power/hibernate.c:237: warning: comparison of distinct pointer=
- types lacks a cast
-
-
-Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
----
- kernel/power/hibernate.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index f4f2073..afc11a0 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -228,19 +228,23 @@ static void platform_recover(int platform_mode)
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
--	s64 elapsed_centisecs64;
--	int centisecs;
--	int k;
--	int kps;
-+	u64 elapsed_centisecs64;
-+	unsigned int centisecs;
-+	unsigned int k;
-+	unsigned int kps;
-=20
- 	elapsed_centisecs64 =3D timeval_to_ns(stop) - timeval_to_ns(start);
-+	/*
-+	 * If "(s64)elapsed_centisecs64 < 0", it will print long elapsed time=
-,
-+	 * it is obvious enough for what went wrong.
-+	 */
- 	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
- 	centisecs =3D elapsed_centisecs64;
- 	if (centisecs =3D=3D 0)
- 		centisecs =3D 1;	/* avoid div-by-zero */
- 	k =3D nr_pages * (PAGE_SIZE / 1024);
- 	kps =3D (k * 100) / centisecs;
--	printk(KERN_INFO "PM: %s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\=
-n",
-+	printk(KERN_INFO "PM: %s %u kbytes in %u.%02u seconds (%u.%02u MB/s)\=
-n",
- 			msg, k,
- 			centisecs / 100, centisecs % 100,
- 			kps / 1000, (kps % 1000) / 10);
---=20
-1.9.2.459.g68773ac
+> 
+> > Kind regards
+> > Ulf Hansson
+> >
+> >>
+> >>> ---
+> >>>  arch/arm/mach-shmobile/pm-rmobile.c |   38 +++--------------------------------
+> >>>  1 file changed, 3 insertions(+), 35 deletions(-)
+> >>>
+> >>> diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+> >>> index 1fc05d9..f710235 100644
+> >>> --- a/arch/arm/mach-shmobile/pm-rmobile.c
+> >>> +++ b/arch/arm/mach-shmobile/pm-rmobile.c
+> >>> @@ -99,39 +99,7 @@ static int rmobile_pd_power_up(struct generic_pm_domain *genpd)
+> >>>
+> >>>  static bool rmobile_pd_active_wakeup(struct device *dev)
+> >>>  {
+> >>> -     bool (*active_wakeup)(struct device *dev);
+> >>> -
+> >>> -     active_wakeup = dev_gpd_data(dev)->ops.active_wakeup;
+> >>> -     return active_wakeup ? active_wakeup(dev) : true;
+> >>> -}
+> >>> -
+> >>> -static int rmobile_pd_stop_dev(struct device *dev)
+> >>> -{
+> >>> -     int (*stop)(struct device *dev);
+> >>> -
+> >>> -     stop = dev_gpd_data(dev)->ops.stop;
+> >>> -     if (stop) {
+> >>> -             int ret = stop(dev);
+> >>> -             if (ret)
+> >>> -                     return ret;
+> >>> -     }
+> >>> -     return pm_clk_suspend(dev);
+> >>> -}
+> >>> -
+> >>> -static int rmobile_pd_start_dev(struct device *dev)
+> >>> -{
+> >>> -     int (*start)(struct device *dev);
+> >>> -     int ret;
+> >>> -
+> >>> -     ret = pm_clk_resume(dev);
+> >>> -     if (ret)
+> >>> -             return ret;
+> >>> -
+> >>> -     start = dev_gpd_data(dev)->ops.start;
+> >>> -     if (start)
+> >>> -             ret = start(dev);
+> >>> -
+> >>> -     return ret;
+> >>> +     return true;
+> >>>  }
+> >>>
+> >>>  static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+> >>> @@ -140,8 +108,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+> >>>       struct dev_power_governor *gov = rmobile_pd->gov;
+> >>>
+> >>>       pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
+> >>> -     genpd->dev_ops.stop             = rmobile_pd_stop_dev;
+> >>> -     genpd->dev_ops.start            = rmobile_pd_start_dev;
+> >>> +     genpd->dev_ops.stop             = pm_clk_suspend;
+> >>> +     genpd->dev_ops.start            = pm_clk_resume;
+> >>>       genpd->dev_ops.active_wakeup    = rmobile_pd_active_wakeup;
+> >>>       genpd->dev_irq_safe             = true;
+> >>>       genpd->power_off                = rmobile_pd_power_down;
+> >>> --
+> >>> 1.7.9.5
+> >>>
+> >>>
+> >>> _______________________________________________
+> >>> linux-arm-kernel mailing list
+> >>> linux-arm-kernel@lists.infradead.org
+> >>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> >>>
+> 
