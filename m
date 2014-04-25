@@ -1,78 +1,232 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU
- ConCurrency
-Date: Fri, 25 Apr 2014 11:23:07 +0100
-Message-ID: <20140425102307.GN2500@e103034-lin>
-References: <20140424193004.GA2467@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140424193004.GA2467@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yuyang Du <yuyang.du@intel.com>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Sleep: Fall back to subsystem level PM callbacks for PM domains
+Date: Fri, 25 Apr 2014 12:44:55 +0200
+Message-ID: <1398422695-2295-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f178.google.com ([209.85.217.178]:62697 "EHLO
+	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbaDYKpH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 06:45:07 -0400
+Received: by mail-lb0-f178.google.com with SMTP id s7so2986654lbd.9
+        for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2014 03:45:05 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Hi Yuyang,
+Previously once the PM core found a PM domain pointer for a device,
+but which didn't have a valid PM callback, it falled back to try the
+driver's PM callback.
 
-On Thu, Apr 24, 2014 at 08:30:05PM +0100, Yuyang Du wrote:
-> 1)	Divide continuous time into periods of time, and average task conc=
-urrency
-> in period, for tolerating the transient bursts:
-> a =3D sum(concurrency * time) / period
-> 2)	Exponentially decay past periods, and synthesize them all, for hys=
-teresis
-> to load drops or resilience to load rises (let f be decaying factor, =
-and a_x
-> the xth period average since period 0):
-> s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, =E2=80=A6..,+ f^(n-1) * a_1 =
-+ f^n * a_0
->=20
-> We name this load indicator as CPU ConCurrency (CC): task concurrency
-> determines how many CPUs are needed to be running concurrently.
->=20
-> To track CC, we intercept the scheduler in 1) enqueue, 2) dequeue, 3)
-> scheduler tick, and 4) enter/exit idle.
->=20
-> By CC, we implemented a Workload Consolidation patch on two Intel mob=
-ile
-> platforms (a quad-core composed of two dual-core modules): contain lo=
-ad and load
-> balancing in the first dual-core when aggregated CC low, and if not i=
-n the
-> full quad-core. Results show that we got power savings and no substan=
-tial
-> performance regression (even gains for some).
+In this scenario, change the behavior of the PM core to try out the
+other subsystem level PM callbacks, before it moves on to the driver.
 
-The idea you present seems quite similar to the task packing proposals
-by Vincent and others that were discussed about a year ago. One of the
-main issues related to task packing/consolidation is that it is not
-always beneficial.
+This gives provision for PM domains to easier re-use subsystem level
+code to handle the needed operations.
 
-I have spent some time over the last couple of weeks looking into this
-trying to figure out when task consolidation makes sense. The pattern I
-have seen is that it makes most sense when the task energy is dominated
-by wake-up costs. That is short-running tasks. The actual energy saving=
-s
-come from a reduced number of wake-ups if the consolidation cpu is busy
-enough to be already awake when another task wakes up, and savings by
-keeping the consolidation cpu in a shallower idle state and thereby
-reducing the wake-up costs. The wake-up cost savings outweighs the
-additional leakage in the shallower idle state in some scenarios. All o=
-f
-this is of course quite platform dependent. Different idle state leakag=
-e
-power and wake-up costs may change the picture.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ Documentation/power/devices.txt |    6 +++--
+ drivers/base/power/main.c       |   55 +++++++++++++++++++++++++++++++--------
+ 2 files changed, 48 insertions(+), 13 deletions(-)
 
-I'm therefore quite interested in knowing what sort of test scenarios
-you used and the parameters for CC (f and size of the periods). I'm not
-convinced (yet) that a cpu load concurrency indicator is sufficient to
-make the call when to consolidate tasks. I'm thinking whether we need a
-power model to guide the decisions.
+diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+index 47d46df..c875056 100644
+--- a/Documentation/power/devices.txt
++++ b/Documentation/power/devices.txt
+@@ -303,8 +303,10 @@ The PM domain, type, class and bus callbacks may in turn invoke device- or
+ driver-specific methods stored in dev->driver->pm, but they don't have to do
+ that.
+ 
+-If the subsystem callback chosen for execution is not present, the PM core will
+-execute the corresponding method from dev->driver->pm instead if there is one.
++If a PM domain exist, but the callback chosen for execution isn't present, the
++PM core will fall back to try the other subsystem level callbacks.  Finally, if
++no subsystem level callback is found, it executes the corresponding method from
++dev->driver->pm instead if there is one.
+ 
+ 
+ Entering System Suspend
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 86d5e4f..e604db9 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -490,7 +490,11 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+ 	if (dev->pm_domain) {
+ 		info = "noirq power domain ";
+ 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
+-	} else if (dev->type && dev->type->pm) {
++		if (callback)
++			goto End;
++	}
++
++	if (dev->type && dev->type->pm) {
+ 		info = "noirq type ";
+ 		callback = pm_noirq_op(dev->type->pm, state);
+ 	} else if (dev->class && dev->class->pm) {
+@@ -506,6 +510,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+ 		callback = pm_noirq_op(dev->driver->pm, state);
+ 	}
+ 
++ End:
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	dev->power.is_noirq_suspended = false;
+ 
+@@ -616,7 +621,11 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+ 	if (dev->pm_domain) {
+ 		info = "early power domain ";
+ 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
+-	} else if (dev->type && dev->type->pm) {
++		if (callback)
++			goto End;
++	}
++
++	if (dev->type && dev->type->pm) {
+ 		info = "early type ";
+ 		callback = pm_late_early_op(dev->type->pm, state);
+ 	} else if (dev->class && dev->class->pm) {
+@@ -632,6 +641,7 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+ 		callback = pm_late_early_op(dev->driver->pm, state);
+ 	}
+ 
++ End:
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	dev->power.is_late_suspended = false;
+ 
+@@ -751,7 +761,8 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 	if (dev->pm_domain) {
+ 		info = "power domain ";
+ 		callback = pm_op(&dev->pm_domain->ops, state);
+-		goto Driver;
++		if (callback)
++			goto End;
+ 	}
+ 
+ 	if (dev->type && dev->type->pm) {
+@@ -889,7 +900,11 @@ static void device_complete(struct device *dev, pm_message_t state)
+ 	if (dev->pm_domain) {
+ 		info = "completing power domain ";
+ 		callback = dev->pm_domain->ops.complete;
+-	} else if (dev->type && dev->type->pm) {
++		if (callback)
++			goto End;
++	}
++
++	if (dev->type && dev->type->pm) {
+ 		info = "completing type ";
+ 		callback = dev->type->pm->complete;
+ 	} else if (dev->class && dev->class->pm) {
+@@ -905,6 +920,7 @@ static void device_complete(struct device *dev, pm_message_t state)
+ 		callback = dev->driver->pm->complete;
+ 	}
+ 
++ End:
+ 	if (callback) {
+ 		pm_dev_dbg(dev, state, info);
+ 		callback(dev);
+@@ -1015,7 +1031,11 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+ 	if (dev->pm_domain) {
+ 		info = "noirq power domain ";
+ 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
+-	} else if (dev->type && dev->type->pm) {
++		if (callback)
++			goto End;
++	}
++
++	if (dev->type && dev->type->pm) {
+ 		info = "noirq type ";
+ 		callback = pm_noirq_op(dev->type->pm, state);
+ 	} else if (dev->class && dev->class->pm) {
+@@ -1031,6 +1051,7 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+ 		callback = pm_noirq_op(dev->driver->pm, state);
+ 	}
+ 
++ End:
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	if (!error)
+ 		dev->power.is_noirq_suspended = true;
+@@ -1154,7 +1175,11 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 	if (dev->pm_domain) {
+ 		info = "late power domain ";
+ 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
+-	} else if (dev->type && dev->type->pm) {
++		if (callback)
++			goto End;
++	}
++
++	if (dev->type && dev->type->pm) {
+ 		info = "late type ";
+ 		callback = pm_late_early_op(dev->type->pm, state);
+ 	} else if (dev->class && dev->class->pm) {
+@@ -1170,6 +1195,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 		callback = pm_late_early_op(dev->driver->pm, state);
+ 	}
+ 
++ End:
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	if (!error)
+ 		dev->power.is_late_suspended = true;
+@@ -1338,20 +1364,21 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	if (dev->pm_domain) {
+ 		info = "power domain ";
+ 		callback = pm_op(&dev->pm_domain->ops, state);
+-		goto Run;
++		if (callback)
++			goto Run;
+ 	}
+ 
+ 	if (dev->type && dev->type->pm) {
+ 		info = "type ";
+ 		callback = pm_op(dev->type->pm, state);
+-		goto Run;
++		goto Driver;
+ 	}
+ 
+ 	if (dev->class) {
+ 		if (dev->class->pm) {
+ 			info = "class ";
+ 			callback = pm_op(dev->class->pm, state);
+-			goto Run;
++			goto Driver;
+ 		} else if (dev->class->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy class ");
+ 			error = legacy_suspend(dev, state, dev->class->suspend,
+@@ -1372,12 +1399,13 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 		}
+ 	}
+ 
+- Run:
++ Driver:
+ 	if (!callback && dev->driver && dev->driver->pm) {
+ 		info = "driver ";
+ 		callback = pm_op(dev->driver->pm, state);
+ 	}
+ 
++ Run:
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 
+  End:
+@@ -1507,7 +1535,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 	if (dev->pm_domain) {
+ 		info = "preparing power domain ";
+ 		callback = dev->pm_domain->ops.prepare;
+-	} else if (dev->type && dev->type->pm) {
++		if (callback)
++			goto End;
++	}
++
++	if (dev->type && dev->type->pm) {
+ 		info = "preparing type ";
+ 		callback = dev->type->pm->prepare;
+ 	} else if (dev->class && dev->class->pm) {
+@@ -1523,6 +1555,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 		callback = dev->driver->pm->prepare;
+ 	}
+ 
++ End:
+ 	if (callback) {
+ 		error = callback(dev);
+ 		suspend_report_result(callback, error);
+-- 
+1.7.9.5
 
-Whether you use CC or reintroduce usage_avg as Vincent proposes I
-believe the overhead should be roughly the same.
-
-Morten
