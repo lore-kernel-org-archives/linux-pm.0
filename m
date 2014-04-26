@@ -1,32 +1,49 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
-Date: Sat, 26 Apr 2014 12:55:37 +0200
-Message-ID: <20140426105537.GI26782@laptop.programming.kicks-ass.net>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
- <2713863.BLQTYQm2Oa@vostro.rjw.lan>
- <20140425132055.GC11096@twins.programming.kicks-ass.net>
- <15044031.LGKXdkz8J7@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v5 2/8] cpufreq: Use cpufreq_for_each_* macros for frequency
+ table iteration
+Date: Sat, 26 Apr 2014 14:35:37 +0300
+Message-ID: <535B9A09.9060902@semaphore.gr>
+References: <535AC26A.1000006@semaphore.gr> <CA+V-a8sg9sBi5mf9KoFWrCJjw6WN+tGrb=bgJwfV3VDZ2DGYig@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <15044031.LGKXdkz8J7@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CA+V-a8sg9sBi5mf9KoFWrCJjw6WN+tGrb=bgJwfV3VDZ2DGYig@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Prabhakar Lad <prabhakar.csengg@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Kukjin Kim <kgene.kim@samsung.com>, Olof Johansson <olof@lixom.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 26, 2014 at 02:18:58AM +0200, Rafael J. Wysocki wrote:
-> And why do we have to do things that we hate it when they are done by others?
+Hi Prabhakar,
 
-Well, I'm assuming that these things that I dislike are actually useful
-and liked by the majority (me not fitting that is nothing new). If
-everybody hates these things, WTF are they still the default on pretty
-much every OS out there, Windows and Mac OS do the same screen dimming
-things when they loose AC last time I touched one of them.
+On 26/04/2014 12:57 =CE=BC=CE=BC, Prabhakar Lad wrote:
+> Hi Stratos,
+>=20
+> Thanks for the patch,
+>=20
+> On Sat, Apr 26, 2014 at 1:45 AM, Stratos Karafotis
+> <stratosk@semaphore.gr> wrote:
+>> The cpufreq core now supports the cpufreq_for_each_entry and
+>> cpufreq_for_each_valid_entry macros helpers for iteration over the
+>> cpufreq_frequency_table, so use them.
+>>
+>> It should have no functional changes.
+>>
+>> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+>=20
+> For patches 1 & 2:  Acked-by: Lad, Prabhakar <prabhakar.csengg@gmail.=
+com>
+>=20
+> and for patch 3: Acked-and-tested-by: Lad, Prabhakar
+> <prabhakar.csengg@gmail.com>
+>=20
+> Thanks,
+> --Prabhakar lad
+>=20
 
-Also, whilst I dislike screen dimming with a passion, I wouldn't
-actually dislike the power aware balancer (assuming it would actually
-work). Then I'm on BAT I tend to not actually do much more than read
-email/browse web and maybe write some code. But I rarely if ever compile
-when on battery.
+Thank you very much!
+
+
+Stratos Karafotis
+
+
