@@ -1,66 +1,56 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM with the PM core
-Date: Fri, 25 Apr 2014 16:44:58 -0700
-Message-ID: <7hoazpdldx.fsf@paris.lan>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
-	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
+Date: Sat, 26 Apr 2014 02:18:58 +0200
+Message-ID: <15044031.LGKXdkz8J7@vostro.rjw.lan>
+References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <2713863.BLQTYQm2Oa@vostro.rjw.lan> <20140425132055.GC11096@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f42.google.com ([209.85.160.42]:45526 "EHLO
-	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbaDYXpA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 19:45:00 -0400
-Received: by mail-pb0-f42.google.com with SMTP id un15so3730307pbc.15
-        for <linux-pm@vger.kernel.org>; Fri, 25 Apr 2014 16:45:00 -0700 (PDT)
-In-Reply-To: <1398334403-26181-4-git-send-email-geert+renesas@glider.be>
-	(Geert Uytterhoeven's message of "Thu, 24 Apr 2014 12:13:22 +0200")
+Received: from v094114.home.net.pl ([79.96.170.134]:58402 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750802AbaDZACf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 20:02:35 -0400
+In-Reply-To: <20140425132055.GC11096@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Geert Uytterhoeven <geert+renesas@glider.be> writes:
+On Friday, April 25, 2014 03:20:55 PM Peter Zijlstra wrote:
+> On Fri, Apr 25, 2014 at 01:46:53PM +0200, Rafael J. Wysocki wrote:
+> 
+> _trim_ emails!!! one of these days I'm going to write a bot to flame
+> your head of if there's excessive quoting.
 
-> When adding a device from DT, check if its clocks are suitable for Runtime
-> PM, and register them with the PM core.
-> If Runtime PM is disabled, just enable the clock.
->
-> This allows the PM core to automatically manage gate clocks of devices for
-> Runtime PM.
+Words ...
 
-...unless the device is already in an existing pm_domain, right?
+> > 
+> > Well, so now the question is whether or not we relly want to always
+> > go to the "power" (or "energy efficiency" if you will) mode if the system
+> > is on battery.  That arguably may not be a good thing even for energy
+> > efficiency depending on how exactly the modes are defined.
+> 
+> Nobody is talking about always. But in general it seems a good enough
+> approach. Hell, many of the AC/BAT switches in todays power management
+> crap things are not always right.
+> 
+> Do I want it to dim the LCD further when I unplug the laptop -- mostly
+> no, but still it does. And the most annoying one is that it reduces the
+> screen blank time to something near 5 seconds or so.
+> 
+> Why would this be any different?
 
-I like this approach, and it extends nicely what we already do on
-platforms using drivers/base/power/clock_ops.c into DT land.
+And why do we have to do things that we hate it when they are done by others?
 
-My only concern is how this will interact if it's used along with
-devices that have existing pm_domains.  I don't have any specific
-concerns (yet, because it's Friday, and my brain is turing off), but it
-just made me wonder if this will be potentially confusing.
- 
-Also...
+> If you know what you want you can turn the knob.
+> 
+> > So in my opinion it's too early to add things like that at this point.
+> 
+> Meh.. 
 
-[...]
+Seriously, I'm not even sure if we really need that stuff to be honest.
 
-> +static int of_clk_register(struct device *dev, struct clk *clk)
-> +{
-> +	int error;
-> +
-> +	if (!dev->pm_domain) {
-> +		error = pm_clk_create(dev);
-> +		if (error)
-> +			return error;
-> +
-> +		dev->pm_domain = &of_clk_pm_domain;
-> +	}
-> +
-> +	dev_dbg(dev, "Setting up clock for runtime PM management\n");
-> +	return pm_clk_add_clk(dev, clk);
-
-I would've expected these 2 lines to be inside the pm_domain check.
-
-What's the reason for doing the pm_clk_add() when the pm_domain isn't
-going to be used?  I suppose it's harmless, but it's a bit confusing.
-
-Kevin
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
