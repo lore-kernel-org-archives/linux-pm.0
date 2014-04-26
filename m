@@ -1,56 +1,113 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
-Date: Sat, 26 Apr 2014 02:18:58 +0200
-Message-ID: <15044031.LGKXdkz8J7@vostro.rjw.lan>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <2713863.BLQTYQm2Oa@vostro.rjw.lan> <20140425132055.GC11096@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management fixes for v3.15-rc3
+Date: Sat, 26 Apr 2014 02:11:51 +0200
+Message-ID: <CAJZ5v0gkQH0=hGTpA0fF=tpAW_t3eCvLkZPQ-=ROPmzzDYssLg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58402 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750802AbaDZACf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Apr 2014 20:02:35 -0400
-In-Reply-To: <20140425132055.GC11096@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday, April 25, 2014 03:20:55 PM Peter Zijlstra wrote:
-> On Fri, Apr 25, 2014 at 01:46:53PM +0200, Rafael J. Wysocki wrote:
-> 
-> _trim_ emails!!! one of these days I'm going to write a bot to flame
-> your head of if there's excessive quoting.
+Hi Linus,
 
-Words ...
+Please pull from
 
-> > 
-> > Well, so now the question is whether or not we relly want to always
-> > go to the "power" (or "energy efficiency" if you will) mode if the system
-> > is on battery.  That arguably may not be a good thing even for energy
-> > efficiency depending on how exactly the modes are defined.
-> 
-> Nobody is talking about always. But in general it seems a good enough
-> approach. Hell, many of the AC/BAT switches in todays power management
-> crap things are not always right.
-> 
-> Do I want it to dim the LCD further when I unplug the laptop -- mostly
-> no, but still it does. And the most annoying one is that it reduces the
-> screen blank time to something near 5 seconds or so.
-> 
-> Why would this be any different?
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.15-rc3
 
-And why do we have to do things that we hate it when they are done by others?
+to receive ACPI, power management and PNP fixes for v3.15-rc3
+with top-most commit d4c9c8a09cff85f69b2c224ca7dbeb42431da2b3
 
-> If you know what you want you can turn the knob.
-> 
-> > So in my opinion it's too early to add things like that at this point.
-> 
-> Meh.. 
+  Merge branches 'pnp' and 'acpi-hotplug'
 
-Seriously, I'm not even sure if we really need that stuff to be honest.
+on top of commit a798c10faf62a505d24e5f6213fbaf904a39623f
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+  Linux 3.15-rc2
+
+These include a fix for a recent ACPI regression related to
+device notifications, intel_idle fix related to IvyTown support,
+fix for a buffer size issue in ACPICA, PM core fix related to the
+"freeze" sleep state, four fixes for various types of breakage in
+cpufreq drivers, a PNP workaround for a wrong memory region size
+in ACPI tables, and a fix and cleanup for the ACPI tools Makefile.
+
+Specifics:
+
+ - Fix for broken ACPI notifications on some systems caused by
+   a recent ACPI hotplug commit that blocked the propagation of
+   unknown type notifications to device drivers inadvertently.
+
+ - intel_idle fix to make the IvyTown C-states handling (added
+   recently) work as intended which now is broken due to missing
+   braces.  From Christoph Jaeger.
+
+ - ACPICA fix to make it allocate buffers of the right sizes for
+   the Generic Serial Bus operation region access.  From Lv Zheng.
+
+ - PM core fix unblocking cpuidle before entering the "freeze"
+   sleep state which causes that state to be able to actually save
+   more energy than runtime idle.
+
+ - Configuration and build fixes for the highbank and powernv
+   cpufreq drivers from Kefeng Wang and Srivatsa S Bhat.
+
+ - Coccinelle warning fix related to error pointers for the
+   unicore32 cpufreq driver from Duan Jiong.
+
+ - Integer overflow fix for the ppc-corenet cpufreq driver from
+   Geert Uytterhoeven.
+
+ - Workaround for BIOSes that don't report the entire Intel MCH
+   area in their ACPI tables from Bjorn Helgaas.
+
+ - ACPI tools Makefile fix and cleanup from Thomas Renninger.
+
+Thanks!
+
+
+---------------
+
+Bjorn Helgaas (1):
+      PNP: Work around BIOS defects in Intel MCH area reporting
+
+Christoph Jaeger (1):
+      intel_idle: fix IVT idle state table setting
+
+Duan Jiong (1):
+      cpufreq: unicore32: replace IS_ERR and PTR_ERR with PTR_ERR_OR_ZERO
+
+Geert Uytterhoeven (1):
+      cpufreq: ppc: Fix integer overflow in expression
+
+Kefeng Wang (1):
+      cpufreq: highbank: fix ARM_HIGHBANK_CPUFREQ dependency warning
+
+Lv Zheng (1):
+      ACPICA: Fix buffer allocation issue for generic_serial_bus
+region accesses.
+
+Rafael J. Wysocki (2):
+      PM / suspend: Make cpuidle work in the "freeze" state
+      ACPI / notify: Do not block unknown type notifications in root handler
+
+Srivatsa S. Bhat (1):
+      cpufreq, powernv: Fix build failure on UP
+
+Thomas Renninger (1):
+      tools/power/acpi: Minor bugfixes
+
+---------------
+
+ drivers/acpi/acpica/exfield.c         | 104 +++++++++++++++++++++++++++++++---
+ drivers/acpi/bus.c                    |   5 +-
+ drivers/cpufreq/Kconfig.arm           |   6 +-
+ drivers/cpufreq/powernv-cpufreq.c     |   1 +
+ drivers/cpufreq/ppc-corenet-cpufreq.c |   2 +-
+ drivers/cpufreq/unicore2-cpufreq.c    |   4 +-
+ drivers/idle/intel_idle.c             |   3 +-
+ drivers/pnp/quirks.c                  |  79 ++++++++++++++++++++++++++
+ kernel/power/suspend.c                |   3 +
+ tools/power/acpi/Makefile             |  11 +---
+ 10 files changed, 188 insertions(+), 30 deletions(-)
