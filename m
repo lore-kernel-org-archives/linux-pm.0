@@ -1,43 +1,106 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
-Date: Sun, 27 Apr 2014 21:39:28 +0200
-Message-ID: <20140427193928.GC17778@laptop.programming.kicks-ass.net>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
- <15044031.LGKXdkz8J7@vostro.rjw.lan>
- <20140426105537.GI26782@laptop.programming.kicks-ass.net>
- <2356289.56GzXmbvd0@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: intel_pstate: Change the calculation of next pstate
+Date: Mon, 28 Apr 2014 01:12:24 +0300
+Message-ID: <535D80C8.9090906@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:38206 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbaD0Tjl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 15:39:41 -0400
-Content-Disposition: inline
-In-Reply-To: <2356289.56GzXmbvd0@vostro.rjw.lan>
+Received: from sema.semaphore.gr ([78.46.194.137]:37293 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752286AbaD0WM2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 18:12:28 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Sun, Apr 27, 2014 at 03:54:32PM +0200, Rafael J. Wysocki wrote:
-> On Saturday, April 26, 2014 12:55:37 PM Peter Zijlstra wrote:
-> > On Sat, Apr 26, 2014 at 02:18:58AM +0200, Rafael J. Wysocki wrote:
-> > > And why do we have to do things that we hate it when they are done by others?
-> > 
-> > Well, I'm assuming that these things that I dislike are actually useful
-> > and liked by the majority (me not fitting that is nothing new). If
-> > everybody hates these things, WTF are they still the default on pretty
-> > much every OS out there, Windows and Mac OS do the same screen dimming
-> > things when they loose AC last time I touched one of them.
-> 
-> Well, vendors have certain battery life targets for their products (you
-> know, something for the marketing people to brag about) and tend to be
-> quite aggressive about doing whatever they can to reach them.
+Currently the driver calculates the next pstate proportional to
+core_busy factor and reverse proportional to current pstate.
 
-Well, I was just hoping the industry wasn't _that_ rotten and there was
-actual a majority of people liking this.
+Change the above method and calculate the next pstate independently
+of current pstate.
 
-> We don't have such targets for the mainline kernel, though, do we? ;-)
+Tested on Intel i7-3770 CPU @ 3.40GHz.
+Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+increase ~1.5% in performance. Below the test results using turbostat
+(5 iterations):
 
-No, for sure :-)
+Without patch:
+
+Ph. avg Time	Total time	PkgWatt		Total Energy
+	79.63	266.416		57.74		15382.85984
+	79.63	265.609		57.87		15370.79283
+	79.57	266.994		57.54		15362.83476
+	79.53	265.304		57.83		15342.53032
+	79.71	265.977		57.76		15362.83152
+avg	79.61	266.06		57.74		15364.36985
+
+With patch:
+
+Ph. avg Time	Total time	PkgWatt		Total Energy
+	78.23	258.826		59.14		15306.96964
+	78.41	259.110		59.15		15326.35650
+	78.40	258.530		59.26		15320.48780
+	78.46	258.673		59.20		15313.44160
+	78.19	259.075		59.16		15326.87700
+avg	78.34	258.842		59.18		15318.82650
+
+The total test time reduced by ~2.6%, while the total energy
+consumption during a test iteration reduced by ~0.35%
+
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/intel_pstate.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 0999673..8e309db 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -608,28 +608,27 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+ 	mod_timer_pinned(&cpu->timer, jiffies + delay);
+ }
+ 
+-static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
++static inline int32_t intel_pstate_get_busy(struct cpudata *cpu)
+ {
+-	int32_t core_busy, max_pstate, current_pstate;
++	int32_t core_busy, max_pstate;
+ 
+ 	core_busy = cpu->sample.core_pct_busy;
+ 	max_pstate = int_tofp(cpu->pstate.max_pstate);
+-	current_pstate = int_tofp(cpu->pstate.current_pstate);
+-	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
++	core_busy = mul_fp(core_busy, max_pstate);
+ 	return FP_ROUNDUP(core_busy);
+ }
+ 
+ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ {
+-	int32_t busy_scaled;
++	int32_t busy;
+ 	struct _pid *pid;
+ 	signed int ctl = 0;
+ 	int steps;
+ 
+ 	pid = &cpu->pid;
+-	busy_scaled = intel_pstate_get_scaled_busy(cpu);
++	busy = intel_pstate_get_busy(cpu);
+ 
+-	ctl = pid_calc(pid, busy_scaled);
++	ctl = pid_calc(pid, busy);
+ 
+ 	steps = abs(ctl);
+ 
+@@ -651,7 +650,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+ 	intel_pstate_adjust_busy_pstate(cpu);
+ 
+ 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+-			fp_toint(intel_pstate_get_scaled_busy(cpu)),
++			fp_toint(intel_pstate_get_busy(cpu)),
+ 			cpu->pstate.current_pstate,
+ 			sample->mperf,
+ 			sample->aperf,
+-- 
+1.9.0
