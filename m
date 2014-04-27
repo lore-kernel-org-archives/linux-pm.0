@@ -1,61 +1,79 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v2] PM / devfreq: Use freq_table for available_frequencies
-Date: Mon, 28 Apr 2014 01:41:55 +0000 (GMT)
-Message-ID: <4324793.197151398649314597.JavaMail.weblogic@epv6ml10>
-Reply-To: myungjoo.ham@samsung.com
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU
+ ConCurrency
+Date: Mon, 28 Apr 2014 04:07:25 +0800
+Message-ID: <20140427200725.GA4771@intel.com>
+References: <20140424193004.GA2467@intel.com>
+ <20140425102307.GN2500@e103034-lin>
+ <13348109.c4H00groOp@vostro.rjw.lan>
+ <20140425145334.GC2639@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:39169 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750749AbaD1EMm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Apr 2014 00:12:42 -0400
+Content-Disposition: inline
+In-Reply-To: <20140425145334.GC2639@e103034-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
 
-PiBTb21lIGRldmljZXMgdXNlIGZyZXFfdGFibGUgaW5zdGVhZCBvZiBPUFAuIEZvciB0aG9zZSBk
-ZXZpY2VzLCB0aGUNCj4gYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzIGZpbGUgc2hvd3MgdXAgZW1wdHku
-IEZpeCB0aGF0IGJ5IHVzaW5nIGZyZXFfdGFibGUgdG8NCj4gZ2VuZXJhdGUgdGhlIGF2YWlsYWJs
-ZV9mcmVxdWVuY2llcyBkYXRhIHdoZW4gaXQncyBhdmFpbGFibGUuDQo+IA0KPiBPUFAgZmluZCBm
-cmVxdWVuY3kgQVBJcyBhbHNvIHNraXBzIGZyZXF1ZW5jaWVzIHRoYXQgaGF2ZSBiZWVuIHRlbXBv
-cmFyaWx5DQo+IGRpc2FibGVkIChzYXksIGR1ZSB0byB0aGVybWFsLCBldGMpLiBTaW5jZSBhdmFp
-bGFibGVfZnJlcXVlbmNpZXMgaXMNCj4gc3VwcG9zZWQgdG8gc2hvdyB0aGUgZW50aXJlIGxpc3Qg
-b2YgYXZhaWxhYmxlIGZyZXF1ZW5jaWVzIHdpdGhvdXQgdGFraW5nDQo+IHRlbXBvcmFyeSBsaW1p
-dHMgaW50byBjb25zaWRlcmF0aW9uLCBwcmVmZXJlbmNlIGlzIGdpdmVuIHRvIGZyZXFfdGFibGUg
-d2hlbg0KPiBhdmFpbGFibGUuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBTYXJhdmFuYSBLYW5uYW4g
-PHNrYW5uYW5AY29kZWF1cm9yYS5vcmc+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVxL2RldmZy
-ZXEuYyB8IDI5ICsrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tDQo+ICAxIGZpbGUgY2hhbmdl
-ZCwgMTggaW5zZXJ0aW9ucygrKSwgMTEgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyBiL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCj4g
-aW5kZXggMjA0MmVjMy4uNTI3Y2JlMiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2Rl
-dmZyZXEuYw0KPiArKysgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+IEBAIC05MTIsMjAg
-KzkxMiwyNyBAQCBzdGF0aWMgc3NpemVfdCBhdmFpbGFibGVfZnJlcXVlbmNpZXNfc2hvdyhzdHJ1
-Y3QgZGV2aWNlICpkLA0KPiAgCXN0cnVjdCBkZXZmcmVxICpkZiA9IHRvX2RldmZyZXEoZCk7DQo+
-ICAJc3RydWN0IGRldmljZSAqZGV2ID0gZGYtPmRldi5wYXJlbnQ7DQo+ICAJc3RydWN0IGRldl9w
-bV9vcHAgKm9wcDsNCj4gKwl1bnNpZ25lZCBpbnQgaSA9IDA7DQo+ICAJc3NpemVfdCBjb3VudCA9
-IDA7DQo+ICAJdW5zaWduZWQgbG9uZyBmcmVxID0gMDsNCj4gIA0KPiAtCXJjdV9yZWFkX2xvY2so
-KTsNCj4gLQlkbyB7DQo+IC0JCW9wcCA9IGRldl9wbV9vcHBfZmluZF9mcmVxX2NlaWwoZGV2LCAm
-ZnJlcSk7DQo+IC0JCWlmIChJU19FUlIob3BwKSkNCj4gLQkJCWJyZWFrOw0KPiAtDQo+IC0JCWNv
-dW50ICs9IHNjbnByaW50ZigmYnVmW2NvdW50XSwgKFBBR0VfU0laRSAtIGNvdW50IC0gMiksDQo+
-IC0JCQkJICAgIiVsdSAiLCBmcmVxKTsNCj4gLQkJZnJlcSsrOw0KPiAtCX0gd2hpbGUgKDEpOw0K
-PiAtCXJjdV9yZWFkX3VubG9jaygpOw0KPiArCWlmIChkZi0+cHJvZmlsZS0+ZnJlcV90YWJsZSkg
-ew0KPiArCQlmb3IgKGkgPSAwOyBpIDwgZGYtPnByb2ZpbGUtPm1heF9zdGF0ZTsgaSsrKQ0KPiAr
-CQkJY291bnQgKz0gc2NucHJpbnRmKCZidWZbY291bnRdLCAoUEFHRV9TSVpFIC0gY291bnQgLSAy
-KSwNCj4gKwkJCQkJICAgIiV1ICIsIGRmLT5wcm9maWxlLT5mcmVxX3RhYmxlW2ldKTsNCg0KWW91
-IGFyZSBoZXJlYnkgY2hhbmdpbmcgdGhlIHNlbW1hbnRpY3Mgb2YgdGhlIG9yaWdpbmFsDQphdmFp
-bGFibGVfZnJlcXVlbmNpZXMgbm9kZS4NCg0KV2hlbiBhIGZyZXF1ZW5jeS92b2x0YWdlIHBhaXIg
-aGFzIGJlZW4gZGlzYWJsZWQgKG9wcF9kaXNhYmxlKSwgcHJvYmFibHkNCmJ5IG9wcF9kaXNhYmxl
-KCksIHRoZSBmcmVxdWVuY3kgaXMgbm8gbW9yZSAiYXZhaWxhYmxlIi4NCkhvd2V2ZXIsIHdoZW4g
-dGhlIGRyaXZlciBhdXRob3Igc3VwcGxpZWQgZnJlcV90YWJsZSBhcyB3ZWxsIGFzIE9QUA0KaW4g
-b3JkZXIgdG8gc2VlIHRoZSBzdGF0aXN0aWNzLCB0aGUgbm9kZSB3aWxsIGJlaGF2ZSBkaWZmZXJl
-bnRseS4NCg0KUGxlYXNlIGRvIG5vdCBhZmZlY3QgdGhlIGN1cnJlbnQgdXNlcnMgYXMgbG9uZyBh
-cyBpdCBkb2VzIG5vdCBnaXZlDQphZGRpdGlvbmFsIGJlbmVmaXQgb3IgZml4IGEgYnVnLg0KDQoN
-CkNoZWVycywNCk15dW5nSm9vLg0KDQoNCj4gKwl9IGVsc2Ugew0KPiArCQlyY3VfcmVhZF9sb2Nr
-KCk7DQo+ICsJCWRvIHsNCj4gKwkJCW9wcCA9IGRldl9wbV9vcHBfZmluZF9mcmVxX2NlaWwoZGV2
-LCAmZnJlcSk7DQo+ICsJCQlpZiAoSVNfRVJSKG9wcCkpDQo+ICsJCQkJYnJlYWs7DQo+ICsNCj4g
-KwkJCWNvdW50ICs9IHNjbnByaW50ZigmYnVmW2NvdW50XSwgKFBBR0VfU0laRSAtIGNvdW50IC0g
-MiksDQo+ICsJCQkJCSAgICIlbHUgIiwgZnJlcSk7DQo+ICsJCQlmcmVxKys7DQo+ICsJCX0gd2hp
-bGUgKDEpOw0KPiArCQlyY3VfcmVhZF91bmxvY2soKTsNCj4gKwl9DQo+ICANCj4gIAkvKiBUcnVu
-Y2F0ZSB0aGUgdHJhaWxpbmcgc3BhY2UgKi8NCj4gIAlpZiAoY291bnQpDQo+IC0tIA0KPiBUaGUg
-UXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgdGhlIENvZGUg
-QXVyb3JhIEZvcnVtLA0KPiBob3N0ZWQgYnkgVGhlIExpbnV4IEZvdW5kYXRpb24NCj4gDQo=
+On Fri, Apr 25, 2014 at 03:53:34PM +0100, Morten Rasmussen wrote:
+> I fully agree. My point was that there is more to task consolidation
+> than just observing the degree of task parallelism. The system topology
+> has a lot to say when deciding whether or not to pack. That was the
+> motivation for proposing to have a power model for the system topology
+> to help making that decision.
+> 
+> We do already have some per-task metric available that may be useful for
+> determining whether a workload is eligible for task packing. The
+> load_avg_contrib gives us an indication of the tasks cpu utilization and
+> we also count task wake-ups. If we tracked task wake-ups over time
+> (right now we only have the sum) we should be able to reason about the
+> number of wake-ups that a task causes. Lots of wake-ups and low
+> load_avg_contrib would indicate the task power is likely to be dominated
+> by the wake-up costs if it is placed on a cpu in a deep idle state.
+> 
+> I fully agree that measuring the workloads while they are running is the
+> way to go. I'm just wondering if the proposed cpu concurrency measure
+> is sufficient to make the task packing decision for all system
+> topologies or if we need something that incorporates more system
+> topology information. If the latter, we may want to roll it all into
+> something like an energy_diff(src_cpu, dst_cpu, task) helper function
+> for use in load-balancing decisions.
+> 
+
+Thank you.
+
+After CC, in the consolidation part, we do 1) attach the CPU topology to "help
+making that decision" and to be adaptive beyond our experimental platforms, and
+2) intercept the current load balance for load and load balancing containment.
+
+Maybe, the way we consolidate workload differs from previous is:
+
+1) we don't do it per task. We only see how many concurrent CPUs needed (on
+average and on prediction at power gated units) for the workload, and simply
+consolidate.
+
+2) I am not sure it is sufficient either, :). But I can offer another two ways
+of how to interpret CC.
+
+2.1) the current work-conserving load balance also uses CC, but instantaneous
+CC (similar to what PeterZ said to Vincent?).
+
+2.2) CC vs. CPU utilization. CC is runqueue-length-weighted CPU utilization.
+If we change: "a = sum(concurrency * time) / period" to "a' = sum(1 * time) /
+period". Then a' is just about the CPU utilization. And the way we weight
+runqueue-length is the simplest one (excluding the exponential decays, and you
+may have other ways).
+
+The workloads they (not me) used to evaluate the "Workload Consolidation" is
+1) 50+ perf/ux benchmarks (almost all of the magazine ones), and 2) ~10 power
+workloads, of course, they are the easiest ones, such as browsing, audio,
+video, recording, imaging, etc.
+
+Thanks,
+Yuyang
