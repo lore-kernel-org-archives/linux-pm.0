@@ -1,91 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
-Date: Sun, 27 Apr 2014 15:23:24 +0200
-Message-ID: <1586415.tT6O0p7OWR@vostro.rjw.lan>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <15044031.LGKXdkz8J7@vostro.rjw.lan> <20140426061744.GB1944@gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: [PATCH RFC 0/5] Dove PMU support
+Date: Sun, 27 Apr 2014 14:23:12 +0100
+Message-ID: <20140427132312.GC26756@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64511 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752099AbaD0NG6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 09:06:58 -0400
-In-Reply-To: <20140426061744.GB1944@gmail.com>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:53661 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751213AbaD0NYJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 09:24:09 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On Saturday, April 26, 2014 08:17:44 AM Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> 
-> > > > Well, so now the question is whether or not we relly want to 
-> > > > always go to the "power" (or "energy efficiency" if you will) 
-> > > > mode if the system is on battery.  That arguably may not be a 
-> > > > good thing even for energy efficiency depending on how exactly 
-> > > > the modes are defined.
-> > > 
-> > > Nobody is talking about always. But in general it seems a good 
-> > > enough approach. Hell, many of the AC/BAT switches in todays power 
-> > > management crap things are not always right.
-> > > 
-> > > Do I want it to dim the LCD further when I unplug the laptop -- 
-> > > mostly no, but still it does. And the most annoying one is that it 
-> > > reduces the screen blank time to something near 5 seconds or so.
-> > > 
-> > > Why would this be any different?
-> > 
-> > And why do we have to do things that we hate it when they are done 
-> > by others?
-> 
-> He replied to your question of 'do we want to act on power events'.
-> 
-> The answer is: yes, from the scheduler point of view we want to act on 
-> power events by default, and if a user does not want that default 
-> behavior, it's not an unprecedented request and GUIs offer various 
-> ways to tweak screen dimming and other power saving details.
-> 
-> So "trying to save power" is the default everywhere, and the scheduler 
-> wants to do the same. The main reason we couldn't do this before was 
-> that the scheduler's 'power saving mode' was dysfunctional. That is 
-> being fixed.
-> 
-> So lets try this, it's high time.
+The following series of patches add better PMU support for Dove.  This
+has been developed on the Cubox, and tested in non-DT and DT modes.
 
-Thanks for stating your perspective clearly, this is good to know.
+This also improves the interrupt handling over the existing code: the
+existing code ends up calling the interrupt handlers twice for every
+interrupt raised, because the interrupt clear-down is done at the
+wrong point - we need to clear down the interrupt in the device first,
+then clear it down in the controller.
 
-Still, I have a rather fundamental problem with the notion that performance
-and energy efficiency are essentially at odds with each other, because quite
-often they aren't.  What is good for performance is often good for energy
-efficiency as well (like when it may be better to do a certain amount of work
-quickly and then go idle instead of slowing down and taking more time to do
-the work, because that time may turn out to be so long that energy used for
-doing the work will actually be greater).  So while I'm all for acting on power
-events, I'm also for being rather careful with that.
+The problem this gives is that it can be racy (see comments in the
+driver) so we're careful about how we do that to minimise the window.
 
-Moreover, in fact performance and energy efficiency are not the only factors
-that need to be taken into account, there also is the maximum power draw (ie.
-the rate of using energy) that can be sustained.  Arguably, all three of them
-always matter, regardless of whether or not the system is on battery.
+I've included all patches here - the initial set are targetted towards
+adding DT support, with the final adding the non-DT support.  There is
+a call to the initialisation function missing for DT mode - I'd like
+the mvebu people to comment on how that should be handled, as it needs
+to be done pretty early.
 
-People often mentally translate energy efficiency into battery life, because
-that's probably the most obvious case, but in fact it generally translates into
-the cost of doing work (in therms of money or other things).  Going to battery
-means something like "energy is now more valuable to me", but there may be other
-events meaning the same (for example, energy may be cheaper in the night etc).
-So it looks like we need a global mechanism to represent the current relative
-value of energy to the user and to update it whenever something like "we're on
-battery now" happens (other subsystems would benefit from that too IMO).
+Also included are two PM domain changes: the first I've discussed with
+Rafael who seems happy with it.  The second is necessary because we
+have no way to know if a generic PM domain is associated with a device
+or whether something else making use of the PM domain is installed in
+the dev->pm_domain pointer, so this allows that decision to be made by
+core PM code.
 
-The same applies to the maximum sustainable power draw limit more or less.
-While it generally changes between "on battery" and "on AC power", it may also
-depend on other factors like the capacity of the available power supply for a
-data center.
+This is more a "this is where I'm at" with this stuff than a real
+submission, nevertheless comments on how to get it ready for submission
+would be welcome.  I'd like to get this off my plate ASAP.
 
-Thanks!
+ arch/arm/Kconfig                     |   1 +
+ arch/arm/boot/dts/dove.dtsi          |   7 +
+ arch/arm/mach-dove/Makefile          |   1 +
+ arch/arm/mach-dove/common.c          |   2 +
+ arch/arm/mach-dove/common.h          |   1 +
+ arch/arm/mach-dove/include/mach/pm.h |  17 --
+ arch/arm/mach-dove/irq.c             |  87 ------
+ arch/arm/mach-dove/pmu.c             | 531 +++++++++++++++++++++++++++++++++++
+ drivers/base/power/domain.c          |   8 +-
+ 9 files changed, 547 insertions(+), 108 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
