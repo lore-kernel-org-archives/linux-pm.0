@@ -1,73 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU ConCurrency
-Date: Sun, 27 Apr 2014 16:05:58 +0200
-Message-ID: <2905301.LGC8T1pCHG@vostro.rjw.lan>
-References: <20140424193004.GA2467@intel.com> <13348109.c4H00groOp@vostro.rjw.lan> <20140425145334.GC2639@e103034-lin>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
+Date: Sun, 27 Apr 2014 21:39:28 +0200
+Message-ID: <20140427193928.GC17778@laptop.programming.kicks-ass.net>
+References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org>
+ <15044031.LGKXdkz8J7@vostro.rjw.lan>
+ <20140426105537.GI26782@laptop.programming.kicks-ass.net>
+ <2356289.56GzXmbvd0@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63551 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750740AbaD0Ntd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 09:49:33 -0400
-In-Reply-To: <20140425145334.GC2639@e103034-lin>
+Received: from bombadil.infradead.org ([198.137.202.9]:38206 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbaD0Tjl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 15:39:41 -0400
+Content-Disposition: inline
+In-Reply-To: <2356289.56GzXmbvd0@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Yuyang Du <yuyang.du@intel.com>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday, April 25, 2014 03:53:34 PM Morten Rasmussen wrote:
-> On Fri, Apr 25, 2014 at 01:19:46PM +0100, Rafael J. Wysocki wrote:
-
-[...]
-
+On Sun, Apr 27, 2014 at 03:54:32PM +0200, Rafael J. Wysocki wrote:
+> On Saturday, April 26, 2014 12:55:37 PM Peter Zijlstra wrote:
+> > On Sat, Apr 26, 2014 at 02:18:58AM +0200, Rafael J. Wysocki wrote:
+> > > And why do we have to do things that we hate it when they are done by others?
 > > 
-> > So in my opinion we need to figure out how to measure workloads while they are
-> > running and then use that information to make load balancing decisions.
-> > 
-> > In principle, given the system's topology, task packing may lead to better
-> > results for some workloads, but not necessarily for all of them.  So we need
-> > a way to determine (a) whether or not task packing is an option at all in the
-> > given system (that may change over time due to user policy changes etc.) and
-> > if that is the case, then (b) if the current workload is eligible for task
-> > packing.
+> > Well, I'm assuming that these things that I dislike are actually useful
+> > and liked by the majority (me not fitting that is nothing new). If
+> > everybody hates these things, WTF are they still the default on pretty
+> > much every OS out there, Windows and Mac OS do the same screen dimming
+> > things when they loose AC last time I touched one of them.
 > 
-> I fully agree. My point was that there is more to task consolidation
-> than just observing the degree of task parallelism. The system topology
-> has a lot to say when deciding whether or not to pack. That was the
-> motivation for proposing to have a power model for the system topology
-> to help making that decision.
+> Well, vendors have certain battery life targets for their products (you
+> know, something for the marketing people to brag about) and tend to be
+> quite aggressive about doing whatever they can to reach them.
 
-Agreed.
+Well, I was just hoping the industry wasn't _that_ rotten and there was
+actual a majority of people liking this.
 
-> We do already have some per-task metric available that may be useful for
-> determining whether a workload is eligible for task packing. The
-> load_avg_contrib gives us an indication of the tasks cpu utilization and
-> we also count task wake-ups. If we tracked task wake-ups over time
-> (right now we only have the sum) we should be able to reason about the
-> number of wake-ups that a task causes. Lots of wake-ups and low
-> load_avg_contrib would indicate the task power is likely to be dominated
-> by the wake-up costs if it is placed on a cpu in a deep idle state.
+> We don't have such targets for the mainline kernel, though, do we? ;-)
 
-Agreed too.
-
-> I fully agree that measuring the workloads while they are running is the
-> way to go. I'm just wondering if the proposed cpu concurrency measure
-> is sufficient to make the task packing decision for all system
-> topologies or if we need something that incorporates more system
-> topology information. If the latter, we may want to roll it all into
-> something like an energy_diff(src_cpu, dst_cpu, task) helper function
-> for use in load-balancing decisions.
-
-I think that the latter is the case.
-
-For example, quite a lot may depend on how much cache is shared between
-different CPU cores and what the cache hierarchy is in general.  Especially
-if the workload fits into the cache entirely.
-
-Thanks!
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+No, for sure :-)
