@@ -1,59 +1,55 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: [PATCH RFC 0/5] Dove PMU support
-Date: Sun, 27 Apr 2014 14:23:12 +0100
-Message-ID: <20140427132312.GC26756@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:53661 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751213AbaD0NYJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 09:24:09 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+From: Russell King <rmk+kernel-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Subject: [PATCH 1/5] pm: domains: quieten down generic pm domains
+Date: Sun, 27 Apr 2014 14:28:50 +0100
+Message-ID: <E1WeP8U-0000Ug-RQ@rmk-PC.arm.linux.org.uk>
+References: <20140427132312.GC26756@n2100.arm.linux.org.uk>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20140427132312.GC26756-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-The following series of patches add better PMU support for Dove.  This
-has been developed on the Cubox, and tested in non-DT and DT modes.
+Signed-off-by: Russell King <rmk+kernel-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+---
+ drivers/base/power/domain.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-This also improves the interrupt handling over the existing code: the
-existing code ends up calling the interrupt handlers twice for every
-interrupt raised, because the interrupt clear-down is done at the
-wrong point - we need to clear down the interrupt in the device first,
-then clear it down in the controller.
-
-The problem this gives is that it can be racy (see comments in the
-driver) so we're careful about how we do that to minimise the window.
-
-I've included all patches here - the initial set are targetted towards
-adding DT support, with the final adding the non-DT support.  There is
-a call to the initialisation function missing for DT mode - I'd like
-the mvebu people to comment on how that should be handled, as it needs
-to be done pretty early.
-
-Also included are two PM domain changes: the first I've discussed with
-Rafael who seems happy with it.  The second is necessary because we
-have no way to know if a generic PM domain is associated with a device
-or whether something else making use of the PM domain is installed in
-the dev->pm_domain pointer, so this allows that decision to be made by
-core PM code.
-
-This is more a "this is where I'm at" with this stuff than a real
-submission, nevertheless comments on how to get it ready for submission
-would be welcome.  I'd like to get this off my plate ASAP.
-
- arch/arm/Kconfig                     |   1 +
- arch/arm/boot/dts/dove.dtsi          |   7 +
- arch/arm/mach-dove/Makefile          |   1 +
- arch/arm/mach-dove/common.c          |   2 +
- arch/arm/mach-dove/common.h          |   1 +
- arch/arm/mach-dove/include/mach/pm.h |  17 --
- arch/arm/mach-dove/irq.c             |  87 ------
- arch/arm/mach-dove/pmu.c             | 531 +++++++++++++++++++++++++++++++++++
- drivers/base/power/domain.c          |   8 +-
- 9 files changed, 547 insertions(+), 108 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index bfb8955c406c..ea91ea0e137b 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -42,7 +42,7 @@
+ 	struct gpd_timing_data *__td = &dev_gpd_data(dev)->td;			\
+ 	if (!__retval && __elapsed > __td->field) {				\
+ 		__td->field = __elapsed;					\
+-		dev_warn(dev, name " latency exceeded, new value %lld ns\n",	\
++		dev_dbg(dev, name " latency exceeded, new value %lld ns\n",	\
+ 			__elapsed);						\
+ 		genpd->max_off_time_changed = true;				\
+ 		__td->constraint_changed = true;				\
+@@ -242,7 +242,7 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
+ 			genpd->max_off_time_changed = true;
+ 			genpd_recalc_cpu_exit_latency(genpd);
+ 			if (genpd->name)
+-				pr_warning("%s: Power-on latency exceeded, "
++				pr_debug("%s: Power-on latency exceeded, "
+ 					"new value %lld ns\n", genpd->name,
+ 					elapsed_ns);
+ 		}
+@@ -566,7 +566,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
+ 			genpd->power_off_latency_ns = elapsed_ns;
+ 			genpd->max_off_time_changed = true;
+ 			if (genpd->name)
+-				pr_warning("%s: Power-off latency exceeded, "
++				pr_debug("%s: Power-off latency exceeded, "
+ 					"new value %lld ns\n", genpd->name,
+ 					elapsed_ns);
+ 		}
 -- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+1.8.3.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
