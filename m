@@ -1,8 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 5/5] cpufreq: Catch double invocations of
- cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 00:25:12 +0530
-Message-ID: <20140428185507.28755.6483.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH v2 1/5] cpufreq,
+ longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
+Date: Tue, 29 Apr 2014 00:24:09 +0530
+Message-ID: <20140428185403.28755.99738.stgit@srivatsabhat.in.ibm.com>
 References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,154 +14,136 @@ To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-Some cpufreq drivers were redundantly invoking the _begin() and _end()
-APIs around frequency transitions, and this double invocation (one from
-the cpufreq core and the other from the cpufreq driver) used to result
-in a self-deadlock, leading to system hangs during boot. (The _begin()
-API makes contending callers wait until the previous invocation is
-complete. Hence, the cpufreq driver would end up waiting on itself!).
+During frequency transitions, the cpufreq core takes the responsibility of
+invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
+for those cpufreq drivers that define the ->target_index callback but don't
+set the ASYNC_NOTIFICATION flag.
 
-Now all such drivers have been fixed, but debugging this issue was not
-very straight-forward (even lockdep didn't catch this). So let us add a
-debug infrastructure to the cpufreq core to catch such issues more easily
-in the future.
+The longhaul cpufreq driver falls under this category, but this driver was
+invoking the _begin() and _end() APIs itself around frequency transitions,
+which led to double invocation of the _begin() API. The _begin API makes
+contending callers wait until the previous invocation is complete. Hence,
+the longhaul driver ended up waiting on itself, leading to system hangs
+during boot.
 
-We add a new field called 'transition_task' to the policy structure, to keep
-track of the task which is performing the frequency transition. Using this
-field, we make note of this task during _begin() and print a warning if we
-find a case where the same task is calling _begin() again, before completing
-the previous frequency transition using the corresponding _end().
+Fix this by removing the calls to the _begin() and _end() APIs from the
+longhaul driver, since they rightly belong to the cpufreq core.
 
-One important aspect to consider is that it is valid for ASYNC_NOTIFICATION
-drivers to invoke _begin() from one task and then invoke the corresponding
-_end() in another task. We take care of this scenario by setting the value
-of 'transition_task' once again explicitly in the _end() function. This
-helps us handle the particular tricky scenario (shown below) that can occur
-in ASYNC_NOTIFICATION drivers:
+(Note that during module_exit(), the longhaul driver sets the frequency
+ without any help from the cpufreq core. So add explicit calls to the
+ _begin() and _end() APIs around that frequency transition alone, to take
+ care of that special case.)
 
-Scenario 1: (Deadlock-free)
-----------
-
-         Task A						Task B
-
-    /* 1st freq transition */
-    Invoke _begin() {
-            ...
-            ...
-    }
-
-    Change the frequency
-
-						Got interrupt for successful
-						change of frequency.
-
-						/* 1st freq transition */
-						Invoke _end() {
-							...
-							...
-    /* 2nd freq transition */    			...
-    Invoke _begin() {					...
-	    ...	//waiting for B				...
-            ... //to finish _end()		}
-	    ...
-	    ...
-    }
-
-
-This scenario is actually deadlock-free because Task A can wait inside the
-second call to _begin() without self-deadlocking, because it is the
-responsibility of Task B to finish the first sequence by invoking the
-corresponding _end().
-
-By setting the value of 'transition_task' again explicitly in _end(), we
-ensure that the code won't print a false-positive warning in this case.
-
-However the same code successfully catches the following deadlock-prone
-scenario even in ASYNC_NOTIFICATION drivers:
-
-Scenario 2: (Deadlock-prone)
-----------
-
-         Task A						Task B
-
-    /* 1st freq transition */
-    Invoke _begin() {
-            ...
-            ...
-    }
-
-    /* 2nd freq transition */
-    Invoke _begin() {
-	    ...
-	    ...
-    }
-
-    Change the frequency
-
-
-Here the bug is that Task A called the second _begin() *before* actually
-performing the 1st frequency transition. In other words, it failed to set
-Task B in motion for the 1st frequency transition, and hence it will
-self-deadlock. This is very similar to the case of drivers which do
-synchronous notification, and hence the debug infrastructure developed
-in this patch can catch this scenario easily.
-
+Reported-and-Tested-by: Meelis Roos <mroos@linux.ee>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/cpufreq.c |   12 ++++++++++++
- include/linux/cpufreq.h   |    1 +
- 2 files changed, 13 insertions(+)
+ drivers/cpufreq/longhaul.c |   36 ++++++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index abda660..2c99a6c 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -354,6 +354,10 @@ static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
- void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs)
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index d00e5d1..5c4369b 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -242,7 +242,7 @@ static void do_powersaver(int cx_address, unsigned int mults_index,
+  * Sets a new clock ratio.
+  */
+ 
+-static void longhaul_setstate(struct cpufreq_policy *policy,
++static int longhaul_setstate(struct cpufreq_policy *policy,
+ 		unsigned int table_index)
  {
+ 	unsigned int mults_index;
+@@ -258,10 +258,12 @@ static void longhaul_setstate(struct cpufreq_policy *policy,
+ 	/* Safety precautions */
+ 	mult = mults[mults_index & 0x1f];
+ 	if (mult == -1)
+-		return;
++		return -EINVAL;
 +
-+	/* Catch double invocations of _begin() which lead to self-deadlock */
-+	WARN_ON(current == policy->transition_task);
+ 	speed = calc_speed(mult);
+ 	if ((speed > highest_speed) || (speed < lowest_speed))
+-		return;
++		return -EINVAL;
 +
- wait:
- 	wait_event(policy->transition_wait, !policy->transition_ongoing);
+ 	/* Voltage transition before frequency transition? */
+ 	if (can_scale_voltage && longhaul_index < table_index)
+ 		dir = 1;
+@@ -269,8 +271,6 @@ static void longhaul_setstate(struct cpufreq_policy *policy,
+ 	freqs.old = calc_speed(longhaul_get_cpu_mult());
+ 	freqs.new = speed;
  
-@@ -365,6 +369,7 @@ wait:
+-	cpufreq_freq_transition_begin(policy, &freqs);
+-
+ 	pr_debug("Setting to FSB:%dMHz Mult:%d.%dx (%s)\n",
+ 			fsb, mult/10, mult%10, print_speed(speed/1000));
+ retry_loop:
+@@ -385,12 +385,14 @@ retry_loop:
+ 			goto retry_loop;
+ 		}
  	}
+-	/* Report true CPU frequency */
+-	cpufreq_freq_transition_end(policy, &freqs, 0);
  
- 	policy->transition_ongoing = true;
-+	policy->transition_task = current;
- 
- 	spin_unlock(&policy->transition_lock);
- 
-@@ -378,9 +383,16 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
- 	if (unlikely(WARN_ON(!policy->transition_ongoing)))
- 		return;
- 
-+	/*
-+	 * The task invoking _end() could be different from the one that
-+	 * invoked the _begin(). So set ->transition_task again here
-+	 * explicity.
-+	 */
-+	policy->transition_task = current;
- 	cpufreq_notify_post_transition(policy, freqs, transition_failed);
- 
- 	policy->transition_ongoing = false;
-+	policy->transition_task = NULL;
- 
- 	wake_up(&policy->transition_wait);
+-	if (!bm_timeout)
++	if (!bm_timeout) {
+ 		printk(KERN_INFO PFX "Warning: Timeout while waiting for "
+ 				"idle PCI bus.\n");
++		return -EBUSY;
++	}
++
++	return 0;
  }
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 5ae5100..8f44d79 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -110,6 +110,7 @@ struct cpufreq_policy {
- 	bool			transition_ongoing; /* Tracks transition status */
- 	spinlock_t		transition_lock;
- 	wait_queue_head_t	transition_wait;
-+	struct task_struct	*transition_task; /* Task which is doing the transition */
- };
  
- /* Only for ACPI */
+ /*
+@@ -631,9 +633,10 @@ static int longhaul_target(struct cpufreq_policy *policy,
+ 	unsigned int i;
+ 	unsigned int dir = 0;
+ 	u8 vid, current_vid;
++	int retval = 0;
+ 
+ 	if (!can_scale_voltage)
+-		longhaul_setstate(policy, table_index);
++		retval = longhaul_setstate(policy, table_index);
+ 	else {
+ 		/* On test system voltage transitions exceeding single
+ 		 * step up or down were turning motherboard off. Both
+@@ -648,7 +651,7 @@ static int longhaul_target(struct cpufreq_policy *policy,
+ 		while (i != table_index) {
+ 			vid = (longhaul_table[i].driver_data >> 8) & 0x1f;
+ 			if (vid != current_vid) {
+-				longhaul_setstate(policy, i);
++				retval = longhaul_setstate(policy, i);
+ 				current_vid = vid;
+ 				msleep(200);
+ 			}
+@@ -657,10 +660,11 @@ static int longhaul_target(struct cpufreq_policy *policy,
+ 			else
+ 				i--;
+ 		}
+-		longhaul_setstate(policy, table_index);
++		retval = longhaul_setstate(policy, table_index);
+ 	}
++
+ 	longhaul_index = table_index;
+-	return 0;
++	return retval;
+ }
+ 
+ 
+@@ -968,7 +972,15 @@ static void __exit longhaul_exit(void)
+ 
+ 	for (i = 0; i < numscales; i++) {
+ 		if (mults[i] == maxmult) {
++			struct cpufreq_freqs freqs;
++
++			freqs.old = policy->cur;
++			freqs.new = longhaul_table[i].frequency;
++			freqs.flags = 0;
++
++			cpufreq_freq_transition_begin(policy, &freqs);
+ 			longhaul_setstate(policy, i);
++			cpufreq_freq_transition_end(policy, &freqs, 0);
+ 			break;
+ 		}
+ 	}
