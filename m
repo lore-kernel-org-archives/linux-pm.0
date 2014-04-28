@@ -1,106 +1,61 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH] cpufreq: intel_pstate: Change the calculation of next pstate
-Date: Mon, 28 Apr 2014 01:12:24 +0300
-Message-ID: <535D80C8.9090906@semaphore.gr>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v2] PM / devfreq: Use freq_table for available_frequencies
+Date: Mon, 28 Apr 2014 01:41:55 +0000 (GMT)
+Message-ID: <4324793.197151398649314597.JavaMail.weblogic@epv6ml10>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:37293 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752286AbaD0WM2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Apr 2014 18:12:28 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Currently the driver calculates the next pstate proportional to
-core_busy factor and reverse proportional to current pstate.
-
-Change the above method and calculate the next pstate independently
-of current pstate.
-
-Tested on Intel i7-3770 CPU @ 3.40GHz.
-Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
-increase ~1.5% in performance. Below the test results using turbostat
-(5 iterations):
-
-Without patch:
-
-Ph. avg Time	Total time	PkgWatt		Total Energy
-	79.63	266.416		57.74		15382.85984
-	79.63	265.609		57.87		15370.79283
-	79.57	266.994		57.54		15362.83476
-	79.53	265.304		57.83		15342.53032
-	79.71	265.977		57.76		15362.83152
-avg	79.61	266.06		57.74		15364.36985
-
-With patch:
-
-Ph. avg Time	Total time	PkgWatt		Total Energy
-	78.23	258.826		59.14		15306.96964
-	78.41	259.110		59.15		15326.35650
-	78.40	258.530		59.26		15320.48780
-	78.46	258.673		59.20		15313.44160
-	78.19	259.075		59.16		15326.87700
-avg	78.34	258.842		59.18		15318.82650
-
-The total test time reduced by ~2.6%, while the total energy
-consumption during a test iteration reduced by ~0.35%
-
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/intel_pstate.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 0999673..8e309db 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -608,28 +608,27 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
- 	mod_timer_pinned(&cpu->timer, jiffies + delay);
- }
- 
--static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
-+static inline int32_t intel_pstate_get_busy(struct cpudata *cpu)
- {
--	int32_t core_busy, max_pstate, current_pstate;
-+	int32_t core_busy, max_pstate;
- 
- 	core_busy = cpu->sample.core_pct_busy;
- 	max_pstate = int_tofp(cpu->pstate.max_pstate);
--	current_pstate = int_tofp(cpu->pstate.current_pstate);
--	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-+	core_busy = mul_fp(core_busy, max_pstate);
- 	return FP_ROUNDUP(core_busy);
- }
- 
- static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- {
--	int32_t busy_scaled;
-+	int32_t busy;
- 	struct _pid *pid;
- 	signed int ctl = 0;
- 	int steps;
- 
- 	pid = &cpu->pid;
--	busy_scaled = intel_pstate_get_scaled_busy(cpu);
-+	busy = intel_pstate_get_busy(cpu);
- 
--	ctl = pid_calc(pid, busy_scaled);
-+	ctl = pid_calc(pid, busy);
- 
- 	steps = abs(ctl);
- 
-@@ -651,7 +650,7 @@ static void intel_pstate_timer_func(unsigned long __data)
- 	intel_pstate_adjust_busy_pstate(cpu);
- 
- 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
--			fp_toint(intel_pstate_get_scaled_busy(cpu)),
-+			fp_toint(intel_pstate_get_busy(cpu)),
- 			cpu->pstate.current_pstate,
- 			sample->mperf,
- 			sample->aperf,
--- 
-1.9.0
+PiBTb21lIGRldmljZXMgdXNlIGZyZXFfdGFibGUgaW5zdGVhZCBvZiBPUFAuIEZvciB0aG9zZSBk
+ZXZpY2VzLCB0aGUNCj4gYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzIGZpbGUgc2hvd3MgdXAgZW1wdHku
+IEZpeCB0aGF0IGJ5IHVzaW5nIGZyZXFfdGFibGUgdG8NCj4gZ2VuZXJhdGUgdGhlIGF2YWlsYWJs
+ZV9mcmVxdWVuY2llcyBkYXRhIHdoZW4gaXQncyBhdmFpbGFibGUuDQo+IA0KPiBPUFAgZmluZCBm
+cmVxdWVuY3kgQVBJcyBhbHNvIHNraXBzIGZyZXF1ZW5jaWVzIHRoYXQgaGF2ZSBiZWVuIHRlbXBv
+cmFyaWx5DQo+IGRpc2FibGVkIChzYXksIGR1ZSB0byB0aGVybWFsLCBldGMpLiBTaW5jZSBhdmFp
+bGFibGVfZnJlcXVlbmNpZXMgaXMNCj4gc3VwcG9zZWQgdG8gc2hvdyB0aGUgZW50aXJlIGxpc3Qg
+b2YgYXZhaWxhYmxlIGZyZXF1ZW5jaWVzIHdpdGhvdXQgdGFraW5nDQo+IHRlbXBvcmFyeSBsaW1p
+dHMgaW50byBjb25zaWRlcmF0aW9uLCBwcmVmZXJlbmNlIGlzIGdpdmVuIHRvIGZyZXFfdGFibGUg
+d2hlbg0KPiBhdmFpbGFibGUuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBTYXJhdmFuYSBLYW5uYW4g
+PHNrYW5uYW5AY29kZWF1cm9yYS5vcmc+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVxL2RldmZy
+ZXEuYyB8IDI5ICsrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tDQo+ICAxIGZpbGUgY2hhbmdl
+ZCwgMTggaW5zZXJ0aW9ucygrKSwgMTEgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyBiL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCj4g
+aW5kZXggMjA0MmVjMy4uNTI3Y2JlMiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2Rl
+dmZyZXEuYw0KPiArKysgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+IEBAIC05MTIsMjAg
+KzkxMiwyNyBAQCBzdGF0aWMgc3NpemVfdCBhdmFpbGFibGVfZnJlcXVlbmNpZXNfc2hvdyhzdHJ1
+Y3QgZGV2aWNlICpkLA0KPiAgCXN0cnVjdCBkZXZmcmVxICpkZiA9IHRvX2RldmZyZXEoZCk7DQo+
+ICAJc3RydWN0IGRldmljZSAqZGV2ID0gZGYtPmRldi5wYXJlbnQ7DQo+ICAJc3RydWN0IGRldl9w
+bV9vcHAgKm9wcDsNCj4gKwl1bnNpZ25lZCBpbnQgaSA9IDA7DQo+ICAJc3NpemVfdCBjb3VudCA9
+IDA7DQo+ICAJdW5zaWduZWQgbG9uZyBmcmVxID0gMDsNCj4gIA0KPiAtCXJjdV9yZWFkX2xvY2so
+KTsNCj4gLQlkbyB7DQo+IC0JCW9wcCA9IGRldl9wbV9vcHBfZmluZF9mcmVxX2NlaWwoZGV2LCAm
+ZnJlcSk7DQo+IC0JCWlmIChJU19FUlIob3BwKSkNCj4gLQkJCWJyZWFrOw0KPiAtDQo+IC0JCWNv
+dW50ICs9IHNjbnByaW50ZigmYnVmW2NvdW50XSwgKFBBR0VfU0laRSAtIGNvdW50IC0gMiksDQo+
+IC0JCQkJICAgIiVsdSAiLCBmcmVxKTsNCj4gLQkJZnJlcSsrOw0KPiAtCX0gd2hpbGUgKDEpOw0K
+PiAtCXJjdV9yZWFkX3VubG9jaygpOw0KPiArCWlmIChkZi0+cHJvZmlsZS0+ZnJlcV90YWJsZSkg
+ew0KPiArCQlmb3IgKGkgPSAwOyBpIDwgZGYtPnByb2ZpbGUtPm1heF9zdGF0ZTsgaSsrKQ0KPiAr
+CQkJY291bnQgKz0gc2NucHJpbnRmKCZidWZbY291bnRdLCAoUEFHRV9TSVpFIC0gY291bnQgLSAy
+KSwNCj4gKwkJCQkJICAgIiV1ICIsIGRmLT5wcm9maWxlLT5mcmVxX3RhYmxlW2ldKTsNCg0KWW91
+IGFyZSBoZXJlYnkgY2hhbmdpbmcgdGhlIHNlbW1hbnRpY3Mgb2YgdGhlIG9yaWdpbmFsDQphdmFp
+bGFibGVfZnJlcXVlbmNpZXMgbm9kZS4NCg0KV2hlbiBhIGZyZXF1ZW5jeS92b2x0YWdlIHBhaXIg
+aGFzIGJlZW4gZGlzYWJsZWQgKG9wcF9kaXNhYmxlKSwgcHJvYmFibHkNCmJ5IG9wcF9kaXNhYmxl
+KCksIHRoZSBmcmVxdWVuY3kgaXMgbm8gbW9yZSAiYXZhaWxhYmxlIi4NCkhvd2V2ZXIsIHdoZW4g
+dGhlIGRyaXZlciBhdXRob3Igc3VwcGxpZWQgZnJlcV90YWJsZSBhcyB3ZWxsIGFzIE9QUA0KaW4g
+b3JkZXIgdG8gc2VlIHRoZSBzdGF0aXN0aWNzLCB0aGUgbm9kZSB3aWxsIGJlaGF2ZSBkaWZmZXJl
+bnRseS4NCg0KUGxlYXNlIGRvIG5vdCBhZmZlY3QgdGhlIGN1cnJlbnQgdXNlcnMgYXMgbG9uZyBh
+cyBpdCBkb2VzIG5vdCBnaXZlDQphZGRpdGlvbmFsIGJlbmVmaXQgb3IgZml4IGEgYnVnLg0KDQoN
+CkNoZWVycywNCk15dW5nSm9vLg0KDQoNCj4gKwl9IGVsc2Ugew0KPiArCQlyY3VfcmVhZF9sb2Nr
+KCk7DQo+ICsJCWRvIHsNCj4gKwkJCW9wcCA9IGRldl9wbV9vcHBfZmluZF9mcmVxX2NlaWwoZGV2
+LCAmZnJlcSk7DQo+ICsJCQlpZiAoSVNfRVJSKG9wcCkpDQo+ICsJCQkJYnJlYWs7DQo+ICsNCj4g
+KwkJCWNvdW50ICs9IHNjbnByaW50ZigmYnVmW2NvdW50XSwgKFBBR0VfU0laRSAtIGNvdW50IC0g
+MiksDQo+ICsJCQkJCSAgICIlbHUgIiwgZnJlcSk7DQo+ICsJCQlmcmVxKys7DQo+ICsJCX0gd2hp
+bGUgKDEpOw0KPiArCQlyY3VfcmVhZF91bmxvY2soKTsNCj4gKwl9DQo+ICANCj4gIAkvKiBUcnVu
+Y2F0ZSB0aGUgdHJhaWxpbmcgc3BhY2UgKi8NCj4gIAlpZiAoY291bnQpDQo+IC0tIA0KPiBUaGUg
+UXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgdGhlIENvZGUg
+QXVyb3JhIEZvcnVtLA0KPiBob3N0ZWQgYnkgVGhlIExpbnV4IEZvdW5kYXRpb24NCj4gDQo=
