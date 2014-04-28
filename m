@@ -1,47 +1,91 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/5] cpufreq,
- powernow-k6: Fix incorrect comparison with max_multipler
-Date: Tue, 29 Apr 2014 00:24:27 +0530
-Message-ID: <20140428185418.28755.68864.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH v2 3/5] cpufreq, powernow-k6: Fix double invocation of
+ cpufreq_freq_transition_begin/end
+Date: Tue, 29 Apr 2014 00:24:42 +0530
+Message-ID: <20140428185434.28755.49098.stgit@srivatsabhat.in.ibm.com>
 References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-The value of 'max_multiplier' is meant to be used for comparison with
-clock_ratio[index].driver_data, not the index itself! Fix the code in
-powernow_k6_cpu_exit() that has this bug.
+During frequency transitions, the cpufreq core takes the responsibility of
+invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
+for those cpufreq drivers that define the ->target_index callback but don't
+set the ASYNC_NOTIFICATION flag.
 
-Also, while at it, make the for-loop condition look for CPUFREQ_TABLE_END,
-instead of hard-coding the loop count to 8.
+The powernow-k6 cpufreq driver falls under this category, but this driver was
+invoking the _begin() and _end() APIs itself around frequency transitions,
+which led to double invocation of the _begin() API. The _begin API makes
+contending callers wait until the previous invocation is complete. Hence,
+the powernow-k6 driver ended up waiting on itself, leading to system hangs
+during boot.
 
-Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+Fix this by removing the calls to the _begin() and _end() APIs from the
+powernow-k6 driver, since they rightly belong to the cpufreq core.
+
+(Note that during ->exit(), the powernow-k6 driver sets the frequency
+ without any help from the cpufreq core. So add explicit calls to the
+ _begin() and _end() APIs around that frequency transition alone, to take
+ care of that special case. Also, add a missing 'break' statement there.)
+
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
 
- drivers/cpufreq/powernow-k6.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/cpufreq/powernow-k6.c |   20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-index 49f120e..695a68c 100644
+index 695a68c..78904e6 100644
 --- a/drivers/cpufreq/powernow-k6.c
 +++ b/drivers/cpufreq/powernow-k6.c
-@@ -227,8 +227,9 @@ have_busfreq:
- static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
+@@ -138,22 +138,14 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
+ static int powernow_k6_target(struct cpufreq_policy *policy,
+ 		unsigned int best_i)
  {
+-	struct cpufreq_freqs freqs;
+ 
+ 	if (clock_ratio[best_i].driver_data > max_multiplier) {
+ 		printk(KERN_ERR PFX "invalid target frequency\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	freqs.old = busfreq * powernow_k6_get_cpu_multiplier();
+-	freqs.new = busfreq * clock_ratio[best_i].driver_data;
+-
+-	cpufreq_freq_transition_begin(policy, &freqs);
+-
+ 	powernow_k6_set_cpu_multiplier(best_i);
+ 
+-	cpufreq_freq_transition_end(policy, &freqs, 0);
+-
+ 	return 0;
+ }
+ 
+@@ -229,8 +221,18 @@ static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
  	unsigned int i;
--	for (i = 0; i < 8; i++) {
--		if (i == max_multiplier)
+ 
+ 	for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
+-		if (clock_ratio[i].driver_data == max_multiplier)
++		if (clock_ratio[i].driver_data == max_multiplier) {
++			struct cpufreq_freqs freqs;
 +
-+	for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
-+		if (clock_ratio[i].driver_data == max_multiplier)
++			freqs.old = policy->cur;
++			freqs.new = clock_ratio[i].frequency;
++			freqs.flags = 0;
++
++			cpufreq_freq_transition_begin(policy, &freqs);
  			powernow_k6_target(policy, i);
++			cpufreq_freq_transition_end(policy, &freqs, 0);
++			break;
++		}
  	}
  	return 0;
+ }
+
