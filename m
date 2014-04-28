@@ -1,61 +1,167 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 4/5] cpufreq, powernow-k7: Fix double invocation of
+Subject: [PATCH v2 5/5] cpufreq: Catch double invocations of
  cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 00:24:58 +0530
-Message-ID: <20140428185451.28755.11924.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 29 Apr 2014 00:25:12 +0530
+Message-ID: <20140428185507.28755.6483.stgit@srivatsabhat.in.ibm.com>
 References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-During frequency transitions, the cpufreq core takes the responsibility of
-invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
-for those cpufreq drivers that define the ->target_index callback but don't
-set the ASYNC_NOTIFICATION flag.
+Some cpufreq drivers were redundantly invoking the _begin() and _end()
+APIs around frequency transitions, and this double invocation (one from
+the cpufreq core and the other from the cpufreq driver) used to result
+in a self-deadlock, leading to system hangs during boot. (The _begin()
+API makes contending callers wait until the previous invocation is
+complete. Hence, the cpufreq driver would end up waiting on itself!).
 
-The powernow-k7 cpufreq driver falls under this category, but this driver was
-invoking the _begin() and _end() APIs itself around frequency transitions,
-which led to double invocation of the _begin() API. The _begin API makes
-contending callers wait until the previous invocation is complete. Hence,
-the powernow-k7 driver ended up waiting on itself, leading to system hangs
-during boot.
+Now all such drivers have been fixed, but debugging this issue was not
+very straight-forward (even lockdep didn't catch this). So let us add a
+debug infrastructure to the cpufreq core to catch such issues more easily
+in the future.
 
-Fix this by removing the calls to the _begin() and _end() APIs from the
-powernow-k7 driver, since they rightly belong to the cpufreq core.
+We add a new field called 'transition_task' to the policy structure, to keep
+track of the task which is performing the frequency transition. Using this
+field, we make note of this task during _begin() and print a warning if we
+find a case where the same task is calling _begin() again, before completing
+the previous frequency transition using the corresponding _end().
+
+One important aspect to consider is that it is valid for ASYNC_NOTIFICATION
+drivers to invoke _begin() from one task and then invoke the corresponding
+_end() in another task. We take care of this scenario by setting the value
+of 'transition_task' once again explicitly in the _end() function. This
+helps us handle the particular tricky scenario (shown below) that can occur
+in ASYNC_NOTIFICATION drivers:
+
+Scenario 1: (Deadlock-free)
+----------
+
+         Task A						Task B
+
+    /* 1st freq transition */
+    Invoke _begin() {
+            ...
+            ...
+    }
+
+    Change the frequency
+
+						Got interrupt for successful
+						change of frequency.
+
+						/* 1st freq transition */
+						Invoke _end() {
+							...
+							...
+    /* 2nd freq transition */    			...
+    Invoke _begin() {					...
+	    ...	//waiting for B				...
+            ... //to finish _end()		}
+	    ...
+	    ...
+    }
+
+
+This scenario is actually deadlock-free because Task A can wait inside the
+second call to _begin() without self-deadlocking, because it is the
+responsibility of Task B to finish the first sequence by invoking the
+corresponding _end().
+
+By setting the value of 'transition_task' again explicitly in _end(), we
+ensure that the code won't print a false-positive warning in this case.
+
+However the same code successfully catches the following deadlock-prone
+scenario even in ASYNC_NOTIFICATION drivers:
+
+Scenario 2: (Deadlock-prone)
+----------
+
+         Task A						Task B
+
+    /* 1st freq transition */
+    Invoke _begin() {
+            ...
+            ...
+    }
+
+    /* 2nd freq transition */
+    Invoke _begin() {
+	    ...
+	    ...
+    }
+
+    Change the frequency
+
+
+Here the bug is that Task A called the second _begin() *before* actually
+performing the 1st frequency transition. In other words, it failed to set
+Task B in motion for the 1st frequency transition, and hence it will
+self-deadlock. This is very similar to the case of drivers which do
+synchronous notification, and hence the debug infrastructure developed
+in this patch can catch this scenario easily.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
 
- drivers/cpufreq/powernow-k7.c |    4 ----
- 1 file changed, 4 deletions(-)
+ drivers/cpufreq/cpufreq.c |   12 ++++++++++++
+ include/linux/cpufreq.h   |    1 +
+ 2 files changed, 13 insertions(+)
 
-diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
-index f911645..e61e224 100644
---- a/drivers/cpufreq/powernow-k7.c
-+++ b/drivers/cpufreq/powernow-k7.c
-@@ -269,8 +269,6 @@ static int powernow_target(struct cpufreq_policy *policy, unsigned int index)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index abda660..2c99a6c 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -354,6 +354,10 @@ static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+ void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
+ 		struct cpufreq_freqs *freqs)
+ {
++
++	/* Catch double invocations of _begin() which lead to self-deadlock */
++	WARN_ON(current == policy->transition_task);
++
+ wait:
+ 	wait_event(policy->transition_wait, !policy->transition_ongoing);
  
- 	freqs.new = powernow_table[index].frequency;
+@@ -365,6 +369,7 @@ wait:
+ 	}
  
--	cpufreq_freq_transition_begin(policy, &freqs);
--
- 	/* Now do the magic poking into the MSRs.  */
+ 	policy->transition_ongoing = true;
++	policy->transition_task = current;
  
- 	if (have_a0 == 1)	/* A0 errata 5 */
-@@ -290,8 +288,6 @@ static int powernow_target(struct cpufreq_policy *policy, unsigned int index)
- 	if (have_a0 == 1)
- 		local_irq_enable();
+ 	spin_unlock(&policy->transition_lock);
  
--	cpufreq_freq_transition_end(policy, &freqs, 0);
--
- 	return 0;
+@@ -378,9 +383,16 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
+ 	if (unlikely(WARN_ON(!policy->transition_ongoing)))
+ 		return;
+ 
++	/*
++	 * The task invoking _end() could be different from the one that
++	 * invoked the _begin(). So set ->transition_task again here
++	 * explicity.
++	 */
++	policy->transition_task = current;
+ 	cpufreq_notify_post_transition(policy, freqs, transition_failed);
+ 
+ 	policy->transition_ongoing = false;
++	policy->transition_task = NULL;
+ 
+ 	wake_up(&policy->transition_wait);
  }
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 5ae5100..8f44d79 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -110,6 +110,7 @@ struct cpufreq_policy {
+ 	bool			transition_ongoing; /* Tracks transition status */
+ 	spinlock_t		transition_lock;
+ 	wait_queue_head_t	transition_wait;
++	struct task_struct	*transition_task; /* Task which is doing the transition */
+ };
  
-
+ /* Only for ACPI */
