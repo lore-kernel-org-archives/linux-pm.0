@@ -1,79 +1,71 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU
- ConCurrency
-Date: Mon, 28 Apr 2014 04:07:25 +0800
-Message-ID: <20140427200725.GA4771@intel.com>
-References: <20140424193004.GA2467@intel.com>
- <20140425102307.GN2500@e103034-lin>
- <13348109.c4H00groOp@vostro.rjw.lan>
- <20140425145334.GC2639@e103034-lin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH RFC 0/5] Dove PMU support
+Date: Mon, 28 Apr 2014 09:47:39 +0200
+Message-ID: <535E079B.6010701@gmail.com>
+References: <20140427132312.GC26756@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:39169 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbaD1EMm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Apr 2014 00:12:42 -0400
-Content-Disposition: inline
-In-Reply-To: <20140425145334.GC2639@e103034-lin>
+Received: from mail-ee0-f46.google.com ([74.125.83.46]:47600 "EHLO
+	mail-ee0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbaD1Hro (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Apr 2014 03:47:44 -0400
+In-Reply-To: <20140427132312.GC26756@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>
 
-On Fri, Apr 25, 2014 at 03:53:34PM +0100, Morten Rasmussen wrote:
-> I fully agree. My point was that there is more to task consolidation
-> than just observing the degree of task parallelism. The system topology
-> has a lot to say when deciding whether or not to pack. That was the
-> motivation for proposing to have a power model for the system topology
-> to help making that decision.
-> 
-> We do already have some per-task metric available that may be useful for
-> determining whether a workload is eligible for task packing. The
-> load_avg_contrib gives us an indication of the tasks cpu utilization and
-> we also count task wake-ups. If we tracked task wake-ups over time
-> (right now we only have the sum) we should be able to reason about the
-> number of wake-ups that a task causes. Lots of wake-ups and low
-> load_avg_contrib would indicate the task power is likely to be dominated
-> by the wake-up costs if it is placed on a cpu in a deep idle state.
-> 
-> I fully agree that measuring the workloads while they are running is the
-> way to go. I'm just wondering if the proposed cpu concurrency measure
-> is sufficient to make the task packing decision for all system
-> topologies or if we need something that incorporates more system
-> topology information. If the latter, we may want to roll it all into
-> something like an energy_diff(src_cpu, dst_cpu, task) helper function
-> for use in load-balancing decisions.
-> 
+On 04/27/2014 03:23 PM, Russell King - ARM Linux wrote:
+> The following series of patches add better PMU support for Dove.  This
+> has been developed on the Cubox, and tested in non-DT and DT modes.
+>
+> This also improves the interrupt handling over the existing code: the
+> existing code ends up calling the interrupt handlers twice for every
+> interrupt raised, because the interrupt clear-down is done at the
+> wrong point - we need to clear down the interrupt in the device first,
+> then clear it down in the controller.
+>
+> The problem this gives is that it can be racy (see comments in the
+> driver) so we're careful about how we do that to minimise the window.
+>
+> I've included all patches here - the initial set are targetted towards
+> adding DT support, with the final adding the non-DT support.  There is
+> a call to the initialisation function missing for DT mode - I'd like
+> the mvebu people to comment on how that should be handled, as it needs
+> to be done pretty early.
+>
+> Also included are two PM domain changes: the first I've discussed with
+> Rafael who seems happy with it.  The second is necessary because we
+> have no way to know if a generic PM domain is associated with a device
+> or whether something else making use of the PM domain is installed in
+> the dev->pm_domain pointer, so this allows that decision to be made by
+> core PM code.
+>
+> This is more a "this is where I'm at" with this stuff than a real
+> submission, nevertheless comments on how to get it ready for submission
+> would be welcome.  I'd like to get this off my plate ASAP.
 
-Thank you.
+Russell,
 
-After CC, in the consolidation part, we do 1) attach the CPU topology to "help
-making that decision" and to be adaptive beyond our experimental platforms, and
-2) intercept the current load balance for load and load balancing containment.
+thanks for dropping those patches. I know you are packed with a bunch
+of other patch sets, so if you agree, I can pick up your Dove related
+patches and finish them.
 
-Maybe, the way we consolidate workload differs from previous is:
+One thing that comes into my mind is, that we moved Dove DT to
+mach-mvebu starting with v3.15-rc1 so we need to find a better place
+for the driver than mach-dove.
 
-1) we don't do it per task. We only see how many concurrent CPUs needed (on
-average and on prediction at power gated units) for the workload, and simply
-consolidate.
+Sebastian
 
-2) I am not sure it is sufficient either, :). But I can offer another two ways
-of how to interpret CC.
+>   arch/arm/Kconfig                     |   1 +
+>   arch/arm/boot/dts/dove.dtsi          |   7 +
+>   arch/arm/mach-dove/Makefile          |   1 +
+>   arch/arm/mach-dove/common.c          |   2 +
+>   arch/arm/mach-dove/common.h          |   1 +
+>   arch/arm/mach-dove/include/mach/pm.h |  17 --
+>   arch/arm/mach-dove/irq.c             |  87 ------
+>   arch/arm/mach-dove/pmu.c             | 531 +++++++++++++++++++++++++++++++++++
+>   drivers/base/power/domain.c          |   8 +-
+>   9 files changed, 547 insertions(+), 108 deletions(-)
+>
 
-2.1) the current work-conserving load balance also uses CC, but instantaneous
-CC (similar to what PeterZ said to Vincent?).
-
-2.2) CC vs. CPU utilization. CC is runqueue-length-weighted CPU utilization.
-If we change: "a = sum(concurrency * time) / period" to "a' = sum(1 * time) /
-period". Then a' is just about the CPU utilization. And the way we weight
-runqueue-length is the simplest one (excluding the exponential decays, and you
-may have other ways).
-
-The workloads they (not me) used to evaluate the "Workload Consolidation" is
-1) 50+ perf/ux benchmarks (almost all of the magazine ones), and 2) ~10 power
-workloads, of course, they are the easiest ones, such as browsing, audio,
-video, recording, imaging, etc.
-
-Thanks,
-Yuyang
