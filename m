@@ -1,81 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpuidle / menu: Return error code if there are no suitable states
-Date: Tue, 29 Apr 2014 01:28:03 +0200
-Message-ID: <2000825.kO1es8ShkW@vostro.rjw.lan>
-References: <2471963.urOyfY8mOG@vostro.rjw.lan> <6832089.A5AOPipfbA@vostro.rjw.lan> <535E3818.2040905@linaro.org>
+Subject: Re: [PATCH v2 0/5] Cpufreq frequency serialization fixes
+Date: Tue, 29 Apr 2014 01:47:33 +0200
+Message-ID: <9665161.ytKRFCMQPA@vostro.rjw.lan>
+References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <535E3818.2040905@linaro.org>
+In-Reply-To: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: mroos@linux.ee, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 28, 2014 01:14:32 PM Daniel Lezcano wrote:
-> On 04/27/2014 02:55 PM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > If there is a PM QoS latency limit and all of the sufficiently shallow
-> > C-states are disabled, the cpuidle menu governor returns 0 which on
-> > some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returned
-> > if that C-state has been disabled.
-> >
-> > Fix the issue by modifying the menu governor to return an error code
-> > in such situations.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >   drivers/cpuidle/governors/menu.c |    2 +-
-> >   include/linux/cpuidle.h          |    2 ++
-> >   2 files changed, 3 insertions(+), 1 deletion(-)
-> >
-> > Index: linux-pm/drivers/cpuidle/governors/menu.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpuidle/governors/menu.c
-> > +++ linux-pm/drivers/cpuidle/governors/menu.c
-> > @@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
-> >   		data->needs_update = 0;
-> >   	}
-> >
-> > -	data->last_state_idx = 0;
-> > +	data->last_state_idx = CPUIDLE_DRIVER_STATE_POLL;
-> >
-> >   	/* Special case when user has set very strict latency requirement */
-> >   	if (unlikely(latency_req == 0))
-> > Index: linux-pm/include/linux/cpuidle.h
-> > ===================================================================
-> > --- linux-pm.orig/include/linux/cpuidle.h
-> > +++ linux-pm/include/linux/cpuidle.h
-> > @@ -217,8 +217,10 @@ static inline int cpuidle_register_gover
-> >
-> >   #ifdef CONFIG_ARCH_HAS_CPU_RELAX
-> >   #define CPUIDLE_DRIVER_STATE_START	1
-> > +#define CPUIDLE_DRIVER_STATE_POLL	0
-> >   #else
-> >   #define CPUIDLE_DRIVER_STATE_START	0
-> > +#define CPUIDLE_DRIVER_STATE_POLL	(-ENXIO)
-> >   #endif
-> >
-> >   #endif /* _LINUX_CPUIDLE_H */
+On Tuesday, April 29, 2014 12:23:54 AM Srivatsa S. Bhat wrote:
 > 
-> Hi Rafael,
+> Hi,
 > 
-> CPUIDLE_DRIVER_STATE_START is only for x86. It introduces some confusion 
-> in the code.
+> Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
+> commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
+> The root-cause of this issue is the extra invocation of the
+> cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
+> longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
+> drivers as well. This patchset fixes the issue in all the 3 drivers and also
+> adds a debug infrastructure to catch such issues easily.
+> 
+> Patches 1-4 fix the regression in longhaul, powernow-k6 and powernow-k7
+> drivers. (Patch 2 fixes a different bug in powernow-k6, and it is kept as a
+> separate patch instead of merging it with patch 3, because I felt that it was
+> a bit subtle and needed attention in a separate patch).
+> 
+> Patch 5 adds a debug infrastructure to the cpufreq core to catch such problems
+> more easily in the future.
 
-I won't disagree with that.
+I've queued up patches [1-4/5] for 3.15, the last one I need to have another
+look at tomorrow.
 
-> As only two drivers are concerned by it, wouldn't make 
-> sense to add the poll state to those driver directly instead of having 
-> the code hacked around ? (eg. insert the poll state in the common 
-> cpuidle code).
+BTW, when you fix regressions, please always add a Fixes: tag to the changelog.
 
-Well, what about initializing data->last_state_idx to
-(CPUIDLE_DRIVER_STATE_START - 1) in menu_select() instead of introducing the
-new symbol for the time being and getting rid of CPUIDLE_DRIVER_STATE_START
-separately?
+Thanks!
 
 
 -- 
