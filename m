@@ -1,134 +1,84 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 5/5] powercap/rapl: change floor frequency for vallewview
-Date: Tue, 29 Apr 2014 02:45:22 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59EF5AC4@BGSMSX101.gar.corp.intel.com>
-References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <1398693880-13428-6-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU
+ ConCurrency
+Date: Tue, 29 Apr 2014 03:26:21 +0800
+Message-ID: <20140428192621.GA6470@intel.com>
+References: <20140424193004.GA2467@intel.com>
+ <20140425102307.GN2500@e103034-lin>
+ <13348109.c4H00groOp@vostro.rjw.lan>
+ <20140425145334.GC2639@e103034-lin>
+ <20140427200725.GA4771@intel.com>
+ <20140428152213.GD2639@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:30764 "EHLO mga09.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:44889 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbaD2Cp2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Apr 2014 22:45:28 -0400
-In-Reply-To: <1398693880-13428-6-git-send-email-jacob.jun.pan@linux.intel.com>
-Content-Language: en-US
+	id S1751710AbaD2Dbg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Apr 2014 23:31:36 -0400
+Content-Disposition: inline
+In-Reply-To: <20140428152213.GD2639@e103034-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
-Cc: "David E. Box" <david.e.box@linux.intel.com>, Alan Cox <alan@linux.intel.com>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "rajeev.d.muralidhar@intel.com" <rajeev.d.muralidhar@intel.com>, "vishwesh.m.rudramuni@intel.com" <vishwesh.m.rudramuni@intel.com>, "nicole.chalhoub@intel.com" <nicole.chalhoub@intel.com>, "ajaya.durg@intel.com" <ajaya.durg@intel.com>, "harinarayanan.seshadri@intel.com" <harinarayanan.seshadri@intel.com>, yuyang.du@intel.
 
-Hi Jacob,
+> I'm a bit confused, do you have one global CC that tracks the number of
+> tasks across all runqueues in the system or one for each cpu? There
+> could be some contention when updating that value on larger systems if
+> it one global CC. If they are separate, how do you then decide when to
+> consolidate? 
 
-> -----Original Message-----
-> From: Jacob Pan [mailto:jacob.jun.pan@linux.intel.com]
-> Sent: Monday, April 28, 2014 7:35 PM
-> To: Linux PM; Wysocki, Rafael J; LKML
-> Cc: David E. Box; Alan Cox; R, Durgadoss; Accardi, Kristen C; Jacob Pan
-> Subject: [PATCH 5/5] powercap/rapl: change floor frequency for vallewview
-> 
-> RAPL power limit reduce power by limiting CPU P-state and
-> other techniques. On Valleyview, RAPL power limit cannot
-> go to LFM (low frequency mode) if we don't set the floor
-> frequency via IOSF mailbox.
-> 
-> This patch enables setting of floor frquency such that
-> RAPL power limit is more effective.
-> 
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> ---
->  drivers/powercap/intel_rapl.c | 27 +++++++++++++++++++--------
->  1 file changed, 19 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index b1cda6f..13e4776 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -32,6 +32,7 @@
-> 
->  #include <asm/processor.h>
->  #include <asm/cpu_device_id.h>
-> +#include <asm/iosf_mbi.h>
-> 
->  /* bitmasks for RAPL MSRs, used by primitive access functions */
->  #define ENERGY_STATUS_MASK      0xffffffff
-> @@ -336,11 +337,17 @@ static int find_nr_power_limit(struct rapl_domain *rd)
->  	return i;
->  }
-> 
-> +#define VLV_CPU_POWER_BUDGET_CTL (0x2)
-> +static const struct x86_cpu_id valleyview_id[] = {
-> +	{ X86_VENDOR_INTEL, 6, 0x37},
-> +	{}
-> +};
+Oh, we are getting down to business. Currently, CC is per CPU. To consolidate,
+the formula is based on a heuristic. Because:
 
-There are other platforms that have this FloorFreq register as well.
-And those addresses are not '0x02'. So, we need to have a cpu_id based
-table to define the address of the floor freq register as well.
-[This is not specific to valleyview.]
+suppose we have 2 CPUs, their task concurrency over time is ('-' means no
+task, 'x' having tasks):
 
-Also, is there a plan to expose this floor freq ratio through Sysfs for
-runtime configuration. ? May be through a standard thermal cooling device
-interface ?
+1)
+CPU0: ---xxxx---------- (CC[0])
+CPU1: ---------xxxx---- (CC[1])
 
-> +
->  static int set_domain_enable(struct powercap_zone *power_zone, bool mode)
->  {
->  	struct rapl_domain *rd = power_zone_to_rapl_domain(power_zone);
->  	int nr_powerlimit;
-> -
-> +	u32 mdata = 0;
->  	if (rd->state & DOMAIN_STATE_BIOS_LOCKED)
->  		return -EACCES;
->  	get_online_cpus();
-> @@ -350,7 +357,16 @@ static int set_domain_enable(struct powercap_zone
-> *power_zone, bool mode)
->  	/* always enable clamp such that p-state can go below OS requested
->  	 * range. power capping priority over guranteed frequency.
->  	 */
-> -	rapl_write_data_raw(rd, PL1_CLAMP, mode);
-> +	if (x86_match_cpu(valleyview_id)) {
-> +		iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_PMC_READ,
-> +			VLV_CPU_POWER_BUDGET_CTL, &mdata);
-> +		mdata &= ~(0x7f << 8);
-> +		mdata |= 1 << 8;
-> +		iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_PMC_WRITE,
-> +			VLV_CPU_POWER_BUDGET_CTL, mdata);
-> +	} else
-> +		rapl_write_data_raw(rd, PL1_CLAMP, mode);
-> +
->  	/* some domains have pl2 */
->  	if (nr_powerlimit > 1) {
->  		rapl_write_data_raw(rd, PL2_ENABLE, mode);
-> @@ -833,11 +849,6 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
->  	return 0;
->  }
-> 
-> -static const struct x86_cpu_id energy_unit_quirk_ids[] = {
-> -	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
-> -	{}
-> -};
+2)
+CPU0: ---xxxx---------- (CC[0])
+CPU1: ---xxxx---------- (CC[1])
 
-Same thing here. There are other Atom platforms that need this
-conversion quirk. So, please keep the table as is.
+If we consolidate CPU0 and CPU1, the consolidated CC will be: CC' = CC[0] +
+CC[1] for case 1 and CC'' = (CC[0] + CC[1]) * 2 for case 2. For the cases
+in between case 1 and 2 in terms of how xxx overlaps, the CC should be between
+CC' and CC''. So, we uniformly use this condition to evaluate for
+consolidation (suppose we consolidate m CPUs to n CPUs, m > n):
+
+(CC[0] + CC[1] + ... + CC[m-2] + CC[m-1]) * (n + log(m-n)) >=<? (1 * n) * n *
+consolidate_coefficient
+
+The consolidate_coeffient could be like 100% or more or less.
+
+> How do you determine your "f" parameter? How fast is the reaction time?
+> If you have had a period of consolidation and have a bunch of tasks
+> waking up at the same time. How long will it be until you spread the
+> load to all cpus?
+
+Per CPU vs. per task? This is really not about who is (more) informative or
+not, or why not both or not. It is about when you have task concurrency and
+CPU utilization at the same time, and you must make a fast decision right now,
+then what? Actually, it is also about how I want to position the whole CC
+fuss. CC and the associated CPU workload consolidation can be regarded as
+another "layer" beneath the current sophisticated load balancing, such that
+this layer senses globally how many CPUs are needed and then do whatever it is
+currently supposed to do in the needed CPUs. I think this is only a design
+choice that is effective but simpler and less intrusive to just realize
+consolidation/packing.
+
+> It seems to me that you are loosing some important information by
+> tracking per cpu and not per task. Also, your load balance behaviour is
+> very sensitive to the choice of decay factor. We have that issue with
+> the runqueue load tracking already. It reacts very slowly to load
+> changes, so it can't really be used for periodic load-balancing
+> decisions.
+
+The current halflife is 1 period, and the period was 32ms, and now 64ms for
+more aggressive consolidation.
 
 Thanks,
-Durga
-
-> -
->  static int rapl_check_unit(struct rapl_package *rp, int cpu)
->  {
->  	u64 msr_val;
-> @@ -859,7 +870,7 @@ static int rapl_check_unit(struct rapl_package *rp, int cpu)
->  	 */
->  	value = (msr_val & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
->  	/* some CPUs have different way to calculate energy unit */
-> -	if (x86_match_cpu(energy_unit_quirk_ids))
-> +	if (x86_match_cpu(valleyview_id))
->  		rp->energy_unit_divisor = 1000000 / (1 << value);
->  	else
->  		rp->energy_unit_divisor = 1 << value;
-> --
-> 1.8.1.2
-
+Yuyang
