@@ -1,63 +1,47 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/5] Cpufreq frequency serialization fixes
-Date: Tue, 29 Apr 2014 00:23:54 +0530
-Message-ID: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH v2 2/5] cpufreq,
+ powernow-k6: Fix incorrect comparison with max_multipler
+Date: Tue, 29 Apr 2014 00:24:27 +0530
+Message-ID: <20140428185418.28755.68864.stgit@srivatsabhat.in.ibm.com>
+References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
+The value of 'max_multiplier' is meant to be used for comparison with
+clock_ratio[index].driver_data, not the index itself! Fix the code in
+powernow_k6_cpu_exit() that has this bug.
 
-Hi,
+Also, while at it, make the for-loop condition look for CPUFREQ_TABLE_END,
+instead of hard-coding the loop count to 8.
 
-Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
-commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
-The root-cause of this issue is the extra invocation of the
-cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
-longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
-drivers as well. This patchset fixes the issue in all the 3 drivers and also
-adds a debug infrastructure to catch such issues easily.
+Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
 
-Patches 1-4 fix the regression in longhaul, powernow-k6 and powernow-k7
-drivers. (Patch 2 fixes a different bug in powernow-k6, and it is kept as a
-separate patch instead of merging it with patch 3, because I felt that it was
-a bit subtle and needed attention in a separate patch).
+ drivers/cpufreq/powernow-k6.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Patch 5 adds a debug infrastructure to the cpufreq core to catch such problems
-more easily in the future.
-
-
-Changes in v2:
---------------
-
-* Modified patch 1 to take error returns into account, as pointed out by
-  Viresh.
-* Added patch 2 to fix the existing issue in the powernow-k6 driver, pointed
-  out by Viresh.
-* Added patch 5 to introduce a debug infrastructure to catch such issues
-  easily.
-
-
- Srivatsa S. Bhat (5):
-      cpufreq, longhaul: Fix double invocation of cpufreq_freq_transition_begin/end
-      cpufreq, powernow-k6: Fix incorrect comparison with max_multipler
-      cpufreq, powernow-k6: Fix double invocation of cpufreq_freq_transition_begin/end
-      cpufreq, powernow-k7: Fix double invocation of cpufreq_freq_transition_begin/end
-      cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
-
-
- drivers/cpufreq/cpufreq.c     |   12 ++++++++++++
- drivers/cpufreq/longhaul.c    |   36 ++++++++++++++++++++++++------------
- drivers/cpufreq/powernow-k6.c |   23 +++++++++++++----------
- drivers/cpufreq/powernow-k7.c |    4 ----
- include/linux/cpufreq.h       |    1 +
- 5 files changed, 50 insertions(+), 26 deletions(-)
-
-
-Thanks,
-Srivatsa S. Bhat
-IBM Linux Technology Center
+diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
+index 49f120e..695a68c 100644
+--- a/drivers/cpufreq/powernow-k6.c
++++ b/drivers/cpufreq/powernow-k6.c
+@@ -227,8 +227,9 @@ have_busfreq:
+ static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
+ {
+ 	unsigned int i;
+-	for (i = 0; i < 8; i++) {
+-		if (i == max_multiplier)
++
++	for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
++		if (clock_ratio[i].driver_data == max_multiplier)
+ 			powernow_k6_target(policy, i);
+ 	}
+ 	return 0;
