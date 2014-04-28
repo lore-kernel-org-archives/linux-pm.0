@@ -1,45 +1,36 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: [PATCH v2 0/5] Cpufreq frequency serialization fixes
-Date: Mon, 28 Apr 2014 23:57:34 +0300 (EEST)
-Message-ID: <alpine.SOC.1.00.1404282357170.13567@math.ut.ee>
-References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 0/5] RAPL driver updates
+Date: Mon, 28 Apr 2014 07:04:35 -0700
+Message-ID: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:43858 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932427AbaD1WFX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Apr 2014 18:05:23 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: "David E. Box" <david.e.box@linux.intel.com>, Alan Cox <alan@linux.intel.com>, Durgadoss R <durgadoss.r@intel.com>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-> Meelis Roos reported hangs during boot in the longhaul cpufreq driver, after
-> commit 12478cf0c55 (cpufreq: Make sure frequency transitions are serialized).
-> The root-cause of this issue is the extra invocation of the
-> cpufreq_freq_transition_begin() and cpufreq_freq_transition_end() APIs in the
-> longhaul driver. I found similar issues in the powernow-k6 and powernow-k7
-> drivers as well. This patchset fixes the issue in all the 3 drivers and also
-> adds a debug infrastructure to catch such issues easily.
-> 
-> Patches 1-4 fix the regression in longhaul, powernow-k6 and powernow-k7
-> drivers. (Patch 2 fixes a different bug in powernow-k6, and it is kept as a
-> separate patch instead of merging it with patch 3, because I felt that it was
-> a bit subtle and needed attention in a separate patch).
-> 
-> Patch 5 adds a debug infrastructure to the cpufreq core to catch such problems
-> more easily in the future.
-> 
-> 
-> Changes in v2:
-> --------------
-> 
-> * Modified patch 1 to take error returns into account, as pointed out by
->   Viresh.
-> * Added patch 2 to fix the existing issue in the powernow-k6 driver, pointed
->   out by Viresh.
-> * Added patch 5 to introduce a debug infrastructure to catch such issues
->   easily.
+A few updates to the RAPL driver. Including David's IOSF-SB driver change
+and a small tweak to allow RAPL driver to use IOSF driver on platforms
+with and without IOSF mailbox interface.
 
-This also works on my VIA EPIA.
+David E. Box (1):
+  x86, iosf: Add dummy functions for loadable modules
+
+Jacob Pan (4):
+  powercap/rapl: further relax energy counter checks
+  powercap/rapl: add new cpu ids
+  x86/iosf: kconfig and used by other drivers
+  powercap/rapl: change floor frequency for vallewview
+
+ arch/x86/Kconfig                |  2 +-
+ arch/x86/include/asm/iosf_mbi.h | 34 +++++++++++++++++++++++
+ arch/x86/kernel/iosf_mbi.c      |  6 +++++
+ drivers/powercap/intel_rapl.c   | 60 +++++++++++++++++++++--------------------
+ 4 files changed, 72 insertions(+), 30 deletions(-)
 
 -- 
-Meelis Roos (mroos@linux.ee)
+1.8.1.2
+
