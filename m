@@ -1,54 +1,68 @@
-From: Tim Gardner <tim.gardner@canonical.com>
-Subject: [PATCH 3.15-rc3] cpufreq: ppc-corenet-cpufreq: Fix __udivdi3 modpost error
-Date: Mon, 28 Apr 2014 10:18:18 -0600
-Message-ID: <1398701898-68201-1-git-send-email-tim.gardner@canonical.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH v2 10/10] ARM: mvebu: Enable the thermal sensor in Armada
+ 380/385 SoC
+Date: Mon, 28 Apr 2014 13:44:03 -0300
+Message-ID: <20140428164403.GA17824@arch.cereza>
+References: <1398371004-15807-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <1398371004-15807-11-git-send-email-ezequiel.garcia@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:50293 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756895AbaD1Qof (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Apr 2014 12:44:35 -0400
+Content-Disposition: inline
+In-Reply-To: <1398371004-15807-11-git-send-email-ezequiel.garcia@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Jason Cooper <jason@lakedaemon.net>, Zhang Rui <rui.zhang@intel.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, devicetree@vger.kernel.org
 
-bfa709bc823fc32ee8dd5220d1711b46078235d8 (cpufreq: powerpc: add cpufreq
-transition latency for FSL e500mc SoCs) introduced a modpost error:
+On Apr 24, Ezequiel Garcia wrote:
+> This commit enables the thermal sensor found in Armada 380/385 SoCs.
+>=20
+> Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> ---
+>  arch/arm/boot/dts/armada-38x.dtsi | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>=20
+> diff --git a/arch/arm/boot/dts/armada-38x.dtsi b/arch/arm/boot/dts/ar=
+mada-38x.dtsi
+> index a064f59..02c6139 100644
+> --- a/arch/arm/boot/dts/armada-38x.dtsi
+> +++ b/arch/arm/boot/dts/armada-38x.dtsi
+> @@ -346,6 +346,12 @@
+>  				clock-output-names =3D "nand";
+>  			};
+> =20
+> +			thermal@e8078 {
+> +				compatible =3D "marvell,armada380-thermal";
+> +				reg =3D <0xe4078 0x4>, <0xe404 0x4>;
 
-ERROR: "__udivdi3" [drivers/cpufreq/ppc-corenet-cpufreq.ko] undefined!
-make[1]: *** [__modpost] Error 1
+Dammit, there's a stupid typo in the register offset. I never noticed t=
+his, because
+the initialization sequence does not do much, and this register is not =
+really used
+(for now). The fix is this:
 
-Fix this by avoiding 64 bit integer division.
-
-gcc version 4.8.2
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhuoyu Zhang <Zhuoyu.Zhang@freescale.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
----
- drivers/cpufreq/ppc-corenet-cpufreq.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-index a1ca3dd..0af618a 100644
---- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -138,6 +138,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	struct cpufreq_frequency_table *table;
- 	struct cpu_data *data;
- 	unsigned int cpu = policy->cpu;
-+	u64 transition_latency_hz;
- 
- 	np = of_get_cpu_node(cpu, NULL);
- 	if (!np)
-@@ -205,8 +206,10 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	for_each_cpu(i, per_cpu(cpu_mask, cpu))
- 		per_cpu(cpu_data, i) = data;
- 
-+	transition_latency_hz = 12ULL * NSEC_PER_SEC;
- 	policy->cpuinfo.transition_latency =
--				(12ULL * NSEC_PER_SEC) / fsl_get_sys_freq();
-+		do_div(transition_latency_hz, fsl_get_sys_freq());
-+
- 	of_node_put(np);
- 
- 	return 0;
--- 
-1.7.9.5
+diff --git a/arch/arm/boot/dts/armada-38x.dtsi b/arch/arm/boot/dts/arma=
+da-38x.dtsi
+index 02c6139..370220f 100644
+--- a/arch/arm/boot/dts/armada-38x.dtsi
++++ b/arch/arm/boot/dts/armada-38x.dtsi
+@@ -348,7 +348,7 @@
+=20
+ 			thermal@e8078 {
+ 				compatible =3D "marvell,armada380-thermal";
+-				reg =3D <0xe4078 0x4>, <0xe404 0x4>;
++				reg =3D <0xe4078 0x4>, <0xe4074 0x4>;
+ 				status =3D "okay";
+ 			};
+=20
+Want me to send a follow-up patch?
+--=20
+Ezequiel Garc=EDa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
