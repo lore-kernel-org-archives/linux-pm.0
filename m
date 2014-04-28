@@ -1,63 +1,113 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 3/5] ARM: dove: create a proper PMU driver for power
-	domains, PMU IRQs and resets
-Date: Mon, 28 Apr 2014 13:17:26 +0100
-Message-ID: <20140428121726.GK26756@n2100.arm.linux.org.uk>
-References: <20140427132312.GC26756@n2100.arm.linux.org.uk> <E1WeP8f-0000Uo-1q@rmk-PC.arm.linux.org.uk> <CAPDyKFoboE4iKyom86+EwHHTQAGpgKxGq969yrjQVpqizk-SLA@mail.gmail.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFC] A new CPU load metric for power-efficient scheduler: CPU
+ ConCurrency
+Date: Mon, 28 Apr 2014 16:22:13 +0100
+Message-ID: <20140428152213.GD2639@e103034-lin>
+References: <20140424193004.GA2467@intel.com>
+ <20140425102307.GN2500@e103034-lin>
+ <13348109.c4H00groOp@vostro.rjw.lan>
+ <20140425145334.GC2639@e103034-lin>
+ <20140427200725.GA4771@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:54478 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755384AbaD1MSY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Apr 2014 08:18:24 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFoboE4iKyom86+EwHHTQAGpgKxGq969yrjQVpqizk-SLA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20140427200725.GA4771@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yuyang Du <yuyang.du@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "arjan.van.de.ven@intel.com" <arjan.van.de.ven@intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "alan.cox@intel.com" <alan.cox@intel.com>, "mark.gross@intel.com" <mark.gross@intel.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "rajeev.d.muralidhar@intel.com" <rajeev.d.muralidhar@intel.com>, "vishwesh.m.rudramuni@intel.com" <vishwesh.m.rudramuni@intel.com>, "nicole.chalhoub@intel.com" <nicole.chalhoub@intel.com>, "ajaya.durg@intel.com" <ajaya.durg@intel.com>, "harinarayanan.seshadri@intel.com" <harinarayanan.seshadri@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>
 
-On Mon, Apr 28, 2014 at 01:55:40PM +0200, Ulf Hansson wrote:
-> On 27 April 2014 15:29, Russell King <rmk+kernel@arm.linux.org.uk> wr=
-ote:
-> > The PMU device contains an interrupt controller, power control and
-> > resets.  The interrupt controller is a little sub-standard in that
-> > there is no race free way to clear down pending interrupts, so we t=
-ry
-> > to avoid problems by reducing the window as much as possible, and
-> > clearing as infrequently as possible.
-> >
-> > The interrupt support is implemented using an IRQ domain, and the
-> > parent interrupt referenced in the standard DT way.
-> >
-> > The power domains and reset support is closely related - there is a
-> > defined sequence for powering down a domain which is tightly couple=
-d
-> > with asserting the reset.  Hence, it makes sense to group these two
-> > together.
-> >
-> > This patch adds the core PMU driver: power domains must be defined =
-in
-> > the DT file in order to make use of them.  The reset controller can
-> > be referenced in the standard way for reset controllers.
->=20
-> Hi Russell,
->=20
-> This patch would be simplified if this was based upon the not yet
-> merged patchset from Tomasz Figa, "[PATCH v3 0/3] Generic Device Tree
-> based power domain look-up".
->=20
-> For example you would likely not need to add some of the marvel
-> specific DT bindings, and you wouldn=E2=80=99t need the bus_notifiers=
- to add
-> devices to the power domain. I guess I just though it could be useful
-> input to consider while going forward, unless you already knew.
+On Sun, Apr 27, 2014 at 09:07:25PM +0100, Yuyang Du wrote:
+> On Fri, Apr 25, 2014 at 03:53:34PM +0100, Morten Rasmussen wrote:
+> > I fully agree. My point was that there is more to task consolidation
+> > than just observing the degree of task parallelism. The system topology
+> > has a lot to say when deciding whether or not to pack. That was the
+> > motivation for proposing to have a power model for the system topology
+> > to help making that decision.
+> > 
+> > We do already have some per-task metric available that may be useful for
+> > determining whether a workload is eligible for task packing. The
+> > load_avg_contrib gives us an indication of the tasks cpu utilization and
+> > we also count task wake-ups. If we tracked task wake-ups over time
+> > (right now we only have the sum) we should be able to reason about the
+> > number of wake-ups that a task causes. Lots of wake-ups and low
+> > load_avg_contrib would indicate the task power is likely to be dominated
+> > by the wake-up costs if it is placed on a cpu in a deep idle state.
+> > 
+> > I fully agree that measuring the workloads while they are running is the
+> > way to go. I'm just wondering if the proposed cpu concurrency measure
+> > is sufficient to make the task packing decision for all system
+> > topologies or if we need something that incorporates more system
+> > topology information. If the latter, we may want to roll it all into
+> > something like an energy_diff(src_cpu, dst_cpu, task) helper function
+> > for use in load-balancing decisions.
+> > 
+> 
+> Thank you.
+> 
+> After CC, in the consolidation part, we do 1) attach the CPU topology to "help
+> making that decision" and to be adaptive beyond our experimental platforms, and
+> 2) intercept the current load balance for load and load balancing containment.
+> 
+> Maybe, the way we consolidate workload differs from previous is:
+> 
+> 1) we don't do it per task. We only see how many concurrent CPUs needed (on
+> average and on prediction at power gated units) for the workload, and simply
+> consolidate.
 
-Does that apply to 3.14?
+I'm a bit confused, do you have one global CC that tracks the number of
+tasks across all runqueues in the system or one for each cpu? There
+could be some contention when updating that value on larger systems if
+it one global CC. If they are separate, how do you then decide when to
+consolidate? 
 
---=20
-=46TTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... sl=
-owly
-improving, and getting towards what was expected from it.
+How do you determine your "f" parameter? How fast is the reaction time?
+If you have had a period of consolidation and have a bunch of tasks
+waking up at the same time. How long will it be until you spread the
+load to all cpus?
+
+> 
+> 2) I am not sure it is sufficient either, :). But I can offer another two ways
+> of how to interpret CC.
+> 
+> 2.1) the current work-conserving load balance also uses CC, but instantaneous
+> CC (similar to what PeterZ said to Vincent?).
+
+The existing load balancing based on load_avg_contrib factors in task
+parallelism implicitly. If you have two tasks runnable at the same time,
+one of them will have to wait on the rq resulting in it getting a higher
+load_avg_contrib than it would have had if the two tasks became runnable
+at different times (no parallelism). The higher load_avg_contrib means
+that load balancer is more likely to spread tasks that overlaps in time
+similar to what you achieve with CC. But it doesn't do the reverse.
+
+> 
+> 2.2) CC vs. CPU utilization. CC is runqueue-length-weighted CPU utilization.
+> If we change: "a = sum(concurrency * time) / period" to "a' = sum(1 * time) /
+> period". Then a' is just about the CPU utilization. And the way we weight
+> runqueue-length is the simplest one (excluding the exponential decays, and you
+> may have other ways).
+
+Right. How do you distinguish between having a concurrency of 1 for 100%
+of the time and having a concurrency of 2 for 50% of the time. Both
+should give an average concurrency of very close to 1 depending on your
+exponential decay?
+
+It seems to me that you are loosing some important information by
+tracking per cpu and not per task. Also, your load balance behaviour is
+very sensitive to the choice of decay factor. We have that issue with
+the runqueue load tracking already. It reacts very slowly to load
+changes, so it can't really be used for periodic load-balancing
+decisions.
+
+> The workloads they (not me) used to evaluate the "Workload Consolidation" is
+> 1) 50+ perf/ux benchmarks (almost all of the magazine ones), and 2) ~10 power
+> workloads, of course, they are the easiest ones, such as browsing, audio,
+> video, recording, imaging, etc.
+
+Can you share how much of the time that the benchmarks actually ran
+consolidated vs spread out? IIUC, you consolidate on two cpus which
+should be enough for a lot of workloads.
+
+Morten
