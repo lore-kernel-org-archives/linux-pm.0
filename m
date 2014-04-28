@@ -1,8 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2 3/5] cpufreq, powernow-k6: Fix double invocation of
+Subject: [PATCH v2 4/5] cpufreq, powernow-k7: Fix double invocation of
  cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 00:24:42 +0530
-Message-ID: <20140428185434.28755.49098.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 29 Apr 2014 00:24:58 +0530
+Message-ID: <20140428185451.28755.11924.stgit@srivatsabhat.in.ibm.com>
 References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -19,73 +19,43 @@ invoking cpufreq_freq_transition_begin() and cpufreq_freq_transition_end()
 for those cpufreq drivers that define the ->target_index callback but don't
 set the ASYNC_NOTIFICATION flag.
 
-The powernow-k6 cpufreq driver falls under this category, but this driver was
+The powernow-k7 cpufreq driver falls under this category, but this driver was
 invoking the _begin() and _end() APIs itself around frequency transitions,
 which led to double invocation of the _begin() API. The _begin API makes
 contending callers wait until the previous invocation is complete. Hence,
-the powernow-k6 driver ended up waiting on itself, leading to system hangs
+the powernow-k7 driver ended up waiting on itself, leading to system hangs
 during boot.
 
 Fix this by removing the calls to the _begin() and _end() APIs from the
-powernow-k6 driver, since they rightly belong to the cpufreq core.
-
-(Note that during ->exit(), the powernow-k6 driver sets the frequency
- without any help from the cpufreq core. So add explicit calls to the
- _begin() and _end() APIs around that frequency transition alone, to take
- care of that special case. Also, add a missing 'break' statement there.)
+powernow-k7 driver, since they rightly belong to the cpufreq core.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
 
- drivers/cpufreq/powernow-k6.c |   20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+ drivers/cpufreq/powernow-k7.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-index 695a68c..78904e6 100644
---- a/drivers/cpufreq/powernow-k6.c
-+++ b/drivers/cpufreq/powernow-k6.c
-@@ -138,22 +138,14 @@ static void powernow_k6_set_cpu_multiplier(unsigned int best_i)
- static int powernow_k6_target(struct cpufreq_policy *policy,
- 		unsigned int best_i)
- {
--	struct cpufreq_freqs freqs;
+diff --git a/drivers/cpufreq/powernow-k7.c b/drivers/cpufreq/powernow-k7.c
+index f911645..e61e224 100644
+--- a/drivers/cpufreq/powernow-k7.c
++++ b/drivers/cpufreq/powernow-k7.c
+@@ -269,8 +269,6 @@ static int powernow_target(struct cpufreq_policy *policy, unsigned int index)
  
- 	if (clock_ratio[best_i].driver_data > max_multiplier) {
- 		printk(KERN_ERR PFX "invalid target frequency\n");
- 		return -EINVAL;
- 	}
+ 	freqs.new = powernow_table[index].frequency;
  
--	freqs.old = busfreq * powernow_k6_get_cpu_multiplier();
--	freqs.new = busfreq * clock_ratio[best_i].driver_data;
--
 -	cpufreq_freq_transition_begin(policy, &freqs);
 -
- 	powernow_k6_set_cpu_multiplier(best_i);
+ 	/* Now do the magic poking into the MSRs.  */
+ 
+ 	if (have_a0 == 1)	/* A0 errata 5 */
+@@ -290,8 +288,6 @@ static int powernow_target(struct cpufreq_policy *policy, unsigned int index)
+ 	if (have_a0 == 1)
+ 		local_irq_enable();
  
 -	cpufreq_freq_transition_end(policy, &freqs, 0);
 -
  	return 0;
  }
  
-@@ -229,8 +221,18 @@ static int powernow_k6_cpu_exit(struct cpufreq_policy *policy)
- 	unsigned int i;
- 
- 	for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
--		if (clock_ratio[i].driver_data == max_multiplier)
-+		if (clock_ratio[i].driver_data == max_multiplier) {
-+			struct cpufreq_freqs freqs;
-+
-+			freqs.old = policy->cur;
-+			freqs.new = clock_ratio[i].frequency;
-+			freqs.flags = 0;
-+
-+			cpufreq_freq_transition_begin(policy, &freqs);
- 			powernow_k6_target(policy, i);
-+			cpufreq_freq_transition_end(policy, &freqs, 0);
-+			break;
-+		}
- 	}
- 	return 0;
- }
 
