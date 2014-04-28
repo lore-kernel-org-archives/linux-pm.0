@@ -1,102 +1,82 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 5/5] powercap/rapl: change floor frequency for vallewview
-Date: Mon, 28 Apr 2014 07:04:40 -0700
-Message-ID: <1398693880-13428-6-git-send-email-jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 4/5] x86/iosf: kconfig and used by other drivers
+Date: Mon, 28 Apr 2014 07:04:39 -0700
+Message-ID: <1398693880-13428-5-git-send-email-jacob.jun.pan@linux.intel.com>
 References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:43858 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933207AbaD1WFZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Apr 2014 18:05:25 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
 Cc: "David E. Box" <david.e.box@linux.intel.com>, Alan Cox <alan@linux.intel.com>, Durgadoss R <durgadoss.r@intel.com>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-RAPL power limit reduce power by limiting CPU P-state and
-other techniques. On Valleyview, RAPL power limit cannot
-go to LFM (low frequency mode) if we don't set the floor
-frequency via IOSF mailbox.
-
-This patch enables setting of floor frquency such that
-RAPL power limit is more effective.
+Allow Kconfig selection for IOSF driver. Fix warning condition
+when MBI interface dummy functions are called at runtime.
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 ---
- drivers/powercap/intel_rapl.c | 27 +++++++++++++++++++--------
- 1 file changed, 19 insertions(+), 8 deletions(-)
+ arch/x86/Kconfig                | 2 +-
+ arch/x86/include/asm/iosf_mbi.h | 9 +++++----
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index b1cda6f..13e4776 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -32,6 +32,7 @@
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 25d2c6f..cda587b 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2375,7 +2375,7 @@ config X86_DMA_REMAP
+ 	depends on STA2X11
  
- #include <asm/processor.h>
- #include <asm/cpu_device_id.h>
-+#include <asm/iosf_mbi.h>
+ config IOSF_MBI
+-	bool
++	bool "Intel OnChip System Fabric mailbox"
+ 	depends on PCI
+ 	---help---
+ 	  To be selected by modules requiring access to the Intel OnChip System
+diff --git a/arch/x86/include/asm/iosf_mbi.h b/arch/x86/include/asm/iosf_mbi.h
+index 9fc5402..74336f0 100644
+--- a/arch/x86/include/asm/iosf_mbi.h
++++ b/arch/x86/include/asm/iosf_mbi.h
+@@ -5,7 +5,6 @@
+ #ifndef IOSF_MBI_SYMS_H
+ #define IOSF_MBI_SYMS_H
  
- /* bitmasks for RAPL MSRs, used by primitive access functions */
- #define ENERGY_STATUS_MASK      0xffffffff
-@@ -336,11 +337,17 @@ static int find_nr_power_limit(struct rapl_domain *rd)
- 	return i;
+-#ifdef CONFIG_IOSF_MBI
+ 
+ #define MBI_MCR_OFFSET		0xD0
+ #define MBI_MDR_OFFSET		0xD4
+@@ -52,6 +51,8 @@
+ #define BT_MBI_PCIE_READ	0x00
+ #define BT_MBI_PCIE_WRITE	0x01
+ 
++#ifdef CONFIG_IOSF_MBI
++
+ bool iosf_mbi_available(void);
+ 
+ /**
+@@ -101,21 +102,21 @@ bool iosf_mbi_available(void)
+ static inline
+ int iosf_mbi_read(u8 port, u8 opcode, u32 offset, u32 *mdr)
+ {
+-	WARN();
++	WARN(1, "MBI driver not available");
+ 	return -EPERM;
  }
  
-+#define VLV_CPU_POWER_BUDGET_CTL (0x2)
-+static const struct x86_cpu_id valleyview_id[] = {
-+	{ X86_VENDOR_INTEL, 6, 0x37},
-+	{}
-+};
-+
- static int set_domain_enable(struct powercap_zone *power_zone, bool mode)
+ static inline
+ int iosf_mbi_write(u8 port, u8 opcode, u32 offset, u32 mdr)
  {
- 	struct rapl_domain *rd = power_zone_to_rapl_domain(power_zone);
- 	int nr_powerlimit;
--
-+	u32 mdata = 0;
- 	if (rd->state & DOMAIN_STATE_BIOS_LOCKED)
- 		return -EACCES;
- 	get_online_cpus();
-@@ -350,7 +357,16 @@ static int set_domain_enable(struct powercap_zone *power_zone, bool mode)
- 	/* always enable clamp such that p-state can go below OS requested
- 	 * range. power capping priority over guranteed frequency.
- 	 */
--	rapl_write_data_raw(rd, PL1_CLAMP, mode);
-+	if (x86_match_cpu(valleyview_id)) {
-+		iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_PMC_READ,
-+			VLV_CPU_POWER_BUDGET_CTL, &mdata);
-+		mdata &= ~(0x7f << 8);
-+		mdata |= 1 << 8;
-+		iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_PMC_WRITE,
-+			VLV_CPU_POWER_BUDGET_CTL, mdata);
-+	} else
-+		rapl_write_data_raw(rd, PL1_CLAMP, mode);
-+
- 	/* some domains have pl2 */
- 	if (nr_powerlimit > 1) {
- 		rapl_write_data_raw(rd, PL2_ENABLE, mode);
-@@ -833,11 +849,6 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
- 	return 0;
+-	WARN();
++	WARN(1, "MBI driver not available");
+ 	return -EPERM;
  }
  
--static const struct x86_cpu_id energy_unit_quirk_ids[] = {
--	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
--	{}
--};
--
- static int rapl_check_unit(struct rapl_package *rp, int cpu)
+ static inline
+ int iosf_mbi_modify(u8 port, u8 opcode, u32 offset, u32 mdr, u32 mask)
  {
- 	u64 msr_val;
-@@ -859,7 +870,7 @@ static int rapl_check_unit(struct rapl_package *rp, int cpu)
- 	 */
- 	value = (msr_val & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
- 	/* some CPUs have different way to calculate energy unit */
--	if (x86_match_cpu(energy_unit_quirk_ids))
-+	if (x86_match_cpu(valleyview_id))
- 		rp->energy_unit_divisor = 1000000 / (1 << value);
- 	else
- 		rp->energy_unit_divisor = 1 << value;
+-	WARN();
++	WARN(1, "MBI driver not available");
+ 	return -EPERM;
+ }
+ #endif /* CONFIG_IOSF_MBI */
 -- 
 1.8.1.2
-
