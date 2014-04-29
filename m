@@ -1,37 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Tue, 29 Apr 2014 09:47:47 +0530
-Message-ID: <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
-References: <535AC247.3070907@semaphore.gr>
+Subject: Re: time_in_state on Ubuntu 13.10
+Date: Tue, 29 Apr 2014 09:58:14 +0530
+Message-ID: <CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>
+References: <535E6906.2090201@unine.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <535AC247.3070907@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f173.google.com ([209.85.128.173]:56472 "EHLO
+	mail-ve0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbaD2E2P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 00:28:15 -0400
+In-Reply-To: <535E6906.2090201@unine.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mascha Kurpicz <mascha.kurpicz@unine.ch>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Maxime Colmant <maxime.colmant@inria.fr>
 
-On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> This patch set introduces two freq_table helper macros which
-> can be used for iteration over cpufreq_frequency_table and
-> makes the necessary changes to cpufreq core and drivers that
-> use such an iteration procedure.
+On Mon, Apr 28, 2014 at 8:13 PM, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
+> First of all I would like to thank for the cpufreq utility that I use
+> regularly.
 >
-> The motivation was a usage of common procedure to iterate over
-> cpufreq_frequency_table across all drivers and cpufreq core.
+> Unfortunately, when upgrading our systems from Ubuntu 12.04 to 13.10, we
+> are encountering some issues with the data in
+> /sys/devices/system/cpu/cpu*/cpufreq/stats/time_in_state.
 >
-> This was tested on a x86_64 platform.
-> Most files compiled successfully but unfortunately I was not
-> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
-> due to lack of cross compiler.
+> On some of the machines, the values are all set to 0 [1], whereas on
+> other machines, values are 0 or very small [2]. In both cases, the
+> output of cpufreq-info for the cpufreq stats is not correct. When
+> running Ubuntu 12.04, we get reasonable values.
 >
-> Changelog
->
-> v4 -> v5
->         - Fix warnings in printk format specifier for 32 bit
->           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
+> We noticed this behavior on Intel i3 machines, and on Intel Xeon. Kernel
+> version in all cases is 3.11.0-20-generic.
 
-Doesn't look much has changed and so it stays as is:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Do you mean that kernel version is same for 12.04 and 13.10? We need
+kernel versions for these two bases.
