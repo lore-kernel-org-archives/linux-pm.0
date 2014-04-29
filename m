@@ -1,7 +1,7 @@
 From: "David E. Box" <david.e.box@linux.intel.com>
-Subject: [PATCH v2 3/4] x86/iosf: Make IOSF driver modular and usable by more drivers
-Date: Tue, 29 Apr 2014 15:33:08 -0700
-Message-ID: <1398810789-2301-4-git-send-email-david.e.box@linux.intel.com>
+Subject: [PATCH v2 2/4] powercap/rapl: add new cpu ids
+Date: Tue, 29 Apr 2014 15:33:07 -0700
+Message-ID: <1398810789-2301-3-git-send-email-david.e.box@linux.intel.com>
 References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
  <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,105 +11,29 @@ To: david.e.box@linux.intel.com, jacob.jun.pan@linux.intel.com, linux-pm@vger.ke
 Cc: alan@linux.intel.com, durgadoss.r@intel.com, kristen.c.accardi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-From: "David E. Box" <david.e.box@linux.intel.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Currently drivers that work on big core can't use the mailbox driver without
-selecting it which forces an unneeded dependency. Provides dummy fucntions to
-allow these modules to conditionally use the mailbox on soc's without limiting
-their ability to compile and load on big core systems. Make mailbox driver
-build default m to ensure availability on x86 SOC's.
+Adding support for Broadwell model 0x3d and HSW model (0x3c)
 
-Signed-off-by: David E. Box <david.e.box@linux.intel.com>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 ---
- arch/x86/Kconfig                |    7 ++-----
- arch/x86/include/asm/iosf_mbi.h |   33 +++++++++++++++++++++++++++++++++
- arch/x86/kernel/iosf_mbi.c      |    6 ++++++
- 3 files changed, 41 insertions(+), 5 deletions(-)
+ drivers/powercap/intel_rapl.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 25d2c6f..f1304d3 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2375,12 +2375,9 @@ config X86_DMA_REMAP
- 	depends on STA2X11
- 
- config IOSF_MBI
--	bool
-+	tristate
-+	default m
- 	depends on PCI
--	---help---
--	  To be selected by modules requiring access to the Intel OnChip System
--	  Fabric (IOSF) Sideband MailBox Interface (MBI). For MBI platforms
--	  enumerable by PCI.
- 
- source "net/Kconfig"
- 
-diff --git a/arch/x86/include/asm/iosf_mbi.h b/arch/x86/include/asm/iosf_mbi.h
-index 8e71c79..9e92d65 100644
---- a/arch/x86/include/asm/iosf_mbi.h
-+++ b/arch/x86/include/asm/iosf_mbi.h
-@@ -50,6 +50,10 @@
- #define BT_MBI_PCIE_READ	0x00
- #define BT_MBI_PCIE_WRITE	0x01
- 
-+#if defined(CONFIG_IOSF_MBI) || defined(CONFIG_IOSF_MBI_MODULE)
-+
-+bool iosf_mbi_available(void);
-+
- /**
-  * iosf_mbi_read() - MailBox Interface read command
-  * @port:	port indicating subunit being accessed
-@@ -87,4 +91,33 @@ int iosf_mbi_write(u8 port, u8 opcode, u32 offset, u32 mdr);
-  */
- int iosf_mbi_modify(u8 port, u8 opcode, u32 offset, u32 mdr, u32 mask);
- 
-+#else /* CONFIG_IOSF_MBI is not enabled */
-+static inline
-+bool iosf_mbi_available(void)
-+{
-+	return false;
-+}
-+
-+static inline
-+int iosf_mbi_read(u8 port, u8 opcode, u32 offset, u32 *mdr)
-+{
-+	WARN(1, "MBI driver not available");
-+	return -EPERM;
-+}
-+
-+static inline
-+int iosf_mbi_write(u8 port, u8 opcode, u32 offset, u32 mdr)
-+{
-+	WARN(1, "MBI driver not available");
-+	return -EPERM;
-+}
-+
-+static inline
-+int iosf_mbi_modify(u8 port, u8 opcode, u32 offset, u32 mdr, u32 mask)
-+{
-+	WARN(1, "MBI driver not available");
-+	return -EPERM;
-+}
-+#endif /* CONFIG_IOSF_MBI */
-+
- #endif /* IOSF_MBI_SYMS_H */
-diff --git a/arch/x86/kernel/iosf_mbi.c b/arch/x86/kernel/iosf_mbi.c
-index c3aae66..d3803c6 100644
---- a/arch/x86/kernel/iosf_mbi.c
-+++ b/arch/x86/kernel/iosf_mbi.c
-@@ -177,6 +177,12 @@ int iosf_mbi_modify(u8 port, u8 opcode, u32 offset, u32 mdr, u32 mask)
- }
- EXPORT_SYMBOL(iosf_mbi_modify);
- 
-+bool iosf_mbi_available(void)
-+{
-+	return mbi_pdev;
-+}
-+EXPORT_SYMBOL(iosf_mbi_available);
-+
- static int iosf_mbi_probe(struct pci_dev *pdev,
- 			  const struct pci_device_id *unused)
- {
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 1c987d2..b1cda6f 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -951,7 +951,9 @@ static const struct x86_cpu_id rapl_ids[] = {
+ 	{ X86_VENDOR_INTEL, 6, 0x2d},/* Sandy Bridge EP */
+ 	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
+ 	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
+-	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell */
++	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
++	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
++	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
+ 	/* TODO: Add more CPU IDs after testing */
+ 	{}
+ };
 -- 
 1.7.10.4
