@@ -1,7 +1,7 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH] cpufreq: intel_pstate: Disable interrupts during MSRs reading
-Date: Tue, 29 Apr 2014 20:46:05 +0300
-Message-ID: <535FE55D.40500@semaphore.gr>
+Subject: [PATCH] cpufreq: intel_pstate: Remove sample parameter in intel_pstate_calc_busy
+Date: Tue, 29 Apr 2014 20:53:49 +0300
+Message-ID: <535FE72D.2020402@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -11,80 +11,57 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-According to Intel 64 and IA-32 Architectures SDM, Volume 3,
-Chapter 14.2, "Software needs to exercise care to avoid delays
-between the two RDMSRs (for example interrupts)".
+Since commit d37e2b7644 ("intel_pstate: remove unneeded sample buffers")
+we use only one sample. So, there is no need to pass the sample
+pointer to intel_pstate_calc_busy. Instead, get the pointer from
+cpudata. Also, remove the unused SAMPLE_COUNT macro.
 
-So, disable interrupts during reading MSRs IA32_APERF and IA32_MPERF.
-Since the TSC is also takes place in the calculation include it in
-the protected section. This should increase the accuracy of the
-calculations.
-
-Tested on Intel i7-3770 CPU @ 3.40GHz.
-Benchmarks (Phoronix Linux compilation) show a slightly increase
-in performance by ~0.1% and a decrease in power consumption by
-~0.13%.
+While at it, reformat the first line in this function.
 
 Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
-
-I hope it's not too inappropriate to post test results in
-conjunction with my previous patch about the change of calculation
-method of next p-state (https://lkml.org/lkml/2014/4/27/100).
-I used Phoronix benchmark - Linux Kernel Compilation 3.1.
-Below the test results using turbostat (5 iterations):
-
-Without 2 patches:
-
-Ph. avg Time	Total time	PkgWatt		Total Energy
-	79.63	266.416		57.74		15382.85984
-	79.63	265.609		57.87		15370.79283
-	79.57	266.994		57.54		15362.83476
-	79.53	265.304		57.83		15342.53032
-	79.71	265.977		57.76		15362.83152
-avg	79.61	266.06		57.74		15364.36985
-
-With change calculation patch:
-
-Ph. avg Time	Total time	PkgWatt		Total Energy
-	78.23	258.826		59.14		15306.96964
-	78.41	259.110		59.15		15326.35650
-	78.40	258.530		59.26		15320.48780
-	78.46	258.673		59.20		15313.44160
-	78.19	259.075		59.16		15326.87700
-avg	78.34	258.842		59.18		15318.82650
-
-With change calculation patch + this one
-
-Ph. avg Time	Total time	PkgWatt		Total Energy
-	78.33	259.320		59.06		15315.43920
-	78.28	258.245		59.20		15288.10400
-	78.08	257.523		59.32		15276.26436
-	78.38	259.084		59.13		15319.63692
-	78.31	258.232		59.22		15292.49904
-avg	78.27	258.480		59.18		15298.38870
-
-
- drivers/cpufreq/intel_pstate.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpufreq/intel_pstate.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 8e309db..95b3958 100644
+index 95b3958..8192ff1 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -576,10 +576,13 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+@@ -32,8 +32,6 @@
+ #include <asm/msr.h>
+ #include <asm/cpu_device_id.h>
+ 
+-#define SAMPLE_COUNT		3
+-
+ #define BYT_RATIOS		0x66a
+ #define BYT_VIDS		0x66b
+ #define BYT_TURBO_RATIOS	0x66c
+@@ -553,14 +551,13 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ 	intel_pstate_set_pstate(cpu, cpu->pstate.max_pstate);
+ }
+ 
+-static inline void intel_pstate_calc_busy(struct cpudata *cpu,
+-					struct sample *sample)
++static inline void intel_pstate_calc_busy(struct cpudata *cpu)
  {
- 	u64 aperf, mperf;
- 	unsigned long long tsc;
-+	unsigned long flags;
++	struct sample *sample = &cpu->sample;
+ 	int32_t core_pct;
+ 	int32_t c0_pct;
  
-+	local_irq_save(flags);
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
- 	tsc = native_read_tsc();
-+	local_irq_restore(flags);
+-	core_pct = div_fp(int_tofp((sample->aperf)),
+-			int_tofp((sample->mperf)));
++	core_pct = div_fp(int_tofp(sample->aperf), int_tofp(sample->mperf));
+ 	core_pct = mul_fp(core_pct, int_tofp(100));
+ 	FP_ROUNDUP(core_pct);
  
- 	aperf = aperf >> FRAC_BITS;
- 	mperf = mperf >> FRAC_BITS;
+@@ -595,7 +592,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 	cpu->sample.mperf -= cpu->prev_mperf;
+ 	cpu->sample.tsc -= cpu->prev_tsc;
+ 
+-	intel_pstate_calc_busy(cpu, &cpu->sample);
++	intel_pstate_calc_busy(cpu);
+ 
+ 	cpu->prev_aperf = aperf;
+ 	cpu->prev_mperf = mperf;
 -- 
 1.9.0
