@@ -1,89 +1,44 @@
-From: "David E. Box" <david.e.box@linux.intel.com>
-Subject: [PATCH v2 1/4] powercap/rapl: further relax energy counter checks
-Date: Tue, 29 Apr 2014 15:33:06 -0700
-Message-ID: <1398810789-2301-2-git-send-email-david.e.box@linux.intel.com>
-References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Sleep: Fall back to subsystem level PM callbacks for PM domains
+Date: Wed, 30 Apr 2014 00:52:17 +0200
+Message-ID: <1679843.u9z8cZFExt@vostro.rjw.lan>
+References: <1398422695-2295-1-git-send-email-ulf.hansson@linaro.org> <1753685.C73DLtyD2t@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:4588 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757494AbaD2Wff (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 29 Apr 2014 18:35:35 -0400
-In-Reply-To: <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:55151 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965422AbaD2Wfs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 18:35:48 -0400
+In-Reply-To: <1753685.C73DLtyD2t@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: david.e.box@linux.intel.com, jacob.jun.pan@linux.intel.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, hpa@linux.intel.com
-Cc: alan@linux.intel.com, durgadoss.r@intel.com, kristen.c.accardi@intel.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>
 
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+On Wednesday, April 30, 2014 12:47:28 AM Rafael J. Wysocki wrote:
+> On Friday, April 25, 2014 12:44:55 PM Ulf Hansson wrote:
+> > Previously once the PM core found a PM domain pointer for a device,
+> > but which didn't have a valid PM callback, it falled back to try the
+> > driver's PM callback.
+> > 
+> > In this scenario, change the behavior of the PM core to try out the
+> > other subsystem level PM callbacks, before it moves on to the driver.
+> > 
+> > This gives provision for PM domains to easier re-use subsystem level
+> > code to handle the needed operations.
+> > 
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> Are you sure this is not going to break the existing PM domains?
 
-Energy counters may roll slowly for some RAPL domains, checking all
-of them can be time consuming and takes unpredictable amount of time.
-Therefore, we relax the sanity check by only checking availability of the
-MSRs and non-zero value of the energy status counters. It has been shown
-sufficient for all the platforms tested to filter out inactive domains.
+And even if it isn't, the idea behind PM domains was to provide a mechanism to
+bypass the bus types' (etc) PM callbacks, so I'm not liking this patch at all.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c |   29 +++++++++--------------------
- 1 file changed, 9 insertions(+), 20 deletions(-)
+Thanks!
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index d9a0770..1c987d2 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1124,8 +1124,7 @@ err_cleanup_package:
- static int rapl_check_domain(int cpu, int domain)
- {
- 	unsigned msr;
--	u64 val1, val2 = 0;
--	int retry = 0;
-+	u64 val = 0;
- 
- 	switch (domain) {
- 	case RAPL_DOMAIN_PACKAGE:
-@@ -1144,26 +1143,13 @@ static int rapl_check_domain(int cpu, int domain)
- 		pr_err("invalid domain id %d\n", domain);
- 		return -EINVAL;
- 	}
--	if (rdmsrl_safe_on_cpu(cpu, msr, &val1))
--		return -ENODEV;
--
--	/* PP1/uncore/graphics domain may not be active at the time of
--	 * driver loading. So skip further checks.
-+	/* make sure domain counters are available and contains non-zero
-+	 * values, otherwise skip it.
- 	 */
--	if (domain == RAPL_DOMAIN_PP1)
--		return 0;
--	/* energy counters roll slowly on some domains */
--	while (++retry < 10) {
--		usleep_range(10000, 15000);
--		rdmsrl_safe_on_cpu(cpu, msr, &val2);
--		if ((val1 & ENERGY_STATUS_MASK) != (val2 & ENERGY_STATUS_MASK))
--			return 0;
--	}
--	/* if energy counter does not change, report as bad domain */
--	pr_info("domain %s energy ctr %llu:%llu not working, skip\n",
--		rapl_domain_names[domain], val1, val2);
-+	if (rdmsrl_safe_on_cpu(cpu, msr, &val) || !val)
-+		return -ENODEV;
- 
--	return -ENODEV;
-+	return 0;
- }
- 
- /* Detect active and valid domains for the given CPU, caller must
-@@ -1180,6 +1166,9 @@ static int rapl_detect_domains(struct rapl_package *rp, int cpu)
- 		/* use physical package id to read counters */
- 		if (!rapl_check_domain(cpu, i))
- 			rp->domain_map |= 1 << i;
-+		else
-+			pr_warn("RAPL domain %s detection failed\n",
-+				rapl_domain_names[i]);
- 	}
- 	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
- 	if (!rp->nr_domains) {
+
 -- 
-1.7.10.4
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
