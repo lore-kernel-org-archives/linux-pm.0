@@ -1,76 +1,86 @@
-From: Christoph Lameter <cl@linux.com>
-Subject: drivers/cpuidle: Replace __get_cpu_var uses for address
- calculation
-Date: Tue, 29 Apr 2014 14:24:39 -0500 (CDT)
-Message-ID: <alpine.DEB.2.10.1404291423110.18675@gentwo.org>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:51139 "EHLO
-	qmta08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933447AbaD2Tav (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 15:30:51 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v2] PM / devfreq: Use freq_table for available_frequencies
+Date: Tue, 29 Apr 2014 13:00:41 -0700
+Message-ID: <536004E9.1010300@codeaurora.org>
+References: <4324793.197151398649314597.JavaMail.weblogic@epv6ml10>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4324793.197151398649314597.JavaMail.weblogic@epv6ml10>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-All of these are for address calculation. Replace with
-this_cpu_ptr().
+On 04/27/2014 06:41 PM, MyungJoo Ham wrote:
+>> Some devices use freq_table instead of OPP. For those devices, the
+>> available_frequencies file shows up empty. Fix that by using freq_table to
+>> generate the available_frequencies data when it's available.
+>>
+>> OPP find frequency APIs also skips frequencies that have been temporarily
+>> disabled (say, due to thermal, etc). Since available_frequencies is
+>> supposed to show the entire list of available frequencies without taking
+>> temporary limits into consideration, preference is given to freq_table when
+>> available.
+>>
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> ---
+>>   drivers/devfreq/devfreq.c | 29 ++++++++++++++++++-----------
+>>   1 file changed, 18 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index 2042ec3..527cbe2 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -912,20 +912,27 @@ static ssize_t available_frequencies_show(struct device *d,
+>>   	struct devfreq *df = to_devfreq(d);
+>>   	struct device *dev = df->dev.parent;
+>>   	struct dev_pm_opp *opp;
+>> +	unsigned int i = 0;
+>>   	ssize_t count = 0;
+>>   	unsigned long freq = 0;
+>>   
+>> -	rcu_read_lock();
+>> -	do {
+>> -		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+>> -		if (IS_ERR(opp))
+>> -			break;
+>> -
+>> -		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+>> -				   "%lu ", freq);
+>> -		freq++;
+>> -	} while (1);
+>> -	rcu_read_unlock();
+>> +	if (df->profile->freq_table) {
+>> +		for (i = 0; i < df->profile->max_state; i++)
+>> +			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+>> +					   "%u ", df->profile->freq_table[i]);
+> 
+> You are hereby changing the semmantics of the original
+> available_frequencies node.
+> 
+> When a frequency/voltage pair has been disabled (opp_disable), probably
+> by opp_disable(), the frequency is no more "available".
+> However, when the driver author supplied freq_table as well as OPP
+> in order to see the statistics, the node will behave differently.
+> 
+> Please do not affect the current users as long as it does not give
+> additional benefit or fix a bug.
 
-[cpufreq changes]
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Christoph Lameter <cl@linux.com>
+I was actually trying to stick with the semantics as it was documented.
+The documentation for this file says it'll show frequencies that are not
+allowed by the current min/max settings either. To me, an OPP disable
+seems similar to some frequencies "disabled" by min/max settings.
 
-Index: linux/drivers/cpuidle/governors/ladder.c
-===================================================================
---- linux.orig/drivers/cpuidle/governors/ladder.c	2014-04-14 13:24:54.769362062 -0500
-+++ linux/drivers/cpuidle/governors/ladder.c	2014-04-14 13:24:54.765362140 -0500
-@@ -66,7 +66,7 @@
- static int ladder_select_state(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev)
- {
--	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-+	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	struct ladder_device_state *last_state;
- 	int last_residency, last_idx = ldev->last_state_idx;
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-@@ -170,7 +170,7 @@
-  */
- static void ladder_reflect(struct cpuidle_device *dev, int index)
- {
--	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-+	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	if (index > 0)
- 		ldev->last_state_idx = index;
- }
-Index: linux/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux.orig/drivers/cpuidle/governors/menu.c	2014-04-14 13:24:54.769362062 -0500
-+++ linux/drivers/cpuidle/governors/menu.c	2014-04-14 13:24:54.765362140 -0500
-@@ -285,7 +285,7 @@
-  */
- static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 	unsigned int interactivity_req;
-@@ -377,7 +377,7 @@
-  */
- static void menu_reflect(struct cpuidle_device *dev, int index)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	data->last_state_idx = index;
- 	if (index >= 0)
- 		data->needs_update = 1;
-@@ -390,7 +390,7 @@
-  */
- static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
--	struct menu_device *data = &__get_cpu_var(menu_devices);
-+	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	int last_idx = data->last_state_idx;
- 	struct cpuidle_state *target = &drv->states[last_idx];
- 	unsigned int measured_us;
+Giving preference to OPP is not a hard change to do, but it seems to go
+againsts the documented semantics.
+
+Thoughts?
+
+-Saravana
+
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
