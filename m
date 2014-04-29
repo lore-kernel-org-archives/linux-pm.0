@@ -1,39 +1,43 @@
-From: "David E. Box" <david.e.box@linux.intel.com>
-Subject: [PATCH v2 2/4] powercap/rapl: add new cpu ids
-Date: Tue, 29 Apr 2014 15:33:07 -0700
-Message-ID: <1398810789-2301-3-git-send-email-david.e.box@linux.intel.com>
-References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/4] RAPL driver updates
+Date: Wed, 30 Apr 2014 01:02:36 +0200
+Message-ID: <2848366.d6jLR9v0Ov@vostro.rjw.lan>
+References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com> <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58554 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751286AbaD2WqI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 18:46:08 -0400
 In-Reply-To: <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: david.e.box@linux.intel.com, jacob.jun.pan@linux.intel.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, hpa@linux.intel.com
-Cc: alan@linux.intel.com, durgadoss.r@intel.com, kristen.c.accardi@intel.com
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "David E. Box" <david.e.box@linux.intel.com>
+Cc: jacob.jun.pan@linux.intel.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, hpa@linux.intel.com, alan@linux.intel.com, durgadoss.r@intel.com, kristen.c.accardi@intel.com
 
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+On Tuesday, April 29, 2014 03:33:05 PM David E. Box wrote:
+> From: "David E. Box" <david.e.box@linux.intel.com>
+> 
+> v2: iosf: Remove Kconfig exposure. Make mailbox driver a module.
+> 
+> David E. Box (1):
+>   x86/iosf: Make IOSF driver modular and usable by more drivers
+> 
+> Jacob Pan (3):
+>   powercap/rapl: further relax energy counter checks
+>   powercap/rapl: add new cpu ids
+>   powercap/rapl: change floor frequency for vallewview
 
-Adding support for Broadwell model 0x3d and HSW model (0x3c)
+I'm fine with [1-2/4].
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+[3/4] has to go via the x86 tree and [4/4] probably too, because it
+depends on [3/4].
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 1c987d2..b1cda6f 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -951,7 +951,9 @@ static const struct x86_cpu_id rapl_ids[] = {
- 	{ X86_VENDOR_INTEL, 6, 0x2d},/* Sandy Bridge EP */
- 	{ X86_VENDOR_INTEL, 6, 0x37},/* Valleyview */
- 	{ X86_VENDOR_INTEL, 6, 0x3a},/* Ivy Bridge */
--	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell */
-+	{ X86_VENDOR_INTEL, 6, 0x3c},/* Haswell */
-+	{ X86_VENDOR_INTEL, 6, 0x3d},/* Broadwell */
-+	{ X86_VENDOR_INTEL, 6, 0x45},/* Haswell ULT */
- 	/* TODO: Add more CPU IDs after testing */
- 	{}
- };
+So would you like me to queue up [1-2/4] without the remaining two for 3.16?
+
+
 -- 
-1.7.10.4
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
