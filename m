@@ -1,74 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: powernow-k8: Fix checkpatch warnings
-Date: Wed, 30 Apr 2014 00:39:11 +0200
-Message-ID: <4780344.RfsAca3Qz3@vostro.rjw.lan>
-References: <5356DB92.1060600@semaphore.gr> <2606012.9SjvfKiI5Z@vostro.rjw.lan> <5357C5E0.1070207@semaphore.gr>
+Subject: Re: [PATCH 1/4] ARM: shmobile: Ignore callbacks for subsys generic_pm_domain_data
+Date: Wed, 30 Apr 2014 00:45:53 +0200
+Message-ID: <1469030.SEtTICGcIm@vostro.rjw.lan>
+References: <1397230004-22306-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFpbX3cdAgvUx=4FbmNxFLH4VO8JqrQqRB3nxXMxZDyXJQ@mail.gmail.com> <20140425010651.GC12641@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61905 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:53572 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756294AbaD2WWm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 18:22:42 -0400
-In-Reply-To: <5357C5E0.1070207@semaphore.gr>
+	with SMTP id S1756637AbaD2W3Y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 18:29:24 -0400
+In-Reply-To: <20140425010651.GC12641@verge.net.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Simon Horman <horms@verge.net.au>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wednesday, April 23, 2014 04:53:36 PM Stratos Karafotis wrote:
-> On 23/04/2014 01:37 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> > On Wednesday, April 23, 2014 12:13:54 AM Stratos Karafotis wrote:
-> >> Fix the following checkpatch warnings:
-> >=20
-> > In addition to comments from Viresh, I have a general one.
-> >=20
-> > Some of the checkpatch.pl warnings are not worth fixing at all ->
-> >=20
-> >> - WARNING: Prefer pr_err(... to printk(KERN_ERR ...
-> >> - WARNING: Prefer pr_info(... to printk(KERN_INFO ...
-> >> - WARNING: Prefer pr_warn(... to printk(KERN_WARNING ...
-> >> - WARNING: quoted string split across lines
-> >> - WARNING: line over 80 characters
-> >=20
-> > -> and the "line over 80 characters" ones are outright wrong in man=
-y cases,
-> > so please don't "fix" them.
-> >=20
->=20
-> Hi Rafael,
->=20
-> Thanks for your comments!
->=20
-> Could you please clarify if you want me to drop the entire patch or
-> send it only with the changes about the last warning found ("no space=
-s
-> at the start of a line)?
->=20
-> Also, I would like to take the opportunity and ask a question. :)
->=20
-> Reading the code, sometimes, I find some minor formatting issues.
-> Like the checkpatch warnings or unnecessary parentheses and braces.
->=20
-> For example the line bellow:
-> 		if ((freq < policy->min) || (freq > policy->max))
->=20
-> I know that this is not actually an issue and a patch with such chang=
-es
-> is (somehow) a noise for the maintainers. But, should it be "fixed" o=
-r not?
+On Friday, April 25, 2014 10:06:51 AM Simon Horman wrote:
+> On Thu, Apr 24, 2014 at 01:25:14PM +0200, Ulf Hansson wrote:
+> > On 14 April 2014 11:22, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > On 14 April 2014 03:20, Simon Horman <horms@verge.net.au> wrote:
+> > >> On Fri, Apr 11, 2014 at 05:26:41PM +0200, Ulf Hansson wrote:
+> > >>> There are no active users of these callbacks, thus there are no benefit
+> > >>> of trying to invoke them.
+> > >>>
+> > >>> Cc: Simon Horman <horms@verge.net.au>
+> > >>> Cc: Magnus Damm <magnus.damm@gmail.com>
+> > >>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > >>> ---
+> > >>>
+> > >>> I am seeking ack from the SOC maintainers since this needs to go with the other
+> > >>> patches in this patchset on the PM core.
+> > >>
+> > >> In order to reduce the possibility of conflicts I would prefer
+> > >> to take this patch through my tree.
+> > >
+> > > Okay, go ahead!
+> > >
+> > 
+> > Hi Simon,
+> > 
+> > Just wanted to know, if you decided to queue this patch in your tree.
+> > Or were there anything else you needed me to fix here?
+> 
+> Sorry for dropping the ball. I will queue-up this patch.
 
-It should be cleaned up generally, so if you have the time and you're w=
-illing
-to do such things, please do them.
+OK
 
-That said things like lines in excess of 80 characters may stay as they=
- are.
+Ulf, since the rest of the series depends on this one (or at least that's
+how it looks to me), would you mind resending it when this one gets into the
+Linus' tree?
 
-Thanks!
-
-
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
