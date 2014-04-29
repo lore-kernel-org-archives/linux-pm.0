@@ -1,98 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 18:53:40 +0530
-Message-ID: <CAKohpo=UYR3sgtutEBRcvRtXjvNpph9wu2TgoM1168HXQrWjLA@mail.gmail.com>
-References: <20140429130506.7052.54268.stgit@srivatsabhat.in.ibm.com>
+From: Jim Quinlan <jim2101024@gmail.com>
+Subject: Linux common clock framework: device with many clocks
+Date: Tue, 29 Apr 2014 09:40:26 -0400
+Message-ID: <CANCKTBvB4mPmEgwZ-dxxB1aDTQmawXYZyhDMdSh9E7K1Nh6eeg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140429130506.7052.54268.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:62868 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbaD2Nk1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 09:40:27 -0400
+Received: by mail-ob0-f172.google.com with SMTP id wo20so230827obc.17
+        for <linux-pm@vger.kernel.org>; Tue, 29 Apr 2014 06:40:27 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 29 April 2014 18:36, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Some cpufreq drivers were redundantly invoking the _begin() and _end()
-> APIs around frequency transitions, and this double invocation (one from
-> the cpufreq core and the other from the cpufreq driver) used to result
-> in a self-deadlock, leading to system hangs during boot. (The _begin()
-> API makes contending callers wait until the previous invocation is
-> complete. Hence, the cpufreq driver would end up waiting on itself!).
->
-> Now all such drivers have been fixed, but debugging this issue was not
-> very straight-forward (even lockdep didn't catch this). So let us add a
-> debug infrastructure to the cpufreq core to catch such issues more easily
-> in the future.
->
-> We add a new field called 'transition_task' to the policy structure, to keep
-> track of the task which is performing the frequency transition. Using this
-> field, we make note of this task during _begin() and print a warning if we
-> find a case where the same task is calling _begin() again, before completing
-> the previous frequency transition using the corresponding _end().
->
-> We have left out ASYNC_NOTIFICATION drivers from this debug infrastructure
-> for 2 reasons:
->
-> 1. At the moment, we have no way to avoid a particular scenario where this
->    debug infrastructure can emit false-positive warnings for such drivers.
->    The scenario is depicted below:
->
->
->          Task A                                         Task B
->
->     /* 1st freq transition */
->     Invoke _begin() {
->             ...
->             ...
->     }
->
->     Change the frequency
->
->     /* 2nd freq transition */
->     Invoke _begin() {
->             ... //waiting for B to
->             ... //finish _end() for
->             ... //the 1st transition
->             ...       |                         Got interrupt for successful
->             ...       |                         change of frequency (1st one).
->             ...       |
->             ...       |                         /* 1st freq transition */
->             ...       |                         Invoke _end() {
->             ...       |                                 ...
->             ...       V                         }
->             ...
->             ...
->     }
->
->    This scenario is actually deadlock-free because, once Task A changes the
->    frequency, it is Task B's responsibility to invoke the corresponding
->    _end() for the 1st frequency transition. Hence it is perfectly legal for
->    Task A to go ahead and attempt another frequency transition in the meantime.
->    (Of course it won't be able to proceed until Task B finishes the 1st _end(),
->    but this doesn't cause a deadlock or a hang).
->
->    The debug infrastructure cannot handle this scenario and will treat it as
->    a deadlock and print a warning. To avoid this, we exclude such drivers
->    from the purview of this code.
->
-> 2. Luckily, we don't _need_ this infrastructure for ASYNC_NOTIFICATION drivers
->    at all! The cpufreq core does not automatically invoke the _begin() and
->    _end() APIs during frequency transitions in such drivers. Thus, the driver
->    alone is responsible for invoking _begin()/_end() and hence there shouldn't
->    be any conflicts which lead to double invocations. So, we can skip these
->    drivers, since the probability that such drivers will hit this problem is
->    extremely low, as outlined above.
->
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->
-> v2: Removed the coverage of ASYNC_NOTIFICATION drivers, in order to avoid
-> false-positives.
->
->  drivers/cpufreq/cpufreq.c |    7 +++++++
->  include/linux/cpufreq.h   |    1 +
->  2 files changed, 8 insertions(+)
+In most examples of .dtsi files I have perused, a device is associated with
+typically one clock, maybe two.  In the SoC I'm working on, some devices
+need to turn off multiple clocks for PM, as many as 13.   The driver gets
+the clocks from the device tree, and when the driver wants to turn off
+clocks to the device, it loops through all 13 clocks.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I'm wondering if is possible to abstract a group of many clocks into one
+"software clock". Invoking clk_disable() on said software clock would
+effect the iteration of clk_disable() on all 13 of the clocks it governs.
+ Enabling would effect clk_enable() on all 13.  This would make the driver
+writer's life a little simpler.
+
+I've looked at the Linux Common Clock Framework, and it doesn't really
+accommodate multiple active parents as it's somewhat contrary to its
+design.  Also, playing with the innards of clk.c is ill-advised.  Should I
+just stick to putting iteration over the clocks in all my drivers, or is
+there a better way?
+
+--Jim Quinlan
