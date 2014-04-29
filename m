@@ -1,103 +1,30 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 5/5] cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 10:25:43 +0530
-Message-ID: <CAKohpokiy2Fvry=uTVnOCymH7Co1ka+JCFT3ndtPQBSD94Mnew@mail.gmail.com>
-References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
-	<20140428185507.28755.6483.stgit@srivatsabhat.in.ibm.com>
-	<CAKohpomaJ0ubnzzQ7AwAd6z+Zm085i+UwB7XMa=si7qthZdgZg@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Change the calculation of next pstate
+Date: Tue, 29 Apr 2014 10:28:02 +0530
+Message-ID: <CAKohpomhUk7RQ3YL3=wpVKSbK_oSkyYBRUZiqnHzWqrZ2DjRRA@mail.gmail.com>
+References: <535D80C8.9090906@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomaJ0ubnzzQ7AwAd6z+Zm085i+UwB7XMa=si7qthZdgZg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:46081 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbaD2E6E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 00:58:04 -0400
+Received: by mail-ob0-f175.google.com with SMTP id wp4so8356183obc.6
+        for <linux-pm@vger.kernel.org>; Mon, 28 Apr 2014 21:58:03 -0700 (PDT)
+In-Reply-To: <535D80C8.9090906@semaphore.gr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 29 April 2014 10:21, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Nice effort.
+Cc'd Dirk,
+
+On 28 April 2014 03:42, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> Currently the driver calculates the next pstate proportional to
+> core_busy factor and reverse proportional to current pstate.
 >
-> On 29 April 2014 00:25, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Now all such drivers have been fixed, but debugging this issue was not
->> very straight-forward (even lockdep didn't catch this). So let us add a
->> debug infrastructure to the cpufreq core to catch such issues more easily
->> in the future.
->
-> BUT, I am not sure if we really need it :(
->
-> I think we just got into the 'barrier' stuff as we had some doubts about it
-> earlier and were quite sure that nothing else could go wrong. Otherwise
-> the only problem could have been present was the second queuing
-> from the same thread. And we will surely get stuck if that happens and
-> we can't just miss that error..
->
->> Scenario 1: (Deadlock-free)
->> ----------
->>
->>          Task A                                         Task B
->>
->>     /* 1st freq transition */
->>     Invoke _begin() {
->>             ...
->>             ...
->>     }
->>
->>     Change the frequency
->>
->>                                                 Got interrupt for successful
->>                                                 change of frequency.
->>
->>                                                 /* 1st freq transition */
->>                                                 Invoke _end() {
->>                                                         ...
->>                                                         ...
->>     /* 2nd freq transition */                           ...
->>     Invoke _begin() {                                   ...
->>             ... //waiting for B                         ...
->>             ... //to finish _end()              }
->>             ...
->>             ...
->>     }
->>
->>
->> This scenario is actually deadlock-free because Task A can wait inside the
->> second call to _begin() without self-deadlocking, because it is the
->> responsibility of Task B to finish the first sequence by invoking the
->> corresponding _end().
+> Change the above method and calculate the next pstate independently
+> of current pstate.
 
-WTF, I was writing my mail and it just got send due to some stupid combination
-of keys :( .. Sorry.
-
-Also, this might not work as expected. Consider this scenario:
-
-     /* 1st freq transition */
-     Invoke _begin() {
-             ...
-             ...
-     }
-
-     Start Change of frequency and return
-     back as there is no end from same thread.
-
-     /* 2nd freq transition as there is nobody stopping us */
-     Invoke _begin() {
-             ... //waiting for B
-             ... //to finish _end()
-             ...
-             ...
-     }
-
-                                                              Got
-interrupt for successful
-                                                              change
-of frequency.
-
-                                                              /* 1st
-freq transition */
-                                                              Invoke _end() {
-                                                                     ...
-                                                                     ...
-                                                             }
-
-And your patch will probably break this ?
+We must mention why the change is required.
