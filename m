@@ -1,79 +1,47 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: [PATCH v2] cpufreq: Catch double invocations of
- cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 16:09:59 +0300 (EEST)
-Message-ID: <alpine.SOC.1.00.1404291609220.3349@math.ut.ee>
-References: <20140429130506.7052.54268.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140429130506.7052.54268.stgit@srivatsabhat.in.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
+ with the PM core
+Date: Tue, 29 Apr 2014 14:16:10 +0100
+Message-ID: <20140429131610.29859C4094A@trevor.secretlab.ca>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+	<7hoazpdldx.fsf@paris.lan>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7hoazpdldx.fsf@paris.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 25 Apr 2014 16:44:58 -0700, Kevin Hilman <khilman@linaro.org> wrote:
+> Geert Uytterhoeven <geert+renesas@glider.be> writes:
 > 
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
+> > When adding a device from DT, check if its clocks are suitable for Runtime
+> > PM, and register them with the PM core.
+> > If Runtime PM is disabled, just enable the clock.
+> >
+> > This allows the PM core to automatically manage gate clocks of devices for
+> > Runtime PM.
 > 
-> v2: Removed the coverage of ASYNC_NOTIFICATION drivers, in order to avoid
-> false-positives.
-
-I am confused - on top of what patches should I test it?
-
-
-
+> ...unless the device is already in an existing pm_domain, right?
 > 
->  drivers/cpufreq/cpufreq.c |    7 +++++++
->  include/linux/cpufreq.h   |    1 +
->  2 files changed, 8 insertions(+)
+> I like this approach, and it extends nicely what we already do on
+> platforms using drivers/base/power/clock_ops.c into DT land.
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index abda660..afcac67 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -354,6 +354,11 @@ static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
->  void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
->  		struct cpufreq_freqs *freqs)
->  {
-> +
-> +	/* Catch double invocations of _begin() which lead to self-deadlock */
-> +	WARN_ON(!(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION)
-> +				&& current == policy->transition_task);
-> +
->  wait:
->  	wait_event(policy->transition_wait, !policy->transition_ongoing);
->  
-> @@ -365,6 +370,7 @@ wait:
->  	}
->  
->  	policy->transition_ongoing = true;
-> +	policy->transition_task = current;
->  
->  	spin_unlock(&policy->transition_lock);
->  
-> @@ -381,6 +387,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
->  	cpufreq_notify_post_transition(policy, freqs, transition_failed);
->  
->  	policy->transition_ongoing = false;
-> +	policy->transition_task = NULL;
->  
->  	wake_up(&policy->transition_wait);
->  }
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 5ae5100..8f44d79 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -110,6 +110,7 @@ struct cpufreq_policy {
->  	bool			transition_ongoing; /* Tracks transition status */
->  	spinlock_t		transition_lock;
->  	wait_queue_head_t	transition_wait;
-> +	struct task_struct	*transition_task; /* Task which is doing the transition */
->  };
->  
->  /* Only for ACPI */
-> 
+> My only concern is how this will interact if it's used along with
+> devices that have existing pm_domains.  I don't have any specific
+> concerns (yet, because it's Friday, and my brain is turing off), but it
+> just made me wonder if this will be potentially confusing.
 
--- 
-Meelis Roos (mroos@linux.ee)
+I have big concerns about this approach. First, it will only work if
+a clock is available at deivce creation time. The conversion of irq
+controllers to normal device drivers has already shown that is a bad
+idea.
+
+I also don't like that it tries to set up every clock, but there is no
+guarantee that the driver will even use it. I would rather see this
+behaviour linked into the function that obtains the clock at driver
+.probe() time. That way it can handle deferred probe correctly and it
+only sets up clocks that are actually used by the driver.
+
+g.
