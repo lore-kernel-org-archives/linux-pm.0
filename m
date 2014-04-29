@@ -1,120 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpuidle / menu: Return error code if there are no suitable states
-Date: Wed, 30 Apr 2014 01:16:45 +0200
-Message-ID: <1516317.nEvPfS8aZ7@vostro.rjw.lan>
-References: <2471963.urOyfY8mOG@vostro.rjw.lan> <535E3818.2040905@linaro.org> <2000825.kO1es8ShkW@vostro.rjw.lan>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v2 0/4] RAPL driver updates
+Date: Tue, 29 Apr 2014 16:38:28 -0700
+Message-ID: <20140429163828.040c0f97@ultegra>
+References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
+	<2848366.d6jLR9v0Ov@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60376 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751767AbaD2XAP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 19:00:15 -0400
-In-Reply-To: <2000825.kO1es8ShkW@vostro.rjw.lan>
+Received: from mga03.intel.com ([143.182.124.21]:36375 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751703AbaD2Xid (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 29 Apr 2014 19:38:33 -0400
+In-Reply-To: <2848366.d6jLR9v0Ov@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "David E. Box" <david.e.box@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, hpa@linux.intel.com, alan@linux.intel.com, durgadoss.r@intel.com, kristen.c.accardi@intel.com
 
-On Tuesday, April 29, 2014 01:28:03 AM Rafael J. Wysocki wrote:
-> On Monday, April 28, 2014 01:14:32 PM Daniel Lezcano wrote:
-> > On 04/27/2014 02:55 PM, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > If there is a PM QoS latency limit and all of the sufficiently shallow
-> > > C-states are disabled, the cpuidle menu governor returns 0 which on
-> > > some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returned
-> > > if that C-state has been disabled.
-> > >
-> > > Fix the issue by modifying the menu governor to return an error code
-> > > in such situations.
-> > >
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > >   drivers/cpuidle/governors/menu.c |    2 +-
-> > >   include/linux/cpuidle.h          |    2 ++
-> > >   2 files changed, 3 insertions(+), 1 deletion(-)
-> > >
-> > > Index: linux-pm/drivers/cpuidle/governors/menu.c
-> > > ===================================================================
-> > > --- linux-pm.orig/drivers/cpuidle/governors/menu.c
-> > > +++ linux-pm/drivers/cpuidle/governors/menu.c
-> > > @@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
-> > >   		data->needs_update = 0;
-> > >   	}
-> > >
-> > > -	data->last_state_idx = 0;
-> > > +	data->last_state_idx = CPUIDLE_DRIVER_STATE_POLL;
-> > >
-> > >   	/* Special case when user has set very strict latency requirement */
-> > >   	if (unlikely(latency_req == 0))
-> > > Index: linux-pm/include/linux/cpuidle.h
-> > > ===================================================================
-> > > --- linux-pm.orig/include/linux/cpuidle.h
-> > > +++ linux-pm/include/linux/cpuidle.h
-> > > @@ -217,8 +217,10 @@ static inline int cpuidle_register_gover
-> > >
-> > >   #ifdef CONFIG_ARCH_HAS_CPU_RELAX
-> > >   #define CPUIDLE_DRIVER_STATE_START	1
-> > > +#define CPUIDLE_DRIVER_STATE_POLL	0
-> > >   #else
-> > >   #define CPUIDLE_DRIVER_STATE_START	0
-> > > +#define CPUIDLE_DRIVER_STATE_POLL	(-ENXIO)
-> > >   #endif
-> > >
-> > >   #endif /* _LINUX_CPUIDLE_H */
+On Wed, 30 Apr 2014 01:02:36 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+
+> On Tuesday, April 29, 2014 03:33:05 PM David E. Box wrote:
+> > From: "David E. Box" <david.e.box@linux.intel.com>
 > > 
-> > Hi Rafael,
+> > v2: iosf: Remove Kconfig exposure. Make mailbox driver a module.
 > > 
-> > CPUIDLE_DRIVER_STATE_START is only for x86. It introduces some confusion 
-> > in the code.
+> > David E. Box (1):
+> >   x86/iosf: Make IOSF driver modular and usable by more drivers
+> > 
+> > Jacob Pan (3):
+> >   powercap/rapl: further relax energy counter checks
+> >   powercap/rapl: add new cpu ids
+> >   powercap/rapl: change floor frequency for vallewview
 > 
-> I won't disagree with that.
+> I'm fine with [1-2/4].
 > 
-> > As only two drivers are concerned by it, wouldn't make 
-> > sense to add the poll state to those driver directly instead of having 
-> > the code hacked around ? (eg. insert the poll state in the common 
-> > cpuidle code).
+> [3/4] has to go via the x86 tree and [4/4] probably too, because it
+> depends on [3/4].
 > 
-> Well, what about initializing data->last_state_idx to
-> (CPUIDLE_DRIVER_STATE_START - 1) in menu_select() instead of introducing the
-> new symbol for the time being and getting rid of CPUIDLE_DRIVER_STATE_START
-> separately?
+OK. I will update [4/4] to be submitted to x86 tree with [3/4].
+> So would you like me to queue up [1-2/4] without the remaining two
+> for 3.16?
+> 
+Sure. thanks.
 
-Updated patch is appended for completness.
+> 
 
-Thanks!
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: cpuidle / menu: Return (-1) if there are no suitable states
-
-If there is a PM QoS latency limit and all of the sufficiently shallow
-C-states are disabled, the cpuidle menu governor returns 0 which on
-some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returned
-if that C-state has been disabled.
-
-Fix the issue by modifying the menu governor to return (-1) in such
-situations.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c |    2 +-
- include/linux/cpuidle.h          |    2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
- 		data->needs_update = 0;
- 	}
- 
--	data->last_state_idx = 0;
-+	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
- 
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0))
-
+[Jacob Pan]
