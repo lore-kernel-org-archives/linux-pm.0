@@ -1,54 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 5/5] cpufreq: Catch double invocations of cpufreq_freq_transition_begin/end
-Date: Tue, 29 Apr 2014 12:19:39 +0530
-Message-ID: <CAKohpokiRMnZ6ga3_y2Tqgo95LzExb5nNgoKBNBXvsMyO__ZYA@mail.gmail.com>
-References: <20140428185331.28755.899.stgit@srivatsabhat.in.ibm.com>
-	<20140428185507.28755.6483.stgit@srivatsabhat.in.ibm.com>
-	<CAKohpomaJ0ubnzzQ7AwAd6z+Zm085i+UwB7XMa=si7qthZdgZg@mail.gmail.com>
-	<CAKohpokiy2Fvry=uTVnOCymH7Co1ka+JCFT3ndtPQBSD94Mnew@mail.gmail.com>
-	<535F43B2.2000309@linux.vnet.ibm.com>
+From: Mascha Kurpicz <mascha.kurpicz@unine.ch>
+Subject: Re: time_in_state on Ubuntu 13.10
+Date: Tue, 29 Apr 2014 09:17:11 +0200
+Message-ID: <535F51F7.5090804@unine.ch>
+References: <535E6906.2090201@unine.ch> <CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <535F43B2.2000309@linux.vnet.ibm.com>
+In-Reply-To: <CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Meelis Roos <mroos@linux.ee>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Maxime Colmant <maxime.colmant@inria.fr>
 List-Id: linux-pm@vger.kernel.org
 
-On 29 April 2014 11:46, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Yes, I'm aware that this corner case doesn't work well with my debug
+Hi,
 
-Don't know if its a corner case, it may be the most obvious case for
-some :)
+Sorry for the imprecision.
 
-> patch. I tried to avoid this but couldn't think of any solution.
+Works correctly with
+Ubuntu 12.04.3 LTS - kernel 3.2.0-29-generic
+Ubuntu 12.04.3 LTS -  kernel 3.8.0-29
+Ubuntu 13.10 - kernel 3.8.0-29-generic
 
-The problem is not that it wouldn't work for these systems, but we will
-get WARN_ON() when they shouldn't have come :)
+0 or very small (e.g. 6) values with
+Ubuntu 13.10 - kernel 3.11.0-20-generic
 
-> (One big-hammer way to avoid this is to exclude this infrastructure
-> for all ASYNC_NOTIFICATION drivers, but I didn't want to go with that
-> approach, since it makes it look ugly). Do you have any better ideas
-> to deal with this scenario?
+Thanks,
+Mascha
 
-Can't think of anything better than this:
 
-+       WARN_ON(!(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION)
-                             && (current == policy->transition_task));
+On 04/29/2014 06:28 AM, Viresh Kumar wrote:
+> On Mon, Apr 28, 2014 at 8:13 PM, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
+>> First of all I would like to thank for the cpufreq utility that I use
+>> regularly.
+>>
+>> Unfortunately, when upgrading our systems from Ubuntu 12.04 to 13.10, we
+>> are encountering some issues with the data in
+>> /sys/devices/system/cpu/cpu*/cpufreq/stats/time_in_state.
+>>
+>> On some of the machines, the values are all set to 0 [1], whereas on
+>> other machines, values are 0 or very small [2]. In both cases, the
+>> output of cpufreq-info for the cpufreq stats is not correct. When
+>> running Ubuntu 12.04, we get reasonable values.
+>>
+>> We noticed this behavior on Intel i3 machines, and on Intel Xeon. Kernel
+>> version in all cases is 3.11.0-20-generic.
+> Do you mean that kernel version is same for 12.04 and 13.10? We need
+> kernel versions for these two bases.
 
-which you already mentioned.
-
-> Also, do we really have cases in mind where a single thread does
-> multiple frequency transitions in one go? That too in such quick
-> successions? Echo's to sysfs, changing of governors from userspace etc
-> all do one frequency transition at a time per-task...
-
-Its not really about if we can think of a real use case or not. The point
-is, governor is free to call transition calls one after the other (will always
-happen from a single thread) and it isn't supposed to wait for drivers
-to finish earlier transitions as ->target() has already returned.
-
---
-viresh
