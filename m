@@ -1,54 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Wed, 30 Apr 2014 00:26:07 +0200
-Message-ID: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
-References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com> <535FCDBD.6080500@semaphore.gr>
+Subject: Re: drivers/cpuidle: Replace __get_cpu_var uses for address calculation
+Date: Wed, 30 Apr 2014 00:28:02 +0200
+Message-ID: <3854840.z4ZSVPZYVF@vostro.rjw.lan>
+References: <alpine.DEB.2.10.1404291423110.18675@gentwo.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <535FCDBD.6080500@semaphore.gr>
-Sender: linux-doc-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60939 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965218AbaD2WLc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 18:11:32 -0400
+In-Reply-To: <alpine.DEB.2.10.1404291423110.18675@gentwo.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Christoph Lameter <cl@linux.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
-> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
-> > On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> w=
-rote:
-> >> This patch set introduces two freq_table helper macros which
-> >> can be used for iteration over cpufreq_frequency_table and
-> >> makes the necessary changes to cpufreq core and drivers that
-> >> use such an iteration procedure.
-> >>
-> >> The motivation was a usage of common procedure to iterate over
-> >> cpufreq_frequency_table across all drivers and cpufreq core.
-> >>
-> >> This was tested on a x86_64 platform.
-> >> Most files compiled successfully but unfortunately I was not
-> >> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
-> >> due to lack of cross compiler.
-> >>
-> >> Changelog
-> >>
-> >> v4 -> v5
-> >>         - Fix warnings in printk format specifier for 32 bit
-> >>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
-> >=20
-> > Doesn't look much has changed and so it stays as is:
-> >=20
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >=20
->=20
-> Thank you very much!
+On Tuesday, April 29, 2014 02:24:39 PM Christoph Lameter wrote:
+> All of these are for address calculation. Replace with
+> this_cpu_ptr().
+> 
+> [cpufreq changes]
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I've applied the series to my bleeding-edge branch, will move it to lin=
-ux-next
-after build testing later this week.
+That should be
 
-Thanks!
+Acked-by: Rafael J. Wysocki <rjw@rjwysocki.net> (as per MAINTAINERS).
 
---=20
+The <rjw@sisk.pl> address is not functional any more.
+
+> Signed-off-by: Christoph Lameter <cl@linux.com>
+> 
+> Index: linux/drivers/cpuidle/governors/ladder.c
+> ===================================================================
+> --- linux.orig/drivers/cpuidle/governors/ladder.c	2014-04-14 13:24:54.769362062 -0500
+> +++ linux/drivers/cpuidle/governors/ladder.c	2014-04-14 13:24:54.765362140 -0500
+> @@ -66,7 +66,7 @@
+>  static int ladder_select_state(struct cpuidle_driver *drv,
+>  				struct cpuidle_device *dev)
+>  {
+> -	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
+> +	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+>  	struct ladder_device_state *last_state;
+>  	int last_residency, last_idx = ldev->last_state_idx;
+>  	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+> @@ -170,7 +170,7 @@
+>   */
+>  static void ladder_reflect(struct cpuidle_device *dev, int index)
+>  {
+> -	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
+> +	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+>  	if (index > 0)
+>  		ldev->last_state_idx = index;
+>  }
+> Index: linux/drivers/cpuidle/governors/menu.c
+> ===================================================================
+> --- linux.orig/drivers/cpuidle/governors/menu.c	2014-04-14 13:24:54.769362062 -0500
+> +++ linux/drivers/cpuidle/governors/menu.c	2014-04-14 13:24:54.765362140 -0500
+> @@ -285,7 +285,7 @@
+>   */
+>  static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  {
+> -	struct menu_device *data = &__get_cpu_var(menu_devices);
+> +	struct menu_device *data = this_cpu_ptr(&menu_devices);
+>  	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>  	int i;
+>  	unsigned int interactivity_req;
+> @@ -377,7 +377,7 @@
+>   */
+>  static void menu_reflect(struct cpuidle_device *dev, int index)
+>  {
+> -	struct menu_device *data = &__get_cpu_var(menu_devices);
+> +	struct menu_device *data = this_cpu_ptr(&menu_devices);
+>  	data->last_state_idx = index;
+>  	if (index >= 0)
+>  		data->needs_update = 1;
+> @@ -390,7 +390,7 @@
+>   */
+>  static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  {
+> -	struct menu_device *data = &__get_cpu_var(menu_devices);
+> +	struct menu_device *data = this_cpu_ptr(&menu_devices);
+>  	int last_idx = data->last_state_idx;
+>  	struct cpuidle_state *target = &drv->states[last_idx];
+>  	unsigned int measured_us;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
