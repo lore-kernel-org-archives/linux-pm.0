@@ -1,43 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/4] RAPL driver updates
-Date: Wed, 30 Apr 2014 01:02:36 +0200
-Message-ID: <2848366.d6jLR9v0Ov@vostro.rjw.lan>
-References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com> <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which
+ is STANDBY or MEM
+Date: Tue, 29 Apr 2014 17:47:12 -0500
+Message-ID: <1398811632.24575.98.camel@snotra.buserror.net>
+References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
+	 <1398462328.24575.20.camel@snotra.buserror.net>
+	 <CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58554 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751286AbaD2WqI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Apr 2014 18:46:08 -0400
-In-Reply-To: <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
+Received: from mail-by2lp0239.outbound.protection.outlook.com ([207.46.163.239]:50883
+	"EHLO na01-by2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751060AbaD2WrV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 29 Apr 2014 18:47:21 -0400
+In-Reply-To: <CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "David E. Box" <david.e.box@linux.intel.com>
-Cc: jacob.jun.pan@linux.intel.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, hpa@linux.intel.com, alan@linux.intel.com, durgadoss.r@intel.com, kristen.c.accardi@intel.com
+To: Leo Li <pku.leo@gmail.com>
+Cc: Dongsheng Wang <dongsheng.wang@freescale.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Zhao Chenhui <chenhui.zhao@freescale.com>, =?UTF-8?Q?=E6=AD=A3=E9=9B=84_=E9=87=91?= <jason.jin@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Tuesday, April 29, 2014 03:33:05 PM David E. Box wrote:
-> From: "David E. Box" <david.e.box@linux.intel.com>
+On Mon, 2014-04-28 at 13:53 +0800, Leo Li wrote:
+> On Sat, Apr 26, 2014 at 5:45 AM, Scott Wood <scottwood@freescale.com> wrote:
+> > On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
+> >> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >>
+> >> Add set_pm_suspend_state & pm_suspend_state functions to set/get
+> >> suspend state. When system going to sleep or deep sleep, devices
+> >> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
+> >> function and to handle different situations.
+> >>
+> >> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >> ---
+> >> *v2*
+> >> Move pm api from fsl platform to powerpc general framework.
+> >
+> > What is powerpc-specific about this?
 > 
-> v2: iosf: Remove Kconfig exposure. Make mailbox driver a module.
+> Generally I agree with you.  But I had the discussion about this topic
+> a while ago with the PM maintainer.  He suggestion to go with the
+> platform way.
 > 
-> David E. Box (1):
->   x86/iosf: Make IOSF driver modular and usable by more drivers
-> 
-> Jacob Pan (3):
->   powercap/rapl: further relax energy counter checks
->   powercap/rapl: add new cpu ids
->   powercap/rapl: change floor frequency for vallewview
+> https://lkml.org/lkml/2013/8/16/505
 
-I'm fine with [1-2/4].
+If what he meant was whether you could do what this patch does, then you
+can answer him with, "No, because it got nacked as not being platform or
+arch specific."  Oh, and you're still using .valid as the hook to set
+the platform state, which is awful -- I think .begin is what you want to
+use.
 
-[3/4] has to go via the x86 tree and [4/4] probably too, because it
-depends on [3/4].
+If we did it in powerpc code, then what would we do on ARM?  Copy the
+code?  No.
 
-So would you like me to queue up [1-2/4] without the remaining two for 3.16?
+Now, a more legitimate objection to putting it in generic code might be
+that "standby" and "mem" are loosely defined and the knowledge of how a
+driver should react to each is platform specific -- but your patch
+doesn't address that.  You still have the driver itself interpret what
+"standby" and "mem" mean.
+
+As for "in analogy with ACPI suspend operations", can someone familiar
+with ACPI explain what is meant?
+
+-Scott
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
