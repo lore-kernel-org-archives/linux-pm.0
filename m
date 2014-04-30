@@ -1,51 +1,120 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH v2 0/4] RAPL driver updates
-Date: Tue, 29 Apr 2014 16:38:28 -0700
-Message-ID: <20140429163828.040c0f97@ultegra>
-References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
-	<2848366.d6jLR9v0Ov@vostro.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 5/5] devfreq: exynos5: Use devm_devfreq_* function using
+ device resource management
+Date: Wed, 30 Apr 2014 09:58:40 +0900
+Message-ID: <53604AC0.6020306@samsung.com>
+References: <1398416894-6782-1-git-send-email-cw00.choi@samsung.com>
+ <1398416894-6782-6-git-send-email-cw00.choi@samsung.com>
+ <CAK9yfHyP63QaaBwc4vkkqU4g3+B2DpqeC_11E5+LevWXED0Qxg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:36375 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751703AbaD2Xid (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 29 Apr 2014 19:38:33 -0400
-In-Reply-To: <2848366.d6jLR9v0Ov@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAK9yfHyP63QaaBwc4vkkqU4g3+B2DpqeC_11E5+LevWXED0Qxg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, rafael.j.wysocki@intel.com, Nishanth Menon <nm@ti.com>, Jiri Kosina <jkosina@suse.cz>, labbe.montjoie@gmail.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manish Badarkhe <badarkhe.manish@gmail.com>, Abhilash Kesavan <a.kesavan@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "David E. Box" <david.e.box@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, hpa@linux.intel.com, alan@linux.intel.com, durgadoss.r@intel.com, kristen.c.accardi@intel.com
 
-On Wed, 30 Apr 2014 01:02:36 +0200
-"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+Hi Sachin,
 
-> On Tuesday, April 29, 2014 03:33:05 PM David E. Box wrote:
-> > From: "David E. Box" <david.e.box@linux.intel.com>
-> > 
-> > v2: iosf: Remove Kconfig exposure. Make mailbox driver a module.
-> > 
-> > David E. Box (1):
-> >   x86/iosf: Make IOSF driver modular and usable by more drivers
-> > 
-> > Jacob Pan (3):
-> >   powercap/rapl: further relax energy counter checks
-> >   powercap/rapl: add new cpu ids
-> >   powercap/rapl: change floor frequency for vallewview
+On 04/30/2014 01:54 AM, Sachin Kamat wrote:
+> Hi Chanwoo,
 > 
-> I'm fine with [1-2/4].
+> On 25 April 2014 14:38, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> This patch uses devm_devfreq_add_device()/devm_devfreq_register_opp_notifier()
+>> to control automatically the resource of devfreq.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Cc: Kukjin Kim <kgene.kim@samsung.com>
+>> Cc: Sachin Kamat <sachin.kamat@linaro.org>
+>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>> Cc: Manish Badarkhe <badarkhe.manish@gmail.com>
+>> Cc: Abhilash Kesavan <a.kesavan@samsung.com>
+>> Cc: linux-arm-kernel@lists.infradead.org
+>> Cc: linux-samsung-soc@vger.kernel.org
+>> ---
+>>  drivers/devfreq/exynos/exynos5_bus.c | 23 ++++++++---------------
+>>  1 file changed, 8 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
+>> index ab54a69..1f622f8 100644
+>> --- a/drivers/devfreq/exynos/exynos5_bus.c
+>> +++ b/drivers/devfreq/exynos/exynos5_bus.c
+>> @@ -165,11 +165,6 @@ static int exynos5_int_get_dev_status(struct device *dev,
+>>  }
+>>  static void exynos5_int_exit(struct device *dev)
+>>  {
+>> -       struct platform_device *pdev = container_of(dev, struct platform_device,
+>> -                                                   dev);
+>> -       struct busfreq_data_int *data = platform_get_drvdata(pdev);
+>> -
+>> -       devfreq_unregister_opp_notifier(dev, data->devfreq);
+>>  }
 > 
-> [3/4] has to go via the x86 tree and [4/4] probably too, because it
-> depends on [3/4].
-> 
-OK. I will update [4/4] to be submitted to x86 tree with [3/4].
-> So would you like me to queue up [1-2/4] without the remaining two
-> for 3.16?
-> 
-Sure. thanks.
+> Do you need an empty function?
+
+exynos5_init_exit() function would be removed because this function is not necessary.
 
 > 
+>>
+>>  static struct devfreq_dev_profile exynos5_devfreq_int_profile = {
+>> @@ -343,30 +338,29 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
+>>
+>>         busfreq_mon_reset(ppmu_data);
+>>
+>> -       data->devfreq = devfreq_add_device(dev, &exynos5_devfreq_int_profile,
+>> +       data->devfreq = devm_devfreq_add_device(dev, &exynos5_devfreq_int_profile,
+>>                                            "simple_ondemand", NULL);
+>> -
+>>         if (IS_ERR(data->devfreq)) {
+>>                 err = PTR_ERR(data->devfreq);
+> 
+> No need of err.   return PTR_ERR(data->devfreq);
 
-[Jacob Pan]
+OK, I'll fix it.
+
+> 
+>> -               goto err_devfreq_add;
+>> +               return err;
+>>         }
+>>
+>> -       devfreq_register_opp_notifier(dev, data->devfreq);
+>> +       err = devm_devfreq_register_opp_notifier(dev, data->devfreq);
+>> +       if (err < 0) {
+>> +               dev_err(dev, "Failed to register opp notifier\n");
+>> +               return err;
+>> +       }
+>>
+>>         err = register_pm_notifier(&data->pm_notifier);
+>>         if (err) {
+>>                 dev_err(dev, "Failed to setup pm notifier\n");
+>> -               goto err_devfreq_add;
+>> +               return err;
+>>         }
+>>
+>>         /* TODO: Add a new QOS class for int/mif bus */
+>>         pm_qos_add_request(&data->int_req, PM_QOS_NETWORK_THROUGHPUT, -1);
+>>
+>>         return 0;
+>> -
+>> -err_devfreq_add:
+>> -       devfreq_remove_device(data->devfreq);
+>> -       return err;
+>>  }
+>>
+>>  static int exynos5_busfreq_int_remove(struct platform_device *pdev)
+>> @@ -375,7 +369,6 @@ static int exynos5_busfreq_int_remove(struct platform_device *pdev)
+>>
+>>         pm_qos_remove_request(&data->int_req);
+>>         unregister_pm_notifier(&data->pm_notifier);
+>> -       devfreq_remove_device(data->devfreq);
+>>
+>>         return 0;
+>>  }
+>> --
+>> 1.8.0
+>>
+> 
+> 
+> 
