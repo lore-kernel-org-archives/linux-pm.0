@@ -1,137 +1,79 @@
-From: Leela Krishna Amudala <leela.krishna@linaro.org>
-Subject: Re: [PATCH V2] ARM: EXYNOS: cpu hotplug: use v7_exit_coherency_flush
- macro for cache disabling
-Date: Wed, 30 Apr 2014 13:59:12 +0530
-Message-ID: <CAM7CM0mJHWEAaqJ=jMkKXjkxr+XzC+QstSkFzX_g52JvrLUDCA@mail.gmail.com>
-References: <1398232351-16280-1-git-send-email-leela.krishna@linaro.org> <5360AE05.7020106@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/4] ARM: shmobile: Ignore callbacks for subsys generic_pm_domain_data
+Date: Wed, 30 Apr 2014 10:53:58 +0200
+Message-ID: <CAPDyKFqH-0rvs6WorcirY+wVMLWnycWHO6=ZcvK1GebcuzaH0w@mail.gmail.com>
+References: <1397230004-22306-1-git-send-email-ulf.hansson@linaro.org>
+	<CAPDyKFpbX3cdAgvUx=4FbmNxFLH4VO8JqrQqRB3nxXMxZDyXJQ@mail.gmail.com>
+	<20140425010651.GC12641@verge.net.au>
+	<1469030.SEtTICGcIm@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <5360AE05.7020106@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f46.google.com ([209.85.216.46]:40519 "EHLO
+	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932739AbaD3Ix7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 04:53:59 -0400
+Received: by mail-qa0-f46.google.com with SMTP id w8so1328591qac.5
+        for <linux-pm@vger.kernel.org>; Wed, 30 Apr 2014 01:53:58 -0700 (PDT)
+In-Reply-To: <1469030.SEtTICGcIm@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hello Kgene,
+On 30 April 2014 00:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, April 25, 2014 10:06:51 AM Simon Horman wrote:
+>> On Thu, Apr 24, 2014 at 01:25:14PM +0200, Ulf Hansson wrote:
+>> > On 14 April 2014 11:22, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> > > On 14 April 2014 03:20, Simon Horman <horms@verge.net.au> wrote:
+>> > >> On Fri, Apr 11, 2014 at 05:26:41PM +0200, Ulf Hansson wrote:
+>> > >>> There are no active users of these callbacks, thus there are no benefit
+>> > >>> of trying to invoke them.
+>> > >>>
+>> > >>> Cc: Simon Horman <horms@verge.net.au>
+>> > >>> Cc: Magnus Damm <magnus.damm@gmail.com>
+>> > >>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> > >>> ---
+>> > >>>
+>> > >>> I am seeking ack from the SOC maintainers since this needs to go with the other
+>> > >>> patches in this patchset on the PM core.
+>> > >>
+>> > >> In order to reduce the possibility of conflicts I would prefer
+>> > >> to take this patch through my tree.
+>> > >
+>> > > Okay, go ahead!
+>> > >
+>> >
+>> > Hi Simon,
+>> >
+>> > Just wanted to know, if you decided to queue this patch in your tree.
+>> > Or were there anything else you needed me to fix here?
+>>
+>> Sorry for dropping the ball. I will queue-up this patch.
+>
+> OK
+>
+> Ulf, since the rest of the series depends on this one (or at least that's
+> how it looks to me), would you mind resending it when this one gets into the
+> Linus' tree?
 
-Can you please pick this patch to your tree ?
+Well, I would prefer if we could go ahead with the rest of the patches
+somehow for 3.16, but I guess it will be hard if Simon picks up this
+patch!?
 
-Best Wishes,
-Leela Krishna.
+Simon,
+I guess the reason for your concern were about conflicts, but the file
+this patch touch has actually not been modified since Sep 2012. So,
+maybe we could go through Rafaels tree anyway?
 
-On Wed, Apr 30, 2014 at 1:32 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> Hi,
+I have a bunch of other patches for genpd which I plan to send once
+the first part of clean up patches were merged. Those are likely
+material for 3.17 though.
+
+Kind regards
+Ulf Hansson
+
 >
-> On 04/23/2014 02:52 PM, Leela Krishna Amudala wrote:
->> A common macro v7_exit_coherency_flush available which does the below tasks in
->> the seqeunce.
->> -clearing C bit
->> -clearing L1 cache
->> -exit SMP
->> -instruction and data synchronization
->>
->> So removing the local functions which does the same thing and use the macro instead.
->>
->> Signed-off-by: Leela Krishna Amudala <leela.krishna@linaro.org>
->> Acked-by: Nicolas Pitre <nico@linaro.org>
->> ---
->> Changes since V1:
->>       - removed unwanted primary_part variable in exynos_cpu_die()
->>       - given more description in commit message
->>         suggested by Daniel Lezcano <daniel.lezcano@linaro.org>
->>
->>  arch/arm/mach-exynos/hotplug.c |   63 +---------------------------------------
->>  1 file changed, 1 insertion(+), 62 deletions(-)
->>
->> diff --git a/arch/arm/mach-exynos/hotplug.c b/arch/arm/mach-exynos/hotplug.c
->> index 5eead53..9ca692d 100644
->> --- a/arch/arm/mach-exynos/hotplug.c
->> +++ b/arch/arm/mach-exynos/hotplug.c
->> @@ -24,56 +24,6 @@
->>  #include "common.h"
->>  #include "regs-pmu.h"
->>
->> -static inline void cpu_enter_lowpower_a9(void)
->> -{
->> -     unsigned int v;
->> -
->> -     asm volatile(
->> -     "       mcr     p15, 0, %1, c7, c5, 0\n"
->> -     "       mcr     p15, 0, %1, c7, c10, 4\n"
->> -     /*
->> -      * Turn off coherency
->> -      */
->> -     "       mrc     p15, 0, %0, c1, c0, 1\n"
->> -     "       bic     %0, %0, %3\n"
->> -     "       mcr     p15, 0, %0, c1, c0, 1\n"
->> -     "       mrc     p15, 0, %0, c1, c0, 0\n"
->> -     "       bic     %0, %0, %2\n"
->> -     "       mcr     p15, 0, %0, c1, c0, 0\n"
->> -       : "=&r" (v)
->> -       : "r" (0), "Ir" (CR_C), "Ir" (0x40)
->> -       : "cc");
->> -}
->> -
->> -static inline void cpu_enter_lowpower_a15(void)
->> -{
->> -     unsigned int v;
->> -
->> -     asm volatile(
->> -     "       mrc     p15, 0, %0, c1, c0, 0\n"
->> -     "       bic     %0, %0, %1\n"
->> -     "       mcr     p15, 0, %0, c1, c0, 0\n"
->> -       : "=&r" (v)
->> -       : "Ir" (CR_C)
->> -       : "cc");
->> -
->> -     flush_cache_louis();
->> -
->> -     asm volatile(
->> -     /*
->> -     * Turn off coherency
->> -     */
->> -     "       mrc     p15, 0, %0, c1, c0, 1\n"
->> -     "       bic     %0, %0, %1\n"
->> -     "       mcr     p15, 0, %0, c1, c0, 1\n"
->> -     : "=&r" (v)
->> -     : "Ir" (0x40)
->> -     : "cc");
->> -
->> -     isb();
->> -     dsb();
->> -}
->> -
->>  static inline void cpu_leave_lowpower(void)
->>  {
->>       unsigned int v;
->> @@ -132,19 +82,8 @@ static inline void platform_do_lowpower(unsigned int cpu, int *spurious)
->>  void __ref exynos_cpu_die(unsigned int cpu)
->>  {
->>       int spurious = 0;
->> -     int primary_part = 0;
->>
->> -     /*
->> -      * we're ready for shutdown now, so do it.
->> -      * Exynos4 is A9 based while Exynos5 is A15; check the CPU part
->> -      * number by reading the Main ID register and then perform the
->> -      * appropriate sequence for entering low power.
->> -      */
->> -     asm("mrc p15, 0, %0, c0, c0, 0" : "=r"(primary_part) : : "cc");
->> -     if ((primary_part & 0xfff0) == 0xc0f0)
->> -             cpu_enter_lowpower_a15();
->> -     else
->> -             cpu_enter_lowpower_a9();
->> +     v7_exit_coherency_flush(louis);
->>
->>       platform_do_lowpower(cpu, &spurious);
->>
->>
->
-> I tested this patch on Exynos3250 based on Cortex-A7 dual core.
->
-> Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
->
-> Thanks,
-> Chanwoo Choi
->
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
