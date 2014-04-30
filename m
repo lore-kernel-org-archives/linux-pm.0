@@ -1,70 +1,239 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH/RFC 0/4] of: Register clocks for Runtime PM with PM core
-Date: Thu, 1 May 2014 00:17:39 +0200
-Message-ID: <CAMuHMdVyQtJvC0G7i5DTYgW0eO3wuwqnvv0tSVA8BMzDkLG+zg@mail.gmail.com>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
-	<4116377.A5MWbYX2Mh@avalon>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it out
+Date: Thu, 01 May 2014 00:47:25 +0200
+Message-ID: <2783362.8r7SvVhudq@vostro.rjw.lan>
+References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <4116377.A5MWbYX2Mh@avalon>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Ben Dooks <ben.dooks-4yDnlxn2s6sWdaTGBSpHTA@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62450 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933759AbaD3Waz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 18:30:55 -0400
+In-Reply-To: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Laurent,
+On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
+> Encapsulate the large portion of cpuidle_idle_call inside another
+> function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
+> Also that is benefitial for the clarity of the code as it removes
+> a nested indentation level.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Wed, Apr 30, 2014 at 11:29 PM, Laurent Pinchart
-<laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org> wrote:
-> On Thursday 24 April 2014 12:13:19 Geert Uytterhoeven wrote:
->> On SoCs like ARM/SH-mobile, gate clocks are available for modules, allowing
->> Runtime PM for a device controlled by a gate clock.
->>
->> On legacy shmobile kernels, this is handled by the PM runtime code in
->> drivers/sh/pm_runtime.c, which installs a clock notifier for the platform
->> bus, registering the "NULL" clock of each platform device with the PM core.
->> This approach is also used on davinci, keystone, and omap1.
->
-> This requires the device to have the MSTP clock defined as the first clock in
-> its DT node. I'm not against that, but the requirement should be clearly
-> documented, and we need to check existing DT bindings to make sure they comply
-> with that.
+Well, this conflicts with
 
-Being the first clock is only required for the "NULL" clock. And that
-is only done
-for legacy shmobile kernels, not for multi-platform.
+https://patchwork.kernel.org/patch/4071541/
 
-In this patch series, the clock would be chosen based on the presence of the
-CLK_RUNTIME_PM flag, to be set by the clock driver. I.e. DT is not involved
-directly (for a change... why does everybody think the whole world revolves
- around DT these days ? :-)
+which you haven't commented on and I still want cpuidle_select() to be able to
+return negative values because of
 
-> I'd like to also take this as an opportunity to discuss how we should name
-> clocks in DT bindings for Renesas devices. Most devices have a single MSTP
-> clock, in which case we don't specify a name. Other devices need several
-> clocks. Names for the non-MSTP clocks will obviously be device-dependent, but
-> how should the MSTP clock be called in that time ? Should it have an empty
-> name (a "" string in DT) ? Should it have a standard name ? Maybe "fck" for
-> "functional clock" ?
+https://patchwork.kernel.org/patch/4089631/
 
-Empty names should not be used if there can be multiple clocks, right?
+(and I have one more patch on top of these two that requires this).
 
-Grepping in arch/*/boot/dts/, "fck" seems to be popular (only) for TI SoCs.
+Any ideas how to resolve that?
 
-Stadardizing across SoCs and architectures would be nice, though.
 
-Gr{oetje,eeting}s,
+> ---
+>  kernel/sched/idle.c |  161 +++++++++++++++++++++++++++------------------------
+>  1 file changed, 86 insertions(+), 75 deletions(-)
+> 
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index b8cd302..f2f4bc9 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -63,6 +63,90 @@ void __weak arch_cpu_idle(void)
+>  	local_irq_enable();
+>  }
+>  
+> +#ifdef CONFIG_CPU_IDLE
+> +static int __cpuidle_idle_call(void)
+> +{
+> +	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+> +	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+> +	int next_state, entered_state, ret;
+> +	bool broadcast;
+> +
+> +	/*
+> +	 * Check if the cpuidle framework is ready, otherwise fallback
+> +	 * to the default arch specific idle method
+> +	 */
+> +	ret = cpuidle_enabled(drv, dev);
+> +	if (ret)
+> +		return ret;
+> +
+> +	/*
+> +	 * Ask the governor to choose an idle state it thinks
+> +	 * it is convenient to go to. There is *always* a
+> +	 * convenient idle state
+> +	 */
+> +	next_state = cpuidle_select(drv, dev);
+> +
+> +	/*
+> +	 * The idle task must be scheduled, it is pointless to
+> +	 * go to idle, just update no idle residency and get
+> +	 * out of this function
+> +	 */
+> +	if (current_clr_polling_and_test()) {
+> +		dev->last_residency = 0;
+> +		entered_state = next_state;
+> +		local_irq_enable();
+> +	} else {
+> +		broadcast = !!(drv->states[next_state].flags &
+> +			       CPUIDLE_FLAG_TIMER_STOP);
+> +
+> +		if (broadcast)
+> +			/*
+> +			 * Tell the time framework to switch to a
+> +			 * broadcast timer because our local timer
+> +			 * will be shutdown. If a local timer is used
+> +			 * from another cpu as a broadcast timer, this
+> +			 * call may fail if it is not available
+> +			 */
+> +			ret = clockevents_notify(
+> +				CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+> +				&dev->cpu);
+> +
+> +		if (!ret) {
+> +			trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> +
+> +			/*
+> +			 * Enter the idle state previously returned by
+> +			 * the governor decision. This function will
+> +			 * block until an interrupt occurs and will
+> +			 * take care of re-enabling the local
+> +			 * interrupts
+> +			 */
+> +			entered_state = cpuidle_enter(drv, dev, next_state);
+> +
+> +			trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> +
+> +			if (broadcast)
+> +				clockevents_notify(
+> +					CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+> +					&dev->cpu);
+> +
+> +			/*
+> +			 * Give the governor an opportunity to reflect
+> +			 * on the outcome
+> +			 */
+> +			cpuidle_reflect(dev, entered_state);
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +#else
+> +static int inline __cpuidle_idle_call(void)
+> +{
+> +	return -ENOSYS;
+> +}
+> +#endif
+> +
+>  /**
+>   * cpuidle_idle_call - the main idle function
+>   *
+> @@ -70,10 +154,7 @@ void __weak arch_cpu_idle(void)
+>   */
+>  static void cpuidle_idle_call(void)
+>  {
+> -	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+> -	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+> -	int next_state, entered_state, ret;
+> -	bool broadcast;
+> +	int ret;
+>  
+>  	/*
+>  	 * Check if the idle task must be rescheduled. If it is the
+> @@ -100,80 +181,10 @@ static void cpuidle_idle_call(void)
+>  	rcu_idle_enter();
+>  
+>  	/*
+> -	 * Check if the cpuidle framework is ready, otherwise fallback
+> -	 * to the default arch specific idle method
+> -	 */
+> -	ret = cpuidle_enabled(drv, dev);
+> -
+> -	if (!ret) {
+> -		/*
+> -		 * Ask the governor to choose an idle state it thinks
+> -		 * it is convenient to go to. There is *always* a
+> -		 * convenient idle state
+> -		 */
+> -		next_state = cpuidle_select(drv, dev);
+> -
+> -		/*
+> -		 * The idle task must be scheduled, it is pointless to
+> -		 * go to idle, just update no idle residency and get
+> -		 * out of this function
+> -		 */
+> -		if (current_clr_polling_and_test()) {
+> -			dev->last_residency = 0;
+> -			entered_state = next_state;
+> -			local_irq_enable();
+> -		} else {
+> -			broadcast = !!(drv->states[next_state].flags &
+> -				       CPUIDLE_FLAG_TIMER_STOP);
+> -
+> -			if (broadcast)
+> -				/*
+> -				 * Tell the time framework to switch
+> -				 * to a broadcast timer because our
+> -				 * local timer will be shutdown. If a
+> -				 * local timer is used from another
+> -				 * cpu as a broadcast timer, this call
+> -				 * may fail if it is not available
+> -				 */
+> -				ret = clockevents_notify(
+> -					CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+> -					&dev->cpu);
+> -
+> -			if (!ret) {
+> -				trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> -
+> -				/*
+> -				 * Enter the idle state previously
+> -				 * returned by the governor
+> -				 * decision. This function will block
+> -				 * until an interrupt occurs and will
+> -				 * take care of re-enabling the local
+> -				 * interrupts
+> -				 */
+> -				entered_state = cpuidle_enter(drv, dev,
+> -							      next_state);
+> -
+> -				trace_cpu_idle_rcuidle(PWR_EVENT_EXIT,
+> -						       dev->cpu);
+> -
+> -				if (broadcast)
+> -					clockevents_notify(
+> -						CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+> -						&dev->cpu);
+> -
+> -				/*
+> -				 * Give the governor an opportunity to reflect on the
+> -				 * outcome
+> -				 */
+> -				cpuidle_reflect(dev, entered_state);
+> -			}
+> -		}
+> -	}
+> -
+> -	/*
+>  	 * We can't use the cpuidle framework, let's use the default
+>  	 * idle routine
+>  	 */
+> +	ret = __cpuidle_idle_call();
+>  	if (ret)
+>  		arch_cpu_idle();
+>  
+> 
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
