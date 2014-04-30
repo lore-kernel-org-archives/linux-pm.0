@@ -1,85 +1,36 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [RFC PATCH] regulator: virtual: Introduce a new virtual locker
- regulator type
-Date: Wed, 30 Apr 2014 11:56:08 -0700
-Message-ID: <CAD=FV=Vo+GLTt7fh4639XFsJfSUTN0ARBsOy+O24gtB_87MgLw@mail.gmail.com>
-References: <1398749704-10196-1-git-send-email-inderpal.s@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: powernow-k8: Fix checkpatch warnings
+Date: Wed, 30 Apr 2014 22:16:14 +0200
+Message-ID: <2559921.qEXZdngR08@vostro.rjw.lan>
+References: <5356DB92.1060600@semaphore.gr> <4780344.RfsAca3Qz3@vostro.rjw.lan> <CAKohponkTeEqdgqJ6+caQcKd5yoMNhFvkZib1UueqNBCmO=pmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f180.google.com ([209.85.220.180]:54681 "EHLO
-	mail-vc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbaD3S4J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 14:56:09 -0400
-Received: by mail-vc0-f180.google.com with SMTP id hq16so2699381vcb.25
-        for <linux-pm@vger.kernel.org>; Wed, 30 Apr 2014 11:56:08 -0700 (PDT)
-In-Reply-To: <1398749704-10196-1-git-send-email-inderpal.s@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponkTeEqdgqJ6+caQcKd5yoMNhFvkZib1UueqNBCmO=pmA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Inderpal Singh <inderpal.s@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "broonie@kernel.org" <broonie@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Pawel Moll <pawel.moll@arm.com>
 
-Hi,
+On Wednesday, April 30, 2014 09:34:03 AM Viresh Kumar wrote:
+> On 30 April 2014 04:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > It should be cleaned up generally, so if you have the time and you're willing
+> > to do such things, please do them.
+> >
+> > That said things like lines in excess of 80 characters may stay as they are.
+> 
+> I have tried this sort of stuff earlier, but there is one issue that stands
+> up again and again. When you update neighboring lines of lines
+> crossing 80 columns, we do get warnings for lines which aren't actually
+> updated by us (from checkpatch.pl). So, probably we need to fix
+> checkpatch then..
 
-On Mon, Apr 28, 2014 at 10:35 PM, Inderpal Singh <inderpal.s@samsung.com> wrote:
-> On some SoCs there could be requirements that two or more voltage
-> regulators need to maintain certain skew for proper functioning.
->
-> This patch implements a new vitual locker type regulator which can
-> have multiple output and input regulators. The real regulators will
-> be hidden under the virtual output regulators. The consumer of the
-> real regulators need not change anything. Only the name of the real
-> regulators need to be changed.
->
-> This patch has been tested on exynos5420 based smdk5420.
->
-> Signed-off-by: Doug Anderson <dianders@chromium.org>
-> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
-> ---
->  .../bindings/regulator/locker-regulator.txt        |  36 ++
->  drivers/regulator/Kconfig                          |   9 +
->  drivers/regulator/Makefile                         |   1 +
->  drivers/regulator/locker.c                         | 472 +++++++++++++++++++++
->  include/linux/regulator/locker.h                   |  35 ++
->  5 files changed, 553 insertions(+)
+That has been my opinion pretty much forever.
 
-I cornered Rob and Mark Rutland a little bit about this at ELC today
-(sorry!).  Neither of them was a huge ran of adding a pseudo device.
-Rob suggested that Mark Brown might be the best person to give
-direction here.  Mark Brown: any thoughts?
-
-Potentially we could also make this type of thing a core regulator property:
-
-  buck2_reg: BUCK2 {
-          regulator-name = "vdd_arm";
-          regulator-min-microvolt = <800000>;
-          regulator-max-microvolt = <1500000>;
-          regulator-always-on;
-          regulator-boot-on;
-          regulator-op-mode = <1>;
-          regulator-ramp-delay = <12500>;
-  };
-  buck3_reg: BUCK3 {
-          regulator-name = "vdd_int";
-          regulator-min-microvolt = <800000>;
-          regulator-max-microvolt = <1400000>;
-          regulator-always-on;
-          regulator-boot-on;
-          regulator-op-mode = <1>;
-          regulator-ramp-delay = <12500>;
-          regulator-lock-to = <&buck2>;
-          regulator-lock-within = <300000>;
-  };
-
-Another option is to add no device tree code at all and add code to
-the devfreq / cpufreq drivers used on this device.  In order to do
-this cleanly I think we'd need to extend the regulator core's
-notification scheme to introduce a new event:
-REGULATOR_EVENT_VOLTAGE_CHANGING that's called _before_ a voltage
-change happened.
+Thanks!
 
 
-Or maybe there's some yet different (cleaner) solution that I haven't
-thought of.
-
--Doug
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
