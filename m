@@ -1,104 +1,57 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] cpuidle / menu: Return error code if there are no
- suitable states
-Date: Wed, 30 Apr 2014 14:40:31 +0200
-Message-ID: <5360EF3F.1040003@linaro.org>
-References: <2471963.urOyfY8mOG@vostro.rjw.lan> <6832089.A5AOPipfbA@vostro.rjw.lan> <535E3818.2040905@linaro.org> <2000825.kO1es8ShkW@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Wed, 30 Apr 2014 18:37:06 +0300
+Message-ID: <536118A2.2060204@semaphore.gr>
+References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com> <535FCDBD.6080500@semaphore.gr> <1621123.rMC9JtD3Mo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2000825.kO1es8ShkW@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/29/2014 01:28 AM, Rafael J. Wysocki wrote:
-> On Monday, April 28, 2014 01:14:32 PM Daniel Lezcano wrote:
->> On 04/27/2014 02:55 PM, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 30/04/2014 01:26 =CF=80=CE=BC, Rafael J. Wysocki wrote:
+> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
+>> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
+>>> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> w=
+rote:
+>>>> This patch set introduces two freq_table helper macros which
+>>>> can be used for iteration over cpufreq_frequency_table and
+>>>> makes the necessary changes to cpufreq core and drivers that
+>>>> use such an iteration procedure.
+>>>>
+>>>> The motivation was a usage of common procedure to iterate over
+>>>> cpufreq_frequency_table across all drivers and cpufreq core.
+>>>>
+>>>> This was tested on a x86_64 platform.
+>>>> Most files compiled successfully but unfortunately I was not
+>>>> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
+>>>> due to lack of cross compiler.
+>>>>
+>>>> Changelog
+>>>>
+>>>> v4 -> v5
+>>>>         - Fix warnings in printk format specifier for 32 bit
+>>>>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
 >>>
->>> If there is a PM QoS latency limit and all of the sufficiently shal=
-low
->>> C-states are disabled, the cpuidle menu governor returns 0 which on
->>> some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returne=
-d
->>> if that C-state has been disabled.
+>>> Doesn't look much has changed and so it stays as is:
 >>>
->>> Fix the issue by modifying the menu governor to return an error cod=
-e
->>> in such situations.
+>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 >>>
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>    drivers/cpuidle/governors/menu.c |    2 +-
->>>    include/linux/cpuidle.h          |    2 ++
->>>    2 files changed, 3 insertions(+), 1 deletion(-)
->>>
->>> Index: linux-pm/drivers/cpuidle/governors/menu.c
->>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
->>> +++ linux-pm/drivers/cpuidle/governors/menu.c
->>> @@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
->>>    		data->needs_update =3D 0;
->>>    	}
->>>
->>> -	data->last_state_idx =3D 0;
->>> +	data->last_state_idx =3D CPUIDLE_DRIVER_STATE_POLL;
->>>
->>>    	/* Special case when user has set very strict latency requireme=
-nt */
->>>    	if (unlikely(latency_req =3D=3D 0))
->>> Index: linux-pm/include/linux/cpuidle.h
->>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>> --- linux-pm.orig/include/linux/cpuidle.h
->>> +++ linux-pm/include/linux/cpuidle.h
->>> @@ -217,8 +217,10 @@ static inline int cpuidle_register_gover
->>>
->>>    #ifdef CONFIG_ARCH_HAS_CPU_RELAX
->>>    #define CPUIDLE_DRIVER_STATE_START	1
->>> +#define CPUIDLE_DRIVER_STATE_POLL	0
->>>    #else
->>>    #define CPUIDLE_DRIVER_STATE_START	0
->>> +#define CPUIDLE_DRIVER_STATE_POLL	(-ENXIO)
->>>    #endif
->>>
->>>    #endif /* _LINUX_CPUIDLE_H */
 >>
->> Hi Rafael,
->>
->> CPUIDLE_DRIVER_STATE_START is only for x86. It introduces some confu=
-sion
->> in the code.
->
-> I won't disagree with that.
->
->> As only two drivers are concerned by it, wouldn't make
->> sense to add the poll state to those driver directly instead of havi=
-ng
->> the code hacked around ? (eg. insert the poll state in the common
->> cpuidle code).
->
-> Well, what about initializing data->last_state_idx to
-> (CPUIDLE_DRIVER_STATE_START - 1) in menu_select() instead of introduc=
-ing the
-> new symbol for the time being and getting rid of CPUIDLE_DRIVER_STATE=
-_START
-> separately?
+>> Thank you very much!
+>=20
+> I've applied the series to my bleeding-edge branch, will move it to l=
+inux-next
+> after build testing later this week.
+>=20
+> Thanks!
+>=20
 
-+1
+Thanks so much!
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Stratos Karafotis
