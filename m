@@ -1,63 +1,211 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [GIT PULL] cpuidle: new driver for Cirrus Logic for 3.16
-Date: Wed, 30 Apr 2014 12:24:23 +0200
-Message-ID: <5360CF57.9050202@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:48757 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757359AbaD3KYW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 06:24:22 -0400
-Received: by mail-wi0-f176.google.com with SMTP id f8so2631293wiw.15
-        for <linux-pm@vger.kernel.org>; Wed, 30 Apr 2014 03:24:21 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it out
+Date: Wed, 30 Apr 2014 14:01:02 +0200
+Message-ID: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: peterz@infradead.org, mingo@elte.hu
+Cc: rjw@rjwysocki.net, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alexander Shiyan <shc_work@mail.ru>, Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+Encapsulate the large portion of cpuidle_idle_call inside another
+function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
+Also that is benefitial for the clarity of the code as it removes
+a nested indentation level.
 
-Hi Rafael,
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ kernel/sched/idle.c |  161 +++++++++++++++++++++++++++------------------------
+ 1 file changed, 86 insertions(+), 75 deletions(-)
 
-this pull request is based on top 3.15-rc3
-
-  * Alexander Shiyan added a new driver for the Cirrus Logic clps711x
-
-Thanks
-   -- Daniel
-
-The following changes since commit d1db0eea852497762cab43b905b879dfcd3b=
-8987:
-
-   Linux 3.15-rc3 (2014-04-27 19:29:27 -0700)
-
-are available in the git repository at:
-
-   git://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/3.16
-
-for you to fetch changes up to 7c7f8f7f2c6bf078874e5de35d7e2c66467fc664=
-:
-
-   ARM: clps711x: Add cpuidle driver (2014-04-30 01:33:02 +0200)
-
-----------------------------------------------------------------
-Alexander Shiyan (1):
-       ARM: clps711x: Add cpuidle driver
-
-  drivers/cpuidle/Kconfig.arm        |    6 ++++
-  drivers/cpuidle/Makefile           |    1 +
-  drivers/cpuidle/cpuidle-clps711x.c |   64=20
-++++++++++++++++++++++++++++++++++++
-  3 files changed, 71 insertions(+)
-  create mode 100644 drivers/cpuidle/cpuidle-clps711x.c
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index b8cd302..f2f4bc9 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -63,6 +63,90 @@ void __weak arch_cpu_idle(void)
+ 	local_irq_enable();
+ }
+ 
++#ifdef CONFIG_CPU_IDLE
++static int __cpuidle_idle_call(void)
++{
++	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
++	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
++	int next_state, entered_state, ret;
++	bool broadcast;
++
++	/*
++	 * Check if the cpuidle framework is ready, otherwise fallback
++	 * to the default arch specific idle method
++	 */
++	ret = cpuidle_enabled(drv, dev);
++	if (ret)
++		return ret;
++
++	/*
++	 * Ask the governor to choose an idle state it thinks
++	 * it is convenient to go to. There is *always* a
++	 * convenient idle state
++	 */
++	next_state = cpuidle_select(drv, dev);
++
++	/*
++	 * The idle task must be scheduled, it is pointless to
++	 * go to idle, just update no idle residency and get
++	 * out of this function
++	 */
++	if (current_clr_polling_and_test()) {
++		dev->last_residency = 0;
++		entered_state = next_state;
++		local_irq_enable();
++	} else {
++		broadcast = !!(drv->states[next_state].flags &
++			       CPUIDLE_FLAG_TIMER_STOP);
++
++		if (broadcast)
++			/*
++			 * Tell the time framework to switch to a
++			 * broadcast timer because our local timer
++			 * will be shutdown. If a local timer is used
++			 * from another cpu as a broadcast timer, this
++			 * call may fail if it is not available
++			 */
++			ret = clockevents_notify(
++				CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
++				&dev->cpu);
++
++		if (!ret) {
++			trace_cpu_idle_rcuidle(next_state, dev->cpu);
++
++			/*
++			 * Enter the idle state previously returned by
++			 * the governor decision. This function will
++			 * block until an interrupt occurs and will
++			 * take care of re-enabling the local
++			 * interrupts
++			 */
++			entered_state = cpuidle_enter(drv, dev, next_state);
++
++			trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
++
++			if (broadcast)
++				clockevents_notify(
++					CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
++					&dev->cpu);
++
++			/*
++			 * Give the governor an opportunity to reflect
++			 * on the outcome
++			 */
++			cpuidle_reflect(dev, entered_state);
++		}
++	}
++
++	return 0;
++}
++#else
++static int inline __cpuidle_idle_call(void)
++{
++	return -ENOSYS;
++}
++#endif
++
+ /**
+  * cpuidle_idle_call - the main idle function
+  *
+@@ -70,10 +154,7 @@ void __weak arch_cpu_idle(void)
+  */
+ static void cpuidle_idle_call(void)
+ {
+-	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+-	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+-	int next_state, entered_state, ret;
+-	bool broadcast;
++	int ret;
+ 
+ 	/*
+ 	 * Check if the idle task must be rescheduled. If it is the
+@@ -100,80 +181,10 @@ static void cpuidle_idle_call(void)
+ 	rcu_idle_enter();
+ 
+ 	/*
+-	 * Check if the cpuidle framework is ready, otherwise fallback
+-	 * to the default arch specific idle method
+-	 */
+-	ret = cpuidle_enabled(drv, dev);
+-
+-	if (!ret) {
+-		/*
+-		 * Ask the governor to choose an idle state it thinks
+-		 * it is convenient to go to. There is *always* a
+-		 * convenient idle state
+-		 */
+-		next_state = cpuidle_select(drv, dev);
+-
+-		/*
+-		 * The idle task must be scheduled, it is pointless to
+-		 * go to idle, just update no idle residency and get
+-		 * out of this function
+-		 */
+-		if (current_clr_polling_and_test()) {
+-			dev->last_residency = 0;
+-			entered_state = next_state;
+-			local_irq_enable();
+-		} else {
+-			broadcast = !!(drv->states[next_state].flags &
+-				       CPUIDLE_FLAG_TIMER_STOP);
+-
+-			if (broadcast)
+-				/*
+-				 * Tell the time framework to switch
+-				 * to a broadcast timer because our
+-				 * local timer will be shutdown. If a
+-				 * local timer is used from another
+-				 * cpu as a broadcast timer, this call
+-				 * may fail if it is not available
+-				 */
+-				ret = clockevents_notify(
+-					CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+-					&dev->cpu);
+-
+-			if (!ret) {
+-				trace_cpu_idle_rcuidle(next_state, dev->cpu);
+-
+-				/*
+-				 * Enter the idle state previously
+-				 * returned by the governor
+-				 * decision. This function will block
+-				 * until an interrupt occurs and will
+-				 * take care of re-enabling the local
+-				 * interrupts
+-				 */
+-				entered_state = cpuidle_enter(drv, dev,
+-							      next_state);
+-
+-				trace_cpu_idle_rcuidle(PWR_EVENT_EXIT,
+-						       dev->cpu);
+-
+-				if (broadcast)
+-					clockevents_notify(
+-						CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+-						&dev->cpu);
+-
+-				/*
+-				 * Give the governor an opportunity to reflect on the
+-				 * outcome
+-				 */
+-				cpuidle_reflect(dev, entered_state);
+-			}
+-		}
+-	}
+-
+-	/*
+ 	 * We can't use the cpuidle framework, let's use the default
+ 	 * idle routine
+ 	 */
++	ret = __cpuidle_idle_call();
+ 	if (ret)
+ 		arch_cpu_idle();
+ 
+-- 
+1.7.9.5
