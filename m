@@ -1,34 +1,115 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Remove sample parameter in intel_pstate_calc_busy
-Date: Wed, 30 Apr 2014 09:36:55 +0530
-Message-ID: <CAKohpo=YHon_WgaM6dm8jU1dw8uasRLekt-YKD63RMrMu9f0Uw@mail.gmail.com>
-References: <535FE72D.2020402@semaphore.gr>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH v2 1/4] powercap/rapl: further relax energy counter
+ checks
+Date: Wed, 30 Apr 2014 05:29:54 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59EF6C00@BGSMSX101.gar.corp.intel.com>
+References: <1398693880-13428-1-git-send-email-jacob.jun.pan@linux.intel.com>
+ <1398810789-2301-1-git-send-email-david.e.box@linux.intel.com>
+ <1398810789-2301-2-git-send-email-david.e.box@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:53592 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbaD3EG4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 00:06:56 -0400
-Received: by mail-ob0-f170.google.com with SMTP id vb8so1363470obc.29
-        for <linux-pm@vger.kernel.org>; Tue, 29 Apr 2014 21:06:56 -0700 (PDT)
-In-Reply-To: <535FE72D.2020402@semaphore.gr>
+Received: from mga02.intel.com ([134.134.136.20]:50567 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754820AbaD3F37 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 01:29:59 -0400
+In-Reply-To: <1398810789-2301-2-git-send-email-david.e.box@linux.intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "David E. Box" <david.e.box@linux.intel.com>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hpa@linux.intel.com" <hpa@linux.intel.com>
+Cc: "alan@linux.intel.com" <alan@linux.intel.com>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>
 
-On 29 April 2014 23:23, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Since commit d37e2b7644 ("intel_pstate: remove unneeded sample buffers")
-> we use only one sample. So, there is no need to pass the sample
-> pointer to intel_pstate_calc_busy. Instead, get the pointer from
-> cpudata. Also, remove the unused SAMPLE_COUNT macro.
->
-> While at it, reformat the first line in this function.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+
+
+> -----Original Message-----
+> From: David E. Box [mailto:david.e.box@linux.intel.com]
+> Sent: Wednesday, April 30, 2014 4:03 AM
+> To: david.e.box@linux.intel.com; jacob.jun.pan@linux.intel.com; linux-
+> pm@vger.kernel.org; Wysocki, Rafael J; linux-kernel@vger.kernel.org;
+> hpa@linux.intel.com
+> Cc: alan@linux.intel.com; R, Durgadoss; Accardi, Kristen C
+> Subject: [PATCH v2 1/4] powercap/rapl: further relax energy counter checks
+> 
+> From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> 
+> Energy counters may roll slowly for some RAPL domains, checking all
+> of them can be time consuming and takes unpredictable amount of time.
+> Therefore, we relax the sanity check by only checking availability of the
+> MSRs and non-zero value of the energy status counters. It has been shown
+> sufficient for all the platforms tested to filter out inactive domains.
+> 
+
+Acked-by: Durgadoss R <durgadoss.r@intel.com>
+
+Thanks,
+Durga
+
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 > ---
->  drivers/cpufreq/intel_pstate.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
+>  drivers/powercap/intel_rapl.c |   29 +++++++++--------------------
+>  1 file changed, 9 insertions(+), 20 deletions(-)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index d9a0770..1c987d2 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -1124,8 +1124,7 @@ err_cleanup_package:
+>  static int rapl_check_domain(int cpu, int domain)
+>  {
+>  	unsigned msr;
+> -	u64 val1, val2 = 0;
+> -	int retry = 0;
+> +	u64 val = 0;
+> 
+>  	switch (domain) {
+>  	case RAPL_DOMAIN_PACKAGE:
+> @@ -1144,26 +1143,13 @@ static int rapl_check_domain(int cpu, int domain)
+>  		pr_err("invalid domain id %d\n", domain);
+>  		return -EINVAL;
+>  	}
+> -	if (rdmsrl_safe_on_cpu(cpu, msr, &val1))
+> -		return -ENODEV;
+> -
+> -	/* PP1/uncore/graphics domain may not be active at the time of
+> -	 * driver loading. So skip further checks.
+> +	/* make sure domain counters are available and contains non-zero
+> +	 * values, otherwise skip it.
+>  	 */
+> -	if (domain == RAPL_DOMAIN_PP1)
+> -		return 0;
+> -	/* energy counters roll slowly on some domains */
+> -	while (++retry < 10) {
+> -		usleep_range(10000, 15000);
+> -		rdmsrl_safe_on_cpu(cpu, msr, &val2);
+> -		if ((val1 & ENERGY_STATUS_MASK) != (val2 &
+> ENERGY_STATUS_MASK))
+> -			return 0;
+> -	}
+> -	/* if energy counter does not change, report as bad domain */
+> -	pr_info("domain %s energy ctr %llu:%llu not working, skip\n",
+> -		rapl_domain_names[domain], val1, val2);
+> +	if (rdmsrl_safe_on_cpu(cpu, msr, &val) || !val)
+> +		return -ENODEV;
+> 
+> -	return -ENODEV;
+> +	return 0;
+>  }
+> 
+>  /* Detect active and valid domains for the given CPU, caller must
+> @@ -1180,6 +1166,9 @@ static int rapl_detect_domains(struct rapl_package *rp,
+> int cpu)
+>  		/* use physical package id to read counters */
+>  		if (!rapl_check_domain(cpu, i))
+>  			rp->domain_map |= 1 << i;
+> +		else
+> +			pr_warn("RAPL domain %s detection failed\n",
+> +				rapl_domain_names[i]);
+>  	}
+>  	rp->nr_domains = bitmap_weight(&rp->domain_map,
+> 	RAPL_DOMAIN_MAX);
+>  	if (!rp->nr_domains) {
+> --
+> 1.7.10.4
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
