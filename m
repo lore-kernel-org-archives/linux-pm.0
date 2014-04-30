@@ -1,122 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PNP / ACPI: Do not return errors if _DIS or _SRS are not present
-Date: Wed, 30 Apr 2014 22:50:58 +0200
-Message-ID: <1492044.L41XNkFY4m@vostro.rjw.lan>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM with the PM core
+Date: Wed, 30 Apr 2014 23:23:11 +0200
+Message-ID: <2068296.FXWLXn1mqR@avalon>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be> <1398334403-26181-4-git-send-email-geert+renesas@glider.be> <CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52423 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759498AbaD3Ue2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 16:34:28 -0400
+Received: from perceval.ideasonboard.com ([95.142.166.194]:50377 "EHLO
+	perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965185AbaD3VW6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 17:22:58 -0400
+In-Reply-To: <CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lan Tianyu <tianyu.lan@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, wxg4net <wxg4net@gmail.com>, nonproffessional@gmail.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tomasz Figa <tomasz.figa@gmail.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Ulf and Geert,
 
-The ACPI PNP subsystem returns errors from pnpacpi_set_resources()
-and pnpacpi_disable_resources() if the _SRS or _DIS methods are not
-present, respectively, but it should not do that, because those
-methods are optional.  For this reason, modify pnpacpi_set_resources()
-and pnpacpi_disable_resources(), respectively, to ignore missing _SRS
-or _DIS.
+On Thursday 24 April 2014 15:11:24 Ulf Hansson wrote:
+> On 24 April 2014 12:13, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> > When adding a device from DT, check if its clocks are suitable for Runtime
+> > PM, and register them with the PM core.
+> > If Runtime PM is disabled, just enable the clock.
+> > 
+> > This allows the PM core to automatically manage gate clocks of devices for
+> > Runtime PM.
+> 
+> Normally I don't think it's a good idea to "automatically" manage
+> clocks from PM core or any other place but from the driver (and
+> possibly the subsystem).
+> 
+> The reason is simply that we hide things that normally is supposed to
+> be handled by the driver. Typically a cross SOC driver should work
+> fine both with and without a pm_domain. It should also not rely on
+> CONFIG_PM_RUNTIME.
 
-This problem has been uncovered by commit 202317a573b2 (ACPI / scan: Add
-acpi_device objects for all device nodes in the namespace) and manifested
-itself by causing serial port suspend to fail on some systems.
+That's a very good point. Geert, what do you think should happen if 
+CONFIG_PM_RUNTIME is not set ? I don't have a strong opinion (yet) on whether 
+we could require CONFIG_PM_RUNTIME, but it would indeed be nice to support 
+both cases. One option would be to keep the clocks enabled unconditionally in 
+that case, as not setting CONFIG_PM_RUNTIME means that the user doesn't care 
+(or cares less) about power consumption.
 
-Fixes: 202317a573b2 (ACPI / scan: Add acpi_device objects for all device nodes in the namespace)
-References: https://bugzilla.kernel.org/show_bug.cgi?id=74371
-Reported-by: wxg4net <wxg4net@gmail.com>
-Reported-and-tested-by: <nonproffessional@gmail.com>
-Cc: 3.14+ <stable@vger.kernel.org> # 3.14+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pnp/pnpacpi/core.c |   44 ++++++++++++++++++++++++++------------------
- 1 file changed, 26 insertions(+), 18 deletions(-)
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Index: linux-pm/drivers/pnp/pnpacpi/core.c
-===================================================================
---- linux-pm.orig/drivers/pnp/pnpacpi/core.c
-+++ linux-pm/drivers/pnp/pnpacpi/core.c
-@@ -83,8 +83,7 @@ static int pnpacpi_set_resources(struct
- {
- 	struct acpi_device *acpi_dev;
- 	acpi_handle handle;
--	struct acpi_buffer buffer;
--	int ret;
-+	int ret = 0;
- 
- 	pnp_dbg(&dev->dev, "set resources\n");
- 
-@@ -97,19 +96,26 @@ static int pnpacpi_set_resources(struct
- 	if (WARN_ON_ONCE(acpi_dev != dev->data))
- 		dev->data = acpi_dev;
- 
--	ret = pnpacpi_build_resource_template(dev, &buffer);
--	if (ret)
--		return ret;
--	ret = pnpacpi_encode_resources(dev, &buffer);
--	if (ret) {
-+	if (acpi_has_method(handle, METHOD_NAME__SRS)) {
-+		struct acpi_buffer buffer;
-+
-+		ret = pnpacpi_build_resource_template(dev, &buffer);
-+		if (ret)
-+			return ret;
-+
-+		ret = pnpacpi_encode_resources(dev, &buffer);
-+		if (!ret) {
-+			acpi_status status;
-+
-+			status = acpi_set_current_resources(handle, &buffer);
-+			if (ACPI_FAILURE(status))
-+				ret = -EIO;
-+		}
- 		kfree(buffer.pointer);
--		return ret;
- 	}
--	if (ACPI_FAILURE(acpi_set_current_resources(handle, &buffer)))
--		ret = -EINVAL;
--	else if (acpi_bus_power_manageable(handle))
-+	if (!ret && acpi_bus_power_manageable(handle))
- 		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
--	kfree(buffer.pointer);
-+
- 	return ret;
- }
- 
-@@ -117,7 +123,7 @@ static int pnpacpi_disable_resources(str
- {
- 	struct acpi_device *acpi_dev;
- 	acpi_handle handle;
--	int ret;
-+	acpi_status status;
- 
- 	dev_dbg(&dev->dev, "disable resources\n");
- 
-@@ -128,13 +134,15 @@ static int pnpacpi_disable_resources(str
- 	}
- 
- 	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
--	ret = 0;
- 	if (acpi_bus_power_manageable(handle))
- 		acpi_bus_set_power(handle, ACPI_STATE_D3_COLD);
--		/* continue even if acpi_bus_set_power() fails */
--	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_DIS", NULL, NULL)))
--		ret = -ENODEV;
--	return ret;
-+
-+	/* continue even if acpi_bus_set_power() fails */
-+	status = acpi_evaluate_object(handle, "_DIS", NULL, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND)
-+		return -ENODEV;
-+
-+	return 0;
- }
- 
- #ifdef CONFIG_ACPI_SLEEP
+-- 
+Regards,
+
+Laurent Pinchart
 
