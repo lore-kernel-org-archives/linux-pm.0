@@ -1,34 +1,34 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernow-k8: Fix checkpatch warnings
-Date: Wed, 30 Apr 2014 09:34:03 +0530
-Message-ID: <CAKohponkTeEqdgqJ6+caQcKd5yoMNhFvkZib1UueqNBCmO=pmA@mail.gmail.com>
-References: <5356DB92.1060600@semaphore.gr>
-	<2606012.9SjvfKiI5Z@vostro.rjw.lan>
-	<5357C5E0.1070207@semaphore.gr>
-	<4780344.RfsAca3Qz3@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Remove sample parameter in intel_pstate_calc_busy
+Date: Wed, 30 Apr 2014 09:36:55 +0530
+Message-ID: <CAKohpo=YHon_WgaM6dm8jU1dw8uasRLekt-YKD63RMrMu9f0Uw@mail.gmail.com>
+References: <535FE72D.2020402@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:59548 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbaD3EEF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 00:04:05 -0400
-Received: by mail-ob0-f169.google.com with SMTP id uz6so1354996obc.14
-        for <linux-pm@vger.kernel.org>; Tue, 29 Apr 2014 21:04:04 -0700 (PDT)
-In-Reply-To: <4780344.RfsAca3Qz3@vostro.rjw.lan>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:53592 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbaD3EG4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 00:06:56 -0400
+Received: by mail-ob0-f170.google.com with SMTP id vb8so1363470obc.29
+        for <linux-pm@vger.kernel.org>; Tue, 29 Apr 2014 21:06:56 -0700 (PDT)
+In-Reply-To: <535FE72D.2020402@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 30 April 2014 04:09, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> It should be cleaned up generally, so if you have the time and you're willing
-> to do such things, please do them.
+On 29 April 2014 23:23, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> Since commit d37e2b7644 ("intel_pstate: remove unneeded sample buffers")
+> we use only one sample. So, there is no need to pass the sample
+> pointer to intel_pstate_calc_busy. Instead, get the pointer from
+> cpudata. Also, remove the unused SAMPLE_COUNT macro.
 >
-> That said things like lines in excess of 80 characters may stay as they are.
+> While at it, reformat the first line in this function.
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 11 ++++-------
+>  1 file changed, 4 insertions(+), 7 deletions(-)
 
-I have tried this sort of stuff earlier, but there is one issue that stands
-up again and again. When you update neighboring lines of lines
-crossing 80 columns, we do get warnings for lines which aren't actually
-updated by us (from checkpatch.pl). So, probably we need to fix
-checkpatch then..
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
