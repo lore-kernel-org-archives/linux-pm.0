@@ -1,75 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 5/8] mfd: db8500-prcmu: Use cpufreq_for_each_entry macro for iteration
-Date: Thu, 01 May 2014 01:06:34 +0200
-Message-ID: <1853484.NiSvS4ksI8@vostro.rjw.lan>
-References: <534DB213.7080802@semaphore.gr> <20140422112717.GA21613@lee--X1> <4646665.ZmnOyyFeHY@vostro.rjw.lan>
+Subject: Re: [PATCH v2] PM / Hibernate: no kernel_power_off when pm_power_off NULL
+Date: Thu, 01 May 2014 01:21:41 +0200
+Message-ID: <1465868.JN1PNL3ufB@vostro.rjw.lan>
+References: <1398126646-29518-1-git-send-email-sebastian.capella@linaro.org> <20140422070955.GA14108@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49915 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56780 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754724AbaD3WuE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 18:50:04 -0400
-In-Reply-To: <4646665.ZmnOyyFeHY@vostro.rjw.lan>
+	with SMTP id S1759830AbaD3XFL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 19:05:11 -0400
+In-Reply-To: <20140422070955.GA14108@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, Linus Walleij <linus.walleij@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-arm-kernel@lists.infradead.org, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Sebastian Capella <sebastian.capella@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
 
-On Tuesday, April 22, 2014 01:49:31 PM Rafael J. Wysocki wrote:
-> On Tuesday, April 22, 2014 12:27:17 PM Lee Jones wrote:
-> > On Tue, 22 Apr 2014, Rafael J. Wysocki wrote:
+On Tuesday, April 22, 2014 09:09:55 AM Pavel Machek wrote:
+> On Mon 2014-04-21 17:30:46, Sebastian Capella wrote:
+> > Reboot logic in kernel/reboot will avoid calling kernel_power_off
+> > when pm_power_off is null, and instead uses kernel_halt.  Change
+> > hibernate's power_down to follow the behavior in the reboot call.
 > > 
-> > > On Tuesday, April 22, 2014 08:15:41 AM Lee Jones wrote:
-> > > > > The cpufreq core now supports the cpufreq_for_each_entry macro helper
-> > > > > for iteration over the cpufreq_frequency_table, so use it.
-> > > > > 
-> > > > > It should have no functional changes.
-> > > > 
-> > > > > Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> > > > > ---
-> > > > 
-> > > > It would be good to have a changelog which describes the differences
-> > > > between the versions, so we can keep track.
-> > > > 
-> > > > >  drivers/mfd/db8500-prcmu.c | 19 ++++++++-----------
-> > > > >  1 file changed, 8 insertions(+), 11 deletions(-)
-> > > > 
-> > > > So it looks like I already applied v2 of this patch to my tree. What
-> > > > changed in v3 and v4? Should I remove that patch from MFD and apply
-> > > > this one instead?
-> > > 
-> > > The reason why v4 was sent is because I asked for it.
-> > > 
-> > > And if you applied [5/8] without [1/8], it won't work, because the macro is
-> > > introduced by that patch.
+> > Calling the notifier twice (once for SYS_POWER_OFF and again for
+> > SYS_HALT) causes a panic during hibernation on Kirkwood
+> > Openblocks A6 board.
 > > 
-> > That's right, which is why I mailed you about it:
-> > 
-> >   > > > Applied untested by me.
-> >   > >
-> >   > > Wouldn't build. Let it go via Rafael.
-> >   >
-> >   > Rafael, would you mind creating a branch from this patch set that we
-> >   > can both pull from please?
-> > 
-> > > If that's the case, please drop [5/8] and let me handle the entire series.
-> > 
-> > I'm happy for you to apply the series and send me a pull-request for
-> > either a) the entire series or b) just the patches which touch MFD and
-> > any subsequent decencies. Or I can apply them and send you one.
+> > Signed-off-by: Sebastian Capella <sebastian.capella@linaro.org>
+> > Reported-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> > Cc: Len Brown <len.brown@intel.com>
 > 
-> OK, I'll create a separate branch with those patches and will let you know
-> where it is.
+> Reviewed-by: Pavel Machek <pavel@ucw.cz>
 
-This material is on the cpufreq-macros branch of the linux-pm.git tree now, so
-
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git cpufreq-macros
-
-will be safe to pull from going forward.
-
-Thanks!
+Queued up for 3.16, thanks!
 
 -- 
 I speak only for myself.
