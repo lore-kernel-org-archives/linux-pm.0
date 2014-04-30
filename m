@@ -1,57 +1,44 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Wed, 30 Apr 2014 18:37:06 +0300
-Message-ID: <536118A2.2060204@semaphore.gr>
-References: <535AC247.3070907@semaphore.gr> <CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com> <535FCDBD.6080500@semaphore.gr> <1621123.rMC9JtD3Mo@vostro.rjw.lan>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH 1/3] sched: idle: Encapsulate the code to compile it
+ out
+Date: Wed, 30 Apr 2014 13:39:28 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1404301311390.980@knanqh.ubzr>
+References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <1398342291-16322-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, linux-doc@vger.kernel.org, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f170.google.com ([209.85.216.170]:37082 "EHLO
+	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945926AbaD3Rjc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 13:39:32 -0400
+Received: by mail-qc0-f170.google.com with SMTP id x13so2266657qcv.15
+        for <linux-pm@vger.kernel.org>; Wed, 30 Apr 2014 10:39:31 -0700 (PDT)
+In-Reply-To: <1398342291-16322-2-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: peterz@infradead.org, mingo@elte.hu, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org
 
-On 30/04/2014 01:26 =CF=80=CE=BC, Rafael J. Wysocki wrote:
-> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
->> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
->>> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> w=
-rote:
->>>> This patch set introduces two freq_table helper macros which
->>>> can be used for iteration over cpufreq_frequency_table and
->>>> makes the necessary changes to cpufreq core and drivers that
->>>> use such an iteration procedure.
->>>>
->>>> The motivation was a usage of common procedure to iterate over
->>>> cpufreq_frequency_table across all drivers and cpufreq core.
->>>>
->>>> This was tested on a x86_64 platform.
->>>> Most files compiled successfully but unfortunately I was not
->>>> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
->>>> due to lack of cross compiler.
->>>>
->>>> Changelog
->>>>
->>>> v4 -> v5
->>>>         - Fix warnings in printk format specifier for 32 bit
->>>>           architectures in freq_table.c, longhaul, pasemi, ppc_cbe
->>>
->>> Doesn't look much has changed and so it stays as is:
->>>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>
->>
->> Thank you very much!
->=20
-> I've applied the series to my bleeding-edge branch, will move it to l=
-inux-next
-> after build testing later this week.
->=20
-> Thanks!
->=20
+On Thu, 24 Apr 2014, Daniel Lezcano wrote:
 
-Thanks so much!
+> Encapsulate the large portion of cpuidle_idle_call inside another
+> function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
+> Also that is benefitial for the clarity of the code as it removes
+> a nested indentation level.
+
+I agree with the nesting level concern.
+
+However I dislike the proliferation of #ifdef's in the main code. Those 
+added in this patch are unnecessary. We want as much compilation 
+coverage as possible.
+
+With cpuidle_enabled() already hardcoded to return -ENODEV when 
+CONFIG_CPU_IDLE=n, the compiler should already be smart enough to 
+optimize away all the redundant code in that case.  You may look at the 
+assembly output from the compiler if you're not sure.
+
+And if you're still not trusting the compiler then the second best 
+option is to use IS_ENABLED(CONFIG_CPU_IDLE) inside some if statement.
 
 
-Stratos Karafotis
+Nicolas
