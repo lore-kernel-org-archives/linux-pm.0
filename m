@@ -1,238 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it out
-Date: Thu, 01 May 2014 00:47:25 +0200
-Message-ID: <2783362.8r7SvVhudq@vostro.rjw.lan>
-References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org>
+Date: Thu, 01 May 2014 00:56:41 +0200
+Message-ID: <2735426.75qSjG3M6Y@vostro.rjw.lan>
+References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org> <2783362.8r7SvVhudq@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62450 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:55822 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933759AbaD3Waz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 18:30:55 -0400
-In-Reply-To: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org>
+	with SMTP id S1945980AbaD3WkM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 18:40:12 -0400
+In-Reply-To: <2783362.8r7SvVhudq@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nicolas Pitre <nicolas.pitre@linaro.org>
 
-On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
-> Encapsulate the large portion of cpuidle_idle_call inside another
-> function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
-> Also that is benefitial for the clarity of the code as it removes
-> a nested indentation level.
+On Thursday, May 01, 2014 12:47:25 AM Rafael J. Wysocki wrote:
+> On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
+> > Encapsulate the large portion of cpuidle_idle_call inside another
+> > function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
+> > Also that is benefitial for the clarity of the code as it removes
+> > a nested indentation level.
+> > 
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-Well, this conflicts with
-
-https://patchwork.kernel.org/patch/4071541/
-
-which you haven't commented on and I still want cpuidle_select() to be able to
-return negative values because of
-
-https://patchwork.kernel.org/patch/4089631/
-
-(and I have one more patch on top of these two that requires this).
-
-Any ideas how to resolve that?
-
-
-> ---
->  kernel/sched/idle.c |  161 +++++++++++++++++++++++++++------------------------
->  1 file changed, 86 insertions(+), 75 deletions(-)
+> Well, this conflicts with
 > 
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index b8cd302..f2f4bc9 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -63,6 +63,90 @@ void __weak arch_cpu_idle(void)
->  	local_irq_enable();
->  }
->  
-> +#ifdef CONFIG_CPU_IDLE
-> +static int __cpuidle_idle_call(void)
-> +{
-> +	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
-> +	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-> +	int next_state, entered_state, ret;
-> +	bool broadcast;
-> +
-> +	/*
-> +	 * Check if the cpuidle framework is ready, otherwise fallback
-> +	 * to the default arch specific idle method
-> +	 */
-> +	ret = cpuidle_enabled(drv, dev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	/*
-> +	 * Ask the governor to choose an idle state it thinks
-> +	 * it is convenient to go to. There is *always* a
-> +	 * convenient idle state
-> +	 */
-> +	next_state = cpuidle_select(drv, dev);
-> +
-> +	/*
-> +	 * The idle task must be scheduled, it is pointless to
-> +	 * go to idle, just update no idle residency and get
-> +	 * out of this function
-> +	 */
-> +	if (current_clr_polling_and_test()) {
-> +		dev->last_residency = 0;
-> +		entered_state = next_state;
-> +		local_irq_enable();
-> +	} else {
-> +		broadcast = !!(drv->states[next_state].flags &
-> +			       CPUIDLE_FLAG_TIMER_STOP);
-> +
-> +		if (broadcast)
-> +			/*
-> +			 * Tell the time framework to switch to a
-> +			 * broadcast timer because our local timer
-> +			 * will be shutdown. If a local timer is used
-> +			 * from another cpu as a broadcast timer, this
-> +			 * call may fail if it is not available
-> +			 */
-> +			ret = clockevents_notify(
-> +				CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-> +				&dev->cpu);
-> +
-> +		if (!ret) {
-> +			trace_cpu_idle_rcuidle(next_state, dev->cpu);
-> +
-> +			/*
-> +			 * Enter the idle state previously returned by
-> +			 * the governor decision. This function will
-> +			 * block until an interrupt occurs and will
-> +			 * take care of re-enabling the local
-> +			 * interrupts
-> +			 */
-> +			entered_state = cpuidle_enter(drv, dev, next_state);
-> +
-> +			trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-> +
-> +			if (broadcast)
-> +				clockevents_notify(
-> +					CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
-> +					&dev->cpu);
-> +
-> +			/*
-> +			 * Give the governor an opportunity to reflect
-> +			 * on the outcome
-> +			 */
-> +			cpuidle_reflect(dev, entered_state);
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +#else
-> +static int inline __cpuidle_idle_call(void)
-> +{
-> +	return -ENOSYS;
-> +}
-> +#endif
-> +
->  /**
->   * cpuidle_idle_call - the main idle function
->   *
-> @@ -70,10 +154,7 @@ void __weak arch_cpu_idle(void)
->   */
->  static void cpuidle_idle_call(void)
->  {
-> -	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
-> -	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-> -	int next_state, entered_state, ret;
-> -	bool broadcast;
-> +	int ret;
->  
->  	/*
->  	 * Check if the idle task must be rescheduled. If it is the
-> @@ -100,80 +181,10 @@ static void cpuidle_idle_call(void)
->  	rcu_idle_enter();
->  
->  	/*
-> -	 * Check if the cpuidle framework is ready, otherwise fallback
-> -	 * to the default arch specific idle method
-> -	 */
-> -	ret = cpuidle_enabled(drv, dev);
-> -
-> -	if (!ret) {
-> -		/*
-> -		 * Ask the governor to choose an idle state it thinks
-> -		 * it is convenient to go to. There is *always* a
-> -		 * convenient idle state
-> -		 */
-> -		next_state = cpuidle_select(drv, dev);
-> -
-> -		/*
-> -		 * The idle task must be scheduled, it is pointless to
-> -		 * go to idle, just update no idle residency and get
-> -		 * out of this function
-> -		 */
-> -		if (current_clr_polling_and_test()) {
-> -			dev->last_residency = 0;
-> -			entered_state = next_state;
-> -			local_irq_enable();
-> -		} else {
-> -			broadcast = !!(drv->states[next_state].flags &
-> -				       CPUIDLE_FLAG_TIMER_STOP);
-> -
-> -			if (broadcast)
-> -				/*
-> -				 * Tell the time framework to switch
-> -				 * to a broadcast timer because our
-> -				 * local timer will be shutdown. If a
-> -				 * local timer is used from another
-> -				 * cpu as a broadcast timer, this call
-> -				 * may fail if it is not available
-> -				 */
-> -				ret = clockevents_notify(
-> -					CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-> -					&dev->cpu);
-> -
-> -			if (!ret) {
-> -				trace_cpu_idle_rcuidle(next_state, dev->cpu);
-> -
-> -				/*
-> -				 * Enter the idle state previously
-> -				 * returned by the governor
-> -				 * decision. This function will block
-> -				 * until an interrupt occurs and will
-> -				 * take care of re-enabling the local
-> -				 * interrupts
-> -				 */
-> -				entered_state = cpuidle_enter(drv, dev,
-> -							      next_state);
-> -
-> -				trace_cpu_idle_rcuidle(PWR_EVENT_EXIT,
-> -						       dev->cpu);
-> -
-> -				if (broadcast)
-> -					clockevents_notify(
-> -						CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
-> -						&dev->cpu);
-> -
-> -				/*
-> -				 * Give the governor an opportunity to reflect on the
-> -				 * outcome
-> -				 */
-> -				cpuidle_reflect(dev, entered_state);
-> -			}
-> -		}
-> -	}
-> -
-> -	/*
->  	 * We can't use the cpuidle framework, let's use the default
->  	 * idle routine
->  	 */
-> +	ret = __cpuidle_idle_call();
->  	if (ret)
->  		arch_cpu_idle();
->  
+> https://patchwork.kernel.org/patch/4071541/
 > 
+> which you haven't commented on and I still want cpuidle_select() to be able to
+> return negative values because of
+> 
+> https://patchwork.kernel.org/patch/4089631/
+> 
+> (and I have one more patch on top of these two that requires this).
+
+Moreover (along the lines of Nico said) after https://patchwork.kernel.org/patch/4071541/
+we actually don't need the #ifdef CONFIG_CPU_IDLE in your patch, because cpuidle_select()
+for CONFIG_CPU_IDLE unset is a static inline returning a negative number and the compiler
+should optimize out the blocks that depend on it being non-negative.
+
+Thanks!
+
 
 -- 
 I speak only for myself.
