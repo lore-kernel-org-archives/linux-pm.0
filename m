@@ -1,78 +1,82 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH] regulator: virtual: Introduce a new virtual locker
- regulator type
-Date: Wed, 30 Apr 2014 18:28:25 -0700
-Message-ID: <20140501012825.GI3245@sirena.org.uk>
-References: <1398749704-10196-1-git-send-email-inderpal.s@samsung.com>
- <CAD=FV=Vo+GLTt7fh4639XFsJfSUTN0ARBsOy+O24gtB_87MgLw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ev7mvGV+3JQuI2Eo"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:53398 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbaEAB2p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Apr 2014 21:28:45 -0400
-Content-Disposition: inline
-In-Reply-To: <CAD=FV=Vo+GLTt7fh4639XFsJfSUTN0ARBsOy+O24gtB_87MgLw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
+ with the PM core
+Date: Thu, 01 May 2014 09:03:31 +0100
+Message-ID: <20140501080331.D3CFAC409DA@trevor.secretlab.ca>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+	<7hoazpdldx.fsf@paris.lan>
+	<20140429131610.29859C4094A@trevor.secretlab.ca>
+	<CAMuHMdUdnoah1uZbMn_xONXZ2i8wG5kY7msMzCdBwS+xt9tmDA@mail.gmail.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdUdnoah1uZbMn_xONXZ2i8wG5kY7msMzCdBwS+xt9tmDA@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Inderpal Singh <inderpal.s@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Pawel Moll <pawel.moll@arm.com>
 
+On Wed, 30 Apr 2014 23:54:37 +0200, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Grant,
+> 
+> On Tue, Apr 29, 2014 at 3:16 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Fri, 25 Apr 2014 16:44:58 -0700, Kevin Hilman <khilman@linaro.org> wrote:
+> >> Geert Uytterhoeven <geert+renesas@glider.be> writes:
+> >>
+> >> > When adding a device from DT, check if its clocks are suitable for Runtime
+> >> > PM, and register them with the PM core.
+> >> > If Runtime PM is disabled, just enable the clock.
+> >> >
+> >> > This allows the PM core to automatically manage gate clocks of devices for
+> >> > Runtime PM.
+> >>
+> >> ...unless the device is already in an existing pm_domain, right?
+> >>
+> >> I like this approach, and it extends nicely what we already do on
+> >> platforms using drivers/base/power/clock_ops.c into DT land.
+> >>
+> >> My only concern is how this will interact if it's used along with
+> >> devices that have existing pm_domains.  I don't have any specific
+> >> concerns (yet, because it's Friday, and my brain is turing off), but it
+> >> just made me wonder if this will be potentially confusing.
+> >
+> > I have big concerns about this approach. First, it will only work if
+> > a clock is available at deivce creation time. The conversion of irq
+> > controllers to normal device drivers has already shown that is a bad
+> > idea.
+> 
+> That's  indeed a valid concern that needs to be addressed.
+> 
+> > I also don't like that it tries to set up every clock, but there is no
+> > guarantee that the driver will even use it. I would rather see this
+> > behaviour linked into the function that obtains the clock at driver
+> > .probe() time. That way it can handle deferred probe correctly and it
+> > only sets up clocks that are actually used by the driver.
+> 
+> Not every clock. Only the clocks that are advertised by the clock driver as
+> being suitable for runtime_pm management. These are typically module
+> clocks, that must be enabled for the module to work. The driver doesn't
+> always want to handle these explicitly.
 
---ev7mvGV+3JQuI2Eo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Help me out here becasue I don't understand how that works with this
+patch set. From my, admittedly naive, reading it looks like the setup is
+being done at device creation time, but if the driver (or module) gets
+to declare which clocks need to be enabled in order to work, then that
+information is not available at device creation time.
 
-On Wed, Apr 30, 2014 at 11:56:08AM -0700, Doug Anderson wrote:
+> In fact we have one case on shmobile where the module clock for an IP
+> core (rcar-gpio) is enabled unconditionally in one SoC,  while it became
+> controllable through a gate clock in a later SoC.
+> With my patch, just adding the clock to the DT node is sufficient to make
+> it work.
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
 
-> I cornered Rob and Mark Rutland a little bit about this at ELC today
-> (sorry!).  Neither of them was a huge ran of adding a pseudo device.
-> Rob suggested that Mark Brown might be the best person to give
-> direction here.  Mark Brown: any thoughts?
-
-I glanced at this briefly and couldn't really understand what it was
-supposed to do from a quick glance but I do tend to agree that it's too
-complex and confusing.  Quite what the virtual regulator is supposed to
-represent or how it is used is distinctly non-obvious.
-
-> Potentially we could also make this type of thing a core regulator property:
-
-Yes, that seems like the obvious solution if it's in the core.  Someone
-would need to write the code of course.
-
-> Another option is to add no device tree code at all and add code to
-> the devfreq / cpufreq drivers used on this device.  In order to do
-> this cleanly I think we'd need to extend the regulator core's
-> notification scheme to introduce a new event:
-> REGULATOR_EVENT_VOLTAGE_CHANGING that's called _before_ a voltage
-> change happened.
-
-That only works if it's the same thing scaling both voltages.  That
-might be true most of the time but is it true all of the time?  If it is
-then that's great.
-
---ev7mvGV+3JQuI2Eo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTYaM2AAoJELSic+t+oim9dNUP/Ry/HZGAKdpX7qg73Q6Mlbf9
-NOoaGS1RJN+c4Ulw3nHBfC2de0obF+4tzehFJ6OzcUivZG6gViKbtXBIsRJtWftR
-Hh9Jck+eSzunLBC+2Xp7J14C6+6/Sc3pl7VqeKsv+Uq5o1+vdpt9qOl9KZU0RxKm
-dQLowKZ67/bPOiRAbOnu4yv2pdtJACcX8L5tnGegBfvJjEXzHQJWfEsR9x9AlJ97
-3glCwYPELQBqCQAdXlZG8FdMgPPnOd1piR+YBbzjdSfKclmK7TwUR/NTtO6LvWEz
-8k9QJHs7iZf9gxuW/Xy4JuuiFAw04MCnCgOUmj+D8Q/VDFgXmlP+agOeoQisa+Tt
-6XW5GTuS4+AtaaSM6ttbsHyTZDSEhQrrtssWGv4flrd7NucygcFyo0upKqyqywlL
-NwW3jD5hrcaYvKspT+M0GP3r6VBxstIoT5GHkO3YznTelt1bUET0qd6p8sB3ie4/
-zejiY6YEZrZFj0AstQhqa+vULQesi1Eyb7TWE/fh52gKeCc2Ike8Tfa2pX3KE1ik
-6qmx2NmPKHg/MNgHY6713sTgVlR3wXrB8JUVE9QvkV5ZwT+wm2Nniz5h7UHV7TuS
-jLHVgMY2jHxKPhksegwX5QejTxIU7b6uLi0TXpIqC6gyfI0+u4v7KVNAkxxB3vC5
-tnYLLeeIMwQ1K/YSHaIG
-=d4rc
------END PGP SIGNATURE-----
-
---ev7mvGV+3JQuI2Eo--
