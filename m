@@ -1,107 +1,110 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: intel_pstate: Change the calculation of next pstate
-Date: Fri, 02 May 2014 01:18:54 +0200
-Message-ID: <21200760.cENPVVrS5i@vostro.rjw.lan>
-References: <5362B5F5.1020706@semaphore.gr> <5362BD02.5020006@gmail.com>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flags to speed up suspend-resume of runtime-suspended devices
+Date: Fri, 02 May 2014 01:36:38 +0200
+Message-ID: <1898485.lQeVbtvK4U@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1405011613200.881-100000@iolanthe.rowland.org> <2117270.jlg4ZsaoxL@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64659 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750836AbaEAXCX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 May 2014 19:02:23 -0400
-In-Reply-To: <5362BD02.5020006@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2117270.jlg4ZsaoxL@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Thursday, May 01, 2014 02:30:42 PM Dirk Brandewie wrote:
-> On 05/01/2014 02:00 PM, Stratos Karafotis wrote:
-> > Currently the driver calculates the next pstate proportional to
-> > core_busy factor, scaled by the ratio max_pstate / current_pstate.
-> >
-> > Using the scaled load (core_busy) to calculate the next pstate
-> > is not always correct, because there are cases that the load is
-> > independent from current pstate. For example, a tight 'for' loop
-> > through many sampling intervals will cause a load of 100% in
-> > every pstate.
-> >
-> > So, change the above method and calculate the next pstate with
-> > the assumption that the next pstate should not depend on the
-> > current pstate. The next pstate should only be directly
-> > proportional to measured load.
-> >
-> > Tested on Intel i7-3770 CPU @ 3.40GHz.
-> > Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
-> > increase ~1.5% in performance. Below the test results using turbostat
-> > (5 iterations):
-> >
-> > Without patch:
-> >
-> > Ph. avg Time	Total time	PkgWatt		Total Energy
-> > 	79.63	266.416		57.74		15382.85984
-> > 	79.63	265.609		57.87		15370.79283
-> > 	79.57	266.994		57.54		15362.83476
-> > 	79.53	265.304		57.83		15342.53032
-> > 	79.71	265.977		57.76		15362.83152
-> > avg	79.61	266.06		57.74		15364.36985
-> >
-> > With patch:
-> >
-> > Ph. avg Time	Total time	PkgWatt		Total Energy
-> > 	78.23	258.826		59.14		15306.96964
-> > 	78.41	259.110		59.15		15326.35650
-> > 	78.40	258.530		59.26		15320.48780
-> > 	78.46	258.673		59.20		15313.44160
-> > 	78.19	259.075		59.16		15326.87700
-> > avg	78.34	258.842		59.18		15318.82650
-> >
-> > The total test time reduced by ~2.6%, while the total energy
-> > consumption during a test iteration reduced by ~0.35%
-> >
-> > Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> > ---
-> >
-> > Changes v1 -> v2
-> > 	- Enhance change log as Rafael and Viresh suggested
-> >
-> >
-> >   drivers/cpufreq/intel_pstate.c | 15 +++++++--------
-> >   1 file changed, 7 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index 0999673..8e309db 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -608,28 +608,27 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
-> >   	mod_timer_pinned(&cpu->timer, jiffies + delay);
-> >   }
-> >
-> > -static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
-> > +static inline int32_t intel_pstate_get_busy(struct cpudata *cpu)
-> >   {
-> > -	int32_t core_busy, max_pstate, current_pstate;
-> > +	int32_t core_busy, max_pstate;
-> >
-> >   	core_busy = cpu->sample.core_pct_busy;
-> >   	max_pstate = int_tofp(cpu->pstate.max_pstate);
-> > -	current_pstate = int_tofp(cpu->pstate.current_pstate);
-> > -	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-> > +	core_busy = mul_fp(core_busy, max_pstate);
+On Friday, May 02, 2014 01:15:14 AM Rafael J. Wysocki wrote:
+> On Thursday, May 01, 2014 05:39:31 PM Alan Stern wrote:
+> > On Fri, 25 Apr 2014, Rafael J. Wysocki wrote:
+> > 
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> > > resume all runtime-suspended devices during system suspend, mostly
+> > > because those devices may need to be reprogrammed due to different
+> > > wakeup settings for system sleep and for runtime PM.  However, at
+> > > least in some cases, that isn't really necessary, because the wakeup
+> > > settings may not be really different.
+> > > 
+> > > The idea here is that subsystems should know whether or not it is
+> > > necessary to reprogram a given device during system suspend and they
+> > > should be able to tell the PM core about that.  For that reason, add
+> > > two new device PM flags, power.resume_not_needed and
+> > > power.use_runtime_resume, such that:
+> > > 
+> > >  (1) If power.resume_not_needed is set for the given device and for
+> > >      all of its children and the device is runtime-suspended during
+> > >      device_suspend(), the remaining device's system suspend/resume
+> > >      callbacks need not be executed.
+> > 
+> > The patch doesn't do that last part.  That is, it still invokes the 
+> > callbacks even when resume_not_needed is set.
 > 
-> NAK,  The goal of this code is to find out how busy the core is at the current
-> P state. This change will return a value WAY too high.
+> Yes, it does and the above paragraph doesn't say that it won't.  It only
+> says that the flag indicates no need to do that.
 > 
-> Assume core_busy is 100 and the max non-turbo P state is 34 (3.4GHz) this code
-> would return a busy value of 3400. The PID  is trying to keep the busy value
-> at the setpoint any value of ~3% will drive the P state to the highest turbo
-> P state in this example.
+> > I'm not sure that you should skip the resume callbacks.
+> 
+> The reason why is that if the device were suspended using ->runtime_suspend(),
+> its driver (or bus type) may be confused if ->runtime_resume() is not used
+> to resume it.
+> 
+> > We expect devices to be resumed during system resume even if they were in
+> > runtime suspend beforehand.  Yes, this means calling resume_noirq without
+> > calling suspend_noirq (ditto for the other callbacks).  Think of it as
+> > a form of optimization -- we could have called suspend_noirq, but we
+> > know that the subsystem would have seen that the device was already in
+> > runtime suspend and then returned immediately.  By not calling
+> > suspend_noirq, we spare the subsystem from testing the runtime status.
+> 
+> The driver/subsystem has the right to expect that ->resume_noirq() will
+> always be called after ->suspend_noirq() (if both are implemented).  Thus
+> calling the former without the latter may be a bug (for the particular
+> driver).  Since we've always had symmetry there, the risk of breaking stuff
+> if we change that is relatively high.
+> 
+> On the other hand, ->runtime_resume() should not make any assumptions
+> about the hardware state when it is called anyway, so it should handle
+> the device during system resume properly, given that the last PM callback
+> executed for it was ->runtime_suspend(), regardless of what the firmware
+> did to it in the meantime.
+> 
+> > (And I also think "resume_not_needed" is too general.  It should be 
+> > something more like "runtime_resume_not_needed_during_system_suspend", 
+> > only not quite so long.)
+> 
+> Well, I can agree with that, but I couldn't invent a better name. In particular,
+> one that wouldn't be too long. :-)
+> 
+> > >  (2) If power.use_runtime_resume is set for the given device and the
+> > >      device is runtime-suspended in device_suspend_late(), its late/early
+> > >      and noirq system suspend/resume callbacks should be skipped and
+> > >      it should be resumed through pm_runtime_resume() in device_resume().
+> > 
+> > IMO this should be a separate patch.  It has no direct connection with 
+> > the main goal of providing subsystems with a mechanism to avoid waking 
+> > up devices for reprogramming during system suspend.
+> 
+> I'm not sure what you mean, honestly.  The main goal here is to allow
+> devices that were runtime suspended to stay that way throughout system
+> suspend and resume up until device_resume() is called for them.
+> 
+> > The main goal of this other patch will be to allow devices which were
+> > in runtime suspend throughout the system suspend phases to remain in
+> > runtime suspend throughout the system resume.  When they do finally get
+> > resumed, it will be by a ->runtime_resume() callback, not ->resume().
+> 
+> Yes, and that's what *this* patch does, isn't it?
+> 
+> I have no idea how to split it so that both parts still make sense.
 
-Well, the problem is that the numbers above indicate an improvement in energy
-efficiency as a result of this patch and we need to explain that result.
+OK, I guess you mean that the first flag (resume_not_needed) should be introduced
+by one patch and the second one by another, but I'm not sure if that would really
+make any difference.  Both of them are needed anyway and resume_not_needed without
+the other flag wouldn't have any effect.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Well, perhaps I should make __device_suspend() check that use_runtime_resume is
+only set when resume_not_needed is set too and return an error if that's not
+the case.
+
+Rafael
