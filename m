@@ -1,73 +1,75 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Remove sample parameter in intel_pstate_calc_busy
-Date: Thu, 01 May 2014 09:04:25 -0700
-Message-ID: <53627089.8010908@intel.com>
-References: <535FE72D.2020402@semaphore.gr>
+From: josh@joshtriplett.org
+Subject: Re: [PATCH] tools/power turbostat: Drop temperature checks
+Date: Thu, 1 May 2014 09:27:46 -0700
+Message-ID: <20140501162746.GA21881@cloud>
+References: <20140501114019.1a63728e@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <535FE72D.2020402@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: dirk.j.brandewie@intel.com, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from relay3-d.mail.gandi.net ([217.70.183.195]:51772 "EHLO
+	relay3-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbaEAQ1v (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 May 2014 12:27:51 -0400
+Content-Disposition: inline
+In-Reply-To: <20140501114019.1a63728e@endymion.delvare>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jean Delvare <jdelvare@suse.de>
+Cc: linux-pm@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Len Brown <len.brown@intel.com>
 
-On 04/29/2014 10:53 AM, Stratos Karafotis wrote:
-> Since commit d37e2b7644 ("intel_pstate: remove unneeded sample buffers")
-> we use only one sample. So, there is no need to pass the sample
-> pointer to intel_pstate_calc_busy. Instead, get the pointer from
-> cpudata. Also, remove the unused SAMPLE_COUNT macro.
->
-> While at it, reformat the first line in this function.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+On Thu, May 01, 2014 at 11:40:19AM +0200, Jean Delvare wrote:
+> The Intel 64 and IA-32 Architectures Software Developer's Manual says
+> that TjMax is stored in bits 23:16 of MSR_TEMPERATURE TARGET (0x1a2).
+> That's 8 bits, not 7, so it must be masked with 0xFF rather than 0x7F.
+> 
+> The manual has no mention of which values should be considered valid,
+> which kind of implies that they all are. Arbitrarily discarding values
+> outside a specific range is wrong. The upper range check had to be
+> fixed recently (commit 144b44b1) and the lower range check is just as
+> wrong. See bug #75071:
+> 
+> https://bugzilla.kernel.org/show_bug.cgi?id=75071
+> 
+> There are many Xeon processor series with TjMax of 70, 71 or 80
+> degrees Celsius, way below the arbitrary 85 degrees Celsius limit.
+> There may be other (past or future) models with even lower limits.
+> 
+> So drop this arbitrary check. The only value that would be clearly
+> invalid is 0. Everything else should be accepted.
+> 
+> After these changes, turbostat is aligned with what the coretemp
+> driver does.
+> 
+> Signed-off-by: Jean Delvare <jdelvare@suse.de>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Josh Triplett <josh@joshtriplett.org>
 
-Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Reviewed-by: Josh Triplett <josh@joshtriplett.org>
 
-> ---
->   drivers/cpufreq/intel_pstate.c | 11 ++++-------
->   1 file changed, 4 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 95b3958..8192ff1 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -32,8 +32,6 @@
->   #include <asm/msr.h>
->   #include <asm/cpu_device_id.h>
->
-> -#define SAMPLE_COUNT		3
-> -
->   #define BYT_RATIOS		0x66a
->   #define BYT_VIDS		0x66b
->   #define BYT_TURBO_RATIOS	0x66c
-> @@ -553,14 +551,13 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
->   	intel_pstate_set_pstate(cpu, cpu->pstate.max_pstate);
->   }
->
-> -static inline void intel_pstate_calc_busy(struct cpudata *cpu,
-> -					struct sample *sample)
-> +static inline void intel_pstate_calc_busy(struct cpudata *cpu)
->   {
-> +	struct sample *sample = &cpu->sample;
->   	int32_t core_pct;
->   	int32_t c0_pct;
->
-> -	core_pct = div_fp(int_tofp((sample->aperf)),
-> -			int_tofp((sample->mperf)));
-> +	core_pct = div_fp(int_tofp(sample->aperf), int_tofp(sample->mperf));
->   	core_pct = mul_fp(core_pct, int_tofp(100));
->   	FP_ROUNDUP(core_pct);
->
-> @@ -595,7 +592,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
->   	cpu->sample.mperf -= cpu->prev_mperf;
->   	cpu->sample.tsc -= cpu->prev_tsc;
->
-> -	intel_pstate_calc_busy(cpu, &cpu->sample);
-> +	intel_pstate_calc_busy(cpu);
->
->   	cpu->prev_aperf = aperf;
->   	cpu->prev_mperf = mperf;
->
-
+>  tools/power/x86/turbostat/turbostat.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-3.15-rc3.orig/tools/power/x86/turbostat/turbostat.c	2014-04-14 09:42:33.140152144 +0200
+> +++ linux-3.15-rc3/tools/power/x86/turbostat/turbostat.c	2014-05-01 11:22:54.635123682 +0200
+> @@ -1971,13 +1971,13 @@ int set_temperature_target(struct thread
+>  	if (get_msr(0, MSR_IA32_TEMPERATURE_TARGET, &msr))
+>  		goto guess;
+>  
+> -	target_c_local = (msr >> 16) & 0x7F;
+> +	target_c_local = (msr >> 16) & 0xFF;
+>  
+>  	if (verbose)
+>  		fprintf(stderr, "cpu%d: MSR_IA32_TEMPERATURE_TARGET: 0x%08llx (%d C)\n",
+>  			cpu, msr, target_c_local);
+>  
+> -	if (target_c_local < 85 || target_c_local > 127)
+> +	if (!target_c_local)
+>  		goto guess;
+>  
+>  	tcc_activation_temp = target_c_local;
+> 
+> 
+> -- 
+> Jean Delvare
+> SUSE L3 Support
