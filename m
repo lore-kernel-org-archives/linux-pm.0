@@ -1,49 +1,63 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] tools/power turbostat: Drop temperature checks
-Date: Thu, 01 May 2014 04:12:51 -0700
-Message-ID: <53622C33.9090100@roeck-us.net>
-References: <20140501114019.1a63728e@endymion.delvare>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
+ with the PM core
+Date: Thu, 1 May 2014 15:41:11 +0200
+Message-ID: <CAMuHMdXbJrnNPyPmD-rcGN-M4ybFtrS3FCuvegJue1Pe-ae8SQ@mail.gmail.com>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+	<7hoazpdldx.fsf@paris.lan>
+	<20140429131610.29859C4094A@trevor.secretlab.ca>
+	<CAMuHMdUdnoah1uZbMn_xONXZ2i8wG5kY7msMzCdBwS+xt9tmDA@mail.gmail.com>
+	<20140501080331.D3CFAC409DA@trevor.secretlab.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.active-venture.com ([67.228.131.205]:60890 "EHLO
-	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755224AbaEALMz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 May 2014 07:12:55 -0400
-In-Reply-To: <20140501114019.1a63728e@endymion.delvare>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20140501080331.D3CFAC409DA@trevor.secretlab.ca>
+Sender: linux-sh-owner@vger.kernel.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.de>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Josh Triplett <josh@joshtriplett.org>
 
-On 05/01/2014 02:40 AM, Jean Delvare wrote:
-> The Intel 64 and IA-32 Architectures Software Developer's Manual says
-> that TjMax is stored in bits 23:16 of MSR_TEMPERATURE TARGET (0x1a2).
-> That's 8 bits, not 7, so it must be masked with 0xFF rather than 0x7F.
->
-> The manual has no mention of which values should be considered valid,
-> which kind of implies that they all are. Arbitrarily discarding values
-> outside a specific range is wrong. The upper range check had to be
-> fixed recently (commit 144b44b1) and the lower range check is just as
-> wrong. See bug #75071:
->
-> https://bugzilla.kernel.org/show_bug.cgi?id=75071
->
-> There are many Xeon processor series with TjMax of 70, 71 or 80
-> degrees Celsius, way below the arbitrary 85 degrees Celsius limit.
-> There may be other (past or future) models with even lower limits.
->
-> So drop this arbitrary check. The only value that would be clearly
-> invalid is 0. Everything else should be accepted.
->
-> After these changes, turbostat is aligned with what the coretemp
-> driver does.
->
-> Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Josh Triplett <josh@joshtriplett.org>
+Hi Grant,
 
-Acked-by: Guenter Roeck <linux@roeck-us.net>
+On Thu, May 1, 2014 at 10:03 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Wed, 30 Apr 2014 23:54:37 +0200, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> On Tue, Apr 29, 2014 at 3:16 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> > I also don't like that it tries to set up every clock, but there is no
+>> > guarantee that the driver will even use it. I would rather see this
+>> > behaviour linked into the function that obtains the clock at driver
+>> > .probe() time. That way it can handle deferred probe correctly and it
+>> > only sets up clocks that are actually used by the driver.
+>>
+>> Not every clock. Only the clocks that are advertised by the clock driver as
+>> being suitable for runtime_pm management. These are typically module
+>> clocks, that must be enabled for the module to work. The driver doesn't
+>> always want to handle these explicitly.
+>
+> Help me out here becasue I don't understand how that works with this
+> patch set. From my, admittedly naive, reading it looks like the setup is
+> being done at device creation time, but if the driver (or module) gets
+> to declare which clocks need to be enabled in order to work, then that
+> information is not available at device creation time.
 
+Setup is indeed done at registration time. Note the check calling
+clk_may_runtime_pm(), which is introduced in "[PATCH/RFC 1/4] clk: Add
+CLK_RUNTIME_PM and clk_may_runtime_pm()".
+
+Clock drivers are initialized much earlier, so they can set the CLK_RUNTIME_PM
+flag for suitable clocks before platform devices are created from DT, cfr. the
+example for shmobile MSTP clocks in "[PATCH/RFC 4/4] clk: shmobile: mstp:
+Set CLK_RUNTIME_PM flag".
+
+I hope this makes it clear.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
