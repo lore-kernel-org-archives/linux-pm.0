@@ -1,78 +1,73 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
- with the PM core
-Date: Thu, 1 May 2014 16:46:31 +0200
-Message-ID: <CAMuHMdVSSZwEn=R_vDPYLWnZoxrdynwJMgKSsbbNZYdvQaYxvg@mail.gmail.com>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
-	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
-	<7hoazpdldx.fsf@paris.lan>
-	<20140429131610.29859C4094A@trevor.secretlab.ca>
-	<CAMuHMdUdnoah1uZbMn_xONXZ2i8wG5kY7msMzCdBwS+xt9tmDA@mail.gmail.com>
-	<20140501080331.D3CFAC409DA@trevor.secretlab.ca>
-	<CAMuHMdXbJrnNPyPmD-rcGN-M4ybFtrS3FCuvegJue1Pe-ae8SQ@mail.gmail.com>
-	<CACxGe6sy-fumkNPRcQqB8G4so85dHW_5pZSv+cQDqzJfoneZ+A@mail.gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Remove sample parameter in intel_pstate_calc_busy
+Date: Thu, 01 May 2014 09:04:25 -0700
+Message-ID: <53627089.8010908@intel.com>
+References: <535FE72D.2020402@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:59566 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbaEAOqd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 May 2014 10:46:33 -0400
-In-Reply-To: <CACxGe6sy-fumkNPRcQqB8G4so85dHW_5pZSv+cQDqzJfoneZ+A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <535FE72D.2020402@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: dirk.j.brandewie@intel.com, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Grant,
-
-On Thu, May 1, 2014 at 3:56 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Thu, May 1, 2014 at 2:41 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Thu, May 1, 2014 at 10:03 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
->>> On Wed, 30 Apr 2014 23:54:37 +0200, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->>>> On Tue, Apr 29, 2014 at 3:16 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->>>> > I also don't like that it tries to set up every clock, but there is no
->>>> > guarantee that the driver will even use it. I would rather see this
->>>> > behaviour linked into the function that obtains the clock at driver
->>>> > .probe() time. That way it can handle deferred probe correctly and it
->>>> > only sets up clocks that are actually used by the driver.
->>>>
->>>> Not every clock. Only the clocks that are advertised by the clock driver as
->>>> being suitable for runtime_pm management. These are typically module
->>>> clocks, that must be enabled for the module to work. The driver doesn't
->>>> always want to handle these explicitly.
->>>
->>> Help me out here becasue I don't understand how that works with this
->>> patch set. From my, admittedly naive, reading it looks like the setup is
->>> being done at device creation time, but if the driver (or module) gets
->>> to declare which clocks need to be enabled in order to work, then that
->>> information is not available at device creation time.
->>
->> Setup is indeed done at registration time. Note the check calling
->> clk_may_runtime_pm(), which is introduced in "[PATCH/RFC 1/4] clk: Add
->> CLK_RUNTIME_PM and clk_may_runtime_pm()".
->>
->> Clock drivers are initialized much earlier, so they can set the CLK_RUNTIME_PM
->> flag for suitable clocks before platform devices are created from DT, cfr. the
->> example for shmobile MSTP clocks in "[PATCH/RFC 4/4] clk: shmobile: mstp:
->> Set CLK_RUNTIME_PM flag".
+On 04/29/2014 10:53 AM, Stratos Karafotis wrote:
+> Since commit d37e2b7644 ("intel_pstate: remove unneeded sample buffers")
+> we use only one sample. So, there is no need to pass the sample
+> pointer to intel_pstate_calc_busy. Instead, get the pointer from
+> cpudata. Also, remove the unused SAMPLE_COUNT macro.
 >
-> This is where I have issue. You're *assuming* clock drivers are
-> initialized much earlier. That is not guaranteed. It is perfectly
-> valid for clocks to be set up by a normal device driver, just like for
-> interrupt controllers or gpio controllers.
+> While at it, reformat the first line in this function.
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 
-OK, I didn't know that. In that case, nothing happens, and everything
-works like before. So the drivers still have to take care of the
-clocks themselves.
+Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Gr{oetje,eeting}s,
+> ---
+>   drivers/cpufreq/intel_pstate.c | 11 ++++-------
+>   1 file changed, 4 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 95b3958..8192ff1 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -32,8 +32,6 @@
+>   #include <asm/msr.h>
+>   #include <asm/cpu_device_id.h>
+>
+> -#define SAMPLE_COUNT		3
+> -
+>   #define BYT_RATIOS		0x66a
+>   #define BYT_VIDS		0x66b
+>   #define BYT_TURBO_RATIOS	0x66c
+> @@ -553,14 +551,13 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+>   	intel_pstate_set_pstate(cpu, cpu->pstate.max_pstate);
+>   }
+>
+> -static inline void intel_pstate_calc_busy(struct cpudata *cpu,
+> -					struct sample *sample)
+> +static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+>   {
+> +	struct sample *sample = &cpu->sample;
+>   	int32_t core_pct;
+>   	int32_t c0_pct;
+>
+> -	core_pct = div_fp(int_tofp((sample->aperf)),
+> -			int_tofp((sample->mperf)));
+> +	core_pct = div_fp(int_tofp(sample->aperf), int_tofp(sample->mperf));
+>   	core_pct = mul_fp(core_pct, int_tofp(100));
+>   	FP_ROUNDUP(core_pct);
+>
+> @@ -595,7 +592,7 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+>   	cpu->sample.mperf -= cpu->prev_mperf;
+>   	cpu->sample.tsc -= cpu->prev_tsc;
+>
+> -	intel_pstate_calc_busy(cpu, &cpu->sample);
+> +	intel_pstate_calc_busy(cpu);
+>
+>   	cpu->prev_aperf = aperf;
+>   	cpu->prev_mperf = mperf;
+>
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
