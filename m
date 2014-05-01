@@ -1,74 +1,116 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Change the calculation of next
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH v2] cpufreq: intel_pstate: Change the calculation of next
  pstate
-Date: Thu, 01 May 2014 11:42:05 -0700
-Message-ID: <5362957D.3060101@gmail.com>
-References: <535D80C8.9090906@semaphore.gr> <CAKohpomhUk7RQ3YL3=wpVKSbK_oSkyYBRUZiqnHzWqrZ2DjRRA@mail.gmail.com> <535FD4A6.3050905@semaphore.gr> <25001203.glgeYCc6ZZ@vostro.rjw.lan>
+Date: Fri, 02 May 2014 00:00:37 +0300
+Message-ID: <5362B5F5.1020706@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <25001203.glgeYCc6ZZ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stratos Karafotis <stratosk@semaphore.gr>
-Cc: dirk.brandewie@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, dirk.brandewie@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On 04/29/2014 02:52 PM, Rafael J. Wysocki wrote:
-> On Tuesday, April 29, 2014 07:34:46 PM Stratos Karafotis wrote:
->> On 29/04/2014 07:58 =CF=80=CE=BC, Viresh Kumar wrote:
->>> Cc'd Dirk,
->>>
->>> On 28 April 2014 03:42, Stratos Karafotis <stratosk@semaphore.gr> w=
-rote:
->>>> Currently the driver calculates the next pstate proportional to
->>>> core_busy factor and reverse proportional to current pstate.
->>>>
->>>> Change the above method and calculate the next pstate independentl=
-y
->>>> of current pstate.
->>>
->>> We must mention why the change is required.
->>>
->>
->> Hi Viresh,
->>
->> Actually, I can't say that it's required. :)
->> I just believe that calculation of next p-state should be independen=
-t
->> from current one. In my opinion we can't scale the load across diffe=
-rent
->> p-states, because it's not always equivalent.
->>
->> For example suppose a load of 100% because of a tight for loop in th=
-e
->> current p-state. It will be also a 100% load in any other p-state.
->> It will be wrong if we scale the load in the calculation formula
->> according to the current p-state.
->>
->> I included the test results in the change log to point out an improv=
-ement
->> because of this patch.
->>
->> I will enrich more the change log as you suggested.
->
-> Please do so.
->
-> Also, we need to take your patch to our power lab and see if we can r=
-eproduce
-> your results in other workloads.
->
-> And I'm waiting for the intel_pstate developer Dirk Brandewie to comm=
-ent.
+Currently the driver calculates the next pstate proportional to
+core_busy factor, scaled by the ratio max_pstate / current_pstate.
 
-Sorry I just returned from dealing with a family emergency and am diggi=
-ng
-out of my inbox.
+Using the scaled load (core_busy) to calculate the next pstate
+is not always correct, because there are cases that the load is 
+independent from current pstate. For example, a tight 'for' loop
+through many sampling intervals will cause a load of 100% in
+every pstate.
 
-I will run this patch through some tests.
+So, change the above method and calculate the next pstate with
+the assumption that the next pstate should not depend on the
+current pstate. The next pstate should only be directly
+proportional to measured load. 
 
+Tested on Intel i7-3770 CPU @ 3.40GHz.
+Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+increase ~1.5% in performance. Below the test results using turbostat
+(5 iterations):
 
->
-> Thanks!
->
+Without patch:
+
+Ph. avg Time	Total time	PkgWatt		Total Energy
+	79.63	266.416		57.74		15382.85984
+	79.63	265.609		57.87		15370.79283
+	79.57	266.994		57.54		15362.83476
+	79.53	265.304		57.83		15342.53032
+	79.71	265.977		57.76		15362.83152
+avg	79.61	266.06		57.74		15364.36985
+
+With patch:
+
+Ph. avg Time	Total time	PkgWatt		Total Energy
+	78.23	258.826		59.14		15306.96964
+	78.41	259.110		59.15		15326.35650
+	78.40	258.530		59.26		15320.48780
+	78.46	258.673		59.20		15313.44160
+	78.19	259.075		59.16		15326.87700
+avg	78.34	258.842		59.18		15318.82650
+
+The total test time reduced by ~2.6%, while the total energy
+consumption during a test iteration reduced by ~0.35%
+
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+
+Changes v1 -> v2
+	- Enhance change log as Rafael and Viresh suggested
+ 
+
+ drivers/cpufreq/intel_pstate.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 0999673..8e309db 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -608,28 +608,27 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+ 	mod_timer_pinned(&cpu->timer, jiffies + delay);
+ }
+ 
+-static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
++static inline int32_t intel_pstate_get_busy(struct cpudata *cpu)
+ {
+-	int32_t core_busy, max_pstate, current_pstate;
++	int32_t core_busy, max_pstate;
+ 
+ 	core_busy = cpu->sample.core_pct_busy;
+ 	max_pstate = int_tofp(cpu->pstate.max_pstate);
+-	current_pstate = int_tofp(cpu->pstate.current_pstate);
+-	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
++	core_busy = mul_fp(core_busy, max_pstate);
+ 	return FP_ROUNDUP(core_busy);
+ }
+ 
+ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ {
+-	int32_t busy_scaled;
++	int32_t busy;
+ 	struct _pid *pid;
+ 	signed int ctl = 0;
+ 	int steps;
+ 
+ 	pid = &cpu->pid;
+-	busy_scaled = intel_pstate_get_scaled_busy(cpu);
++	busy = intel_pstate_get_busy(cpu);
+ 
+-	ctl = pid_calc(pid, busy_scaled);
++	ctl = pid_calc(pid, busy);
+ 
+ 	steps = abs(ctl);
+ 
+@@ -651,7 +650,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+ 	intel_pstate_adjust_busy_pstate(cpu);
+ 
+ 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+-			fp_toint(intel_pstate_get_scaled_busy(cpu)),
++			fp_toint(intel_pstate_get_busy(cpu)),
+ 			cpu->pstate.current_pstate,
+ 			sample->mperf,
+ 			sample->aperf,
+-- 
+1.9.0
