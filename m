@@ -1,96 +1,69 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it
  out
-Date: Fri, 02 May 2014 15:29:45 +0200
-Message-ID: <53639DC9.2000701@linaro.org>
-References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org> <2735426.75qSjG3M6Y@vostro.rjw.lan> <53635E5F.8070100@linaro.org> <5985714.f7hh9Ej59L@vostro.rjw.lan>
+Date: Fri, 02 May 2014 15:35:23 +0200
+Message-ID: <53639F1B.5080000@linaro.org>
+References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org> <2783362.8r7SvVhudq@vostro.rjw.lan> <53635CCB.9090301@linaro.org> <2782801.UzoMhgfu56@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:37862 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbaEBN3o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 09:29:44 -0400
-Received: by mail-wi0-f170.google.com with SMTP id f8so2229814wiw.3
-        for <linux-pm@vger.kernel.org>; Fri, 02 May 2014 06:29:43 -0700 (PDT)
-In-Reply-To: <5985714.f7hh9Ej59L@vostro.rjw.lan>
+Received: from mail-wg0-f52.google.com ([74.125.82.52]:43591 "EHLO
+	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbaEBNfW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 09:35:22 -0400
+Received: by mail-wg0-f52.google.com with SMTP id l18so3553085wgh.23
+        for <linux-pm@vger.kernel.org>; Fri, 02 May 2014 06:35:21 -0700 (PDT)
+In-Reply-To: <2782801.UzoMhgfu56@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 On 05/02/2014 02:09 PM, Rafael J. Wysocki wrote:
-> On Friday, May 02, 2014 10:59:11 AM Daniel Lezcano wrote:
->> On 05/01/2014 12:56 AM, Rafael J. Wysocki wrote:
->>> On Thursday, May 01, 2014 12:47:25 AM Rafael J. Wysocki wrote:
->>>> On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
->>>>> Encapsulate the large portion of cpuidle_idle_call inside another
->>>>> function so when CONFIG_CPU_IDLE=3Dn, the code will be compiled o=
-ut.
->>>>> Also that is benefitial for the clarity of the code as it removes
->>>>> a nested indentation level.
->>>>>
->>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> On Friday, May 02, 2014 10:52:27 AM Daniel Lezcano wrote:
+>> On 05/01/2014 12:47 AM, Rafael J. Wysocki wrote:
+>>> On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
+>>>> Encapsulate the large portion of cpuidle_idle_call inside another
+>>>> function so when CONFIG_CPU_IDLE=3Dn, the code will be compiled ou=
+t.
+>>>> Also that is benefitial for the clarity of the code as it removes
+>>>> a nested indentation level.
 >>>>
->>>> Well, this conflicts with
->>>>
->>>> https://patchwork.kernel.org/patch/4071541/
->>>>
->>>> which you haven't commented on and I still want cpuidle_select() t=
-o be able to
->>>> return negative values because of
->>>>
->>>> https://patchwork.kernel.org/patch/4089631/
->>>>
->>>> (and I have one more patch on top of these two that requires this)=
-=2E
+>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 >>>
->>> Moreover (along the lines of Nico said) after https://patchwork.ker=
-nel.org/patch/4071541/
->>> we actually don't need the #ifdef CONFIG_CPU_IDLE in your patch, be=
-cause cpuidle_select()
->>> for CONFIG_CPU_IDLE unset is a static inline returning a negative n=
-umber and the compiler
->>> should optimize out the blocks that depend on it being non-negative=
-=2E
+>>> Well, this conflicts with
+>>>
+>>> https://patchwork.kernel.org/patch/4071541/
+>>>
+>>> which you haven't commented on and I still want cpuidle_select() to=
+ be able to
+>>> return negative values because of
+>>>
+>>> https://patchwork.kernel.org/patch/4089631/
+>>>
+>>> (and I have one more patch on top of these two that requires this).
+>>>
+>>> Any ideas how to resolve that?
 >>
->> Thanks for the head up.
->>
->> Actually that was to solve a compilation issue with the next patch w=
-hen
->> adding the cpuidle state in the struct rq.
->>
->> When the option CPU_IDLE is not set, the code assinging the cpu idle
->> state in the rq is still there while in the struct rq the field is
->> compiled out with the ifdef macro. If I rely on the compiler
->> optimization, the compilation error will happen.
+>> I don't think we have a big conflict. If Peter takes your patches be=
+fore
+>> than mines then I will refresh and resend them.
 >
-> I see.
->
-> If you don't put the new idle_state field in struct_rq under the #ifd=
-ef,
-> you won't need to worry about the build problem.
->
-> Alternatively, you can define
->
-> #ifdef CONFIG_CPU_IDLE
-> static inline void rq_set_idle_state(struct rq *rq, struct cpuidle_st=
-ate *state)
-> {
-> 	rq->idle_state =3D state;
-> }
-> #else
-> static inline void rq_set_idle_state(struct rq *rq, struct cpuidle_st=
-ate *state) {}
-> #endif
->
-> and use rq_set_idle_state() to set that field.
+> Actually, I was planning the merge them myself, because they are more=
+ cpuidle
+> than the scheduler, but either way would be fine.
 
-Thanks, I will look at one or another solution.
+Well I have some patches for the scheduler which will need these=20
+modifications. Is it possible to merge them throw a common branch to be=
+=20
+shared between sched and pm ?
 
-
+>> I am open to any other suggestion.
+>
+> Please see the other message I've just sent. :-)
+>
 
 
 --=20
