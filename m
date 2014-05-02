@@ -1,74 +1,107 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it
- out
-Date: Fri, 02 May 2014 10:59:11 +0200
-Message-ID: <53635E5F.8070100@linaro.org>
-References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org> <2783362.8r7SvVhudq@vostro.rjw.lan> <2735426.75qSjG3M6Y@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/4] ARM: shmobile: Ignore callbacks for subsys generic_pm_domain_data
+Date: Fri, 2 May 2014 11:13:23 +0200
+Message-ID: <CAPDyKFpce1v8Ec4kJzAHxp8QtvXF=PqXi0FbzJbMgs9TCousSQ@mail.gmail.com>
+References: <1397230004-22306-1-git-send-email-ulf.hansson@linaro.org>
+	<CAPDyKFqH-0rvs6WorcirY+wVMLWnycWHO6=ZcvK1GebcuzaH0w@mail.gmail.com>
+	<20140430102308.GA23426@verge.net.au>
+	<1639184.jtW6HVkuRH@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f178.google.com ([74.125.82.178]:37742 "EHLO
-	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbaEBI7J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 04:59:09 -0400
-Received: by mail-we0-f178.google.com with SMTP id u56so3338596wes.37
-        for <linux-pm@vger.kernel.org>; Fri, 02 May 2014 01:59:08 -0700 (PDT)
-In-Reply-To: <2735426.75qSjG3M6Y@vostro.rjw.lan>
+Received: from mail-qa0-f42.google.com ([209.85.216.42]:39032 "EHLO
+	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbaEBJNY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 05:13:24 -0400
+Received: by mail-qa0-f42.google.com with SMTP id j5so1491791qaq.15
+        for <linux-pm@vger.kernel.org>; Fri, 02 May 2014 02:13:23 -0700 (PDT)
+In-Reply-To: <1639184.jtW6HVkuRH@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Simon Horman <horms@verge.net.au>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomasz Figa <t.figa@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 05/01/2014 12:56 AM, Rafael J. Wysocki wrote:
-> On Thursday, May 01, 2014 12:47:25 AM Rafael J. Wysocki wrote:
->> On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
->>> Encapsulate the large portion of cpuidle_idle_call inside another
->>> function so when CONFIG_CPU_IDLE=3Dn, the code will be compiled out=
-=2E
->>> Also that is benefitial for the clarity of the code as it removes
->>> a nested indentation level.
->>>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 30 April 2014 22:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, April 30, 2014 07:23:08 PM Simon Horman wrote:
+>> On Wed, Apr 30, 2014 at 10:53:58AM +0200, Ulf Hansson wrote:
+>> > On 30 April 2014 00:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > > On Friday, April 25, 2014 10:06:51 AM Simon Horman wrote:
+>> > >> On Thu, Apr 24, 2014 at 01:25:14PM +0200, Ulf Hansson wrote:
+>> > >> > On 14 April 2014 11:22, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> > >> > > On 14 April 2014 03:20, Simon Horman <horms@verge.net.au> wrote:
+>> > >> > >> On Fri, Apr 11, 2014 at 05:26:41PM +0200, Ulf Hansson wrote:
+>> > >> > >>> There are no active users of these callbacks, thus there are no benefit
+>> > >> > >>> of trying to invoke them.
+>> > >> > >>>
+>> > >> > >>> Cc: Simon Horman <horms@verge.net.au>
+>> > >> > >>> Cc: Magnus Damm <magnus.damm@gmail.com>
+>> > >> > >>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> > >> > >>> ---
+>> > >> > >>>
+>> > >> > >>> I am seeking ack from the SOC maintainers since this needs to go with the other
+>> > >> > >>> patches in this patchset on the PM core.
+>> > >> > >>
+>> > >> > >> In order to reduce the possibility of conflicts I would prefer
+>> > >> > >> to take this patch through my tree.
+>> > >> > >
+>> > >> > > Okay, go ahead!
+>> > >> > >
+>> > >> >
+>> > >> > Hi Simon,
+>> > >> >
+>> > >> > Just wanted to know, if you decided to queue this patch in your tree.
+>> > >> > Or were there anything else you needed me to fix here?
+>> > >>
+>> > >> Sorry for dropping the ball. I will queue-up this patch.
+>> > >
+>> > > OK
+>> > >
+>> > > Ulf, since the rest of the series depends on this one (or at least that's
+>> > > how it looks to me), would you mind resending it when this one gets into the
+>> > > Linus' tree?
+>> >
+>> > Well, I would prefer if we could go ahead with the rest of the patches
+>> > somehow for 3.16, but I guess it will be hard if Simon picks up this
+>> > patch!?
+>> >
+>> > Simon,
+>> > I guess the reason for your concern were about conflicts, but the file
+>> > this patch touch has actually not been modified since Sep 2012. So,
+>> > maybe we could go through Rafaels tree anyway?
 >>
->> Well, this conflicts with
+>> Yes, my primary concern was conflicts.
+>> But as you point out that seems unlikely.
 >>
->> https://patchwork.kernel.org/patch/4071541/
+>> I have already picked up the patch but the pull request I sent to
+>> the ARM SoC maintainers has not been pulled. And regardless it
+>> won't appear in Linus's tree via that route until v3.16-rc1.
 >>
->> which you haven't commented on and I still want cpuidle_select() to =
-be able to
->> return negative values because of
->>
->> https://patchwork.kernel.org/patch/4089631/
->>
->> (and I have one more patch on top of these two that requires this).
+>> Perhaps a good way forwards would be for Rafael to also apply the patch
+>> with my Ack.
 >
-> Moreover (along the lines of Nico said) after https://patchwork.kerne=
-l.org/patch/4071541/
-> we actually don't need the #ifdef CONFIG_CPU_IDLE in your patch, beca=
-use cpuidle_select()
-> for CONFIG_CPU_IDLE unset is a static inline returning a negative num=
-ber and the compiler
-> should optimize out the blocks that depend on it being non-negative.
+> Not really.  No duplicate patches with different changelogs coming from
+> different trees.  Please!
+>
+>> I could also revert the version applied to my tree
+>> if that is of any help.
+>>
+>> Acked-by: Simon Horman <horms+renesas@verge.net.au>
+>
+> Ulf, can you please do as I said?
 
-Thanks for the head up.
+Okay! It seems like I have no choice. :-)
 
-Actually that was to solve a compilation issue with the next patch when=
-=20
-adding the cpuidle state in the struct rq.
+Does that mean you were happy with the rest from this patchset?
 
-When the option CPU_IDLE is not set, the code assinging the cpu idle=20
-state in the rq is still there while in the struct rq the field is=20
-compiled out with the ifdef macro. If I rely on the compiler=20
-optimization, the compilation error will happen.
+Additionally, I intend to post some more patches for the PM domain
+soon. Thus I will need to fold in these patches to any other upcoming
+patchset. Thought it could be good to know.
 
+Kind regards
+Ulf Hansson
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
