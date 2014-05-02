@@ -1,85 +1,77 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH] regulator: virtual: Introduce a new virtual locker
- regulator type
-Date: Fri, 2 May 2014 09:51:32 -0700
-Message-ID: <20140502165132.GH3245@sirena.org.uk>
-References: <1398749704-10196-1-git-send-email-inderpal.s@samsung.com>
- <CAD=FV=Vo+GLTt7fh4639XFsJfSUTN0ARBsOy+O24gtB_87MgLw@mail.gmail.com>
- <20140501012825.GI3245@sirena.org.uk>
- <CAD=FV=X5vGgZOxbRb808R9CSnGLPD9Tc77VMO5B3f3FS0jwk6Q@mail.gmail.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it
+ out
+Date: Fri, 2 May 2014 14:20:56 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1405021417460.980@knanqh.ubzr>
+References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org> <2735426.75qSjG3M6Y@vostro.rjw.lan> <53635E5F.8070100@linaro.org> <5985714.f7hh9Ej59L@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="58ygytiqlNL9PddM"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55296 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbaEBQvv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 12:51:51 -0400
-Content-Disposition: inline
-In-Reply-To: <CAD=FV=X5vGgZOxbRb808R9CSnGLPD9Tc77VMO5B3f3FS0jwk6Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5985714.f7hh9Ej59L@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Inderpal Singh <inderpal.s@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Pawel Moll <pawel.moll@arm.com>
+
+On Fri, 2 May 2014, Rafael J. Wysocki wrote:
+
+> On Friday, May 02, 2014 10:59:11 AM Daniel Lezcano wrote:
+> > On 05/01/2014 12:56 AM, Rafael J. Wysocki wrote:
+> > > On Thursday, May 01, 2014 12:47:25 AM Rafael J. Wysocki wrote:
+> > >> On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
+> > >>> Encapsulate the large portion of cpuidle_idle_call inside another
+> > >>> function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
+> > >>> Also that is benefitial for the clarity of the code as it removes
+> > >>> a nested indentation level.
+> > >>>
+> > >>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > >>
+> > >> Well, this conflicts with
+> > >>
+> > >> https://patchwork.kernel.org/patch/4071541/
+> > >>
+> > >> which you haven't commented on and I still want cpuidle_select() to be able to
+> > >> return negative values because of
+> > >>
+> > >> https://patchwork.kernel.org/patch/4089631/
+> > >>
+> > >> (and I have one more patch on top of these two that requires this).
+> > >
+> > > Moreover (along the lines of Nico said) after https://patchwork.kernel.org/patch/4071541/
+> > > we actually don't need the #ifdef CONFIG_CPU_IDLE in your patch, because cpuidle_select()
+> > > for CONFIG_CPU_IDLE unset is a static inline returning a negative number and the compiler
+> > > should optimize out the blocks that depend on it being non-negative.
+> > 
+> > Thanks for the head up.
+> > 
+> > Actually that was to solve a compilation issue with the next patch when 
+> > adding the cpuidle state in the struct rq.
+> > 
+> > When the option CPU_IDLE is not set, the code assinging the cpu idle 
+> > state in the rq is still there while in the struct rq the field is 
+> > compiled out with the ifdef macro. If I rely on the compiler 
+> > optimization, the compilation error will happen.
+> 
+> I see.
+> 
+> If you don't put the new idle_state field in struct_rq under the #ifdef,
+> you won't need to worry about the build problem.
+> 
+> Alternatively, you can define
+> 
+> #ifdef CONFIG_CPU_IDLE
+> static inline void rq_set_idle_state(struct rq *rq, struct cpuidle_state *state)
+> {
+> 	rq->idle_state = state;
+> }
+> #else
+> static inline void rq_set_idle_state(struct rq *rq, struct cpuidle_state *state) {}
+> #endif
+> 
+> and use rq_set_idle_state() to set that field.
+
+Agreed.  And a similar accessor for consumers to get this value in order 
+to avoid #ifdef's there as well.
 
 
---58ygytiqlNL9PddM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Fri, May 02, 2014 at 09:13:39AM -0700, Doug Anderson wrote:
-> On Wed, Apr 30, 2014 at 6:28 PM, Mark Brown <broonie@kernel.org> wrote:
-
-> > I glanced at this briefly and couldn't really understand what it was
-> > supposed to do from a quick glance but I do tend to agree that it's too
-> > complex and confusing.  Quite what the virtual regulator is supposed to
-> > represent or how it is used is distinctly non-obvious.
-
-> From my understanding, there are parts internal to the SoC where
-> something powered by the INT rail looks at an signal based on the ARM
-> rail, or vice versa.  If the two voltages are too vastly different
-> then you get into trouble.
-
-That bit is totally clear and normal, what's not at all obvious is what
-the virtual regulator is really representing and how it will be used by
-software at runtime to achieve this goal.  In general introducing purely
-virtual things into the device tree is not a good sign for things like
-OS independence.
-
-> Mark Brown: did the bindings above seem sane to you?  I can clean them
-> up a bit and explain more:
-
-Yes, that's one of the suggestions I proposed...
-
-> - regulator-lock-to: A list of regulators to monitor.  If they ever
-> are greater than our voltage + the corresponding "lock-within" then we
-> should bump up our voltage.  We'll bump back down if/when the
-> monitored regulator falls again.
-
-This isn't a good name, there is also a common feature in hardware where
-two regulators are run in parallel to deliver higher current.  The idea
-is fine though.
-
---58ygytiqlNL9PddM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTY80RAAoJELSic+t+oim9iCYP/1S1UMDUBH97IjK6tEVKLomD
-Kc3JW1vSHbyOiDe7jsH9pESiMBVXwEtwTfEUBUl9YFU4V5pqjzGHBkSzxmqgVvSN
-PiHe6n5IgQLwjEi8CviQXMIadsRp+eaakl5acsGrqLHb18LOOj7w/wFHmenS0VA7
-0wkbSfPktSiw31XwutmfO6+1Z0aVP1nmUxrbGEtgLtHlpJ/vrokx/f8njC0l5Byv
-pCkKzYLRpzYX9FzhzFk5CmYwyI+jqZ+IrMxHNKy1iO629UEnP0a0d4b/iQIf7NJV
-KtPwyzL45HmB42zrP3rrOjndMW0l/SCYECaJOPaTM5SusM9IowIZVpoDqOJR7K0E
-QedRAVstNy9GUayEIBQ8MD3+LYkZV09inEjNWI958JtpsJij+n5TwycKrFQfhw+l
-Hg4isvxQYTldGm+3T/5ar34K5qbD+vcDb2vt1TNyrcd17huJIQ8x6Et1eZ8zRySn
-Ua6FJHQ8Lc4AGKKY3CobGmpB9ICFa8ZGya4hz89GjN2HQGPyjBPeBqFAD+rCJBzQ
-34flTUcTomxN4anhVh23yZqFn96Zuvf2MMVzELU9oHYzxgvx/XLDqm7uon7IMlkG
-/08UIvdUS4rPiv9ga0jqlAzOSpBqZ4zahG07H4hacUco0K4Qr8ESzmxF5GsVkQhN
-rPwtMAjNK1Sa5QpcyeO+
-=7mtz
------END PGP SIGNATURE-----
-
---58ygytiqlNL9PddM--
+Nicolas
