@@ -1,45 +1,72 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: time_in_state on Ubuntu 13.10
-Date: Fri, 2 May 2014 10:55:09 +0530
-Message-ID: <CAKohponNhk2wxM2vTX6ZWf590bxTSjT-53oV9D6AKPch+VbsSw@mail.gmail.com>
-References: <535E6906.2090201@unine.ch>
-	<CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>
-	<535F51F7.5090804@unine.ch>
-	<CAKohponpGMMRUvDivaxj_qz5dQvhxZHiHW4Z19GzpaEJHGStRQ@mail.gmail.com>
-	<535F6508.5020202@unine.ch>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
+ with the PM core
+Date: Fri, 2 May 2014 10:13:11 +0200
+Message-ID: <CAPDyKFqG0dV+-y2=t=d3w6_hxWsYi+sOmNdvS6ECPOuoQ61Pmw@mail.gmail.com>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+	<CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
+	<535B130C.1000007@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <535F6508.5020202@unine.ch>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mascha Kurpicz <mascha.kurpicz@unine.ch>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Maxime Colmant <maxime.colmant@inria.fr>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <535B130C.1000007@gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 29 April 2014 14:08, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
-> On 04/29/2014 10:26 AM, Viresh Kumar wrote:
->> On 29 April 2014 12:47, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
->>> Sorry for the imprecision.
->>>
->>> Works correctly with
->>> Ubuntu 12.04.3 LTS - kernel 3.2.0-29-generic
->>> Ubuntu 12.04.3 LTS -  kernel 3.8.0-29
->>> Ubuntu 13.10 - kernel 3.8.0-29-generic
->>>
->>> 0 or very small (e.g. 6) values with
->>> Ubuntu 13.10 - kernel 3.11.0-20-generic
->> Can you provide cpufreq-info 's output for the last two cases please?
+>>
+>>
+>> Normally I don't think it's a good idea to "automatically" manage
+>> clocks from PM core or any other place but from the driver (and
+>> possibly the subsystem).
+>>
+>> The reason is simply that we hide things that normally is supposed to
+>> be handled by the driver. Typically a cross SOC driver should work
+>> fine both with and without a pm_domain. It should also not rely on
+>> CONFIG_PM_RUNTIME.
 
-Sorry, got distracted and just forgot about this thread :), must have marked
-it in my pending list :(
+[Snip]
 
-Anyways, I have tried to look at the diff between these kernel releases and
-looks like I couldn't figure out what's going wrong.
+>>
+>>> +static int of_clk_register(struct device *dev, struct clk *clk)
+>>> +{
+>>> +       int error;
+>>> +
+>>> +       if (!dev->pm_domain) {
+>>> +               error = pm_clk_create(dev);
+>>> +               if (error)
+>>> +                       return error;
+>>> +
+>>> +               dev->pm_domain = &of_clk_pm_domain;
+>>
+>>
+>> I am concerned about how this will work in conjunction with the
+>> generic power domain.
+>>
+>> A device can't reside in more than one pm_domain; thus I think it
+>> would be better to always use the generic power domain and not have a
+>> specific one for clocks. Typically the genpd should invoke
+>> pm_clk_resume|suspend from it's runtime PM callbacks.
+>
+>
+> I'm not sure about this. A typical use case would be to gate clocks ASAP and
+> then wait until device is idle long enough to consider turning off the power
+> domain worthwhile. Also sometimes we may want to gate the clocks, but
+> prevent power domain from being powered off to retain hardware state (e.g.
+> because there is no way to read it and restore later).
 
-I tried to test things with the latest kernel and they seem to be working fine.
-Atleast on my ARM board.
+So, in principle you prefer to have driver's handle clock gating to
+save power from their runtime PM callbacks, instead of from the power
+domain, right? Just to clarify, that's my view as well.
 
-Would it be possible for you to do a git bisect between 3.8 and 3.11 ?
+Kind regards
+Ulf Hansson
 
---
-viresh
+>
+> I believe, though, that for devices that are not inside a controllable power
+> domain, this might be a good solution.
+>
+> Best regards,
+> Tomasz
