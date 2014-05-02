@@ -1,79 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH] PM / OPP: move cpufreq specific OPP functions out of
- generic OPP library
-Date: Fri, 2 May 2014 10:52:59 +0530
-Message-ID: <CAKohponv-p20=www51rW13RSG6=ACgDrRDfL9Xd26ePgjkpWfA@mail.gmail.com>
-References: <1398992810-14957-1-git-send-email-nm@ti.com>
-	<CAKohpokEuZ69HnnKE89maXk=21cgAMjEYjEvEcaoBpg4bLRsGg@mail.gmail.com>
-	<CAGo_u6ohKZh+zKWSzGbvT+AKgnhSjzX7v9isqpd2pc-Cpmxocg@mail.gmail.com>
+Subject: Re: time_in_state on Ubuntu 13.10
+Date: Fri, 2 May 2014 10:55:09 +0530
+Message-ID: <CAKohponNhk2wxM2vTX6ZWf590bxTSjT-53oV9D6AKPch+VbsSw@mail.gmail.com>
+References: <535E6906.2090201@unine.ch>
+	<CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>
+	<535F51F7.5090804@unine.ch>
+	<CAKohponpGMMRUvDivaxj_qz5dQvhxZHiHW4Z19GzpaEJHGStRQ@mail.gmail.com>
+	<535F6508.5020202@unine.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAGo_u6ohKZh+zKWSzGbvT+AKgnhSjzX7v9isqpd2pc-Cpmxocg@mail.gmail.com>
+In-Reply-To: <535F6508.5020202@unine.ch>
 Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@deeprootsystems.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Mascha Kurpicz <mascha.kurpicz@unine.ch>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Maxime Colmant <maxime.colmant@inria.fr>
 List-Id: linux-pm@vger.kernel.org
 
-On 2 May 2014 10:48, Nishanth Menon <nm@ti.com> wrote:
-> On Thu, May 1, 2014 at 11:30 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
->>> new file mode 100644
->>> index 0000000..2602ff8
->>> --- /dev/null
->>> +++ b/drivers/cpufreq/cpufreq_opp.c
->>> @@ -0,0 +1,102 @@
->>> +/*
->>> + * Generic OPP Interface for CPUFREQ drivers
->>> + *
->>> + * Copyright (C) 2009-2014 Texas Instruments Incorporated.
->>> + *     Nishanth Menon
->>> + *     Romit Dasgupta
->>> + *     Kevin Hilman
->>> + *
->>> + * This program is free software; you can redistribute it and/or modify
->>> + * it under the terms of the GNU General Public License version 2 as
->>> + * published by the Free Software Foundation.
->>> + */
->>
->> I hope you have just copy pasted routines to this file, and haven't done
->> even the most minor modification in those, as its hard to review it.
->
-> there is code replacement ofcourse ->
-> * the logic of walking down the list holding a mutex has been replaced
-> with rcu locks,
-> * instead of reading internal data structure and generating the list,
-> use the existing search API that does exactly the same.
-> * Documentation update for the same.
+On 29 April 2014 14:08, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
+> On 04/29/2014 10:26 AM, Viresh Kumar wrote:
+>> On 29 April 2014 12:47, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
+>>> Sorry for the imprecision.
+>>>
+>>> Works correctly with
+>>> Ubuntu 12.04.3 LTS - kernel 3.2.0-29-generic
+>>> Ubuntu 12.04.3 LTS -  kernel 3.8.0-29
+>>> Ubuntu 13.10 - kernel 3.8.0-29-generic
+>>>
+>>> 0 or very small (e.g. 6) values with
+>>> Ubuntu 13.10 - kernel 3.11.0-20-generic
+>> Can you provide cpufreq-info 's output for the last two cases please?
 
-Hmm, actually if I would have written this patch, then probably I would
-have done the same thing, but looking from the reviewers perspective,
-it would be much more easy if we can separate things into patches.
+Sorry, got distracted and just forgot about this thread :), must have marked
+it in my pending list :(
 
-So, maybe do these changes first in opp.c only and then finally a
-patch that just moves things around.
+Anyways, I have tried to look at the diff between these kernel releases and
+looks like I couldn't figure out what's going wrong.
 
-> Both are needed if you have to move the code out. functionally, both
-> are equivalent
+I tried to test things with the latest kernel and they seem to be working fine.
+Atleast on my ARM board.
 
-That's an assumption and we never know when we might have screwed
-the code :) .. And so more careful review of those parts is required :)
+Would it be possible for you to do a git bisect between 3.8 and 3.11 ?
 
->>> diff --git a/drivers/cpufreq/cpufreq_opp.h b/drivers/cpufreq/cpufreq_opp.h
->>
->> Two problems, driver may lie in arch/ as well, though we don't recommend
->> them, secondly move these in cpufreq.h, don't need a header here for sure.
->
-> There are none at the moment. ideally, we'd like to discourage folks
-
-Yes, we do. :)
-
-> putting cpufreq drivers in arch/ given the amount of effort you have
-> undertaken in bringing them all here. but I have personally no strong
-> objection to getting rid of the private header and using the generic
-> cpufreq header.
->
-> Otherwise, I assume you are ok with this approach and will post a
-> formal patch by monday.
-
-Yep.
+--
+viresh
