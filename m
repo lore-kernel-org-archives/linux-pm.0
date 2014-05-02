@@ -1,198 +1,165 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flags to speed up suspend-resume of runtime-suspended devices
-Date: Fri, 02 May 2014 17:41:33 +0200
-Message-ID: <6199158.2qqefUVTXs@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405011613200.881-100000@iolanthe.rowland.org> <1898485.lQeVbtvK4U@vostro.rjw.lan> <5908855.HA1MHrW16u@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flags to speed up suspend-resume
+ of runtime-suspended devices
+Date: Fri, 2 May 2014 12:12:32 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405021104120.1225-100000@iolanthe.rowland.org>
+References: <1898485.lQeVbtvK4U@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <5908855.HA1MHrW16u@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1898485.lQeVbtvK4U@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, May 02, 2014 02:04:07 AM Rafael J. Wysocki wrote:
-> On Friday, May 02, 2014 01:36:38 AM Rafael J. Wysocki wrote:
-> > On Friday, May 02, 2014 01:15:14 AM Rafael J. Wysocki wrote:
-> 
-> [cut]
-> 
+On Fri, 2 May 2014, Rafael J. Wysocki wrote:
+
+> On Friday, May 02, 2014 01:15:14 AM Rafael J. Wysocki wrote:
+> > On Thursday, May 01, 2014 05:39:31 PM Alan Stern wrote:
+> > > On Fri, 25 Apr 2014, Rafael J. Wysocki wrote:
+> > > 
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > 
+> > > > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> > > > resume all runtime-suspended devices during system suspend, mostly
+> > > > because those devices may need to be reprogrammed due to different
+> > > > wakeup settings for system sleep and for runtime PM.  However, at
+> > > > least in some cases, that isn't really necessary, because the wakeup
+> > > > settings may not be really different.
+> > > > 
+> > > > The idea here is that subsystems should know whether or not it is
+> > > > necessary to reprogram a given device during system suspend and they
+> > > > should be able to tell the PM core about that.  For that reason, add
+> > > > two new device PM flags, power.resume_not_needed and
+> > > > power.use_runtime_resume, such that:
+> > > > 
+> > > >  (1) If power.resume_not_needed is set for the given device and for
+> > > >      all of its children and the device is runtime-suspended during
+> > > >      device_suspend(), the remaining device's system suspend/resume
+> > > >      callbacks need not be executed.
+> > > 
+> > > The patch doesn't do that last part.  That is, it still invokes the 
+> > > callbacks even when resume_not_needed is set.
 > > 
-> > OK, I guess you mean that the first flag (resume_not_needed) should be introduced
-> > by one patch and the second one by another, but I'm not sure if that would really
-> > make any difference.  Both of them are needed anyway and resume_not_needed without
-> > the other flag wouldn't have any effect.
+> > Yes, it does and the above paragraph doesn't say that it won't.  It only
+> > says that the flag indicates no need to do that.
+
+But then the reader is left wondering: What is the reason for having
+the flag, if it doesn't cause the PM core to do anything different?
+This is partly a weakness of the patch description.  Here's a 
+suggestion for an improved description:
+
+--------------------------------------------------------------------
+
+Many devices have different wakeup settings for runtime suspend and
+system suspend.  If such a device is already runtime-suspended when a
+system suspend starts, it will be necessary to perform a runtime resume
+in order to reprogram the device's wakeup settings.  Thus, the device
+will always enter system suspend in a runtime-active state.
+
+Other devices may need to be runtime-active when a system suspend
+starts for other reasons.  Still, there are quite a few devices which
+have no such requirements.  If they are already in runtime suspend,
+there's no reason why they shouldn't remain that way during the system
+suspend.  And avoiding an extra runtime-resume/device-suspend pair
+could help speed up the procedure.
+
+Some subsystems, such as PCI and the ACPI PM domain, automatically 
+resume all runtime-suspended devices when a system suspend starts, on 
+the theory that the device may require reprogramming.  As described 
+above, we would like to avoid doing this in cases where it isn't 
+needed.
+
+This patch introduces a standardized way for drivers to tell their
+subsystems that no reprogramming is needed and a device may remain in
+runtime suspend during a system suspend.  A new flag,
+dev->power.resume_not_needed, is added.  Drivers set this flag during
+their ->prepare() callbacks to tell the subsystems that no runtime
+resume is necessary.  If the flag is set and the device is
+runtime-suspended, the subsystem can return immediately from its
+->suspend(), ->suspend_late(), and ->suspend_noirq() callbacks.  
+(However, the various resume callbacks should continue to function as 
+before, because we want the device to end up at full power when the 
+system resume is over.)
+
+Note: If dev->power.ignore_children is set then
+dev->power.resume_not_needed probably should not be set.  This is
+because the driver for the child device may expect dev always to be at
+full power when the child's suspend routines run.
+
+--------------------------------------------------------------------
+
+This description doesn't say anything about the PM core skipping the 
+various suspend callbacks.  That's because the patch doesn't actually 
+skip them.
+
+It also doesn't say anything about requiring resume_not_needed to be 
+set in all the descendant devices.  That's because this isn't 
+necessary, if all you want to accomplish is to avoid the unnecessary 
+runtime resumes.
+
+> > > >  (2) If power.use_runtime_resume is set for the given device and the
+> > > >      device is runtime-suspended in device_suspend_late(), its late/early
+> > > >      and noirq system suspend/resume callbacks should be skipped and
+> > > >      it should be resumed through pm_runtime_resume() in device_resume().
+> > > 
+> > > IMO this should be a separate patch.  It has no direct connection with 
+> > > the main goal of providing subsystems with a mechanism to avoid waking 
+> > > up devices for reprogramming during system suspend.
 > > 
-> > Well, perhaps I should make __device_suspend() check that use_runtime_resume is
-> > only set when resume_not_needed is set too and return an error if that's not
-> > the case.
+> > I'm not sure what you mean, honestly.  The main goal here is to allow
+> > devices that were runtime suspended to stay that way throughout system
+> > suspend and resume up until device_resume() is called for them.
+
+No, not exactly.  The main goal is to allow devices that were runtime
+suspended to stay that way throughout system suspend _only_.  We expect
+system resume to function as it has in the past.  Changing the
+expectations for system resume should be the subject of a second patch.
+
+> > I have no idea how to split it so that both parts still make sense.
 > 
-> Below is an updated patch for further discussion.
+> OK, I guess you mean that the first flag (resume_not_needed) should be introduced
+> by one patch and the second one by another, but I'm not sure if that would really
+> make any difference.  Both of them are needed anyway and resume_not_needed without
+> the other flag wouldn't have any effect.
 > 
-> I tried to improve the changelog and invent better names for the new flags.
+> Well, perhaps I should make __device_suspend() check that use_runtime_resume is
+> only set when resume_not_needed is set too and return an error if that's not
+> the case.
 
-Well, I have a second update.
+Here's my suggestion for the second patch's description.  It describes 
+what I have in mind:
 
-It has different flag names and changelog (that should explain things better
-hopefully) and the purpose of both flags should be more clear now (patch [3/3]
-would need to be reworked on top of this, but for now let's just discuss the
-core changes).
+--------------------------------------------------------------------
 
-Rafael
+Now that we have a mechanism for allowing devices to remain in a
+runtime-suspended state during system suspend, it makes sense to add a
+mechanism allowing them to remain in runtime suspend during system
+resume as well -- in other words, throughout an entire system suspend
+cycle.  In theory, all the PM core has to do is avoid invoking the
+suspend and resume callbacks for devices that are runtime suspended.
 
+However, some drivers may not be prepared to handle this new behavior.
+They may assume that their various resume callbacks always get called,
+regardless of the device's runtime status, because that's how it works
+now.  Or they may assume that the device's parent is always at full
+power when the device's resume callbacks run, which wouldn't have to
+hold if the parent's power.ignore_children flag was set.
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: PM / sleep: Flags to speed up suspend-resume of runtime-suspended devices
+Therefore this patch adds a new flag: dev->power.use_runtime_resume.  
+Drivers can set this flag in their ->prepare() routines.  When
+__device_suspend() runs, if the device and all its descendants are
+runtime suspended, and if power.use_runtime_resume is set in the device
+and all its descendants, then the PM core will skip the ->suspend(),
+->suspend_late(), ->suspend_noirq(), ->resume_noirq(),
+->resume_early(), and ->resume() callbacks.  The device will not return 
+to full power until a runtime resume occurs.
 
-Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-resume all runtime-suspended devices during system suspend, mostly
-because those devices may need to be reprogrammed due to different
-wakeup settings for system sleep and for runtime PM.  However, at
-least in some cases, that isn't really necessary, because the wakeup
-settings may not be really different.
+--------------------------------------------------------------------
 
-The idea here is that subsystems should know whether or not it is
-necessary to resume a given device during system suspend as long as
-they know that the device's children will not need it to be functional
-during the late/early and noirq phases of their suspend and resume.
-To help them with that, introduce two new device PM flags:
-power.parent_needed and power.leave_runtime_suspended supposed to work
-as follows.
+This isn't exactly the same as what you implemented, but I think the 
+description explains the situation well enough that the reasons for the 
+differences are clear.
 
-The PM core will clear power.leave_runtime_suspended and will set
-power.parent_needed for all devices in dpm_prepare().  Next, the
-subsystem (or driver) of a device that in principle may not need
-to be resumed during system suspend, if runtume-suspended already,
-will set power.leave_runtime_suspended in its ->prepare() callback.
-Also the subsystems (or drivers) of devices whose parents need not
-be resumed during system suspend, if runtime-suspended already,
-are supposed to clear power.parent_needed for them.  The PM core
-will then clear power.leave_runtime_suspended for the parents of
-all devices having power.parent_needed set in __device_suspend().
-
-Now, if the ->suspend() callback is executed for a device whose
-power.leave_runtime_suspended is set, it can simply return 0 after
-checking the device's state if that state is appropriate for
-system suspend.  The PM core will then skip the late/early and
-noirq system suspend/resume callbacks for that device and will
-use pm_runtime_resume() to resume it in device_resume().
-
-If the state of a device with power.leave_runtime_suspended is not
-appropriate for system suspend, the ->suspend() callback should
-resume it using pm_runtime_resume() and clear
-power.leave_runtime_suspended for it.
-
-Note: Drivers (or bus types etc.) can reasonably expect that the
-next PM callback executed after ->runtime_suspend() will be
-->runtime_resume() rather than ->resume_noirq() or ->resume_early().
-This change is designed with that expectation in mind.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |   33 ++++++++++++++++++++++++++-------
- include/linux/pm.h        |    2 ++
- 2 files changed, 28 insertions(+), 7 deletions(-)
-
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -546,6 +546,8 @@ struct dev_pm_info {
- 	bool			is_late_suspended:1;
- 	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
-+	bool			parent_needed:1;
-+	bool			leave_runtime_suspended:1;
- 	spinlock_t		lock;
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -479,7 +479,7 @@ static int device_resume_noirq(struct de
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.leave_runtime_suspended)
- 		goto Out;
- 
- 	if (!dev->power.is_noirq_suspended)
-@@ -605,7 +605,7 @@ static int device_resume_early(struct de
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.leave_runtime_suspended)
- 		goto Out;
- 
- 	if (!dev->power.is_late_suspended)
-@@ -735,6 +735,11 @@ static int device_resume(struct device *
- 	if (dev->power.syscore)
- 		goto Complete;
- 
-+	if (dev->power.leave_runtime_suspended) {
-+		pm_runtime_resume(dev);
-+		goto Complete;
-+	}
-+
- 	dpm_wait(dev->parent, async);
- 	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
-@@ -1007,7 +1012,7 @@ static int __device_suspend_noirq(struct
- 		goto Complete;
- 	}
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.leave_runtime_suspended)
- 		goto Complete;
- 
- 	dpm_wait_for_children(dev, async);
-@@ -1146,7 +1151,7 @@ static int __device_suspend_late(struct
- 		goto Complete;
- 	}
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || dev->power.leave_runtime_suspended)
- 		goto Complete;
- 
- 	dpm_wait_for_children(dev, async);
-@@ -1383,9 +1388,21 @@ static int __device_suspend(struct devic
-  End:
- 	if (!error) {
- 		dev->power.is_suspended = true;
--		if (dev->power.wakeup_path
--		    && dev->parent && !dev->parent->power.ignore_children)
--			dev->parent->power.wakeup_path = true;
-+		if (dev->power.leave_runtime_suspended)
-+			dev->power.parent_needed = false;
-+
-+		if (dev->parent) {
-+			spin_lock_irq(&dev->parent->power.lock);
-+
-+			if (dev->power.wakeup_path
-+			    && !dev->parent->power.ignore_children)
-+				dev->parent->power.wakeup_path = true;
-+
-+			if (dev->power.parent_needed)
-+				dev->parent->power.leave_runtime_suspended = false;
-+
-+			spin_unlock_irq(&dev->parent->power.lock);
-+		}
- 	}
- 
- 	device_unlock(dev);
-@@ -1553,6 +1570,8 @@ int dpm_prepare(pm_message_t state)
- 		struct device *dev = to_device(dpm_list.next);
- 
- 		get_device(dev);
-+		dev->power.leave_runtime_suspended = false;
-+		dev->power.parent_needed = true;
- 		mutex_unlock(&dpm_list_mtx);
- 
- 		error = device_prepare(dev, state);
-
+Alan Stern
