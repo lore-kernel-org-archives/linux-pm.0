@@ -1,44 +1,70 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
  with the PM core
-Date: Fri, 2 May 2014 16:35:44 +0200
-Message-ID: <CAMuHMdUGdfF8x58dz46VWNsC4X0cmFng39Z2xSO_pXYqn9u=HA@mail.gmail.com>
+Date: Fri, 2 May 2014 16:58:03 +0200
+Message-ID: <CAMuHMdWLfKcKLORPJ9f-0TLoWM5EfCZ0G5MfxjUiJCRJG555Sg@mail.gmail.com>
 References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
 	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFpTwPDu9afhOjhhQ2PKGFB+hWsp=mcaYTq8OvuGF7yT3Q@mail.gmail.com>
+	<CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
+	<535B130C.1000007@gmail.com>
+	<CAPDyKFqG0dV+-y2=t=d3w6_hxWsYi+sOmNdvS6ECPOuoQ61Pmw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpTwPDu9afhOjhhQ2PKGFB+hWsp=mcaYTq8OvuGF7yT3Q@mail.gmail.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFqG0dV+-y2=t=d3w6_hxWsYi+sOmNdvS6ECPOuoQ61Pmw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Ben Dooks <ben.dooks-4yDnlxn2s6sWdaTGBSpHTA@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-omap <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
+Hi Ulf, Tomasz,
 
-On Fri, May 2, 2014 at 10:56 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> +static int of_clk_pm_runtime_suspend(struct device *dev)
->> +{
->> +       int ret;
->> +
->> +       ret = pm_generic_runtime_suspend(dev);
->> +       if (ret)
->> +               return ret;
->> +
->> +       ret = pm_clk_suspend(dev);
+On Fri, May 2, 2014 at 10:13 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>>>> +static int of_clk_register(struct device *dev, struct clk *clk)
+>>>> +{
+>>>> +       int error;
+>>>> +
+>>>> +       if (!dev->pm_domain) {
+>>>> +               error = pm_clk_create(dev);
+>>>> +               if (error)
+>>>> +                       return error;
+>>>> +
+>>>> +               dev->pm_domain = &of_clk_pm_domain;
+>>>
+>>>
+>>> I am concerned about how this will work in conjunction with the
+>>> generic power domain.
+>>>
+>>> A device can't reside in more than one pm_domain; thus I think it
+>>> would be better to always use the generic power domain and not have a
+>>> specific one for clocks. Typically the genpd should invoke
+>>> pm_clk_resume|suspend from it's runtime PM callbacks.
+>>
+>> I'm not sure about this. A typical use case would be to gate clocks ASAP and
+>> then wait until device is idle long enough to consider turning off the power
+>> domain worthwhile. Also sometimes we may want to gate the clocks, but
+>> prevent power domain from being powered off to retain hardware state (e.g.
+>> because there is no way to read it and restore later).
 >
-> What about slow clocks? Those aren't handled with pm_clk_suspend().
+> So, in principle you prefer to have driver's handle clock gating to
+> save power from their runtime PM callbacks, instead of from the power
+> domain, right? Just to clarify, that's my view as well.
 
-How are slow clocks handled?
+If there's both a gate clock and a power domain, and the driver's Runtime PM
+callbacks handle clock gating, who's handling the power domain?
 
 Gr{oetje,eeting}s,
 
-                        Geert
+                        Geert (still trying to fit all pieces of the
+puzzle together)
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
 
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
                                 -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
