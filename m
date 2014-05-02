@@ -1,72 +1,81 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
- with the PM core
-Date: Fri, 2 May 2014 10:13:11 +0200
-Message-ID: <CAPDyKFqG0dV+-y2=t=d3w6_hxWsYi+sOmNdvS6ECPOuoQ61Pmw@mail.gmail.com>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
-	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
-	<535B130C.1000007@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] cpuidle / menu: Return error code if there are no
+ suitable states
+Date: Fri, 02 May 2014 10:47:48 +0200
+Message-ID: <53635BB4.30900@linaro.org>
+References: <2471963.urOyfY8mOG@vostro.rjw.lan> <535E3818.2040905@linaro.org> <2000825.kO1es8ShkW@vostro.rjw.lan> <1516317.nEvPfS8aZ7@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <535B130C.1000007@gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:37908 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbaEBIrq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 04:47:46 -0400
+Received: by mail-wi0-f179.google.com with SMTP id bs8so1966278wib.0
+        for <linux-pm@vger.kernel.org>; Fri, 02 May 2014 01:47:45 -0700 (PDT)
+In-Reply-To: <1516317.nEvPfS8aZ7@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
 
->>
->>
->> Normally I don't think it's a good idea to "automatically" manage
->> clocks from PM core or any other place but from the driver (and
->> possibly the subsystem).
->>
->> The reason is simply that we hide things that normally is supposed to
->> be handled by the driver. Typically a cross SOC driver should work
->> fine both with and without a pm_domain. It should also not rely on
->> CONFIG_PM_RUNTIME.
+On 04/30/2014 01:16 AM, Rafael J. Wysocki wrote:
+> On Tuesday, April 29, 2014 01:28:03 AM Rafael J. Wysocki wrote:
+>> On Monday, April 28, 2014 01:14:32 PM Daniel Lezcano wrote:
+>>> On 04/27/2014 02:55 PM, Rafael J. Wysocki wrote:
 
-[Snip]
+[ ... ]
 
->>
->>> +static int of_clk_register(struct device *dev, struct clk *clk)
->>> +{
->>> +       int error;
->>> +
->>> +       if (!dev->pm_domain) {
->>> +               error = pm_clk_create(dev);
->>> +               if (error)
->>> +                       return error;
->>> +
->>> +               dev->pm_domain = &of_clk_pm_domain;
->>
->>
->> I am concerned about how this will work in conjunction with the
->> generic power domain.
->>
->> A device can't reside in more than one pm_domain; thus I think it
->> would be better to always use the generic power domain and not have a
->> specific one for clocks. Typically the genpd should invoke
->> pm_clk_resume|suspend from it's runtime PM callbacks.
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: cpuidle / menu: Return (-1) if there are no suitable states
 >
+> If there is a PM QoS latency limit and all of the sufficiently shallo=
+w
+> C-states are disabled, the cpuidle menu governor returns 0 which on
+> some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returned
+> if that C-state has been disabled.
 >
-> I'm not sure about this. A typical use case would be to gate clocks ASAP and
-> then wait until device is idle long enough to consider turning off the power
-> domain worthwhile. Also sometimes we may want to gate the clocks, but
-> prevent power domain from being powered off to retain hardware state (e.g.
-> because there is no way to read it and restore later).
-
-So, in principle you prefer to have driver's handle clock gating to
-save power from their runtime PM callbacks, instead of from the power
-domain, right? Just to clarify, that's my view as well.
-
-Kind regards
-Ulf Hansson
-
+> Fix the issue by modifying the menu governor to return (-1) in such
+> situations.
 >
-> I believe, though, that for devices that are not inside a controllable power
-> domain, this might be a good solution.
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>   drivers/cpuidle/governors/menu.c |    2 +-
+>   include/linux/cpuidle.h          |    2 ++
+>   2 files changed, 3 insertions(+), 1 deletion(-)
 >
-> Best regards,
-> Tomasz
+> Index: linux-pm/drivers/cpuidle/governors/menu.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> +++ linux-pm/drivers/cpuidle/governors/menu.c
+> @@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
+>   		data->needs_update =3D 0;
+>   	}
+>
+> -	data->last_state_idx =3D 0;
+> +	data->last_state_idx =3D CPUIDLE_DRIVER_STATE_START - 1;
+
+In case of x86, CPUIDLE_DRIVER_STATE_START will be 1, so the select=20
+function could return 0 even this one is disabled and this is not what=20
+you want to happen, no ?
+
+
+>   	/* Special case when user has set very strict latency requirement =
+*/
+>   	if (unlikely(latency_req =3D=3D 0))
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
