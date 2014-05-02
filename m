@@ -1,54 +1,77 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it out
-Date: Fri, 02 May 2014 14:09:35 +0200
-Message-ID: <2782801.UzoMhgfu56@vostro.rjw.lan>
-References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org> <2783362.8r7SvVhudq@vostro.rjw.lan> <53635CCB.9090301@linaro.org>
+Subject: Re: [PATCH 2/2] cpuidle / menu: Return error code if there are no suitable states
+Date: Fri, 02 May 2014 14:20:18 +0200
+Message-ID: <1684440.TX1lbQesgE@vostro.rjw.lan>
+References: <2471963.urOyfY8mOG@vostro.rjw.lan> <1516317.nEvPfS8aZ7@vostro.rjw.lan> <53635BB4.30900@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58162 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61598 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751987AbaEBLxC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 07:53:02 -0400
-In-Reply-To: <53635CCB.9090301@linaro.org>
+	with SMTP id S1751926AbaEBMDp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 08:03:45 -0400
+In-Reply-To: <53635BB4.30900@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
 
-On Friday, May 02, 2014 10:52:27 AM Daniel Lezcano wrote:
-> On 05/01/2014 12:47 AM, Rafael J. Wysocki wrote:
-> > On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
-> >> Encapsulate the large portion of cpuidle_idle_call inside another
-> >> function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
-> >> Also that is benefitial for the clarity of the code as it removes
-> >> a nested indentation level.
-> >>
-> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >
-> > Well, this conflicts with
-> >
-> > https://patchwork.kernel.org/patch/4071541/
-> >
-> > which you haven't commented on and I still want cpuidle_select() to be able to
-> > return negative values because of
-> >
-> > https://patchwork.kernel.org/patch/4089631/
-> >
-> > (and I have one more patch on top of these two that requires this).
-> >
-> > Any ideas how to resolve that?
+On Friday, May 02, 2014 10:47:48 AM Daniel Lezcano wrote:
+> On 04/30/2014 01:16 AM, Rafael J. Wysocki wrote:
+> > On Tuesday, April 29, 2014 01:28:03 AM Rafael J. Wysocki wrote:
+> >> On Monday, April 28, 2014 01:14:32 PM Daniel Lezcano wrote:
+> >>> On 04/27/2014 02:55 PM, Rafael J. Wysocki wrote:
 > 
-> I don't think we have a big conflict. If Peter takes your patches before 
-> than mines then I will refresh and resend them.
+> [ ... ]
+> 
+> > ---
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Subject: cpuidle / menu: Return (-1) if there are no suitable states
+> >
+> > If there is a PM QoS latency limit and all of the sufficiently shallow
+> > C-states are disabled, the cpuidle menu governor returns 0 which on
+> > some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returned
+> > if that C-state has been disabled.
+> >
+> > Fix the issue by modifying the menu governor to return (-1) in such
+> > situations.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >   drivers/cpuidle/governors/menu.c |    2 +-
+> >   include/linux/cpuidle.h          |    2 ++
+> >   2 files changed, 3 insertions(+), 1 deletion(-)
+> >
+> > Index: linux-pm/drivers/cpuidle/governors/menu.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> > +++ linux-pm/drivers/cpuidle/governors/menu.c
+> > @@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
+> >   		data->needs_update = 0;
+> >   	}
+> >
+> > -	data->last_state_idx = 0;
+> > +	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+> 
+> In case of x86, CPUIDLE_DRIVER_STATE_START will be 1, so the select 
+> function could return 0 even this one is disabled and this is not what 
+> you want to happen, no ?
 
-Actually, I was planning the merge them myself, because they are more cpuidle
-than the scheduler, but either way would be fine.
+OK, so that's a choice.  We can choose to do the above or to return an error
+code if the 0 state is disabled too.  The above is arguably simpler and
+matches the idea that 0 is a "fallback" state on x86.
 
-> I am open to any other suggestion.
+Of course, it also is confusing, because user space *can* set "disable" for
+the 0 state on x86, but that actually has no effect today AFAICS.
 
-Please see the other message I've just sent. :-)
+I'm mostly worried about systems where CPUIDLE_DRIVER_STATE_START is 0
+and where menu_select() explicitly checks "disabled" and then it returns
+0 anyway if it cannot find any other suitable state.
+
+In my opinion that needs to be made consistent, but I don't care too much about
+which way as long as the change is not too intrusive.
+
 
 -- 
 I speak only for myself.
