@@ -1,165 +1,103 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flags to speed up suspend-resume
- of runtime-suspended devices
-Date: Fri, 2 May 2014 12:12:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1405021104120.1225-100000@iolanthe.rowland.org>
-References: <1898485.lQeVbtvK4U@vostro.rjw.lan>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [RFC PATCH] regulator: virtual: Introduce a new virtual locker
+ regulator type
+Date: Fri, 2 May 2014 09:13:39 -0700
+Message-ID: <CAD=FV=X5vGgZOxbRb808R9CSnGLPD9Tc77VMO5B3f3FS0jwk6Q@mail.gmail.com>
+References: <1398749704-10196-1-git-send-email-inderpal.s@samsung.com>
+	<CAD=FV=Vo+GLTt7fh4639XFsJfSUTN0ARBsOy+O24gtB_87MgLw@mail.gmail.com>
+	<20140501012825.GI3245@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1898485.lQeVbtvK4U@vostro.rjw.lan>
+In-Reply-To: <20140501012825.GI3245@sirena.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: Inderpal Singh <inderpal.s@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Pawel Moll <pawel.moll@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2 May 2014, Rafael J. Wysocki wrote:
+Mark,
 
-> On Friday, May 02, 2014 01:15:14 AM Rafael J. Wysocki wrote:
-> > On Thursday, May 01, 2014 05:39:31 PM Alan Stern wrote:
-> > > On Fri, 25 Apr 2014, Rafael J. Wysocki wrote:
-> > > 
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > 
-> > > > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-> > > > resume all runtime-suspended devices during system suspend, mostly
-> > > > because those devices may need to be reprogrammed due to different
-> > > > wakeup settings for system sleep and for runtime PM.  However, at
-> > > > least in some cases, that isn't really necessary, because the wakeup
-> > > > settings may not be really different.
-> > > > 
-> > > > The idea here is that subsystems should know whether or not it is
-> > > > necessary to reprogram a given device during system suspend and they
-> > > > should be able to tell the PM core about that.  For that reason, add
-> > > > two new device PM flags, power.resume_not_needed and
-> > > > power.use_runtime_resume, such that:
-> > > > 
-> > > >  (1) If power.resume_not_needed is set for the given device and for
-> > > >      all of its children and the device is runtime-suspended during
-> > > >      device_suspend(), the remaining device's system suspend/resume
-> > > >      callbacks need not be executed.
-> > > 
-> > > The patch doesn't do that last part.  That is, it still invokes the 
-> > > callbacks even when resume_not_needed is set.
-> > 
-> > Yes, it does and the above paragraph doesn't say that it won't.  It only
-> > says that the flag indicates no need to do that.
+On Wed, Apr 30, 2014 at 6:28 PM, Mark Brown <broonie@kernel.org> wrote:
+> On Wed, Apr 30, 2014 at 11:56:08AM -0700, Doug Anderson wrote:
+>
+>> I cornered Rob and Mark Rutland a little bit about this at ELC today
+>> (sorry!).  Neither of them was a huge ran of adding a pseudo device.
+>> Rob suggested that Mark Brown might be the best person to give
+>> direction here.  Mark Brown: any thoughts?
+>
+> I glanced at this briefly and couldn't really understand what it was
+> supposed to do from a quick glance but I do tend to agree that it's too
+> complex and confusing.  Quite what the virtual regulator is supposed to
+> represent or how it is used is distinctly non-obvious.
 
-But then the reader is left wondering: What is the reason for having
-the flag, if it doesn't cause the PM core to do anything different?
-This is partly a weakness of the patch description.  Here's a 
-suggestion for an improved description:
+>From my understanding, there are parts internal to the SoC where
+something powered by the INT rail looks at an signal based on the ARM
+rail, or vice versa.  If the two voltages are too vastly different
+then you get into trouble.
 
---------------------------------------------------------------------
+To put numbers imagine the ARM rail at 1300 mV and the INT rail at 875
+mV.  Something powered by the ARM rail will be looking at a signal,
+and perhaps it decides that signals that are >= 1000 mV are high and
+signals that are < 1000 mV are low.  If the INT rail is 875 mV then it
+will never be able to signal a high.
 
-Many devices have different wakeup settings for runtime suspend and
-system suspend.  If such a device is already runtime-suspended when a
-system suspend starts, it will be necessary to perform a runtime resume
-in order to reprogram the device's wakeup settings.  Thus, the device
-will always enter system suspend in a runtime-active state.
+The ARM and INT rails scale independently of each other.  The ARM rail
+increases when the CPU frequency need to be fast.  The INT rail
+increases when some internal peripherals on the system need to run
+fast.  Imagine you're doing hardware assisted video decoding: you'd
+want INT high and ARM low.  Imagine that you're running a
+CPU-intensive game: you want INT low and ARM high.
 
-Other devices may need to be runtime-active when a system suspend
-starts for other reasons.  Still, there are quite a few devices which
-have no such requirements.  If they are already in runtime suspend,
-there's no reason why they shouldn't remain that way during the system
-suspend.  And avoiding an extra runtime-resume/device-suspend pair
-could help speed up the procedure.
+The "solution" to the above (without redoing the SoC) is to make sure
+that the INT and ARM rails are always within 300mV of each other.
 
-Some subsystems, such as PCI and the ACPI PM domain, automatically 
-resume all runtime-suspended devices when a system suspend starts, on 
-the theory that the device may require reprogramming.  As described 
-above, we would like to avoid doing this in cases where it isn't 
-needed.
 
-This patch introduces a standardized way for drivers to tell their
-subsystems that no reprogramming is needed and a device may remain in
-runtime suspend during a system suspend.  A new flag,
-dev->power.resume_not_needed, is added.  Drivers set this flag during
-their ->prepare() callbacks to tell the subsystems that no runtime
-resume is necessary.  If the flag is set and the device is
-runtime-suspended, the subsystem can return immediately from its
-->suspend(), ->suspend_late(), and ->suspend_noirq() callbacks.  
-(However, the various resume callbacks should continue to function as 
-before, because we want the device to end up at full power when the 
-system resume is over.)
+>> Potentially we could also make this type of thing a core regulator property:
+>
+> Yes, that seems like the obvious solution if it's in the core.  Someone
+> would need to write the code of course.
 
-Note: If dev->power.ignore_children is set then
-dev->power.resume_not_needed probably should not be set.  This is
-because the driver for the child device may expect dev always to be at
-full power when the child's suspend routines run.
+OK.  Inderpal: is this something you're willing to do?  I'd imagine
+that all of the core code should remain the same, it's just a matter
+of hooking it up properly.
 
---------------------------------------------------------------------
+Mark Brown: did the bindings above seem sane to you?  I can clean them
+up a bit and explain more:
 
-This description doesn't say anything about the PM core skipping the 
-various suspend callbacks.  That's because the patch doesn't actually 
-skip them.
+  buck2_reg: BUCK2 {
+          regulator-name = "vdd_arm";
+          regulator-min-microvolt = <800000>;
+          regulator-max-microvolt = <1500000>;
+          regulator-always-on;
+          regulator-boot-on;
+          regulator-op-mode = <1>;
+          regulator-ramp-delay = <12500>;
+          regulator-lock-to = <&buck3_reg>;
+          regulator-lock-within-microvolt = <300000>;
+ };
+  buck3_reg: BUCK3 {
+          regulator-name = "vdd_int";
+          regulator-min-microvolt = <800000>;
+          regulator-max-microvolt = <1400000>;
+          regulator-always-on;
+          regulator-boot-on;
+          regulator-op-mode = <1>;
+          regulator-ramp-delay = <12500>;
+          regulator-lock-to = <&buck2_reg>, <&buck9_reg>;
+          regulator-lock-within-microvolt = <300000>, <200000>;
+  };
 
-It also doesn't say anything about requiring resume_not_needed to be 
-set in all the descendant devices.  That's because this isn't 
-necessary, if all you want to accomplish is to avoid the unnecessary 
-runtime resumes.
+- regulator-lock-to: A list of regulators to monitor.  If they ever
+are greater than our voltage + the corresponding "lock-within" then we
+should bump up our voltage.  We'll bump back down if/when the
+monitored regulator falls again.
 
-> > > >  (2) If power.use_runtime_resume is set for the given device and the
-> > > >      device is runtime-suspended in device_suspend_late(), its late/early
-> > > >      and noirq system suspend/resume callbacks should be skipped and
-> > > >      it should be resumed through pm_runtime_resume() in device_resume().
-> > > 
-> > > IMO this should be a separate patch.  It has no direct connection with 
-> > > the main goal of providing subsystems with a mechanism to avoid waking 
-> > > up devices for reprogramming during system suspend.
-> > 
-> > I'm not sure what you mean, honestly.  The main goal here is to allow
-> > devices that were runtime suspended to stay that way throughout system
-> > suspend and resume up until device_resume() is called for them.
+- regulator-lock-within-microvolt: A list of microvolt values that
+correspond to a phandle in the "regulator-lock-to" list.
 
-No, not exactly.  The main goal is to allow devices that were runtime
-suspended to stay that way throughout system suspend _only_.  We expect
-system resume to function as it has in the past.  Changing the
-expectations for system resume should be the subject of a second patch.
+Note that the above specification makes the locking a single
+direction.  If it needs to be bidirectional you specify it in both
+regulators.
 
-> > I have no idea how to split it so that both parts still make sense.
-> 
-> OK, I guess you mean that the first flag (resume_not_needed) should be introduced
-> by one patch and the second one by another, but I'm not sure if that would really
-> make any difference.  Both of them are needed anyway and resume_not_needed without
-> the other flag wouldn't have any effect.
-> 
-> Well, perhaps I should make __device_suspend() check that use_runtime_resume is
-> only set when resume_not_needed is set too and return an error if that's not
-> the case.
 
-Here's my suggestion for the second patch's description.  It describes 
-what I have in mind:
-
---------------------------------------------------------------------
-
-Now that we have a mechanism for allowing devices to remain in a
-runtime-suspended state during system suspend, it makes sense to add a
-mechanism allowing them to remain in runtime suspend during system
-resume as well -- in other words, throughout an entire system suspend
-cycle.  In theory, all the PM core has to do is avoid invoking the
-suspend and resume callbacks for devices that are runtime suspended.
-
-However, some drivers may not be prepared to handle this new behavior.
-They may assume that their various resume callbacks always get called,
-regardless of the device's runtime status, because that's how it works
-now.  Or they may assume that the device's parent is always at full
-power when the device's resume callbacks run, which wouldn't have to
-hold if the parent's power.ignore_children flag was set.
-
-Therefore this patch adds a new flag: dev->power.use_runtime_resume.  
-Drivers can set this flag in their ->prepare() routines.  When
-__device_suspend() runs, if the device and all its descendants are
-runtime suspended, and if power.use_runtime_resume is set in the device
-and all its descendants, then the PM core will skip the ->suspend(),
-->suspend_late(), ->suspend_noirq(), ->resume_noirq(),
-->resume_early(), and ->resume() callbacks.  The device will not return 
-to full power until a runtime resume occurs.
-
---------------------------------------------------------------------
-
-This isn't exactly the same as what you implemented, but I think the 
-description explains the situation well enough that the reasons for the 
-differences are clear.
-
-Alan Stern
+-Doug
