@@ -1,68 +1,110 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH] PM / OPP: move cpufreq specific OPP functions out of
- generic OPP library
-Date: Fri, 2 May 2014 07:15:58 -0500
-Message-ID: <CAGo_u6oT6nK0-Sj8yp9C2r8FkQ8SXF8LvhbHxDjAoGs+Pd=szA@mail.gmail.com>
-References: <1398992810-14957-1-git-send-email-nm@ti.com>
-	<CAKohpokEuZ69HnnKE89maXk=21cgAMjEYjEvEcaoBpg4bLRsGg@mail.gmail.com>
-	<CAGo_u6ohKZh+zKWSzGbvT+AKgnhSjzX7v9isqpd2pc-Cpmxocg@mail.gmail.com>
-	<CAKohponv-p20=www51rW13RSG6=ACgDrRDfL9Xd26ePgjkpWfA@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] cpuidle / menu: Return error code if there are no
+ suitable states
+Date: Fri, 02 May 2014 15:19:55 +0200
+Message-ID: <53639B7B.2040209@linaro.org>
+References: <2471963.urOyfY8mOG@vostro.rjw.lan> <1516317.nEvPfS8aZ7@vostro.rjw.lan> <53635BB4.30900@linaro.org> <1684440.TX1lbQesgE@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAKohponv-p20=www51rW13RSG6=ACgDrRDfL9Xd26ePgjkpWfA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@deeprootsystems.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1684440.TX1lbQesgE@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 2, 2014 at 12:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 2 May 2014 10:48, Nishanth Menon <nm@ti.com> wrote:
->> On Thu, May 1, 2014 at 11:30 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>>> diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
->>>> new file mode 100644
->>>> index 0000000..2602ff8
->>>> --- /dev/null
->>>> +++ b/drivers/cpufreq/cpufreq_opp.c
->>>> @@ -0,0 +1,102 @@
->>>> +/*
->>>> + * Generic OPP Interface for CPUFREQ drivers
->>>> + *
->>>> + * Copyright (C) 2009-2014 Texas Instruments Incorporated.
->>>> + *     Nishanth Menon
->>>> + *     Romit Dasgupta
->>>> + *     Kevin Hilman
->>>> + *
->>>> + * This program is free software; you can redistribute it and/or modify
->>>> + * it under the terms of the GNU General Public License version 2 as
->>>> + * published by the Free Software Foundation.
->>>> + */
->>>
->>> I hope you have just copy pasted routines to this file, and haven't done
->>> even the most minor modification in those, as its hard to review it.
+On 05/02/2014 02:20 PM, Rafael J. Wysocki wrote:
+> On Friday, May 02, 2014 10:47:48 AM Daniel Lezcano wrote:
+>> On 04/30/2014 01:16 AM, Rafael J. Wysocki wrote:
+>>> On Tuesday, April 29, 2014 01:28:03 AM Rafael J. Wysocki wrote:
+>>>> On Monday, April 28, 2014 01:14:32 PM Daniel Lezcano wrote:
+>>>>> On 04/27/2014 02:55 PM, Rafael J. Wysocki wrote:
 >>
->> there is code replacement ofcourse ->
->> * the logic of walking down the list holding a mutex has been replaced
->> with rcu locks,
->> * instead of reading internal data structure and generating the list,
->> use the existing search API that does exactly the same.
->> * Documentation update for the same.
+>> [ ... ]
+>>
+>>> ---
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> Subject: cpuidle / menu: Return (-1) if there are no suitable state=
+s
+>>>
+>>> If there is a PM QoS latency limit and all of the sufficiently shal=
+low
+>>> C-states are disabled, the cpuidle menu governor returns 0 which on
+>>> some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returne=
+d
+>>> if that C-state has been disabled.
+>>>
+>>> Fix the issue by modifying the menu governor to return (-1) in such
+>>> situations.
+>>>
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>    drivers/cpuidle/governors/menu.c |    2 +-
+>>>    include/linux/cpuidle.h          |    2 ++
+>>>    2 files changed, 3 insertions(+), 1 deletion(-)
+>>>
+>>> Index: linux-pm/drivers/cpuidle/governors/menu.c
+>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+>>> +++ linux-pm/drivers/cpuidle/governors/menu.c
+>>> @@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
+>>>    		data->needs_update =3D 0;
+>>>    	}
+>>>
+>>> -	data->last_state_idx =3D 0;
+>>> +	data->last_state_idx =3D CPUIDLE_DRIVER_STATE_START - 1;
+>>
+>> In case of x86, CPUIDLE_DRIVER_STATE_START will be 1, so the select
+>> function could return 0 even this one is disabled and this is not wh=
+at
+>> you want to happen, no ?
 >
-> Hmm, actually if I would have written this patch, then probably I would
-> have done the same thing, but looking from the reviewers perspective,
-> it would be much more easy if we can separate things into patches.
+> OK, so that's a choice.  We can choose to do the above or to return a=
+n error
+> code if the 0 state is disabled too.  The above is arguably simpler a=
+nd
+> matches the idea that 0 is a "fallback" state on x86.
 >
-> So, maybe do these changes first in opp.c only and then finally a
-> patch that just moves things around.
->
->> Both are needed if you have to move the code out. functionally, both
->> are equivalent
->
-> That's an assumption and we never know when we might have screwed
-> the code :) .. And so more careful review of those parts is required :)
+> Of course, it also is confusing, because user space *can* set "disabl=
+e" for
+> the 0 state on x86, but that actually has no effect today AFAICS.
 
-True. Will do the same as suggested for the formal series. Thanks for
-your feedback and review.
+Yes, the poll state is very rarely selected.
 
-Regards,
-Nishanth Menon
+Regarding the description of this patch, I think it would make sense to=
+=20
+move the duplicate pm qos checks to the cpuidle_idle_call function=20
+directly and pass the latency req to the select function, so the zero=20
+latency check could be done by the caller before entering select.
+
+> I'm mostly worried about systems where CPUIDLE_DRIVER_STATE_START is =
+0
+> and where menu_select() explicitly checks "disabled" and then it retu=
+rns
+> 0 anyway if it cannot find any other suitable state.
+
+=46or the ARM platform, the state0 and the default idle function are th=
+e=20
+same, so disabling this state will result in calling the same idle func=
+tion.
+
+> In my opinion that needs to be made consistent, but I don't care too =
+much about
+> which way as long as the change is not too intrusive.
+
+I think we can live with this patch until we remove the=20
+CPUIDLE_DRIVER_STATE_START macro. It was introduced to factor out a=20
+couple of drivers and now it results in a confusing-hard-to-fix-code.
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
