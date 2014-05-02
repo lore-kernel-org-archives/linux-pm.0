@@ -1,70 +1,63 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
- with the PM core
-Date: Fri, 2 May 2014 16:58:03 +0200
-Message-ID: <CAMuHMdWLfKcKLORPJ9f-0TLoWM5EfCZ0G5MfxjUiJCRJG555Sg@mail.gmail.com>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
-	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
-	<535B130C.1000007@gmail.com>
-	<CAPDyKFqG0dV+-y2=t=d3w6_hxWsYi+sOmNdvS6ECPOuoQ61Pmw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it out
+Date: Fri, 02 May 2014 17:32:25 +0200
+Message-ID: <8539453.ED7vQGf2Gc@vostro.rjw.lan>
+References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org> <2782801.UzoMhgfu56@vostro.rjw.lan> <53639F1B.5080000@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFqG0dV+-y2=t=d3w6_hxWsYi+sOmNdvS6ECPOuoQ61Pmw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Ben Dooks <ben.dooks-4yDnlxn2s6sWdaTGBSpHTA@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-omap <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59880 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752705AbaEBPPx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 May 2014 11:15:53 -0400
+In-Reply-To: <53639F1B.5080000@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: peterz@infradead.org, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Ulf, Tomasz,
+On Friday, May 02, 2014 03:35:23 PM Daniel Lezcano wrote:
+> On 05/02/2014 02:09 PM, Rafael J. Wysocki wrote:
+> > On Friday, May 02, 2014 10:52:27 AM Daniel Lezcano wrote:
+> >> On 05/01/2014 12:47 AM, Rafael J. Wysocki wrote:
+> >>> On Wednesday, April 30, 2014 02:01:02 PM Daniel Lezcano wrote:
+> >>>> Encapsulate the large portion of cpuidle_idle_call inside another
+> >>>> function so when CONFIG_CPU_IDLE=n, the code will be compiled out.
+> >>>> Also that is benefitial for the clarity of the code as it removes
+> >>>> a nested indentation level.
+> >>>>
+> >>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>>
+> >>> Well, this conflicts with
+> >>>
+> >>> https://patchwork.kernel.org/patch/4071541/
+> >>>
+> >>> which you haven't commented on and I still want cpuidle_select() to be able to
+> >>> return negative values because of
+> >>>
+> >>> https://patchwork.kernel.org/patch/4089631/
+> >>>
+> >>> (and I have one more patch on top of these two that requires this).
+> >>>
+> >>> Any ideas how to resolve that?
+> >>
+> >> I don't think we have a big conflict. If Peter takes your patches before
+> >> than mines then I will refresh and resend them.
+> >
+> > Actually, I was planning the merge them myself, because they are more cpuidle
+> > than the scheduler, but either way would be fine.
+> 
+> Well I have some patches for the scheduler which will need these 
+> modifications. Is it possible to merge them throw a common branch to be 
+> shared between sched and pm ?
 
-On Fri, May 2, 2014 at 10:13 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->>>> +static int of_clk_register(struct device *dev, struct clk *clk)
->>>> +{
->>>> +       int error;
->>>> +
->>>> +       if (!dev->pm_domain) {
->>>> +               error = pm_clk_create(dev);
->>>> +               if (error)
->>>> +                       return error;
->>>> +
->>>> +               dev->pm_domain = &of_clk_pm_domain;
->>>
->>>
->>> I am concerned about how this will work in conjunction with the
->>> generic power domain.
->>>
->>> A device can't reside in more than one pm_domain; thus I think it
->>> would be better to always use the generic power domain and not have a
->>> specific one for clocks. Typically the genpd should invoke
->>> pm_clk_resume|suspend from it's runtime PM callbacks.
->>
->> I'm not sure about this. A typical use case would be to gate clocks ASAP and
->> then wait until device is idle long enough to consider turning off the power
->> domain worthwhile. Also sometimes we may want to gate the clocks, but
->> prevent power domain from being powered off to retain hardware state (e.g.
->> because there is no way to read it and restore later).
->
-> So, in principle you prefer to have driver's handle clock gating to
-> save power from their runtime PM callbacks, instead of from the power
-> domain, right? Just to clarify, that's my view as well.
+That would be perfectly fine by me, but I'm not sure what Ingo and Peter think
+about that.
 
-If there's both a gate clock and a power domain, and the driver's Runtime PM
-callbacks handle clock gating, who's handling the power domain?
+I can set up a branch with sched/idle/cpuidle changes.
 
-Gr{oetje,eeting}s,
 
-                        Geert (still trying to fit all pieces of the
-puzzle together)
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
