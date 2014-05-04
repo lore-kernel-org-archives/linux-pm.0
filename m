@@ -1,51 +1,145 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH v4 0/5] add cpuidle support for Exynos5420
-Date: Mon,  5 May 2014 14:57:15 +0530
-Message-ID: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:45114 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755458AbaEEJ1f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 05:27:35 -0400
-Received: by mail-pa0-f54.google.com with SMTP id lf10so9061841pab.41
-        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 02:27:34 -0700 (PDT)
-In-Reply-To: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / suspend: Always use deepest C-state in the "freeze" sleep state
+Date: Mon, 05 May 2014 00:51:54 +0200
+Message-ID: <2548502.zJ1no3NhRc@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>
 
-Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This patchset adds cpuidle support for Exynos5420 SoC based on
-generic big.little cpuidle driver.
+If freeze_enter() is called, we want to bypass the current cpuidle
+governor and always use the deepest available (that is, not disabled)
+C-state, because we want to save as much energy as reasonably possible
+then and runtime latency constraints don't matter at that point, since
+the system is in a sleep state anyway.
 
-Tested on SMDK5420.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-This patch set depends on:
-	1. [PATCH 0/5] MCPM backend for Exynos5420
-	   http://www.spinics.net/lists/arm-kernel/msg327923.html
+This is on top of https://patchwork.kernel.org/patch/4071541/ .
 
-	2. [PATCH] arm: exynos: add generic function to calculate cpu number
-	   http://www.spinics.net/lists/linux-samsung-soc/msg29446.html
-	   http://www.spinics.net/lists/arm-kernel/msg324024.html
-		
-Changelog is in respective patches.
-Chander Kashyap (5):
-  driver: cpuidle-big-little: add of_device_id structure
-  cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little
-    driver
-  driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
-  exynos: cpuidle: do not allow cpuidle registration for Exynos5420
-  mcpm: exynos: populate suspend and powered_up callbacks
+---
+ drivers/cpuidle/cpuidle.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/cpuidle.h   |    2 ++
+ kernel/power/suspend.c    |    2 ++
+ 3 files changed, 48 insertions(+), 1 deletion(-)
 
- arch/arm/mach-exynos/cpuidle.c       |    3 +++
- arch/arm/mach-exynos/mcpm-exynos.c   |   34 ++++++++++++++++++++++++++++++++++
- drivers/cpuidle/Kconfig.arm          |    2 +-
- drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
- 4 files changed, 49 insertions(+), 2 deletions(-)
-
--- 
-1.7.9.5
-
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -32,6 +32,7 @@ LIST_HEAD(cpuidle_detected_devices);
+ static int enabled_devices;
+ static int off __read_mostly;
+ static int initialized __read_mostly;
++static bool use_deepest_state __read_mostly;
+ 
+ int cpuidle_disabled(void)
+ {
+@@ -65,6 +66,45 @@ int cpuidle_play_dead(void)
+ }
+ 
+ /**
++ * cpuidle_use_deepest_state - Enable/disable the "deepest idle" mode.
++ * @enable: Whether enable or disable the feature.
++ *
++ * If the "deepest idle" mode is enabled, cpuidle will ignore the governor and
++ * always use the state with the greatest exit latency (out of the states that
++ * are not disabled).
++ *
++ * This function can only be called after cpuidle_pause() to avoid races.
++ */
++void cpuidle_use_deepest_state(bool enable)
++{
++	use_deepest_state = enable;
++}
++
++/**
++ * cpuidle_find_deepest_state - Find the state of the greatest exit latency.
++ * @drv: cpuidle driver for a given CPU.
++ * @dev: cpuidle device for a given CPU.
++ */
++static int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
++				      struct cpuidle_device *dev)
++{
++	unsigned int latency_req = 0;
++	int i, ret = CPUIDLE_DRIVER_STATE_START - 1;
++
++	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
++		struct cpuidle_state *s = &drv->states[i];
++		struct cpuidle_state_usage *su = &dev->states_usage[i];
++
++		if (s->disabled || su->disable || s->exit_latency <= latency_req)
++			continue;
++
++		latency_req = s->exit_latency;
++		ret = i;
++	}
++	return ret;
++}
++
++/**
+  * cpuidle_enter_state - enter the state and update stats
+  * @dev: cpuidle device for this cpu
+  * @drv: cpuidle driver for this cpu
+@@ -124,6 +164,9 @@ int cpuidle_select(struct cpuidle_driver
+ 	if (!drv || !dev || !dev->enabled)
+ 		return -EBUSY;
+ 
++	if (unlikely(use_deepest_state))
++		return cpuidle_find_deepest_state(drv, dev);
++
+ 	return cpuidle_curr_governor->select(drv, dev);
+ }
+ 
+@@ -155,7 +198,7 @@ int cpuidle_enter(struct cpuidle_driver
+  */
+ void cpuidle_reflect(struct cpuidle_device *dev, int index)
+ {
+-	if (cpuidle_curr_governor->reflect)
++	if (cpuidle_curr_governor->reflect && !unlikely(use_deepest_state))
+ 		cpuidle_curr_governor->reflect(dev, index);
+ }
+ 
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -143,6 +143,7 @@ extern void cpuidle_resume(void);
+ extern int cpuidle_enable_device(struct cpuidle_device *dev);
+ extern void cpuidle_disable_device(struct cpuidle_device *dev);
+ extern int cpuidle_play_dead(void);
++extern void cpuidle_use_deepest_state(bool enable);
+ 
+ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev);
+ #else
+@@ -175,6 +176,7 @@ static inline int cpuidle_enable_device(
+ {return -ENODEV; }
+ static inline void cpuidle_disable_device(struct cpuidle_device *dev) { }
+ static inline int cpuidle_play_dead(void) {return -ENODEV; }
++static inline void cpuidle_use_deepest_state(bool enable) {}
+ static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
+ 	struct cpuidle_device *dev) {return NULL; }
+ #endif
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -54,9 +54,11 @@ static void freeze_begin(void)
+ 
+ static void freeze_enter(void)
+ {
++	cpuidle_use_deepest_state(true);
+ 	cpuidle_resume();
+ 	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
+ 	cpuidle_pause();
++	cpuidle_use_deepest_state(false);
+ }
+ 
+ void freeze_wake(void)
