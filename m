@@ -1,153 +1,162 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3] cpufreq: Catch double invocations of
- cpufreq_freq_transition_begin/end
-Date: Mon, 05 May 2014 12:52:39 +0530
-Message-ID: <20140505072129.14454.25747.stgit@srivatsabhat.in.ibm.com>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: =?UTF-8?q?=5BRFC=20PATCH=2000/12=20v1=5D=20A=20new=20CPU=20load=20metric=20for=20power-efficient=20scheduler=3A=20CPU=20ConCurrency?=
+Date: Mon,  5 May 2014 08:02:40 +0800
+Message-ID: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
-Cc: ego@linux.vnet.ibm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Some cpufreq drivers were redundantly invoking the _begin() and _end()
-APIs around frequency transitions, and this double invocation (one from
-the cpufreq core and the other from the cpufreq driver) used to result
-in a self-deadlock, leading to system hangs during boot. (The _begin()
-API makes contending callers wait until the previous invocation is
-complete. Hence, the cpufreq driver would end up waiting on itself!).
+Hi Ingo, PeterZ, Rafael, and others,
 
-Now all such drivers have been fixed, but debugging this issue was not
-very straight-forward (even lockdep didn't catch this). So let us add a
-debug infrastructure to the cpufreq core to catch such issues more easily
-in the future.
+The current scheduler=E2=80=99s load balancing is completely work-conse=
+rving. In some
+workload, generally low CPU utilization but immersed with CPU bursts of
+transient tasks, migrating task to engage all available CPUs for
+work-conserving can lead to significant overhead: cache locality loss,
+idle/active HW state transitional latency and power, shallower idle sta=
+te,
+etc, which are both power and performance inefficient especially for to=
+day=E2=80=99s
+low power processors in mobile.=20
 
-We add a new field called 'transition_task' to the policy structure, to keep
-track of the task which is performing the frequency transition. Using this
-field, we make note of this task during _begin() and print a warning if we
-find a case where the same task is calling _begin() again, before completing
-the previous frequency transition using the corresponding _end().
+This RFC introduces a sense of idleness-conserving into work-conserving=
+ (by
+all means, we really don=E2=80=99t want to be overwhelming in only one =
+way). But to
+what extent the idleness-conserving should be, bearing in mind that we =
+don=E2=80=99t
+want to sacrifice performance? We first need a load/idleness indicator =
+to that
+end.
 
-We have left out ASYNC_NOTIFICATION drivers from this debug infrastructure
-for 2 reasons:
+Thanks to CFS=E2=80=99s =E2=80=9Cmodel an ideal, precise multi-tasking =
+CPU=E2=80=9D, tasks can be seen
+as concurrently running (the tasks in the runqueue). So it is natural t=
+o use
+task concurrency as load indicator. Having said that, we do two things:
 
-1. At the moment, we have no way to avoid a particular scenario where this
-   debug infrastructure can emit false-positive warnings for such drivers.
-   The scenario is depicted below:
+1) Divide continuous time into periods of time, and average task concur=
+rency
+in period, for tolerating the transient bursts:
+a =3D sum(concurrency * time) / period
+2) Exponentially decay past periods, and synthesize them all, for hyste=
+resis
+to load drops or resilience to load rises (let f be decaying factor, an=
+d a_x
+the xth period average since period 0):
+s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, ..., + f^(n-1) * a_1 + f^n * a=
+_0
 
+We name this load indicator as CPU ConCurrency (CC): task concurrency
+determines how many CPUs are needed to be running concurrently.
 
-         Task A						Task B
+Another two ways of how to interpret CC:
 
-    /* 1st freq transition */
-    Invoke _begin() {
-            ...
-            ...
-    }
+1) the current work-conserving load balance also uses CC, but instantan=
+eous
+CC.
 
-    Change the frequency
+2) CC vs. CPU utilization. CC is runqueue-length-weighted CPU utilizati=
+on. If
+we change: "a =3D sum(concurrency * time) / period" to "a' =3D sum(1 * =
+time) /
+period". Then a' is just about the CPU utilization. And the way we weig=
+ht
+runqueue-length is the simplest one (excluding the exponential decays, =
+and you
+may have other ways).
 
-    /* 2nd freq transition */
-    Invoke _begin() {
-	    ...	//waiting for B to
-            ... //finish _end() for
-	    ... //the 1st transition
-	    ...	      |				Got interrupt for successful
-	    ...	      |				change of frequency (1st one).
-	    ...       |
-	    ...	      |				/* 1st freq transition */
-	    ...	      |				Invoke _end() {
-	    ...	      |					...
-	    ...	      V				}
-	    ...
-	    ...
-    }
+To track CC, we intercept the scheduler in 1) enqueue, 2) dequeue, 3)
+scheduler tick, and 4) enter/exit idle.
 
-   This scenario is actually deadlock-free because, once Task A changes the
-   frequency, it is Task B's responsibility to invoke the corresponding
-   _end() for the 1st frequency transition. Hence it is perfectly legal for
-   Task A to go ahead and attempt another frequency transition in the meantime.
-   (Of course it won't be able to proceed until Task B finishes the 1st _end(),
-   but this doesn't cause a deadlock or a hang).
+After CC, in the consolidation part, we do 1) attach the CPU topology t=
+o be
+adaptive beyond our experimental platforms, and 2) intercept the curren=
+t load
+balance for load and load balancing containment.
 
-   The debug infrastructure cannot handle this scenario and will treat it as
-   a deadlock and print a warning. To avoid this, we exclude such drivers
-   from the purview of this code.
+Currently, CC is per CPU. To consolidate, the formula is based on a heu=
+ristic.
+Suppose we have 2 CPUs, their task concurrency over time is ('-' means =
+no
+task, 'x' having tasks):
 
-2. Luckily, we don't _need_ this infrastructure for ASYNC_NOTIFICATION drivers
-   at all! The cpufreq core does not automatically invoke the _begin() and
-   _end() APIs during frequency transitions in such drivers. Thus, the driver
-   alone is responsible for invoking _begin()/_end() and hence there shouldn't
-   be any conflicts which lead to double invocations. So, we can skip these
-   drivers, since the probability that such drivers will hit this problem is
-   extremely low, as outlined above.
+1)
+CPU0: ---xxxx---------- (CC[0])
+CPU1: ---------xxxx---- (CC[1])
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
+2)
+CPU0: ---xxxx---------- (CC[0])
+CPU1: ---xxxx---------- (CC[1])
 
-Changes in v3:
-Expanded the comment in the code to briefly mention why ASYNC_NOTIFICATION
-drivers are left out from the check, as suggested by Gautham R. Shenoy.
-No code changes in this version.
+If we consolidate CPU0 and CPU1, the consolidated CC will be: CC' =3D C=
+C[0] +
+CC[1] for case 1 and CC'' =3D (CC[0] + CC[1]) * 2 for case 2. For the c=
+ases in
+between case 1 and 2 in terms of how xxx overlaps, the CC should be bet=
+ween
+CC' and CC''. So, we uniformly use this condition for consolidation (su=
+ppose
+we consolidate m CPUs to n CPUs, m > n):
 
-v2: https://lkml.org/lkml/2014/4/29/283
-v1: https://lkml.org/lkml/2014/4/28/469
+(CC[0] + CC[1] + ... + CC[m-2] + CC[m-1]) * (n + log(m-n)) >=3D<? (1 * =
+n) * n *
+consolidate_coefficient
 
- drivers/cpufreq/cpufreq.c |   14 ++++++++++++++
- include/linux/cpufreq.h   |    1 +
- 2 files changed, 15 insertions(+)
+The consolidate_coefficient could be like 100% or more or less.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index abda660..a05c921 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -354,6 +354,18 @@ static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
- void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs)
- {
-+
-+	/*
-+	 * Catch double invocations of _begin() which lead to self-deadlock.
-+	 * ASYNC_NOTIFICATION drivers are left out because the cpufreq core
-+	 * doesn't invoke _begin() on their behalf, and hence the chances of
-+	 * double invocations are very low. Moreover, there are scenarios
-+	 * where these checks can emit false-positive warnings in these
-+	 * drivers; so we avoid that by skipping them altogether.
-+	 */
-+	WARN_ON(!(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION)
-+				&& current == policy->transition_task);
-+
- wait:
- 	wait_event(policy->transition_wait, !policy->transition_ongoing);
- 
-@@ -365,6 +377,7 @@ wait:
- 	}
- 
- 	policy->transition_ongoing = true;
-+	policy->transition_task = current;
- 
- 	spin_unlock(&policy->transition_lock);
- 
-@@ -381,6 +394,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
- 	cpufreq_notify_post_transition(policy, freqs, transition_failed);
- 
- 	policy->transition_ongoing = false;
-+	policy->transition_task = NULL;
- 
- 	wake_up(&policy->transition_wait);
- }
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 5ae5100..8f44d79 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -110,6 +110,7 @@ struct cpufreq_policy {
- 	bool			transition_ongoing; /* Tracks transition status */
- 	spinlock_t		transition_lock;
- 	wait_queue_head_t	transition_wait;
-+	struct task_struct	*transition_task; /* Task which is doing the transition */
- };
- 
- /* Only for ACPI */
+By CC, we implemented a Workload Consolidation patch on two Intel mobil=
+e
+platforms (a quad-core composed of two dual-core modules): contain load=
+ and
+load balancing in the first dual-core when aggregated CC low, and if no=
+t in
+the full quad-core. Results show that we got power savings and no subst=
+antial
+performance regression (even gains for some). The workloads we used to
+evaluate the Workload Consolidation include 1) 50+ perf/ux benchmarks (=
+almost
+all of the magazine ones), and 2) ~10 power workloads, of course, they =
+are the
+easiest ones, such as browsing, audio, video, recording, imaging, etc. =
+The
+current half-life is 1 period, and the period was 32ms, and now 64ms fo=
+r more
+aggressive consolidation.
 
+Yuyang Du (12):
+  CONFIG for CPU ConCurrency
+  Init for CPU ConCurrency
+  CPU ConCurrency calculation
+  CPU ConCurrency collecting in:
+  CONFIG for Workload Consolidation
+  Attach CPU topology
+  CPU ConCurrency API for Workload Consolidation
+  Intercept wakeup/fork/exec balance
+  Intercept idle balance
+  Intercept periodic nohz idle balance
+  Intercept periodic load balance
+  Intercept RT provocatively
+
+ arch/x86/Kconfig             |   21 +
+ include/linux/sched.h        |   13 +
+ include/linux/sched/sysctl.h |    8 +
+ include/linux/topology.h     |   16 +
+ kernel/sched/Makefile        |    1 +
+ kernel/sched/concurrency.c   |  928 ++++++++++++++++++++++++++++++++++=
+++++++++
+ kernel/sched/core.c          |   49 +++
+ kernel/sched/fair.c          |  131 +++++-
+ kernel/sched/rt.c            |   25 ++
+ kernel/sched/sched.h         |   36 ++
+ kernel/sysctl.c              |   16 +
+ 11 files changed, 1235 insertions(+), 9 deletions(-)
+ create mode 100644 kernel/sched/concurrency.c
+
+--=20
+1.7.9.5
