@@ -1,52 +1,41 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 0/7] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with secure
- firmware enabled
-Date: Mon, 05 May 2014 12:57:12 +0200
-Message-ID: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [Patch v3 3/5] driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+Date: Mon,  5 May 2014 13:57:22 +0530
+Message-ID: <1399278444-8312-4-git-send-email-chander.kashyap@linaro.org>
+References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
+ <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Add "samsung,exynos5420" compatible string to initialize generic
+big-little cpuidle driver for Exynos5420.
 
-This patch series fixes support for AFTR idle mode on boards with
-secure firmware enabled (it also includes fix for register setup on
-EXYNOS4x12 SoCs).  It has been tested on Trats2 target but should
-also work on (EXYNOS4412 based) Insignal Origen board.
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+Changes in v3:
+	1. Add compatible string to of_device_id table insted comparing directoly
+Changes in v2: none
 
-This patchset depends on "[PATCH V5 00/20] ARM: exynos: cpuidle:
-Move the driver to drivers/cpuidle" patch series from Daniel Lezcano
-("http://www.spinics.net/lists/linux-samsung-soc/msg28494.html").
+ drivers/cpuidle/cpuidle-big_little.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (5):
-  ARM: EXYNOS: add AFTR mode support to firmware do_idle method
-  ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
-  ARM: EXYNOS: PM: use c15resume firmware method if secure firmware is
-    enabled
-  ARM: EXYNOS: PM: fix register setup on EXYNOS4x12 for AFTR mode code
-  ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
-
-Kyungmin Park (1):
-  arm: firmware: Check firmware is running or not
-
-Tomasz Figa (1):
-  ARM: EXYNOS: add support for firmware-assisted c15resume
-
- arch/arm/common/firmware.c       |  5 +++++
- arch/arm/include/asm/firmware.h  | 14 +++++++++++++-
- arch/arm/mach-exynos/firmware.c  | 18 ++++++++++++++++--
- arch/arm/mach-exynos/pm.c        | 40 ++++++++++++++++++++++++++++++++--------
- drivers/cpuidle/cpuidle-exynos.c |  7 ++++++-
- 5 files changed, 72 insertions(+), 12 deletions(-)
-
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index 4cd02bd..344d79fa 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -165,6 +165,7 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
+ 
+ static const struct of_device_id compatible_machine_match[] = {
+ 	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
++	{ .compatible = "samsung,exynos5420" },
+ 	{},
+ };
+ 
 -- 
-1.8.2.3
+1.7.9.5
