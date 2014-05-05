@@ -1,87 +1,56 @@
 From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v4 5/5] mcpm: exynos: populate suspend and powered_up callbacks
-Date: Mon,  5 May 2014 14:57:20 +0530
-Message-ID: <1399282040-8995-6-git-send-email-chander.kashyap@linaro.org>
+Subject: [Patch v4 1/5] driver: cpuidle-big-little: add of_device_id structure
+Date: Mon,  5 May 2014 14:57:16 +0530
+Message-ID: <1399282040-8995-2-git-send-email-chander.kashyap@linaro.org>
 References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
  <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:52303 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755749AbaEEJ14 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 05:27:56 -0400
-Received: by mail-pa0-f54.google.com with SMTP id lf10so9007353pab.13
-        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 02:27:55 -0700 (PDT)
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-In order to support cpuidle through mcpm, suspend and powered-up
-callbacks are required in mcpm platform code.
-Hence populate the same callbacks.
+This driver will be used by many big.Little Soc's. As of now it does
+string matching of hardcoded compatible string to init the driver. This
+comparison list will keep on growing with addition of new SoC's.
+Hence add of_device_id structure to collect the compatible strings of
+SoC's using this driver.
 
 Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
 Signed-off-by: Chander Kashyap <k.chander@samsung.com>
 ---
-Changes in v4: None
-Changes in v3:
-	1. Removed coherancy enablement after suspend failure.
-	2. Use generic function to poweron cpu.
-changes in v2:
-	1. Fixed typo: enynos_pmu_cpunr to exynos_pmu_cpunr
- arch/arm/mach-exynos/mcpm-exynos.c |   34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/cpuidle/cpuidle-big_little.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
-index d0f7461..6d4a907 100644
---- a/arch/arm/mach-exynos/mcpm-exynos.c
-+++ b/arch/arm/mach-exynos/mcpm-exynos.c
-@@ -256,10 +256,44 @@ static int exynos_power_down_finish(unsigned int cpu, unsigned int cluster)
- 	return -ETIMEDOUT; /* timeout */
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index b45fc62..4cd02bd 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -163,14 +163,23 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
+ 	return 0;
  }
  
-+void exynos_powered_up(void)
-+{
-+	unsigned int mpidr, cpu, cluster;
++static const struct of_device_id compatible_machine_match[] = {
++	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
++	{},
++};
 +
-+	mpidr = read_cpuid_mpidr();
-+	cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
-+	cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+ static int __init bl_idle_init(void)
+ {
+ 	int ret;
++	struct device_node *root = of_find_node_by_path("/");
 +
-+	arch_spin_lock(&exynos_mcpm_lock);
-+	if (cpu_use_count[cpu][cluster] == 0)
-+		cpu_use_count[cpu][cluster] = 1;
-+	arch_spin_unlock(&exynos_mcpm_lock);
-+}
-+
-+static void exynos_suspend(u64 residency)
-+{
-+	unsigned int mpidr, cpunr;
-+
-+	mpidr = read_cpuid_mpidr();
-+	cpunr = exynos_pmu_cpunr(mpidr);
-+
-+	__raw_writel(virt_to_phys(mcpm_entry_point), ns_sram_base_addr + 0x1c);
-+
-+	exynos_power_down();
-+
-+	/*
-+	 * Execution reaches here only if cpu did not power down.
-+	 * Hence roll back the changes done in exynos_power_down function.
-+	*/
-+	exynos_cpu_powerup(cpunr);
-+}
-+
- static const struct mcpm_platform_ops exynos_power_ops = {
- 	.power_up		= exynos_power_up,
- 	.power_down		= exynos_power_down,
- 	.power_down_finish	= exynos_power_down_finish,
-+	.suspend		= exynos_suspend,
-+	.powered_up		= exynos_powered_up,
- };
++	if (!root)
++		return -ENODEV;
  
- static void __init exynos_mcpm_usage_count_init(void)
+ 	/*
+ 	 * Initialize the driver just for a compliant set of machines
+ 	 */
+-	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7"))
++	if (!of_match_node(compatible_machine_match, root))
+ 		return -ENODEV;
+ 	/*
+ 	 * For now the differentiation between little and big cores
 -- 
 1.7.9.5
-
