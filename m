@@ -1,56 +1,31 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v4 1/5] driver: cpuidle-big-little: add of_device_id structure
-Date: Mon,  5 May 2014 14:57:16 +0530
-Message-ID: <1399282040-8995-2-git-send-email-chander.kashyap@linaro.org>
-References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
- <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] PM / OPP: Remove cpufreq wrapper dependency on
+ internal data organization
+Date: Mon, 5 May 2014 20:10:00 +0530
+Message-ID: <CAKohponPGO511A--_sh5LYM6txgv5LTEy+n4RpshC8WH1CyEgw@mail.gmail.com>
+References: <1399296830-13056-1-git-send-email-nm@ti.com>
+	<1399296830-13056-2-git-send-email-nm@ti.com>
+	<CAKohpomeP3Ftx8mH=x0Hj7HEpw6A9X8O8JEFqvrJbkZYDqDS6Q@mail.gmail.com>
+	<CAGo_u6pcEKDiAqvJW66_p7M7D0noFj6o9Rw5_d8Af3NMBhHA=g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <CAGo_u6pcEKDiAqvJW66_p7M7D0noFj6o9Rw5_d8Af3NMBhHA=g@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@deeprootsystems.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This driver will be used by many big.Little Soc's. As of now it does
-string matching of hardcoded compatible string to init the driver. This
-comparison list will keep on growing with addition of new SoC's.
-Hence add of_device_id structure to collect the compatible strings of
-SoC's using this driver.
+On 5 May 2014 19:55, Nishanth Menon <nm@ti.com> wrote:
+> On Mon, May 5, 2014 at 9:23 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>
+>>
+>> What if opp is being added for some reason at the same time?
+>> I hope we can surely see some awkward results, maybe some
+>> NULL pointers invocations as well..
+>
+> we wont - rcu operations ensure that.
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
----
- drivers/cpuidle/cpuidle-big_little.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+Stupid !!
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index b45fc62..4cd02bd 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -163,14 +163,23 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
- 	return 0;
- }
- 
-+static const struct of_device_id compatible_machine_match[] = {
-+	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
-+	{},
-+};
-+
- static int __init bl_idle_init(void)
- {
- 	int ret;
-+	struct device_node *root = of_find_node_by_path("/");
-+
-+	if (!root)
-+		return -ENODEV;
- 
- 	/*
- 	 * Initialize the driver just for a compliant set of machines
- 	 */
--	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7"))
-+	if (!of_match_node(compatible_machine_match, root))
- 		return -ENODEV;
- 	/*
- 	 * For now the differentiation between little and big cores
--- 
-1.7.9.5
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
