@@ -1,89 +1,99 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: Re: [Patch v3 2/5] cpuidle: config: Add ARCH_EXYNOS entry to select
- cpuidle-big-little driver
-Date: Mon, 5 May 2014 14:39:19 +0530
-Message-ID: <CANuQgHE50Ogqaf7jJsfy6Wx40oCsUBSXz=877BaXdXswQ7e8tw@mail.gmail.com>
-References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
-	<1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
-	<1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
-	<536752FD.3040704@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 07/10] thermal: exynos: simplify temp_to_code() and
+ code_to_temp()
+Date: Mon, 05 May 2014 13:15:36 +0200
+Message-ID: <1399288539-1793-8-git-send-email-b.zolnierkie@samsung.com>
+References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:36318 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755698AbaEEJJU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 05:09:20 -0400
-Received: by mail-oa0-f54.google.com with SMTP id j17so3730095oag.27
-        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 02:09:19 -0700 (PDT)
-In-Reply-To: <536752FD.3040704@suse.de>
+Received: from mailout3.samsung.com ([203.254.224.33]:54981 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756134AbaEELTm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 07:19:42 -0400
+In-reply-to: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 
-Hi Andreas,
+* Remove dead temp check from temp_to_code() (this function users
+  in exynos_tmu_initialize() always pass correct temperatures and
+  exynos_tmu_set_emulation() returns early for EXYNOS4210 because
+  TMU_SUPPORT_EMULATION flag is not set on this SoC).
 
-On 5 May 2014 14:29, Andreas F=C3=A4rber <afaerber@suse.de> wrote:
-> Hi,
->
-> Am 05.05.2014 10:27, schrieb Chander Kashyap:
->> Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 c=
-ores.
->> In order to use generic cpuidle-big-little driver, this patch adds E=
-xynos5420
->> specific check to initialize generic cpuidle driver.
->>
->> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
->> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
->> ---
->> Changes in v3: None
->> Changes in v2:
->>       1. Changed config macro from SOC_EXYNOS5420 to SOC_EXYNOS5420
->
-> This is probably a copy&pasto? Anyway, the commit message needs an
-> update since no Exynos5420 specific check is done below afaics. That
-> went into 3/5.
+* Move temp_code check from code_to_temp() to exynos_tmu_read()
+  (code_to_temp() only user).
 
-Oops that's write,
-Copy paste mistake, and commit message change is required. I will fix i=
-t .
+There should be no functional changes caused by this patch.
 
-Thanks
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 38 +++++++++++-------------------------
+ 1 file changed, 11 insertions(+), 27 deletions(-)
 
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index a415829..20379eb 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -71,19 +71,7 @@ struct exynos_tmu_data {
+  */
+ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
+ {
+-	struct exynos_tmu_platform_data *pdata = data->pdata;
+-	int temp_code;
+-
+-	if (data->soc == SOC_ARCH_EXYNOS4210)
+-		/* temp should range between 25 and 125 */
+-		if (temp < 25 || temp > 125) {
+-			temp_code = -EINVAL;
+-			goto out;
+-		}
+-
+-	temp_code = temp + data->temp_error - pdata->first_point_trim;
+-out:
+-	return temp_code;
++	return temp + data->temp_error - data->pdata->first_point_trim;
+ }
+ 
+ /*
+@@ -92,19 +80,7 @@ out:
+  */
+ static int code_to_temp(struct exynos_tmu_data *data, u8 temp_code)
+ {
+-	struct exynos_tmu_platform_data *pdata = data->pdata;
+-	int temp;
+-
+-	if (data->soc == SOC_ARCH_EXYNOS4210)
+-		/* temp_code should range between 75 and 175 */
+-		if (temp_code < 75 || temp_code > 175) {
+-			temp = -ENODATA;
+-			goto out;
+-		}
+-
+-	temp = temp_code - data->temp_error + pdata->first_point_trim;
+-out:
+-	return temp;
++	return temp_code - data->temp_error + data->pdata->first_point_trim;
+ }
+ 
+ static int exynos_tmu_initialize(struct platform_device *pdev)
+@@ -297,8 +273,16 @@ static int exynos_tmu_read(struct exynos_tmu_data *data)
+ 	clk_enable(data->clk);
+ 
+ 	temp_code = readb(data->base + reg->tmu_cur_temp);
+-	temp = code_to_temp(data, temp_code);
+ 
++	if (data->soc == SOC_ARCH_EXYNOS4210)
++		/* temp_code should range between 75 and 175 */
++		if (temp_code < 75 || temp_code > 175) {
++			temp = -ENODATA;
++			goto out;
++		}
++
++	temp = code_to_temp(data, temp_code);
++out:
+ 	clk_disable(data->clk);
+ 	mutex_unlock(&data->lock);
+ 
+-- 
+1.8.2.3
 
->
-> Cheers,
-> Andreas
->
->>  drivers/cpuidle/Kconfig.arm |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.a=
-rm
->> index 97ccc31..d9596e7 100644
->> --- a/drivers/cpuidle/Kconfig.arm
->> +++ b/drivers/cpuidle/Kconfig.arm
->> @@ -4,7 +4,7 @@
->>
->>  config ARM_BIG_LITTLE_CPUIDLE
->>       bool "Support for ARM big.LITTLE processors"
->> -     depends on ARCH_VEXPRESS_TC2_PM
->> +     depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
->>       select ARM_CPU_SUSPEND
->>       select CPU_IDLE_MULTIPLE_DRIVERS
->>       help
->>
->
->
-> --
-> SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-> GF: Jeff Hawn, Jennifer Guild, Felix Imend=C3=B6rffer; HRB 16746 AG N=
-=C3=BCrnberg
-
-
-
---=20
-with warm regards,
-Chander Kashyap
