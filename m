@@ -1,50 +1,55 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Mon, 5 May 2014 09:46:54 -0500
-Message-ID: <CAGo_u6p1xLe7cPnCNKe3WixhAY6tmX=-a7CQes9nsV81SpTEvw@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
-	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
-	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-	<5367946F.1030407@ti.com>
-	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
-	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
-	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v2] PM / devfreq: Use freq_table for available_frequencies
+Date: Mon, 05 May 2014 11:18:35 -0700
+Message-ID: <5367D5FB.2080305@codeaurora.org>
+References: <4324793.197151398649314597.JavaMail.weblogic@epv6ml10> <536004E9.1010300@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f180.google.com ([74.125.82.180]:63674 "EHLO
-	mail-we0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932770AbaEEOqz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 10:46:55 -0400
-In-Reply-To: <CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <536004E9.1010300@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On Mon, May 5, 2014 at 9:38 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 5 May 2014 19:53, Nishanth Menon <nm@ti.com> wrote:
->> ceil and floor allows us to walk down the opp entries the direction we
->> want it to.
->> one can convert that data any way one wants it - especially when custom
->> mapping such as this is desired.
->
-> Yeah, but doing that for every frequency transition is not right.
-> Otherwise they already have a solution, where they reverse order
-> of frequencies for their driver. exynos_sort_descend_freq_table().
->
-> Probably that's a better solution then :)
-Such a map should probably be done at probe, unless we have strong
-reasons why not to.
+On 04/29/2014 01:00 PM, Saravana Kannan wrote:
+> On 04/27/2014 06:41 PM, MyungJoo Ham wrote:
+>> You are hereby changing the semmantics of the original
+>> available_frequencies node.
+>>
+>> When a frequency/voltage pair has been disabled (opp_disable), probably
+>> by opp_disable(), the frequency is no more "available".
+>> However, when the driver author supplied freq_table as well as OPP
+>> in order to see the statistics, the node will behave differently.
+>>
+>> Please do not affect the current users as long as it does not give
+>> additional benefit or fix a bug.
+> 
+> I was actually trying to stick with the semantics as it was documented.
+> The documentation for this file says it'll show frequencies that are not
+> allowed by the current min/max settings either. To me, an OPP disable
+> seems similar to some frequencies "disabled" by min/max settings.
+> 
+> Giving preference to OPP is not a hard change to do, but it seems to go
+> againsts the documented semantics.
+> 
+> Thoughts?
 
->
-> But, Jonghwan was probably trying to get this solved in the framework
-> only, in case anybody else needs it.
->
-Lets keep things simple for the time being. ideally users of a
-framework should not depend on internal organization of data.
+I'll send out another patch like you wanted -- with OPP being given
+preference over freq_table when listing frequencies.
 
-Regards,
-Nishanth Menon
+But I would still like to hear your thoughts. As of today, there's no
+clean way to get the complete list of available frequencies that would
+give a consistent output irrespective of the temporary limits/conditions
+imposed by thermal, current limiting, etc. The round about way is to cat
+trans_stat and parse the frequencies from that.
+
+That's why I was trying to give preference to freq_table.
+
+Thanks,
+Saravana
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
