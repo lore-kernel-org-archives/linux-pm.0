@@ -1,55 +1,49 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v2] PM / devfreq: Use freq_table for available_frequencies
-Date: Mon, 05 May 2014 11:18:35 -0700
-Message-ID: <5367D5FB.2080305@codeaurora.org>
-References: <4324793.197151398649314597.JavaMail.weblogic@epv6ml10> <536004E9.1010300@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <536004E9.1010300@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [Patch v4 3/5] driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+Date: Mon,  5 May 2014 14:57:18 +0530
+Message-ID: <1399282040-8995-4-git-send-email-chander.kashyap@linaro.org>
+References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
+ <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:60654 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755895AbaEEJ1s (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 05:27:48 -0400
+Received: by mail-pa0-f48.google.com with SMTP id rd3so613021pab.7
+        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 02:27:47 -0700 (PDT)
+In-Reply-To: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 
-On 04/29/2014 01:00 PM, Saravana Kannan wrote:
-> On 04/27/2014 06:41 PM, MyungJoo Ham wrote:
->> You are hereby changing the semmantics of the original
->> available_frequencies node.
->>
->> When a frequency/voltage pair has been disabled (opp_disable), probably
->> by opp_disable(), the frequency is no more "available".
->> However, when the driver author supplied freq_table as well as OPP
->> in order to see the statistics, the node will behave differently.
->>
->> Please do not affect the current users as long as it does not give
->> additional benefit or fix a bug.
-> 
-> I was actually trying to stick with the semantics as it was documented.
-> The documentation for this file says it'll show frequencies that are not
-> allowed by the current min/max settings either. To me, an OPP disable
-> seems similar to some frequencies "disabled" by min/max settings.
-> 
-> Giving preference to OPP is not a hard change to do, but it seems to go
-> againsts the documented semantics.
-> 
-> Thoughts?
+Add "samsung,exynos5420" compatible string to initialize generic
+big-little cpuidle driver for Exynos5420.
 
-I'll send out another patch like you wanted -- with OPP being given
-preference over freq_table when listing frequencies.
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+Changes in v4: None
+Changes in v3:
+	1. Add compatible string to of_device_id table insted comparing directoly
+Changes in v2: none
 
-But I would still like to hear your thoughts. As of today, there's no
-clean way to get the complete list of available frequencies that would
-give a consistent output irrespective of the temporary limits/conditions
-imposed by thermal, current limiting, etc. The round about way is to cat
-trans_stat and parse the frequencies from that.
+ drivers/cpuidle/cpuidle-big_little.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-That's why I was trying to give preference to freq_table.
-
-Thanks,
-Saravana
-
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index 4cd02bd..344d79fa 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -165,6 +165,7 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
+ 
+ static const struct of_device_id compatible_machine_match[] = {
+ 	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
++	{ .compatible = "samsung,exynos5420" },
+ 	{},
+ };
+ 
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+1.7.9.5
+
