@@ -1,43 +1,54 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v4 2/5] cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little driver
-Date: Mon,  5 May 2014 14:57:17 +0530
-Message-ID: <1399282040-8995-3-git-send-email-chander.kashyap@linaro.org>
-References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
- <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 5/7] ARM: EXYNOS: PM: use c15resume firmware method if secure
+ firmware is enabled
+Date: Mon, 05 May 2014 12:57:17 +0200
+Message-ID: <1399287439-31376-6-git-send-email-b.zolnierkie@samsung.com>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:36485 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756412AbaEEK7k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 06:59:40 -0400
+In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 
-Add support to select generic big-little cpuidle driver for Samsung Exynos
-series SoC's. This is required for Exynos big-llittle SoC's eg, Exynos5420.
+Use c15resume firmware method instead of accessing the registers
+directly in exynos_cpu_restore_register() if secure firmware is
+enabled.  This affects both PM resume method and cpuidle AFTR mode.
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+This patch shouldn't cause any functionality changes on boards that
+don't use secure firmware.
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
-Changes in v4:
-	1. Typo fixed from SOC_EXYNOS5420 to ARCH_EXYNOS
-	2. Commit message updated
-Changes in v3: None
-Changes in v2:
-	1. Changed config macro from SOC_EXYNOS5420 to ARCH_EXYNOS
- drivers/cpuidle/Kconfig.arm |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/mach-exynos/pm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 97ccc31..d9596e7 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -4,7 +4,7 @@
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index 1679c51..18f6bf8 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -26,6 +26,7 @@
+ #include <asm/hardware/cache-l2x0.h>
+ #include <asm/smp_scu.h>
+ #include <asm/suspend.h>
++#include <asm/firmware.h>
  
- config ARM_BIG_LITTLE_CPUIDLE
- 	bool "Support for ARM big.LITTLE processors"
--	depends on ARCH_VEXPRESS_TC2_PM
-+	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
- 	select ARM_CPU_SUSPEND
- 	select CPU_IDLE_MULTIPLE_DRIVERS
- 	help
+ #include <plat/cpu.h>
+ #include <plat/pm-common.h>
+@@ -167,6 +168,9 @@ static void exynos_cpu_restore_register(void)
+ {
+ 	unsigned long tmp;
+ 
++	if (call_firmware_op(c15resume, save_arm_register) == 0)
++		return;
++
+ 	/* Restore Power control register */
+ 	tmp = save_arm_register[0];
+ 
 -- 
-1.7.9.5
+1.8.2.3
+
