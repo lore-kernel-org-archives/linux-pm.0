@@ -1,39 +1,91 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v3 4/5] exynos: cpuidle: do not allow cpuidle registration for Exynos5420
-Date: Mon,  5 May 2014 13:57:23 +0530
-Message-ID: <1399278444-8312-5-git-send-email-chander.kashyap@linaro.org>
-References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
- <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: [RFC PATCH 12/12 v1] Intercept RT provocatively
+Date: Mon,  5 May 2014 08:02:52 +0800
+Message-ID: <1399248172-13871-13-git-send-email-yuyang.du@intel.com>
+References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:46110 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755346AbaEEIJQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 May 2014 04:09:16 -0400
+In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
 
-Exynos5420 is big.Little Soc. It uses cpuidle-big-litle generic cpuidle driver.
-Hence do not allow exynos cpuidle driver registration for Exynos5420.
-
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Yuyang Du <yuyang.du@intel.com>
 ---
- arch/arm/mach-exynos/cpuidle.c |    3 +++
- 1 file changed, 3 insertions(+)
+ kernel/sched/rt.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
-index c57cae0..242f75d 100644
---- a/arch/arm/mach-exynos/cpuidle.c
-+++ b/arch/arm/mach-exynos/cpuidle.c
-@@ -219,6 +219,9 @@ static int exynos_cpuidle_probe(struct platform_device *pdev)
- 	int cpu_id, ret;
- 	struct cpuidle_device *device;
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index bd2267a..f8141fb 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -1217,6 +1217,9 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ {
+ 	struct task_struct *curr;
+ 	struct rq *rq;
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	int do_find = 0;
++#endif
  
-+	if (soc_is_exynos5420())
-+		return -ENODEV;
+ 	if (p->nr_cpus_allowed == 1)
+ 		goto out;
+@@ -1230,6 +1233,11 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ 	rcu_read_lock();
+ 	curr = ACCESS_ONCE(rq->curr); /* unlocked access */
+ 
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	if (workload_consolidation_cpu_shielded(cpu))
++		do_find = 1;
++#endif
 +
- 	if (soc_is_exynos5250())
- 		exynos5_core_down_clk();
+ 	/*
+ 	 * If the current task on @p's runqueue is an RT task, then
+ 	 * try to see if we can wake this RT task up on another
+@@ -1252,9 +1260,15 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ 	 * This test is optimistic, if we get it wrong the load-balancer
+ 	 * will have to sort it out.
+ 	 */
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	if (do_find || (curr && unlikely(rt_task(curr)) &&
++	    (curr->nr_cpus_allowed < 2 ||
++	     curr->prio <= p->prio))) {
++#else
+ 	if (curr && unlikely(rt_task(curr)) &&
+ 	    (curr->nr_cpus_allowed < 2 ||
+ 	     curr->prio <= p->prio)) {
++#endif
+ 		int target = find_lowest_rq(p);
  
+ 		if (target != -1)
+@@ -1460,6 +1474,12 @@ static int find_lowest_rq(struct task_struct *task)
+ 	if (!cpupri_find(&task_rq(task)->rd->cpupri, task, lowest_mask))
+ 		return -1; /* No targets found */
+ 
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	workload_consolidation_nonshielded_mask(this_cpu, lowest_mask);
++	if (!cpumask_weight(lowest_mask))
++		return -1;
++#endif
++
+ 	/*
+ 	 * At this point we have built a mask of cpus representing the
+ 	 * lowest priority tasks in the system.  Now we want to elect
+@@ -1687,6 +1707,11 @@ static int pull_rt_task(struct rq *this_rq)
+ 	if (likely(!rt_overloaded(this_rq)))
+ 		return 0;
+ 
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	if (workload_consolidation_cpu_shielded(this_cpu))
++		return 0;
++#endif
++
+ 	/*
+ 	 * Match the barrier from rt_set_overloaded; this guarantees that if we
+ 	 * see overloaded we must also see the rto_mask bit.
 -- 
 1.7.9.5
+
