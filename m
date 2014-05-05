@@ -1,72 +1,50 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 4/7] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by
- static inlines
-Date: Mon, 05 May 2014 12:57:16 +0200
-Message-ID: <1399287439-31376-5-git-send-email-b.zolnierkie@samsung.com>
-References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+Subject: [PATCH 00/10] thermal: exynos: various cleanups
+Date: Mon, 05 May 2014 13:15:29 +0200
+Message-ID: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
-by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
-inlines.
+Hi,
 
-This patch shouldn't cause any functionality changes.
+This patch series contains various cleanups for EXYNOS thermal
+driver.  Overall it decreases driver's LOC by 13%.  It is based
+on next-20140428 kernel.  It should not cause any functionality
+changes.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- arch/arm/mach-exynos/pm.c | 28 ++++++++++++++++++++--------
- 1 file changed, 20 insertions(+), 8 deletions(-)
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index b380d48..1679c51 100644
---- a/arch/arm/mach-exynos/pm.c
-+++ b/arch/arm/mach-exynos/pm.c
-@@ -101,12 +101,23 @@ static int exynos_irq_set_wake(struct irq_data *data, unsigned int state)
- 	return -ENOENT;
- }
- 
--#define EXYNOS_BOOT_VECTOR_ADDR	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
--			S5P_INFORM7 : (samsung_rev() == EXYNOS4210_REV_1_0 ? \
--			(S5P_VA_SYSRAM + 0x24) : S5P_INFORM0))
--#define EXYNOS_BOOT_VECTOR_FLAG	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
--			S5P_INFORM6 : (samsung_rev() == EXYNOS4210_REV_1_0 ? \
--			(S5P_VA_SYSRAM + 0x20) : S5P_INFORM1))
-+static inline void __iomem *exynos_boot_vector_addr(void)
-+{
-+	if (samsung_rev() == EXYNOS4210_REV_1_1)
-+		return S5P_INFORM7;
-+	else if (samsung_rev() == EXYNOS4210_REV_1_0)
-+		return S5P_VA_SYSRAM + 0x24;
-+	return S5P_INFORM0;
-+}
-+
-+static inline void __iomem *exynos_boot_vector_flag(void)
-+{
-+	if (samsung_rev() == EXYNOS4210_REV_1_1)
-+		return S5P_INFORM6;
-+	else if (samsung_rev() == EXYNOS4210_REV_1_0)
-+		return S5P_VA_SYSRAM + 0x20;
-+	return S5P_INFORM1;
-+}
- 
- #define S5P_CHECK_AFTR  0xFCBA0D10
- #define S5P_CHECK_SLEEP 0x00000BAD
-@@ -119,8 +130,9 @@ static void exynos_set_wakeupmask(long mask)
- 
- static void exynos_cpu_set_boot_vector(long flags)
- {
--	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
--	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
-+	__raw_writel(virt_to_phys(exynos_cpu_resume),
-+		     exynos_boot_vector_addr());
-+	__raw_writel(flags, exynos_boot_vector_flag());
- }
- 
- void exynos_enter_aftr(void)
+
+Bartlomiej Zolnierkiewicz (10):
+  thermal: exynos: remove unused struct exynos_tmu_registers entries
+  thermal: exynos: remove unused defines
+  thermal: exynos: remove dead code for HW_MODE calibration
+  thermal: exynos: remove dead code for TYPE_TWO_POINT_TRIMMING
+    calibration
+  thermal: exynos: remove redundant pdata checks from
+    exynos_tmu_initialize()
+  thermal: exynos: remove redundant threshold_code checks from
+    exynos_tmu_initialize()
+  thermal: exynos: simplify temp_to_code() and code_to_temp()
+  thermal: exynos: cache non_hw_trigger_levels in pdata
+  thermal: exynos: remove redundant pdata checks from
+    exynos_tmu_control()
+  thermal: exynos: remove identical values from exynos*_tmu_registers
+    structures
+
+ drivers/thermal/samsung/exynos_thermal_common.h |   1 -
+ drivers/thermal/samsung/exynos_tmu.c            | 181 ++++--------------------
+ drivers/thermal/samsung/exynos_tmu.h            |  86 +----------
+ drivers/thermal/samsung/exynos_tmu_data.c       |  40 +-----
+ drivers/thermal/samsung/exynos_tmu_data.h       |  32 +----
+ 5 files changed, 37 insertions(+), 303 deletions(-)
+
 -- 
 1.8.2.3
