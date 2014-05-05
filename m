@@ -1,46 +1,53 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v4 4/5] exynos: cpuidle: do not allow cpuidle registration for Exynos5420
-Date: Mon,  5 May 2014 14:57:19 +0530
-Message-ID: <1399282040-8995-5-git-send-email-chander.kashyap@linaro.org>
-References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
- <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+From: Mascha Kurpicz <mascha.kurpicz@unine.ch>
+Subject: Re: time_in_state on Ubuntu 13.10
+Date: Mon, 5 May 2014 14:08:09 +0200
+Message-ID: <53677F29.2090905@unine.ch>
+References: <535E6906.2090201@unine.ch>	<CAOh2x==Q_oDn9v4S5ggh_e-3_=vSU_5Ko_89LfWM9ARBS9i=Rg@mail.gmail.com>	<535F51F7.5090804@unine.ch>	<CAKohponpGMMRUvDivaxj_qz5dQvhxZHiHW4Z19GzpaEJHGStRQ@mail.gmail.com>	<535F6508.5020202@unine.ch> <CAKohponNhk2wxM2vTX6ZWf590bxTSjT-53oV9D6AKPch+VbsSw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:50344 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755951AbaEEJ1w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 05:27:52 -0400
-Received: by mail-pa0-f45.google.com with SMTP id ey11so3745624pad.4
-        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 02:27:52 -0700 (PDT)
-In-Reply-To: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+Received: from columba.unine.ch ([130.125.1.53]:41741 "EHLO unine.ch"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756486AbaEEMIN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 May 2014 08:08:13 -0400
+In-Reply-To: <CAKohponNhk2wxM2vTX6ZWf590bxTSjT-53oV9D6AKPch+VbsSw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Maxime Colmant <maxime.colmant@inria.fr>
 
-Exynos5420 is big.Little Soc. It uses cpuidle-big-litle generic cpuidle driver.
-Hence do not allow exynos cpuidle driver registration for Exynos5420.
+On 05/02/2014 07:25 AM, Viresh Kumar wrote:
+> On 29 April 2014 14:08, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
+>> On 04/29/2014 10:26 AM, Viresh Kumar wrote:
+>>> On 29 April 2014 12:47, Mascha Kurpicz <mascha.kurpicz@unine.ch> wrote:
+>>>> Sorry for the imprecision.
+>>>>
+>>>> Works correctly with
+>>>> Ubuntu 12.04.3 LTS - kernel 3.2.0-29-generic
+>>>> Ubuntu 12.04.3 LTS -  kernel 3.8.0-29
+>>>> Ubuntu 13.10 - kernel 3.8.0-29-generic
+>>>>
+>>>> 0 or very small (e.g. 6) values with
+>>>> Ubuntu 13.10 - kernel 3.11.0-20-generic
+>>> Can you provide cpufreq-info 's output for the last two cases please?
+> Sorry, got distracted and just forgot about this thread :), must have marked
+> it in my pending list :(
+>
+> Anyways, I have tried to look at the diff between these kernel releases and
+> looks like I couldn't figure out what's going wrong.
+>
+> I tried to test things with the latest kernel and they seem to be working fine.
+> Atleast on my ARM board.
+>
+> Would it be possible for you to do a git bisect between 3.8 and 3.11 ?
+We just tested with the latest release (14.04) and realized that the
+issue was already fixed for the latest kernel version, sorry about that!
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/mach-exynos/cpuidle.c |    3 +++
- 1 file changed, 3 insertions(+)
+https://lkml.org/lkml/2013/9/7/119
 
-diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
-index c57cae0..242f75d 100644
---- a/arch/arm/mach-exynos/cpuidle.c
-+++ b/arch/arm/mach-exynos/cpuidle.c
-@@ -219,6 +219,9 @@ static int exynos_cpuidle_probe(struct platform_device *pdev)
- 	int cpu_id, ret;
- 	struct cpuidle_device *device;
- 
-+	if (soc_is_exynos5420())
-+		return -ENODEV;
-+
- 	if (soc_is_exynos5250())
- 		exynos5_core_down_clk();
- 
--- 
-1.7.9.5
+Thanks anyways for your support :-)
+
+> --
+> viresh
 
