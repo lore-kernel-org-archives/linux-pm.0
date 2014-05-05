@@ -1,50 +1,75 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 00/10] thermal: exynos: various cleanups
-Date: Mon, 05 May 2014 13:15:29 +0200
-Message-ID: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: [RFC PATCH 11/12 v1] Intercept periodic load balance
+Date: Mon,  5 May 2014 08:02:51 +0800
+Message-ID: <1399248172-13871-12-git-send-email-yuyang.du@intel.com>
+References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:46110 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755380AbaEEIJL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 May 2014 04:09:11 -0400
+In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
 
-Hi,
+Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+---
+ kernel/sched/fair.c |   33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-This patch series contains various cleanups for EXYNOS thermal
-driver.  Overall it decreases driver's LOC by 13%.  It is based
-on next-20140428 kernel.  It should not cause any functionality
-changes.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (10):
-  thermal: exynos: remove unused struct exynos_tmu_registers entries
-  thermal: exynos: remove unused defines
-  thermal: exynos: remove dead code for HW_MODE calibration
-  thermal: exynos: remove dead code for TYPE_TWO_POINT_TRIMMING
-    calibration
-  thermal: exynos: remove redundant pdata checks from
-    exynos_tmu_initialize()
-  thermal: exynos: remove redundant threshold_code checks from
-    exynos_tmu_initialize()
-  thermal: exynos: simplify temp_to_code() and code_to_temp()
-  thermal: exynos: cache non_hw_trigger_levels in pdata
-  thermal: exynos: remove redundant pdata checks from
-    exynos_tmu_control()
-  thermal: exynos: remove identical values from exynos*_tmu_registers
-    structures
-
- drivers/thermal/samsung/exynos_thermal_common.h |   1 -
- drivers/thermal/samsung/exynos_tmu.c            | 181 ++++--------------------
- drivers/thermal/samsung/exynos_tmu.h            |  86 +----------
- drivers/thermal/samsung/exynos_tmu_data.c       |  40 +-----
- drivers/thermal/samsung/exynos_tmu_data.h       |  32 +----
- 5 files changed, 37 insertions(+), 303 deletions(-)
-
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 374c86b..6cbf6c5 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -7260,6 +7260,36 @@ static void run_rebalance_domains(struct softirq_action *h)
+ 	enum cpu_idle_type idle = this_rq->idle_balance ?
+ 						CPU_IDLE : CPU_NOT_IDLE;
+ 
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	struct cpumask *nonshielded = __get_cpu_var(local_cpu_mask);
++	int this_cpu = cpu_of(this_rq);
++
++	/*
++	 * if we encounter shadowded cpus here, don't do balance on them
++	 */
++	cpumask_copy(nonshielded, cpu_active_mask);
++
++	rcu_read_lock();
++	workload_consolidation_nonshielded_mask(this_cpu, nonshielded);
++	rcu_read_unlock();
++
++	/*
++	 * aggressively unload the shielded cpus to unshielded cpus
++	 */
++	workload_consolidation_unload(nonshielded);
++
++	if (cpumask_test_cpu(this_cpu, nonshielded)) {
++		rebalance_domains(this_rq, idle);
++
++		/*
++		 * If this cpu has a pending nohz_balance_kick, then do the
++		 * balancing on behalf of the other idle cpus whose ticks are
++		 * stopped.
++		 */
++		cpumask_and(nonshielded, nonshielded, nohz.idle_cpus_mask);
++		nohz_idle_balance(this_rq, idle, nonshielded);
++	}
++#else
+ 	rebalance_domains(this_rq, idle);
+ 
+ 	/*
+@@ -7267,7 +7297,8 @@ static void run_rebalance_domains(struct softirq_action *h)
+ 	 * balancing on behalf of the other idle cpus whose ticks are
+ 	 * stopped.
+ 	 */
+-	nohz_idle_balance(this_rq, idle);
++	nohz_idle_balance(this_rq, idle, nohz.idle_cpus_mask);
++#endif
+ }
+ 
+ /*
 -- 
-1.8.2.3
+1.7.9.5
+
