@@ -1,44 +1,43 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH v3 0/5] add cpuidle support for Exynos5420
-Date: Mon,  5 May 2014 13:57:19 +0530
-Message-ID: <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
-References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12 for AFTR
+ mode code
+Date: Mon, 05 May 2014 12:57:18 +0200
+Message-ID: <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
+Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
+mode code.  Without this setup AFTR mode doesn't show any benefit
+over WFI one.  When this setup is applied AFTR mode reduces power
+consumption by ~12% (as measured on Trats2 board).
 
-This patchset adds cpuidle support for Exynos5420 SoC based on
-generic big.little cpuidle driver.
+This change is a preparation for adding secure firmware support to
+EXYNOS cpuidle driver.
 
-Tested on SMDK5420.
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ arch/arm/mach-exynos/pm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-This patch set depends on:
-	1. [PATCH 0/5] MCPM backend for Exynos5420
-	   http://www.spinics.net/lists/arm-kernel/msg327923.html
-
-	2. [PATCH] arm: exynos: add generic function to calculate cpu number
-	   http://www.spinics.net/lists/linux-samsung-soc/msg29446.html
-	   http://www.spinics.net/lists/arm-kernel/msg324024.html
-		
-Changelog is in respective patches.
-Chander Kashyap (5):
-  driver: cpuidle-big-little: add of_device_id structure
-  cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little
-    driver
-  driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
-  exynos: cpuidle: do not allow cpuidle registration for Exynos5420
-  mcpm: exynos: populate suspend and powered_up callbacks
-
- arch/arm/mach-exynos/cpuidle.c       |    3 +++
- arch/arm/mach-exynos/mcpm-exynos.c   |   34 ++++++++++++++++++++++++++++++++++
- drivers/cpuidle/Kconfig.arm          |    2 +-
- drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
- 4 files changed, 49 insertions(+), 2 deletions(-)
-
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index 18f6bf8..3922968 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -391,6 +391,10 @@ static int exynos_cpu_pm_notifier(struct notifier_block *self,
+ 	case CPU_PM_ENTER:
+ 		if (cpu == 0) {
+ 			exynos_pm_central_suspend();
++			if (soc_is_exynos4212() || soc_is_exynos4412())
++				__raw_writel(S5P_USE_STANDBY_WFI0 |
++					     S5P_USE_STANDBY_WFE0,
++					     S5P_CENTRAL_SEQ_OPTION);
+ 			exynos_cpu_save_register();
+ 		}
+ 		break;
 -- 
-1.7.9.5
+1.8.2.3
