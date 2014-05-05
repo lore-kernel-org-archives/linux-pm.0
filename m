@@ -1,153 +1,72 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flags to speed up suspend-resume
- of runtime-suspended devices
-Date: Mon, 5 May 2014 11:46:47 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1405051018160.1443-100000@iolanthe.rowland.org>
-References: <7301393.PpWC4ERV6A@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <7301393.PpWC4ERV6A@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 4/7] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by
+ static inlines
+Date: Mon, 05 May 2014 12:57:16 +0200
+Message-ID: <1399287439-31376-5-git-send-email-b.zolnierkie@samsung.com>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-I'll trim a lot of material and respond to the points that are 
-important comments or criticisms.
+Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
+by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
+inlines.
 
-On Mon, 5 May 2014, Rafael J. Wysocki wrote:
+This patch shouldn't cause any functionality changes.
 
-> > The description below is much better than the earlier one, but I still feel
-> > this deserves to be split in two: one patch for each new flag.
-> 
-> Well, I guess I can introduce power.leave_runtime_suspended for leaf devices
-> first, but that would be somewhat artificial, because in that case some code
-> added by the first patch would be removed by the second one. :-)
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ arch/arm/mach-exynos/pm.c | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
 
-The "leaf devices" thing is a key point; see below.
-
-> There is a theoretical case where the child is runtime-suspended, but
-> not actually zero-power, and it doesn't have leave_runtime_suspended set,
-> but its driver doesn't implement ->suspend() at all and instead it waits
-> until ->suspend_late() or even ->suspend_noirq() and then attempts to do
-> something extra to the device.  Then, if the parent is a bridge and is
-> required to be functional for accessing the child, we can't leave it
-> runtime-suspended too.
-> 
-> I'm not sure how realistic that is, to be honest, but it does look like
-> a valid thing to do to my eyes, so in my opinion we may need to get the
-> child driver's permission to leave the parent in runtime suspend for
-> that reason too.
-
-The only time this would be a problem is if the driver changes the
-device's settings from the runtime-suspend values to the system-suspend
-values, without doing a runtime resume first.  For example, the driver
-might disable wakeup while the device remains at low power.
-
-I'm not sure how realistic this is, either -- although it's not hard to 
-imagine a PCI driver doing this sort of thing.  Still, if you think we 
-should worry about it then I agree, the parent_needed flag ought to be 
-present from the start.
-
-> I guess it is fair to simply say that "we need to get the child driver's
-> permission to leave the parent in runtime suspend".
-
-Okay.  But does it follow that we need permission from the child's
-descendants as well?  I don't see any reason why.  After all, if a
-grandchild needs the child to be at full power, then the parent will
-automatically end up at full power too.  Which means neither
-leave_runtime_suspended nor parent_needed has to be propagated up the
-tree.
-
-Hmmm, I just thought of something else.  What about non-parent-child 
-relationships?  Device B might depend on device A, even though A isn't 
-an ancestor of B.  I guess in this case, A's leave_runtime_suspended 
-flag should not be set.
-
-> > As a corollary, if we don't have the child's permission to leave the
-> > parent suspended during system resume then we have to invoke all of the
-> > parent's resume callbacks, which means we also have to invoke all the
-> > suspend callbacks.  However, we still might be able to leave the parent
-> > in runtime suspend during the suspend stages.  The decision whether or
-> > not to do so should be up to the subsystem or driver, not the PM core; 
-> > the subsystem's callback routines can check the device's runtime status 
-> > and then do what they want.
-> 
-> Yes, but they can do that anyway, can't they? :-)
-
-Yes, they can.  The point of this part of the patch is adding the
-leave_runtime_suspended flag (1) makes the subsystem's decision a
-little easier and (2) informs the subsystem when it can safely avoid
-perfoming a runtime resume in its ->suspend() callback.
-
-> > You are using leave_runtime_suspended to mean two different things:  
-> > remain runtime-suspended during the system suspend stages (i.e., no
-> > reprogramming is needed so don't go to full power), and remain
-> > runtime-suspended during both the system suspend and system resume
-> > stages.  Only the first meaning matters if all you want to accomplish
-> > is to avoid unnecessary runtime resumes during system suspend.
-> 
-> Well, this is not the case, becase you can't call ->resume_noirq() *after*
-> ->runtime_suspend() for a number of drivers, as they simply may not expect
-> that to happen (that covers all of the PCI drivers and the ACPI PM domain at
-> least).
-
-For some non-PCI, non-ACPI PM domain drivers, it _is_ okay to call
-->resume_noirq() after ->runtime_suspend().
-
-But forget about that; let's concentrate on PCI.  When a PCI driver
-sets leave_runtime_suspended, it is telling the PCI core that it
-doesn't mind having its ->resume_noirq() callback invoked after
-->runtime_suspend().  If a PCI driver doesn't set
-leave_runtime_suspended, the PCI core will continue to handle it
-exactly the same as now: do a runtime resume before invoking the
-driver's ->suspend() callback.
-
-> So you can't say "well, I'll skip your ->suspend_late and ->suspend_noirq,
-> but then I'll resume you traditionally" for those drivers, but this isn't
-> about remaining runtime-suspended during system resume too, but about
-> preserving the expected ordering of callbacks for them.
-
-For drivers that don't set leave_runtime_suspended, the ordering of 
-callbacks will be unchanged.  That's why you introduced this flag 
-originally, right?  So that the subsystem would know which drivers 
-don't mind doing things differently.
-
-> So yes, the goal is to "remain runtime-suspended during the system suspend stages",
-> but that *leads* *to* "do not execute system resume callbacks up to and including
-> ->resume()" either at least for an important subset of drivers.
-
-I disagree, for the reasons given above.
-
-Now, this raises a second issue: How should we handle devices that can
-remain runtime-suspended through both the system suspend and system
-resume stages?  Maybe we better discuss that in a separate email
-thread.
-
-> > > Note: Drivers (or bus types etc.) can reasonably expect that the
-> > > next PM callback executed after ->runtime_suspend() will be
-> > > ->runtime_resume() rather than ->resume_noirq() or ->resume_early().
-> > > This change is designed with that expectation in mind.
-> > 
-> > Except, of course, that in the current kernel this isn't true.
-> 
-> Well, what about PCI devices?  Their drivers surely can have such an expectation,
-> because all of the PCI devices *are* resumed today in either pci_pm_prepare() or
-> pci_pm_suspend(), before executing the driver's ->suspend() callback.
-
-Yes, of course.  But the USB subsystem, for example, doesn't expect it.
-
-> > And there probably are a few cases where it can't ever be true.
-> 
-> It is easy to say things like that without giving any examples.
-
-Sorry, what I meant was that _if_ a device is going to remain in 
-runtime suspend throughout the system suspend and system resume stages, 
-then there probably are cases where the device will have to come back 
-to full power during resume_early -- which means ->runtime_resume() 
-can't be used, because runtime PM is disabled during resume_early.  
-Isn't this true of PCI bridges?
-
-Alan Stern
-
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index b380d48..1679c51 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -101,12 +101,23 @@ static int exynos_irq_set_wake(struct irq_data *data, unsigned int state)
+ 	return -ENOENT;
+ }
+ 
+-#define EXYNOS_BOOT_VECTOR_ADDR	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
+-			S5P_INFORM7 : (samsung_rev() == EXYNOS4210_REV_1_0 ? \
+-			(S5P_VA_SYSRAM + 0x24) : S5P_INFORM0))
+-#define EXYNOS_BOOT_VECTOR_FLAG	(samsung_rev() == EXYNOS4210_REV_1_1 ? \
+-			S5P_INFORM6 : (samsung_rev() == EXYNOS4210_REV_1_0 ? \
+-			(S5P_VA_SYSRAM + 0x20) : S5P_INFORM1))
++static inline void __iomem *exynos_boot_vector_addr(void)
++{
++	if (samsung_rev() == EXYNOS4210_REV_1_1)
++		return S5P_INFORM7;
++	else if (samsung_rev() == EXYNOS4210_REV_1_0)
++		return S5P_VA_SYSRAM + 0x24;
++	return S5P_INFORM0;
++}
++
++static inline void __iomem *exynos_boot_vector_flag(void)
++{
++	if (samsung_rev() == EXYNOS4210_REV_1_1)
++		return S5P_INFORM6;
++	else if (samsung_rev() == EXYNOS4210_REV_1_0)
++		return S5P_VA_SYSRAM + 0x20;
++	return S5P_INFORM1;
++}
+ 
+ #define S5P_CHECK_AFTR  0xFCBA0D10
+ #define S5P_CHECK_SLEEP 0x00000BAD
+@@ -119,8 +130,9 @@ static void exynos_set_wakeupmask(long mask)
+ 
+ static void exynos_cpu_set_boot_vector(long flags)
+ {
+-	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_ADDR);
+-	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
++	__raw_writel(virt_to_phys(exynos_cpu_resume),
++		     exynos_boot_vector_addr());
++	__raw_writel(flags, exynos_boot_vector_flag());
+ }
+ 
+ void exynos_enter_aftr(void)
+-- 
+1.8.2.3
