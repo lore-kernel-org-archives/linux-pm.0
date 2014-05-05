@@ -1,279 +1,141 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 04/10] thermal: exynos: remove dead code for
- TYPE_TWO_POINT_TRIMMING calibration
-Date: Mon, 05 May 2014 13:15:33 +0200
-Message-ID: <1399288539-1793-5-git-send-email-b.zolnierkie@samsung.com>
-References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH 1/2] PM / OPP: Remove cpufreq wrapper dependency on internal data organization
+Date: Mon, 5 May 2014 08:33:49 -0500
+Message-ID: <1399296830-13056-2-git-send-email-nm@ti.com>
+References: <1399296830-13056-1-git-send-email-nm@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1399296830-13056-1-git-send-email-nm@ti.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Only TYPE_ONE_POINT_TRIMMING calibration is used so remove
-the dead code for TYPE_TWO_POINT_TRIMMING calibration.
+CPUFREQ custom functions for OPP (Operating Performance Points)
+currently exist inside the OPP library. These custom functions currently
+depend on internal data structures to pick up OPP information to create
+the cpufreq table.  For example, the cpufreq table is created precisely
+in the same order of how OPP entries are stored inside the list implementation.
 
-There should be no functional changes caused by this patch.
+This kind of tight interdependency is purely artificial since the same
+functionality can be achieved using the generic OPP functions
+meant to do the same. This interdependency also limits the independent
+modification of cpufreq and OPP library.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+So use the generic dev_pm_opp_find_freq_ceil function that achieves the
+table organization as we currently use.
+
+As a result of this, we dont need to use the internal device_opp
+structure anymore, and we hence we can switch over to rcu lock instead
+of the mutex holding the internal list lock.
+
+This breaking of dependency on internal data structure imposes no change
+to usage of these.
+
+NOTE: This change is a precursor to moving this cpufreq specific logic
+out of the generic library into cpufreq.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-omap@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+
+Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c      | 55 ++++++-------------------------
- drivers/thermal/samsung/exynos_tmu.h      | 20 +----------
- drivers/thermal/samsung/exynos_tmu_data.c | 17 +---------
- drivers/thermal/samsung/exynos_tmu_data.h |  2 --
- 4 files changed, 12 insertions(+), 82 deletions(-)
+ drivers/base/power/opp.c |   55 +++++++++++++++++++++++-----------------------
+ 1 file changed, 28 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 9f2a5ee..903566f 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -47,8 +47,7 @@
-  * @irq_work: pointer to the irq work structure.
-  * @lock: lock to implement synchronization.
-  * @clk: pointer to the clock structure.
-- * @temp_error1: fused value of the first point trim.
-- * @temp_error2: fused value of the second point trim.
-+ * @temp_error: fused value of the first point trim.
-  * @regulator: pointer to the TMU regulator structure.
-  * @reg_conf: pointer to structure to register with core thermal.
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 2553867..38b43bb 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -617,53 +617,54 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
+  * the table if any of the mentioned functions have been invoked in the interim.
+  *
+  * Locking: The internal device_opp and opp structures are RCU protected.
+- * To simplify the logic, we pretend we are updater and hold relevant mutex here
+- * Callers should ensure that this function is *NOT* called under RCU protection
+- * or in contexts where mutex locking cannot be used.
++ * Since we just use the regular accessor functions to access the internal data
++ * structures, we use RCU read lock inside this function. As a result, users of
++ * this function DONOT need to use explicit locks for invoking.
   */
-@@ -62,14 +61,13 @@ struct exynos_tmu_data {
- 	struct work_struct irq_work;
- 	struct mutex lock;
- 	struct clk *clk;
--	u8 temp_error1, temp_error2;
-+	u8 temp_error;
- 	struct regulator *regulator;
- 	struct thermal_sensor_conf *reg_conf;
- };
- 
- /*
-  * TMU treats temperature as a mapped temperature code.
-- * The temperature is converted differently depending on the calibration type.
-  */
- static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
+ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+ 			    struct cpufreq_frequency_table **table)
  {
-@@ -83,20 +81,7 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
- 			goto out;
- 		}
+-	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *opp;
+-	struct cpufreq_frequency_table *freq_table;
+-	int i = 0;
++	struct cpufreq_frequency_table *freq_table = NULL;
++	int i, max_opps, ret = 0;
++	unsigned long rate;
  
--	switch (pdata->cal_type) {
--	case TYPE_TWO_POINT_TRIMMING:
--		temp_code = (temp - pdata->first_point_trim) *
--			(data->temp_error2 - data->temp_error1) /
--			(pdata->second_point_trim - pdata->first_point_trim) +
--			data->temp_error1;
--		break;
--	case TYPE_ONE_POINT_TRIMMING:
--		temp_code = temp + data->temp_error1 - pdata->first_point_trim;
--		break;
--	default:
--		temp_code = temp + pdata->default_temp_offset;
--		break;
--	}
-+	temp_code = temp + data->temp_error - pdata->first_point_trim;
- out:
- 	return temp_code;
- }
-@@ -117,20 +102,7 @@ static int code_to_temp(struct exynos_tmu_data *data, u8 temp_code)
- 			goto out;
- 		}
+-	/* Pretend as if I am an updater */
+-	mutex_lock(&dev_opp_list_lock);
++	rcu_read_lock();
  
--	switch (pdata->cal_type) {
--	case TYPE_TWO_POINT_TRIMMING:
--		temp = (temp_code - data->temp_error1) *
--			(pdata->second_point_trim - pdata->first_point_trim) /
--			(data->temp_error2 - data->temp_error1) +
--			pdata->first_point_trim;
--		break;
--	case TYPE_ONE_POINT_TRIMMING:
--		temp = temp_code - data->temp_error1 + pdata->first_point_trim;
--		break;
--	default:
--		temp = temp_code - pdata->default_temp_offset;
--		break;
--	}
-+	temp = temp_code - data->temp_error + pdata->first_point_trim;
- out:
- 	return temp;
- }
-@@ -179,19 +151,12 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 	} else {
- 		trim_info = readl(data->base + reg->triminfo_data);
+-	dev_opp = find_device_opp(dev);
+-	if (IS_ERR(dev_opp)) {
+-		int r = PTR_ERR(dev_opp);
+-		mutex_unlock(&dev_opp_list_lock);
+-		dev_err(dev, "%s: Device OPP not found (%d)\n", __func__, r);
+-		return r;
++	max_opps = dev_pm_opp_get_opp_count(dev);
++	if (max_opps <= 0) {
++		ret = max_opps ? max_opps : -ENODATA;
++		goto out;
  	}
--	data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
--	data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
--				EXYNOS_TMU_TEMP_MASK);
--
--	if (!data->temp_error1 ||
--		(pdata->min_efuse_value > data->temp_error1) ||
--		(data->temp_error1 > pdata->max_efuse_value))
--		data->temp_error1 = pdata->efuse_value & EXYNOS_TMU_TEMP_MASK;
--
--	if (!data->temp_error2)
--		data->temp_error2 =
--			(pdata->efuse_value >> reg->triminfo_85_shift) &
--			EXYNOS_TMU_TEMP_MASK;
-+	data->temp_error = trim_info & EXYNOS_TMU_TEMP_MASK;
+ 
+-	freq_table = kzalloc(sizeof(struct cpufreq_frequency_table) *
+-			     (dev_pm_opp_get_opp_count(dev) + 1), GFP_KERNEL);
++	freq_table = kzalloc(sizeof(*freq_table) * (max_opps + 1), GFP_KERNEL);
+ 	if (!freq_table) {
+-		mutex_unlock(&dev_opp_list_lock);
+-		dev_warn(dev, "%s: Unable to allocate frequency table\n",
+-			__func__);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto out;
+ 	}
+ 
+-	list_for_each_entry(opp, &dev_opp->opp_list, node) {
+-		if (opp->available) {
+-			freq_table[i].driver_data = i;
+-			freq_table[i].frequency = opp->rate / 1000;
+-			i++;
++	for (i = 0, rate = 0; i < max_opps; i++, rate++) {
++		/* find next rate */
++		opp = dev_pm_opp_find_freq_ceil(dev, &rate);
++		if (IS_ERR(opp)) {
++			ret = PTR_ERR(opp);
++			goto out;
+ 		}
++		freq_table[i].driver_data = i;
++		freq_table[i].frequency = rate / 1000;
+ 	}
+-	mutex_unlock(&dev_opp_list_lock);
+ 
+ 	freq_table[i].driver_data = i;
+ 	freq_table[i].frequency = CPUFREQ_TABLE_END;
+ 
+ 	*table = &freq_table[0];
+ 
+-	return 0;
++out:
++	rcu_read_unlock();
++	if (ret)
++		kfree(freq_table);
 +
-+	if (!data->temp_error ||
-+	    pdata->min_efuse_value > data->temp_error ||
-+	    data->temp_error > pdata->max_efuse_value)
-+		data->temp_error = pdata->efuse_value & EXYNOS_TMU_TEMP_MASK;
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_init_cpufreq_table);
  
- 	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
- 		dev_err(&pdev->dev, "Invalid max trigger level\n");
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index e417af8..186e39e 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -26,14 +26,6 @@
- 
- #include "exynos_thermal_common.h"
- 
--enum calibration_type {
--	TYPE_ONE_POINT_TRIMMING,
--	TYPE_ONE_POINT_TRIMMING_25,
--	TYPE_ONE_POINT_TRIMMING_85,
--	TYPE_TWO_POINT_TRIMMING,
--	TYPE_NONE,
--};
--
- enum soc_type {
- 	SOC_ARCH_EXYNOS4210 = 1,
- 	SOC_ARCH_EXYNOS4412,
-@@ -74,8 +66,6 @@ enum soc_type {
-  * bitfields. The register validity, offsets and bitfield values may vary
-  * slightly across different exynos SOC's.
-  * @triminfo_data: register containing 2 pont trimming data
-- * @triminfo_25_shift: shift bit of the 25 C trim value in triminfo_data reg.
-- * @triminfo_85_shift: shift bit of the 85 C trim value in triminfo_data reg.
-  * @triminfo_ctrl: trim info controller register.
-  * @tmu_ctrl: TMU main controller register.
-  * @test_mux_addr_shift: shift bits of test mux address.
-@@ -116,8 +106,6 @@ enum soc_type {
-  */
- struct exynos_tmu_registers {
- 	u32	triminfo_data;
--	u32	triminfo_25_shift;
--	u32	triminfo_85_shift;
- 
- 	u32	triminfo_ctrl;
- 
-@@ -207,10 +195,7 @@ struct exynos_tmu_registers {
-  * @min_efuse_value: minimum valid trimming data
-  * @max_efuse_value: maximum valid trimming data
-  * @first_point_trim: temp value of the first point trimming
-- * @second_point_trim: temp value of the second point trimming
-- * @default_temp_offset: default temperature offset in case of no trimming
-  * @test_mux; information if SoC supports test MUX
-- * @cal_type: calibration type for temperature
-  * @freq_clip_table: Table representing frequency reduction percentage.
-  * @freq_tab_count: Count of the above table as frequency reduction may
-  *	applicable to only some of the trigger levels.
-@@ -232,15 +217,12 @@ struct exynos_tmu_platform_data {
- 	u8 reference_voltage;
- 	u8 noise_cancel_mode;
- 
--	u32 efuse_value;
-+	u8 efuse_value;
- 	u32 min_efuse_value;
- 	u32 max_efuse_value;
- 	u8 first_point_trim;
--	u8 second_point_trim;
--	u8 default_temp_offset;
- 	u8 test_mux;
- 
--	enum calibration_type cal_type;
- 	enum soc_type type;
- 	struct freq_clip_table freq_tab[4];
- 	unsigned int freq_tab_count;
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 4b992d9..c32d186 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -27,8 +27,6 @@
- #if defined(CONFIG_CPU_EXYNOS4210)
- static const struct exynos_tmu_registers exynos4210_tmu_registers = {
- 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
--	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
--	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
- 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
- 	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
- 	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
-@@ -66,12 +64,9 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
- 		.max_trigger_level = 4,
- 		.gain = 15,
- 		.reference_voltage = 7,
--		.cal_type = TYPE_ONE_POINT_TRIMMING,
- 		.min_efuse_value = 40,
- 		.max_efuse_value = 100,
- 		.first_point_trim = 25,
--		.second_point_trim = 85,
--		.default_temp_offset = 50,
- 		.freq_tab[0] = {
- 			.freq_clip_max = 800 * 1000,
- 			.temp_level = 85,
-@@ -93,8 +88,6 @@ struct exynos_tmu_init_data const exynos4210_default_tmu_data = {
- #if defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250)
- static const struct exynos_tmu_registers exynos4412_tmu_registers = {
- 	.triminfo_data = EXYNOS_TMU_REG_TRIMINFO,
--	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
--	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
- 	.triminfo_ctrl = EXYNOS_TMU_TRIMINFO_CON,
- 	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
- 	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
-@@ -145,13 +138,10 @@ static const struct exynos_tmu_registers exynos4412_tmu_registers = {
- 	.gain = 8, \
- 	.reference_voltage = 16, \
- 	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
- 	.efuse_value = 55, \
- 	.min_efuse_value = 40, \
- 	.max_efuse_value = 100, \
- 	.first_point_trim = 25, \
--	.second_point_trim = 85, \
--	.default_temp_offset = 50, \
- 	.freq_tab[0] = { \
- 		.freq_clip_max = 1400 * 1000, \
- 		.temp_level = 70, \
-@@ -195,8 +185,6 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
- #if defined(CONFIG_SOC_EXYNOS5440)
- static const struct exynos_tmu_registers exynos5440_tmu_registers = {
- 	.triminfo_data = EXYNOS5440_TMU_S0_7_TRIM,
--	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
--	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
- 	.tmu_ctrl = EXYNOS5440_TMU_S0_7_CTRL,
- 	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
- 	.buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
-@@ -240,13 +228,10 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
- 	.gain = 5, \
- 	.reference_voltage = 16, \
- 	.noise_cancel_mode = 4, \
--	.cal_type = TYPE_ONE_POINT_TRIMMING, \
--	.efuse_value = 0x5b2d, \
-+	.efuse_value = 45, \
- 	.min_efuse_value = 16, \
- 	.max_efuse_value = 76, \
- 	.first_point_trim = 25, \
--	.second_point_trim = 70, \
--	.default_temp_offset = 25, \
- 	.type = SOC_ARCH_EXYNOS5440, \
- 	.registers = &exynos5440_tmu_registers, \
- 	.features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-index 1fed00d..734d1f9 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.h
-+++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -51,8 +51,6 @@
- #define EXYNOS_THD_TEMP_FALL		0x54
- #define EXYNOS_EMUL_CON		0x80
- 
--#define EXYNOS_TRIMINFO_25_SHIFT	0
--#define EXYNOS_TRIMINFO_85_SHIFT	8
- #define EXYNOS_TMU_RISE_INT_MASK	0x111
- #define EXYNOS_TMU_RISE_INT_SHIFT	0
- #define EXYNOS_TMU_FALL_INT_MASK	0x111
 -- 
-1.8.2.3
+1.7.9.5
