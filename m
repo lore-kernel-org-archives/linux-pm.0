@@ -1,80 +1,41 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 3/7] ARM: EXYNOS: add AFTR mode support to firmware do_idle
- method
-Date: Mon, 05 May 2014 12:57:15 +0200
-Message-ID: <1399287439-31376-4-git-send-email-b.zolnierkie@samsung.com>
-References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
+ cpufreq table
+Date: Mon, 5 May 2014 09:23:36 -0500
+Message-ID: <CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
+	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
+	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
+	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+	<5367946F.1030407@ti.com>
+	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:60518 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932636AbaEEOXh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 10:23:37 -0400
+In-Reply-To: <CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On some platforms (i.e. EXYNOS ones) more than one idle mode is
-available and we need to distinguish them in firmware do_idle method.
+On Mon, May 5, 2014 at 9:14 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> To be precise, for exynos they need the position of a frequency when
+> it is arranged in descending order. And they will simply write this position
+> in their clock controller later. For example, if frequencies are:
+> 100 MHz, 200, 300, 400, 500, 600
+>
+> Then they need to write 1 for 600, 2 for 500, 3 for 400, and so on..
+> I am not able to imaging how ceil/floor would help here.
 
-Add mode parameter to do_idle firmware method and AFTR mode support
-to EXYNOS do_idle implementation.
+ceil and floor allows us to walk down the opp entries the direction we
+want it to.
+one can convert that data any way one wants it - especially when custom
+mapping such as this is desired.
 
-This change is a preparation for adding secure firmware support to
-EXYNOS cpuidle driver.
-
-This patch shouldn't cause any functionality changes (please note
-that do_idle firmware method is unused currently).
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- arch/arm/include/asm/firmware.h |  7 ++++++-
- arch/arm/mach-exynos/firmware.c | 10 ++++++++--
- 2 files changed, 14 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/include/asm/firmware.h b/arch/arm/include/asm/firmware.h
-index 70883c7..63989c3 100644
---- a/arch/arm/include/asm/firmware.h
-+++ b/arch/arm/include/asm/firmware.h
-@@ -28,7 +28,7 @@ struct firmware_ops {
- 	/*
- 	 * Enters CPU idle mode
- 	 */
--	int (*do_idle)(void);
-+	int (*do_idle)(int mode);
- 	/*
- 	 * Sets boot address of specified physical CPU
- 	 */
-@@ -47,6 +47,11 @@ struct firmware_ops {
- 	int (*c15resume)(u32 *regs);
- };
- 
-+enum {
-+	FW_DO_IDLE_NORMAL,
-+	FW_DO_IDLE_AFTR,
-+};
-+
- /* Global pointer for current firmware_ops structure, can't be NULL. */
- extern const struct firmware_ops *firmware_ops;
- 
-diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
-index 581c7bf..71fe169 100644
---- a/arch/arm/mach-exynos/firmware.c
-+++ b/arch/arm/mach-exynos/firmware.c
-@@ -20,9 +20,15 @@
- 
- #include "smc.h"
- 
--static int exynos_do_idle(void)
-+static int exynos_do_idle(int mode)
- {
--	exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
-+	switch (mode) {
-+	case FW_DO_IDLE_AFTR:
-+		exynos_smc(SMC_CMD_CPU0AFTR, 0, 0, 0);
-+		break;
-+	case FW_DO_IDLE_NORMAL:
-+		exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
-+	}
- 	return 0;
- }
- 
--- 
-1.8.2.3
+Regards,
+Nishanth Menon
