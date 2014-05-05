@@ -1,63 +1,113 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Mon, 5 May 2014 11:24:15 +0530
-Message-ID: <CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
-	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
+Date: Mon, 05 May 2014 02:32:31 +0200
+Message-ID: <11389655.8tCmxgKokW@vostro.rjw.lan>
+References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <5275186.Hb1xxV4ZWO@vostro.rjw.lan> <535F7E23.7020104@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jonghwan Choi <jhbird.choi@samsung.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53147 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751704AbaEEAPz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 May 2014 20:15:55 -0400
+In-Reply-To: <535F7E23.7020104@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Amit Kucheria <amit.kucheria@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 3 May 2014 05:46, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
-> Hi. Viresh Kumar
-> Your reply is so fast like Usain Bolt.
+On Tuesday, April 29, 2014 12:25:39 PM Daniel Lezcano wrote:
+> On 04/29/2014 01:11 AM, Rafael J. Wysocki wrote:
+> > On Monday, April 28, 2014 01:07:31 PM Daniel Lezcano wrote:
 
-Heh, that's not true.. See how slow I was this time :)
+[cut]
 
->> So, create three flags:
->> OPP_TABLE_ORDER_ASCENDING              0
->> OPP_TABLE_ORDER_DESCENDING            1
->> OPP_TABLE_ORDER_ORIGINAL                  2 (And use this for your case.)
->
-> -> Actually, I want to use OPP_TABLE_ORDER_DESCENDING.(Not
-> OPP_TABLE_ORDER_ORIGINAL.)
-> I think that it is enough to support both descending and ascending ordering
-> only.
-> The meaning of "ORIGIANL" Amit, said, when he(and I) writes a frequency in
-> dts file with ordering(Ascending or Descending). He(and I) want the
-> frequency to be register according to ordering.(Ascending or Descending).
+> > In my opinion it would be much better to have a knob representing the current
+> > relative value of energy to the user (which may depend on things like whether
+> > or not the system is on battery etc) and meaning how far we need to go with
+> > energy saving efforts.
+> >
+> > So if that knob is 0, we'll do things that are known-good for performance.
+> > If it is 1, we'll do some extra effort to save enery as well possibly at
+> > a small expense of performance if that's necessary.  If it is 100, we'll do
+> > all we can to save as much energy as possible without caring about performance
+> > at all.
+> >
+> > And it doesn't even have to be scheduler-specific, it very well may be global.
+> 
+> That would be very nice but I don't see how we can quantify this energy 
+> and handle that generically from the kernel for all the hardware.
+> 
+> I am pretty sure we will discover for some kind of hardware a specific 
+> option will consume more power, argh ! energy I mean, than another 
+> hardware because of the architecture.
+> 
+>  From my personal experience, when we are facing this kind of complexity 
+> and heuristic, it is the sign the userspace has some work to do.
+> 
+> What I am proposing is not in contradiction with your approach, it is 
+> about exporting a lot of knobs to userspace, and the userspace decide 
+> how to map what is '0' <--> '100' regarding these options. Nothing 
+> prevent the different platform to set a default value for these options.
 
-But what if somebody doesn't have a ascending or descending list there? And
-want to preserve the original list? That's why I recommended it.
+Our experience so far, however, is that user space is not really likely to
+change the default values of such knobs.
 
-> I concerned that if we use ORIGINAL ordering, opp_find_freq_ceil/foor can be
-> broken.
+>  From my POV, the cgroup could be a good solution for that for different 
+> reasons. Especially one good reason is we can stick the energy policy 
+> per task instead of the entire system.
+> 
+> Let's imagine the following scenario:
+> 
+> An user has a laptop running a mailer looking for the email every 5 
+> minutes. The system switched to 'power'. The user wants to play a video 
+> game but due to the 'power' policy, the game is not playable so it 
+> forces the policy to 'performance'. All the tasks will use the 
+> 'performance' policy, thus consuming more energy.
 
-I completely missed that earlier :) ..
-It would be broken with descending one as well..
+This isn't all about the given task, but also about devices that are in use
+while it is being run.  For example, to play a game the user would probably
+like the input subsystem to be more responsive and the screen to be brighter
+etc.  If that is a network game, the network adapter will probably need to
+work in the "performance" mode too.
 
-To skip the complexity of finding right freq associated with
-"ORIGINAL" ordering,
-lets concentrate on Ascending/Descending ordering for now.
+> If we do per task, the video game will use the 'performance' policy and 
+> the other tasks on the system will use the 'power' policy. The userspace 
+> can take the decision to freeze the application running 'performance' if 
+> we reach a critical battery level.
 
-So, this is what I would recommend now:
-- Create two macros: OPP_TABLE_ORDER_ASCENDING and
-  OPP_TABLE_ORDER_DESCENDING
-- create of_init_opp_table_ordered(**, int order), order would be one of the
-above two macros
-- rename dev_pm_opp_add to __dev_pm_opp_add() and create a wrapper
-over it: dev_pm_opp_add(), which would pass
-OPP_TABLE_ORDER_ASCENDING to it by default and call it from
-of_init_opp_table_ordered() like this: __dev_pm_opp_add(***, order)..
+Well, consider task packing in that context and suppose that according to the
+current policy task packing should be applied to "energy efficient" tasks, but
+not to "performance" tasks.  Now, suppose that there's an "energy efficient"
+task to run and there's a core occupied by a "performace" task.  Should the
+"energy efficient" task be run on that core or should we find another one
+for it?  Who's more important in that case?
 
-- Fix ceil/floor routines for these two cases.
+> The cgroup is a good framework to do that and gives a lot of flexibility 
+> to userspace. I understood Peter does not like the cgroup but I did not 
+> give up to convince him, the cgroup could be good solution :)
 
---
-viresh
+Will user space actually use that flexibility?
+
+> Looking forward, if the energy policy is tied with the task, in the 
+> future we can normalize the energy consumption and stick to an 'energy 
+> load' per task and reuse the load tracking for energy, do per task 
+> energy accounting, nice per energy, etc ...
+
+That can be done, but some parts of the kernel that may benefit from an
+"energy conservation bias" knob are not tied to any particular task.  The
+block layer may be one example here.
+
+> Going back to reality, concretely this sysctl patch did not reach a 
+> consensus. So I will resend the two other patches, hoping the discussion 
+> will lead to an agreement.
+
+Well, the discussion so far has been useful to me anyway. :-)
+
+Thanks!
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
