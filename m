@@ -1,101 +1,240 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpuidle / menu: Return error code if there are no suitable states
-Date: Mon, 05 May 2014 00:39:38 +0200
-Message-ID: <4202990.UXkavWrN4U@vostro.rjw.lan>
-References: <2471963.urOyfY8mOG@vostro.rjw.lan> <1684440.TX1lbQesgE@vostro.rjw.lan> <53639B7B.2040209@linaro.org>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flags to speed up suspend-resume of runtime-suspended devices
+Date: Mon, 05 May 2014 02:09:53 +0200
+Message-ID: <7301393.PpWC4ERV6A@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1405021340180.1225-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49874 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752649AbaEDWXC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 May 2014 18:23:02 -0400
-In-Reply-To: <53639B7B.2040209@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1405021340180.1225-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
 
-On Friday, May 02, 2014 03:19:55 PM Daniel Lezcano wrote:
-> On 05/02/2014 02:20 PM, Rafael J. Wysocki wrote:
-> > On Friday, May 02, 2014 10:47:48 AM Daniel Lezcano wrote:
-> >> On 04/30/2014 01:16 AM, Rafael J. Wysocki wrote:
-> >>> On Tuesday, April 29, 2014 01:28:03 AM Rafael J. Wysocki wrote:
-> >>>> On Monday, April 28, 2014 01:14:32 PM Daniel Lezcano wrote:
-> >>>>> On 04/27/2014 02:55 PM, Rafael J. Wysocki wrote:
-> >>
-> >> [ ... ]
-> >>
-> >>> ---
-> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>> Subject: cpuidle / menu: Return (-1) if there are no suitable states
-> >>>
-> >>> If there is a PM QoS latency limit and all of the sufficiently shallow
-> >>> C-states are disabled, the cpuidle menu governor returns 0 which on
-> >>> some systems is CPUIDLE_DRIVER_STATE_START and shouldn't be returned
-> >>> if that C-state has been disabled.
-> >>>
-> >>> Fix the issue by modifying the menu governor to return (-1) in such
-> >>> situations.
-> >>>
-> >>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>> ---
-> >>>    drivers/cpuidle/governors/menu.c |    2 +-
-> >>>    include/linux/cpuidle.h          |    2 ++
-> >>>    2 files changed, 3 insertions(+), 1 deletion(-)
-> >>>
-> >>> Index: linux-pm/drivers/cpuidle/governors/menu.c
-> >>> ===================================================================
-> >>> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
-> >>> +++ linux-pm/drivers/cpuidle/governors/menu.c
-> >>> @@ -296,7 +296,7 @@ static int menu_select(struct cpuidle_dr
-> >>>    		data->needs_update = 0;
-> >>>    	}
-> >>>
-> >>> -	data->last_state_idx = 0;
-> >>> +	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
-> >>
-> >> In case of x86, CPUIDLE_DRIVER_STATE_START will be 1, so the select
-> >> function could return 0 even this one is disabled and this is not what
-> >> you want to happen, no ?
-> >
-> > OK, so that's a choice.  We can choose to do the above or to return an error
-> > code if the 0 state is disabled too.  The above is arguably simpler and
-> > matches the idea that 0 is a "fallback" state on x86.
-> >
-> > Of course, it also is confusing, because user space *can* set "disable" for
-> > the 0 state on x86, but that actually has no effect today AFAICS.
+On Friday, May 02, 2014 02:44:43 PM Alan Stern wrote:
+> On Fri, 2 May 2014, Rafael J. Wysocki wrote:
 > 
-> Yes, the poll state is very rarely selected.
+> > Well, I have a second update.
+> > 
+> > It has different flag names and changelog (that should explain things better
+> > hopefully) and the purpose of both flags should be more clear now (patch [3/3]
+> > would need to be reworked on top of this, but for now let's just discuss the
+> > core changes).
 > 
-> Regarding the description of this patch, I think it would make sense to 
-> move the duplicate pm qos checks to the cpuidle_idle_call function 
-> directly and pass the latency req to the select function, so the zero 
-> latency check could be done by the caller before entering select.
-
-I would prefer to have them in cpuidle_select() for various reasons (one
-of them being to avoid the need to pass latency_req from cpuidle_idle_call()
-to cpuidle_select() which isn't necessary).
-
-> > I'm mostly worried about systems where CPUIDLE_DRIVER_STATE_START is 0
-> > and where menu_select() explicitly checks "disabled" and then it returns
-> > 0 anyway if it cannot find any other suitable state.
+> We've got patch descriptions passing in the night!  :-)
 > 
-> For the ARM platform, the state0 and the default idle function are the 
-> same, so disabling this state will result in calling the same idle function.
+> This doesn't contain any changes to the patch itself, apart from the 
+> flag names, right?
+
+There is this change in the patch itself:
+
++               if (dev->power.leave_runtime_suspended)
++                       dev->power.parent_needed = false;
+
+in __device_suspend() and power.parent_needed is set for all devices in
+dpm_prepare().
+
+> The description below is much better than the earlier one, but I still feel
+> this deserves to be split in two: one patch for each new flag.
+
+Well, I guess I can introduce power.leave_runtime_suspended for leaf devices
+first, but that would be somewhat artificial, because in that case some code
+added by the first patch would be removed by the second one. :-)
+
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Subject: PM / sleep: Flags to speed up suspend-resume of runtime-suspended devices
+> > 
+> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> > resume all runtime-suspended devices during system suspend, mostly
+> > because those devices may need to be reprogrammed due to different
+> > wakeup settings for system sleep and for runtime PM.  However, at
+> > least in some cases, that isn't really necessary, because the wakeup
+> > settings may not be really different.
+> > 
+> > The idea here is that subsystems should know whether or not it is
+> > necessary to resume a given device during system suspend as long as
+> > they know that the device's children will not need it to be functional
+> > during the late/early and noirq phases of their suspend and resume.
 > 
-> > In my opinion that needs to be made consistent, but I don't care too much about
-> > which way as long as the change is not too intrusive.
+> Perhaps the matter of the children's requirements should be discussed 
+> more fully.  I skimmed over it in my suggested description too.
 > 
-> I think we can live with this patch until we remove the 
-> CPUIDLE_DRIVER_STATE_START macro. It was introduced to factor out a 
-> couple of drivers and now it results in a confusing-hard-to-fix-code.
+> Under what conditions will a child need the parent device to be 
+> functional?  Let's start by assuming the parent's ignore_children 
+> bit isn't set.
+> 
+> By this assumption, if the child was at full power during the suspend
+> stages then the parent would have to be at full power too.  So let's
+> assume that the child is in runtime suspend when its ->suspend()
+> routine runs.  I can't think of any scenario where the child's driver
+> would require the parent to be at full power without also needing the
+> child to be at full power.  If the child really does need to be at full
+> power then the driver will have to do a runtime resume, which would
+> also bring the parent to full power.  Either way, we don't have to do
+> anything special -- during the suspend stages, if the child needs the 
+> parent to be at full power then it will be.
+> 
+> (As a variant of this case, maybe the child belongs to one of the
+> subsystems like PCI, and its driver expects the subsystem to
+> runtime-resume the child before invoking its ->suspend() callback.  
+> When the subsystem does this, the parent will automatically be resumed
+> as well.  Again there are no special requirements; the point is moot
+> because the parent will never be runtime-suspended when its ->suspend()
+> routine is ready to run.)
 
-OK
+Yes.
 
-Thanks!
+> During the resume stages, if the child is going to be restored to full
+> power then certainly the parent has to be at full power first.  
+> Drivers expect this, so if we're going to leave the parent in runtime
+> suspend during system resume, we have to get the child driver's
+> permission first.  _That's_ what the parent_needed flag should mean.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+There is a theoretical case where the child is runtime-suspended, but
+not actually zero-power, and it doesn't have leave_runtime_suspended set,
+but its driver doesn't implement ->suspend() at all and instead it waits
+until ->suspend_late() or even ->suspend_noirq() and then attempts to do
+something extra to the device.  Then, if the parent is a bridge and is
+required to be functional for accessing the child, we can't leave it
+runtime-suspended too.
+
+I'm not sure how realistic that is, to be honest, but it does look like
+a valid thing to do to my eyes, so in my opinion we may need to get the
+child driver's permission to leave the parent in runtime suspend for
+that reason too.
+
+I guess it is fair to simply say that "we need to get the child driver's
+permission to leave the parent in runtime suspend".
+
+> What about the case where ignore_children _is_ set?  Then the child's 
+> driver might indeed need the parent to be at full power during system 
+> suspend, since we could start off with the parent suspended and the 
+> child active.
+> 
+> Putting these arguments together, the result is that during system
+> suspend we don't care about the children's needs unless the parent's
+> ignore_children bit is set.  But during system resume, we must resume
+> the parent unless the child's driver says we don't have to.
+> 
+> As a corollary, if we don't have the child's permission to leave the
+> parent suspended during system resume then we have to invoke all of the
+> parent's resume callbacks, which means we also have to invoke all the
+> suspend callbacks.  However, we still might be able to leave the parent
+> in runtime suspend during the suspend stages.  The decision whether or
+> not to do so should be up to the subsystem or driver, not the PM core; 
+> the subsystem's callback routines can check the device's runtime status 
+> and then do what they want.
+
+Yes, but they can do that anyway, can't they? :-)
+
+> > To help them with that, introduce two new device PM flags:
+> > power.parent_needed and power.leave_runtime_suspended supposed to work
+> > as follows.
+> > 
+> > The PM core will clear power.leave_runtime_suspended and will set
+> > power.parent_needed for all devices in dpm_prepare().  Next, the
+> > subsystem (or driver) of a device that in principle may not need
+> > to be resumed during system suspend, if runtume-suspended already,
+> > will set power.leave_runtime_suspended in its ->prepare() callback.
+> > Also the subsystems (or drivers) of devices whose parents need not
+> > be resumed during system suspend, if runtime-suspended already,
+> > are supposed to clear power.parent_needed for them.  The PM core
+> > will then clear power.leave_runtime_suspended for the parents of
+> > all devices having power.parent_needed set in __device_suspend().
+> 
+> You are using leave_runtime_suspended to mean two different things:  
+> remain runtime-suspended during the system suspend stages (i.e., no
+> reprogramming is needed so don't go to full power), and remain
+> runtime-suspended during both the system suspend and system resume
+> stages.  Only the first meaning matters if all you want to accomplish
+> is to avoid unnecessary runtime resumes during system suspend.
+
+Well, this is not the case, becase you can't call ->resume_noirq() *after*
+->runtime_suspend() for a number of drivers, as they simply may not expect
+that to happen (that covers all of the PCI drivers and the ACPI PM domain at
+least).
+
+So you can't say "well, I'll skip your ->suspend_late and ->suspend_noirq,
+but then I'll resume you traditionally" for those drivers, but this isn't
+about remaining runtime-suspended during system resume too, but about
+preserving the expected ordering of callbacks for them.
+
+So yes, the goal is to "remain runtime-suspended during the system suspend stages",
+but that *leads* *to* "do not execute system resume callbacks up to and including
+->resume()" either at least for an important subset of drivers.
+
+> For the first meaning -- and I claim that this is the appropriate
+> meaning for this patch -- the leave_runtime_suspend flag doesn't depend
+> on the children's needs, except in the case where the parent's
+> ignore_children bit is set.  In that case, we could simply force the
+> parent's leave_runtime_suspended flag to be always off.  Or we could 
+> leave it set if it is set in all of the parent's children.
+> 
+> The parent_needed flag is the one that really has to propagate up the
+> device tree.
+
+It doesn't need to be propagated if it is set for everybody to start with
+which is the case in my last patch.
+
+> If this flag is set in a child then the PM core has to
+> invoke all the suspend and resume callbacks, not just in the child's
+> parent but in all its ancestors.  (Perhaps you could stop if you reach
+> an ancestor with ignore_children set, but it's safer not to.)
+> 
+> > Now, if the ->suspend() callback is executed for a device whose
+> > power.leave_runtime_suspended is set, it can simply return 0 after
+> > checking the device's state if that state is appropriate for
+> > system suspend.  The PM core will then skip the late/early and
+> > noirq system suspend/resume callbacks for that device and will
+> > use pm_runtime_resume() to resume it in device_resume().
+> 
+> By the discussion above, the PM core shouldn't skip anything
+> unless the parent_needed flag is clear.
+
+In all of the device's children.
+
+> > If the state of a device with power.leave_runtime_suspended is not
+> > appropriate for system suspend, the ->suspend() callback should
+> > resume it using pm_runtime_resume() and clear
+> > power.leave_runtime_suspended for it.
+> 
+> Oh yes, I forgot to discuss this earlier.  We have two choices for 
+> handling this:
+> 
+> 	As you wrote above, require drivers not to set 
+> 	leave_runtime_suspended if the device isn't in an appropriate
+> 	state, and propagate the flag up the device tree.  (But as
+> 	I mentioned, in most cases the flag shouldn't need to be
+> 	propagated.)
+
+It isn't propageted in my last patch.
+
+> 	Make the PM core automatically clear leave_runtime_suspended
+> 	whenever the device is (or becomes) runtime-active.  Then 
+> 	callbacks don't have to check whether the device actually is in
+> 	runtime suspend; they just have to check the flag.
+> 
+> I prefer the second choice, because it is easier for drivers.
+
+Well, I'm not sure how much easier that is, because the flag will have to be
+operated under power.lock then, but that will cause patch [2/3] to be unnecessary,
+so it's fine by me. :-)
+
+> > Note: Drivers (or bus types etc.) can reasonably expect that the
+> > next PM callback executed after ->runtime_suspend() will be
+> > ->runtime_resume() rather than ->resume_noirq() or ->resume_early().
+> > This change is designed with that expectation in mind.
+> 
+> Except, of course, that in the current kernel this isn't true.
+
+Well, what about PCI devices?  Their drivers surely can have such an expectation,
+because all of the PCI devices *are* resumed today in either pci_pm_prepare() or
+pci_pm_suspend(), before executing the driver's ->suspend() callback.
+
+> And there probably are a few cases where it can't ever be true.
+
+It is easy to say things like that without giving any examples.
+
+Rafael
