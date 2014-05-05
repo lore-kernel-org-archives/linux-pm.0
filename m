@@ -1,65 +1,84 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: [PATCH v3] cpufreq: Catch double invocations of
- cpufreq_freq_transition_begin/end
-Date: Mon, 5 May 2014 11:53:48 +0300 (EEST)
-Message-ID: <alpine.SOC.1.00.1405051152370.17122@math.ut.ee>
-References: <20140505072129.14454.25747.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140505072129.14454.25747.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, ego@linux.vnet.ibm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 7/7] ARM: EXYNOS: cpuidle: add secure firmware support to AFTR
+ mode code
+Date: Mon, 05 May 2014 12:57:19 +0200
+Message-ID: <1399287439-31376-8-git-send-email-b.zolnierkie@samsung.com>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-> 
-> Changes in v3:
-> Expanded the comment in the code to briefly mention why ASYNC_NOTIFICATION
-> drivers are left out from the check, as suggested by Gautham R. Shenoy.
-> No code changes in this version.
-> 
-> v2: https://lkml.org/lkml/2014/4/29/283
-> v1: https://lkml.org/lkml/2014/4/28/469
+* Use do_idle firmware method instead of cpu_do_idle() on boards
+  with secure firmware enabled.
 
-Seems to work on VIA EPIA with 3.15-rc2 (no other cpufreq fixes):
+* Use S5P_VA_SYSRAM_NS + 0x24 address for exynos_boot_vector_addr()
+  and S5P_VA_SYSRAM_NS + 0x20 one for exynos_boot_vector_flag() on
+  boards with secure firmware enabled.
 
-[    8.250959] ------------[ cut here ]------------
-[    8.251179] WARNING: CPU: 0 PID: 116 at drivers/cpufreq/cpufreq.c:367 cpufreq_freq_transition_begin+0xd3/0xd8()
-[    8.251400] Modules linked in: snd_via82xx snd_mpu401_uart longhaul snd_ac97_codec ac97_bus snd_rawmidi snd_seq_device sg snd_pcm snd_timer vt8231 via_rhine uhci_hcd hwmon ehci_hcd tulip i2c_viapro snd evdev soundcore serio_raw sr_mod i2c_core mii usbcore gameport usb_common cdrom parport_pc fan parport via_agp button agpgart processor
-[    8.253465] CPU: 0 PID: 116 Comm: kworker/0:1 Not tainted 3.15.0-rc2-dirty #40
-[    8.253664] Hardware name: VIA TECHNOLOGIES, INC. EPIA/EPIA, BIOS 6.00 PG 11/02/2004
-[    8.253873] Workqueue: events od_dbs_timer
-[    8.254038]  00000000 00000000 cf6afd60 c1283096 cf6afd90 c101ff15 c135a90c 00000000
-[    8.254574]  00000074 c138ccdc 0000016f c11eaaf0 c11eaaf0 cf542000 00061698 cf582c00
-[    8.255118]  cf6afda0 c101ffa8 00000009 00000000 cf6afdd0 c11eaaf0 cf6afdd8 cf6afdf4
-[    8.255661] Call Trace:
-[    8.255815]  [<c1283096>] dump_stack+0x16/0x18
-[    8.255988]  [<c101ff15>] warn_slowpath_common+0x70/0x87
-[    8.256151]  [<c11eaaf0>] ? cpufreq_freq_transition_begin+0xd3/0xd8
-[    8.256316]  [<c11eaaf0>] ? cpufreq_freq_transition_begin+0xd3/0xd8
-[    8.256482]  [<c101ffa8>] warn_slowpath_null+0x1d/0x1f
-[    8.256641]  [<c11eaaf0>] cpufreq_freq_transition_begin+0xd3/0xd8
-[    8.256809]  [<c1036cba>] ? __srcu_notifier_call_chain+0x24/0x93
-[    8.256989]  [<d06c52d5>] longhaul_setstate+0x88/0x2f1 [longhaul]
-[    8.257149]  [<c1036d43>] ? srcu_notifier_call_chain+0x1a/0x1c
-[    8.257315]  [<c11eaad9>] ? cpufreq_freq_transition_begin+0xbc/0xd8
-[    8.257481]  [<d06c55ba>] longhaul_target+0x7c/0x8b [longhaul]
-[    8.257647]  [<c11eaebd>] __cpufreq_driver_target+0xfe/0x148
-[    8.257824]  [<c10540c6>] ? get_cpu_iowait_time_us+0x84/0xa3
-[    8.257981]  [<c11ebe27>] od_check_cpu+0x75/0x79
-[    8.258135]  [<c11ec7a1>] dbs_check_cpu+0xbd/0xc5
-[    8.258286]  [<c11ec813>] ? need_load_eval+0x18/0x79
-[    8.258439]  [<c11ec004>] od_dbs_timer+0x7a/0xd9
-[    8.258612]  [<c102f808>] process_one_work+0x205/0x363
-[    8.258770]  [<c102f7d7>] ? process_one_work+0x1d4/0x363
-[    8.258927]  [<c10300b3>] ? worker_thread+0x27/0x26f
-[    8.259086]  [<c103022c>] worker_thread+0x1a0/0x26f
-[    8.259244]  [<c103008c>] ? rescuer_thread+0x204/0x204
-[    8.259405]  [<c10339e9>] kthread+0xa3/0xa8
-[    8.259567]  [<c1287bc0>] ret_from_kernel_thread+0x20/0x30
-[    8.259726]  [<c1033946>] ? kthread_create_on_node+0x112/0x112
-[    8.259874] ---[ end trace fe16863c964a8bbe ]---
+This patch fixes hang on an attempt to enter AFTR mode for TRATS2
+board (which uses EXYNOS4412 SoC with secure firmware enabled).
 
+This patch shouldn't cause any functionality changes on boards that
+don't use secure firmware.
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ arch/arm/mach-exynos/pm.c        | 8 ++++++--
+ drivers/cpuidle/cpuidle-exynos.c | 7 ++++++-
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+index 3922968..ba4cd05 100644
+--- a/arch/arm/mach-exynos/pm.c
++++ b/arch/arm/mach-exynos/pm.c
+@@ -104,7 +104,9 @@ static int exynos_irq_set_wake(struct irq_data *data, unsigned int state)
+ 
+ static inline void __iomem *exynos_boot_vector_addr(void)
+ {
+-	if (samsung_rev() == EXYNOS4210_REV_1_1)
++	if (firmware_run())
++		return S5P_VA_SYSRAM_NS + 0x24;
++	else if (samsung_rev() == EXYNOS4210_REV_1_1)
+ 		return S5P_INFORM7;
+ 	else if (samsung_rev() == EXYNOS4210_REV_1_0)
+ 		return S5P_VA_SYSRAM + 0x24;
+@@ -113,7 +115,9 @@ static inline void __iomem *exynos_boot_vector_addr(void)
+ 
+ static inline void __iomem *exynos_boot_vector_flag(void)
+ {
+-	if (samsung_rev() == EXYNOS4210_REV_1_1)
++	if (firmware_run())
++		return S5P_VA_SYSRAM_NS + 0x20;
++	else if (samsung_rev() == EXYNOS4210_REV_1_1)
+ 		return S5P_INFORM6;
+ 	else if (samsung_rev() == EXYNOS4210_REV_1_0)
+ 		return S5P_VA_SYSRAM + 0x20;
+diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+index 7c01512..f90a4a0 100644
+--- a/drivers/cpuidle/cpuidle-exynos.c
++++ b/drivers/cpuidle/cpuidle-exynos.c
+@@ -17,13 +17,18 @@
+ #include <asm/proc-fns.h>
+ #include <asm/suspend.h>
+ #include <asm/cpuidle.h>
++#include <asm/firmware.h>
+ 
+ static void (*exynos_enter_aftr)(void);
+ 
+ static int idle_finisher(unsigned long flags)
+ {
+ 	exynos_enter_aftr();
+-	cpu_do_idle();
++	if (firmware_run())
++		/* no need to check the return value on EXYNOS SoCs */
++		call_firmware_op(do_idle, FW_DO_IDLE_AFTR);
++	else
++		cpu_do_idle();
+ 
+ 	return 1;
+ }
 -- 
-Meelis Roos <mroos@linux.ee>
+1.8.2.3
