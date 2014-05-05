@@ -1,113 +1,153 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] sched: idle: Add sched balance option
-Date: Mon, 05 May 2014 02:32:31 +0200
-Message-ID: <11389655.8tCmxgKokW@vostro.rjw.lan>
-References: <1398342291-16322-1-git-send-email-daniel.lezcano@linaro.org> <5275186.Hb1xxV4ZWO@vostro.rjw.lan> <535F7E23.7020104@linaro.org>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v3] cpufreq: Catch double invocations of
+ cpufreq_freq_transition_begin/end
+Date: Mon, 05 May 2014 12:52:39 +0530
+Message-ID: <20140505072129.14454.25747.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53147 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751704AbaEEAPz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 May 2014 20:15:55 -0400
-In-Reply-To: <535F7E23.7020104@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@rjwysocki.net, mroos@linux.ee, viresh.kumar@linaro.org
+Cc: ego@linux.vnet.ibm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Amit Kucheria <amit.kucheria@linaro.org>, Ingo Molnar <mingo@elte.hu>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, April 29, 2014 12:25:39 PM Daniel Lezcano wrote:
-> On 04/29/2014 01:11 AM, Rafael J. Wysocki wrote:
-> > On Monday, April 28, 2014 01:07:31 PM Daniel Lezcano wrote:
+Some cpufreq drivers were redundantly invoking the _begin() and _end()
+APIs around frequency transitions, and this double invocation (one from
+the cpufreq core and the other from the cpufreq driver) used to result
+in a self-deadlock, leading to system hangs during boot. (The _begin()
+API makes contending callers wait until the previous invocation is
+complete. Hence, the cpufreq driver would end up waiting on itself!).
 
-[cut]
+Now all such drivers have been fixed, but debugging this issue was not
+very straight-forward (even lockdep didn't catch this). So let us add a
+debug infrastructure to the cpufreq core to catch such issues more easily
+in the future.
 
-> > In my opinion it would be much better to have a knob representing the current
-> > relative value of energy to the user (which may depend on things like whether
-> > or not the system is on battery etc) and meaning how far we need to go with
-> > energy saving efforts.
-> >
-> > So if that knob is 0, we'll do things that are known-good for performance.
-> > If it is 1, we'll do some extra effort to save enery as well possibly at
-> > a small expense of performance if that's necessary.  If it is 100, we'll do
-> > all we can to save as much energy as possible without caring about performance
-> > at all.
-> >
-> > And it doesn't even have to be scheduler-specific, it very well may be global.
-> 
-> That would be very nice but I don't see how we can quantify this energy 
-> and handle that generically from the kernel for all the hardware.
-> 
-> I am pretty sure we will discover for some kind of hardware a specific 
-> option will consume more power, argh ! energy I mean, than another 
-> hardware because of the architecture.
-> 
->  From my personal experience, when we are facing this kind of complexity 
-> and heuristic, it is the sign the userspace has some work to do.
-> 
-> What I am proposing is not in contradiction with your approach, it is 
-> about exporting a lot of knobs to userspace, and the userspace decide 
-> how to map what is '0' <--> '100' regarding these options. Nothing 
-> prevent the different platform to set a default value for these options.
+We add a new field called 'transition_task' to the policy structure, to keep
+track of the task which is performing the frequency transition. Using this
+field, we make note of this task during _begin() and print a warning if we
+find a case where the same task is calling _begin() again, before completing
+the previous frequency transition using the corresponding _end().
 
-Our experience so far, however, is that user space is not really likely to
-change the default values of such knobs.
+We have left out ASYNC_NOTIFICATION drivers from this debug infrastructure
+for 2 reasons:
 
->  From my POV, the cgroup could be a good solution for that for different 
-> reasons. Especially one good reason is we can stick the energy policy 
-> per task instead of the entire system.
-> 
-> Let's imagine the following scenario:
-> 
-> An user has a laptop running a mailer looking for the email every 5 
-> minutes. The system switched to 'power'. The user wants to play a video 
-> game but due to the 'power' policy, the game is not playable so it 
-> forces the policy to 'performance'. All the tasks will use the 
-> 'performance' policy, thus consuming more energy.
-
-This isn't all about the given task, but also about devices that are in use
-while it is being run.  For example, to play a game the user would probably
-like the input subsystem to be more responsive and the screen to be brighter
-etc.  If that is a network game, the network adapter will probably need to
-work in the "performance" mode too.
-
-> If we do per task, the video game will use the 'performance' policy and 
-> the other tasks on the system will use the 'power' policy. The userspace 
-> can take the decision to freeze the application running 'performance' if 
-> we reach a critical battery level.
-
-Well, consider task packing in that context and suppose that according to the
-current policy task packing should be applied to "energy efficient" tasks, but
-not to "performance" tasks.  Now, suppose that there's an "energy efficient"
-task to run and there's a core occupied by a "performace" task.  Should the
-"energy efficient" task be run on that core or should we find another one
-for it?  Who's more important in that case?
-
-> The cgroup is a good framework to do that and gives a lot of flexibility 
-> to userspace. I understood Peter does not like the cgroup but I did not 
-> give up to convince him, the cgroup could be good solution :)
-
-Will user space actually use that flexibility?
-
-> Looking forward, if the energy policy is tied with the task, in the 
-> future we can normalize the energy consumption and stick to an 'energy 
-> load' per task and reuse the load tracking for energy, do per task 
-> energy accounting, nice per energy, etc ...
-
-That can be done, but some parts of the kernel that may benefit from an
-"energy conservation bias" knob are not tied to any particular task.  The
-block layer may be one example here.
-
-> Going back to reality, concretely this sysctl patch did not reach a 
-> consensus. So I will resend the two other patches, hoping the discussion 
-> will lead to an agreement.
-
-Well, the discussion so far has been useful to me anyway. :-)
-
-Thanks!
+1. At the moment, we have no way to avoid a particular scenario where this
+   debug infrastructure can emit false-positive warnings for such drivers.
+   The scenario is depicted below:
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+         Task A						Task B
+
+    /* 1st freq transition */
+    Invoke _begin() {
+            ...
+            ...
+    }
+
+    Change the frequency
+
+    /* 2nd freq transition */
+    Invoke _begin() {
+	    ...	//waiting for B to
+            ... //finish _end() for
+	    ... //the 1st transition
+	    ...	      |				Got interrupt for successful
+	    ...	      |				change of frequency (1st one).
+	    ...       |
+	    ...	      |				/* 1st freq transition */
+	    ...	      |				Invoke _end() {
+	    ...	      |					...
+	    ...	      V				}
+	    ...
+	    ...
+    }
+
+   This scenario is actually deadlock-free because, once Task A changes the
+   frequency, it is Task B's responsibility to invoke the corresponding
+   _end() for the 1st frequency transition. Hence it is perfectly legal for
+   Task A to go ahead and attempt another frequency transition in the meantime.
+   (Of course it won't be able to proceed until Task B finishes the 1st _end(),
+   but this doesn't cause a deadlock or a hang).
+
+   The debug infrastructure cannot handle this scenario and will treat it as
+   a deadlock and print a warning. To avoid this, we exclude such drivers
+   from the purview of this code.
+
+2. Luckily, we don't _need_ this infrastructure for ASYNC_NOTIFICATION drivers
+   at all! The cpufreq core does not automatically invoke the _begin() and
+   _end() APIs during frequency transitions in such drivers. Thus, the driver
+   alone is responsible for invoking _begin()/_end() and hence there shouldn't
+   be any conflicts which lead to double invocations. So, we can skip these
+   drivers, since the probability that such drivers will hit this problem is
+   extremely low, as outlined above.
+
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+
+Changes in v3:
+Expanded the comment in the code to briefly mention why ASYNC_NOTIFICATION
+drivers are left out from the check, as suggested by Gautham R. Shenoy.
+No code changes in this version.
+
+v2: https://lkml.org/lkml/2014/4/29/283
+v1: https://lkml.org/lkml/2014/4/28/469
+
+ drivers/cpufreq/cpufreq.c |   14 ++++++++++++++
+ include/linux/cpufreq.h   |    1 +
+ 2 files changed, 15 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index abda660..a05c921 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -354,6 +354,18 @@ static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
+ void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
+ 		struct cpufreq_freqs *freqs)
+ {
++
++	/*
++	 * Catch double invocations of _begin() which lead to self-deadlock.
++	 * ASYNC_NOTIFICATION drivers are left out because the cpufreq core
++	 * doesn't invoke _begin() on their behalf, and hence the chances of
++	 * double invocations are very low. Moreover, there are scenarios
++	 * where these checks can emit false-positive warnings in these
++	 * drivers; so we avoid that by skipping them altogether.
++	 */
++	WARN_ON(!(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION)
++				&& current == policy->transition_task);
++
+ wait:
+ 	wait_event(policy->transition_wait, !policy->transition_ongoing);
+ 
+@@ -365,6 +377,7 @@ wait:
+ 	}
+ 
+ 	policy->transition_ongoing = true;
++	policy->transition_task = current;
+ 
+ 	spin_unlock(&policy->transition_lock);
+ 
+@@ -381,6 +394,7 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
+ 	cpufreq_notify_post_transition(policy, freqs, transition_failed);
+ 
+ 	policy->transition_ongoing = false;
++	policy->transition_task = NULL;
+ 
+ 	wake_up(&policy->transition_wait);
+ }
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 5ae5100..8f44d79 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -110,6 +110,7 @@ struct cpufreq_policy {
+ 	bool			transition_ongoing; /* Tracks transition status */
+ 	spinlock_t		transition_lock;
+ 	wait_queue_head_t	transition_wait;
++	struct task_struct	*transition_task; /* Task which is doing the transition */
+ };
+ 
+ /* Only for ACPI */
+
