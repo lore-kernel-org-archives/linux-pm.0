@@ -1,62 +1,80 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 08/12 v1] Intercept wakeup/fork/exec balance
-Date: Mon,  5 May 2014 08:02:48 +0800
-Message-ID: <1399248172-13871-9-git-send-email-yuyang.du@intel.com>
-References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 3/7] ARM: EXYNOS: add AFTR mode support to firmware do_idle
+ method
+Date: Mon, 05 May 2014 12:57:15 +0200
+Message-ID: <1399287439-31376-4-git-send-email-b.zolnierkie@samsung.com>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
----
- kernel/sched/fair.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+On some platforms (i.e. EXYNOS ones) more than one idle mode is
+available and we need to distinguish them in firmware do_idle method.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index e7153ff..65f1651 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4365,9 +4365,16 @@ static int select_idle_sibling(struct task_struct *p, int target)
- 	struct sched_domain *sd;
- 	struct sched_group *sg;
- 	int i = task_cpu(p);
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	int ret;
- 
-+	ret = workload_consolidation_wakeup(i, target);
-+	if (ret < nr_cpu_ids)
-+		return ret;
-+#else
- 	if (idle_cpu(target))
- 		return target;
-+#endif
- 
+Add mode parameter to do_idle firmware method and AFTR mode support
+to EXYNOS do_idle implementation.
+
+This change is a preparation for adding secure firmware support to
+EXYNOS cpuidle driver.
+
+This patch shouldn't cause any functionality changes (please note
+that do_idle firmware method is unused currently).
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ arch/arm/include/asm/firmware.h |  7 ++++++-
+ arch/arm/mach-exynos/firmware.c | 10 ++++++++--
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/include/asm/firmware.h b/arch/arm/include/asm/firmware.h
+index 70883c7..63989c3 100644
+--- a/arch/arm/include/asm/firmware.h
++++ b/arch/arm/include/asm/firmware.h
+@@ -28,7 +28,7 @@ struct firmware_ops {
  	/*
- 	 * If the prevous cpu is cache affine and idle, don't be stupid.
-@@ -4460,7 +4467,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
- 	}
+ 	 * Enters CPU idle mode
+ 	 */
+-	int (*do_idle)(void);
++	int (*do_idle)(int mode);
+ 	/*
+ 	 * Sets boot address of specified physical CPU
+ 	 */
+@@ -47,6 +47,11 @@ struct firmware_ops {
+ 	int (*c15resume)(u32 *regs);
+ };
  
- 	while (sd) {
--		struct sched_group *group;
-+		struct sched_group *group = NULL;
- 		int weight;
- 
- 		if (!(sd->flags & sd_flag)) {
-@@ -4468,6 +4475,12 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
- 			continue;
- 		}
- 
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+		if (sd->flags & SD_ASYM_CONCURRENCY)
-+			group = workload_consolidation_find_group(sd, p, cpu);
++enum {
++	FW_DO_IDLE_NORMAL,
++	FW_DO_IDLE_AFTR,
++};
 +
-+		if (!group)
-+#endif
- 		group = find_idlest_group(sd, p, cpu, sd_flag);
- 		if (!group) {
- 			sd = sd->child;
+ /* Global pointer for current firmware_ops structure, can't be NULL. */
+ extern const struct firmware_ops *firmware_ops;
+ 
+diff --git a/arch/arm/mach-exynos/firmware.c b/arch/arm/mach-exynos/firmware.c
+index 581c7bf..71fe169 100644
+--- a/arch/arm/mach-exynos/firmware.c
++++ b/arch/arm/mach-exynos/firmware.c
+@@ -20,9 +20,15 @@
+ 
+ #include "smc.h"
+ 
+-static int exynos_do_idle(void)
++static int exynos_do_idle(int mode)
+ {
+-	exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
++	switch (mode) {
++	case FW_DO_IDLE_AFTR:
++		exynos_smc(SMC_CMD_CPU0AFTR, 0, 0, 0);
++		break;
++	case FW_DO_IDLE_NORMAL:
++		exynos_smc(SMC_CMD_SLEEP, 0, 0, 0);
++	}
+ 	return 0;
+ }
+ 
 -- 
-1.7.9.5
+1.8.2.3
