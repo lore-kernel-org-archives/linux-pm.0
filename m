@@ -1,67 +1,38 @@
-From: =?ISO-8859-15?Q?Andreas_F=E4rber?= <afaerber@suse.de>
-Subject: Re: [Patch v3 2/5] cpuidle: config: Add ARCH_EXYNOS entry to select
- cpuidle-big-little driver
-Date: Mon, 05 May 2014 10:59:41 +0200
-Message-ID: <536752FD.3040704@suse.de>
-References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org> <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org> <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
+ cpufreq table
+Date: Mon, 5 May 2014 20:08:45 +0530
+Message-ID: <CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
+	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
+	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
+	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+	<5367946F.1030407@ti.com>
+	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:36673 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755184AbaEEI7p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 5 May 2014 04:59:45 -0400
-In-Reply-To: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <chander.kashyap@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <k.chander@samsung.com>
 
-Hi,
+On 5 May 2014 19:53, Nishanth Menon <nm@ti.com> wrote:
+> ceil and floor allows us to walk down the opp entries the direction we
+> want it to.
+> one can convert that data any way one wants it - especially when custom
+> mapping such as this is desired.
 
-Am 05.05.2014 10:27, schrieb Chander Kashyap:
-> Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 co=
-res.
-> In order to use generic cpuidle-big-little driver, this patch adds Ex=
-ynos5420
-> specific check to initialize generic cpuidle driver.
->=20
-> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-> ---
-> Changes in v3: None
-> Changes in v2:
-> 	1. Changed config macro from SOC_EXYNOS5420 to SOC_EXYNOS5420
+Yeah, but doing that for every frequency transition is not right.
+Otherwise they already have a solution, where they reverse order
+of frequencies for their driver. exynos_sort_descend_freq_table().
 
-This is probably a copy&pasto? Anyway, the commit message needs an
-update since no Exynos5420 specific check is done below afaics. That
-went into 3/5.
+Probably that's a better solution then :)
 
-Cheers,
-Andreas
+But, Jonghwan was probably trying to get this solved in the framework
+only, in case anybody else needs it.
 
->  drivers/cpuidle/Kconfig.arm |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
-m
-> index 97ccc31..d9596e7 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -4,7 +4,7 @@
-> =20
->  config ARM_BIG_LITTLE_CPUIDLE
->  	bool "Support for ARM big.LITTLE processors"
-> -	depends on ARCH_VEXPRESS_TC2_PM
-> +	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
->  	select ARM_CPU_SUSPEND
->  	select CPU_IDLE_MULTIPLE_DRIVERS
->  	help
->=20
-
-
---=20
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffer; HRB 16746 AG N=FCrn=
-berg
+--
+viresh
