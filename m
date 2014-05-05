@@ -1,127 +1,56 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 02/12 v1] Init for CPU ConCurrency
-Date: Mon,  5 May 2014 08:02:42 +0800
-Message-ID: <1399248172-13871-3-git-send-email-yuyang.du@intel.com>
-References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:46110 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755158AbaEEIIh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 5 May 2014 04:08:37 -0400
-In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [Patch v3 1/5] driver: cpuidle-big-little: add of_device_id structure
+Date: Mon,  5 May 2014 13:57:20 +0530
+Message-ID: <1399278444-8312-2-git-send-email-chander.kashyap@linaro.org>
+References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
+ <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+This driver will be used by many big.Little Soc's. As of now it does
+string matching of hardcoded compatible string to init the driver. This
+comparison list will keep on growing with addition of new SoC's.
+Hence add of_device_id structure to collect the compatible strings of
+SoC's using this driver.
+
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
 ---
- kernel/sched/Makefile      |    1 +
- kernel/sched/concurrency.c |   22 ++++++++++++++++++++++
- kernel/sched/core.c        |    5 +++++
- kernel/sched/sched.h       |   21 +++++++++++++++++++++
- 4 files changed, 49 insertions(+)
- create mode 100644 kernel/sched/concurrency.c
+ drivers/cpuidle/cpuidle-big_little.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
-index ab32b7b..e67f7e3 100644
---- a/kernel/sched/Makefile
-+++ b/kernel/sched/Makefile
-@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
- obj-$(CONFIG_SCHEDSTATS) += stats.o
- obj-$(CONFIG_SCHED_DEBUG) += debug.o
- obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
-+obj-$(CONFIG_CPU_CONCURRENCY) += concurrency.o
-diff --git a/kernel/sched/concurrency.c b/kernel/sched/concurrency.c
-new file mode 100644
-index 0000000..195bcf5
---- /dev/null
-+++ b/kernel/sched/concurrency.c
-@@ -0,0 +1,22 @@
-+/*
-+ * CPU ConCurrency (CC) is measures the CPU load by averaging
-+ * the number of running tasks. Using CC, the scheduler can
-+ * evaluate the load of CPUs to improve load balance for power
-+ * efficiency without sacrificing performance.
-+ *
-+ */
-+
-+#ifdef CONFIG_CPU_CONCURRENCY
-+
-+#include "sched.h"
-+
-+void init_cpu_concurrency(struct rq *rq)
-+{
-+	rq->concurrency.sum = 0;
-+	rq->concurrency.sum_now = 0;
-+	rq->concurrency.contrib = 0;
-+	rq->concurrency.nr_running = 0;
-+	rq->concurrency.sum_timestamp = ULLONG_MAX;
-+	rq->concurrency.contrib_timestamp = ULLONG_MAX;
-+}
-+#endif
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 268a45e..ff990f9 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6884,6 +6884,11 @@ void __init sched_init(void)
- #endif
- 		init_rq_hrtick(rq);
- 		atomic_set(&rq->nr_iowait, 0);
-+
-+		/*
-+		 * cpu concurrency init
-+		 */
-+		init_cpu_concurrency(rq);
- 	}
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index b45fc62..4cd02bd 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -163,14 +163,23 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
+ 	return 0;
+ }
  
- 	set_load_weight(&init_task);
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 456e492..0cf9bf0 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -508,6 +508,17 @@ extern struct root_domain def_root_domain;
- 
- #endif /* CONFIG_SMP */
- 
-+#ifdef CONFIG_CPU_CONCURRENCY
-+struct cpu_concurrency_t {
-+	u64 sum;
-+	u64 sum_now;
-+	u64 contrib;
-+	u64 sum_timestamp;
-+	u64 contrib_timestamp;
-+	unsigned long nr_running;
++static const struct of_device_id compatible_machine_match[] = {
++	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
++	{},
 +};
-+#endif
 +
- /*
-  * This is the main, per-CPU runqueue data structure.
-  *
-@@ -643,6 +654,10 @@ struct rq {
- #ifdef CONFIG_SMP
- 	struct llist_head wake_list;
- #endif
+ static int __init bl_idle_init(void)
+ {
+ 	int ret;
++	struct device_node *root = of_find_node_by_path("/");
 +
-+#ifdef CONFIG_CPU_CONCURRENCY
-+	struct cpu_concurrency_t concurrency;
-+#endif
- };
++	if (!root)
++		return -ENODEV;
  
- static inline int cpu_of(struct rq *rq)
-@@ -1203,6 +1218,12 @@ extern void init_sched_dl_class(void);
- extern void resched_task(struct task_struct *p);
- extern void resched_cpu(int cpu);
- 
-+#ifdef CONFIG_CPU_CONCURRENCY
-+extern void init_cpu_concurrency(struct rq *rq);
-+#else
-+static inline void init_cpu_concurrency(struct rq *rq) {}
-+#endif
-+
- extern struct rt_bandwidth def_rt_bandwidth;
- extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
- 
+ 	/*
+ 	 * Initialize the driver just for a compliant set of machines
+ 	 */
+-	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7"))
++	if (!of_match_node(compatible_machine_match, root))
+ 		return -ENODEV;
+ 	/*
+ 	 * For now the differentiation between little and big cores
 -- 
 1.7.9.5
-
