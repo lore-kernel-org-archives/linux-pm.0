@@ -1,49 +1,72 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [Patch v4 3/5] driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
-Date: Mon,  5 May 2014 14:57:18 +0530
-Message-ID: <1399282040-8995-4-git-send-email-chander.kashyap@linaro.org>
-References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
- <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:60654 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755895AbaEEJ1s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 05:27:48 -0400
-Received: by mail-pa0-f48.google.com with SMTP id rd3so613021pab.7
-        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 02:27:47 -0700 (PDT)
-In-Reply-To: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for cpufreq
+ table
+Date: Mon, 5 May 2014 08:38:55 -0500
+Message-ID: <5367946F.1030407@ti.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com> <CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 
-Add "samsung,exynos5420" compatible string to initialize generic
-big-little cpuidle driver for Exynos5420.
+On 05/05/2014 12:54 AM, Viresh Kumar wrote:
+> On 3 May 2014 05:46, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
+>> Hi. Viresh Kumar
+>> Your reply is so fast like Usain Bolt.
+> 
+> Heh, that's not true.. See how slow I was this time :)
+> 
+>>> So, create three flags:
+>>> OPP_TABLE_ORDER_ASCENDING              0
+>>> OPP_TABLE_ORDER_DESCENDING            1
+>>> OPP_TABLE_ORDER_ORIGINAL                  2 (And use this for your case.)
+>>
+>> -> Actually, I want to use OPP_TABLE_ORDER_DESCENDING.(Not
+>> OPP_TABLE_ORDER_ORIGINAL.)
+>> I think that it is enough to support both descending and ascending ordering
+>> only.
+>> The meaning of "ORIGIANL" Amit, said, when he(and I) writes a frequency in
+>> dts file with ordering(Ascending or Descending). He(and I) want the
+>> frequency to be register according to ordering.(Ascending or Descending).
+> 
+> But what if somebody doesn't have a ascending or descending list there? And
+> want to preserve the original list? That's why I recommended it.
+> 
+>> I concerned that if we use ORIGINAL ordering, opp_find_freq_ceil/foor can be
+>> broken.
+> 
+> I completely missed that earlier :) ..
+> It would be broken with descending one as well..
+> 
+> To skip the complexity of finding right freq associated with
+> "ORIGINAL" ordering,
+> lets concentrate on Ascending/Descending ordering for now.
+> 
+> So, this is what I would recommend now:
+> - Create two macros: OPP_TABLE_ORDER_ASCENDING and
+>   OPP_TABLE_ORDER_DESCENDING
+> - create of_init_opp_table_ordered(**, int order), order would be one of the
+> above two macros
+> - rename dev_pm_opp_add to __dev_pm_opp_add() and create a wrapper
+> over it: dev_pm_opp_add(), which would pass
+> OPP_TABLE_ORDER_ASCENDING to it by default and call it from
+> of_init_opp_table_ordered() like this: __dev_pm_opp_add(***, order)..
+> 
+> - Fix ceil/floor routines for these two cases.
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
-Changes in v4: None
-Changes in v3:
-	1. Add compatible string to of_device_id table insted comparing directoly
-Changes in v2: none
+With the brief history of the patch in linux-pm, I am unable to
+understand why not just use ceil/floor routines to pick up data the
+way you need it. It should not matter if we use an ordered list, or
+some other weird organization inside the storage. There are already
+accessors functions meant to precisely help with the case that is
+being tried here.
 
- drivers/cpuidle/cpuidle-big_little.c |    1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index 4cd02bd..344d79fa 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -165,6 +165,7 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
- 
- static const struct of_device_id compatible_machine_match[] = {
- 	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
-+	{ .compatible = "samsung,exynos5420" },
- 	{},
- };
- 
 -- 
-1.7.9.5
-
+Regards,
+Nishanth Menon
