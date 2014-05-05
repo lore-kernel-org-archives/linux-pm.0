@@ -1,94 +1,67 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 09/12 v1] Intercept idle balance
-Date: Mon,  5 May 2014 08:02:49 +0800
-Message-ID: <1399248172-13871-10-git-send-email-yuyang.du@intel.com>
-References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+From: =?ISO-8859-15?Q?Andreas_F=E4rber?= <afaerber@suse.de>
+Subject: Re: [Patch v3 2/5] cpuidle: config: Add ARCH_EXYNOS entry to select
+ cpuidle-big-little driver
+Date: Mon, 05 May 2014 10:59:41 +0200
+Message-ID: <536752FD.3040704@suse.de>
+References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org> <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org> <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:46110 "EHLO mga01.intel.com"
+Received: from cantor2.suse.de ([195.135.220.15]:36673 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755360AbaEEIJE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 5 May 2014 04:09:04 -0400
-In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+	id S1755184AbaEEI7p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 May 2014 04:59:45 -0400
+In-Reply-To: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
+To: Chander Kashyap <chander.kashyap@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <k.chander@samsung.com>
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
----
- kernel/sched/fair.c |   31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+Hi,
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 65f1651..d921c20 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6655,6 +6655,10 @@ out:
- 	return ld_moved;
- }
- 
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
-+#endif
-+
- /*
-  * idle_balance is called by schedule() if this_cpu is about to become
-  * idle. Attempts to pull tasks from other CPUs.
-@@ -6666,6 +6670,9 @@ static int idle_balance(struct rq *this_rq)
- 	unsigned long next_balance = jiffies + HZ;
- 	u64 curr_cost = 0;
- 	int this_cpu = this_rq->cpu;
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	struct cpumask *nonshielded = __get_cpu_var(local_cpu_mask);
-+#endif
- 
- 	idle_enter_fair(this_rq);
- 	/*
-@@ -6684,6 +6691,19 @@ static int idle_balance(struct rq *this_rq)
- 
- 	update_blocked_averages(this_cpu);
- 	rcu_read_lock();
-+
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	cpumask_copy(nonshielded, cpu_active_mask);
-+
-+	/*
-+	 * if we encounter shadowded cpus here, don't do balance on them
-+	 */
-+	workload_consolidation_nonshielded_mask(this_cpu, nonshielded);
-+	if (!cpumask_test_cpu(this_cpu, nonshielded))
-+		goto unlock;
-+	workload_consolidation_unload(nonshielded);
-+#endif
-+
- 	for_each_domain(this_cpu, sd) {
- 		unsigned long interval;
- 		int continue_balancing = 1;
-@@ -6716,6 +6736,9 @@ static int idle_balance(struct rq *this_rq)
- 		if (pulled_task)
- 			break;
- 	}
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+unlock:
-+#endif
- 	rcu_read_unlock();
- 
- 	raw_spin_lock(&this_rq->lock);
-@@ -7709,6 +7732,14 @@ void print_cfs_stats(struct seq_file *m, int cpu)
- __init void init_sched_fair_class(void)
- {
- #ifdef CONFIG_SMP
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	unsigned int i;
-+	for_each_possible_cpu(i) {
-+		zalloc_cpumask_var_node(&per_cpu(local_cpu_mask, i),
-+					GFP_KERNEL, cpu_to_node(i));
-+	}
-+#endif
-+
- 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
- 
- #ifdef CONFIG_NO_HZ_COMMON
--- 
-1.7.9.5
+Am 05.05.2014 10:27, schrieb Chander Kashyap:
+> Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 co=
+res.
+> In order to use generic cpuidle-big-little driver, this patch adds Ex=
+ynos5420
+> specific check to initialize generic cpuidle driver.
+>=20
+> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> ---
+> Changes in v3: None
+> Changes in v2:
+> 	1. Changed config macro from SOC_EXYNOS5420 to SOC_EXYNOS5420
 
+This is probably a copy&pasto? Anyway, the commit message needs an
+update since no Exynos5420 specific check is done below afaics. That
+went into 3/5.
+
+Cheers,
+Andreas
+
+>  drivers/cpuidle/Kconfig.arm |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
+m
+> index 97ccc31..d9596e7 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -4,7 +4,7 @@
+> =20
+>  config ARM_BIG_LITTLE_CPUIDLE
+>  	bool "Support for ARM big.LITTLE processors"
+> -	depends on ARCH_VEXPRESS_TC2_PM
+> +	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
+>  	select ARM_CPU_SUSPEND
+>  	select CPU_IDLE_MULTIPLE_DRIVERS
+>  	help
+>=20
+
+
+--=20
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 N=FCrnberg, Germany
+GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffer; HRB 16746 AG N=FCrn=
+berg
