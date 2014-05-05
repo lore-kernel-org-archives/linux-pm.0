@@ -1,191 +1,79 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 06/12 v1] Attach CPU topology
-Date: Mon,  5 May 2014 08:02:46 +0800
-Message-ID: <1399248172-13871-7-git-send-email-yuyang.du@intel.com>
-References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [Patch v3 5/5] mcpm: exynos: populate suspend and powered_up callbacks
+Date: Mon,  5 May 2014 13:57:24 +0530
+Message-ID: <1399278444-8312-6-git-send-email-chander.kashyap@linaro.org>
+References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
+ <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+In-Reply-To: <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
----
- include/linux/sched.h    |   13 +++++++++++++
- include/linux/topology.h |   16 ++++++++++++++++
- kernel/sched/core.c      |   41 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 70 insertions(+)
+In order to support cpuidle through mcpm, suspend and powered-up
+callbacks are required in mcpm platform code.
+Hence populate the same callbacks.
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 25f54c7..29827ce 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -877,6 +877,12 @@ enum cpu_idle_type {
- #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
- #define SD_NUMA			0x4000	/* cross-node balancing */
- 
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+#define SD_ASYM_CONCURRENCY	0x8000	/* Higher concurrency in front to save power */
-+#else
-+#define SD_ASYM_CONCURRENCY	0
-+#endif
-+
- extern int __weak arch_sd_sibiling_asym_packing(void);
- 
- struct sched_domain_attr {
-@@ -960,6 +966,13 @@ struct sched_domain {
- 		struct rcu_head rcu;	/* used during destruction */
- 	};
- 
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	unsigned int total_groups;
-+	unsigned int group_number;
-+	unsigned int asym_concurrency;
-+	struct sched_group *first_group;	/* ordered by CPU number */
-+#endif
-+
- 	unsigned int span_weight;
- 	/*
- 	 * Span of all CPUs in this domain.
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 7062330..e57f4d6 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -66,6 +66,16 @@ int arch_update_cpu_topology(void);
- #define PENALTY_FOR_NODE_WITH_CPUS	(1)
- #endif
- 
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+#ifndef ASYM_CONCURRENCY_INIT
-+#define ASYM_CONCURRENCY_INIT(n) .asym_concurrency = (n),
-+#endif
-+#else
-+#ifndef ASYM_CONCURRENCY_INIT
-+#define ASYM_CONCURRENCY_INIT(n)
-+#endif
-+#endif
-+
- /*
-  * Below are the 3 major initializers used in building sched_domains:
-  * SD_SIBLING_INIT, for SMT domains
-@@ -102,12 +112,14 @@ int arch_update_cpu_topology(void);
- 				| 0*SD_SERIALIZE			\
- 				| 0*SD_PREFER_SIBLING			\
- 				| arch_sd_sibling_asym_packing()	\
-+				| 0*SD_ASYM_CONCURRENCY			\
- 				,					\
- 	.last_balance		= jiffies,				\
- 	.balance_interval	= 1,					\
- 	.smt_gain		= 1178,	/* 15% */			\
- 	.max_newidle_lb_cost	= 0,					\
- 	.next_decay_max_lb_cost	= jiffies,				\
-+	ASYM_CONCURRENCY_INIT(0)					\
- }
- #endif
- #endif /* CONFIG_SCHED_SMT */
-@@ -134,11 +146,13 @@ int arch_update_cpu_topology(void);
- 				| 0*SD_SHARE_CPUPOWER			\
- 				| 1*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
-+				| 1*SD_ASYM_CONCURRENCY			\
- 				,					\
- 	.last_balance		= jiffies,				\
- 	.balance_interval	= 1,					\
- 	.max_newidle_lb_cost	= 0,					\
- 	.next_decay_max_lb_cost	= jiffies,				\
-+	ASYM_CONCURRENCY_INIT(180)					\
- }
- #endif
- #endif /* CONFIG_SCHED_MC */
-@@ -167,11 +181,13 @@ int arch_update_cpu_topology(void);
- 				| 0*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
- 				| 1*SD_PREFER_SIBLING			\
-+				| 1*SD_ASYM_CONCURRENCY			\
- 				,					\
- 	.last_balance		= jiffies,				\
- 	.balance_interval	= 1,					\
- 	.max_newidle_lb_cost	= 0,					\
- 	.next_decay_max_lb_cost	= jiffies,				\
-+	ASYM_CONCURRENCY_INIT(180)					\
- }
- #endif
- 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index aee8660..671f953 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -4843,7 +4843,11 @@ set_table_entry(struct ctl_table *entry,
- static struct ctl_table *
- sd_alloc_ctl_domain_table(struct sched_domain *sd)
- {
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	struct ctl_table *table = sd_alloc_ctl_entry(15);
-+#else
- 	struct ctl_table *table = sd_alloc_ctl_entry(14);
-+#endif
- 
- 	if (table == NULL)
- 		return NULL;
-@@ -4876,7 +4880,13 @@ sd_alloc_ctl_domain_table(struct sched_domain *sd)
- 		sizeof(long), 0644, proc_doulongvec_minmax, false);
- 	set_table_entry(&table[12], "name", sd->name,
- 		CORENAME_MAX_SIZE, 0444, proc_dostring, false);
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	set_table_entry(&table[13], "asym_concurrency", &sd->asym_concurrency,
-+		sizeof(int), 0644, proc_dointvec, false);
-+	/* &table[14] is terminator */
-+#else
- 	/* &table[13] is terminator */
-+#endif
- 
- 	return table;
- }
-@@ -5497,6 +5507,33 @@ static void update_top_cache_domain(int cpu)
- 	rcu_assign_pointer(per_cpu(sd_asym, cpu), sd);
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+---
+Changes in v3:
+	1. Removed coherance enablement after suspend failure.
+	2. Use generic function to poweron cpu.
+changes in v2:
+	1. Fixed typo: enynos_pmu_cpunr to exynos_pmu_cpunr
+ arch/arm/mach-exynos/mcpm-exynos.c |   34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+
+diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
+index d0f7461..6d4a907 100644
+--- a/arch/arm/mach-exynos/mcpm-exynos.c
++++ b/arch/arm/mach-exynos/mcpm-exynos.c
+@@ -256,10 +256,44 @@ static int exynos_power_down_finish(unsigned int cpu, unsigned int cluster)
+ 	return -ETIMEDOUT; /* timeout */
  }
  
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+static void update_domain_extra_info(struct sched_domain *sd)
++void exynos_powered_up(void)
 +{
-+	while (sd) {
-+		int i = 0, j = 0, first, min = INT_MAX;
-+		struct sched_group *group;
++	unsigned int mpidr, cpu, cluster;
 +
-+		group = sd->groups;
-+		first = group_first_cpu(group);
-+		do {
-+			int k = group_first_cpu(group);
-+			i += 1;
-+			if (k < first)
-+				j += 1;
-+			if (k < min) {
-+				sd->first_group = group;
-+				min = k;
-+			}
-+		} while (group = group->next, group != sd->groups);
++	mpidr = read_cpuid_mpidr();
++	cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
++	cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
 +
-+		sd->total_groups = i;
-+		sd->group_number = j;
-+		sd = sd->parent;
-+	}
++	arch_spin_lock(&exynos_mcpm_lock);
++	if (cpu_use_count[cpu][cluster] == 0)
++		cpu_use_count[cpu][cluster] = 1;
++	arch_spin_unlock(&exynos_mcpm_lock);
 +}
-+#endif
 +
- /*
-  * Attach the domain 'sd' to 'cpu' as its base domain. Callers must
-  * hold the hotplug lock.
-@@ -5545,6 +5582,10 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
- 	destroy_sched_domains(tmp, cpu);
- 
- 	update_top_cache_domain(cpu);
++static void exynos_suspend(u64 residency)
++{
++	unsigned int mpidr, cpunr;
 +
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	update_domain_extra_info(sd);
-+#endif
- }
++	mpidr = read_cpuid_mpidr();
++	cpunr = exynos_pmu_cpunr(mpidr);
++
++	__raw_writel(virt_to_phys(mcpm_entry_point), ns_sram_base_addr + 0x1c);
++
++	exynos_power_down();
++
++	/*
++	 * Execution reaches here only if cpu did not power down.
++	 * Hence roll back the changes done in exynos_power_down function.
++	*/
++	exynos_cpu_powerup(cpunr);
++}
++
+ static const struct mcpm_platform_ops exynos_power_ops = {
+ 	.power_up		= exynos_power_up,
+ 	.power_down		= exynos_power_down,
+ 	.power_down_finish	= exynos_power_down_finish,
++	.suspend		= exynos_suspend,
++	.powered_up		= exynos_powered_up,
+ };
  
- /* cpus with isolated domains */
+ static void __init exynos_mcpm_usage_count_init(void)
 -- 
 1.7.9.5
