@@ -1,84 +1,46 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 7/7] ARM: EXYNOS: cpuidle: add secure firmware support to AFTR
- mode code
-Date: Mon, 05 May 2014 12:57:19 +0200
-Message-ID: <1399287439-31376-8-git-send-email-b.zolnierkie@samsung.com>
-References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] cpupower, add option to display frequencies and latencies without rounding off values
+Date: Mon, 05 May 2014 18:06:01 +0200
+Message-ID: <1451795.6yxSG0gxlO@skinner>
+References: <1398349927-18684-1-git-send-email-prarit@redhat.com> <2505557.Dy0KJtTk9a@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:45786 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752214AbaEEQGD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 May 2014 12:06:03 -0400
+In-Reply-To: <2505557.Dy0KJtTk9a@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Prarit Bhargava <prarit@redhat.com>, linux-pm@vger.kernel.org
 
-* Use do_idle firmware method instead of cpu_do_idle() on boards
-  with secure firmware enabled.
+On Thursday, May 01, 2014 01:41:34 AM Rafael J. Wysocki wrote:
+> On Thursday, April 24, 2014 10:32:07 AM Prarit Bhargava wrote:
+...
 
-* Use S5P_VA_SYSRAM_NS + 0x24 address for exynos_boot_vector_addr()
-  and S5P_VA_SYSRAM_NS + 0x20 one for exynos_boot_vector_flag() on
-  boards with secure firmware enabled.
+> > 
+> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > Cc: Thomas Renninger <trenn@suse.de>
+> > Cc: linux-pm@vger.kernel.org
+> > Acked-by: Thomas Renninger <trenn@suse.de>
+> > Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> 
+> Thomas, any comments?  Yes, no, don't care?
 
-This patch fixes hang on an attempt to enter AFTR mode for TRATS2
-board (which uses EXYNOS4412 SoC with secure firmware enabled).
+The patch is ok and introduces a new functionality which
+is compatible with the rest by only getting switched on via
+an extra parameter.
 
-This patch shouldn't cause any functionality changes on boards that
-don't use secure firmware.
+It should not conflict with my other patches which I forgot
+what status there is.
+Subject: tools/power/cpupower enhancements/fixes
+on linux-pm@lists.linux-foundation.org
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- arch/arm/mach-exynos/pm.c        | 8 ++++++--
- drivers/cpuidle/cpuidle-exynos.c | 7 ++++++-
- 2 files changed, 12 insertions(+), 3 deletions(-)
+Are you going to pick them up, shall I resend?
 
-diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index 3922968..ba4cd05 100644
---- a/arch/arm/mach-exynos/pm.c
-+++ b/arch/arm/mach-exynos/pm.c
-@@ -104,7 +104,9 @@ static int exynos_irq_set_wake(struct irq_data *data, unsigned int state)
- 
- static inline void __iomem *exynos_boot_vector_addr(void)
- {
--	if (samsung_rev() == EXYNOS4210_REV_1_1)
-+	if (firmware_run())
-+		return S5P_VA_SYSRAM_NS + 0x24;
-+	else if (samsung_rev() == EXYNOS4210_REV_1_1)
- 		return S5P_INFORM7;
- 	else if (samsung_rev() == EXYNOS4210_REV_1_0)
- 		return S5P_VA_SYSRAM + 0x24;
-@@ -113,7 +115,9 @@ static inline void __iomem *exynos_boot_vector_addr(void)
- 
- static inline void __iomem *exynos_boot_vector_flag(void)
- {
--	if (samsung_rev() == EXYNOS4210_REV_1_1)
-+	if (firmware_run())
-+		return S5P_VA_SYSRAM_NS + 0x20;
-+	else if (samsung_rev() == EXYNOS4210_REV_1_1)
- 		return S5P_INFORM6;
- 	else if (samsung_rev() == EXYNOS4210_REV_1_0)
- 		return S5P_VA_SYSRAM + 0x20;
-diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
-index 7c01512..f90a4a0 100644
---- a/drivers/cpuidle/cpuidle-exynos.c
-+++ b/drivers/cpuidle/cpuidle-exynos.c
-@@ -17,13 +17,18 @@
- #include <asm/proc-fns.h>
- #include <asm/suspend.h>
- #include <asm/cpuidle.h>
-+#include <asm/firmware.h>
- 
- static void (*exynos_enter_aftr)(void);
- 
- static int idle_finisher(unsigned long flags)
- {
- 	exynos_enter_aftr();
--	cpu_do_idle();
-+	if (firmware_run())
-+		/* no need to check the return value on EXYNOS SoCs */
-+		call_firmware_op(do_idle, FW_DO_IDLE_AFTR);
-+	else
-+		cpu_do_idle();
- 
- 	return 1;
- }
--- 
-1.8.2.3
+Thanks,
+
+    Thomas
