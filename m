@@ -1,112 +1,40 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 10/12 v1] Intercept periodic nohz idle balance
-Date: Mon,  5 May 2014 08:02:50 +0800
-Message-ID: <1399248172-13871-11-git-send-email-yuyang.du@intel.com>
-References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
+ cpufreq table
+Date: Mon, 5 May 2014 19:44:48 +0530
+Message-ID: <CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
+	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
+	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
+	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+	<5367946F.1030407@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:48239 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932542AbaEEOOs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 10:14:48 -0400
+Received: by mail-ob0-f182.google.com with SMTP id wn1so3667871obc.41
+        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 07:14:48 -0700 (PDT)
+In-Reply-To: <5367946F.1030407@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
----
- kernel/sched/fair.c |   50 +++++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 43 insertions(+), 7 deletions(-)
+On 5 May 2014 19:08, Nishanth Menon <nm@ti.com> wrote:
+> With the brief history of the patch in linux-pm, I am unable to
+> understand why not just use ceil/floor routines to pick up data the
+> way you need it. It should not matter if we use an ordered list, or
+> some other weird organization inside the storage. There are already
+> accessors functions meant to precisely help with the case that is
+> being tried here.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index d921c20..374c86b 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6867,10 +6867,46 @@ static struct {
- 
- static inline int find_new_ilb(void)
- {
-+#ifdef CONFIG_WORKLOAD_CONSOLIDATION
-+	struct cpumask *nonshielded = __get_cpu_var(local_cpu_mask);
-+	int ilb, weight;
-+	int this_cpu = smp_processor_id();
-+
-+	/*
-+	 * Optimize for the case when we have no idle CPUs or only one
-+	 * idle CPU. Don't walk the sched_domain hierarchy in such cases
-+	 */
-+	if (cpumask_weight(nohz.idle_cpus_mask) < 2)
-+		return nr_cpu_ids;
-+
-+	ilb = cpumask_first(nohz.idle_cpus_mask);
-+
-+	if (ilb < nr_cpu_ids && idle_cpu(ilb)) {
-+
-+		cpumask_copy(nonshielded, nohz.idle_cpus_mask);
-+
-+		rcu_read_lock();
-+		workload_consolidation_nonshielded_mask(this_cpu, nonshielded);
-+		rcu_read_unlock();
-+
-+		weight = cpumask_weight(nonshielded);
-+
-+		if (weight < 2)
-+			return nr_cpu_ids;
-+
-+		/*
-+		 * get idle load balancer again
-+		 */
-+		ilb = cpumask_first(nonshielded);
-+	    if (ilb < nr_cpu_ids && idle_cpu(ilb))
-+			return ilb;
-+	}
-+#else
- 	int ilb = cpumask_first(nohz.idle_cpus_mask);
- 
- 	if (ilb < nr_cpu_ids && idle_cpu(ilb))
- 		return ilb;
-+#endif
- 
- 	return nr_cpu_ids;
- }
-@@ -7107,7 +7143,7 @@ out:
-  * In CONFIG_NO_HZ_COMMON case, the idle balance kickee will do the
-  * rebalancing for all the cpus for whom scheduler ticks are stopped.
-  */
--static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
-+static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle, struct cpumask *mask)
- {
- 	int this_cpu = this_rq->cpu;
- 	struct rq *rq;
-@@ -7117,7 +7153,7 @@ static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
- 	    !test_bit(NOHZ_BALANCE_KICK, nohz_flags(this_cpu)))
- 		goto end;
- 
--	for_each_cpu(balance_cpu, nohz.idle_cpus_mask) {
-+	for_each_cpu(balance_cpu, mask) {
- 		if (balance_cpu == this_cpu || !idle_cpu(balance_cpu))
- 			continue;
- 
-@@ -7165,10 +7201,10 @@ static inline int nohz_kick_needed(struct rq *rq)
- 	if (unlikely(rq->idle_balance))
- 		return 0;
- 
--       /*
--	* We may be recently in ticked or tickless idle mode. At the first
--	* busy tick after returning from idle, we will update the busy stats.
--	*/
-+	/*
-+	 * We may be recently in ticked or tickless idle mode. At the first
-+	 * busy tick after returning from idle, we will update the busy stats.
-+	 */
- 	set_cpu_sd_state_busy();
- 	nohz_balance_exit_idle(cpu);
- 
-@@ -7211,7 +7247,7 @@ need_kick:
- 	return 1;
- }
- #else
--static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle) { }
-+static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle, struct cpumask *mask) { }
- #endif
- 
- /*
--- 
-1.7.9.5
+To be precise, for exynos they need the position of a frequency when
+it is arranged in descending order. And they will simply write this position
+in their clock controller later. For example, if frequencies are:
+100 MHz, 200, 300, 400, 500, 600
+
+Then they need to write 1 for 600, 2 for 500, 3 for 400, and so on..
+I am not able to imaging how ceil/floor would help here.
