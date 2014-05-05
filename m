@@ -1,41 +1,87 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 01/12 v1] CONFIG for CPU ConCurrency
-Date: Mon,  5 May 2014 08:02:41 +0800
-Message-ID: <1399248172-13871-2-git-send-email-yuyang.du@intel.com>
-References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, yuyang.du@intel.com
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [Patch v4 5/5] mcpm: exynos: populate suspend and powered_up callbacks
+Date: Mon,  5 May 2014 14:57:20 +0530
+Message-ID: <1399282040-8995-6-git-send-email-chander.kashyap@linaro.org>
+References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
+ <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:52303 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755749AbaEEJ14 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 May 2014 05:27:56 -0400
+Received: by mail-pa0-f54.google.com with SMTP id lf10so9007353pab.13
+        for <linux-pm@vger.kernel.org>; Mon, 05 May 2014 02:27:55 -0700 (PDT)
+In-Reply-To: <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+In order to support cpuidle through mcpm, suspend and powered-up
+callbacks are required in mcpm platform code.
+Hence populate the same callbacks.
+
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
 ---
- arch/x86/Kconfig |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+Changes in v4: None
+Changes in v3:
+	1. Removed coherancy enablement after suspend failure.
+	2. Use generic function to poweron cpu.
+changes in v2:
+	1. Fixed typo: enynos_pmu_cpunr to exynos_pmu_cpunr
+ arch/arm/mach-exynos/mcpm-exynos.c |   34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 25d2c6f..9bfac8d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -797,6 +797,17 @@ config SCHED_MC
- 	  making when dealing with multi-core CPU chips at a cost of slightly
- 	  increased overhead in some places. If unsure say N here.
+diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
+index d0f7461..6d4a907 100644
+--- a/arch/arm/mach-exynos/mcpm-exynos.c
++++ b/arch/arm/mach-exynos/mcpm-exynos.c
+@@ -256,10 +256,44 @@ static int exynos_power_down_finish(unsigned int cpu, unsigned int cluster)
+ 	return -ETIMEDOUT; /* timeout */
+ }
  
-+config CPU_CONCURRENCY
-+	bool "CPU ConCurency (CC)"
-+	default n
-+	depends on SMP
-+	---help---
-+	  CPU ConCurrency (CC) is a new CPU load metric that measures the CPU
-+	  load by averaging the number of running tasks. Using CC, the scheduler
-+	  can evaluate the load of CPUs and may consolidate workloads on CPUs in
-+	  load balancing for power efficiency without sacrificing performance.
-+	  If unsure say N here.
++void exynos_powered_up(void)
++{
++	unsigned int mpidr, cpu, cluster;
 +
- source "kernel/Kconfig.preempt"
++	mpidr = read_cpuid_mpidr();
++	cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
++	cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
++
++	arch_spin_lock(&exynos_mcpm_lock);
++	if (cpu_use_count[cpu][cluster] == 0)
++		cpu_use_count[cpu][cluster] = 1;
++	arch_spin_unlock(&exynos_mcpm_lock);
++}
++
++static void exynos_suspend(u64 residency)
++{
++	unsigned int mpidr, cpunr;
++
++	mpidr = read_cpuid_mpidr();
++	cpunr = exynos_pmu_cpunr(mpidr);
++
++	__raw_writel(virt_to_phys(mcpm_entry_point), ns_sram_base_addr + 0x1c);
++
++	exynos_power_down();
++
++	/*
++	 * Execution reaches here only if cpu did not power down.
++	 * Hence roll back the changes done in exynos_power_down function.
++	*/
++	exynos_cpu_powerup(cpunr);
++}
++
+ static const struct mcpm_platform_ops exynos_power_ops = {
+ 	.power_up		= exynos_power_up,
+ 	.power_down		= exynos_power_down,
+ 	.power_down_finish	= exynos_power_down_finish,
++	.suspend		= exynos_suspend,
++	.powered_up		= exynos_powered_up,
+ };
  
- config X86_UP_APIC
+ static void __init exynos_mcpm_usage_count_init(void)
 -- 
 1.7.9.5
+
