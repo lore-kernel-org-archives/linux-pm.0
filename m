@@ -1,38 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Mon, 5 May 2014 20:08:45 +0530
-Message-ID: <CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
-	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
-	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-	<5367946F.1030407@ti.com>
-	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
-	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 05/10] thermal: exynos: remove redundant pdata checks from
+ exynos_tmu_initialize()
+Date: Mon, 05 May 2014 13:15:34 +0200
+Message-ID: <1399288539-1793-6-git-send-email-b.zolnierkie@samsung.com>
+References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On 5 May 2014 19:53, Nishanth Menon <nm@ti.com> wrote:
-> ceil and floor allows us to walk down the opp entries the direction we
-> want it to.
-> one can convert that data any way one wants it - especially when custom
-> mapping such as this is desired.
+Remove runtime checks for pdata sanity from exynos_tmu_initialize().
+The current values hardcoded in pdata will never trigger the checks
+and for the new code potential mistakes should be caught during
+development/review phases.
 
-Yeah, but doing that for every frequency transition is not right.
-Otherwise they already have a solution, where they reverse order
-of frequencies for their driver. exynos_sort_descend_freq_table().
+There should be no functional changes caused by this patch.
 
-Probably that's a better solution then :)
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/thermal/samsung/exynos_thermal_common.h |  1 -
+ drivers/thermal/samsung/exynos_tmu.c            | 13 -------------
+ 2 files changed, 14 deletions(-)
 
-But, Jonghwan was probably trying to get this solved in the framework
-only, in case anybody else needs it.
-
---
-viresh
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
+index 3eb2ed9..cd44719 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.h
++++ b/drivers/thermal/samsung/exynos_thermal_common.h
+@@ -27,7 +27,6 @@
+ #define SENSOR_NAME_LEN	16
+ #define MAX_TRIP_COUNT	8
+ #define MAX_COOLING_DEVICE 4
+-#define MAX_THRESHOLD_LEVS 5
+ 
+ #define ACTIVE_INTERVAL 500
+ #define IDLE_INTERVAL 10000
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 903566f..789d745 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -158,23 +158,10 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 	    data->temp_error > pdata->max_efuse_value)
+ 		data->temp_error = pdata->efuse_value & EXYNOS_TMU_TEMP_MASK;
+ 
+-	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
+-		dev_err(&pdev->dev, "Invalid max trigger level\n");
+-		ret = -EINVAL;
+-		goto out;
+-	}
+-
+ 	for (i = 0; i < pdata->max_trigger_level; i++) {
+ 		if (!pdata->trigger_levels[i])
+ 			continue;
+ 
+-		if ((pdata->trigger_type[i] == HW_TRIP) &&
+-		(!pdata->trigger_levels[pdata->max_trigger_level - 1])) {
+-			dev_err(&pdev->dev, "Invalid hw trigger level\n");
+-			ret = -EINVAL;
+-			goto out;
+-		}
+-
+ 		/* Count trigger levels except the HW trip*/
+ 		if (!(pdata->trigger_type[i] == HW_TRIP))
+ 			trigger_levs++;
+-- 
+1.8.2.3
