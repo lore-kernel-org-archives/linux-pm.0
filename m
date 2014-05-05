@@ -1,160 +1,52 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze"
- sleep state
-Date: Mon, 05 May 2014 20:46:20 +0800
-Message-ID: <5367881C.6000104@linux.intel.com>
-References: <2548502.zJ1no3NhRc@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:43535 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932186AbaEEMqt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 5 May 2014 08:46:49 -0400
-In-Reply-To: <2548502.zJ1no3NhRc@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 0/7] ARM: EXYNOS: cpuidle: fix AFTR mode on boards with secure
+ firmware enabled
+Date: Mon, 05 May 2014 12:57:12 +0200
+Message-ID: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
 
-On 2014/5/5 6:51, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If freeze_enter() is called, we want to bypass the current cpuidle
-> governor and always use the deepest available (that is, not disabled)
-> C-state, because we want to save as much energy as reasonably possible
-> then and runtime latency constraints don't matter at that point, since
-> the system is in a sleep state anyway.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> This is on top of https://patchwork.kernel.org/patch/4071541/ .
-> 
-> ---
->  drivers/cpuidle/cpuidle.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
->  include/linux/cpuidle.h   |    2 ++
->  kernel/power/suspend.c    |    2 ++
->  3 files changed, 48 insertions(+), 1 deletion(-)
-> 
-> Index: linux-pm/drivers/cpuidle/cpuidle.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
-> +++ linux-pm/drivers/cpuidle/cpuidle.c
-> @@ -32,6 +32,7 @@ LIST_HEAD(cpuidle_detected_devices);
->  static int enabled_devices;
->  static int off __read_mostly;
->  static int initialized __read_mostly;
-> +static bool use_deepest_state __read_mostly;
->  
->  int cpuidle_disabled(void)
->  {
-> @@ -65,6 +66,45 @@ int cpuidle_play_dead(void)
->  }
->  
->  /**
-> + * cpuidle_use_deepest_state - Enable/disable the "deepest idle" mode.
-> + * @enable: Whether enable or disable the feature.
-> + *
-> + * If the "deepest idle" mode is enabled, cpuidle will ignore the governor and
-> + * always use the state with the greatest exit latency (out of the states that
-> + * are not disabled).
-> + *
-> + * This function can only be called after cpuidle_pause() to avoid races.
-> + */
-> +void cpuidle_use_deepest_state(bool enable)
-> +{
-> +	use_deepest_state = enable;
-> +}
-> +
-> +/**
-> + * cpuidle_find_deepest_state - Find the state of the greatest exit latency.
-> + * @drv: cpuidle driver for a given CPU.
-> + * @dev: cpuidle device for a given CPU.
-> + */
-> +static int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
-> +				      struct cpuidle_device *dev)
-> +{
-> +	unsigned int latency_req = 0;
-> +	int i, ret = CPUIDLE_DRIVER_STATE_START - 1;
-> +
-> +	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
-> +		struct cpuidle_state *s = &drv->states[i];
-> +		struct cpuidle_state_usage *su = &dev->states_usage[i];
-> +
-> +		if (s->disabled || su->disable || s->exit_latency <= latency_req)
-> +			continue;
-> +
-> +		latency_req = s->exit_latency;
-> +		ret = i;
-> +	}
-> +	return ret;
-> +}
-> +
-> +/**
->   * cpuidle_enter_state - enter the state and update stats
->   * @dev: cpuidle device for this cpu
->   * @drv: cpuidle driver for this cpu
-> @@ -124,6 +164,9 @@ int cpuidle_select(struct cpuidle_driver
->  	if (!drv || !dev || !dev->enabled)
->  		return -EBUSY;
->  
-> +	if (unlikely(use_deepest_state))
-> +		return cpuidle_find_deepest_state(drv, dev);
-> +
->  	return cpuidle_curr_governor->select(drv, dev);
->  }
->  
-> @@ -155,7 +198,7 @@ int cpuidle_enter(struct cpuidle_driver
->   */
->  void cpuidle_reflect(struct cpuidle_device *dev, int index)
->  {
-> -	if (cpuidle_curr_governor->reflect)
-> +	if (cpuidle_curr_governor->reflect && !unlikely(use_deepest_state))
->  		cpuidle_curr_governor->reflect(dev, index);
->  }
->  
-> Index: linux-pm/include/linux/cpuidle.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/cpuidle.h
-> +++ linux-pm/include/linux/cpuidle.h
-> @@ -143,6 +143,7 @@ extern void cpuidle_resume(void);
->  extern int cpuidle_enable_device(struct cpuidle_device *dev);
->  extern void cpuidle_disable_device(struct cpuidle_device *dev);
->  extern int cpuidle_play_dead(void);
-> +extern void cpuidle_use_deepest_state(bool enable);
->  
->  extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev);
->  #else
-> @@ -175,6 +176,7 @@ static inline int cpuidle_enable_device(
->  {return -ENODEV; }
->  static inline void cpuidle_disable_device(struct cpuidle_device *dev) { }
->  static inline int cpuidle_play_dead(void) {return -ENODEV; }
-> +static inline void cpuidle_use_deepest_state(bool enable) {}
->  static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
->  	struct cpuidle_device *dev) {return NULL; }
->  #endif
-> Index: linux-pm/kernel/power/suspend.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/suspend.c
-> +++ linux-pm/kernel/power/suspend.c
-> @@ -54,9 +54,11 @@ static void freeze_begin(void)
->  
->  static void freeze_enter(void)
->  {
-> +	cpuidle_use_deepest_state(true);
->  	cpuidle_resume();
->  	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
->  	cpuidle_pause();
-> +	cpuidle_use_deepest_state(false);
->  }
->  
->  void freeze_wake(void)
-> 
+Hi,
 
-Tested-by: Aubrey Li <aubrey.li@linux.intel.com>
+This patch series fixes support for AFTR idle mode on boards with
+secure firmware enabled (it also includes fix for register setup on
+EXYNOS4x12 SoCs).  It has been tested on Trats2 target but should
+also work on (EXYNOS4412 based) Insignal Origen board.
 
-I tested freeze mode on ASUS-T100, it works as expected. Thanks Rafael!
+This patchset depends on "[PATCH V5 00/20] ARM: exynos: cpuidle:
+Move the driver to drivers/cpuidle" patch series from Daniel Lezcano
+("http://www.spinics.net/lists/linux-samsung-soc/msg28494.html").
 
--Aubrey
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (5):
+  ARM: EXYNOS: add AFTR mode support to firmware do_idle method
+  ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros by static inlines
+  ARM: EXYNOS: PM: use c15resume firmware method if secure firmware is
+    enabled
+  ARM: EXYNOS: PM: fix register setup on EXYNOS4x12 for AFTR mode code
+  ARM: EXYNOS: cpuidle: add secure firmware support to AFTR mode code
+
+Kyungmin Park (1):
+  arm: firmware: Check firmware is running or not
+
+Tomasz Figa (1):
+  ARM: EXYNOS: add support for firmware-assisted c15resume
+
+ arch/arm/common/firmware.c       |  5 +++++
+ arch/arm/include/asm/firmware.h  | 14 +++++++++++++-
+ arch/arm/mach-exynos/firmware.c  | 18 ++++++++++++++++--
+ arch/arm/mach-exynos/pm.c        | 40 ++++++++++++++++++++++++++++++++--------
+ drivers/cpuidle/cpuidle-exynos.c |  7 ++++++-
+ 5 files changed, 72 insertions(+), 12 deletions(-)
+
+-- 
+1.8.2.3
