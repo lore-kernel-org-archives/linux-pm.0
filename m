@@ -1,39 +1,41 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 0/2] PM / OPP: move cpufreq specific helpers out of OPP layer
-Date: Mon, 5 May 2014 08:33:48 -0500
-Message-ID: <1399296830-13056-1-git-send-email-nm@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-omap-owner@vger.kernel.org>
-Sender: linux-omap-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [Patch v3 2/5] cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little driver
+Date: Mon,  5 May 2014 13:57:21 +0530
+Message-ID: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
+References: <1398245154-18771-1-git-send-email-chander.kashyap@linaro.org>
+ <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1399278444-8312-1-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-CPUFreq usage of OPP should be independent of the ordering of type of
-data storage inside OPP layer. The current operations can equally be
-performed by generic operations.
+Exynos5420 is a big-little SoC from Samsung. It has 4 A15 and 4 A7 cores.
+In order to use generic cpuidle-big-little driver, this patch adds Exynos5420
+specific check to initialize generic cpuidle driver.
 
-[RFC]: https://patchwork.kernel.org/patch/4100811/
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+---
+Changes in v3: None
+Changes in v2:
+	1. Changed config macro from SOC_EXYNOS5420 to SOC_EXYNOS5420
+ drivers/cpuidle/Kconfig.arm |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Series based on: v3.15-rc1
-
-Nishanth Menon (2):
-  PM / OPP: Remove cpufreq wrapper dependency on internal data
-    organization
-  PM / OPP: Move cpufreq specific OPP functions out of generic OPP
-    library
-
- Documentation/cpu-freq/core.txt |   29 +++++++++++
- Documentation/power/opp.txt     |   40 ++------------
- drivers/base/power/opp.c        |   91 --------------------------------
- drivers/cpufreq/Makefile        |    2 +
- drivers/cpufreq/cpufreq_opp.c   |  110 +++++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h         |   21 ++++++++
- include/linux/pm_opp.h          |   20 -------
- 7 files changed, 167 insertions(+), 146 deletions(-)
- create mode 100644 drivers/cpufreq/cpufreq_opp.c
-
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index 97ccc31..d9596e7 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -4,7 +4,7 @@
+ 
+ config ARM_BIG_LITTLE_CPUIDLE
+ 	bool "Support for ARM big.LITTLE processors"
+-	depends on ARCH_VEXPRESS_TC2_PM
++	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
+ 	select ARM_CPU_SUSPEND
+ 	select CPU_IDLE_MULTIPLE_DRIVERS
+ 	help
 -- 
 1.7.9.5
-
