@@ -1,111 +1,65 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: [PATCH v3 7/7] thermal: armada: Support Armada 380 SoC
-Date: Tue,  6 May 2014 13:59:51 -0300
-Message-ID: <1399395591-5713-8-git-send-email-ezequiel.garcia@free-electrons.com>
-References: <1399395591-5713-1-git-send-email-ezequiel.garcia@free-electrons.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] thermal-soc: fixes
+Date: Tue,  6 May 2014 15:26:52 -0400
+Message-ID: <1399404412-29538-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:53327 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750821AbaEFRAz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 13:00:55 -0400
-In-Reply-To: <1399395591-5713-1-git-send-email-ezequiel.garcia@free-electrons.com>
+Received: from mail-ve0-f174.google.com ([209.85.128.174]:46134 "EHLO
+	mail-ve0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459AbaEFT1A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 15:27:00 -0400
+Received: by mail-ve0-f174.google.com with SMTP id jw12so4326437veb.5
+        for <linux-pm@vger.kernel.org>; Tue, 06 May 2014 12:26:59 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org
 
-Now that a generic infrastructure is in place, it's possible to support
-the Armada 380 SoC thermal sensor. This sensor is similar to the one
-available in the already supported SoCs, with its specific temperature formula
-and specific sensor initialization.
+Hello Rui, linux-pm
 
-Acked-by: Jason Cooper <jason@lakedaemon.net>
-Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
----
- .../devicetree/bindings/thermal/armada-thermal.txt |  3 ++-
- drivers/thermal/armada_thermal.c                   | 30 ++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 1 deletion(-)
+First of all, I'd like to apologize for my late radio silence. I have been
+dealing with transitional phase here and just now I could get my hands back
+to the linux soc tree.
 
-diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-index 2a67e51..4cf0249 100644
---- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-@@ -1,4 +1,4 @@
--* Marvell Armada 370/375/XP thermal management
-+* Marvell Armada 370/375/380/XP thermal management
- 
- Required properties:
- 
-@@ -6,6 +6,7 @@ Required properties:
- 		marvell,armada370-thermal
- 		marvell,armada375-thermal
- 		marvell,armada375-z1-thermal
-+		marvell,armada380-thermal
- 		marvell,armadaxp-thermal
- 
- 		Note: As the name suggests, "marvell,armada375-z1-thermal"
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index e65c5e4..9d1420a 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -43,6 +43,7 @@
- #define A375_UNIT_CONTROL_MASK		0x7
- #define A375_READOUT_INVERT		BIT(15)
- #define A375_HW_RESETn			BIT(8)
-+#define A380_HW_RESET			BIT(8)
- 
- struct armada_thermal_data;
- 
-@@ -149,6 +150,19 @@ static void armada375_init_sensor(struct platform_device *pdev,
- 	mdelay(50);
- }
- 
-+static void armada380_init_sensor(struct platform_device *pdev,
-+				  struct armada_thermal_priv *priv)
-+{
-+	unsigned long reg = readl_relaxed(priv->control);
-+
-+	/* Reset hardware once */
-+	if (!(reg & A380_HW_RESET)) {
-+		reg |= A380_HW_RESET;
-+		writel(reg, priv->control);
-+		mdelay(10);
-+	}
-+}
-+
- static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
- 	unsigned long reg = readl_relaxed(priv->sensor);
-@@ -220,6 +234,18 @@ static const struct armada_thermal_data armada375_data = {
- 	.coef_div = 13616,
- };
- 
-+static const struct armada_thermal_data armada380_data = {
-+	.is_valid = armada_is_valid,
-+	.init_sensor = armada380_init_sensor,
-+	.is_valid_shift = 10,
-+	.temp_shift = 0,
-+	.temp_mask = 0x3ff,
-+	.coef_b = 1169498786UL,
-+	.coef_m = 2000000UL,
-+	.coef_div = 4289,
-+	.inverted = true,
-+};
-+
- static const struct of_device_id armada_thermal_id_table[] = {
- 	{
- 		.compatible = "marvell,armadaxp-thermal",
-@@ -238,6 +264,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
- 		.data       = &armada375_data,
- 	},
- 	{
-+		.compatible = "marvell,armada380-thermal",
-+		.data       = &armada380_data,
-+	},
-+	{
- 		/* sentinel */
- 	},
- };
--- 
-1.9.1
+I started by cleaning the fixes out of the linux-pm patchwork. This pull
+request has the outstading fixes sent end of 2013. Mainly, I have here
+several changes on exynos, adding support to new chips. I also have
+one small fix on TI's soc.
 
+I will be looking into new drivers also pretty soon.
+
+For now, please consider this pull request, as it contains pretty old patches
+waiting for long time already.
+
+The following changes since commit 9477165ec525d47abb1cb6523698e0cd89d65ddb:
+
+  thermal: rcar-thermal: update thermal zone only when temperature changes (2014-04-08 09:01:39 +0800)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git next
+
+for you to fetch changes up to 923488a53e7890566f298c2f67416af84ba2a21c:
+
+  thermal: samsung: Add TMU support for Exynos5260 SoCs (2014-05-06 14:55:42 -0400)
+
+----------------------------------------------------------------
+Bartlomiej Zolnierkiewicz (1):
+      thermal: offer Samsung thermal support only when ARCH_EXYNOS is defined
+
+Naveen Krishna Chatradhi (4):
+      thermal: samsung: replace inten_ bit fields with intclr_
+      thermal: samsung: change base_common to more meaningful base_second
+      thermal: samsung: Add TMU support for Exynos5420 SoCs
+      thermal: samsung: Add TMU support for Exynos5260 SoCs
+
+Paul Walmsley (1):
+      thermal: ti-soc-thermal: clk_round_rate() can return a zero upon error
+
+ .../devicetree/bindings/thermal/exynos-thermal.txt |  50 ++++-
+ drivers/thermal/Kconfig                            |   2 +-
+ drivers/thermal/samsung/exynos_tmu.c               |  77 ++++++--
+ drivers/thermal/samsung/exynos_tmu.h               |  23 ++-
+ drivers/thermal/samsung/exynos_tmu_data.c          | 211 ++++++++++++++++++++-
+ drivers/thermal/samsung/exynos_tmu_data.h          |  31 ++-
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |   2 +-
+ 7 files changed, 355 insertions(+), 41 deletions(-)
