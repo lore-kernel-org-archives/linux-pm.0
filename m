@@ -1,96 +1,89 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Tue, 06 May 2014 20:55:22 +0300
-Message-ID: <5369220A.3030207@semaphore.gr>
-References: <535AC247.3070907@semaphore.gr>	<CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>	<535FCDBD.6080500@semaphore.gr>	<1621123.rMC9JtD3Mo@vostro.rjw.lan> <CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v3 1/3] base: power: Add generic OF-based power domain
+ look-up
+Date: Tue, 06 May 2014 19:15:21 +0200
+Message-ID: <536918A9.6050502@gmail.com>
+References: <1398271618-28932-1-git-send-email-t.figa@samsung.com>	<1398271618-28932-2-git-send-email-t.figa@samsung.com>	<535E9163.3070305@wwwdotorg.org>
+ <CAPDyKFoGOcScsaGWkw9bVh=gpGTApRK48AczaMiSmLah+YOSXQ@mail.gmail.com>
+ <53690D21.8080807@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <53690D21.8080807@wwwdotorg.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Stephen Warren <swarren@wwwdotorg.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Philipp Zabel <philipp.zabel@gmail.com>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vg
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
 
-On 06/05/2014 06:24 =CE=BC=CE=BC, Geert Uytterhoeven wrote:
-> Hi Stratos,
->=20
-> On Wed, Apr 30, 2014 at 12:26 AM, Rafael J. Wysocki <rjw@rjwysocki.ne=
-t> wrote:
->> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
->>> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
->>>> On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> =
-wrote:
->>>>> This patch set introduces two freq_table helper macros which
->>>>> can be used for iteration over cpufreq_frequency_table and
->>>>> makes the necessary changes to cpufreq core and drivers that
->>>>> use such an iteration procedure.
->>>>>
->>>>> The motivation was a usage of common procedure to iterate over
->>>>> cpufreq_frequency_table across all drivers and cpufreq core.
->>>>>
->>>>> This was tested on a x86_64 platform.
->>>>> Most files compiled successfully but unfortunately I was not
->>>>> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
->>>>> due to lack of cross compiler.
->>>>>
->>>>> Changelog
->>>>>
->>>>> v4 -> v5
->>>>>         - Fix warnings in printk format specifier for 32 bit
->>>>>           architectures in freq_table.c, longhaul, pasemi, ppc_cb=
-e
+
+On 06.05.2014 18:26, Stephen Warren wrote:
+> On 05/06/2014 02:22 AM, Ulf Hansson wrote:
+>> On 28 April 2014 19:35, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>>> On 04/23/2014 10:46 AM, Tomasz Figa wrote:
+>>>> This patch introduces generic code to perform power domain look-up using
+>>>> device tree and automatically bind devices to their power domains.
+>>>> Generic device tree binding is introduced to specify power domains of
+>>>> devices in their device tree nodes.
 >>>>
->>>> Doesn't look much has changed and so it stays as is:
->>>>
->>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>>
+>>>> Backwards compatibility with legacy Samsung-specific power domain
+>>>> bindings is provided, but for now the new code is not compiled when
+>>>> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
+>>>> will change as soon as Exynos power domain code gets converted to use
+>>>> the generic framework in further patch.
 >>>
->>> Thank you very much!
+>>>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>>>
+>>>> +==Power domain consumers==
+>>>> +
+>>>> +Required properties:
+>>>> + - power-domain : A phandle and power domain specifier as defined by bindings
+>>>> +                  of power controller specified by phandle.
+>>>
+>>> It seems quite likely that a single logical device could have components
+>>> in multiple power domains. Consider an HDMI controller with different
+>>> power domains for the HDMI core, CEC communication, DDC/I2C
+>>> communication, and the I/O pads, with no clear separation between those
+>>> two components of the module (no separate register spaces, but the
+>>> bits/registers are interleaved all together).
+>>>
+>>> As such, I think that rather than a "power-domain" property, we need a
+>>> pair of "power-domains", and "power-domain-names" properties, and
+>>> preferably with mandatory usage of name-based lookups, rather than
+>>> allowing a random mix of name-based and index-based lookups like we have
+>>> with some existing resource bindings.
 >>
->> I've applied the series to my bleeding-edge branch, will move it to =
-linux-next
->> after build testing later this week.
->=20
-> This breaks if CONFIG_CPU_FREQ=3Dn, e.g. ARM/shmobile/koelsch/
-> non-multiplatform:
->=20
-> drivers/built-in.o: In function `clk_round_parent':
-> clkdev.c:(.text+0xcf168): undefined reference to `cpufreq_next_valid'
-> drivers/built-in.o: In function `clk_rate_table_find':
-> clkdev.c:(.text+0xcf820): undefined reference to `cpufreq_next_valid'
-> make[3]: *** [vmlinux] Error 1
->=20
-> drivers/sh/clk/core.c (pre-CCF shmobile clock core) calls
-> cpufreq_for_each_valid_entry():
->=20
-> #define cpufreq_for_each_valid_entry(pos, table)        \
->         for (pos =3D table; cpufreq_next_valid(&pos); pos++)
->=20
-> but cpufreq_next_valid() in drivers/cpufreq/cpufreq.c is not
-> compiled in.
+>> Each struct device have only one dev_pm_domain pointer, thus a device
+>> are not able to reside in more than one power domain.
+>>
+>> Therefore I doubt this will be very useful, unless I missed your point. :-)
+>
+> A struct device is a Linux-internal concept. DT is supposed to represent
+> the HW in an OS-agnostic fashion, not according to the limitations of
+> any one OS's driver model.
+>
+> It's certainly true that a single logical HW module (represented by a
+> single DT node) can have parts in multiple power domains.
+>
 
-My bad. I'm sorry for this. :(
+AFAIK a single DT node is supposed to represent a single _physical_ HW 
+module. It all depends on description granularity, though. A physical 
+chip (or IP block) might be further divided into multiple blocks, so I 
+can imagine some of them being in different power domains than another. 
+Still, based on the fact that in Linux we never needed to specify 
+multiple power domains for a device, is this really a real use case?
 
-Rafael,
-A solution could be to make cpufreq_next_valid an inline function in cp=
-ufreq.h,
-but as Viresh mentioned this would be very inefficient because of multi=
-ple copies.
+Anyway, the binding is defined in a way that lets you simply turn the 
+single phandle+specifier into a list of them, if such need ever shows up.
 
-So, maybe it's better to revert the 2 patches that don't depend on CONF=
-IG_CPU_FREQ:
-
-4229e1c61a4a ("sh: clk: Use cpufreq_for_each_valid_entry macro for iter=
-ation") and
-04ae58645afa ("irda: sh_sir: Use cpufreq_for_each_valid_entry macro for=
- iteration").
-
-Do I need to send revert patches for the above?
-
-
-Thanks,
-Stratos
+Best regards,
+Tomasz
