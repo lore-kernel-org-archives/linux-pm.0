@@ -1,53 +1,51 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: [PATCH v3 5/7] thermal: armada: Allow to specify an 'inverted readout' sensor
-Date: Tue,  6 May 2014 13:59:49 -0300
-Message-ID: <1399395591-5713-6-git-send-email-ezequiel.garcia@free-electrons.com>
-References: <1399395591-5713-1-git-send-email-ezequiel.garcia@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpupower, add option to display frequencies and latencies without rounding off values
+Date: Tue, 06 May 2014 14:24:19 +0200
+Message-ID: <3460512.WJX8BUPG7x@vostro.rjw.lan>
+References: <1398349927-18684-1-git-send-email-prarit@redhat.com> <2505557.Dy0KJtTk9a@vostro.rjw.lan> <1451795.6yxSG0gxlO@skinner>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:53312 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750821AbaEFRAr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 13:00:47 -0400
-In-Reply-To: <1399395591-5713-1-git-send-email-ezequiel.garcia@free-electrons.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:63672 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934584AbaEFMHn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 08:07:43 -0400
+In-Reply-To: <1451795.6yxSG0gxlO@skinner>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Prarit Bhargava <prarit@redhat.com>, linux-pm@vger.kernel.org
 
-In order to support inverted-formula thermal sensor readout, this commit
-introduces an 'inverted' field in the SoC-specific structure which
-allows to specify an inversion of the temperature formula.
+On Monday, May 05, 2014 06:06:01 PM Thomas Renninger wrote:
+> On Thursday, May 01, 2014 01:41:34 AM Rafael J. Wysocki wrote:
+> > On Thursday, April 24, 2014 10:32:07 AM Prarit Bhargava wrote:
+> ...
+> 
+> > > 
+> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > > Cc: Thomas Renninger <trenn@suse.de>
+> > > Cc: linux-pm@vger.kernel.org
+> > > Acked-by: Thomas Renninger <trenn@suse.de>
+> > > Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> > 
+> > Thomas, any comments?  Yes, no, don't care?
+> 
+> The patch is ok and introduces a new functionality which
+> is compatible with the rest by only getting switched on via
+> an extra parameter.
 
-Acked-by: Jason Cooper <jason@lakedaemon.net>
-Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
----
- drivers/thermal/armada_thermal.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+OK, thanks!
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 6fd6483..f84d9f0 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -56,6 +56,7 @@ struct armada_thermal_data {
- 	unsigned long coef_b;
- 	unsigned long coef_m;
- 	unsigned long coef_div;
-+	bool inverted;
- 
- 	/* Register shift and mask to access the sensor temperature */
- 	unsigned int temp_shift;
-@@ -138,7 +139,10 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
- 	m = priv->data->coef_m;
- 	div = priv->data->coef_div;
- 
--	*temp = (b - (m * reg)) / div;
-+	if (priv->data->inverted)
-+		*temp = ((m * reg) - b) / div;
-+	else
-+		*temp = (b - (m * reg)) / div;
- 	return 0;
- }
- 
+> It should not conflict with my other patches which I forgot
+> what status there is.
+> Subject: tools/power/cpupower enhancements/fixes
+> on linux-pm@lists.linux-foundation.org
+> 
+> Are you going to pick them up, shall I resend?
+
+Please resend.  I've lost track of them, sorry about that.
+
 -- 
-1.9.1
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
