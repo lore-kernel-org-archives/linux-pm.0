@@ -1,72 +1,271 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 1/3] base: power: Add generic OF-based power domain
- look-up
-Date: Tue, 6 May 2014 19:52:47 +0200
-Message-ID: <CAPDyKFqtW1pV3xv1E8fhtPS99eVezGJqKq_JM4Mrq2ewJyTpog@mail.gmail.com>
-References: <1398271618-28932-1-git-send-email-t.figa@samsung.com>
- <1398271618-28932-2-git-send-email-t.figa@samsung.com>
- <CAPDyKFpvtRpgg-Ohv2Yi--_5mnp3ghpj7_4xyM7SjJvYCFzS6Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAPDyKFpvtRpgg-Ohv2Yi--_5mnp3ghpj7_4xyM7SjJvYCFzS6Q@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Philipp Zabel <philipp.zabel@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <tomasz.figa@gmail.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rafael J. Wyso
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH RFC v3 5/6] drivers: cpuidle: CPU idle ARM64 driver
+Date: Tue,  6 May 2014 19:04:42 +0100
+Message-ID: <1399399483-17112-6-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1399399483-17112-1-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Antti Miettinen <ananaza-X3B1VOXEql0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Capella <sebastian.capella-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 April 2014 11:40, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 23 April 2014 18:46, Tomasz Figa <t.figa@samsung.com> wrote:
->> This patch introduces generic code to perform power domain look-up using
->> device tree and automatically bind devices to their power domains.
->> Generic device tree binding is introduced to specify power domains of
->> devices in their device tree nodes.
->>
->> Backwards compatibility with legacy Samsung-specific power domain
->> bindings is provided, but for now the new code is not compiled when
->> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
->> will change as soon as Exynos power domain code gets converted to use
->> the generic framework in further patch.
->>
->> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
->> Reviewed-by: Mark Brown <broonie@linaro.org>
->> Reviewed-by: Kevin Hilman <khilman@linaro.org>
->> Reviewed-by: Philipp Zabel <philipp.zabel@gmail.com>
->> [on i.MX6 GK802]
->> Tested-by: Philipp Zabel <philipp.zabel@gmail.com>
+This patch implements a generic CPU idle driver for ARM64 machines.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+It relies on the DT idle states infrastructure to initialize idle
+states count and respective parameters. Current code assumes the driver
+is managing idle states on all possible CPUs but can be easily
+generalized to support heterogenous systems and build cpumasks at
+runtime using MIDRs or DT cpu nodes compatible properties.
 
-I also implemented some test-support for genpd for a ux500 SOC as well
-- tested passed successfully. :-)
+Suspend back-ends (eg PSCI) must register a suspend initializer with
+the CPU idle driver so that the suspend backend call can be detected,
+and the driver code can call the back-end infrastructure to complete the
+suspend backend initialization.
 
-[snip]
+Idle state index 0 is always initialized as a simple wfi state, ie always
+considered present and functional on all ARM64 platforms.
 
->> +
->> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
->
-> I remember we discussed this earlier, but I don't think we should add
-> another Kconfig for this. CONFIG_OF should be enough.
->
-> I realize that we need to handle "Samsung-specific bindings", to not
-> break the Exynos pm domain. Maybe adding the parsing of them into the
-> generic power domain in the same patch as when we switch Exynos to the
-> new API would do the trick?
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+---
+ drivers/cpuidle/Kconfig         |   5 ++
+ drivers/cpuidle/Kconfig.arm64   |  13 ++++
+ drivers/cpuidle/Makefile        |   4 +
+ drivers/cpuidle/cpuidle-arm64.c | 161 ++++++++++++++++++++++++++++++++++++=
+++++
+ 4 files changed, 183 insertions(+)
+ create mode 100644 drivers/cpuidle/Kconfig.arm64
+ create mode 100644 drivers/cpuidle/cpuidle-arm64.c
 
-I realized that there already exists CONFIG_PM_GENERIC_DOMAINS_SLEEP
-and CONFIG_PM_GENERIC_DOMAINS_RUNTIME, which serves similar purpose as
-CONFIG_PM_GENERIC_DOMAINS_OF would.
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index 995654e..0654eb5 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -44,6 +44,11 @@ depends on ARM
+ source "drivers/cpuidle/Kconfig.arm"
+ endmenu
+=20
++menu "ARM64 CPU Idle Drivers"
++depends on ARM64
++source "drivers/cpuidle/Kconfig.arm64"
++endmenu
++
+ menu "POWERPC CPU Idle Drivers"
+ depends on PPC
+ source "drivers/cpuidle/Kconfig.powerpc"
+diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.arm64
+new file mode 100644
+index 0000000..b83612c
+--- /dev/null
++++ b/drivers/cpuidle/Kconfig.arm64
+@@ -0,0 +1,13 @@
++#
++# ARM64 CPU Idle drivers
++#
++
++config ARM64_CPUIDLE
++=09bool "Generic ARM64 CPU idle Driver"
++=09select OF_IDLE_STATES
++=09help
++=09  Select this to enable generic cpuidle driver for ARM v8.
++=09  It provides a generic idle driver whose idle states are configured
++=09  at run-time through DT nodes. The CPUidle suspend backend is
++=09  initialized by the device tree parsing code on matching the entry
++=09  method to the respective CPU operations.
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index 2fc5139..161a5f2 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -16,6 +16,10 @@ obj-$(CONFIG_ARM_U8500_CPUIDLE)         +=3D cpuidle-ux5=
+00.o
+ obj-$(CONFIG_ARM_AT91_CPUIDLE)          +=3D cpuidle-at91.o
+=20
+ ##########################################################################=
+#####
++# ARM64 drivers
++obj-$(CONFIG_ARM64_CPUIDLE)=09=09+=3D cpuidle-arm64.o
++
++##########################################################################=
+#####
+ # POWERPC drivers
+ obj-$(CONFIG_PSERIES_CPUIDLE)=09=09+=3D cpuidle-pseries.o
+ obj-$(CONFIG_POWERNV_CPUIDLE)=09=09+=3D cpuidle-powernv.o
+diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm6=
+4.c
+new file mode 100644
+index 0000000..fef1fad
+--- /dev/null
++++ b/drivers/cpuidle/cpuidle-arm64.c
+@@ -0,0 +1,161 @@
++/*
++ * ARM64 generic CPU idle driver.
++ *
++ * Copyright (C) 2014 ARM Ltd.
++ * Author: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#define pr_fmt(fmt) "CPUidle arm64: " fmt
++
++#include <linux/cpuidle.h>
++#include <linux/cpumask.h>
++#include <linux/cpu_pm.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++
++#include <asm/psci.h>
++#include <asm/suspend.h>
++
++#include "of_idle_states.h"
++
++typedef int (*suspend_init_fn)(struct cpuidle_driver *,
++=09=09=09       struct device_node *[]);
++
++struct cpu_suspend_ops {
++=09const char *id;
++=09suspend_init_fn init_fn;
++};
++
++static const struct cpu_suspend_ops suspend_operations[] __initconst =3D {
++=09{"arm,psci", psci_dt_register_idle_states},
++=09{}
++};
++
++static __init const struct cpu_suspend_ops *get_suspend_ops(const char *st=
+r)
++{
++=09int i;
++
++=09if (!str)
++=09=09return NULL;
++
++=09for (i =3D 0; suspend_operations[i].id; i++)
++=09=09if (!strcmp(suspend_operations[i].id, str))
++=09=09=09return &suspend_operations[i];
++
++=09return NULL;
++}
++
++/*
++ * arm_enter_idle_state - Programs CPU to enter the specified state
++ *
++ * @dev: cpuidle device
++ * @drv: cpuidle driver
++ * @idx: state index
++ *
++ * Called from the CPUidle framework to program the device to the
++ * specified target state selected by the governor.
++ */
++static int arm_enter_idle_state(struct cpuidle_device *dev,
++=09=09=09=09struct cpuidle_driver *drv, int idx)
++{
++=09int ret;
++
++=09if (!idx) {
++=09=09cpu_do_idle();
++=09=09return idx;
++=09}
++
++=09cpu_pm_enter();
++=09/*
++=09 * Pass idle state index to cpu_suspend which in turn will call
++=09 * the CPU ops suspend protocol with idle index as a parameter.
++=09 *
++=09 * Some states would not require context to be saved and flushed
++=09 * to DRAM, so calling cpu_suspend would not be stricly necessary.
++=09 * When power domains specifications for ARM CPUs are finalized then
++=09 * this code can be optimized to prevent saving registers if not
++=09 * needed.
++=09 */
++=09ret =3D cpu_suspend(idx);
++
++=09cpu_pm_exit();
++
++=09return ret ? -1 : idx;
++}
++
++struct cpuidle_driver arm64_idle_driver =3D {
++=09.name =3D "arm64_idle",
++=09.owner =3D THIS_MODULE,
++};
++
++static struct device_node *state_nodes[CPUIDLE_STATE_MAX] __initdata;
++
++/*
++ * arm64_idle_init
++ *
++ * Registers the arm64 specific cpuidle driver with the cpuidle
++ * framework. It relies on core code to parse the idle states
++ * and initialize them using driver data structures accordingly.
++ */
++static int __init arm64_idle_init(void)
++{
++=09int i, ret;
++=09const char *entry_method;
++=09struct device_node *idle_states_node;
++=09const struct cpu_suspend_ops *suspend_init;
++=09struct cpuidle_driver *drv =3D &arm64_idle_driver;
++
++=09idle_states_node =3D of_find_node_by_path("/cpus/idle-states");
++=09if (!idle_states_node)
++=09=09return -ENOENT;
++
++=09if (of_property_read_string(idle_states_node, "entry-method",
++=09=09=09=09    &entry_method)) {
++=09=09pr_warn(" * %s missing entry-method property\n",
++=09=09=09    idle_states_node->full_name);
++=09=09of_node_put(idle_states_node);
++=09=09return -EOPNOTSUPP;
++=09}
++
++=09suspend_init =3D get_suspend_ops(entry_method);
++=09if (!suspend_init) {
++=09=09pr_warn("Missing suspend initializer\n");
++=09=09of_node_put(idle_states_node);
++=09=09return -EOPNOTSUPP;
++=09}
++
++=09/*
++=09 * State at index 0 is standby wfi and considered standard
++=09 * on all ARM platforms. If in some platforms simple wfi
++=09 * can't be used as "state 0", DT bindings must be implemented
++=09 * to work around this issue and allow installing a special
++=09 * handler for idle state index 0.
++=09 */
++=09drv->states[0].exit_latency =3D 1;
++=09drv->states[0].target_residency =3D 1;
++=09drv->states[0].flags =3D CPUIDLE_FLAG_TIME_VALID;
++=09strncpy(drv->states[0].name, "ARM WFI", CPUIDLE_NAME_LEN);
++=09strncpy(drv->states[0].desc, "ARM WFI", CPUIDLE_DESC_LEN);
++
++=09drv->cpumask =3D (struct cpumask *) cpu_possible_mask;
++=09/*
++=09 * Start at index 1, request idle state nodes to be filled
++=09 */
++=09ret =3D of_init_idle_driver(drv, state_nodes, 1, true);
++=09if (ret)
++=09=09return ret;
++
++=09if (suspend_init->init_fn(drv, state_nodes))
++=09=09return -EOPNOTSUPP;
++
++=09for (i =3D 0; i < drv->state_count; i++)
++=09=09drv->states[i].enter =3D arm_enter_idle_state;
++
++=09return cpuidle_register(drv, NULL);
++}
++device_initcall(arm64_idle_init);
+--=20
+1.8.4
 
-So, let's ignore my previous comment and move on.
 
-Kind regards
-Ulf Hansson
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
