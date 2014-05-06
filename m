@@ -1,52 +1,43 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
- with the PM core
-Date: Tue, 6 May 2014 09:43:30 +0200
-Message-ID: <CAPDyKFoSOUfgvrKE8x3dih7xvm3VBoNZHjPxWCtFw_h-QALqvw@mail.gmail.com>
-References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
-	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFpTwPDu9afhOjhhQ2PKGFB+hWsp=mcaYTq8OvuGF7yT3Q@mail.gmail.com>
-	<CAMuHMdUGdfF8x58dz46VWNsC4X0cmFng39Z2xSO_pXYqn9u=HA@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
+ cpufreq table
+Date: Tue, 6 May 2014 18:25:23 +0100
+Message-ID: <CAPKp9uZKMKsB2dfAPC3WdswHm3VO1ujJ7Rz762dJ+b+mswKC3A@mail.gmail.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
+	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
+	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
+	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+	<5367946F.1030407@ti.com>
+	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUGdfF8x58dz46VWNsC4X0cmFng39Z2xSO_pXYqn9u=HA@mail.gmail.com>
+In-Reply-To: <CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>, Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2 May 2014 16:35, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
+On Mon, May 5, 2014 at 3:14 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 5 May 2014 19:08, Nishanth Menon <nm@ti.com> wrote:
+>> With the brief history of the patch in linux-pm, I am unable to
+>> understand why not just use ceil/floor routines to pick up data the
+>> way you need it. It should not matter if we use an ordered list, or
+>> some other weird organization inside the storage. There are already
+>> accessors functions meant to precisely help with the case that is
+>> being tried here.
 >
-> On Fri, May 2, 2014 at 10:56 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> +static int of_clk_pm_runtime_suspend(struct device *dev)
->>> +{
->>> +       int ret;
->>> +
->>> +       ret = pm_generic_runtime_suspend(dev);
->>> +       if (ret)
->>> +               return ret;
->>> +
->>> +       ret = pm_clk_suspend(dev);
->>
->> What about slow clocks? Those aren't handled with pm_clk_suspend().
+> To be precise, for exynos they need the position of a frequency when
+> it is arranged in descending order. And they will simply write this position
+> in their clock controller later. For example, if frequencies are:
+> 100 MHz, 200, 300, 400, 500, 600
 >
-> How are slow clocks handled?
+> Then they need to write 1 for 600, 2 for 500, 3 for 400, and so on..
+> I am not able to imaging how ceil/floor would help here.
 
-clk_prepare|unprepare - these functions may sleep.
+It's better to have these mapping in the users of this framework IMO.
+Assuming these OPPs come from DT, what happens if entries in the DT are
+updated (added/removed), won't the mapping go wrong then ?
 
-Kind regards
-Ulf Hansson
-
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+Regards,
+Sudeep
