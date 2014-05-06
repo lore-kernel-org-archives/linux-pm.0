@@ -1,73 +1,77 @@
-From: Johan Hovold <jhovold@gmail.com>
-Subject: Performance regression in v3.14
-Date: Tue, 6 May 2014 18:35:59 +0200
-Message-ID: <20140506163559.GA5308@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: [PATCH v3 0/7] thermal: Armada 375/380 SoC support
+Date: Tue,  6 May 2014 13:59:44 -0300
+Message-ID: <1399395591-5713-1-git-send-email-ezequiel.garcia@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:53276 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750821AbaEFRA2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 13:00:28 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Cc: Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-After updating my main system from v3.13 to v3.14.2, I found that the
-git bash-completion was extremely sluggish. Completing a file name would
-take roughly six rather than one second on this Haswell machine
-(i7-4770). (Other things, such as git rebase, also felt slower, but
-the completion issue was much more obvious and easy to measure).
+This patchset adds the support for the thermal sensor in the recently
+introduced Armada 375 and 38x SoC. Compared to the previous patchset
+version, only the driver changes are being sent now. The rest has been
+merged by Jason Cooper through the mvebu tree.
 
-I managed to reproduce the problem using the following minimal construct
+There are other very minor changes from v2, see below.
 
-	cat dmesg.repeat | while read x; do true; done
+The first five patches are preparation work. They add a generic
+infrastructure that allows to support similar thermal sensors in
+a non-intrusive way.
 
-where dmesg.repeat is simply dmesg concatenated together to an
-equivalent number of lines as produced by git ls-files in the
-kernel-source tree root (45k), and where the actual processing of each
-line has been removed.
+Patches six and seven uses this infrastructure to support the 
+Armada 375 and 380 SoC thermal sensor.
 
-Most of the time I get:
+Since there are some issues in the Armada 375 Z1 SoC thermal sensor,
+patch eight adds a quirk to workaround such issues. The Z1 silicon stepping
+is detected and the compatible string is updated, so the driver can apply
+sensor initialization workarounds.
 
-	$ time cat dmesg.repeat | while read x; do true; done
+In addition, the quirk moves the offset of the thermal control register,
+and allows to specifiy the correct (A0 stepping) offset in the devicetree.
+This quirk is applied only for the A375-DB board, being the only board known
+to have the problematic Z1 SoC.
 
-	real    0m6.091s
-	user    0m3.674s
-	sys     0m2.447s
+The series applies on v3.15-rc1, and has been tested on A375-DB board
+and A385-DB board.
 
-but sometimes it only takes one second.
+Feedback and comments are welcome!
 
-	$ time cat dmesg.repeat | while read x; do true; done
+Changes from v2:
 
-	real    0m1.100s
-	user    0m0.544s
-	sys     0m0.570s
+  * Renamed the 'offset' fields and macros to the more proper 'shift'.
+    This was pointed out on private discussion by Thomas Petazzoni.
 
-I don't seem to be able to reproduce the problem on 3.13 where the pipe
-always takes about one second to finish.
+  * Fix a typo in the Armada 380 init_sensor() function.
 
-Taking all but one core offline seems to make the problem go away, and so
-does using the performance rather than powersave governor of the
-intel_pstate cpufreq driver (on at least one of two online cores).
+Changes from v1:
 
-Moving the mouse cursor makes to loop finish faster, and so does
-switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
-was around cpuinfo_min_freq several times (when tracing, see below).
+  * Introduced the Armada 380 support. In order to support this in a clean
+    way, the 'inverted' field was added.
 
-I could not reproduce the problem when using perf record, but I can get
-function-profile traces using ftrace (in which case the loop takes about
-60 seconds instead of six seconds to finish).
+  * Cleaned the A375 workaround in the thermal driver, by detecting the
+    device compatible string, as suggested by Jason Cooper.
 
-Comparing the traces I see a lot of functions taking ten times longer to
-finish, but I guess that's expected if this is indeed a cpufreq issue.
+  * Added details about the register offset in the Z1 stepping to the
+    binding documentation as requested by Jason Cooper.
 
-Since this is my main machine (and only multi-core machine at the
-moment) I'm not able to bisect this myself. And for the same reason I
-have not verified that the problem persists in v3.15-rc.
+Ezequiel Garcia (7):
+  thermal: armada: Rename armada_thermal_ops struct
+  thermal: armada: Add infrastructure to support generic formulas
+  thermal: armada: Add generic infrastructure to handle the sensor
+  thermal: armada: Pass the platform_device to init_sensor()
+  thermal: armada: Allow to specify an 'inverted readout' sensor
+  thermal: armada: Support Armada 375 SoC
+  thermal: armada: Support Armada 380 SoC
 
-I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
-obviously related and marked for stable in v3.15-rc.
+ .../devicetree/bindings/thermal/armada-thermal.txt |  12 +-
+ drivers/thermal/armada_thermal.c                   | 158 ++++++++++++++++++---
+ 2 files changed, 150 insertions(+), 20 deletions(-)
 
-Any ideas about what might be going on?
+-- 
+1.9.1
 
-Thanks,
-Johan
