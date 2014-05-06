@@ -1,67 +1,88 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 1/3] base: power: Add generic OF-based power domain
- look-up
-Date: Tue, 6 May 2014 10:22:42 +0200
-Message-ID: <CAPDyKFoGOcScsaGWkw9bVh=gpGTApRK48AczaMiSmLah+YOSXQ@mail.gmail.com>
-References: <1398271618-28932-1-git-send-email-t.figa@samsung.com>
- <1398271618-28932-2-git-send-email-t.figa@samsung.com>
- <535E9163.3070305@wwwdotorg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <535E9163.3070305@wwwdotorg.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Philipp Zabel <philipp.zabel@gmail.com>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <t.figa@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rafael J. Wysocki
+From: Javi Merino <javi.merino@arm.com>
+Subject: [RFC PATCH 0/5] The power allocator thermal governor
+Date: Tue,  6 May 2014 13:06:33 +0100
+Message-ID: <1399377998-14870-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:32972 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757398AbaEFMHF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 08:07:05 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Punit.Agrawal@arm.com, Javi Merino <javi.merino@arm.com>
 
-On 28 April 2014 19:35, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 04/23/2014 10:46 AM, Tomasz Figa wrote:
->> This patch introduces generic code to perform power domain look-up using
->> device tree and automatically bind devices to their power domains.
->> Generic device tree binding is introduced to specify power domains of
->> devices in their device tree nodes.
->>
->> Backwards compatibility with legacy Samsung-specific power domain
->> bindings is provided, but for now the new code is not compiled when
->> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
->> will change as soon as Exynos power domain code gets converted to use
->> the generic framework in further patch.
->
->> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->
->> +==Power domain consumers==
->> +
->> +Required properties:
->> + - power-domain : A phandle and power domain specifier as defined by bindings
->> +                  of power controller specified by phandle.
->
-> It seems quite likely that a single logical device could have components
-> in multiple power domains. Consider an HDMI controller with different
-> power domains for the HDMI core, CEC communication, DDC/I2C
-> communication, and the I/O pads, with no clear separation between those
-> two components of the module (no separate register spaces, but the
-> bits/registers are interleaved all together).
->
-> As such, I think that rather than a "power-domain" property, we need a
-> pair of "power-domains", and "power-domain-names" properties, and
-> preferably with mandatory usage of name-based lookups, rather than
-> allowing a random mix of name-based and index-based lookups like we have
-> with some existing resource bindings.
+Hi,
 
-Each struct device have only one dev_pm_domain pointer, thus a device
-are not able to reside in more than one power domain.
+This RFC is our first stab at implementing the ideas we proposed in
+[1].  The power allocator governor allocates device power to control
+temperature.  This requires transforming performance requests into
+requested power, which we do with the aid of power models.  Patch 3
+(thermal: add a basic cpu power actor) implements a simple power model
+for cpus.  The division of power between the actors ensures that power
+is allocated where it is needed the most, based on the current
+workload.
 
-Therefore I doubt this will be very useful, unless I missed your point. :-)
+[1] http://article.gmane.org/gmane.linux.power-management.general/43243
 
-Kind regards
-Ulf Hansson
+Patches 1 and 2 were previously sent as separate patches: [2] and
+[3]. There was a similar patch to "thermal: provide a way for the
+governors to have private data for each thermal zone" posted by Wei Ni
+but we can't use it as it is because it doesn't allow the governor's
+bind() function (start() in Wei's patch) to modify the governor_data.
+Other than that, this patch incorporates Rui's suggestion of keeping
+the original governor if the new governor fails to bind.
+
+[2] http://article.gmane.org/gmane.linux.power-management.general/43624
+[3] https://patchwork.kernel.org/patch/3859721/
+
+It's an RFC because we still need to tune it to achieve the
+temperature stability that we are aiming for.  This RFC is just meant
+to remove major road blocks as early as possible (if any).
+
+We'll provide integration instructions soon so that people can test it
+in their platforms.
+
+Cheers,
+Javi & Punit
+
+Javi Merino (5):
+  thermal: let governors have private data for each thermal zone
+  thermal: let cooling devices operate on other units other than state
+  thermal: add a basic cpu power actor
+  thermal: introduce the Power Allocator governor
+  thermal: add trace events to the power allocator governor
+
+ drivers/acpi/fan.c                      |   22 +-
+ drivers/acpi/processor_thermal.c        |   23 +-
+ drivers/acpi/video.c                    |   22 +-
+ drivers/platform/x86/acerhdf.c          |   24 +-
+ drivers/platform/x86/intel_menlow.c     |   26 +-
+ drivers/power/power_supply_core.c       |   24 +-
+ drivers/thermal/Kconfig                 |   14 +
+ drivers/thermal/Makefile                |    1 +
+ drivers/thermal/cpu_cooling.c           |  427 +++++++++++++++++++++++++++=
+++--
+ drivers/thermal/db8500_thermal.c        |    2 +-
+ drivers/thermal/fair_share.c            |    2 +-
+ drivers/thermal/intel_powerclamp.c      |   24 +-
+ drivers/thermal/power_allocator.c       |  413 +++++++++++++++++++++++++++=
++++
+ drivers/thermal/step_wise.c             |    2 +-
+ drivers/thermal/thermal_core.c          |   91 +++++--
+ drivers/thermal/thermal_core.h          |    8 +
+ include/linux/cpu_cooling.h             |   28 ++
+ include/linux/thermal.h                 |   25 +-
+ include/trace/events/thermal.h          |   34 +++
+ include/trace/events/thermal_governor.h |   35 +++
+ 20 files changed, 1153 insertions(+), 94 deletions(-)
+ create mode 100644 drivers/thermal/power_allocator.c
+ create mode 100644 include/trace/events/thermal.h
+ create mode 100644 include/trace/events/thermal_governor.h
+
+--=20
+1.7.9.5
+
+
