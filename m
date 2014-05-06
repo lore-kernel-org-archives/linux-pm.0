@@ -1,92 +1,83 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Tue, 6 May 2014 17:24:46 +0200
-Message-ID: <CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
-References: <535AC247.3070907@semaphore.gr>
-	<CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
-	<535FCDBD.6080500@semaphore.gr>
-	<1621123.rMC9JtD3Mo@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH/RFC 3/4] of/clk: Register clocks suitable for Runtime PM
+ with the PM core
+Date: Tue, 6 May 2014 09:58:13 +0200
+Message-ID: <CAPDyKFoqGr=ED3v_yubL8sqcsAy8xxRXhn30pm40=dV1skFEaQ@mail.gmail.com>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+	<1398334403-26181-4-git-send-email-geert+renesas@glider.be>
+	<CAPDyKFr02yyhGNncYX2AgBXTA3Sc0AGQcExjtLvQ5QU0_=YJwg@mail.gmail.com>
+	<535B130C.1000007@gmail.com>
+	<CAPDyKFqG0dV+-y2=t=d3w6_hxWsYi+sOmNdvS6ECPOuoQ61Pmw@mail.gmail.com>
+	<CAMuHMdWLfKcKLORPJ9f-0TLoWM5EfCZ0G5MfxjUiJCRJG555Sg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f171.google.com ([209.85.223.171]:51958 "EHLO
-	mail-ie0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbaEFPYr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 11:24:47 -0400
-In-Reply-To: <1621123.rMC9JtD3Mo@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdWLfKcKLORPJ9f-0TLoWM5EfCZ0G5MfxjUiJCRJG555Sg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ben Dooks <ben.dooks@codethink.co.uk>, Felipe Balbi <balbi@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-Hi Stratos,
-
-On Wed, Apr 30, 2014 at 12:26 AM, Rafael J. Wysocki <rjw@rjwysocki.net>=
- wrote:
-> On Tuesday, April 29, 2014 07:05:17 PM Stratos Karafotis wrote:
->> On 29/04/2014 07:17 =CF=80=CE=BC, Viresh Kumar wrote:
->> > On 26 April 2014 01:45, Stratos Karafotis <stratosk@semaphore.gr> =
-wrote:
->> >> This patch set introduces two freq_table helper macros which
->> >> can be used for iteration over cpufreq_frequency_table and
->> >> makes the necessary changes to cpufreq core and drivers that
->> >> use such an iteration procedure.
->> >>
->> >> The motivation was a usage of common procedure to iterate over
->> >> cpufreq_frequency_table across all drivers and cpufreq core.
->> >>
->> >> This was tested on a x86_64 platform.
->> >> Most files compiled successfully but unfortunately I was not
->> >> able to compile sh_sir.c pasemi_cpufreq.c and ppc_cbe_cpufreq.c
->> >> due to lack of cross compiler.
->> >>
->> >> Changelog
->> >>
->> >> v4 -> v5
->> >>         - Fix warnings in printk format specifier for 32 bit
->> >>           architectures in freq_table.c, longhaul, pasemi, ppc_cb=
-e
->> >
->> > Doesn't look much has changed and so it stays as is:
->> >
->> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> >
->>
->> Thank you very much!
+On 2 May 2014 16:58, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Ulf, Tomasz,
 >
-> I've applied the series to my bleeding-edge branch, will move it to l=
-inux-next
-> after build testing later this week.
+> On Fri, May 2, 2014 at 10:13 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>>> +static int of_clk_register(struct device *dev, struct clk *clk)
+>>>>> +{
+>>>>> +       int error;
+>>>>> +
+>>>>> +       if (!dev->pm_domain) {
+>>>>> +               error = pm_clk_create(dev);
+>>>>> +               if (error)
+>>>>> +                       return error;
+>>>>> +
+>>>>> +               dev->pm_domain = &of_clk_pm_domain;
+>>>>
+>>>>
+>>>> I am concerned about how this will work in conjunction with the
+>>>> generic power domain.
+>>>>
+>>>> A device can't reside in more than one pm_domain; thus I think it
+>>>> would be better to always use the generic power domain and not have a
+>>>> specific one for clocks. Typically the genpd should invoke
+>>>> pm_clk_resume|suspend from it's runtime PM callbacks.
+>>>
+>>> I'm not sure about this. A typical use case would be to gate clocks ASAP and
+>>> then wait until device is idle long enough to consider turning off the power
+>>> domain worthwhile. Also sometimes we may want to gate the clocks, but
+>>> prevent power domain from being powered off to retain hardware state (e.g.
+>>> because there is no way to read it and restore later).
+>>
+>> So, in principle you prefer to have driver's handle clock gating to
+>> save power from their runtime PM callbacks, instead of from the power
+>> domain, right? Just to clarify, that's my view as well.
+>
+> If there's both a gate clock and a power domain, and the driver's Runtime PM
+> callbacks handle clock gating, who's handling the power domain?
 
-This breaks if CONFIG_CPU_FREQ=3Dn, e.g. ARM/shmobile/koelsch/
-non-multiplatform:
+This is my view, not sure everybody agrees :-)
 
-drivers/built-in.o: In function `clk_round_parent':
-clkdev.c:(.text+0xcf168): undefined reference to `cpufreq_next_valid'
-drivers/built-in.o: In function `clk_rate_table_find':
-clkdev.c:(.text+0xcf820): undefined reference to `cpufreq_next_valid'
-make[3]: *** [vmlinux] Error 1
+1. If you have a hardware power domain you need to implement a
+pm_domain (preferably use the generic power domain).
 
-drivers/sh/clk/core.c (pre-CCF shmobile clock core) calls
-cpufreq_for_each_valid_entry():
+2. If you don't have a hardware power domain, but still cares about
+having a centralized solution for dev_pm_qos - you may use the generic
+power domain, since it supports this.
 
-#define cpufreq_for_each_valid_entry(pos, table)        \
-        for (pos =3D table; cpufreq_next_valid(&pos); pos++)
+3. If none of the above, you don't need a pm_domain at all.
 
-but cpufreq_next_valid() in drivers/cpufreq/cpufreq.c is not
-compiled in.
+Kind regards
+Ulf Hansson
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-=
-m68k.org
-
-In personal conversations with technical people, I call myself a hacker=
-=2E But
-when I'm talking to journalists I just say "programmer" or something li=
-ke that.
-                                -- Linus Torvalds
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert (still trying to fit all pieces of the
+> puzzle together)
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
