@@ -1,614 +1,109 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH RFC v3 1/6] Documentation: arm: define DT idle states bindings
-Date: Tue,  6 May 2014 19:04:38 +0100
-Message-ID: <1399399483-17112-2-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1399399483-17112-1-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Antti Miettinen <ananaza-X3B1VOXEql0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Capella <sebastian.capella-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH RFC v3 0/6] ARM generic idle states
+Date: Tue,  6 May 2014 19:04:37 +0100
+Message-ID: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@linaro.org>, Nicolas Pitre <nico@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Sebastian Capella <sebastian.capella@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Grant Likely <grant.likely@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Antti Miettinen <ananaza@iki.fi>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-ARM based platforms implement a variety of power management schemes that
-allow processors to enter idle states at run-time.
-The parameters defining these idle states vary on a per-platform basis forc=
-ing
-the OS to hardcode the state parameters in platform specific static tables
-whose size grows as the number of platforms supported in the kernel increas=
-es
-and hampers device drivers standardization.
+This patch is v3 of a previous posting:
 
-Therefore, this patch aims at standardizing idle state device tree bindings=
- for
-ARM platforms. Bindings define idle state parameters inclusive of entry met=
-hods
-and state latencies, to allow operating systems to retrieve the configurati=
-on
-entries from the device tree and initialize the related power management
-drivers, paving the way for common code in the kernel to deal with idle
-states and removing the need for static data in current and previous kernel
-versions.
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-April/248084.html
 
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
----
+Changes in v3:
+
+- Streamlined the idle states bindings and added them to the series
+  http://www.spinics.net/lists/arm-kernel/msg316299.html
+- Sorting states through min-residency+exit-latency
+- Added debug strings formatting
+- Reworded min-residency-us idle state property
+- Removed power-domain properties from idle states waiting for code
+  examples requiring them to be defined
+
+Changes in v2:
+
+- Moved OF parsing code to drivers/cpuidle
+- Improved states detection and sorting through linked list
+- Split code in generic and ARM64 specific bits
+- Moved idle enter function into ARM64 idle driver
+- Refactored PSCI idle states register function
+- Renamed suspend operations and moved detection to ARM64 idle driver
+- Changed the way CPUIDLE_FLAG_TIMER_STOP is handled
+- Simplified idle state nodes parsing since according to the latest
+  bindings idle state nodes are a flat list, not hierarchical anymore
+- Used min-residency-us to sort the states, to be further discussed
+
+Idle states on most ARM platforms can be characterized by a set of
+parameters that are platform agnostic and describe the HW idle states
+features. So far, CPU idle drivers for ARM platforms required the definition
+of parameters through static tables, duplicating control data for different
+platforms. Moreover, the lack of standardization on firmware interfaces
+hampered any standardization effort, resulting in CPU idle drivers for ARM
+platforms containing duplicated code and platform specific power down routines.
+
+The introduction of the PSCI firmware interface, and more in general, well
+defined suspend back-ends, allows the definition of generic idle states and
+the respective kernel infrastructure to support them.
+
+Building on top of DT idle states bindings, that standardize idle states
+parameters and corresponding suspend back-ends, this patchset provides code
+that parses DT idle states nodes and builds at run-time the control data
+infrastructure required by the ARM CPU idle drivers.
+
+Idle states define an entry method (eg PSCI), that requires the respective
+ARM64 kernel back-end to be invoked to initialize idle states parameters, so
+that when the idle driver executes the back-end specific entry method a table
+look-up can be carried out to retrieve the corresponding idle state parameter.
+
+On legacy ARM platforms, the OF idle states are just used to initialize
+states data.
+
+The idle states bindings can be extended with new back-ends; the ARM64 CPUidle
+driver must be updated accordingly so that the corresponding back
+end initializer can be invoked at boot time for parameters initialization.
+
+Patchset has been tested on AEM v8 models, on top of bootwrapper PSCI CPU
+SUSPEND implementation which provides simulated core power gating.
+
+Lorenzo Pieralisi (6):
+  Documentation: arm: define DT idle states bindings
+  Documentation: devicetree: psci: define CPU suspend parameter
+  drivers: cpuidle: implement OF based idle states infrastructure
+  arm64: add PSCI CPU_SUSPEND based cpu_suspend support
+  drivers: cpuidle: CPU idle ARM64 driver
+  arm64: boot: dts: update rtsm aemv8 dts with PSCI and idle states
+
  Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
- .../devicetree/bindings/arm/idle-states.txt        | 508 +++++++++++++++++=
-++++
- 2 files changed, 516 insertions(+)
+ .../devicetree/bindings/arm/idle-states.txt        | 508 +++++++++++++++++++++
+ Documentation/devicetree/bindings/arm/psci.txt     |  11 +
+ arch/arm64/boot/dts/rtsm_ve-aemv8a.dts             |  49 +-
+ arch/arm64/include/asm/psci.h                      |   4 +
+ arch/arm64/kernel/psci.c                           | 102 +++++
+ drivers/cpuidle/Kconfig                            |  14 +
+ drivers/cpuidle/Kconfig.arm64                      |  13 +
+ drivers/cpuidle/Makefile                           |   5 +
+ drivers/cpuidle/cpuidle-arm64.c                    | 161 +++++++
+ drivers/cpuidle/of_idle_states.c                   | 293 ++++++++++++
+ drivers/cpuidle/of_idle_states.h                   |   8 +
+ 12 files changed, 1168 insertions(+), 8 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
+ create mode 100644 drivers/cpuidle/Kconfig.arm64
+ create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+ create mode 100644 drivers/cpuidle/of_idle_states.c
+ create mode 100644 drivers/cpuidle/of_idle_states.h
 
-diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation=
-/devicetree/bindings/arm/cpus.txt
-index 333f4ae..d19e8ae 100644
---- a/Documentation/devicetree/bindings/arm/cpus.txt
-+++ b/Documentation/devicetree/bindings/arm/cpus.txt
-@@ -209,6 +209,12 @@ nodes to be present and contain the properties describ=
-ed below.
- =09=09Value type: <phandle>
- =09=09Definition: Specifies the ACC[2] node associated with this CPU.
-=20
-+=09- cpu-idle-states
-+=09=09Usage: Optional
-+=09=09Value type: <prop-encoded-array>
-+=09=09Definition:
-+=09=09=09# List of phandles to idle state nodes supported
-+=09=09=09  by this cpu [3].
-=20
- Example 1 (dual-cluster big.LITTLE system 32-bit):
-=20
-@@ -405,3 +411,5 @@ cpus {
- --
- [1] arm/msm/qcom,saw2.txt
- [2] arm/msm/qcom,kpss-acc.txt
-+[3] ARM Linux kernel documentation - idle states bindings
-+    Documentation/devicetree/bindings/arm/idle-states.txt
-diff --git a/Documentation/devicetree/bindings/arm/idle-states.txt b/Docume=
-ntation/devicetree/bindings/arm/idle-states.txt
-new file mode 100644
-index 0000000..196ef52
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/idle-states.txt
-@@ -0,0 +1,508 @@
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+ARM idle states binding description
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+1 - Introduction
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+ARM systems contain HW capable of managing power consumption dynamically,
-+where cores can be put in different low-power states (ranging from simple
-+wfi to power gating) according to OSPM policies. The CPU states representi=
-ng
-+the range of dynamic idle states that a processor can enter at run-time, c=
-an be
-+specified through device tree bindings representing the parameters require=
-d
-+to enter/exit specific idle states on a given processor.
-+
-+According to the Server Base System Architecture document (SBSA, [3]), the
-+power states an ARM CPU can be put into are identified by the following li=
-st:
-+
-+- Running
-+- Idle_standby
-+- Idle_retention
-+- Sleep
-+- Off
-+
-+The power states described in the SBSA document define the basic CPU state=
-s on
-+top of which ARM platforms implement power management schemes that allow a=
-n OS
-+PM implementation to put the processor in different idle states (which inc=
-lude
-+states listed above; "off" state is not an idle state since it does not ha=
-ve
-+wake-up capabilities, hence it is not considered in this document).
-+
-+Idle state parameters (eg entry latency) are platform specific and need to=
- be
-+characterized with bindings that provide the required information to OSPM
-+code so that it can build the required tables and use them at runtime.
-+
-+The device tree binding definition for ARM idle states is the subject of t=
-his
-+document.
-+
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+2 - idle-states node
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+ARM processor idle states are defined within the idle-states node, which i=
-s
-+a direct child of the cpus node [1] and provides a container where the
-+processor idle states, defined as device tree nodes, are listed.
-+
-+- idle-states node
-+
-+=09Usage: Optional - On ARM systems, is a container of processor idle
-+=09=09=09  states nodes. If the system does not provide CPU
-+=09=09=09  power management capabilities or the processor just
-+=09=09=09  supports idle_standby an idle-states node is not
-+=09=09=09  required.
-+
-+=09Description: idle-states node is a container node, where its
-+=09=09     subnodes describe the CPU idle states.
-+
-+=09Node name must be "idle-states".
-+
-+=09The idle-states node's parent node must be the cpus node.
-+
-+=09The idle-states node's child nodes can be:
-+
-+=09- one or more state nodes
-+
-+=09Any other configuration is considered invalid.
-+
-+=09An idle-states node defines the following properties:
-+
-+=09- entry-method
-+=09=09Usage: Required
-+=09=09Value type: <stringlist>
-+=09=09Definition: Describes the method by which a CPU enters the
-+=09=09=09    idle states. This property is required and must be
-+=09=09=09    one of:
-+
-+=09=09=09    - "arm,psci"
-+=09=09=09      ARM PSCI firmware interface [2].
-+
-+=09=09=09    - "[vendor],[method]"
-+=09=09=09      An implementation dependent string with
-+=09=09=09      format "vendor,method", where vendor is a string
-+=09=09=09      denoting the name of the manufacturer and
-+=09=09=09      method is a string specifying the mechanism
-+=09=09=09      used to enter the idle state.
-+
-+The nodes describing the idle states (state) can only be defined within th=
-e
-+idle-states node.
-+
-+Any other configuration is consider invalid and therefore must be ignored.
-+
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+3 - state node
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+A state node represents an idle state description and must be defined as
-+follows:
-+
-+- state node
-+
-+=09Description: must be child of the idle-states node
-+
-+=09The state node name shall follow standard device tree naming
-+=09rules ([5], 2.2.1 "Node names"), in particular state nodes which
-+=09are siblings within a single common parent must be given a unique name.
-+
-+=09The idle state entered by executing the wfi instruction (idle_standby
-+=09SBSA,[3][4]) is considered standard on all ARM platforms and therefore
-+=09must not be listed.
-+
-+=09A state node defines the following properties:
-+
-+=09- compatible
-+=09=09Usage: Required
-+=09=09Value type: <stringlist>
-+=09=09Definition: Must be "arm,idle-state".
-+
-+=09- logic-state-retained
-+=09=09Usage: See definition
-+=09=09Value type: <none>
-+=09=09Definition: if present logic is retained on state entry,
-+=09=09=09    otherwise it is lost.
-+
-+=09- cache-state-retained
-+=09=09Usage: See definition
-+=09=09Value type: <none>
-+=09=09Definition: if present cache memory is retained on state entry,
-+=09=09=09    otherwise it is lost.
-+
-+=09- entry-method-param
-+=09=09Usage: See definition.
-+=09=09Value type: <u32>
-+=09=09Definition: Depends on the idle-states node entry-method
-+=09=09=09    property value. Refer to the entry-method bindings
-+=09=09=09    for this property value definition.
-+
-+=09- entry-latency-us
-+=09=09Usage: Required
-+=09=09Value type: <prop-encoded-array>
-+=09=09Definition: u32 value representing worst case latency
-+=09=09=09    in microseconds required to enter the idle state.
-+
-+=09- exit-latency-us
-+=09=09Usage: Required
-+=09=09Value type: <prop-encoded-array>
-+=09=09Definition: u32 value representing worst case latency
-+=09=09=09    in microseconds required to exit the idle state.
-+
-+=09- min-residency-us
-+=09=09Usage: Required
-+=09=09Value type: <prop-encoded-array>
-+=09=09Definition: u32 value representing duration in microseconds
-+=09=09=09    after which this state becomes more energy
-+=09=09=09    efficient than any shallower states.
-+
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+4 - Examples
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+Example 1 (ARM 64-bit, 16-cpu system):
-+
-+cpus {
-+=09#size-cells =3D <0>;
-+=09#address-cells =3D <2>;
-+
-+=09idle-states {
-+=09=09entry-method =3D "arm,psci";
-+
-+=09=09CPU_RETENTION_0_0: cpu-retention-0-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09cache-state-retained;
-+=09=09=09entry-method-param =3D <0x0010000>;
-+=09=09=09entry-latency-us =3D <20>;
-+=09=09=09exit-latency-us =3D <40>;
-+=09=09=09min-residency-us =3D <30>;
-+=09=09};
-+
-+=09=09CLUSTER_RETENTION_0: cluster-retention-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09logic-state-retained;
-+=09=09=09cache-state-retained;
-+=09=09=09entry-method-param =3D <0x1010000>;
-+=09=09=09entry-latency-us =3D <50>;
-+=09=09=09exit-latency-us =3D <100>;
-+=09=09=09min-residency-us =3D <250>;
-+=09=09};
-+
-+=09=09CPU_SLEEP_0_0: cpu-sleep-0-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x0010000>;
-+=09=09=09entry-latency-us =3D <250>;
-+=09=09=09exit-latency-us =3D <500>;
-+=09=09=09min-residency-us =3D <350>;
-+=09=09};
-+
-+=09=09CLUSTER_SLEEP_0: cluster-sleep-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x1010000>;
-+=09=09=09entry-latency-us =3D <600>;
-+=09=09=09exit-latency-us =3D <1100>;
-+=09=09=09min-residency-us =3D <2700>;
-+=09=09};
-+
-+=09=09CPU_RETENTION_1_0: cpu-retention-1-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09cache-state-retained;
-+=09=09=09entry-method-param =3D <0x0010000>;
-+=09=09=09entry-latency-us =3D <20>;
-+=09=09=09exit-latency-us =3D <40>;
-+=09=09=09min-residency-us =3D <30>;
-+=09=09};
-+
-+=09=09CLUSTER_RETENTION_1: cluster-retention-1 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09logic-state-retained;
-+=09=09=09cache-state-retained;
-+=09=09=09entry-method-param =3D <0x1010000>;
-+=09=09=09entry-latency-us =3D <50>;
-+=09=09=09exit-latency-us =3D <100>;
-+=09=09=09min-residency-us =3D <270>;
-+=09=09};
-+
-+=09=09CPU_SLEEP_1_0: cpu-sleep-1-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x0010000>;
-+=09=09=09entry-latency-us =3D <70>;
-+=09=09=09exit-latency-us =3D <100>;
-+=09=09=09min-residency-us =3D <100>;
-+=09=09};
-+
-+=09=09CLUSTER_SLEEP_1: cluster-sleep-1 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x1010000>;
-+=09=09=09entry-latency-us =3D <500>;
-+=09=09=09exit-latency-us =3D <1200>;
-+=09=09=09min-residency-us =3D <3500>;
-+=09=09};
-+=09};
-+
-+=09CPU0: cpu@0 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x0>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU1: cpu@1 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x1>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU2: cpu@100 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x100>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU3: cpu@101 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x101>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU4: cpu@10000 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x10000>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU5: cpu@10001 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x10001>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU6: cpu@10100 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x10100>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU7: cpu@10101 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a57";
-+=09=09reg =3D <0x0 0x10101>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-+=09=09=09=09   &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU8: cpu@100000000 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x0>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU9: cpu@100000001 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x1>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU10: cpu@100000100 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x100>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU11: cpu@100000101 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x101>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU12: cpu@100010000 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x10000>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU13: cpu@100010001 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x10001>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU14: cpu@100010100 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x10100>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU15: cpu@100010101 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a53";
-+=09=09reg =3D <0x1 0x10101>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_RETENTION_1_0 &CPU_SLEEP_1_0
-+=09=09=09=09   &CLUSTER_RETENTION_1 &CLUSTER_SLEEP_1>;
-+=09};
-+};
-+
-+Example 2 (ARM 32-bit, 8-cpu system, two clusters):
-+
-+cpus {
-+=09#size-cells =3D <0>;
-+=09#address-cells =3D <1>;
-+
-+=09idle-states {
-+=09=09entry-method =3D "arm,psci";
-+
-+=09=09CPU_SLEEP_0_0: cpu-sleep-0-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x0010000>;
-+=09=09=09entry-latency-us =3D <400>;
-+=09=09=09exit-latency-us =3D <500>;
-+=09=09=09min-residency-us =3D <300>;
-+=09=09};
-+
-+=09=09CLUSTER_SLEEP_0: cluster-sleep-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x1010000>;
-+=09=09=09entry-latency-us =3D <1000>;
-+=09=09=09exit-latency-us =3D <1500>;
-+=09=09=09min-residency-us =3D <1500>;
-+=09=09};
-+
-+=09=09CPU_SLEEP_1_0: cpu-sleep-1-0 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x0010000>;
-+=09=09=09entry-latency-us =3D <300>;
-+=09=09=09exit-latency-us =3D <500>;
-+=09=09=09min-residency-us =3D <500>;
-+=09=09};
-+
-+=09=09CLUSTER_SLEEP_1: cluster-sleep-1 {
-+=09=09=09compatible =3D "arm,idle-state";
-+=09=09=09entry-method-param =3D <0x1010000>;
-+=09=09=09entry-latency-us =3D <800>;
-+=09=09=09exit-latency-us =3D <2000>;
-+=09=09=09min-residency-us =3D <6500>;
-+=09=09};
-+=09};
-+
-+=09CPU0: cpu@0 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a15";
-+=09=09reg =3D <0x0>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU1: cpu@1 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a15";
-+=09=09reg =3D <0x1>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU2: cpu@2 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a15";
-+=09=09reg =3D <0x2>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU3: cpu@3 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a15";
-+=09=09reg =3D <0x3>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_0_0 &CLUSTER_SLEEP_0>;
-+=09};
-+
-+=09CPU4: cpu@100 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a7";
-+=09=09reg =3D <0x100>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU5: cpu@101 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a7";
-+=09=09reg =3D <0x101>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU6: cpu@102 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a7";
-+=09=09reg =3D <0x102>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
-+=09};
-+
-+=09CPU7: cpu@103 {
-+=09=09device_type =3D "cpu";
-+=09=09compatible =3D "arm,cortex-a7";
-+=09=09reg =3D <0x103>;
-+=09=09enable-method =3D "psci";
-+=09=09cpu-idle-states =3D <&CPU_SLEEP_1_0 &CLUSTER_SLEEP_1>;
-+=09};
-+};
-+
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+4 - References
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+[1] ARM Linux Kernel documentation - CPUs bindings
-+    Documentation/devicetree/bindings/arm/cpus.txt
-+
-+[2] ARM Linux Kernel documentation - PSCI bindings
-+    Documentation/devicetree/bindings/arm/psci.txt
-+
-+[3] ARM Server Base System Architecture (SBSA)
-+    http://infocenter.arm.com/help/index.jsp
-+
-+[4] ARM Architecture Reference Manuals
-+    http://infocenter.arm.com/help/index.jsp
-+
-+[5] ePAPR standard
-+    https://www.power.org/documentation/epapr-version-1-1/
---=20
+-- 
 1.8.4
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
