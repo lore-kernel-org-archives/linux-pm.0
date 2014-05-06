@@ -1,43 +1,73 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Tue, 6 May 2014 18:25:23 +0100
-Message-ID: <CAPKp9uZKMKsB2dfAPC3WdswHm3VO1ujJ7Rz762dJ+b+mswKC3A@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
-	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
-	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-	<5367946F.1030407@ti.com>
-	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+From: Johan Hovold <jhovold@gmail.com>
+Subject: Performance regression in v3.14
+Date: Tue, 6 May 2014 18:35:59 +0200
+Message-ID: <20140506163559.GA5308@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 5, 2014 at 3:14 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 5 May 2014 19:08, Nishanth Menon <nm@ti.com> wrote:
->> With the brief history of the patch in linux-pm, I am unable to
->> understand why not just use ceil/floor routines to pick up data the
->> way you need it. It should not matter if we use an ordered list, or
->> some other weird organization inside the storage. There are already
->> accessors functions meant to precisely help with the case that is
->> being tried here.
->
-> To be precise, for exynos they need the position of a frequency when
-> it is arranged in descending order. And they will simply write this position
-> in their clock controller later. For example, if frequencies are:
-> 100 MHz, 200, 300, 400, 500, 600
->
-> Then they need to write 1 for 600, 2 for 500, 3 for 400, and so on..
-> I am not able to imaging how ceil/floor would help here.
+After updating my main system from v3.13 to v3.14.2, I found that the
+git bash-completion was extremely sluggish. Completing a file name would
+take roughly six rather than one second on this Haswell machine
+(i7-4770). (Other things, such as git rebase, also felt slower, but
+the completion issue was much more obvious and easy to measure).
 
-It's better to have these mapping in the users of this framework IMO.
-Assuming these OPPs come from DT, what happens if entries in the DT are
-updated (added/removed), won't the mapping go wrong then ?
+I managed to reproduce the problem using the following minimal construct
 
-Regards,
-Sudeep
+	cat dmesg.repeat | while read x; do true; done
+
+where dmesg.repeat is simply dmesg concatenated together to an
+equivalent number of lines as produced by git ls-files in the
+kernel-source tree root (45k), and where the actual processing of each
+line has been removed.
+
+Most of the time I get:
+
+	$ time cat dmesg.repeat | while read x; do true; done
+
+	real    0m6.091s
+	user    0m3.674s
+	sys     0m2.447s
+
+but sometimes it only takes one second.
+
+	$ time cat dmesg.repeat | while read x; do true; done
+
+	real    0m1.100s
+	user    0m0.544s
+	sys     0m0.570s
+
+I don't seem to be able to reproduce the problem on 3.13 where the pipe
+always takes about one second to finish.
+
+Taking all but one core offline seems to make the problem go away, and so
+does using the performance rather than powersave governor of the
+intel_pstate cpufreq driver (on at least one of two online cores).
+
+Moving the mouse cursor makes to loop finish faster, and so does
+switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
+was around cpuinfo_min_freq several times (when tracing, see below).
+
+I could not reproduce the problem when using perf record, but I can get
+function-profile traces using ftrace (in which case the loop takes about
+60 seconds instead of six seconds to finish).
+
+Comparing the traces I see a lot of functions taking ten times longer to
+finish, but I guess that's expected if this is indeed a cpufreq issue.
+
+Since this is my main machine (and only multi-core machine at the
+moment) I'm not able to bisect this myself. And for the same reason I
+have not verified that the problem persists in v3.15-rc.
+
+I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
+obviously related and marked for stable in v3.15-rc.
+
+Any ideas about what might be going on?
+
+Thanks,
+Johan
