@@ -1,65 +1,72 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH RFC v3 2/6] Documentation: devicetree: psci: define CPU suspend parameter
-Date: Tue,  6 May 2014 19:04:39 +0100
-Message-ID: <1399399483-17112-3-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:50134 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbaEFSDN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 May 2014 14:03:13 -0400
-In-Reply-To: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 1/3] base: power: Add generic OF-based power domain
+ look-up
+Date: Tue, 6 May 2014 19:52:47 +0200
+Message-ID: <CAPDyKFqtW1pV3xv1E8fhtPS99eVezGJqKq_JM4Mrq2ewJyTpog@mail.gmail.com>
+References: <1398271618-28932-1-git-send-email-t.figa@samsung.com>
+ <1398271618-28932-2-git-send-email-t.figa@samsung.com>
+ <CAPDyKFpvtRpgg-Ohv2Yi--_5mnp3ghpj7_4xyM7SjJvYCFzS6Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAPDyKFpvtRpgg-Ohv2Yi--_5mnp3ghpj7_4xyM7SjJvYCFzS6Q@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Philipp Zabel <philipp.zabel@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Len Brown <len.brown@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Tomasz Figa <tomasz.figa@gmail.com>, Pavel Machek <pavel@ucw.cz>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rafael J. Wyso
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebastian.capella@linaro.org>, Tomasz Figa <t.figa@samsung.com>
 
-OS layers built on top of PSCI to enter low-power states require the
-power_state parameter to be passed to the PSCI CPU suspend method.
+On 24 April 2014 11:40, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 23 April 2014 18:46, Tomasz Figa <t.figa@samsung.com> wrote:
+>> This patch introduces generic code to perform power domain look-up using
+>> device tree and automatically bind devices to their power domains.
+>> Generic device tree binding is introduced to specify power domains of
+>> devices in their device tree nodes.
+>>
+>> Backwards compatibility with legacy Samsung-specific power domain
+>> bindings is provided, but for now the new code is not compiled when
+>> CONFIG_ARCH_EXYNOS is selected to avoid collision with legacy code. This
+>> will change as soon as Exynos power domain code gets converted to use
+>> the generic framework in further patch.
+>>
+>> Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+>> Reviewed-by: Mark Brown <broonie@linaro.org>
+>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>> Reviewed-by: Philipp Zabel <philipp.zabel@gmail.com>
+>> [on i.MX6 GK802]
+>> Tested-by: Philipp Zabel <philipp.zabel@gmail.com>
 
-This parameter is specific to a power state and platform specific,
-therefore must be provided by firmware to the OS in order to enable
-proper call sequence.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-This patch adds a property in the PSCI bindings that describes how
-the CPU suspend power_state parameter should be defined in DT in
-all device nodes that rely on PSCI CPU suspend method usage.
+I also implemented some test-support for genpd for a ux500 SOC as well
+- tested passed successfully. :-)
 
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- Documentation/devicetree/bindings/arm/psci.txt | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+[snip]
 
-diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation=
-/devicetree/bindings/arm/psci.txt
-index 433afe9..797c48f 100644
---- a/Documentation/devicetree/bindings/arm/psci.txt
-+++ b/Documentation/devicetree/bindings/arm/psci.txt
-@@ -42,6 +42,14 @@ Main node optional properties:
-=20
-  - migrate       : Function ID for MIGRATE operation
-=20
-+Device tree nodes that require usage of PSCI CPU_SUSPEND function (ie idle
-+states bindings[1]) must specify the following properties:
-+
-+- entry-method-param
-+=09=09Usage: Required for idle states bindings [1].
-+=09=09Value type: <u32>
-+=09=09Definition: power_state parameter to pass to the PSCI
-+=09=09=09    suspend call.
-=20
- Example:
-=20
-@@ -53,3 +61,6 @@ Example:
- =09=09cpu_on=09=09=3D <0x95c10002>;
- =09=09migrate=09=09=3D <0x95c10003>;
- =09};
-+
-+[1] Kernel documentation - ARM idle states bindings
-+    Documentation/devicetree/bindings/arm/idle-states.txt
---=20
-1.8.4
+>> +
+>> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+>
+> I remember we discussed this earlier, but I don't think we should add
+> another Kconfig for this. CONFIG_OF should be enough.
+>
+> I realize that we need to handle "Samsung-specific bindings", to not
+> break the Exynos pm domain. Maybe adding the parsing of them into the
+> generic power domain in the same patch as when we switch Exynos to the
+> new API would do the trick?
 
+I realized that there already exists CONFIG_PM_GENERIC_DOMAINS_SLEEP
+and CONFIG_PM_GENERIC_DOMAINS_RUNTIME, which serves similar purpose as
+CONFIG_PM_GENERIC_DOMAINS_OF would.
 
+So, let's ignore my previous comment and move on.
+
+Kind regards
+Ulf Hansson
