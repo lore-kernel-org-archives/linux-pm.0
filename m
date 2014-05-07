@@ -1,39 +1,82 @@
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: pm_runtime_barrier breaks autosuspend
-Date: Wed, 7 May 2014 08:50:28 -0700
-Message-ID: <CAPcyv4hf2hQGEsZXtFJiVa0GC-7A6RpKUDOTY6C7xkpDEaezRA@mail.gmail.com>
-References: <CAPcyv4h9prfrxmEvVamzCaT9Hc91WR90VO6k2PQa9RkSinAvuA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1405071112080.1325-100000@iolanthe.rowland.org>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: Fix build error on some platforms that use cpufreq_for_each_*
+Date: Wed, 07 May 2014 19:33:33 +0300
+Message-ID: <536A605D.6030009@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f181.google.com ([209.85.128.181]:39028 "EHLO
-	mail-ve0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756625AbaEGPu3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 May 2014 11:50:29 -0400
-Received: by mail-ve0-f181.google.com with SMTP id pa12so1504823veb.40
-        for <linux-pm@vger.kernel.org>; Wed, 07 May 2014 08:50:28 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.44L0.1405071112080.1325-100000@iolanthe.rowland.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:53678 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751634AbaEGQdg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 May 2014 12:33:36 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Wed, May 7, 2014 at 8:21 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Tue, 6 May 2014, Dan Williams wrote:
->
->> > Why didn't pm_request_resume() result in an autosuspend?
->>
->> Found it.
->>
->> The last thing pm_runtime_barrier() does is pm_runtime_put_noidle()
->> which may cause the autosuspend timer to never be reset.
->
-> Rafael, this seems like a bug.  Should pm_runtime_barrier() be changed
-> so that just before the spinlock is released, we queue an autosuspend
-> request if dev->power.use_autosuspend is set and all the other
-> conditions are met?
+On platforms that use cpufreq_for_each_* macros, build fails if
+CONFIG_CPU_FREQ=n, e.g. ARM/shmobile/koelsch/non-multiplatform:
 
-...or at least rename it to pm_runtime_barrier_noidle()?  I.e. make it
-clear that it needs to be wrapped by get / put, or an explicit suspend
-request queued afterwards.
+drivers/built-in.o: In function `clk_round_parent':
+clkdev.c:(.text+0xcf168): undefined reference to `cpufreq_next_valid'
+drivers/built-in.o: In function `clk_rate_table_find':
+clkdev.c:(.text+0xcf820): undefined reference to `cpufreq_next_valid'
+make[3]: *** [vmlinux] Error 1
+
+Fix this making cpufreq_next_valid function inline and move it to
+cpufreq.h.
+
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/cpufreq.c | 11 -----------
+ include/linux/cpufreq.h   | 11 +++++++++--
+ 2 files changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index bfe82b6..a05c921 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -237,17 +237,6 @@ void cpufreq_cpu_put(struct cpufreq_policy *policy)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
+ 
+-bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
+-{
+-	while ((*pos)->frequency != CPUFREQ_TABLE_END)
+-		if ((*pos)->frequency != CPUFREQ_ENTRY_INVALID)
+-			return true;
+-		else
+-			(*pos)++;
+-	return false;
+-}
+-EXPORT_SYMBOL_GPL(cpufreq_next_valid);
+-
+ /*********************************************************************
+  *            EXTERNALLY AFFECTING FREQUENCY CHANGES                 *
+  *********************************************************************/
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 9d803b5..3f45889 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -489,8 +489,15 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ }
+ #endif
+ 
+-
+-bool cpufreq_next_valid(struct cpufreq_frequency_table **pos);
++static inline bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
++{
++	while ((*pos)->frequency != CPUFREQ_TABLE_END)
++		if ((*pos)->frequency != CPUFREQ_ENTRY_INVALID)
++			return true;
++		else
++			(*pos)++;
++	return false;
++}
+ 
+ /*
+  * cpufreq_for_each_entry -	iterate over a cpufreq_frequency_table
+-- 
+1.9.0
