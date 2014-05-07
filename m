@@ -1,87 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Performance regression in v3.14
-Date: Wed, 7 May 2014 11:10:34 +0530
-Message-ID: <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
-References: <20140506163559.GA5308@localhost>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: [PATCH 1/3] thermal: rcar: remove unnecessary OOM messages
+Date: Wed, 07 May 2014 15:03:25 +0900
+Message-ID: <01a401cf69ba$0f1b88d0$2d529a70$%han@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140506163559.GA5308@localhost>
-Sender: cpufreq-owner@vger.kernel.org
-To: Johan Hovold <jhovold@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:24109 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbaEGGD1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 May 2014 02:03:27 -0400
+Received: from epcpsbgr2.samsung.com
+ (u142.gpu120.samsung.co.kr [203.254.230.142])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N5600KXFWTPBUB0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 07 May 2014 15:03:25 +0900 (KST)
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Zhang Rui' <rui.zhang@intel.com>
+Cc: 'Eduardo Valentin' <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>, 'Kuninori Morimoto' <kuninori.morimoto.gx@renesas.com>, 'Simon Horman' <horms+renesas@verge.net.au>
 
-Cc'ing Dirk who is taking care of intel-pstate driver.
+The site-specific OOM messages are unnecessary, because they
+duplicate the MM subsystem generic OOM message.
 
-On 6 May 2014 22:05, Johan Hovold <jhovold@gmail.com> wrote:
-> After updating my main system from v3.13 to v3.14.2, I found that the
-> git bash-completion was extremely sluggish. Completing a file name would
-> take roughly six rather than one second on this Haswell machine
-> (i7-4770). (Other things, such as git rebase, also felt slower, but
-> the completion issue was much more obvious and easy to measure).
->
-> I managed to reproduce the problem using the following minimal construct
->
->         cat dmesg.repeat | while read x; do true; done
->
-> where dmesg.repeat is simply dmesg concatenated together to an
-> equivalent number of lines as produced by git ls-files in the
-> kernel-source tree root (45k), and where the actual processing of each
-> line has been removed.
->
-> Most of the time I get:
->
->         $ time cat dmesg.repeat | while read x; do true; done
->
->         real    0m6.091s
->         user    0m3.674s
->         sys     0m2.447s
->
-> but sometimes it only takes one second.
->
->         $ time cat dmesg.repeat | while read x; do true; done
->
->         real    0m1.100s
->         user    0m0.544s
->         sys     0m0.570s
->
-> I don't seem to be able to reproduce the problem on 3.13 where the pipe
-> always takes about one second to finish.
->
-> Taking all but one core offline seems to make the problem go away, and so
-> does using the performance rather than powersave governor of the
-> intel_pstate cpufreq driver (on at least one of two online cores).
->
-> Moving the mouse cursor makes to loop finish faster, and so does
-> switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
-> was around cpuinfo_min_freq several times (when tracing, see below).
->
-> I could not reproduce the problem when using perf record, but I can get
-> function-profile traces using ftrace (in which case the loop takes about
-> 60 seconds instead of six seconds to finish).
->
-> Comparing the traces I see a lot of functions taking ten times longer to
-> finish, but I guess that's expected if this is indeed a cpufreq issue.
->
-> Since this is my main machine (and only multi-core machine at the
-> moment) I'm not able to bisect this myself. And for the same reason I
-> have not verified that the problem persists in v3.15-rc.
->
-> I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
-> obviously related and marked for stable in v3.15-rc.
->
-> Any ideas about what might be going on?
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/thermal/rcar_thermal.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-I tried to take a look at the diff for cpufreq between 3.13 and 3.14.2 and
-couldn't pin point on any change which might cause it. Don't have a clue
-of what's going on. I don't know how to help you on this.
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 5a37940..105ab5e 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -374,10 +374,8 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	int idle = IDLE_INTERVAL;
+ 
+ 	common = devm_kzalloc(dev, sizeof(*common), GFP_KERNEL);
+-	if (!common) {
+-		dev_err(dev, "Could not allocate common\n");
++	if (!common)
+ 		return -ENOMEM;
+-	}
+ 
+ 	INIT_LIST_HEAD(&common->head);
+ 	spin_lock_init(&common->lock);
+@@ -423,7 +421,6 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 
+ 		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+ 		if (!priv) {
+-			dev_err(dev, "Could not allocate priv\n");
+ 			ret = -ENOMEM;
+ 			goto error_unregister;
+ 		}
+-- 
+1.7.10.4
 
-Normally I test my stuff on a ARM board and I don't remember facing
-any such behavior there. There might be something wrong with intel-pstate
-as well..
 
-Also, can you try to use acpi-cpufreq instead? And see how that is behaving?
-
---
-viresh
