@@ -1,28 +1,44 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: [RFC PATCH 00/12 v1] A new CPU load metric for power-efficient
- scheduler: CPU ConCurrency
-Date: Wed, 7 May 2014 02:46:37 +0800
-Message-ID: <20140506184637.GA17884@intel.com>
-References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
- <20140505093744.GO17778@laptop.programming.kicks-ass.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Wed, 7 May 2014 10:53:16 +0530
+Message-ID: <CAKohpo=3_7G+3bMF2CpWgZXvktdXBkCi4-tCxogwGcvvEEh18w@mail.gmail.com>
+References: <535AC247.3070907@semaphore.gr>
+	<CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
+	<535FCDBD.6080500@semaphore.gr>
+	<1621123.rMC9JtD3Mo@vostro.rjw.lan>
+	<CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
+	<5369220A.3030207@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:29887 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbaEGCvg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 6 May 2014 22:51:36 -0400
-Content-Disposition: inline
-In-Reply-To: <20140505093744.GO17778@laptop.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <5369220A.3030207@semaphore.gr>
+Sender: linux-sh-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com
 
-> The general code structure is an immediate no go. We're not going to
-> bolt on anything like this.
+On 6 May 2014 23:25, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> My bad. I'm sorry for this. :(
+>
+> Rafael,
+> A solution could be to make cpufreq_next_valid an inline function in cpufreq.h,
+> but as Viresh mentioned this would be very inefficient because of multiple copies.
 
-Could you please detail a little bit about general code structure?
+That statement was true when we didn't had this problem..
 
-Thank you all the same,
-Yuyang
+> So, maybe it's better to revert the 2 patches that don't depend on CONFIG_CPU_FREQ:
+>
+> 4229e1c61a4a ("sh: clk: Use cpufreq_for_each_valid_entry macro for iteration") and
+> 04ae58645afa ("irda: sh_sir: Use cpufreq_for_each_valid_entry macro for iteration").
+
+This doesn't look right. It can happen to some other drivers as well in future.
+So, there are two solutions I can think of:
+1. move cpufreq_next_valid and rename it to __cpufreq_next_valid(). Also make it
+inline. Then create two versions of cpufreq_next_valid(), one inlined (only when
+CONFIG_CPU_FREQ=n) and other one in cpufreq.c (non- inlined)..
+
+But probably that would be called ugly by some people :)
+
+2. Make cpufreq_next_valid() inline and forget about extra space it takes :)
+
+@Rafel: Let me know which one you like :)
