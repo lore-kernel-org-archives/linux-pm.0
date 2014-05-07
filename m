@@ -1,34 +1,48 @@
-From: Romain Francoise <romain@orebokech.com>
-Subject: Re: Performance regression in v3.14
-Date: Wed, 07 May 2014 10:36:51 +0200
-Message-ID: <87tx92rnmk.fsf@kima.orebokech.com>
-References: <20140506163559.GA5308@localhost>
-	<CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
-	<20140507073536.GA1973@localhost>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
+Date: Wed, 07 May 2014 15:13:18 +0200
+Message-ID: <4469396.zveA7sC36d@vostro.rjw.lan>
+References: <535AC247.3070907@semaphore.gr> <5369220A.3030207@semaphore.gr> <CAKohpo=3_7G+3bMF2CpWgZXvktdXBkCi4-tCxogwGcvvEEh18w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140507073536.GA1973@localhost> (Johan Hovold's message of
-	"Wed, 7 May 2014 09:35:36 +0200")
-Sender: cpufreq-owner@vger.kernel.org
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=3_7G+3bMF2CpWgZXvktdXBkCi4-tCxogwGcvvEEh18w@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, Geert Uytterhoeven <geert@linux-m68k.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Johan Hovold <jhovold@gmail.com> writes:
+On Wednesday, May 07, 2014 10:53:16 AM Viresh Kumar wrote:
+> On 6 May 2014 23:25, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> > My bad. I'm sorry for this. :(
+> >
+> > Rafael,
+> > A solution could be to make cpufreq_next_valid an inline function in cpufreq.h,
+> > but as Viresh mentioned this would be very inefficient because of multiple copies.
+> 
+> That statement was true when we didn't had this problem..
+> 
+> > So, maybe it's better to revert the 2 patches that don't depend on CONFIG_CPU_FREQ:
+> >
+> > 4229e1c61a4a ("sh: clk: Use cpufreq_for_each_valid_entry macro for iteration") and
+> > 04ae58645afa ("irda: sh_sir: Use cpufreq_for_each_valid_entry macro for iteration").
+> 
+> This doesn't look right. It can happen to some other drivers as well in future.
+> So, there are two solutions I can think of:
+> 1. move cpufreq_next_valid and rename it to __cpufreq_next_valid(). Also make it
+> inline. Then create two versions of cpufreq_next_valid(), one inlined (only when
+> CONFIG_CPU_FREQ=n) and other one in cpufreq.c (non- inlined)..
+> 
+> But probably that would be called ugly by some people :)
+> 
+> 2. Make cpufreq_next_valid() inline and forget about extra space it takes :)
+> 
+> @Rafel: Let me know which one you like :)
 
-> So I guess that idle-active difference is normal for acpi-cpufreq and
-> that the problem only arises in or with the intel_pstate driver.
+2.
 
-I've also noticed some performance issues with intel_pstate in powersave
-mode, in my case playing fullscreen video was very choppy. Switching to
-the performance governor fixed things as well. Looking at turbostat, the
-cores remain close to their minimal frequency pretty much all the time
-in powersave.
 
-Maybe 91a4cd4f3d8169d ("intel_pstate: Remove periodic P state boost")
-which went in v3.14 is the culprit?
-
-(I would also be curious to know what the driver authors recommend for
-typical laptop usage, performance or powersave, since it defaults to
-performance.)
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
