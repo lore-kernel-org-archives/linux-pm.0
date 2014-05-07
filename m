@@ -1,23 +1,101 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Wed, 7 May 2014 19:06:09 +0530
-Message-ID: <CAKohpokLnseVjuWybVTJG5v3-ATpXXbMccE+CscXGyGUnr13yA@mail.gmail.com>
-References: <535AC247.3070907@semaphore.gr>
-	<5369220A.3030207@semaphore.gr>
-	<CAKohpo=3_7G+3bMF2CpWgZXvktdXBkCi4-tCxogwGcvvEEh18w@mail.gmail.com>
-	<4469396.zveA7sC36d@vostro.rjw.lan>
-	<536A3654.20201@semaphore.gr>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: Performance regression in v3.14
+Date: Wed, 07 May 2014 07:10:49 -0700
+Message-ID: <536A3EE9.5050409@intel.com>
+References: <20140506163559.GA5308@localhost> <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <536A3654.20201@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:61240 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbaEGOKx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 May 2014 10:10:53 -0400
+In-Reply-To: <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Johan Hovold <jhovold@gmail.com>
+Cc: dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 7 May 2014 19:04, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Do you want me to resend the entire patch set or only patch 1/8?
+On 05/06/2014 10:40 PM, Viresh Kumar wrote:
+> Cc'ing Dirk who is taking care of intel-pstate driver.
+>
 
-Probably a new patch which would make it inline that's it. I don't think
-he is going to rebase his branch now..
+Thanks Viresh I had seen this thread.
+
+I am looking into it
+
+--Dirk
+> On 6 May 2014 22:05, Johan Hovold <jhovold@gmail.com> wrote:
+>> After updating my main system from v3.13 to v3.14.2, I found that the
+>> git bash-completion was extremely sluggish. Completing a file name would
+>> take roughly six rather than one second on this Haswell machine
+>> (i7-4770). (Other things, such as git rebase, also felt slower, but
+>> the completion issue was much more obvious and easy to measure).
+>>
+>> I managed to reproduce the problem using the following minimal construct
+>>
+>>          cat dmesg.repeat | while read x; do true; done
+>>
+>> where dmesg.repeat is simply dmesg concatenated together to an
+>> equivalent number of lines as produced by git ls-files in the
+>> kernel-source tree root (45k), and where the actual processing of each
+>> line has been removed.
+>>
+>> Most of the time I get:
+>>
+>>          $ time cat dmesg.repeat | while read x; do true; done
+>>
+>>          real    0m6.091s
+>>          user    0m3.674s
+>>          sys     0m2.447s
+>>
+>> but sometimes it only takes one second.
+>>
+>>          $ time cat dmesg.repeat | while read x; do true; done
+>>
+>>          real    0m1.100s
+>>          user    0m0.544s
+>>          sys     0m0.570s
+>>
+>> I don't seem to be able to reproduce the problem on 3.13 where the pipe
+>> always takes about one second to finish.
+>>
+>> Taking all but one core offline seems to make the problem go away, and so
+>> does using the performance rather than powersave governor of the
+>> intel_pstate cpufreq driver (on at least one of two online cores).
+>>
+>> Moving the mouse cursor makes to loop finish faster, and so does
+>> switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
+>> was around cpuinfo_min_freq several times (when tracing, see below).
+>>
+>> I could not reproduce the problem when using perf record, but I can get
+>> function-profile traces using ftrace (in which case the loop takes about
+>> 60 seconds instead of six seconds to finish).
+>>
+>> Comparing the traces I see a lot of functions taking ten times longer to
+>> finish, but I guess that's expected if this is indeed a cpufreq issue.
+>>
+>> Since this is my main machine (and only multi-core machine at the
+>> moment) I'm not able to bisect this myself. And for the same reason I
+>> have not verified that the problem persists in v3.15-rc.
+>>
+>> I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
+>> obviously related and marked for stable in v3.15-rc.
+>>
+>> Any ideas about what might be going on?
+>
+> I tried to take a look at the diff for cpufreq between 3.13 and 3.14.2 and
+> couldn't pin point on any change which might cause it. Don't have a clue
+> of what's going on. I don't know how to help you on this.
+>
+> Normally I test my stuff on a ARM board and I don't remember facing
+> any such behavior there. There might be something wrong with intel-pstate
+> as well..
+>
+> Also, can you try to use acpi-cpufreq instead? And see how that is behaving?
+>
+> --
+> viresh
+>
+
