@@ -1,44 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 0/8] Introduce new cpufreq helper macros
-Date: Wed, 7 May 2014 10:53:16 +0530
-Message-ID: <CAKohpo=3_7G+3bMF2CpWgZXvktdXBkCi4-tCxogwGcvvEEh18w@mail.gmail.com>
-References: <535AC247.3070907@semaphore.gr>
-	<CAKohpok-74uK5k-adxjmEy71=vF8V7MaBwdCD1Vb2ats7FHi_A@mail.gmail.com>
-	<535FCDBD.6080500@semaphore.gr>
-	<1621123.rMC9JtD3Mo@vostro.rjw.lan>
-	<CAMuHMdU6eKQbmqvDj8Ra3MjuqhvFQ6WxoTsiJ4mojqXY4XOtaw@mail.gmail.com>
-	<5369220A.3030207@semaphore.gr>
+Subject: Re: Performance regression in v3.14
+Date: Wed, 7 May 2014 11:10:34 +0530
+Message-ID: <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+References: <20140506163559.GA5308@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <5369220A.3030207@semaphore.gr>
-Sender: linux-sh-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jesper Nilsson <jesper.nilsson@axis.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "David S. Miller" <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Sekhar Nori <nsekhar@ti.com>, Samuel Ortiz <samuel@sortiz.org>, Linux-sh list <linux-sh@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140506163559.GA5308@localhost>
+Sender: cpufreq-owner@vger.kernel.org
+To: Johan Hovold <jhovold@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 6 May 2014 23:25, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> My bad. I'm sorry for this. :(
+Cc'ing Dirk who is taking care of intel-pstate driver.
+
+On 6 May 2014 22:05, Johan Hovold <jhovold@gmail.com> wrote:
+> After updating my main system from v3.13 to v3.14.2, I found that the
+> git bash-completion was extremely sluggish. Completing a file name would
+> take roughly six rather than one second on this Haswell machine
+> (i7-4770). (Other things, such as git rebase, also felt slower, but
+> the completion issue was much more obvious and easy to measure).
 >
-> Rafael,
-> A solution could be to make cpufreq_next_valid an inline function in cpufreq.h,
-> but as Viresh mentioned this would be very inefficient because of multiple copies.
-
-That statement was true when we didn't had this problem..
-
-> So, maybe it's better to revert the 2 patches that don't depend on CONFIG_CPU_FREQ:
+> I managed to reproduce the problem using the following minimal construct
 >
-> 4229e1c61a4a ("sh: clk: Use cpufreq_for_each_valid_entry macro for iteration") and
-> 04ae58645afa ("irda: sh_sir: Use cpufreq_for_each_valid_entry macro for iteration").
+>         cat dmesg.repeat | while read x; do true; done
+>
+> where dmesg.repeat is simply dmesg concatenated together to an
+> equivalent number of lines as produced by git ls-files in the
+> kernel-source tree root (45k), and where the actual processing of each
+> line has been removed.
+>
+> Most of the time I get:
+>
+>         $ time cat dmesg.repeat | while read x; do true; done
+>
+>         real    0m6.091s
+>         user    0m3.674s
+>         sys     0m2.447s
+>
+> but sometimes it only takes one second.
+>
+>         $ time cat dmesg.repeat | while read x; do true; done
+>
+>         real    0m1.100s
+>         user    0m0.544s
+>         sys     0m0.570s
+>
+> I don't seem to be able to reproduce the problem on 3.13 where the pipe
+> always takes about one second to finish.
+>
+> Taking all but one core offline seems to make the problem go away, and so
+> does using the performance rather than powersave governor of the
+> intel_pstate cpufreq driver (on at least one of two online cores).
+>
+> Moving the mouse cursor makes to loop finish faster, and so does
+> switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
+> was around cpuinfo_min_freq several times (when tracing, see below).
+>
+> I could not reproduce the problem when using perf record, but I can get
+> function-profile traces using ftrace (in which case the loop takes about
+> 60 seconds instead of six seconds to finish).
+>
+> Comparing the traces I see a lot of functions taking ten times longer to
+> finish, but I guess that's expected if this is indeed a cpufreq issue.
+>
+> Since this is my main machine (and only multi-core machine at the
+> moment) I'm not able to bisect this myself. And for the same reason I
+> have not verified that the problem persists in v3.15-rc.
+>
+> I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
+> obviously related and marked for stable in v3.15-rc.
+>
+> Any ideas about what might be going on?
 
-This doesn't look right. It can happen to some other drivers as well in future.
-So, there are two solutions I can think of:
-1. move cpufreq_next_valid and rename it to __cpufreq_next_valid(). Also make it
-inline. Then create two versions of cpufreq_next_valid(), one inlined (only when
-CONFIG_CPU_FREQ=n) and other one in cpufreq.c (non- inlined)..
+I tried to take a look at the diff for cpufreq between 3.13 and 3.14.2 and
+couldn't pin point on any change which might cause it. Don't have a clue
+of what's going on. I don't know how to help you on this.
 
-But probably that would be called ugly by some people :)
+Normally I test my stuff on a ARM board and I don't remember facing
+any such behavior there. There might be something wrong with intel-pstate
+as well..
 
-2. Make cpufreq_next_valid() inline and forget about extra space it takes :)
+Also, can you try to use acpi-cpufreq instead? And see how that is behaving?
 
-@Rafel: Let me know which one you like :)
+--
+viresh
