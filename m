@@ -1,170 +1,77 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH RFC v3 1/6] Documentation: arm: define DT idle states
- bindings
-Date: Thu, 8 May 2014 09:57:43 +0100
-Message-ID: <20140508085743.GA12860@e102568-lin.cambridge.arm.com>
-References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1399399483-17112-2-git-send-email-lorenzo.pieralisi@arm.com>
- <536ac4ef.6ae7440a.511a.ffffdef8@mx.google.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH v2] PM / devfreq: Use freq_table for
+ available_frequencies
+Date: Thu, 08 May 2014 10:02:18 +0000 (GMT)
+Message-ID: <30733097.432311399543337408.JavaMail.weblogic@epv6ml09>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:48981 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbaEHI5u convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 04:57:50 -0400
-In-Reply-To: <536ac4ef.6ae7440a.511a.ffffdef8@mx.google.com>
-Content-Disposition: inline
+Received: from mailout4.samsung.com ([203.254.224.34]:21007 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753348AbaEHKCT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 06:02:19 -0400
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N5900HQP2JUBS50@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 08 May 2014 19:02:18 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Capella <sebastian.capella@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sebastian Capella <capellas@>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, May 08, 2014 at 12:43:04AM +0100, Sebastian Capella wrote:
-> Quoting Lorenzo Pieralisi (2014-05-06 11:04:38)
-> > diff --git a/Documentation/devicetree/bindings/arm/idle-states.txt b/Documentation/devicetree/bindings/arm/idle-states.txt
-> > new file mode 100644
-> > index 0000000..196ef52
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/arm/idle-states.txt
-> > @@ -0,0 +1,508 @@
-> ...
-> > +===========================================
-> > +2 - idle-states node
-> > +===========================================
-> > +
-> > +ARM processor idle states are defined within the idle-states node, which is
-> > +a direct child of the cpus node [1] and provides a container where the
-> > +processor idle states, defined as device tree nodes, are listed.
-> > +
-> > +- idle-states node
-> > +
-> > +       Usage: Optional - On ARM systems, is a container of processor idle
-> > +                         states nodes. If the system does not provide CPU
-> > +                         power management capabilities or the processor just
-> > +                         supports idle_standby an idle-states node is not
-> > +                         required.
-> > +
-> > +       Description: idle-states node is a container node, where its
-> > +                    subnodes describe the CPU idle states.
-> > +
-> > +       Node name must be "idle-states".
-> > +
-> > +       The idle-states node's parent node must be the cpus node.
-> > +
-> > +       The idle-states node's child nodes can be:
-> > +
-> > +       - one or more state nodes
-> > +
-> > +       Any other configuration is considered invalid.
-> > +
-> > +       An idle-states node defines the following properties:
-> > +
-> > +       - entry-method
-> > +               Usage: Required
-> > +               Value type: <stringlist>
-> > +               Definition: Describes the method by which a CPU enters the
-> > +                           idle states. This property is required and must be
-> > +                           one of:
-> > +
-> > +                           - "arm,psci"
-> > +                             ARM PSCI firmware interface [2].
-> > +
-> > +                           - "[vendor],[method]"
-> > +                             An implementation dependent string with
-> > +                             format "vendor,method", where vendor is a string
-> > +                             denoting the name of the manufacturer and
-> > +                             method is a string specifying the mechanism
-> > +                             used to enter the idle state.
-> > +
-> > +The nodes describing the idle states (state) can only be defined within the
-> > +idle-states node.
-> > +
-> > +Any other configuration is consider invalid and therefore must be ignored.
-> 
-> consider -> considered
-> must be -> shall?
-> 
-> Is the reference to "any other configuration" referring to state nodes
-> not in the idle states node?  If so, maybe this sentence should go
-> together with that one.
+PiBPbiAwNC8yOS8yMDE0IDAxOjAwIFBNLCBTYXJhdmFuYSBLYW5uYW4gd3JvdGU6DQo+ID4gT24g
+MDQvMjcvMjAxNCAwNjo0MSBQTSwgTXl1bmdKb28gSGFtIHdyb3RlOg0KPiA+PiBZb3UgYXJlIGhl
+cmVieSBjaGFuZ2luZyB0aGUgc2VtbWFudGljcyBvZiB0aGUgb3JpZ2luYWwNCj4gPj4gYXZhaWxh
+YmxlX2ZyZXF1ZW5jaWVzIG5vZGUuDQo+ID4+DQo+ID4+IFdoZW4gYSBmcmVxdWVuY3kvdm9sdGFn
+ZSBwYWlyIGhhcyBiZWVuIGRpc2FibGVkIChvcHBfZGlzYWJsZSksIHByb2JhYmx5DQo+ID4+IGJ5
+IG9wcF9kaXNhYmxlKCksIHRoZSBmcmVxdWVuY3kgaXMgbm8gbW9yZSAiYXZhaWxhYmxlIi4NCj4g
+Pj4gSG93ZXZlciwgd2hlbiB0aGUgZHJpdmVyIGF1dGhvciBzdXBwbGllZCBmcmVxX3RhYmxlIGFz
+IHdlbGwgYXMgT1BQDQo+ID4+IGluIG9yZGVyIHRvIHNlZSB0aGUgc3RhdGlzdGljcywgdGhlIG5v
+ZGUgd2lsbCBiZWhhdmUgZGlmZmVyZW50bHkuDQo+ID4+DQo+ID4+IFBsZWFzZSBkbyBub3QgYWZm
+ZWN0IHRoZSBjdXJyZW50IHVzZXJzIGFzIGxvbmcgYXMgaXQgZG9lcyBub3QgZ2l2ZQ0KPiA+PiBh
+ZGRpdGlvbmFsIGJlbmVmaXQgb3IgZml4IGEgYnVnLg0KPiA+IA0KPiA+IEkgd2FzIGFjdHVhbGx5
+IHRyeWluZyB0byBzdGljayB3aXRoIHRoZSBzZW1hbnRpY3MgYXMgaXQgd2FzIGRvY3VtZW50ZWQu
+DQo+ID4gVGhlIGRvY3VtZW50YXRpb24gZm9yIHRoaXMgZmlsZSBzYXlzIGl0J2xsIHNob3cgZnJl
+cXVlbmNpZXMgdGhhdCBhcmUgbm90DQo+ID4gYWxsb3dlZCBieSB0aGUgY3VycmVudCBtaW4vbWF4
+IHNldHRpbmdzIGVpdGhlci4gVG8gbWUsIGFuIE9QUCBkaXNhYmxlDQo+ID4gc2VlbXMgc2ltaWxh
+ciB0byBzb21lIGZyZXF1ZW5jaWVzICJkaXNhYmxlZCIgYnkgbWluL21heCBzZXR0aW5ncy4NCj4g
+PiANCj4gPiBHaXZpbmcgcHJlZmVyZW5jZSB0byBPUFAgaXMgbm90IGEgaGFyZCBjaGFuZ2UgdG8g
+ZG8sIGJ1dCBpdCBzZWVtcyB0byBnbw0KPiA+IGFnYWluc3RzIHRoZSBkb2N1bWVudGVkIHNlbWFu
+dGljcy4NCj4gPiANCj4gPiBUaG91Z2h0cz8NCj4gDQo+IEknbGwgc2VuZCBvdXQgYW5vdGhlciBw
+YXRjaCBsaWtlIHlvdSB3YW50ZWQgLS0gd2l0aCBPUFAgYmVpbmcgZ2l2ZW4NCj4gcHJlZmVyZW5j
+ZSBvdmVyIGZyZXFfdGFibGUgd2hlbiBsaXN0aW5nIGZyZXF1ZW5jaWVzLg0KPiANCj4gQnV0IEkg
+d291bGQgc3RpbGwgbGlrZSB0byBoZWFyIHlvdXIgdGhvdWdodHMuIEFzIG9mIHRvZGF5LCB0aGVy
+ZSdzIG5vDQo+IGNsZWFuIHdheSB0byBnZXQgdGhlIGNvbXBsZXRlIGxpc3Qgb2YgYXZhaWxhYmxl
+IGZyZXF1ZW5jaWVzIHRoYXQgd291bGQNCj4gZ2l2ZSBhIGNvbnNpc3RlbnQgb3V0cHV0IGlycmVz
+cGVjdGl2ZSBvZiB0aGUgdGVtcG9yYXJ5IGxpbWl0cy9jb25kaXRpb25zDQo+IGltcG9zZWQgYnkg
+dGhlcm1hbCwgY3VycmVudCBsaW1pdGluZywgZXRjLiBUaGUgcm91bmQgYWJvdXQgd2F5IGlzIHRv
+IGNhdA0KPiB0cmFuc19zdGF0IGFuZCBwYXJzZSB0aGUgZnJlcXVlbmNpZXMgZnJvbSB0aGF0Lg0K
+PiANCj4gVGhhdCdzIHdoeSBJIHdhcyB0cnlpbmcgdG8gZ2l2ZSBwcmVmZXJlbmNlIHRvIGZyZXFf
+dGFibGUuDQo+IA0KPiBUaGFua3MsDQo+IFNhcmF2YW5hDQoNClRoZSBub2RlLCBhdmFpbGFibGVf
+ZnJlcXVlbmNpZXMsIHdhcyBzdWdnZXN0ZWQgYmVmb3JlIGZyZXFfdGFibGUgY29uY2VwdC4NCkF0
+IHRoYXQgdGltZSwgYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzIHdhcyBzdXBwb3NlZCB0byBzaG93IHRo
+ZSBsaXN0IG9mDQphdmFpbGFibGUgT1BQIGxpc3RzIGZvciB0aG9zZSB3aG8gdXNlIE9QUCBmb3Ig
+ZGV2ZnJlcSBkZXZpY2UsIGV4Y2x1ZGluZw0KdGhvc2UgZGlzYWJsZWQgYnkgT1BQLiAoT1BQIGxp
+c3RzIGFyZSBleHRlcm5hbCB0byBkZXZmcmVxIGFuZCBkZXZmcmVxJ3MNCm1pbi9tYXggYXJlIGlu
+dGVybmFsIHRvIGRldmZyZXEpDQoNCkxvY2FsbHksIHRoaXMgbm9kZSBoYXMgYmVlbiB1c2VkIHRv
+IGRlYnVnIHRoZSBiZWhhdmlvciBvZiBhIGRldmZyZXEgZGV2aWNlLg0KV2l0aCBtaW4vbWF4IG5v
+ZGVzLCB3ZSBrbm93IHRoZSByYW5nZSB3aGlsZSB3ZSBjYW5ub3QgKGVhc2lseSBhdCBzaGVsbCkN
+CnNlZSB3aGljaCBPUFAgcG9pbnRzIGFyZSBhdmFpbGFibGUgYXQgdGhlIG1vbWVudCwgd2hlcmUg
+d2UgaGF2ZSBiZWVuIGFibGUNCnRvIHVzZSBhdmFpbGFibGVfZnJlcXVlbmNpZXMuDQoNCldlIGRv
+IG5vdCB3YW50IHRvIGxvc2Ugc3VjaCBjYXBhdmlsaXR5IGFzIGxvbmcgYXMgd2UgZG8gbm90IGhh
+dmUgT1BQIHN5c2ZzDQphdXRvbWF0aWNhbGx5IGFzc2lnbmVkIHRvIGFueSBPUFAgbGlzdHMuIElm
+IEkgcmVtZW1iZXIgY29ycmVjdGx5LCB3ZSBkb24ndA0KaGF2ZSBpdCwgeWV0Lg0KDQoNCkEuIEkg
+d2FudCB0byBtaW5pbWl6ZSBzZW1hbnRpY3MgY2hhbmdlcyBpbiBzeXNmcy4gQWRkaW5nIGFub3Ro
+ZXIgd2l0aG91dA0KaW50ZXJmZXJpbmcgd2l0aCBwcmV2aW91cyB1c2FnZSBpcyBvay4NCkIuICht
+b3JlIGltcG9ydGFudGx5KSBJIGRvbid0IHdhbnQgdG8gbG9zZSB0aGUgZGVidWdnaW5nIGNhcGFi
+aWxpdGllcy4NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvby4NCg0KPiANCj4gLS0gDQo+IFRoZSBRdWFs
+Y29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlciBvZiB0aGUgQ29kZSBBdXJv
+cmEgRm9ydW0sDQo+IGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbg0KPiANCj4gDQo+IA0K
+PiAgICAgICAgDQo+ICAgDQo+ICAgICAgICAgIA0KPiANCg==
 
-Yes, it makes sense.
-
-> > +===========================================
-> > +4 - Examples
-> > +===========================================
-> > +
-> > +Example 1 (ARM 64-bit, 16-cpu system):
-> > +
-> > +cpus {
-> > +       #size-cells = <0>;
-> > +       #address-cells = <2>;
-> > +
-> > +       idle-states {
-> > +               entry-method = "arm,psci";
-> > +
-> > +               CPU_RETENTION_0_0: cpu-retention-0-0 {
-> > +                       compatible = "arm,idle-state";
-> > +                       cache-state-retained;
-> > +                       entry-method-param = <0x0010000>;
-> > +                       entry-latency-us = <20>;
-> > +                       exit-latency-us = <40>;
-> > +                       min-residency-us = <30>;
-> > +               };
-> > +
-> > +               CLUSTER_RETENTION_0: cluster-retention-0 {
-> > +                       compatible = "arm,idle-state";
-> > +                       logic-state-retained;
-> > +                       cache-state-retained;
-> > +                       entry-method-param = <0x1010000>;
-> > +                       entry-latency-us = <50>;
-> > +                       exit-latency-us = <100>;
-> > +                       min-residency-us = <250>;
-> > +               };
->                   ...
-> > +       };
-> > +
-> > +       CPU0: cpu@0 {
-> > +               device_type = "cpu";
-> > +               compatible = "arm,cortex-a57";
-> > +               reg = <0x0 0x0>;
-> > +               enable-method = "psci";
-> > +               cpu-idle-states = <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-> > +                                  &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-> > +       };
-> > +
-> > +       CPU1: cpu@1 {
-> > +               device_type = "cpu";
-> > +               compatible = "arm,cortex-a57";
-> > +               reg = <0x0 0x1>;
-> > +               enable-method = "psci";
-> > +               cpu-idle-states = <&CPU_RETENTION_0_0 &CPU_SLEEP_0_0
-> > +                                  &CLUSTER_RETENTION_0 &CLUSTER_SLEEP_0>;
-> > +       };
-> 
-> How can we specify what states are entered together vs. those that
-> are independent (since they also share the entry-method-param)?
-> CPU_SLEEP_0_0 is used for both CPU0 and CPU1, yet each cpu can enter
-> it without waiting for the other.  Whereas CLUSTER_RETENTION_0 should
-> not be entered until all CPUs sharing it enter.
-
-We do not specify that. That can be solved with power-domains but I
-removed them from the bindings since I want to merge bindings that are
-required by current code, and PSCI does not need this information, since
-the power state parameter to PSCI suspend call (and the related SMC
-implementation) caters for it.
-
-When I see implementations requiring these bits of info, we will add
-them to the bindings.
-
-> Is the idea to define separate CPU_SLEEP/CPU_RETENTION nodes for each cpu?
-
-On big.LITTLE systems you might want to have different states (eg CPU
-core gatng) for big and little CPUs, and that's doable with the current
-bindings since each CPU can point at idle states in its cpu node.
-
-Thanks for having a look,
-Lorenzo
 
