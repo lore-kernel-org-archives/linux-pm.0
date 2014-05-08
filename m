@@ -1,128 +1,137 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: linux-pm build failure
-Date: Thu, 08 May 2014 21:44:13 +0200
-Message-ID: <2930403.UViFFypGRj@vostro.rjw.lan>
-References: <536BBAF8.6040601@semaphore.gr>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
+Date: Thu, 08 May 2014 22:02:14 +0200
+Message-ID: <2072799.Uj3u7nOOPY@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org> <2321901.5eTtTCbUUZ@vostro.rjw.lan> <CAPDyKFqS1Brnb2GezX8-=+WkQmXei-6UrrAuYhU6td6O-uxMPw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62847 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755244AbaEHT1d convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 15:27:33 -0400
-In-Reply-To: <536BBAF8.6040601@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFqS1Brnb2GezX8-=+WkQmXei-6UrrAuYhU6td6O-uxMPw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>, Lv Zheng <lv.zheng@intel.com>, Lan Tianyu <tianyu.lan@intel.com>
-Cc: Bob Moore <robert.moore@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
-On Thursday, May 08, 2014 08:12:24 PM Stratos Karafotis wrote:
-> Hi all,
+On Thursday, May 08, 2014 02:25:06 PM Ulf Hansson wrote:
+> On 8 May 2014 13:44, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Thursday, May 08, 2014 12:59:20 PM Ulf Hansson wrote:
+> >> On 8 May 2014 12:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > On Thursday, May 08, 2014 09:49:36 AM Ulf Hansson wrote:
+> >> >> On 8 May 2014 01:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >> >
+> >> >> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> >> >> > resume all runtime-suspended devices during system suspend, mostly
+> >> >> > because those devices may need to be reprogrammed due to different
+> >> >> > wakeup settings for system sleep and for runtime PM.
+> >> >> >
+> >> >> > For some devices, though, it's OK to remain in runtime suspend
+> >> >> > throughout a complete system suspend/resume cycle (if the device was in
+> >> >> > runtime suspend at the start of the cycle).  We would like to do this
+> >> >> > whenever possible, to avoid the overhead of extra power-up and power-down
+> >> >> > events.
+> >> >> >
+> >> >> > However, problems may arise because the device's descendants may require
+> >> >> > it to be at full power at various points during the cycle.  Therefore the
+> >> >> > most straightforward way to do this safely is if the device and all its
+> >> >> > descendants can remain runtime suspended until the resume stage of system
+> >> >> > resume.
+> >> >> >
+> >> >> > To this end, introduce dev->power.leave_runtime_suspended.
+> >> >> > If a subsystem or driver sets this flag during the ->prepare() callback,
+> >> >> > and if the flag is set in all of the device's descendants, and if the
+> >> >> > device is still in runtime suspend at the beginning of the ->suspend()
+> >> >> > callback, that callback is allowed to return 0 without clearing
+> >> >> > power.leave_runtime_suspended and without changing the state of the
+> >> >> > device, unless the current state of the device is not appropriate for
+> >> >> > the upcoming system sleep state (for example, the device is supposed to
+> >> >> > wake up the system from that state and its current wakeup settings are
+> >> >> > not suitable for that).  Then, the PM core will not invoke the device's
+> >> >> > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
+> >> >> > ->resume() callbacks.  Instead, it will invoke ->runtime_resume() during
+> >> >> > the device resume stage of system resume.
+> >> >> >
+> >> >> > By leaving this flag set after ->suspend(), a driver or subsystem tells
+> >> >> > the PM core that the device is runtime suspended, it is in a suitable
+> >> >> > state for system suspend (for example, the wakeup setting does not
+> >> >> > need to be changed), and it does not need to return to full
+> >> >> > power until the resume stage.
+> >> >> >
+> >> >> > Changelog based on an Alan Stern's description of the idea
+> >> >> > (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
+> >> >> >
+> >> >> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >> > ---
+> >> >> >  drivers/base/power/main.c    |   31 ++++++++++++++++++++++++-------
+> >> >> >  drivers/base/power/runtime.c |   10 ++++++++++
+> >> >> >  include/linux/pm.h           |    3 +++
+> >> >> >  include/linux/pm_runtime.h   |   16 ++++++++++++++++
+> >> >> >  kernel/power/Kconfig         |    4 ++++
+> >> >> >  5 files changed, 57 insertions(+), 7 deletions(-)
+> >> >> >
+> >> >> > Index: linux-pm/kernel/power/Kconfig
+> >> >> > ===================================================================
+> >> >> > --- linux-pm.orig/kernel/power/Kconfig
+> >> >> > +++ linux-pm/kernel/power/Kconfig
+> >> >> > @@ -147,6 +147,10 @@ config PM
+> >> >> >         def_bool y
+> >> >> >         depends on PM_SLEEP || PM_RUNTIME
+> >> >> >
+> >> >> > +config PM_BOTH
+> >> >> > +       def_bool y
+> >> >> > +       depends on PM_SLEEP && PM_RUNTIME
+> >> >> > +
+> >> >>
+> >> >> Should we not depend on PM_RUNTIME only? Thus we don't need the new
+> >> >> Kconfig,
+> >> >
+> >> > Well, OK.  I guess we can tolerate one useless statement in rpm_resume()
+> >> > in case CONFIG_PM_SLEEP is unset.
+> >> >
+> >> >> and then we could rename the new APIs to pm_runtime_* instead.
+> >> >
+> >> > That would just make the name longer - for what value?
+> >>
+> >> Only "__set_leave_runtime_suspended" will be a bit longer.
+> >>
+> >> The idea I had was to clearly indicate, these functions is a part of
+> >> PM_RUNTIME API.
+> >>
+> >> Compare what you have:
+> >> __set_leave_runtime_suspended
+> >> pm_set_leave_runtime_suspended
+> >> pm_leave_runtime_suspended
+> >>
+> >> To what I suggest:
+> >> __pm_runtime_set_leave_suspended
+> >> pm_runtime_set_leave_suspended
+> >> pm_runtime_leave_suspended
+> >
+> > And why exactly do you think these are any better?
+> 
+> Because that's how all (almost all) other functions in the runtime PM
+> API are specified - I believe it makes sense to keep them aligned.
+> 
+> Anyway, if you insist in keeping your functions names, it's not that
+> of a big deal for me.
+> 
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> >
+> > The flag is not called leave_suspended surely?
+> 
+> To me that doesn't matter, the flag has nothing to do with the
+> function names in an API.
 
-Hi,
+Well, the point is that pm_runtime_leave_suspended suggests that the runtime
+PM framework is supposed to leave the device suspended, while this isn't the
+case.  This essentially is a system suspend flag that depends on runtime PM
+being available.
 
-Thanks for the report!
+Thanks!
 
-This is caused by commit
 
-0e23847d5ee4 ACPICA: Export acpi_buffer_to_resource symbol
-
-merged on top of the recent ACPICA material.
-
-Lv, Tianyu, care to take care of this?
-
-> There is a build failure in latest linux-pm bleeding-edge:
->=20
-> In file included from include/linux/linkage.h:6:0,
->                  from include/linux/kernel.h:6,
->                  from include/acpi/platform/aclinux.h:64,
->                  from include/acpi/platform/acenv.h:150,
->                  from include/acpi/acpi.h:56,
->                  from drivers/acpi/acpica/rscreate.c:44:
-> include/linux/export.h:59:20: error: redefinition of =E2=80=98__kstrt=
-ab_acpi_buffer_to_resource=E2=80=99
->   static const char __kstrtab_##sym[]   \
->                     ^
-> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__E=
-XPORT_SYMBOL=E2=80=99
->   __EXPORT_SYMBOL(sym, "")
->   ^
-> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =E2=
-=80=98EXPORT_SYMBOL=E2=80=99
->  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->                                      ^
-> drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
->  ^
-> include/linux/export.h:59:20: note: previous definition of =E2=80=98_=
-_kstrtab_acpi_buffer_to_resource=E2=80=99 was here
->   static const char __kstrtab_##sym[]   \
->                     ^
-> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__E=
-XPORT_SYMBOL=E2=80=99
->   __EXPORT_SYMBOL(sym, "")
->   ^
-> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =E2=
-=80=98EXPORT_SYMBOL=E2=80=99
->  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->                                      ^
-> drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
->  ^
-> include/linux/export.h:63:39: error: redefinition of =E2=80=98__ksymt=
-ab_acpi_buffer_to_resource=E2=80=99
->   __visible const struct kernel_symbol __ksymtab_##sym \
->                                        ^
-> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__E=
-XPORT_SYMBOL=E2=80=99
->   __EXPORT_SYMBOL(sym, "")
->   ^
-> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =E2=
-=80=98EXPORT_SYMBOL=E2=80=99
->  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->                                      ^
-> drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
->  ^
-> include/linux/export.h:63:39: note: previous definition of =E2=80=98_=
-_ksymtab_acpi_buffer_to_resource=E2=80=99 was here
->   __visible const struct kernel_symbol __ksymtab_##sym \
->                                        ^
-> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__E=
-XPORT_SYMBOL=E2=80=99
->   __EXPORT_SYMBOL(sym, "")
->   ^
-> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =E2=
-=80=98EXPORT_SYMBOL=E2=80=99
->  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->                                      ^
-> drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
->  ^
-> make[3]: *** [drivers/acpi/acpica/rscreate.o] Error 1
-> make[2]: *** [drivers/acpi/acpica] Error 2
-> make[1]: *** [drivers/acpi] Error 2
-> make[1]: *** Waiting for unfinished jobs....
-> make: *** [drivers] Error 2
->=20
->=20
-> Reverting commit 51e35823eb57 ("ACPICA: Update acpi_buffer_to_resourc=
-e interface"), build completes fine.
->=20
->=20
-> Thanks,
-> Stratos Karafotis
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
