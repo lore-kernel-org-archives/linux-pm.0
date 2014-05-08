@@ -1,68 +1,261 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Thu, 8 May 2014 11:25:34 +0530
-Message-ID: <CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
-	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
-	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-	<5367946F.1030407@ti.com>
-	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
-	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
-	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
-	<003e01cf6984$fb950280$f2bf0780$@samsung.com>
-	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
-	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
-	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
-	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
-	<000301cf6a62$413c16b0$c3b44410$@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
+ runtime-suspended devices
+Date: Thu, 8 May 2014 09:49:36 +0200
+Message-ID: <CAPDyKFoYsKunfo1Vzp3U-QDZVg97m31taKG3ZuW_86Bt3xWPog@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org>
+	<2333255.ofrK1CRRL4@vostro.rjw.lan>
+	<2703563.1xTcfTGG98@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000301cf6a62$413c16b0$c3b44410$@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jonghwan Choi <jhbird.choi@samsung.com>
-Cc: Nishanth Menon <nm@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f46.google.com ([209.85.192.46]:35811 "EHLO
+	mail-qg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbaEHHth (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 03:49:37 -0400
+Received: by mail-qg0-f46.google.com with SMTP id q108so2375357qgd.33
+        for <linux-pm@vger.kernel.org>; Thu, 08 May 2014 00:49:36 -0700 (PDT)
+In-Reply-To: <2703563.1xTcfTGG98@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 8 May 2014 07:37, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
-
-As asked earlier by Nishanth:
-
-- Avoid top-posting (the practice of putting your answer above the quoted
-  text you are responding to).  It makes your response harder to read and
-  makes a poor impression.
-
-Reference: Documentation/development-process/2.Process
-
-> I believe that 3 item is required for DVFS. Those are frequency, voltage, divider value.
-
-Not necessarily. People may need a multiplier as well or some other
-configuration and so this stuff was left for drivers to implement.
-
-> How about adding that divider value into struct dev_pm_opp like this;
-
-Wouldn't work for all and so NAK.
-
-> struct dev_pm_opp {
->         struct list_head node;
+On 8 May 2014 01:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
->         bool available;
->         unsigned long rate;
->         unsigned long u_volt;
->         unsigned int ctl[2]; // Added
+> Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> resume all runtime-suspended devices during system suspend, mostly
+> because those devices may need to be reprogrammed due to different
+> wakeup settings for system sleep and for runtime PM.
 >
->         struct device_opp *dev_opp;
->         struct rcu_head head;
-> };
+> For some devices, though, it's OK to remain in runtime suspend
+> throughout a complete system suspend/resume cycle (if the device was in
+> runtime suspend at the start of the cycle).  We would like to do this
+> whenever possible, to avoid the overhead of extra power-up and power-down
+> events.
+>
+> However, problems may arise because the device's descendants may require
+> it to be at full power at various points during the cycle.  Therefore the
+> most straightforward way to do this safely is if the device and all its
+> descendants can remain runtime suspended until the resume stage of system
+> resume.
+>
+> To this end, introduce dev->power.leave_runtime_suspended.
+> If a subsystem or driver sets this flag during the ->prepare() callback,
+> and if the flag is set in all of the device's descendants, and if the
+> device is still in runtime suspend at the beginning of the ->suspend()
+> callback, that callback is allowed to return 0 without clearing
+> power.leave_runtime_suspended and without changing the state of the
+> device, unless the current state of the device is not appropriate for
+> the upcoming system sleep state (for example, the device is supposed to
+> wake up the system from that state and its current wakeup settings are
+> not suitable for that).  Then, the PM core will not invoke the device's
+> ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
+> ->resume() callbacks.  Instead, it will invoke ->runtime_resume() during
+> the device resume stage of system resume.
+>
+> By leaving this flag set after ->suspend(), a driver or subsystem tells
+> the PM core that the device is runtime suspended, it is in a suitable
+> state for system suspend (for example, the wakeup setting does not
+> need to be changed), and it does not need to return to full
+> power until the resume stage.
+>
+> Changelog based on an Alan Stern's description of the idea
+> (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/power/main.c    |   31 ++++++++++++++++++++++++-------
+>  drivers/base/power/runtime.c |   10 ++++++++++
+>  include/linux/pm.h           |    3 +++
+>  include/linux/pm_runtime.h   |   16 ++++++++++++++++
+>  kernel/power/Kconfig         |    4 ++++
+>  5 files changed, 57 insertions(+), 7 deletions(-)
+>
+> Index: linux-pm/kernel/power/Kconfig
+> ===================================================================
+> --- linux-pm.orig/kernel/power/Kconfig
+> +++ linux-pm/kernel/power/Kconfig
+> @@ -147,6 +147,10 @@ config PM
+>         def_bool y
+>         depends on PM_SLEEP || PM_RUNTIME
+>
+> +config PM_BOTH
+> +       def_bool y
+> +       depends on PM_SLEEP && PM_RUNTIME
+> +
 
-Always paste a diff, its impossible to read this :(
+Should we not depend on PM_RUNTIME only? Thus we don't need the new
+Kconfig, and then we could rename the new APIs to pm_runtime_*
+instead.
 
-> In my test, it works very wel..
+>  config PM_DEBUG
+>         bool "Power Management Debug Support"
+>         depends on PM
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -583,6 +583,9 @@ struct dev_pm_info {
+>         unsigned long           suspended_jiffies;
+>         unsigned long           accounting_timestamp;
+>  #endif
+> +#ifdef CONFIG_PM_BOTH
+> +       bool                    leave_runtime_suspended:1;
+> +#endif
+>         struct pm_subsys_data   *subsys_data;  /* Owned by the subsystem. */
+>         void (*set_latency_tolerance)(struct device *, s32);
+>         struct dev_pm_qos       *qos;
+> Index: linux-pm/include/linux/pm_runtime.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm_runtime.h
+> +++ linux-pm/include/linux/pm_runtime.h
+> @@ -264,4 +264,20 @@ static inline void pm_runtime_dont_use_a
+>         __pm_runtime_use_autosuspend(dev, false);
+>  }
+>
+> +#ifdef CONFIG_PM_BOTH
+> +static inline void __set_leave_runtime_suspended(struct device *dev, bool val)
+> +{
+> +       dev->power.leave_runtime_suspended = val;
+> +}
+> +extern void pm_set_leave_runtime_suspended(struct device *dev, bool val);
+> +static inline bool pm_leave_runtime_suspended(struct device *dev)
+> +{
+> +       return dev->power.leave_runtime_suspended;
+> +}
+> +#else
+> +static inline void __set_leave_runtime_suspended(struct device *dev, bool val) {}
+> +static inline void pm_set_leave_runtime_suspended(struct device *dev, bool val) {}
+> +static inline bool pm_leave_runtime_suspended(struct device *dev) { return false; }
+> +#endif
+> +
+>  #endif
+> Index: linux-pm/drivers/base/power/runtime.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/runtime.c
+> +++ linux-pm/drivers/base/power/runtime.c
+> @@ -732,6 +732,7 @@ static int rpm_resume(struct device *dev
+>         }
+>   skip_parent:
+>
+> +       __set_leave_runtime_suspended(dev, false);
+>         if (dev->power.no_callbacks)
+>                 goto no_callback;       /* Assume success. */
+>
+> @@ -1485,3 +1486,12 @@ out:
+>         return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(pm_runtime_force_resume);
+> +
+> +#ifdef CONFIG_PM_BOTH
+> +void pm_set_leave_runtime_suspended(struct device *dev, bool val)
+> +{
+> +       spin_lock_irq(&dev->power.lock);
+> +       __set_leave_runtime_suspended(dev, val);
+> +       spin_unlock_irq(&dev->power.lock);
+> +}
+> +#endif
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -479,7 +479,7 @@ static int device_resume_noirq(struct de
+>         TRACE_DEVICE(dev);
+>         TRACE_RESUME(0);
+>
+> -       if (dev->power.syscore)
+> +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+>                 goto Out;
+>
+>         if (!dev->power.is_noirq_suspended)
+> @@ -605,7 +605,7 @@ static int device_resume_early(struct de
+>         TRACE_DEVICE(dev);
+>         TRACE_RESUME(0);
+>
+> -       if (dev->power.syscore)
+> +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+>                 goto Out;
+>
+>         if (!dev->power.is_late_suspended)
+> @@ -735,6 +735,11 @@ static int device_resume(struct device *
+>         if (dev->power.syscore)
+>                 goto Complete;
+>
+> +       if (pm_leave_runtime_suspended(dev)) {
+> +               pm_runtime_resume(dev);
+> +               goto Complete;
+> +       }
+> +
+>         dpm_wait(dev->parent, async);
+>         dpm_watchdog_set(&wd, dev);
+>         device_lock(dev);
+> @@ -1007,7 +1012,7 @@ static int __device_suspend_noirq(struct
+>                 goto Complete;
+>         }
+>
+> -       if (dev->power.syscore)
+> +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+>                 goto Complete;
+>
+>         dpm_wait_for_children(dev, async);
+> @@ -1146,7 +1151,7 @@ static int __device_suspend_late(struct
+>                 goto Complete;
+>         }
+>
+> -       if (dev->power.syscore)
+> +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+>                 goto Complete;
+>
+>         dpm_wait_for_children(dev, async);
+> @@ -1382,10 +1387,21 @@ static int __device_suspend(struct devic
+>
+>   End:
+>         if (!error) {
+> +               struct device *parent = dev->parent;
+> +
+>                 dev->power.is_suspended = true;
+> -               if (dev->power.wakeup_path
+> -                   && dev->parent && !dev->parent->power.ignore_children)
+> -                       dev->parent->power.wakeup_path = true;
+> +               if (parent) {
+> +                       spin_lock_irq(&parent->power.lock);
+> +
+> +                       if (dev->power.wakeup_path
+> +                           && !parent->power.ignore_children)
+> +                               parent->power.wakeup_path = true;
+> +
+> +                       if (!pm_leave_runtime_suspended(dev))
 
-Working isn't enough :)
+I suppose this is the reason to why you think you need CONFIG_PM_BOTH?
 
-You don't have a complicated list of dividers, these are simple
-values from 0 to total-num-of-freq -1 and that can be handled very
-easily in your code.. Please do it there.
+But won't this would work nicely even if we just had CONFIG_PM_RUNTIME?
+
+> +                               __set_leave_runtime_suspended(parent, false);
+> +
+> +                       spin_unlock_irq(&parent->power.lock);
+> +               }
+>         }
+>
+>         device_unlock(dev);
+> @@ -1553,6 +1569,7 @@ int dpm_prepare(pm_message_t state)
+>                 struct device *dev = to_device(dpm_list.next);
+>
+>                 get_device(dev);
+> +               pm_set_leave_runtime_suspended(dev, false);
+
+Is this needed?
+
+>                 mutex_unlock(&dpm_list_mtx);
+>
+>                 error = device_prepare(dev, state);
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+Kind regards
+Ulf Hansson
