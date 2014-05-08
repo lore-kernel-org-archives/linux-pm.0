@@ -1,119 +1,57 @@
 From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v3 3/6] drivers: cpuidle: implement OF based idle states
- infrastructure
-Date: Thu, 08 May 2014 16:12:19 -0700
-Message-ID: <536c0f39.90ab420a.3da7.ffff86ca@mx.google.com>
+Subject: Re: [PATCH RFC v3 1/6] Documentation: arm: define DT idle states
+ bindings
+Date: Thu, 08 May 2014 16:28:28 -0700
+Message-ID: <536c131d.43d7440a.1d61.ffff95ca@mx.google.com>
 References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1399399483-17112-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <1399399483-17112-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <536ac4ef.6ae7440a.511a.ffffdef8@mx.google.com>
+ <20140508085743.GA12860@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:46180 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932068AbaEHXLy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 19:11:54 -0400
-Received: by mail-pd0-f172.google.com with SMTP id g10so2945239pdj.3
-        for <linux-pm@vger.kernel.org>; Thu, 08 May 2014 16:11:54 -0700 (PDT)
-In-Reply-To: <1399399483-17112-4-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140508085743.GA12860@e102568-lin.cambridge.arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <capellas@broadcom.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Nicolas Pitre <nico@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.org>, Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Antti Miettinen <ananaza@iki.fi>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@a>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sebastian Capella <capellas@broadcom.com>
 
-Quoting Lorenzo Pieralisi (2014-05-06 11:04:40)
-
-> diff --git a/drivers/cpuidle/of_idle_states.c b/drivers/cpuidle/of_idle_states.c
-> new file mode 100644
-> index 0000000..360b7ad
-> --- /dev/null
-> +++ b/drivers/cpuidle/of_idle_states.c
-> @@ -0,0 +1,293 @@
+Quoting Lorenzo Pieralisi (2014-05-08 01:57:43)
+> On Thu, May 08, 2014 at 12:43:04AM +0100, Sebastian Capella wrote:
+> > Quoting Lorenzo Pieralisi (2014-05-06 11:04:38)
+> > > diff --git a/Documentation/devicetree/bindings/arm/idle-states.txt b/Documentation/devicetree/bindings/arm/idle-states.txt
+> > > new file mode 100644
+> > > index 0000000..196ef52
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/arm/idle-states.txt
+> > > @@ -0,0 +1,508 @@
 ...
-> +static int __init add_state_node(cpumask_t *cpumask,
-> +                                struct device_node *state_node)
-> +{
-> +       struct state_elem *el;
-> +       u32 tmp, val = 0;
-> +
-> +       pr_debug(" * %s...\n", state_node->full_name);
-> +
-> +       if (!state_cpus_valid(cpumask, state_node))
-> +               return -EINVAL;
-> +       /*
-> +        * Parse just the properties required to sort the states.
-> +        * Since we are missing a value defining the energy
-> +        * efficiency of a state, for now the sorting code uses
-> +        *
-> +        * min-residency-us+exit-latency-us
-> +        *
-> +        * as sorting rank.
-> +        */
-> +       if (of_property_read_u32(state_node, "min-residency-us",
-> +                                &tmp)) {
-> +               pr_debug(" * %s missing min-residency-us property\n",
-> +                        state_node->full_name);
-> +               return -EINVAL;
-> +       }
-> +
-> +       val += tmp;
-> +
-> +       if (of_property_read_u32(state_node, "exit-latency-us",
-> +                                &tmp)) {
-> +               pr_debug(" * %s missing exit-latency-us property\n",
-> +                            state_node->full_name);
-> +               return -EINVAL;
-> +       }
-> +
-> +       val += tmp;
+> > > +
+> > > +The nodes describing the idle states (state) can only be defined within the
+> > > +idle-states node.
+> > > +
+> > > +Any other configuration is consider invalid and therefore must be ignored.
+> > 
+> > consider -> considered
+> > must be -> shall?
+> > 
+> > Is the reference to "any other configuration" referring to state nodes
+> > not in the idle states node?  If so, maybe this sentence should go
+> > together with that one.
+> 
+> Yes, it makes sense.
+> 
 
-Sorry if i'm rehashing old stuff, but I prefer not to use the
-min-residency + exit-latency to sort.  I saw Rob's comment suggesting it
-and your reply.  I'm not sure when it was decided.
-
-Would it be possible to sort instead based on the order in the
-cpus->cpu-idle-states?  If not, my preference would be to either use
-index like you had before, or specify another sort order / rank value.
-
-I think there's potential for us to create lower power states that
-have lower min-residencies (reduced power consumption in the state,
-allowing us to more quickly recover the higher entrance cost)
-with higher exit latencies in such a way that the formula would not
-sort as we expect.  Having a separate value would allow us to control
-the sorting in those cases.
-
-> +
-> +/*
-
-For kernel-doc, I think you need a /** here, and a () after the
-of_init_idle_driver below.  Also maybe Return: instead of Returns:
-and I think the return paragraph goes at the end, but am not positive.
-
-kernel-doc-nano-HOWTO.txt
-
-> + * of_init_idle_driver - Parse the DT idle states and initialize the
-> + *                      idle driver states array
-> + *
-> + * @drv:         Pointer to CPU idle driver to be initialized
-> + * @state_nodes:  Array of struct device_nodes to be initialized if
-> + *               init_nodes == true. Must be sized CPUIDLE_STATE_MAX
-> + * @start_idx:    First idle state index to be initialized
-> + * @init_nodes:   Boolean to request device nodes initialization
-> + *
-> + * Returns:
-> + *     0 on success
-> + *     <0 on failure
-> + *
-> + *     On success the states array in the cpuidle driver contains
-> + *     initialized entries in the states array, starting from index start_idx.
-> + *     If init_nodes == true, on success the state_nodes array is initialized
-> + *     with idle state DT node pointers, starting from index start_idx,
-> + *     in a 1:1 relation with the idle driver states array.
-> + */
-> +int __init of_init_idle_driver(struct cpuidle_driver *drv,
-> +                              struct device_node *state_nodes[],
-> +                              unsigned int start_idx, bool init_nodes)
-> +{
+With this small change you can add my Reviewed-by
 
 Thanks!
 
