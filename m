@@ -1,41 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix build error on some platforms that use cpufreq_for_each_*
-Date: Thu, 8 May 2014 11:09:02 +0530
-Message-ID: <CAKohponPkv1gyCVca3Vigv2jSv7G49Jyu_dHDJ2BEMXDkfr-jw@mail.gmail.com>
-References: <536A605D.6030009@semaphore.gr>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
+ cpufreq table
+Date: Thu, 8 May 2014 11:20:16 +0530
+Message-ID: <CAOh2x=n9X7OgcQNAHEe+XbSP+8b12b=rEO6bertxuorvSpkv5Q@mail.gmail.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
+	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
+	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
+	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+	<5367946F.1030407@ti.com>
+	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
+	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
+	<003e01cf6984$fb950280$f2bf0780$@samsung.com>
+	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
+	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
+	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
+	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f41.google.com ([209.85.219.41]:47774 "EHLO
-	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbaEHFjD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 01:39:03 -0400
-Received: by mail-oa0-f41.google.com with SMTP id m1so2534303oag.0
-        for <linux-pm@vger.kernel.org>; Wed, 07 May 2014 22:39:02 -0700 (PDT)
-In-Reply-To: <536A605D.6030009@semaphore.gr>
+Received: from mail-ve0-f179.google.com ([209.85.128.179]:34507 "EHLO
+	mail-ve0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbaEHFuR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 01:50:17 -0400
+In-Reply-To: <CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Nishanth Menon <nm@ti.com>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On 7 May 2014 22:03, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> On platforms that use cpufreq_for_each_* macros, build fails if
-> CONFIG_CPU_FREQ=n, e.g. ARM/shmobile/koelsch/non-multiplatform:
+On Thu, May 8, 2014 at 7:25 AM, Nishanth Menon <nm@ti.com> wrote:
+>> Is it acceptiable?
 >
-> drivers/built-in.o: In function `clk_round_parent':
-> clkdev.c:(.text+0xcf168): undefined reference to `cpufreq_next_valid'
-> drivers/built-in.o: In function `clk_rate_table_find':
-> clkdev.c:(.text+0xcf820): undefined reference to `cpufreq_next_valid'
-> make[3]: *** [vmlinux] Error 1
->
-> Fix this making cpufreq_next_valid function inline and move it to
-> cpufreq.h.
->
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq.c | 11 -----------
->  include/linux/cpufreq.h   | 11 +++++++++--
->  2 files changed, 9 insertions(+), 13 deletions(-)
+> Personally, I feel that filling up driver_data should be left to the
+> driver(caller of dev_pm_opp_init_cpufreq_table).
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Exactly, and I never advised Jonghwan to update the common routine
+for this. I wanted him to handle this in his driver only :)
