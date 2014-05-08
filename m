@@ -1,54 +1,45 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 0/5] updates for intel_pstate
-Date: Thu, 08 May 2014 14:08:30 -0700
-Message-ID: <536BF24E.1000709@gmail.com>
-References: <1399579047-5792-1-git-send-email-dirk.j.brandewie@intel.com> <3320314.vMXib5RYFF@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
+ runtime-suspended devices
+Date: Thu, 8 May 2014 17:20:43 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405081718200.995-100000@iolanthe.rowland.org>
+References: <1528372.jfySyitOy3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:62642 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755733AbaEHVId (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 17:08:33 -0400
-In-Reply-To: <3320314.vMXib5RYFF@vostro.rjw.lan>
+Received: from iolanthe.rowland.org ([192.131.102.54]:42653 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754809AbaEHVUo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 17:20:44 -0400
+In-Reply-To: <1528372.jfySyitOy3@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: dirk.brandewie@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 05/08/2014 01:30 PM, Rafael J. Wysocki wrote:
-> On Thursday, May 08, 2014 12:57:22 PM dirk.brandewie@gmail.com wrote:
->> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>
->> Patches 1-4 are bugfixes.  Patch 4 specifically removes the wreckage
->> caused by C0 tracking change.
->
-> I would appreciate sending such stuff before the -rc4 time frame.
+On Thu, 8 May 2014, Rafael J. Wysocki wrote:
 
-Agreed.
+> > > Wait a minute.  Following ->runtime_suspend(), you are going to call 
+> > > ->suspend() and then ->runtime_resume()?  That doesn't seem like what 
+> > > you really want; a ->suspend() call should always have a matching 
+> > > ->resume().
+> > 
+> > Yes, it should, but I didn't see any other way to do that.
+> 
+> Actually, that's kind of easy to resolve. :-)
+> 
+> When ->suspend() leaves power.leave_runtime_suspended set, the PM core can
+> simply skip the early/late and noirq callbacks and then call ->resume()
+> that will be responsible for using whatever is necessary to resume the
+> device.
+> 
+> And perhaps the flag should be called something different then, like
+> direct_resume (meaning go directly for ->resume() without executing
+> the intermediate callbacks)?
 
-Patch 1 is a resend the others were sent as soon as they were ready/tested
+In light of what I wrote earlier, it should be okay for the ->prepare() 
+callback to be responsible for setting leave_runtime_suspended.  Then 
+there will be no need to call either ->suspend() or ->resume().
 
->
->> Patch 5 Adds new CPU IDs for the Broadwell processors.
->>
->> Dirk Brandewie (5):
->>    intel_pstate: Set turbo VID for Baytrail
->>    intel_pstate: remove setting P state to MAX on init
->>    intel_pstate: Fix fixed point rounding macro
->>    intel_pstate: Remove C0 tracking
->>    intel_pstate: Add CPU IDs for Broadwell processors
->>
->>   drivers/cpufreq/intel_pstate.c | 52 +++++++++++++++++-------------------------
->>   1 file changed, 21 insertions(+), 31 deletions(-)
->
-> I'll queue them up for 3.15-rc6, but that's a bit too late.
->
-> Next time I may just wait for the next merge window, fixes or not.
-
-OK the reporters of the issues already have the fixes in hand.
-
->
->
+Alan Stern
 
