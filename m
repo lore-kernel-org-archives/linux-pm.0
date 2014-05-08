@@ -1,139 +1,41 @@
-From: Jonghwan Choi <jhbird.choi@samsung.com>
-Subject: RE: [PATCH 1/3] PM / OPP: Add support for descending order for cpufreq
- table
-Date: Thu, 08 May 2014 11:07:24 +0900
-Message-ID: <000301cf6a62$413c16b0$c3b44410$@samsung.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
- <CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
- <003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
- <CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
- <5367946F.1030407@ti.com>
- <CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
- <CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
- <CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
- <003e01cf6984$fb950280$f2bf0780$@samsung.com>
- <CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
- <CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
- <001501cf6a5c$07bc2520$17346f60$@samsung.com>
- <CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Fix build error on some platforms that use cpufreq_for_each_*
+Date: Thu, 8 May 2014 11:09:02 +0530
+Message-ID: <CAKohponPkv1gyCVca3Vigv2jSv7G49Jyu_dHDJ2BEMXDkfr-jw@mail.gmail.com>
+References: <536A605D.6030009@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:15811 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbaEHCH1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 May 2014 22:07:27 -0400
-In-reply-to: <CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
-Content-language: ko
+Received: from mail-oa0-f41.google.com ([209.85.219.41]:47774 "EHLO
+	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752565AbaEHFjD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 01:39:03 -0400
+Received: by mail-oa0-f41.google.com with SMTP id m1so2534303oag.0
+        for <linux-pm@vger.kernel.org>; Wed, 07 May 2014 22:39:02 -0700 (PDT)
+In-Reply-To: <536A605D.6030009@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Nishanth Menon' <nm@ti.com>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'open list' <linux-kernel@vger.kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Len Brown' <len.brown@intel.com>, 'Amit Daniel Kachhap' <amit.daniel@samsung.com>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-I believe that 3 item is required for DVFS. Those are frequency, voltage, divider value.
-Currently OPP only supports voltage and frequency. 
-So some cpufreq and devfreq driver get a divider value from struct divider table.
+On 7 May 2014 22:03, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> On platforms that use cpufreq_for_each_* macros, build fails if
+> CONFIG_CPU_FREQ=n, e.g. ARM/shmobile/koelsch/non-multiplatform:
+>
+> drivers/built-in.o: In function `clk_round_parent':
+> clkdev.c:(.text+0xcf168): undefined reference to `cpufreq_next_valid'
+> drivers/built-in.o: In function `clk_rate_table_find':
+> clkdev.c:(.text+0xcf820): undefined reference to `cpufreq_next_valid'
+> make[3]: *** [vmlinux] Error 1
+>
+> Fix this making cpufreq_next_valid function inline and move it to
+> cpufreq.h.
+>
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/cpufreq.c | 11 -----------
+>  include/linux/cpufreq.h   | 11 +++++++++--
+>  2 files changed, 9 insertions(+), 13 deletions(-)
 
-How about adding that divider value into struct dev_pm_opp like this;
-
-struct dev_pm_opp {
-        struct list_head node;
-
-        bool available;
-        unsigned long rate;
-        unsigned long u_volt;
-        unsigned int ctl[2]; // Added
-
-        struct device_opp *dev_opp;
-        struct rcu_head head;
-};
-In my test, it works very wel..
-
-I got a this idea from _PCT in acpi spec.
-
-Then we can remove a lot of code related to divide table. And we also can solve this problem.
-
-Thanks
-
-Best Regarfs.
-
-
-> -----Original Message-----
-> From: menon.nishanth@gmail.com [mailto:menon.nishanth@gmail.com] On Behalf
-> Of Nishanth Menon
-> Sent: Thursday, May 08, 2014 10:56 AM
-> To: Jonghwan Choi
-> Cc: Viresh Kumar; Linux PM list; open list; Rafael J. Wysocki; Len Brown;
-> Amit Daniel Kachhap
-> Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
-> cpufreq table
-> 
-> On Wed, May 7, 2014 at 8:22 PM, Jonghwan Choi <jhbird.choi@samsung.com>
-> wrote:
-> >> @Jonghwan: Please consider doing this:
-> >> - Don't play with the order of frequencies in table.
-> >> - Instead initialize .driver_data filed with values that you need to
-> >> write in the registers for all frequencies. i.e. 0 for highest
-> >> frequency and
-> >> FREQ_COUNT-1 for lowest one.
-> >
-> > -> For that, I changed like this.
-> > For initializing .driver_data, I changed dev_pm_opp_init_cpufreq_table
-> function().
-> >
-> >
-> > --- a/drivers/base/power/opp.c
-> > +++ b/drivers/base/power/opp.c
-> > @@ -622,12 +622,12 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
-> >   * or in contexts where mutex locking cannot be used.
-> >   */
-> >  int dev_pm_opp_init_cpufreq_table(struct device *dev,
-> > -                           struct cpufreq_frequency_table **table)
-> > +               struct cpufreq_frequency_table **table, int order)
-> >  {
-> >         struct device_opp *dev_opp;
-> >         struct dev_pm_opp *opp;
-> >         struct cpufreq_frequency_table *freq_table;
-> > -       int i = 0;
-> > +       int i = 0, index = 0;
-> >
-> >         /* Pretend as if I am an updater */
-> >         mutex_lock(&dev_opp_list_lock); @@ -649,16 +649,22 @@ int
-> > dev_pm_opp_init_cpufreq_table(struct device *dev,
-> >                 return -ENOMEM;
-> >         }
-> >
-> > +       if (OPP_TABLE_ORDER_DESCENDING == order)
-> > +               index = dev_pm_opp_get_opp_count(dev) - 1;
-> > +
-> >         list_for_each_entry(opp, &dev_opp->opp_list, node) {
-> >                 if (opp->available) {
-> > -                       freq_table[i].driver_data = i;
-> > +                       if (OPP_TABLE_ORDER_DESCENDING == order)
-> > +                               freq_table[i].driver_data = index--;
-> > +                       else
-> > +                               freq_table[i].driver_data = index++;
-> >                         freq_table[i].frequency = opp->rate / 1000;
-> >                         i++;
-> >                 }
-> >         }
-> >         mutex_unlock(&dev_opp_list_lock);
-> >
-> > -       freq_table[i].driver_data = i;
-> > +       freq_table[i].driver_data = index;
-> >         freq_table[i].frequency = CPUFREQ_TABLE_END;
-> >
-> >         *table = &freq_table[0];
-> >
-> >
-> > Is it acceptiable?
-> 
-> Personally, I feel that filling up driver_data should be left to the
-> driver(caller of dev_pm_opp_init_cpufreq_table). for example providing a
-> function pointer which decides what that value should be (be it index or
-> some magical register value).. Viresh might have better opinions.
-> 
-> Regards,
-> Nishanth Menon
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
