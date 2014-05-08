@@ -1,43 +1,35 @@
-From: Ryan <ryanphilips19@googlemail.com>
-Subject: powertop usage
-Date: Fri, 9 May 2014 00:35:45 +0530
-Message-ID: <CANMsd02rYJpqVf72Yn7R9kHyZhNuYhvRLeY0e27jTfAhhr62gw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH 3/3] ACPI / PM: Avoid resuming devices in ACPI PM domain during system suspend
+Date: Thu, 08 May 2014 21:40:43 +0200
+Message-ID: <1678557.ZOxSn5icam@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1405081058420.1087-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f43.google.com ([209.85.216.43]:61009 "EHLO
-	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755094AbaEHTFq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 15:05:46 -0400
-Received: by mail-qa0-f43.google.com with SMTP id m5so2955605qaj.16
-        for <linux-pm@vger.kernel.org>; Thu, 08 May 2014 12:05:46 -0700 (PDT)
+Received: from v094114.home.net.pl ([79.96.170.134]:61886 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755061AbaEHTYE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 15:24:04 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1405081058420.1087-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hello,
+On Thursday, May 08, 2014 10:59:38 AM Alan Stern wrote:
+> On Thu, 8 May 2014, Rafael J. Wysocki wrote:
+> 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Rework the ACPI PM domain's PM callbacks to avoid resuming devices
+> > during system suspend (in order to modify their wakeup settings etc.)
+> > if that isn't necessary.
+> 
+> Wasn't there going to be a patch in this series doing the same thing 
+> for PCI?  Or has it not yet been written?
 
-I am trying to use powertop to find out what is causing wakeups.
+Not yet written. :-)
 
-Have 3 columns
-usage, events/second and description
+Rafael
 
-Can i have something like this:
-<run powertop for 1 min> and play "usage scenerio" (a game) in the background
-But, powertop values keep changing every second.
-
-Is there a way of finding out what all things caused wakeups for the 1
-min duration
-and not for a second (which keeps changing)
-
-Is this the way - Powertop is used?
-
-Also, what does usage and events/second suggest. can anyone describe
-with a example and how it can be used to debug and identify issues.
-
-i see any "timers" in description - why is this?
-and why dont i get complete kworker details ( I see only something called kwork)
-in the description i cant find out which kworker is waking up so much.
-
-Thanks,
-Ryan
