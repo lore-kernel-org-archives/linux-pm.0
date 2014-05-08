@@ -1,8 +1,8 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
  cpufreq table
-Date: Thu, 8 May 2014 11:20:16 +0530
-Message-ID: <CAOh2x=n9X7OgcQNAHEe+XbSP+8b12b=rEO6bertxuorvSpkv5Q@mail.gmail.com>
+Date: Thu, 8 May 2014 11:25:34 +0530
+Message-ID: <CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>
 References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
 	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
 	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
@@ -16,24 +16,53 @@ References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
 	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
 	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
 	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
+	<000301cf6a62$413c16b0$c3b44410$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f179.google.com ([209.85.128.179]:34507 "EHLO
-	mail-ve0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbaEHFuR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 01:50:17 -0400
-In-Reply-To: <CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <000301cf6a62$413c16b0$c3b44410$@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jonghwan Choi <jhbird.choi@samsung.com>
+Cc: Nishanth Menon <nm@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On Thu, May 8, 2014 at 7:25 AM, Nishanth Menon <nm@ti.com> wrote:
->> Is it acceptiable?
+On 8 May 2014 07:37, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
+
+As asked earlier by Nishanth:
+
+- Avoid top-posting (the practice of putting your answer above the quoted
+  text you are responding to).  It makes your response harder to read and
+  makes a poor impression.
+
+Reference: Documentation/development-process/2.Process
+
+> I believe that 3 item is required for DVFS. Those are frequency, voltage, divider value.
+
+Not necessarily. People may need a multiplier as well or some other
+configuration and so this stuff was left for drivers to implement.
+
+> How about adding that divider value into struct dev_pm_opp like this;
+
+Wouldn't work for all and so NAK.
+
+> struct dev_pm_opp {
+>         struct list_head node;
 >
-> Personally, I feel that filling up driver_data should be left to the
-> driver(caller of dev_pm_opp_init_cpufreq_table).
+>         bool available;
+>         unsigned long rate;
+>         unsigned long u_volt;
+>         unsigned int ctl[2]; // Added
+>
+>         struct device_opp *dev_opp;
+>         struct rcu_head head;
+> };
 
-Exactly, and I never advised Jonghwan to update the common routine
-for this. I wanted him to handle this in his driver only :)
+Always paste a diff, its impossible to read this :(
+
+> In my test, it works very wel..
+
+Working isn't enough :)
+
+You don't have a complicated list of dividers, these are simple
+values from 0 to total-num-of-freq -1 and that can be handled very
+easily in your code.. Please do it there.
