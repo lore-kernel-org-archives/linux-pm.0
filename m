@@ -1,78 +1,93 @@
 From: Tomasz Figa <t.figa@samsung.com>
-Subject: [PATCH v4 0/3] Generic Device Tree based power domain look-up
-Date: Thu, 08 May 2014 14:49:12 +0200
-Message-ID: <1399553355-6615-1-git-send-email-t.figa@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Subject: [PATCH v4 2/3] drivercore: Bind/unbind power domain on probe/remove
+Date: Thu, 08 May 2014 14:45:08 +0200
+Message-ID: <1399553109-6487-3-git-send-email-t.figa@samsung.com>
+References: <1399553109-6487-1-git-send-email-t.figa@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-reply-to: <1399553109-6487-1-git-send-email-t.figa@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Stephen Boyd <sboyd@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.fi>
+Cc: Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Tomasz Figa <t.figa@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Philipp Zabel <philipp.zabel@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, devicetree@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Pawel Moll <pawel.moll@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Kumar
 List-Id: linux-pm@vger.kernel.org
 
-Up till now there was no single generic method to bind devices to their
-power domains using Device Tree. Each platform has been doing this using
-its own way, example of which are Exynos power domain bindings [1] and
-look-up code [2].
+On a number of platforms, devices are part of controllable power
+domains, which need to be enabled before such devices can be accessed
+and may be powered down when the device is idle to save some power.
+This means that on systems that support power domain control using
+generic power domains subsystem, it is necessary to add device to its
+power domain before binding a driver to it and remove it from its power
+domain after its driver is unbound to make sure that an unused device
+does not affect power domain state.
 
-This series is intended to change this and provide generic DT bindings for
-power domain specification and generic code performing look-up of power
-domains and binding them to devices.
+Since this is not limited to particular busses and specific
+archs/platforms, it is more convenient to do the above directly in
+driver core, just as done with pinctrl default configuration. This patch
+adds necessary code to really_probe() and __device_release_driver() to
+achieve this and maintain consistent stack-like ordering of operations
+happening when binding and unbinding a driver.
 
-First two patches are the most important part of this series, as they
-introduce $subject. Patch 3 converts mach-exynos to use the new generic
-method. Further patches are adding one more user of the new code,
-mach-s3c64xx, with first 3 patches (4-6) required to clean-up its power
-domain driver a bit and last 3 patches (9-11) adding display support for
-Mini6410 board, including a node for display controller (FIMD) which is
-a power domain consumer.
+Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Reviewed-by: Philipp Zabel <philipp.zabel@gmail.com>
+[on i.MX6 GK802]
+Tested-by: Philipp Zabel <philipp.zabel@gmail.com>
+Reviewed-by: Mark Brown <broonie@linaro.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/dd.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-The design of DT bindings and provider code is heavily inspired by
-implementation of clock providers in Common Clock Framework, while
-the code binding devices to power domains by my Exynos power domain
-implementation (now removed by this series ;)).
-
-Successfully tested on Exynos4210-based Trats and Exynos4412-based Trats2
-boards using MFC, 
-
-[1] Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-[2] arch/arm/mach-exynos/pm_domains.c
-
-Changes since v3:
-(http://thread.gmane.org/gmane.linux.power-management.general/44571)
- - rebased onto current Rafael's linux-pm bleeding-edge branch (0a112bf),
- - renamed "power-domain" property to "power-domains" to facilitate further
-   extension to support multiple power domains per device in future.
-
-Changes since v2:
-(http://thread.gmane.org/gmane.linux.kernel/1658926)
- - rebased onto current Rafael's linux-pm bleeding-edge branch,
- - dropped patches for s3c64xx for now. I will send them in separate series,
- - do not call pm_genpd_dev_need_restore(true) in genpd_bind_domain(),
- - fixed various stylistic issues reported in review comments.
-
-Changes since v1 (RFC):
-[https://lkml.org/lkml/2014/1/11/141]
- - rebased onto current Rafael's linux-pm bleeding-edge branch,
- - reordered the patches a bit (to have the generic ones first),
- - dropped renaming of S3C64xx power domains (as suggested by Mark Brown),
- - added support for deferred probing (as suggested by Stephen Boyd),
- - fixed several minor issues pointed by Stephen Boyd,
- - replaced notifiers with direct hooks in driver core to make power domain
-   support independent from specific bus type and allow error handling.
-
-Tomasz Figa (3):
-  base: power: Add generic OF-based power domain look-up
-  drivercore: Bind/unbind power domain on probe/remove
-  ARM: exynos: Move to generic power domain bindings
-
- .../bindings/arm/exynos/power_domain.txt           |  12 +-
- .../devicetree/bindings/power/power_domain.txt     |  51 ++++
- arch/arm/mach-exynos/pm_domains.c                  |  81 +-----
- drivers/base/dd.c                                  |   9 +-
- drivers/base/power/domain.c                        | 283 +++++++++++++++++++++
- include/linux/pm_domain.h                          |  46 ++++
- kernel/power/Kconfig                               |   4 +
- 7 files changed, 398 insertions(+), 88 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
-
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 62ec61e..9489b3a 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -23,6 +23,7 @@
+ #include <linux/kthread.h>
+ #include <linux/wait.h>
+ #include <linux/async.h>
++#include <linux/pm_domain.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/pinctrl/devinfo.h>
+ 
+@@ -287,6 +288,11 @@ static int really_probe(struct device *dev, struct device_driver *drv)
+ 
+ 	dev->driver = drv;
+ 
++	/* If using genpd, bind power domain now before probing */
++	ret = genpd_bind_domain(dev);
++	if (ret)
++		goto probe_failed;
++
+ 	/* If using pinctrl, bind pins now before probing */
+ 	ret = pinctrl_bind_pins(dev);
+ 	if (ret)
+@@ -317,6 +323,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
+ probe_failed:
+ 	devres_release_all(dev);
+ 	driver_sysfs_remove(dev);
++	genpd_unbind_domain(dev);
+ 	dev->driver = NULL;
+ 	dev_set_drvdata(dev, NULL);
+ 
+@@ -530,7 +537,7 @@ static void __device_release_driver(struct device *dev)
+ 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 						     BUS_NOTIFY_UNBOUND_DRIVER,
+ 						     dev);
+-
++		genpd_unbind_domain(dev);
+ 	}
+ }
+ 
 -- 
 1.9.2
