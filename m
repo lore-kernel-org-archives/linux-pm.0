@@ -1,85 +1,53 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [RFC PATCH] cpufreq: intel_pstate: Change the calculation of
- next pstate
-Date: Thu, 08 May 2014 13:52:25 -0700
-Message-ID: <536BEE89.3040602@gmail.com>
-References: <5368255D.3090207@semaphore.gr>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
+ runtime-suspended devices
+Date: Thu, 8 May 2014 17:08:16 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405081700480.995-100000@iolanthe.rowland.org>
+References: <3058268.hrHgpxktTP@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:40904 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754333AbaEHUw2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 16:52:28 -0400
-In-Reply-To: <5368255D.3090207@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3058268.hrHgpxktTP@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: dirk.brandewie@gmail.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On 05/05/2014 04:57 PM, Stratos Karafotis wrote:
-> Currently the driver calculates the next pstate proportional to
-> core_busy factor, scaled by the ratio max_pstate / current_pstate.
+On Thu, 8 May 2014, Rafael J. Wysocki wrote:
+
+> > Wait a minute.  Following ->runtime_suspend(), you are going to call 
+> > ->suspend() and then ->runtime_resume()?  That doesn't seem like what 
+> > you really want; a ->suspend() call should always have a matching 
+> > ->resume().
 > 
-> Using the scaled load (core_busy) to calculate the next pstate
-> is not always correct, because there are cases that the load is
-> independent from current pstate. For example, a tight 'for' loop
-> through many sampling intervals will cause a load of 100% in
-> every pstate.
+> Yes, it should, but I didn't see any other way to do that.
 > 
-> So, change the above method and calculate the next pstate with
-> the assumption that the next pstate should not depend on the
-> current pstate. The next pstate should only be proportional
-> to measured load. Use the linear function to calculate the load:
+> > I guess you did it this way to allow for runtime-resumes and -suspends 
+> > between ->prepare() and ->suspend(), but it still seems wrong.
 > 
-> Next P-state = A + B * load
+> No.  I did that to allow ->suspend() to check whether or not the device is
+> in the right state.  ->prepare() could do that, arguably, but then there's
+> the case when ->runtime_suspend() may still be running in parallel with it.
+> And the device may be runtime-suspended immediately before its ->suspend()
+> in theory if its children do pm_runtime_put_sync(parent).
 > 
-> where A = min_state and B = (max_pstate - min_pstate) / 100
-> If turbo is enabled the B = (turbo_pstate - min_pstate) / 100
-> The load is calculated using the kernel time functions.
+> Also, this is a bus type ->suspend(), so the *driver* ->suspend()
+> won't be called at this point in the ACPI PM domain case for example.
 > 
+> > How about asking drivers to set leave_runtime_suspended in their
+> > ->runtime_suspend() callbacks, as well as during ->prepare()?  Then
+> > intervening runtime resume/suspend cycles wouldn't matter and you
+> > wouldn't need to call ->suspend(); you could skip it along with the
+> > other PM callbacks.
+> 
+> That wouldn't work, because they cannot know the target sleep state of the
+> system in advance.  This only is known during the given suspend sequence.
 
-This will hurt your power numbers under "normal" conditions where you
-are not running a performance workload. Consider the following:
+Argh!  We're both being foolish.  Runtime suspends can't occur between 
+->prepare() and ->suspend(), because device_prepare() does a 
+pm_runtime_get_noresume.
 
-   1. The system is idle, all core at min P state and utilization is low say < 10%
-   2. You run something that drives the load as seen by the kernel to 100%
-      which scaled by the current P state.
+You might still have to worry about a runtime suspend concurrent with
+->prepare(), though.  An appropriate barrier could fix that.
 
-This would cause the P state to go from min -> max in one step.  Which is
-what you want if you are only looking at a single core.  But this will also
-drag every core in the package to the max P state as well.  This would be fine
-if the power vs frequency cure was linear all the cores would finish
-their work faster and go idle sooner (race to halt) and maybe spend
-more time in a deeper C state which dwarfs the amount of power we can
-save by controlling P states. Unfortunately this is *not* the case, 
-power vs frequency curve is non-linear and get very steep in the turbo
-range.  If it were linear there would be no reason to have P state
-control you could select the highest P state and walk away.
-
-Being conservative on the way up and aggressive on way down give you
-the best power efficiency on non-benchmark loads.  Most benchmarks
-are pretty useless for measuring power efficiency (unless they were
-designed for it) since they are measuring how fast something can be
-done which is measuring the efficiency at max performance.
-
-The performance issues you pointed out were caused by commit 
-fcb6a15c intel_pstate: Take core C0 time into account for core busy calculation
-and the ensuing problem is caused. These have been fixed in the patch set
-
-   https://lkml.org/lkml/2014/5/8/574
-
-The performance comparison between before/after this patch set, your patch
-and ondemand/acpi_cpufreq is available at:
-    http://openbenchmarking.org/result/1405085-PL-C0200965993
-ffmpeg was added to the set of benchmarks because there was a regression
-reported against this benchmark as well.
-    https://bugzilla.kernel.org/show_bug.cgi?id=75121
-
---Dirk
-
-
-
- 
-   
+Alan Stern
