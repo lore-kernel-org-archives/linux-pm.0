@@ -1,104 +1,43 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: linux-pm build failure
-Date: Thu, 08 May 2014 20:12:24 +0300
-Message-ID: <536BBAF8.6040601@semaphore.gr>
+From: Ryan <ryanphilips19@googlemail.com>
+Subject: powertop usage
+Date: Fri, 9 May 2014 00:35:45 +0530
+Message-ID: <CANMsd02rYJpqVf72Yn7R9kHyZhNuYhvRLeY0e27jTfAhhr62gw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:56034 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751856AbaEHRM1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 13:12:27 -0400
+Received: from mail-qa0-f43.google.com ([209.85.216.43]:61009 "EHLO
+	mail-qa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755094AbaEHTFq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 15:05:46 -0400
+Received: by mail-qa0-f43.google.com with SMTP id m5so2955605qaj.16
+        for <linux-pm@vger.kernel.org>; Thu, 08 May 2014 12:05:46 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bob Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-Hi all,
+Hello,
 
-There is a build failure in latest linux-pm bleeding-edge:
+I am trying to use powertop to find out what is causing wakeups.
 
-In file included from include/linux/linkage.h:6:0,
-                 from include/linux/kernel.h:6,
-                 from include/acpi/platform/aclinux.h:64,
-                 from include/acpi/platform/acenv.h:150,
-                 from include/acpi/acpi.h:56,
-                 from drivers/acpi/acpica/rscreate.c:44:
-include/linux/export.h:59:20: error: redefinition of =91__kstrtab_acpi_=
-buffer_to_resource=92
-  static const char __kstrtab_##sym[]   \
-                    ^
-include/linux/export.h:69:2: note: in expansion of macro =91__EXPORT_SY=
-MBOL=92
-  __EXPORT_SYMBOL(sym, "")
-  ^
-include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =91=
-EXPORT_SYMBOL=92
- #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
-                                     ^
-drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro =91AC=
-PI_EXPORT_SYMBOL=92
- ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
- ^
-include/linux/export.h:59:20: note: previous definition of =91__kstrtab=
-_acpi_buffer_to_resource=92 was here
-  static const char __kstrtab_##sym[]   \
-                    ^
-include/linux/export.h:69:2: note: in expansion of macro =91__EXPORT_SY=
-MBOL=92
-  __EXPORT_SYMBOL(sym, "")
-  ^
-include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =91=
-EXPORT_SYMBOL=92
- #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
-                                     ^
-drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro =91AC=
-PI_EXPORT_SYMBOL=92
- ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
- ^
-include/linux/export.h:63:39: error: redefinition of =91__ksymtab_acpi_=
-buffer_to_resource=92
-  __visible const struct kernel_symbol __ksymtab_##sym \
-                                       ^
-include/linux/export.h:69:2: note: in expansion of macro =91__EXPORT_SY=
-MBOL=92
-  __EXPORT_SYMBOL(sym, "")
-  ^
-include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =91=
-EXPORT_SYMBOL=92
- #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
-                                     ^
-drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro =91AC=
-PI_EXPORT_SYMBOL=92
- ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
- ^
-include/linux/export.h:63:39: note: previous definition of =91__ksymtab=
-_acpi_buffer_to_resource=92 was here
-  __visible const struct kernel_symbol __ksymtab_##sym \
-                                       ^
-include/linux/export.h:69:2: note: in expansion of macro =91__EXPORT_SY=
-MBOL=92
-  __EXPORT_SYMBOL(sym, "")
-  ^
-include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =91=
-EXPORT_SYMBOL=92
- #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
-                                     ^
-drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro =91AC=
-PI_EXPORT_SYMBOL=92
- ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
- ^
-make[3]: *** [drivers/acpi/acpica/rscreate.o] Error 1
-make[2]: *** [drivers/acpi/acpica] Error 2
-make[1]: *** [drivers/acpi] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [drivers] Error 2
+Have 3 columns
+usage, events/second and description
 
+Can i have something like this:
+<run powertop for 1 min> and play "usage scenerio" (a game) in the background
+But, powertop values keep changing every second.
 
-Reverting commit 51e35823eb57 ("ACPICA: Update acpi_buffer_to_resource =
-interface"), build completes fine.
+Is there a way of finding out what all things caused wakeups for the 1
+min duration
+and not for a second (which keeps changing)
 
+Is this the way - Powertop is used?
+
+Also, what does usage and events/second suggest. can anyone describe
+with a example and how it can be used to debug and identify issues.
+
+i see any "timers" in description - why is this?
+and why dont i get complete kworker details ( I see only something called kwork)
+in the description i cant find out which kworker is waking up so much.
 
 Thanks,
-Stratos Karafotis
+Ryan
