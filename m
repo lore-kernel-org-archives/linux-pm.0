@@ -1,217 +1,120 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
-Date: Fri, 09 May 2014 00:41:18 +0200
-Message-ID: <3786444.hNhCASz73P@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405081718200.995-100000@iolanthe.rowland.org> <2356017.WpDFDYKWcr@vostro.rjw.lan> <4232134.uNVe9bptuo@vostro.rjw.lan>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH RFC v3 3/6] drivers: cpuidle: implement OF based idle states
+ infrastructure
+Date: Thu, 08 May 2014 16:12:19 -0700
+Message-ID: <536c0f39.90ab420a.3da7.ffff86ca@mx.google.com>
+References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1399399483-17112-4-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51055 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756144AbaEHW0h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 18:26:37 -0400
-In-Reply-To: <4232134.uNVe9bptuo@vostro.rjw.lan>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:46180 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932068AbaEHXLy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 19:11:54 -0400
+Received: by mail-pd0-f172.google.com with SMTP id g10so2945239pdj.3
+        for <linux-pm@vger.kernel.org>; Thu, 08 May 2014 16:11:54 -0700 (PDT)
+In-Reply-To: <1399399483-17112-4-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sebastian Capella <capellas@broadcom.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Quoting Lorenzo Pieralisi (2014-05-06 11:04:40)
 
-Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-resume all runtime-suspended devices during system suspend, mostly
-because those devices may need to be reprogrammed due to different
-wakeup settings for system sleep and for runtime PM.
+> diff --git a/drivers/cpuidle/of_idle_states.c b/drivers/cpuidle/of_idle_states.c
+> new file mode 100644
+> index 0000000..360b7ad
+> --- /dev/null
+> +++ b/drivers/cpuidle/of_idle_states.c
+> @@ -0,0 +1,293 @@
+...
+> +static int __init add_state_node(cpumask_t *cpumask,
+> +                                struct device_node *state_node)
+> +{
+> +       struct state_elem *el;
+> +       u32 tmp, val = 0;
+> +
+> +       pr_debug(" * %s...\n", state_node->full_name);
+> +
+> +       if (!state_cpus_valid(cpumask, state_node))
+> +               return -EINVAL;
+> +       /*
+> +        * Parse just the properties required to sort the states.
+> +        * Since we are missing a value defining the energy
+> +        * efficiency of a state, for now the sorting code uses
+> +        *
+> +        * min-residency-us+exit-latency-us
+> +        *
+> +        * as sorting rank.
+> +        */
+> +       if (of_property_read_u32(state_node, "min-residency-us",
+> +                                &tmp)) {
+> +               pr_debug(" * %s missing min-residency-us property\n",
+> +                        state_node->full_name);
+> +               return -EINVAL;
+> +       }
+> +
+> +       val += tmp;
+> +
+> +       if (of_property_read_u32(state_node, "exit-latency-us",
+> +                                &tmp)) {
+> +               pr_debug(" * %s missing exit-latency-us property\n",
+> +                            state_node->full_name);
+> +               return -EINVAL;
+> +       }
+> +
+> +       val += tmp;
 
-For some devices, though, it's OK to remain in runtime suspend 
-throughout a complete system suspend/resume cycle (if the device was in
-runtime suspend at the start of the cycle).  We would like to do this
-whenever possible, to avoid the overhead of extra power-up and power-down
-events.
+Sorry if i'm rehashing old stuff, but I prefer not to use the
+min-residency + exit-latency to sort.  I saw Rob's comment suggesting it
+and your reply.  I'm not sure when it was decided.
 
-However, problems may arise because the device's descendants may require
-it to be at full power at various points during the cycle.  Therefore the
-most straightforward way to do this safely is if the device and all its
-descendants can remain runtime suspended until the resume stage of system
-resume.
+Would it be possible to sort instead based on the order in the
+cpus->cpu-idle-states?  If not, my preference would be to either use
+index like you had before, or specify another sort order / rank value.
 
-To this end, introduce a new device PM flag, power.direct_resume.
-If a subsystem or driver sets this flag during the ->prepare()
-callback, and if the flag is set in all of the device's descendants,
-and if the device is still in runtime suspend at the beginning of the
-->suspend() callback, that callback is allowed to return 0 without
-clearing power.direct_resume and without changing the state of the
-device, unless the current state of the device is not appropriate for
-the upcoming system sleep state (for example, the device is supposed
-to wake up the system from that state and its current wakeup settings
-are not suitable for that).  Then, the PM core will not invoke the
-device's ->suspend_late(), ->suspend_irq(), ->resume_irq(), or
-->resume_early() callbacks.  Instead, it will only invoke ->resume()
-during the device resume stage of system resume and that callback
-will be entirely responsible for resuming the device as appropriate.
+I think there's potential for us to create lower power states that
+have lower min-residencies (reduced power consumption in the state,
+allowing us to more quickly recover the higher entrance cost)
+with higher exit latencies in such a way that the formula would not
+sort as we expect.  Having a separate value would allow us to control
+the sorting in those cases.
 
-By leaving this flag set after ->suspend(), a driver or subsystem tells
-the PM core that the device is runtime suspended, it is in a suitable
-state for system suspend (for example, the wakeup setting does not
-need to be changed), and it does not need to return to full power
-until the resume stage.
+> +
+> +/*
 
-Changelog based on an Alan Stern's description of the idea
-(http://marc.info/?l=linux-pm&m=139940466625569&w=2).
+For kernel-doc, I think you need a /** here, and a () after the
+of_init_idle_driver below.  Also maybe Return: instead of Returns:
+and I think the return paragraph goes at the end, but am not positive.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c    |   26 +++++++++++++++++++-------
- drivers/base/power/runtime.c |    8 ++++++++
- include/linux/pm.h           |    1 +
- include/linux/pm_runtime.h   |   13 +++++++++++++
- 4 files changed, 41 insertions(+), 7 deletions(-)
+kernel-doc-nano-HOWTO.txt
 
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -574,6 +574,7 @@ struct dev_pm_info {
- 	unsigned int		use_autosuspend:1;
- 	unsigned int		timer_autosuspends:1;
- 	unsigned int		memalloc_noio:1;
-+	bool			direct_resume:1;	/* For system suspend */
- 	enum rpm_request	request;
- 	enum rpm_status		runtime_status;
- 	int			runtime_error;
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -57,6 +57,7 @@ extern unsigned long pm_runtime_autosusp
- extern void pm_runtime_update_max_time_suspended(struct device *dev,
- 						 s64 delta_ns);
- extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
-+extern void pm_set_direct_resume(struct device *dev, bool val);
- 
- static inline bool pm_children_suspended(struct device *dev)
- {
-@@ -116,6 +117,15 @@ static inline void pm_runtime_mark_last_
- 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
- }
- 
-+static inline void __set_direct_resume(struct device *dev, bool val)
-+{
-+	dev->power.direct_resume = val;
-+}
-+
-+static inline bool pm_direct_resume_is_set(struct device *dev)
-+{
-+	return dev->power.direct_resume;
-+}
- #else /* !CONFIG_PM_RUNTIME */
- 
- static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
-@@ -165,6 +175,9 @@ static inline unsigned long pm_runtime_a
- 				struct device *dev) { return 0; }
- static inline void pm_runtime_set_memalloc_noio(struct device *dev,
- 						bool enable){}
-+static inline void __set_direct_resume(struct device *dev, bool val) {}
-+static inline void pm_set_direct_resume(struct device *dev, bool val) {}
-+static inline bool pm_direct_resume_is_set(struct device *dev) { return false; }
- 
- #endif /* !CONFIG_PM_RUNTIME */
- 
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -732,6 +732,7 @@ static int rpm_resume(struct device *dev
- 	}
-  skip_parent:
- 
-+	__set_direct_resume(dev, false);
- 	if (dev->power.no_callbacks)
- 		goto no_callback;	/* Assume success. */
- 
-@@ -1485,3 +1486,10 @@ out:
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(pm_runtime_force_resume);
-+
-+void pm_set_direct_resume(struct device *dev, bool val)
-+{
-+	spin_lock_irq(&dev->power.lock);
-+	__set_direct_resume(dev, val);
-+	spin_unlock_irq(&dev->power.lock);
-+}
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -479,7 +479,7 @@ static int device_resume_noirq(struct de
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || pm_direct_resume_is_set(dev))
- 		goto Out;
- 
- 	if (!dev->power.is_noirq_suspended)
-@@ -605,7 +605,7 @@ static int device_resume_early(struct de
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || pm_direct_resume_is_set(dev))
- 		goto Out;
- 
- 	if (!dev->power.is_late_suspended)
-@@ -1007,7 +1007,7 @@ static int __device_suspend_noirq(struct
- 		goto Complete;
- 	}
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || pm_direct_resume_is_set(dev))
- 		goto Complete;
- 
- 	dpm_wait_for_children(dev, async);
-@@ -1146,7 +1146,7 @@ static int __device_suspend_late(struct
- 		goto Complete;
- 	}
- 
--	if (dev->power.syscore)
-+	if (dev->power.syscore || pm_direct_resume_is_set(dev))
- 		goto Complete;
- 
- 	dpm_wait_for_children(dev, async);
-@@ -1382,10 +1382,21 @@ static int __device_suspend(struct devic
- 
-  End:
- 	if (!error) {
-+		struct device *parent = dev->parent;
-+
- 		dev->power.is_suspended = true;
--		if (dev->power.wakeup_path
--		    && dev->parent && !dev->parent->power.ignore_children)
--			dev->parent->power.wakeup_path = true;
-+		if (parent) {
-+			spin_lock_irq(&parent->power.lock);
-+
-+			if (dev->power.wakeup_path
-+			    && !parent->power.ignore_children)
-+				parent->power.wakeup_path = true;
-+
-+			if (!pm_direct_resume_is_set(dev))
-+				__set_direct_resume(parent, false);
-+
-+			spin_unlock_irq(&parent->power.lock);
-+		}
- 	}
- 
- 	device_unlock(dev);
-@@ -1553,6 +1564,7 @@ int dpm_prepare(pm_message_t state)
- 		struct device *dev = to_device(dpm_list.next);
- 
- 		get_device(dev);
-+		pm_set_direct_resume(dev, false);
- 		mutex_unlock(&dpm_list_mtx);
- 
- 		error = device_prepare(dev, state);
+> + * of_init_idle_driver - Parse the DT idle states and initialize the
+> + *                      idle driver states array
+> + *
+> + * @drv:         Pointer to CPU idle driver to be initialized
+> + * @state_nodes:  Array of struct device_nodes to be initialized if
+> + *               init_nodes == true. Must be sized CPUIDLE_STATE_MAX
+> + * @start_idx:    First idle state index to be initialized
+> + * @init_nodes:   Boolean to request device nodes initialization
+> + *
+> + * Returns:
+> + *     0 on success
+> + *     <0 on failure
+> + *
+> + *     On success the states array in the cpuidle driver contains
+> + *     initialized entries in the states array, starting from index start_idx.
+> + *     If init_nodes == true, on success the state_nodes array is initialized
+> + *     with idle state DT node pointers, starting from index start_idx,
+> + *     in a 1:1 relation with the idle driver states array.
+> + */
+> +int __init of_init_idle_driver(struct cpuidle_driver *drv,
+> +                              struct device_node *state_nodes[],
+> +                              unsigned int start_idx, bool init_nodes)
+> +{
 
+Thanks!
+
+Sebastian
