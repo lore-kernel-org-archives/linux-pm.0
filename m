@@ -1,139 +1,78 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
- runtime-suspended devices
-Date: Thu, 8 May 2014 14:25:06 +0200
-Message-ID: <CAPDyKFqS1Brnb2GezX8-=+WkQmXei-6UrrAuYhU6td6O-uxMPw@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org>
-	<1589827.thSfpq14Si@vostro.rjw.lan>
-	<CAPDyKFoPxXVYfK2ytGVJ8fYQDJXiSuaRX_6QtRYzffZVtKJfeA@mail.gmail.com>
-	<2321901.5eTtTCbUUZ@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f178.google.com ([209.85.216.178]:52513 "EHLO
-	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbaEHMZH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 08:25:07 -0400
-Received: by mail-qc0-f178.google.com with SMTP id l6so2748594qcy.9
-        for <linux-pm@vger.kernel.org>; Thu, 08 May 2014 05:25:06 -0700 (PDT)
-In-Reply-To: <2321901.5eTtTCbUUZ@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: [PATCH v4 0/3] Generic Device Tree based power domain look-up
+Date: Thu, 08 May 2014 14:45:06 +0200
+Message-ID: <1399553109-6487-1-git-send-email-t.figa@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Kumar Gala <galak@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Stephen Boyd <sboyd@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <tomasz.figa@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 8 May 2014 13:44, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, May 08, 2014 12:59:20 PM Ulf Hansson wrote:
->> On 8 May 2014 12:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Thursday, May 08, 2014 09:49:36 AM Ulf Hansson wrote:
->> >> On 8 May 2014 01:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >> >
->> >> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
->> >> > resume all runtime-suspended devices during system suspend, mostly
->> >> > because those devices may need to be reprogrammed due to different
->> >> > wakeup settings for system sleep and for runtime PM.
->> >> >
->> >> > For some devices, though, it's OK to remain in runtime suspend
->> >> > throughout a complete system suspend/resume cycle (if the device was in
->> >> > runtime suspend at the start of the cycle).  We would like to do this
->> >> > whenever possible, to avoid the overhead of extra power-up and power-down
->> >> > events.
->> >> >
->> >> > However, problems may arise because the device's descendants may require
->> >> > it to be at full power at various points during the cycle.  Therefore the
->> >> > most straightforward way to do this safely is if the device and all its
->> >> > descendants can remain runtime suspended until the resume stage of system
->> >> > resume.
->> >> >
->> >> > To this end, introduce dev->power.leave_runtime_suspended.
->> >> > If a subsystem or driver sets this flag during the ->prepare() callback,
->> >> > and if the flag is set in all of the device's descendants, and if the
->> >> > device is still in runtime suspend at the beginning of the ->suspend()
->> >> > callback, that callback is allowed to return 0 without clearing
->> >> > power.leave_runtime_suspended and without changing the state of the
->> >> > device, unless the current state of the device is not appropriate for
->> >> > the upcoming system sleep state (for example, the device is supposed to
->> >> > wake up the system from that state and its current wakeup settings are
->> >> > not suitable for that).  Then, the PM core will not invoke the device's
->> >> > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
->> >> > ->resume() callbacks.  Instead, it will invoke ->runtime_resume() during
->> >> > the device resume stage of system resume.
->> >> >
->> >> > By leaving this flag set after ->suspend(), a driver or subsystem tells
->> >> > the PM core that the device is runtime suspended, it is in a suitable
->> >> > state for system suspend (for example, the wakeup setting does not
->> >> > need to be changed), and it does not need to return to full
->> >> > power until the resume stage.
->> >> >
->> >> > Changelog based on an Alan Stern's description of the idea
->> >> > (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
->> >> >
->> >> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >> > ---
->> >> >  drivers/base/power/main.c    |   31 ++++++++++++++++++++++++-------
->> >> >  drivers/base/power/runtime.c |   10 ++++++++++
->> >> >  include/linux/pm.h           |    3 +++
->> >> >  include/linux/pm_runtime.h   |   16 ++++++++++++++++
->> >> >  kernel/power/Kconfig         |    4 ++++
->> >> >  5 files changed, 57 insertions(+), 7 deletions(-)
->> >> >
->> >> > Index: linux-pm/kernel/power/Kconfig
->> >> > ===================================================================
->> >> > --- linux-pm.orig/kernel/power/Kconfig
->> >> > +++ linux-pm/kernel/power/Kconfig
->> >> > @@ -147,6 +147,10 @@ config PM
->> >> >         def_bool y
->> >> >         depends on PM_SLEEP || PM_RUNTIME
->> >> >
->> >> > +config PM_BOTH
->> >> > +       def_bool y
->> >> > +       depends on PM_SLEEP && PM_RUNTIME
->> >> > +
->> >>
->> >> Should we not depend on PM_RUNTIME only? Thus we don't need the new
->> >> Kconfig,
->> >
->> > Well, OK.  I guess we can tolerate one useless statement in rpm_resume()
->> > in case CONFIG_PM_SLEEP is unset.
->> >
->> >> and then we could rename the new APIs to pm_runtime_* instead.
->> >
->> > That would just make the name longer - for what value?
->>
->> Only "__set_leave_runtime_suspended" will be a bit longer.
->>
->> The idea I had was to clearly indicate, these functions is a part of
->> PM_RUNTIME API.
->>
->> Compare what you have:
->> __set_leave_runtime_suspended
->> pm_set_leave_runtime_suspended
->> pm_leave_runtime_suspended
->>
->> To what I suggest:
->> __pm_runtime_set_leave_suspended
->> pm_runtime_set_leave_suspended
->> pm_runtime_leave_suspended
->
-> And why exactly do you think these are any better?
+Up till now there was no single generic method to bind devices to their
+power domains using Device Tree. Each platform has been doing this using
+its own way, example of which are Exynos power domain bindings [1] and
+look-up code [2].
 
-Because that's how all (almost all) other functions in the runtime PM
-API are specified - I believe it makes sense to keep them aligned.
+This series is intended to change this and provide generic DT bindings for
+power domain specification and generic code performing look-up of power
+domains and binding them to devices.
 
-Anyway, if you insist in keeping your functions names, it's not that
-of a big deal for me.
+First two patches are the most important part of this series, as they
+introduce $subject. Patch 3 converts mach-exynos to use the new generic
+method. Further patches are adding one more user of the new code,
+mach-s3c64xx, with first 3 patches (4-6) required to clean-up its power
+domain driver a bit and last 3 patches (9-11) adding display support for
+Mini6410 board, including a node for display controller (FIMD) which is
+a power domain consumer.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+The design of DT bindings and provider code is heavily inspired by
+implementation of clock providers in Common Clock Framework, while
+the code binding devices to power domains by my Exynos power domain
+implementation (now removed by this series ;)).
 
->
-> The flag is not called leave_suspended surely?
+Successfully tested on Exynos4210-based Trats and Exynos4412-based Trats2
+boards using MFC, 
 
-To me that doesn't matter, the flag has nothing to do with the
-function names in an API.
+[1] Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+[2] arch/arm/mach-exynos/pm_domains.c
 
->
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+Changes since v3:
+(http://thread.gmane.org/gmane.linux.power-management.general/44571)
+ - rebased onto current Rafael's linux-pm bleeding-edge branch (0a112bf),
+ - renamed "power-domain" property to "power-domains" to facilitate further
+   extension to support multiple power domains per device in future.
+
+Changes since v2:
+(http://thread.gmane.org/gmane.linux.kernel/1658926)
+ - rebased onto current Rafael's linux-pm bleeding-edge branch,
+ - dropped patches for s3c64xx for now. I will send them in separate series,
+ - do not call pm_genpd_dev_need_restore(true) in genpd_bind_domain(),
+ - fixed various stylistic issues reported in review comments.
+
+Changes since v1 (RFC):
+[https://lkml.org/lkml/2014/1/11/141]
+ - rebased onto current Rafael's linux-pm bleeding-edge branch,
+ - reordered the patches a bit (to have the generic ones first),
+ - dropped renaming of S3C64xx power domains (as suggested by Mark Brown),
+ - added support for deferred probing (as suggested by Stephen Boyd),
+ - fixed several minor issues pointed by Stephen Boyd,
+ - replaced notifiers with direct hooks in driver core to make power domain
+   support independent from specific bus type and allow error handling.
+
+Tomasz Figa (3):
+  base: power: Add generic OF-based power domain look-up
+  drivercore: Bind/unbind power domain on probe/remove
+  ARM: exynos: Move to generic power domain bindings
+
+ .../bindings/arm/exynos/power_domain.txt           |  12 +-
+ .../devicetree/bindings/power/power_domain.txt     |  51 ++++
+ arch/arm/mach-exynos/pm_domains.c                  |  81 +-----
+ drivers/base/dd.c                                  |   9 +-
+ drivers/base/power/domain.c                        | 283 +++++++++++++++++++++
+ include/linux/pm_domain.h                          |  46 ++++
+ kernel/power/Kconfig                               |   4 +
+ 7 files changed, 398 insertions(+), 88 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
+
+-- 
+1.9.2
