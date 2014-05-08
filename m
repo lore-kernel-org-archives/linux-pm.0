@@ -1,76 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
-Date: Thu, 08 May 2014 23:03:58 +0200
-Message-ID: <1528372.jfySyitOy3@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405081040330.1087-100000@iolanthe.rowland.org> <3058268.hrHgpxktTP@vostro.rjw.lan>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [RFC PATCH] cpufreq: intel_pstate: Change the calculation of
+ next pstate
+Date: Thu, 08 May 2014 13:52:25 -0700
+Message-ID: <536BEE89.3040602@gmail.com>
+References: <5368255D.3090207@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56255 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754809AbaEHUrS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 16:47:18 -0400
-In-Reply-To: <3058268.hrHgpxktTP@vostro.rjw.lan>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:40904 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754333AbaEHUw2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 16:52:28 -0400
+In-Reply-To: <5368255D.3090207@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: dirk.brandewie@gmail.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On Thursday, May 08, 2014 10:17:50 PM Rafael J. Wysocki wrote:
-> On Thursday, May 08, 2014 10:57:36 AM Alan Stern wrote:
-> > On Thu, 8 May 2014, Rafael J. Wysocki wrote:
-> > 
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-> > > resume all runtime-suspended devices during system suspend, mostly
-> > > because those devices may need to be reprogrammed due to different
-> > > wakeup settings for system sleep and for runtime PM.
-> > > 
-> > > For some devices, though, it's OK to remain in runtime suspend 
-> > > throughout a complete system suspend/resume cycle (if the device was in
-> > > runtime suspend at the start of the cycle).  We would like to do this
-> > > whenever possible, to avoid the overhead of extra power-up and power-down
-> > > events.
-> > > 
-> > > However, problems may arise because the device's descendants may require
-> > > it to be at full power at various points during the cycle.  Therefore the
-> > > most straightforward way to do this safely is if the device and all its
-> > > descendants can remain runtime suspended until the resume stage of system
-> > > resume.
-> > > 
-> > > To this end, introduce dev->power.leave_runtime_suspended.
-> > > If a subsystem or driver sets this flag during the ->prepare() callback,
-> > > and if the flag is set in all of the device's descendants, and if the
-> > > device is still in runtime suspend at the beginning of the ->suspend()
-> > > callback, that callback is allowed to return 0 without clearing
-> > > power.leave_runtime_suspended and without changing the state of the
-> > > device, unless the current state of the device is not appropriate for
-> > > the upcoming system sleep state (for example, the device is supposed to
-> > > wake up the system from that state and its current wakeup settings are
-> > > not suitable for that).  Then, the PM core will not invoke the device's
-> > > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
-> > > ->resume() callbacks.  Instead, it will invoke ->runtime_resume() during
-> > > the device resume stage of system resume.
-> > 
-> > Wait a minute.  Following ->runtime_suspend(), you are going to call 
-> > ->suspend() and then ->runtime_resume()?  That doesn't seem like what 
-> > you really want; a ->suspend() call should always have a matching 
-> > ->resume().
+On 05/05/2014 04:57 PM, Stratos Karafotis wrote:
+> Currently the driver calculates the next pstate proportional to
+> core_busy factor, scaled by the ratio max_pstate / current_pstate.
 > 
-> Yes, it should, but I didn't see any other way to do that.
+> Using the scaled load (core_busy) to calculate the next pstate
+> is not always correct, because there are cases that the load is
+> independent from current pstate. For example, a tight 'for' loop
+> through many sampling intervals will cause a load of 100% in
+> every pstate.
+> 
+> So, change the above method and calculate the next pstate with
+> the assumption that the next pstate should not depend on the
+> current pstate. The next pstate should only be proportional
+> to measured load. Use the linear function to calculate the load:
+> 
+> Next P-state = A + B * load
+> 
+> where A = min_state and B = (max_pstate - min_pstate) / 100
+> If turbo is enabled the B = (turbo_pstate - min_pstate) / 100
+> The load is calculated using the kernel time functions.
+> 
 
-Actually, that's kind of easy to resolve. :-)
+This will hurt your power numbers under "normal" conditions where you
+are not running a performance workload. Consider the following:
 
-When ->suspend() leaves power.leave_runtime_suspended set, the PM core can
-simply skip the early/late and noirq callbacks and then call ->resume()
-that will be responsible for using whatever is necessary to resume the
-device.
+   1. The system is idle, all core at min P state and utilization is low say < 10%
+   2. You run something that drives the load as seen by the kernel to 100%
+      which scaled by the current P state.
 
-And perhaps the flag should be called something different then, like
-direct_resume (meaning go directly for ->resume() without executing
-the intermediate callbacks)?
+This would cause the P state to go from min -> max in one step.  Which is
+what you want if you are only looking at a single core.  But this will also
+drag every core in the package to the max P state as well.  This would be fine
+if the power vs frequency cure was linear all the cores would finish
+their work faster and go idle sooner (race to halt) and maybe spend
+more time in a deeper C state which dwarfs the amount of power we can
+save by controlling P states. Unfortunately this is *not* the case, 
+power vs frequency curve is non-linear and get very steep in the turbo
+range.  If it were linear there would be no reason to have P state
+control you could select the highest P state and walk away.
 
-Rafael
+Being conservative on the way up and aggressive on way down give you
+the best power efficiency on non-benchmark loads.  Most benchmarks
+are pretty useless for measuring power efficiency (unless they were
+designed for it) since they are measuring how fast something can be
+done which is measuring the efficiency at max performance.
 
+The performance issues you pointed out were caused by commit 
+fcb6a15c intel_pstate: Take core C0 time into account for core busy calculation
+and the ensuing problem is caused. These have been fixed in the patch set
+
+   https://lkml.org/lkml/2014/5/8/574
+
+The performance comparison between before/after this patch set, your patch
+and ondemand/acpi_cpufreq is available at:
+    http://openbenchmarking.org/result/1405085-PL-C0200965993
+ffmpeg was added to the set of benchmarks because there was a regression
+reported against this benchmark as well.
+    https://bugzilla.kernel.org/show_bug.cgi?id=75121
+
+--Dirk
+
+
+
+ 
+   
