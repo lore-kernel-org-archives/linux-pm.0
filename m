@@ -1,53 +1,54 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
- runtime-suspended devices
-Date: Thu, 8 May 2014 17:08:16 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1405081700480.995-100000@iolanthe.rowland.org>
-References: <3058268.hrHgpxktTP@vostro.rjw.lan>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 0/5] updates for intel_pstate
+Date: Thu, 08 May 2014 14:08:30 -0700
+Message-ID: <536BF24E.1000709@gmail.com>
+References: <1399579047-5792-1-git-send-email-dirk.j.brandewie@intel.com> <3320314.vMXib5RYFF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3058268.hrHgpxktTP@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:62642 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755733AbaEHVId (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 17:08:33 -0400
+In-Reply-To: <3320314.vMXib5RYFF@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: dirk.brandewie@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Thu, 8 May 2014, Rafael J. Wysocki wrote:
+On 05/08/2014 01:30 PM, Rafael J. Wysocki wrote:
+> On Thursday, May 08, 2014 12:57:22 PM dirk.brandewie@gmail.com wrote:
+>> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>>
+>> Patches 1-4 are bugfixes.  Patch 4 specifically removes the wreckage
+>> caused by C0 tracking change.
+>
+> I would appreciate sending such stuff before the -rc4 time frame.
 
-> > Wait a minute.  Following ->runtime_suspend(), you are going to call 
-> > ->suspend() and then ->runtime_resume()?  That doesn't seem like what 
-> > you really want; a ->suspend() call should always have a matching 
-> > ->resume().
-> 
-> Yes, it should, but I didn't see any other way to do that.
-> 
-> > I guess you did it this way to allow for runtime-resumes and -suspends 
-> > between ->prepare() and ->suspend(), but it still seems wrong.
-> 
-> No.  I did that to allow ->suspend() to check whether or not the device is
-> in the right state.  ->prepare() could do that, arguably, but then there's
-> the case when ->runtime_suspend() may still be running in parallel with it.
-> And the device may be runtime-suspended immediately before its ->suspend()
-> in theory if its children do pm_runtime_put_sync(parent).
-> 
-> Also, this is a bus type ->suspend(), so the *driver* ->suspend()
-> won't be called at this point in the ACPI PM domain case for example.
-> 
-> > How about asking drivers to set leave_runtime_suspended in their
-> > ->runtime_suspend() callbacks, as well as during ->prepare()?  Then
-> > intervening runtime resume/suspend cycles wouldn't matter and you
-> > wouldn't need to call ->suspend(); you could skip it along with the
-> > other PM callbacks.
-> 
-> That wouldn't work, because they cannot know the target sleep state of the
-> system in advance.  This only is known during the given suspend sequence.
+Agreed.
 
-Argh!  We're both being foolish.  Runtime suspends can't occur between 
-->prepare() and ->suspend(), because device_prepare() does a 
-pm_runtime_get_noresume.
+Patch 1 is a resend the others were sent as soon as they were ready/tested
 
-You might still have to worry about a runtime suspend concurrent with
-->prepare(), though.  An appropriate barrier could fix that.
+>
+>> Patch 5 Adds new CPU IDs for the Broadwell processors.
+>>
+>> Dirk Brandewie (5):
+>>    intel_pstate: Set turbo VID for Baytrail
+>>    intel_pstate: remove setting P state to MAX on init
+>>    intel_pstate: Fix fixed point rounding macro
+>>    intel_pstate: Remove C0 tracking
+>>    intel_pstate: Add CPU IDs for Broadwell processors
+>>
+>>   drivers/cpufreq/intel_pstate.c | 52 +++++++++++++++++-------------------------
+>>   1 file changed, 21 insertions(+), 31 deletions(-)
+>
+> I'll queue them up for 3.15-rc6, but that's a bit too late.
+>
+> Next time I may just wait for the next merge window, fixes or not.
 
-Alan Stern
+OK the reporters of the issues already have the fixes in hand.
+
+>
+>
+
