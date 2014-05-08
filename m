@@ -1,137 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
-Date: Thu, 08 May 2014 22:02:14 +0200
-Message-ID: <2072799.Uj3u7nOOPY@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org> <2321901.5eTtTCbUUZ@vostro.rjw.lan> <CAPDyKFqS1Brnb2GezX8-=+WkQmXei-6UrrAuYhU6td6O-uxMPw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqS1Brnb2GezX8-=+WkQmXei-6UrrAuYhU6td6O-uxMPw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: dirk.brandewie@gmail.com
+Subject: [PATCH 0/5] updates for intel_pstate
+Date: Thu,  8 May 2014 12:57:22 -0700
+Message-ID: <1399579047-5792-1-git-send-email-dirk.j.brandewie@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:38759 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755192AbaEHT5k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 15:57:40 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Thursday, May 08, 2014 02:25:06 PM Ulf Hansson wrote:
-> On 8 May 2014 13:44, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Thursday, May 08, 2014 12:59:20 PM Ulf Hansson wrote:
-> >> On 8 May 2014 12:53, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Thursday, May 08, 2014 09:49:36 AM Ulf Hansson wrote:
-> >> >> On 8 May 2014 01:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >> >
-> >> >> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-> >> >> > resume all runtime-suspended devices during system suspend, mostly
-> >> >> > because those devices may need to be reprogrammed due to different
-> >> >> > wakeup settings for system sleep and for runtime PM.
-> >> >> >
-> >> >> > For some devices, though, it's OK to remain in runtime suspend
-> >> >> > throughout a complete system suspend/resume cycle (if the device was in
-> >> >> > runtime suspend at the start of the cycle).  We would like to do this
-> >> >> > whenever possible, to avoid the overhead of extra power-up and power-down
-> >> >> > events.
-> >> >> >
-> >> >> > However, problems may arise because the device's descendants may require
-> >> >> > it to be at full power at various points during the cycle.  Therefore the
-> >> >> > most straightforward way to do this safely is if the device and all its
-> >> >> > descendants can remain runtime suspended until the resume stage of system
-> >> >> > resume.
-> >> >> >
-> >> >> > To this end, introduce dev->power.leave_runtime_suspended.
-> >> >> > If a subsystem or driver sets this flag during the ->prepare() callback,
-> >> >> > and if the flag is set in all of the device's descendants, and if the
-> >> >> > device is still in runtime suspend at the beginning of the ->suspend()
-> >> >> > callback, that callback is allowed to return 0 without clearing
-> >> >> > power.leave_runtime_suspended and without changing the state of the
-> >> >> > device, unless the current state of the device is not appropriate for
-> >> >> > the upcoming system sleep state (for example, the device is supposed to
-> >> >> > wake up the system from that state and its current wakeup settings are
-> >> >> > not suitable for that).  Then, the PM core will not invoke the device's
-> >> >> > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
-> >> >> > ->resume() callbacks.  Instead, it will invoke ->runtime_resume() during
-> >> >> > the device resume stage of system resume.
-> >> >> >
-> >> >> > By leaving this flag set after ->suspend(), a driver or subsystem tells
-> >> >> > the PM core that the device is runtime suspended, it is in a suitable
-> >> >> > state for system suspend (for example, the wakeup setting does not
-> >> >> > need to be changed), and it does not need to return to full
-> >> >> > power until the resume stage.
-> >> >> >
-> >> >> > Changelog based on an Alan Stern's description of the idea
-> >> >> > (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
-> >> >> >
-> >> >> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >> > ---
-> >> >> >  drivers/base/power/main.c    |   31 ++++++++++++++++++++++++-------
-> >> >> >  drivers/base/power/runtime.c |   10 ++++++++++
-> >> >> >  include/linux/pm.h           |    3 +++
-> >> >> >  include/linux/pm_runtime.h   |   16 ++++++++++++++++
-> >> >> >  kernel/power/Kconfig         |    4 ++++
-> >> >> >  5 files changed, 57 insertions(+), 7 deletions(-)
-> >> >> >
-> >> >> > Index: linux-pm/kernel/power/Kconfig
-> >> >> > ===================================================================
-> >> >> > --- linux-pm.orig/kernel/power/Kconfig
-> >> >> > +++ linux-pm/kernel/power/Kconfig
-> >> >> > @@ -147,6 +147,10 @@ config PM
-> >> >> >         def_bool y
-> >> >> >         depends on PM_SLEEP || PM_RUNTIME
-> >> >> >
-> >> >> > +config PM_BOTH
-> >> >> > +       def_bool y
-> >> >> > +       depends on PM_SLEEP && PM_RUNTIME
-> >> >> > +
-> >> >>
-> >> >> Should we not depend on PM_RUNTIME only? Thus we don't need the new
-> >> >> Kconfig,
-> >> >
-> >> > Well, OK.  I guess we can tolerate one useless statement in rpm_resume()
-> >> > in case CONFIG_PM_SLEEP is unset.
-> >> >
-> >> >> and then we could rename the new APIs to pm_runtime_* instead.
-> >> >
-> >> > That would just make the name longer - for what value?
-> >>
-> >> Only "__set_leave_runtime_suspended" will be a bit longer.
-> >>
-> >> The idea I had was to clearly indicate, these functions is a part of
-> >> PM_RUNTIME API.
-> >>
-> >> Compare what you have:
-> >> __set_leave_runtime_suspended
-> >> pm_set_leave_runtime_suspended
-> >> pm_leave_runtime_suspended
-> >>
-> >> To what I suggest:
-> >> __pm_runtime_set_leave_suspended
-> >> pm_runtime_set_leave_suspended
-> >> pm_runtime_leave_suspended
-> >
-> > And why exactly do you think these are any better?
-> 
-> Because that's how all (almost all) other functions in the runtime PM
-> API are specified - I believe it makes sense to keep them aligned.
-> 
-> Anyway, if you insist in keeping your functions names, it's not that
-> of a big deal for me.
-> 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
-> >
-> > The flag is not called leave_suspended surely?
-> 
-> To me that doesn't matter, the flag has nothing to do with the
-> function names in an API.
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Well, the point is that pm_runtime_leave_suspended suggests that the runtime
-PM framework is supposed to leave the device suspended, while this isn't the
-case.  This essentially is a system suspend flag that depends on runtime PM
-being available.
+Patches 1-4 are bugfixes.  Patch 4 specifically removes the wreckage
+caused by C0 tracking change. 
 
-Thanks!
+Patch 5 Adds new CPU IDs for the Broadwell processors.
 
+Dirk Brandewie (5):
+  intel_pstate: Set turbo VID for Baytrail
+  intel_pstate: remove setting P state to MAX on init
+  intel_pstate: Fix fixed point rounding macro
+  intel_pstate: Remove C0 tracking
+  intel_pstate: Add CPU IDs for Broadwell processors
+
+ drivers/cpufreq/intel_pstate.c | 52 +++++++++++++++++-------------------------
+ 1 file changed, 21 insertions(+), 31 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.9.0
+
