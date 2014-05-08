@@ -1,77 +1,269 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH v2] PM / devfreq: Use freq_table for
- available_frequencies
-Date: Thu, 08 May 2014 10:02:18 +0000 (GMT)
-Message-ID: <30733097.432311399543337408.JavaMail.weblogic@epv6ml09>
-Reply-To: myungjoo.ham@samsung.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
+Date: Thu, 08 May 2014 12:53:50 +0200
+Message-ID: <1589827.thSfpq14Si@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org> <2703563.1xTcfTGG98@vostro.rjw.lan> <CAPDyKFoYsKunfo1Vzp3U-QDZVg97m31taKG3ZuW_86Bt3xWPog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:21007 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753348AbaEHKCT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 06:02:19 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0N5900HQP2JUBS50@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 08 May 2014 19:02:18 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFoYsKunfo1Vzp3U-QDZVg97m31taKG3ZuW_86Bt3xWPog@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-PiBPbiAwNC8yOS8yMDE0IDAxOjAwIFBNLCBTYXJhdmFuYSBLYW5uYW4gd3JvdGU6DQo+ID4gT24g
-MDQvMjcvMjAxNCAwNjo0MSBQTSwgTXl1bmdKb28gSGFtIHdyb3RlOg0KPiA+PiBZb3UgYXJlIGhl
-cmVieSBjaGFuZ2luZyB0aGUgc2VtbWFudGljcyBvZiB0aGUgb3JpZ2luYWwNCj4gPj4gYXZhaWxh
-YmxlX2ZyZXF1ZW5jaWVzIG5vZGUuDQo+ID4+DQo+ID4+IFdoZW4gYSBmcmVxdWVuY3kvdm9sdGFn
-ZSBwYWlyIGhhcyBiZWVuIGRpc2FibGVkIChvcHBfZGlzYWJsZSksIHByb2JhYmx5DQo+ID4+IGJ5
-IG9wcF9kaXNhYmxlKCksIHRoZSBmcmVxdWVuY3kgaXMgbm8gbW9yZSAiYXZhaWxhYmxlIi4NCj4g
-Pj4gSG93ZXZlciwgd2hlbiB0aGUgZHJpdmVyIGF1dGhvciBzdXBwbGllZCBmcmVxX3RhYmxlIGFz
-IHdlbGwgYXMgT1BQDQo+ID4+IGluIG9yZGVyIHRvIHNlZSB0aGUgc3RhdGlzdGljcywgdGhlIG5v
-ZGUgd2lsbCBiZWhhdmUgZGlmZmVyZW50bHkuDQo+ID4+DQo+ID4+IFBsZWFzZSBkbyBub3QgYWZm
-ZWN0IHRoZSBjdXJyZW50IHVzZXJzIGFzIGxvbmcgYXMgaXQgZG9lcyBub3QgZ2l2ZQ0KPiA+PiBh
-ZGRpdGlvbmFsIGJlbmVmaXQgb3IgZml4IGEgYnVnLg0KPiA+IA0KPiA+IEkgd2FzIGFjdHVhbGx5
-IHRyeWluZyB0byBzdGljayB3aXRoIHRoZSBzZW1hbnRpY3MgYXMgaXQgd2FzIGRvY3VtZW50ZWQu
-DQo+ID4gVGhlIGRvY3VtZW50YXRpb24gZm9yIHRoaXMgZmlsZSBzYXlzIGl0J2xsIHNob3cgZnJl
-cXVlbmNpZXMgdGhhdCBhcmUgbm90DQo+ID4gYWxsb3dlZCBieSB0aGUgY3VycmVudCBtaW4vbWF4
-IHNldHRpbmdzIGVpdGhlci4gVG8gbWUsIGFuIE9QUCBkaXNhYmxlDQo+ID4gc2VlbXMgc2ltaWxh
-ciB0byBzb21lIGZyZXF1ZW5jaWVzICJkaXNhYmxlZCIgYnkgbWluL21heCBzZXR0aW5ncy4NCj4g
-PiANCj4gPiBHaXZpbmcgcHJlZmVyZW5jZSB0byBPUFAgaXMgbm90IGEgaGFyZCBjaGFuZ2UgdG8g
-ZG8sIGJ1dCBpdCBzZWVtcyB0byBnbw0KPiA+IGFnYWluc3RzIHRoZSBkb2N1bWVudGVkIHNlbWFu
-dGljcy4NCj4gPiANCj4gPiBUaG91Z2h0cz8NCj4gDQo+IEknbGwgc2VuZCBvdXQgYW5vdGhlciBw
-YXRjaCBsaWtlIHlvdSB3YW50ZWQgLS0gd2l0aCBPUFAgYmVpbmcgZ2l2ZW4NCj4gcHJlZmVyZW5j
-ZSBvdmVyIGZyZXFfdGFibGUgd2hlbiBsaXN0aW5nIGZyZXF1ZW5jaWVzLg0KPiANCj4gQnV0IEkg
-d291bGQgc3RpbGwgbGlrZSB0byBoZWFyIHlvdXIgdGhvdWdodHMuIEFzIG9mIHRvZGF5LCB0aGVy
-ZSdzIG5vDQo+IGNsZWFuIHdheSB0byBnZXQgdGhlIGNvbXBsZXRlIGxpc3Qgb2YgYXZhaWxhYmxl
-IGZyZXF1ZW5jaWVzIHRoYXQgd291bGQNCj4gZ2l2ZSBhIGNvbnNpc3RlbnQgb3V0cHV0IGlycmVz
-cGVjdGl2ZSBvZiB0aGUgdGVtcG9yYXJ5IGxpbWl0cy9jb25kaXRpb25zDQo+IGltcG9zZWQgYnkg
-dGhlcm1hbCwgY3VycmVudCBsaW1pdGluZywgZXRjLiBUaGUgcm91bmQgYWJvdXQgd2F5IGlzIHRv
-IGNhdA0KPiB0cmFuc19zdGF0IGFuZCBwYXJzZSB0aGUgZnJlcXVlbmNpZXMgZnJvbSB0aGF0Lg0K
-PiANCj4gVGhhdCdzIHdoeSBJIHdhcyB0cnlpbmcgdG8gZ2l2ZSBwcmVmZXJlbmNlIHRvIGZyZXFf
-dGFibGUuDQo+IA0KPiBUaGFua3MsDQo+IFNhcmF2YW5hDQoNClRoZSBub2RlLCBhdmFpbGFibGVf
-ZnJlcXVlbmNpZXMsIHdhcyBzdWdnZXN0ZWQgYmVmb3JlIGZyZXFfdGFibGUgY29uY2VwdC4NCkF0
-IHRoYXQgdGltZSwgYXZhaWxhYmxlX2ZyZXF1ZW5jaWVzIHdhcyBzdXBwb3NlZCB0byBzaG93IHRo
-ZSBsaXN0IG9mDQphdmFpbGFibGUgT1BQIGxpc3RzIGZvciB0aG9zZSB3aG8gdXNlIE9QUCBmb3Ig
-ZGV2ZnJlcSBkZXZpY2UsIGV4Y2x1ZGluZw0KdGhvc2UgZGlzYWJsZWQgYnkgT1BQLiAoT1BQIGxp
-c3RzIGFyZSBleHRlcm5hbCB0byBkZXZmcmVxIGFuZCBkZXZmcmVxJ3MNCm1pbi9tYXggYXJlIGlu
-dGVybmFsIHRvIGRldmZyZXEpDQoNCkxvY2FsbHksIHRoaXMgbm9kZSBoYXMgYmVlbiB1c2VkIHRv
-IGRlYnVnIHRoZSBiZWhhdmlvciBvZiBhIGRldmZyZXEgZGV2aWNlLg0KV2l0aCBtaW4vbWF4IG5v
-ZGVzLCB3ZSBrbm93IHRoZSByYW5nZSB3aGlsZSB3ZSBjYW5ub3QgKGVhc2lseSBhdCBzaGVsbCkN
-CnNlZSB3aGljaCBPUFAgcG9pbnRzIGFyZSBhdmFpbGFibGUgYXQgdGhlIG1vbWVudCwgd2hlcmUg
-d2UgaGF2ZSBiZWVuIGFibGUNCnRvIHVzZSBhdmFpbGFibGVfZnJlcXVlbmNpZXMuDQoNCldlIGRv
-IG5vdCB3YW50IHRvIGxvc2Ugc3VjaCBjYXBhdmlsaXR5IGFzIGxvbmcgYXMgd2UgZG8gbm90IGhh
-dmUgT1BQIHN5c2ZzDQphdXRvbWF0aWNhbGx5IGFzc2lnbmVkIHRvIGFueSBPUFAgbGlzdHMuIElm
-IEkgcmVtZW1iZXIgY29ycmVjdGx5LCB3ZSBkb24ndA0KaGF2ZSBpdCwgeWV0Lg0KDQoNCkEuIEkg
-d2FudCB0byBtaW5pbWl6ZSBzZW1hbnRpY3MgY2hhbmdlcyBpbiBzeXNmcy4gQWRkaW5nIGFub3Ro
-ZXIgd2l0aG91dA0KaW50ZXJmZXJpbmcgd2l0aCBwcmV2aW91cyB1c2FnZSBpcyBvay4NCkIuICht
-b3JlIGltcG9ydGFudGx5KSBJIGRvbid0IHdhbnQgdG8gbG9zZSB0aGUgZGVidWdnaW5nIGNhcGFi
-aWxpdGllcy4NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvby4NCg0KPiANCj4gLS0gDQo+IFRoZSBRdWFs
-Y29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlciBvZiB0aGUgQ29kZSBBdXJv
-cmEgRm9ydW0sDQo+IGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbg0KPiANCj4gDQo+IA0K
-PiAgICAgICAgDQo+ICAgDQo+ICAgICAgICAgIA0KPiANCg==
+On Thursday, May 08, 2014 09:49:36 AM Ulf Hansson wrote:
+> On 8 May 2014 01:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> > resume all runtime-suspended devices during system suspend, mostly
+> > because those devices may need to be reprogrammed due to different
+> > wakeup settings for system sleep and for runtime PM.
+> >
+> > For some devices, though, it's OK to remain in runtime suspend
+> > throughout a complete system suspend/resume cycle (if the device was in
+> > runtime suspend at the start of the cycle).  We would like to do this
+> > whenever possible, to avoid the overhead of extra power-up and power-down
+> > events.
+> >
+> > However, problems may arise because the device's descendants may require
+> > it to be at full power at various points during the cycle.  Therefore the
+> > most straightforward way to do this safely is if the device and all its
+> > descendants can remain runtime suspended until the resume stage of system
+> > resume.
+> >
+> > To this end, introduce dev->power.leave_runtime_suspended.
+> > If a subsystem or driver sets this flag during the ->prepare() callback,
+> > and if the flag is set in all of the device's descendants, and if the
+> > device is still in runtime suspend at the beginning of the ->suspend()
+> > callback, that callback is allowed to return 0 without clearing
+> > power.leave_runtime_suspended and without changing the state of the
+> > device, unless the current state of the device is not appropriate for
+> > the upcoming system sleep state (for example, the device is supposed to
+> > wake up the system from that state and its current wakeup settings are
+> > not suitable for that).  Then, the PM core will not invoke the device's
+> > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
+> > ->resume() callbacks.  Instead, it will invoke ->runtime_resume() during
+> > the device resume stage of system resume.
+> >
+> > By leaving this flag set after ->suspend(), a driver or subsystem tells
+> > the PM core that the device is runtime suspended, it is in a suitable
+> > state for system suspend (for example, the wakeup setting does not
+> > need to be changed), and it does not need to return to full
+> > power until the resume stage.
+> >
+> > Changelog based on an Alan Stern's description of the idea
+> > (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/base/power/main.c    |   31 ++++++++++++++++++++++++-------
+> >  drivers/base/power/runtime.c |   10 ++++++++++
+> >  include/linux/pm.h           |    3 +++
+> >  include/linux/pm_runtime.h   |   16 ++++++++++++++++
+> >  kernel/power/Kconfig         |    4 ++++
+> >  5 files changed, 57 insertions(+), 7 deletions(-)
+> >
+> > Index: linux-pm/kernel/power/Kconfig
+> > ===================================================================
+> > --- linux-pm.orig/kernel/power/Kconfig
+> > +++ linux-pm/kernel/power/Kconfig
+> > @@ -147,6 +147,10 @@ config PM
+> >         def_bool y
+> >         depends on PM_SLEEP || PM_RUNTIME
+> >
+> > +config PM_BOTH
+> > +       def_bool y
+> > +       depends on PM_SLEEP && PM_RUNTIME
+> > +
+> 
+> Should we not depend on PM_RUNTIME only? Thus we don't need the new
+> Kconfig,
+
+Well, OK.  I guess we can tolerate one useless statement in rpm_resume()
+in case CONFIG_PM_SLEEP is unset.
+
+> and then we could rename the new APIs to pm_runtime_* instead.
+
+That would just make the name longer - for what value?
+
+> >  config PM_DEBUG
+> >         bool "Power Management Debug Support"
+> >         depends on PM
+> > Index: linux-pm/include/linux/pm.h
+> > ===================================================================
+> > --- linux-pm.orig/include/linux/pm.h
+> > +++ linux-pm/include/linux/pm.h
+> > @@ -583,6 +583,9 @@ struct dev_pm_info {
+> >         unsigned long           suspended_jiffies;
+> >         unsigned long           accounting_timestamp;
+> >  #endif
+> > +#ifdef CONFIG_PM_BOTH
+> > +       bool                    leave_runtime_suspended:1;
+> > +#endif
+> >         struct pm_subsys_data   *subsys_data;  /* Owned by the subsystem. */
+> >         void (*set_latency_tolerance)(struct device *, s32);
+> >         struct dev_pm_qos       *qos;
+> > Index: linux-pm/include/linux/pm_runtime.h
+> > ===================================================================
+> > --- linux-pm.orig/include/linux/pm_runtime.h
+> > +++ linux-pm/include/linux/pm_runtime.h
+> > @@ -264,4 +264,20 @@ static inline void pm_runtime_dont_use_a
+> >         __pm_runtime_use_autosuspend(dev, false);
+> >  }
+> >
+> > +#ifdef CONFIG_PM_BOTH
+> > +static inline void __set_leave_runtime_suspended(struct device *dev, bool val)
+> > +{
+> > +       dev->power.leave_runtime_suspended = val;
+> > +}
+> > +extern void pm_set_leave_runtime_suspended(struct device *dev, bool val);
+> > +static inline bool pm_leave_runtime_suspended(struct device *dev)
+> > +{
+> > +       return dev->power.leave_runtime_suspended;
+> > +}
+> > +#else
+> > +static inline void __set_leave_runtime_suspended(struct device *dev, bool val) {}
+> > +static inline void pm_set_leave_runtime_suspended(struct device *dev, bool val) {}
+> > +static inline bool pm_leave_runtime_suspended(struct device *dev) { return false; }
+> > +#endif
+> > +
+> >  #endif
+> > Index: linux-pm/drivers/base/power/runtime.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/base/power/runtime.c
+> > +++ linux-pm/drivers/base/power/runtime.c
+> > @@ -732,6 +732,7 @@ static int rpm_resume(struct device *dev
+> >         }
+> >   skip_parent:
+> >
+> > +       __set_leave_runtime_suspended(dev, false);
+
+(*)
+
+> >         if (dev->power.no_callbacks)
+> >                 goto no_callback;       /* Assume success. */
+> >
+> > @@ -1485,3 +1486,12 @@ out:
+> >         return ret;
+> >  }
+> >  EXPORT_SYMBOL_GPL(pm_runtime_force_resume);
+> > +
+> > +#ifdef CONFIG_PM_BOTH
+> > +void pm_set_leave_runtime_suspended(struct device *dev, bool val)
+> > +{
+> > +       spin_lock_irq(&dev->power.lock);
+> > +       __set_leave_runtime_suspended(dev, val);
+> > +       spin_unlock_irq(&dev->power.lock);
+> > +}
+> > +#endif
+> > Index: linux-pm/drivers/base/power/main.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/base/power/main.c
+> > +++ linux-pm/drivers/base/power/main.c
+> > @@ -479,7 +479,7 @@ static int device_resume_noirq(struct de
+> >         TRACE_DEVICE(dev);
+> >         TRACE_RESUME(0);
+> >
+> > -       if (dev->power.syscore)
+> > +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+> >                 goto Out;
+> >
+> >         if (!dev->power.is_noirq_suspended)
+> > @@ -605,7 +605,7 @@ static int device_resume_early(struct de
+> >         TRACE_DEVICE(dev);
+> >         TRACE_RESUME(0);
+> >
+> > -       if (dev->power.syscore)
+> > +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+> >                 goto Out;
+> >
+> >         if (!dev->power.is_late_suspended)
+> > @@ -735,6 +735,11 @@ static int device_resume(struct device *
+> >         if (dev->power.syscore)
+> >                 goto Complete;
+> >
+> > +       if (pm_leave_runtime_suspended(dev)) {
+> > +               pm_runtime_resume(dev);
+> > +               goto Complete;
+> > +       }
+> > +
+> >         dpm_wait(dev->parent, async);
+> >         dpm_watchdog_set(&wd, dev);
+> >         device_lock(dev);
+> > @@ -1007,7 +1012,7 @@ static int __device_suspend_noirq(struct
+> >                 goto Complete;
+> >         }
+> >
+> > -       if (dev->power.syscore)
+> > +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+> >                 goto Complete;
+> >
+> >         dpm_wait_for_children(dev, async);
+> > @@ -1146,7 +1151,7 @@ static int __device_suspend_late(struct
+> >                 goto Complete;
+> >         }
+> >
+> > -       if (dev->power.syscore)
+> > +       if (dev->power.syscore || pm_leave_runtime_suspended(dev))
+> >                 goto Complete;
+> >
+> >         dpm_wait_for_children(dev, async);
+> > @@ -1382,10 +1387,21 @@ static int __device_suspend(struct devic
+> >
+> >   End:
+> >         if (!error) {
+> > +               struct device *parent = dev->parent;
+> > +
+> >                 dev->power.is_suspended = true;
+> > -               if (dev->power.wakeup_path
+> > -                   && dev->parent && !dev->parent->power.ignore_children)
+> > -                       dev->parent->power.wakeup_path = true;
+> > +               if (parent) {
+> > +                       spin_lock_irq(&parent->power.lock);
+> > +
+> > +                       if (dev->power.wakeup_path
+> > +                           && !parent->power.ignore_children)
+> > +                               parent->power.wakeup_path = true;
+> > +
+> > +                       if (!pm_leave_runtime_suspended(dev))
+> 
+> I suppose this is the reason to why you think you need CONFIG_PM_BOTH?
+
+Actually, no.  The reason is the (*) change in rpm_resume().
+
+> But won't this would work nicely even if we just had CONFIG_PM_RUNTIME?
+
+Yes, it will.
+
+> > +                               __set_leave_runtime_suspended(parent, false);
+> > +
+> > +                       spin_unlock_irq(&parent->power.lock);
+> > +               }
+> >         }
+> >
+> >         device_unlock(dev);
+> > @@ -1553,6 +1569,7 @@ int dpm_prepare(pm_message_t state)
+> >                 struct device *dev = to_device(dpm_list.next);
+> >
+> >                 get_device(dev);
+> > +               pm_set_leave_runtime_suspended(dev, false);
+> 
+> Is this needed?
+
+Yes, it is.  We don't want any leftovers after this point.
+
+> >                 mutex_unlock(&dpm_list_mtx);
+> >
+> >                 error = device_prepare(dev, state);
+> >
+> > --
+
+Thanks!
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
