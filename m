@@ -1,91 +1,96 @@
-From: jonghwan Choi <jhbird.choi@gmail.com>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Fri, 9 May 2014 04:59:28 -0700
-Message-ID: <CAGZ6kuO_N+bZpWa8uQiZUCTWscMbwAd7EL-1dbCJX9JCvFDnyQ@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAOh2x=m8DzmLOGqL0E_seOZMuzU=O9vQuu-JEp+E5454RmfEXw@mail.gmail.com>
-	<003901cf6664$e4e8d2a0$aeba77e0$@samsung.com>
-	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-	<5367946F.1030407@ti.com>
-	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
-	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
-	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
-	<003e01cf6984$fb950280$f2bf0780$@samsung.com>
-	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
-	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
-	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
-	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
-	<000301cf6a62$413c16b0$c3b44410$@samsung.com>
-	<CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>
-	<000e01cf6b23$58fda900$0af8fb00$@samsung.com>
-	<CAKohpomX_ZXSyk7RuCyO1t8VUee5H5KN5zj1-VhDp+ZtFbF-xA@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v3 3/6] drivers: cpuidle: implement OF based idle
+ states infrastructure
+Date: Fri, 9 May 2014 13:04:19 +0100
+Message-ID: <20140509120419.GA5040@e102568-lin.cambridge.arm.com>
+References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1399399483-17112-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <536c0f39.90ab420a.3da7.ffff86ca@mx.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:36570 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbaEIL73 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 07:59:29 -0400
-In-Reply-To: <CAKohpomX_ZXSyk7RuCyO1t8VUee5H5KN5zj1-VhDp+ZtFbF-xA@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:36532 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752316AbaEIME3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 08:04:29 -0400
+In-Reply-To: <536c0f39.90ab420a.3da7.ffff86ca@mx.google.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Nishanth Menon <nm@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sebastian Capella <capellas@>
 
-On Thu, May 8, 2014 at 11:00 PM, Viresh Kumar <viresh.kumar@linaro.org>=
- wrote:
+On Fri, May 09, 2014 at 12:12:19AM +0100, Sebastian Capella wrote:
+> Quoting Lorenzo Pieralisi (2014-05-06 11:04:40)
+> 
+> > diff --git a/drivers/cpuidle/of_idle_states.c b/drivers/cpuidle/of_idle_states.c
+> > new file mode 100644
+> > index 0000000..360b7ad
+> > --- /dev/null
+> > +++ b/drivers/cpuidle/of_idle_states.c
+> > @@ -0,0 +1,293 @@
+> ...
+> > +static int __init add_state_node(cpumask_t *cpumask,
+> > +                                struct device_node *state_node)
+> > +{
+> > +       struct state_elem *el;
+> > +       u32 tmp, val = 0;
+> > +
+> > +       pr_debug(" * %s...\n", state_node->full_name);
+> > +
+> > +       if (!state_cpus_valid(cpumask, state_node))
+> > +               return -EINVAL;
+> > +       /*
+> > +        * Parse just the properties required to sort the states.
+> > +        * Since we are missing a value defining the energy
+> > +        * efficiency of a state, for now the sorting code uses
+> > +        *
+> > +        * min-residency-us+exit-latency-us
+> > +        *
+> > +        * as sorting rank.
+> > +        */
+> > +       if (of_property_read_u32(state_node, "min-residency-us",
+> > +                                &tmp)) {
+> > +               pr_debug(" * %s missing min-residency-us property\n",
+> > +                        state_node->full_name);
+> > +               return -EINVAL;
+> > +       }
+> > +
+> > +       val += tmp;
+> > +
+> > +       if (of_property_read_u32(state_node, "exit-latency-us",
+> > +                                &tmp)) {
+> > +               pr_debug(" * %s missing exit-latency-us property\n",
+> > +                            state_node->full_name);
+> > +               return -EINVAL;
+> > +       }
+> > +
+> > +       val += tmp;
+> 
+> Sorry if i'm rehashing old stuff, but I prefer not to use the
+> min-residency + exit-latency to sort.  I saw Rob's comment suggesting it
+> and your reply.  I'm not sure when it was decided.
+> 
+> Would it be possible to sort instead based on the order in the
+> cpus->cpu-idle-states?  If not, my preference would be to either use
+> index like you had before, or specify another sort order / rank value.
+> 
+> I think there's potential for us to create lower power states that
+> have lower min-residencies (reduced power consumption in the state,
+> allowing us to more quickly recover the higher entrance cost)
+> with higher exit latencies in such a way that the formula would not
+> sort as we expect.  Having a separate value would allow us to control
+> the sorting in those cases.
 
-> Why? So, as far as I got it your dividers are nothing but 0,1,2...
-> i.e.
-> Freqs: 400  500  600  700  800
-> div:      4      3      2      1      0
->
-> right? That's what you are doing in exynos5440. So just add this in y=
-our
-> probe after doing: dev_pm_opp_init_cpufreq_table
->
-> for(i =3D 0; all-available-freqs; i++)
->     dvfs_info->freq_table[i].driver_data =3D dvfs_info->freq_count - =
-i;
->
-> And this will work with changes in dts files.
+Ok, so adding to my previous comment, would exit_latency by itself be
+enough ? Can we think of a system where ranking by exit_latency is wrong ?
 
-I am sorry
-I couldn=E2=80=99t provide detailed information about this suggestion.
-This suggestion is not for exynos5440. This is for exynos4210,
-exynos4x12 and exynos5250.
-(But this can be applied to exynos5440 also)
-I want to make exynos cpufreq driver simple.
-There are exynos-cpufreq.c, exynos4210-cpufreq.c exynos4x12-cpufreq.
-exynos5250-cpufreq.c for exynos soc.
-And exynos4210-cpufreq.c, exynos4x12 and exynos5250-cpufreq. c has a
-clk divider table for each frequency.
+If yes, we need a power rank, and this patch is wrong too:
 
-example) exynos4210-cpufreq.c
-static struct apll_freq apll_freq_4210[] =3D {
-        /*
-         * values:
-         * freq
-         * clock divider for CORE, COREM0, COREM1, PERIPH, ATB,
-PCLK_DBG, APLL, RESERVED
-         * clock divider for COPY, HPM, RESERVED
-         * PLL M, P, S
-         */
-        APLL_FREQ(1200, 0, 3, 7, 3, 4, 1, 7, 0, 5, 0, 0, 150, 3, 1),
-        APLL_FREQ(1000, 0, 3, 7, 3, 4, 1, 7, 0, 4, 0, 0, 250, 6, 1),
-        APLL_FREQ(800,  0, 3, 7, 3, 3, 1, 7, 0, 3, 0, 0, 200, 6, 1),
-        APLL_FREQ(500,  0, 3, 7, 3, 3, 1, 7, 0, 3, 0, 0, 250, 6, 2),
-        APLL_FREQ(200,  0, 1, 3, 1, 3, 1, 0, 0, 3, 0, 0, 200, 6, 3),
-};
+http://marc.info/?l=linux-kernel&m=139924292401056&w=2
 
-If we can pass this clk divider value to exynos cpufreq driver through
-DT, we can remove most of exynosxxxx-cpufreq.c files/codes. And when
-new frequency is added/removed or new soc is released, for supporting
-dvfs we have only to describe frequency, voltage and divider value in
-dts file.
+If answer is not, I can just rely on exit_latency to sort the states.
 
-Thanks
+Lorenzo
 
-Best Regards.
