@@ -1,61 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze" sleep state
-Date: Fri, 09 May 2014 23:25:33 +0200
-Message-ID: <1900403.uK8ecXs4pj@vostro.rjw.lan>
-References: <2548502.zJ1no3NhRc@vostro.rjw.lan> <2485687.UrJORvS9e7@vostro.rjw.lan> <20140509141356.GA1811@xo-6d-61-c0.localdomain>
+Subject: Re: linux-pm build failure
+Date: Fri, 09 May 2014 23:36:03 +0200
+Message-ID: <12185110.9TpRMrqnbe@vostro.rjw.lan>
+References: <536BBAF8.6040601@semaphore.gr> <2930403.UViFFypGRj@vostro.rjw.lan> <536C3337.40402@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58714 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61471 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757751AbaEIVIx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 17:08:53 -0400
-In-Reply-To: <20140509141356.GA1811@xo-6d-61-c0.localdomain>
+	with SMTP id S1757603AbaEIVTW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 17:19:22 -0400
+In-Reply-To: <536C3337.40402@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, Lv Zheng <lv.zheng@intel.com>, Bob Moore <robert.moore@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
-On Friday, May 09, 2014 04:13:56 PM Pavel Machek wrote:
-> On Fri 2014-05-09 13:26:47, Rafael J. Wysocki wrote:
-> > On Friday, May 09, 2014 09:38:35 AM Pavel Machek wrote:
-> > > On Mon 2014-05-05 00:51:54, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > 
-> > > > If freeze_enter() is called, we want to bypass the current cpuidle
-> > > > governor and always use the deepest available (that is, not disabled)
-> > > > C-state, because we want to save as much energy as reasonably possible
-> > > > then and runtime latency constraints don't matter at that point, since
-> > > > the system is in a sleep state anyway.
-> > > 
-> > > Would there be way to pass the parameter "go to deepest" instead of adding
-> > > global state for this?
-> > 
-> > I'm not sure what you mean?  A parameter of what in particular?  And where
-> > to pass it?
-> 
-> Currently the code is:
-> 
-> static void freeze_enter(void)
-> {
-> + cpuidle_use_deepest_state(true);
->   cpuidle_resume();
->   wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
->   cpuidle_pause();
-> + cpuidle_use_deepest_state(false);
-> }
-> 
-> . I believe it would be better if you did
-> 
-> cpuidle_resume(GOTO_DEEPEST_C_STATE)
-> 
-> instead of having global state.
+On Friday, May 09, 2014 09:45:27 AM Lan Tianyu wrote:
+> On 2014=E5=B9=B405=E6=9C=8809=E6=97=A5 03:44, Rafael J. Wysocki wrote=
+:
+> > On Thursday, May 08, 2014 08:12:24 PM Stratos Karafotis wrote:
+> >> Hi all,
+> >=20
+> > Hi,
+> >=20
+> > Thanks for the report!
+> >=20
+> > This is caused by commit
+> >=20
+> > 0e23847d5ee4 ACPICA: Export acpi_buffer_to_resource symbol
+> >=20
+> > merged on top of the recent ACPICA material.
+> >=20
+> > Lv, Tianyu, care to take care of this?
+>=20
+> Hi Rafael:
+> 	Just check commit 51e35823eb57 and find it also exports
+> acpi_buffer_to_resource symbol which commit 0e23847d5ee4 has already
+> done. I think you can drop commit 0e23847d5ee4 which only exports sym=
+bol
+> without any other changes.
 
-That's a good idea actually.  I'll do that on top of the $subject patch.
+Done, thanks!
 
-Thanks!
-
--- 
+--=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
