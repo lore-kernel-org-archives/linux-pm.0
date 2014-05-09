@@ -1,55 +1,75 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/3] arm64: Add big.LITTLE switcher stub
-Date: Fri, 09 May 2014 18:05:56 +0100
-Message-ID: <536D0AF4.1040705@arm.com>
-References: <1399653631-4938-1-git-send-email-broonie@kernel.org> <1399653631-4938-2-git-send-email-broonie@kernel.org>
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which
+ is STANDBY or MEM
+Date: Fri, 9 May 2014 12:09:46 -0500
+Message-ID: <1399655386.15726.438.camel@snotra.buserror.net>
+References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
+	 <1398462328.24575.20.camel@snotra.buserror.net>
+	 <CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
+	 <1398811632.24575.98.camel@snotra.buserror.net>
+	 <CADRPPNRukfr92m4hSTar_N4iNYJ8fRPMnyOokzc9tCEDLg_BVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:48323 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756779AbaEIRES convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 13:04:18 -0400
-In-Reply-To: <1399653631-4938-2-git-send-email-broonie@kernel.org>
+Received: from mail-by2lp0239.outbound.protection.outlook.com ([207.46.163.239]:37126
+	"EHLO na01-by2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756779AbaEIRJy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 9 May 2014 13:09:54 -0400
+In-Reply-To: <CADRPPNRukfr92m4hSTar_N4iNYJ8fRPMnyOokzc9tCEDLg_BVw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Li Yang <leoli@freescale.com>
+Cc: Dongsheng Wang <dongsheng.wang@freescale.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Zhao Chenhui <chenhui.zhao@freescale.com>, =?UTF-8?Q?=E6=AD=A3=E9=9B=84_=E9=87=91?= <jason.jin@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Mark,
+On Fri, 2014-05-09 at 17:33 +0800, Li Yang wrote:
+> On Wed, Apr 30, 2014 at 6:47 AM, Scott Wood <scottwood@freescale.com> wrote:
+> > On Mon, 2014-04-28 at 13:53 +0800, Leo Li wrote:
+> >> On Sat, Apr 26, 2014 at 5:45 AM, Scott Wood <scottwood@freescale.com> wrote:
+> >> > On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
+> >> >> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >> >>
+> >> >> Add set_pm_suspend_state & pm_suspend_state functions to set/get
+> >> >> suspend state. When system going to sleep or deep sleep, devices
+> >> >> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
+> >> >> function and to handle different situations.
+> >> >>
+> >> >> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >> >> ---
+> >> >> *v2*
+> >> >> Move pm api from fsl platform to powerpc general framework.
+> >> >
+> >> > What is powerpc-specific about this?
+> >>
+> >> Generally I agree with you.  But I had the discussion about this topic
+> >> a while ago with the PM maintainer.  He suggestion to go with the
+> >> platform way.
+> >>
+> >> https://lkml.org/lkml/2013/8/16/505
+> >
+> > If what he meant was whether you could do what this patch does, then you
+> > can answer him with, "No, because it got nacked as not being platform or
+> > arch specific."  Oh, and you're still using .valid as the hook to set
+> > the platform state, which is awful -- I think .begin is what you want to
+> > use.
+> 
+> I'm not saying the current patch is good for upstream.  Actually I did
+> say that the patch need to be updated for upstream purpose. 
 
-On 09/05/14 17:40, Mark Brown wrote:
-> From: Mark Brown <broonie@linaro.org>
->
-> The big.LITTLE cpufreq driver is useful on arm64 big.LITTLE systems even
-> without IKS support since it implements support for clusters with shared
-> clocks (a common big.LITTLE configuration). In order to allow it to be
-> built provide the non-IKS stubs for arm64, enabling cpufreq with all the
-> cores available.
->
+I don't follow -- this thread is an upstream submission.
 
-I am in process of using this driver for ARM64 and hit the same issue.
-I don't like this approach at all. I too did similar changes/hacks which are
-good for quick testing but not for upstream.
+> > Now, a more legitimate objection to putting it in generic code might be
+> > that "standby" and "mem" are loosely defined and the knowledge of how a
+> > driver should react to each is platform specific -- but your patch
+> > doesn't address that.  You still have the driver itself interpret what
+> > "standby" and "mem" mean.
+> >
+> 
+> Yup, we will address it in next batch.
 
-I would like to move all the switcher code out of the driver as extension.
-Also the core driver should be made to work with any multi-clsuter platform not
-just big-little(bL). bL is one of them and bL switcher support should an
-extension of it.
+Thanks.
 
-The main reason for this is I see some non-bL multi-cluster platform support
-getting added, this driver should ideally support that.
+-Scott
 
-> It may make sense to make an asm-generic version of these stubs instead but
-> given that there's only likely to be these two architectures using the code
-> and asm-generic stubs also need per architecture updates it's probably more
-> trouble than it's worth.
->
-
-I would not take this approach too. As mentioned above if we can resolve it in
-that way we may not require this.
-
-Regards,
-Sudeep
 
