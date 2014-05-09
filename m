@@ -1,49 +1,54 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH 3/3] cpufreq: Enable big.LITTLE cpufreq driver on arm64
-Date: Fri,  9 May 2014 17:40:31 +0100
-Message-ID: <1399653631-4938-3-git-send-email-broonie@kernel.org>
+From: "menon.nishanth@gmail.com" <menon.nishanth@gmail.com>
+Subject: Re: [PATCH 1/3] arm64: Enable OPP
+Date: Fri, 9 May 2014 12:02:12 -0500
+Message-ID: <CAGo_u6rGEWwywQ5JKh1ROhkOjrkWrM35PdWAooed26oak=1irA@mail.gmail.com>
 References: <1399653631-4938-1-git-send-email-broonie@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:39432 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756740AbaEIQlG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 12:41:06 -0400
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:48029 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932228AbaEIRCN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 13:02:13 -0400
+Received: by mail-wi0-f170.google.com with SMTP id bs8so2802062wib.1
+        for <linux-pm@vger.kernel.org>; Fri, 09 May 2014 10:02:12 -0700 (PDT)
 In-Reply-To: <1399653631-4938-1-git-send-email-broonie@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>
 
-From: Mark Brown <broonie@linaro.org>
+On Fri, May 9, 2014 at 11:40 AM, Mark Brown <broonie@kernel.org> wrote:
+> From: Mark Brown <broonie@linaro.org>
+>
+> Some of the generic drivers used on ARM class systems use OPP so allow it
+> to be selected in Kconfig. No code is required for this, it is not clear
+> to me why there is config for this option.
+If you mean why we have ARCH_HAS_OPP,
+http://lists-archives.com/linux-kernel/27401148-pm-hide-opp-configuration-when-socs-do-not-provide-an-implementation.html
 
-There are arm64 big.LITTLE systems so enable the big.LITTLE cpufreq driver.
-While IKS is not available for these systems the driver is still useful
-since it manages clusters with shared frequencies which is the common case
-for these systems.
-
-Long term combining the cpufreq-cpu0 and big.LITTLE drivers may be a
-more sensible option but that is substantially more complex especially
-in the case of IKS.
-
-Signed-off-by: Mark Brown <broonie@linaro.org>
----
- drivers/cpufreq/Kconfig.arm | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 6e05a1e18e52..6a7dd3e958d5 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -5,7 +5,8 @@
- # big LITTLE core layer and glue drivers
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
--	depends on ARM && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK
-+	depends on (BIG_LITTLE && ARM_CPU_TOPOLOGY) || (ARM64 && SMP)
-+	depends on HAVE_CLK
- 	select PM_OPP
- 	help
- 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
--- 
-2.0.0.rc2
-
+>
+> Signed-off-by: Mark Brown <broonie@linaro.org>
+> ---
+>  arch/arm64/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 8ccdd2646ae3..8256d6d09d33 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -2,6 +2,7 @@ config ARM64
+>         def_bool y
+>         select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+>         select ARCH_USE_CMPXCHG_LOCKREF
+> +       select ARCH_HAS_OPP
+>         select ARCH_HAS_SG_CHAIN
+>         select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+>         select ARCH_WANT_OPTIONAL_GPIOLIB
+> --
+> 2.0.0.rc2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
