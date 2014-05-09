@@ -1,134 +1,111 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Kevin Hilman <khilman@linaro.org>
 Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
-Date: Sat, 10 May 2014 00:49:25 +0200
-Message-ID: <1599191.L8hnSpOETp@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405082110330.13708-100000@netrider.rowland.org>
+Date: Fri, 09 May 2014 15:48:21 -0700
+Message-ID: <7hmweqmuve.fsf@paris.lan>
+References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org>
+	<2333255.ofrK1CRRL4@vostro.rjw.lan>
+	<2703563.1xTcfTGG98@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1405082110330.13708-100000@netrider.rowland.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:45219 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbaEIWsZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 18:48:25 -0400
+Received: by mail-pd0-f179.google.com with SMTP id g10so4164874pdj.24
+        for <linux-pm@vger.kernel.org>; Fri, 09 May 2014 15:48:24 -0700 (PDT)
+In-Reply-To: <2703563.1xTcfTGG98@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Thu, 08 May 2014 01:29:47 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Thursday, May 08, 2014 09:52:18 PM Alan Stern wrote:
-> On Thu, 8 May 2014, Rafael J. Wysocki wrote:
-> 
-> > Well, no.
-> > 
-> > The reason why that doesn't work is because ->prepare() callbacks are
-> > executed in the reverse order, so the perent's ones will be run before
-> > the ->prepare() of the children.  Thus if ->prepare() sets the flag
-> > with the expectation that ->suspend() (and the subsequent callbacks)
-> > won't be executed, that expectation may not be met actually.
-> 
-> That's true also if the flag gets set in ->suspend(), isn't it?  A
-> driver may set direct_resume in its ->suspend() callback, expecting
-> that the subsequent callbacks won't be executed.  But if a descendant
-> hasn't also set its flag then the callbacks _will_ be executed.
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-No, that's not possible with the current patch, because __device_suspend() is
-executed for descendants first and then for ancestors and it clears
-direct_suspend for the parents of devices that don't have it set.  This means
-that the ancestor's ->suspend() will see the flag clear if it is unset for
-any of its descendants.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> resume all runtime-suspended devices during system suspend, mostly
+> because those devices may need to be reprogrammed due to different
+> wakeup settings for system sleep and for runtime PM.
+>
+> For some devices, though, it's OK to remain in runtime suspend 
+> throughout a complete system suspend/resume cycle (if the device was in
+> runtime suspend at the start of the cycle).  We would like to do this
+> whenever possible, to avoid the overhead of extra power-up and power-down
+> events.
+>
+> However, problems may arise because the device's descendants may require
+> it to be at full power at various points during the cycle.  Therefore the
+> most straightforward way to do this safely is if the device and all its
+> descendants can remain runtime suspended until the resume stage of system
+> resume.
+>
+> To this end, introduce dev->power.leave_runtime_suspended.
+> If a subsystem or driver sets this flag during the ->prepare() callback,
+> and if the flag is set in all of the device's descendants, and if the
+> device is still in runtime suspend at the beginning of the ->suspend()
+> callback, that callback is allowed to return 0 without clearing
+> power.leave_runtime_suspended and without changing the state of the
+> device, unless the current state of the device is not appropriate for
+> the upcoming system sleep state (for example, the device is supposed to
+> wake up the system from that state and its current wakeup settings are
+> not suitable for that).  Then, the PM core will not invoke the device's
+> ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
+> ->resume() callbacks.  
 
-IOW, the only case in which the ancestor's ->suspend() sees the flag set is
-when it has been set for all of its descendants.  Thus, if it leaves the
-flag set, the late/early and noirq callbacks won't be executed for it.
+Up to here, this sounds great.
 
-Now, there is a reason for concern in that, because ->suspend() may set the
-flag as a result of an error and that may lead to unexpected consequences.
+> Instead, it will invoke ->runtime_resume() during the device resume
+> stage of system resume.
 
-> > So I'm going to do what I said above.  I prefer it anyway. :-)
-> 
-> In your most recent patch (and in the earlier ones too), after you call
-> dev's ->suspend() routine, if dev->power.direct_resume isn't set then
-> you clear dev->parent->direct_resume.  But what good will that do if
-> dev->parent's ->suspend() routine turns the flag back on when it gets
-> called later?
+But this part I'm not fully following...
 
-In fact, ->suspend() is not supposed to set the flag when it is clear.
-It can clear it when it is set, which means that we have "normal" suspend.
+> By leaving this flag set after ->suspend(), a driver or subsystem tells
+> the PM core that the device is runtime suspended, it is in a suitable
+> state for system suspend (for example, the wakeup setting does not
+> need to be changed), and it does not need to return to full
+> power until the resume stage.
 
-> I can think of two ways to make this work.
-> 
-> 	Expect subsystems and drivers to set the flag during 
-> 	->suspend().  Turn on the flag in every device during 
-> 	device_prepare().  Then in __device_suspend(), remember the
-> 	flag's value and turn it off before invoking the callback.
+But taking this "leave runtime suspended" idea the next logical step,
+why would/should a device need to return to full power at the ->resume()
+stage?  especially when it wasn't at full power when ->suspend()
+happened?
 
-That doesn't work, because ->suspend() has to decide whether or not
-to resume the device and do things it would do normally, so it needs to know
-the value of the flag.
+IOW, why doesn't "leave runtime suspended" mean "leave runtime suspended
+until runtime resumed on demand."
 
->       If the flag is on again when the callback returns, set the flag 
-> 	back to the remembered value.  If the flag ends up being off
-> 	then turn off the parent's flag.
+Forcing ->runtime_resume() during device resume means that in most
+cases, a device will be forcibly runtime resumed, only to have nothing
+to do but go idle and runtime suspend again, resulting in a(nother)
+unnessary power-up, power-down cycle this patch is trying to avoid
+during ->suspend().
 
-That'd be too late.  The only thing we can do to kind of protect the PM
-core from errors in drivers in that case would be to remember the value of
-the flag before calling ->suspend() and return an error if it the flag after
-->suspend() is set, but it wasn't before.
+Hmm, but wait a minute...
 
-> 	Expect subsystems and drivers to set the flag during 
-> 	->prepare().  Whenever a callback returns with the flag not
-> 	set, clear the flag in all of the device's ancestors.
-> 
-> Both are somewhat awkward, and both involve turning the flag off after 
-> the callback has turned it on.
+[...]
 
-After the callback set it on while it shouldn't, it might have done something
-wrong already.
+> @@ -735,6 +735,11 @@ static int device_resume(struct device *
+>  	if (dev->power.syscore)
+>  		goto Complete;
+>  
+> +	if (pm_leave_runtime_suspended(dev)) {
+> +		pm_runtime_resume(dev);
+> +		goto Complete;
+> +	}
 
-> Also, how do you expect direct_resume to work with the PCI subsystem?  
-> Will the PCI core set the flag appropriately on behalf of the driver?
+... maybe I'm forgetting how this works (since it's Friday and my brain
+is already shutting down for the week) but after pm_runtime_resume() is
+called, won't the device remain runtime active until
+pm_runtime_suspend() is called, or until a
+pm_runtime_get()/pm_runtime_put() cycle happens?
 
-Yes.
+That means that on device resume, the device is forced into full power
+state (even though it was runtime suspended when ->suspend() happened)
+and will stay there until its used again.  
 
-> If the core does set the flag, will it invoke the driver's ->suspend()
-> callback or skip the callback?
+That seems like a rather unpleasant (and non-intuitive) side-effect of
+"leave runtime suspended".
 
-It will skip the driver's callback.  [It would actually help if you looked
-at patch [3/3] which is there to illustrate my idea of how to do those
-things in a subsystem.]
-
-> If it invokes the driver's callback but
-> leaves the device in runtime suspend, what happens if the driver
-> expects the device always to be at full power when its ->suspend()  
-> routine runs?  If the core skips the driver's ->suspend() callback,
-> what happens if one of the device's children did not set direct_resume 
-> and so the later PM callbacks do get invoked?
-
-Then the parent will have direct_resume unset.  That is not a concern.
-The only concern to me is possible errors in ->suspend() setting the
-flag when it shouldn't.
-
-> Several of these questions are a lot easier to answer if the flag gets 
-> set during ->prepare() rather than ->suspend().
-
-I agree with that, but I have one concern about this approach.  Namely,
-in that case the PM core has to use pm_runtime_resume() or equivalent to
-resume devices with the flag set during the device resume stage.  Now,
-in the next step we may want to leave certain devices suspended at that
-point and the PM core has no way to tell which ones.  Also subsystems
-don't really have a chance to tell it about that (they would need to
-know in advance during ->prepare(), which is kind of unrealistic, or
-perhaps it isn't).
-
-However, if ->resume() is called for devices with the flag set, like in
-my most recent patch, the subsystem may decide not to resume the device
-if it knows enough about it.
-
-This pretty much is my only concern here, so I'm open to ideas how to deal
-with leaving devices suspended (if possible) during the device resume stage. :-)
-
-For one, postponing the resume to ->complete() is an option, but it will have
-to be done with care, because the ->complete() callbacks are executed
-sequentially, so calling pm_runtime_resume() from there is rather out of the
-question.
-
-Rafael
-
+Kevin
