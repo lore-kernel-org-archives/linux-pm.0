@@ -1,79 +1,114 @@
-From: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which is
- STANDBY or MEM
-Date: Fri, 9 May 2014 17:33:20 +0800
-Message-ID: <CADRPPNRukfr92m4hSTar_N4iNYJ8fRPMnyOokzc9tCEDLg_BVw@mail.gmail.com>
-References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
-	<1398462328.24575.20.camel@snotra.buserror.net>
-	<CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
-	<1398811632.24575.98.camel@snotra.buserror.net>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH RFC v3 5/6] drivers: cpuidle: CPU idle ARM64 driver
+Date: Fri, 9 May 2014 10:40:15 +0100
+Message-ID: <20140509094015.GC32007@e102568-lin.cambridge.arm.com>
+References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1399399483-17112-6-git-send-email-lorenzo.pieralisi@arm.com>
+ <536c25e8.82e6440a.6af4.ffffa583@mx.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f51.google.com ([209.85.215.51]:57650 "EHLO
-	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756273AbaEIJdW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 05:33:22 -0400
-Received: by mail-la0-f51.google.com with SMTP id gf5so242878lab.24
-        for <linux-pm@vger.kernel.org>; Fri, 09 May 2014 02:33:20 -0700 (PDT)
-In-Reply-To: <1398811632.24575.98.camel@snotra.buserror.net>
+Received: from service87.mimecast.com ([91.220.42.44]:34483 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbaEIJkV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 05:40:21 -0400
+In-Reply-To: <536c25e8.82e6440a.6af4.ffffa583@mx.google.com>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Scott Wood <scottwood@freescale.com>
-Cc: Dongsheng Wang <dongsheng.wang@freescale.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Zhao Chenhui <chenhui.zhao@freescale.com>, =?UTF-8?B?5q2j6ZuEIOmHkQ==?= <jason.jin@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sebastian Capella <sebastian.capella@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sebastian Capella <capellas@>
 
-On Wed, Apr 30, 2014 at 6:47 AM, Scott Wood <scottwood@freescale.com> wrote:
-> On Mon, 2014-04-28 at 13:53 +0800, Leo Li wrote:
->> On Sat, Apr 26, 2014 at 5:45 AM, Scott Wood <scottwood@freescale.com> wrote:
->> > On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
->> >> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->> >>
->> >> Add set_pm_suspend_state & pm_suspend_state functions to set/get
->> >> suspend state. When system going to sleep or deep sleep, devices
->> >> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
->> >> function and to handle different situations.
->> >>
->> >> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->> >> ---
->> >> *v2*
->> >> Move pm api from fsl platform to powerpc general framework.
->> >
->> > What is powerpc-specific about this?
->>
->> Generally I agree with you.  But I had the discussion about this topic
->> a while ago with the PM maintainer.  He suggestion to go with the
->> platform way.
->>
->> https://lkml.org/lkml/2013/8/16/505
->
-> If what he meant was whether you could do what this patch does, then you
-> can answer him with, "No, because it got nacked as not being platform or
-> arch specific."  Oh, and you're still using .valid as the hook to set
-> the platform state, which is awful -- I think .begin is what you want to
-> use.
+On Fri, May 09, 2014 at 01:48:38AM +0100, Sebastian Capella wrote:
+> Quoting Lorenzo Pieralisi (2014-05-06 11:04:42)
+> > diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
+> > new file mode 100644
+> > index 0000000..fef1fad
+> > --- /dev/null
+> > +++ b/drivers/cpuidle/cpuidle-arm64.c
+> > @@ -0,0 +1,161 @@
+> ...
+> > +/*
+> 
+> Is this intended to be kernel-docs?  If so, should maybe use the /** and
+> () after the function below.  Otherwise, should you remove the @ in the
+> argument list below?
 
-I'm not saying the current patch is good for upstream.  Actually I did
-say that the patch need to be updated for upstream purpose.  I only
-meant that we discussed about having the mem/standby passed by generic
-kernel/power interface as you suggested internally and got an negative
-feedback.
+Changes done according to kernel-docs.
 
->
-> If we did it in powerpc code, then what would we do on ARM?  Copy the
-> code?  No.
+> > + * arm_enter_idle_state - Programs CPU to enter the specified state
+> > + *
+> > + * @dev: cpuidle device
+> > + * @drv: cpuidle driver
+> > + * @idx: state index
+> > + *
+> > + * Called from the CPUidle framework to program the device to the
+> > + * specified target state selected by the governor.
+> > + */
+> > +static int arm_enter_idle_state(struct cpuidle_device *dev,
+> > +                               struct cpuidle_driver *drv, int idx)
+> 
+> ...
+> 
+> > +static int __init arm64_idle_init(void)
+> > +{
+> > +       int i, ret;
+> > +       const char *entry_method;
+> > +       struct device_node *idle_states_node;
+> > +       const struct cpu_suspend_ops *suspend_init;
+> > +       struct cpuidle_driver *drv = &arm64_idle_driver;
+> > +
+> > +       idle_states_node = of_find_node_by_path("/cpus/idle-states");
+> > +       if (!idle_states_node)
+> > +               return -ENOENT;
+> > +
+> > +       if (of_property_read_string(idle_states_node, "entry-method",
+> > +                                   &entry_method)) {
+> > +               pr_warn(" * %s missing entry-method property\n",
+> > +                           idle_states_node->full_name);
+> > +               of_node_put(idle_states_node);
+> > +               return -EOPNOTSUPP;
+> > +       }
+> > +
+> > +       suspend_init = get_suspend_ops(entry_method);
+> > +       if (!suspend_init) {
+> > +               pr_warn("Missing suspend initializer\n");
+> > +               of_node_put(idle_states_node);
+> > +               return -EOPNOTSUPP;
+> > +       }
+> > +
+> > +       /*
+> > +        * State at index 0 is standby wfi and considered standard
+> > +        * on all ARM platforms. If in some platforms simple wfi
+> > +        * can't be used as "state 0", DT bindings must be implemented
+> > +        * to work around this issue and allow installing a special
+> > +        * handler for idle state index 0.
+> > +        */
+> > +       drv->states[0].exit_latency = 1;
+> > +       drv->states[0].target_residency = 1;
+> > +       drv->states[0].flags = CPUIDLE_FLAG_TIME_VALID;
+> > +       strncpy(drv->states[0].name, "ARM WFI", CPUIDLE_NAME_LEN);
+> > +       strncpy(drv->states[0].desc, "ARM WFI", CPUIDLE_DESC_LEN);
+> > +
+> > +       drv->cpumask = (struct cpumask *) cpu_possible_mask;
+> > +       /*
+> > +        * Start at index 1, request idle state nodes to be filled
+> > +        */
+> > +       ret = of_init_idle_driver(drv, state_nodes, 1, true);
+> > +       if (ret)
+> > +               return ret;
+> > +
+> > +       if (suspend_init->init_fn(drv, state_nodes))
+> > +               return -EOPNOTSUPP;
+> > +
+> > +       for (i = 0; i < drv->state_count; i++)
+> > +               drv->states[i].enter = arm_enter_idle_state;
+> 
+> Is this missing an of_node_put(idle_states_node)?
 
-If you are saying that this shouldn't be done in arch/powerpc  Yes.
-We have determined to use drivers/platform folder for the re-used code
-with ARM.  Platform power management code will be moved there.
+Yes, good catch, patched.
 
->
-> Now, a more legitimate objection to putting it in generic code might be
-> that "standby" and "mem" are loosely defined and the knowledge of how a
-> driver should react to each is platform specific -- but your patch
-> doesn't address that.  You still have the driver itself interpret what
-> "standby" and "mem" mean.
->
+Thanks !
+Lorenzo
 
-Yup, we will address it in next batch.
-
-- Leo
