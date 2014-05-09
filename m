@@ -1,255 +1,127 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [RFC PATCH] cpufreq: intel_pstate: Change the calculation of
- next pstate
-Date: Fri, 09 May 2014 17:56:52 +0300
-Message-ID: <536CECB4.1090109@semaphore.gr>
-References: <5368255D.3090207@semaphore.gr> <536BEE89.3040602@gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [Patch v4 5/5] mcpm: exynos: populate suspend and powered_up
+ callbacks
+Date: Fri, 9 May 2014 16:32:06 +0100
+Message-ID: <20140509153206.GB5040@e102568-lin.cambridge.arm.com>
+References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
+ <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+ <1399282040-8995-6-git-send-email-chander.kashyap@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:58548 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751067AbaEIO44 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 10:56:56 -0400
-In-Reply-To: <536BEE89.3040602@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1399282040-8995-6-git-send-email-chander.kashyap@linaro.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chander Kashyap <chander.kashyap@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-Hi Dirk,
+On Mon, May 05, 2014 at 10:27:20AM +0100, Chander Kashyap wrote:
+> In order to support cpuidle through mcpm, suspend and powered-up
+> callbacks are required in mcpm platform code.
+> Hence populate the same callbacks.
+> 
+> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> ---
+> Changes in v4: None
+> Changes in v3:
+> 	1. Removed coherancy enablement after suspend failure.
 
-On 08/05/2014 11:52 =CE=BC=CE=BC, Dirk Brandewie wrote:
-> On 05/05/2014 04:57 PM, Stratos Karafotis wrote:
->> Currently the driver calculates the next pstate proportional to
->> core_busy factor, scaled by the ratio max_pstate / current_pstate.
->>
->> Using the scaled load (core_busy) to calculate the next pstate
->> is not always correct, because there are cases that the load is
->> independent from current pstate. For example, a tight 'for' loop
->> through many sampling intervals will cause a load of 100% in
->> every pstate.
->>
->> So, change the above method and calculate the next pstate with
->> the assumption that the next pstate should not depend on the
->> current pstate. The next pstate should only be proportional
->> to measured load. Use the linear function to calculate the load:
->>
->> Next P-state =3D A + B * load
->>
->> where A =3D min_state and B =3D (max_pstate - min_pstate) / 100
->> If turbo is enabled the B =3D (turbo_pstate - min_pstate) / 100
->> The load is calculated using the kernel time functions.
->>
+coherency
 
-Thank you very much for your comments and for your time to test my patc=
-h!
+> 	2. Use generic function to poweron cpu.
+> changes in v2:
+> 	1. Fixed typo: enynos_pmu_cpunr to exynos_pmu_cpunr
+>  arch/arm/mach-exynos/mcpm-exynos.c |   34 ++++++++++++++++++++++++++++++++++
+>  1 file changed, 34 insertions(+)
+> 
+> diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
+> index d0f7461..6d4a907 100644
+> --- a/arch/arm/mach-exynos/mcpm-exynos.c
+> +++ b/arch/arm/mach-exynos/mcpm-exynos.c
+> @@ -256,10 +256,44 @@ static int exynos_power_down_finish(unsigned int cpu, unsigned int cluster)
+>  	return -ETIMEDOUT; /* timeout */
+>  }
+>  
+> +void exynos_powered_up(void)
 
+static ?
 
->=20
-> This will hurt your power numbers under "normal" conditions where you
-> are not running a performance workload. Consider the following:
->=20
->    1. The system is idle, all core at min P state and utilization is =
-low say < 10%
->    2. You run something that drives the load as seen by the kernel to=
- 100%
->       which scaled by the current P state.
->=20
-> This would cause the P state to go from min -> max in one step.  Whic=
-h is
-> what you want if you are only looking at a single core.  But this wil=
-l also
-> drag every core in the package to the max P state as well.  This woul=
-d be fine
+> +{
+> +	unsigned int mpidr, cpu, cluster;
+> +
+> +	mpidr = read_cpuid_mpidr();
+> +	cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
+> +	cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+> +
+> +	arch_spin_lock(&exynos_mcpm_lock);
+> +	if (cpu_use_count[cpu][cluster] == 0)
+> +		cpu_use_count[cpu][cluster] = 1;
+> +	arch_spin_unlock(&exynos_mcpm_lock);
+> +}
+> +
+> +static void exynos_suspend(u64 residency)
+> +{
+> +	unsigned int mpidr, cpunr;
+> +
+> +	mpidr = read_cpuid_mpidr();
+> +	cpunr = exynos_pmu_cpunr(mpidr);
 
-I think, this will also happen using the original driver (before your
-new patch 4/5), after some sampling intervals.
+If I were to be picky, I would compute these values only if they
+are needed, ie move the computation after exynos_power_down().
 
+There is another quite horrible issue here. We know this code works
+because the processors A15/A7 hit the caches with C bit in SCTLR cleared.
 
-> if the power vs frequency cure was linear all the cores would finish
-> their work faster and go idle sooner (race to halt) and maybe spend
-> more time in a deeper C state which dwarfs the amount of power we can
-> save by controlling P states. Unfortunately this is *not* the case,=20
-> power vs frequency curve is non-linear and get very steep in the turb=
-o
-> range.  If it were linear there would be no reason to have P state
-> control you could select the highest P state and walk away.
->=20
-> Being conservative on the way up and aggressive on way down give you
-> the best power efficiency on non-benchmark loads.  Most benchmarks
-> are pretty useless for measuring power efficiency (unless they were
-> designed for it) since they are measuring how fast something can be
-> done which is measuring the efficiency at max performance.
->=20
-> The performance issues you pointed out were caused by commit=20
-> fcb6a15c intel_pstate: Take core C0 time into account for core busy c=
-alculation
-> and the ensuing problem is caused. These have been fixed in the patch=
- set
->=20
->    https://lkml.org/lkml/2014/5/8/574
->=20
-> The performance comparison between before/after this patch set, your =
-patch
-> and ondemand/acpi_cpufreq is available at:
->     http://openbenchmarking.org/result/1405085-PL-C0200965993
-> ffmpeg was added to the set of benchmarks because there was a regress=
-ion
-> reported against this benchmark as well.
->     https://bugzilla.kernel.org/show_bug.cgi?id=3D75121
+On processors where this is not true, this sequence would explode
+if power down fails (in case core is gated but L2 is still powered on,
+the stack is stuck in L2) since it is going to read stack data that is
+in L2 but can't be read.
 
-Of course, I agree generally with your comments above. But I believe th=
-at
-the we should scale the core as soon as we measure high load.=20
+It is not related to this sequence only, but it is an issue in general
+and wanted to mention that on the lists for public awareness.
 
-I tested your new patches and I confirm your benchmarks. But I think
-they are against the above theory (at least on low loads).
-With the new patches I get increased frequencies even on an idle system=
-=2E
-Please compare the results below.
+The gist of what I am saying is, please add a comment to that extent,
+here and it should be added in exynos_power_down() too.
 
-With your latest patches during a mp3 decoding (a non-benchmark load)
-the energy consumption increased to 5187.52 J from 5036.57 J (almost 3%=
-).
+> +	__raw_writel(virt_to_phys(mcpm_entry_point), ns_sram_base_addr + 0x1c);
 
+No magic numbers please (0x1c). You can add a macro/wrapper, as TC2 does.
 
-Thanks again,
-Stratos
+> +	exynos_power_down();
+> +
+> +	/*
+> +	 * Execution reaches here only if cpu did not power down.
+> +	 * Hence roll back the changes done in exynos_power_down function.
+> +	*/
+> +	exynos_cpu_powerup(cpunr);
 
+Please be aware that if this function returns MCPM will soft reboot, and
+the CPUidle driver will have no way to detect a state entry failure.
 
+I am just flagging this up, since fixing this behaviour is not easy, and
+honestly, since power down failure should be the exception not the rule,
+the idle stats should not be affected much.
 
-With my patch
--------------
-[root@albert ~]# /home/stratosk/kernels/linux-pm/tools/power/x86/turbos=
-tat/turbostat -i 60
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c=
-3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWa=
-tt CorWatt GFXWatt=20
-       -       -       1    0.06    1645    3392       0    0.26    0.0=
-0   99.67    0.00      32      32    0.00    0.00    0.00    0.00   20.=
-18    2.00    0.02
-       0       0       2    0.10    1623    3392       0    0.63    0.0=
-1   99.26    0.00      32      32    0.00    0.00    0.00    0.00   20.=
-18    2.00    0.02
-       0       4       0    0.01    1618    3392       0    0.72
-       1       1       1    0.03    1618    3392       0    0.03    0.0=
-0   99.94    0.00      27
-       1       5       0    0.01    1606    3392       0    0.05
-       2       2       0    0.02    1635    3392       0    0.28    0.0=
-0   99.70    0.00      22
-       2       6       3    0.17    1668    3392       0    0.13
-       3       3       2    0.12    1647    3392       0    0.08    0.0=
-0   99.80    0.00      30
-       3       7       0    0.02    1623    3392       0    0.18
+I think this is the proper way of implementing the sequence but please
+all keep in mind what I wrote above.
 
+Lorenzo
 
-With your latest patch
-----------------------
-[root@albert ~]# /home/stratosk/kernels/linux-pm/tools/power/x86/turbos=
-tat/turbostat -i 60
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c=
-3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWa=
-tt CorWatt GFXWatt=20
-       -       -       1    0.05    2035    3392       0    0.28    0.0=
-1   99.66    0.00      34      34    0.00    0.00    0.00    0.00   20.=
-20    2.01    0.02
-       0       0       1    0.04    1831    3392       0    0.06    0.0=
-0   99.90    0.00      34      34    0.00    0.00    0.00    0.00   20.=
-20    2.01    0.02
-       0       4       0    0.01    2136    3392       0    0.09
-       1       1       1    0.06    1931    3392       0    0.70    0.0=
-0   99.24    0.00      31
-       1       5       0    0.01    2024    3392       0    0.75
-       2       2       1    0.03    2231    3392       0    0.21    0.0=
-3   99.73    0.00      26
-       2       6       2    0.09    1967    3392       0    0.15
-       3       3       3    0.15    2115    3392       0    0.06    0.0=
-0   99.78    0.00      34
-       3       7       0    0.02    2073    3392       0    0.19
-
-
-
-With my patch:
---------------
-[root@albert ~]# /home/stratosk/kernels/linux-pm/tools/power/x86/turbos=
-tat/turbostat mpg321 /home/stratosk/One\ Direction\ -\ Story\ of\ My\ L=
-ife.mp3
-[4:05] Decoding of One Direction - Story of My Life.mp3 finished.
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c=
-3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWa=
-tt CorWatt GFXWatt=20
-       -       -       7    0.45    1613    3392       0   14.55    0.0=
-2   84.97    0.00      35      35    0.00    0.00    0.00    0.00   20.=
-51    2.33    0.01
-       0       0      16    1.01    1623    3392       0    1.06    0.0=
-4   97.89    0.00      35      35    0.00    0.00    0.00    0.00   20.=
-51    2.33    0.01
-       0       4       0    0.02    1616    3392       0    2.05
-       1       1       3    0.16    1609    3392       0    1.61    0.0=
-0   98.22    0.00      30
-       1       5      13    0.80    1606    3392       0    0.97
-       2       2       8    0.52    1606    3392       0   38.97    0.0=
-3   60.48    0.00      26
-       2       6      10    0.65    1613    3392       0   38.84
-       3       3       7    0.42    1613    3392       0   16.28    0.0=
-1   83.29    0.00      33
-       3       7       1    0.05    1624    3392       0   16.65
-245.566284 sec
-
-
-With your patch:
-----------------
-[root@albert ~]# /home/stratosk/kernels/linux-pm/tools/power/x86/turbos=
-tat/turbostat mpg321 /home/stratosk/One\ Direction\ -\ Story\ of\ My\ L=
-ife.mp3
-[4:05] Decoding of One Direction - Story of My Life.mp3 finished.
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c=
-3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWa=
-tt CorWatt GFXWatt=20
-       -       -       7    0.27    2773    3392       0   40.05    0.0=
-1   59.67    0.00      35      35    0.00    0.00    0.00    0.00   21.=
-11    2.93    0.01
-       0       0       9    0.31    2773    3392       0   82.55    0.0=
-1   17.12    0.00      35      35    0.00    0.00    0.00    0.00   21.=
-11    2.93    0.01
-       0       4       5    0.15    3290    3392       0   82.71
-       1       1       8    0.31    2541    3392       0   26.87    0.0=
-0   72.82    0.00      30
-       1       5      19    0.79    2400    3392       0   26.38
-       2       2       8    0.23    3490    3392       0   15.43    0.0=
-0   84.34    0.00      27
-       2       6       1    0.04    2086    3392       0   15.62
-       3       3       4    0.13    2978    3392       0   35.44    0.0=
-0   64.42    0.00      31
-       3       7       6    0.16    3553    3392       0   35.42
-245.642873 sec
-
-
-With original code
------------------
-[root@albert ~]# /home/stratosk/kernels/linux-pm/tools/power/x86/turbos=
-tat/turbostat mpg321 /home/stratosk/One\ Direction\ -\ Story\ of\ My\ L=
-ife.mp3
-[4:05] Decoding of One Direction - Story of My Life.mp3 finished.
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c=
-3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWa=
-tt CorWatt GFXWatt=20
-       -       -       5    0.32    1608    3392       0   20.43    0.0=
-1   79.24    0.00      35      35    0.00    0.00    0.00    0.00   20.=
-59    2.41    0.01
-       0       0       2    0.11    1621    3392       0   20.90    0.0=
-1   78.98    0.00      35      35    0.00    0.00    0.00    0.00   20.=
-59    2.41    0.01
-       0       4       6    0.38    1600    3392       0   20.63
-       1       1       8    0.50    1603    3392       0   24.10    0.0=
-0   75.40    0.00      29
-       1       5       0    0.02    1611    3392       0   24.58
-       2       2      13    0.81    1598    3392       0    0.45    0.0=
-2   98.73    0.00      29
-       2       6       1    0.04    1675    3392       0    1.21
-       3       3       9    0.59    1603    3392       0   35.54    0.0=
-1   63.86    0.00      33
-       3       7       1    0.08    1749    3392       0   36.05
-245.641863 sec
+> +}
+> +
+>  static const struct mcpm_platform_ops exynos_power_ops = {
+>  	.power_up		= exynos_power_up,
+>  	.power_down		= exynos_power_down,
+>  	.power_down_finish	= exynos_power_down_finish,
+> +	.suspend		= exynos_suspend,
+> +	.powered_up		= exynos_powered_up,
+>  };
+>  
+>  static void __init exynos_mcpm_usage_count_init(void)
+> -- 
+> 1.7.9.5
+> 
+> 
