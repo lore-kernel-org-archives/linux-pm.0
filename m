@@ -1,55 +1,48 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze"
- sleep state
-Date: Fri, 9 May 2014 09:38:35 +0200
-Message-ID: <20140509073835.GB4965@xo-6d-61-c0.localdomain>
-References: <2548502.zJ1no3NhRc@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2548502.zJ1no3NhRc@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCHv2 0/5] devfreq: Support resource management functions and code
+ clean
+Date: Fri, 09 May 2014 16:43:06 +0900
+Message-ID: <1399621391-27228-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:45721 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbaEIHnQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 03:43:16 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rafael.j.wysocki@intel.com, nm@ti.com, jkosina@suse.cz, labbe.montjoie@gmail.com, a.kesavan@samsung.com, sreekumar.c@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-On Mon 2014-05-05 00:51:54, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If freeze_enter() is called, we want to bypass the current cpuidle
-> governor and always use the deepest available (that is, not disabled)
-> C-state, because we want to save as much energy as reasonably possible
-> then and runtime latency constraints don't matter at that point, since
-> the system is in a sleep state anyway.
+This patchset fix devfreq_remove_device() to remove duplicate function call
+of _remove_devfreq() and add following functions for the resource management
+of devfreq device and simpify the control of resource on exynos4_bus/exynos5_bus
+driver.
+- devm_devfreq_add_device
+- devm_devfreq_remove_device
+- devm_devfreq_register_opp_notifier
+- devm_devfreq_unregister_opp_notifier
 
-Would there be way to pass the parameter "go to deepest" instead of adding
-global state for this?
-								Pavel
+Changes from v1:
+- Remove empty function (exynos5_init_exit) and propogate the return value
+  without additonal local variable if failed to call devm_devfreqw_add_device
+  in exynos5_busfreq.c.
+- Fix return value from -ENOMEM to -ENOSYS in devm_devfreq_add_device() inline
+  function.
+- Fix minor coding style of devm_devfreq_dev_match()
 
-> Index: linux-pm/kernel/power/suspend.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/suspend.c
-> +++ linux-pm/kernel/power/suspend.c
-> @@ -54,9 +54,11 @@ static void freeze_begin(void)
->  
->  static void freeze_enter(void)
->  {
-> +	cpuidle_use_deepest_state(true);
->  	cpuidle_resume();
->  	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
->  	cpuidle_pause();
-> +	cpuidle_use_deepest_state(false);
->  }
->  
->  void freeze_wake(void)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Chanwoo Choi (5):
+  devfreq: Fix devfreq_remove_device() to improve the sequence of resource free
+  devfreq: Add resource-managed function for devfreq device
+  devfreq: Add devm_devfreq_{register,unregister}_opp_notfier function
+  devfreq: exynos4: Use devm_devfreq_* function using device resource management
+  devfreq: exynos5: Use devm_devfreq_* function using device resource management
+
+ drivers/devfreq/devfreq.c            | 125 ++++++++++++++++++++++++++++++++---
+ drivers/devfreq/exynos/exynos4_bus.c |  19 ++----
+ drivers/devfreq/exynos/exynos5_bus.c |  29 +++-----
+ include/linux/devfreq.h              |  35 +++++++++-
+ 4 files changed, 161 insertions(+), 47 deletions(-)
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.8.0
+
