@@ -1,75 +1,63 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which
- is STANDBY or MEM
-Date: Fri, 9 May 2014 12:09:46 -0500
-Message-ID: <1399655386.15726.438.camel@snotra.buserror.net>
-References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
-	 <1398462328.24575.20.camel@snotra.buserror.net>
-	 <CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
-	 <1398811632.24575.98.camel@snotra.buserror.net>
-	 <CADRPPNRukfr92m4hSTar_N4iNYJ8fRPMnyOokzc9tCEDLg_BVw@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/3] arm64: Enable OPP
+Date: Fri, 9 May 2014 18:11:20 +0100
+Message-ID: <20140509171120.GS12304@sirena.org.uk>
+References: <1399653631-4938-1-git-send-email-broonie@kernel.org>
+ <CAGo_u6rGEWwywQ5JKh1ROhkOjrkWrM35PdWAooed26oak=1irA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WjrKmzek8eDUsx7N"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-by2lp0239.outbound.protection.outlook.com ([207.46.163.239]:37126
-	"EHLO na01-by2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756779AbaEIRJy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 9 May 2014 13:09:54 -0400
-In-Reply-To: <CADRPPNRukfr92m4hSTar_N4iNYJ8fRPMnyOokzc9tCEDLg_BVw@mail.gmail.com>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:39476 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757136AbaEIRLh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 13:11:37 -0400
+Content-Disposition: inline
+In-Reply-To: <CAGo_u6rGEWwywQ5JKh1ROhkOjrkWrM35PdWAooed26oak=1irA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Li Yang <leoli@freescale.com>
-Cc: Dongsheng Wang <dongsheng.wang@freescale.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Zhao Chenhui <chenhui.zhao@freescale.com>, =?UTF-8?Q?=E6=AD=A3=E9=9B=84_=E9=87=91?= <jason.jin@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-
-On Fri, 2014-05-09 at 17:33 +0800, Li Yang wrote:
-> On Wed, Apr 30, 2014 at 6:47 AM, Scott Wood <scottwood@freescale.com> wrote:
-> > On Mon, 2014-04-28 at 13:53 +0800, Leo Li wrote:
-> >> On Sat, Apr 26, 2014 at 5:45 AM, Scott Wood <scottwood@freescale.com> wrote:
-> >> > On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
-> >> >> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> >> >>
-> >> >> Add set_pm_suspend_state & pm_suspend_state functions to set/get
-> >> >> suspend state. When system going to sleep or deep sleep, devices
-> >> >> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
-> >> >> function and to handle different situations.
-> >> >>
-> >> >> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> >> >> ---
-> >> >> *v2*
-> >> >> Move pm api from fsl platform to powerpc general framework.
-> >> >
-> >> > What is powerpc-specific about this?
-> >>
-> >> Generally I agree with you.  But I had the discussion about this topic
-> >> a while ago with the PM maintainer.  He suggestion to go with the
-> >> platform way.
-> >>
-> >> https://lkml.org/lkml/2013/8/16/505
-> >
-> > If what he meant was whether you could do what this patch does, then you
-> > can answer him with, "No, because it got nacked as not being platform or
-> > arch specific."  Oh, and you're still using .valid as the hook to set
-> > the platform state, which is awful -- I think .begin is what you want to
-> > use.
-> 
-> I'm not saying the current patch is good for upstream.  Actually I did
-> say that the patch need to be updated for upstream purpose. 
-
-I don't follow -- this thread is an upstream submission.
-
-> > Now, a more legitimate objection to putting it in generic code might be
-> > that "standby" and "mem" are loosely defined and the knowledge of how a
-> > driver should react to each is platform specific -- but your patch
-> > doesn't address that.  You still have the driver itself interpret what
-> > "standby" and "mem" mean.
-> >
-> 
-> Yup, we will address it in next batch.
-
-Thanks.
-
--Scott
+To: "menon.nishanth@gmail.com" <menon.nishanth@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel <linaro-kernel@lists.linaro.org>
 
 
+--WjrKmzek8eDUsx7N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Fri, May 09, 2014 at 12:02:12PM -0500, menon.nishanth@gmail.com wrote:
+> On Fri, May 9, 2014 at 11:40 AM, Mark Brown <broonie@kernel.org> wrote:
+
+> > Some of the generic drivers used on ARM class systems use OPP so allow it
+> > to be selected in Kconfig. No code is required for this, it is not clear
+> > to me why there is config for this option.
+
+> If you mean why we have ARCH_HAS_OPP,
+> http://lists-archives.com/linux-kernel/27401148-pm-hide-opp-configuration-when-socs-do-not-provide-an-implementation.html
+
+That's for the user visible symbol but OPP is also enableable via select
+- the fix here may be to remove both the visibility check and the
+dependency.
+
+--WjrKmzek8eDUsx7N
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTbQw0AAoJELSic+t+oim92coP/2iEsPS0CREfAOTLWjHXHdHd
+V9dWKBMuJeWC2IvvMXBKwf6y0YxWADoePRdd7+REWm6bu20E2xf2Wjw1LMZE33hK
+gItSXIyKMEPxvn+18BGQVgQ9kF6nhYGuiJxBMWM0B0bF5wXbPL7ot6kYfrZCH7Ro
+asu16/+IekYmZKpjyas4K6UM3guB1MDZEMO67n0zvatOpNWbzdZqZ6vlbVaJllbJ
+37ppzTG+u27GyuDIn31NssHdf98N0l6WJX+gWDmu+SI3NWULZpvznFy+MeDCzrxz
+K/L3BMqe+nr1Po/TLmhSatD/ZpbgCwvxWqC09n+GViWDyXmnyAruUHl8XMCP2TTg
+fm3XnX/DGabN81NfHyu+12lNYwom2OXSyBja88KLhXW3nODCX/Yfc7yjYDpZ3Eok
+0JqazMTYpbuv8zcDVPPov+ZOTO8fGnce0rshc8r2WlBWnPY5MUK7ArSWmNQMidEf
+ca4ZK/grUPqmhDUN6aGYU4GxRW3R6H0LMDsO8MTBxdl4fPXLwunv59LI7aFo8ywX
+B0gXCCz05dJeSRgZWHivrbHSDMeFh9a/99q3ShxYsB+6pxHjazm9lxItxJJo2aGq
+cbowYd49YKFQZTFaeFc/oI8fbopk1z2i+r7wI5e/LhL5mBDdRMdLAEo820+GE1eo
+GoZqLWCQ081/YdMYEKUV
+=FTUu
+-----END PGP SIGNATURE-----
+
+--WjrKmzek8eDUsx7N--
