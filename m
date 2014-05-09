@@ -1,37 +1,105 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v3 6/6] arm64: boot: dts: update rtsm aemv8 dts with PSCI and
- idle states
-Date: Thu, 08 May 2014 17:51:52 -0700
-Message-ID: <536c26a9.6289420a.6e63.027e@mx.google.com>
-References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1399399483-17112-7-git-send-email-lorenzo.pieralisi@arm.com>
+From: "Zheng, Lv" <lv.zheng@intel.com>
+Subject: RE: linux-pm build failure
+Date: Fri, 9 May 2014 01:09:25 +0000
+Message-ID: <1AE640813FDE7649BE1B193DEA596E880255AD90@SHSMSX101.ccr.corp.intel.com>
+References: <536BBAF8.6040601@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:52476 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753492AbaEIAvz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 20:51:55 -0400
-Received: by mail-pd0-f174.google.com with SMTP id w10so2947962pde.5
-        for <linux-pm@vger.kernel.org>; Thu, 08 May 2014 17:51:54 -0700 (PDT)
-In-Reply-To: <1399399483-17112-7-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mga02.intel.com ([134.134.136.20]:12957 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754263AbaEIBJ3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 21:09:29 -0400
+In-Reply-To: <536BBAF8.6040601@semaphore.gr>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sebastian Capella <capellas@broadcom.com>
+To: Stratos Karafotis <stratosk@semaphore.gr>, "Moore, Robert" <robert.moore@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Lan, Tianyu" <tianyu.lan@intel.com>
 
-Quoting Lorenzo Pieralisi (2014-05-06 11:04:43)
-> This patch updates the RTSM dts file with PSCI bindings and nodes
-> describing the AEMv8 model idle states parameters.
+Hi, Rafael
+
+This commit should be required by Tianyu's i2c opregion support.
+Let me Cc Tianyu to confirm.
+
+Thanks
+-Lv
+
+> -----Original Message-----
+> From: Stratos Karafotis [mailto:stratosk@semaphore.gr]
+> Sent: Friday, May 09, 2014 1:12 AM
+> To: Moore, Robert; Zheng, Lv; Wysocki, Rafael J
+> Cc: linux-pm@vger.kernel.org
+> Subject: linux-pm build failure
 > 
-> PSCI function IDs compliancy with PSCI v0.2 is still under development
-> so this patch provides PSCI function IDs for demonstration purposes only.
+> Hi all,
 > 
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-
-Reviewed-by: Sebastian Capella <sebastian.capella@linaro.org>
-
-Thanks!
-
-Sebastian
+> There is a build failure in latest linux-pm bleeding-edge:
+> 
+> In file included from include/linux/linkage.h:6:0,
+>                  from include/linux/kernel.h:6,
+>                  from include/acpi/platform/aclinux.h:64,
+>                  from include/acpi/platform/acenv.h:150,
+>                  from include/acpi/acpi.h:56,
+>                  from drivers/acpi/acpica/rscreate.c:44:
+> include/linux/export.h:59:20: error: redefinition of '__kstrtab_acpi_buffer_to_resource'
+>   static const char __kstrtab_##sym[]   \
+>                     ^
+> include/linux/export.h:69:2: note: in expansion of macro '__EXPORT_SYMBOL'
+>   __EXPORT_SYMBOL(sym, "")
+>   ^
+> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro 'EXPORT_SYMBOL'
+>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
+>                                      ^
+> drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro 'ACPI_EXPORT_SYMBOL'
+>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
+>  ^
+> include/linux/export.h:59:20: note: previous definition of '__kstrtab_acpi_buffer_to_resource' was here
+>   static const char __kstrtab_##sym[]   \
+>                     ^
+> include/linux/export.h:69:2: note: in expansion of macro '__EXPORT_SYMBOL'
+>   __EXPORT_SYMBOL(sym, "")
+>   ^
+> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro 'EXPORT_SYMBOL'
+>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
+>                                      ^
+> drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro 'ACPI_EXPORT_SYMBOL'
+>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
+>  ^
+> include/linux/export.h:63:39: error: redefinition of '__ksymtab_acpi_buffer_to_resource'
+>   __visible const struct kernel_symbol __ksymtab_##sym \
+>                                        ^
+> include/linux/export.h:69:2: note: in expansion of macro '__EXPORT_SYMBOL'
+>   __EXPORT_SYMBOL(sym, "")
+>   ^
+> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro 'EXPORT_SYMBOL'
+>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
+>                                      ^
+> drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro 'ACPI_EXPORT_SYMBOL'
+>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
+>  ^
+> include/linux/export.h:63:39: note: previous definition of '__ksymtab_acpi_buffer_to_resource' was here
+>   __visible const struct kernel_symbol __ksymtab_##sym \
+>                                        ^
+> include/linux/export.h:69:2: note: in expansion of macro '__EXPORT_SYMBOL'
+>   __EXPORT_SYMBOL(sym, "")
+>   ^
+> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro 'EXPORT_SYMBOL'
+>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
+>                                      ^
+> drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro 'ACPI_EXPORT_SYMBOL'
+>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
+>  ^
+> make[3]: *** [drivers/acpi/acpica/rscreate.o] Error 1
+> make[2]: *** [drivers/acpi/acpica] Error 2
+> make[1]: *** [drivers/acpi] Error 2
+> make[1]: *** Waiting for unfinished jobs....
+> make: *** [drivers] Error 2
+> 
+> 
+> Reverting commit 51e35823eb57 ("ACPICA: Update acpi_buffer_to_resource interface"), build completes fine.
+> 
+> 
+> Thanks,
+> Stratos Karafotis
