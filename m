@@ -1,109 +1,79 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv2 1/5] devfreq: Fix devfreq_remove_device() to improve the
- sequence of resource free
-Date: Fri, 09 May 2014 16:43:07 +0900
-Message-ID: <1399621391-27228-2-git-send-email-cw00.choi@samsung.com>
-References: <1399621391-27228-1-git-send-email-cw00.choi@samsung.com>
+From: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which is
+ STANDBY or MEM
+Date: Fri, 9 May 2014 17:33:20 +0800
+Message-ID: <CADRPPNRukfr92m4hSTar_N4iNYJ8fRPMnyOokzc9tCEDLg_BVw@mail.gmail.com>
+References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
+	<1398462328.24575.20.camel@snotra.buserror.net>
+	<CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
+	<1398811632.24575.98.camel@snotra.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:23887 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbaEIHq1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 03:46:27 -0400
-In-reply-to: <1399621391-27228-1-git-send-email-cw00.choi@samsung.com>
+Received: from mail-la0-f51.google.com ([209.85.215.51]:57650 "EHLO
+	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756273AbaEIJdW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 05:33:22 -0400
+Received: by mail-la0-f51.google.com with SMTP id gf5so242878lab.24
+        for <linux-pm@vger.kernel.org>; Fri, 09 May 2014 02:33:20 -0700 (PDT)
+In-Reply-To: <1398811632.24575.98.camel@snotra.buserror.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rafael.j.wysocki@intel.com, nm@ti.com, jkosina@suse.cz, labbe.montjoie@gmail.com, a.kesavan@samsung.com, sreekumar.c@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Dongsheng Wang <dongsheng.wang@freescale.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Zhao Chenhui <chenhui.zhao@freescale.com>, =?UTF-8?B?5q2j6ZuEIOmHkQ==?= <jason.jin@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-This patch modify devfreq_remove_device() to improve the sequence of resource
-free. If executing existing devfreq_remove_device(), this function always
-executes _remove_devfreq() twice. In result, second _remove_devfreq() always
-return error value. So, This patch resolves complicated function sequence
-as following:
+On Wed, Apr 30, 2014 at 6:47 AM, Scott Wood <scottwood@freescale.com> wrote:
+> On Mon, 2014-04-28 at 13:53 +0800, Leo Li wrote:
+>> On Sat, Apr 26, 2014 at 5:45 AM, Scott Wood <scottwood@freescale.com> wrote:
+>> > On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
+>> >> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>> >>
+>> >> Add set_pm_suspend_state & pm_suspend_state functions to set/get
+>> >> suspend state. When system going to sleep or deep sleep, devices
+>> >> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
+>> >> function and to handle different situations.
+>> >>
+>> >> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+>> >> ---
+>> >> *v2*
+>> >> Move pm api from fsl platform to powerpc general framework.
+>> >
+>> > What is powerpc-specific about this?
+>>
+>> Generally I agree with you.  But I had the discussion about this topic
+>> a while ago with the PM maintainer.  He suggestion to go with the
+>> platform way.
+>>
+>> https://lkml.org/lkml/2013/8/16/505
+>
+> If what he meant was whether you could do what this patch does, then you
+> can answer him with, "No, because it got nacked as not being platform or
+> arch specific."  Oh, and you're still using .valid as the hook to set
+> the platform state, which is awful -- I think .begin is what you want to
+> use.
 
-[Flow sequence before modification]
-devfreq_remove_device()
-   _remove_devfreq(devfreq, false)
-      kfree(devfreq);  /* Free devfreq */
-      if (!skip ...) { /* skip is false */
-         device_unregister(&devfreq->dev)
-         put_device(&devfreq->dev);
-            ...
-            dev->release()
-               devfreq_dev_release()
-                  _remove_devfreq(devfreq, true) <- Recall to free devfreq
-                  /*
-		   * Always return error without freeing resource because
-		   * already _remove_devfreq() frees the memory of devfreq.
-		   */
-   }
+I'm not saying the current patch is good for upstream.  Actually I did
+say that the patch need to be updated for upstream purpose.  I only
+meant that we discussed about having the mem/standby passed by generic
+kernel/power interface as you suggested internally and got an negative
+feedback.
 
-[Flow sequence after modification]
-devfreq_remove_device
-   device_unregister(&devfreq->dev)
-   put_device(&devfreq->dev);
-      ..
-      dev->release()
-         devfreq_dev_release()
-            _remove_devfreq()
-               kfree(devfreq); /* Free devfreq */
+>
+> If we did it in powerpc code, then what would we do on ARM?  Copy the
+> code?  No.
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+If you are saying that this shouldn't be done in arch/powerpc  Yes.
+We have determined to use drivers/platform folder for the re-used code
+with ARM.  Platform power management code will be moved there.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index d32c8b6..e960eb0 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -437,7 +437,7 @@ update:
-  * @devfreq:	the devfreq struct
-  * @skip:	skip calling device_unregister().
-  */
--static void _remove_devfreq(struct devfreq *devfreq, bool skip)
-+static void _remove_devfreq(struct devfreq *devfreq)
- {
- 	mutex_lock(&devfreq_list_lock);
- 	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
-@@ -462,11 +462,6 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
- 	if (devfreq->profile->exit)
- 		devfreq->profile->exit(devfreq->dev.parent);
- 
--	if (!skip && get_device(&devfreq->dev)) {
--		device_unregister(&devfreq->dev);
--		put_device(&devfreq->dev);
--	}
--
- 	mutex_destroy(&devfreq->lock);
- 	kfree(devfreq);
- }
-@@ -476,14 +471,12 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
-  * @dev:	the devfreq device
-  *
-  * This calls _remove_devfreq() if _remove_devfreq() is not called.
-- * Note that devfreq_dev_release() could be called by _remove_devfreq() as
-- * well as by others unregistering the device.
-  */
- static void devfreq_dev_release(struct device *dev)
- {
- 	struct devfreq *devfreq = to_devfreq(dev);
- 
--	_remove_devfreq(devfreq, true);
-+	_remove_devfreq(devfreq);
- }
- 
- static int devfreq_qos_sanity_check(struct device *dev,
-@@ -659,7 +652,8 @@ int devfreq_remove_device(struct devfreq *devfreq)
- 	if (!devfreq)
- 		return -EINVAL;
- 
--	_remove_devfreq(devfreq, false);
-+	device_unregister(&devfreq->dev);
-+	put_device(&devfreq->dev);
- 
- 	return 0;
- }
--- 
-1.8.0
+>
+> Now, a more legitimate objection to putting it in generic code might be
+> that "standby" and "mem" are loosely defined and the knowledge of how a
+> driver should react to each is platform specific -- but your patch
+> doesn't address that.  You still have the driver itself interpret what
+> "standby" and "mem" mean.
+>
 
+Yup, we will address it in next batch.
+
+- Leo
