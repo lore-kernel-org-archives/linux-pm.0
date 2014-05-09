@@ -1,39 +1,45 @@
-From: "menon.nishanth@gmail.com" <menon.nishanth@gmail.com>
-Subject: Re: [PATCH 1/3] arm64: Enable OPP
-Date: Fri, 9 May 2014 12:17:23 -0500
-Message-ID: <CAGo_u6oL06G7jk8_X-SH73oWCAHX5vTj7ViC1AyaDhDLJEvWmw@mail.gmail.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 2/3] arm64: Add big.LITTLE switcher stub
+Date: Fri, 9 May 2014 18:47:38 +0100
+Message-ID: <20140509174738.GP7950@arm.com>
 References: <1399653631-4938-1-git-send-email-broonie@kernel.org>
-	<CAGo_u6rGEWwywQ5JKh1ROhkOjrkWrM35PdWAooed26oak=1irA@mail.gmail.com>
-	<20140509171120.GS12304@sirena.org.uk>
+ <1399653631-4938-2-git-send-email-broonie@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:59259 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756896AbaEIRRY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 13:17:24 -0400
-Received: by mail-wi0-f174.google.com with SMTP id r20so1673415wiv.7
-        for <linux-pm@vger.kernel.org>; Fri, 09 May 2014 10:17:23 -0700 (PDT)
-In-Reply-To: <20140509171120.GS12304@sirena.org.uk>
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:14052 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755420AbaEIRsV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 13:48:21 -0400
+Content-Disposition: inline
+In-Reply-To: <1399653631-4938-2-git-send-email-broonie@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Mark Brown <broonie@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel <linaro-kernel@lists.linaro.org>
+Cc: Will Deacon <Will.Deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>
 
-On Fri, May 9, 2014 at 12:11 PM, Mark Brown <broonie@kernel.org> wrote:
-> On Fri, May 09, 2014 at 12:02:12PM -0500, menon.nishanth@gmail.com wrote:
->> On Fri, May 9, 2014 at 11:40 AM, Mark Brown <broonie@kernel.org> wrote:
->
->> > Some of the generic drivers used on ARM class systems use OPP so allow it
->> > to be selected in Kconfig. No code is required for this, it is not clear
->> > to me why there is config for this option.
->
->> If you mean why we have ARCH_HAS_OPP,
->> http://lists-archives.com/linux-kernel/27401148-pm-hide-opp-configuration-when-socs-do-not-provide-an-implementation.html
->
-> That's for the user visible symbol but OPP is also enableable via select
-> - the fix here may be to remove both the visibility check and the
-> dependency.
-That is reasonable.
-Regards,
-Nishanth Menon
+On Fri, May 09, 2014 at 05:40:30PM +0100, Mark Brown wrote:
+> From: Mark Brown <broonie@linaro.org>
+> 
+> The big.LITTLE cpufreq driver is useful on arm64 big.LITTLE systems even
+> without IKS support since it implements support for clusters with shared
+> clocks (a common big.LITTLE configuration). In order to allow it to be
+> built provide the non-IKS stubs for arm64, enabling cpufreq with all the
+> cores available.
+
+Have you thought of patching the actual cpufreq driver? Are you adding
+this code just to avoid compiler errors on arm64 with this driver?
+
+> It may make sense to make an asm-generic version of these stubs instead
+
+asm-generic/bL_switcher.h? I take it as a good joke ;)
+
+> but
+> given that there's only likely to be these two architectures using the code
+> and asm-generic stubs also need per architecture updates it's probably more
+> trouble than it's worth.
+
+Exactly.
+
+-- 
+Catalin
