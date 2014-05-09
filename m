@@ -1,12 +1,12 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH 2/3] arm64: Add big.LITTLE switcher stub
-Date: Fri,  9 May 2014 17:40:30 +0100
-Message-ID: <1399653631-4938-2-git-send-email-broonie@kernel.org>
+Subject: [PATCH 3/3] cpufreq: Enable big.LITTLE cpufreq driver on arm64
+Date: Fri,  9 May 2014 17:40:31 +0100
+Message-ID: <1399653631-4938-3-git-send-email-broonie@kernel.org>
 References: <1399653631-4938-1-git-send-email-broonie@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:39431 "EHLO
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:39432 "EHLO
 	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756558AbaEIQlG (ORCPT
+	with ESMTP id S1756740AbaEIQlG (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 12:41:06 -0400
 In-Reply-To: <1399653631-4938-1-git-send-email-broonie@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
@@ -16,83 +16,34 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linaro-kerne
 
 From: Mark Brown <broonie@linaro.org>
 
-The big.LITTLE cpufreq driver is useful on arm64 big.LITTLE systems even
-without IKS support since it implements support for clusters with shared
-clocks (a common big.LITTLE configuration). In order to allow it to be
-built provide the non-IKS stubs for arm64, enabling cpufreq with all the
-cores available.
+There are arm64 big.LITTLE systems so enable the big.LITTLE cpufreq driver.
+While IKS is not available for these systems the driver is still useful
+since it manages clusters with shared frequencies which is the common case
+for these systems.
 
-It may make sense to make an asm-generic version of these stubs instead but
-given that there's only likely to be these two architectures using the code
-and asm-generic stubs also need per architecture updates it's probably more
-trouble than it's worth.
+Long term combining the cpufreq-cpu0 and big.LITTLE drivers may be a
+more sensible option but that is substantially more complex especially
+in the case of IKS.
 
 Signed-off-by: Mark Brown <broonie@linaro.org>
 ---
- arch/arm64/include/asm/bL_switcher.h | 54 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
- create mode 100644 arch/arm64/include/asm/bL_switcher.h
+ drivers/cpufreq/Kconfig.arm | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/include/asm/bL_switcher.h b/arch/arm64/include/asm/bL_switcher.h
-new file mode 100644
-index 000000000000..2bee500b7f54
---- /dev/null
-+++ b/arch/arm64/include/asm/bL_switcher.h
-@@ -0,0 +1,54 @@
-+/*
-+ * Based on the stubs for the ARM implementation which is:
-+ *
-+ * Created by:  Nicolas Pitre, April 2012
-+ * Copyright:   (C) 2012-2013  Linaro Limited
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef ASM_BL_SWITCHER_H
-+#define ASM_BL_SWITCHER_H
-+
-+#include <linux/notifier.h>
-+#include <linux/types.h>
-+
-+typedef void (*bL_switch_completion_handler)(void *cookie);
-+
-+static inline int bL_switch_request(unsigned int cpu,
-+				    unsigned int new_cluster_id)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+/*
-+ * Register here to be notified about runtime enabling/disabling of
-+ * the switcher.
-+ *
-+ * The notifier chain is called with the switcher activation lock held:
-+ * the switcher will not be enabled or disabled during callbacks.
-+ * Callbacks must not call bL_switcher_{get,put}_enabled().
-+ */
-+#define BL_NOTIFY_PRE_ENABLE	0
-+#define BL_NOTIFY_POST_ENABLE	1
-+#define BL_NOTIFY_PRE_DISABLE	2
-+#define BL_NOTIFY_POST_DISABLE	3
-+
-+static inline int bL_switcher_register_notifier(struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+
-+static inline int bL_switcher_unregister_notifier(struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+
-+static inline bool bL_switcher_get_enabled(void) { return false; }
-+static inline void bL_switcher_put_enabled(void) { }
-+static inline int bL_switcher_trace_trigger(void) { return 0; }
-+static inline int bL_switcher_get_logical_index(u32 mpidr) { return -EUNATCH; }
-+
-+#endif
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 6e05a1e18e52..6a7dd3e958d5 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -5,7 +5,8 @@
+ # big LITTLE core layer and glue drivers
+ config ARM_BIG_LITTLE_CPUFREQ
+ 	tristate "Generic ARM big LITTLE CPUfreq driver"
+-	depends on ARM && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK
++	depends on (BIG_LITTLE && ARM_CPU_TOPOLOGY) || (ARM64 && SMP)
++	depends on HAVE_CLK
+ 	select PM_OPP
+ 	help
+ 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
 -- 
 2.0.0.rc2
 
