@@ -1,139 +1,74 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: linux-pm build failure
-Date: Fri, 09 May 2014 09:45:27 +0800
-Message-ID: <536C3337.40402@intel.com>
-References: <536BBAF8.6040601@semaphore.gr> <2930403.UViFFypGRj@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
+ runtime-suspended devices
+Date: Thu, 8 May 2014 21:52:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405082110330.13708-100000@netrider.rowland.org>
+References: <2356017.WpDFDYKWcr@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:10746 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753367AbaEIBpM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 8 May 2014 21:45:12 -0400
-In-Reply-To: <2930403.UViFFypGRj@vostro.rjw.lan>
+Received: from netrider.rowland.org ([192.131.102.5]:45911 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753367AbaEIBwT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 May 2014 21:52:19 -0400
+In-Reply-To: <2356017.WpDFDYKWcr@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, Lv Zheng <lv.zheng@intel.com>, Bob Moore <robert.moore@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 2014=E5=B9=B405=E6=9C=8809=E6=97=A5 03:44, Rafael J. Wysocki wrote:
-> On Thursday, May 08, 2014 08:12:24 PM Stratos Karafotis wrote:
->> Hi all,
->=20
-> Hi,
->=20
-> Thanks for the report!
->=20
-> This is caused by commit
->=20
-> 0e23847d5ee4 ACPICA: Export acpi_buffer_to_resource symbol
->=20
-> merged on top of the recent ACPICA material.
->=20
-> Lv, Tianyu, care to take care of this?
+On Thu, 8 May 2014, Rafael J. Wysocki wrote:
 
-Hi Rafael:
-	Just check commit 51e35823eb57 and find it also exports
-acpi_buffer_to_resource symbol which commit 0e23847d5ee4 has already
-done. I think you can drop commit 0e23847d5ee4 which only exports symbo=
-l
-without any other changes.
+> Well, no.
+> 
+> The reason why that doesn't work is because ->prepare() callbacks are
+> executed in the reverse order, so the perent's ones will be run before
+> the ->prepare() of the children.  Thus if ->prepare() sets the flag
+> with the expectation that ->suspend() (and the subsequent callbacks)
+> won't be executed, that expectation may not be met actually.
 
->=20
->> There is a build failure in latest linux-pm bleeding-edge:
->>
->> In file included from include/linux/linkage.h:6:0,
->>                  from include/linux/kernel.h:6,
->>                  from include/acpi/platform/aclinux.h:64,
->>                  from include/acpi/platform/acenv.h:150,
->>                  from include/acpi/acpi.h:56,
->>                  from drivers/acpi/acpica/rscreate.c:44:
->> include/linux/export.h:59:20: error: redefinition of =E2=80=98__kstr=
-tab_acpi_buffer_to_resource=E2=80=99
->>   static const char __kstrtab_##sym[]   \
->>                     ^
->> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__=
-EXPORT_SYMBOL=E2=80=99
->>   __EXPORT_SYMBOL(sym, "")
->>   ^
->> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =
-=E2=80=98EXPORT_SYMBOL=E2=80=99
->>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->>                                      ^
->> drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
->>  ^
->> include/linux/export.h:59:20: note: previous definition of =E2=80=98=
-__kstrtab_acpi_buffer_to_resource=E2=80=99 was here
->>   static const char __kstrtab_##sym[]   \
->>                     ^
->> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__=
-EXPORT_SYMBOL=E2=80=99
->>   __EXPORT_SYMBOL(sym, "")
->>   ^
->> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =
-=E2=80=98EXPORT_SYMBOL=E2=80=99
->>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->>                                      ^
->> drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
->>  ^
->> include/linux/export.h:63:39: error: redefinition of =E2=80=98__ksym=
-tab_acpi_buffer_to_resource=E2=80=99
->>   __visible const struct kernel_symbol __ksymtab_##sym \
->>                                        ^
->> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__=
-EXPORT_SYMBOL=E2=80=99
->>   __EXPORT_SYMBOL(sym, "")
->>   ^
->> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =
-=E2=80=98EXPORT_SYMBOL=E2=80=99
->>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->>                                      ^
->> drivers/acpi/acpica/rscreate.c:119:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource)
->>  ^
->> include/linux/export.h:63:39: note: previous definition of =E2=80=98=
-__ksymtab_acpi_buffer_to_resource=E2=80=99 was here
->>   __visible const struct kernel_symbol __ksymtab_##sym \
->>                                        ^
->> include/linux/export.h:69:2: note: in expansion of macro =E2=80=98__=
-EXPORT_SYMBOL=E2=80=99
->>   __EXPORT_SYMBOL(sym, "")
->>   ^
->> include/acpi/platform/aclinux.h:110:37: note: in expansion of macro =
-=E2=80=98EXPORT_SYMBOL=E2=80=99
->>  #define ACPI_EXPORT_SYMBOL(symbol)  EXPORT_SYMBOL(symbol);
->>                                      ^
->> drivers/acpi/acpica/rscreate.c:117:1: note: in expansion of macro =E2=
-=80=98ACPI_EXPORT_SYMBOL=E2=80=99
->>  ACPI_EXPORT_SYMBOL(acpi_buffer_to_resource);
->>  ^
->> make[3]: *** [drivers/acpi/acpica/rscreate.o] Error 1
->> make[2]: *** [drivers/acpi/acpica] Error 2
->> make[1]: *** [drivers/acpi] Error 2
->> make[1]: *** Waiting for unfinished jobs....
->> make: *** [drivers] Error 2
->>
->>
->> Reverting commit 51e35823eb57 ("ACPICA: Update acpi_buffer_to_resour=
-ce interface"), build completes fine.
->>
->>
->> Thanks,
->> Stratos Karafotis
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
-in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+That's true also if the flag gets set in ->suspend(), isn't it?  A
+driver may set direct_resume in its ->suspend() callback, expecting
+that the subsequent callbacks won't be executed.  But if a descendant
+hasn't also set its flag then the callbacks _will_ be executed.
 
+> So I'm going to do what I said above.  I prefer it anyway. :-)
 
---=20
-Best regards
-Tianyu Lan
+In your most recent patch (and in the earlier ones too), after you call
+dev's ->suspend() routine, if dev->power.direct_resume isn't set then
+you clear dev->parent->direct_resume.  But what good will that do if
+dev->parent's ->suspend() routine turns the flag back on when it gets
+called later?
+
+I can think of two ways to make this work.
+
+	Expect subsystems and drivers to set the flag during 
+	->suspend().  Turn on the flag in every device during 
+	device_prepare().  Then in __device_suspend(), remember the
+	flag's value and turn it off before invoking the callback.  If 
+	the flag is on again when the callback returns, set the flag 
+	back to the remembered value.  If the flag ends up being off
+	then turn off the parent's flag.
+
+	Expect subsystems and drivers to set the flag during 
+	->prepare().  Whenever a callback returns with the flag not
+	set, clear the flag in all of the device's ancestors.
+
+Both are somewhat awkward, and both involve turning the flag off after 
+the callback has turned it on.
+
+Also, how do you expect direct_resume to work with the PCI subsystem?  
+Will the PCI core set the flag appropriately on behalf of the driver?  
+If the core does set the flag, will it invoke the driver's ->suspend()
+callback or skip the callback?  If it invokes the driver's callback but
+leaves the device in runtime suspend, what happens if the driver
+expects the device always to be at full power when its ->suspend()  
+routine runs?  If the core skips the driver's ->suspend() callback,
+what happens if one of the device's children did not set direct_resume 
+and so the later PM callbacks do get invoked?
+
+Several of these questions are a lot easier to answer if the flag gets 
+set during ->prepare() rather than ->suspend().
+
+Alan Stern
+
