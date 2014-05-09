@@ -1,88 +1,61 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for cpufreq
- table
-Date: Fri, 9 May 2014 08:23:09 -0500
-Message-ID: <536CD6BD.9000804@ti.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>	<5367946F.1030407@ti.com>	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>	<003e01cf6984$fb950280$f2bf0780$@samsung.com>	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>	<001501cf6a5c$07bc2520$17346f60$@samsung.com>	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>	<000301cf6a62$413c16b0$c3b44410$@samsung.com>	<CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>	<000e01cf6b23$58fda900$0af
- 8fb00$@samsung.com>	<CAKohpomX_ZXSyk7RuCyO1t8VUee5H5KN5zj1-VhDp+ZtFbF-xA@mail.gmail.com> <CAGZ6kuO_N+bZpWa8uQiZUCTWscMbwAd7EL-1dbCJX9JCvFDnyQ@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze"
+ sleep state
+Date: Fri, 9 May 2014 16:13:56 +0200
+Message-ID: <20140509141356.GA1811@xo-6d-61-c0.localdomain>
+References: <2548502.zJ1no3NhRc@vostro.rjw.lan>
+ <20140509073835.GB4965@xo-6d-61-c0.localdomain>
+ <2485687.UrJORvS9e7@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:56735 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755877AbaEINXR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 9 May 2014 09:23:17 -0400
-In-Reply-To: <CAGZ6kuO_N+bZpWa8uQiZUCTWscMbwAd7EL-1dbCJX9JCvFDnyQ@mail.gmail.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54969 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753367AbaEIOOG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 10:14:06 -0400
+Content-Disposition: inline
+In-Reply-To: <2485687.UrJORvS9e7@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jonghwan Choi <jhbird.choi@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
 
-On 05/09/2014 06:59 AM, jonghwan Choi wrote:
-> On Thu, May 8, 2014 at 11:00 PM, Viresh Kumar <viresh.kumar@linaro.or=
-g> wrote:
->=20
->> Why? So, as far as I got it your dividers are nothing but 0,1,2...
->> i.e.
->> Freqs: 400  500  600  700  800
->> div:      4      3      2      1      0
->>
->> right? That's what you are doing in exynos5440. So just add this in =
-your
->> probe after doing: dev_pm_opp_init_cpufreq_table
->>
->> for(i =3D 0; all-available-freqs; i++)
->>     dvfs_info->freq_table[i].driver_data =3D dvfs_info->freq_count -=
- i;
->>
->> And this will work with changes in dts files.
->=20
-> I am sorry
-> I couldn=92t provide detailed information about this suggestion.
-> This suggestion is not for exynos5440. This is for exynos4210,
-> exynos4x12 and exynos5250.
-> (But this can be applied to exynos5440 also)
-> I want to make exynos cpufreq driver simple.
-> There are exynos-cpufreq.c, exynos4210-cpufreq.c exynos4x12-cpufreq.
-> exynos5250-cpufreq.c for exynos soc.
-> And exynos4210-cpufreq.c, exynos4x12 and exynos5250-cpufreq. c has a
-> clk divider table for each frequency.
->=20
-> example) exynos4210-cpufreq.c
-> static struct apll_freq apll_freq_4210[] =3D {
->         /*
->          * values:
->          * freq
->          * clock divider for CORE, COREM0, COREM1, PERIPH, ATB,
-> PCLK_DBG, APLL, RESERVED
->          * clock divider for COPY, HPM, RESERVED
->          * PLL M, P, S
->          */
->         APLL_FREQ(1200, 0, 3, 7, 3, 4, 1, 7, 0, 5, 0, 0, 150, 3, 1),
->         APLL_FREQ(1000, 0, 3, 7, 3, 4, 1, 7, 0, 4, 0, 0, 250, 6, 1),
->         APLL_FREQ(800,  0, 3, 7, 3, 3, 1, 7, 0, 3, 0, 0, 200, 6, 1),
->         APLL_FREQ(500,  0, 3, 7, 3, 3, 1, 7, 0, 3, 0, 0, 250, 6, 2),
->         APLL_FREQ(200,  0, 1, 3, 1, 3, 1, 0, 0, 3, 0, 0, 200, 6, 3),
-> };
->=20
-> If we can pass this clk divider value to exynos cpufreq driver throug=
-h
-> DT, we can remove most of exynosxxxx-cpufreq.c files/codes. And when
-> new frequency is added/removed or new soc is released, for supporting
-> dvfs we have only to describe frequency, voltage and divider value in
-> dts file.
+On Fri 2014-05-09 13:26:47, Rafael J. Wysocki wrote:
+> On Friday, May 09, 2014 09:38:35 AM Pavel Machek wrote:
+> > On Mon 2014-05-05 00:51:54, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > If freeze_enter() is called, we want to bypass the current cpuidle
+> > > governor and always use the deepest available (that is, not disabled)
+> > > C-state, because we want to save as much energy as reasonably possible
+> > > then and runtime latency constraints don't matter at that point, since
+> > > the system is in a sleep state anyway.
+> > 
+> > Would there be way to pass the parameter "go to deepest" instead of adding
+> > global state for this?
+> 
+> I'm not sure what you mean?  A parameter of what in particular?  And where
+> to pass it?
 
-Have you considered the option of having a clock driver which can
-decide the divider (based on dts OR index or whatever)?
+Currently the code is:
 
-example: you could do clk_set_rate(apll, rate);
-and instead of implementing clock divider programmation inside cpufreq
-driver, you let corresponding clock driver do it for you. that allows
-you to reuse clock driver with various parameters needed for your SoC
-variations. IMHO, we are trying to solve a problem meant to be solved
-in clock framework instead of within cpufreq.
+static void freeze_enter(void)
+{
++ cpuidle_use_deepest_state(true);
+  cpuidle_resume();
+  wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
+  cpuidle_pause();
++ cpuidle_use_deepest_state(false);
+}
 
---=20
-Regards,
-Nishanth Menon
+. I believe it would be better if you did
+
+cpuidle_resume(GOTO_DEEPEST_C_STATE)
+
+instead of having global state.
+
+Thanks,
+										Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
