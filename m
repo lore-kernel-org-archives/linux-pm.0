@@ -1,42 +1,109 @@
-From: Sebastian Capella <sebastian.capella@linaro.org>
-Subject: Re: [PATCH RFC v3 4/6] arm64: add PSCI CPU_SUSPEND based cpu_suspend support
-Date: Fri, 09 May 2014 16:11:23 -0700
-Message-ID: <536d609c.0458440a.0ea9.77a3@mx.google.com>
-References: <1399399483-17112-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1399399483-17112-5-git-send-email-lorenzo.pieralisi@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
+Date: Sat, 10 May 2014 03:38:27 +0200
+Message-ID: <2529433.Aygp7Yxy87@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org> <2703563.1xTcfTGG98@vostro.rjw.lan> <7hmweqmuve.fsf@paris.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:61558 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbaEIXLZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 19:11:25 -0400
-Received: by mail-pa0-f48.google.com with SMTP id rd3so4952553pab.7
-        for <linux-pm@vger.kernel.org>; Fri, 09 May 2014 16:11:25 -0700 (PDT)
-In-Reply-To: <1399399483-17112-5-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:52817 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754063AbaEJBVp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 21:21:45 -0400
+In-Reply-To: <7hmweqmuve.fsf@paris.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>
+To: Kevin Hilman <khilman@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Quoting Lorenzo Pieralisi (2014-05-06 11:04:41)
-> This patch implements the cpu_suspend cpu operations method through
-> the PSCI CPU_SUSPEND API. The PSCI implementation translates the idle state
-> index passed by the cpu_suspend core call into a valid PSCI state according to
-> the PSCI states initialized at boot by the PSCI suspend backend.
+On Friday, May 09, 2014 03:48:21 PM Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 > 
-> Entry point is set to cpu_resume physical address, that represents the
-> default kernel execution address following a CPU reset.
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> > resume all runtime-suspended devices during system suspend, mostly
+> > because those devices may need to be reprogrammed due to different
+> > wakeup settings for system sleep and for runtime PM.
+> >
+> > For some devices, though, it's OK to remain in runtime suspend 
+> > throughout a complete system suspend/resume cycle (if the device was in
+> > runtime suspend at the start of the cycle).  We would like to do this
+> > whenever possible, to avoid the overhead of extra power-up and power-down
+> > events.
+> >
+> > However, problems may arise because the device's descendants may require
+> > it to be at full power at various points during the cycle.  Therefore the
+> > most straightforward way to do this safely is if the device and all its
+> > descendants can remain runtime suspended until the resume stage of system
+> > resume.
+> >
+> > To this end, introduce dev->power.leave_runtime_suspended.
+> > If a subsystem or driver sets this flag during the ->prepare() callback,
+> > and if the flag is set in all of the device's descendants, and if the
+> > device is still in runtime suspend at the beginning of the ->suspend()
+> > callback, that callback is allowed to return 0 without clearing
+> > power.leave_runtime_suspended and without changing the state of the
+> > device, unless the current state of the device is not appropriate for
+> > the upcoming system sleep state (for example, the device is supposed to
+> > wake up the system from that state and its current wakeup settings are
+> > not suitable for that).  Then, the PM core will not invoke the device's
+> > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
+> > ->resume() callbacks.  
 > 
-> Idle state indices missing a DT node description are initialized to power
-> state standby WFI so that if called by the idle driver they provide the
-> default behaviour.
+> Up to here, this sounds great.
 > 
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > Instead, it will invoke ->runtime_resume() during the device resume
+> > stage of system resume.
+> 
+> But this part I'm not fully following...
 
-Reviewed-by: Sebastian Capella <sebastian.capella@linaro.org>
+You're not looking at the most recent one. :-)
+
+Please look here: https://patchwork.kernel.org/patch/4139181/
+
+> > By leaving this flag set after ->suspend(), a driver or subsystem tells
+> > the PM core that the device is runtime suspended, it is in a suitable
+> > state for system suspend (for example, the wakeup setting does not
+> > need to be changed), and it does not need to return to full
+> > power until the resume stage.
+> 
+> But taking this "leave runtime suspended" idea the next logical step,
+> why would/should a device need to return to full power at the ->resume()
+> stage?  especially when it wasn't at full power when ->suspend()
+> happened?
+
+Good question and I've been thinking about that for a while.
+
+Generally, the main reason for resuming is that on some platforms devices are
+automatically powered up by firmware and in those cases it's better to
+resume them (to make the runtime PM status reflect the physical state) and
+suspend again later.
+
+Generally speaking, subsystems that need to do that know what they are and
+that's what I was talking about in the most recent reply to Alan:
+
+http://marc.info/?l=linux-pm&m=139967477806094&w=4
+
+Currently, I think, there are two options on the table really.
+
+ 1. Do more or less what https://patchwork.kernel.org/patch/4139181/ does
+    with a modification to check that ->suspend() doesn't "cheat" (by setting
+    the flag that had been unset before it was called).  The subsystem's
+    ->resume() would then decide what to do with the device (resume it or
+    leave it suspended).
+
+ 2. Do what Alan was suggesting, that is set the flag in ->prepare() and
+    make the PM core skip *all* of the system suspend/resume callbacks
+    for devices with that flag set and let the ->complete() callback
+    decide what to do with the device.
+
+I'm leaning a bit towards 2, but still considering 1 too.
 
 Thanks!
 
-Sebastian
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
