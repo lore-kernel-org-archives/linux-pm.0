@@ -1,109 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
-Date: Sat, 10 May 2014 03:38:27 +0200
-Message-ID: <2529433.Aygp7Yxy87@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org> <2703563.1xTcfTGG98@vostro.rjw.lan> <7hmweqmuve.fsf@paris.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: linux-pm build failure
+Date: Sat, 10 May 2014 09:22:05 +0300
+Message-ID: <536DC58D.6010707@semaphore.gr>
+References: <536BBAF8.6040601@semaphore.gr> <2930403.UViFFypGRj@vostro.rjw.lan> <536C3337.40402@intel.com> <12185110.9TpRMrqnbe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52817 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754063AbaEJBVp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 May 2014 21:21:45 -0400
-In-Reply-To: <7hmweqmuve.fsf@paris.lan>
+Received: from sema.semaphore.gr ([78.46.194.137]:60062 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751024AbaEJGWJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 10 May 2014 02:22:09 -0400
+In-Reply-To: <12185110.9TpRMrqnbe@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lan Tianyu <tianyu.lan@intel.com>
+Cc: Lv Zheng <lv.zheng@intel.com>, Bob Moore <robert.moore@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
-On Friday, May 09, 2014 03:48:21 PM Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-> > resume all runtime-suspended devices during system suspend, mostly
-> > because those devices may need to be reprogrammed due to different
-> > wakeup settings for system sleep and for runtime PM.
-> >
-> > For some devices, though, it's OK to remain in runtime suspend 
-> > throughout a complete system suspend/resume cycle (if the device was in
-> > runtime suspend at the start of the cycle).  We would like to do this
-> > whenever possible, to avoid the overhead of extra power-up and power-down
-> > events.
-> >
-> > However, problems may arise because the device's descendants may require
-> > it to be at full power at various points during the cycle.  Therefore the
-> > most straightforward way to do this safely is if the device and all its
-> > descendants can remain runtime suspended until the resume stage of system
-> > resume.
-> >
-> > To this end, introduce dev->power.leave_runtime_suspended.
-> > If a subsystem or driver sets this flag during the ->prepare() callback,
-> > and if the flag is set in all of the device's descendants, and if the
-> > device is still in runtime suspend at the beginning of the ->suspend()
-> > callback, that callback is allowed to return 0 without clearing
-> > power.leave_runtime_suspended and without changing the state of the
-> > device, unless the current state of the device is not appropriate for
-> > the upcoming system sleep state (for example, the device is supposed to
-> > wake up the system from that state and its current wakeup settings are
-> > not suitable for that).  Then, the PM core will not invoke the device's
-> > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
-> > ->resume() callbacks.  
-> 
-> Up to here, this sounds great.
-> 
-> > Instead, it will invoke ->runtime_resume() during the device resume
-> > stage of system resume.
-> 
-> But this part I'm not fully following...
+On 10/05/2014 12:36 =CF=80=CE=BC, Rafael J. Wysocki wrote:
+> On Friday, May 09, 2014 09:45:27 AM Lan Tianyu wrote:
+>> On 2014=E5=B9=B405=E6=9C=8809=E6=97=A5 03:44, Rafael J. Wysocki wrot=
+e:
+>>> On Thursday, May 08, 2014 08:12:24 PM Stratos Karafotis wrote:
+>>>> Hi all,
+>>>
+>>> Hi,
+>>>
+>>> Thanks for the report!
+>>>
+>>> This is caused by commit
+>>>
+>>> 0e23847d5ee4 ACPICA: Export acpi_buffer_to_resource symbol
+>>>
+>>> merged on top of the recent ACPICA material.
+>>>
+>>> Lv, Tianyu, care to take care of this?
+>>
+>> Hi Rafael:
+>> 	Just check commit 51e35823eb57 and find it also exports
+>> acpi_buffer_to_resource symbol which commit 0e23847d5ee4 has already
+>> done. I think you can drop commit 0e23847d5ee4 which only exports sy=
+mbol
+>> without any other changes.
+>=20
+> Done, thanks!
+>=20
 
-You're not looking at the most recent one. :-)
+Now it builds fine!
 
-Please look here: https://patchwork.kernel.org/patch/4139181/
-
-> > By leaving this flag set after ->suspend(), a driver or subsystem tells
-> > the PM core that the device is runtime suspended, it is in a suitable
-> > state for system suspend (for example, the wakeup setting does not
-> > need to be changed), and it does not need to return to full
-> > power until the resume stage.
-> 
-> But taking this "leave runtime suspended" idea the next logical step,
-> why would/should a device need to return to full power at the ->resume()
-> stage?  especially when it wasn't at full power when ->suspend()
-> happened?
-
-Good question and I've been thinking about that for a while.
-
-Generally, the main reason for resuming is that on some platforms devices are
-automatically powered up by firmware and in those cases it's better to
-resume them (to make the runtime PM status reflect the physical state) and
-suspend again later.
-
-Generally speaking, subsystems that need to do that know what they are and
-that's what I was talking about in the most recent reply to Alan:
-
-http://marc.info/?l=linux-pm&m=139967477806094&w=4
-
-Currently, I think, there are two options on the table really.
-
- 1. Do more or less what https://patchwork.kernel.org/patch/4139181/ does
-    with a modification to check that ->suspend() doesn't "cheat" (by setting
-    the flag that had been unset before it was called).  The subsystem's
-    ->resume() would then decide what to do with the device (resume it or
-    leave it suspended).
-
- 2. Do what Alan was suggesting, that is set the flag in ->prepare() and
-    make the PM core skip *all* of the system suspend/resume callbacks
-    for devices with that flag set and let the ->complete() callback
-    decide what to do with the device.
-
-I'm leaning a bit towards 2, but still considering 1 too.
-
-Thanks!
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thank you!
+Stratos
