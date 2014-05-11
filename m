@@ -1,7 +1,7 @@
 From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 05/12 v2] CONFIG for Workload Consolidation
-Date: Mon, 12 May 2014 02:16:54 +0800
-Message-ID: <1399832221-8314-6-git-send-email-yuyang.du@intel.com>
+Subject: [RFC PATCH 12/12 v2] Intercept RT scheduler
+Date: Mon, 12 May 2014 02:17:01 +0800
+Message-ID: <1399832221-8314-13-git-send-email-yuyang.du@intel.com>
 References: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
@@ -10,34 +10,83 @@ To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-ke
 Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com, yuyang.du@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Add CONFIG_WORKLOAD_CONSOLIDATION in arch/x86/Kconfig. This CONFIG enables
-and disables CPU workload consolidation in scheduler's load balancing.
+We intercept load balancing to contain the load and load balancing in
+the consolidated CPUs according to our consolidating mechanism.
+
+In RT scheduler, we also skip pulling/selecting task to the idle
+non-consolidated CPUs. This is pretty provocative.
 
 Signed-off-by: Yuyang Du <yuyang.du@intel.com>
 ---
- arch/x86/Kconfig |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ kernel/sched/rt.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 9bfac8d..0999c16 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -808,6 +808,16 @@ config CPU_CONCURRENCY
- 	  load balancing for power efficiency without sacrificing performance.
- 	  If unsure say N here.
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index bd2267a..f8141fb 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -1217,6 +1217,9 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ {
+ 	struct task_struct *curr;
+ 	struct rq *rq;
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	int do_find = 0;
++#endif
  
-+config WORKLOAD_CONSOLIDATION
-+	bool "CPU Workload Consolidation"
-+	default n
-+	depends on CPU_CONCURRENCY
-+	---help---
-+	  CPU Workload Consolidation is a new CPU PM module, which uses the CPU
-+	  concurrency of the CPU, and allows asymmetric concurrency across CPUs to
-+	  reduce the SW and HW overhead to increase load balance efficiency and
-+	  conserve energy. If unsure say N here.
+ 	if (p->nr_cpus_allowed == 1)
+ 		goto out;
+@@ -1230,6 +1233,11 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ 	rcu_read_lock();
+ 	curr = ACCESS_ONCE(rq->curr); /* unlocked access */
+ 
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	if (workload_consolidation_cpu_shielded(cpu))
++		do_find = 1;
++#endif
 +
- source "kernel/Kconfig.preempt"
+ 	/*
+ 	 * If the current task on @p's runqueue is an RT task, then
+ 	 * try to see if we can wake this RT task up on another
+@@ -1252,9 +1260,15 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ 	 * This test is optimistic, if we get it wrong the load-balancer
+ 	 * will have to sort it out.
+ 	 */
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	if (do_find || (curr && unlikely(rt_task(curr)) &&
++	    (curr->nr_cpus_allowed < 2 ||
++	     curr->prio <= p->prio))) {
++#else
+ 	if (curr && unlikely(rt_task(curr)) &&
+ 	    (curr->nr_cpus_allowed < 2 ||
+ 	     curr->prio <= p->prio)) {
++#endif
+ 		int target = find_lowest_rq(p);
  
- config X86_UP_APIC
+ 		if (target != -1)
+@@ -1460,6 +1474,12 @@ static int find_lowest_rq(struct task_struct *task)
+ 	if (!cpupri_find(&task_rq(task)->rd->cpupri, task, lowest_mask))
+ 		return -1; /* No targets found */
+ 
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	workload_consolidation_nonshielded_mask(this_cpu, lowest_mask);
++	if (!cpumask_weight(lowest_mask))
++		return -1;
++#endif
++
+ 	/*
+ 	 * At this point we have built a mask of cpus representing the
+ 	 * lowest priority tasks in the system.  Now we want to elect
+@@ -1687,6 +1707,11 @@ static int pull_rt_task(struct rq *this_rq)
+ 	if (likely(!rt_overloaded(this_rq)))
+ 		return 0;
+ 
++#ifdef CONFIG_WORKLOAD_CONSOLIDATION
++	if (workload_consolidation_cpu_shielded(this_cpu))
++		return 0;
++#endif
++
+ 	/*
+ 	 * Match the barrier from rt_set_overloaded; this guarantees that if we
+ 	 * see overloaded we must also see the rto_mask bit.
 -- 
 1.7.9.5
