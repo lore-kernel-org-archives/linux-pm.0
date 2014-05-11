@@ -1,77 +1,123 @@
-From: jonghwan Choi <jhbird.choi@gmail.com>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Sun, 11 May 2014 04:38:40 -0700
-Message-ID: <CAGZ6kuPzpxh-r9-KfPDOGXQXjqcthMV07Nd_dgwvBd7w+F9A+w@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-	<5367946F.1030407@ti.com>
-	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
-	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
-	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
-	<003e01cf6984$fb950280$f2bf0780$@samsung.com>
-	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
-	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
-	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
-	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
-	<000301cf6a62$413c16b0$c3b44410$@samsung.com>
-	<CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>
-	<000e01cf6b23$58fda900$0af8fb00$@samsung.com>
-	<CAKohpomX_ZXSyk7RuCyO1t8VUee5H5KN5zj1-VhDp+ZtFbF-xA@mail.gmail.com>
-	<CAGZ6kuO_N+bZpWa8uQiZUCTWscMbwAd7EL-1dbCJX9JCvFDnyQ@mail.gmail.com>
-	<536CD6BD.9000804@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
+ runtime-suspended devices
+Date: Sun, 11 May 2014 12:46:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405111213240.22680-100000@netrider.rowland.org>
+References: <1599191.L8hnSpOETp@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:43008 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757950AbaEKLil (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 May 2014 07:38:41 -0400
-In-Reply-To: <536CD6BD.9000804@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1599191.L8hnSpOETp@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On Fri, May 9, 2014 at 6:23 AM, Nishanth Menon <nm@ti.com> wrote:
-> Have you considered the option of having a clock driver which can
-> decide the divider (based on dts OR index or whatever)?
->
-> example: you could do clk_set_rate(apll, rate);
-> and instead of implementing clock divider programmation inside cpufreq
-> driver, you let corresponding clock driver do it for you. that allows
-> you to reuse clock driver with various parameters needed for your SoC
-> variations. IMHO, we are trying to solve a problem meant to be solved
-> in clock framework instead of within cpufreq.
+On Sat, 10 May 2014, Rafael J. Wysocki wrote:
 
+> On Thursday, May 08, 2014 09:52:18 PM Alan Stern wrote:
+> > On Thu, 8 May 2014, Rafael J. Wysocki wrote:
+> > 
+> > > Well, no.
+> > > 
+> > > The reason why that doesn't work is because ->prepare() callbacks are
+> > > executed in the reverse order, so the perent's ones will be run before
+> > > the ->prepare() of the children.  Thus if ->prepare() sets the flag
+> > > with the expectation that ->suspend() (and the subsequent callbacks)
+> > > won't be executed, that expectation may not be met actually.
+> > 
+> > That's true also if the flag gets set in ->suspend(), isn't it?  A
+> > driver may set direct_resume in its ->suspend() callback, expecting
+> > that the subsequent callbacks won't be executed.  But if a descendant
+> > hasn't also set its flag then the callbacks _will_ be executed.
+> 
+> No, that's not possible with the current patch, because __device_suspend() is
+> executed for descendants first and then for ancestors and it clears
+> direct_suspend for the parents of devices that don't have it set.  This means
+> that the ancestor's ->suspend() will see the flag clear if it is unset for
+> any of its descendants.
+> 
+> IOW, the only case in which the ancestor's ->suspend() sees the flag set is
+> when it has been set for all of its descendants.  Thus, if it leaves the
+> flag set, the late/early and noirq callbacks won't be executed for it.
+> 
+> Now, there is a reason for concern in that, because ->suspend() may set the
+> flag as a result of an error and that may lead to unexpected consequences.
 
-I already considered it.
-(But it only passes on  what cpufreq driver has to do to clock framework.
-For changing clock rate, if changing operation just divides a rate of
-parent it can be solved easily
-But exycpufreq driver is  more complicated.
+Ah, my mistake; I should have read the patch more carefully.  I didn't
+realize that your plan was for subsystems/drivers to set the flag
+during ->prepare() and then clear it (or leave it set) during
+->suspend().
 
-Previously, to change frequency, pll value and clk divider value were
-changed in cpufreq driver.
-Later someone moved the code which changes pll value to clock framework.
-In there, pll values are maintained as table per frequency. And if
-frequency is added/removed, values of
-pll table should be changed.
-when we change the pll value through clk_set_rate, internally  to find
-proper pll value,  pll table is searched.
-If proper pll value is found, that value is written into the register)
+> Then the parent will have direct_resume unset.  That is not a concern.
+> The only concern to me is possible errors in ->suspend() setting the
+> flag when it shouldn't.
 
-My suggestion is that all these change details should be removed
-according to adding/removing frequency.
-I believe that cpufreq driver just writes a specific value per
-frequency  into the register for dvfs(Maybe other work is also needed)
+So now one question is: Why would a subsystem or driver want to clear a
+flag that it had set earlier?  I can't think of any good reasons.  The
+only obvious possibility would be if the wakeup requirements got
+changed between ->prepare() and ->suspend(), but that should never
+happen because wakeup settings are changed by userspace and userspace
+will be frozen.
 
-If we just describe the specific value per frequency in dts file, the
-driver will get that information through DT, and use it for DVFS.)
-Then when a new chip is  released(if the chip has the same h/w
-interface - register map), we only have to do as above.
+Another question is: Does a subsystem or driver need to know if the
+original flag setting couldn't be honored?  Again, I don't think it is 
+necessary to call ->suspend() just for this reason.  More precisely, I 
+think it will be good enough to call ->suspend() when the flag is clear 
+(either because a descendant device didn't set its flag or because the 
+device is no longer in runtime suspend); if the flag is set then there 
+is no reason to call ->suspend().  The subsystem can assume that 
+->suspend() won't be called; then if it does get called, the subsystem 
+will realize something has changed.
 
+Thus, a suitable algorithm now appears to be:
 
-Thanks
+	Have subsystems/drivers set the flag during ->prepare().  They
+	don't even have to check if the device is runtime-suspended;
+	if it isn't then the PM core will turn off the flag later.
 
-Best Regards
+	In __device_suspend(), before invoking the ->supend() callback, 
+	check the flag.  If it is still set and if the device is
+	runtime-suspended (a barrier may be necessary here), skip 
+	->suspend() and the following callbacks.  Otherwise clear the
+	parent's flag and proceed as usual.
+
+> > Several of these questions are a lot easier to answer if the flag gets 
+> > set during ->prepare() rather than ->suspend().
+> 
+> I agree with that, but I have one concern about this approach.  Namely,
+> in that case the PM core has to use pm_runtime_resume() or equivalent to
+> resume devices with the flag set during the device resume stage.  Now,
+> in the next step we may want to leave certain devices suspended at that
+> point and the PM core has no way to tell which ones.  Also subsystems
+> don't really have a chance to tell it about that (they would need to
+> know in advance during ->prepare(), which is kind of unrealistic, or
+> perhaps it isn't).
+> 
+> However, if ->resume() is called for devices with the flag set, like in
+> my most recent patch, the subsystem may decide not to resume the device
+> if it knows enough about it.
+> 
+> This pretty much is my only concern here, so I'm open to ideas how to deal
+> with leaving devices suspended (if possible) during the device resume stage. :-)
+
+This is a good question.  I'm not sure of the best answer at the 
+moment.
+
+> For one, postponing the resume to ->complete() is an option, but it will have
+> to be done with care, because the ->complete() callbacks are executed
+> sequentially, so calling pm_runtime_resume() from there is rather out of the
+> question.
+
+Calling pm_request_resume() would be okay, though.
+
+There's another aspect to this we need to consider: hibernation.  I'm
+quite sure we don't want to come out of hibernation thinking that
+devices are still in their runtime-suspended states.  Skipping the
+callbacks for freeze and thaw would be all right in principle, and
+maybe even for poweroff, but not for restore.  And of course, during
+the restore stages, the last thing subsystems and drivers will remember
+happening is freeze -- which might mean you shouldn't skip the freeze
+callbacks either.
+
+Alan Stern
