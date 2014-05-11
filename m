@@ -1,123 +1,583 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of
- runtime-suspended devices
-Date: Sun, 11 May 2014 12:46:10 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1405111213240.22680-100000@netrider.rowland.org>
-References: <1599191.L8hnSpOETp@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH v2] cpufreq: powernow-k8: Suppress checkpatch warnings
+Date: Sun, 11 May 2014 20:26:16 +0300
+Message-ID: <536FB2B8.1060505@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1599191.L8hnSpOETp@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:38050 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752354AbaEKR0U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 May 2014 13:26:20 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Sat, 10 May 2014, Rafael J. Wysocki wrote:
+Suppress the following checkpatch.pl warnings:
 
-> On Thursday, May 08, 2014 09:52:18 PM Alan Stern wrote:
-> > On Thu, 8 May 2014, Rafael J. Wysocki wrote:
-> > 
-> > > Well, no.
-> > > 
-> > > The reason why that doesn't work is because ->prepare() callbacks are
-> > > executed in the reverse order, so the perent's ones will be run before
-> > > the ->prepare() of the children.  Thus if ->prepare() sets the flag
-> > > with the expectation that ->suspend() (and the subsequent callbacks)
-> > > won't be executed, that expectation may not be met actually.
-> > 
-> > That's true also if the flag gets set in ->suspend(), isn't it?  A
-> > driver may set direct_resume in its ->suspend() callback, expecting
-> > that the subsequent callbacks won't be executed.  But if a descendant
-> > hasn't also set its flag then the callbacks _will_ be executed.
-> 
-> No, that's not possible with the current patch, because __device_suspend() is
-> executed for descendants first and then for ancestors and it clears
-> direct_suspend for the parents of devices that don't have it set.  This means
-> that the ancestor's ->suspend() will see the flag clear if it is unset for
-> any of its descendants.
-> 
-> IOW, the only case in which the ancestor's ->suspend() sees the flag set is
-> when it has been set for all of its descendants.  Thus, if it leaves the
-> flag set, the late/early and noirq callbacks won't be executed for it.
-> 
-> Now, there is a reason for concern in that, because ->suspend() may set the
-> flag as a result of an error and that may lead to unexpected consequences.
+- WARNING: Prefer pr_err(... to printk(KERN_ERR ...
+- WARNING: Prefer pr_info(... to printk(KERN_INFO ...
+- WARNING: Prefer pr_warn(... to printk(KERN_WARNING ...
+- WARNING: quoted string split across lines
+- WARNING: please, no spaces at the start of a line
 
-Ah, my mistake; I should have read the patch more carefully.  I didn't
-realize that your plan was for subsystems/drivers to set the flag
-during ->prepare() and then clear it (or leave it set) during
-->suspend().
+Also, define the pr_fmt macro instead of PFX for the module name.
 
-> Then the parent will have direct_resume unset.  That is not a concern.
-> The only concern to me is possible errors in ->suspend() setting the
-> flag when it shouldn't.
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
 
-So now one question is: Why would a subsystem or driver want to clear a
-flag that it had set earlier?  I can't think of any good reasons.  The
-only obvious possibility would be if the wakeup requirements got
-changed between ->prepare() and ->suspend(), but that should never
-happen because wakeup settings are changed by userspace and userspace
-will be frozen.
+Changes v1 -> v2
+	- Use pr_err_once instead of printk_once
+	- Change missing_pss_msg to macro (because pr_err_once
+	doesn't compile otherwise)
+	- Put one pr_err message in a single line instead of two
+	- Ignore "line over 80 characters" warnings
+	- Change the word "Fix" in the subject of the patch to
+	"Suppress" as the patch doesn't really fix anything
 
-Another question is: Does a subsystem or driver need to know if the
-original flag setting couldn't be honored?  Again, I don't think it is 
-necessary to call ->suspend() just for this reason.  More precisely, I 
-think it will be good enough to call ->suspend() when the flag is clear 
-(either because a descendant device didn't set its flag or because the 
-device is no longer in runtime suspend); if the flag is set then there 
-is no reason to call ->suspend().  The subsystem can assume that 
-->suspend() won't be called; then if it does get called, the subsystem 
-will realize something has changed.
+ drivers/cpufreq/powernow-k8.c | 180 +++++++++++++++++-------------------------
+ drivers/cpufreq/powernow-k8.h |   2 +-
+ 2 files changed, 74 insertions(+), 108 deletions(-)
 
-Thus, a suitable algorithm now appears to be:
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index 1b6ae6b..f9ce7e4 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -27,6 +27,8 @@
+  *  power and thermal data sheets, (e.g. 30417.pdf, 30430.pdf, 43375.pdf)
+  */
+ 
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/smp.h>
+ #include <linux/module.h>
+@@ -45,7 +47,6 @@
+ #include <linux/mutex.h>
+ #include <acpi/processor.h>
+ 
+-#define PFX "powernow-k8: "
+ #define VERSION "version 2.20.00"
+ #include "powernow-k8.h"
+ 
+@@ -161,7 +162,7 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
+ 	u32 i = 0;
+ 
+ 	if ((fid & INVALID_FID_MASK) || (data->currvid & INVALID_VID_MASK)) {
+-		printk(KERN_ERR PFX "internal error - overflow on fid write\n");
++		pr_err("internal error - overflow on fid write\n");
+ 		return 1;
+ 	}
+ 
+@@ -175,9 +176,7 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
+ 	do {
+ 		wrmsr(MSR_FIDVID_CTL, lo, data->plllock * PLL_LOCK_CONVERSION);
+ 		if (i++ > 100) {
+-			printk(KERN_ERR PFX
+-				"Hardware error - pending bit very stuck - "
+-				"no further pstate changes possible\n");
++			pr_err("Hardware error - pending bit very stuck - no further pstate changes possible\n");
+ 			return 1;
+ 		}
+ 	} while (query_current_values_with_pending_wait(data));
+@@ -185,15 +184,13 @@ static int write_new_fid(struct powernow_k8_data *data, u32 fid)
+ 	count_off_irt(data);
+ 
+ 	if (savevid != data->currvid) {
+-		printk(KERN_ERR PFX
+-			"vid change on fid trans, old 0x%x, new 0x%x\n",
+-			savevid, data->currvid);
++		pr_err("vid change on fid trans, old 0x%x, new 0x%x\n",
++		       savevid, data->currvid);
+ 		return 1;
+ 	}
+ 
+ 	if (fid != data->currfid) {
+-		printk(KERN_ERR PFX
+-			"fid trans failed, fid 0x%x, curr 0x%x\n", fid,
++		pr_err("fid trans failed, fid 0x%x, curr 0x%x\n", fid,
+ 			data->currfid);
+ 		return 1;
+ 	}
+@@ -209,7 +206,7 @@ static int write_new_vid(struct powernow_k8_data *data, u32 vid)
+ 	int i = 0;
+ 
+ 	if ((data->currfid & INVALID_FID_MASK) || (vid & INVALID_VID_MASK)) {
+-		printk(KERN_ERR PFX "internal error - overflow on vid write\n");
++		pr_err("internal error - overflow on vid write\n");
+ 		return 1;
+ 	}
+ 
+@@ -223,23 +220,19 @@ static int write_new_vid(struct powernow_k8_data *data, u32 vid)
+ 	do {
+ 		wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
+ 		if (i++ > 100) {
+-			printk(KERN_ERR PFX "internal error - pending bit "
+-					"very stuck - no further pstate "
+-					"changes possible\n");
++			pr_err("internal error - pending bit very stuck - no further pstate changes possible\n");
+ 			return 1;
+ 		}
+ 	} while (query_current_values_with_pending_wait(data));
+ 
+ 	if (savefid != data->currfid) {
+-		printk(KERN_ERR PFX "fid changed on vid trans, old "
+-			"0x%x new 0x%x\n",
+-		       savefid, data->currfid);
++		pr_err("fid changed on vid trans, old 0x%x new 0x%x\n",
++			savefid, data->currfid);
+ 		return 1;
+ 	}
+ 
+ 	if (vid != data->currvid) {
+-		printk(KERN_ERR PFX "vid trans failed, vid 0x%x, "
+-				"curr 0x%x\n",
++		pr_err("vid trans failed, vid 0x%x, curr 0x%x\n",
+ 				vid, data->currvid);
+ 		return 1;
+ 	}
+@@ -283,8 +276,7 @@ static int transition_fid_vid(struct powernow_k8_data *data,
+ 		return 1;
+ 
+ 	if ((reqfid != data->currfid) || (reqvid != data->currvid)) {
+-		printk(KERN_ERR PFX "failed (cpu%d): req 0x%x 0x%x, "
+-				"curr 0x%x 0x%x\n",
++		pr_err("failed (cpu%d): req 0x%x 0x%x, curr 0x%x 0x%x\n",
+ 				smp_processor_id(),
+ 				reqfid, reqvid, data->currfid, data->currvid);
+ 		return 1;
+@@ -304,8 +296,7 @@ static int core_voltage_pre_transition(struct powernow_k8_data *data,
+ 	u32 savefid = data->currfid;
+ 	u32 maxvid, lo, rvomult = 1;
+ 
+-	pr_debug("ph1 (cpu%d): start, currfid 0x%x, currvid 0x%x, "
+-		"reqvid 0x%x, rvo 0x%x\n",
++	pr_debug("ph1 (cpu%d): start, currfid 0x%x, currvid 0x%x, reqvid 0x%x, rvo 0x%x\n",
+ 		smp_processor_id(),
+ 		data->currfid, data->currvid, reqvid, data->rvo);
+ 
+@@ -342,8 +333,7 @@ static int core_voltage_pre_transition(struct powernow_k8_data *data,
+ 		return 1;
+ 
+ 	if (savefid != data->currfid) {
+-		printk(KERN_ERR PFX "ph1 err, currfid changed 0x%x\n",
+-				data->currfid);
++		pr_err("ph1 err, currfid changed 0x%x\n", data->currfid);
+ 		return 1;
+ 	}
+ 
+@@ -360,13 +350,11 @@ static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid)
+ 	u32 fid_interval, savevid = data->currvid;
+ 
+ 	if (data->currfid == reqfid) {
+-		printk(KERN_ERR PFX "ph2 null fid transition 0x%x\n",
+-				data->currfid);
++		pr_err("ph2 null fid transition 0x%x\n", data->currfid);
+ 		return 0;
+ 	}
+ 
+-	pr_debug("ph2 (cpu%d): starting, currfid 0x%x, currvid 0x%x, "
+-		"reqfid 0x%x\n",
++	pr_debug("ph2 (cpu%d): starting, currfid 0x%x, currvid 0x%x, reqfid 0x%x\n",
+ 		smp_processor_id(),
+ 		data->currfid, data->currvid, reqfid);
+ 
+@@ -409,15 +397,13 @@ static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid)
+ 		return 1;
+ 
+ 	if (data->currfid != reqfid) {
+-		printk(KERN_ERR PFX
+-			"ph2: mismatch, failed fid transition, "
+-			"curr 0x%x, req 0x%x\n",
++		pr_err("ph2: mismatch, failed fid transition, curr 0x%x, req 0x%x\n",
+ 			data->currfid, reqfid);
+ 		return 1;
+ 	}
+ 
+ 	if (savevid != data->currvid) {
+-		printk(KERN_ERR PFX "ph2: vid changed, save 0x%x, curr 0x%x\n",
++		pr_err("ph2: vid changed, save 0x%x, curr 0x%x\n",
+ 			savevid, data->currvid);
+ 		return 1;
+ 	}
+@@ -444,17 +430,14 @@ static int core_voltage_post_transition(struct powernow_k8_data *data,
+ 			return 1;
+ 
+ 		if (savefid != data->currfid) {
+-			printk(KERN_ERR PFX
+-			       "ph3: bad fid change, save 0x%x, curr 0x%x\n",
+-			       savefid, data->currfid);
++			pr_err("ph3: bad fid change, save 0x%x, curr 0x%x\n",
++				savefid, data->currfid);
+ 			return 1;
+ 		}
+ 
+ 		if (data->currvid != reqvid) {
+-			printk(KERN_ERR PFX
+-			       "ph3: failed vid transition\n, "
+-			       "req 0x%x, curr 0x%x",
+-			       reqvid, data->currvid);
++			pr_err("ph3: failed vid transition\n, req 0x%x, curr 0x%x",
++				reqvid, data->currvid);
+ 			return 1;
+ 		}
+ 	}
+@@ -498,23 +481,20 @@ static void check_supported_cpu(void *_rc)
+ 	if ((eax & CPUID_XFAM) == CPUID_XFAM_K8) {
+ 		if (((eax & CPUID_USE_XFAM_XMOD) != CPUID_USE_XFAM_XMOD) ||
+ 		    ((eax & CPUID_XMOD) > CPUID_XMOD_REV_MASK)) {
+-			printk(KERN_INFO PFX
+-				"Processor cpuid %x not supported\n", eax);
++			pr_info("Processor cpuid %x not supported\n", eax);
+ 			return;
+ 		}
+ 
+ 		eax = cpuid_eax(CPUID_GET_MAX_CAPABILITIES);
+ 		if (eax < CPUID_FREQ_VOLT_CAPABILITIES) {
+-			printk(KERN_INFO PFX
+-			       "No frequency change capabilities detected\n");
++			pr_info("No frequency change capabilities detected\n");
+ 			return;
+ 		}
+ 
+ 		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
+ 		if ((edx & P_STATE_TRANSITION_CAPABLE)
+ 			!= P_STATE_TRANSITION_CAPABLE) {
+-			printk(KERN_INFO PFX
+-				"Power state transitions not supported\n");
++			pr_info("Power state transitions not supported\n");
+ 			return;
+ 		}
+ 		*rc = 0;
+@@ -529,43 +509,39 @@ static int check_pst_table(struct powernow_k8_data *data, struct pst_s *pst,
+ 
+ 	for (j = 0; j < data->numps; j++) {
+ 		if (pst[j].vid > LEAST_VID) {
+-			printk(KERN_ERR FW_BUG PFX "vid %d invalid : 0x%x\n",
+-			       j, pst[j].vid);
++			pr_err(FW_BUG "vid %d invalid : 0x%x\n", j,
++				pst[j].vid);
+ 			return -EINVAL;
+ 		}
+ 		if (pst[j].vid < data->rvo) {
+ 			/* vid + rvo >= 0 */
+-			printk(KERN_ERR FW_BUG PFX "0 vid exceeded with pstate"
+-			       " %d\n", j);
++			pr_err(FW_BUG "0 vid exceeded with pstate %d\n", j);
+ 			return -ENODEV;
+ 		}
+ 		if (pst[j].vid < maxvid + data->rvo) {
+ 			/* vid + rvo >= maxvid */
+-			printk(KERN_ERR FW_BUG PFX "maxvid exceeded with pstate"
+-			       " %d\n", j);
++			pr_err(FW_BUG "maxvid exceeded with pstate %d\n", j);
+ 			return -ENODEV;
+ 		}
+ 		if (pst[j].fid > MAX_FID) {
+-			printk(KERN_ERR FW_BUG PFX "maxfid exceeded with pstate"
+-			       " %d\n", j);
++			pr_err(FW_BUG "maxfid exceeded with pstate %d\n", j);
+ 			return -ENODEV;
+ 		}
+ 		if (j && (pst[j].fid < HI_FID_TABLE_BOTTOM)) {
+ 			/* Only first fid is allowed to be in "low" range */
+-			printk(KERN_ERR FW_BUG PFX "two low fids - %d : "
+-			       "0x%x\n", j, pst[j].fid);
++			pr_err(FW_BUG "two low fids - %d : 0x%x\n", j,
++				pst[j].fid);
+ 			return -EINVAL;
+ 		}
+ 		if (pst[j].fid < lastfid)
+ 			lastfid = pst[j].fid;
+ 	}
+ 	if (lastfid & 1) {
+-		printk(KERN_ERR FW_BUG PFX "lastfid invalid\n");
++		pr_err(FW_BUG "lastfid invalid\n");
+ 		return -EINVAL;
+ 	}
+ 	if (lastfid > LO_FID_TABLE_TOP)
+-		printk(KERN_INFO FW_BUG PFX
+-			"first fid not from lo freq table\n");
++		pr_info(FW_BUG "first fid not from lo freq table\n");
+ 
+ 	return 0;
+ }
+@@ -582,16 +558,14 @@ static void print_basics(struct powernow_k8_data *data)
+ 	for (j = 0; j < data->numps; j++) {
+ 		if (data->powernow_table[j].frequency !=
+ 				CPUFREQ_ENTRY_INVALID) {
+-				printk(KERN_INFO PFX
+-					"fid 0x%x (%d MHz), vid 0x%x\n",
+-					data->powernow_table[j].driver_data & 0xff,
+-					data->powernow_table[j].frequency/1000,
+-					data->powernow_table[j].driver_data >> 8);
++			pr_info("fid 0x%x (%d MHz), vid 0x%x\n",
++				data->powernow_table[j].driver_data & 0xff,
++				data->powernow_table[j].frequency/1000,
++				data->powernow_table[j].driver_data >> 8);
+ 		}
+ 	}
+ 	if (data->batps)
+-		printk(KERN_INFO PFX "Only %d pstates on battery\n",
+-				data->batps);
++		pr_info("Only %d pstates on battery\n", data->batps);
+ }
+ 
+ static int fill_powernow_table(struct powernow_k8_data *data,
+@@ -602,21 +576,20 @@ static int fill_powernow_table(struct powernow_k8_data *data,
+ 
+ 	if (data->batps) {
+ 		/* use ACPI support to get full speed on mains power */
+-		printk(KERN_WARNING PFX
+-			"Only %d pstates usable (use ACPI driver for full "
+-			"range\n", data->batps);
++		pr_warn("Only %d pstates usable (use ACPI driver for full range\n",
++			data->batps);
+ 		data->numps = data->batps;
+ 	}
+ 
+ 	for (j = 1; j < data->numps; j++) {
+ 		if (pst[j-1].fid >= pst[j].fid) {
+-			printk(KERN_ERR PFX "PST out of sequence\n");
++			pr_err("PST out of sequence\n");
+ 			return -EINVAL;
+ 		}
+ 	}
+ 
+ 	if (data->numps < 2) {
+-		printk(KERN_ERR PFX "no p states to transition\n");
++		pr_err("no p states to transition\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -626,7 +599,7 @@ static int fill_powernow_table(struct powernow_k8_data *data,
+ 	powernow_table = kzalloc((sizeof(*powernow_table)
+ 		* (data->numps + 1)), GFP_KERNEL);
+ 	if (!powernow_table) {
+-		printk(KERN_ERR PFX "powernow_table memory alloc failure\n");
++		pr_err("powernow_table memory alloc failure\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -681,13 +654,13 @@ static int find_psb_table(struct powernow_k8_data *data)
+ 
+ 		pr_debug("table vers: 0x%x\n", psb->tableversion);
+ 		if (psb->tableversion != PSB_VERSION_1_4) {
+-			printk(KERN_ERR FW_BUG PFX "PSB table is not v1.4\n");
++			pr_err(FW_BUG "PSB table is not v1.4\n");
+ 			return -ENODEV;
+ 		}
+ 
+ 		pr_debug("flags: 0x%x\n", psb->flags1);
+ 		if (psb->flags1) {
+-			printk(KERN_ERR FW_BUG PFX "unknown flags\n");
++			pr_err(FW_BUG "unknown flags\n");
+ 			return -ENODEV;
+ 		}
+ 
+@@ -716,7 +689,7 @@ static int find_psb_table(struct powernow_k8_data *data)
+ 				cpst = 1;
+ 		}
+ 		if (cpst != 1) {
+-			printk(KERN_ERR FW_BUG PFX "numpst must be 1\n");
++			pr_err(FW_BUG "numpst must be 1\n");
+ 			return -ENODEV;
+ 		}
+ 
+@@ -742,9 +715,8 @@ static int find_psb_table(struct powernow_k8_data *data)
+ 	 * BIOS and Kernel Developer's Guide, which is available on
+ 	 * www.amd.com
+ 	 */
+-	printk(KERN_ERR FW_BUG PFX "No PSB or ACPI _PSS objects\n");
+-	printk(KERN_ERR PFX "Make sure that your BIOS is up to date"
+-		" and Cool'N'Quiet support is enabled in BIOS setup\n");
++	pr_err(FW_BUG "No PSB or ACPI _PSS objects\n");
++	pr_err("Make sure that your BIOS is up to date and Cool'N'Quiet support is enabled in BIOS setup\n");
+ 	return -ENODEV;
+ }
+ 
+@@ -819,8 +791,7 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
+ 	acpi_processor_notify_smm(THIS_MODULE);
+ 
+ 	if (!zalloc_cpumask_var(&data->acpi_data.shared_cpu_map, GFP_KERNEL)) {
+-		printk(KERN_ERR PFX
+-				"unable to alloc powernow_k8_data cpumask\n");
++		pr_err("unable to alloc powernow_k8_data cpumask\n");
+ 		ret_val = -ENOMEM;
+ 		goto err_out_mem;
+ 	}
+@@ -885,9 +856,8 @@ static int fill_powernow_table_fidvid(struct powernow_k8_data *data,
+ 		}
+ 
+ 		if (freq != (data->acpi_data.states[i].core_frequency * 1000)) {
+-			printk(KERN_INFO PFX "invalid freq entries "
+-				"%u kHz vs. %u kHz\n", freq,
+-				(unsigned int)
++			pr_info("invalid freq entries %u kHz vs. %u kHz\n",
++				freq, (unsigned int)
+ 				(data->acpi_data.states[i].core_frequency
+ 				 * 1000));
+ 			invalidate_entry(powernow_table, i);
+@@ -916,7 +886,7 @@ static int get_transition_latency(struct powernow_k8_data *data)
+ 			max_latency = cur_latency;
+ 	}
+ 	if (max_latency == 0) {
+-		pr_err(FW_WARN PFX "Invalid zero transition latency\n");
++		pr_err(FW_WARN "Invalid zero transition latency\n");
+ 		max_latency = 1;
+ 	}
+ 	/* value in usecs, needs to be in nanoseconds */
+@@ -991,7 +961,7 @@ static long powernowk8_target_fn(void *arg)
+ 	checkvid = data->currvid;
+ 
+ 	if (pending_bit_stuck()) {
+-		printk(KERN_ERR PFX "failing targ, change pending bit set\n");
++		pr_err("failing targ, change pending bit set\n");
+ 		return -EIO;
+ 	}
+ 
+@@ -1003,12 +973,11 @@ static long powernowk8_target_fn(void *arg)
+ 		return -EIO;
+ 
+ 	pr_debug("targ: curr fid 0x%x, vid 0x%x\n",
+-		 data->currfid, data->currvid);
++		data->currfid, data->currvid);
+ 
+ 	if ((checkvid != data->currvid) ||
+ 	    (checkfid != data->currfid)) {
+-		pr_info(PFX
+-		       "error - out of sync, fix 0x%x 0x%x, vid 0x%x 0x%x\n",
++		pr_info("error - out of sync, fix 0x%x 0x%x, vid 0x%x 0x%x\n",
+ 		       checkfid, data->currfid,
+ 		       checkvid, data->currvid);
+ 	}
+@@ -1020,7 +989,7 @@ static long powernowk8_target_fn(void *arg)
+ 	ret = transition_frequency_fidvid(data, newstate);
+ 
+ 	if (ret) {
+-		printk(KERN_ERR PFX "transition frequency failed\n");
++		pr_err("transition frequency failed\n");
+ 		mutex_unlock(&fidvid_mutex);
+ 		return 1;
+ 	}
+@@ -1049,7 +1018,7 @@ static void powernowk8_cpu_init_on_cpu(void *_init_on_cpu)
+ 	struct init_on_cpu *init_on_cpu = _init_on_cpu;
+ 
+ 	if (pending_bit_stuck()) {
+-		printk(KERN_ERR PFX "failing init, change pending bit set\n");
++		pr_err("failing init, change pending bit set\n");
+ 		init_on_cpu->rc = -ENODEV;
+ 		return;
+ 	}
+@@ -1064,11 +1033,10 @@ static void powernowk8_cpu_init_on_cpu(void *_init_on_cpu)
+ 	init_on_cpu->rc = 0;
+ }
+ 
+-static const char missing_pss_msg[] =
+-	KERN_ERR
+-	FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
+-	FW_BUG PFX "First, make sure Cool'N'Quiet is enabled in the BIOS.\n"
+-	FW_BUG PFX "If that doesn't help, try upgrading your BIOS.\n";
++#define MISSING_PSS_MSG \
++	FW_BUG "No compatible ACPI _PSS objects found.\n" \
++	FW_BUG "First, make sure Cool'N'Quiet is enabled in the BIOS.\n" \
++	FW_BUG "If that doesn't help, try upgrading your BIOS.\n"
+ 
+ /* per CPU init entry point to the driver */
+ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+@@ -1083,7 +1051,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 
+ 	data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 	if (!data) {
+-		printk(KERN_ERR PFX "unable to alloc powernow_k8_data");
++		pr_err("unable to alloc powernow_k8_data");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -1095,13 +1063,11 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 		 * an UP version, and is deprecated by AMD.
+ 		 */
+ 		if (num_online_cpus() != 1) {
+-			printk_once(missing_pss_msg);
++			pr_err_once(MISSING_PSS_MSG);
+ 			goto err_out;
+ 		}
+ 		if (pol->cpu != 0) {
+-			printk(KERN_ERR FW_BUG PFX "No ACPI _PSS objects for "
+-			       "CPU other than CPU0. Complain to your BIOS "
+-			       "vendor.\n");
++			pr_err(FW_BUG "No ACPI _PSS objects for CPU other than CPU0. Complain to your BIOS vendor.\n");
+ 			goto err_out;
+ 		}
+ 		rc = find_psb_table(data);
+@@ -1129,7 +1095,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 
+ 	/* min/max the cpu is capable of */
+ 	if (cpufreq_table_validate_and_show(pol, data->powernow_table)) {
+-		printk(KERN_ERR FW_BUG PFX "invalid powernow_table\n");
++		pr_err(FW_BUG "invalid powernow_table\n");
+ 		powernow_k8_cpu_exit_acpi(data);
+ 		kfree(data->powernow_table);
+ 		kfree(data);
+@@ -1137,7 +1103,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 	}
+ 
+ 	pr_debug("cpu_init done, current fid 0x%x, vid 0x%x\n",
+-		 data->currfid, data->currvid);
++		data->currfid, data->currvid);
+ 
+ 	/* Point all the CPUs in this policy to the same data */
+ 	for_each_cpu(cpu, pol->cpus)
+@@ -1220,12 +1186,12 @@ static void __request_acpi_cpufreq(void)
+ 		goto request;
+ 
+ 	if (strncmp(cur_drv, drv, min_t(size_t, strlen(cur_drv), strlen(drv))))
+-		pr_warn(PFX "WTF driver: %s\n", cur_drv);
++		pr_warn("WTF driver: %s\n", cur_drv);
+ 
+ 	return;
+ 
+  request:
+-	pr_warn(PFX "This CPU is not supported anymore, using acpi-cpufreq instead.\n");
++	pr_warn("This CPU is not supported anymore, using acpi-cpufreq instead.\n");
+ 	request_module(drv);
+ }
+ 
+@@ -1260,7 +1226,7 @@ static int powernowk8_init(void)
+ 	if (ret)
+ 		return ret;
+ 
+-	pr_info(PFX "Found %d %s (%d cpu cores) (" VERSION ")\n",
++	pr_info("Found %d %s (%d cpu cores) (" VERSION ")\n",
+ 		num_online_nodes(), boot_cpu_data.x86_model_id, supported_cpus);
+ 
+ 	return ret;
+@@ -1274,8 +1240,8 @@ static void __exit powernowk8_exit(void)
+ 	cpufreq_unregister_driver(&cpufreq_amd64_driver);
+ }
+ 
+-MODULE_AUTHOR("Paul Devriendt <paul.devriendt@amd.com> and "
+-		"Mark Langsdorf <mark.langsdorf@amd.com>");
++MODULE_AUTHOR("Paul Devriendt <paul.devriendt@amd.com>");
++MODULE_AUTHOR("Mark Langsdorf <mark.langsdorf@amd.com>");
+ MODULE_DESCRIPTION("AMD Athlon 64 and Opteron processor frequency driver.");
+ MODULE_LICENSE("GPL");
+ 
+diff --git a/drivers/cpufreq/powernow-k8.h b/drivers/cpufreq/powernow-k8.h
+index 79329d4..45ce11e 100644
+--- a/drivers/cpufreq/powernow-k8.h
++++ b/drivers/cpufreq/powernow-k8.h
+@@ -19,7 +19,7 @@ struct powernow_k8_data {
+ 	u32 vidmvs;  /* usable value calculated from mvs */
+ 	u32 vstable; /* voltage stabilization time, units 20 us */
+ 	u32 plllock; /* pll lock time, units 1 us */
+-        u32 exttype; /* extended interface = 1 */
++	u32 exttype; /* extended interface = 1 */
+ 
+ 	/* keep track of the current fid / vid or pstate */
+ 	u32 currvid;
+-- 
+1.9.0
 
-	Have subsystems/drivers set the flag during ->prepare().  They
-	don't even have to check if the device is runtime-suspended;
-	if it isn't then the PM core will turn off the flag later.
-
-	In __device_suspend(), before invoking the ->supend() callback, 
-	check the flag.  If it is still set and if the device is
-	runtime-suspended (a barrier may be necessary here), skip 
-	->suspend() and the following callbacks.  Otherwise clear the
-	parent's flag and proceed as usual.
-
-> > Several of these questions are a lot easier to answer if the flag gets 
-> > set during ->prepare() rather than ->suspend().
-> 
-> I agree with that, but I have one concern about this approach.  Namely,
-> in that case the PM core has to use pm_runtime_resume() or equivalent to
-> resume devices with the flag set during the device resume stage.  Now,
-> in the next step we may want to leave certain devices suspended at that
-> point and the PM core has no way to tell which ones.  Also subsystems
-> don't really have a chance to tell it about that (they would need to
-> know in advance during ->prepare(), which is kind of unrealistic, or
-> perhaps it isn't).
-> 
-> However, if ->resume() is called for devices with the flag set, like in
-> my most recent patch, the subsystem may decide not to resume the device
-> if it knows enough about it.
-> 
-> This pretty much is my only concern here, so I'm open to ideas how to deal
-> with leaving devices suspended (if possible) during the device resume stage. :-)
-
-This is a good question.  I'm not sure of the best answer at the 
-moment.
-
-> For one, postponing the resume to ->complete() is an option, but it will have
-> to be done with care, because the ->complete() callbacks are executed
-> sequentially, so calling pm_runtime_resume() from there is rather out of the
-> question.
-
-Calling pm_request_resume() would be okay, though.
-
-There's another aspect to this we need to consider: hibernation.  I'm
-quite sure we don't want to come out of hibernation thinking that
-devices are still in their runtime-suspended states.  Skipping the
-callbacks for freeze and thaw would be all right in principle, and
-maybe even for poweroff, but not for restore.  And of course, during
-the restore stages, the last thing subsystems and drivers will remember
-happening is freeze -- which might mean you shouldn't skip the freeze
-callbacks either.
-
-Alan Stern
