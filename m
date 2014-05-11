@@ -1,59 +1,77 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 1/3] thermal: rcar: remove unnecessary OOM messages
-Date: Sun, 11 May 2014 09:49:22 +0900
-Message-ID: <20140511004922.GX31760@verge.net.au>
-References: <01a401cf69ba$0f1b88d0$2d529a70$%han@samsung.com>
+From: jonghwan Choi <jhbird.choi@gmail.com>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
+ cpufreq table
+Date: Sun, 11 May 2014 04:38:40 -0700
+Message-ID: <CAGZ6kuPzpxh-r9-KfPDOGXQXjqcthMV07Nd_dgwvBd7w+F9A+w@mail.gmail.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
+	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+	<5367946F.1030407@ti.com>
+	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
+	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
+	<003e01cf6984$fb950280$f2bf0780$@samsung.com>
+	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
+	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
+	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
+	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
+	<000301cf6a62$413c16b0$c3b44410$@samsung.com>
+	<CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>
+	<000e01cf6b23$58fda900$0af8fb00$@samsung.com>
+	<CAKohpomX_ZXSyk7RuCyO1t8VUee5H5KN5zj1-VhDp+ZtFbF-xA@mail.gmail.com>
+	<CAGZ6kuO_N+bZpWa8uQiZUCTWscMbwAd7EL-1dbCJX9JCvFDnyQ@mail.gmail.com>
+	<536CD6BD.9000804@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:52927 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758036AbaEKIgt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 May 2014 04:36:49 -0400
-Content-Disposition: inline
-In-Reply-To: <01a401cf69ba$0f1b88d0$2d529a70$%han@samsung.com>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:43008 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757950AbaEKLil (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 May 2014 07:38:41 -0400
+In-Reply-To: <536CD6BD.9000804@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Zhang Rui' <rui.zhang@intel.com>, 'Eduardo Valentin' <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, 'Kuninori Morimoto' <kuninori.morimoto.gx@renesas.com>
+To: Nishanth Menon <nm@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On Wed, May 07, 2014 at 03:03:25PM +0900, Jingoo Han wrote:
-> The site-specific OOM messages are unnecessary, because they
-> duplicate the MM subsystem generic OOM message.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+On Fri, May 9, 2014 at 6:23 AM, Nishanth Menon <nm@ti.com> wrote:
+> Have you considered the option of having a clock driver which can
+> decide the divider (based on dts OR index or whatever)?
+>
+> example: you could do clk_set_rate(apll, rate);
+> and instead of implementing clock divider programmation inside cpufreq
+> driver, you let corresponding clock driver do it for you. that allows
+> you to reuse clock driver with various parameters needed for your SoC
+> variations. IMHO, we are trying to solve a problem meant to be solved
+> in clock framework instead of within cpufreq.
 
-Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-> ---
->  drivers/thermal/rcar_thermal.c |    5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 5a37940..105ab5e 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -374,10 +374,8 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  	int idle = IDLE_INTERVAL;
->  
->  	common = devm_kzalloc(dev, sizeof(*common), GFP_KERNEL);
-> -	if (!common) {
-> -		dev_err(dev, "Could not allocate common\n");
-> +	if (!common)
->  		return -ENOMEM;
-> -	}
->  
->  	INIT_LIST_HEAD(&common->head);
->  	spin_lock_init(&common->lock);
-> @@ -423,7 +421,6 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  
->  		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->  		if (!priv) {
-> -			dev_err(dev, "Could not allocate priv\n");
->  			ret = -ENOMEM;
->  			goto error_unregister;
->  		}
-> -- 
-> 1.7.10.4
-> 
-> 
+I already considered it.
+(But it only passes on  what cpufreq driver has to do to clock framework.
+For changing clock rate, if changing operation just divides a rate of
+parent it can be solved easily
+But exycpufreq driver is  more complicated.
+
+Previously, to change frequency, pll value and clk divider value were
+changed in cpufreq driver.
+Later someone moved the code which changes pll value to clock framework.
+In there, pll values are maintained as table per frequency. And if
+frequency is added/removed, values of
+pll table should be changed.
+when we change the pll value through clk_set_rate, internally  to find
+proper pll value,  pll table is searched.
+If proper pll value is found, that value is written into the register)
+
+My suggestion is that all these change details should be removed
+according to adding/removing frequency.
+I believe that cpufreq driver just writes a specific value per
+frequency  into the register for dvfs(Maybe other work is also needed)
+
+If we just describe the specific value per frequency in dts file, the
+driver will get that information through DT, and use it for DVFS.)
+Then when a new chip is  released(if the chip has the same h/w
+interface - register map), we only have to do as above.
+
+
+Thanks
+
+Best Regards
