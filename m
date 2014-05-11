@@ -1,113 +1,122 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 4/5] intel_pstate: Remove C0 tracking
-Date: Mon, 12 May 2014 02:26:16 +0200
-Message-ID: <8611014.ohD4mdM9gP@vostro.rjw.lan>
-References: <1399579047-5792-1-git-send-email-dirk.j.brandewie@intel.com> <1399579047-5792-5-git-send-email-dirk.j.brandewie@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56190 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750722AbaELAJc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 May 2014 20:09:32 -0400
-In-Reply-To: <1399579047-5792-5-git-send-email-dirk.j.brandewie@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: [RFC PATCH 02/12 v2] Init CPU ConCurrency
+Date: Mon, 12 May 2014 02:16:51 +0800
+Message-ID: <1399832221-8314-3-git-send-email-yuyang.du@intel.com>
+References: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com, yuyang.du@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: dirk.brandewie@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Thursday, May 08, 2014 12:57:26 PM dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> 
-> Commit fcb6a15c intel_pstate: Take core C0 time into account for core busy
-> introduced a regression referenced below.  The issue with "lockup"
-> after suspend that this commit was addressing is now dealt with in the
-> suspend path.
-> 
-> References:
->    https://bugzilla.kernel.org/show_bug.cgi?id=66581
->    https://bugzilla.kernel.org/show_bug.cgi?id=75121
-> 
-> Reported-by: Doug Smythies <dsmythies@telus.net>
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+CPU ConCurrency (CC) is inserted as a member in each CPU's rq, and
+initiated the same time as rq. Updating CC is protected by rq's lock.
 
-Do we need this in -stable?
+Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+---
+ kernel/sched/Makefile      |    1 +
+ kernel/sched/concurrency.c |   22 ++++++++++++++++++++++
+ kernel/sched/core.c        |    2 ++
+ kernel/sched/sched.h       |   21 +++++++++++++++++++++
+ 4 files changed, 46 insertions(+)
+ create mode 100644 kernel/sched/concurrency.c
 
-> ---
->  drivers/cpufreq/intel_pstate.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index bb20881..4c26faf 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -59,7 +59,6 @@ struct sample {
->  	int32_t core_pct_busy;
->  	u64 aperf;
->  	u64 mperf;
-> -	unsigned long long tsc;
->  	int freq;
->  };
->  
-> @@ -100,7 +99,6 @@ struct cpudata {
->  
->  	u64	prev_aperf;
->  	u64	prev_mperf;
-> -	unsigned long long prev_tsc;
->  	struct sample sample;
->  };
->  
-> @@ -561,46 +559,37 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu,
->  					struct sample *sample)
->  {
->  	int32_t core_pct;
-> -	int32_t c0_pct;
->  
->  	core_pct = div_fp(int_tofp((sample->aperf)),
->  			int_tofp((sample->mperf)));
->  	core_pct = mul_fp(core_pct, int_tofp(100));
->  	FP_ROUNDUP(core_pct);
->  
-> -	c0_pct = div_fp(int_tofp(sample->mperf), int_tofp(sample->tsc));
-> -
->  	sample->freq = fp_toint(
->  		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
->  
-> -	sample->core_pct_busy = mul_fp(core_pct, c0_pct);
-> +	sample->core_pct_busy = core_pct;
->  }
->  
->  static inline void intel_pstate_sample(struct cpudata *cpu)
->  {
->  	u64 aperf, mperf;
-> -	unsigned long long tsc;
->  
->  	rdmsrl(MSR_IA32_APERF, aperf);
->  	rdmsrl(MSR_IA32_MPERF, mperf);
-> -	tsc = native_read_tsc();
->  
->  	aperf = aperf >> FRAC_BITS;
->  	mperf = mperf >> FRAC_BITS;
-> -	tsc = tsc >> FRAC_BITS;
->  
->  	cpu->sample.aperf = aperf;
->  	cpu->sample.mperf = mperf;
-> -	cpu->sample.tsc = tsc;
->  	cpu->sample.aperf -= cpu->prev_aperf;
->  	cpu->sample.mperf -= cpu->prev_mperf;
-> -	cpu->sample.tsc -= cpu->prev_tsc;
->  
->  	intel_pstate_calc_busy(cpu, &cpu->sample);
->  
->  	cpu->prev_aperf = aperf;
->  	cpu->prev_mperf = mperf;
-> -	cpu->prev_tsc = tsc;
->  }
->  
->  static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
-> 
-
+diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
+index ab32b7b..e67f7e3 100644
+--- a/kernel/sched/Makefile
++++ b/kernel/sched/Makefile
+@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
+ obj-$(CONFIG_SCHEDSTATS) += stats.o
+ obj-$(CONFIG_SCHED_DEBUG) += debug.o
+ obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
++obj-$(CONFIG_CPU_CONCURRENCY) += concurrency.o
+diff --git a/kernel/sched/concurrency.c b/kernel/sched/concurrency.c
+new file mode 100644
+index 0000000..50e08a2
+--- /dev/null
++++ b/kernel/sched/concurrency.c
+@@ -0,0 +1,22 @@
++/*
++ * CPU ConCurrency (CC) measures the CPU load by averaging
++ * the number of running tasks. Using CC, the scheduler can
++ * evaluate the load of CPUs to improve load balance for power
++ * efficiency without sacrificing performance.
++ *
++ */
++
++#ifdef CONFIG_CPU_CONCURRENCY
++
++#include "sched.h"
++
++void init_cpu_concurrency(struct rq *rq)
++{
++	rq->concurrency.sum = 0;
++	rq->concurrency.sum_now = 0;
++	rq->concurrency.contrib = 0;
++	rq->concurrency.nr_running = 0;
++	rq->concurrency.sum_timestamp = ULLONG_MAX;
++	rq->concurrency.contrib_timestamp = ULLONG_MAX;
++}
++#endif
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 268a45e..7958a47 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6884,6 +6884,8 @@ void __init sched_init(void)
+ #endif
+ 		init_rq_hrtick(rq);
+ 		atomic_set(&rq->nr_iowait, 0);
++
++		init_cpu_concurrency(rq);
+ 	}
+ 
+ 	set_load_weight(&init_task);
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 456e492..f1c9235 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -508,6 +508,17 @@ extern struct root_domain def_root_domain;
+ 
+ #endif /* CONFIG_SMP */
+ 
++#ifdef CONFIG_CPU_CONCURRENCY
++struct cpu_concurrency_t {
++	u64 sum;
++	u64 sum_now;
++	u64 contrib;
++	u64 sum_timestamp;
++	u64 contrib_timestamp;
++	unsigned int nr_running;
++};
++#endif
++
+ /*
+  * This is the main, per-CPU runqueue data structure.
+  *
+@@ -643,6 +654,10 @@ struct rq {
+ #ifdef CONFIG_SMP
+ 	struct llist_head wake_list;
+ #endif
++
++#ifdef CONFIG_CPU_CONCURRENCY
++	struct cpu_concurrency_t concurrency;
++#endif
+ };
+ 
+ static inline int cpu_of(struct rq *rq)
+@@ -1203,6 +1218,12 @@ extern void init_sched_dl_class(void);
+ extern void resched_task(struct task_struct *p);
+ extern void resched_cpu(int cpu);
+ 
++#ifdef CONFIG_CPU_CONCURRENCY
++extern void init_cpu_concurrency(struct rq *rq);
++#else
++static inline void init_cpu_concurrency(struct rq *rq) {}
++#endif
++
+ extern struct rt_bandwidth def_rt_bandwidth;
+ extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
