@@ -1,122 +1,166 @@
 From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 02/12 v2] Init CPU ConCurrency
-Date: Mon, 12 May 2014 02:16:51 +0800
-Message-ID: <1399832221-8314-3-git-send-email-yuyang.du@intel.com>
-References: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
+Subject: =?UTF-8?q?=5BRFC=20PATCH=2000/12=20v2=5D=20A=20new=20CPU=20load=20metric=20for=20power-efficient=20scheduler=3A=20CPU=20ConCurrency?=
+Date: Mon, 12 May 2014 02:16:49 +0800
+Message-ID: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com, yuyang.du@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-CPU ConCurrency (CC) is inserted as a member in each CPU's rq, and
-initiated the same time as rq. Updating CC is protected by rq's lock.
+Hi Ingo, PeterZ, Rafael, and others,
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
----
- kernel/sched/Makefile      |    1 +
- kernel/sched/concurrency.c |   22 ++++++++++++++++++++++
- kernel/sched/core.c        |    2 ++
- kernel/sched/sched.h       |   21 +++++++++++++++++++++
- 4 files changed, 46 insertions(+)
+The current scheduler=E2=80=99s load balancing is completely work-conse=
+rving. In some
+workload, generally low CPU utilization but immersed with CPU bursts of
+transient tasks, migrating task to engage all available CPUs for
+work-conserving can lead to significant overhead: cache locality loss,
+idle/active HW state transitional latency and power, shallower idle sta=
+te,
+etc, which are both power and performance inefficient especially for to=
+day=E2=80=99s
+low power processors in mobile.=20
+
+This RFC introduces a sense of idleness-conserving into work-conserving=
+ (by
+all means, we really don=E2=80=99t want to be overwhelming in only one =
+way). But to
+what extent the idleness-conserving should be, bearing in mind that we =
+don=E2=80=99t
+want to sacrifice performance? We first need a load/idleness indicator =
+to that
+end.
+
+Thanks to CFS=E2=80=99s =E2=80=9Cmodel an ideal, precise multi-tasking =
+CPU=E2=80=9D, tasks can be seen
+as concurrently running (the tasks in the runqueue). So it is natural t=
+o use
+task concurrency as load indicator. Having said that, we do two things:
+
+1) Divide continuous time into periods of time, and average task concur=
+rency
+in period, for tolerating the transient bursts:
+a =3D sum(concurrency * time) / period
+2) Exponentially decay past periods, and synthesize them all, for hyste=
+resis
+to load drops or resilience to load rises (let f be decaying factor, an=
+d a_x
+the xth period average since period 0):
+s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, ..., + f^(n-1) * a_1 + f^n * a=
+_0
+
+We name this load indicator as CPU ConCurrency (CC): task concurrency
+determines how many CPUs are needed to be running concurrently.
+
+Another two ways of how to interpret CC:
+
+1) the current work-conserving load balance also uses CC, but instantan=
+eous
+CC.
+
+2) CC vs. CPU utilization. CC is runqueue-length-weighted CPU utilizati=
+on. If
+we change: "a =3D sum(concurrency * time) / period" to "a' =3D sum(1 * =
+time) /
+period". Then a' is just about the CPU utilization. And the way we weig=
+ht
+runqueue-length is the simplest one (excluding the exponential decays, =
+and you
+may have other ways).
+
+To track CC, we intercept the scheduler in 1) enqueue, 2) dequeue, 3)
+scheduler tick, and 4) enter/exit idle.
+
+After CC, in the consolidation part, we do 1) attach the CPU topology t=
+o be
+adaptive beyond our experimental platforms, and 2) intercept the curren=
+t load
+balance for load and load balancing containment.
+
+Currently, CC is per CPU. To consolidate, the formula is based on a heu=
+ristic.
+Suppose we have 2 CPUs, their task concurrency over time is ('-' means =
+no
+task, 'x' having tasks):
+
+1)
+CPU0: ---xxxx---------- (CC[0])
+CPU1: ---------xxxx---- (CC[1])
+
+2)
+CPU0: ---xxxx---------- (CC[0])
+CPU1: ---xxxx---------- (CC[1])
+
+If we consolidate CPU0 and CPU1, the consolidated CC will be: CC' =3D C=
+C[0] +
+CC[1] for case 1 and CC'' =3D (CC[0] + CC[1]) * 2 for case 2. For the c=
+ases in
+between case 1 and 2 in terms of how xxx overlaps, the CC should be bet=
+ween
+CC' and CC''. So, we uniformly use this condition for consolidation (su=
+ppose
+we consolidate m CPUs to n CPUs, m > n):
+
+(CC[0] + CC[1] + ... + CC[m-2] + CC[m-1]) * (n + log(m-n)) >=3D<? (1 * =
+n) * n *
+consolidating_coefficient
+
+The consolidating_coefficient could be like 100% or more or less.
+
+By CC, we implemented a Workload Consolidation patch on two Intel mobil=
+e
+platforms (a quad-core composed of two dual-core modules): contain load=
+ and
+load balancing in the first dual-core when aggregated CC low, and if no=
+t in
+the full quad-core. Results show that we got power savings and no subst=
+antial
+performance regression (even gains for some). The workloads we used to
+evaluate the Workload Consolidation include 1) 50+ perf/ux benchmarks (=
+almost
+all of the magazine ones), and 2) ~10 power workloads, of course, they =
+are the
+easiest ones, such as browsing, audio, video, recording, imaging, etc. =
+The
+current half-life is 1 period, and the period was 32ms, and now 64ms fo=
+r more
+aggressive consolidation.
+
+v2:
+- Data type defined in formation
+
+Yuyang Du (12):
+  CONFIG for CPU ConCurrency
+  Init CPU ConCurrency
+  CPU ConCurrency calculation
+  CPU ConCurrency tracking
+  CONFIG for Workload Consolidation
+  Attach CPU topology to specify each sched_domain's workload
+    consolidation
+  CPU ConCurrency API for Workload Consolidation
+  Intercept wakeup/fork/exec load balancing
+  Intercept idle balancing
+  Intercept periodic nohz idle balancing
+  Intercept periodic load balancing
+  Intercept RT scheduler
+
+ arch/x86/Kconfig             |   21 +
+ include/linux/sched.h        |   13 +
+ include/linux/sched/sysctl.h |    8 +
+ include/linux/topology.h     |   16 +
+ kernel/sched/Makefile        |    1 +
+ kernel/sched/concurrency.c   |  928 ++++++++++++++++++++++++++++++++++=
+++++++++
+ kernel/sched/core.c          |   46 +++
+ kernel/sched/fair.c          |  131 +++++-
+ kernel/sched/rt.c            |   25 ++
+ kernel/sched/sched.h         |   36 ++
+ kernel/sysctl.c              |   16 +
+ 11 files changed, 1232 insertions(+), 9 deletions(-)
  create mode 100644 kernel/sched/concurrency.c
 
-diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
-index ab32b7b..e67f7e3 100644
---- a/kernel/sched/Makefile
-+++ b/kernel/sched/Makefile
-@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
- obj-$(CONFIG_SCHEDSTATS) += stats.o
- obj-$(CONFIG_SCHED_DEBUG) += debug.o
- obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
-+obj-$(CONFIG_CPU_CONCURRENCY) += concurrency.o
-diff --git a/kernel/sched/concurrency.c b/kernel/sched/concurrency.c
-new file mode 100644
-index 0000000..50e08a2
---- /dev/null
-+++ b/kernel/sched/concurrency.c
-@@ -0,0 +1,22 @@
-+/*
-+ * CPU ConCurrency (CC) measures the CPU load by averaging
-+ * the number of running tasks. Using CC, the scheduler can
-+ * evaluate the load of CPUs to improve load balance for power
-+ * efficiency without sacrificing performance.
-+ *
-+ */
-+
-+#ifdef CONFIG_CPU_CONCURRENCY
-+
-+#include "sched.h"
-+
-+void init_cpu_concurrency(struct rq *rq)
-+{
-+	rq->concurrency.sum = 0;
-+	rq->concurrency.sum_now = 0;
-+	rq->concurrency.contrib = 0;
-+	rq->concurrency.nr_running = 0;
-+	rq->concurrency.sum_timestamp = ULLONG_MAX;
-+	rq->concurrency.contrib_timestamp = ULLONG_MAX;
-+}
-+#endif
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 268a45e..7958a47 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6884,6 +6884,8 @@ void __init sched_init(void)
- #endif
- 		init_rq_hrtick(rq);
- 		atomic_set(&rq->nr_iowait, 0);
-+
-+		init_cpu_concurrency(rq);
- 	}
- 
- 	set_load_weight(&init_task);
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 456e492..f1c9235 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -508,6 +508,17 @@ extern struct root_domain def_root_domain;
- 
- #endif /* CONFIG_SMP */
- 
-+#ifdef CONFIG_CPU_CONCURRENCY
-+struct cpu_concurrency_t {
-+	u64 sum;
-+	u64 sum_now;
-+	u64 contrib;
-+	u64 sum_timestamp;
-+	u64 contrib_timestamp;
-+	unsigned int nr_running;
-+};
-+#endif
-+
- /*
-  * This is the main, per-CPU runqueue data structure.
-  *
-@@ -643,6 +654,10 @@ struct rq {
- #ifdef CONFIG_SMP
- 	struct llist_head wake_list;
- #endif
-+
-+#ifdef CONFIG_CPU_CONCURRENCY
-+	struct cpu_concurrency_t concurrency;
-+#endif
- };
- 
- static inline int cpu_of(struct rq *rq)
-@@ -1203,6 +1218,12 @@ extern void init_sched_dl_class(void);
- extern void resched_task(struct task_struct *p);
- extern void resched_cpu(int cpu);
- 
-+#ifdef CONFIG_CPU_CONCURRENCY
-+extern void init_cpu_concurrency(struct rq *rq);
-+#else
-+static inline void init_cpu_concurrency(struct rq *rq) {}
-+#endif
-+
- extern struct rt_bandwidth def_rt_bandwidth;
- extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
- 
--- 
+--=20
 1.7.9.5
