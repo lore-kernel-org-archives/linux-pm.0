@@ -1,41 +1,47 @@
-From: Mark Hambleton <mark.hambleton@broadcom.com>
-Subject: RE: [PATCH 2/3] arm64: Add big.LITTLE switcher stub
-Date: Mon, 12 May 2014 14:09:06 +0000
-Message-ID: <D00A5DFD97C44C4D820FC3A847C5D57507406990@IRVEXCHMB14.corp.ad.broadcom.com>
-References: <1399653631-4938-1-git-send-email-broonie@kernel.org>
- <1399653631-4938-2-git-send-email-broonie@kernel.org>
- <536D0AF4.1040705@arm.com> <20140509175005.GT12304@sirena.org.uk>
- <536D2533.6050100@arm.com> <20140509192921.GY12304@sirena.org.uk>
- <5370877C.40409@arm.com> <20140512121729.GC12304@sirena.org.uk>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze"
+ sleep state
+Date: Mon, 12 May 2014 22:19:08 +0800
+Message-ID: <5370D85C.3090505@linux.intel.com>
+References: <2548502.zJ1no3NhRc@vostro.rjw.lan> <5370D5E4.5040001@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-gw2-out.broadcom.com ([216.31.210.63]:9739 "EHLO
-	mail-gw2-out.broadcom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758187AbaELOJH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 10:09:07 -0400
-In-Reply-To: <20140512121729.GC12304@sirena.org.uk>
-Content-Language: en-US
+Received: from mga02.intel.com ([134.134.136.20]:62445 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756705AbaELOUY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 May 2014 10:20:24 -0400
+In-Reply-To: <5370D5E4.5040001@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
 
-> This all gets a bit circular though - the more patches people have to
-> carry to make upstream useful to them less useful working with upstream
-> seems to them, meaning the devices are less likely to appear upstream at
-> all at least in any sort of complete form.  One out of tree patch being
-> required isn't going to be a deal breaker by itself but they all add up
-> to a perception that upstream isn't useful.
+On 2014/5/12 22:08, Daniel Lezcano wrote:
+> On 05/05/2014 12:51 AM, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> If freeze_enter() is called, we want to bypass the current cpuidle
+>> governor and always use the deepest available (that is, not disabled)
+>> C-state, because we want to save as much energy as reasonably possible
+>> then and runtime latency constraints don't matter at that point, since
+>> the system is in a sleep state anyway.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>
+>> This is on top of https://patchwork.kernel.org/patch/4071541/ .
+>>
 > 
-> There's definitely some taste considerations with how far you go to
-> cater for such systems - in this case I'd say it's just tweaking Kconfig
-> to allow people to use code that's already present rather than adding
-> really new code (there's the stubs but they're pretty insubstantial)
-> which means upstream doesn't have to carry anything that wasn't there
-> already.
+> Wouldn't make sense to revisit play_dead instead ?
+> 
+play_dead() is broken.
 
-Agree, with the original version of this patch I just put all the stubs in drivers/cpufreq/arm_big_little.h to get around needing to add files to arm64 (when it shouldn't need it). At least then the stubs were pretty local to the implementation and didn't require all of the ifdefs in the code (as Mark says that looks horrible).
+Even if it works, we still should rely on cpuidle driver to place the
+CPUs into the deepest c-state, because there is no architectural way to
+enter deepest c-state and what play_dead() does is a bad assumption.
 
-Mark
+Thanks,
+-Aubrey
+
