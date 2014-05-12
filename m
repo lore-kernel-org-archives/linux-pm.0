@@ -1,71 +1,119 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 00/12 v2] A new CPU load metric for power-efficient
- scheduler: CPU ConCurrency
-Date: Mon, 12 May 2014 17:15:32 +0200
-Message-ID: <20140512151532.GQ30445@twins.programming.kicks-ass.net>
-References: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
- <20140512064533.GH30445@twins.programming.kicks-ass.net>
- <20140512012856.GA9351@intel.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Flag to speed up suspend-resume of runtime-suspended devices
+Date: Mon, 12 May 2014 09:33:26 -0700
+Message-ID: <7hha4vkld5.fsf@paris.lan>
+References: <Pine.LNX.4.44L0.1405071126340.1325-100000@iolanthe.rowland.org>
+	<2703563.1xTcfTGG98@vostro.rjw.lan> <7hmweqmuve.fsf@paris.lan>
+	<2529433.Aygp7Yxy87@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="4CI+obvDyVe27XRB"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:35859 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758693AbaELPPi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 11:15:38 -0400
-Content-Disposition: inline
-In-Reply-To: <20140512012856.GA9351@intel.com>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:54320 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758805AbaELQda (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 12:33:30 -0400
+Received: by mail-pa0-f52.google.com with SMTP id fa1so4787715pad.25
+        for <linux-pm@vger.kernel.org>; Mon, 12 May 2014 09:33:29 -0700 (PDT)
+In-Reply-To: <2529433.Aygp7Yxy87@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Sat, 10 May 2014 03:38:27 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuyang Du <yuyang.du@intel.com>
-Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Aaron Lu <aaron.lu@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
---4CI+obvDyVe27XRB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Friday, May 09, 2014 03:48:21 PM Kevin Hilman wrote:
+>> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>> 
+>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >
+>> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+>> > resume all runtime-suspended devices during system suspend, mostly
+>> > because those devices may need to be reprogrammed due to different
+>> > wakeup settings for system sleep and for runtime PM.
+>> >
+>> > For some devices, though, it's OK to remain in runtime suspend 
+>> > throughout a complete system suspend/resume cycle (if the device was in
+>> > runtime suspend at the start of the cycle).  We would like to do this
+>> > whenever possible, to avoid the overhead of extra power-up and power-down
+>> > events.
+>> >
+>> > However, problems may arise because the device's descendants may require
+>> > it to be at full power at various points during the cycle.  Therefore the
+>> > most straightforward way to do this safely is if the device and all its
+>> > descendants can remain runtime suspended until the resume stage of system
+>> > resume.
+>> >
+>> > To this end, introduce dev->power.leave_runtime_suspended.
+>> > If a subsystem or driver sets this flag during the ->prepare() callback,
+>> > and if the flag is set in all of the device's descendants, and if the
+>> > device is still in runtime suspend at the beginning of the ->suspend()
+>> > callback, that callback is allowed to return 0 without clearing
+>> > power.leave_runtime_suspended and without changing the state of the
+>> > device, unless the current state of the device is not appropriate for
+>> > the upcoming system sleep state (for example, the device is supposed to
+>> > wake up the system from that state and its current wakeup settings are
+>> > not suitable for that).  Then, the PM core will not invoke the device's
+>> > ->suspend_late(), ->suspend_irq(), ->resume_irq(), ->resume_early(), or
+>> > ->resume() callbacks.  
+>> 
+>> Up to here, this sounds great.
+>> 
+>> > Instead, it will invoke ->runtime_resume() during the device resume
+>> > stage of system resume.
+>> 
+>> But this part I'm not fully following...
+>
+> You're not looking at the most recent one. :-)
 
-On Mon, May 12, 2014 at 09:28:57AM +0800, Yuyang Du wrote:
-> On Mon, May 12, 2014 at 08:45:33AM +0200, Peter Zijlstra wrote:
-> > On Mon, May 12, 2014 at 02:16:49AM +0800, Yuyang Du wrote:
-> >=20
-> > Yes, just what we need, more patches while we haven't had the time to
-> > look at the old set yet :-(
->=20
-> No essential change, added commit messages (after smashing our heads to
-> figure out what general code structure is). Can we get over immediate no =
-go to
-> maybe slow no go?
+Sorry about that, I haven't been able to keep up with the versions.
 
-Well, sane feedback means I first have to read and digest wth you're
-doing, this means at least a days time reading through your patches.
-Finding a spare day is hard when people keep sending me bugs to chase
-down.
+> Please look here: https://patchwork.kernel.org/patch/4139181/
 
-It'll happen, eventually, but you'll have to wait, just like everyone
-else.
+OK.  
 
---4CI+obvDyVe27XRB
-Content-Type: application/pgp-signature
+>> > By leaving this flag set after ->suspend(), a driver or subsystem tells
+>> > the PM core that the device is runtime suspended, it is in a suitable
+>> > state for system suspend (for example, the wakeup setting does not
+>> > need to be changed), and it does not need to return to full
+>> > power until the resume stage.
+>> 
+>> But taking this "leave runtime suspended" idea the next logical step,
+>> why would/should a device need to return to full power at the ->resume()
+>> stage?  especially when it wasn't at full power when ->suspend()
+>> happened?
+>
+> Good question and I've been thinking about that for a while.
+>
+> Generally, the main reason for resuming is that on some platforms devices are
+> automatically powered up by firmware and in those cases it's better to
+> resume them (to make the runtime PM status reflect the physical state) and
+> suspend again later.
+>
+> Generally speaking, subsystems that need to do that know what they are and
+> that's what I was talking about in the most recent reply to Alan:
+>
+> http://marc.info/?l=linux-pm&m=139967477806094&w=4
+>
+> Currently, I think, there are two options on the table really.
+>
+>  1. Do more or less what https://patchwork.kernel.org/patch/4139181/ does
+>     with a modification to check that ->suspend() doesn't "cheat" (by setting
+>     the flag that had been unset before it was called).  The subsystem's
+>     ->resume() would then decide what to do with the device (resume it or
+>     leave it suspended).
+>
+>  2. Do what Alan was suggesting, that is set the flag in ->prepare() and
+>     make the PM core skip *all* of the system suspend/resume callbacks
+>     for devices with that flag set and let the ->complete() callback
+>     decide what to do with the device.
+>
+> I'm leaning a bit towards 2, but still considering 1 too.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+If it matters, I have a slight preference for 2 also, though as long as
+the subsytem/device gets to decide whether to resume, I think I'm OK
+with either approach.
 
-iQIcBAEBAgAGBQJTcOWUAAoJEHZH4aRLwOS6Vl4P/13hIYg6ZqzyrtdGq2D8SLxj
-pR+yXy7rT/0morcjzi9WRacYusTjGSF2o71wXnV403IwjVXYubIlbM5TaT3BQ/aD
-/x//AX1UFQCdOWf++Kn0svxG3SsEzDz+QZXrh7G45usArji+taI6G3Afm0F4KWGj
-Kz07KOiddoci7eBR5Nx+tFHDrS+t48OrAejdwr5VzdR9Chn0LF4m6USNaJOWsH6a
-kQCD+7DyewbBbMZja7ouDFkg9JlgaFarwHEbo2i2ww8HH4TtYrRqDGpNLDNosb0P
-HEQRlDK/9lpEGGiaV6vyz+xIwSJOyST2+DheHMbQip0oBcQB3pAgN3mDIOoyzhZD
-9liO79hduCXFdMY/AoyGkyIbRQQJlPfIasIdwQ6Uc03/P/cVW0MXDNsoDvrEQy5A
-NcbZEedOR1JqgGQcNM26CeGp3BQakqi6liCezob46/vTEDshe6cJhG0KVTIhzPy/
-jXer4EpRNAqS9hadeXPWIfmwhND6FTnz9FypUVY8G/qLLSKBIBuvBboJoiEtes6D
-WnY/SxHNR7Nv/Edzy6lv5IEL1kZW2eaU2aCe+iHuswvcPaqv65xfYCqRYSJM0Tdz
-O51CFalB4oJLxpamSmY2ia4UawxOLEaq/W8RF36SWZqJAbrnpji8A7o69i7kv17l
-OYUHoDBZp2+v7B7DXT9+
-=9cUc
------END PGP SIGNATURE-----
+Kevin
 
---4CI+obvDyVe27XRB--
