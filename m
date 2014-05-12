@@ -1,53 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 4/5] intel_pstate: Remove C0 tracking
-Date: Tue, 13 May 2014 01:45:19 +0200
-Message-ID: <5584056.gWB1BqsgiU@vostro.rjw.lan>
-References: <1399579047-5792-1-git-send-email-dirk.j.brandewie@intel.com> <5349714.j69a5Fx52S@vostro.rjw.lan> <5370DD27.5030701@intel.com>
+Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze" sleep state
+Date: Tue, 13 May 2014 01:53:49 +0200
+Message-ID: <1675732.Zj8pe2mRTV@vostro.rjw.lan>
+References: <2548502.zJ1no3NhRc@vostro.rjw.lan> <5370D85C.3090505@linux.intel.com> <5370E026.5040105@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5370DD27.5030701@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, dirk.j.brandewie@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:54677 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751708AbaELXhE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 19:37:04 -0400
+In-Reply-To: <5370E026.5040105@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Li, Aubrey" <aubrey.li@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
 
-On Monday, May 12, 2014 07:39:35 AM Dirk Brandewie wrote:
-> On 05/12/2014 05:16 AM, Rafael J. Wysocki wrote:
-> > On Monday, May 12, 2014 05:27:25 AM Stratos Karafotis wrote:
-> >> Hi,
+On Monday, May 12, 2014 04:52:22 PM Daniel Lezcano wrote:
+> On 05/12/2014 04:19 PM, Li, Aubrey wrote:
+> > On 2014/5/12 22:08, Daniel Lezcano wrote:
+> >> On 05/05/2014 12:51 AM, Rafael J. Wysocki wrote:
+> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>
+> >>> If freeze_enter() is called, we want to bypass the current cpuidle
+> >>> governor and always use the deepest available (that is, not disabled)
+> >>> C-state, because we want to save as much energy as reasonably possible
+> >>> then and runtime latency constraints don't matter at that point, since
+> >>> the system is in a sleep state anyway.
+> >>>
+> >>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>> ---
+> >>>
+> >>> This is on top of https://patchwork.kernel.org/patch/4071541/ .
+> >>>
 > >>
-> >
-> > [cut]
-> >
+> >> Wouldn't make sense to revisit play_dead instead ?
 > >>
-> >> With this patch, my CPU (Core i7-3770 @ 3.90GHz) seems to never use lowest
-> >> frequencies. Even on an idle system I get always ~2GHz. Normally,
-> >> on an idle system it used to be 1.6GHz.
-> >> On very small loads (mp3 decoding) the CPU goes up to 2.7G GHz (it used to
-> >> be 1.6GHz)
-> >>
-> >> Reverting, this patch on my local build, the problem is resolved.
+> > play_dead() is broken.
 > >
-> > Dirk, seriously, I can't regard this as a fix that can go into -rc6.
-> >
+> > Even if it works, we still should rely on cpuidle driver to place the
+> > CPUs into the deepest c-state, because there is no architectural way to
+> > enter deepest c-state and what play_dead() does is a bad assumption.
 > 
-> Ok I will resubmit after more testing
-> 
-> > Which of the other patch in the series are must-go for 3.15?  [1-2/5] I guess?
-> > And do we need [2/5] it in -stable too?
-> 
-> 1/5  is for stable it fixes a random MCE on baytrail.
-> 2/5  is for stable it should have went with the stop_cpu patch
+> Ok, let me rephrase it. Why not revisiting cpuidle_play_dead instead ?
 
-Which -stable are these two for?  All of them?
-
-> 5/5  can go too since it is just adding CPU IDs
-
-Well, I'm a bit reluctant to push that for -rc6.  There were cases where new
-IDs broke stuff that worked without them just fine.
-
+Many drivers don't implement the ->enter_dead() callback.
 
 -- 
 I speak only for myself.
