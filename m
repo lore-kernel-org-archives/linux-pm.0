@@ -1,74 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
- cpufreq table
-Date: Mon, 12 May 2014 11:48:33 +0530
-Message-ID: <CAKohpo=wJAMgRqakX_WP+QshhpCqVNnA3e3gg4=s_sHaxfqwoQ@mail.gmail.com>
-References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
-	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
-	<5367946F.1030407@ti.com>
-	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
-	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
-	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
-	<003e01cf6984$fb950280$f2bf0780$@samsung.com>
-	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
-	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
-	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
-	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
-	<000301cf6a62$413c16b0$c3b44410$@samsung.com>
-	<CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>
-	<000e01cf6b23$58fda900$0af8fb00$@samsung.com>
-	<CAKohpomX_ZXSyk7RuCyO1t8VUee5H5KN5zj1-VhDp+ZtFbF-xA@mail.gmail.com>
-	<CAGZ6kuO_N+bZpWa8uQiZUCTWscMbwAd7EL-1dbCJX9JCvFDnyQ@mail.gmail.com>
-	<536CD6BD.9000804@ti.com>
-	<CAGZ6kuPzpxh-r9-KfPDOGXQXjqcthMV07Nd_dgwvBd7w+F9A+w@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 00/12 v2] A new CPU load metric for power-efficient
+ scheduler: CPU ConCurrency
+Date: Mon, 12 May 2014 08:45:33 +0200
+Message-ID: <20140512064533.GH30445@twins.programming.kicks-ass.net>
+References: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jz7tQN4RWHemAAHb"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:38210 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753511AbaELGSe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 02:18:34 -0400
-Received: by mail-oa0-f45.google.com with SMTP id l6so7767673oag.32
-        for <linux-pm@vger.kernel.org>; Sun, 11 May 2014 23:18:33 -0700 (PDT)
-In-Reply-To: <CAGZ6kuPzpxh-r9-KfPDOGXQXjqcthMV07Nd_dgwvBd7w+F9A+w@mail.gmail.com>
+Received: from casper.infradead.org ([85.118.1.10]:33286 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbaELGpl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 02:45:41 -0400
+Content-Disposition: inline
+In-Reply-To: <1399832221-8314-1-git-send-email-yuyang.du@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jonghwan Choi <jhbird.choi@gmail.com>
-Cc: Nishanth Menon <nm@ti.com>, Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+To: Yuyang Du <yuyang.du@intel.com>
+Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com
 
-On 11 May 2014 17:08, jonghwan Choi <jhbird.choi@gmail.com> wrote:
-> I already considered it.
-> (But it only passes on  what cpufreq driver has to do to clock framework.
-> For changing clock rate, if changing operation just divides a rate of
-> parent it can be solved easily
-> But exycpufreq driver is  more complicated.
->
-> Previously, to change frequency, pll value and clk divider value were
-> changed in cpufreq driver.
-> Later someone moved the code which changes pll value to clock framework.
-> In there, pll values are maintained as table per frequency. And if
-> frequency is added/removed, values of
-> pll table should be changed.
-> when we change the pll value through clk_set_rate, internally  to find
-> proper pll value,  pll table is searched.
-> If proper pll value is found, that value is written into the register)
->
-> My suggestion is that all these change details should be removed
-> according to adding/removing frequency.
-> I believe that cpufreq driver just writes a specific value per
-> frequency  into the register for dvfs(Maybe other work is also needed)
->
-> If we just describe the specific value per frequency in dts file, the
-> driver will get that information through DT, and use it for DVFS.)
-> Then when a new chip is  released(if the chip has the same h/w
-> interface - register map), we only have to do as above.
 
-We also want to make your life simple, but adding this field to OPP
-table isn't the right approach for sure.
+--jz7tQN4RWHemAAHb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Can't you calculate the divider values at run time based on a frequency?
-I think it should work. That way you can just code these calculations
-in clock driver and things would work smoothly..
+On Mon, May 12, 2014 at 02:16:49AM +0800, Yuyang Du wrote:
 
-If there are problems, tell us what they are and we will try to find some
-solution for you. .
+Yes, just what we need, more patches while we haven't had the time to
+look at the old set yet :-(
+
+--jz7tQN4RWHemAAHb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTcG4HAAoJEHZH4aRLwOS6SygP/AhxO5WIOv00SIZql/x3HiGB
+eQ+eqXRnF32QSReowFuB+CTP5COb5BT3MTQYHuK3oXOzd2Kj43sil4HHTq/mJU3A
+gG7jfaokT7WDSPKRbKpYMWWNi/suVsQnMYP+mOH/l7lV9sle+rJPWra6nI1crF5v
+JVRkX8HInvEL9b02W+HhFQHmgL9iwdmRVEQcREUK9MDbrP1ipESi6xUi0lBQGi1w
+fn8PY60dSxrIJDI1Xx7v/rezk3ETyoA6d3E6aEc63fUniJlFMCQVk0LRnFX84q3Q
+MKCFefc4BV3JP2RuNl19bRQz8kfHLJxdJGOH3RvvBiAaP1cCRuN8zB+0LHucRuEf
+t6jC8I5hBD+cuGfdthLU0hyud5MVyjg0JGIDqbDMTRzN7eI40oK0rav0cPV7YUpv
+mPr23ozhqv7ubnbFOjnhRMuHfrdCCmwXyLTuZZEKnZhnL8+Zy45wFfU9HiqtRqwm
+fpixRutJYpxclv6EbF08AH5C94Zbi0vz9YUrstcQB8Bubo+HHeMY5tTsUyK+MWNk
+JxudYxjkPe5/oSmvU/GMcCTRpt1z6hf7oTqIQOjKPjuuT5lro8xnpp/2JrXEqrqw
+uX36Qng+L566rbiX5imVDBBEOd/+6PaNlKQj80R1rfdpMN3RX5Wiuh87cqKvsykx
+WX4UPL2UvpV6urk7RDLG
+=wWuI
+-----END PGP SIGNATURE-----
+
+--jz7tQN4RWHemAAHb--
