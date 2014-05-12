@@ -1,61 +1,43 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: linux-pm bleeding-edge build failure
-Date: Mon, 12 May 2014 05:35:52 +0300
-Message-ID: <53703388.3010501@semaphore.gr>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Make OPP invisible to users in Kconfig
+Date: Mon, 12 May 2014 09:40:46 +0530
+Message-ID: <CAKohpo=xtnHyWcjHxmSPgzdovMshgotMkQj6Y__R9UvzzfTyHw@mail.gmail.com>
+References: <1399659488-13974-1-git-send-email-broonie@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:39150 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750905AbaELCfz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 May 2014 22:35:55 -0400
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:47083 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbaELEKr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 00:10:47 -0400
+Received: by mail-ob0-f177.google.com with SMTP id gq1so7269737obb.22
+        for <linux-pm@vger.kernel.org>; Sun, 11 May 2014 21:10:47 -0700 (PDT)
+In-Reply-To: <1399659488-13974-1-git-send-email-broonie@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <menon.nishanth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Rafael,
+On 9 May 2014 23:48, Mark Brown <broonie@kernel.org> wrote:
+> From: Mark Brown <broonie@linaro.org>
+>
+> The OPP code is an in kernel library selected by its users, there is no
+> no architecture code required to implement it and enabling it without a
 
-Building the latest bleeding edge (4881a46e969889ba1c20fed733e742bf19d0=
-591e),
-I get this error:
+s/no no/no
 
-drivers/acpi/acpica/tbfadt.c: In function =91acpi_tb_convert_fadt=92:
-drivers/acpi/acpica/tbfadt.c:493:12: error: too few arguments to functi=
-on =91acpi_tb_init_generic_address=92
-            fadt_info_table[i].name);
-            ^
-drivers/acpi/acpica/tbfadt.c:190:1: note: declared here
- acpi_tb_init_generic_address(struct acpi_generic_address *generic_addr=
-ess,
- ^
-drivers/acpi/acpica/tbfadt.c:394:5: warning: unused variable =91flags=92=
- [-Wunused-variable]
-  u8 flags;
-     ^
-drivers/acpi/acpica/tbfadt.c:393:5: warning: unused variable =91length=92=
- [-Wunused-variable]
-  u8 length;
-     ^
-drivers/acpi/acpica/tbfadt.c: In function =91acpi_tb_validate_fadt=92:
-drivers/acpi/acpica/tbfadt.c:572:3: error: =91flags=92 undeclared (firs=
-t use in this function)
-   flags =3D fadt_info_table[i].flags;
-   ^
-drivers/acpi/acpica/tbfadt.c:572:3: note: each undeclared identifier is=
- reported only once for each function it appears in
-drivers/acpi/acpica/tbfadt.c:599:7: error: =91address32=92 undeclared (=
-first use in this function)
-   if (address32) {
-       ^
-make[3]: *** [drivers/acpi/acpica/tbfadt.o] Error 1
-make[2]: *** [drivers/acpi/acpica] Error 2
-make[1]: *** [drivers/acpi] Error 2
-make: *** [drivers] Error 2
-make: *** Waiting for unfinished jobs....
+> user just increases the kernel size. Since the users select rather than
+> depend on it just remove the ability to directly set the option from
+> Kconfig.
+>
+> Signed-off-by: Mark Brown <broonie@linaro.org>
+> ---
+>
+> This leaves the ARCH_HAS_OPP symbol since removing that requires
+> updating the relevant architectures, if this is OK I can sumbit a
+> followup patch cleaning that up.
+>
+>  kernel/power/Kconfig | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-
-
-Thanks,
-Stratos
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
