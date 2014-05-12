@@ -1,93 +1,52 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 2/3] arm64: Add big.LITTLE switcher stub
-Date: Mon, 12 May 2014 13:17:29 +0100
-Message-ID: <20140512121729.GC12304@sirena.org.uk>
-References: <1399653631-4938-1-git-send-email-broonie@kernel.org>
- <1399653631-4938-2-git-send-email-broonie@kernel.org>
- <536D0AF4.1040705@arm.com>
- <20140509175005.GT12304@sirena.org.uk>
- <536D2533.6050100@arm.com>
- <20140509192921.GY12304@sirena.org.uk>
- <5370877C.40409@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze"
+ sleep state
+Date: Mon, 12 May 2014 16:08:36 +0200
+Message-ID: <5370D5E4.5040001@linaro.org>
+References: <2548502.zJ1no3NhRc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qqIUvgzkb/SUnfPt"
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:42016 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751578AbaELMRz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 08:17:55 -0400
-Content-Disposition: inline
-In-Reply-To: <5370877C.40409@arm.com>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:36091 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756705AbaELOI3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 10:08:29 -0400
+Received: by mail-wg0-f47.google.com with SMTP id x12so6955047wgg.30
+        for <linux-pm@vger.kernel.org>; Mon, 12 May 2014 07:08:28 -0700 (PDT)
+In-Reply-To: <2548502.zJ1no3NhRc@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Catalin Marinas <Catalin.Marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
+
+On 05/05/2014 12:51 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> If freeze_enter() is called, we want to bypass the current cpuidle
+> governor and always use the deepest available (that is, not disabled)
+> C-state, because we want to save as much energy as reasonably possibl=
+e
+> then and runtime latency constraints don't matter at that point, sinc=
+e
+> the system is in a sleep state anyway.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>
+> This is on top of https://patchwork.kernel.org/patch/4071541/ .
+>
+
+Wouldn't make sense to revisit play_dead instead ?
 
 
---qqIUvgzkb/SUnfPt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-On Mon, May 12, 2014 at 09:34:04AM +0100, Sudeep Holla wrote:
-> On 09/05/14 20:29, Mark Brown wrote:
-> >On Fri, May 09, 2014 at 07:57:55PM +0100, Sudeep Holla wrote:
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-> >>If some real platform that needs this support urgently, then we can think of
-> >>similar short-term solution as part of adding support for cpufreq on that
-> >>platform. Do you know any platform that needs this right now ?
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-...
-> >There's some other non-public devices I am aware of - the whole reason I
-> >wrote this series was for those.
-
-> Correct all these are 32-bit platforms which are now in process of upstreaming.
-> So far they had their own driver and never used the arm-big-little driver.
-> And this current series deals with 64-bit platforms.
-
-Except for the non-public devices on the end of the list there :)
-
-> >There are real users who want to use this fairly urgently.  I can't be
-> >specific, sorry.
-
-> That's fine, I understand. But the main argument is that if these platforms
-> will not add support for cpufreq upstream anytime soon, I don't see any value
-> in rushing to this short term solution.
-
-This all gets a bit circular though - the more patches people have to
-carry to make upstream useful to them less useful working with upstream
-seems to them, meaning the devices are less likely to appear upstream at
-all at least in any sort of complete form.  One out of tree patch being
-required isn't going to be a deal breaker by itself but they all add up
-to a perception that upstream isn't useful.
-
-There's definitely some taste considerations with how far you go to
-cater for such systems - in this case I'd say it's just tweaking Kconfig
-to allow people to use code that's already present rather than adding
-really new code (there's the stubs but they're pretty insubstantial)
-which means upstream doesn't have to carry anything that wasn't there
-already.
-
---qqIUvgzkb/SUnfPt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTcLvWAAoJELSic+t+oim9ccUP+wQzPRq5Ghwkws9VNogKj+gT
-O+UdkTY3FZ7EawQti7geup4AeX3RwHowkhFFH0Bn38wmXvgjW0zJobU3sdd3r/2p
-uZlTgGuoEqmMS/xDjzwW6KlRum+wY5ZF8eMmf6jRy81AL1qghxn9mBNj2IHd/G01
-slKW9sGqFMhcNEfPo7cQsKRSQDeOfFBRW3pv2hM1VMrQ3SCZ96oQn0E7g3Jthz9x
-BoEbwTtMxLKMjBuikiBoVapzxzJpMOR2GIzagpYr1VGdd9i/CLD9yXy3BbaDURLh
-/+7koOrl0P+Nb5wLtuAGY9tqfLCeXBPrEJWcZ+h8JVdC+LsuqyZ03abEyuwOe5EN
-sTU6jiEz36gzOzCso4ejUDoRz31RVhYCLe4bPy9m5tQqCR5z9SrvZPvUXx/Ol8wa
-oCVoXZyWwtfAXyTSilSkVuHIXuNHMNZsSuG8agbMD75iasYe3spDaN2hUTWFpY+M
-DKAqBBJwcn7nAYawI8Cg1zxFDktIChgiLgGzVtn3HDNfCiL3xSWcKPE5UEXJjowp
-bVI7HWz0ACucgmmAlbznlVkVV3B9zupjkGkpn7SI3a7Te8EFlt17B6HA1KDGesbK
-AoYnJghAaAqa9nDCyXpI8zau8WGqADscncXL7XFslfPiVSHLBDA0QX/DzqDLYG6z
-bWoBJORnC0izpwo9GzcO
-=P9s5
------END PGP SIGNATURE-----
-
---qqIUvgzkb/SUnfPt--
