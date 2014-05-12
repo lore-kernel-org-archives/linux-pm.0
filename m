@@ -1,59 +1,74 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: make local function static
-Date: Mon, 12 May 2014 11:24:06 +0530
-Message-ID: <20140512055406.GA3804@in.ibm.com>
-References: <1399794680-22210-1-git-send-email-computersforpeace@gmail.com>
- <536FC254.2000702@linux.vnet.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] PM / OPP: Add support for descending order for
+ cpufreq table
+Date: Mon, 12 May 2014 11:48:33 +0530
+Message-ID: <CAKohpo=wJAMgRqakX_WP+QshhpCqVNnA3e3gg4=s_sHaxfqwoQ@mail.gmail.com>
+References: <000001cf643d$69e5e350$3db1a9f0$@samsung.com>
+	<CAKohpon7W726Hxj5OJ6SnmPz3gYhAeBRr1wS3SCa3F2hSLriLQ@mail.gmail.com>
+	<5367946F.1030407@ti.com>
+	<CAKohpon-KZpSJK7PxpLjZS7sVPcYraDxb4oJHN6dxSagD+F--Q@mail.gmail.com>
+	<CAGo_u6pUVeMM9mqe5htvM1X_4pkRGEUVOA2ty4ZPfUyLcLZkrw@mail.gmail.com>
+	<CAKohpokfcptseU6ST+e_GfU6poVJxXCXMeoYCvT65060v5GJYQ@mail.gmail.com>
+	<003e01cf6984$fb950280$f2bf0780$@samsung.com>
+	<CAGo_u6o0J_T_hnmDAiYpsDxe77iKPCjuWisZJfTjYYOVGJF96A@mail.gmail.com>
+	<CAKohpo=qbj9w5=wWHEG=9c2spjbbhaDaXG+F-Lhe9QffV9sDbw@mail.gmail.com>
+	<001501cf6a5c$07bc2520$17346f60$@samsung.com>
+	<CAGo_u6rAY1Cqh6_1RPsjGMwqNSVr=yW+VgyXfEjA6V+LT-SMcQ@mail.gmail.com>
+	<000301cf6a62$413c16b0$c3b44410$@samsung.com>
+	<CAKohponiuHYjLve5ywLSGtDPPFN9a54gzZUicn1m702B2Ct3Pw@mail.gmail.com>
+	<000e01cf6b23$58fda900$0af8fb00$@samsung.com>
+	<CAKohpomX_ZXSyk7RuCyO1t8VUee5H5KN5zj1-VhDp+ZtFbF-xA@mail.gmail.com>
+	<CAGZ6kuO_N+bZpWa8uQiZUCTWscMbwAd7EL-1dbCJX9JCvFDnyQ@mail.gmail.com>
+	<536CD6BD.9000804@ti.com>
+	<CAGZ6kuPzpxh-r9-KfPDOGXQXjqcthMV07Nd_dgwvBd7w+F9A+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <536FC254.2000702@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Brian Norris <computersforpeace@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:38210 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753511AbaELGSe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 02:18:34 -0400
+Received: by mail-oa0-f45.google.com with SMTP id l6so7767673oag.32
+        for <linux-pm@vger.kernel.org>; Sun, 11 May 2014 23:18:33 -0700 (PDT)
+In-Reply-To: <CAGZ6kuPzpxh-r9-KfPDOGXQXjqcthMV07Nd_dgwvBd7w+F9A+w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: jonghwan Choi <jhbird.choi@gmail.com>
+Cc: Nishanth Menon <nm@ti.com>, Jonghwan Choi <jhbird.choi@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On Mon, May 12, 2014 at 12:02:52AM +0530, Srivatsa S. Bhat wrote:
-> On 05/11/2014 01:21 PM, Brian Norris wrote:
-> > powernv_cpufreq_get() is only referenced in this file.
-> > 
-> > Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: cpufreq@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> 
-> Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+On 11 May 2014 17:08, jonghwan Choi <jhbird.choi@gmail.com> wrote:
+> I already considered it.
+> (But it only passes on  what cpufreq driver has to do to clock framework.
+> For changing clock rate, if changing operation just divides a rate of
+> parent it can be solved easily
+> But exycpufreq driver is  more complicated.
+>
+> Previously, to change frequency, pll value and clk divider value were
+> changed in cpufreq driver.
+> Later someone moved the code which changes pll value to clock framework.
+> In there, pll values are maintained as table per frequency. And if
+> frequency is added/removed, values of
+> pll table should be changed.
+> when we change the pll value through clk_set_rate, internally  to find
+> proper pll value,  pll table is searched.
+> If proper pll value is found, that value is written into the register)
+>
+> My suggestion is that all these change details should be removed
+> according to adding/removing frequency.
+> I believe that cpufreq driver just writes a specific value per
+> frequency  into the register for dvfs(Maybe other work is also needed)
+>
+> If we just describe the specific value per frequency in dts file, the
+> driver will get that information through DT, and use it for DVFS.)
+> Then when a new chip is  released(if the chip has the same h/w
+> interface - register map), we only have to do as above.
 
-Thanks for this fix Brian.
+We also want to make your life simple, but adding this field to OPP
+table isn't the right approach for sure.
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Can't you calculate the divider values at run time based on a frequency?
+I think it should work. That way you can just code these calculations
+in clock driver and things would work smoothly..
 
---
-Thanks and Regards
-gautham.
-
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
-> > ---
-> >  drivers/cpufreq/powernv-cpufreq.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> > index af4968813e76..bb1d08dc8cc8 100644
-> > --- a/drivers/cpufreq/powernv-cpufreq.c
-> > +++ b/drivers/cpufreq/powernv-cpufreq.c
-> > @@ -235,7 +235,7 @@ static void powernv_read_cpu_freq(void *arg)
-> >   * firmware for CPU 'cpu'. This value is reported through the sysfs
-> >   * file cpuinfo_cur_freq.
-> >   */
-> > -unsigned int powernv_cpufreq_get(unsigned int cpu)
-> > +static unsigned int powernv_cpufreq_get(unsigned int cpu)
-> >  {
-> >  	struct powernv_smp_call_data freq_data;
-> > 
-
+If there are problems, tell us what they are and we will try to find some
+solution for you. .
