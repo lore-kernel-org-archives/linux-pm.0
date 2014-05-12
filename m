@@ -1,47 +1,50 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [PATCH] PM / suspend: Always use deepest C-state in the "freeze"
- sleep state
-Date: Mon, 12 May 2014 22:19:08 +0800
-Message-ID: <5370D85C.3090505@linux.intel.com>
-References: <2548502.zJ1no3NhRc@vostro.rjw.lan> <5370D5E4.5040001@linaro.org>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 4/5] intel_pstate: Remove C0 tracking
+Date: Mon, 12 May 2014 07:39:35 -0700
+Message-ID: <5370DD27.5030701@intel.com>
+References: <1399579047-5792-1-git-send-email-dirk.j.brandewie@intel.com> <CADmjqpOnzRrB8gJsmHWG=4bvhERLovnKyP0Pcki_uVJ3qpfD0g@mail.gmail.com> <5370318D.2010309@semaphore.gr> <5349714.j69a5Fx52S@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:62445 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756705AbaELOUY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 May 2014 10:20:24 -0400
-In-Reply-To: <5370D5E4.5040001@linaro.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:58599 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753557AbaELOjj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 May 2014 10:39:39 -0400
+In-Reply-To: <5349714.j69a5Fx52S@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Aubrey Li <aubrey.li@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stratos Karafotis <stratosk@semaphore.gr>, dirk.brandewie@gmail.com
+Cc: dirk.j.brandewie@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 2014/5/12 22:08, Daniel Lezcano wrote:
-> On 05/05/2014 12:51 AM, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 05/12/2014 05:16 AM, Rafael J. Wysocki wrote:
+> On Monday, May 12, 2014 05:27:25 AM Stratos Karafotis wrote:
+>> Hi,
 >>
->> If freeze_enter() is called, we want to bypass the current cpuidle
->> governor and always use the deepest available (that is, not disabled)
->> C-state, because we want to save as much energy as reasonably possible
->> then and runtime latency constraints don't matter at that point, since
->> the system is in a sleep state anyway.
+>
+> [cut]
+>
 >>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
+>> With this patch, my CPU (Core i7-3770 @ 3.90GHz) seems to never use lowest
+>> frequencies. Even on an idle system I get always ~2GHz. Normally,
+>> on an idle system it used to be 1.6GHz.
+>> On very small loads (mp3 decoding) the CPU goes up to 2.7G GHz (it used to
+>> be 1.6GHz)
 >>
->> This is on top of https://patchwork.kernel.org/patch/4071541/ .
->>
-> 
-> Wouldn't make sense to revisit play_dead instead ?
-> 
-play_dead() is broken.
+>> Reverting, this patch on my local build, the problem is resolved.
+>
+> Dirk, seriously, I can't regard this as a fix that can go into -rc6.
+>
 
-Even if it works, we still should rely on cpuidle driver to place the
-CPUs into the deepest c-state, because there is no architectural way to
-enter deepest c-state and what play_dead() does is a bad assumption.
+Ok I will resubmit after more testing
 
-Thanks,
--Aubrey
+> Which of the other patch in the series are must-go for 3.15?  [1-2/5] I guess?
+> And do we need [2/5] it in -stable too?
+
+1/5  is for stable it fixes a random MCE on baytrail.
+2/5  is for stable it should have went with the stop_cpu patch
+5/5  can go too since it is just adding CPU IDs
+
+>
+>
 
