@@ -1,135 +1,50 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [Patch v4 5/5] mcpm: exynos: populate suspend and powered_up
- callbacks
-Date: Tue, 13 May 2014 18:14:52 +0100
-Message-ID: <20140513171452.GB10210@red-moon>
-References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
- <1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
- <1399282040-8995-6-git-send-email-chander.kashyap@linaro.org>
- <20140509153206.GB5040@e102568-lin.cambridge.arm.com>
- <CANuQgHG9tGzi2rSOwREAxVu4BQoprDg9om62AybgW5v31fpbTQ@mail.gmail.com>
+From: Thomas Abraham <ta.omasab@gmail.com>
+Subject: Re: [PATCH 0/2] PM / OPP: move cpufreq specific helpers out of OPP layer
+Date: Tue, 13 May 2014 23:59:01 +0530
+Message-ID: <CAJuA9agOJyQ_2KOoyn=ohVOeO199aVqm_YXtpUVfETQiPk+ZTw@mail.gmail.com>
+References: <1399296830-13056-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:57202 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbaEMRMq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 May 2014 13:12:46 -0400
-In-Reply-To: <CANuQgHG9tGzi2rSOwREAxVu4BQoprDg9om62AybgW5v31fpbTQ@mail.gmail.com>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1399296830-13056-1-git-send-email-nm@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@deeprootsystems.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <chander.kashyap@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>
 
-On Tue, May 13, 2014 at 12:43:31PM +0100, Chander Kashyap wrote:
+On Mon, May 5, 2014 at 7:03 PM, Nishanth Menon <nm@ti.com> wrote:
+> CPUFreq usage of OPP should be independent of the ordering of type of
+> data storage inside OPP layer. The current operations can equally be
+> performed by generic operations.
+>
+> [RFC]: https://patchwork.kernel.org/patch/4100811/
+>
+> Series based on: v3.15-rc1
+>
+> Nishanth Menon (2):
+>   PM / OPP: Remove cpufreq wrapper dependency on internal data
+>     organization
+>   PM / OPP: Move cpufreq specific OPP functions out of generic OPP
+>     library
+>
+>  Documentation/cpu-freq/core.txt |   29 +++++++++++
+>  Documentation/power/opp.txt     |   40 ++------------
+>  drivers/base/power/opp.c        |   91 --------------------------------
+>  drivers/cpufreq/Makefile        |    2 +
+>  drivers/cpufreq/cpufreq_opp.c   |  110 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/cpufreq.h         |   21 ++++++++
+>  include/linux/pm_opp.h          |   20 -------
+>  7 files changed, 167 insertions(+), 146 deletions(-)
+>  create mode 100644 drivers/cpufreq/cpufreq_opp.c
 
-[...]
+Works fine on Exynos.
+Tested-by: Thomas Abraham <thomas.ab@samsung.com>
 
-> >> +static void exynos_suspend(u64 residency)
-> >> +{
-> >> +     unsigned int mpidr, cpunr;
-> >> +
-> >> +     mpidr = read_cpuid_mpidr();
-> >> +     cpunr = exynos_pmu_cpunr(mpidr);
-> >
-> > If I were to be picky, I would compute these values only if they
-> > are needed, ie move the computation after exynos_power_down().
-> 
-> Yes thats make sense. I will realign it.
-> 
-> >
-> > There is another quite horrible issue here. We know this code works
-> > because the processors A15/A7 hit the caches with C bit in SCTLR cleared.
-> >
-> > On processors where this is not true, this sequence would explode
-> > if power down fails (in case core is gated but L2 is still powered on,
-> > the stack is stuck in L2) since it is going to read stack data that is
-> > in L2 but can't be read.
-> >
-> > It is not related to this sequence only, but it is an issue in general
-> > and wanted to mention that on the lists for public awareness.
-> >
-> 
-> Can you please elaborate. I didn't understand.
-
-It is not related to this patch only. This function carries out writes to the
-stack (which might end up in eg L2) and then disables the C bit in SCTLR
-through MCPM.
-
-A15 and A7 processors hit the cache with the C bit clear in the SCTLR
-so the processor still "hits" the stack values if the power down fails.
-On processors where caches are not hit with the C bit clear (eg A9) this code
-would fail since the stack values that sit in the caches cannot be read with
-the C bit clear in SCTLR until the SCTLR is restored, so it will have to
-be implemented in assembly with no stack usage (or better, no cacheable data
-usage).
-
-So, all I am saying is, to avoid copy'n'paste havoc and to avoid running
-this code on Exynos platforms where it must not be run as-is, please add
-a comment along the line:
-
-"This function requires the stack data to be visible through power down
-and can only be executed on processors like A15 and A7 that hit the cache
-with the C bit clear in the SCTLR register."
-
-Please let me know if that's clear.
-
-Lorenzo
-
-> 
-> > The gist of what I am saying is, please add a comment to that extent,
-> > here and it should be added in exynos_power_down() too.
-> >
-> >> +     __raw_writel(virt_to_phys(mcpm_entry_point), ns_sram_base_addr + 0x1c);
-> >
-> > No magic numbers please (0x1c). You can add a macro/wrapper, as TC2 does.
-> 
-> Yes i will remove it.
-> 
-> >
-> >> +     exynos_power_down();
-> >> +
-> >> +     /*
-> >> +      * Execution reaches here only if cpu did not power down.
-> >> +      * Hence roll back the changes done in exynos_power_down function.
-> >> +     */
-> >> +     exynos_cpu_powerup(cpunr);
-> >
-> > Please be aware that if this function returns MCPM will soft reboot, and
-> > the CPUidle driver will have no way to detect a state entry failure.
-> >
-> > I am just flagging this up, since fixing this behaviour is not easy, and
-> > honestly, since power down failure should be the exception not the rule,
-> > the idle stats should not be affected much.
-> >
-> > I think this is the proper way of implementing the sequence but please
-> > all keep in mind what I wrote above.
-> >
-> > Lorenzo
-> >
-> >> +}
-> >> +
-> >>  static const struct mcpm_platform_ops exynos_power_ops = {
-> >>       .power_up               = exynos_power_up,
-> >>       .power_down             = exynos_power_down,
-> >>       .power_down_finish      = exynos_power_down_finish,
-> >> +     .suspend                = exynos_suspend,
-> >> +     .powered_up             = exynos_powered_up,
-> >>  };
-> >>
-> >>  static void __init exynos_mcpm_usage_count_init(void)
-> >> --
-> >> 1.7.9.5
-> >>
-> >>
-> >
-> 
-> 
-> 
-> -- 
-> with warm regards,
-> Chander Kashyap
-> 
-
+>
+> --
+> 1.7.9.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
