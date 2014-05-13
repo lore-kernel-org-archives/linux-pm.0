@@ -1,44 +1,80 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: [RFC PATCH] cpufreq: intel_pstate: Change the calculation of
- next pstate
-Date: Tue, 13 May 2014 05:59:56 +0800
-Message-ID: <20140512215956.GC10676@intel.com>
-References: <bf3034d0-5c89-4ddb-921a-a92a4aed39f8@fmsmsx105.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "[Chander Kashyap" <chander.kashyap@linaro.org>
+Subject: [PATCH] PM / OPP: discard duplicate OPP additions
+Date: Tue, 13 May 2014 13:11:30 +0530
+Message-ID: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:16753 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbaEMGEl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 May 2014 02:04:41 -0400
-Content-Disposition: inline
-In-Reply-To: <bf3034d0-5c89-4ddb-921a-a92a4aed39f8@fmsmsx105.amr.corp.intel.com>
+Received: from mail-pb0-f45.google.com ([209.85.160.45]:58021 "EHLO
+	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754563AbaEMHlq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 May 2014 03:41:46 -0400
+Received: by mail-pb0-f45.google.com with SMTP id um1so692212pbc.32
+        for <linux-pm@vger.kernel.org>; Tue, 13 May 2014 00:41:45 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, " linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-> > > Maybe, in some cases yes. But not always. 
-> > > For example, please consider a CPU running a tight "for" loop in 100MHz 
-> > > for a couple of seconds. This produces a load of 100%. 
-> > > It will produce the same load (100%) in any other frequency. 
-> >
-> > Still fundamentally wrong, because you are not making a fair 
-> > comparison ("load" in 100MHz vs. any other freq). 
-> >
-> 
-> I'm sorry, I didn't understand you. What do you mean it's not fair?
-> 
-> In the above example (considering a CPU with min freq 100MHz and max freq 1000Mhz) a load of 100% should also be 100 in other next frequency.
-> 
-> If we scale the load we will calculate the load in 100Mhz to 10%. I believe that this is not true.
+From: Chander Kashyap <k.chander@samsung.com>
 
-The amount of work @100MHz is the same as the amount of work @1000MHZ, in your
-example? Put another way, your proposed method does not do any extra better,
-but do worse in other cases (what if @1000MHz, the load drops to 10%).
+It may be possible to unregister and re-register the cpufreq driver.
+One such example is arm big-little IKS cpufreq driver. While
+re-registering the driver, same OPPs may get added again.
 
-That said, your case cannot be used against associating freq with load. That also
-said, by associating freq with load, we will finally get highest freq as well
-(in your case).
+This patch detects the duplicacy and discards them.
 
-Yuyang
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+---
+ drivers/base/power/opp.c |   28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 2553867..2e803a9 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -443,23 +443,33 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	new_opp->u_volt = u_volt;
+ 	new_opp->available = true;
+ 
+-	/* Insert new OPP in order of increasing frequency */
++	/*
++	 * Insert new OPP in order of increasing frequency
++	 * and discard if already present
++	 */
+ 	head = &dev_opp->opp_list;
+ 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+-		if (new_opp->rate < opp->rate)
++		if (new_opp->rate <= opp->rate)
+ 			break;
+ 		else
+ 			head = &opp->node;
+ 	}
+ 
+-	list_add_rcu(&new_opp->node, head);
+-	mutex_unlock(&dev_opp_list_lock);
++	if (new_opp->rate != opp->rate) {
++		list_add_rcu(&new_opp->node, head);
++		mutex_unlock(&dev_opp_list_lock);
++
++		/*
++		 * Notify the changes in the availability of the operable
++		 * frequency/voltage list.
++		 */
++		srcu_notifier_call_chain(&dev_opp->head,
++						OPP_EVENT_ADD, new_opp);
++	} else {
++		mutex_unlock(&dev_opp_list_lock);
++		kfree(new_opp);
++	}
+ 
+-	/*
+-	 * Notify the changes in the availability of the operable
+-	 * frequency/voltage list.
+-	 */
+-	srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_add);
+-- 
+1.7.9.5
+
