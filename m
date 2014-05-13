@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 0/3] PM / sleep: Avoid resuming runtime-suspended
- devices during system suspend
-Date: Tue, 13 May 2014 10:45:38 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1405131038220.1098-100000@iolanthe.rowland.org>
-References: <4649019.is79p6EySp@vostro.rjw.lan>
+Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming
+ runtime-suspended devices unnecessarily
+Date: Tue, 13 May 2014 10:49:32 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405131046250.1098-100000@iolanthe.rowland.org>
+References: <1752814.FckPkBGaUc@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4649019.is79p6EySp@vostro.rjw.lan>
+In-Reply-To: <1752814.FckPkBGaUc@vostro.rjw.lan>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
@@ -15,64 +15,81 @@ List-Id: linux-pm@vger.kernel.org
 
 On Tue, 13 May 2014, Rafael J. Wysocki wrote:
 
-> Hi All,
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> We've discussed that at length here:
+> Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> resume all runtime-suspended devices during system suspend, mostly
+> because those devices may need to be reprogrammed due to different
+> wakeup settings for system sleep and for runtime PM.
 > 
-> http://marc.info/?t=139950469000003&r=1&w=4
+> For some devices, though, it's OK to remain in runtime suspend 
+> throughout a complete system suspend/resume cycle (if the device was in
+> runtime suspend at the start of the cycle).  We would like to do this
+> whenever possible, to avoid the overhead of extra power-up and power-down
+> events.
 > 
-> but I'm starting a new thread to refresh things a bit.
+> However, problems may arise because the device's descendants may require
+> it to be at full power at various points during the cycle.  Therefore the
+> most straightforward way to do this safely is if the device and all its
+> descendants can remain runtime suspended until the complete stage of
+> system resume.
 > 
-> This is about adding a mechanism allowing us to avoid runtime-suspended
-> devices during system suspend.  The reason why it has to touch the PM core
-> is because that needs to be coordinated across the device hierarchy.
+> To this end, introduce a new device PM flag, power.direct_complete
+> and modify the PM core to use that flag as follows.
 > 
-> The idea is to add a new device PM flag and to modify the PM core as follows.
+> If the ->prepare() callback of a device returns a positive number,
+> the PM core will regard that as an indication that it may leave the
+> device runtime-suspended.  It will then check if the system power
+> transition in progress is a suspend (and not hibernation in particular)
+> and if the device is, indeed, runtime-suspended.  In that case, the PM
+> core will set the device's power.direct_complete flag.  Otherwise it
+> will clear power.direct_complete for the device and it also will later
+> clear it for the device's parent (if there's one).
 > 
->  - If ->prepare() returns a positive number for a device, that means "this
->    device is runtime-suspended and you can leave it like that if you do the
->    same for all of its descendants".
-> 
->  - If that happens, the PM core sets the new flag for the device in
->    question *if* the device is indeed runtime-suspended *and* *if*
->    the transition is a suspend (and not hibernation, for example).
->    Otherwise, it clears the flag for the device.  All of that happens in
->    device_prepare().
-> 
->  - In __device_suspend() the PM core clears the new flag for the device's
->    parent if it is clear for the device to ensure that the flag will only
->    be set for a device if it is also set for all of its descendants.
+> Next, the PM core will not invoke the ->suspend() ->suspend_late(),
+> ->suspend_irq(), ->resume_irq(), ->resume_early(), or ->resume()
+> callbacks for all devices having power.direct_complete set.  It
+> will invoke their ->complete() callbacks, however, and those
+> callbacks are then responsible for resuming the devices as
+> appropriate, if necessary.
 
-There's nothing to prevent a runtime-suspended device from being 
-resumed in between the ->prepare() and ->suspend() callbacks.  (Ulf 
-mentioned this too.)
+Perhaps you should mention here (and maybe even as a comment in the 
+code) that ->complete() callbacks may want to call pm_request_resume() 
+if dev->power.direct_resume is set, but they shouldn't call 
+pm_runtime_resume().
 
-Therefore it makes little sense to check the device's runtime status in 
-device_prepare().  The check should be done in __device_suspend().
-
->  - PM core skips ->suspend/late/noirq and ->resume/early/noirq for all devices
->    having the flag set - so the flag can be called "direct_complete" as it
->    causes the PM core to go directy for the ->complete() callback when set.
+> Changelog partly based on an Alan Stern's description of the idea
+> (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
 > 
->  - The ->complete() callback has to check direct_complete if ->prepare()
->    returned a positive number previously and is responsible for further
->    handling of the device.
-> 
-> That is introduced by patch [2/3].
-> 
-> To simplify things slightly it is helpful to move the invocation of
-> pm_runtime_barrier() from __device_suspend() to device_prepare(), but still
-> under pm_runtime_get_noresume() beforehand (patch [1/3]).
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-If the check is moved to __device_suspend() then the barrier can remain 
-where it is now.
+...
 
-> Patch [3/3] shows how this can be used by adding support for it to the ACPI
-> PM comain.
-> 
-> Thanks!
+> @@ -1518,17 +1527,19 @@ static int device_prepare(struct device
+>  		callback = dev->driver->pm->prepare;
+>  	}
+>  
+> -	if (callback) {
+> -		error = callback(dev);
+> -		suspend_report_result(callback, error);
+> -	}
+> +	if (callback)
+> +		ret = callback(dev);
+>  
+>  	device_unlock(dev);
+>  
+> -	if (error)
+> +	if (ret < 0) {
+> +		suspend_report_result(callback, ret);
+>  		pm_runtime_put(dev);
+> -
+> -	return error;
+> +		return ret;
+> +	}
+> +	dev->power.direct_complete = ret > 0 && state.event == PM_EVENT_SUSPEND
+> +					&& pm_runtime_suspended(dev);
 
-Aside from this one matter, everything seems pretty good.
+Shouldn't the flag be set under the spinlock?
 
 Alan Stern
 
