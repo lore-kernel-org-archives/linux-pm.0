@@ -1,116 +1,64 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC][PATCH 1/3] PM / sleep: Move runtime PM barrier invocation
- to device_prepare()
-Date: Tue, 13 May 2014 12:59:43 +0200
-Message-ID: <CAPDyKFrOwWzL5uFHQoYXWkATAUW6=u8Dxwm6y3Q3CWfD4Ru=Qw@mail.gmail.com>
-References: <4649019.is79p6EySp@vostro.rjw.lan>
-	<2675141.cAMB9masRU@vostro.rjw.lan>
-	<CAPDyKFrXaxwh9xGK7Zn2Be0ViQqZJeT3hLo12ptmrmZvjMSscQ@mail.gmail.com>
-	<2578127.8G0jVZIWmC@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
+Date: Tue, 13 May 2014 16:35:02 +0530
+Message-ID: <CAKohpon9RLBPniYN+26Bk9GaMBAiTEFqp_YONzPBm7+3n17yiQ@mail.gmail.com>
+References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
+	<CAKohpo=6qXer+RRS-F6x=O1VLzbWq+_a-b29MaUzZBvt7XzDwQ@mail.gmail.com>
+	<CAPKp9uZbz3M1Xyu7SnSFEexzUPxPqFTSmd7zmU8jU5-Dwu4gvA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2578127.8G0jVZIWmC@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:48936 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759400AbaEMLFD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 May 2014 07:05:03 -0400
+Received: by mail-ob0-f169.google.com with SMTP id vb8so171331obc.14
+        for <linux-pm@vger.kernel.org>; Tue, 13 May 2014 04:05:03 -0700 (PDT)
+In-Reply-To: <CAPKp9uZbz3M1Xyu7SnSFEexzUPxPqFTSmd7zmU8jU5-Dwu4gvA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>, Nishanth Menon <nm@ti.com>
+Cc: "[Chander Kashyap" <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-On 13 May 2014 12:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, May 13, 2014 11:16:34 AM Ulf Hansson wrote:
->> On 13 May 2014 03:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> > Move the invocation of the runtime PM barrier during system suspend
->> > (or hibernation) from __device_suspend() to device_prepare() to make
->> > all runtime PM transitions in progress complete before executing
->> > ->prepare() callbacks for devices.
->> >
->> > That will allow those callbacks to check if devices are runtime
->> > suspended in a non-racy way.
->> >
->> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> > ---
->> >  drivers/base/power/main.c |   31 +++++++++++++------------------
->> >  1 file changed, 13 insertions(+), 18 deletions(-)
->> >
->> > Index: linux-pm/drivers/base/power/main.c
->> > ===================================================================
->> > --- linux-pm.orig/drivers/base/power/main.c
->> > +++ linux-pm/drivers/base/power/main.c
->> > @@ -1312,24 +1312,7 @@ static int __device_suspend(struct devic
->> >
->> >         dpm_wait_for_children(dev, async);
->> >
->> > -       if (async_error)
->> > -               goto Complete;
->> > -
->> > -       /*
->> > -        * If a device configured to wake up the system from sleep states
->> > -        * has been suspended at run time and there's a resume request pending
->> > -        * for it, this is equivalent to the device signaling wakeup, so the
->> > -        * system suspend operation should be aborted.
->> > -        */
->> > -       if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
->> > -               pm_wakeup_event(dev, 0);
->> > -
->> > -       if (pm_wakeup_pending()) {
->> > -               async_error = -EBUSY;
->> > -               goto Complete;
->> > -       }
+On 13 May 2014 16:00, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> On Tue, May 13, 2014 at 9:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 13 May 2014 13:11, [Chander Kashyap <chander.kashyap@linaro.org> wrote:
 >>
->> I suppose you went a bit too far here!?
+>> What happened to your name ? "["
 >>
->> We can still have wakeup pending at this point, and thus we should
->> bail out, right?
+>>> From: Chander Kashyap <k.chander@samsung.com>
+>>>
+>>> It may be possible to unregister and re-register the cpufreq driver.
+>>> One such example is arm big-little IKS cpufreq driver. While
+>>> re-registering the driver, same OPPs may get added again.
+>>>
+>>> This patch detects the duplicacy and discards them.
+>>>
+>>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>>> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+>>> ---
+>>>  drivers/base/power/opp.c |   28 +++++++++++++++++++---------
+>>>  1 file changed, 19 insertions(+), 9 deletions(-)
+>>
+>> I wouldn't say that this approach is particularly bad or wrong, but what
+>> about this instead?
+>>
 >
-> That pm_wakeup_pending() is part of the barrier handling, so ->
->
->> > -
->> > -       if (dev->power.syscore)
->> > +       if (async_error || dev->power.syscore)
->> >                 goto Complete;
->> >
->> >         dpm_watchdog_set(&wd, dev);
->> > @@ -1500,6 +1483,18 @@ static int device_prepare(struct device
->> >          */
->> >         pm_runtime_get_noresume(dev);
->> >
->> > +       /*
->> > +        * If a device configured to wake up the system from sleep states
->> > +        * has been suspended at run time and there's a resume request pending
->> > +        * for it, this is equivalent to the device signaling wakeup, so the
->> > +        * system suspend operation should be aborted.
->> > +        */
->> > +       if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
->> > +               pm_wakeup_event(dev, 0);
->> > +
->> > +       if (pm_wakeup_pending())
->> > +               return -EBUSY;
->> > +
->
-> -> it is done here now.
->
-> I don't see why it would be still necessary in __device_suspend().
+> Yes I prefer this and this exactly what I had[1] in my OPP DT series which
+> we could not conclude on the bindings. You also need patch[2] for DT version.
 
-Can't we have wakeup configured for !CONFIG_PM_RUNTIME case?
-pm_runtime_barrier() won't handle those scenarios, right?
+Ahh, I have just reinvented the wheel. Though I can see now that I have
+Acked those patches as well :)
 
-Similar check for pm_wakeup_pending() is done at
-__device_suspend_noirq, __device_suspend_late - I assumed it was
-because of the same reasons.
+So, what are the plans for those patches then? As Chander also needs few
+of those.
 
-Kind regards
-Ulf Hansson
+Probably split the series to get the non-blockers upstream Atleast ?
 
->
->> >         device_lock(dev);
->> >
->> >         dev->power.wakeup_path = device_may_wakeup(dev);
->> >
->
-> Thanks!
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+Another thing that I thought later, though the problem can be fixed by
+your version of patches, the version from chander had something good as
+well. It would get rid of duplicate entries coming from dtb. Would it make
+sense to get that part in as well?
+
+--
+viresh
