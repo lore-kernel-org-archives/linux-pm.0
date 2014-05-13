@@ -1,51 +1,97 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Tue, 13 May 2014 13:52:51 +0530
-Message-ID: <CAKohpo=6qXer+RRS-F6x=O1VLzbWq+_a-b29MaUzZBvt7XzDwQ@mail.gmail.com>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Move runtime PM barrier invocation
+ to device_prepare()
+Date: Tue, 13 May 2014 11:16:34 +0200
+Message-ID: <CAPDyKFrXaxwh9xGK7Zn2Be0ViQqZJeT3hLo12ptmrmZvjMSscQ@mail.gmail.com>
+References: <4649019.is79p6EySp@vostro.rjw.lan>
+	<2675141.cAMB9masRU@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "[Chander Kashyap" <chander.kashyap@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f45.google.com ([209.85.216.45]:53934 "EHLO
+	mail-qa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759129AbaEMJQf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 May 2014 05:16:35 -0400
+Received: by mail-qa0-f45.google.com with SMTP id hw13so53225qab.4
+        for <linux-pm@vger.kernel.org>; Tue, 13 May 2014 02:16:34 -0700 (PDT)
+In-Reply-To: <2675141.cAMB9masRU@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
-On 13 May 2014 13:11, [Chander Kashyap <chander.kashyap@linaro.org> wrote:
-
-What happened to your name ? "["
-
-> From: Chander Kashyap <k.chander@samsung.com>
+On 13 May 2014 03:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> It may be possible to unregister and re-register the cpufreq driver.
-> One such example is arm big-little IKS cpufreq driver. While
-> re-registering the driver, same OPPs may get added again.
+> Move the invocation of the runtime PM barrier during system suspend
+> (or hibernation) from __device_suspend() to device_prepare() to make
+> all runtime PM transitions in progress complete before executing
+> ->prepare() callbacks for devices.
 >
-> This patch detects the duplicacy and discards them.
+> That will allow those callbacks to check if devices are runtime
+> suspended in a non-racy way.
 >
-> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/base/power/opp.c |   28 +++++++++++++++++++---------
->  1 file changed, 19 insertions(+), 9 deletions(-)
+>  drivers/base/power/main.c |   31 +++++++++++++------------------
+>  1 file changed, 13 insertions(+), 18 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -1312,24 +1312,7 @@ static int __device_suspend(struct devic
+>
+>         dpm_wait_for_children(dev, async);
+>
+> -       if (async_error)
+> -               goto Complete;
+> -
+> -       /*
+> -        * If a device configured to wake up the system from sleep states
+> -        * has been suspended at run time and there's a resume request pending
+> -        * for it, this is equivalent to the device signaling wakeup, so the
+> -        * system suspend operation should be aborted.
+> -        */
+> -       if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+> -               pm_wakeup_event(dev, 0);
+> -
+> -       if (pm_wakeup_pending()) {
+> -               async_error = -EBUSY;
+> -               goto Complete;
+> -       }
 
-I wouldn't say that this approach is particularly bad or wrong, but what
-about this instead?
+I suppose you went a bit too far here!?
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 2553867..7efdaf3 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -713,6 +713,11 @@ int of_init_opp_table(struct device *dev)
-        const __be32 *val;
-        int nr;
+We can still have wakeup pending at this point, and thus we should
+bail out, right?
 
-+       if (!IS_ERR(find_device_opp(dev))) {
-+               dev_warn("%s: opp table already exists\n", __func__);
-+               return -EEXIST;
-+       }
-+
-        prop = of_find_property(dev->of_node, "operating-points", NULL);
-        if (!prop)
-                return -ENODEV;
+> -
+> -       if (dev->power.syscore)
+> +       if (async_error || dev->power.syscore)
+>                 goto Complete;
+>
+>         dpm_watchdog_set(&wd, dev);
+> @@ -1500,6 +1483,18 @@ static int device_prepare(struct device
+>          */
+>         pm_runtime_get_noresume(dev);
+>
+> +       /*
+> +        * If a device configured to wake up the system from sleep states
+> +        * has been suspended at run time and there's a resume request pending
+> +        * for it, this is equivalent to the device signaling wakeup, so the
+> +        * system suspend operation should be aborted.
+> +        */
+> +       if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+> +               pm_wakeup_event(dev, 0);
+> +
+> +       if (pm_wakeup_pending())
+> +               return -EBUSY;
+> +
+>         device_lock(dev);
+>
+>         dev->power.wakeup_path = device_may_wakeup(dev);
+>
+
+Kind regards
+Ulf Hansson
