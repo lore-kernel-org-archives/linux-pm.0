@@ -1,257 +1,116 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 8/9] cpupower: Remove mc and smt power aware scheduler info/settings
-Date: Tue, 13 May 2014 12:41:45 +0200
-Message-ID: <1399977706-50854-9-git-send-email-trenn@suse.de>
-References: <1399977706-50854-1-git-send-email-trenn@suse.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:51396 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760853AbaEMKlx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 May 2014 06:41:53 -0400
-In-Reply-To: <1399977706-50854-1-git-send-email-trenn@suse.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC][PATCH 1/3] PM / sleep: Move runtime PM barrier invocation
+ to device_prepare()
+Date: Tue, 13 May 2014 12:59:43 +0200
+Message-ID: <CAPDyKFrOwWzL5uFHQoYXWkATAUW6=u8Dxwm6y3Q3CWfD4Ru=Qw@mail.gmail.com>
+References: <4649019.is79p6EySp@vostro.rjw.lan>
+	<2675141.cAMB9masRU@vostro.rjw.lan>
+	<CAPDyKFrXaxwh9xGK7Zn2Be0ViQqZJeT3hLo12ptmrmZvjMSscQ@mail.gmail.com>
+	<2578127.8G0jVZIWmC@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2578127.8G0jVZIWmC@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.de>
 
-These kernel interfaces got removed by:
-commit 8e7fbcbc22c12414bcc9dfdd683637f58fb32759
-Author: Peter Zijlstra <peterz@infradead.org>
-Date:   Mon Jan 9 11:28:35 2012 +0100
+On 13 May 2014 12:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, May 13, 2014 11:16:34 AM Ulf Hansson wrote:
+>> On 13 May 2014 03:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >
+>> > Move the invocation of the runtime PM barrier during system suspend
+>> > (or hibernation) from __device_suspend() to device_prepare() to make
+>> > all runtime PM transitions in progress complete before executing
+>> > ->prepare() callbacks for devices.
+>> >
+>> > That will allow those callbacks to check if devices are runtime
+>> > suspended in a non-racy way.
+>> >
+>> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> > ---
+>> >  drivers/base/power/main.c |   31 +++++++++++++------------------
+>> >  1 file changed, 13 insertions(+), 18 deletions(-)
+>> >
+>> > Index: linux-pm/drivers/base/power/main.c
+>> > ===================================================================
+>> > --- linux-pm.orig/drivers/base/power/main.c
+>> > +++ linux-pm/drivers/base/power/main.c
+>> > @@ -1312,24 +1312,7 @@ static int __device_suspend(struct devic
+>> >
+>> >         dpm_wait_for_children(dev, async);
+>> >
+>> > -       if (async_error)
+>> > -               goto Complete;
+>> > -
+>> > -       /*
+>> > -        * If a device configured to wake up the system from sleep states
+>> > -        * has been suspended at run time and there's a resume request pending
+>> > -        * for it, this is equivalent to the device signaling wakeup, so the
+>> > -        * system suspend operation should be aborted.
+>> > -        */
+>> > -       if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+>> > -               pm_wakeup_event(dev, 0);
+>> > -
+>> > -       if (pm_wakeup_pending()) {
+>> > -               async_error = -EBUSY;
+>> > -               goto Complete;
+>> > -       }
+>>
+>> I suppose you went a bit too far here!?
+>>
+>> We can still have wakeup pending at this point, and thus we should
+>> bail out, right?
+>
+> That pm_wakeup_pending() is part of the barrier handling, so ->
+>
+>> > -
+>> > -       if (dev->power.syscore)
+>> > +       if (async_error || dev->power.syscore)
+>> >                 goto Complete;
+>> >
+>> >         dpm_watchdog_set(&wd, dev);
+>> > @@ -1500,6 +1483,18 @@ static int device_prepare(struct device
+>> >          */
+>> >         pm_runtime_get_noresume(dev);
+>> >
+>> > +       /*
+>> > +        * If a device configured to wake up the system from sleep states
+>> > +        * has been suspended at run time and there's a resume request pending
+>> > +        * for it, this is equivalent to the device signaling wakeup, so the
+>> > +        * system suspend operation should be aborted.
+>> > +        */
+>> > +       if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+>> > +               pm_wakeup_event(dev, 0);
+>> > +
+>> > +       if (pm_wakeup_pending())
+>> > +               return -EBUSY;
+>> > +
+>
+> -> it is done here now.
+>
+> I don't see why it would be still necessary in __device_suspend().
 
-    sched: Remove stale power aware scheduling remnants and dysfunctional knobs
+Can't we have wakeup configured for !CONFIG_PM_RUNTIME case?
+pm_runtime_barrier() won't handle those scenarios, right?
 
-No need to further keep them as userspace configurations.
+Similar check for pm_wakeup_pending() is done at
+__device_suspend_noirq, __device_suspend_late - I assumed it was
+because of the same reasons.
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
----
- tools/power/cpupower/man/cpupower-info.1   |    2 +-
- tools/power/cpupower/man/cpupower-set.1    |   31 +-------------------
- tools/power/cpupower/utils/cpupower-info.c |   35 +----------------------
- tools/power/cpupower/utils/cpupower-set.c  |   43 +--------------------------
- 4 files changed, 5 insertions(+), 106 deletions(-)
+Kind regards
+Ulf Hansson
 
-diff --git a/tools/power/cpupower/man/cpupower-info.1 b/tools/power/cpupower/man/cpupower-info.1
-index 58e2119..340bcd0 100644
---- a/tools/power/cpupower/man/cpupower-info.1
-+++ b/tools/power/cpupower/man/cpupower-info.1
-@@ -3,7 +3,7 @@
- cpupower\-info \- Shows processor power related kernel or hardware configurations
- .SH SYNOPSIS
- .ft B
--.B cpupower info [ \-b ] [ \-s ] [ \-m ]
-+.B cpupower info [ \-b ]
- 
- .SH DESCRIPTION
- \fBcpupower info \fP shows kernel configurations or processor hardware
-diff --git a/tools/power/cpupower/man/cpupower-set.1 b/tools/power/cpupower/man/cpupower-set.1
-index 9dbd536..2bcc696 100644
---- a/tools/power/cpupower/man/cpupower-set.1
-+++ b/tools/power/cpupower/man/cpupower-set.1
-@@ -3,7 +3,7 @@
- cpupower\-set \- Set processor power related kernel or hardware configurations
- .SH SYNOPSIS
- .ft B
--.B cpupower set [ \-b VAL ] [ \-s VAL ] [ \-m VAL ]
-+.B cpupower set [ \-b VAL ]
- 
- 
- .SH DESCRIPTION
-@@ -55,35 +55,6 @@ Use \fBcpupower -c all info -b\fP to verify.
- 
- This options needs the msr kernel driver (CONFIG_X86_MSR) loaded.
- .RE
--.PP
--\-\-sched\-mc,  \-m [ VAL ]
--.RE
--\-\-sched\-smt, \-s [ VAL ]
--.RS 4
--\-\-sched\-mc utilizes cores in one processor package/socket first before
--processes are scheduled to other processor packages/sockets.
--
--\-\-sched\-smt utilizes thread siblings of one processor core first before
--processes are scheduled to other cores.
--
--The impact on power consumption and performance (positiv or negativ) heavily
--depends on processor support for deep sleep states, frequency scaling and
--frequency boost modes and their dependencies between other thread siblings
--and processor cores.
--
--Taken over from kernel documentation:
--
--Adjust the kernel's multi-core scheduler support.
--
--Possible values are:
--.RS 2
--0 - No power saving load balance (default value)
--
--1 - Fill one thread/core/package first for long running threads
--
--2 - Also bias task wakeups to semi-idle cpu package for power
--savings
--.RE
- 
- .SH "SEE ALSO"
- cpupower-info(1), cpupower-monitor(1), powertop(1)
-diff --git a/tools/power/cpupower/utils/cpupower-info.c b/tools/power/cpupower/utils/cpupower-info.c
-index 0ac2577..136d979 100644
---- a/tools/power/cpupower/utils/cpupower-info.c
-+++ b/tools/power/cpupower/utils/cpupower-info.c
-@@ -18,8 +18,6 @@
- 
- static struct option set_opts[] = {
- 	{ .name = "perf-bias",	.has_arg = optional_argument,	.flag = NULL,	.val = 'b'},
--	{ .name = "sched-mc",	.has_arg = optional_argument,	.flag = NULL,	.val = 'm'},
--	{ .name = "sched-smt",	.has_arg = optional_argument,	.flag = NULL,	.val = 's'},
- 	{ },
- };
- 
-@@ -37,8 +35,6 @@ int cmd_info(int argc, char **argv)
- 
- 	union {
- 		struct {
--			int sched_mc:1;
--			int sched_smt:1;
- 			int perf_bias:1;
- 		};
- 		int params;
-@@ -49,23 +45,13 @@ int cmd_info(int argc, char **argv)
- 	textdomain(PACKAGE);
- 
- 	/* parameter parsing */
--	while ((ret = getopt_long(argc, argv, "msb", set_opts, NULL)) != -1) {
-+	while ((ret = getopt_long(argc, argv, "b", set_opts, NULL)) != -1) {
- 		switch (ret) {
- 		case 'b':
- 			if (params.perf_bias)
- 				print_wrong_arg_exit();
- 			params.perf_bias = 1;
- 			break;
--		case 'm':
--			if (params.sched_mc)
--				print_wrong_arg_exit();
--			params.sched_mc = 1;
--			break;
--		case 's':
--			if (params.sched_smt)
--				print_wrong_arg_exit();
--			params.sched_smt = 1;
--			break;
- 		default:
- 			print_wrong_arg_exit();
- 		}
-@@ -78,25 +64,6 @@ int cmd_info(int argc, char **argv)
- 	if (bitmask_isallclear(cpus_chosen))
- 		bitmask_setbit(cpus_chosen, 0);
- 
--	if (params.sched_mc) {
--		ret = sysfs_get_sched("mc");
--		printf(_("System's multi core scheduler setting: "));
--		if (ret < 0)
--			/* if sysfs file is missing it's: errno == ENOENT */
--			printf(_("not supported\n"));
--		else
--			printf("%d\n", ret);
--	}
--	if (params.sched_smt) {
--		ret = sysfs_get_sched("smt");
--		printf(_("System's thread sibling scheduler setting: "));
--		if (ret < 0)
--			/* if sysfs file is missing it's: errno == ENOENT */
--			printf(_("not supported\n"));
--		else
--			printf("%d\n", ret);
--	}
--
- 	/* Add more per cpu options here */
- 	if (!params.perf_bias)
- 		return ret;
-diff --git a/tools/power/cpupower/utils/cpupower-set.c b/tools/power/cpupower/utils/cpupower-set.c
-index bcf1d2f..573c75f 100644
---- a/tools/power/cpupower/utils/cpupower-set.c
-+++ b/tools/power/cpupower/utils/cpupower-set.c
-@@ -19,8 +19,6 @@
- 
- static struct option set_opts[] = {
- 	{ .name = "perf-bias",	.has_arg = required_argument,	.flag = NULL,	.val = 'b'},
--	{ .name = "sched-mc",	.has_arg = required_argument,	.flag = NULL,	.val = 'm'},
--	{ .name = "sched-smt",	.has_arg = required_argument,	.flag = NULL,	.val = 's'},
- 	{ },
- };
- 
-@@ -38,13 +36,11 @@ int cmd_set(int argc, char **argv)
- 
- 	union {
- 		struct {
--			int sched_mc:1;
--			int sched_smt:1;
- 			int perf_bias:1;
- 		};
- 		int params;
- 	} params;
--	int sched_mc = 0, sched_smt = 0, perf_bias = 0;
-+	int perf_bias = 0;
- 	int ret = 0;
- 
- 	setlocale(LC_ALL, "");
-@@ -52,7 +48,7 @@ int cmd_set(int argc, char **argv)
- 
- 	params.params = 0;
- 	/* parameter parsing */
--	while ((ret = getopt_long(argc, argv, "m:s:b:",
-+	while ((ret = getopt_long(argc, argv, "b:",
- 						set_opts, NULL)) != -1) {
- 		switch (ret) {
- 		case 'b':
-@@ -66,28 +62,6 @@ int cmd_set(int argc, char **argv)
- 			}
- 			params.perf_bias = 1;
- 			break;
--		case 'm':
--			if (params.sched_mc)
--				print_wrong_arg_exit();
--			sched_mc = atoi(optarg);
--			if (sched_mc < 0 || sched_mc > 2) {
--				printf(_("--sched-mc param out "
--					 "of range [0-%d]\n"), 2);
--				print_wrong_arg_exit();
--			}
--			params.sched_mc = 1;
--			break;
--		case 's':
--			if (params.sched_smt)
--				print_wrong_arg_exit();
--			sched_smt = atoi(optarg);
--			if (sched_smt < 0 || sched_smt > 2) {
--				printf(_("--sched-smt param out "
--					 "of range [0-%d]\n"), 2);
--				print_wrong_arg_exit();
--			}
--			params.sched_smt = 1;
--			break;
- 		default:
- 			print_wrong_arg_exit();
- 		}
-@@ -96,19 +70,6 @@ int cmd_set(int argc, char **argv)
- 	if (!params.params)
- 		print_wrong_arg_exit();
- 
--	if (params.sched_mc) {
--		ret = sysfs_set_sched("mc", sched_mc);
--		if (ret)
--			fprintf(stderr, _("Error setting sched-mc %s\n"),
--				(ret == -ENODEV) ? "not supported" : "");
--	}
--	if (params.sched_smt) {
--		ret = sysfs_set_sched("smt", sched_smt);
--		if (ret)
--			fprintf(stderr, _("Error setting sched-smt %s\n"),
--				(ret == -ENODEV) ? "not supported" : "");
--	}
--
- 	/* Default is: set all CPUs */
- 	if (bitmask_isallclear(cpus_chosen))
- 		bitmask_setall(cpus_chosen);
--- 
-1.7.6.1
-
+>
+>> >         device_lock(dev);
+>> >
+>> >         dev->power.wakeup_path = device_may_wakeup(dev);
+>> >
+>
+> Thanks!
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
