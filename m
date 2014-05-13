@@ -1,12 +1,12 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 1/9] cpupower: Rename cpufrequtils -> cpupower, and libcpufreq -> libcpupower.
-Date: Tue, 13 May 2014 12:41:38 +0200
-Message-ID: <1399977706-50854-2-git-send-email-trenn@suse.de>
+Subject: [PATCH 2/9] cpupower: Remove dead link to homepage, and update the targets built.
+Date: Tue, 13 May 2014 12:41:39 +0200
+Message-ID: <1399977706-50854-3-git-send-email-trenn@suse.de>
 References: <1399977706-50854-1-git-send-email-trenn@suse.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:51382 "EHLO mx2.suse.de"
+Received: from cantor2.suse.de ([195.135.220.15]:51380 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759902AbaEMKlv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1759642AbaEMKlv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Tue, 13 May 2014 06:41:51 -0400
 In-Reply-To: <1399977706-50854-1-git-send-email-trenn@suse.de>
 Sender: linux-pm-owner@vger.kernel.org
@@ -20,55 +20,53 @@ Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Ramkumar Ramachandra <artagnon@gmail.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- tools/power/cpupower/README |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ tools/power/cpupower/README |   16 +++++++---------
+ tools/power/cpupower/ToDo   |    1 -
+ 2 files changed, 7 insertions(+), 10 deletions(-)
 
 diff --git a/tools/power/cpupower/README b/tools/power/cpupower/README
-index fd9d4c0..96ff1ff 100644
+index 96ff1ff..1c68f47 100644
 --- a/tools/power/cpupower/README
 +++ b/tools/power/cpupower/README
-@@ -1,4 +1,4 @@
--The cpufrequtils package (homepage: 
-+The cpupower package (homepage:
- http://www.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils.html ) 
- consists of the following elements:
+@@ -1,6 +1,4 @@
+-The cpupower package (homepage:
+-http://www.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils.html ) 
+-consists of the following elements:
++The cpupower package consists of the following elements:
  
-@@ -11,10 +11,10 @@ providing cpuid.h is needed.
- For both it's not explicitly checked for (yet).
- 
- 
--libcpufreq
-+libcpupower
- ----------
- 
--"libcpufreq" is a library which offers a unified access method for userspace
-+"libcpupower" is a library which offers a unified access method for userspace
- tools and programs to the cpufreq core and drivers in the Linux kernel. This
- allows for code reduction in userspace tools, a clean implementation of
- the interaction to the cpufreq core, and support for both the sysfs and proc
-@@ -28,7 +28,7 @@ make
+ requirements
+ ------------
+@@ -28,12 +26,12 @@ make
  su
  make install
  
--should suffice on most systems. It builds default libcpufreq,
-+should suffice on most systems. It builds default libcpupower,
- cpufreq-set and cpufreq-info files and installs them in /usr/lib and
- /usr/bin, respectively. If you want to set up the paths differently and/or
- want to configure the package to your specific needs, you need to open
-@@ -39,11 +39,11 @@ CONFIGURATION.
+-should suffice on most systems. It builds default libcpupower,
+-cpufreq-set and cpufreq-info files and installs them in /usr/lib and
+-/usr/bin, respectively. If you want to set up the paths differently and/or
+-want to configure the package to your specific needs, you need to open
+-"Makefile" with an editor of your choice and edit the block marked
+-CONFIGURATION.
++should suffice on most systems. It builds libcpupower to put in
++/usr/lib; cpupower, cpufreq-bench_plot.sh to put in /usr/bin; and
++cpufreq-bench to put in /usr/sbin. If you want to set up the paths
++differently and/or want to configure the package to your specific
++needs, you need to open "Makefile" with an editor of your choice and
++edit the block marked CONFIGURATION.
+ 
+ 
  THANKS
- ------
- Many thanks to Mattia Dongili who wrote the autotoolization and
--libtoolization, the manpages and the italian language file for cpufrequtils;
-+libtoolization, the manpages and the italian language file for cpupower;
- to Dave Jones for his feedback and his dump_psb tool; to Bruno Ducrot for his
- powernow-k8-decode and intel_gsic tools as well as the french language file;
- and to various others commenting on the previous (pre-)releases of 
--cpufrequtils.
-+cpupower.
- 
- 
-         Dominik Brodowski
+diff --git a/tools/power/cpupower/ToDo b/tools/power/cpupower/ToDo
+index 874b78b..6e8b89f 100644
+--- a/tools/power/cpupower/ToDo
++++ b/tools/power/cpupower/ToDo
+@@ -3,7 +3,6 @@ ToDos sorted by priority:
+ - Use bitmask functions to parse CPU topology more robust
+   (current implementation has issues on AMD)
+ - Try to read out boost states and frequencies on Intel
+-- Adjust README
+ - Somewhere saw the ability to read power consumption of
+   RAM from HW on Intel SandyBridge -> another monitor?
+ - Add another c1e debug idle monitor
 -- 
 1.7.6.1
 
