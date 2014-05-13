@@ -1,47 +1,270 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 3/9] cpupower: Remove all manpages on make uninstall
-Date: Tue, 13 May 2014 12:41:40 +0200
-Message-ID: <1399977706-50854-4-git-send-email-trenn@suse.de>
+Subject: [PATCH 9/9] cpupower, add option to display frequencies and latencies without rounding off values
+Date: Tue, 13 May 2014 12:41:46 +0200
+Message-ID: <1399977706-50854-10-git-send-email-trenn@suse.de>
 References: <1399977706-50854-1-git-send-email-trenn@suse.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:51384 "EHLO mx2.suse.de"
+Received: from cantor2.suse.de ([195.135.220.15]:51398 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760198AbaEMKlv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 May 2014 06:41:51 -0400
+	id S1760198AbaEMKlx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 May 2014 06:41:53 -0400
 In-Reply-To: <1399977706-50854-1-git-send-email-trenn@suse.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Ramkumar Ramachandra <artagnon@gmail.com>, Thomas Renninger <trenn@suse.de>
+Cc: linux-pm@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>, Thomas Renninger <trenn@suse.de>
 
-From: Ramkumar Ramachandra <artagnon@gmail.com>
+From: Prarit Bhargava <prarit@redhat.com>
 
+The command "cpupower frequency-info" can be used when using cpupower to
+monitor and test processor behaviour to determine if the processor is
+behaving as expected.  This data can be compared to the output of
+/proc/cpuinfo or the output of
+/sys/devices/system/cpu/cpuX/cpufreq/scaling_available_frequencies
+to determine if the cpu is in an expected state.
+
+When doing this I noticed comparison test failures due to the way the
+data is displayed in cpupower.  For example,
+
+[root@intel-s3e37-02 cpupower]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+2262000 2261000 2128000 1995000 1862000 1729000 1596000 1463000 1330000
+1197000 1064000
+
+compared to
+
+[root@intel-s3e37-02 cpupower]# cpupower frequency-info
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0
+  CPUs which need to have their frequency coordinated by software: 0
+  maximum transition latency: 10.0 us.
+  hardware limits: 1.06 GHz - 2.26 GHz
+  available frequency steps: 2.26 GHz, 2.26 GHz, 2.13 GHz, 2.00 GHz, 1.86 GHz, 1.73 GHz, 1.60 GHz, 1.46 GHz, 1.33 GHz, 1.20 GHz, 1.06 GHz
+  available cpufreq governors: conservative, userspace, powersave, ondemand, performance
+  current policy: frequency should be within 1.06 GHz and 2.26 GHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.26 GHz (asserted by call to hardware).
+  boost state support:
+    Supported: yes
+    Active: yes
+
+shows very different values for the available frequency steps.  The cpupower
+output rounds off values at 2 decimal points and this causes problems with
+test scripts.  For example, with the data above,
+
+1.064 is 1.06
+1.197 is 1.20
+1.596 is 1.60
+1.995 is 2.00
+2.128 is 2.13
+
+and most confusingly,
+
+2.261 is 2.26
+2.262 is 2.26
+
+Truncating these values serves no real purpose other than making the output
+pretty.  Since the default has been to round off these values I am adding
+a -n/--no-rounding option to the cpupower utility that will display the
+data without rounding off the still significant digits.
+
+After patch,
+
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0
+  CPUs which need to have their frequency coordinated by software: 0
+  maximum transition latency: 10.000 us.
+  hardware limits: 1.064000 GHz - 2.262000 GHz
+  available frequency steps: 2.262000 GHz, 2.261000 GHz, 2.128000 GHz, 1.995000 GHz, 1.862000 GHz, 1.729000 GHz, 1.596000 GHz, 1.463000 GHz, 1.330000 GHz, 1.197000 GHz, 1.064000 GHz
+  available cpufreq governors: conservative, userspace, powersave, ondemand, performance
+  current policy: frequency should be within 1.064000 GHz and 2.262000 GHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.262000 GHz (asserted by call to hardware).
+  boost state support:
+    Supported: yes
+    Active: yes
+
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 Cc: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Ramkumar Ramachandra <artagnon@gmail.com>
+Cc: linux-pm@vger.kernel.org
+Acked-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- tools/power/cpupower/Makefile |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ tools/power/cpupower/man/cpupower-frequency-info.1 |    3 +
+ tools/power/cpupower/utils/cpufreq-info.c          |  110 +++++++++++++-------
+ 2 files changed, 73 insertions(+), 40 deletions(-)
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index cbfec92..dca6b43 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -295,8 +295,12 @@ uninstall:
- 	- rm -f $(DESTDIR)${libdir}/libcpupower.*
- 	- rm -f $(DESTDIR)${includedir}/cpufreq.h
- 	- rm -f $(DESTDIR)${bindir}/utils/cpupower
--	- rm -f $(DESTDIR)${mandir}/man1/cpufreq-set.1
--	- rm -f $(DESTDIR)${mandir}/man1/cpufreq-info.1
-+	- rm -f $(DESTDIR)${mandir}/man1/cpupower.1
-+	- rm -f $(DESTDIR)${mandir}/man1/cpupower-frequency-set.1
-+	- rm -f $(DESTDIR)${mandir}/man1/cpupower-frequency-info.1
-+	- rm -f $(DESTDIR)${mandir}/man1/cpupower-set.1
-+	- rm -f $(DESTDIR)${mandir}/man1/cpupower-info.1
-+	- rm -f $(DESTDIR)${mandir}/man1/cpupower-monitor.1
- 	- for HLANG in $(LANGUAGES); do \
- 		rm -f $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo; \
- 	  done;
+diff --git a/tools/power/cpupower/man/cpupower-frequency-info.1 b/tools/power/cpupower/man/cpupower-frequency-info.1
+index 4a1918e..9c85a38 100644
+--- a/tools/power/cpupower/man/cpupower-frequency-info.1
++++ b/tools/power/cpupower/man/cpupower-frequency-info.1
+@@ -50,6 +50,9 @@ Prints out information like provided by the /proc/cpufreq interface in 2.4. and
+ \fB\-m\fR \fB\-\-human\fR
+ human\-readable output for the \-f, \-w, \-s and \-y parameters.
+ .TP  
++\fB\-n\fR \fB\-\-no-rounding\fR
++Output frequencies and latencies without rounding off values.
++.TP  
+ .SH "REMARKS"
+ .LP 
+ By default only values of core zero are displayed. How to display settings of
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+index 28953c9..b4b90a9 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -82,29 +82,42 @@ static void proc_cpufreq_output(void)
+ 	}
+ }
+ 
++static int no_rounding;
+ static void print_speed(unsigned long speed)
+ {
+ 	unsigned long tmp;
+ 
+-	if (speed > 1000000) {
+-		tmp = speed % 10000;
+-		if (tmp >= 5000)
+-			speed += 10000;
+-		printf("%u.%02u GHz", ((unsigned int) speed/1000000),
+-			((unsigned int) (speed%1000000)/10000));
+-	} else if (speed > 100000) {
+-		tmp = speed % 1000;
+-		if (tmp >= 500)
+-			speed += 1000;
+-		printf("%u MHz", ((unsigned int) speed / 1000));
+-	} else if (speed > 1000) {
+-		tmp = speed % 100;
+-		if (tmp >= 50)
+-			speed += 100;
+-		printf("%u.%01u MHz", ((unsigned int) speed/1000),
+-			((unsigned int) (speed%1000)/100));
+-	} else
+-		printf("%lu kHz", speed);
++	if (no_rounding) {
++		if (speed > 1000000)
++			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
++				((unsigned int) speed%1000000));
++		else if (speed > 100000)
++			printf("%u MHz", (unsigned int) speed);
++		else if (speed > 1000)
++			printf("%u.%03u MHz", ((unsigned int) speed/1000),
++				(unsigned int) (speed%1000));
++		else
++			printf("%lu kHz", speed);
++	} else {
++		if (speed > 1000000) {
++			tmp = speed%10000;
++			if (tmp >= 5000)
++				speed += 10000;
++			printf("%u.%02u GHz", ((unsigned int) speed/1000000),
++				((unsigned int) (speed%1000000)/10000));
++		} else if (speed > 100000) {
++			tmp = speed%1000;
++			if (tmp >= 500)
++				speed += 1000;
++			printf("%u MHz", ((unsigned int) speed/1000));
++		} else if (speed > 1000) {
++			tmp = speed%100;
++			if (tmp >= 50)
++				speed += 100;
++			printf("%u.%01u MHz", ((unsigned int) speed/1000),
++				((unsigned int) (speed%1000)/100));
++		}
++	}
+ 
+ 	return;
+ }
+@@ -113,26 +126,38 @@ static void print_duration(unsigned long duration)
+ {
+ 	unsigned long tmp;
+ 
+-	if (duration > 1000000) {
+-		tmp = duration % 10000;
+-		if (tmp >= 5000)
+-			duration += 10000;
+-		printf("%u.%02u ms", ((unsigned int) duration/1000000),
+-			((unsigned int) (duration%1000000)/10000));
+-	} else if (duration > 100000) {
+-		tmp = duration % 1000;
+-		if (tmp >= 500)
+-			duration += 1000;
+-		printf("%u us", ((unsigned int) duration / 1000));
+-	} else if (duration > 1000) {
+-		tmp = duration % 100;
+-		if (tmp >= 50)
+-			duration += 100;
+-		printf("%u.%01u us", ((unsigned int) duration/1000),
+-			((unsigned int) (duration%1000)/100));
+-	} else
+-		printf("%lu ns", duration);
+-
++	if (no_rounding) {
++		if (duration > 1000000)
++			printf("%u.%06u ms", ((unsigned int) duration/1000000),
++				((unsigned int) duration%1000000));
++		else if (duration > 100000)
++			printf("%u us", ((unsigned int) duration/1000));
++		else if (duration > 1000)
++			printf("%u.%03u us", ((unsigned int) duration/1000),
++				((unsigned int) duration%1000));
++		else
++			printf("%lu ns", duration);
++	} else {
++		if (duration > 1000000) {
++			tmp = duration%10000;
++			if (tmp >= 5000)
++				duration += 10000;
++			printf("%u.%02u ms", ((unsigned int) duration/1000000),
++				((unsigned int) (duration%1000000)/10000));
++		} else if (duration > 100000) {
++			tmp = duration%1000;
++			if (tmp >= 500)
++				duration += 1000;
++			printf("%u us", ((unsigned int) duration / 1000));
++		} else if (duration > 1000) {
++			tmp = duration%100;
++			if (tmp >= 50)
++				duration += 100;
++			printf("%u.%01u us", ((unsigned int) duration/1000),
++				((unsigned int) (duration%1000)/100));
++		} else
++			printf("%lu ns", duration);
++	}
+ 	return;
+ }
+ 
+@@ -525,6 +550,7 @@ static struct option info_opts[] = {
+ 	{ .name = "latency",	.has_arg = no_argument,		.flag = NULL,	.val = 'y'},
+ 	{ .name = "proc",	.has_arg = no_argument,		.flag = NULL,	.val = 'o'},
+ 	{ .name = "human",	.has_arg = no_argument,		.flag = NULL,	.val = 'm'},
++	{ .name = "no-rounding", .has_arg = no_argument,	.flag = NULL,	.val = 'n'},
+ 	{ },
+ };
+ 
+@@ -538,7 +564,8 @@ int cmd_freq_info(int argc, char **argv)
+ 	int output_param = 0;
+ 
+ 	do {
+-		ret = getopt_long(argc, argv, "oefwldpgrasmyb", info_opts, NULL);
++		ret = getopt_long(argc, argv, "oefwldpgrasmybn", info_opts,
++				  NULL);
+ 		switch (ret) {
+ 		case '?':
+ 			output_param = '?';
+@@ -575,6 +602,9 @@ int cmd_freq_info(int argc, char **argv)
+ 			}
+ 			human = 1;
+ 			break;
++		case 'n':
++			no_rounding = 1;
++			break;
+ 		default:
+ 			fprintf(stderr, "invalid or unknown argument\n");
+ 			return EXIT_FAILURE;
 -- 
 1.7.6.1
 
