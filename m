@@ -1,83 +1,153 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Tue, 13 May 2014 12:37:29 +0100
-Message-ID: <537203F9.4000009@arm.com>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>	<CAKohpo=6qXer+RRS-F6x=O1VLzbWq+_a-b29MaUzZBvt7XzDwQ@mail.gmail.com>	<CAPKp9uZbz3M1Xyu7SnSFEexzUPxPqFTSmd7zmU8jU5-Dwu4gvA@mail.gmail.com> <CAKohpon9RLBPniYN+26Bk9GaMBAiTEFqp_YONzPBm7+3n17yiQ@mail.gmail.com>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [Patch v4 5/5] mcpm: exynos: populate suspend and powered_up callbacks
+Date: Tue, 13 May 2014 17:13:31 +0530
+Message-ID: <CANuQgHG9tGzi2rSOwREAxVu4BQoprDg9om62AybgW5v31fpbTQ@mail.gmail.com>
+References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
+	<1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
+	<1399282040-8995-6-git-send-email-chander.kashyap@linaro.org>
+	<20140509153206.GB5040@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:48152 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753590AbaEMLhf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 May 2014 07:37:35 -0400
-In-Reply-To: <CAKohpon9RLBPniYN+26Bk9GaMBAiTEFqp_YONzPBm7+3n17yiQ@mail.gmail.com>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:47171 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753253AbaEMLnc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 May 2014 07:43:32 -0400
+Received: by mail-ob0-f181.google.com with SMTP id wm4so205425obc.26
+        for <linux-pm@vger.kernel.org>; Tue, 13 May 2014 04:43:32 -0700 (PDT)
+In-Reply-To: <20140509153206.GB5040@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "[Chander Kashyap" <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>
 
-Hi Viresh,
+Hi Lorenzo
 
-On 13/05/14 12:05, Viresh Kumar wrote:
-> On 13 May 2014 16:00, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> On Tue, May 13, 2014 at 9:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> On 13 May 2014 13:11, [Chander Kashyap <chander.kashyap@linaro.org> wrote:
->>>
->>> What happened to your name ? "["
->>>
->>>> From: Chander Kashyap <k.chander@samsung.com>
->>>>
->>>> It may be possible to unregister and re-register the cpufreq driver.
->>>> One such example is arm big-little IKS cpufreq driver. While
->>>> re-registering the driver, same OPPs may get added again.
->>>>
->>>> This patch detects the duplicacy and discards them.
->>>>
->>>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
->>>> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
->>>> ---
->>>>   drivers/base/power/opp.c |   28 +++++++++++++++++++---------
->>>>   1 file changed, 19 insertions(+), 9 deletions(-)
->>>
->>> I wouldn't say that this approach is particularly bad or wrong, but what
->>> about this instead?
->>>
+On 9 May 2014 21:02, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+> On Mon, May 05, 2014 at 10:27:20AM +0100, Chander Kashyap wrote:
+>> In order to support cpuidle through mcpm, suspend and powered-up
+>> callbacks are required in mcpm platform code.
+>> Hence populate the same callbacks.
 >>
->> Yes I prefer this and this exactly what I had[1] in my OPP DT series which
->> we could not conclude on the bindings. You also need patch[2] for DT version.
+>> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> ---
+>> Changes in v4: None
+>> Changes in v3:
+>>       1. Removed coherancy enablement after suspend failure.
 >
-> Ahh, I have just reinvented the wheel. Though I can see now that I have
-> Acked those patches as well :)
+> coherency
+>
+>>       2. Use generic function to poweron cpu.
+>> changes in v2:
+>>       1. Fixed typo: enynos_pmu_cpunr to exynos_pmu_cpunr
+>>  arch/arm/mach-exynos/mcpm-exynos.c |   34 ++++++++++++++++++++++++++++++++++
+>>  1 file changed, 34 insertions(+)
+>>
+>> diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
+>> index d0f7461..6d4a907 100644
+>> --- a/arch/arm/mach-exynos/mcpm-exynos.c
+>> +++ b/arch/arm/mach-exynos/mcpm-exynos.c
+>> @@ -256,10 +256,44 @@ static int exynos_power_down_finish(unsigned int cpu, unsigned int cluster)
+>>       return -ETIMEDOUT; /* timeout */
+>>  }
+>>
+>> +void exynos_powered_up(void)
+>
+> static ?
+
+Ok, done
+
+>
+>> +{
+>> +     unsigned int mpidr, cpu, cluster;
+>> +
+>> +     mpidr = read_cpuid_mpidr();
+>> +     cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
+>> +     cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+>> +
+>> +     arch_spin_lock(&exynos_mcpm_lock);
+>> +     if (cpu_use_count[cpu][cluster] == 0)
+>> +             cpu_use_count[cpu][cluster] = 1;
+>> +     arch_spin_unlock(&exynos_mcpm_lock);
+>> +}
+>> +
+>> +static void exynos_suspend(u64 residency)
+>> +{
+>> +     unsigned int mpidr, cpunr;
+>> +
+>> +     mpidr = read_cpuid_mpidr();
+>> +     cpunr = exynos_pmu_cpunr(mpidr);
+>
+> If I were to be picky, I would compute these values only if they
+> are needed, ie move the computation after exynos_power_down().
+
+Yes thats make sense. I will realign it.
+
+>
+> There is another quite horrible issue here. We know this code works
+> because the processors A15/A7 hit the caches with C bit in SCTLR cleared.
+>
+> On processors where this is not true, this sequence would explode
+> if power down fails (in case core is gated but L2 is still powered on,
+> the stack is stuck in L2) since it is going to read stack data that is
+> in L2 but can't be read.
+>
+> It is not related to this sequence only, but it is an issue in general
+> and wanted to mention that on the lists for public awareness.
 >
 
-Yes correct, it was stalled due to no discussions on the bindings.
+Can you please elaborate. I didn't understand.
 
-> So, what are the plans for those patches then? As Chander also needs few
-> of those.
+> The gist of what I am saying is, please add a comment to that extent,
+> here and it should be added in exynos_power_down() too.
 >
-> Probably split the series to get the non-blockers upstream Atleast ?
+>> +     __raw_writel(virt_to_phys(mcpm_entry_point), ns_sram_base_addr + 0x1c);
+>
+> No magic numbers please (0x1c). You can add a macro/wrapper, as TC2 does.
+
+Yes i will remove it.
+
+>
+>> +     exynos_power_down();
+>> +
+>> +     /*
+>> +      * Execution reaches here only if cpu did not power down.
+>> +      * Hence roll back the changes done in exynos_power_down function.
+>> +     */
+>> +     exynos_cpu_powerup(cpunr);
+>
+> Please be aware that if this function returns MCPM will soft reboot, and
+> the CPUidle driver will have no way to detect a state entry failure.
+>
+> I am just flagging this up, since fixing this behaviour is not easy, and
+> honestly, since power down failure should be the exception not the rule,
+> the idle stats should not be affected much.
+>
+> I think this is the proper way of implementing the sequence but please
+> all keep in mind what I wrote above.
+>
+> Lorenzo
+>
+>> +}
+>> +
+>>  static const struct mcpm_platform_ops exynos_power_ops = {
+>>       .power_up               = exynos_power_up,
+>>       .power_down             = exynos_power_down,
+>>       .power_down_finish      = exynos_power_down_finish,
+>> +     .suspend                = exynos_suspend,
+>> +     .powered_up             = exynos_powered_up,
+>>  };
+>>
+>>  static void __init exynos_mcpm_usage_count_init(void)
+>> --
+>> 1.7.9.5
+>>
+>>
 >
 
-I can do that.
 
-> Another thing that I thought later, though the problem can be fixed by
-> your version of patches, the version from chander had something good as
-> well. It would get rid of duplicate entries coming from dtb. Would it make
-> sense to get that part in as well?
->
 
-That requires agreement on the bindings. The main issue with shared opp
-bindings is that in general we don't want to modify the standard bindings
-without covering all aspects. It will avoid carrying around buggy bindings
-forever as its ABI.
-
-There was another thread from Samsung modifying bindings[0] and Rob insisted to
-join the discussion[1] I started, but I never got any feedback.
-
-Regards,
-Sudeep
-
-[0] http://marc.info/?l=devicetree&m=139152254008892&w=2
-[1] http://www.spinics.net/lists/arm-kernel/msg303977.html
-
+-- 
+with warm regards,
+Chander Kashyap
