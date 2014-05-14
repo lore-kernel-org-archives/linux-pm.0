@@ -1,70 +1,107 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v5 4/6] driver: cpuidle: cpuidle-big-little: init driver
- for Exynos5420
-Date: Wed, 14 May 2014 15:06:29 +0100
-Message-ID: <20140514140628.GA25241@e102568-lin.cambridge.arm.com>
-References: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com>
- <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
- <1400054637-21505-5-git-send-email-chander.kashyap@linaro.org>
- <5587958.90ud9NuKXm@wuerfel>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH 1/2] speedstep-smi: enable interrupts when waiting
+Date: Wed, 14 May 2014 10:24:44 -0400 (EDT)
+Message-ID: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:54948 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751596AbaENOGf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 10:06:35 -0400
-In-Reply-To: <5587958.90ud9NuKXm@wuerfel>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Chander Kashyap <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Chander Kashyap <k.chander@samsung.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>
 
-On Wed, May 14, 2014 at 02:04:51PM +0100, Arnd Bergmann wrote:
-> On Wednesday 14 May 2014 13:33:55 Chander Kashyap wrote:
-> > 
-> > diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-> > index 4cd02bd..344d79fa 100644
-> > --- a/drivers/cpuidle/cpuidle-big_little.c
-> > +++ b/drivers/cpuidle/cpuidle-big_little.c
-> > @@ -165,6 +165,7 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
-> >  
-> >  static const struct of_device_id compatible_machine_match[] = {
-> >         { .compatible = "arm,vexpress,v2p-ca15_a7" },
-> > +       { .compatible = "samsung,exynos5420" },
-> >         {},
-> >  };
-> 
-> Does the cpuidle-big_little driver actually care about the platform?
+Hi Viresh
 
-No, platform specific bits are hidden behind MCPM. Apart from idle states
-data, that will soon be initialized through DT too.
+Some times ago, I sent these two cpufreq patches to fix frequency 
+transition problem on speedstep-smi, but you didn't put them to the 
+upstream kernel. I am resending the patches. If you would like a different 
+solution to this problem, please explain it.
 
-Actually, when idle for arm64 is merged we can even rework it and end up
-with a single driver, DT based, that's the ultimate goal.
+Mikulas
 
-> If not, it would be good to add a generic string here as well, for
-> future platforms to match.
 
-Yes, you have a point.
+On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
+speedstep-smi driver sometimes loads and sometimes doesn't load with
+"change to state X failed" message.
 
-> It still makes sense to list both the generic string and the platform
-> specific one though, in case we have to work around subtle differences.
+The hardware sometimes refuses to change frequency and in this case, we 
+need to retry later. I found out that we need to enable interrupts while 
+waiting for retry. When we enable interrupts, the hardware blockage that 
+prevents frequency transition resolves and the transition is possible. 
+With disabled interrupts, the blockage doesn't resolve (no matter how long 
+do we wait). The exact reasons for this hardware behavior are unknown.
 
-Agreed, but subtle differences do not belong in this driver, that's the
-purpose of abstracting it the best we can. I have no problem in leaving
-platform specific compatible there though.
+This patch enables interrupts in the function speedstep_set_state that can
+be called with disabled interrupts. However, this function is called with
+disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
+any problem.
 
-Lorenzo
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+Cc: stable@vger.kernel.org
 
-> 
-> 	Arnd
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+---
+ drivers/cpufreq/speedstep-lib.c |    3 +++
+ drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+ 2 files changed, 15 insertions(+)
 
+Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
+===================================================================
+--- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c	2014-02-03 18:56:44.000000000 +0100
++++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:21.000000000 +0100
+@@ -156,6 +156,7 @@ static void speedstep_set_state(unsigned
+ 		return;
+ 
+ 	/* Disable IRQs */
++	preempt_disable();
+ 	local_irq_save(flags);
+ 
+ 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+@@ -166,9 +167,19 @@ static void speedstep_set_state(unsigned
+ 
+ 	do {
+ 		if (retry) {
++			/*
++			 * We need to enable interrupts, otherwise the blockage
++			 * won't resolve.
++			 *
++			 * We disable preemption so that other processes don't
++			 * run. If other processes were running, they could
++			 * submit more DMA requests, making the blockage worse.
++			 */
+ 			pr_debug("retry %u, previous result %u, waiting...\n",
+ 					retry, result);
++			local_irq_enable();
+ 			mdelay(retry * 50);
++			local_irq_disable();
+ 		}
+ 		retry++;
+ 		__asm__ __volatile__(
+@@ -185,6 +196,7 @@ static void speedstep_set_state(unsigned
+ 
+ 	/* enable IRQs */
+ 	local_irq_restore(flags);
++	preempt_enable();
+ 
+ 	if (new_state == state)
+ 		pr_debug("change to %u MHz succeeded after %u tries "
+Index: linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c
+===================================================================
+--- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-lib.c	2014-02-03 18:54:39.000000000 +0100
++++ linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:21.000000000 +0100
+@@ -400,6 +400,7 @@ unsigned int speedstep_get_freqs(enum sp
+ 
+ 	pr_debug("previous speed is %u\n", prev_speed);
+ 
++	preempt_disable();
+ 	local_irq_save(flags);
+ 
+ 	/* switch to low state */
+@@ -464,6 +465,8 @@ unsigned int speedstep_get_freqs(enum sp
+ 
+ out:
+ 	local_irq_restore(flags);
++	preempt_enable();
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(speedstep_get_freqs);
