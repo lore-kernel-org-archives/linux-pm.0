@@ -1,68 +1,57 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 2/2] Documentation: devicetree: Add boost-frequency
- binding to list boost mode frequency
-Date: Wed, 14 May 2014 16:06:03 +0100
-Message-ID: <5373865B.2040205@arm.com>
-References: <1400029380-5372-1-git-send-email-thomas.ab@samsung.com> <1400029380-5372-3-git-send-email-thomas.ab@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch]  PM / hibernate: memory corruption in
+ resumedelay_setup()
+Date: Wed, 14 May 2014 17:56:02 +0200
+Message-ID: <20140514155602.GA9723@amd.pavel.ucw.cz>
+References: <20140514125720.GC14571@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1400029380-5372-3-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42792 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755276AbaENP4E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 11:56:04 -0400
+Content-Disposition: inline
+In-Reply-To: <20140514125720.GC14571@mwanda>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabian Frederick <fabf@skynet.be>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 
+Hi!
 
+> "resume_delay" is not an unsigned long, it's an int, so this will
+> corrupt memory on 64 bit systems.
 
-On 14/05/14 02:03, Thomas Abraham wrote:
-> From: Thomas Abraham <thomas.ab@samsung.com>
->
-> Add a new optional boost-frequency binding for specifying the frequencies
-> usable in boost mode.
->
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> ---
->   .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   11 +++++++++++
->   1 files changed, 11 insertions(+), 0 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
->
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-> new file mode 100644
-> index 0000000..d925e38
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-> @@ -0,0 +1,11 @@
-> +* Device tree binding for CPU boost frequency (aka over-clocking)
-> +
-> +Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
-> +overclocking) in which the CPU can operate in frequencies beyond the normal
-> +operating conditions.
-> +
-> +Optional Properties:
-> +- boost-frequency: list of frequencies in KHz to be used only in boost mode.
-> +  This list should be a subset of frequencies listed in "operating-points"
-> +  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
-> +  details about "operating-points" property.
->
+ssleep takes unsigned int.
 
-Though I understand the need of it, I think the binding is designed to suffice
-the need of the boost frequency support in cpufreq.
+Variable is int.
 
-Typically SoC would provide characteristics like under-drive(hits performance
-but most energy efficient), nominal(highest sustained performance w/o any
-external constraint like power, thermal) and over-drive(maximum performance but
-not sustainable for long periods)
+We parse it using kstrtoul.
 
-IMO the binding could represent these unique points on the curve instead.
+So I'd suggest: switch resume_delay variable to unsigned int, and use
+kstrtouint().
 
-Regards,
-Sudeep
+> Fixes: 317cf7e5e85e ('PM / hibernate: convert simple_strtoul to kstrtoul')
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 2377ff7..3659b26 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -1115,8 +1115,9 @@ static int __init resumewait_setup(char *str)
+>  
+>  static int __init resumedelay_setup(char *str)
+>  {
+> -	int rc = kstrtoul(str, 0, (unsigned long *)&resume_delay);
+> +	int rc;
+>  
+> +	rc = kstrtoint(str, 0, &resume_delay);
+
+...and if possible, keep it on one line.
+
+Thanks,
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
