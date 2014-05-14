@@ -1,51 +1,65 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [patch v2]  PM / hibernate: memory corruption in resumedelay_setup()
-Date: Wed, 14 May 2014 19:08:46 +0300
-Message-ID: <20140514160845.GA5273@mwanda>
-References: <20140514155602.GA9723@amd.pavel.ucw.cz>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH RESEND] cpufreq: Break out early when frequency equals target_freq
+Date: Wed, 14 May 2014 21:05:52 +0300
+Message-ID: <5373B080.3050907@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:42110 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbaENQJN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 12:09:13 -0400
-Content-Disposition: inline
-In-Reply-To: <20140514155602.GA9723@amd.pavel.ucw.cz>
+Received: from sema.semaphore.gr ([78.46.194.137]:46114 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750741AbaENSF5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 14:05:57 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-In the original code "resume_delay" is an int so on 64 bits, the call to
-kstrtoul() will cause memory corruption.  We may as well fix a style
-issue here as well and make "resume_delay" unsigned int, since that's
-what we pass to ssleep().
+Many drivers keep frequencies in frequency table in ascending
+or descending order. When governor tries to change to policy->min
+or policy->max respectively then the cpufreq_frequency_table_target
+could return on first iteration. This will save some iteration cycles.
 
-Fixes: 317cf7e5e85e ('PM / hibernate: convert simple_strtoul to kstrtoul')
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+So, break out early when a frequency in cpufreq_frequency_table
+equals to target one.
+
+Testing this during kernel compilation using ondemand governor
+with a frequency table in ascending order, the
+cpufreq_frequency_table_target returned early on the first
+iteration at about 30% of times called.
+
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
-v2: style differences
+ drivers/cpufreq/freq_table.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 2377ff7..df88d55 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -35,7 +35,7 @@
- static int nocompress;
- static int noresume;
- static int resume_wait;
--static int resume_delay;
-+static unsigned int resume_delay;
- static char resume_file[256] = CONFIG_PM_STD_PARTITION;
- dev_t swsusp_resume_device;
- sector_t swsusp_resume_block;
-@@ -1115,7 +1115,7 @@ static int __init resumewait_setup(char *str)
- 
- static int __init resumedelay_setup(char *str)
- {
--	int rc = kstrtoul(str, 0, (unsigned long *)&resume_delay);
-+	int rc = kstrtouint(str, 0, &resume_delay);
- 
- 	if (rc)
- 		return rc;
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 8e518c6..1632981 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -137,9 +137,13 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+ 		i = pos - table;
+ 		if ((freq < policy->min) || (freq > policy->max))
+ 			continue;
++		if (freq == target_freq) {
++			optimal.driver_data = i;
++			break;
++		}
+ 		switch (relation) {
+ 		case CPUFREQ_RELATION_H:
+-			if (freq <= target_freq) {
++			if (freq < target_freq) {
+ 				if (freq >= optimal.frequency) {
+ 					optimal.frequency = freq;
+ 					optimal.driver_data = i;
+@@ -152,7 +156,7 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+ 			}
+ 			break;
+ 		case CPUFREQ_RELATION_L:
+-			if (freq >= target_freq) {
++			if (freq > target_freq) {
+ 				if (freq <= optimal.frequency) {
+ 					optimal.frequency = freq;
+ 					optimal.driver_data = i;
+-- 
+1.9.0
