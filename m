@@ -1,43 +1,49 @@
 From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH v5 2/6] arm: exynos: add generic function to calculate cpu number
-Date: Wed, 14 May 2014 13:33:53 +0530
-Message-ID: <1400054637-21505-3-git-send-email-chander.kashyap@linaro.org>
+Subject: [PATCH v5 4/6] driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+Date: Wed, 14 May 2014 13:33:55 +0530
+Message-ID: <1400054637-21505-5-git-send-email-chander.kashyap@linaro.org>
 References: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com>
  <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:52077 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbaENIEe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 04:04:34 -0400
+Received: by mail-pa0-f42.google.com with SMTP id rd3so1372970pab.15
+        for <linux-pm@vger.kernel.org>; Wed, 14 May 2014 01:04:33 -0700 (PDT)
 In-Reply-To: <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-The address of cpu power registers in pmu is based on cpu number
-offsets. This function calculate the same. This is essentially
-required in case of multi-cluster SoC's e.g Exynos5420.
+Add "samsung,exynos5420" compatible string to initialize generic
+big-little cpuidle driver for Exynos5420.
 
 Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
 Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-exynos/regs-pmu.h |    9 +++++++++
- 1 file changed, 9 insertions(+)
+Changes in v4: None
+Changes in v3:
+	1. Add compatible string to of_device_id table insted comparing directoly
+Changes in v2: none
 
-diff --git a/arch/arm/mach-exynos/regs-pmu.h b/arch/arm/mach-exynos/regs-pmu.h
-index 4179f6a..485aefd 100644
---- a/arch/arm/mach-exynos/regs-pmu.h
-+++ b/arch/arm/mach-exynos/regs-pmu.h
-@@ -325,4 +325,13 @@
+ drivers/cpuidle/cpuidle-big_little.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index 4cd02bd..344d79fa 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -165,6 +165,7 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
  
- #define EXYNOS5420_SWRESET_KFC_SEL				0x3
+ static const struct of_device_id compatible_machine_match[] = {
+ 	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
++	{ .compatible = "samsung,exynos5420" },
+ 	{},
+ };
  
-+#include <asm/cputype.h>
-+#define MAX_CPUS_IN_CLUSTER	4
-+
-+static inline unsigned int exynos_pmu_cpunr(unsigned int mpidr)
-+{
-+	return ((MPIDR_AFFINITY_LEVEL(mpidr, 1) * MAX_CPUS_IN_CLUSTER)
-+		 + MPIDR_AFFINITY_LEVEL(mpidr, 0));
-+}
-+
- #endif /* __ASM_ARCH_REGS_PMU_H */
 -- 
 1.7.9.5
+
