@@ -1,43 +1,86 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v3 1/2] cpufreq / OPP: Allow boost frequency to be looked
- up from device tree
-Date: Wed, 14 May 2014 09:31:49 -0500
-Message-ID: <53737E55.9070704@ti.com>
-References: <1400029380-5372-1-git-send-email-thomas.ab@samsung.com>	<1400029380-5372-2-git-send-email-thomas.ab@samsung.com>	<CAKohponnPSRAotJUu+5a9y8j97QF8Jqgc5DA5WQnwGWCnVY-aA@mail.gmail.com>	<CAGo_u6p-uqw82ewDciDEhAt0=Nswfw33-gf8Aa+-6_k3eCcTzw@mail.gmail.com>	<20140514080930.781e0557@amdc2363> <CAKohponG9PNse4cHkvfLfaRouW-jxjToBXUCHyOCgx8-Pc=2Xw@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming
+ runtime-suspended devices unnecessarily
+Date: Wed, 14 May 2014 10:53:16 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405141041360.1432-100000@iolanthe.rowland.org>
+References: <16671603.abrivY8Odm@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:52960 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbaENOcW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 10:32:22 -0400
-In-Reply-To: <CAKohponG9PNse4cHkvfLfaRouW-jxjToBXUCHyOCgx8-Pc=2Xw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <16671603.abrivY8Odm@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
-Cc: Thomas Abraham <ta.omasab@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Thomas P Abraham <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 05/14/2014 01:24 AM, Viresh Kumar wrote:
-> On 14 May 2014 11:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
->> I agree with Nishanth here, that point 1 (as described by Viresh at
->> [*]) is a more scalable approach.
-> 
-> The only reason why I wanted all that to be done at OPP level was to
-> ensure if somebody else also needs it apart from cpufreq, they don't have
-> to duplicate code and find it.. As it is present at a central place..
-> 
-> But if no other code is going to look for that, it may just be fine as is..
-> 
-If we eventually have a need beyond cpufreq (say devfreq) with similar
-instances, then it makes sense to move it out to a generic place.
-Either way, code implementation/duplication is a OS problem - and
-should be looked at independent of the description in dts. If we feel
-the description is valid hardware description (which, personally, I
-do), then lets go to the next discussion point of where to put it -
-generic or cpufreq specific (here, I have no preference), and finally
-decide the implementation as necessary as a result of the description.
+On Tue, 13 May 2014, Rafael J. Wysocki wrote:
 
--- 
-Regards,
-Nishanth Menon
+> > It would be surprising if ->prepare() needed to make any difficult
+> > checks.  This would imply that the device could have multiple
+> > runtime-suspend states, some of which are appropriate for system
+> > suspend while others aren't.  Not impossible, but I wouldn't expect it
+> > to come up often.
+> 
+> That is the case for every device with ACPI power management in principle. :-)
+> 
+> Please see patch [3/3] for details.
+
+I don't understand enough about the ACPI subsystem to follow the
+details of that patch.
+
+> OK, I've updated the $subject patch in the meantime and the result is appended
+> Former patch [1/3] is not necessary any more now and patch [3/3] is still valid.
+> 
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: PM / sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily
+> 
+> Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
+> resume all runtime-suspended devices during system suspend, mostly
+> because those devices may need to be reprogrammed due to different
+> wakeup settings for system sleep and for runtime PM.
+
+...
+
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+This is looking quite good.  I have one suggestion for a small 
+improvement...
+
+> @@ -1332,6 +1338,16 @@ static int __device_suspend(struct devic
+>  	if (dev->power.syscore)
+>  		goto Complete;
+>  
+> +	if (dev->power.direct_complete) {
+> +		pm_runtime_disable(dev);
+> +		if (dev->power.disable_depth == 1
+> +		    && pm_runtime_status_suspended(dev))
+> +			goto Complete;
+> +
+> +		dev->power.direct_complete = false;
+> +		pm_runtime_enable(dev);
+> +	}
+
+Do we want to allow ->prepare() to return > 0 if the device isn't
+runtime suspended?  If we do then non-suspended devices may be a common
+case.  We should then avoid the extra overhead of disable + enable.  
+So I would write:
+
+	if (dev->power.direct_complete) {
+		if (pm_runtime_status_suspended(dev)) {
+			pm_runtime_disable(dev);
+			if (dev->power.disable_depth == 1
+			    && pm_runtime_status_suspended(dev))
+				goto Complete;
+			pm_runtime_enable(dev);
+		}
+		dev->power.direct_complete = false;
+	}
+
+Also, now that we have finally settled on the appropriate API, there
+needs to ba a patch updating the PM documentation.
+
+Alan Stern
+
