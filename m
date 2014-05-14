@@ -1,127 +1,46 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH 2/2] speedstep: clean up interrupt disabling
-Date: Wed, 14 May 2014 10:25:25 -0400 (EDT)
-Message-ID: <alpine.LRH.2.02.1405141024520.11670@file01.intranet.prod.int.rdu2.redhat.com>
-References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
+Date: Wed, 14 May 2014 09:27:00 -0500
+Message-ID: <53737D34.5040307@ti.com>
+References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>	<CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>	<CANuQgHGehqDD8-SKTfEKMEZmT5KwofFL8bhYqge0uNm6kpPgUQ@mail.gmail.com> <CAKohponfdoPG7H4h-5s+V7CwB_SgnyqqUm9aa6G-K_cX3DOcfA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:52050 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754857AbaENO1N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 May 2014 10:27:13 -0400
+In-Reply-To: <CAKohponfdoPG7H4h-5s+V7CwB_SgnyqqUm9aa6G-K_cX3DOcfA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Chander Kashyap <chander.kashyap@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-This patch cleans up interrupt disabling in speedstep-smi and
-speedstep-lib. It doesn't fix any bug.
+On 05/14/2014 06:08 AM, Viresh Kumar wrote:
+> On 14 May 2014 15:01, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+>>> say we do at this point:
+>>> if (new_opp->rate == opp->rate) {
+>>>   dev_err(dev, "%s: attempt to add duplicate OPP entry (rate=%ld)\n",
+>>> __func__, new_opp->rate)
+>>>    kfree(new_opp);
+>>>     return -EINVAL;
+>>> }
+>>
+>> Yes this is more cleaner.
+>> But instead of dev_err,  we should use dev_warn and secondly
+> 
+> Correct
+> 
+>> return 0 rather than EINVAL, as there are independent users for this function
+> 
+> Why? We should actually use EEXIST here instead of EINVAL though..
+> 
+Yep -EEXIST is the right return value here. As Viresh indicated,
+reporting back 0 when the requested operation actually was not
+performed is wrong. Caller is supposed to know when it makes an error
+- hiding it is not correct.
 
-speedstep_get_freqs in speedstep-lib may be called from speedstep-smi or
-speedstep-ich. When it is called from speedstep-ich, it needs to calculate
-transition latency. When it is called from speedstep-smi, transition
-latency doesn't have to be calculated.
-
-The function speedstep_set_state in speedstep-smi needs to enable
-interrupts. Previously it enabled interrupts even if it was called with
-disabled interrupts, but it is dirty.
-
-This patch changes speedstep_get_freqs so that it disables interrupts only
-when it is called from speedstep-ich and when it is measuring the
-transition latency. This avoids much of the code dirtiness.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
----
- drivers/cpufreq/speedstep-lib.c |   13 ++++++-------
- drivers/cpufreq/speedstep-smi.c |   11 ++++-------
- 2 files changed, 10 insertions(+), 14 deletions(-)
-
-Index: linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c
-===================================================================
---- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:21.000000000 +0100
-+++ linux-3.14-rc1/drivers/cpufreq/speedstep-lib.c	2014-02-03 19:06:26.000000000 +0100
-@@ -400,9 +400,6 @@ unsigned int speedstep_get_freqs(enum sp
- 
- 	pr_debug("previous speed is %u\n", prev_speed);
- 
--	preempt_disable();
--	local_irq_save(flags);
--
- 	/* switch to low state */
- 	set_state(SPEEDSTEP_LOW);
- 	*low_speed = speedstep_get_frequency(processor);
-@@ -414,15 +411,19 @@ unsigned int speedstep_get_freqs(enum sp
- 	pr_debug("low speed is %u\n", *low_speed);
- 
- 	/* start latency measurement */
--	if (transition_latency)
-+	if (transition_latency) {
-+		local_irq_save(flags);
- 		do_gettimeofday(&tv1);
-+	}
- 
- 	/* switch to high state */
- 	set_state(SPEEDSTEP_HIGH);
- 
- 	/* end latency measurement */
--	if (transition_latency)
-+	if (transition_latency) {
- 		do_gettimeofday(&tv2);
-+		local_irq_restore(flags);
-+	}
- 
- 	*high_speed = speedstep_get_frequency(processor);
- 	if (!*high_speed) {
-@@ -464,8 +465,6 @@ unsigned int speedstep_get_freqs(enum sp
- 	}
- 
- out:
--	local_irq_restore(flags);
--	preempt_enable();
- 
- 	return ret;
- }
-Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
-===================================================================
---- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:21.000000000 +0100
-+++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c	2014-02-03 19:06:26.000000000 +0100
-@@ -148,16 +148,16 @@ static int speedstep_smi_get_freqs(unsig
- static void speedstep_set_state(unsigned int state)
- {
- 	unsigned int result = 0, command, new_state, dummy;
--	unsigned long flags;
- 	unsigned int function = SET_SPEEDSTEP_STATE;
- 	unsigned int retry = 0;
- 
- 	if (state > 0x1)
- 		return;
- 
--	/* Disable IRQs */
-+	WARN_ON_ONCE(irqs_disabled());
-+
-+	/* Disable preemption so that other processes don't run */
- 	preempt_disable();
--	local_irq_save(flags);
- 
- 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
- 
-@@ -177,9 +177,7 @@ static void speedstep_set_state(unsigned
- 			 */
- 			pr_debug("retry %u, previous result %u, waiting...\n",
- 					retry, result);
--			local_irq_enable();
- 			mdelay(retry * 50);
--			local_irq_disable();
- 		}
- 		retry++;
- 		__asm__ __volatile__(
-@@ -194,8 +192,7 @@ static void speedstep_set_state(unsigned
- 			);
- 	} while ((new_state != state) && (retry <= SMI_TRIES));
- 
--	/* enable IRQs */
--	local_irq_restore(flags);
-+	/* enable preemption */
- 	preempt_enable();
- 
- 	if (new_state == state)
-
+-- 
+Regards,
+Nishanth Menon
