@@ -1,142 +1,134 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: Re: [Patch v4 5/5] mcpm: exynos: populate suspend and powered_up callbacks
-Date: Wed, 14 May 2014 08:22:17 +0530
-Message-ID: <CANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com>
-References: <1399278444-8312-3-git-send-email-chander.kashyap@linaro.org>
-	<1399282040-8995-1-git-send-email-chander.kashyap@linaro.org>
-	<1399282040-8995-6-git-send-email-chander.kashyap@linaro.org>
-	<20140509153206.GB5040@e102568-lin.cambridge.arm.com>
-	<CANuQgHG9tGzi2rSOwREAxVu4BQoprDg9om62AybgW5v31fpbTQ@mail.gmail.com>
-	<20140513171452.GB10210@red-moon>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/2] cpufreq / OPP: Allow boost frequency to be looked
+ up from device tree
+Date: Wed, 14 May 2014 09:10:10 +0530
+Message-ID: <CAKohponnPSRAotJUu+5a9y8j97QF8Jqgc5DA5WQnwGWCnVY-aA@mail.gmail.com>
+References: <1400029380-5372-1-git-send-email-thomas.ab@samsung.com>
+	<1400029380-5372-2-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20140513171452.GB10210@red-moon>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:51334 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752983AbaENDkL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 May 2014 23:40:11 -0400
+Received: by mail-ob0-f178.google.com with SMTP id va2so1483924obc.23
+        for <linux-pm@vger.kernel.org>; Tue, 13 May 2014 20:40:10 -0700 (PDT)
+In-Reply-To: <1400029380-5372-2-git-send-email-thomas.ab@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Abraham <ta.omasab@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>
 
-Hi Lorenzo,
+On 14 May 2014 06:32, Thomas Abraham <ta.omasab@gmail.com> wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
+>
+> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
+> support for CPU boost mode. This patch adds support for finding available
+> boost frequencies from device tree and marking them as usable in boost mode.
+>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> ---
+>  drivers/cpufreq/cpufreq_opp.c |   39 +++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 39 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
+> index c0c6f4a..e3c97f3 100644
+> --- a/drivers/cpufreq/cpufreq_opp.c
+> +++ b/drivers/cpufreq/cpufreq_opp.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/pm_opp.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/slab.h>
+> +#include <linux/of.h>
+>
+>  /**
+>   * dev_pm_opp_init_cpufreq_table() - create a cpufreq table for a device
+> @@ -51,6 +52,10 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>         struct cpufreq_frequency_table *freq_table = NULL;
+>         int i, max_opps, ret = 0;
+>         unsigned long rate;
+> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> +       int j, len;
+> +       u32 *boost_freqs = NULL;
+> +#endif
+>
+>         rcu_read_lock();
+>
+> @@ -82,6 +87,40 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>
+>         *table = &freq_table[0];
+>
+> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> +       if (of_find_property(dev->of_node, "boost-frequency", &len)) {
 
-On 13 May 2014 22:44, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> On Tue, May 13, 2014 at 12:43:31PM +0100, Chander Kashyap wrote:
->
-> [...]
->
->> >> +static void exynos_suspend(u64 residency)
->> >> +{
->> >> +     unsigned int mpidr, cpunr;
->> >> +
->> >> +     mpidr = read_cpuid_mpidr();
->> >> +     cpunr = exynos_pmu_cpunr(mpidr);
->> >
->> > If I were to be picky, I would compute these values only if they
->> > are needed, ie move the computation after exynos_power_down().
->>
->> Yes thats make sense. I will realign it.
->>
->> >
->> > There is another quite horrible issue here. We know this code works
->> > because the processors A15/A7 hit the caches with C bit in SCTLR cleared.
->> >
->> > On processors where this is not true, this sequence would explode
->> > if power down fails (in case core is gated but L2 is still powered on,
->> > the stack is stuck in L2) since it is going to read stack data that is
->> > in L2 but can't be read.
->> >
->> > It is not related to this sequence only, but it is an issue in general
->> > and wanted to mention that on the lists for public awareness.
->> >
->>
->> Can you please elaborate. I didn't understand.
->
-> It is not related to this patch only. This function carries out writes to the
-> stack (which might end up in eg L2) and then disables the C bit in SCTLR
-> through MCPM.
->
-> A15 and A7 processors hit the cache with the C bit clear in the SCTLR
-> so the processor still "hits" the stack values if the power down fails.
-> On processors where caches are not hit with the C bit clear (eg A9) this code
-> would fail since the stack values that sit in the caches cannot be read with
-> the C bit clear in SCTLR until the SCTLR is restored, so it will have to
-> be implemented in assembly with no stack usage (or better, no cacheable data
-> usage).
->
-> So, all I am saying is, to avoid copy'n'paste havoc and to avoid running
-> this code on Exynos platforms where it must not be run as-is, please add
-> a comment along the line:
->
-> "This function requires the stack data to be visible through power down
-> and can only be executed on processors like A15 and A7 that hit the cache
-> with the C bit clear in the SCTLR register."
->
-> Please let me know if that's clear.
+Does this mean another block inside the cpu node ? Like this: ?
 
-It all clear now.
-Thanks a lot.
+cpu@0 {
+        compatible = "arm,cortex-a9";
+        reg = <0>;
+        next-level-cache = <&L2>;
+        operating-points = <
+                /* kHz    uV */
+                792000  1100000
+                396000  950000
+                198000  850000
+        >;
+        boost-frequency = <
+                792000
+                198000
+        >;
+};
 
+I think it we might better add another field in the opp block as these
+OPPs are rather boost one..
+
+@Rob/Rafael: Opinion please ..
+
+> +               if (len == 0 || (len & (sizeof(u32) - 1)) != 0) {
+> +                       dev_err(dev, "%s: invalid boost frequency\n", __func__);
+> +                       ret = -EINVAL;
+> +                       goto out;
+> +               }
+> +
+> +               boost_freqs = kzalloc(len, GFP_KERNEL);
+> +               if (!boost_freqs) {
+> +                       dev_warn(dev, "%s: no memory for boost freq table\n",
+> +                                       __func__);
+> +                       ret = -ENOMEM;
+> +                       goto out;
+> +               }
+> +               of_property_read_u32_array(dev->of_node, "boost-frequency",
+> +                       boost_freqs, len / sizeof(u32));
+> +       }
+> +
+> +       for (j = 0; j < len / sizeof(u32) && boost_freqs; j++) {
+
+Why is this present outside of above if {} ? as boost_freqs is guaranteed to
+be NULL without that.
+
+> +               for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +                       if (boost_freqs[j] == freq_table[i].frequency) {
+
+Use cpufreq_frequency_table_get_index() instead.
+
+> +                               freq_table[i].flags |= CPUFREQ_BOOST_FREQ;
+> +                               break;
+> +                       }
+> +               }
+> +               if (freq_table[i].frequency == CPUFREQ_TABLE_END)
+> +                       pr_err("%s: invalid boost frequency %d\n",
+> +                               __func__, boost_freqs[j]);
+> +       }
+> +
+> +       kfree(boost_freqs);
+> +#endif
+> +
+>  out:
+>         rcu_read_unlock();
+>         if (ret)
+> --
+> 1.7.4.4
 >
-> Lorenzo
->
->>
->> > The gist of what I am saying is, please add a comment to that extent,
->> > here and it should be added in exynos_power_down() too.
->> >
->> >> +     __raw_writel(virt_to_phys(mcpm_entry_point), ns_sram_base_addr + 0x1c);
->> >
->> > No magic numbers please (0x1c). You can add a macro/wrapper, as TC2 does.
->>
->> Yes i will remove it.
->>
->> >
->> >> +     exynos_power_down();
->> >> +
->> >> +     /*
->> >> +      * Execution reaches here only if cpu did not power down.
->> >> +      * Hence roll back the changes done in exynos_power_down function.
->> >> +     */
->> >> +     exynos_cpu_powerup(cpunr);
->> >
->> > Please be aware that if this function returns MCPM will soft reboot, and
->> > the CPUidle driver will have no way to detect a state entry failure.
->> >
->> > I am just flagging this up, since fixing this behaviour is not easy, and
->> > honestly, since power down failure should be the exception not the rule,
->> > the idle stats should not be affected much.
->> >
->> > I think this is the proper way of implementing the sequence but please
->> > all keep in mind what I wrote above.
->> >
->> > Lorenzo
->> >
->> >> +}
->> >> +
->> >>  static const struct mcpm_platform_ops exynos_power_ops = {
->> >>       .power_up               = exynos_power_up,
->> >>       .power_down             = exynos_power_down,
->> >>       .power_down_finish      = exynos_power_down_finish,
->> >> +     .suspend                = exynos_suspend,
->> >> +     .powered_up             = exynos_powered_up,
->> >>  };
->> >>
->> >>  static void __init exynos_mcpm_usage_count_init(void)
->> >> --
->> >> 1.7.9.5
->> >>
->> >>
->> >
->>
->>
->>
->> --
->> with warm regards,
->> Chander Kashyap
->>
->
-
-
-
--- 
-with warm regards,
-Chander Kashyap
