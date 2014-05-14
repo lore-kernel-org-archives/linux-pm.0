@@ -1,126 +1,75 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Wed, 14 May 2014 15:01:11 +0530
-Message-ID: <CANuQgHGehqDD8-SKTfEKMEZmT5KwofFL8bhYqge0uNm6kpPgUQ@mail.gmail.com>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
-	<CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v5 0/6] add cpuidle support for Exynos5420
+Date: Wed, 14 May 2014 11:56:24 +0200
+Message-ID: <53733DC8.1020608@linaro.org>
+References: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com> <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:61822 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752839AbaENJbM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 05:31:12 -0400
-Received: by mail-oa0-f42.google.com with SMTP id j17so1867296oag.29
-        for <linux-pm@vger.kernel.org>; Wed, 14 May 2014 02:31:11 -0700 (PDT)
-In-Reply-To: <CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:39519 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbaENJ4Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 05:56:16 -0400
+Received: by mail-wi0-f171.google.com with SMTP id hm4so7685450wib.16
+        for <linux-pm@vger.kernel.org>; Wed, 14 May 2014 02:56:14 -0700 (PDT)
+In-Reply-To: <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: Chander Kashyap <chander.kashyap@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hi Nishant,
-
-On 13 May 2014 18:53, Nishanth Menon <nm@ti.com> wrote:
-> On Tue, May 13, 2014 at 2:41 AM, [Chander Kashyap
-> <chander.kashyap@linaro.org> wrote:
->> From: Chander Kashyap <k.chander@samsung.com>
->>
->> It may be possible to unregister and re-register the cpufreq driver.
->> One such example is arm big-little IKS cpufreq driver. While
->> re-registering the driver, same OPPs may get added again.
->>
->> This patch detects the duplicacy and discards them.
+On 05/14/2014 10:03 AM, Chander Kashyap wrote:
+> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 co=
+res.
 >
-> Nice catch. Thanks for the same.
->
-> That said, instead of ignoring it (skipping addition), should we do
-> the following:
-> a) if we find the same OPP being added, return error
-> b) add a cleanup routine dev_pm_opp_remove ?
->
-> Original design required OPP entries added by platform code and used
-> by driver code, but things have changed over time.
->
->>
->> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
->> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
->> ---
->>  drivers/base/power/opp.c |   28 +++++++++++++++++++---------
->>  1 file changed, 19 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
->> index 2553867..2e803a9 100644
->> --- a/drivers/base/power/opp.c
->> +++ b/drivers/base/power/opp.c
->> @@ -443,23 +443,33 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->>         new_opp->u_volt = u_volt;
->>         new_opp->available = true;
->>
->> -       /* Insert new OPP in order of increasing frequency */
->> +       /*
->> +        * Insert new OPP in order of increasing frequency
->> +        * and discard if already present
->> +        */
->>         head = &dev_opp->opp_list;
->>         list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
->> -               if (new_opp->rate < opp->rate)
->> +               if (new_opp->rate <= opp->rate)
->>                         break;
->>                 else
->>                         head = &opp->node;
->>         }
->>
->
-> say we do at this point:
-> if (new_opp->rate == opp->rate) {
->   dev_err(dev, "%s: attempt to add duplicate OPP entry (rate=%ld)\n",
-> __func__, new_opp->rate)
->    kfree(new_opp);
->     return -EINVAL;
-> }
+> This patchset adds cpuidle support for Exynos5420 SoC based on
+> generic big.little cpuidle driver.
 
-Yes this is more cleaner.
-But instead of dev_err,  we should use dev_warn and secondly
-return 0 rather than EINVAL, as there are independent users for this function
+Hi Chander,
 
-> we could avoid the change below, right?
+just a side question. I am not succeeding to have both cluster A7/A15=20
+with the upstream kernel.
+
+How can I test your driver ?
+
+Did I miss something ?
+
+Thanks
+   -- Daniel
+
+> Tested on SMDK5420.
 >
->> -       list_add_rcu(&new_opp->node, head);
->> -       mutex_unlock(&dev_opp_list_lock);
->> +       if (new_opp->rate != opp->rate) {
->> +               list_add_rcu(&new_opp->node, head);
->> +               mutex_unlock(&dev_opp_list_lock);
->> +
->> +               /*
->> +                * Notify the changes in the availability of the operable
->> +                * frequency/voltage list.
->> +                */
->> +               srcu_notifier_call_chain(&dev_opp->head,
->> +                                               OPP_EVENT_ADD, new_opp);
->> +       } else {
->> +               mutex_unlock(&dev_opp_list_lock);
->> +               kfree(new_opp);
->> +       }
->>
->> -       /*
->> -        * Notify the changes in the availability of the operable
->> -        * frequency/voltage list.
->> -        */
->> -       srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
->>         return 0;
->>  }
->>  EXPORT_SYMBOL_GPL(dev_pm_opp_add);
->> --
->> 1.7.9.5
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> This patch set depends on:
+> 	1. [PATCH 0/5] MCPM backend for Exynos5420
+> 	   http://www.spinics.net/lists/arm-kernel/msg331100.html
+> Changelog is in respective patches.
+> Chander Kashyap (5):
+>    driver: cpuidle-big-little: add of_device_id structure
+>    arm: exynos: add generic function to calculate cpu number
+>    cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-littl=
+e
+>      driver
+>    driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+>    exynos: cpuidle: do not allow cpuidle registration for Exynos5420
+>    mcpm: exynos: populate suspend and powered_up callbacks
+>
+>   arch/arm/mach-exynos/cpuidle.c       |    3 +++
+>   arch/arm/mach-exynos/mcpm-exynos.c   |   36 +++++++++++++++++++++++=
++++++++++++
+>   arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
+>   drivers/cpuidle/Kconfig.arm          |    2 +-
+>   drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
+>   5 files changed, 60 insertions(+), 2 deletions(-)
+>
 
 
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
--- 
-with warm regards,
-Chander Kashyap
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
