@@ -1,39 +1,34 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Wed, 14 May 2014 16:38:10 +0530
-Message-ID: <CAKohponfdoPG7H4h-5s+V7CwB_SgnyqqUm9aa6G-K_cX3DOcfA@mail.gmail.com>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
-	<CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>
-	<CANuQgHGehqDD8-SKTfEKMEZmT5KwofFL8bhYqge0uNm6kpPgUQ@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [patch]  PM / hibernate: memory corruption in resumedelay_setup()
+Date: Wed, 14 May 2014 15:57:20 +0300
+Message-ID: <20140514125720.GC14571@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:44907 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754205AbaENLIK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 07:08:10 -0400
-Received: by mail-oa0-f54.google.com with SMTP id j17so1985001oag.27
-        for <linux-pm@vger.kernel.org>; Wed, 14 May 2014 04:08:10 -0700 (PDT)
-In-Reply-To: <CANuQgHGehqDD8-SKTfEKMEZmT5KwofFL8bhYqge0uNm6kpPgUQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: kernel-janitors-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabian Frederick <fabf@skynet.be>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <chander.kashyap@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-On 14 May 2014 15:01, Chander Kashyap <chander.kashyap@linaro.org> wrote:
->> say we do at this point:
->> if (new_opp->rate == opp->rate) {
->>   dev_err(dev, "%s: attempt to add duplicate OPP entry (rate=%ld)\n",
->> __func__, new_opp->rate)
->>    kfree(new_opp);
->>     return -EINVAL;
->> }
->
-> Yes this is more cleaner.
-> But instead of dev_err,  we should use dev_warn and secondly
+"resume_delay" is not an unsigned long, it's an int, so this will
+corrupt memory on 64 bit systems.
 
-Correct
+Fixes: 317cf7e5e85e ('PM / hibernate: convert simple_strtoul to kstrtoul')
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-> return 0 rather than EINVAL, as there are independent users for this function
-
-Why? We should actually use EEXIST here instead of EINVAL though..
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 2377ff7..3659b26 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -1115,8 +1115,9 @@ static int __init resumewait_setup(char *str)
+ 
+ static int __init resumedelay_setup(char *str)
+ {
+-	int rc = kstrtoul(str, 0, (unsigned long *)&resume_delay);
++	int rc;
+ 
++	rc = kstrtoint(str, 0, &resume_delay);
+ 	if (rc)
+ 		return rc;
+ 	return 1;
