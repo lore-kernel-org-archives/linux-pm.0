@@ -1,55 +1,126 @@
 From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH v5 3/6] cpuidle: config: Add ARCH_EXYNOS entry to select
- cpuidle-big-little driver
-Date: Wed, 14 May 2014 13:33:54 +0530
-Message-ID: <1400054637-21505-4-git-send-email-chander.kashyap@linaro.org>
-References: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com>
- <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
+Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
+Date: Wed, 14 May 2014 15:01:11 +0530
+Message-ID: <CANuQgHGehqDD8-SKTfEKMEZmT5KwofFL8bhYqge0uNm6kpPgUQ@mail.gmail.com>
+References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
+	<CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Chander Kashyap <k.chander@samsung.com>, lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net, Chander Kashyap <chander.kashyap@linaro.org>, kgene.kim@samsung.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:61822 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839AbaENJbM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 05:31:12 -0400
+Received: by mail-oa0-f42.google.com with SMTP id j17so1867296oag.29
+        for <linux-pm@vger.kernel.org>; Wed, 14 May 2014 02:31:11 -0700 (PDT)
+In-Reply-To: <CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-Add support to select generic big-little cpuidle driver for Samsung Exynos
-series SoC's. This is required for Exynos big-little SoC's eg, Exynos5420.
+Hi Nishant,
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
----
-Changes in v4:
-	1. Typo fixed from SOC_EXYNOS5420 to ARCH_EXYNOS
-	2. Commit message updated
-Changes in v3: None
-Changes in v2:
-	1. Changed config macro from SOC_EXYNOS5420 to ARCH_EXYNOS
- drivers/cpuidle/Kconfig.arm |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 13 May 2014 18:53, Nishanth Menon <nm@ti.com> wrote:
+> On Tue, May 13, 2014 at 2:41 AM, [Chander Kashyap
+> <chander.kashyap@linaro.org> wrote:
+>> From: Chander Kashyap <k.chander@samsung.com>
+>>
+>> It may be possible to unregister and re-register the cpufreq driver.
+>> One such example is arm big-little IKS cpufreq driver. While
+>> re-registering the driver, same OPPs may get added again.
+>>
+>> This patch detects the duplicacy and discards them.
+>
+> Nice catch. Thanks for the same.
+>
+> That said, instead of ignoring it (skipping addition), should we do
+> the following:
+> a) if we find the same OPP being added, return error
+> b) add a cleanup routine dev_pm_opp_remove ?
+>
+> Original design required OPP entries added by platform code and used
+> by driver code, but things have changed over time.
+>
+>>
+>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+>> ---
+>>  drivers/base/power/opp.c |   28 +++++++++++++++++++---------
+>>  1 file changed, 19 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>> index 2553867..2e803a9 100644
+>> --- a/drivers/base/power/opp.c
+>> +++ b/drivers/base/power/opp.c
+>> @@ -443,23 +443,33 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>>         new_opp->u_volt = u_volt;
+>>         new_opp->available = true;
+>>
+>> -       /* Insert new OPP in order of increasing frequency */
+>> +       /*
+>> +        * Insert new OPP in order of increasing frequency
+>> +        * and discard if already present
+>> +        */
+>>         head = &dev_opp->opp_list;
+>>         list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+>> -               if (new_opp->rate < opp->rate)
+>> +               if (new_opp->rate <= opp->rate)
+>>                         break;
+>>                 else
+>>                         head = &opp->node;
+>>         }
+>>
+>
+> say we do at this point:
+> if (new_opp->rate == opp->rate) {
+>   dev_err(dev, "%s: attempt to add duplicate OPP entry (rate=%ld)\n",
+> __func__, new_opp->rate)
+>    kfree(new_opp);
+>     return -EINVAL;
+> }
 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 97ccc31..d9596e7 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -4,7 +4,7 @@
- 
- config ARM_BIG_LITTLE_CPUIDLE
- 	bool "Support for ARM big.LITTLE processors"
--	depends on ARCH_VEXPRESS_TC2_PM
-+	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
- 	select ARM_CPU_SUSPEND
- 	select CPU_IDLE_MULTIPLE_DRIVERS
- 	help
+Yes this is more cleaner.
+But instead of dev_err,  we should use dev_warn and secondly
+return 0 rather than EINVAL, as there are independent users for this function
+
+> we could avoid the change below, right?
+>
+>> -       list_add_rcu(&new_opp->node, head);
+>> -       mutex_unlock(&dev_opp_list_lock);
+>> +       if (new_opp->rate != opp->rate) {
+>> +               list_add_rcu(&new_opp->node, head);
+>> +               mutex_unlock(&dev_opp_list_lock);
+>> +
+>> +               /*
+>> +                * Notify the changes in the availability of the operable
+>> +                * frequency/voltage list.
+>> +                */
+>> +               srcu_notifier_call_chain(&dev_opp->head,
+>> +                                               OPP_EVENT_ADD, new_opp);
+>> +       } else {
+>> +               mutex_unlock(&dev_opp_list_lock);
+>> +               kfree(new_opp);
+>> +       }
+>>
+>> -       /*
+>> -        * Notify the changes in the availability of the operable
+>> -        * frequency/voltage list.
+>> -        */
+>> -       srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
+>>         return 0;
+>>  }
+>>  EXPORT_SYMBOL_GPL(dev_pm_opp_add);
+>> --
+>> 1.7.9.5
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-1.7.9.5
+with warm regards,
+Chander Kashyap
