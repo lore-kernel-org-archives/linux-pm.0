@@ -1,57 +1,141 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch]  PM / hibernate: memory corruption in
- resumedelay_setup()
-Date: Wed, 14 May 2014 17:56:02 +0200
-Message-ID: <20140514155602.GA9723@amd.pavel.ucw.cz>
-References: <20140514125720.GC14571@mwanda>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: [PATCH RESEND 1/2] cpufreq: imx6q: Drop devm_clk/regulator_get usage
+Date: Wed, 14 May 2014 18:02:23 +0200
+Message-ID: <1400083344-20042-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42792 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755276AbaENP4E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 11:56:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20140514125720.GC14571@mwanda>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50492 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755453AbaENQCe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 May 2014 12:02:34 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabian Frederick <fabf@skynet.be>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@freescale.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, Philipp Zabel <p.zabel@pengutronix.de>
 
-Hi!
+This driver is using devres managed calls incorrectly, giving the cpu0
+device as first parameter instead of the cpufreq platform device.
+This results in resources not being freed if the cpufreq platform device
+is unbound, for example if probing has to be deferred for a missing
+regulator.
+Supporting probe deferral properly is a prerequisite to enabling the
+internal LDO bypass on i.MX6 and regulating the CPU voltage with an
+external regulator.
 
-> "resume_delay" is not an unsigned long, it's an int, so this will
-> corrupt memory on 64 bit systems.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Shawn Guo <shawn.guo@freescale.com>
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+---
+Resent to linux-pm@vger.kernel.org instead of cpufreq@vger.kernel.org.
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 53 ++++++++++++++++++++++++++++++-----------
+ 1 file changed, 39 insertions(+), 14 deletions(-)
 
-ssleep takes unsigned int.
-
-Variable is int.
-
-We parse it using kstrtoul.
-
-So I'd suggest: switch resume_delay variable to unsigned int, and use
-kstrtouint().
-
-> Fixes: 317cf7e5e85e ('PM / hibernate: convert simple_strtoul to kstrtoul')
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index 2377ff7..3659b26 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -1115,8 +1115,9 @@ static int __init resumewait_setup(char *str)
->  
->  static int __init resumedelay_setup(char *str)
->  {
-> -	int rc = kstrtoul(str, 0, (unsigned long *)&resume_delay);
-> +	int rc;
->  
-> +	rc = kstrtoint(str, 0, &resume_delay);
-
-...and if possible, keep it on one line.
-
-Thanks,
-								Pavel
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index e27fca8..92a82ec 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -170,25 +170,25 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
+ 
+-	arm_clk = devm_clk_get(cpu_dev, "arm");
+-	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
+-	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
+-	step_clk = devm_clk_get(cpu_dev, "step");
+-	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
++	arm_clk = clk_get(cpu_dev, "arm");
++	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
++	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
++	step_clk = clk_get(cpu_dev, "step");
++	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
+ 	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
+ 	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
+ 		dev_err(cpu_dev, "failed to get clocks\n");
+ 		ret = -ENOENT;
+-		goto put_node;
++		goto put_clk;
+ 	}
+ 
+-	arm_reg = devm_regulator_get(cpu_dev, "arm");
+-	pu_reg = devm_regulator_get(cpu_dev, "pu");
+-	soc_reg = devm_regulator_get(cpu_dev, "soc");
++	arm_reg = regulator_get(cpu_dev, "arm");
++	pu_reg = regulator_get(cpu_dev, "pu");
++	soc_reg = regulator_get(cpu_dev, "soc");
+ 	if (IS_ERR(arm_reg) || IS_ERR(pu_reg) || IS_ERR(soc_reg)) {
+ 		dev_err(cpu_dev, "failed to get regulators\n");
+ 		ret = -ENOENT;
+-		goto put_node;
++		goto put_reg;
+ 	}
+ 
+ 	/*
+@@ -201,21 +201,21 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		ret = of_init_opp_table(cpu_dev);
+ 		if (ret < 0) {
+ 			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
+-			goto put_node;
++			goto put_reg;
+ 		}
+ 
+ 		num = dev_pm_opp_get_opp_count(cpu_dev);
+ 		if (num < 0) {
+ 			ret = num;
+ 			dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
+-			goto put_node;
++			goto put_reg;
+ 		}
+ 	}
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+-		goto put_node;
++		goto put_reg;
+ 	}
+ 
+ 	/* Make imx6_soc_volt array's size same as arm opp number */
+@@ -301,7 +301,24 @@ soc_opp_out:
+ 
+ free_freq_table:
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+-put_node:
++put_reg:
++	if (!IS_ERR(arm_reg))
++		regulator_put(arm_reg);
++	if (!IS_ERR(pu_reg))
++		regulator_put(pu_reg);
++	if (!IS_ERR(soc_reg))
++		regulator_put(soc_reg);
++put_clk:
++	if (!IS_ERR(arm_clk))
++		clk_put(arm_clk);
++	if (!IS_ERR(pll1_sys_clk))
++		clk_put(pll1_sys_clk);
++	if (!IS_ERR(pll1_sw_clk))
++		clk_put(pll1_sw_clk);
++	if (!IS_ERR(step_clk))
++		clk_put(step_clk);
++	if (!IS_ERR(pll2_pfd2_396m_clk))
++		clk_put(pll2_pfd2_396m_clk);
+ 	of_node_put(np);
+ 	return ret;
+ }
+@@ -310,6 +327,14 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
+ {
+ 	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
++	regulator_put(arm_reg);
++	regulator_put(pu_reg);
++	regulator_put(soc_reg);
++	clk_put(arm_clk);
++	clk_put(pll1_sys_clk);
++	clk_put(pll1_sw_clk);
++	clk_put(step_clk);
++	clk_put(pll2_pfd2_396m_clk);
+ 
+ 	return 0;
+ }
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.0.0.rc0
+
