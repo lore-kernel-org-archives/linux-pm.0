@@ -1,28 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/2] cpufreq / OPP: Allow boost frequency to be looked
- up from device tree
-Date: Wed, 14 May 2014 11:54:40 +0530
-Message-ID: <CAKohponG9PNse4cHkvfLfaRouW-jxjToBXUCHyOCgx8-Pc=2Xw@mail.gmail.com>
-References: <1400029380-5372-1-git-send-email-thomas.ab@samsung.com>
-	<1400029380-5372-2-git-send-email-thomas.ab@samsung.com>
-	<CAKohponnPSRAotJUu+5a9y8j97QF8Jqgc5DA5WQnwGWCnVY-aA@mail.gmail.com>
-	<CAGo_u6p-uqw82ewDciDEhAt0=Nswfw33-gf8Aa+-6_k3eCcTzw@mail.gmail.com>
-	<20140514080930.781e0557@amdc2363>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [PATCH v5 0/6] add cpuidle support for Exynos5420
+Date: Wed, 14 May 2014 13:33:51 +0530
+Message-ID: <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
+References: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20140514080930.781e0557@amdc2363>
+In-Reply-To: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Nishanth Menon <nm@ti.com>, Thomas Abraham <ta.omasab@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tomasz Figa <t.figa@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Thomas P Abraham <thomas.ab@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <chander.kashyap@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 14 May 2014 11:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> I agree with Nishanth here, that point 1 (as described by Viresh at
-> [*]) is a more scalable approach.
+Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
 
-The only reason why I wanted all that to be done at OPP level was to
-ensure if somebody else also needs it apart from cpufreq, they don't have
-to duplicate code and find it.. As it is present at a central place..
+This patchset adds cpuidle support for Exynos5420 SoC based on
+generic big.little cpuidle driver.
 
-But if no other code is going to look for that, it may just be fine as is..
+Tested on SMDK5420.
+
+This patch set depends on:
+	1. [PATCH 0/5] MCPM backend for Exynos5420
+	   http://www.spinics.net/lists/arm-kernel/msg331100.html
+Changelog is in respective patches.
+Chander Kashyap (5):
+  driver: cpuidle-big-little: add of_device_id structure
+  arm: exynos: add generic function to calculate cpu number
+  cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little
+    driver
+  driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+  exynos: cpuidle: do not allow cpuidle registration for Exynos5420
+  mcpm: exynos: populate suspend and powered_up callbacks
+
+ arch/arm/mach-exynos/cpuidle.c       |    3 +++
+ arch/arm/mach-exynos/mcpm-exynos.c   |   36 ++++++++++++++++++++++++++++++++++
+ arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
+ drivers/cpuidle/Kconfig.arm          |    2 +-
+ drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
+ 5 files changed, 60 insertions(+), 2 deletions(-)
+
+-- 
+1.7.9.5
