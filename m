@@ -1,66 +1,76 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 0/7] thermal: Armada 375/380 SoC support
-Date: Thu, 15 May 2014 17:14:04 +0800
-Message-ID: <1400145244.2273.36.camel@rzhang1-toshiba>
-References: <1399395591-5713-1-git-send-email-ezequiel.garcia@free-electrons.com>
-	 <20140506173157.GA22929@arch.cereza>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: Format of patches (was: [PATCH 1/2] speedstep-smi: enable interrupts
+ when waiting)
+Date: Thu, 15 May 2014 06:37:26 -0400 (EDT)
+Message-ID: <alpine.LRH.2.02.1405150614100.19101@file01.intranet.prod.int.rdu2.redhat.com>
+References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:32330 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750702AbaEOJOI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 May 2014 05:14:08 -0400
-In-Reply-To: <20140506173157.GA22929@arch.cereza>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Tawfik Bayouk <tawfik@marvell.com>, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-
-On =E4=BA=8C, 2014-05-06 at 14:31 -0300, Ezequiel Garcia wrote:
-> Just a minor clarification:
->=20
-> On 06 May 01:59 PM, Ezequiel Garcia wrote:
-> > This patchset adds the support for the thermal sensor in the recent=
-ly
-> > introduced Armada 375 and 38x SoC. Compared to the previous patchse=
-t
-> > version, only the driver changes are being sent now. The rest has b=
-een
-> > merged by Jason Cooper through the mvebu tree.
-> >=20
-> > There are other very minor changes from v2, see below.
-> >=20
-> > The first five patches are preparation work. They add a generic
-> > infrastructure that allows to support similar thermal sensors in
-> > a non-intrusive way.
-> >=20
-> > Patches six and seven uses this infrastructure to support the=20
-> > Armada 375 and 380 SoC thermal sensor.
-> >=20
->=20
-> Of course, the current series end right here, in patch seven...
->=20
-> > Since there are some issues in the Armada 375 Z1 SoC thermal sensor=
-,
-> > patch eight adds a quirk to workaround such issues. The Z1 silicon =
-stepping
-> > is detected and the compatible string is updated, so the driver can=
- apply
-> > sensor initialization workarounds.
-> >=20
->=20
-> .. the quirk patch has been already merged through mvebu.
->=20
-> Thanks and sorry for the noise!
->=20
-> Zhang: Any comments about the driver changes?
-
-The whole series has been applied, with minor typo fix of patch 2/7,
-according to Eduardo' comments.
-
-thanks,
-rui
 
 
+
+On Thu, 15 May 2014, Viresh Kumar wrote:
+
+> On 14 May 2014 19:54, Mikulas Patocka <mpatocka@redhat.com> wrote:
+> > Hi Viresh
+> >
+> > Some times ago, I sent these two cpufreq patches to fix frequency
+> > transition problem on speedstep-smi, but you didn't put them to the
+> > upstream kernel. I am resending the patches. If you would like a different
+> > solution to this problem, please explain it.
+> 
+> Probably these are just missed by Rafael. The patches are fine but the
+> above paragraph you wrote would get into kernel logs and must have
+> been placed below the three dash lines: "---"
+
+I used "---" in the past, but some people complained that their script 
+picks the text above "---" and ignores the text below "---" - thus, it 
+does exactly the opposite of what it should do.
+
+I don't know what kind of delimiter should I use. Suppose that I want to 
+send something like this:
+
+
+
+
+Hi, here I'm sending some cool stuff.
+
+***
+
+The message that goes to git.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+
+---
+ drivers/cpufreq/speedstep-lib.c |    3 +++
+ drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+ 2 files changed, 15 insertions(+)
+
+Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
+===================================================================
+--- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c 2014-02-03 
+18:56:44.000000000 +0100
++++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c      2014-02-03 
+19:06:21.000000000 +0100
+... the patch.
+
+
+
+
+Now - I'm asking - what kind of barrier should I use between "Hi, here I'm 
+sending some cool stuff" and "The message that goes to git"? I don't 
+really know. The file Documentation/SubmittingPatches doesn't explain it, 
+it says that the message for git should go at the top of the email. If I 
+want the person who receives the patch to read "Hi, here I'm sending some 
+cool stuff" first, I need to put it at the beginning of the email.
+
+Maybe we should define a new barrier for this purpose, put it to 
+Documentation/SubmittingPatches and update the scripts?
+
+Mikulas
