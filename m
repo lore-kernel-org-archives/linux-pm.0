@@ -1,113 +1,156 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [RFC] cpufreq: send notifications for intermediate (stable) frequencies
-Date: Thu, 15 May 2014 13:58:26 -0700
-Message-ID: <CAD=FV=V4dBRubAKUOUFc=yAWRPNhmSvULg4Pjtx9rD+ou-sMZg@mail.gmail.com>
-References: <25738681139c04272b6d2ebeff244c6d36c893f7.1400133090.git.viresh.kumar@linaro.org>
-	<537512E0.7000102@wwwdotorg.org>
-	<CAD=FV=X_tVnMBz3yOf6QBYf4+-AK79_sF=asX4mD2mptxhM2CQ@mail.gmail.com>
-	<537528B9.9070708@wwwdotorg.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI / PM: Hold ACPI scan lock over the "freeze" sleep state
+Date: Thu, 15 May 2014 23:29:57 +0200
+Message-ID: <9592270.SopCIMyJ0g@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f178.google.com ([209.85.220.178]:61007 "EHLO
-	mail-vc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753506AbaEOU62 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 16:58:28 -0400
-Received: by mail-vc0-f178.google.com with SMTP id hq16so5125286vcb.37
-        for <linux-pm@vger.kernel.org>; Thu, 15 May 2014 13:58:27 -0700 (PDT)
-In-Reply-To: <537528B9.9070708@wwwdotorg.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53130 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754198AbaEOVNJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 17:13:09 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Peter De Schrijver <pdeschrijver@nvidia.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Russell King <linux@arm.linux.org.uk>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-Stephen,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Thu, May 15, 2014 at 1:51 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 05/15/2014 02:39 PM, Doug Anderson wrote:
->> Hi,
->>
->> On Thu, May 15, 2014 at 12:17 PM, Stephen Warren <swarren@wwwdotorg.org> wrote:
->>> On 05/14/2014 11:56 PM, Viresh Kumar wrote:
->>>> Douglas Anderson, recently pointed out an interesting problem due to which his
->>>> udelay() was expiring earlier than it should:
->>>> https://lkml.org/lkml/2014/5/13/766
->>>>
->>>> While transitioning between frequencies few platforms may temporarily switch to
->>>> a stable frequency, waiting for the main PLL to stabilize.
->>>>
->>>> For example: When we transition between very low frequencies on exynos, like
->>>> between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
->>>> No CPUFREQ notification is sent for that. That means there's a period of time
->>>> when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
->>>> and 300MHz. And so udelay behaves badly.
->>>>
->>>> To get this fixed in a generic way, lets introduce another callback safe_freq()
->>>> for the cpufreq drivers.
->>>>
->>>> safe_freq() should return a stable intermediate frequency a platform might want
->>>> to switch to, before jumping to the frequency corresponding to 'index'. Core
->>>> will send the 'PRE' notification for this 'stable' frequency and 'POST' for the
->>>> 'target' frequency. Though if ->target_index() fails, it will handle POST for
->>>> 'stable' frequency only.
->>>>
->>>> Drivers must send 'POST' notification for 'stable' freq and 'PRE' for 'target'
->>>> freq. If they can't switch to target frequency, they don't need to send any
->>>> notification.
->>>
->>> This seems rather complex. Can't either the driver or the cpufreq core
->>> be responsible for all of the notifications? Otherwise, the logic gets
->>> rather complex, and spread between the core and the driver.
->>>
->>> Perhaps the core should make separate calls into the driver to switch to
->>> the temporary frequency and the final frequency, so it can manage all
->>> the notifications. Probably best to use a separate function pointer for
->>> the temporary change so the driver can easily know what it's doing.
->>
->> In the discussion about the exynos cpufreq redesign (atop
->> cpufreq-cpu0), it turns out that they've come up with a pretty
->> reasonable solution that also happens to solve our problem.  They
->> utilize an extra divider to make sure that the temporary PLL gets
->> divided down so that it's low enough.
->>
->> It might mean that going between 300 MHz and 500 MHz that you will
->> transition through 400 MHz, but I'm quite OK with not sending out a
->> notification for that.
->>
->> If something like that could work for tegra, then maybe we can drop
->> this whole thing and it will all just fix itself.  ;)
->
-> At least in the case of Tegra20 cpufreq, I don't think that will be
-> possible at least without changing the temporary clock source we use
-> (pll_p). The PLL that's use temporarily is also the root of all the
-> peripheral clocks, and hence can't be changed. We also only characterize
-> that PLL at the one specific frequency it was designed to run at.
+The "freeze" sleep state suffers from the same issue that was
+addressed by commit ad07277e82de (ACPI / PM: Hold acpi_scan_lock over
+system PM transitions) for ACPI sleep states, that is, things break
+if ->remove() is called for devices whose system resume callbacks
+haven't been executed yet.
 
-It's interesting, in the exynos case they didn't change the PLL itself
-but found an extra divider that I wasn't actually aware existed.  It
-was located after the mux and before the cpu.
+It also can be addressed in the same way, by holding the ACPI scan
+lock over the "freeze" sleep state and PM transitions to and from
+that state, but ->begin() and ->end() platform operations for the
+"freeze" sleep state are needed for this purpose.
 
+This change has been tested on Acer Aspire S5 with Thunderbolt.
 
-> That said, it looks like the CPU clock may support pll_p_out3 and 4 as
-> sources in addition to pll_p. I'm not sure if anything else uses those
-> divided pll_p outputs. Peter, perhaps you can comment? Also, since pll_p
-> itself runs at exactly 216MHz, pll_p_out3 and 4 can never go higher than
-> that, so we couldn't use this trick for transitions between two fast
-> clock rates. Note that Tegra20 does reparenting for any CPU clock rate
-> change, not just when changing to/from certain slow rates. None of the
-> other potential CPU clock parents seem any better.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/sleep.c    |   18 ++++++++++++++++++
+ include/linux/suspend.h |    7 +++++++
+ kernel/power/suspend.c  |   15 +++++++++++++++
+ 3 files changed, 40 insertions(+)
 
-On exynos it won't necessarily transition to a frequency that's
-between the start and end.  ...but at least with the trick mentioned
-you can be sure that it's never _faster_ than either start or end.
-The last I read through the code exynos always transitioned to a temp
-PLL, though perhaps certain transitions could be optimized to avoid it
-(if you're making a transition that doesn't need to relock).
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -187,6 +187,11 @@ struct platform_suspend_ops {
+ 	void (*recover)(void);
+ };
+ 
++struct platform_freeze_ops {
++	int (*begin)(void);
++	void (*end)(void);
++};
++
+ #ifdef CONFIG_SUSPEND
+ /**
+  * suspend_set_ops - set platform dependent suspend operations
+@@ -194,6 +199,7 @@ struct platform_suspend_ops {
+  */
+ extern void suspend_set_ops(const struct platform_suspend_ops *ops);
+ extern int suspend_valid_only_mem(suspend_state_t state);
++extern void freeze_set_ops(const struct platform_freeze_ops *ops);
+ extern void freeze_wake(void);
+ 
+ /**
+@@ -220,6 +226,7 @@ extern int pm_suspend(suspend_state_t st
+ 
+ static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
++static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
+ static inline void freeze_wake(void) {}
+ #endif /* !CONFIG_SUSPEND */
+ 
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -38,6 +38,7 @@ const char *const pm_states[PM_SUSPEND_M
+ };
+ 
+ static const struct platform_suspend_ops *suspend_ops;
++static const struct platform_freeze_ops *freeze_ops;
+ 
+ static bool need_suspend_ops(suspend_state_t state)
+ {
+@@ -47,6 +48,13 @@ static bool need_suspend_ops(suspend_sta
+ static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
+ static bool suspend_freeze_wake;
+ 
++void freeze_set_ops(const struct platform_freeze_ops *ops)
++{
++	lock_system_sleep();
++	freeze_ops = ops;
++	unlock_system_sleep();
++}
++
+ static void freeze_begin(void)
+ {
+ 	suspend_freeze_wake = false;
+@@ -271,6 +279,10 @@ int suspend_devices_and_enter(suspend_st
+ 		error = suspend_ops->begin(state);
+ 		if (error)
+ 			goto Close;
++	} else if (state == PM_SUSPEND_FREEZE && freeze_ops->begin) {
++		error = freeze_ops->begin();
++		if (error)
++			goto Close;
+ 	}
+ 	suspend_console();
+ 	suspend_test_start();
+@@ -296,6 +308,9 @@ int suspend_devices_and_enter(suspend_st
+  Close:
+ 	if (need_suspend_ops(state) && suspend_ops->end)
+ 		suspend_ops->end();
++	else if (state == PM_SUSPEND_FREEZE && freeze_ops->end)
++		freeze_ops->end();
++
+ 	trace_machine_suspend(PWR_EVENT_EXIT);
+ 	return error;
+ 
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -611,6 +611,22 @@ static const struct platform_suspend_ops
+ 	.recover = acpi_pm_finish,
+ };
+ 
++static int acpi_freeze_begin(void)
++{
++	acpi_scan_lock_acquire();
++	return 0;
++}
++
++static void acpi_freeze_end(void)
++{
++	acpi_scan_lock_release();
++}
++
++static const struct platform_freeze_ops acpi_freeze_ops = {
++	.begin = acpi_freeze_begin,
++	.end = acpi_freeze_end,
++};
++
+ static void acpi_sleep_suspend_setup(void)
+ {
+ 	int i;
+@@ -621,7 +637,9 @@ static void acpi_sleep_suspend_setup(voi
+ 
+ 	suspend_set_ops(old_suspend_ordering ?
+ 		&acpi_suspend_ops_old : &acpi_suspend_ops);
++	freeze_set_ops(&acpi_freeze_ops);
+ }
++
+ #else /* !CONFIG_SUSPEND */
+ static inline void acpi_sleep_suspend_setup(void) {}
+ #endif /* !CONFIG_SUSPEND */
 
-...example transitions:
-1.6 => 800 (temp) => 1.7
-600 => 800 (temp) => 800
-600 => 400 (temp) => 700
-200 => 200 (temp) => 300
-
--Doug
