@@ -1,229 +1,210 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 03/10] thermal: exynos: remove dead code for HW_MODE
- calibration
-Date: Thu, 15 May 2014 17:06:30 +0200
-Message-ID: <2058868.E9O0pixU5L@amdc1032>
-References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
- <1399288539-1793-4-git-send-email-b.zolnierkie@samsung.com>
- <20140515141441.GB27339@developer>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [RFC PATCH 1/5] thermal: let governors have private data for
+ each thermal zone
+Date: Thu, 15 May 2014 11:10:25 -0400
+Message-ID: <20140515151025.GD27690@developer>
+References: <1399377998-14870-1-git-send-email-javi.merino@arm.com>
+ <1399377998-14870-2-git-send-email-javi.merino@arm.com>
+ <CAC-25o_gfoXQ5AaeF=huDPFP5F9hoR9Rjjxctv7+kj=aaDjr2Q@mail.gmail.com>
+ <20140515143053.GA3964@e102654-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20140515141441.GB27339@developer>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f54.google.com ([209.85.213.54]:61046 "EHLO
+	mail-yh0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754424AbaEOPKq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 11:10:46 -0400
+Received: by mail-yh0-f54.google.com with SMTP id i57so3189760yha.27
+        for <linux-pm@vger.kernel.org>; Thu, 15 May 2014 08:10:46 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20140515143053.GA3964@e102654-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Thursday, May 15, 2014 10:14:41 AM Eduardo Valentin wrote:
-> Hello Bartlomiej
+Javi,
 
-Hi,
-
-> On Mon, May 05, 2014 at 01:15:32PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > There should be no functional changes caused by this patch.
+On Thu, May 15, 2014 at 03:30:53PM +0100, Javi Merino wrote:
+> On Tue, May 13, 2014 at 03:31:08PM +0100, edubezval@gmail.com wrote:
+> > Hello Javi,
 > > 
-> 
-> Please provide better explanation when removing features. For instance,
-> based on the comment of commit introducing it, HW_MODE is a feature of
-> 5540 samsung's SoC. Question is why now it is being removed?
-> 
-> commit 1928457ea6337043a06ca2acd9b4d01e75810a3f
-> Author: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> Date:   Mon Jun 24 16:20:46 2013 +0530
-> 
->     thermal: exynos: Add hardware mode thermal calibration support
->         
->     This patch adds support for h/w mode calibration in the TMU controller.
->     Soc's like 5440 support this features. The h/w bits needed for calibration
->     setting are same as that of enum calibration_type.
+> > Thanks for your patch. Find some comment inline.
+> > 
 
-The commit above has added HW_MODE feature but it has never been enabled.
-As such it has been a dead code for almost a year now and should be removed
-from the kernel.  Morevoer if somebody would like to re-introduce it for
-Exynos5440 (or other SoC) she/he should explain why it is needed and why it
-is better than the software calibration that is used for all SoCs currently.
+[cut]
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+> 
+> Will do, but I find that the other governor op (throttle) is not
+> documented.  Where do you suggest we should put it?
+> 
 
+The main entry for thermal Documentation is Documentation/thermal/. The
+sysfs-api.txt file has major info about the thermal framework. But for
+this case, I agree with you, we deserve a better explanation. I think
+the fact that the governor API is becoming more interesting is a hint
+that we need better documentation. I suggest having another file
+describing the governor API and how it deals with other entities such
+as sensor inputs and cooling actions.
+
+Rui, any suggestion here?
+
+
+> > > + if (tz->governor && tz->governor->bind_to_tz) {
+> > > + if (tz->governor->bind_to_tz(tz))
+> > > + /*
+> > > + * The new governor failed to register
+> > > + * and the previous one failed as well
+> > > + */
+> > 
+> > I suggest having a dev_warn here to notify that a zone is now orphan due to
+> > switching from one governor to another.
+> 
+> Done
+> 
+> > > + tz->governor = NULL;
+> > > + }
+> > > +
+> > > + return ret;
+> > > + }
+> > > + }
+> > > +
+> > > + tz->governor = new_gov;
+> > > +
+> > > + return ret;
+> > > +}
+> > > +
+> > >  int thermal_register_governor(struct thermal_governor *governor)
+> > >  {
+> > >   int err;
+> > > @@ -104,8 +143,12 @@ int thermal_register_governor(struct thermal_governor *governor)
+> > >
+> > >   name = pos->tzp->governor_name;
+> > >
+> > > - if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
+> > > - pos->governor = governor;
+> > > + if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
+> > > + int ret = thermal_set_governor(pos, governor);
+> > 
+> > nip: add a blank line between declarations and first statement.
+> 
+> Ok
+> 
+> > > + if (ret)
+> > > + pr_warn("Failed to set governor %s for zone %d: %d\n",
+> > > + governor->name, pos->id, ret);
+> > 
+> > dev_* family of logging functions is preferred in this file.
+> 
+> Done
+> 
+> > > + }
+> > >   }
+> > >
+> > >   mutex_unlock(&thermal_list_lock);
+> > > @@ -131,7 +174,7 @@ void thermal_unregister_governor(struct thermal_governor *governor)
+> > >   list_for_each_entry(pos, &thermal_tz_list, node) {
+> > >   if (!strnicmp(pos->governor->name, governor->name,
+> > >   THERMAL_NAME_LENGTH))
+> > > - pos->governor = NULL;
+> > > + thermal_set_governor(pos, NULL);
+> > >   }
+> > >
+> > >   mutex_unlock(&thermal_list_lock);
+> > > @@ -756,8 +799,9 @@ policy_store(struct device *dev, struct device_attribute *attr,
+> > >   if (!gov)
+> > >   goto exit;
+> > >
+> > > - tz->governor = gov;
+> > > - ret = count;
+> > > + ret = thermal_set_governor(tz, gov);
+> > > + if (!ret)
+> > > + ret = count;
+> > >
+> > >  exit:
+> > >   mutex_unlock(&thermal_governor_lock);
+> > > @@ -1452,6 +1496,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+> > >   int result;
+> > >   int count;
+> > >   int passive = 0;
+> > > + struct thermal_governor *governor;
+> > >
+> > >   if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+> > >   return ERR_PTR(-EINVAL);
+> > > @@ -1542,9 +1587,15 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+> > >   mutex_lock(&thermal_governor_lock);
+> > >
+> > >   if (tz->tzp)
+> > > - tz->governor = __find_governor(tz->tzp->governor_name);
+> > > + governor = __find_governor(tz->tzp->governor_name);
+> > >   else
+> > > - tz->governor = def_governor;
+> > > + governor = def_governor;
+> > > +
+> > > + result = thermal_set_governor(tz, governor);
+> > > + if (result) {
+> > > + mutex_unlock(&thermal_governor_lock);
+> > > + goto unregister;
+> > > + }
+> > >
+> > >   mutex_unlock(&thermal_governor_lock);
+> > >
+> > > @@ -1634,7 +1685,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+> > >   device_remove_file(&tz->device, &dev_attr_mode);
+> > >   device_remove_file(&tz->device, &dev_attr_policy);
+> > >   remove_trip_attrs(tz);
+> > > - tz->governor = NULL;
+> > > + thermal_set_governor(tz, NULL);
+> > >
+> > >   thermal_remove_hwmon_sysfs(tz);
+> > >   release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+> > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > > index f7e11c7ea7d9..baac212f815e 100644
+> > > --- a/include/linux/thermal.h
+> > > +++ b/include/linux/thermal.h
+> > > @@ -177,6 +177,7 @@ struct thermal_zone_device {
+> > >   struct thermal_zone_device_ops *ops;
+> > >   const struct thermal_zone_params *tzp;
+> > >   struct thermal_governor *governor;
+> > > + void *governor_data;
+> > 
+> > Please document this entry.
+> 
+> Where?  None of these entries are documented.  I guess I'll have to
+> add a patch that describes each one of them and then add ours.
+> 
+> > >   struct list_head thermal_instances;
+> > >   struct idr idr;
+> > >   struct mutex lock; /* protect thermal_instances list */
+> > > @@ -187,6 +188,8 @@ struct thermal_zone_device {
+> > >  /* Structure that holds thermal governor information */
+> > >  struct thermal_governor {
+> > >   char name[THERMAL_NAME_LENGTH];
+> > > + int (*bind_to_tz)(struct thermal_zone_device *tz);
+> > > + void (*unbind_from_tz)(struct thermal_zone_device *tz);
+> > 
+> > a governor cannot prevent unbinding?
+> 
+> To me it's like open()/close() or malloc()/free().  You generally can
+> fail to bind, but not fail to unbind.  I can change it to an int if
+> you think it is something that we may need.
+> 
+> > Please, document the proposed operations.
+> 
+> Same as before, none of the entries in this struct are documented so
+> I'll submit a patch that describes the current ones and then add our
+> new ones in our patch.
+> 
+> > >   int (*throttle)(struct thermal_zone_device *tz, int trip);
+> > >   struct list_head governor_list;
+> > >  };
+> > > --
+> > > 1.7.9.5
+> > 
+> > I request that you update Documentation/thermal/sysfs-api.txt too.
+> 
+> Will do.
+> 
 > Cheers,
+> Javi
 > 
-> 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > ---
-> >  drivers/thermal/samsung/exynos_tmu.c      | 33 +------------------------------
-> >  drivers/thermal/samsung/exynos_tmu.h      | 13 ------------
-> >  drivers/thermal/samsung/exynos_tmu_data.c |  3 ---
-> >  drivers/thermal/samsung/exynos_tmu_data.h |  2 --
-> >  4 files changed, 1 insertion(+), 50 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> > index 0d96a51..9f2a5ee 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> > @@ -76,9 +76,6 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
-> >  	struct exynos_tmu_platform_data *pdata = data->pdata;
-> >  	int temp_code;
-> >  
-> > -	if (pdata->cal_mode == HW_MODE)
-> > -		return temp;
-> > -
-> >  	if (data->soc == SOC_ARCH_EXYNOS4210)
-> >  		/* temp should range between 25 and 125 */
-> >  		if (temp < 25 || temp > 125) {
-> > @@ -113,9 +110,6 @@ static int code_to_temp(struct exynos_tmu_data *data, u8 temp_code)
-> >  	struct exynos_tmu_platform_data *pdata = data->pdata;
-> >  	int temp;
-> >  
-> > -	if (pdata->cal_mode == HW_MODE)
-> > -		return temp_code;
-> > -
-> >  	if (data->soc == SOC_ARCH_EXYNOS4210)
-> >  		/* temp_code should range between 75 and 175 */
-> >  		if (temp_code < 75 || temp_code > 175) {
-> > @@ -164,9 +158,6 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
-> >  	if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
-> >  		__raw_writel(1, data->base + reg->triminfo_ctrl);
-> >  
-> > -	if (pdata->cal_mode == HW_MODE)
-> > -		goto skip_calib_data;
-> > -
-> >  	/* Save trimming info in order to perform calibration */
-> >  	if (data->soc == SOC_ARCH_EXYNOS5440) {
-> >  		/*
-> > @@ -202,7 +193,6 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
-> >  			(pdata->efuse_value >> reg->triminfo_85_shift) &
-> >  			EXYNOS_TMU_TEMP_MASK;
-> >  
-> > -skip_calib_data:
-> >  	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
-> >  		dev_err(&pdev->dev, "Invalid max trigger level\n");
-> >  		ret = -EINVAL;
-> > @@ -311,7 +301,7 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
-> >  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> >  	struct exynos_tmu_platform_data *pdata = data->pdata;
-> >  	const struct exynos_tmu_registers *reg = pdata->registers;
-> > -	unsigned int con, interrupt_en, cal_val;
-> > +	unsigned int con, interrupt_en;
-> >  
-> >  	mutex_lock(&data->lock);
-> >  	clk_enable(data->clk);
-> > @@ -337,27 +327,6 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
-> >  		con |= (pdata->noise_cancel_mode << reg->therm_trip_mode_shift);
-> >  	}
-> >  
-> > -	if (pdata->cal_mode == HW_MODE) {
-> > -		con &= ~(reg->calib_mode_mask << reg->calib_mode_shift);
-> > -		cal_val = 0;
-> > -		switch (pdata->cal_type) {
-> > -		case TYPE_TWO_POINT_TRIMMING:
-> > -			cal_val = 3;
-> > -			break;
-> > -		case TYPE_ONE_POINT_TRIMMING_85:
-> > -			cal_val = 2;
-> > -			break;
-> > -		case TYPE_ONE_POINT_TRIMMING_25:
-> > -			cal_val = 1;
-> > -			break;
-> > -		case TYPE_NONE:
-> > -			break;
-> > -		default:
-> > -			dev_err(&pdev->dev, "Invalid calibration type, using none\n");
-> > -		}
-> > -		con |= cal_val << reg->calib_mode_shift;
-> > -	}
-> > -
-> >  	if (on) {
-> >  		con |= (1 << reg->core_en_shift);
-> >  		interrupt_en =
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-> > index 80dc899..e417af8 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu.h
-> > +++ b/drivers/thermal/samsung/exynos_tmu.h
-> > @@ -34,11 +34,6 @@ enum calibration_type {
-> >  	TYPE_NONE,
-> >  };
-> >  
-> > -enum calibration_mode {
-> > -	SW_MODE,
-> > -	HW_MODE,
-> > -};
-> > -
-> >  enum soc_type {
-> >  	SOC_ARCH_EXYNOS4210 = 1,
-> >  	SOC_ARCH_EXYNOS4412,
-> > @@ -92,10 +87,6 @@ enum soc_type {
-> >   * @buf_slope_sel_shift: shift bits of amplifier gain value in tmu_ctrl
-> >  	register.
-> >   * @buf_slope_sel_mask: mask bits of amplifier gain value in tmu_ctrl register.
-> > - * @calib_mode_shift: shift bits of calibration mode value in tmu_ctrl
-> > -	register.
-> > - * @calib_mode_mask: mask bits of calibration mode value in tmu_ctrl
-> > -	register.
-> >   * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl register.
-> >   * @tmu_status: register drescribing the TMU status.
-> >   * @tmu_cur_temp: register containing the current temperature of the TMU.
-> > @@ -139,8 +130,6 @@ struct exynos_tmu_registers {
-> >  	u32	therm_trip_en_shift;
-> >  	u32	buf_slope_sel_shift;
-> >  	u32	buf_slope_sel_mask;
-> > -	u32	calib_mode_shift;
-> > -	u32	calib_mode_mask;
-> >  	u32	core_en_shift;
-> >  
-> >  	u32	tmu_status;
-> > @@ -222,7 +211,6 @@ struct exynos_tmu_registers {
-> >   * @default_temp_offset: default temperature offset in case of no trimming
-> >   * @test_mux; information if SoC supports test MUX
-> >   * @cal_type: calibration type for temperature
-> > - * @cal_mode: calibration mode for temperature
-> >   * @freq_clip_table: Table representing frequency reduction percentage.
-> >   * @freq_tab_count: Count of the above table as frequency reduction may
-> >   *	applicable to only some of the trigger levels.
-> > @@ -253,7 +241,6 @@ struct exynos_tmu_platform_data {
-> >  	u8 test_mux;
-> >  
-> >  	enum calibration_type cal_type;
-> > -	enum calibration_mode cal_mode;
-> >  	enum soc_type type;
-> >  	struct freq_clip_table freq_tab[4];
-> >  	unsigned int freq_tab_count;
-> > diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> > index 36d64d6..4b992d9 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> > @@ -205,8 +205,6 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
-> >  	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
-> >  	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
-> >  	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-> > -	.calib_mode_shift = EXYNOS_TMU_CALIB_MODE_SHIFT,
-> > -	.calib_mode_mask = EXYNOS_TMU_CALIB_MODE_MASK,
-> >  	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
-> >  	.tmu_status = EXYNOS5440_TMU_S0_7_STATUS,
-> >  	.tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
-> > @@ -243,7 +241,6 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
-> >  	.reference_voltage = 16, \
-> >  	.noise_cancel_mode = 4, \
-> >  	.cal_type = TYPE_ONE_POINT_TRIMMING, \
-> > -	.cal_mode = 0, \
-> >  	.efuse_value = 0x5b2d, \
-> >  	.min_efuse_value = 16, \
-> >  	.max_efuse_value = 76, \
-> > diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-> > index d4eeddb..1fed00d 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> > +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> > @@ -60,8 +60,6 @@
-> >  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
-> >  #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
-> >  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
-> > -#define EXYNOS_TMU_CALIB_MODE_SHIFT	4
-> > -#define EXYNOS_TMU_CALIB_MODE_MASK	0x3
-> >  
-> >  #define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
-> >  #define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
