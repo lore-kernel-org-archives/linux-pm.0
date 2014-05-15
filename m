@@ -1,156 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / PM: Hold ACPI scan lock over the "freeze" sleep state
-Date: Thu, 15 May 2014 23:29:57 +0200
-Message-ID: <9592270.SopCIMyJ0g@vostro.rjw.lan>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v5 5/6] exynos: cpuidle: do not allow cpuidle registration
+ for Exynos5420
+Date: Thu, 15 May 2014 23:26:51 +0200
+Message-ID: <5375311B.2010202@gmail.com>
+References: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com> <1400054637-21505-1-git-send-email-chander.kashyap@linaro.org> <1400054637-21505-6-git-send-email-chander.kashyap@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53130 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754198AbaEOVNJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 17:13:09 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1400054637-21505-6-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chander Kashyap <chander.kashyap@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Chander,
 
-The "freeze" sleep state suffers from the same issue that was
-addressed by commit ad07277e82de (ACPI / PM: Hold acpi_scan_lock over
-system PM transitions) for ACPI sleep states, that is, things break
-if ->remove() is called for devices whose system resume callbacks
-haven't been executed yet.
+On 14.05.2014 10:03, Chander Kashyap wrote:
+> Exynos5420 is big.Little Soc. It uses cpuidle-big-litle generic cpuidle driver.
+> Hence do not allow exynos cpuidle driver registration for Exynos5420.
+> 
+> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  arch/arm/mach-exynos/cpuidle.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
+> index 3dd385e..807a386 100644
+> --- a/arch/arm/mach-exynos/cpuidle.c
+> +++ b/arch/arm/mach-exynos/cpuidle.c
+> @@ -218,6 +218,9 @@ static int exynos_cpuidle_probe(struct platform_device *pdev)
+>  	int cpu_id, ret;
+>  	struct cpuidle_device *device;
+>  
+> +	if (soc_is_exynos5420())
+> +		return -ENODEV;
+> +
+>  	if (soc_is_exynos5250())
+>  		exynos5_core_down_clk();
+>  
+> 
 
-It also can be addressed in the same way, by holding the ACPI scan
-lock over the "freeze" sleep state and PM transitions to and from
-that state, but ->begin() and ->end() platform operations for the
-"freeze" sleep state are needed for this purpose.
+Why not put this in exynos.c in exynos_dt_machine_init(), so
+exynos_cpuidle_init() is called only if not running on Exynos5420?
 
-This change has been tested on Acer Aspire S5 with Thunderbolt.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/sleep.c    |   18 ++++++++++++++++++
- include/linux/suspend.h |    7 +++++++
- kernel/power/suspend.c  |   15 +++++++++++++++
- 3 files changed, 40 insertions(+)
-
-Index: linux-pm/include/linux/suspend.h
-===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -187,6 +187,11 @@ struct platform_suspend_ops {
- 	void (*recover)(void);
- };
- 
-+struct platform_freeze_ops {
-+	int (*begin)(void);
-+	void (*end)(void);
-+};
-+
- #ifdef CONFIG_SUSPEND
- /**
-  * suspend_set_ops - set platform dependent suspend operations
-@@ -194,6 +199,7 @@ struct platform_suspend_ops {
-  */
- extern void suspend_set_ops(const struct platform_suspend_ops *ops);
- extern int suspend_valid_only_mem(suspend_state_t state);
-+extern void freeze_set_ops(const struct platform_freeze_ops *ops);
- extern void freeze_wake(void);
- 
- /**
-@@ -220,6 +226,7 @@ extern int pm_suspend(suspend_state_t st
- 
- static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
- static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
-+static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
- static inline void freeze_wake(void) {}
- #endif /* !CONFIG_SUSPEND */
- 
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -38,6 +38,7 @@ const char *const pm_states[PM_SUSPEND_M
- };
- 
- static const struct platform_suspend_ops *suspend_ops;
-+static const struct platform_freeze_ops *freeze_ops;
- 
- static bool need_suspend_ops(suspend_state_t state)
- {
-@@ -47,6 +48,13 @@ static bool need_suspend_ops(suspend_sta
- static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
- static bool suspend_freeze_wake;
- 
-+void freeze_set_ops(const struct platform_freeze_ops *ops)
-+{
-+	lock_system_sleep();
-+	freeze_ops = ops;
-+	unlock_system_sleep();
-+}
-+
- static void freeze_begin(void)
- {
- 	suspend_freeze_wake = false;
-@@ -271,6 +279,10 @@ int suspend_devices_and_enter(suspend_st
- 		error = suspend_ops->begin(state);
- 		if (error)
- 			goto Close;
-+	} else if (state == PM_SUSPEND_FREEZE && freeze_ops->begin) {
-+		error = freeze_ops->begin();
-+		if (error)
-+			goto Close;
- 	}
- 	suspend_console();
- 	suspend_test_start();
-@@ -296,6 +308,9 @@ int suspend_devices_and_enter(suspend_st
-  Close:
- 	if (need_suspend_ops(state) && suspend_ops->end)
- 		suspend_ops->end();
-+	else if (state == PM_SUSPEND_FREEZE && freeze_ops->end)
-+		freeze_ops->end();
-+
- 	trace_machine_suspend(PWR_EVENT_EXIT);
- 	return error;
- 
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -611,6 +611,22 @@ static const struct platform_suspend_ops
- 	.recover = acpi_pm_finish,
- };
- 
-+static int acpi_freeze_begin(void)
-+{
-+	acpi_scan_lock_acquire();
-+	return 0;
-+}
-+
-+static void acpi_freeze_end(void)
-+{
-+	acpi_scan_lock_release();
-+}
-+
-+static const struct platform_freeze_ops acpi_freeze_ops = {
-+	.begin = acpi_freeze_begin,
-+	.end = acpi_freeze_end,
-+};
-+
- static void acpi_sleep_suspend_setup(void)
- {
- 	int i;
-@@ -621,7 +637,9 @@ static void acpi_sleep_suspend_setup(voi
- 
- 	suspend_set_ops(old_suspend_ordering ?
- 		&acpi_suspend_ops_old : &acpi_suspend_ops);
-+	freeze_set_ops(&acpi_freeze_ops);
- }
-+
- #else /* !CONFIG_SUSPEND */
- static inline void acpi_sleep_suspend_setup(void) {}
- #endif /* !CONFIG_SUSPEND */
-
+Best regards,
+Tomasz
