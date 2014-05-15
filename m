@@ -1,42 +1,51 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH RFC 04/11] cpuidle: kirkwood: Remove ARCH_KIRKWOOD dependency
-Date: Thu, 15 May 2014 16:23:49 +0200
-Message-ID: <1400163836-9831-9-git-send-email-andrew@lunn.ch>
-References: <1400163836-9831-1-git-send-email-andrew@lunn.ch>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming
+ runtime-suspended devices unnecessarily
+Date: Thu, 15 May 2014 10:29:42 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1405151024060.1415-100000@iolanthe.rowland.org>
+References: <20140515060924.69ae7486@ultegra>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:44727 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186AbaEOO16 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 May 2014 10:27:58 -0400
-In-Reply-To: <1400163836-9831-1-git-send-email-andrew@lunn.ch>
+Received: from iolanthe.rowland.org ([192.131.102.54]:42605 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751559AbaEOO3m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 10:29:42 -0400
+In-Reply-To: <20140515060924.69ae7486@ultegra>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux ARM <linux-arm-kernel@lists.infradead.org>, Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-mach-kirkwood has been removed, now that kirkwood lives in mach-mvebu.
+On Thu, 15 May 2014, Jacob Pan wrote:
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
----
- drivers/cpuidle/Kconfig.arm | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> > > should we respect ignore_children flag here? not all parent devices
+> > > create children with proper .prepare() function. this allows parents
+> > > override children.
+> > > I am looking at USB, a USB device could have logical children such
+> > > as ep_xx, they don't go through the same subsystem .prepare().
+> > 
+> > Well, I'm not sure about that.  Let me consider that for a while.
+> OK. let me be more clear about the situation i see in USB. Correct me
+> if I am wrong, a USB device will always has at least one endpoint/ep_00
+> as a kid for control pipe, it is a logical device. So when
+> device_prepare() is called, its call back is NULL which
+> makes .direct_complete = 0. Since children device suspend is called
+> before parents, the parents .direct_complete flag will always get
+> cleared.
+> 
+> What i am trying to achieve here is to see if we avoid resuming
+> built-in (hardwired connect_type) non-hub USB devices based on this new
+> patchset. E.g. we don't want to resume/suspend USB camera every time in
+> system suspend/resume cycle if they are already rpm suspended. We can
+> save ~100ms resume time for the devices we have tested.
 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 5bb94780d377..a56c17928534 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -27,7 +27,7 @@ config ARM_HIGHBANK_CPUIDLE
- 
- config ARM_KIRKWOOD_CPUIDLE
- 	bool "CPU Idle Driver for Marvell Kirkwood SoCs"
--	depends on ARCH_KIRKWOOD || MACH_KIRKWOOD
-+	depends on MACH_KIRKWOOD
- 	help
- 	  This adds the CPU Idle driver for Marvell Kirkwood SoCs.
- 
--- 
-2.0.0.rc2
+This is a good point, but I don't think it is at all related to 
+ignore_children.
+
+Instead, it seems that the best way to solve it would be to add a 
+->prepare() handler for usb_ep_device_type that would always turn 
+on direct_complete.
+
+Alan Stern
 
