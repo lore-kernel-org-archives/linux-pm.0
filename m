@@ -1,70 +1,70 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 09/10] thermal: exynos: remove redundant pdata checks
- from exynos_tmu_control()
-Date: Thu, 15 May 2014 11:03:08 -0400
-Message-ID: <20140515150308.GC27690@developer>
-References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
- <1399288539-1793-10-git-send-email-b.zolnierkie@samsung.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming
+ runtime-suspended devices unnecessarily
+Date: Thu, 15 May 2014 00:03:20 -0700
+Message-ID: <20140515000320.3c1c9256@jacob-desktop>
+References: <20140515060924.69ae7486@ultegra>
+	<Pine.LNX.4.44L0.1405151024060.1415-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1399288539-1793-10-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1405151024060.1415-100000@iolanthe.rowland.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Bartlomiej,
+On Thu, 15 May 2014 10:29:42 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-On Mon, May 05, 2014 at 01:15:38PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> pdata->reference_voltage and pdata->gain are always defined
-> to non-zero values so remove the redundant checks from
-> exynos_tmu_control().
+> On Thu, 15 May 2014, Jacob Pan wrote:
 > 
-
-In all existing SoCs? 
-Should this be considered to any upcoming SoCs?
-
-> There should be no functional changes caused by this patch.
+> > > > should we respect ignore_children flag here? not all parent
+> > > > devices create children with proper .prepare() function. this
+> > > > allows parents override children.
+> > > > I am looking at USB, a USB device could have logical children
+> > > > such as ep_xx, they don't go through the same
+> > > > subsystem .prepare().
+> > > 
+> > > Well, I'm not sure about that.  Let me consider that for a while.
+> > OK. let me be more clear about the situation i see in USB. Correct
+> > me if I am wrong, a USB device will always has at least one
+> > endpoint/ep_00 as a kid for control pipe, it is a logical device.
+> > So when device_prepare() is called, its call back is NULL which
+> > makes .direct_complete = 0. Since children device suspend is called
+> > before parents, the parents .direct_complete flag will always get
+> > cleared.
+> > 
+> > What i am trying to achieve here is to see if we avoid resuming
+> > built-in (hardwired connect_type) non-hub USB devices based on this
+> > new patchset. E.g. we don't want to resume/suspend USB camera every
+> > time in system suspend/resume cycle if they are already rpm
+> > suspended. We can save ~100ms resume time for the devices we have
+> > tested.
 > 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  drivers/thermal/samsung/exynos_tmu.c | 12 ++++--------
->  1 file changed, 4 insertions(+), 8 deletions(-)
+> This is a good point, but I don't think it is at all related to 
+> ignore_children.
 > 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index a8d9524..45d7c6f 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -215,15 +215,11 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
->  	if (pdata->test_mux)
->  		con |= (pdata->test_mux << reg->test_mux_addr_shift);
->  
-> -	if (pdata->reference_voltage) {
-> -		con &= ~(reg->buf_vref_sel_mask << reg->buf_vref_sel_shift);
-> -		con |= pdata->reference_voltage << reg->buf_vref_sel_shift;
-> -	}
-> +	con &= ~(reg->buf_vref_sel_mask << reg->buf_vref_sel_shift);
-> +	con |= pdata->reference_voltage << reg->buf_vref_sel_shift;
->  
-> -	if (pdata->gain) {
-> -		con &= ~(reg->buf_slope_sel_mask << reg->buf_slope_sel_shift);
-> -		con |= (pdata->gain << reg->buf_slope_sel_shift);
-> -	}
-> +	con &= ~(reg->buf_slope_sel_mask << reg->buf_slope_sel_shift);
-> +	con |= (pdata->gain << reg->buf_slope_sel_shift);
+> Instead, it seems that the best way to solve it would be to add a 
+> ->prepare() handler for usb_ep_device_type that would always turn 
+> on direct_complete.
+> 
+yeah, that would solve the problem with EP device type. But what about
+other subdevices. e.g. for USB camera, uvcvideo device? We can add
+.prepare(return 1;) for each level but would it be better to have a
+flag similar to ignore_children if not ignore_children itself.
+Actually, I don't understand why this is not related to
+ignore_children. Could you explain?
 
-The way it is put, looks like gain and reference_voltage are mandatory
-pdata fields. Should these checks be moved to initialization phase?
+If the parent knows it can ignore children and already rpm suspended,
+why do we still ask children?
 
->  
->  	if (pdata->noise_cancel_mode) {
->  		con &= ~(reg->therm_trip_mode_mask <<
-> -- 
-> 1.8.2.3
+> Alan Stern
 > 
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+[Jacob Pan]
