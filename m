@@ -1,57 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Thu, 15 May 2014 14:25:52 +0530
-Message-ID: <CAKohpom1t2sOWr_S5Xzhx_OG=2qmgkZ5Z6UJ4TKAmJgeq0TU2Q@mail.gmail.com>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
-	<CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>
-	<CANuQgHGehqDD8-SKTfEKMEZmT5KwofFL8bhYqge0uNm6kpPgUQ@mail.gmail.com>
-	<CAKohponfdoPG7H4h-5s+V7CwB_SgnyqqUm9aa6G-K_cX3DOcfA@mail.gmail.com>
-	<53737D34.5040307@ti.com>
-	<CANuQgHG23F7zGxbNJVzGAeCsNNPU_CwSu5veK2-CCjnc1RE-UQ@mail.gmail.com>
-	<CAKohpo=O_=PVpFCnTWA=0R6deMFHgWx8dxOecro1dMwGVwxong@mail.gmail.com>
-	<CANuQgHEECW3c2C5+h7vUp5RuWJin3PPaos_BY1VoqzR=jTwGFQ@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal/intel_powerclamp: add newer cpu ids
+Date: Thu, 15 May 2014 17:02:42 +0800
+Message-ID: <1400144562.2273.32.camel@rzhang1-toshiba>
+References: <1398756954-26442-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:49612 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbaEOIzx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 04:55:53 -0400
-Received: by mail-ob0-f176.google.com with SMTP id wo20so863261obc.7
-        for <linux-pm@vger.kernel.org>; Thu, 15 May 2014 01:55:52 -0700 (PDT)
-In-Reply-To: <CANuQgHEECW3c2C5+h7vUp5RuWJin3PPaos_BY1VoqzR=jTwGFQ@mail.gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:35333 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751725AbaEOJDA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 May 2014 05:03:00 -0400
+In-Reply-To: <1398756954-26442-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <chander.kashyap@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 15 May 2014 14:16, Chander Kashyap <chander.kashyap@linaro.org> wrote:
-> Yes exactly. All users of this API need to be modified to handle
-> EEXIST as success.
+On =E4=BA=8C, 2014-04-29 at 00:35 -0700, Jacob Pan wrote:
+> Add support for Broadwell and Valleyview CPUs
+>=20
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-There are very few:
+applied.
 
-arch/arm/mach-omap2/opp.c
-arch/arm/mach-vexpress/spc.c
-drivers/devfreq/exynos/exynos4_bus.c
-drivers/devfreq/exynos/exynos5_bus.c
+thanks,
+rui
+> ---
+>  drivers/thermal/intel_powerclamp.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/int=
+el_powerclamp.c
+> index a084325..95cb7fc 100644
+> --- a/drivers/thermal/intel_powerclamp.c
+> +++ b/drivers/thermal/intel_powerclamp.c
+> @@ -681,8 +681,10 @@ static const struct x86_cpu_id intel_powerclamp_=
+ids[] =3D {
+>  	{ X86_VENDOR_INTEL, 6, 0x2d},
+>  	{ X86_VENDOR_INTEL, 6, 0x2e},
+>  	{ X86_VENDOR_INTEL, 6, 0x2f},
+> +	{ X86_VENDOR_INTEL, 6, 0x37},
+>  	{ X86_VENDOR_INTEL, 6, 0x3a},
+>  	{ X86_VENDOR_INTEL, 6, 0x3c},
+> +	{ X86_VENDOR_INTEL, 6, 0x3d},
+>  	{ X86_VENDOR_INTEL, 6, 0x3e},
+>  	{ X86_VENDOR_INTEL, 6, 0x3f},
+>  	{ X86_VENDOR_INTEL, 6, 0x45},
 
-So shouldn't be a problem fixing them..
 
-> To avoid this returning 0 was suggested
-
-But the bigger problem is that all new users have to know about this
-and must take care of it, would also result in code duplication.
-
-So, if I think this way:
-
-The purpose of dev_pm_opp_add() is to make sure the OPP is
-present with the device, when this function returns..
-
-And with a duplicate entry, we can still confirm that. Over that, I couldn't
-think of any situation where the caller wants to react to -EXIST separately.
-They will still consider it as success.
-
-So, maybe returning '0' isn't that bad of an idea :)
-
-@Nishanth ?
