@@ -1,94 +1,38 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 05/10] thermal: exynos: remove redundant pdata checks from
- exynos_tmu_initialize()
-Date: Thu, 15 May 2014 18:24:14 +0200
-Message-ID: <2098888.ybkVo6Z2Xi@amdc1032>
-References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
- <1399288539-1793-6-git-send-email-b.zolnierkie@samsung.com>
- <20140515144739.GA27690@developer>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: Format of patches
+Date: Thu, 15 May 2014 09:37:53 -0700
+Message-ID: <5374ED61.8050804@infradead.org>
+References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>	<CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>	<alpine.LRH.2.02.1405150614100.19101@file01.intranet.prod.int.rdu2.redhat.com>	<CAKohponwxi96buPx=vYgY1jZhSUanOZ2G7g2CjoapE=stzJcXw@mail.gmail.com>	<alpine.LRH.2.02.1405150843180.8791@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpokGQSuts5rr4XeFb1dsykfNX-A--NXapkgJ2g0fUjVmQQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20140515144739.GA27690@developer>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokGQSuts5rr4XeFb1dsykfNX-A--NXapkgJ2g0fUjVmQQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Mikulas Patocka <mpatocka@redhat.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 15, 2014 10:47:40 AM Eduardo Valentin wrote:
-> Hello Bartlomiej,
-
-Hi,
-
-> On Mon, May 05, 2014 at 01:15:34PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > Remove runtime checks for pdata sanity from exynos_tmu_initialize().
-> > The current values hardcoded in pdata will never trigger the checks
-> > and for the new code potential mistakes should be caught during
-> > development/review phases.
-> > 
-> > There should be no functional changes caused by this patch.
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > ---
-> >  drivers/thermal/samsung/exynos_thermal_common.h |  1 -
-> >  drivers/thermal/samsung/exynos_tmu.c            | 13 -------------
-> >  2 files changed, 14 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
-> > index 3eb2ed9..cd44719 100644
-> > --- a/drivers/thermal/samsung/exynos_thermal_common.h
-> > +++ b/drivers/thermal/samsung/exynos_thermal_common.h
-> > @@ -27,7 +27,6 @@
-> >  #define SENSOR_NAME_LEN	16
-> >  #define MAX_TRIP_COUNT	8
-> >  #define MAX_COOLING_DEVICE 4
-> > -#define MAX_THRESHOLD_LEVS 5
-> >  
-> >  #define ACTIVE_INTERVAL 500
-> >  #define IDLE_INTERVAL 10000
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> > index 903566f..789d745 100644
-> > --- a/drivers/thermal/samsung/exynos_tmu.c
-> > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> > @@ -158,23 +158,10 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
-> >  	    data->temp_error > pdata->max_efuse_value)
-> >  		data->temp_error = pdata->efuse_value & EXYNOS_TMU_TEMP_MASK;
-> >  
-> > -	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
-> > -		dev_err(&pdev->dev, "Invalid max trigger level\n");
-> > -		ret = -EINVAL;
-> > -		goto out;
-> > -	}
-> > -
-> >  	for (i = 0; i < pdata->max_trigger_level; i++) {
-> >  		if (!pdata->trigger_levels[i])
-> >  			continue;
-> >  
-> > -		if ((pdata->trigger_type[i] == HW_TRIP) &&
-> > -		(!pdata->trigger_levels[pdata->max_trigger_level - 1])) {
-> > -			dev_err(&pdev->dev, "Invalid hw trigger level\n");
-> > -			ret = -EINVAL;
-> > -			goto out;
-> > -		}
-> > -
+On 05/15/2014 07:00 AM, Viresh Kumar wrote:
+> On 15 May 2014 18:15, Mikulas Patocka <mpatocka@redhat.com> wrote:
+>>>> ---
+>>>
+>>> Blurb here :)
+>>
+>> Sure - but if I want you to read "Blurb here :)" before reading the git
+>> message, I need to place it at the top of the email, before the git
+>> message.
 > 
-> Does it mean no new pdata are going to be written? i.e., no new soc is
-> going to be supported by this driver that needs proper pdata checking?
+> You can't, git will pick it up :)
 
-This is not a proper checking.  The checks in question are done at runtime
-in a production code for data that is hardcoded inside driver during
-development time and later it doesn't change.  Such data should be verified
-during development and review time (i.e. by a script parsing relevant data
-from exynos_tmu_data.c, one can also argue that verification to be done is
-so simple that the review by a maintainer should be enough).
+Right.  The patch description goes at the top of the email.
+If you want to include text that should not be part of the patch
+description, you can put it after the --- or you can put it into
+an introductory email (like [PATCH 0/5]).
 
-> >  		/* Count trigger levels except the HW trip*/
-> >  		if (!(pdata->trigger_type[i] == HW_TRIP))
-> >  			trigger_levs++;
+> And people are trained enough to read stuff at this place as it was
+> present over the top of mail :)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+
+-- 
+~Randy
