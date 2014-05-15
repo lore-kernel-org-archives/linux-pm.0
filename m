@@ -1,223 +1,84 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 03/10] thermal: exynos: remove dead code for HW_MODE
- calibration
-Date: Thu, 15 May 2014 10:14:41 -0400
-Message-ID: <20140515141441.GB27339@developer>
-References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
- <1399288539-1793-4-git-send-email-b.zolnierkie@samsung.com>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Thu, 15 May 2014 07:10:50 -0700
+Message-ID: <ad94b743-b3f7-4fb7-b26f-03127ca38d2b@BY2FFO11FD049.protection.gbl>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
+ <20140515073816.GI16662@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1399288539-1793-4-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20140515073816.GI16662@pengutronix.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Mike Turquette <mturquette@linaro.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Bartlomiej
-
-On Mon, May 05, 2014 at 01:15:32PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> There should be no functional changes caused by this patch.
-> 
-
-Please provide better explanation when removing features. For instance,
-based on the comment of commit introducing it, HW_MODE is a feature of
-5540 samsung's SoC. Question is why now it is being removed?
-
-commit 1928457ea6337043a06ca2acd9b4d01e75810a3f
-Author: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Date:   Mon Jun 24 16:20:46 2013 +0530
-
-    thermal: exynos: Add hardware mode thermal calibration support
-        
-    This patch adds support for h/w mode calibration in the TMU controller.
-    Soc's like 5440 support this features. The h/w bits needed for calibration
-    setting are same as that of enum calibration_type.
-
-  
-
-
-Cheers,
-
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  drivers/thermal/samsung/exynos_tmu.c      | 33 +------------------------------
->  drivers/thermal/samsung/exynos_tmu.h      | 13 ------------
->  drivers/thermal/samsung/exynos_tmu_data.c |  3 ---
->  drivers/thermal/samsung/exynos_tmu_data.h |  2 --
->  4 files changed, 1 insertion(+), 50 deletions(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 0d96a51..9f2a5ee 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -76,9 +76,6 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
->  	struct exynos_tmu_platform_data *pdata = data->pdata;
->  	int temp_code;
->  
-> -	if (pdata->cal_mode == HW_MODE)
-> -		return temp;
-> -
->  	if (data->soc == SOC_ARCH_EXYNOS4210)
->  		/* temp should range between 25 and 125 */
->  		if (temp < 25 || temp > 125) {
-> @@ -113,9 +110,6 @@ static int code_to_temp(struct exynos_tmu_data *data, u8 temp_code)
->  	struct exynos_tmu_platform_data *pdata = data->pdata;
->  	int temp;
->  
-> -	if (pdata->cal_mode == HW_MODE)
-> -		return temp_code;
-> -
->  	if (data->soc == SOC_ARCH_EXYNOS4210)
->  		/* temp_code should range between 75 and 175 */
->  		if (temp_code < 75 || temp_code > 175) {
-> @@ -164,9 +158,6 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->  	if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
->  		__raw_writel(1, data->base + reg->triminfo_ctrl);
->  
-> -	if (pdata->cal_mode == HW_MODE)
-> -		goto skip_calib_data;
-> -
->  	/* Save trimming info in order to perform calibration */
->  	if (data->soc == SOC_ARCH_EXYNOS5440) {
->  		/*
-> @@ -202,7 +193,6 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
->  			(pdata->efuse_value >> reg->triminfo_85_shift) &
->  			EXYNOS_TMU_TEMP_MASK;
->  
-> -skip_calib_data:
->  	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
->  		dev_err(&pdev->dev, "Invalid max trigger level\n");
->  		ret = -EINVAL;
-> @@ -311,7 +301,7 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
->  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
->  	struct exynos_tmu_platform_data *pdata = data->pdata;
->  	const struct exynos_tmu_registers *reg = pdata->registers;
-> -	unsigned int con, interrupt_en, cal_val;
-> +	unsigned int con, interrupt_en;
->  
->  	mutex_lock(&data->lock);
->  	clk_enable(data->clk);
-> @@ -337,27 +327,6 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
->  		con |= (pdata->noise_cancel_mode << reg->therm_trip_mode_shift);
->  	}
->  
-> -	if (pdata->cal_mode == HW_MODE) {
-> -		con &= ~(reg->calib_mode_mask << reg->calib_mode_shift);
-> -		cal_val = 0;
-> -		switch (pdata->cal_type) {
-> -		case TYPE_TWO_POINT_TRIMMING:
-> -			cal_val = 3;
-> -			break;
-> -		case TYPE_ONE_POINT_TRIMMING_85:
-> -			cal_val = 2;
-> -			break;
-> -		case TYPE_ONE_POINT_TRIMMING_25:
-> -			cal_val = 1;
-> -			break;
-> -		case TYPE_NONE:
-> -			break;
-> -		default:
-> -			dev_err(&pdev->dev, "Invalid calibration type, using none\n");
-> -		}
-> -		con |= cal_val << reg->calib_mode_shift;
-> -	}
-> -
->  	if (on) {
->  		con |= (1 << reg->core_en_shift);
->  		interrupt_en =
-> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-> index 80dc899..e417af8 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.h
-> +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -34,11 +34,6 @@ enum calibration_type {
->  	TYPE_NONE,
->  };
->  
-> -enum calibration_mode {
-> -	SW_MODE,
-> -	HW_MODE,
-> -};
-> -
->  enum soc_type {
->  	SOC_ARCH_EXYNOS4210 = 1,
->  	SOC_ARCH_EXYNOS4412,
-> @@ -92,10 +87,6 @@ enum soc_type {
->   * @buf_slope_sel_shift: shift bits of amplifier gain value in tmu_ctrl
->  	register.
->   * @buf_slope_sel_mask: mask bits of amplifier gain value in tmu_ctrl register.
-> - * @calib_mode_shift: shift bits of calibration mode value in tmu_ctrl
-> -	register.
-> - * @calib_mode_mask: mask bits of calibration mode value in tmu_ctrl
-> -	register.
->   * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl register.
->   * @tmu_status: register drescribing the TMU status.
->   * @tmu_cur_temp: register containing the current temperature of the TMU.
-> @@ -139,8 +130,6 @@ struct exynos_tmu_registers {
->  	u32	therm_trip_en_shift;
->  	u32	buf_slope_sel_shift;
->  	u32	buf_slope_sel_mask;
-> -	u32	calib_mode_shift;
-> -	u32	calib_mode_mask;
->  	u32	core_en_shift;
->  
->  	u32	tmu_status;
-> @@ -222,7 +211,6 @@ struct exynos_tmu_registers {
->   * @default_temp_offset: default temperature offset in case of no trimming
->   * @test_mux; information if SoC supports test MUX
->   * @cal_type: calibration type for temperature
-> - * @cal_mode: calibration mode for temperature
->   * @freq_clip_table: Table representing frequency reduction percentage.
->   * @freq_tab_count: Count of the above table as frequency reduction may
->   *	applicable to only some of the trigger levels.
-> @@ -253,7 +241,6 @@ struct exynos_tmu_platform_data {
->  	u8 test_mux;
->  
->  	enum calibration_type cal_type;
-> -	enum calibration_mode cal_mode;
->  	enum soc_type type;
->  	struct freq_clip_table freq_tab[4];
->  	unsigned int freq_tab_count;
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> index 36d64d6..4b992d9 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -205,8 +205,6 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
->  	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
->  	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
->  	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-> -	.calib_mode_shift = EXYNOS_TMU_CALIB_MODE_SHIFT,
-> -	.calib_mode_mask = EXYNOS_TMU_CALIB_MODE_MASK,
->  	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
->  	.tmu_status = EXYNOS5440_TMU_S0_7_STATUS,
->  	.tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
-> @@ -243,7 +241,6 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
->  	.reference_voltage = 16, \
->  	.noise_cancel_mode = 4, \
->  	.cal_type = TYPE_ONE_POINT_TRIMMING, \
-> -	.cal_mode = 0, \
->  	.efuse_value = 0x5b2d, \
->  	.min_efuse_value = 16, \
->  	.max_efuse_value = 76, \
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-> index d4eeddb..1fed00d 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.h
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -60,8 +60,6 @@
->  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
->  #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
->  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
-> -#define EXYNOS_TMU_CALIB_MODE_SHIFT	4
-> -#define EXYNOS_TMU_CALIB_MODE_MASK	0x3
->  
->  #define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
->  #define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
-> -- 
-> 1.8.2.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGkgVXdlLAoKT24gVGh1LCAyMDE0LTA1LTE1IGF0IDA5OjM4QU0gKzAyMDAsIFV3ZSBLbGVpbmUt
+S8O2bmlnIHdyb3RlOgo+IEhlbGxvLAo+IAo+IGl0J3MgZ3JlYXQgeW91IHBpY2sgdGhhdCB1cC4K
+PiAKPiBPbiBXZWQsIE1heSAxNCwgMjAxNCBhdCAwMzozMDo1MlBNIC0wNzAwLCBTb3JlbiBCcmlu
+a21hbm4gd3JvdGU6Cj4gPiBJbnRyb2R1Y2UgYSBuZXcgQVBJIGZ1bmN0aW9uIHRvIHJvdW5kIGEg
+cmF0ZSB0byB0aGUgY2xvc2VzdCBwb3NzaWJsZQo+ID4gcmF0ZSB0aGUgSFcgY2xvY2sgY2FuIGdl
+bmVyYXRlLgo+ID4gSW4gY29udHJhc3QgdG8gJ2Nsa19yb3VuZF9yYXRlKCknIHdoaWNoIHdvcmtz
+IHNpbWlsYXIsIGJ1dCBhbHdheXMgcmV0dXJucwo+ID4gYSBmcmVxdWVuY3kgPD0gaXRzIGlucHV0
+IHJhdGUuCj4gPiAKPiA+IFRoZSBjb2RlIGNvbWVzIGZyb20gVXdlIGFuZCB3YXMgY29waWVkIGZy
+b20gdGhpcyBMS01MIHRocmVhZDoKPiA+IGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDEzLzMvMjEv
+MTE1Cj4gPiAKPiA+IFNpZ25lZC1vZmYtYnk6IFNvcmVuIEJyaW5rbWFubiA8c29yZW4uYnJpbmtt
+YW5uQHhpbGlueC5jb20+Cj4gPiAtLS0KPiA+IAo+ID4gIGRyaXZlcnMvY2xrL2Nsay5jICAgfCAy
+NiArKysrKysrKysrKysrKysrKysrKysrKystLQo+ID4gIGluY2x1ZGUvbGludXgvY2xrLmggfCAx
+NCArKysrKysrKysrKystLQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMzYgaW5zZXJ0aW9ucygrKSwg
+NCBkZWxldGlvbnMoLSkKPiA+IAo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2xrL2Nsay5jIGIv
+ZHJpdmVycy9jbGsvY2xrLmMKPiA+IGluZGV4IGRmZjAzNzNmNTNjMS4uYjcxNWY1YTk4MjZjIDEw
+MDY0NAo+ID4gLS0tIGEvZHJpdmVycy9jbGsvY2xrLmMKPiA+ICsrKyBiL2RyaXZlcnMvY2xrL2Ns
+ay5jCj4gPiBAQCAtMTAxMSw4ICsxMDExLDkgQEAgdW5zaWduZWQgbG9uZyBfX2Nsa19yb3VuZF9y
+YXRlKHN0cnVjdCBjbGsgKmNsaywgdW5zaWduZWQgbG9uZyByYXRlKQo+ID4gICAqIEByYXRlOiB0
+aGUgcmF0ZSB3aGljaCBpcyB0byBiZSByb3VuZGVkCj4gPiAgICoKPiA+ICAgKiBUYWtlcyBpbiBh
+IHJhdGUgYXMgaW5wdXQgYW5kIHJvdW5kcyBpdCB0byBhIHJhdGUgdGhhdCB0aGUgY2xrIGNhbiBh
+Y3R1YWxseQo+ID4gLSAqIHVzZSB3aGljaCBpcyB0aGVuIHJldHVybmVkLiAgSWYgY2xrIGRvZXNu
+J3Qgc3VwcG9ydCByb3VuZF9yYXRlIG9wZXJhdGlvbgo+ID4gLSAqIHRoZW4gdGhlIHBhcmVudCBy
+YXRlIGlzIHJldHVybmVkLgo+ID4gKyAqIHVzZSBhbmQgZG9lcyBub3QgZXhjZWVkIHRoZSByZXF1
+ZXN0ZWQgZnJlcXVlbmN5LCB3aGljaCBpcyB0aGVuIHJldHVybmVkLgo+ID4gKyAqIElmIGNsayBk
+b2Vzbid0IHN1cHBvcnQgcm91bmRfcmF0ZSBvcGVyYXRpb24gdGhlbiB0aGUgcGFyZW50IHJhdGUK
+PiA+ICsgKiBpcyByZXR1cm5lZC4KPiA+ICAgKi8KPiA+ICBsb25nIGNsa19yb3VuZF9yYXRlKHN0
+cnVjdCBjbGsgKmNsaywgdW5zaWduZWQgbG9uZyByYXRlKQo+ID4gIHsKPiA+IEBAIC0xMDI3LDYg
+KzEwMjgsMjcgQEAgbG9uZyBjbGtfcm91bmRfcmF0ZShzdHJ1Y3QgY2xrICpjbGssIHVuc2lnbmVk
+IGxvbmcgcmF0ZSkKPiA+ICBFWFBPUlRfU1lNQk9MX0dQTChjbGtfcm91bmRfcmF0ZSk7Cj4gPiAg
+Cj4gPiAgLyoqCj4gPiArICogY2xrX3JvdW5kX3JhdGVfbmVhcmVzdCAtIHJvdW5kIHRoZSBnaXZl
+biByYXRlIGZvciBhIGNsawo+ID4gKyAqIEBjbGs6IHRoZSBjbGsgZm9yIHdoaWNoIHdlIGFyZSBy
+b3VuZGluZyBhIHJhdGUKPiA+ICsgKiBAcmF0ZTogdGhlIHJhdGUgd2hpY2ggaXMgdG8gYmUgcm91
+bmRlZAo+ID4gKyAqCj4gPiArICogVGFrZXMgaW4gYSByYXRlIGFzIGlucHV0IGFuZCByb3VuZHMg
+aXQgdG8gdGhlIGNsb3Nlc3QgcmF0ZSB0aGF0IHRoZSBjbGsKPiA+ICsgKiBjYW4gYWN0dWFsbHkg
+dXNlIHdoaWNoIGlzIHRoZW4gcmV0dXJuZWQuIElmIGNsayBkb2Vzbid0IHN1cHBvcnQKPiA+ICsg
+KiByb3VuZF9yYXRlIG9wZXJhdGlvbiB0aGVuIHRoZSBwYXJlbnQgcmF0ZSBpcyByZXR1cm5lZC4K
+PiA+ICsgKi8KPiA+ICtsb25nIGNsa19yb3VuZF9yYXRlX25lYXJlc3Qoc3RydWN0IGNsayAqY2xr
+LCB1bnNpZ25lZCBsb25nIHJhdGUpCj4gPiArewo+ID4gKwlsb25nIGxvd2VyX2xpbWl0ID0gY2xr
+X3JvdW5kX3JhdGUoY2xrLCByYXRlKTsKPiA+ICsJbG9uZyB1cHBlcl9saW1pdCA9IGNsa19yb3Vu
+ZF9yYXRlKGNsaywgcmF0ZSArIChyYXRlIC0gbG93ZXJfbGltaXQpKTsKPiA+ICsKPiA+ICsJaWYg
+KHJhdGUgLSBsb3dlcl9saW1pdCA8IHVwcGVyX2xpbWl0IC0gcmF0ZSkKPiA+ICsJCXJldHVybiBs
+b3dlcl9saW1pdDsKPiA+ICsJZWxzZQo+ID4gKwkJcmV0dXJuIHVwcGVyX2xpbWl0Owo+IEkgd2Fu
+dGVkIHRvIHN1Z2dlc3QgdG8gYWRkIHNvbWUgY29tbWVudCB0byBkZXNjcmliZSB3aHkgdGhlIGNh
+bGN1bGF0aW9uCj4gd29ya3MgaGVyZS4gV2hpbGUgdHJ5aW5nIHRvIHByb292ZSBpdCwgSSBub3Rp
+Y2VkIHRoYXQgdGhpcwo+IGltcGxlbWVudGF0aW9uIGlzIGJ1Z2d5Lgo+IENvbnNpZGVyIGEgY2xv
+Y2sgdGhhdCBjYW4gcHJvdmlkZSB0aGUgZm9sbG93aW5nIGZyZXF1ZW5jaWVzOiAzODAwMCwKPiAz
+ODQwMSwgMzg2MDAuCj4gCj4gCWNsa19yb3VuZF9yYXRlX25lYXJlc3QoY2xrLCAzODQwMCkKPiAJ
+ICBsb3dlcl9saW1pdCA9IGNsa19yb3VuZF9yYXRlKGNsaywgMzg0MDApIC0+IDM4MDAwCj4gCSAg
+dXBwZXJfbGltaXQgPSBjbGtfcm91bmRfcmF0ZShjbGssIDM4ODAwKSAtPiAzODYwMAo+IAo+IAkg
+IHJldHVybiAzODYwMAo+IAo+IGJ1dCAzODQwMSB3b3VsZCBoYXZlIGJlZW4gdGhlIGJldHRlci9j
+b3JyZWN0IGFuc3dlci4gSSB0aGluayB5b3UgY2Fubm90Cj4gaW1wbGVtZW50IGNsa19yb3VuZF9y
+YXRlX25lYXJlc3Qgd2l0aG91dCBpdGVyYXRpb24gaWYgeW91IGRvbid0IHdhbnQgdG8KPiBhZGQg
+c3BlY2lmaWMgbG9naWMgdG8gdGhlIGNsb2NrIHByb3ZpZGVycy4KCllvdSdyZSByaWdodC4gQXBw
+YXJlbnRseSB3ZSBoYXZlbid0IGhhZCBzdWNoIGEgY2FzZS4gQW55d2F5LCB0aGlzIG5lZWRzCnRv
+IGJlIGltcGxlbWVudGVkIGRpZmZlcmVudGx5LgoKCVRoYW5rcywKCVPDtnJlbgoKCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwg
+bWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8v
+bGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
