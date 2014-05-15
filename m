@@ -1,61 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] speedstep-smi: enable interrupts when waiting
-Date: Thu, 15 May 2014 10:15:53 +0530
-Message-ID: <CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
-References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+From: Inderpal Singh <inderpal.s@samsung.com>
+Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
+Date: Thu, 15 May 2014 10:22:53 +0530
+Message-ID: <CAOqmu81C7A-bMQY3p5fsvk-4Y=S1yGZHw_Q=RbxCKxwR9fFz-w@mail.gmail.com>
+References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
+	<20140514150255.GA8330@amd.pavel.ucw.cz>
+	<CAKohpo=MFxUHL22TxXPk4B=JX9AD3RGdgXPPGK9sD3GD6AEV+g@mail.gmail.com>
+	<CAOqmu80j2q6hQLThVt60QkjqcZTXwJ6ddwDLvqBEW1ejrVh_hw@mail.gmail.com>
+	<CAKohponWM+RxgK-50BXH-gk3-bX2no7NojT5-6ZRWJAtSizO7A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:59084 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbaEOEpy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 00:45:54 -0400
-Received: by mail-ob0-f176.google.com with SMTP id wo20so615719obc.7
-        for <linux-pm@vger.kernel.org>; Wed, 14 May 2014 21:45:53 -0700 (PDT)
-In-Reply-To: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohponWM+RxgK-50BXH-gk3-bX2no7NojT5-6ZRWJAtSizO7A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "[Chander Kashyap" <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 14 May 2014 19:54, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> Hi Viresh
+On Thu, May 15, 2014 at 10:06 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 15 May 2014 10:02, Inderpal Singh <inderpal.s@samsung.com> wrote:
+>> I feel freeing of opps are needed at least at the driver unregistration
+>> time, like we free cpufreq_table.
+>> Otherwise it amounts to memory leak unless we assume that the same driver is
+>> going to re-register and re-use the same opps.
 >
-> Some times ago, I sent these two cpufreq patches to fix frequency
-> transition problem on speedstep-smi, but you didn't put them to the
-> upstream kernel. I am resending the patches. If you would like a different
-> solution to this problem, please explain it.
-
-Probably these are just missed by Rafael. The patches are fine but the
-above paragraph you wrote would get into kernel logs and must have
-been placed below the three dash lines: "---"
-
-> On Dell Latitude C600 laptop with Pentium 3 850MHz processor, the
-> speedstep-smi driver sometimes loads and sometimes doesn't load with
-> "change to state X failed" message.
+> Its memory leak only if we have lost the pointer to allocated memory, which
+> we haven't. Yes, it will keep occupying some space but there is only
+> one instance
+> of that per 'cluster' and is very much affordable instead of building it again..
 >
-> The hardware sometimes refuses to change frequency and in this case, we
-> need to retry later. I found out that we need to enable interrupts while
-> waiting for retry. When we enable interrupts, the hardware blockage that
-> prevents frequency transition resolves and the transition is possible.
-> With disabled interrupts, the blockage doesn't resolve (no matter how long
-> do we wait). The exact reasons for this hardware behavior are unknown.
+> There is a high chance that it will be used again by this or any other driver,
+> cpufreq or outside of it.
 >
-> This patch enables interrupts in the function speedstep_set_state that can
-> be called with disabled interrupts. However, this function is called with
-> disabled interrupts only from speedstep_get_freqs, so it shouldn't cause
-> any problem.
->
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
-> Cc: stable@vger.kernel.org
->
-> ---
+> But, yes I do agree that the OPPs not added from dts, i.e. added from
+> platform should be freed when they don't make a sense. But that's a different
+> issue altogether.
 
-Here. And this will be skipped by tools (git, etc) while applying the patch.
+What i am saying that "what if we are not going to re-use again ? " I
+am not sure if its practical.
+Also, I feel the driver who created the opp table at its registration
+time should free it at its unregistration. Isn't it true in general?
 
->  drivers/cpufreq/speedstep-lib.c |    3 +++
->  drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
->  2 files changed, 15 insertions(+)
 
-For both the patches:
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
