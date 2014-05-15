@@ -1,148 +1,242 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI and power management fixes for v3.15-rc6
-Date: Thu, 15 May 2014 14:51:24 +0200
-Message-ID: <CAJZ5v0inpqY5w-FE4Wvaj2W_tG3AMHNoRQfdK8iSgJUQ798O-g@mail.gmail.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming
+ runtime-suspended devices unnecessarily
+Date: Thu, 15 May 2014 06:09:24 -0700
+Message-ID: <20140515060924.69ae7486@ultegra>
+References: <4649019.is79p6EySp@vostro.rjw.lan>
+	<1752814.FckPkBGaUc@vostro.rjw.lan>
+	<20140514152421.6d21b025@ultegra>
+	<2114493.MQBIxPPRgp@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:36212 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbaEOMvY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 08:51:24 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2114493.MQBIxPPRgp@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 15 May 2014 13:11:15 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
 
-Please pull from
+> On Wednesday, May 14, 2014 03:24:21 PM Jacob Pan wrote:
+> > On Tue, 13 May 2014 03:10:19 +0200
+> > "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+> > 
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have
+> > > to resume all runtime-suspended devices during system suspend,
+> > > mostly because those devices may need to be reprogrammed due to
+> > > different wakeup settings for system sleep and for runtime PM.
+> > > 
+> > > For some devices, though, it's OK to remain in runtime suspend 
+> > > throughout a complete system suspend/resume cycle (if the device
+> > > was in runtime suspend at the start of the cycle).  We would like
+> > > to do this whenever possible, to avoid the overhead of extra
+> > > power-up and power-down events.
+> > > 
+> > > However, problems may arise because the device's descendants may
+> > > require it to be at full power at various points during the cycle.
+> > > Therefore the most straightforward way to do this safely is if the
+> > > device and all its descendants can remain runtime suspended until
+> > > the complete stage of system resume.
+> > > 
+> > > To this end, introduce a new device PM flag, power.direct_complete
+> > > and modify the PM core to use that flag as follows.
+> > > 
+> > > If the ->prepare() callback of a device returns a positive number,
+> > > the PM core will regard that as an indication that it may leave
+> > > the device runtime-suspended.  It will then check if the system
+> > > power transition in progress is a suspend (and not hibernation in
+> > > particular) and if the device is, indeed, runtime-suspended.  In
+> > > that case, the PM core will set the device's
+> > > power.direct_complete flag. Otherwise it will clear
+> > > power.direct_complete for the device and it also will later clear
+> > > it for the device's parent (if there's one).
+> > > 
+> > > Next, the PM core will not invoke the ->suspend()
+> > > ->suspend_late(), ->suspend_irq(), ->resume_irq(),
+> > > ->resume_early(), or ->resume() callbacks for all devices having
+> > > power.direct_complete set.  It will invoke their ->complete()
+> > > callbacks, however, and those callbacks are then responsible for
+> > > resuming the devices as appropriate, if necessary.
+> > > 
+> > > Changelog partly based on an Alan Stern's description of the idea
+> > > (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > ---
+> > >  drivers/base/power/main.c |   45
+> > > ++++++++++++++++++++++++++++-----------------
+> > > include/linux/pm.h        |    1 + 2 files changed, 29
+> > > insertions(+), 17 deletions(-)
+> > > 
+> > > Index: linux-pm/include/linux/pm.h
+> > > ===================================================================
+> > > --- linux-pm.orig/include/linux/pm.h
+> > > +++ linux-pm/include/linux/pm.h
+> > > @@ -546,6 +546,7 @@ struct dev_pm_info {
+> > >  	bool			is_late_suspended:1;
+> > >  	bool			ignore_children:1;
+> > >  	bool			early_init:1;	/*
+> > > Owned by the PM core */
+> > > +	bool			direct_complete:1;	/*
+> > > Owned by the PM core */ spinlock_t		lock;
+> > >  #ifdef CONFIG_PM_SLEEP
+> > >  	struct list_head	entry;
+> > > Index: linux-pm/drivers/base/power/main.c
+> > > ===================================================================
+> > > --- linux-pm.orig/drivers/base/power/main.c
+> > > +++ linux-pm/drivers/base/power/main.c
+> > > @@ -479,7 +479,7 @@ static int device_resume_noirq(struct de
+> > >  	TRACE_DEVICE(dev);
+> > >  	TRACE_RESUME(0);
+> > >  
+> > > -	if (dev->power.syscore)
+> > > +	if (dev->power.syscore || dev->power.direct_complete)
+> > >  		goto Out;
+> > >  
+> > >  	if (!dev->power.is_noirq_suspended)
+> > > @@ -605,7 +605,7 @@ static int device_resume_early(struct de
+> > >  	TRACE_DEVICE(dev);
+> > >  	TRACE_RESUME(0);
+> > >  
+> > > -	if (dev->power.syscore)
+> > > +	if (dev->power.syscore || dev->power.direct_complete)
+> > >  		goto Out;
+> > >  
+> > >  	if (!dev->power.is_late_suspended)
+> > > @@ -732,7 +732,7 @@ static int device_resume(struct device *
+> > >  	TRACE_DEVICE(dev);
+> > >  	TRACE_RESUME(0);
+> > >  
+> > > -	if (dev->power.syscore)
+> > > +	if (dev->power.syscore || dev->power.direct_complete)
+> > >  		goto Complete;
+> > >  
+> > >  	dpm_wait(dev->parent, async);
+> > > @@ -1007,7 +1007,7 @@ static int __device_suspend_noirq(struct
+> > >  		goto Complete;
+> > >  	}
+> > >  
+> > > -	if (dev->power.syscore)
+> > > +	if (dev->power.syscore || dev->power.direct_complete)
+> > >  		goto Complete;
+> > >  
+> > >  	dpm_wait_for_children(dev, async);
+> > > @@ -1146,7 +1146,7 @@ static int __device_suspend_late(struct
+> > >  		goto Complete;
+> > >  	}
+> > >  
+> > > -	if (dev->power.syscore)
+> > > +	if (dev->power.syscore || dev->power.direct_complete)
+> > >  		goto Complete;
+> > >  
+> > >  	dpm_wait_for_children(dev, async);
+> > > @@ -1312,7 +1312,7 @@ static int __device_suspend(struct devic
+> > >  
+> > >  	dpm_wait_for_children(dev, async);
+> > >  
+> > > -	if (async_error || dev->power.syscore)
+> > > +	if (async_error || dev->power.syscore ||
+> > > dev->power.direct_complete) goto Complete;
+> > >  
+> > >  	dpm_watchdog_set(&wd, dev);
+> > > @@ -1365,10 +1365,19 @@ static int __device_suspend(struct devic
+> > >  
+> > >   End:
+> > >  	if (!error) {
+> > > +		struct device *parent = dev->parent;
+> > > +
+> > >  		dev->power.is_suspended = true;
+> > > -		if (dev->power.wakeup_path
+> > > -		    && dev->parent
+> > > && !dev->parent->power.ignore_children)
+> > > -			dev->parent->power.wakeup_path = true;
+> > > +		if (parent) {
+> > > +			spin_lock_irq(&parent->power.lock);
+> > > +
+> > > +			dev->parent->power.direct_complete =
+> > > false;
+> > should we respect ignore_children flag here? not all parent devices
+> > create children with proper .prepare() function. this allows parents
+> > override children.
+> > I am looking at USB, a USB device could have logical children such
+> > as ep_xx, they don't go through the same subsystem .prepare().
+> 
+> Well, I'm not sure about that.  Let me consider that for a while.
+OK. let me be more clear about the situation i see in USB. Correct me
+if I am wrong, a USB device will always has at least one endpoint/ep_00
+as a kid for control pipe, it is a logical device. So when
+device_prepare() is called, its call back is NULL which
+makes .direct_complete = 0. Since children device suspend is called
+before parents, the parents .direct_complete flag will always get
+cleared.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-3.15-rc6
+What i am trying to achieve here is to see if we avoid resuming
+built-in (hardwired connect_type) non-hub USB devices based on this new
+patchset. E.g. we don't want to resume/suspend USB camera every time in
+system suspend/resume cycle if they are already rpm suspended. We can
+save ~100ms resume time for the devices we have tested.
 
-to receive ACPI and power management fixes for v3.15-rc6
-with top-most commit 68c8829d0602d2a217f21b7c9dfa40ec21fea019
+> 
+> Alan, what do you think?
+> 
+> > 
+> > > +			if (dev->power.wakeup_path
+> > > +
+> > > && !dev->parent->power.ignore_children)
+> > > +				dev->parent->power.wakeup_path =
+> > > true; +
+> > > +			spin_unlock_irq(&parent->power.lock);
+> > > +		}
+> > >  	}
+> > >  
+> > >  	device_unlock(dev);
+> > > @@ -1470,7 +1479,7 @@ static int device_prepare(struct device
+> > >  {
+> > >  	int (*callback)(struct device *) = NULL;
+> > >  	char *info = NULL;
+> > > -	int error = 0;
+> > > +	int ret = 0;
+> > >  
+> > >  	if (dev->power.syscore)
+> > >  		return 0;
+> > > @@ -1518,17 +1527,19 @@ static int device_prepare(struct device
+> > >  		callback = dev->driver->pm->prepare;
+> > >  	}
+> > >  
+> > > -	if (callback) {
+> > > -		error = callback(dev);
+> > > -		suspend_report_result(callback, error);
+> > > -	}
+> > > +	if (callback)
+> > > +		ret = callback(dev);
+> > >  
+> > >  	device_unlock(dev);
+> > >  
+> > > -	if (error)
+> > > +	if (ret < 0) {
+> > > +		suspend_report_result(callback, ret);
+> > >  		pm_runtime_put(dev);
+> > > -
+> > > -	return error;
+> > > +		return ret;
+> > > +	}
+> > > +	dev->power.direct_complete = ret > 0 && state.event ==
+> > > PM_EVENT_SUSPEND
+> > > +					&&
+> > > pm_runtime_suspended(dev);
+> > > +	return 0;
+> > >  }
+> > >  
+> > >  /**
+> > > 
+> > > --
+> 
+> Rafael
+> 
 
-  Merge branch 'pm-cpufreq'
-
-on top of commit d6d211db37e75de2ddc3a4f979038c40df7cc79c
-
-  Linux 3.15-rc5
-
-Still fixing regressions (partly by reverting commits that broke
-things for people), fixing other stable-candidate bugs and adding
-some blacklist entries for ACPI video and _OSI.  Two ACPICA regression
-fixes (one recent and one for a 3.14 commit), a fix for an ACPI-related
-regression in TPM (introduced in 3.14), a revert of the ACPI AC
-driver conversion in 3.13 that went wrong for an unknown reason,
-two reverts of commits that attempted to remove an old user space
-interface in /proc and broke some utilities, in 3.13 too, a fix for
-a CPU hotplug bug in the ACPI processor driver (stable material),
-two (stable candidate) fixes for intel_pstate and a few new blacklist
-entries, mostly for systems that shipped with Windows 8.
-
-Specifics:
-
- - ACPICA fix for a stale pointer access introduced by a recent
-   commit in the XSDT validation code from Lv Zheng.
-
- - ACPICA fix for the default value of the command line switch
-   to favor 32-bit FADT addresses (in case there's a conflict
-   between a 64-bit and a 32-bit address).  The previous default
-   was that the 32-bit version would take precedence and we tried
-   to change it to the other way around and it didn't work.
-   From Lv Zheng.
-
- - A TPM commit related to ACPI _DSM in 3.14 caused the driver to
-   refuse to load if a specific _DSM was missing and that broke
-   resume from system suspend on Chromebooks that require the TPM
-   hardware to be restored to a working state during resume by the
-   OS.  Restore the old behavior to load the driver if the _DSM
-   in question is not present, but prevent it from using the
-   feature the _DSM is for.
-
- - ACPI AC driver conversion in 3.13 broke thermal management on
-   at least one machine and has to be reverted.  From Guenter Roeck.
-
- - Two reverts of 3.13 commits that attempted to remove the old ACPI
-   battery interface in /proc, but turned out to break some utilities
-   still using that interface.  From Lan Tianyu.
-
- - ACPI processor driver fix to prevent acpi_processor_add() from
-   modifying the CPU device's .offline field which leads to breakage
-   if the initial online of the CPU fails.  From Igor Mammedov.
-
- - Two intel_pstate fixes, one to take a BayTrail documentation update
-   into account and one to avoid forcing the maximum P-state on init
-   which causes CPU PM trouble on systems with P-states coordination
-   when one of the CPU cores is initialized after an offline/online
-   cycle triggered by user space.  Both stable candidates, from
-   Dirk Brandewie.
-
- - Fix for the ACPI video DMI blacklist entry for Dell Inspiron 7520
-   from Aaron Lu.
-
- - Three new ACPI video blacklist entries for machines shipping with
-   Win8 that need to use native backlight so that it can be controlled
-   in a usual way (which doesn't work otherwise due bugs in the ACPI
-   tables) from Hans de Goede.
-
- - Two ACPI _OSI quirks for systems that need them to work correctly
-   with Linux from Edward Lin and Hans de Goede.
-
-Thanks!
-
-
----------------
-
-Aaron Lu (1):
-      ACPI / video: correct DMI tag for Dell Inspiron 7520
-
-Dirk Brandewie (2):
-      intel_pstate: Set turbo VID for BayTrail
-      intel_pstate: remove setting P state to MAX on init
-
-Edward Lin (1):
-      ACPI: blacklist win8 OSI for Dell Inspiron 7737
-
-Guenter Roeck (1):
-      ACPI: Revert "ACPI / AC: convert ACPI ac driver to platform bus"
-
-Hans de Goede (2):
-      ACPI / video: Add use_native_backlight quirks for more systems
-      ACPI / blacklist: Add dmi_enable_osi_linux quirk for Asus EEE PC 1015PX
-
-Igor Mammedov (1):
-      ACPI / processor: do not mark present at boot but not onlined
-CPU as onlined
-
-Lan Tianyu (2):
-      ACPI: Revert "ACPI: Remove CONFIG_ACPI_PROCFS_POWER and cm_sbsc.c"
-      ACPI: Revert "ACPI / Battery: Remove battery's proc directory"
-
-Lv Zheng (2):
-      ACPICA: Tables: Fix invalid pointer accesses in
-acpi_tb_parse_root_table().
-      ACPICA: Tables: Restore old behavor to favor 32-bit FADT addresses.
-
-Rafael J. Wysocki (2):
-      ACPI / proc: Do not say when /proc interfaces will be deleted in Kconfig
-      ACPI / TPM: Fix resume regression on Chromebooks
-
----------------
-
- drivers/acpi/Kconfig           |  17 +++
- drivers/acpi/Makefile          |   1 +
- drivers/acpi/ac.c              | 117 ++++++++-------
- drivers/acpi/acpi_platform.c   |   1 -
- drivers/acpi/acpi_processor.c  |   1 -
- drivers/acpi/acpica/acglobal.h |   4 +-
- drivers/acpi/acpica/tbutils.c  |   7 +-
- drivers/acpi/battery.c         | 329 ++++++++++++++++++++++++++++++++++++++++-
- drivers/acpi/blacklist.c       |  21 +++
- drivers/acpi/cm_sbs.c          | 105 +++++++++++++
- drivers/acpi/video.c           |  22 ++-
- drivers/char/tpm/tpm_ppi.c     |   8 +-
- drivers/cpufreq/intel_pstate.c |  34 ++---
- 13 files changed, 575 insertions(+), 92 deletions(-)
+[Jacob Pan]
