@@ -1,76 +1,55 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Format of patches (was: [PATCH 1/2] speedstep-smi: enable interrupts
- when waiting)
-Date: Thu, 15 May 2014 06:37:26 -0400 (EDT)
-Message-ID: <alpine.LRH.2.02.1405150614100.19101@file01.intranet.prod.int.rdu2.redhat.com>
-References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com> <CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Format of patches (was: [PATCH 1/2] speedstep-smi: enable
+ interrupts when waiting)
+Date: Thu, 15 May 2014 16:15:32 +0530
+Message-ID: <CAKohponwxi96buPx=vYgY1jZhSUanOZ2G7g2CjoapE=stzJcXw@mail.gmail.com>
+References: <alpine.LRH.2.02.1405141012040.11670@file01.intranet.prod.int.rdu2.redhat.com>
+	<CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
+	<alpine.LRH.2.02.1405150614100.19101@file01.intranet.prod.int.rdu2.redhat.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=h8cNbb2VbWzpDUPQDMK8QAs_sV=-SQyOaJWWFw4qKvA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LRH.2.02.1405150614100.19101@file01.intranet.prod.int.rdu2.redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 15 May 2014 16:07, Mikulas Patocka <mpatocka@redhat.com> wrote:
+> On Thu, 15 May 2014, Viresh Kumar wrote:
+>> On 14 May 2014 19:54, Mikulas Patocka <mpatocka@redhat.com> wrote:
+>> > Hi Viresh
+>> >
+>> > Some times ago, I sent these two cpufreq patches to fix frequency
+>> > transition problem on speedstep-smi, but you didn't put them to the
+>> > upstream kernel. I am resending the patches. If you would like a different
+>> > solution to this problem, please explain it.
+>>
+>> Probably these are just missed by Rafael. The patches are fine but the
+>> above paragraph you wrote would get into kernel logs and must have
+>> been placed below the three dash lines: "---"
+>
+> I used "---" in the past, but some people complained that their script
+> picks the text above "---" and ignores the text below "---" - thus, it
+> does exactly the opposite of what it should do.
+
+Have you added an extra line with --- ? Probably yes.
+I haven't asked you to add another line, but move the part you don't want
+to be commited below --- already present in patch..
+
+Like:
+
+> ---
+
+Blurb here :)
+
+>  drivers/cpufreq/speedstep-lib.c |    3 +++
+>  drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
+>  2 files changed, 15 insertions(+)
+>
 
 
-On Thu, 15 May 2014, Viresh Kumar wrote:
+> I don't know what kind of delimiter should I use. Suppose that I want to
+> send something like this:
 
-> On 14 May 2014 19:54, Mikulas Patocka <mpatocka@redhat.com> wrote:
-> > Hi Viresh
-> >
-> > Some times ago, I sent these two cpufreq patches to fix frequency
-> > transition problem on speedstep-smi, but you didn't put them to the
-> > upstream kernel. I am resending the patches. If you would like a different
-> > solution to this problem, please explain it.
-> 
-> Probably these are just missed by Rafael. The patches are fine but the
-> above paragraph you wrote would get into kernel logs and must have
-> been placed below the three dash lines: "---"
-
-I used "---" in the past, but some people complained that their script 
-picks the text above "---" and ignores the text below "---" - thus, it 
-does exactly the opposite of what it should do.
-
-I don't know what kind of delimiter should I use. Suppose that I want to 
-send something like this:
-
-
-
-
-Hi, here I'm sending some cool stuff.
-
-***
-
-The message that goes to git.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
----
- drivers/cpufreq/speedstep-lib.c |    3 +++
- drivers/cpufreq/speedstep-smi.c |   12 ++++++++++++
- 2 files changed, 15 insertions(+)
-
-Index: linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c
-===================================================================
---- linux-3.14-rc1.orig/drivers/cpufreq/speedstep-smi.c 2014-02-03 
-18:56:44.000000000 +0100
-+++ linux-3.14-rc1/drivers/cpufreq/speedstep-smi.c      2014-02-03 
-19:06:21.000000000 +0100
-... the patch.
-
-
-
-
-Now - I'm asking - what kind of barrier should I use between "Hi, here I'm 
-sending some cool stuff" and "The message that goes to git"? I don't 
-really know. The file Documentation/SubmittingPatches doesn't explain it, 
-it says that the message for git should go at the top of the email. If I 
-want the person who receives the patch to read "Hi, here I'm sending some 
-cool stuff" first, I need to put it at the beginning of the email.
-
-Maybe we should define a new barrier for this purpose, put it to 
-Documentation/SubmittingPatches and update the scripts?
-
-Mikulas
+Will go through below mail of yours once we are clear on above..
