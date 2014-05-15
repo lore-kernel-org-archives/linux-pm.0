@@ -1,78 +1,94 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming
- runtime-suspended devices unnecessarily
-Date: Thu, 15 May 2014 11:58:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1405151151560.910-100000@iolanthe.rowland.org>
-References: <20140515000320.3c1c9256@jacob-desktop>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 05/10] thermal: exynos: remove redundant pdata checks from
+ exynos_tmu_initialize()
+Date: Thu, 15 May 2014 18:24:14 +0200
+Message-ID: <2098888.ybkVo6Z2Xi@amdc1032>
+References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
+ <1399288539-1793-6-git-send-email-b.zolnierkie@samsung.com>
+ <20140515144739.GA27690@developer>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140515000320.3c1c9256@jacob-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20140515144739.GA27690@developer>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 15 May 2014, Jacob Pan wrote:
+On Thursday, May 15, 2014 10:47:40 AM Eduardo Valentin wrote:
+> Hello Bartlomiej,
 
-> On Thu, 15 May 2014 10:29:42 -0400 (EDT)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
+Hi,
+
+> On Mon, May 05, 2014 at 01:15:34PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > Remove runtime checks for pdata sanity from exynos_tmu_initialize().
+> > The current values hardcoded in pdata will never trigger the checks
+> > and for the new code potential mistakes should be caught during
+> > development/review phases.
+> > 
+> > There should be no functional changes caused by this patch.
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > ---
+> >  drivers/thermal/samsung/exynos_thermal_common.h |  1 -
+> >  drivers/thermal/samsung/exynos_tmu.c            | 13 -------------
+> >  2 files changed, 14 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
+> > index 3eb2ed9..cd44719 100644
+> > --- a/drivers/thermal/samsung/exynos_thermal_common.h
+> > +++ b/drivers/thermal/samsung/exynos_thermal_common.h
+> > @@ -27,7 +27,6 @@
+> >  #define SENSOR_NAME_LEN	16
+> >  #define MAX_TRIP_COUNT	8
+> >  #define MAX_COOLING_DEVICE 4
+> > -#define MAX_THRESHOLD_LEVS 5
+> >  
+> >  #define ACTIVE_INTERVAL 500
+> >  #define IDLE_INTERVAL 10000
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> > index 903566f..789d745 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > @@ -158,23 +158,10 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+> >  	    data->temp_error > pdata->max_efuse_value)
+> >  		data->temp_error = pdata->efuse_value & EXYNOS_TMU_TEMP_MASK;
+> >  
+> > -	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
+> > -		dev_err(&pdev->dev, "Invalid max trigger level\n");
+> > -		ret = -EINVAL;
+> > -		goto out;
+> > -	}
+> > -
+> >  	for (i = 0; i < pdata->max_trigger_level; i++) {
+> >  		if (!pdata->trigger_levels[i])
+> >  			continue;
+> >  
+> > -		if ((pdata->trigger_type[i] == HW_TRIP) &&
+> > -		(!pdata->trigger_levels[pdata->max_trigger_level - 1])) {
+> > -			dev_err(&pdev->dev, "Invalid hw trigger level\n");
+> > -			ret = -EINVAL;
+> > -			goto out;
+> > -		}
+> > -
 > 
-> > On Thu, 15 May 2014, Jacob Pan wrote:
-> > 
-> > > > > should we respect ignore_children flag here? not all parent
-> > > > > devices create children with proper .prepare() function. this
-> > > > > allows parents override children.
-> > > > > I am looking at USB, a USB device could have logical children
-> > > > > such as ep_xx, they don't go through the same
-> > > > > subsystem .prepare().
-> > > > 
-> > > > Well, I'm not sure about that.  Let me consider that for a while.
-> > > OK. let me be more clear about the situation i see in USB. Correct
-> > > me if I am wrong, a USB device will always has at least one
-> > > endpoint/ep_00 as a kid for control pipe, it is a logical device.
-> > > So when device_prepare() is called, its call back is NULL which
-> > > makes .direct_complete = 0. Since children device suspend is called
-> > > before parents, the parents .direct_complete flag will always get
-> > > cleared.
-> > > 
-> > > What i am trying to achieve here is to see if we avoid resuming
-> > > built-in (hardwired connect_type) non-hub USB devices based on this
-> > > new patchset. E.g. we don't want to resume/suspend USB camera every
-> > > time in system suspend/resume cycle if they are already rpm
-> > > suspended. We can save ~100ms resume time for the devices we have
-> > > tested.
-> > 
-> > This is a good point, but I don't think it is at all related to 
-> > ignore_children.
-> > 
-> > Instead, it seems that the best way to solve it would be to add a 
-> > ->prepare() handler for usb_ep_device_type that would always turn 
-> > on direct_complete.
-> > 
-> yeah, that would solve the problem with EP device type. But what about
-> other subdevices. e.g. for USB camera, uvcvideo device? We can add
-> .prepare(return 1;) for each level but would it be better to have a
-> flag similar to ignore_children if not ignore_children itself.
+> Does it mean no new pdata are going to be written? i.e., no new soc is
+> going to be supported by this driver that needs proper pdata checking?
 
-Something like that could always be added.
+This is not a proper checking.  The checks in question are done at runtime
+in a production code for data that is hardcoded inside driver during
+development time and later it doesn't change.  Such data should be verified
+during development and review time (i.e. by a script parsing relevant data
+from exynos_tmu_data.c, one can also argue that verification to be done is
+so simple that the review by a maintainer should be enough).
 
-> Actually, I don't understand why this is not related to
-> ignore_children. Could you explain?
+> >  		/* Count trigger levels except the HW trip*/
+> >  		if (!(pdata->trigger_type[i] == HW_TRIP))
+> >  			trigger_levs++;
 
-It's hard to explain why two things are totally separate.  Much better 
-for you to describe why you think they _are_ related, so that I can 
-explain how you are wrong.
-
-> If the parent knows it can ignore children and already rpm suspended,
-> why do we still ask children?
-
-The "ignore_children" flag doesn't mean that the parent can ignore its 
-children.  It means that the PM core is allowed to do a runtime suspend 
-of the parent while leaving the children at full power.
-
-In particular, it doesn't mean that the children's ->suspend() callback 
-will work correctly if it is called while the parent is runtime 
-suspended.
-
-Alan Stern
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
