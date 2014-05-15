@@ -1,35 +1,55 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Thu, 15 May 2014 14:16:56 +0530
-Message-ID: <CANuQgHEECW3c2C5+h7vUp5RuWJin3PPaos_BY1VoqzR=jTwGFQ@mail.gmail.com>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
-	<CAGo_u6qTZ-yq26+K5nHut92d=-9nrCHKDNK9EMLK5kGMQc+dOw@mail.gmail.com>
-	<CANuQgHGehqDD8-SKTfEKMEZmT5KwofFL8bhYqge0uNm6kpPgUQ@mail.gmail.com>
-	<CAKohponfdoPG7H4h-5s+V7CwB_SgnyqqUm9aa6G-K_cX3DOcfA@mail.gmail.com>
-	<53737D34.5040307@ti.com>
-	<CANuQgHG23F7zGxbNJVzGAeCsNNPU_CwSu5veK2-CCjnc1RE-UQ@mail.gmail.com>
-	<CAKohpo=O_=PVpFCnTWA=0R6deMFHgWx8dxOecro1dMwGVwxong@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: rcar: Use pm_runtime_put() i.s.o.
+ pm_runtime_put_sync()
+Date: Thu, 15 May 2014 16:48:05 +0800
+Message-ID: <1400143685.2273.31.camel@rzhang1-toshiba>
+References: <1397494975-22489-1-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=O_=PVpFCnTWA=0R6deMFHgWx8dxOecro1dMwGVwxong@mail.gmail.com>
+In-Reply-To: <1397494975-22489-1-git-send-email-geert@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-On 15 May 2014 13:57, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 15 May 2014 13:55, Chander Kashyap <chander.kashyap@linaro.org> wrote:
->> Then in that case the caller must take care for two type of errors:
->> -EEXIST and -ENOMEM
->
-> Actually, success: (0 or -EEXIST), failure: Anything else.
+On =E4=B8=80, 2014-04-14 at 19:02 +0200, Geert Uytterhoeven wrote:
+> From: Geert Uytterhoeven <geert+renesas@glider.be>
+>=20
+> There's no need for this to be synchronous
+>=20
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Yes exactly. All users of this API need to be modified to handle
-EEXIST as success.
+applied.
 
-To avoid this returning 0 was suggested,
-
--- 
-with warm regards,
-Chander Kashyap
+thanks,
+rui
+> ---
+>  drivers/thermal/rcar_thermal.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_th=
+ermal.c
+> index 5a37940b02c9..a8ed0e0265ae 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -470,7 +470,7 @@ error_unregister:
+>  			rcar_thermal_irq_disable(priv);
+>  	}
+> =20
+> -	pm_runtime_put_sync(dev);
+> +	pm_runtime_put(dev);
+>  	pm_runtime_disable(dev);
+> =20
+>  	return ret;
+> @@ -488,7 +488,7 @@ static int rcar_thermal_remove(struct platform_de=
+vice *pdev)
+>  			rcar_thermal_irq_disable(priv);
+>  	}
+> =20
+> -	pm_runtime_put_sync(dev);
+> +	pm_runtime_put(dev);
+>  	pm_runtime_disable(dev);
+> =20
+>  	return 0;
