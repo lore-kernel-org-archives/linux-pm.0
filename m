@@ -1,51 +1,28 @@
-From: Inderpal Singh <inderpal.s@samsung.com>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Thu, 15 May 2014 11:40:57 +0530
-Message-ID: <CAOqmu82rYWomE6n=vEFk97tiS0Da4mZSFdvO5zVbApRAoS2LNA@mail.gmail.com>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
-	<20140514150255.GA8330@amd.pavel.ucw.cz>
-	<CAKohpo=MFxUHL22TxXPk4B=JX9AD3RGdgXPPGK9sD3GD6AEV+g@mail.gmail.com>
-	<CAOqmu80j2q6hQLThVt60QkjqcZTXwJ6ddwDLvqBEW1ejrVh_hw@mail.gmail.com>
-	<CAKohponWM+RxgK-50BXH-gk3-bX2no7NojT5-6ZRWJAtSizO7A@mail.gmail.com>
-	<CAOqmu81C7A-bMQY3p5fsvk-4Y=S1yGZHw_Q=RbxCKxwR9fFz-w@mail.gmail.com>
-	<CAKohpon+YbHx_P0oxkT5vSKVn30aZBddykgLLfyg5N3gPEXe6w@mail.gmail.com>
-	<CAOqmu81sUqCTw_x2HZAjfQhzdH6aRMOPAy+i_HeScp2q8zTzuQ@mail.gmail.com>
-	<CAKohponTH9X6AUX_0TJbRw0bUw5WQaE6oeDpGW9avTLifLGBCQ@mail.gmail.com>
-	<CAOqmu83ptKYHECdtLgEJLxbWa-VjxjKfw4dQo2gqQJP4doS_FQ@mail.gmail.com>
-	<CAKohpo=mYH1f69B+dHwQR71Qmpi7a07rWhQ=up-9zriY9hOFng@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 0/5] Frequency resolution in CCF vs. cpufreq
+Date: Thu, 15 May 2014 11:42:09 +0530
+Message-ID: <CAKohpokm3WVnu_DggKc4PbhVAKNexrJ4051F-gnVFFTDOyz9ew@mail.gmail.com>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f170.google.com ([209.85.223.170]:51340 "EHLO
-	mail-ie0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbaEOGK6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 May 2014 02:10:58 -0400
-In-Reply-To: <CAKohpo=mYH1f69B+dHwQR71Qmpi7a07rWhQ=up-9zriY9hOFng@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, "[Chander Kashyap" <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>
 
-On Thu, May 15, 2014 at 11:31 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 15 May 2014 11:16, Inderpal Singh <inderpal.s@samsung.com> wrote:
->> I think I did not make myself clear.
+On 15 May 2014 04:00, Soren Brinkmann <soren.brinkmann@xilinx.com> wrote:
+> I have one or two problems with cpufreq and the CCF, which are caused by
+> rounding/different frequency resolutions.
 >
-> Probably I was the one who got confused :)
->
->> Devfreq will have its own opp table associated with its own device. It
->> does not uses the opp table of cpus.
->> Hence there may be need to free the table if driver (at least devfreq)
->> getting un-registered.
->
-> We may have an unregister routine routine, I am not arguing about that.
-> But we don't need to call that for CPU's opp, that's it.. For devices it might
-> make sense to free memory.
+> cpufreq works with kHz, while the CCF uses Hz. On Zynq our default frequency is
+> 666666666 Hz which the CCF, due to rounding, reports as 666666660. And for
+> cpufreq, which simply divides values it obtains through clk_round_rate() by
+> 1000, 666666.
+> Since passing 666666 to clk_round_rate() does not result in 666666660
+> (clk_round_rate() always rounds down!), we chose to put 666667 in the OPP. This
+> causes issue 1: cpufreq stats are broken.
 
-Yes the provision should be there in the OPP framework and let the
-individual drivers decide whether to invoke or not.
-
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I know it might a big exercise, but wouldn't it be worth to make cpufreq start
+using frequencies in Hz ?
