@@ -1,24 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/3] cpufreq: add support for intermediate (stable)
-Date: Fri, 16 May 2014 15:40:43 +0530
-Message-ID: <CAKohpokUP6rnV=UyES1GY0yqwiUndBrJFtw7fwJScsRigbE7tA@mail.gmail.com>
-References: <cover.1400230695.git.viresh.kumar@linaro.org>
-	<CAJuA9aitMu_=OLT+=6pX=us03HVfrPZ1zCYFXfNg58W+-nzm3g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJuA9aitMu_=OLT+=6pX=us03HVfrPZ1zCYFXfNg58W+-nzm3g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Stephen Warren <swarren@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Thomas Abraham <thomas.abraham@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arvind Chauhan <arvind.chauhan@arm.com>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [PATCH] PM / OPP: fix incorrect OPP count handling in of_init_opp_table
+Date: Fri, 16 May 2014 16:21:17 +0530
+Message-ID: <1400237477-24831-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:48839 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756904AbaEPKv4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 06:51:56 -0400
+Received: by mail-pa0-f47.google.com with SMTP id lf10so2415062pab.34
+        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 03:51:55 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: nm@ti.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-On 16 May 2014 15:39, Thomas Abraham <ta.omasab@gmail.com> wrote:
-> In the given example above, the reworked implementation of cpufreq for
-> exynos maintains the transition frequency at 800MHz / 4 = 200MHz by
-> using a clock divider. So the transition frequency is ensured to be
-> less than or equal to the pre-transition cpu clock frequency.
+In of_init_opp_table function, if a failure to add an OPP is
+detected, the count of OPPs, yet to be added is not updated.
+Fix this by decrementing this count on failure as well.
 
-Thanks for the information. But I think this patchset is still required for
-many platforms. Anyway these extra notifications must be sent for exynos
-as well.
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+---
+ drivers/base/power/opp.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index d9e376a..faae9cf 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -643,11 +643,9 @@ int of_init_opp_table(struct device *dev)
+ 		unsigned long freq = be32_to_cpup(val++) * 1000;
+ 		unsigned long volt = be32_to_cpup(val++);
+ 
+-		if (dev_pm_opp_add(dev, freq, volt)) {
++		if (dev_pm_opp_add(dev, freq, volt))
+ 			dev_warn(dev, "%s: Failed to add OPP %ld\n",
+ 				 __func__, freq);
+-			continue;
+-		}
+ 		nr -= 2;
+ 	}
+ 
+-- 
+1.7.9.5
+
