@@ -1,43 +1,54 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH v6 2/6] arm: exynos: add generic function to calculate cpu number
-Date: Fri, 16 May 2014 13:33:54 +0530
-Message-ID: <1400227438-27155-3-git-send-email-chander.kashyap@linaro.org>
-References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com>
- <1400227438-27155-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1400227438-27155-1-git-send-email-chander.kashyap@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [RFC Patch Part1 V1 08/30] x86, ACPI, irq: fix possible eror in GSI to IRQ mapping for legacy IRQ
+Date: Fri, 16 May 2014 16:05:28 +0800
+Message-ID: <1400227550-5935-9-git-send-email-jiang.liu@linux.intel.com>
+References: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, sfi-devel@simplefirmware.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The address of cpu power registers in pmu is based on cpu number
-offsets. This function calculate the same. This is essentially
-required in case of multi-cluster SoC's e.g Exynos5420.
+A default identity mapping between GSI and IRQ is built for legacy IRQs.
+So when overriding the default identity mapping for legacy IRQs,
+we should also invalidate isa_irq_to_gsi[gsi] when setting
+isa_irq_to_gsi[irq] = gsi.  Otherwise there may be two entries with the
+same GSI in the isa_irq_to_gsi array, and acpi_isa_irq_to_gsi() may give
+wrong result.
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/arm/mach-exynos/regs-pmu.h |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/x86/kernel/acpi/boot.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-exynos/regs-pmu.h b/arch/arm/mach-exynos/regs-pmu.h
-index 4179f6a..485aefd 100644
---- a/arch/arm/mach-exynos/regs-pmu.h
-+++ b/arch/arm/mach-exynos/regs-pmu.h
-@@ -325,4 +325,13 @@
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 8b8ff786af12..dccf9e88db30 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -508,7 +508,8 @@ EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
  
- #define EXYNOS5420_SWRESET_KFC_SEL				0x3
+ int acpi_isa_irq_to_gsi(unsigned isa_irq, u32 *gsi)
+ {
+-	if (isa_irq < NR_IRQS_LEGACY) {
++	if (isa_irq < NR_IRQS_LEGACY &&
++	    isa_irq_to_gsi[isa_irq] != ACPI_INVALID_GSI) {
+ 		*gsi = isa_irq_to_gsi[isa_irq];
+ 		return 0;
+ 	}
+@@ -913,6 +914,13 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
  
-+#include <asm/cputype.h>
-+#define MAX_CPUS_IN_CLUSTER	4
-+
-+static inline unsigned int exynos_pmu_cpunr(unsigned int mpidr)
-+{
-+	return ((MPIDR_AFFINITY_LEVEL(mpidr, 1) * MAX_CPUS_IN_CLUSTER)
-+		 + MPIDR_AFFINITY_LEVEL(mpidr, 0));
-+}
-+
- #endif /* __ASM_ARCH_REGS_PMU_H */
+ 	mp_save_irq(&mp_irq);
+ 
++	/*
++	 * Reset default identity mapping if gsi is also an legacy IRQ,
++	 * otherwise there will be more than one entry with the same GSI
++	 * and acpi_isa_irq_to_gsi() may give wrong result.
++	 */
++	if (gsi < NR_IRQS_LEGACY && isa_irq_to_gsi[gsi] == gsi)
++		isa_irq_to_gsi[gsi] = ACPI_INVALID_GSI;
+ 	isa_irq_to_gsi[bus_irq] = gsi;
+ }
+ 
 -- 
-1.7.9.5
+1.7.10.4
