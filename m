@@ -1,55 +1,94 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH V2 0/3] cpufreq: add support for intermediate (stable)
-Date: Fri, 16 May 2014 08:38:24 -0700
-Message-ID: <CAD=FV=VB=EOQNvfULVN=JcbBwg80PM-P7=0VAnaeMWfy9etf9g@mail.gmail.com>
-References: <cover.1400230695.git.viresh.kumar@linaro.org>
-	<CAJuA9aitMu_=OLT+=6pX=us03HVfrPZ1zCYFXfNg58W+-nzm3g@mail.gmail.com>
-	<CAKohpokUP6rnV=UyES1GY0yqwiUndBrJFtw7fwJScsRigbE7tA@mail.gmail.com>
-	<CAD=FV=XHy1jZ6EL8M+KByA1fhZkNc2Afvn2+QKaMe=0wyEo7Pg@mail.gmail.com>
-	<CAKohpo=VKsAdSJLL+cvGnBMFLj8JDecd2ZRKfQtEc9ZmqkC1eg@mail.gmail.com>
+From: Inderpal Singh <inderpal.s@samsung.com>
+Subject: Re: [PATCH] PM / OPP: Implement free_opp_table function
+Date: Fri, 16 May 2014 22:38:50 +0530
+Message-ID: <CAOqmu82GQ2qsm0c7fq8n5ovR7+4j5t_Y3=03S=nWtR+bH3yhdg@mail.gmail.com>
+References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+	<CAKohponY6Nn5kYGyps2SLm5uBbH1JWuJBpzzVD=QOc=oM7crAg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f169.google.com ([209.85.128.169]:53509 "EHLO
-	mail-ve0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbaEPPiZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 11:38:25 -0400
-Received: by mail-ve0-f169.google.com with SMTP id jx11so3380866veb.0
-        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 08:38:24 -0700 (PDT)
-In-Reply-To: <CAKohpo=VKsAdSJLL+cvGnBMFLj8JDecd2ZRKfQtEc9ZmqkC1eg@mail.gmail.com>
+Received: from mail-ie0-f182.google.com ([209.85.223.182]:46336 "EHLO
+	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754346AbaEPRIv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 13:08:51 -0400
+In-Reply-To: <CAKohponY6Nn5kYGyps2SLm5uBbH1JWuJBpzzVD=QOc=oM7crAg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thomas Abraham <ta.omasab@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Stephen Warren <swarren@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Abraham <thomas.abraham@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arvind Chauhan <arvind.chauhan@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
 
-Viresh,
+Hi Viresh,
 
-On Fri, May 16, 2014 at 8:26 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 16 May 2014 20:50, Doug Anderson <dianders@chromium.org> wrote:
->> Right, so I think on exynos no functionality will be broken once
->> Thomas's cpufreq-cpu0 change lands (udelay will only run long, never
->> short).  ...but from the purist standpoint we will be transitioning
->> from 1.6 GHz => 800 MHz => 1.7 GHz without any notification about the
->> 800 MHz.   You could imagine someone registering for cpufreq
->> notifications that would care about the 800MHz transition.
+Thanks for the review.
+
+On Fri, May 16, 2014 at 3:36 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 16 May 2014 14:39, Inderpal Singh <inderpal.s@samsung.com> wrote:
+>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>> +void dev_pm_opp_free_opp_table(struct device *dev)
+>> +{
+>> +       struct device_opp *dev_opp = NULL;
+>> +       struct dev_pm_opp *opp;
+>> +
+>> +       /* Hold our list modification lock here */
+>> +       mutex_lock(&dev_opp_list_lock);
+>> +
+>> +       /* Check for existing list for 'dev' */
+>> +       dev_opp = find_device_opp(dev);
+>> +       if (IS_ERR(dev_opp)) {
+>> +               mutex_unlock(&dev_opp_list_lock);
+>> +               return;
+>> +       }
+>> +
+>> +       while (!list_empty(&dev_opp->opp_list)) {
+>> +               opp = list_entry_rcu(dev_opp->opp_list.next,
+>> +                                       struct dev_pm_opp, node);
+>
+> list_for_each_entry_rcu ?
+>
+
+list_for_each_entry_rcu can not be used as opp is being deleted in the loop.
+
+Thanks,
+Inder
+
+>> +               list_del_rcu(&opp->node);
+>> +               kfree_rcu(opp, head);
+>> +       }
+>> +
+>> +       list_del_rcu(&dev_opp->node);
+>> +       mutex_unlock(&dev_opp_list_lock);
+>> +       synchronize_rcu();
+>> +       kfree(dev_opp);
+>> +}
+>> +EXPORT_SYMBOL_GPL(dev_pm_opp_free_opp_table);
+>>  #endif
+>> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+>> index 0330217..3c29620 100644
+>> --- a/include/linux/pm_opp.h
+>> +++ b/include/linux/pm_opp.h
+>> @@ -50,6 +50,8 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+>>  int dev_pm_opp_disable(struct device *dev, unsigned long freq);
 >>
->> ...so it seems like we could wait for Thomas's patches to land as-is
->> (since they make things better) and then atop that see about adding
->> support for intermediate frequencies to cpufreq-cpu0.
+>>  struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
+>> +
+>> +void dev_pm_opp_free_opp_table(struct device *dev);
+>>  #else
+>>  static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+>>  {
+>> @@ -105,6 +107,10 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
+>>  {
+>>         return ERR_PTR(-EINVAL);
+>>  }
+>> +
+>> +void dev_pm_opp_free_opp_table(struct device *dev)
+>> +{
+>> +}
+>>  #endif         /* CONFIG_PM_OPP */
+>>
+>>  #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
 >
-> Hmm, don't know. I think these patches aren't aimed at solving exynos's
-> problem but rather a general solution which must have already been there.
->
-> If some platform can work without it then its fine, but otherwise they should
-> use it, even if udelay does work for them..
->
-> So, I would propose to go ahead with these patches in linux-next and lets
-> see who all would use it.
-
-Ah.  I wasn't suggesting to wait on your patches.  I think it's fine
-to get your patches landed and to get Thomas's patches landed (without
-actually intermediate frequencies).  ...and then both sets have landed
-then we can modify cpufreq-cpu0 / exynos to actually use the
-intermediate freq.
-
--Doug
+> Otherwise looks fine.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
