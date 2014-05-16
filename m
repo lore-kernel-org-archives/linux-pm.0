@@ -1,60 +1,54 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12
- for AFTR mode code
-Date: Fri, 16 May 2014 11:03:11 +0200
-Message-ID: <5375D44F.7000505@linaro.org>
-References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com> <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/3] cpufreq: add support for intermediate (stable)
+Date: Fri, 16 May 2014 14:33:33 +0530
+Message-ID: <cover.1400230695.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, nicolas.pitre@linaro.org, swarren@wwwdotorg.org, dianders@chromium.org, linux@arm.linux.org.uk, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/05/2014 12:57 PM, Bartlomiej Zolnierkiewicz wrote:
-> Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
-> mode code.  Without this setup AFTR mode doesn't show any benefit
-> over WFI one.  When this setup is applied AFTR mode reduces power
-> consumption by ~12% (as measured on Trats2 board).
->
-> This change is a preparation for adding secure firmware support to
-> EXYNOS cpuidle driver.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->   arch/arm/mach-exynos/pm.c | 4 ++++
->   1 file changed, 4 insertions(+)
->
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index 18f6bf8..3922968 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -391,6 +391,10 @@ static int exynos_cpu_pm_notifier(struct notifie=
-r_block *self,
->   	case CPU_PM_ENTER:
->   		if (cpu =3D=3D 0) {
->   			exynos_pm_central_suspend();
-> +			if (soc_is_exynos4212() || soc_is_exynos4412())
-> +				__raw_writel(S5P_USE_STANDBY_WFI0 |
-> +					     S5P_USE_STANDBY_WFE0,
-> +					     S5P_CENTRAL_SEQ_OPTION);
+Douglas Anderson, recently pointed out an interesting problem due to which
+udelay() was expiring earlier than it should.
 
-Why not put this code in the exynos_enter_aftr() ?
+While transitioning between frequencies few platforms may temporarily switch to
+a stable frequency, waiting for the main PLL to stabilize.
 
->   			exynos_cpu_save_register();
->   		}
->   		break;
+For example: When we transition between very low frequencies on exynos, like
+between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
+No CPUFREQ notification is sent for that. That means there's a period of time
+when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
+and 300MHz. And so udelay behaves badly.
 
+To get this fixed in a generic way, lets introduce another set of callbacks
+get_intermediate() and target_intermediate(), only for drivers with
+target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
 
+get_intermediate should return a stable intermediate frequency platform wants to
+switch to, and target_intermediate() should set CPU to to that frequency, before
+jumping to the frequency corresponding to 'index'. Core will take care of
+sending notifications and driver doesn't have to handle them in
+target_intermediate() or target_index().
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+This patchset also update Tegra to use this new infrastructure.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+NOTE: Once set to intermediate frequency, driver isn't expected to fail for the
+following ->target_index() call, if it fails core will issue a WARN().
+
+@Stephen: Can you please test this? I haven't as I didn't had a board. :)
+
+V1-V2: Almost changed completely, V1 was here: https://lkml.org/lkml/2014/5/15/40
+
+Viresh Kumar (3):
+  cpufreq: handle calls to ->target_index() in separate routine
+  cpufreq: add support for intermediate (stable) frequencies
+  cpufreq: Tegra: implement intermediate frequency callbacks
+
+ Documentation/cpu-freq/cpu-drivers.txt | 19 +++++++-
+ drivers/cpufreq/cpufreq.c              | 82 ++++++++++++++++++++++++----------
+ drivers/cpufreq/tegra-cpufreq.c        | 81 ++++++++++++++++-----------------
+ include/linux/cpufreq.h                | 15 +++++++
+ 4 files changed, 128 insertions(+), 69 deletions(-)
+
+-- 
+2.0.0.rc2
