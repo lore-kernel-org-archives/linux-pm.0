@@ -1,81 +1,66 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: Re: [RESEND][PATCH] cpuidle: governor: menu: move repeated correction
- factor check to init
-Date: Fri, 16 May 2014 13:46:17 +0530
-Message-ID: <CANuQgHGLgrbYME7Y8zJQ6ACt7ByviZJMMEk+RbhqwXvnsm+8_g@mail.gmail.com>
-References: <CANuQgHFdYhTc8YZ2MbQv0r_CsJGDLwHOqy9NuVDEfVUOTsbRpA@mail.gmail.com>
-	<1398170284-7551-1-git-send-email-chander.kashyap@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [RFC Patch Part1 V1 07/30] x86, ACPI, irq: enhance error handling in function acpi_register_gsi()
+Date: Fri, 16 May 2014 16:05:27 +0800
+Message-ID: <1400227550-5935-8-git-send-email-jiang.liu@linux.intel.com>
+References: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:47213 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932161AbaEPIQS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 04:16:18 -0400
-Received: by mail-ob0-f181.google.com with SMTP id wm4so2519937obc.26
-        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 01:16:17 -0700 (PDT)
-In-Reply-To: <1398170284-7551-1-git-send-email-chander.kashyap@linaro.org>
+Received: from mga01.intel.com ([192.55.52.88]:31551 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755312AbaEPIEi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 May 2014 04:04:38 -0400
+In-Reply-To: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>, rafael.j.wysocki@intel.com, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Chander Kashyap <chander.kashyap@linaro.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, sfi-devel@simplefirmware.org, linux-pm@vger.kernel.org
 
-On 22 April 2014 18:08, Chander Kashyap <chander.kashyap@linaro.org> wrote:
-> In menu_select function we check for correction factor every time.
-> If it is zero we are initializing to unity. Hence move it to init function
-> and initialise by unity, hence avoid repeated comparisons.
->
-> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-> Reviewed-by: Tuukka Tikkanen <tuukka.tikkanen@linaro.org>
-> ---
->  drivers/cpuidle/governors/menu.c |   15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 71b5232..9b7918c 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -311,13 +311,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->         data->bucket = which_bucket(data->next_timer_us);
->
->         /*
-> -        * if the correction factor is 0 (eg first time init or cpu hotplug
-> -        * etc), we actually want to start out with a unity factor.
-> -        */
-> -       if (data->correction_factor[data->bucket] == 0)
-> -               data->correction_factor[data->bucket] = RESOLUTION * DECAY;
-> -
-> -       /*
->          * Force the result of multiplication to be 64 bits even if both
->          * operands are 32 bits.
->          * Make sure to round up for half microseconds.
-> @@ -466,9 +459,17 @@ static int menu_enable_device(struct cpuidle_driver *drv,
->                                 struct cpuidle_device *dev)
->  {
->         struct menu_device *data = &per_cpu(menu_devices, dev->cpu);
-> +       int i;
->
->         memset(data, 0, sizeof(struct menu_device));
->
-> +       /*
-> +        * if the correction factor is 0 (eg first time init or cpu hotplug
-> +        * etc), we actually want to start out with a unity factor.
-> +        */
-> +       for(i = 0; i < BUCKETS; i++)
-> +               data->correction_factor[i] = RESOLUTION * DECAY;
-> +
->         return 0;
->  }
->
+Function mp_register_gsi() may return invalid GSI if error happens,
+so enhance acpi_register_gsi() to handle possible error cases.
 
-ping.
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/x86/kernel/acpi/boot.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-> --
-> 1.7.9.5
->
-
-
-
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 6d65850f49e9..8b8ff786af12 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -97,6 +97,8 @@ static u32 isa_irq_to_gsi[NR_IRQS_LEGACY] __read_mostly = {
+ 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+ };
+ 
++#define	ACPI_INVALID_GSI		INT_MIN
++
+ static unsigned int gsi_to_irq(unsigned int gsi)
+ {
+ 	unsigned int irq = gsi + NR_IRQS_LEGACY;
+@@ -553,13 +555,13 @@ int (*acpi_suspend_lowlevel)(void);
+  */
+ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+ {
+-	unsigned int irq;
+ 	unsigned int plat_gsi = gsi;
+ 
+ 	plat_gsi = (*__acpi_register_gsi)(dev, gsi, trigger, polarity);
+-	irq = gsi_to_irq(plat_gsi);
++	if (plat_gsi != ACPI_INVALID_GSI)
++		return gsi_to_irq(plat_gsi);
+ 
+-	return irq;
++	return -1;
+ }
+ EXPORT_SYMBOL_GPL(acpi_register_gsi);
+ 
+@@ -1054,7 +1056,7 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 			     polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
+ 	ret = io_apic_set_pci_routing(dev, gsi_to_irq(gsi), &irq_attr);
+ 	if (ret < 0)
+-		gsi = INT_MIN;
++		gsi = ACPI_INVALID_GSI;
+ 
+ 	return gsi;
+ }
 -- 
-with warm regards,
-Chander Kashyap
+1.7.10.4
+
