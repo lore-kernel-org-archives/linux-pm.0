@@ -1,141 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/3][Resend] ACPI / PM: Avoid resuming devices in ACPI PM domain during system suspend
-Date: Fri, 16 May 2014 02:48:18 +0200
-Message-ID: <1523744.XGJjEBjYbG@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405141041360.1432-100000@iolanthe.rowland.org> <1495375.YeObBhD5SE@vostro.rjw.lan> <1596386.YnYCCm2UQG@vostro.rjw.lan>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [PATCH v5 5/6] exynos: cpuidle: do not allow cpuidle registration
+ for Exynos5420
+Date: Fri, 16 May 2014 09:31:38 +0530
+Message-ID: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com>
+References: <ANuQgHGSPJ45tbrVppAVpOqF0OfHacPWfX=S5mOVxTPr66f7vg@mail.gmail.com>
+	<1400054637-21505-1-git-send-email-chander.kashyap@linaro.org>
+	<1400054637-21505-6-git-send-email-chander.kashyap@linaro.org>
+	<5375311B.2010202@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1596386.YnYCCm2UQG@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5375311B.2010202@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Tomasz,
 
-Rework the ACPI PM domain's PM callbacks to avoid resuming devices
-during system suspend (in order to modify their wakeup settings etc.)
-if that isn't necessary.
+On 16 May 2014 02:56, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> Hi Chander,
+>
+> On 14.05.2014 10:03, Chander Kashyap wrote:
+>> Exynos5420 is big.Little Soc. It uses cpuidle-big-litle generic cpuidle driver.
+>> Hence do not allow exynos cpuidle driver registration for Exynos5420.
+>>
+>> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+>> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+>> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>  arch/arm/mach-exynos/cpuidle.c |    3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/arch/arm/mach-exynos/cpuidle.c b/arch/arm/mach-exynos/cpuidle.c
+>> index 3dd385e..807a386 100644
+>> --- a/arch/arm/mach-exynos/cpuidle.c
+>> +++ b/arch/arm/mach-exynos/cpuidle.c
+>> @@ -218,6 +218,9 @@ static int exynos_cpuidle_probe(struct platform_device *pdev)
+>>       int cpu_id, ret;
+>>       struct cpuidle_device *device;
+>>
+>> +     if (soc_is_exynos5420())
+>> +             return -ENODEV;
+>> +
+>>       if (soc_is_exynos5250())
+>>               exynos5_core_down_clk();
+>>
+>>
+>
+> Why not put this in exynos.c in exynos_dt_machine_init(), so
+> exynos_cpuidle_init() is called only if not running on Exynos5420?
+>
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/device_pm.c |   46 ++++++++++++++++++++++++++++++++++++++++++----
- drivers/acpi/scan.c      |    4 ++++
- include/acpi/acpi_bus.h  |    3 ++-
- 3 files changed, 48 insertions(+), 5 deletions(-)
+That makes more sense.
+I will update this
 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -907,20 +907,44 @@ int acpi_subsys_prepare(struct device *d
- 	if (dev->power.ignore_children)
- 		pm_runtime_resume(dev);
- 
-+	pm_set_direct_resume(dev, true);
- 	return pm_generic_prepare(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
- 
- /**
-- * acpi_subsys_suspend - Run the device driver's suspend callback.
-+ * acpi_subsys_suspend - Handle device suspend stage of system suspend.
-  * @dev: Device to handle.
-- *
-- * Follow PCI and resume devices suspended at run time before running their
-- * system suspend callbacks.
-  */
- int acpi_subsys_suspend(struct device *dev)
- {
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	u32 sys_target;
-+
-+	if (!adev || !pm_runtime_enabled_and_suspended(dev)) {
-+		pm_set_direct_resume(dev, false);
-+		goto out;
-+	}
-+	if (!pm_direct_resume_is_set(dev)
-+	    || device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
-+		goto resume;
-+
-+	sys_target = acpi_target_system_state();
-+	if (sys_target != ACPI_STATE_S0) {
-+		int ret, state;
-+
-+		if (adev->power.flags.dsw_present)
-+			goto resume;
-+
-+		ret = acpi_dev_pm_get_state(dev, adev, sys_target, NULL, &state);
-+		if (!ret && state == adev->power.state)
-+			return 0;
-+	}
-+
-+ resume:
- 	pm_runtime_resume(dev);
-+
-+ out:
- 	return pm_generic_suspend(dev);
- }
- 
-@@ -954,6 +978,19 @@ int acpi_subsys_resume_early(struct devi
- EXPORT_SYMBOL_GPL(acpi_subsys_resume_early);
- 
- /**
-+ * acpi_subsys_resume - Handle device resume stage of system resume.
-+ * @dev: Device to handle.
-+ */
-+int acpi_subsys_resume(struct device *dev)
-+{
-+	if (pm_direct_resume_is_set(dev)) {
-+		pm_runtime_resume(dev);
-+		return 0;
-+	}
-+	return pm_generic_resume(dev);
-+}
-+
-+/**
-  * acpi_subsys_freeze - Run the device driver's freeze callback.
-  * @dev: Device to handle.
-  */
-@@ -982,6 +1019,7 @@ static struct dev_pm_domain acpi_general
- 		.suspend = acpi_subsys_suspend,
- 		.suspend_late = acpi_subsys_suspend_late,
- 		.resume_early = acpi_subsys_resume_early,
-+		.resume = acpi_subsys_resume,
- 		.freeze = acpi_subsys_freeze,
- 		.poweroff = acpi_subsys_suspend,
- 		.poweroff_late = acpi_subsys_suspend_late,
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -261,7 +261,8 @@ struct acpi_device_power_flags {
- 	u32 inrush_current:1;	/* Serialize Dx->D0 */
- 	u32 power_removed:1;	/* Optimize Dx->D0 */
- 	u32 ignore_parent:1;	/* Power is independent of parent power state */
--	u32 reserved:27;
-+	u32 dsw_present:1;	/* _DSW present? */
-+	u32 reserved:26;
- };
- 
- struct acpi_device_power_state {
-Index: linux-pm/drivers/acpi/scan.c
-===================================================================
---- linux-pm.orig/drivers/acpi/scan.c
-+++ linux-pm/drivers/acpi/scan.c
-@@ -1551,9 +1551,13 @@ static void acpi_bus_get_power_flags(str
- 	 */
- 	if (acpi_has_method(device->handle, "_PSC"))
- 		device->power.flags.explicit_get = 1;
-+
- 	if (acpi_has_method(device->handle, "_IRC"))
- 		device->power.flags.inrush_current = 1;
- 
-+	if (acpi_has_method(device->handle, "_DSW"))
-+		device->power.flags.dsw_present = 1;
-+
- 	/*
- 	 * Enumerate supported power management states
- 	 */
+Thanks
+> Best regards,
+> Tomasz
+
+
+
+-- 
+with warm regards,
+Chander Kashyap
