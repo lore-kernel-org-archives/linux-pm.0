@@ -1,43 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Doug Anderson <dianders@chromium.org>
 Subject: Re: [PATCH V2 0/3] cpufreq: add support for intermediate (stable)
-Date: Fri, 16 May 2014 20:56:18 +0530
-Message-ID: <CAKohpo=VKsAdSJLL+cvGnBMFLj8JDecd2ZRKfQtEc9ZmqkC1eg@mail.gmail.com>
+Date: Fri, 16 May 2014 08:38:24 -0700
+Message-ID: <CAD=FV=VB=EOQNvfULVN=JcbBwg80PM-P7=0VAnaeMWfy9etf9g@mail.gmail.com>
 References: <cover.1400230695.git.viresh.kumar@linaro.org>
 	<CAJuA9aitMu_=OLT+=6pX=us03HVfrPZ1zCYFXfNg58W+-nzm3g@mail.gmail.com>
 	<CAKohpokUP6rnV=UyES1GY0yqwiUndBrJFtw7fwJScsRigbE7tA@mail.gmail.com>
 	<CAD=FV=XHy1jZ6EL8M+KByA1fhZkNc2Afvn2+QKaMe=0wyEo7Pg@mail.gmail.com>
+	<CAKohpo=VKsAdSJLL+cvGnBMFLj8JDecd2ZRKfQtEc9ZmqkC1eg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:40269 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932283AbaEPP0S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 11:26:18 -0400
-Received: by mail-ob0-f173.google.com with SMTP id wm4so3122157obc.32
-        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 08:26:18 -0700 (PDT)
-In-Reply-To: <CAD=FV=XHy1jZ6EL8M+KByA1fhZkNc2Afvn2+QKaMe=0wyEo7Pg@mail.gmail.com>
+Received: from mail-ve0-f169.google.com ([209.85.128.169]:53509 "EHLO
+	mail-ve0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751789AbaEPPiZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 11:38:25 -0400
+Received: by mail-ve0-f169.google.com with SMTP id jx11so3380866veb.0
+        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 08:38:24 -0700 (PDT)
+In-Reply-To: <CAKohpo=VKsAdSJLL+cvGnBMFLj8JDecd2ZRKfQtEc9ZmqkC1eg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Thomas Abraham <ta.omasab@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Stephen Warren <swarren@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Abraham <thomas.abraham@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arvind Chauhan <arvind.chauhan@arm.com>
 
-On 16 May 2014 20:50, Doug Anderson <dianders@chromium.org> wrote:
-> Right, so I think on exynos no functionality will be broken once
-> Thomas's cpufreq-cpu0 change lands (udelay will only run long, never
-> short).  ...but from the purist standpoint we will be transitioning
-> from 1.6 GHz => 800 MHz => 1.7 GHz without any notification about the
-> 800 MHz.   You could imagine someone registering for cpufreq
-> notifications that would care about the 800MHz transition.
+Viresh,
+
+On Fri, May 16, 2014 at 8:26 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 16 May 2014 20:50, Doug Anderson <dianders@chromium.org> wrote:
+>> Right, so I think on exynos no functionality will be broken once
+>> Thomas's cpufreq-cpu0 change lands (udelay will only run long, never
+>> short).  ...but from the purist standpoint we will be transitioning
+>> from 1.6 GHz => 800 MHz => 1.7 GHz without any notification about the
+>> 800 MHz.   You could imagine someone registering for cpufreq
+>> notifications that would care about the 800MHz transition.
+>>
+>> ...so it seems like we could wait for Thomas's patches to land as-is
+>> (since they make things better) and then atop that see about adding
+>> support for intermediate frequencies to cpufreq-cpu0.
 >
-> ...so it seems like we could wait for Thomas's patches to land as-is
-> (since they make things better) and then atop that see about adding
-> support for intermediate frequencies to cpufreq-cpu0.
+> Hmm, don't know. I think these patches aren't aimed at solving exynos's
+> problem but rather a general solution which must have already been there.
+>
+> If some platform can work without it then its fine, but otherwise they should
+> use it, even if udelay does work for them..
+>
+> So, I would propose to go ahead with these patches in linux-next and lets
+> see who all would use it.
 
-Hmm, don't know. I think these patches aren't aimed at solving exynos's
-problem but rather a general solution which must have already been there.
+Ah.  I wasn't suggesting to wait on your patches.  I think it's fine
+to get your patches landed and to get Thomas's patches landed (without
+actually intermediate frequencies).  ...and then both sets have landed
+then we can modify cpufreq-cpu0 / exynos to actually use the
+intermediate freq.
 
-If some platform can work without it then its fine, but otherwise they should
-use it, even if udelay does work for them..
-
-So, I would propose to go ahead with these patches in linux-next and lets
-see who all would use it.
+-Doug
