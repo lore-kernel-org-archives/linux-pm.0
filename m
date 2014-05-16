@@ -1,73 +1,155 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] PM / sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily
-Date: Fri, 16 May 2014 23:10:30 +0200
-Message-ID: <2004121.oyWgtUAlR6@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1405161023110.1224-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [GIT PULL] ACPI and power management fixes for v3.15-rc6
+Date: Fri, 16 May 2014 23:54:32 +0200
+Message-ID: <CAJZ5v0iZ6eREK24fWAw7ixz=BJXMiMBcTAOJ1MdBq+pfR4zcHA@mail.gmail.com>
+References: <CAJZ5v0inpqY5w-FE4Wvaj2W_tG3AMHNoRQfdK8iSgJUQ798O-g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49173 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751969AbaEPUxk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 16:53:40 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1405161023110.1224-100000@iolanthe.rowland.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:44848 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbaEPVyd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 17:54:33 -0400
+In-Reply-To: <CAJZ5v0inpqY5w-FE4Wvaj2W_tG3AMHNoRQfdK8iSgJUQ798O-g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, May 16, 2014 10:27:37 AM Alan Stern wrote:
-> On Fri, 16 May 2014, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-> > resume all runtime-suspended devices during system suspend, mostly
-> > because those devices may need to be reprogrammed due to different
-> > wakeup settings for system sleep and for runtime PM.
-> > 
-> > For some devices, though, it's OK to remain in runtime suspend 
-> > throughout a complete system suspend/resume cycle (if the device was in
-> > runtime suspend at the start of the cycle).  We would like to do this
-> > whenever possible, to avoid the overhead of extra power-up and power-down
-> > events.
-> > 
-> > However, problems may arise because the device's descendants may require
-> > it to be at full power at various points during the cycle.  Therefore the
-> > most straightforward way to do this safely is if the device and all its
-> > descendants can remain runtime suspended until the complete stage of
-> > system resume.
-> > 
-> > To this end, introduce a new device PM flag, power.direct_complete
-> > and modify the PM core to use that flag as follows.
-> > 
-> > If the ->prepare() callback of a device returns a positive number,
-> > the PM core will regard that as an indication that it may leave the
-> > device runtime-suspended.  It will then check if the system power
-> > transition in progress is a suspend (and not hibernation in particular)
-> > and if the device is, indeed, runtime-suspended.  In that case, the PM
-> > core will set the device's power.direct_complete flag.  Otherwise it
-> > will clear power.direct_complete for the device and it also will later
-> > clear it for the device's parent (if there's one).
-> > 
-> > Next, the PM core will not invoke the ->suspend() ->suspend_late(),
-> > ->suspend_irq(), ->resume_irq(), ->resume_early(), or ->resume()
-> > callbacks for all devices having power.direct_complete set.  It
-> > will invoke their ->complete() callbacks, however, and those
-> > callbacks are then responsible for resuming the devices as
-> > appropriate, if necessary.  For example, in some cases they may
-> > need to queue up runtime resume requests for the devices using
-> > pm_request_resume().
-> > 
-> > Changelog partly based on an Alan Stern's description of the idea
-> > (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> And likewise for the documentation patches.
+Hi Linus,
 
-Thanks a lot!
+Sorry for this last-minute update, but it's just turned out that
+one of the new ACPI video blacklist entries was added overzealously
+and added is a commit reverting it.
 
+Please pull from
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.15-rc6
+
+to receive ACPI and power management fixes for v3.15-rc6
+with top-most commit 658a0f4e661a6c07395de318a58f9058ba2faf8f
+
+  Merge branch 'acpi-video'
+
+on top of commit d6d211db37e75de2ddc3a4f979038c40df7cc79c
+
+  Linux 3.15-rc5
+
+Still fixing regressions (partly by reverting commits that broke
+things for people), fixing other stable-candidate bugs and adding
+some blacklist entries for ACPI video and _OSI.  Two ACPICA regression
+fixes (one recent and one for a 3.14 commit), a fix for an ACPI-related
+regression in TPM (introduced in 3.14), a revert of the ACPI AC
+driver conversion in 3.13 that went wrong for an unknown reason,
+two reverts of commits that attempted to remove an old user space
+interface in /proc and broke some utilities, in 3.13 too, a fix for
+a CPU hotplug bug in the ACPI processor driver (stable material),
+two (stable candidate) fixes for intel_pstate and a few new blacklist
+entries, mostly for systems that shipped with Windows 8.
+
+Specifics:
+
+ - ACPICA fix for a stale pointer access introduced by a recent
+   commit in the XSDT validation code from Lv Zheng.
+
+ - ACPICA fix for the default value of the command line switch
+   to favor 32-bit FADT addresses (in case there's a conflict
+   between a 64-bit and a 32-bit address).  The previous default
+   was that the 32-bit version would take precedence and we tried
+   to change it to the other way around and it didn't work.
+   From Lv Zheng.
+
+ - A TPM commit related to ACPI _DSM in 3.14 caused the driver to
+   refuse to load if a specific _DSM was missing and that broke
+   resume from system suspend on Chromebooks that require the TPM
+   hardware to be restored to a working state during resume by the
+   OS.  Restore the old behavior to load the driver if the _DSM
+   in question is not present, but prevent it from using the
+   feature the _DSM is for.
+
+ - ACPI AC driver conversion in 3.13 broke thermal management on
+   at least one machine and has to be reverted.  From Guenter Roeck.
+
+ - Two reverts of 3.13 commits that attempted to remove the old ACPI
+   battery interface in /proc, but turned out to break some utilities
+   still using that interface.  From Lan Tianyu.
+
+ - ACPI processor driver fix to prevent acpi_processor_add() from
+   modifying the CPU device's .offline field which leads to breakage
+   if the initial online of the CPU fails.  From Igor Mammedov.
+
+ - Two intel_pstate fixes, one to take a BayTrail documentation update
+   into account and one to avoid forcing the maximum P-state on init
+   which causes CPU PM trouble on systems with P-states coordination
+   when one of the CPU cores is initialized after an offline/online
+   cycle triggered by user space.  Both stable candidates, from
+   Dirk Brandewie.
+
+ - Fix for the ACPI video DMI blacklist entry for Dell Inspiron 7520
+   from Aaron Lu.
+
+ - Two new ACPI video blacklist entries for machines shipping with
+   Win8 that need to use native backlight so that it can be controlled
+   in a usual way (which doesn't work otherwise due bugs in the ACPI
+   tables) from Hans de Goede.
+
+ - Two ACPI _OSI quirks for systems that need them to work correctly
+   with Linux from Edward Lin and Hans de Goede.
+
+Thanks!
+
+
+---------------
+
+Aaron Lu (1):
+      ACPI / video: correct DMI tag for Dell Inspiron 7520
+
+Dirk Brandewie (2):
+      intel_pstate: Set turbo VID for BayTrail
+      intel_pstate: remove setting P state to MAX on init
+
+Edward Lin (1):
+      ACPI: blacklist win8 OSI for Dell Inspiron 7737
+
+Guenter Roeck (1):
+      ACPI: Revert "ACPI / AC: convert ACPI ac driver to platform bus"
+
+Hans de Goede (3):
+      ACPI / video: Add use_native_backlight quirks for more systems
+      ACPI / blacklist: Add dmi_enable_osi_linux quirk for Asus EEE PC 1015PX
+      ACPI / video: Revert native brightness quirk for ThinkPad T530
+
+Igor Mammedov (1):
+      ACPI / processor: do not mark present at boot but not onlined
+CPU as onlined
+
+Lan Tianyu (2):
+      ACPI: Revert "ACPI: Remove CONFIG_ACPI_PROCFS_POWER and cm_sbsc.c"
+      ACPI: Revert "ACPI / Battery: Remove battery's proc directory"
+
+Lv Zheng (2):
+      ACPICA: Tables: Fix invalid pointer accesses in
+acpi_tb_parse_root_table().
+      ACPICA: Tables: Restore old behavor to favor 32-bit FADT addresses.
+
+Rafael J. Wysocki (2):
+      ACPI / proc: Do not say when /proc interfaces will be deleted in Kconfig
+      ACPI / TPM: Fix resume regression on Chromebooks
+
+---------------
+
+ drivers/acpi/Kconfig           |  17 +++
+ drivers/acpi/Makefile          |   1 +
+ drivers/acpi/ac.c              | 117 ++++++++-------
+ drivers/acpi/acpi_platform.c   |   1 -
+ drivers/acpi/acpi_processor.c  |   1 -
+ drivers/acpi/acpica/acglobal.h |   4 +-
+ drivers/acpi/acpica/tbutils.c  |   7 +-
+ drivers/acpi/battery.c         | 329 ++++++++++++++++++++++++++++++++++++++++-
+ drivers/acpi/blacklist.c       |  21 +++
+ drivers/acpi/cm_sbs.c          | 105 +++++++++++++
+ drivers/acpi/video.c           |  16 +-
+ drivers/char/tpm/tpm_ppi.c     |   8 +-
+ drivers/cpufreq/intel_pstate.c |  34 ++---
+ 13 files changed, 568 insertions(+), 93 deletions(-)
