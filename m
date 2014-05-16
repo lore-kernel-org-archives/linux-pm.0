@@ -1,70 +1,65 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] cpuidle: new driver for Cirrus Logic for 3.16
-Date: Fri, 16 May 2014 13:34:24 +0200
-Message-ID: <2465369.ul6KCqXmnx@vostro.rjw.lan>
-References: <5360CF57.9050202@linaro.org> <5375CB0D.2080309@linaro.org>
+Subject: [PATCH] PM / runtime: Update documentation to reflect the current code flow
+Date: Fri, 16 May 2014 13:44:32 +0200
+Message-ID: <1820626.RvqOqaKi2q@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52325 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:59413 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932152AbaEPLRf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 07:17:35 -0400
-In-Reply-To: <5375CB0D.2080309@linaro.org>
+	with SMTP id S932160AbaEPL1n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 07:27:43 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Alexander Shiyan <shc_work@mail.ru>, Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Friday, May 16, 2014 10:23:41 AM Daniel Lezcano wrote:
-> 
-> Hi Rafael,
-> 
-> just a head up in case you missed it.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Pulled now, thanks!
+The runtime PM documentation in runtime_pm.txt has not been updated
+after some changes to the system suspend and resume core code, so
+update it to reflect the current code flow.
 
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-> On 04/30/2014 12:24 PM, Daniel Lezcano wrote:
-> >
-> > Hi Rafael,
-> >
-> > this pull request is based on top 3.15-rc3
-> >
-> >   * Alexander Shiyan added a new driver for the Cirrus Logic clps711x
-> >
-> > Thanks
-> >    -- Daniel
-> >
-> > The following changes since commit
-> > d1db0eea852497762cab43b905b879dfcd3b8987:
-> >
-> >    Linux 3.15-rc3 (2014-04-27 19:29:27 -0700)
-> >
-> > are available in the git repository at:
-> >
-> >    git://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/3.16
-> >
-> > for you to fetch changes up to 7c7f8f7f2c6bf078874e5de35d7e2c66467fc664:
-> >
-> >    ARM: clps711x: Add cpuidle driver (2014-04-30 01:33:02 +0200)
-> >
-> > ----------------------------------------------------------------
-> > Alexander Shiyan (1):
-> >        ARM: clps711x: Add cpuidle driver
-> >
-> >   drivers/cpuidle/Kconfig.arm        |    6 ++++
-> >   drivers/cpuidle/Makefile           |    1 +
-> >   drivers/cpuidle/cpuidle-clps711x.c |   64
-> > ++++++++++++++++++++++++++++++++++++
-> >   3 files changed, 71 insertions(+)
-> >   create mode 100644 drivers/cpuidle/cpuidle-clps711x.c
-> >
-> 
-> 
-> 
+This is independent of the "do not resume runtime-suspended devices" series.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks!
+
+---
+ Documentation/power/runtime_pm.txt |   18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+Index: linux-pm/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/runtime_pm.txt
++++ linux-pm/Documentation/power/runtime_pm.txt
+@@ -665,15 +665,17 @@ The PM core does its best to reduce the
+ the runtime PM and system suspend/resume (and hibernation) callbacks by carrying
+ out the following operations:
+ 
+-  * During system suspend it calls pm_runtime_get_noresume() and
+-    pm_runtime_barrier() for every device right before executing the
+-    subsystem-level .suspend() callback for it.  In addition to that it calls
+-    __pm_runtime_disable() with 'false' as the second argument for every device
+-    right before executing the subsystem-level .suspend_late() callback for it.
++  * During system suspend pm_runtime_get_noresume() is called for every device
++    right before executing the subsystem-level .prepare() callback for it and
++    pm_runtime_barrier() is called for every device right before executing the
++    subsystem-level .suspend() callback for it.  In addition to that the PM core
++    calls  __pm_runtime_disable() with 'false' as the second argument for every
++    device right before executing the subsystem-level .suspend_late() callback
++    for it.
+ 
+-  * During system resume it calls pm_runtime_enable() and pm_runtime_put()
+-    for every device right after executing the subsystem-level .resume_early()
+-    callback and right after executing the subsystem-level .resume() callback
++  * During system resume pm_runtime_enable() and pm_runtime_put() are called for
++    every device right after executing the subsystem-level .resume_early()
++    callback and right after executing the subsystem-level .complete() callback
+     for it, respectively.
+ 
+ 7. Generic subsystem callbacks
+
