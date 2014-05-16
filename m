@@ -1,40 +1,54 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v2] PM / OPP: discard duplicate OPP additions
-Date: Fri, 16 May 2014 14:12:02 +0530
-Message-ID: <CANuQgHGPKpNYOVAgr8riULEoNr=h71OQRZLC9U193S7akM3B8g@mail.gmail.com>
-References: <CAKohpo=SXFYEncSe__XQHQ588hTME7cbmS+ykeWZOOt4ESb2Pg@mail.gmail.com>
+Date: Fri, 16 May 2014 14:17:59 +0530
+Message-ID: <CAKohpomarqCwU6JTpNpTOTd+4A5zwGYFYEbLFDcvAKbVyY9YTg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=SXFYEncSe__XQHQ588hTME7cbmS+ykeWZOOt4ESb2Pg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:49637 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbaEPIr7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 04:47:59 -0400
+Received: by mail-oa0-f42.google.com with SMTP id j17so2672985oag.29
+        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 01:47:59 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chander Kashyap <chander.kashyap@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-On 16 May 2014 13:54, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 16 May 2014 13:43, Chander Kashyap <chander.kashyap@linaro.org> wrote:
->> From: Chander Kashyap <k.chander@samsung.com>
+On 16 May 2014 14:12, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+> On 16 May 2014 13:54, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 16 May 2014 13:43, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+>>> From: Chander Kashyap <k.chander@samsung.com>
+>>>
+>>> It may be possible to unregister and re-register the cpufreq driver.
+>>> One such example is arm big-little IKS cpufreq driver. While
+>>> re-registering the driver, same OPPs may get added again.
+>>>
+>>> This patch detects the duplicacy and discards them.
 >>
->> It may be possible to unregister and re-register the cpufreq driver.
->> One such example is arm big-little IKS cpufreq driver. While
->> re-registering the driver, same OPPs may get added again.
+>> Diff looks fine but not the log ofcourse. It doesn't have anything to do with
+>> big LITTLE.. Its just a patch to avoid addition of duplicate OPPs..
 >>
->> This patch detects the duplicacy and discards them.
 >
-> Diff looks fine but not the log ofcourse. It doesn't have anything to do with
-> big LITTLE.. Its just a patch to avoid addition of duplicate OPPs..
+> Big little reference is provided as an example. Nothing much
+
+What I am saying is: "This is not a problem of re-registering drivers
+but adding duplicate OPPs and that's what we should emphasize
+on in the log". Your log is all focused on how to get re-registering
+of a driver working.
+
+>> Also fix spelling mistakes in log..
+>>
+>> And subject should be:
+>> PM / OPP: discard duplicate OPPs
 >
+> Duplicates are discarded during OPP addition, and subject line indicates that.
 
-Big little reference is provided as an example. Nothing much
+I am asking to improve it. Replace:
 
-> Also fix spelling mistakes in log..
->
-> And subject should be:
-> PM / OPP: discard duplicate OPPs
+PM / OPP: discard duplicate OPP additions
 
-Duplicates are discarded during OPP addition, and subject line indicates that.
+with
 
--- 
-with warm regards,
-Chander Kashyap
+PM / OPP: discard duplicate OPPs
