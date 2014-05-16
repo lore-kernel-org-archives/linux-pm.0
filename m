@@ -1,151 +1,98 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/3] cpufreq: Tegra: implement intermediate frequency callbacks
-Date: Fri, 16 May 2014 14:37:19 +0530
-Message-ID: <b3e68b08ca8175fde81ef1a85db1fde506f835b9.1400230695.git.viresh.kumar@linaro.org>
-References: <9e1ed1bf8c3610709436fe5ef8df3a63856f8f5c.1400230695.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:39989 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755616AbaEPJHo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 05:07:44 -0400
-Received: by mail-pa0-f46.google.com with SMTP id kq14so2288724pab.5
-        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 02:07:44 -0700 (PDT)
-In-Reply-To: <9e1ed1bf8c3610709436fe5ef8df3a63856f8f5c.1400230695.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1400230695.git.viresh.kumar@linaro.org>
-References: <cover.1400230695.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Inderpal Singh <inderpal.s@samsung.com>
+Subject: [PATCH] PM / OPP: Implement free_opp_table function
+Date: Fri, 16 May 2014 14:39:26 +0530
+Message-ID: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: nm@ti.com, rjw@rjwysocki.net, pavel@ucw.cz, viresh.kumar@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, nicolas.pitre@linaro.org, swarren@wwwdotorg.org, dianders@chromium.org, linux@arm.linux.org.uk, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Tegra had always been switching to intermediate frequency (pll_p_clk) since
-ever. CPUFreq core has better support for handling notifications for these
-frequencies and so we can adapt Tegra's driver to it.
+At the driver unloading time the associated opp table may need
+to be deleted. Otherwise it amounts to memory leak. The existing
+OPP library does not have provison to do so.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hence this patch implements the function to free the opp table.
+
+Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 81 +++++++++++++++++++----------------------
- 1 file changed, 38 insertions(+), 43 deletions(-)
+ drivers/base/power/opp.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h   |  6 ++++++
+ 2 files changed, 47 insertions(+)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index 6e774c6..10b29ec 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -46,9 +46,33 @@ static struct clk *pll_x_clk;
- static struct clk *pll_p_clk;
- static struct clk *emc_clk;
- 
--static int tegra_cpu_clk_set_rate(unsigned long rate)
-+static unsigned int
-+tegra_get_intermediate(struct cpufreq_policy *policy, unsigned int index)
- {
--	int ret;
-+	return clk_get_rate(pll_p_clk);
-+}
-+
-+static int
-+tegra_target_intermediate(struct cpufreq_policy *policy, unsigned int frequency)
-+{
-+	return clk_set_parent(cpu_clk, pll_p_clk);
-+}
-+
-+static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
-+{
-+	unsigned long rate = freq_table[index].frequency;
-+	int ret = 0;
-+
-+	/*
-+	 * Vote on memory bus frequency based on cpu frequency
-+	 * This sets the minimum frequency, display or avp may request higher
-+	 */
-+	if (rate >= 816000)
-+		clk_set_rate(emc_clk, 600000000); /* cpu 816 MHz, emc max */
-+	else if (rate >= 456000)
-+		clk_set_rate(emc_clk, 300000000); /* cpu 456 MHz, emc 150Mhz */
-+	else
-+		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
- 
- 	/*
- 	 * Take an extra reference to the main pll so it doesn't turn
-@@ -56,12 +80,6 @@ static int tegra_cpu_clk_set_rate(unsigned long rate)
- 	 */
- 	clk_prepare_enable(pll_x_clk);
- 
--	ret = clk_set_parent(cpu_clk, pll_p_clk);
--	if (ret) {
--		pr_err("Failed to switch cpu to clock pll_p\n");
--		goto out;
--	}
--
- 	if (rate == clk_get_rate(pll_p_clk))
- 		goto out;
- 
-@@ -72,36 +90,11 @@ static int tegra_cpu_clk_set_rate(unsigned long rate)
- 	}
- 
- 	ret = clk_set_parent(cpu_clk, pll_x_clk);
--	if (ret) {
-+	if (ret)
- 		pr_err("Failed to switch cpu to clock pll_x\n");
--		goto out;
--	}
- 
- out:
- 	clk_disable_unprepare(pll_x_clk);
--	return ret;
--}
--
--static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
--{
--	unsigned long rate = freq_table[index].frequency;
--	int ret = 0;
--
--	/*
--	 * Vote on memory bus frequency based on cpu frequency
--	 * This sets the minimum frequency, display or avp may request higher
--	 */
--	if (rate >= 816000)
--		clk_set_rate(emc_clk, 600000000); /* cpu 816 MHz, emc max */
--	else if (rate >= 456000)
--		clk_set_rate(emc_clk, 300000000); /* cpu 456 MHz, emc 150Mhz */
--	else
--		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
--
--	ret = tegra_cpu_clk_set_rate(rate * 1000);
--	if (ret)
--		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
--			rate);
- 
- 	return ret;
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index d9e376a..d45ffd5 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -654,4 +654,45 @@ int of_init_opp_table(struct device *dev)
+ 	return 0;
  }
-@@ -137,16 +130,18 @@ static int tegra_cpu_exit(struct cpufreq_policy *policy)
- }
- 
- static struct cpufreq_driver tegra_cpufreq_driver = {
--	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
--	.verify		= cpufreq_generic_frequency_table_verify,
--	.target_index	= tegra_target,
--	.get		= cpufreq_generic_get,
--	.init		= tegra_cpu_init,
--	.exit		= tegra_cpu_exit,
--	.name		= "tegra",
--	.attr		= cpufreq_generic_attr,
-+	.flags			= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify			= cpufreq_generic_frequency_table_verify,
-+	.get_intermediate	= tegra_get_intermediate,
-+	.target_intermediate	= tegra_target_intermediate,
-+	.target_index		= tegra_target,
-+	.get			= cpufreq_generic_get,
-+	.init			= tegra_cpu_init,
-+	.exit			= tegra_cpu_exit,
-+	.name			= "tegra",
-+	.attr			= cpufreq_generic_attr,
- #ifdef CONFIG_PM
--	.suspend	= cpufreq_generic_suspend,
-+	.suspend		= cpufreq_generic_suspend,
+ EXPORT_SYMBOL_GPL(of_init_opp_table);
++
++/**
++ * dev_pm_opp_free_opp_table() - free the opp table
++ * @dev:	device for which we do this operation
++ *
++ * Free up the allocated opp table
++ *
++ * Locking: The internal device_opp and opp structures are RCU protected.
++ * Hence this function internally uses RCU updater strategy with mutex locks to
++ * keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex locking or synchronize_rcu() blocking calls cannot be used.
++ */
++void dev_pm_opp_free_opp_table(struct device *dev)
++{
++	struct device_opp *dev_opp = NULL;
++	struct dev_pm_opp *opp;
++
++	/* Hold our list modification lock here */
++	mutex_lock(&dev_opp_list_lock);
++
++	/* Check for existing list for 'dev' */
++	dev_opp = find_device_opp(dev);
++	if (IS_ERR(dev_opp)) {
++		mutex_unlock(&dev_opp_list_lock);
++		return;
++	}
++
++	while (!list_empty(&dev_opp->opp_list)) {
++		opp = list_entry_rcu(dev_opp->opp_list.next,
++					struct dev_pm_opp, node);
++		list_del_rcu(&opp->node);
++		kfree_rcu(opp, head);
++	}
++
++	list_del_rcu(&dev_opp->node);
++	mutex_unlock(&dev_opp_list_lock);
++	synchronize_rcu();
++	kfree(dev_opp);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_free_opp_table);
  #endif
- };
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 0330217..3c29620 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -50,6 +50,8 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+ int dev_pm_opp_disable(struct device *dev, unsigned long freq);
  
+ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
++
++void dev_pm_opp_free_opp_table(struct device *dev);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -105,6 +107,10 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
+ {
+ 	return ERR_PTR(-EINVAL);
+ }
++
++void dev_pm_opp_free_opp_table(struct device *dev)
++{
++}
+ #endif		/* CONFIG_PM_OPP */
+ 
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
 -- 
-2.0.0.rc2
-
+1.8.3.2
