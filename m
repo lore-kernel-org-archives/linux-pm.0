@@ -1,24 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Implement free_opp_table function
-Date: Fri, 16 May 2014 22:56:39 +0530
-Message-ID: <CAKohpomoXs+ybYvDa8_NdXqT7T4xqgtbbtEHp2CR1T=f6GVbNA@mail.gmail.com>
-References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
-	<CAKohponY6Nn5kYGyps2SLm5uBbH1JWuJBpzzVD=QOc=oM7crAg@mail.gmail.com>
-	<CAOqmu82GQ2qsm0c7fq8n5ovR7+4j5t_Y3=03S=nWtR+bH3yhdg@mail.gmail.com>
-	<CAKohpokCBbL1OkxB3rh0Pr3yqiG1H6UsZgD-WQTRvihxJt1-Qw@mail.gmail.com>
-	<CAOqmu81Np91-GRe-GndjE2FnbGA-xttvu64gr=h9FaNpbBSoBw@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V2 2/3] cpufreq: add support for intermediate (stable)
+ frequencies
+Date: Fri, 16 May 2014 12:50:01 -0600
+Message-ID: <53765DD9.6040403@wwwdotorg.org>
+References: <cover.1400230695.git.viresh.kumar@linaro.org> <9e1ed1bf8c3610709436fe5ef8df3a63856f8f5c.1400230695.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOqmu81Np91-GRe-GndjE2FnbGA-xttvu64gr=h9FaNpbBSoBw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Inderpal Singh <inderpal.s@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:48282 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756409AbaEPSuF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 14:50:05 -0400
+In-Reply-To: <9e1ed1bf8c3610709436fe5ef8df3a63856f8f5c.1400230695.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, nicolas.pitre@linaro.org, dianders@chromium.org, linux@arm.linux.org.uk, thomas.abraham@linaro.org, pdeschrijver@nvidia.com
 
-On 16 May 2014 22:54, Inderpal Singh <inderpal.s@samsung.com> wrote:
-> by the time "pos = list_entry_rcu(pos->member.
-> next, typeof(*pos), member)" is executed, the pos would have been
-> freed in the loop.
+On 05/16/2014 03:07 AM, Viresh Kumar wrote:
+> Douglas Anderson, recently pointed out an interesting problem due to which
+> udelay() was expiring earlier than it should.
+> 
+> While transitioning between frequencies few platforms may temporarily switch to
+> a stable frequency, waiting for the main PLL to stabilize.
+> 
+> For example: When we transition between very low frequencies on exynos, like
+> between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
+> No CPUFREQ notification is sent for that. That means there's a period of time
+> when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
+> and 300MHz. And so udelay behaves badly.
+> 
+> To get this fixed in a generic way, lets introduce another set of callbacks
+> get_intermediate() and target_intermediate(), only for drivers with
+> target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
+> 
+> get_intermediate should return a stable intermediate frequency platform wants to
+> switch to, and target_intermediate() should set CPU to to that frequency, before
+> jumping to the frequency corresponding to 'index'. Core will take care of
+> sending notifications and driver doesn't have to handle them in
+> target_intermediate() or target_index().
+> 
+> NOTE: Once set to intermediate frequency, driver isn't expected to fail for the
+> following ->target_index() call, if it fails core will issue a WARN().
 
-Oops!!
+> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+
+> +cpufreq_driver.get_intermediate
+> +and target_intermediate		Uset to switch to stable frequency while
+> +				changing CPU frequency.
+
+s/Uset/Used.
+
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+
+> @@ -226,6 +226,21 @@ struct cpufreq_driver {
+
+> +	unsigned int (*get_intermediate)(struct cpufreq_policy *policy,
+> +					 unsigned int index);
+
+Should get_intermediate be passed a struct cpufreq_freqs freqs rather
+than just the target index? That way, if the intermediate frequency
+varies depending on old/new frequencies, then the driver won't have to
+go look up the current frequency in order to implement that logic.
