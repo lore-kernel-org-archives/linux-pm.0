@@ -1,79 +1,119 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V2 3/3] cpufreq: Tegra: implement intermediate frequency
- callbacks
-Date: Fri, 16 May 2014 13:39:27 -0600
-Message-ID: <5376696F.9090006@wwwdotorg.org>
-References: <9e1ed1bf8c3610709436fe5ef8df3a63856f8f5c.1400230695.git.viresh.kumar@linaro.org> <b3e68b08ca8175fde81ef1a85db1fde506f835b9.1400230695.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily
+Date: Fri, 16 May 2014 23:08:01 +0200
+Message-ID: <1491497.iq6zE5EtMa@vostro.rjw.lan>
+References: <20140515000320.3c1c9256@jacob-desktop> <Pine.LNX.4.44L0.1405151151560.910-100000@iolanthe.rowland.org> <20140516082055.40cd2bb4@ultegra>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:57529 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992428AbaEPTjb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 15:39:31 -0400
-In-Reply-To: <b3e68b08ca8175fde81ef1a85db1fde506f835b9.1400230695.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20140516082055.40cd2bb4@ultegra>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, nicolas.pitre@linaro.org, dianders@chromium.org, linux@arm.linux.org.uk, thomas.abraham@linaro.org, pdeschrijver@nvidia.com
 
-On 05/16/2014 03:07 AM, Viresh Kumar wrote:
-> Tegra had always been switching to intermediate frequency (pll_p_clk) since
-> ever. CPUFreq core has better support for handling notifications for these
-> frequencies and so we can adapt Tegra's driver to it.
-
-You need to squash in the patch below in order for this series to work.
-Once that's done,
-
-Tested-by: Stephen Warren <swarren@nvidia.com>
-
->     Signed-off-by: Stephen Warren <swarren@nvidia.com>
+On Friday, May 16, 2014 08:20:55 AM Jacob Pan wrote:
+> On Thu, 15 May 2014 11:58:55 -0400 (EDT)
+> Alan Stern <stern@rowland.harvard.edu> wrote:
 > 
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-> index 10b29ec99bdc..c04fec02ac6a 100644
-> --- a/drivers/cpufreq/tegra-cpufreq.c
-> +++ b/drivers/cpufreq/tegra-cpufreq.c
-> @@ -49,13 +49,22 @@ static struct clk *emc_clk;
->  static unsigned int
->  tegra_get_intermediate(struct cpufreq_policy *policy, unsigned int index)
->  {
-> -       return clk_get_rate(pll_p_clk);
-> +       return clk_get_rate(pll_p_clk) / 1000; /* kHz */
->  }
->  
->  static int
->  tegra_target_intermediate(struct cpufreq_policy *policy, unsigned int frequency)
->  {
-> +       WARN_ON(frequency != clk_get_rate(pll_p_clk) / 1000);
-> +
-> +       /*
-> +        * Take an extra reference to the main pll so it doesn't turn
-> +        * off when we move the cpu off of it
-> +        */
-> +       clk_prepare_enable(pll_x_clk);
-> +
->         return clk_set_parent(cpu_clk, pll_p_clk);
-> +       /* FIXME: if error, remove pll_x reference */
->  }
->  
->  static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
-> @@ -74,16 +83,10 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
->         else
->                 clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
->  
-> -       /*
-> -        * Take an extra reference to the main pll so it doesn't turn
-> -        * off when we move the cpu off of it
-> -        */
-> -       clk_prepare_enable(pll_x_clk);
-> -
->         if (rate == clk_get_rate(pll_p_clk))
->                 goto out;
->  
-> -       ret = clk_set_rate(pll_x_clk, rate);
-> +       ret = clk_set_rate(pll_x_clk, rate * 1000);
->         if (ret) {
->                 pr_err("Failed to change pll_x to %lu\n", rate);
->                 goto out;
+> > On Thu, 15 May 2014, Jacob Pan wrote:
+> > 
+> > > On Thu, 15 May 2014 10:29:42 -0400 (EDT)
+> > > Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > 
+> > > > On Thu, 15 May 2014, Jacob Pan wrote:
+> > > > 
+> > > > > > > should we respect ignore_children flag here? not all parent
+> > > > > > > devices create children with proper .prepare() function.
+> > > > > > > this allows parents override children.
+> > > > > > > I am looking at USB, a USB device could have logical
+> > > > > > > children such as ep_xx, they don't go through the same
+> > > > > > > subsystem .prepare().
+> > > > > > 
+> > > > > > Well, I'm not sure about that.  Let me consider that for a
+> > > > > > while.
+> > > > > OK. let me be more clear about the situation i see in USB.
+> > > > > Correct me if I am wrong, a USB device will always has at least
+> > > > > one endpoint/ep_00 as a kid for control pipe, it is a logical
+> > > > > device. So when device_prepare() is called, its call back is
+> > > > > NULL which makes .direct_complete = 0. Since children device
+> > > > > suspend is called before parents, the parents .direct_complete
+> > > > > flag will always get cleared.
+> > > > > 
+> > > > > What i am trying to achieve here is to see if we avoid resuming
+> > > > > built-in (hardwired connect_type) non-hub USB devices based on
+> > > > > this new patchset. E.g. we don't want to resume/suspend USB
+> > > > > camera every time in system suspend/resume cycle if they are
+> > > > > already rpm suspended. We can save ~100ms resume time for the
+> > > > > devices we have tested.
+> > > > 
+> > > > This is a good point, but I don't think it is at all related to 
+> > > > ignore_children.
+> > > > 
+> > > > Instead, it seems that the best way to solve it would be to add a 
+> > > > ->prepare() handler for usb_ep_device_type that would always turn 
+> > > > on direct_complete.
+> > > > 
+> > > yeah, that would solve the problem with EP device type. But what
+> > > about other subdevices. e.g. for USB camera, uvcvideo device? We
+> > > can add .prepare(return 1;) for each level but would it be better
+> > > to have a flag similar to ignore_children if not ignore_children
+> > > itself.
+> > 
+> > Something like that could always be added.
+> or, how about if a device's .prepare() is NULL, we could
+> assume .direct_resume() should be set. i.e.
 
+You mean direct_complete (which is a flag, not a function), I suppose?
+
+Wouldn't that go a bit too far?  It seems to be based on the assumption that
+all devices having no ->prepare() callback can be safely left in runtime
+suspend over a system suspend/resume cycle, but is that assumption actually
+satisfied for all such devices?
+
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1539,7 +1539,7 @@ static int device_prepare(struct device *dev,
+> pm_message_t state) pm_runtime_put(dev);
+>                 return ret;
+>         }
+> -       dev->power.direct_complete = ret > 0 && state.event ==
+> PM_EVENT_SUSPEND
+> +       dev->power.direct_complete = (!callback || ret > 0) &&
+> state.event == PM_EVENT_SUSPEND && pm_runtime_suspended(dev);
+>         dev_dbg(dev, "%s:direct_complete %d, info %s\n", __func__,
+> dev->power.direct_complete, info);
+> 
+> > 
+> > > Actually, I don't understand why this is not related to
+> > > ignore_children. Could you explain?
+> > 
+> > It's hard to explain why two things are totally separate.  Much
+> > better for you to describe why you think they _are_ related, so that
+> > I can explain how you are wrong.
+> > 
+> > > If the parent knows it can ignore children and already rpm
+> > > suspended, why do we still ask children?
+> > 
+> > The "ignore_children" flag doesn't mean that the parent can ignore
+> > its children.  It means that the PM core is allowed to do a runtime
+> > suspend of the parent while leaving the children at full power.
+> > 
+> > In particular, it doesn't mean that the children's ->suspend()
+> > callback will work correctly if it is called while the parent is
+> > runtime suspended.
+> that explains my question about ignore_chilren flag. thanks.
+> > 
+> > Alan Stern
+> > 
+> 
+> [Jacob Pan]
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
