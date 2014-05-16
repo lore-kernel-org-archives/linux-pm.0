@@ -1,37 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Latest cpupower enhancements and fixes
-Date: Sat, 17 May 2014 00:57:37 +0200
-Message-ID: <1745271.ICNh0U6VUW@vostro.rjw.lan>
-References: <1399977706-50854-1-git-send-email-trenn@suse.de>
+Subject: Re: [PATCH] PM / OPP: fix incorrect OPP count handling in of_init_opp_table
+Date: Sat, 17 May 2014 01:03:32 +0200
+Message-ID: <200048151.0RTJzuPcGp@vostro.rjw.lan>
+References: <1400237477-24831-1-git-send-email-chander.kashyap@linaro.org> <CAKohpomYMcisB-UHp7TOEdxvQ9-1VzyRshQh=P-dQqYOuBz-5g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64586 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753687AbaEPWks (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 18:40:48 -0400
-In-Reply-To: <1399977706-50854-1-git-send-email-trenn@suse.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomYMcisB-UHp7TOEdxvQ9-1VzyRshQh=P-dQqYOuBz-5g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Chander Kashyap <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@vger.kernel.org
 
-On Tuesday, May 13, 2014 12:41:37 PM Thomas Renninger wrote:
-> Hi Rafael,
+On Friday, May 16, 2014 04:43:31 PM Viresh Kumar wrote:
+> On 16 May 2014 16:21, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+> > In of_init_opp_table function, if a failure to add an OPP is
+> > detected, the count of OPPs, yet to be added is not updated.
+> > Fix this by decrementing this count on failure as well.
+> >
+> > Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> > Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+> > ---
+> >  drivers/base/power/opp.c |    4 +---
+> >  1 file changed, 1 insertion(+), 3 deletions(-)
 > 
-> as discussed, here the resend, already including the one
-> sent by Prarit.
-> 
-> Would be great if you can queue them up for the next kernel release.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I've queued it up for 3.16 except for [9/9] that I applied already before.
-
-For the future I'd recommend using changelogs rather than subjects to
-explain what is done by the patches. :-)
-
-Thanks!
-
+Is this -stable material?  If so, which -stable?
 
 -- 
 I speak only for myself.
