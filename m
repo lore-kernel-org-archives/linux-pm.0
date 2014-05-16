@@ -1,70 +1,24 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/3] PM / sleep: Mechanism to avoid resuming runtime-suspended
- devices unnecessarily
-Date: Fri, 16 May 2014 10:27:37 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1405161023110.1224-100000@iolanthe.rowland.org>
-References: <7183958.HCss1mGDD2@vostro.rjw.lan>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Subject: =?UTF-8?B?UmU6IFtHSVQgUFVMTF0gY3B1aWRsZTogbmV3IGRyaXZlciBmb3IgQ2lycnVz?=
+ =?UTF-8?B?IExvZ2ljIGZvciAzLjE2?=
+Date: Fri, 16 May 2014 19:10:58 +0400
+Message-ID: <1400253058.410868598@f167.i.mail.ru>
+References: <5360CF57.9050202@linaro.org>
+ <5375CB0D.2080309@linaro.org>
+ <2465369.ul6KCqXmnx@vostro.rjw.lan>
+Reply-To: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:42518 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755324AbaEPO1i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 10:27:38 -0400
-In-Reply-To: <7183958.HCss1mGDD2@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2465369.ul6KCqXmnx@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?UTF-8?B?UmFmYWVsIEouIFd5c29ja2k=?= <rjw@rjwysocki.net>
+Cc: =?UTF-8?B?TGludXggUE0gbWFpbGluZyBsaXN0?= <linux-pm@vger.kernel.org>, =?UTF-8?B?TGludXggS2VybmVsIE1haWxpbmcgTGlzdA==?= <linux-kernel@vger.kernel.org>, =?UTF-8?B?RGFuaWVsIExlemNhbm8=?= <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Fri, 16 May 2014, Rafael J. Wysocki wrote:
-
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Currently, some subsystems (e.g. PCI and the ACPI PM domain) have to
-> resume all runtime-suspended devices during system suspend, mostly
-> because those devices may need to be reprogrammed due to different
-> wakeup settings for system sleep and for runtime PM.
-> 
-> For some devices, though, it's OK to remain in runtime suspend 
-> throughout a complete system suspend/resume cycle (if the device was in
-> runtime suspend at the start of the cycle).  We would like to do this
-> whenever possible, to avoid the overhead of extra power-up and power-down
-> events.
-> 
-> However, problems may arise because the device's descendants may require
-> it to be at full power at various points during the cycle.  Therefore the
-> most straightforward way to do this safely is if the device and all its
-> descendants can remain runtime suspended until the complete stage of
-> system resume.
-> 
-> To this end, introduce a new device PM flag, power.direct_complete
-> and modify the PM core to use that flag as follows.
-> 
-> If the ->prepare() callback of a device returns a positive number,
-> the PM core will regard that as an indication that it may leave the
-> device runtime-suspended.  It will then check if the system power
-> transition in progress is a suspend (and not hibernation in particular)
-> and if the device is, indeed, runtime-suspended.  In that case, the PM
-> core will set the device's power.direct_complete flag.  Otherwise it
-> will clear power.direct_complete for the device and it also will later
-> clear it for the device's parent (if there's one).
-> 
-> Next, the PM core will not invoke the ->suspend() ->suspend_late(),
-> ->suspend_irq(), ->resume_irq(), ->resume_early(), or ->resume()
-> callbacks for all devices having power.direct_complete set.  It
-> will invoke their ->complete() callbacks, however, and those
-> callbacks are then responsible for resuming the devices as
-> appropriate, if necessary.  For example, in some cases they may
-> need to queue up runtime resume requests for the devices using
-> pm_request_resume().
-> 
-> Changelog partly based on an Alan Stern's description of the idea
-> (http://marc.info/?l=linux-pm&m=139940466625569&w=2).
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
-
-And likewise for the documentation patches.
-
+RnJpLCAxNiBNYXkgMjAxNCAxMzozNDoyNCArMDIwMCDQvtGCICJSYWZhZWwgSi4gV3lzb2NraSIg
+PHJqd0Byand5c29ja2kubmV0PjoKPiBPbiBGcmlkYXksIE1heSAxNiwgMjAxNCAxMDoyMzo0MSBB
+TSBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiA+IAo+ID4gSGkgUmFmYWVsLAo+ID4gCj4gPiBqdXN0
+IGEgaGVhZCB1cCBpbiBjYXNlIHlvdSBtaXNzZWQgaXQuCj4gCj4gUHVsbGVkIG5vdywgdGhhbmtz
+IQoKVG54IQoKLS0tCgo=
