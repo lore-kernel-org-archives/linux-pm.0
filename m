@@ -1,7 +1,7 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [RFC Patch Part1 V1 26/30] x86, irq, ACPI: use common irqdomain map interface to program IOAPIC pins
-Date: Fri, 16 May 2014 16:05:46 +0800
-Message-ID: <1400227550-5935-27-git-send-email-jiang.liu@linux.intel.com>
+Subject: [RFC Patch Part1 V1 21/30] x86, ACPI, irq: provide basic irqdomain support
+Date: Fri, 16 May 2014 16:05:41 +0800
+Message-ID: <1400227550-5935-22-git-send-email-jiang.liu@linux.intel.com>
 References: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
@@ -10,102 +10,57 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@lin
 Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, sfi-devel@simplefirmware.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Refine ACPI to use common irqdomain map interface to program IOAPIC pins,
-so we can unify the callsite to progam IOAPIC pins.
+Enhance ACPI driver to provide basic irqdomain support for IOAPIC.
 
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/x86/kernel/acpi/boot.c |   48 ++++++++++++++++---------------------------
- 1 file changed, 18 insertions(+), 30 deletions(-)
+ arch/x86/kernel/acpi/boot.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 1ee639e74d50..50f06c9d1e2a 100644
+index f70f4f318316..1ee639e74d50 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -332,7 +332,9 @@ static void  mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+@@ -31,6 +31,7 @@
+ #include <linux/module.h>
+ #include <linux/dmi.h>
+ #include <linux/irq.h>
++#include <linux/irqdomain.h>
+ #include <linux/slab.h>
+ #include <linux/bootmem.h>
+ #include <linux/ioport.h>
+@@ -331,6 +332,23 @@ static void  mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
  static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
  			   int polarity);
  
--static struct irq_domain_ops acpi_irqdomain_ops;
-+static struct irq_domain_ops acpi_irqdomain_ops = {
-+	.map = mp_irqdomain_map,
-+};
- 
- static struct irq_domain *acpi_create_irqdomain(int idx, void *arg)
- {
-@@ -512,10 +514,6 @@ int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
- 	int irq = map_gsi_to_irq(gsi, 1);
- 
- 	if (irq >= 0) {
--#ifdef CONFIG_X86_IO_APIC
--		if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
--			setup_IO_APIC_irq_extra(gsi);
--#endif
- 		*irqp = irq;
- 		return 0;
- 	}
-@@ -1047,11 +1045,7 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
- static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
- 			   int polarity)
- {
--	int irq;
--	int ioapic;
--	int ioapic_pin;
--	struct io_apic_irq_attr irq_attr;
--	int ret;
-+	int irq, ioapic, pin, node;
- 
- 	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
- 		return gsi;
-@@ -1060,35 +1054,29 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
- 	if (acpi_gbl_FADT.sci_interrupt == gsi)
- 		return gsi;
- 
--	irq = map_gsi_to_irq(gsi, 1);
--	if (irq < 0)
--		return ACPI_INVALID_GSI;
--
- 	ioapic = mp_find_ioapic(gsi);
- 	if (ioapic < 0) {
--		printk(KERN_WARNING "No IOAPIC for GSI %u\n", gsi);
--		return gsi;
-+		pr_warn("No IOAPIC for GSI %u\n", gsi);
-+		return ACPI_INVALID_GSI;
- 	}
- 
--	ioapic_pin = mp_find_ioapic_pin(ioapic, gsi);
--
--	if (ioapic_pin > MP_MAX_IOAPIC_PIN) {
--		printk(KERN_ERR "Invalid reference to IOAPIC pin "
--		       "%d-%d\n", mpc_ioapic_id(ioapic),
--		       ioapic_pin);
--		return gsi;
-+	pin = mp_find_ioapic_pin(ioapic, gsi);
-+	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
-+	if (mp_set_pin_attr(ioapic, pin,
-+			    trigger == ACPI_EDGE_SENSITIVE ? 0 : 1,
-+			    polarity == ACPI_ACTIVE_HIGH ? 0 : 1,
-+			    node)) {
-+		pr_warn("Failed to set pin attr for GSI%d\n", gsi);
-+		return ACPI_INVALID_GSI;
- 	}
- 
-+	irq = map_gsi_to_irq(gsi, 1);
-+	if (irq < 0)
-+		return ACPI_INVALID_GSI;
++static struct irq_domain_ops acpi_irqdomain_ops;
 +
- 	if (enable_update_mptable)
- 		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
++static struct irq_domain *acpi_create_irqdomain(int idx, void *arg)
++{
++	struct mp_ioapic_gsi *gsi_cfg = mp_ioapic_gsi_routing(idx);
++
++	/*
++	 * Statically allocate IRQ number for legacy IRQs and all pins on the
++	 * first IOAPIC.
++	 */
++	if (gsi_cfg->gsi_base < NR_IRQS_LEGACY &&
++	    ioapic_dynirq_base < gsi_cfg->gsi_end)
++		ioapic_dynirq_base = gsi_cfg->gsi_end + 1;
++
++	return mp_irqdomain_create(idx, NULL, &acpi_irqdomain_ops);
++}
++
+ static int __init
+ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+ {
+@@ -345,7 +363,7 @@ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
  
--	set_io_apic_irq_attr(&irq_attr, ioapic, ioapic_pin,
--			     trigger == ACPI_EDGE_SENSITIVE ? 0 : 1,
--			     polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
--	ret = io_apic_set_pci_routing(dev, irq, &irq_attr);
--	if (ret < 0)
--		gsi = ACPI_INVALID_GSI;
--
- 	return gsi;
+ 	mp_register_ioapic(ioapic->id,
+ 			   ioapic->address, ioapic->global_irq_base,
+-			   NULL, NULL);
++			   acpi_create_irqdomain, NULL);
+ 
+ 	return 0;
  }
- 
 -- 
 1.7.10.4
