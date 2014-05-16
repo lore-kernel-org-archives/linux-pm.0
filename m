@@ -1,43 +1,58 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 4/7] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros
- by static inlines
-Date: Fri, 16 May 2014 10:59:06 +0200
-Message-ID: <5375D35A.6030806@linaro.org>
-References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com> <1399287439-31376-5-git-send-email-b.zolnierkie@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f169.google.com ([74.125.82.169]:34718 "EHLO
-	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756037AbaEPI65 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 04:58:57 -0400
-Received: by mail-we0-f169.google.com with SMTP id u56so2288854wes.28
-        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 01:58:56 -0700 (PDT)
-In-Reply-To: <1399287439-31376-5-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: [PATCH v3] PM / OPP: discard duplicate OPPs
+Date: Fri, 16 May 2014 14:30:09 +0530
+Message-ID: <1400230809-11401-1-git-send-email-chander.kashyap@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: nm@ti.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On 05/05/2014 12:57 PM, Bartlomiej Zolnierkiewicz wrote:
-> Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
-> by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
-> inlines.
->
-> This patch shouldn't cause any functionality changes.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Chander Kashyap <k.chander@samsung.com>
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+This patch detects the duplicate OPP entries and discards them
 
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+---
+ Changes in v3:
+	- Modify the commit log
+ Changes in v2:
+	- Reorder check for duplicate opp
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+ drivers/base/power/opp.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index ca521e1..973da78 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -443,15 +443,24 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	new_opp->u_volt = u_volt;
+ 	new_opp->available = true;
+ 
+-	/* Insert new OPP in order of increasing frequency */
++	/*
++	 * Insert new OPP in order of increasing frequency
++	 * and discard if already present
++	 */
+ 	head = &dev_opp->opp_list;
+ 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+-		if (new_opp->rate < opp->rate)
++		if (new_opp->rate <= opp->rate)
+ 			break;
+ 		else
+ 			head = &opp->node;
+ 	}
+ 
++	if (new_opp->rate == opp->rate) {
++		mutex_unlock(&dev_opp_list_lock);
++		kfree(new_opp);
++		return 0;
++	}
++
+ 	list_add_rcu(&new_opp->node, head);
+ 	mutex_unlock(&dev_opp_list_lock);
+ 
+-- 
+1.7.9.5
