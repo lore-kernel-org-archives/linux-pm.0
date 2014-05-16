@@ -1,66 +1,40 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [RFC Patch Part1 V1 05/30] x86, acpi, irq: kill static function irq_to_gsi()
-Date: Fri, 16 May 2014 16:05:25 +0800
-Message-ID: <1400227550-5935-6-git-send-email-jiang.liu@linux.intel.com>
-References: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [PATCH v2] PM / OPP: discard duplicate OPP additions
+Date: Fri, 16 May 2014 14:12:02 +0530
+Message-ID: <CANuQgHGPKpNYOVAgr8riULEoNr=h71OQRZLC9U193S7akM3B8g@mail.gmail.com>
+References: <CAKohpo=SXFYEncSe__XQHQ588hTME7cbmS+ykeWZOOt4ESb2Pg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1400227550-5935-1-git-send-email-jiang.liu@linux.intel.com>
+In-Reply-To: <CAKohpo=SXFYEncSe__XQHQ588hTME7cbmS+ykeWZOOt4ESb2Pg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, sfi-devel@simplefirmware.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Static function irq_to_gsi() is only called by acpi_isa_irq_to_gsi(),
-so kill function irq_to_gsi() and simplify acpi_isa_irq_to_gsi().
+On 16 May 2014 13:54, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 16 May 2014 13:43, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+>> From: Chander Kashyap <k.chander@samsung.com>
+>>
+>> It may be possible to unregister and re-register the cpufreq driver.
+>> One such example is arm big-little IKS cpufreq driver. While
+>> re-registering the driver, same OPPs may get added again.
+>>
+>> This patch detects the duplicacy and discards them.
+>
+> Diff looks fine but not the log ofcourse. It doesn't have anything to do with
+> big LITTLE.. Its just a patch to avoid addition of duplicate OPPs..
+>
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/kernel/acpi/boot.c |   26 ++++++--------------------
- 1 file changed, 6 insertions(+), 20 deletions(-)
+Big little reference is provided as an example. Nothing much
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index b41b47021f53..8390db1f7a93 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -120,22 +120,6 @@ static unsigned int gsi_to_irq(unsigned int gsi)
- 	return irq;
- }
- 
--static u32 irq_to_gsi(int irq)
--{
--	unsigned int gsi;
--
--	if (irq < NR_IRQS_LEGACY)
--		gsi = isa_irq_to_gsi[irq];
--	else if (irq < gsi_top)
--		gsi = irq;
--	else if (irq < (gsi_top + NR_IRQS_LEGACY))
--		gsi = irq - gsi_top;
--	else
--		gsi = 0xffffffff;
--
--	return gsi;
--}
--
- /*
-  * This is just a simple wrapper around early_ioremap(),
-  * with sanity checks for phys == 0 and size == 0.
-@@ -527,10 +511,12 @@ EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
- 
- int acpi_isa_irq_to_gsi(unsigned isa_irq, u32 *gsi)
- {
--	if (isa_irq >= 16)
--		return -1;
--	*gsi = irq_to_gsi(isa_irq);
--	return 0;
-+	if (isa_irq < NR_IRQS_LEGACY) {
-+		*gsi = isa_irq_to_gsi[isa_irq];
-+		return 0;
-+	}
-+
-+	return -1;
- }
- 
- static int acpi_register_gsi_pic(struct device *dev, u32 gsi,
+> Also fix spelling mistakes in log..
+>
+> And subject should be:
+> PM / OPP: discard duplicate OPPs
+
+Duplicates are discarded during OPP addition, and subject line indicates that.
+
 -- 
-1.7.10.4
+with warm regards,
+Chander Kashyap
