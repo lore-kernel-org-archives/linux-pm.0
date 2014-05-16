@@ -1,58 +1,60 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: [PATCH v3] PM / OPP: discard duplicate OPPs
-Date: Fri, 16 May 2014 14:30:09 +0530
-Message-ID: <1400230809-11401-1-git-send-email-chander.kashyap@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: nm@ti.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12
+ for AFTR mode code
+Date: Fri, 16 May 2014 11:03:11 +0200
+Message-ID: <5375D44F.7000505@linaro.org>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com> <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Chander Kashyap <k.chander@samsung.com>
+On 05/05/2014 12:57 PM, Bartlomiej Zolnierkiewicz wrote:
+> Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
+> mode code.  Without this setup AFTR mode doesn't show any benefit
+> over WFI one.  When this setup is applied AFTR mode reduces power
+> consumption by ~12% (as measured on Trats2 board).
+>
+> This change is a preparation for adding secure firmware support to
+> EXYNOS cpuidle driver.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>   arch/arm/mach-exynos/pm.c | 4 ++++
+>   1 file changed, 4 insertions(+)
+>
+> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> index 18f6bf8..3922968 100644
+> --- a/arch/arm/mach-exynos/pm.c
+> +++ b/arch/arm/mach-exynos/pm.c
+> @@ -391,6 +391,10 @@ static int exynos_cpu_pm_notifier(struct notifie=
+r_block *self,
+>   	case CPU_PM_ENTER:
+>   		if (cpu =3D=3D 0) {
+>   			exynos_pm_central_suspend();
+> +			if (soc_is_exynos4212() || soc_is_exynos4412())
+> +				__raw_writel(S5P_USE_STANDBY_WFI0 |
+> +					     S5P_USE_STANDBY_WFE0,
+> +					     S5P_CENTRAL_SEQ_OPTION);
 
-This patch detects the duplicate OPP entries and discards them
+Why not put this code in the exynos_enter_aftr() ?
 
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
----
- Changes in v3:
-	- Modify the commit log
- Changes in v2:
-	- Reorder check for duplicate opp
+>   			exynos_cpu_save_register();
+>   		}
+>   		break;
 
- drivers/base/power/opp.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index ca521e1..973da78 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -443,15 +443,24 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 	new_opp->u_volt = u_volt;
- 	new_opp->available = true;
- 
--	/* Insert new OPP in order of increasing frequency */
-+	/*
-+	 * Insert new OPP in order of increasing frequency
-+	 * and discard if already present
-+	 */
- 	head = &dev_opp->opp_list;
- 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
--		if (new_opp->rate < opp->rate)
-+		if (new_opp->rate <= opp->rate)
- 			break;
- 		else
- 			head = &opp->node;
- 	}
- 
-+	if (new_opp->rate == opp->rate) {
-+		mutex_unlock(&dev_opp_list_lock);
-+		kfree(new_opp);
-+		return 0;
-+	}
-+
- 	list_add_rcu(&new_opp->node, head);
- 	mutex_unlock(&dev_opp_list_lock);
- 
--- 
-1.7.9.5
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
