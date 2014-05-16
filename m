@@ -1,54 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] PM / OPP: discard duplicate OPP additions
-Date: Fri, 16 May 2014 14:17:59 +0530
-Message-ID: <CAKohpomarqCwU6JTpNpTOTd+4A5zwGYFYEbLFDcvAKbVyY9YTg@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 4/7] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_* macros
+ by static inlines
+Date: Fri, 16 May 2014 10:59:06 +0200
+Message-ID: <5375D35A.6030806@linaro.org>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com> <1399287439-31376-5-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:49637 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbaEPIr7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 04:47:59 -0400
-Received: by mail-oa0-f42.google.com with SMTP id j17so2672985oag.29
-        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 01:47:59 -0700 (PDT)
+Received: from mail-we0-f169.google.com ([74.125.82.169]:34718 "EHLO
+	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756037AbaEPI65 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 May 2014 04:58:57 -0400
+Received: by mail-we0-f169.google.com with SMTP id u56so2288854wes.28
+        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 01:58:56 -0700 (PDT)
+In-Reply-To: <1399287439-31376-5-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <chander.kashyap@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On 16 May 2014 14:12, Chander Kashyap <chander.kashyap@linaro.org> wrote:
-> On 16 May 2014 13:54, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 16 May 2014 13:43, Chander Kashyap <chander.kashyap@linaro.org> wrote:
->>> From: Chander Kashyap <k.chander@samsung.com>
->>>
->>> It may be possible to unregister and re-register the cpufreq driver.
->>> One such example is arm big-little IKS cpufreq driver. While
->>> re-registering the driver, same OPPs may get added again.
->>>
->>> This patch detects the duplicacy and discards them.
->>
->> Diff looks fine but not the log ofcourse. It doesn't have anything to do with
->> big LITTLE.. Its just a patch to avoid addition of duplicate OPPs..
->>
+On 05/05/2014 12:57 PM, Bartlomiej Zolnierkiewicz wrote:
+> Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
+> by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
+> inlines.
 >
-> Big little reference is provided as an example. Nothing much
-
-What I am saying is: "This is not a problem of re-registering drivers
-but adding duplicate OPPs and that's what we should emphasize
-on in the log". Your log is all focused on how to get re-registering
-of a driver working.
-
->> Also fix spelling mistakes in log..
->>
->> And subject should be:
->> PM / OPP: discard duplicate OPPs
+> This patch shouldn't cause any functionality changes.
 >
-> Duplicates are discarded during OPP addition, and subject line indicates that.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-I am asking to improve it. Replace:
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-PM / OPP: discard duplicate OPP additions
 
-with
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-PM / OPP: discard duplicate OPPs
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
