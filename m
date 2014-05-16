@@ -1,69 +1,28 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [GIT PULL] cpuidle: new driver for Cirrus Logic for 3.16
-Date: Fri, 16 May 2014 10:23:41 +0200
-Message-ID: <5375CB0D.2080309@linaro.org>
-References: <5360CF57.9050202@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] PM / OPP: discard duplicate OPP additions
+Date: Fri, 16 May 2014 13:54:03 +0530
+Message-ID: <CAKohpo=SXFYEncSe__XQHQ588hTME7cbmS+ykeWZOOt4ESb2Pg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5360CF57.9050202@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alexander Shiyan <shc_work@mail.ru>, Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Chander Kashyap <chander.kashyap@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 16 May 2014 13:43, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+> From: Chander Kashyap <k.chander@samsung.com>
+>
+> It may be possible to unregister and re-register the cpufreq driver.
+> One such example is arm big-little IKS cpufreq driver. While
+> re-registering the driver, same OPPs may get added again.
+>
+> This patch detects the duplicacy and discards them.
 
-Hi Rafael,
+Diff looks fine but not the log ofcourse. It doesn't have anything to do with
+big LITTLE.. Its just a patch to avoid addition of duplicate OPPs..
 
-just a head up in case you missed it.
+Also fix spelling mistakes in log..
 
-Thanks
-   -- Daniel
-
-On 04/30/2014 12:24 PM, Daniel Lezcano wrote:
->
-> Hi Rafael,
->
-> this pull request is based on top 3.15-rc3
->
->   * Alexander Shiyan added a new driver for the Cirrus Logic clps711x
->
-> Thanks
->    -- Daniel
->
-> The following changes since commit
-> d1db0eea852497762cab43b905b879dfcd3b8987:
->
->    Linux 3.15-rc3 (2014-04-27 19:29:27 -0700)
->
-> are available in the git repository at:
->
->    git://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/3.16
->
-> for you to fetch changes up to 7c7f8f7f2c6bf078874e5de35d7e2c66467fc6=
-64:
->
->    ARM: clps711x: Add cpuidle driver (2014-04-30 01:33:02 +0200)
->
-> ----------------------------------------------------------------
-> Alexander Shiyan (1):
->        ARM: clps711x: Add cpuidle driver
->
->   drivers/cpuidle/Kconfig.arm        |    6 ++++
->   drivers/cpuidle/Makefile           |    1 +
->   drivers/cpuidle/cpuidle-clps711x.c |   64
-> ++++++++++++++++++++++++++++++++++++
->   3 files changed, 71 insertions(+)
->   create mode 100644 drivers/cpuidle/cpuidle-clps711x.c
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+And subject should be:
+PM / OPP: discard duplicate OPPs
