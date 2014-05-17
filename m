@@ -1,113 +1,38 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 1/4] cpufreq: handle calls to ->target_index() in separate routine
-Date: Sat, 17 May 2014 10:21:20 +0530
-Message-ID: <914cddcb07a8aa1a9ec984f436dd2bba69cfd128.1400302114.git.viresh.kumar@linaro.org>
-References: <cover.1400302114.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1400302114.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1400302114.git.viresh.kumar@linaro.org>
-References: <cover.1400302114.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, nicolas.pitre@linaro.org, swarren@wwwdotorg.org, dianders@chromium.org, linux@arm.linux.org.uk, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 3/3] cpufreq: Tegra: implement intermediate frequency callbacks
+Date: Sat, 17 May 2014 10:22:02 +0530
+Message-ID: <CAKohpondZuWyA+oLOTbFHn2D1g6DdNu0PaoTfAau8jXw4VVc3Q@mail.gmail.com>
+References: <9e1ed1bf8c3610709436fe5ef8df3a63856f8f5c.1400230695.git.viresh.kumar@linaro.org>
+	<b3e68b08ca8175fde81ef1a85db1fde506f835b9.1400230695.git.viresh.kumar@linaro.org>
+	<5376696F.9090006@wwwdotorg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f180.google.com ([209.85.214.180]:34413 "EHLO
+	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756854AbaEQEwD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 May 2014 00:52:03 -0400
+Received: by mail-ob0-f180.google.com with SMTP id va2so3874972obc.25
+        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 21:52:02 -0700 (PDT)
+In-Reply-To: <5376696F.9090006@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-Handling calls to ->target_index() has got complex over time and might become
-more complex. So, its better to take target_index() bits out in another routine
-__target_index() for better code readability. Shouldn't have any functional
-impact.
+On 17 May 2014 01:09, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>>  static int
+>>  tegra_target_intermediate(struct cpufreq_policy *policy, unsigned int frequency)
+>>  {
+>> +       WARN_ON(frequency != clk_get_rate(pll_p_clk) / 1000);
+>> +
+>> +       /*
+>> +        * Take an extra reference to the main pll so it doesn't turn
+>> +        * off when we move the cpu off of it
+>> +        */
+>> +       clk_prepare_enable(pll_x_clk);
+>> +
+>>         return clk_set_parent(cpu_clk, pll_p_clk);
+>> +       /* FIXME: if error, remove pll_x reference */
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 56 ++++++++++++++++++++++++++++-------------------
- 1 file changed, 33 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a05c921..9bf12a2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1816,12 +1816,43 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
-  *                              GOVERNORS                            *
-  *********************************************************************/
- 
-+static int __target_index(struct cpufreq_policy *policy,
-+			  struct cpufreq_frequency_table *freq_table, int index)
-+{
-+	struct cpufreq_freqs freqs;
-+	int retval = -EINVAL;
-+	bool notify;
-+
-+	notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
-+
-+	if (notify) {
-+		freqs.old = policy->cur;
-+		freqs.new = freq_table[index].frequency;
-+		freqs.flags = 0;
-+
-+		pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
-+				__func__, policy->cpu, freqs.old, freqs.new);
-+
-+		cpufreq_freq_transition_begin(policy, &freqs);
-+	}
-+
-+	retval = cpufreq_driver->target_index(policy, index);
-+	if (retval)
-+		pr_err("%s: Failed to change cpu frequency: %d\n",
-+				__func__, retval);
-+
-+	if (notify)
-+		cpufreq_freq_transition_end(policy, &freqs, retval);
-+
-+	return retval;
-+}
-+
- int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int target_freq,
- 			    unsigned int relation)
- {
--	int retval = -EINVAL;
- 	unsigned int old_target_freq = target_freq;
-+	int retval = -EINVAL;
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
-@@ -1848,8 +1879,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 		retval = cpufreq_driver->target(policy, target_freq, relation);
- 	else if (cpufreq_driver->target_index) {
- 		struct cpufreq_frequency_table *freq_table;
--		struct cpufreq_freqs freqs;
--		bool notify;
- 		int index;
- 
- 		freq_table = cpufreq_frequency_get_table(policy->cpu);
-@@ -1870,26 +1899,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			goto out;
- 		}
- 
--		notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
--
--		if (notify) {
--			freqs.old = policy->cur;
--			freqs.new = freq_table[index].frequency;
--			freqs.flags = 0;
--
--			pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
--				 __func__, policy->cpu, freqs.old, freqs.new);
--
--			cpufreq_freq_transition_begin(policy, &freqs);
--		}
--
--		retval = cpufreq_driver->target_index(policy, index);
--		if (retval)
--			pr_err("%s: Failed to change cpu frequency: %d\n",
--			       __func__, retval);
--
--		if (notify)
--			cpufreq_freq_transition_end(policy, &freqs, retval);
-+		retval = __target_index(policy, freq_table, index);
- 	}
- 
- out:
--- 
-2.0.0.rc2
+Fixed this as well
