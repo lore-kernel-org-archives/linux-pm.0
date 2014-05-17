@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 2/4] cpufreq: add support for intermediate (stable) frequencies
-Date: Sat, 17 May 2014 10:21:21 +0530
-Message-ID: <046e3785229754332de62854439d2a4a17d637b7.1400302114.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 4/4] cpufreq: Tegra: implement intermediate frequency callbacks
+Date: Sat, 17 May 2014 10:21:23 +0530
+Message-ID: <0fcd08cda4001198c02fb41f3e6437bf758417d1.1400302114.git.viresh.kumar@linaro.org>
 References: <cover.1400302114.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1400302114.git.viresh.kumar@linaro.org>
@@ -12,194 +12,124 @@ To: rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, nicolas.pitre@linaro.org, swarren@wwwdotorg.org, dianders@chromium.org, linux@arm.linux.org.uk, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Douglas Anderson, recently pointed out an interesting problem due to which
-udelay() was expiring earlier than it should.
-
-While transitioning between frequencies few platforms may temporarily switch to
-a stable frequency, waiting for the main PLL to stabilize.
-
-For example: When we transition between very low frequencies on exynos, like
-between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
-No CPUFREQ notification is sent for that. That means there's a period of time
-when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
-and 300MHz. And so udelay behaves badly.
-
-To get this fixed in a generic way, lets introduce another set of callbacks
-get_intermediate() and target_intermediate(), only for drivers with
-target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
-
-get_intermediate should return a stable intermediate frequency platform wants to
-switch to, and target_intermediate() should set CPU to to that frequency, before
-jumping to the frequency corresponding to 'index'. Core will take care of
-sending notifications and driver doesn't have to handle them in
-target_intermediate() or target_index().
-
-NOTE: Once set to intermediate frequency, driver isn't expected to fail for the
-following ->target_index() call, if it fails core will issue a WARN().
+Tegra had always been switching to intermediate frequency (pll_p_clk) since
+ever. CPUFreq core has better support for handling notifications for these
+frequencies and so we can adapt Tegra's driver to it.
 
 Tested-by: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/cpu-freq/cpu-drivers.txt | 19 ++++++++++++++--
- drivers/cpufreq/cpufreq.c              | 40 +++++++++++++++++++++++++++-------
- include/linux/cpufreq.h                | 15 +++++++++++++
- 3 files changed, 64 insertions(+), 10 deletions(-)
+ drivers/cpufreq/tegra-cpufreq.c | 71 +++++++++++++++++++++--------------------
+ 1 file changed, 37 insertions(+), 34 deletions(-)
 
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-index b045fe5..b1bdb8a 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.txt
-@@ -26,6 +26,7 @@ Contents:
- 1.4  target/target_index or setpolicy?
- 1.5  target/target_index
- 1.6  setpolicy
-+1.7  get_intermediate and target_intermediate
- 2.   Frequency Table Helpers
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index 6e774c6..fc66442 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -46,10 +46,19 @@ static struct clk *pll_x_clk;
+ static struct clk *pll_p_clk;
+ static struct clk *emc_clk;
  
- 
-@@ -79,6 +80,10 @@ cpufreq_driver.attr -		A pointer to a NULL-terminated list of
- 				"struct freq_attr" which allow to
- 				export values to sysfs.
- 
-+cpufreq_driver.get_intermediate
-+and target_intermediate		Used to switch to stable frequency while
-+				changing CPU frequency.
+-static int tegra_cpu_clk_set_rate(unsigned long rate)
++static unsigned int
++tegra_get_intermediate(struct cpufreq_policy *policy, unsigned int index)
++{
++	return clk_get_rate(pll_p_clk) / 1000; /* kHz */
++}
 +
- 
- 1.2 Per-CPU Initialization
- --------------------------
-@@ -151,7 +156,7 @@ Some cpufreq-capable processors switch the frequency between certain
- limits on their own. These shall use the ->setpolicy call
- 
- 
--1.4. target/target_index
-+1.5. target/target_index
- -------------
- 
- The target_index call has two arguments: struct cpufreq_policy *policy,
-@@ -179,7 +184,7 @@ Here again the frequency table helper might assist you - see section 2
- for details.
- 
- 
--1.5 setpolicy
-+1.6 setpolicy
- ---------------
- 
- The setpolicy call only takes a struct cpufreq_policy *policy as
-@@ -190,6 +195,16 @@ setting when policy->policy is CPUFREQ_POLICY_PERFORMANCE, and a
- powersaving-oriented setting when CPUFREQ_POLICY_POWERSAVE. Also check
- the reference implementation in drivers/cpufreq/longrun.c
- 
-+1.7 get_intermediate and target_intermediate
-+--------------------------------------------
-+
-+Only for drivers with target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
-+
-+get_intermediate should return a stable intermediate frequency platform wants to
-+switch to, and target_intermediate() should set CPU to to that frequency, before
-+jumping to the frequency corresponding to 'index'. Core will take care of
-+sending notifications and driver doesn't have to handle them in
-+target_intermediate() or target_index().
- 
- 
- 2. Frequency Table Helpers
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9bf12a2..f38f2f2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1819,27 +1819,50 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
- static int __target_index(struct cpufreq_policy *policy,
- 			  struct cpufreq_frequency_table *freq_table, int index)
++static int
++tegra_target_intermediate(struct cpufreq_policy *policy, unsigned int frequency)
  {
--	struct cpufreq_freqs freqs;
-+	struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
- 	int retval = -EINVAL;
- 	bool notify;
+ 	int ret;
  
- 	notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
-+	if (!notify)
-+		goto skip_notify;
++	WARN_ON(frequency != clk_get_rate(pll_p_clk) / 1000);
++
+ 	/*
+ 	 * Take an extra reference to the main pll so it doesn't turn
+ 	 * off when we move the cpu off of it
+@@ -57,28 +66,9 @@ static int tegra_cpu_clk_set_rate(unsigned long rate)
+ 	clk_prepare_enable(pll_x_clk);
  
--	if (notify) {
--		freqs.old = policy->cur;
--		freqs.new = freq_table[index].frequency;
--		freqs.flags = 0;
-+	/* Handle switching to intermediate frequency */
-+	if (cpufreq_driver->get_intermediate) {
-+		freqs.new = cpufreq_driver->get_intermediate(policy, index);
+ 	ret = clk_set_parent(cpu_clk, pll_p_clk);
+-	if (ret) {
+-		pr_err("Failed to switch cpu to clock pll_p\n");
+-		goto out;
+-	}
+-
+-	if (rate == clk_get_rate(pll_p_clk))
+-		goto out;
+-
+-	ret = clk_set_rate(pll_x_clk, rate);
+-	if (ret) {
+-		pr_err("Failed to change pll_x to %lu\n", rate);
+-		goto out;
+-	}
+-
+-	ret = clk_set_parent(cpu_clk, pll_x_clk);
+-	if (ret) {
+-		pr_err("Failed to switch cpu to clock pll_x\n");
+-		goto out;
+-	}
++	if (ret)
++		clk_disable_unprepare(pll_x_clk);
  
--		pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
-+		pr_debug("%s: cpu: %d, switching to intermediate freq: oldfreq: %u, intermediate freq: %u\n",
- 				__func__, policy->cpu, freqs.old, freqs.new);
+-out:
+-	clk_disable_unprepare(pll_x_clk);
+ 	return ret;
+ }
  
- 		cpufreq_freq_transition_begin(policy, &freqs);
-+		retval = cpufreq_driver->target_intermediate(policy, freqs.new);
-+		cpufreq_freq_transition_end(policy, &freqs, retval);
-+
-+		if (retval) {
-+			pr_err("%s: Failed to change to intermediate frequency: %d\n",
-+				__func__, retval);
-+			return retval;
-+		}
-+
-+		/* Set intermediate as old freq */
-+		freqs.old = freqs.new;
- 	}
+@@ -98,10 +88,21 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
+ 	else
+ 		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
  
-+	freqs.new = freq_table[index].frequency;
+-	ret = tegra_cpu_clk_set_rate(rate * 1000);
++	if (rate == clk_get_rate(pll_p_clk))
++		goto out;
 +
-+	pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n", __func__,
-+		 policy->cpu, freqs.old, freqs.new);
-+
-+	cpufreq_freq_transition_begin(policy, &freqs);
-+
-+skip_notify:
- 	retval = cpufreq_driver->target_index(policy, index);
--	if (retval)
-+	if (retval) {
-+		/* We shouldn't fail after setting intermediate freq */
-+		WARN_ON(cpufreq_driver->get_intermediate);
- 		pr_err("%s: Failed to change cpu frequency: %d\n",
- 				__func__, retval);
++	ret = clk_set_rate(pll_x_clk, rate * 1000);
++	if (ret) {
++		pr_err("Failed to change pll_x to %lu\n", rate);
++		goto out;
 +	}
++
++	ret = clk_set_parent(cpu_clk, pll_x_clk);
+ 	if (ret)
+-		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
+-			rate);
++		pr_err("Failed to switch cpu to clock pll_x\n");
++
++out:
++	clk_disable_unprepare(pll_x_clk);
  
- 	if (notify)
- 		cpufreq_freq_transition_end(policy, &freqs, retval);
-@@ -2361,7 +2384,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	    !(driver_data->setpolicy || driver_data->target_index ||
- 		    driver_data->target) ||
- 	     (driver_data->setpolicy && (driver_data->target_index ||
--		    driver_data->target)))
-+		    driver_data->target)) ||
-+	     (!!driver_data->get_intermediate ^ !!driver_data->target_intermediate))
- 		return -EINVAL;
+ 	return ret;
+ }
+@@ -137,16 +138,18 @@ static int tegra_cpu_exit(struct cpufreq_policy *policy)
+ }
  
- 	pr_debug("trying to register driver %s\n", driver_data->name);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 3f45889..bfcba11 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -226,6 +226,21 @@ struct cpufreq_driver {
- 				 unsigned int relation);
- 	int	(*target_index)	(struct cpufreq_policy *policy,
- 				 unsigned int index);
-+	/*
-+	 * Only for drivers with target_index() and CPUFREQ_ASYNC_NOTIFICATION
-+	 * unset.
-+	 *
-+	 * get_intermediate should return a stable intermediate frequency
-+	 * platform wants to switch to and target_intermediate() should set CPU
-+	 * to to that frequency, before jumping to the frequency corresponding
-+	 * to 'index'. Core will take care of sending notifications and driver
-+	 * doesn't have to handle them in target_intermediate() or
-+	 * target_index().
-+	 */
-+	unsigned int (*get_intermediate)(struct cpufreq_policy *policy,
-+					 unsigned int index);
-+	int	(*target_intermediate)(struct cpufreq_policy *policy,
-+				       unsigned int frequency);
+ static struct cpufreq_driver tegra_cpufreq_driver = {
+-	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+-	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target_index	= tegra_target,
+-	.get		= cpufreq_generic_get,
+-	.init		= tegra_cpu_init,
+-	.exit		= tegra_cpu_exit,
+-	.name		= "tegra",
+-	.attr		= cpufreq_generic_attr,
++	.flags			= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++	.verify			= cpufreq_generic_frequency_table_verify,
++	.get_intermediate	= tegra_get_intermediate,
++	.target_intermediate	= tegra_target_intermediate,
++	.target_index		= tegra_target,
++	.get			= cpufreq_generic_get,
++	.init			= tegra_cpu_init,
++	.exit			= tegra_cpu_exit,
++	.name			= "tegra",
++	.attr			= cpufreq_generic_attr,
+ #ifdef CONFIG_PM
+-	.suspend	= cpufreq_generic_suspend,
++	.suspend		= cpufreq_generic_suspend,
+ #endif
+ };
  
- 	/* should be defined, if possible */
- 	unsigned int	(*get)	(unsigned int cpu);
 -- 
 2.0.0.rc2
