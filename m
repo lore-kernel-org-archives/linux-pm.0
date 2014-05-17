@@ -1,38 +1,59 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/3] cpufreq: add support for intermediate (stable) frequencies
-Date: Sat, 17 May 2014 09:36:33 +0530
-Message-ID: <CAKohpo=t=HcOMHfG_wRhaPAucDsOCmW4wW9_UjPmv5uE29v36g@mail.gmail.com>
-References: <cover.1400230695.git.viresh.kumar@linaro.org>
-	<9e1ed1bf8c3610709436fe5ef8df3a63856f8f5c.1400230695.git.viresh.kumar@linaro.org>
-	<53765DD9.6040403@wwwdotorg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:47023 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbaEQEGe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 May 2014 00:06:34 -0400
-Received: by mail-ob0-f178.google.com with SMTP id va2so3896454obc.37
-        for <linux-pm@vger.kernel.org>; Fri, 16 May 2014 21:06:33 -0700 (PDT)
-In-Reply-To: <53765DD9.6040403@wwwdotorg.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V3 0/4] cpufreq: add support for intermediate (stable)
+Date: Sat, 17 May 2014 10:21:19 +0530
+Message-ID: <cover.1400302114.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, nicolas.pitre@linaro.org, swarren@wwwdotorg.org, dianders@chromium.org, linux@arm.linux.org.uk, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-On 17 May 2014 00:20, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> s/Uset/Used.
+Douglas Anderson, recently pointed out an interesting problem due to which
+udelay() was expiring earlier than it should.
 
-:(
+While transitioning between frequencies few platforms may temporarily switch to
+a stable frequency, waiting for the main PLL to stabilize.
 
->> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->> +     unsigned int (*get_intermediate)(struct cpufreq_policy *policy,
->> +                                      unsigned int index);
->
-> Should get_intermediate be passed a struct cpufreq_freqs freqs rather
-> than just the target index? That way, if the intermediate frequency
-> varies depending on old/new frequencies, then the driver won't have to
-> go look up the current frequency in order to implement that logic.
+For example: When we transition between very low frequencies on exynos, like
+between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
+No CPUFREQ notification is sent for that. That means there's a period of time
+when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
+and 300MHz. And so udelay behaves badly.
 
-That can be done by simply doing policy->cur and we don't require to
-get it from hardware again. So, probably should stay as is.
+To get this fixed in a generic way, lets introduce another set of callbacks
+get_intermediate() and target_intermediate(), only for drivers with
+target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
+
+get_intermediate should return a stable intermediate frequency platform wants to
+switch to, and target_intermediate() should set CPU to to that frequency, before
+jumping to the frequency corresponding to 'index'. Core will take care of
+sending notifications and driver doesn't have to handle them in
+target_intermediate() or target_index().
+
+This patchset also update Tegra to use this new infrastructure and is already
+tested by Stephen.
+
+NOTE: Once set to intermediate frequency, driver isn't expected to fail for the
+following ->target_index() call, if it fails core will issue a WARN().
+
+V2-V3:
+- Fix spelling error: s/Uset/Used
+- Update tegra with the changes Stephen suggested
+- Include a dependency patch sent separately earlier (3/4)
+
+V1-V2: Almost changed completely, V1 was here: https://lkml.org/lkml/2014/5/15/40
+
+Viresh Kumar (4):
+  cpufreq: handle calls to ->target_index() in separate routine
+  cpufreq: add support for intermediate (stable) frequencies
+  cpufreq: Tegra: drop wrapper around tegra_update_cpu_speed()
+  cpufreq: Tegra: implement intermediate frequency callbacks
+
+ Documentation/cpu-freq/cpu-drivers.txt | 19 +++++++-
+ drivers/cpufreq/cpufreq.c              | 82 ++++++++++++++++++++++++----------
+ drivers/cpufreq/tegra-cpufreq.c        | 80 ++++++++++++++++-----------------
+ include/linux/cpufreq.h                | 15 +++++++
+ 4 files changed, 129 insertions(+), 67 deletions(-)
+
+-- 
+2.0.0.rc2
