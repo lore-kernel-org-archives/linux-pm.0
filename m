@@ -1,152 +1,79 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Sun, 18 May 2014 17:51:05 -0700
-Message-ID: <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC PATCH 00/12 v1] A new CPU load metric for power-efficient
+ scheduler: CPU ConCurrency
+Date: Mon, 19 May 2014 03:16:56 +0800
+Message-ID: <20140518191656.GB18818@intel.com>
+References: <1399248172-13871-1-git-send-email-yuyang.du@intel.com>
+ <20140505093744.GO17778@laptop.programming.kicks-ass.net>
+ <20140506184637.GA17884@intel.com>
+ <20140515145042.GO30445@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:46876 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750834AbaESDVa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 18 May 2014 23:21:30 -0400
 Content-Disposition: inline
-In-Reply-To: <20140515073816.GI16662@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20140515145042.GO30445@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com
 
-Hi,
+> So I should have just deleted all patches, for none of them has a
+> changelog.
+> 
 
-I spent some time finding an alternative implementation for
-clk_round_rate_nearest, the result can be found below.
-I hope this is closer to a working implementation.
+It is my bad to not make changelogs in patches. The v2 has them, but I should
+have made them since always.
 
-	Thanks,
-	S=C3=B6ren
+> So all this cc crap only hooks into and modifies fair.c behaviour. There
+> is absolutely no reason it should live anywhere else except fair.c
+> 
+> Secondly, the very last thing we need is more CONFIG_ goo, and you
+> sprinkle #ifdef around like it was gold dust.
+> 
 
+Aggreed. I will change these.
 
-------------------8<-----------------8<---------------------8<---------=
-----8<---
-=46rom: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Date: Tue, 2 Apr 2013 10:08:13 -0700
-Subject: [PATCH] clk: Introduce 'clk_round_rate_nearest()'
+> Thirdly, wth is wrong with the current per-task runtime accounting and
+> why can't you extend/adapt that instead of duplicating the lot.
+> 
 
-Introduce a new API function to round a rate to the closest possible
-rate the HW clock can generate.
-In contrast to 'clk_round_rate()' which works similar, but always retur=
-ns
-a frequency <=3D its input rate.
+Sure. As you and Vincent said, CC will take a ride of current tracking codes
+instead of duplicating.
 
-Cc: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
----
- drivers/clk/clk.c   | 43 +++++++++++++++++++++++++++++++++++++++++--
- include/linux/clk.h | 14 ++++++++++++--
- 2 files changed, 53 insertions(+), 4 deletions(-)
+> Fourthly, I'm _never_ going to merge anything that hijacks the load
+> balancer and does some random other thing. There's going to be a single
+> load-balancer full stop.
+> 
+> Many people have expressed interest in a packing balancer (vs the
+> spreading we currently default to). Some have even done patches.
+> At the same time it seems very difficult to agree on _when_ packing
+> makes sense. That said, when we do packing we should do it driven by the
+> topology and policy, not by some compile time option.
+>
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index dff0373f53c1..faf24d0569df 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -1011,8 +1011,9 @@ unsigned long __clk_round_rate(struct clk *clk, u=
-nsigned long rate)
-  * @rate: the rate which is to be rounded
-  *
-  * Takes in a rate as input and rounds it to a rate that the clk can a=
-ctually
-- * use which is then returned.  If clk doesn't support round_rate oper=
-ation
-- * then the parent rate is returned.
-+ * use and does not exceed the requested frequency, which is then retu=
-rned.
-+ * If clk doesn't support round_rate operation then the parent rate
-+ * is returned.
-  */
- long clk_round_rate(struct clk *clk, unsigned long rate)
- {
-@@ -1027,6 +1028,44 @@ long clk_round_rate(struct clk *clk, unsigned lo=
-ng rate)
- EXPORT_SYMBOL_GPL(clk_round_rate);
-=20
- /**
-+ * clk_round_rate_nearest - round the given rate for a clk
-+ * @clk: the clk for which we are rounding a rate
-+ * @rate: the rate which is to be rounded
-+ *
-+ * Takes in a rate as input and rounds it to the closest rate that the=
- clk
-+ * can actually use which is then returned. If clk doesn't support
-+ * round_rate operation then the parent rate is returned.
-+ */
-+long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
-+{
-+	unsigned long lower, upper, cur, lower_last, upper_last;
-+
-+	lower =3D clk_round_rate(clk, rate);
-+	if (lower >=3D rate)
-+		return lower;
-+
-+	upper =3D clk_round_rate(clk, rate + rate - lower);
-+	if (upper =3D=3D lower)
-+		return upper;
-+
-+	lower =3D rate + 1;
-+	do {
-+		upper_last =3D upper;
-+		lower_last =3D lower;
-+
-+		cur =3D clk_round_rate(clk, lower + ((upper - lower) >> 1));
-+		if (cur < lower)
-+			lower +=3D (upper - lower) >> 1;
-+		else
-+			upper =3D cur;
-+
-+	} while (lower_last !=3D lower && upper_last !=3D upper);
-+
-+	return upper;
-+}
-+EXPORT_SYMBOL_GPL(clk_round_rate_nearest);
-+
-+/**
-  * __clk_notify - call clk notifier chain
-  * @clk: struct clk * that is changing rate
-  * @msg: clk notifier type (see include/linux/clk.h)
-diff --git a/include/linux/clk.h b/include/linux/clk.h
-index fb5e097d8f72..2f83bf030ac6 100644
---- a/include/linux/clk.h
-+++ b/include/linux/clk.h
-@@ -255,15 +255,25 @@ void devm_clk_put(struct device *dev, struct clk =
-*clk);
-=20
-=20
- /**
-- * clk_round_rate - adjust a rate to the exact rate a clock can provid=
-e
-+ * clk_round_rate - round a rate to the exact rate a clock can provide=
- not
-+ *		    exceeding @rate
-  * @clk: clock source
-  * @rate: desired clock rate in Hz
-  *
-- * Returns rounded clock rate in Hz, or negative errno.
-+ * Returns rounded clock rate in Hz, or parent rate
-  */
- long clk_round_rate(struct clk *clk, unsigned long rate);
-=20
- /**
-+ * clk_round_rate_nearest - round a rate to the exact rate a clock can=
- provide
-+ * @clk: the clk for which we are rounding a rate
-+ * @rate: the rate which is to be rounded
-+ *
-+ * Returns rounded clock rate in Hz, or parent rate
-+ */
-+long clk_round_rate_nearest(struct clk *clk, unsigned long rate);
-+
-+/**
-  * clk_set_rate - set the clock rate for a clock source
-  * @clk: clock source
-  * @rate: desired clock rate in Hz
---=20
-1.9.3.1.ga73a6ad
+I will make "Workload Consolidation" driven by topology and policy,
+essentially it is already so, but sure the codes are not completely clean in
+that regard.
+
+> Lastly, if you'd done your homework and actually read some of the
+> threads on the subject from say the past two years, you'd know pretty
+> much all that already.
+> 
+> I'm not here to endlessly repeat myself and waste time staring at
+> unchangelogged patches.
+> 
+
+This will not happen again.
+
+> Anyway, there might or might not be useful ideas in there.. but its very
+> hard to tell one way or another.
+
+I think the above is mostly about "amenability" to scheduler codes.
+Apparently, I am not doing it right. Will send another version to
+make it less hard. Thanks for your time.
+
+Yuyang
