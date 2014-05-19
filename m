@@ -1,59 +1,35 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / OPP: fix incorrect OPP count handling in of_init_opp_table
-Date: Tue, 20 May 2014 01:26:57 +0200
-Message-ID: <1589010.LoIeM7LX94@vostro.rjw.lan>
-References: <1400237477-24831-1-git-send-email-chander.kashyap@linaro.org> <CAGo_u6oQiOJzp2DCCFUfwWWPLKKw=pgZPgdr9LBqfYs-GKb9zg@mail.gmail.com>
+Subject: Re: [PATCH 3/3] cpufreq: Enable big.LITTLE cpufreq driver on arm64
+Date: Tue, 20 May 2014 01:36:56 +0200
+Message-ID: <3610030.uyJEv7eFhP@vostro.rjw.lan>
+References: <1399653631-4938-1-git-send-email-broonie@kernel.org> <2437793.vfcRUkFCet@vostro.rjw.lan> <20140519230729.GD30457@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61672 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:54185 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751397AbaESXKD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 19:10:03 -0400
-In-Reply-To: <CAGo_u6oQiOJzp2DCCFUfwWWPLKKw=pgZPgdr9LBqfYs-GKb9zg@mail.gmail.com>
+	with SMTP id S1751253AbaESXUB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 19:20:01 -0400
+In-Reply-To: <20140519230729.GD30457@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Chander Kashyap <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, pavel@ucw.cz, Len Brown <len.brown@intel.com>, gregkh@linuxfoundation.org, Viresh Kumar <viresh.kumar@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: Mark Brown <broonie@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On Monday, May 19, 2014 08:04:30 AM Nishanth Menon wrote:
-> On Fri, May 16, 2014 at 5:51 AM, Chander Kashyap
-> <chander.kashyap@linaro.org> wrote:
-> > In of_init_opp_table function, if a failure to add an OPP is
-> > detected, the count of OPPs, yet to be added is not updated.
-> > Fix this by decrementing this count on failure as well.
-> >
-> > Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-> > Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
-> > ---
-> >  drivers/base/power/opp.c |    4 +---
-> >  1 file changed, 1 insertion(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> > index d9e376a..faae9cf 100644
-> > --- a/drivers/base/power/opp.c
-> > +++ b/drivers/base/power/opp.c
-> > @@ -643,11 +643,9 @@ int of_init_opp_table(struct device *dev)
-> >                 unsigned long freq = be32_to_cpup(val++) * 1000;
-> >                 unsigned long volt = be32_to_cpup(val++);
-> >
-> > -               if (dev_pm_opp_add(dev, freq, volt)) {
-> > +               if (dev_pm_opp_add(dev, freq, volt))
-> >                         dev_warn(dev, "%s: Failed to add OPP %ld\n",
-> >                                  __func__, freq);
-> > -                       continue;
-> > -               }
-> >                 nr -= 2;
-> >         }
-> Good Catch. Thanks.
+On Tuesday, May 20, 2014 12:07:29 AM Mark Brown wrote:
 > 
-> Acked-by: Nishanth Menon <nm@ti.com>
+> --MAH+hnPXVZWQ5cD/
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> 
+> On Tue, May 20, 2014 at 01:19:03AM +0200, Rafael J. Wysocki wrote:
+> 
+> > I've queued this one up for 3.16, thanks!
+> 
+> This will fail to build without patch 1 - it uses the stubs added there.
 
-Since my pull request for 3.15-rc6 has been sent already, I'm going to push
-this for -rc7.  Thanks!
+OK, dropping then.
 
+Rafael
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
