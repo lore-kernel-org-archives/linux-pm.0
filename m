@@ -1,103 +1,203 @@
-From: Bibek Basu <bbasu@nvidia.com>
-Subject: [PATCH] cpufreq: remove race while accessing cur_policy
-Date: Mon, 19 May 2014 10:24:01 +0530
-Message-ID: <1400475241-21174-1-git-send-email-bbasu@nvidia.com>
+From: Amit Kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 01/10] thermal: exynos: remove unused struct
+ exynos_tmu_registers entries
+Date: Mon, 19 May 2014 10:42:17 +0530
+Message-ID: <CADGdYn69-+uaHwh7YEMjOXG=b6tTMSg9=KS=OV8ZiQVDLD8GOw@mail.gmail.com>
+References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com>
+	<1399288539-1793-2-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:7498 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbaESEyq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 00:54:46 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1399288539-1793-2-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Bibek Basu <bbasu@nvidia.com>
 
-While accessing cur_policy during executing events
-CPUFREQ_GOV_START, CPUFREQ_GOV_STOP, CPUFREQ_GOV_LIMITS,
-same mutex lock is not taken, dbs_data->mutex, which leads
-to race and data corruption while running continious suspend
-resume test. This is seen with ondemand governor with suspend
-resume test using rtcwake.
+Hi Bartlomiej,
 
-[ 367.405875] Unable to handle kernel NULL pointer dereference at virtual address 00000028
-[ 367.427534] pgd = ed610000
-[ 367.427545] [00000028] *pgd=adf11831, *pte=00000000, *ppte=00000000
-[ 367.427555] Internal error: Oops: 17 [#1] PREEMPT SMP ARM
-[ 367.427564] Modules linked in: nvhost_vi
-[ 367.427573] CPU: 1 PID: 3243 Comm: rtcwake Not tainted 3.10.24-gf5cf9e5 #1
-[ 367.427578] task: ee708040 ti: ed61c000 task.ti: ed61c000
-[ 367.427589] PC is at cpufreq_governor_dbs+0x400/0x634
-[ 367.427594] LR is at cpufreq_governor_dbs+0x3f8/0x634
-[ 367.427600] pc : [<c05652b8>] lr : [<c05652b0>] psr: 600f0013
-[ 367.427600] sp : ed61dcb0 ip : 000493e0 fp : c1cc14f0
-[ 367.427604] r10: 00000000 r9 : 00000000 r8 : 00000000
-[ 367.427608] r7 : eb725280 r6 : c1cc1560 r5 : eb575200 r4 : ebad7740
-[ 367.427612] r3 : ee708040 r2 : ed61dca8 r1 : 001ebd24 r0 : 00000000
-[ 367.427618] Flags: nZCv IRQs on FIQs on Mode SVC_32 ISA ARM Segment user
-[ 367.427622] Control: 10c5387d Table: ad61006a DAC: 00000015
-[ 367.429201] [<c05652b8>] (cpufreq_governor_dbs+0x400/0x634) from [<c055f700>] (__cpufreq_governor+0x98/0x1b4)
-[ 367.429216] [<c055f700>] (__cpufreq_governor+0x98/0x1b4) from [<c0560770>] (__cpufreq_set_policy+0x250/0x320)
-[ 367.429226] [<c0560770>] (__cpufreq_set_policy+0x250/0x320) from [<c0561dcc>] (cpufreq_update_policy+0xcc/0x168)
-[ 367.429235] [<c0561dcc>] (cpufreq_update_policy+0xcc/0x168) from [<c0561ed0>] (cpu_freq_notify+0x68/0xdc)
-[ 367.429253] [<c0561ed0>] (cpu_freq_notify+0x68/0xdc) from [<c008eff8>] (notifier_call_chain+0x4c/0x8c)
-[ 367.429270] [<c008eff8>] (notifier_call_chain+0x4c/0x8c) from [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68)
-[ 367.429283] [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68) from [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28)
-[ 367.429301] [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28) from [<c00aac6c>] (pm_qos_update_bounded_target+0xd8/0x310)
-[ 367.429314] [<c00aac6c>] (pm_qos_update_bounded_target+0xd8/0x310) from [<c00ab3b0>] (__pm_qos_update_request+0x64/0x70)
-[ 367.429328] [<c00ab3b0>] (__pm_qos_update_request+0x64/0x70) from [<c004b4b8>] (tegra_pm_notify+0x114/0x134)
-[ 367.429342] [<c004b4b8>] (tegra_pm_notify+0x114/0x134) from [<c008eff8>] (notifier_call_chain+0x4c/0x8c)
-[ 367.429355] [<c008eff8>] (notifier_call_chain+0x4c/0x8c) from [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68)
-[ 367.429366] [<c008f3d4>] (__blocking_notifier_call_chain+0x50/0x68) from [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28)
-[ 367.429376] [<c008f40c>] (blocking_notifier_call_chain+0x20/0x28) from [<c00ac228>] (pm_notifier_call_chain+0x1c/0x34)
-[ 367.429389] [<c00ac228>] (pm_notifier_call_chain+0x1c/0x34) from [<c00ad38c>] (enter_state+0xec/0x128)
-[ 367.429399] [<c00ad38c>] (enter_state+0xec/0x128) from [<c00ad400>] (pm_suspend+0x38/0xa4)
-[ 367.429407] [<c00ad400>] (pm_suspend+0x38/0xa4) from [<c00ac114>] (state_store+0x70/0xc0)
-[ 367.429423] [<c00ac114>] (state_store+0x70/0xc0) from [<c027b1e8>] (kobj_attr_store+0x14/0x20)
-[ 367.429443] [<c027b1e8>] (kobj_attr_store+0x14/0x20) from [<c019cd9c>] (sysfs_write_file+0x104/0x184)
-[ 367.429460] [<c019cd9c>] (sysfs_write_file+0x104/0x184) from [<c0143038>] (vfs_write+0xd0/0x19c)
-[ 367.429472] [<c0143038>] (vfs_write+0xd0/0x19c) from [<c0143414>] (SyS_write+0x4c/0x78)
-[ 367.429485] [<c0143414>] (SyS_write+0x4c/0x78) from [<c000f080>] (ret_fast_syscall+0x0/0x30)
-[ 367.429495] Code: e1a00006 eb084346 e59b0020 e5951024 (e5903028)
-[ 367.429533] ---[ end trace 0488523c8f6b0f9d ]---
+On 5/5/14, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> wrote:
+> There should be no functional changes caused by this patch.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  drivers/thermal/samsung/exynos_tmu.h      | 40
+> -------------------------------
+>  drivers/thermal/samsung/exynos_tmu_data.c |  2 --
+>  drivers/thermal/samsung/exynos_tmu_data.h |  1 -
+>  3 files changed, 43 deletions(-)
+>
+> diff --git a/drivers/thermal/samsung/exynos_tmu.h
+> b/drivers/thermal/samsung/exynos_tmu.h
+> index 3fb6554..80dc899 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.h
+> +++ b/drivers/thermal/samsung/exynos_tmu.h
+> @@ -82,8 +82,6 @@ enum soc_type {
+>   * @triminfo_25_shift: shift bit of the 25 C trim value in triminfo_data
+> reg.
+>   * @triminfo_85_shift: shift bit of the 85 C trim value in triminfo_data
+> reg.
+>   * @triminfo_ctrl: trim info controller register.
+> - * @triminfo_reload_shift: shift of triminfo reload enable bit in
+> triminfo_ctrl
+> -	reg.
+>   * @tmu_ctrl: TMU main controller register.
+>   * @test_mux_addr_shift: shift bits of test mux address.
+>   * @buf_vref_sel_shift: shift bits of reference voltage in tmu_ctrl
+> register.
+> @@ -98,27 +96,13 @@ enum soc_type {
+>  	register.
+>   * @calib_mode_mask: mask bits of calibration mode value in tmu_ctrl
+>  	register.
+> - * @therm_trip_tq_en_shift: shift bits of thermal trip enable by TQ pin in
+> -	tmu_ctrl register.
+>   * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl register.
+>   * @tmu_status: register drescribing the TMU status.
+>   * @tmu_cur_temp: register containing the current temperature of the TMU.
+> - * @tmu_cur_temp_shift: shift bits of current temp value in tmu_cur_temp
+> -	register.
+>   * @threshold_temp: register containing the base threshold level.
+>   * @threshold_th0: Register containing first set of rising levels.
+> - * @threshold_th0_l0_shift: shift bits of level0 threshold temperature.
+> - * @threshold_th0_l1_shift: shift bits of level1 threshold temperature.
+> - * @threshold_th0_l2_shift: shift bits of level2 threshold temperature.
+> - * @threshold_th0_l3_shift: shift bits of level3 threshold temperature.
+>   * @threshold_th1: Register containing second set of rising levels.
+> - * @threshold_th1_l0_shift: shift bits of level0 threshold temperature.
+> - * @threshold_th1_l1_shift: shift bits of level1 threshold temperature.
+> - * @threshold_th1_l2_shift: shift bits of level2 threshold temperature.
+> - * @threshold_th1_l3_shift: shift bits of level3 threshold temperature.
+>   * @threshold_th2: Register containing third set of rising levels.
+> - * @threshold_th2_l0_shift: shift bits of level0 threshold temperature.
+> - * @threshold_th3: Register containing fourth set of rising levels.
+>   * @threshold_th3_l0_shift: shift bits of level0 threshold temperature.
+>   * @tmu_inten: register containing the different threshold interrupt
+>  	enable bits.
+> @@ -131,15 +115,11 @@ enum soc_type {
+>   * @inten_rise2_shift: shift bits of rising 2 interrupt bits.
+>   * @inten_rise3_shift: shift bits of rising 3 interrupt bits.
+>   * @inten_fall0_shift: shift bits of falling 0 interrupt bits.
+> - * @inten_fall1_shift: shift bits of falling 1 interrupt bits.
+> - * @inten_fall2_shift: shift bits of falling 2 interrupt bits.
+> - * @inten_fall3_shift: shift bits of falling 3 interrupt bits.
+>   * @tmu_intstat: Register containing the interrupt status values.
+>   * @tmu_intclear: Register for clearing the raised interrupt status.
+>   * @emul_con: TMU emulation controller register.
+>   * @emul_temp_shift: shift bits of emulation temperature.
+>   * @emul_time_shift: shift bits of emulation time.
+> - * @emul_time_mask: mask bits of emulation time.
+>   * @tmu_irqstatus: register to find which TMU generated interrupts.
+>   * @tmu_pmin: register to get/set the Pmin value.
 
-Signed-off-by: Bibek Basu <bbasu@nvidia.com>
----
- drivers/cpufreq/cpufreq_governor.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+I prefer to have these register description as they describe the h/w
+and are used for capturing those parameters. My argument here is that
+adding new soc should have minimum changes. However some unused macros
+removed below makes sense.
+>   */
+> @@ -149,7 +129,6 @@ struct exynos_tmu_registers {
+>  	u32	triminfo_85_shift;
+>
+>  	u32	triminfo_ctrl;
+> -	u32	triminfo_reload_shift;
+>
+>  	u32	tmu_ctrl;
+>  	u32     test_mux_addr_shift;
+> @@ -162,32 +141,17 @@ struct exynos_tmu_registers {
+>  	u32	buf_slope_sel_mask;
+>  	u32	calib_mode_shift;
+>  	u32	calib_mode_mask;
+> -	u32	therm_trip_tq_en_shift;
+>  	u32	core_en_shift;
+>
+>  	u32	tmu_status;
+>
+>  	u32	tmu_cur_temp;
+> -	u32	tmu_cur_temp_shift;
+>
+>  	u32	threshold_temp;
+>
+>  	u32	threshold_th0;
+> -	u32	threshold_th0_l0_shift;
+> -	u32	threshold_th0_l1_shift;
+> -	u32	threshold_th0_l2_shift;
+> -	u32	threshold_th0_l3_shift;
+> -
+>  	u32	threshold_th1;
+> -	u32	threshold_th1_l0_shift;
+> -	u32	threshold_th1_l1_shift;
+> -	u32	threshold_th1_l2_shift;
+> -	u32	threshold_th1_l3_shift;
+> -
+>  	u32	threshold_th2;
+> -	u32	threshold_th2_l0_shift;
+> -
+> -	u32	threshold_th3;
+>  	u32	threshold_th3_l0_shift;
+>
+>  	u32	tmu_inten;
+> @@ -200,9 +164,6 @@ struct exynos_tmu_registers {
+>  	u32	inten_rise2_shift;
+>  	u32	inten_rise3_shift;
+>  	u32	inten_fall0_shift;
+> -	u32	inten_fall1_shift;
+> -	u32	inten_fall2_shift;
+> -	u32	inten_fall3_shift;
+>
+>  	u32	tmu_intstat;
+>
+> @@ -211,7 +172,6 @@ struct exynos_tmu_registers {
+>  	u32	emul_con;
+>  	u32	emul_temp_shift;
+>  	u32	emul_time_shift;
+> -	u32	emul_time_mask;
+>
+>  	u32	tmu_irqstatus;
+>  	u32	tmu_pmin;
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c
+> b/drivers/thermal/samsung/exynos_tmu_data.c
+> index 476b768..36d64d6 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+> @@ -96,7 +96,6 @@ static const struct exynos_tmu_registers
+> exynos4412_tmu_registers = {
+>  	.triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
+>  	.triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
+>  	.triminfo_ctrl = EXYNOS_TMU_TRIMINFO_CON,
+> -	.triminfo_reload_shift = EXYNOS_TRIMINFO_RELOAD_SHIFT,
+>  	.tmu_ctrl = EXYNOS_TMU_REG_CONTROL,
+>  	.test_mux_addr_shift = EXYNOS4412_MUX_ADDR_SHIFT,
+>  	.buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
+> @@ -126,7 +125,6 @@ static const struct exynos_tmu_registers
+> exynos4412_tmu_registers = {
+>  	.emul_con = EXYNOS_EMUL_CON,
+>  	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
+>  	.emul_time_shift = EXYNOS_EMUL_TIME_SHIFT,
+> -	.emul_time_mask = EXYNOS_EMUL_TIME_MASK,
+Makes sense.
+>  };
+>
+>  #define EXYNOS4412_TMU_DATA \
+> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h
+> b/drivers/thermal/samsung/exynos_tmu_data.h
+> index a1ea19d..06c4345 100644
+> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+> @@ -63,7 +63,6 @@
+>  #define EXYNOS_THD_TEMP_FALL		0x54
+>  #define EXYNOS_EMUL_CON		0x80
+>
+> -#define EXYNOS_TRIMINFO_RELOAD_SHIFT	1
+make sense.
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index ba43991..e1c6433 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -366,6 +366,11 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		break;
- 
- 	case CPUFREQ_GOV_LIMITS:
-+		mutex_lock(&dbs_data->mutex);
-+		if (!cpu_cdbs->cur_policy) {
-+			mutex_unlock(&dbs_data->mutex);
-+			break;
-+		}
- 		mutex_lock(&cpu_cdbs->timer_mutex);
- 		if (policy->max < cpu_cdbs->cur_policy->cur)
- 			__cpufreq_driver_target(cpu_cdbs->cur_policy,
-@@ -375,6 +380,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 					policy->min, CPUFREQ_RELATION_L);
- 		dbs_check_cpu(dbs_data, cpu);
- 		mutex_unlock(&cpu_cdbs->timer_mutex);
-+		mutex_unlock(&dbs_data->mutex);
- 		break;
- 	}
- 	return 0;
--- 
-1.8.1.5
-
-
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+>  #define EXYNOS_TRIMINFO_25_SHIFT	0
+>  #define EXYNOS_TRIMINFO_85_SHIFT	8
+>  #define EXYNOS_TMU_RISE_INT_MASK	0x111
+> --
+> 1.8.2.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
