@@ -1,67 +1,53 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH 00/10] thermal: exynos: various cleanups
-Date: Mon, 19 May 2014 13:09:34 +0200
-Message-ID: <5379E66E.7020804@gmail.com>
-References: <1399288539-1793-1-git-send-email-b.zolnierkie@samsung.com> <1400144805.2273.34.camel@rzhang1-toshiba> <CADGdYn5S67Sd8ON5YHiUvqiw7ypXqV3n4VURheEJsStWinR85w@mail.gmail.com> <4899668.1WyrreGo3H@amdc1032>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] PM / OPP: fix incorrect OPP count handling in of_init_opp_table
+Date: Mon, 19 May 2014 08:04:30 -0500
+Message-ID: <CAGo_u6oQiOJzp2DCCFUfwWWPLKKw=pgZPgdr9LBqfYs-GKb9zg@mail.gmail.com>
+References: <1400237477-24831-1-git-send-email-chander.kashyap@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4899668.1WyrreGo3H@amdc1032>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Kachhap <amit.kachhap@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f169.google.com ([74.125.82.169]:51805 "EHLO
+	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbaESNEb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 09:04:31 -0400
+In-Reply-To: <1400237477-24831-1-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chander Kashyap <chander.kashyap@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, pavel@ucw.cz, Len Brown <len.brown@intel.com>, gregkh@linuxfoundation.org, Viresh Kumar <viresh.kumar@linaro.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-Hi,
+On Fri, May 16, 2014 at 5:51 AM, Chander Kashyap
+<chander.kashyap@linaro.org> wrote:
+> In of_init_opp_table function, if a failure to add an OPP is
+> detected, the count of OPPs, yet to be added is not updated.
+> Fix this by decrementing this count on failure as well.
+>
+> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+> ---
+>  drivers/base/power/opp.c |    4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index d9e376a..faae9cf 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -643,11 +643,9 @@ int of_init_opp_table(struct device *dev)
+>                 unsigned long freq = be32_to_cpup(val++) * 1000;
+>                 unsigned long volt = be32_to_cpup(val++);
+>
+> -               if (dev_pm_opp_add(dev, freq, volt)) {
+> +               if (dev_pm_opp_add(dev, freq, volt))
+>                         dev_warn(dev, "%s: Failed to add OPP %ld\n",
+>                                  __func__, freq);
+> -                       continue;
+> -               }
+>                 nr -= 2;
+>         }
+Good Catch. Thanks.
 
-On 19.05.2014 13:05, Bartlomiej Zolnierkiewicz wrote:
->=20
-> Hi,
->=20
-> On Monday, May 19, 2014 11:46:10 AM Amit Kachhap wrote:
->> On 5/15/14, Zhang Rui <rui.zhang@intel.com> wrote:
->>> On =E4=B8=80, 2014-05-05 at 13:15 +0200, Bartlomiej Zolnierkiewicz =
-wrote:
->>>> Hi,
->>>>
->>>> This patch series contains various cleanups for EXYNOS thermal
->>>> driver.  Overall it decreases driver's LOC by 13%.  It is based
->>>> on next-20140428 kernel.  It should not cause any functionality
->>>> changes.
->>>>
->>> Amit,
->>>
->>> what do you think of this patch set?
->>>
->>> thanks,
->>> rui
->>
->> I agreed to many of the cleanups in the patch but tmu controller
->> features should be retained as they will allow adding quick soc
->> support and also avoid unnecessary churning of code in the future.
->=20
-> The general rule in the kernel code is not to keep the dead code as
-> it has a maintainance cost and makes further changes usually more
-> difficult, not easier.  There is no guarantee that the future SoCs
-> support will use the dead code (i.e. TYPE_TWO_POINT_TRIMMING support
-> has been introudced more than 2.5 years but no users of it has been
-> ever added) and in the meantime all other code changes has to take
-> the dead code into account.  I also have more Exynos thermal driver
-> changes in the work and it would be much easier to do them without
-> the need to support unused SoC features.  Please consider this in
-> your opinion.
+Acked-by: Nishanth Menon <nm@ti.com>
 
-I'd also like to add that I don't see any correlation with mentioned
-dead code and possibility of adding new SoCs. The code is mostly relate=
-d
-to unused/untested features and support for new SoCs might just be adde=
-d
-without those optional features. Moreover, less features (especially
-untested) means less hassle to add new SoC, because you have less thing=
-s
-to test. Especially considering the fact that you would have to test
-originally untested code and fix it if it turns out to be broken.
-
-Best regards,
-Tomasz
+--
+Regards,
+Nishanth Menon
