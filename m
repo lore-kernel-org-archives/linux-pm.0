@@ -1,141 +1,54 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch Part1 V2 07/29] x86, ACPI, trivial: minor improvements to arch/x86/kernel/acpi/boot.c
-Date: Tue, 20 May 2014 00:22:51 +0800
-Message-ID: <1400516594-11544-8-git-send-email-jiang.liu@linux.intel.com>
+Subject: [Patch Part1 V2 09/29] x86, ACPI, irq: fix possible eror in GSI to IRQ mapping for legacy IRQ
+Date: Tue, 20 May 2014 00:22:53 +0800
+Message-ID: <1400516594-11544-10-git-send-email-jiang.liu@linux.intel.com>
 References: <1400516594-11544-1-git-send-email-jiang.liu@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1400516594-11544-1-git-send-email-jiang.liu@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Jiri Kosina <trivial@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
 Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-1) Remove out-of-date comment
-2) Kill unused function acpi_set_irq_model_pic()
-3) Use NR_IRQS_LEGACY instead of hard-coded 16
-4) Trivial syntax improvements
+A default identity mapping between GSI and IRQ is built for legacy IRQs.
+So when overriding the default identity mapping for legacy IRQs,
+we should also invalidate isa_irq_to_gsi[gsi] when setting
+isa_irq_to_gsi[irq] = gsi.  Otherwise there may be two entries with the
+same GSI in the isa_irq_to_gsi array, and acpi_isa_irq_to_gsi() may give
+wrong result.
 
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/x86/kernel/acpi/boot.c |   50 ++++++++++++++-----------------------------
- 1 file changed, 16 insertions(+), 34 deletions(-)
+ arch/x86/kernel/acpi/boot.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 8390db1f7a93..6d65850f49e9 100644
+index 8b8ff786af12..dccf9e88db30 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -370,11 +370,6 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
- 	if (acpi_sci_flags & ACPI_MADT_POLARITY_MASK)
- 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+@@ -508,7 +508,8 @@ EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
  
--	/*
--	 * mp_config_acpi_legacy_irqs() already setup IRQs < 16
--	 * If GSI is < 16, this will update its flags,
--	 * else it will create a new mp_irqs[] entry.
--	 */
- 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
- 
- 	/*
-@@ -573,14 +568,7 @@ void acpi_unregister_gsi(u32 gsi)
- }
- EXPORT_SYMBOL_GPL(acpi_unregister_gsi);
- 
--void __init acpi_set_irq_model_pic(void)
--{
--	acpi_irq_model = ACPI_IRQ_MODEL_PIC;
--	__acpi_register_gsi = acpi_register_gsi_pic;
--	acpi_ioapic = 0;
--}
--
--void __init acpi_set_irq_model_ioapic(void)
-+static void __init acpi_set_irq_model_ioapic(void)
+ int acpi_isa_irq_to_gsi(unsigned isa_irq, u32 *gsi)
  {
- 	acpi_irq_model = ACPI_IRQ_MODEL_IOAPIC;
- 	__acpi_register_gsi = acpi_register_gsi_ioapic;
-@@ -819,9 +807,8 @@ static int __init early_acpi_parse_madt_lapic_addr_ovr(void)
- 	 * and (optionally) overriden by a LAPIC_ADDR_OVR entry (64-bit value).
- 	 */
- 
--	count =
--	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE,
--				  acpi_parse_lapic_addr_ovr, 0);
-+	count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE,
-+				      acpi_parse_lapic_addr_ovr, 0);
- 	if (count < 0) {
- 		printk(KERN_ERR PREFIX
- 		       "Error parsing LAPIC address override entry\n");
-@@ -846,9 +833,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
- 	 * and (optionally) overriden by a LAPIC_ADDR_OVR entry (64-bit value).
- 	 */
- 
--	count =
--	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE,
--				  acpi_parse_lapic_addr_ovr, 0);
-+	count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE,
-+				      acpi_parse_lapic_addr_ovr, 0);
- 	if (count < 0) {
- 		printk(KERN_ERR PREFIX
- 		       "Error parsing LAPIC address override entry\n");
-@@ -876,11 +862,10 @@ static int __init acpi_parse_madt_lapic_entries(void)
- 		return count;
+-	if (isa_irq < NR_IRQS_LEGACY) {
++	if (isa_irq < NR_IRQS_LEGACY &&
++	    isa_irq_to_gsi[isa_irq] != ACPI_INVALID_GSI) {
+ 		*gsi = isa_irq_to_gsi[isa_irq];
+ 		return 0;
  	}
+@@ -913,6 +914,13 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
  
--	x2count =
--	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_X2APIC_NMI,
--				  acpi_parse_x2apic_nmi, 0);
--	count =
--	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_NMI, acpi_parse_lapic_nmi, 0);
-+	x2count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_X2APIC_NMI,
-+					acpi_parse_x2apic_nmi, 0);
-+	count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_NMI,
-+				      acpi_parse_lapic_nmi, 0);
- 	if (count < 0 || x2count < 0) {
- 		printk(KERN_ERR PREFIX "Error parsing LAPIC NMI entry\n");
- 		/* TBD: Cleanup to allow fallback to MPS */
-@@ -947,7 +932,7 @@ static void __init mp_config_acpi_legacy_irqs(void)
- 	 * Use the default configuration for the IRQs 0-15.  Unless
- 	 * overridden by (MADT) interrupt source override entries.
- 	 */
--	for (i = 0; i < 16; i++) {
-+	for (i = 0; i < NR_IRQS_LEGACY; i++) {
- 		int ioapic, pin;
- 		unsigned int dstapic;
- 		int idx;
-@@ -1103,9 +1088,8 @@ static int __init acpi_parse_madt_ioapic_entries(void)
- 		return -ENODEV;
- 	}
+ 	mp_save_irq(&mp_irq);
  
--	count =
--	    acpi_table_parse_madt(ACPI_MADT_TYPE_IO_APIC, acpi_parse_ioapic,
--				  MAX_IO_APICS);
-+	count = acpi_table_parse_madt(ACPI_MADT_TYPE_IO_APIC, acpi_parse_ioapic,
-+				      MAX_IO_APICS);
- 	if (!count) {
- 		printk(KERN_ERR PREFIX "No IOAPIC entries present\n");
- 		return -ENODEV;
-@@ -1114,9 +1098,8 @@ static int __init acpi_parse_madt_ioapic_entries(void)
- 		return count;
- 	}
++	/*
++	 * Reset default identity mapping if gsi is also an legacy IRQ,
++	 * otherwise there will be more than one entry with the same GSI
++	 * and acpi_isa_irq_to_gsi() may give wrong result.
++	 */
++	if (gsi < NR_IRQS_LEGACY && isa_irq_to_gsi[gsi] == gsi)
++		isa_irq_to_gsi[gsi] = ACPI_INVALID_GSI;
+ 	isa_irq_to_gsi[bus_irq] = gsi;
+ }
  
--	count =
--	    acpi_table_parse_madt(ACPI_MADT_TYPE_INTERRUPT_OVERRIDE, acpi_parse_int_src_ovr,
--				  nr_irqs);
-+	count = acpi_table_parse_madt(ACPI_MADT_TYPE_INTERRUPT_OVERRIDE,
-+				      acpi_parse_int_src_ovr, nr_irqs);
- 	if (count < 0) {
- 		printk(KERN_ERR PREFIX
- 		       "Error parsing interrupt source overrides entry\n");
-@@ -1135,9 +1118,8 @@ static int __init acpi_parse_madt_ioapic_entries(void)
- 	/* Fill in identity legacy mappings where no override */
- 	mp_config_acpi_legacy_irqs();
- 
--	count =
--	    acpi_table_parse_madt(ACPI_MADT_TYPE_NMI_SOURCE, acpi_parse_nmi_src,
--				  nr_irqs);
-+	count = acpi_table_parse_madt(ACPI_MADT_TYPE_NMI_SOURCE,
-+				      acpi_parse_nmi_src, nr_irqs);
- 	if (count < 0) {
- 		printk(KERN_ERR PREFIX "Error parsing NMI SRC entry\n");
- 		/* TBD: Cleanup to allow fallback to MPS */
 -- 
 1.7.10.4
