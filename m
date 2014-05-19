@@ -1,42 +1,152 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / OPP: discard duplicate OPP additions
-Date: Sat, 17 May 2014 19:29:27 +0200
-Message-ID: <20140517172927.GA309@amd.pavel.ucw.cz>
-References: <1399966890-22926-1-git-send-email-k.chander@samsung.com>
- <20140514150255.GA8330@amd.pavel.ucw.cz>
- <CAKohpo=MFxUHL22TxXPk4B=JX9AD3RGdgXPPGK9sD3GD6AEV+g@mail.gmail.com>
- <CAOqmu80j2q6hQLThVt60QkjqcZTXwJ6ddwDLvqBEW1ejrVh_hw@mail.gmail.com>
- <CAKohponWM+RxgK-50BXH-gk3-bX2no7NojT5-6ZRWJAtSizO7A@mail.gmail.com>
- <CAOqmu81C7A-bMQY3p5fsvk-4Y=S1yGZHw_Q=RbxCKxwR9fFz-w@mail.gmail.com>
- <CAKohpon+YbHx_P0oxkT5vSKVn30aZBddykgLLfyg5N3gPEXe6w@mail.gmail.com>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Sun, 18 May 2014 17:51:05 -0700
+Message-ID: <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
+ <20140515073816.GI16662@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36921 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964856AbaEQR33 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 May 2014 13:29:29 -0400
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKohpon+YbHx_P0oxkT5vSKVn30aZBddykgLLfyg5N3gPEXe6w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20140515073816.GI16662@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Inderpal Singh <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, "[Chander Kashyap" <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>
 
-Hi!
+Hi,
 
-> And both these doesn't happen in this case. OPP tables can be used
-> by any other framework and is more or less a core thing..
-> 
-> Now, with this discussion I have another idea here..
-> 
-> Why don't we build these tables automatically on boot from some core
-> code, rather than asking drivers to do it ? That will get rid of duplication
-> from all drivers and would also reduce confusion
+I spent some time finding an alternative implementation for
+clk_round_rate_nearest, the result can be found below.
+I hope this is closer to a working implementation.
 
-Yes please.
+	Thanks,
+	S=C3=B6ren
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+------------------8<-----------------8<---------------------8<---------=
+----8<---
+=46rom: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Date: Tue, 2 Apr 2013 10:08:13 -0700
+Subject: [PATCH] clk: Introduce 'clk_round_rate_nearest()'
+
+Introduce a new API function to round a rate to the closest possible
+rate the HW clock can generate.
+In contrast to 'clk_round_rate()' which works similar, but always retur=
+ns
+a frequency <=3D its input rate.
+
+Cc: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+---
+ drivers/clk/clk.c   | 43 +++++++++++++++++++++++++++++++++++++++++--
+ include/linux/clk.h | 14 ++++++++++++--
+ 2 files changed, 53 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index dff0373f53c1..faf24d0569df 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -1011,8 +1011,9 @@ unsigned long __clk_round_rate(struct clk *clk, u=
+nsigned long rate)
+  * @rate: the rate which is to be rounded
+  *
+  * Takes in a rate as input and rounds it to a rate that the clk can a=
+ctually
+- * use which is then returned.  If clk doesn't support round_rate oper=
+ation
+- * then the parent rate is returned.
++ * use and does not exceed the requested frequency, which is then retu=
+rned.
++ * If clk doesn't support round_rate operation then the parent rate
++ * is returned.
+  */
+ long clk_round_rate(struct clk *clk, unsigned long rate)
+ {
+@@ -1027,6 +1028,44 @@ long clk_round_rate(struct clk *clk, unsigned lo=
+ng rate)
+ EXPORT_SYMBOL_GPL(clk_round_rate);
+=20
+ /**
++ * clk_round_rate_nearest - round the given rate for a clk
++ * @clk: the clk for which we are rounding a rate
++ * @rate: the rate which is to be rounded
++ *
++ * Takes in a rate as input and rounds it to the closest rate that the=
+ clk
++ * can actually use which is then returned. If clk doesn't support
++ * round_rate operation then the parent rate is returned.
++ */
++long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
++{
++	unsigned long lower, upper, cur, lower_last, upper_last;
++
++	lower =3D clk_round_rate(clk, rate);
++	if (lower >=3D rate)
++		return lower;
++
++	upper =3D clk_round_rate(clk, rate + rate - lower);
++	if (upper =3D=3D lower)
++		return upper;
++
++	lower =3D rate + 1;
++	do {
++		upper_last =3D upper;
++		lower_last =3D lower;
++
++		cur =3D clk_round_rate(clk, lower + ((upper - lower) >> 1));
++		if (cur < lower)
++			lower +=3D (upper - lower) >> 1;
++		else
++			upper =3D cur;
++
++	} while (lower_last !=3D lower && upper_last !=3D upper);
++
++	return upper;
++}
++EXPORT_SYMBOL_GPL(clk_round_rate_nearest);
++
++/**
+  * __clk_notify - call clk notifier chain
+  * @clk: struct clk * that is changing rate
+  * @msg: clk notifier type (see include/linux/clk.h)
+diff --git a/include/linux/clk.h b/include/linux/clk.h
+index fb5e097d8f72..2f83bf030ac6 100644
+--- a/include/linux/clk.h
++++ b/include/linux/clk.h
+@@ -255,15 +255,25 @@ void devm_clk_put(struct device *dev, struct clk =
+*clk);
+=20
+=20
+ /**
+- * clk_round_rate - adjust a rate to the exact rate a clock can provid=
+e
++ * clk_round_rate - round a rate to the exact rate a clock can provide=
+ not
++ *		    exceeding @rate
+  * @clk: clock source
+  * @rate: desired clock rate in Hz
+  *
+- * Returns rounded clock rate in Hz, or negative errno.
++ * Returns rounded clock rate in Hz, or parent rate
+  */
+ long clk_round_rate(struct clk *clk, unsigned long rate);
+=20
+ /**
++ * clk_round_rate_nearest - round a rate to the exact rate a clock can=
+ provide
++ * @clk: the clk for which we are rounding a rate
++ * @rate: the rate which is to be rounded
++ *
++ * Returns rounded clock rate in Hz, or parent rate
++ */
++long clk_round_rate_nearest(struct clk *clk, unsigned long rate);
++
++/**
+  * clk_set_rate - set the clock rate for a clock source
+  * @clk: clock source
+  * @rate: desired clock rate in Hz
+--=20
+1.9.3.1.ga73a6ad
