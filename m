@@ -1,243 +1,147 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Mon, 19 May 2014 10:29:05 -0700
-Message-ID: <df742b46-c630-49ea-b234-4d746bb66ec1@BL2FFO11FD040.protection.gbl>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
- <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
- <20140519161949.GG16662@pengutronix.de>
- <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
+From: Inderpal Singh <inderpal.s@samsung.com>
+Subject: Re: [PATCH] PM / OPP: Implement free_opp_table function
+Date: Mon, 19 May 2014 23:38:40 +0530
+Message-ID: <CAOqmu83XqC_B1Abb_+FMc=DywUxL0=_NompWB4ED18UhxxqQNw@mail.gmail.com>
+References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+	<537A037E.8000800@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f180.google.com ([209.85.223.180]:46395 "EHLO
+	mail-ie0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbaESSIk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 14:08:40 -0400
+In-Reply-To: <537A037E.8000800@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Uwe,
+Hi Nishanth,
 
-On Mon, 2014-05-19 at 09:41AM -0700, S=C3=B6ren Brinkmann wrote:
-> On Mon, 2014-05-19 at 06:19PM +0200, Uwe Kleine-K=C3=B6nig wrote:
-> > Hi S=C3=B6ren,
-> >=20
-> > On Sun, May 18, 2014 at 05:51:05PM -0700, S=C3=B6ren Brinkmann wrot=
-e:
-> > > ------------------8<-----------------8<---------------------8<---=
-----------8<---
-> > > From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > > Date: Tue, 2 Apr 2013 10:08:13 -0700
-> > > Subject: [PATCH] clk: Introduce 'clk_round_rate_nearest()'
-> > >=20
-> > > Introduce a new API function to round a rate to the closest possi=
-ble
-> > > rate the HW clock can generate.
-> > > In contrast to 'clk_round_rate()' which works similar, but always=
- returns
-> > > a frequency <=3D its input rate.
-> > >=20
-> > > Cc: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-> > > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > > ---
-> > >  drivers/clk/clk.c   | 43 +++++++++++++++++++++++++++++++++++++++=
-++--
-> > >  include/linux/clk.h | 14 ++++++++++++--
-> > >  2 files changed, 53 insertions(+), 4 deletions(-)
-> > >=20
-> > > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> > > index dff0373f53c1..faf24d0569df 100644
-> > > --- a/drivers/clk/clk.c
-> > > +++ b/drivers/clk/clk.c
-> > > @@ -1011,8 +1011,9 @@ unsigned long __clk_round_rate(struct clk *=
-clk, unsigned long rate)
-> > >   * @rate: the rate which is to be rounded
-> > >   *
-> > >   * Takes in a rate as input and rounds it to a rate that the clk=
- can actually
-> > > - * use which is then returned.  If clk doesn't support round_rat=
-e operation
-> > > - * then the parent rate is returned.
-> > > + * use and does not exceed the requested frequency, which is the=
-n returned.
-> > > + * If clk doesn't support round_rate operation then the parent r=
-ate
-> > > + * is returned.
-> > >   */
-> > >  long clk_round_rate(struct clk *clk, unsigned long rate)
-> > >  {
-> > > @@ -1027,6 +1028,44 @@ long clk_round_rate(struct clk *clk, unsig=
-ned long rate)
-> > >  EXPORT_SYMBOL_GPL(clk_round_rate);
-> > > =20
-> > >  /**
-> > > + * clk_round_rate_nearest - round the given rate for a clk
-> > > + * @clk: the clk for which we are rounding a rate
-> > > + * @rate: the rate which is to be rounded
-> > > + *
-> > > + * Takes in a rate as input and rounds it to the closest rate th=
-at the clk
-> > > + * can actually use which is then returned. If clk doesn't suppo=
-rt
-> > > + * round_rate operation then the parent rate is returned.
-> > > + */
-> > > +long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
-> > Why does this function doesn't return an unsigned long when it neve=
-r
-> > returns a negative value? Ditto for clk_round_rate?
->=20
-> I matched the definition of clk_round_rate(). But you're probably rig=
-ht,
-> it may be the right thing to change clk_round_rate to return an
-> unsigned, but with that being exposed API it would be a risky change.
->=20
-> >=20
-> > > +{
-> > > +	unsigned long lower, upper, cur, lower_last, upper_last;
-> > > +
-> > > +	lower =3D clk_round_rate(clk, rate);
-> > > +	if (lower >=3D rate)
-> > > +		return lower;
-> > Is the >-case worth a warning?
->=20
-> No, it's correct behavior. If you request a rate that is way lower th=
-an what the
-> clock can generate, returning something larger is perfectly valid, IM=
-HO.
-> Which reveals one problem in this whole discussion. The API does not
-> require clk_round_rate() to round down. It is actually an implementat=
-ion
-> choice that had been made for clk-divider.
->=20
-> >=20
-> > > +
-> > > +	upper =3D clk_round_rate(clk, rate + rate - lower);
-> > This was parenthesized in my original patch on purpose. If rate is =
-big
-> >=20
-> > 	rate + rate - lower
-> >=20
-> > might overflow when
-> >=20
-> > 	rate + (rate - lower)
-> >=20
-> > doesn't. Thinking again, there is no real problem, because this is
-> > unsigned arithmetic. To be save we still need to check if rate + (r=
-ate -
-> > lower) overflows.
->=20
-> Good point. I'll add the parentheses.
->=20
-> >=20
-> > > +	if (upper =3D=3D lower)
-> > if (upper <=3D rate) is the better check here. (=3D would be a bug.=
-)
->=20
-> I don't understand. Passing rate + x to round rate can never return
-> something below 'lower'. Only something in the range [lower,lower+x].
-> So, if upper =3D=3D lower we found our closest frequency and return i=
-t.
-> Otherwise we have to iterate over [lower+1,upper]. Or what did I miss=
-?
->=20
-> >=20
-> > > +		return upper;
-> > > +
-> > > +	lower =3D rate + 1;
-> > ok, so your loop invariant is that the best freq is in [lower; uppe=
-r].
->=20
-> right.
->=20
-> >=20
-> > > +	do {
-> > > +		upper_last =3D upper;
-> > > +		lower_last =3D lower;
-> > > +
-> > > +		cur =3D clk_round_rate(clk, lower + ((upper - lower) >> 1));
-> > > +		if (cur < lower)
-> > > +			lower +=3D (upper - lower) >> 1;
-> > You already know that lower + ((upper - lower) >> 1) is too small, =
-so
-> > you can better do
-> >=20
-> > 	lower +=3D ((upper - lower) >> 1) + 1;
->=20
-> right. I'll add the '+1'
->=20
-> >=20
-> > > +		else
-> > > +			upper =3D cur;
-> > > +
-> > > +	} while (lower_last !=3D lower && upper_last !=3D upper);
-> > > +
-> > > +	return upper;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(clk_round_rate_nearest);
-> > I think the function still has potential for optimisation, what abo=
-ut:
->=20
-> At first glance, I don't see many differences except for the comments
-> you made above. I'll have a closer look though.
->=20
-> >=20
-> > unsigned long clk_round_rate_nearest(struct clk *clk, unsigned long=
- rate)
-> > {
-> > 	unsigned long lower, upper, rounded;
-> >=20
-> > 	rounded =3D clk_round_rate(clk, rate);
-> >=20
-> > 	if (rounded >=3D rate)
-> > 		return rounded;
-> >=20
-> > 	/*
-> > 	 * rounded is the best approximation for rate that is not
-> > 	 * bigger than rate. If there is a better one, it must be in the
-> > 	 * interval (rate; rate + (rate - rounded)).
-> > 	 * Note that the upper limit isn't better than rate itself, so
-> > 	 * that one doesn't need to be considered.
-> > 	 */
-> > 	=20
-> > 	upper =3D rate + (rate - rounded) - 1;
-> > 	if (upper < rate)
-> > 		upper =3D ULONG_MAX;=20
->=20
-> Aren't we done here? Your search for an upper boundary resulted in
-> 'lower'. Hence there is no valid frequency closer to 'rate' than 'low=
-er'. Why do
-> you extend to ULONG_MAX?
+Thanks for the review comments.
 
-With the improvements suggested by you I have this now:
+On Mon, May 19, 2014 at 6:43 PM, Nishanth Menon <nm@ti.com> wrote:
+> On 05/16/2014 04:09 AM, Inderpal Singh wrote:
+>> At the driver unloading time the associated opp table may need
+>> to be deleted. Otherwise it amounts to memory leak. The existing
+>> OPP library does not have provison to do so.
+>>
+>> Hence this patch implements the function to free the opp table.
+>>
+>> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+>> ---
+>>  drivers/base/power/opp.c | 41 +++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/pm_opp.h   |  6 ++++++
+>>  2 files changed, 47 insertions(+)
+>>
+>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>> index d9e376a..d45ffd5 100644
+>> --- a/drivers/base/power/opp.c
+>> +++ b/drivers/base/power/opp.c
+>> @@ -654,4 +654,45 @@ int of_init_opp_table(struct device *dev)
+>>       return 0;
+>>  }
+>>  EXPORT_SYMBOL_GPL(of_init_opp_table);
+>> +
+>> +/**
+>> + * dev_pm_opp_free_opp_table() - free the opp table
+>> + * @dev:     device for which we do this operation
+>> + *
+>> + * Free up the allocated opp table
+>> + *
+>> + * Locking: The internal device_opp and opp structures are RCU protected.
+>> + * Hence this function internally uses RCU updater strategy with mutex locks to
+>> + * keep the integrity of the internal data structures. Callers should ensure
+>> + * that this function is *NOT* called under RCU protection or in contexts where
+>> + * mutex locking or synchronize_rcu() blocking calls cannot be used.
+>> + */
+>> +void dev_pm_opp_free_opp_table(struct device *dev)
+>> +{
+>> +     struct device_opp *dev_opp = NULL;
+>> +     struct dev_pm_opp *opp;
+>> +
+> if (!dev)
+>         return;
+>
 
-long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
-{
-	unsigned long lower, upper;
+missed it. Will take care in the next version.
 
-	lower =3D clk_round_rate(clk, rate);
-	if (lower >=3D rate)
-		return lower;
+>> +     /* Hold our list modification lock here */
+>> +     mutex_lock(&dev_opp_list_lock);
+>> +
+>> +     /* Check for existing list for 'dev' */
+>> +     dev_opp = find_device_opp(dev);
+>> +     if (IS_ERR(dev_opp)) {
+>> +             mutex_unlock(&dev_opp_list_lock);
+>> +             return;
+>> +     }
+>> +
+>> +     while (!list_empty(&dev_opp->opp_list)) {
+>> +             opp = list_entry_rcu(dev_opp->opp_list.next,
+>> +                                     struct dev_pm_opp, node);
+>> +             list_del_rcu(&opp->node);
+>> +             kfree_rcu(opp, head);
+>> +     }
+>
+> How about the OPP notifiers? should'nt we add a new event
+> OPP_EVENT_REMOVE?
+>
 
-	upper =3D clk_round_rate(clk, rate + (rate - lower) - 1);
-	if (upper =3D=3D lower)
-		return upper;
+As this function is to free the whole opp table. Hence, I think,
+notifier may not be needed. It may be required for per opp removal as
+is the case with opp addition and enable/disable. But at present there
+are no users of these notifiers at all. Let me know your view.
 
-	lower =3D rate + 1;
-	while (lower < upper) {
-		unsigned long rounded, mid;
+> To maintain non-dt behavior coherency, should'nt we rather add a
+> opp_remove or an opp_del function?
 
-		mid =3D lower + ((upper - lower) >> 1);
-		rounded =3D clk_round_rate(clk, mid);
-		if (rounded < lower)
-			lower =3D mid + 1;
-		else
-			upper =3D rounded;
-	}
+Yes we should have opp_remove as well, but what's the use case ?
+Should we go ahead and implement it Or, wait for the use-case?
 
-	return upper;
-}
+Thanks,
+Inder
 
-	S=C3=B6ren
+>
+>> +
+>> +     list_del_rcu(&dev_opp->node);
+>> +     mutex_unlock(&dev_opp_list_lock);
+>> +     synchronize_rcu();
+>> +     kfree(dev_opp);
+>> +}
+>> +EXPORT_SYMBOL_GPL(dev_pm_opp_free_opp_table);
+>>  #endif
+>> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+>> index 0330217..3c29620 100644
+>> --- a/include/linux/pm_opp.h
+>> +++ b/include/linux/pm_opp.h
+>> @@ -50,6 +50,8 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+>>  int dev_pm_opp_disable(struct device *dev, unsigned long freq);
+>>
+>>  struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
+>> +
+>> +void dev_pm_opp_free_opp_table(struct device *dev);
+>>  #else
+>>  static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+>>  {
+>> @@ -105,6 +107,10 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
+>>  {
+>>       return ERR_PTR(-EINVAL);
+>>  }
+>> +
+>> +void dev_pm_opp_free_opp_table(struct device *dev)
+>> +{
+>> +}
+>>  #endif               /* CONFIG_PM_OPP */
+>>
+>>  #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+>>
+>
+>
+> --
+> Regards,
+> Nishanth Menon
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
