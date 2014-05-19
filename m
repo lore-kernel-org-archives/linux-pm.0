@@ -1,48 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / OPP: Make OPP invisible to users in Kconfig
-Date: Tue, 20 May 2014 01:19:45 +0200
-Message-ID: <2738394.FHGFLADJqP@vostro.rjw.lan>
-References: <1399659488-13974-1-git-send-email-broonie@kernel.org> <CAKohpo=xtnHyWcjHxmSPgzdovMshgotMkQj6Y__R9UvzzfTyHw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: powernv: make local function static
+Date: Tue, 20 May 2014 01:21:25 +0200
+Message-ID: <12636388.mIvbtR4O8Q@vostro.rjw.lan>
+References: <1399794680-22210-1-git-send-email-computersforpeace@gmail.com> <536FC254.2000702@linux.vnet.ibm.com> <20140512055406.GA3804@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53664 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751117AbaESXCu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 19:02:50 -0400
-In-Reply-To: <CAKohpo=xtnHyWcjHxmSPgzdovMshgotMkQj6Y__R9UvzzfTyHw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140512055406.GA3804@in.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: ego@linux.vnet.ibm.com
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Brian Norris <computersforpeace@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>, Nishanth Menon <menon.nishanth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Monday, May 12, 2014 09:40:46 AM Viresh Kumar wrote:
-> On 9 May 2014 23:48, Mark Brown <broonie@kernel.org> wrote:
-> > From: Mark Brown <broonie@linaro.org>
-> >
-> > The OPP code is an in kernel library selected by its users, there is no
-> > no architecture code required to implement it and enabling it without a
+On Monday, May 12, 2014 11:24:06 AM Gautham R Shenoy wrote:
+> On Mon, May 12, 2014 at 12:02:52AM +0530, Srivatsa S. Bhat wrote:
+> > On 05/11/2014 01:21 PM, Brian Norris wrote:
+> > > powernv_cpufreq_get() is only referenced in this file.
+> > > 
+> > > Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+> > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > Cc: cpufreq@vger.kernel.org
+> > > Cc: linux-pm@vger.kernel.org
+> > 
+> > Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 > 
-> s/no no/no
+> Thanks for this fix Brian.
 > 
-> > user just increases the kernel size. Since the users select rather than
-> > depend on it just remove the ability to directly set the option from
-> > Kconfig.
-> >
-> > Signed-off-by: Mark Brown <broonie@linaro.org>
-> > ---
-> >
-> > This leaves the ARCH_HAS_OPP symbol since removing that requires
-> > updating the relevant architectures, if this is OK I can sumbit a
-> > followup patch cleaning that up.
-> >
-> >  kernel/power/Kconfig | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
 Queued up for 3.16, thanks!
+
+> 
+> --
+> Thanks and Regards
+> gautham.
+> 
+> > 
+> > Regards,
+> > Srivatsa S. Bhat
+> > 
+> > > ---
+> > >  drivers/cpufreq/powernv-cpufreq.c | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> > > index af4968813e76..bb1d08dc8cc8 100644
+> > > --- a/drivers/cpufreq/powernv-cpufreq.c
+> > > +++ b/drivers/cpufreq/powernv-cpufreq.c
+> > > @@ -235,7 +235,7 @@ static void powernv_read_cpu_freq(void *arg)
+> > >   * firmware for CPU 'cpu'. This value is reported through the sysfs
+> > >   * file cpuinfo_cur_freq.
+> > >   */
+> > > -unsigned int powernv_cpufreq_get(unsigned int cpu)
+> > > +static unsigned int powernv_cpufreq_get(unsigned int cpu)
+> > >  {
+> > >  	struct powernv_smp_call_data freq_data;
+> > > 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
