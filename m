@@ -1,91 +1,103 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 2/3] PM / sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily
-Date: Mon, 19 May 2014 22:20:51 +0200
-Message-ID: <3015549.0dZ2xYlt4R@vostro.rjw.lan>
-References: <20140515000320.3c1c9256@jacob-desktop> <1491497.iq6zE5EtMa@vostro.rjw.lan> <20140519021831.29767863@jacob-desktop>
+Subject: Re: [PATCH Resend] driver/core: cpu: initialize opp table
+Date: Mon, 19 May 2014 23:13:24 +0200
+Message-ID: <4765191.0FhyvSGyvF@vostro.rjw.lan>
+References: <60d825e8bfe01f8a5ff98fffaf51ffbf04c7d175.1400480033.git.viresh.kumar@linaro.org> <ca7cc76c49806ce1ac8f9617fa4266cfc29d1ea1.1400480592.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20140519021831.29767863@jacob-desktop>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59200 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751585AbaESU4a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 16:56:30 -0400
+In-Reply-To: <ca7cc76c49806ce1ac8f9617fa4266cfc29d1ea1.1400480592.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, pavel@ucw.cz, nm@ti.com, chander.kashyap@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Monday, May 19, 2014 02:18:31 AM Jacob Pan wrote:
-> On Fri, 16 May 2014 23:08:01 +0200
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+On Monday, May 19, 2014 11:59:11 AM Viresh Kumar wrote:
+> All drivers expecting CPU's OPPs from device tree initialize OPP table using
+> of_init_opp_table() and there is nothing driver specific in that. They all do it
+> in the same way adding to code redundancy.
 > 
-> > On Friday, May 16, 2014 08:20:55 AM Jacob Pan wrote:
-> > > On Thu, 15 May 2014 11:58:55 -0400 (EDT)
-> > > Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > 
-> > > > On Thu, 15 May 2014, Jacob Pan wrote:
-> > > > 
-> > > > > On Thu, 15 May 2014 10:29:42 -0400 (EDT)
-> > > > > Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > > > 
-> > > > > > On Thu, 15 May 2014, Jacob Pan wrote:
-> > > > > > 
-> > > > > > > > > should we respect ignore_children flag here? not all
-> > > > > > > > > parent devices create children with proper .prepare()
-> > > > > > > > > function. this allows parents override children.
-> > > > > > > > > I am looking at USB, a USB device could have logical
-> > > > > > > > > children such as ep_xx, they don't go through the same
-> > > > > > > > > subsystem .prepare().
-> > > > > > > > 
-> > > > > > > > Well, I'm not sure about that.  Let me consider that for a
-> > > > > > > > while.
-> > > > > > > OK. let me be more clear about the situation i see in USB.
-> > > > > > > Correct me if I am wrong, a USB device will always has at
-> > > > > > > least one endpoint/ep_00 as a kid for control pipe, it is a
-> > > > > > > logical device. So when device_prepare() is called, its
-> > > > > > > call back is NULL which makes .direct_complete = 0. Since
-> > > > > > > children device suspend is called before parents, the
-> > > > > > > parents .direct_complete flag will always get cleared.
-> > > > > > > 
-> > > > > > > What i am trying to achieve here is to see if we avoid
-> > > > > > > resuming built-in (hardwired connect_type) non-hub USB
-> > > > > > > devices based on this new patchset. E.g. we don't want to
-> > > > > > > resume/suspend USB camera every time in system
-> > > > > > > suspend/resume cycle if they are already rpm suspended. We
-> > > > > > > can save ~100ms resume time for the devices we have tested.
-> > > > > > 
-> > > > > > This is a good point, but I don't think it is at all related
-> > > > > > to ignore_children.
-> > > > > > 
-> > > > > > Instead, it seems that the best way to solve it would be to
-> > > > > > add a ->prepare() handler for usb_ep_device_type that would
-> > > > > > always turn on direct_complete.
-> > > > > > 
-> > > > > yeah, that would solve the problem with EP device type. But what
-> > > > > about other subdevices. e.g. for USB camera, uvcvideo device? We
-> > > > > can add .prepare(return 1;) for each level but would it be
-> > > > > better to have a flag similar to ignore_children if not
-> > > > > ignore_children itself.
-> > > > 
-> > > > Something like that could always be added.
-> > > or, how about if a device's .prepare() is NULL, we could
-> > > assume .direct_resume() should be set. i.e.
-> > 
-> > You mean direct_complete (which is a flag, not a function), I suppose?
-> > 
-> yes.
-> > Wouldn't that go a bit too far?  It seems to be based on the
-> > assumption that all devices having no ->prepare() callback can be
-> > safely left in runtime suspend over a system suspend/resume cycle,
-> > but is that assumption actually satisfied for all such devices?
-> > 
-> yes, I agree it is risky though i don't see problems with my limited
-> testing. But on the other side, it is too strict.
-> I also tried adding .prepare( return 1;) to usb_ep_device_type pm ops,
-> that didn't work either. The reason is that ep devices don't support
-> runtime pm (disable_depth > 0). I think in this case ignore_children
-> flag should be the right indicator to ignore pm_runtime_suspended()?
+> It would be better if we can get rid of code redundancy by initializing CPU OPPs
+> from core code for all CPUs that have a "operating-points" property defined in
+> their node.
+> 
+> This patch initializes OPPs as soon as CPU device is registered in
+> register_cpu().
+> 
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V1-V2:
+> A colleague spotted some extra debug prints in my first mail :(
+> 
+> Replace
+> + pr_err("****%s: failed to init OPP table for cpu%d, err: %d\n",
+> with
+> + pr_err("%s: failed to init OPP table for cpu%d, err: %d\n",
+> 
+>  drivers/base/cpu.c | 14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> index 006b1bc..74ce944 100644
+> --- a/drivers/base/cpu.c
+> +++ b/drivers/base/cpu.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/acpi.h>
+>  #include <linux/of.h>
+>  #include <linux/cpufeature.h>
+> +#include <linux/pm_opp.h>
+>  
+>  #include "base.h"
+>  
+> @@ -349,11 +350,20 @@ int register_cpu(struct cpu *cpu, int num)
+>  	if (cpu->hotpluggable)
+>  		cpu->dev.groups = hotplugable_cpu_attr_groups;
+>  	error = device_register(&cpu->dev);
+> -	if (!error)
 
-I guess an "ignore this device completely for PM" flag as suggested by
-Alan would be better.
+What about
 
-Rafael
+	if (error)
+		return error;
 
+and then you'd save an indentation level?
+
+Anyway, I find adding of_node* stuff directly to the driver core this way
+kind of disgusting as there still are platforms that don't use it.
+
+Can we have a call to a function that will change into an empty stub on such
+platforms here, please?
+
+> +	if (!error) {
+>  		per_cpu(cpu_sys_devices, num) = &cpu->dev;
+> -	if (!error)
+>  		register_cpu_under_node(num, cpu_to_node(num));
+>  
+> +		/* Initialize CPUs OPP table */
+> +		if (of_node_get(cpu->dev.of_node)) {
+> +			error = of_init_opp_table(&cpu->dev);
+> +			if (error && error != -ENODEV)
+> +				pr_err("%s: failed to init OPP table for cpu%d, err: %d\n",
+> +					__func__, num, error);
+> +			of_node_put(cpu->dev.of_node);
+> +		}
+> +	}
+> +
+>  	return error;
+>  }
+>  
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
