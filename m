@@ -1,253 +1,161 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Mon, 19 May 2014 18:19:49 +0200
-Message-ID: <20140519161949.GG16662@pengutronix.de>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
- <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57689 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932361AbaESQT7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 12:19:59 -0400
-Content-Disposition: inline
-In-Reply-To: <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch Part1 V2 04/29] x86, mpparse: simplify arch/x86/include/asm/mpspec.h
+Date: Tue, 20 May 2014 00:22:48 +0800
+Message-ID: <1400516594-11544-5-git-send-email-jiang.liu@linux.intel.com>
+References: <1400516594-11544-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1400516594-11544-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, David Rientjes <rientjes@google.com>, Seiji Aguchi <seiji.aguchi@hds.com>, Jiang Liu <jiang.liu@linux.intel.com>, HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Richard Weinberger <richard@nod.at>, Andi Kleen <ak@linux.intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@linux.intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi S=F6ren,
+Simplify arch/x86/include/asm/mpspec.h by
+1) Change max_physical_apicid to static as it's only used in apic.c.
+2) Kill declaration of mpc_default_type, it's never defined.
+3) Delete default_acpi_madt_oem_check(), it has already been declared
+   in apic.h.
+4) Change mp_override_legacy_irq(), mp_config_acpi_legacy_irqs() and
+   mp_register_gsi() as static because they are only used in acpi/boot.c.
 
-On Sun, May 18, 2014 at 05:51:05PM -0700, S=F6ren Brinkmann wrote:
-> ------------------8<-----------------8<---------------------8<-------=
-------8<---
-> From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> Date: Tue, 2 Apr 2013 10:08:13 -0700
-> Subject: [PATCH] clk: Introduce 'clk_round_rate_nearest()'
->=20
-> Introduce a new API function to round a rate to the closest possible
-> rate the HW clock can generate.
-> In contrast to 'clk_round_rate()' which works similar, but always ret=
-urns
-> a frequency <=3D its input rate.
->=20
-> Cc: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> ---
->  drivers/clk/clk.c   | 43 +++++++++++++++++++++++++++++++++++++++++--
->  include/linux/clk.h | 14 ++++++++++++--
->  2 files changed, 53 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> index dff0373f53c1..faf24d0569df 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -1011,8 +1011,9 @@ unsigned long __clk_round_rate(struct clk *clk,=
- unsigned long rate)
->   * @rate: the rate which is to be rounded
->   *
->   * Takes in a rate as input and rounds it to a rate that the clk can=
- actually
-> - * use which is then returned.  If clk doesn't support round_rate op=
-eration
-> - * then the parent rate is returned.
-> + * use and does not exceed the requested frequency, which is then re=
-turned.
-> + * If clk doesn't support round_rate operation then the parent rate
-> + * is returned.
->   */
->  long clk_round_rate(struct clk *clk, unsigned long rate)
->  {
-> @@ -1027,6 +1028,44 @@ long clk_round_rate(struct clk *clk, unsigned =
-long rate)
->  EXPORT_SYMBOL_GPL(clk_round_rate);
-> =20
->  /**
-> + * clk_round_rate_nearest - round the given rate for a clk
-> + * @clk: the clk for which we are rounding a rate
-> + * @rate: the rate which is to be rounded
-> + *
-> + * Takes in a rate as input and rounds it to the closest rate that t=
-he clk
-> + * can actually use which is then returned. If clk doesn't support
-> + * round_rate operation then the parent rate is returned.
-> + */
-> +long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
-Why does this function doesn't return an unsigned long when it never
-returns a negative value? Ditto for clk_round_rate?
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/x86/include/asm/apic.h    |    4 ++--
+ arch/x86/include/asm/io_apic.h |    3 ---
+ arch/x86/include/asm/mpspec.h  |   13 -------------
+ arch/x86/kernel/acpi/boot.c    |   12 +++++++++---
+ arch/x86/kernel/apic/apic.c    |    2 +-
+ 5 files changed, 12 insertions(+), 22 deletions(-)
 
-> +{
-> +	unsigned long lower, upper, cur, lower_last, upper_last;
-> +
-> +	lower =3D clk_round_rate(clk, rate);
-> +	if (lower >=3D rate)
-> +		return lower;
-Is the >-case worth a warning?
-
-> +
-> +	upper =3D clk_round_rate(clk, rate + rate - lower);
-This was parenthesized in my original patch on purpose. If rate is big
-
-	rate + rate - lower
-
-might overflow when
-
-	rate + (rate - lower)
-
-doesn't. Thinking again, there is no real problem, because this is
-unsigned arithmetic. To be save we still need to check if rate + (rate =
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 19b0ebafcd3e..69ed79aa9085 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -502,8 +502,6 @@ static inline unsigned default_get_apic_id(unsigned long x)
+ #define DEFAULT_TRAMPOLINE_PHYS_HIGH		0x469
+ 
+ #ifdef CONFIG_X86_64
+-extern int default_acpi_madt_oem_check(char *, char *);
 -
-lower) overflows.
+ extern void apic_send_IPI_self(int vector);
+ 
+ DECLARE_PER_CPU(int, x2apic_extra_bits);
+@@ -552,6 +550,8 @@ static inline int default_apic_id_valid(int apicid)
+ 	return (apicid < 255);
+ }
+ 
++extern int default_acpi_madt_oem_check(char *, char *);
++
+ extern void default_setup_apic_routing(void);
+ 
+ extern struct apic apic_noop;
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index 90f97b4b9347..9121abbc8c8f 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -118,9 +118,6 @@ extern int mp_irq_entries;
+ /* MP IRQ source entries */
+ extern struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
+ 
+-/* non-0 if default (table-less) MP configuration */
+-extern int mpc_default_type;
+-
+ /* Older SiS APIC requires we rewrite the index register */
+ extern int sis_apic_bug;
+ 
+diff --git a/arch/x86/include/asm/mpspec.h b/arch/x86/include/asm/mpspec.h
+index f5a617956735..7bef40a01a1d 100644
+--- a/arch/x86/include/asm/mpspec.h
++++ b/arch/x86/include/asm/mpspec.h
+@@ -40,8 +40,6 @@ extern int mp_bus_id_to_type[MAX_MP_BUSSES];
+ extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+ 
+ extern unsigned int boot_cpu_physical_apicid;
+-extern unsigned int max_physical_apicid;
+-extern int mpc_default_type;
+ extern unsigned long mp_lapic_addr;
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+@@ -88,15 +86,6 @@ static inline void early_reserve_e820_mpc_new(void) { }
+ #endif
+ 
+ int generic_processor_info(int apicid, int version);
+-#ifdef CONFIG_ACPI
+-extern void mp_register_ioapic(int id, u32 address, u32 gsi_base);
+-extern void mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+-				   u32 gsi);
+-extern void mp_config_acpi_legacy_irqs(void);
+-struct device;
+-extern int mp_register_gsi(struct device *dev, u32 gsi, int edge_level,
+-				 int active_high_low);
+-#endif /* CONFIG_ACPI */
+ 
+ #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_LOCAL_APIC)
+ 
+@@ -163,6 +152,4 @@ extern physid_mask_t phys_cpu_present_map;
+ 
+ extern int generic_mps_oem_check(struct mpc_table *, char *, char *);
+ 
+-extern int default_acpi_madt_oem_check(char *, char *);
+-
+ #endif /* _ASM_X86_MPSPEC_H */
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 86281ffb96d6..b41b47021f53 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -345,6 +345,10 @@ acpi_parse_lapic_nmi(struct acpi_subtable_header * header, const unsigned long e
+ #endif				/*CONFIG_X86_LOCAL_APIC */
+ 
+ #ifdef CONFIG_X86_IO_APIC
++static void  mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
++				    u32 gsi);
++static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
++			   int polarity);
+ 
+ static int __init
+ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+@@ -903,7 +907,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
+ #ifdef	CONFIG_X86_IO_APIC
+ #define MP_ISA_BUS		0
+ 
+-void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
++static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
++					  u32 gsi)
+ {
+ 	int ioapic;
+ 	int pin;
+@@ -938,7 +943,7 @@ void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
+ 	isa_irq_to_gsi[bus_irq] = gsi;
+ }
+ 
+-void __init mp_config_acpi_legacy_irqs(void)
++static void __init mp_config_acpi_legacy_irqs(void)
+ {
+ 	int i;
+ 	struct mpc_intsrc mp_irq;
+@@ -1040,7 +1045,8 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+ 	return 0;
+ }
+ 
+-int mp_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
++static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
++			   int polarity)
+ {
+ 	int ioapic;
+ 	int ioapic_pin;
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index ad28db7e6bde..ca1bd75e3de2 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -67,7 +67,7 @@ EXPORT_SYMBOL_GPL(boot_cpu_physical_apicid);
+ /*
+  * The highest APIC ID seen during enumeration.
+  */
+-unsigned int max_physical_apicid;
++static unsigned int max_physical_apicid;
+ 
+ /*
+  * Bitmask of physically existing CPUs:
+-- 
+1.7.10.4
 
-> +	if (upper =3D=3D lower)
-if (upper <=3D rate) is the better check here. (=3D would be a bug.)
-
-> +		return upper;
-> +
-> +	lower =3D rate + 1;
-ok, so your loop invariant is that the best freq is in [lower; upper].
-
-> +	do {
-> +		upper_last =3D upper;
-> +		lower_last =3D lower;
-> +
-> +		cur =3D clk_round_rate(clk, lower + ((upper - lower) >> 1));
-> +		if (cur < lower)
-> +			lower +=3D (upper - lower) >> 1;
-You already know that lower + ((upper - lower) >> 1) is too small, so
-you can better do
-
-	lower +=3D ((upper - lower) >> 1) + 1;
-
-> +		else
-> +			upper =3D cur;
-> +
-> +	} while (lower_last !=3D lower && upper_last !=3D upper);
-> +
-> +	return upper;
-> +}
-> +EXPORT_SYMBOL_GPL(clk_round_rate_nearest);
-I think the function still has potential for optimisation, what about:
-
-unsigned long clk_round_rate_nearest(struct clk *clk, unsigned long rat=
-e)
-{
-	unsigned long lower, upper, rounded;
-
-	rounded =3D clk_round_rate(clk, rate);
-
-	if (rounded >=3D rate)
-		return rounded;
-
-	/*
-	 * rounded is the best approximation for rate that is not
-	 * bigger than rate. If there is a better one, it must be in the
-	 * interval (rate; rate + (rate - rounded)).
-	 * Note that the upper limit isn't better than rate itself, so
-	 * that one doesn't need to be considered.
-	 */
-	=20
-	upper =3D rate + (rate - rounded) - 1;
-	if (upper < rate)
-		upper =3D ULONG_MAX;=20
-
-	upper =3D clk_round_rate(clk, upper);
-
-	lower =3D rate + 1;
-
-	/*
-	 * If there is a better approximation than clk_round_rate(clk,
-	 * rate), it is in the interval [lower, upper]. Otherwise all
-	 * values in this interval yield clk_round_rate(clk, rate).
-	 */
-	while (lower < upper) {
-		unsigned long mid;
-
-		mid =3D lower + (upper - lower) >> 1;
-		rounded =3D clk_round_rate(clk, mid);
-
-		if (rounded < rate) {
-			/* implies rounded =3D=3D clk_round_rate(clk, rate); */
-			lower =3D mid + 1;
-		} else {
-			/*
-			 * rounded is a better approximation than lower
-			 * assuming that rounded <=3D mid
-			 */
-			upper =3D rounded;
-		}
-	}
-
-	/*
-	 * upper is always assigned a return value from clk_round_rate,
-	 * so it's suitable for direct return.
-	 */
-	return upper;
-}
-
-? Note this is not even compile tested ...
-
-=09
-> +
-> +/**
->   * __clk_notify - call clk notifier chain
->   * @clk: struct clk * that is changing rate
->   * @msg: clk notifier type (see include/linux/clk.h)
-> diff --git a/include/linux/clk.h b/include/linux/clk.h
-> index fb5e097d8f72..2f83bf030ac6 100644
-> --- a/include/linux/clk.h
-> +++ b/include/linux/clk.h
-> @@ -255,15 +255,25 @@ void devm_clk_put(struct device *dev, struct cl=
-k *clk);
-> =20
-> =20
->  /**
-> - * clk_round_rate - adjust a rate to the exact rate a clock can prov=
-ide
-> + * clk_round_rate - round a rate to the exact rate a clock can provi=
-de not
-> + *		    exceeding @rate
->   * @clk: clock source
->   * @rate: desired clock rate in Hz
->   *
-> - * Returns rounded clock rate in Hz, or negative errno.
-> + * Returns rounded clock rate in Hz, or parent rate
->   */
-I'd put the changes in this hunk up to here into a separate patch.
-
-Best regards
-Uwe
-
->  long clk_round_rate(struct clk *clk, unsigned long rate);
-> =20
->  /**
-> + * clk_round_rate_nearest - round a rate to the exact rate a clock c=
-an provide
-> + * @clk: the clk for which we are rounding a rate
-> + * @rate: the rate which is to be rounded
-> + *
-> + * Returns rounded clock rate in Hz, or parent rate
-> + */
-> +long clk_round_rate_nearest(struct clk *clk, unsigned long rate);
-> +
-> +/**
->   * clk_set_rate - set the clock rate for a clock source
->   * @clk: clock source
->   * @rate: desired clock rate in Hz
-> --=20
-> 1.9.3.1.ga73a6ad
->=20
->=20
->=20
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
-    |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
