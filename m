@@ -1,51 +1,107 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH] cpufreq: intel_pstate: Remove unused member name of cpudata
-Date: Tue, 20 May 2014 21:12:27 +0300
-Message-ID: <537B9B0B.1020404@semaphore.gr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V5] PM/OPP: discard duplicate OPPs
+Date: Tue, 20 May 2014 23:09:47 +0200
+Message-ID: <1555967.8fxByr2j83@vostro.rjw.lan>
+References: <7cb6e0e039e0935e37c81d0f23d26b0b81ad8cda.1400597170.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:59339 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751864AbaETSMb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 14:12:31 -0400
+Received: from v094114.home.net.pl ([79.96.170.134]:60371 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750948AbaETUwv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 16:52:51 -0400
+In-Reply-To: <7cb6e0e039e0935e37c81d0f23d26b0b81ad8cda.1400597170.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org >> LKML" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, Chander Kashyap <k.chander@samsung.com>
 
-Although, a value is assigned to member name of struct cpudata,
-it is never used.
+On Tuesday, May 20, 2014 08:23:28 PM Viresh Kumar wrote:
+> From: Chander Kashyap <k.chander@samsung.com>
+> 
+> We don't have any protection against addition of duplicate OPPs currently and
+> in case some code tries to add them it will end up corrupting OPP tables.
+> 
+> There can be many combinations in which we may end up trying duplicate OPPs:
+> - both freq and volt are same, but earlier OPP may or may not be active.
+> - only freq is same and volt is different.
+> 
+> This patch tries to implement below logic for these cases:
+> 
+> Return 0 if new OPP was duplicate of existing one (i.e. same freq and volt) and
+> return -EEXIST if new OPP had same freq but different volt as of an existing OPP
+> OR if both freq/volt were same but earlier OPP was disabled.
+> 
+> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V4->V5:
+> - Mention Return values under 'Return:' clause of doc style comment.
+> - s/pr_warn/dev_warn
+> - s/linrao/linaro in my email id :(
+> 
+>  drivers/base/power/opp.c | 27 +++++++++++++++++++++++++--
+>  1 file changed, 25 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 2553867..6a06d43 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -394,6 +394,13 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+>   * to keep the integrity of the internal data structures. Callers should ensure
+>   * that this function is *NOT* called under RCU protection or in contexts where
+>   * mutex cannot be locked.
+> + *
+> + * Returns:
+> + * 0:		On success OR
+> + *		Duplicate OPPs (both freq and volt are same) and opp->available
+> + * -EEXIST:	Freq are same and volt are different OR
+> + *		Duplicate OPPs (both freq and volt are same) and !opp->available
+> + * -ENOMEM:	Memory allocation failure
+>   */
+>  int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>  {
+> @@ -443,15 +450,31 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>  	new_opp->u_volt = u_volt;
+>  	new_opp->available = true;
+>  
+> -	/* Insert new OPP in order of increasing frequency */
+> +	/*
+> +	 * Insert new OPP in order of increasing frequency
+> +	 * and discard if already present
+> +	 */
+>  	head = &dev_opp->opp_list;
+>  	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+> -		if (new_opp->rate < opp->rate)
+> +		if (new_opp->rate <= opp->rate)
+>  			break;
+>  		else
+>  			head = &opp->node;
+>  	}
+>  
+> +	/* Duplicate OPPs ? */
+> +	if (new_opp->rate == opp->rate) {
+> +		int ret = (new_opp->u_volt == opp->u_volt) && opp->available ?
+> +			0 : -EEXIST;
 
-We can safely remove it.
+The parens are not necessary.  And is the direction correct?
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/intel_pstate.c | 4 ----
- 1 file changed, 4 deletions(-)
+> +
+> +		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+> +			__func__, opp->rate, opp->u_volt, opp->available,
+> +			new_opp->rate, new_opp->u_volt, new_opp->available);
+> +		mutex_unlock(&dev_opp_list_lock);
+> +		kfree(new_opp);
+> +		return ret;
+> +	}
+> +
+>  	list_add_rcu(&new_opp->node, head);
+>  	mutex_unlock(&dev_opp_list_lock);
+>  
+> 
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 24a534a..a6d5afa 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -88,8 +88,6 @@ struct _pid {
- struct cpudata {
- 	int cpu;
- 
--	char name[64];
--
- 	struct timer_list timer;
- 
- 	struct pstate_data pstate;
-@@ -544,8 +542,6 @@ static inline void intel_pstate_pstate_decrease(struct cpudata *cpu, int steps)
- 
- static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- {
--	sprintf(cpu->name, "Intel 2nd generation core");
--
- 	cpu->pstate.min_pstate = pstate_funcs.get_min();
- 	cpu->pstate.max_pstate = pstate_funcs.get_max();
- 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
 -- 
-1.9.0
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
