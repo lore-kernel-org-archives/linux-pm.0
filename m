@@ -1,88 +1,98 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH V3 1/4] cpufreq: handle calls to ->target_index() in
- separate routine
-Date: Tue, 20 May 2014 09:44:15 -0700
-Message-ID: <CAD=FV=U8Q39qaE8Avk51LJDnBWLBXX_MqyoQV-jjpYUNwpJcrQ@mail.gmail.com>
-References: <cover.1400302114.git.viresh.kumar@linaro.org>
-	<914cddcb07a8aa1a9ec984f436dd2bba69cfd128.1400302114.git.viresh.kumar@linaro.org>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [RFC 2/2] PM / OPP: extend DT parsing to allow voltage ranges
+Date: Tue, 20 May 2014 18:45:24 +0200
+Message-ID: <1400604324.4853.51.camel@weser.hi.pengutronix.de>
+References: <1400596060-5330-1-git-send-email-l.stach@pengutronix.de>
+	 <1400596060-5330-3-git-send-email-l.stach@pengutronix.de>
+	 <537B6782.5080505@ti.com>
+	 <1400596877.4853.16.camel@weser.hi.pengutronix.de>
+	 <CAGo_u6qTFzVMhcWrk0L5Z4zykfLTMrkph0b4AJNEX7SS7pvWxQ@mail.gmail.com>
+	 <1400598429.4853.29.camel@weser.hi.pengutronix.de>
+	 <CAGo_u6ru5OgwCbJRrMNXUzeNLFMUvW=j8su6AAC4vmy3GOSM2g@mail.gmail.com>
+	 <CAGo_u6omOyuXvpDcirm36AnreGfa4nxisQ8BqZ8p2AVmWjfwbA@mail.gmail.com>
+	 <1400600908.4853.41.camel@weser.hi.pengutronix.de>
+	 <CAGo_u6pyU1O0uv-3CJc6OPoJ+bkcpNJ9_26JL3DxugX7dJhZfA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f172.google.com ([209.85.220.172]:43368 "EHLO
-	mail-vc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbaETQoQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 12:44:16 -0400
-Received: by mail-vc0-f172.google.com with SMTP id hr9so964315vcb.3
-        for <linux-pm@vger.kernel.org>; Tue, 20 May 2014 09:44:15 -0700 (PDT)
-In-Reply-To: <914cddcb07a8aa1a9ec984f436dd2bba69cfd128.1400302114.git.viresh.kumar@linaro.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:59435 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753125AbaETQqk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 12:46:40 -0400
+In-Reply-To: <CAGo_u6pyU1O0uv-3CJc6OPoJ+bkcpNJ9_26JL3DxugX7dJhZfA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Russell King <linux@arm.linux.org.uk>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+To: Nishanth Menon <nm@ti.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Viresh,
+Am Dienstag, den 20.05.2014, 11:09 -0500 schrieb Nishanth Menon:
+> On Tue, May 20, 2014 at 10:48 AM, Lucas Stach <l.stach@pengutronix.de> wrote:
+> > Am Dienstag, den 20.05.2014, 10:29 -0500 schrieb Nishanth Menon:
+> >> On Tue, May 20, 2014 at 10:23 AM, Nishanth Menon <nm@ti.com> wrote:
+> 
+> [...]
+> >> If you need to handle PMIC accuracy, use voltage-tolerance.
+> >>
+> > And that's exactly one of the issues of the current binding, the
+> > tolerance isn't stable, but rather per OPP.
+> >
+> > As an example look at two operating points of the i.MX5:
+> >
+> > /*  kHz min(uV) nom(uV) max(uV) */
+> >  166666  850000  900000 1400000
+> > 1200000 1300000 1350000 1400000
+> >
+> > So for the 1,2GHz OPP the voltage tolerance is just 3,7% as anything
+> > bigger would exceed the absolute maximum rating, but for the 166MHz OPP
+> > it is already 64,7%.
+> >
+> > I agree that I could just cap the rail at 1,4V and give a max voltage
+> > equal to that as max_volt to the regulator API, but actually the device
+> > doesn't even know it's tolerance as it has no max defined. It makes
+> > having a max_volt in the regulator API kind of senseless, as connected
+> > devices don't know their maximum rating.
+> 
+> Is'nt that(voltage-tolerance binding) a different problem that needs a
+> different solution rather than creating a new binding for OPP - which
+> actually makes no description sense (since the max is absolute max)?
+> 
+Ok, I agree that having a nominal voltage isn't really required, so this
+leaves us with min...max, where min is already there in the OPP
+framework.
 
-On Fri, May 16, 2014 at 9:51 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Handling calls to ->target_index() has got complex over time and might become
-> more complex. So, its better to take target_index() bits out in another routine
-> __target_index() for better code readability. Shouldn't have any functional
-> impact.
->
-> Tested-by: Stephen Warren <swarren@nvidia.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 56 ++++++++++++++++++++++++++++-------------------
->  1 file changed, 33 insertions(+), 23 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index a05c921..9bf12a2 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1816,12 +1816,43 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
->   *                              GOVERNORS                            *
->   *********************************************************************/
->
-> +static int __target_index(struct cpufreq_policy *policy,
-> +                         struct cpufreq_frequency_table *freq_table, int index)
-> +{
-> +       struct cpufreq_freqs freqs;
-> +       int retval = -EINVAL;
-> +       bool notify;
-> +
-> +       notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
-> +
-> +       if (notify) {
-> +               freqs.old = policy->cur;
-> +               freqs.new = freq_table[index].frequency;
-> +               freqs.flags = 0;
-> +
-> +               pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
-> +                               __func__, policy->cpu, freqs.old, freqs.new);
-> +
-> +               cpufreq_freq_transition_begin(policy, &freqs);
-> +       }
-> +
-> +       retval = cpufreq_driver->target_index(policy, index);
-> +       if (retval)
-> +               pr_err("%s: Failed to change cpu frequency: %d\n",
-> +                               __func__, retval);
-> +
-> +       if (notify)
-> +               cpufreq_freq_transition_end(policy, &freqs, retval);
-> +
-> +       return retval;
-> +}
-> +
->  int __cpufreq_driver_target(struct cpufreq_policy *policy,
->                             unsigned int target_freq,
->                             unsigned int relation)
->  {
-> -       int retval = -EINVAL;
->         unsigned int old_target_freq = target_freq;
-> +       int retval = -EINVAL;
+The question here is: are there any devices out there where we could
+imagine a frequency dependent max-voltage? I could very well image such
+a thing for CPU devices, where thermal constraints would force us to
+reduce the regulator voltage to allow for a higher frequency. If any
+device on the same rail needs a higher voltage this would prevent using
+the higher OPP.
 
-I'm not sure that this shuffling was really necessary, but I guess it
-doesn't hurt.  ...and I guess a CL that's shuffling code anyway is the
-place to put it...
+I have never seen such a device in practice, so maybe just having a
+global max-voltage property is the right thing. I'll have to think about
+this.
 
-Reviewed-by: Doug Anderson <dianders@chromium.org>
+> How can we address that? should we add some logic that says:
+> 
+> if voltage tolerance == 0, then try min_uV to max_opp_uV?
+> OR
+> introduce a new binding that says absolute-max-voltage (this is what I
+> was planning on doing with voltage domain btw).. and ensure that that
+> is used?
+> 
+> Personally, I never liked voltage-tolerance binding precisely for the
+> same reason as you bring up.. but that is a ABI now and we need to see
+> if the requirements can match with it, or define a new one keeping the
+> old ABI alive..
+> 
+I would like to keep the focus on new drivers using OPPs. How to fit in
+drivers with existing bindings is to be defined later. I'm working on a
+new cpufreq driver and would like to work out a solution that avoids
+using this wobbly voltage-tolerance.
+
+Regards,
+Lucas
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
+
