@@ -1,37 +1,89 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v3] PM / OPP: discard duplicate OPPs
-Date: Tue, 20 May 2014 06:24:20 -0500
-Message-ID: <CAGo_u6o+Vysq0LkdFTrP82WOpS1TT-=MD+zgP+Q_L=3RV8x5hA@mail.gmail.com>
-References: <1400230809-11401-1-git-send-email-chander.kashyap@linaro.org>
-	<537A0247.1030503@ti.com>
-	<CAKohpoknoFuz8qnDpunA7oxr5E_18=+EQsFEy0P39fcU=4Ps9w@mail.gmail.com>
+Subject: Re: [PATCH] PM / OPP: Implement free_opp_table function
+Date: Tue, 20 May 2014 06:25:42 -0500
+Message-ID: <CAGo_u6pZqp92yNXSmAkjH6FzQyroaAFMJjFRAVjcDBU7H_YgNw@mail.gmail.com>
+References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+	<537A037E.8000800@ti.com>
+	<CAOqmu83XqC_B1Abb_+FMc=DywUxL0=_NompWB4ED18UhxxqQNw@mail.gmail.com>
+	<CAGo_u6p+XWfQU64Uvbd2-5u5DumoSo1XsDt_s48MF5yXYZDBxA@mail.gmail.com>
+	<CAOqmu80avjT8cjKPLL-JFbP4w8dWqbfSTJQW9XDd16UviSSRDQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f45.google.com ([74.125.82.45]:35256 "EHLO
-	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbaETLYW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 07:24:22 -0400
-In-Reply-To: <CAKohpoknoFuz8qnDpunA7oxr5E_18=+EQsFEy0P39fcU=4Ps9w@mail.gmail.com>
+Received: from mail-wg0-f43.google.com ([74.125.82.43]:49452 "EHLO
+	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbaETLZo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 07:25:44 -0400
+In-Reply-To: <CAOqmu80avjT8cjKPLL-JFbP4w8dWqbfSTJQW9XDd16UviSSRDQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Chander Kashyap <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: Inderpal Singh <inderpal.s@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Mon, May 19, 2014 at 11:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Tue, May 20, 2014 at 12:36 AM, Inderpal Singh <inderpal.s@samsung.com> wrote:
+> On Tue, May 20, 2014 at 12:04 AM, Nishanth Menon <nm@ti.com> wrote:
+>> On Mon, May 19, 2014 at 1:08 PM, Inderpal Singh <inderpal.s@samsung.com> wrote:
+>>> Hi Nishanth,
+>>>
+>>> Thanks for the review comments.
+>>>
+>>> On Mon, May 19, 2014 at 6:43 PM, Nishanth Menon <nm@ti.com> wrote:
+>>>> On 05/16/2014 04:09 AM, Inderpal Singh wrote:
+
+[..]
+>>>>> +     /* Hold our list modification lock here */
+>>>>> +     mutex_lock(&dev_opp_list_lock);
+>>>>> +
+>>>>> +     /* Check for existing list for 'dev' */
+>>>>> +     dev_opp = find_device_opp(dev);
+>>>>> +     if (IS_ERR(dev_opp)) {
+>>>>> +             mutex_unlock(&dev_opp_list_lock);
+>>>>> +             return;
+>>>>> +     }
+>>>>> +
+>>>>> +     while (!list_empty(&dev_opp->opp_list)) {
+>>>>> +             opp = list_entry_rcu(dev_opp->opp_list.next,
+>>>>> +                                     struct dev_pm_opp, node);
+>>>>> +             list_del_rcu(&opp->node);
+>>>>> +             kfree_rcu(opp, head);
+>>>>> +     }
+>>>>
+>>>> How about the OPP notifiers? should'nt we add a new event
+>>>> OPP_EVENT_REMOVE?
+>>>>
+>>>
+>>> As this function is to free the whole opp table. Hence, I think,
+>>> notifier may not be needed. It may be required for per opp removal as
+>>> is the case with opp addition and enable/disable. But at present there
+>>> are no users of these notifiers at all. Let me know your view.
+>>
+>> umm.. we do have devfreq which depends on OPPs :).
 >
-> I have asked this on the earlier thread as well, let me ask it again.
-> What would callers do on return value of EEXIST ? Is there anything
-> special we may want to handle ?
+> Yes, devfreq does depend on OPPs, but no devfreq driver is registering
+> its notifier_block to handle OPP notifications.
+>
 
-That is upto the caller. returning 0 for an operation we were supposed
-to do, but due to error checks, did not do, implies we need to provide
-appropriate error back to caller. caller may choose to act upon the
-error and do something OR not - depending on what the caller is (for
-example, caller may choose to abort the full sequence as it does not
-trust the entries anymore, OR maybe trying to add optional OPP - whose
-failure is ignored) - it is NOT upto the this code to implement that
-policy.
+Lets not forget the power of downstream tree drivers that use the API set :)
 
+>>
+>>>> To maintain non-dt behavior coherency, should'nt we rather add a
+>>>> opp_remove or an opp_del function?
+>>>
+>>> Yes we should have opp_remove as well, but what's the use case ?
+>>> Should we go ahead and implement it Or, wait for the use-case?
+>>
+>> IMHO, if we are doing it properly, we should add the requisite
+>> function as well. we dont want to have differing behavior device tree
+>> Vs non-DT.
+>
+> So we will have 2 functions then. One to remove the whole opp table
+> and the the other to remove the individual OPPs.
+> I will cover this in v2. Will also take care of the OPP_EVENT_REMOVE
+> notification part.
+>
+
+Thanks.
+
+--
 Regards,
 Nishanth Menon
