@@ -1,245 +1,212 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Tue, 20 May 2014 09:33:58 +0200
-Message-ID: <20140520073358.GJ16662@pengutronix.de>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
- <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
- <20140519161949.GG16662@pengutronix.de>
- <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
+From: Dudley Du <dudl@cypress.com>
+Subject: RE: [PATCH 4/6] input: cyapa: enable/disable trackpad device based
+ on LID state
+Date: Tue, 20 May 2014 06:54:07 +0000
+Message-ID: <77BC725C9062764F874D79F51E1F1A8F40C326DE@S04-MBX01-01.s04.local>
+References: <77BC725C9062764F874D79F51E1F1A8F40C14099@S04-MBX01-01.s04.local>
+ <20140520034302.GB986@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:53372 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbaETHeL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 03:34:11 -0400
-Content-Disposition: inline
-In-Reply-To: <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
+Received: from relay-s04-hub005.domainlocalhost.com ([74.115.207.216]:36125
+	"EHLO relay-S04-HUB005.domainlocalhost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750969AbaETG7q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 20 May 2014 02:59:46 -0400
+In-Reply-To: <20140520034302.GB986@core.coreip.homeip.net>
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Benson Leung <bleung@google.com>, Daniel Kurtz <djkurtz@google.com>, David Solda <dso@cypress.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi S=F6ren,
+Hi Rafael,
 
-On Mon, May 19, 2014 at 09:41:32AM -0700, S=F6ren Brinkmann wrote:
-> On Mon, 2014-05-19 at 06:19PM +0200, Uwe Kleine-K=F6nig wrote:
-> > Hi S=F6ren,
-> >=20
-> > On Sun, May 18, 2014 at 05:51:05PM -0700, S=F6ren Brinkmann wrote:
-> > > ------------------8<-----------------8<---------------------8<---=
-----------8<---
-> > > From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > > Date: Tue, 2 Apr 2013 10:08:13 -0700
-> > > Subject: [PATCH] clk: Introduce 'clk_round_rate_nearest()'
-> > >=20
-> > > Introduce a new API function to round a rate to the closest possi=
-ble
-> > > rate the HW clock can generate.
-> > > In contrast to 'clk_round_rate()' which works similar, but always=
- returns
-> > > a frequency <=3D its input rate.
-> > >=20
-> > > Cc: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> > > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> > > ---
-> > >  drivers/clk/clk.c   | 43 +++++++++++++++++++++++++++++++++++++++=
-++--
-> > >  include/linux/clk.h | 14 ++++++++++++--
-> > >  2 files changed, 53 insertions(+), 4 deletions(-)
-> > >=20
-> > > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> > > index dff0373f53c1..faf24d0569df 100644
-> > > --- a/drivers/clk/clk.c
-> > > +++ b/drivers/clk/clk.c
-> > > @@ -1011,8 +1011,9 @@ unsigned long __clk_round_rate(struct clk *=
-clk, unsigned long rate)
-> > >   * @rate: the rate which is to be rounded
-> > >   *
-> > >   * Takes in a rate as input and rounds it to a rate that the clk=
- can actually
-> > > - * use which is then returned.  If clk doesn't support round_rat=
-e operation
-> > > - * then the parent rate is returned.
-> > > + * use and does not exceed the requested frequency, which is the=
-n returned.
-> > > + * If clk doesn't support round_rate operation then the parent r=
-ate
-> > > + * is returned.
-> > >   */
-> > >  long clk_round_rate(struct clk *clk, unsigned long rate)
-> > >  {
-> > > @@ -1027,6 +1028,44 @@ long clk_round_rate(struct clk *clk, unsig=
-ned long rate)
-> > >  EXPORT_SYMBOL_GPL(clk_round_rate);
-> > > =20
-> > >  /**
-> > > + * clk_round_rate_nearest - round the given rate for a clk
-> > > + * @clk: the clk for which we are rounding a rate
-> > > + * @rate: the rate which is to be rounded
-> > > + *
-> > > + * Takes in a rate as input and rounds it to the closest rate th=
-at the clk
-> > > + * can actually use which is then returned. If clk doesn't suppo=
-rt
-> > > + * round_rate operation then the parent rate is returned.
-> > > + */
-> > > +long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
-> > Why does this function doesn't return an unsigned long when it neve=
-r
-> > returns a negative value? Ditto for clk_round_rate?
->=20
-> I matched the definition of clk_round_rate(). But you're probably rig=
-ht,
-> it may be the right thing to change clk_round_rate to return an
-> unsigned, but with that being exposed API it would be a risky change.
-Russell, what do you think?
+Could you help give some advice on how to apply the function to put the trackpad device into low power mode with LID in current kernel?
+or it's just a policy and should not be submitted to kernel right now?
 
-> > > +{
-> > > +	unsigned long lower, upper, cur, lower_last, upper_last;
-> > > +
-> > > +	lower =3D clk_round_rate(clk, rate);
-> > > +	if (lower >=3D rate)
-> > > +		return lower;
-> > Is the >-case worth a warning?
->=20
-> No, it's correct behavior. If you request a rate that is way lower th=
-an what the
-> clock can generate, returning something larger is perfectly valid, IM=
-HO.
-> Which reveals one problem in this whole discussion. The API does not
-> require clk_round_rate() to round down. It is actually an implementat=
-ion
-> choice that had been made for clk-divider.
-I'm sure it's more than an implementation choice for clk-divider. But I
-don't find any respective documentation (but I didn't try hard).
+Thanks,
+Dudley
 
-
-> > > +
-> > > +	upper =3D clk_round_rate(clk, rate + rate - lower);
-> > This was parenthesized in my original patch on purpose. If rate is =
-big
-> >=20
-> > 	rate + rate - lower
-> >=20
-> > might overflow when
-> >=20
-> > 	rate + (rate - lower)
-> >=20
-> > doesn't. Thinking again, there is no real problem, because this is
-> > unsigned arithmetic. To be save we still need to check if rate + (r=
-ate -
-> > lower) overflows.
->=20
-> Good point. I'll add the parentheses.
->=20
-> >=20
-> > > +	if (upper =3D=3D lower)
-> > if (upper <=3D rate) is the better check here. (=3D would be a bug.=
-)
->=20
-> I don't understand. Passing rate + x to round rate can never return
-> something below 'lower'. Only something in the range [lower,lower+x].
-> So, if upper =3D=3D lower we found our closest frequency and return i=
-t.
-> Otherwise we have to iterate over [lower+1,upper]. Or what did I miss=
-?
-Assuming a correct implementation of clk_round_rate there is no
-difference. Checking for <=3D rate is just a bit more robust for broken
-implementations.
-
-> > > +		return upper;
-> > > +
-> > > +	lower =3D rate + 1;
-> > ok, so your loop invariant is that the best freq is in [lower; uppe=
-r].
->=20
-> right.
->=20
-> >=20
-> > > +	do {
-> > > +		upper_last =3D upper;
-> > > +		lower_last =3D lower;
-> > > +
-> > > +		cur =3D clk_round_rate(clk, lower + ((upper - lower) >> 1));
-> > > +		if (cur < lower)
-> > > +			lower +=3D (upper - lower) >> 1;
-> > You already know that lower + ((upper - lower) >> 1) is too small, =
-so
-> > you can better do
-> >=20
-> > 	lower +=3D ((upper - lower) >> 1) + 1;
->=20
-> right. I'll add the '+1'
->=20
-> >=20
-> > > +		else
-> > > +			upper =3D cur;
-> > > +
-> > > +	} while (lower_last !=3D lower && upper_last !=3D upper);
-> > > +
-> > > +	return upper;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(clk_round_rate_nearest);
-> > I think the function still has potential for optimisation, what abo=
-ut:
->=20
-> At first glance, I don't see many differences except for the comments
-> you made above. I'll have a closer look though.
-I would expect my variant to result in more effective code as it has
-simpler expressions.
-
-> > unsigned long clk_round_rate_nearest(struct clk *clk, unsigned long=
- rate)
-> > {
-> > 	unsigned long lower, upper, rounded;
-> >=20
-> > 	rounded =3D clk_round_rate(clk, rate);
-> >=20
-> > 	if (rounded >=3D rate)
-> > 		return rounded;
-> >=20
-> > 	/*
-> > 	 * rounded is the best approximation for rate that is not
-> > 	 * bigger than rate. If there is a better one, it must be in the
-> > 	 * interval (rate; rate + (rate - rounded)).
-> > 	 * Note that the upper limit isn't better than rate itself, so
-> > 	 * that one doesn't need to be considered.
-> > 	 */
-> > 	=20
-> > 	upper =3D rate + (rate - rounded) - 1;
-> > 	if (upper < rate)
-> > 		upper =3D ULONG_MAX;=20
->=20
-> Aren't we done here? Your search for an upper boundary resulted in
-> 'lower'. Hence there is no valid frequency closer to 'rate' than 'low=
-er'. Why do
-> you extend to ULONG_MAX?
-Consider a clock that can do (assuming ULONG_MAX =3D 4294967295):
-
-	12000, 4294967285
-
-and you call
-
-	clk_round_rate_nearest(clk, 4294967283)
-
-Then we have:
-
-	rounded =3D clk_round_rate(clk, 4294967283) =3D 12000.
-	upper =3D 4294955269
-
-because the addition overflowed upper is smaller than rate. Still we
-want to find rate=3D4294967285, right?
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
-    |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
+>
+> -----Original Message-----
+> From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
+> Sent: Tuesday, May 20, 2014 11:43 AM
+> To: Dudley Du
+> Cc: Benson Leung; Daniel Kurtz; David Solda; linux-input@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH 4/6] input: cyapa: enable/disable trackpad device based on LID state
+>
+> Hi Dudley,
+>
+> On Wed, Apr 16, 2014 at 08:39:34AM +0000, Dudley Du wrote:
+> > Rely on EV_SW and SW_LID bits to identify a LID device, and hook up
+> > our filter to listen for SW_LID events to enable/disable touchpad when
+> > LID is open/closed.
+> > TEST=test on Chomebooks.
+>
+> This is a policy and it does not belong in the kernel. Please work with Rafael to establish generic interface to put devices into low power mode (like accelerating runtime PM idle timeout) and use it when userspace detects that lid is closed.
+>
+> Thanks.
+>
+> >
+> > Signed-off-by: Du, Dudley <dudl@cypress.com>
+> > ---
+> > diff --git a/drivers/input/mouse/cyapa.c b/drivers/input/mouse/cyapa.c
+> > index 6820b3f..da03427 100644
+> > --- a/drivers/input/mouse/cyapa.c
+> > +++ b/drivers/input/mouse/cyapa.c
+> > @@ -523,6 +523,9 @@ struct cyapa {
+> >         int physical_size_x;
+> >         int physical_size_y;
+> >
+> > +       bool lid_handler_registered;
+> > +       struct input_handler lid_handler;
+> > +
+> >         /* used in ttsp and truetouch based trackpad devices. */
+> >         u8 x_origin;  /* X Axis Origin: 0 = left side; 1 = rigth side. */
+> >         u8 y_origin;  /* Y Axis Origin: 0 = top; 1 = bottom. */ @@
+> > -3107,6 +3110,125 @@ static void cyapa_start_runtime(struct cyapa
+> > *cyapa)  static void cyapa_start_runtime(struct cyapa *cyapa) {}
+> > #endif /* CONFIG_PM_RUNTIME */
+> >
+> > +
+> > +/*
+> > + * We rely on EV_SW and SW_LID bits to identify a LID device, and
+> > +hook
+> > + * up our filter to listen for SW_LID events to enable/disable
+> > +touchpad when
+> > + * LID is open/closed.
+> > + */
+> > +static const struct input_device_id lid_device_ids[] = {
+> > +       {
+> > +               .flags = INPUT_DEVICE_ID_MATCH_EVBIT |
+> > +                        INPUT_DEVICE_ID_MATCH_SWBIT,
+> > +               .evbit = { BIT_MASK(EV_SW) },
+> > +               .swbit = { BIT_MASK(SW_LID) },
+> > +       },
+> > +       { },
+> > +};
+> > +
+> > +static int lid_device_connect(struct input_handler *handler,
+> > +                             struct input_dev *dev,
+> > +                             const struct input_device_id *id) {
+> > +       struct input_handle *lid_handle;
+> > +       int error;
+> > +
+> > +       lid_handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
+> > +       if (!lid_handle)
+> > +               return -ENOMEM;
+> > +
+> > +       lid_handle->dev = dev;
+> > +       lid_handle->handler = handler;
+> > +       lid_handle->name = "lid_event_handler";
+> > +       lid_handle->private = handler->private;
+> > +
+> > +       error = input_register_handle(lid_handle);
+> > +       if (error)
+> > +               goto err_free;
+> > +
+> > +       error = input_open_device(lid_handle);
+> > +       if (error)
+> > +               goto err_unregister;
+> > +
+> > +       return 0;
+> > +err_unregister:
+> > +       input_unregister_handle(lid_handle);
+> > +err_free:
+> > +       kfree(lid_handle);
+> > +       return error;
+> > +}
+> > +
+> > +static void lid_device_disconnect(struct input_handle *handle) {
+> > +       input_close_device(handle);
+> > +       input_unregister_handle(handle);
+> > +       kfree(handle);
+> > +}
+> > +
+> > +static bool lid_event_filter(struct input_handle *handle,
+> > +                            unsigned int type, unsigned int code, int
+> > +value) {
+> > +       struct cyapa *cyapa = handle->private;
+> > +       struct device *dev = &cyapa->client->dev;
+> > +
+> > +       if (type == EV_SW && code == SW_LID) {
+> > +               if (cyapa->suspended) {
+> > +                       /*
+> > +                        * If the lid event filter is called while suspended,
+> > +                        * there is no guarantee that the underlying i2cs are
+> > +                        * resumed at this point, so it is not safe to issue
+> > +                        * the command to change power modes.
+> > +                        * Instead, rely on cyapa_resume to set us back to
+> > +                        * PWR_MODE_FULL_ACTIVE.
+> > +                        */
+> > +                       return false;
+> > +               }
+> > +               if (value == 0) {
+> > +                       if (cyapa->cyapa_set_power_mode)
+> > +                               cyapa->cyapa_set_power_mode(cyapa,
+> > +                                               PWR_MODE_FULL_ACTIVE, 0);
+> > +                       pm_runtime_set_active(dev);
+> > +                       pm_runtime_enable(dev);
+> > +               } else {
+> > +                       pm_runtime_disable(dev);
+> > +                       if (cyapa->cyapa_set_power_mode)
+> > +                               cyapa->cyapa_set_power_mode(cyapa,
+> > +                                               PWR_MODE_OFF, 0);
+> > +               }
+> > +       }
+> > +
+> > +       return false;
+> > +}
+> > +
+> > +static void lid_event_register_handler(struct cyapa *cyapa) {
+> > +       int error;
+> > +       struct input_handler *lid_handler = &cyapa->lid_handler;
+> > +
+> > +       if (cyapa->lid_handler_registered)
+> > +               return;
+> > +
+> > +       lid_handler->filter     = lid_event_filter;
+> > +       lid_handler->connect    = lid_device_connect;
+> > +       lid_handler->disconnect = lid_device_disconnect;
+> > +       lid_handler->name       = "cyapa_lid_event_handler";
+> > +       lid_handler->id_table   = lid_device_ids;
+> > +       lid_handler->private    = cyapa;
+> > +
+> > +       error = input_register_handler(lid_handler);
+> > +       if (error)
+> > +               return;
+> > +       cyapa->lid_handler_registered = true; }
+> > +
+> > +static void lid_event_unregister_handler(struct cyapa *cyapa) {
+> > +       if (cyapa->lid_handler_registered) {
+> > +               input_unregister_handler(&cyapa->lid_handler);
+> > +               cyapa->lid_handler_registered = false;
+> > +       }
+> > +}
+> > +
+> >  static void cyapa_detect_async(void *data, async_cookie_t cookie)  {
+> >         struct cyapa *cyapa = (struct cyapa *)data; @@ -3126,6 +3248,7
+> > @@ static void cyapa_detect_and_start(void *data, async_cookie_t cookie)
+> >         cyapa_detect_async(data, cookie);
+> >
+> >         cyapa_start_runtime(cyapa);
+> > +       lid_event_register_handler(cyapa);
+> >  }
+> >
+> >  static int cyapa_probe(struct i2c_client *client, @@ -3221,7 +3344,7
+> > @@ static int cyapa_remove(struct i2c_client *client)
+> >
+> >         free_irq(cyapa->irq, cyapa);
+> >         input_unregister_device(cyapa->input);
+> > -
+> > +       lid_event_unregister_handler(cyapa);
+> >         if (cyapa->cyapa_set_power_mode)
+> >                 cyapa->cyapa_set_power_mode(cyapa, PWR_MODE_OFF, 0);
+> >         i2c_set_clientdata(client, NULL); This message and any
+> > attachments may contain Cypress (or its subsidiaries) confidential information. If it has been received in error, please advise the sender and immediately delete this message.
+>
+> --
+> Dmitry
+This message and any attachments may contain Cypress (or its subsidiaries) confidential information. If it has been received in error, please advise the sender and immediately delete this message.
