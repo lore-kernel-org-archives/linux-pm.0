@@ -1,131 +1,72 @@
-From: Inderpal Singh <inderpal.s@samsung.com>
-Subject: Re: [PATCH] PM / OPP: Implement free_opp_table function
-Date: Tue, 20 May 2014 11:06:30 +0530
-Message-ID: <CAOqmu80avjT8cjKPLL-JFbP4w8dWqbfSTJQW9XDd16UviSSRDQ@mail.gmail.com>
-References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
-	<537A037E.8000800@ti.com>
-	<CAOqmu83XqC_B1Abb_+FMc=DywUxL0=_NompWB4ED18UhxxqQNw@mail.gmail.com>
-	<CAGo_u6p+XWfQU64Uvbd2-5u5DumoSo1XsDt_s48MF5yXYZDBxA@mail.gmail.com>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Tue, 20 May 2014 09:51:58 +0200
+Message-ID: <20140520075158.GK16662@pengutronix.de>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
+ <20140515073816.GI16662@pengutronix.de>
+ <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
+ <20140519161949.GG16662@pengutronix.de>
+ <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
+ <df742b46-c630-49ea-b234-4d746bb66ec1@BL2FFO11FD040.protection.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f172.google.com ([209.85.213.172]:50086 "EHLO
-	mail-ig0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbaETFgb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 01:36:31 -0400
-In-Reply-To: <CAGo_u6p+XWfQU64Uvbd2-5u5DumoSo1XsDt_s48MF5yXYZDBxA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <df742b46-c630-49ea-b234-4d746bb66ec1@BL2FFO11FD040.protection.gbl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, May 20, 2014 at 12:04 AM, Nishanth Menon <nm@ti.com> wrote:
-> On Mon, May 19, 2014 at 1:08 PM, Inderpal Singh <inderpal.s@samsung.com> wrote:
->> Hi Nishanth,
->>
->> Thanks for the review comments.
->>
->> On Mon, May 19, 2014 at 6:43 PM, Nishanth Menon <nm@ti.com> wrote:
->>> On 05/16/2014 04:09 AM, Inderpal Singh wrote:
->>>> At the driver unloading time the associated opp table may need
->>>> to be deleted. Otherwise it amounts to memory leak. The existing
->>>> OPP library does not have provison to do so.
->>>>
->>>> Hence this patch implements the function to free the opp table.
->>>>
->>>> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
->>>> ---
->>>>  drivers/base/power/opp.c | 41 +++++++++++++++++++++++++++++++++++++++++
->>>>  include/linux/pm_opp.h   |  6 ++++++
->>>>  2 files changed, 47 insertions(+)
->>>>
->>>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
->>>> index d9e376a..d45ffd5 100644
->>>> --- a/drivers/base/power/opp.c
->>>> +++ b/drivers/base/power/opp.c
->>>> @@ -654,4 +654,45 @@ int of_init_opp_table(struct device *dev)
->>>>       return 0;
->>>>  }
->>>>  EXPORT_SYMBOL_GPL(of_init_opp_table);
->>>> +
->>>> +/**
->>>> + * dev_pm_opp_free_opp_table() - free the opp table
->>>> + * @dev:     device for which we do this operation
->>>> + *
->>>> + * Free up the allocated opp table
->>>> + *
->>>> + * Locking: The internal device_opp and opp structures are RCU protected.
->>>> + * Hence this function internally uses RCU updater strategy with mutex locks to
->>>> + * keep the integrity of the internal data structures. Callers should ensure
->>>> + * that this function is *NOT* called under RCU protection or in contexts where
->>>> + * mutex locking or synchronize_rcu() blocking calls cannot be used.
->>>> + */
->>>> +void dev_pm_opp_free_opp_table(struct device *dev)
->>>> +{
->>>> +     struct device_opp *dev_opp = NULL;
->>>> +     struct dev_pm_opp *opp;
->>>> +
->>> if (!dev)
->>>         return;
->>>
->>
->> missed it. Will take care in the next version.
->>
->>>> +     /* Hold our list modification lock here */
->>>> +     mutex_lock(&dev_opp_list_lock);
->>>> +
->>>> +     /* Check for existing list for 'dev' */
->>>> +     dev_opp = find_device_opp(dev);
->>>> +     if (IS_ERR(dev_opp)) {
->>>> +             mutex_unlock(&dev_opp_list_lock);
->>>> +             return;
->>>> +     }
->>>> +
->>>> +     while (!list_empty(&dev_opp->opp_list)) {
->>>> +             opp = list_entry_rcu(dev_opp->opp_list.next,
->>>> +                                     struct dev_pm_opp, node);
->>>> +             list_del_rcu(&opp->node);
->>>> +             kfree_rcu(opp, head);
->>>> +     }
->>>
->>> How about the OPP notifiers? should'nt we add a new event
->>> OPP_EVENT_REMOVE?
->>>
->>
->> As this function is to free the whole opp table. Hence, I think,
->> notifier may not be needed. It may be required for per opp removal as
->> is the case with opp addition and enable/disable. But at present there
->> are no users of these notifiers at all. Let me know your view.
->
-> umm.. we do have devfreq which depends on OPPs :).
+Hello,
 
-Yes, devfreq does depend on OPPs, but no devfreq driver is registering
-its notifier_block to handle OPP notifications.
+On Mon, May 19, 2014 at 10:29:05AM -0700, S=F6ren Brinkmann wrote:
+> With the improvements suggested by you I have this now:
+>=20
+> long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
+> {
+> 	unsigned long lower, upper;
+>=20
+> 	lower =3D clk_round_rate(clk, rate);
+> 	if (lower >=3D rate)
+> 		return lower;
+>=20
+> 	upper =3D clk_round_rate(clk, rate + (rate - lower) - 1);
+> 	if (upper =3D=3D lower)
+> 		return upper;
+>=20
+> 	lower =3D rate + 1;
+> 	while (lower < upper) {
+> 		unsigned long rounded, mid;
+>=20
+> 		mid =3D lower + ((upper - lower) >> 1);
+> 		rounded =3D clk_round_rate(clk, mid);
+> 		if (rounded < lower)
+> 			lower =3D mid + 1;
+> 		else
+> 			upper =3D rounded;
+> 	}
+>=20
+> 	return upper;
+> }
+This is nearly my version now. I just lacks the overflow check when
+calculating upper and I skipped the early return if (upper =3D=3D lower=
+).
+(Instead the while condition evaluates to false on the first hit and
+returns with the same result.)
 
->
->>> To maintain non-dt behavior coherency, should'nt we rather add a
->>> opp_remove or an opp_del function?
->>
->> Yes we should have opp_remove as well, but what's the use case ?
->> Should we go ahead and implement it Or, wait for the use-case?
->
-> IMHO, if we are doing it properly, we should add the requisite
-> function as well. we dont want to have differing behavior device tree
-> Vs non-DT.
+Other than that I added a few comments. :-)
 
-So we will have 2 functions then. One to remove the whole opp table
-and the the other to remove the individual OPPs.
-I will cover this in v2. Will also take care of the OPP_EVENT_REMOVE
-notification part.
+Something we still should resolve is the return type. It should match
+clk_round_rate, but should both be signed or unsigned?=20
 
+Uwe
 
-Regards,
-Inder
-
->
-> Regards,
-> Nishanth Menon
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
+    |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
