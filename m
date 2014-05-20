@@ -1,97 +1,91 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC 2/2] PM / OPP: extend DT parsing to allow voltage ranges
-Date: Tue, 20 May 2014 09:53:21 -0500
-Message-ID: <CAGo_u6qTFzVMhcWrk0L5Z4zykfLTMrkph0b4AJNEX7SS7pvWxQ@mail.gmail.com>
-References: <1400596060-5330-1-git-send-email-l.stach@pengutronix.de>
-	<1400596060-5330-3-git-send-email-l.stach@pengutronix.de>
-	<537B6782.5080505@ti.com>
-	<1400596877.4853.16.camel@weser.hi.pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f45.google.com ([74.125.82.45]:36927 "EHLO
-	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753158AbaETOx0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 10:53:26 -0400
-Received: by mail-wg0-f45.google.com with SMTP id m15so639083wgh.16
-        for <linux-pm@vger.kernel.org>; Tue, 20 May 2014 07:53:25 -0700 (PDT)
-In-Reply-To: <1400596877.4853.16.camel@weser.hi.pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V5] PM/OPP: discard duplicate OPPs
+Date: Tue, 20 May 2014 20:23:28 +0530
+Message-ID: <7cb6e0e039e0935e37c81d0f23d26b0b81ad8cda.1400597170.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, Chander Kashyap <k.chander@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Tue, May 20, 2014 at 9:41 AM, Lucas Stach <l.stach@pengutronix.de> wrote:
-> Am Dienstag, den 20.05.2014, 09:32 -0500 schrieb Nishanth Menon:
->> On 05/20/2014 09:27 AM, Lucas Stach wrote:
->> > Following the introduction of voltage ranges into OPP
->> > we need a way to encode them in the device tree in a
->> > similar fashion to the non-ranged versions.
->> >
->> > To keep compatibility with old DTs the parsing function
->> > is changed to understand both versions.
->> >
->> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
->> > ---
->> >  Documentation/devicetree/bindings/power/opp.txt | 23 ++++++++++++++++++
->> >  drivers/base/power/opp.c                        | 31 ++++++++++++++++++-------
->> >  2 files changed, 46 insertions(+), 8 deletions(-)
->> >
->> > diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
->> > index 74499e5033fc..5b520ff321f5 100644
->> > --- a/Documentation/devicetree/bindings/power/opp.txt
->> > +++ b/Documentation/devicetree/bindings/power/opp.txt
->> > @@ -10,6 +10,16 @@ Properties:
->> >     freq: clock frequency in kHz
->> >     vol: voltage in microvolt
->> >
->> > +or
->> > +
->> > +- operating-points-range: An array of 4-tuple items, each item consisting
->> > +  of a frequency and a related voltage range in the following form:
->> > +  <freq min-vol-uV nom-vol-uV max-vol-uV>
->> > +   freq: clock frequency in kHz
->> > +   min-vol-uV: absolute minimum required voltage for this frequency
->> > +   nom-vol-uV: nominal voltage for this frequency
->> > +   max-vol-uV: absolute maximum allowed voltage for this frequency
->>
->> And, Why cant we function at min-volt-uV? because PMIC cannot support
->> it? then why add voltage tolerance? This is not clear in the dt
->> description.
->>
-> The min-vol-uV is meant as the absolute minimum voltage where the device
-> is still able to work.
-> But still vendors are giving nominal voltages that should be met if
-> possible. So for example for a CPU device we might always want to try to
-> match the nominal voltage, but in case the regulator isn't able to
-> supply a this voltage it's still ok to use a voltage in the
-> min...nominal range.
+From: Chander Kashyap <k.chander@samsung.com>
 
-So,the chip either is supposed to function OR not function for a
-frequency at a voltage right?
+We don't have any protection against addition of duplicate OPPs currently and
+in case some code tries to add them it will end up corrupting OPP tables.
 
-Then, we have a problem here -> if min_uV is selected by a regulator
-(for the sake of argument), then device is expected to function. So,
-then why choose nom_uV on a regulator that can do min_uV? if the
-device is NOT *guaranteed* to work at min_uV, then defining min_uV as
-"functional voltage if nom_uV is not available" is wrong as well - no?
+There can be many combinations in which we may end up trying duplicate OPPs:
+- both freq and volt are same, but earlier OPP may or may not be active.
+- only freq is same and volt is different.
 
-Is'nt that a wrong definition?
+This patch tries to implement below logic for these cases:
 
+Return 0 if new OPP was duplicate of existing one (i.e. same freq and volt) and
+return -EEXIST if new OPP had same freq but different volt as of an existing OPP
+OR if both freq/volt were same but earlier OPP was disabled.
 
->
-> Another case may be where we are scaling CPU voltage and have to
-> maintain a certain voltage difference between CPU and SoC power domain.
-> So there may be cases where we might decide that it's better (faster) to
-> scale CPU only to it's min voltage to avoid touching the SoC regulator.
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V4->V5:
+- Mention Return values under 'Return:' clause of doc style comment.
+- s/pr_warn/dev_warn
+- s/linrao/linaro in my email id :(
 
-That is not the job of OPP definition for device X - voltage domain to
-voltage domain dependency is part of something else (for example: an
-voltage domain driver like an RFC[1] or equivalent)
+ drivers/base/power/opp.c | 27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
 
-[1]
-http://marc.info/?l=linux-omap&m=139275579731801&w=2
-
---
-Regards,
-Nishanth Menon
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 2553867..6a06d43 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -394,6 +394,13 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+  * to keep the integrity of the internal data structures. Callers should ensure
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
++ *
++ * Returns:
++ * 0:		On success OR
++ *		Duplicate OPPs (both freq and volt are same) and opp->available
++ * -EEXIST:	Freq are same and volt are different OR
++ *		Duplicate OPPs (both freq and volt are same) and !opp->available
++ * -ENOMEM:	Memory allocation failure
+  */
+ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ {
+@@ -443,15 +450,31 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	new_opp->u_volt = u_volt;
+ 	new_opp->available = true;
+ 
+-	/* Insert new OPP in order of increasing frequency */
++	/*
++	 * Insert new OPP in order of increasing frequency
++	 * and discard if already present
++	 */
+ 	head = &dev_opp->opp_list;
+ 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+-		if (new_opp->rate < opp->rate)
++		if (new_opp->rate <= opp->rate)
+ 			break;
+ 		else
+ 			head = &opp->node;
+ 	}
+ 
++	/* Duplicate OPPs ? */
++	if (new_opp->rate == opp->rate) {
++		int ret = (new_opp->u_volt == opp->u_volt) && opp->available ?
++			0 : -EEXIST;
++
++		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
++			__func__, opp->rate, opp->u_volt, opp->available,
++			new_opp->rate, new_opp->u_volt, new_opp->available);
++		mutex_unlock(&dev_opp_list_lock);
++		kfree(new_opp);
++		return ret;
++	}
++
+ 	list_add_rcu(&new_opp->node, head);
+ 	mutex_unlock(&dev_opp_list_lock);
+ 
+-- 
+2.0.0.rc2
