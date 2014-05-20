@@ -1,27 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH Resend] driver/core: cpu: initialize opp table
-Date: Tue, 20 May 2014 08:08:29 +0530
-Message-ID: <CAKohponzi0qcA6Zs8u=fPFpYXc4rC_ybV3EKu212mDXYekNKug@mail.gmail.com>
-References: <60d825e8bfe01f8a5ff98fffaf51ffbf04c7d175.1400480033.git.viresh.kumar@linaro.org>
-	<ca7cc76c49806ce1ac8f9617fa4266cfc29d1ea1.1400480592.git.viresh.kumar@linaro.org>
-	<4765191.0FhyvSGyvF@vostro.rjw.lan>
-	<1458497.gJ29RmexAd@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / runtime: Update documentation to reflect the current
+ code flow
+Date: Tue, 20 May 2014 09:53:45 +0200
+Message-ID: <CAPDyKFqaF9_YCuo6=6hO2m3E=AhFdA7pTAdnem1FFH_9Fa=b0w@mail.gmail.com>
+References: <1820626.RvqOqaKi2q@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:49803 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbaETCia (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 May 2014 22:38:30 -0400
-Received: by mail-oa0-f45.google.com with SMTP id l6so7243355oag.32
-        for <linux-pm@vger.kernel.org>; Mon, 19 May 2014 19:38:29 -0700 (PDT)
-In-Reply-To: <1458497.gJ29RmexAd@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1820626.RvqOqaKi2q@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Pavel Machek <pavel@ucw.cz>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
+List-Id: linux-pm@vger.kernel.org
 
-On 20 May 2014 02:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Do patches [2-5/5] depend on this one BTW?
+On 16 May 2014 13:44, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The runtime PM documentation in runtime_pm.txt has not been updated
+> after some changes to the system suspend and resume core code, so
+> update it to reflect the current code flow.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Yes.
+Looks good!
+
+Reviewed-by: Ulf Hansson <ulf.hansson@gmail.com>
+
+> ---
+>
+> This is independent of the "do not resume runtime-suspended devices" series.
+>
+> Thanks!
+>
+> ---
+>  Documentation/power/runtime_pm.txt |   18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
+>
+> Index: linux-pm/Documentation/power/runtime_pm.txt
+> ===================================================================
+> --- linux-pm.orig/Documentation/power/runtime_pm.txt
+> +++ linux-pm/Documentation/power/runtime_pm.txt
+> @@ -665,15 +665,17 @@ The PM core does its best to reduce the
+>  the runtime PM and system suspend/resume (and hibernation) callbacks by carrying
+>  out the following operations:
+>
+> -  * During system suspend it calls pm_runtime_get_noresume() and
+> -    pm_runtime_barrier() for every device right before executing the
+> -    subsystem-level .suspend() callback for it.  In addition to that it calls
+> -    __pm_runtime_disable() with 'false' as the second argument for every device
+> -    right before executing the subsystem-level .suspend_late() callback for it.
+> +  * During system suspend pm_runtime_get_noresume() is called for every device
+> +    right before executing the subsystem-level .prepare() callback for it and
+> +    pm_runtime_barrier() is called for every device right before executing the
+> +    subsystem-level .suspend() callback for it.  In addition to that the PM core
+> +    calls  __pm_runtime_disable() with 'false' as the second argument for every
+> +    device right before executing the subsystem-level .suspend_late() callback
+> +    for it.
+>
+> -  * During system resume it calls pm_runtime_enable() and pm_runtime_put()
+> -    for every device right after executing the subsystem-level .resume_early()
+> -    callback and right after executing the subsystem-level .resume() callback
+> +  * During system resume pm_runtime_enable() and pm_runtime_put() are called for
+> +    every device right after executing the subsystem-level .resume_early()
+> +    callback and right after executing the subsystem-level .complete() callback
+>      for it, respectively.
+>
+>  7. Generic subsystem callbacks
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
