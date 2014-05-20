@@ -1,72 +1,48 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Tue, 20 May 2014 09:51:58 +0200
-Message-ID: <20140520075158.GK16662@pengutronix.de>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
- <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
- <20140519161949.GG16662@pengutronix.de>
- <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
- <df742b46-c630-49ea-b234-4d746bb66ec1@BL2FFO11FD040.protection.gbl>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3] PM / OPP: discard duplicate OPPs
+Date: Tue, 20 May 2014 09:30:02 +0530
+Message-ID: <CAKohpoknoFuz8qnDpunA7oxr5E_18=+EQsFEy0P39fcU=4Ps9w@mail.gmail.com>
+References: <1400230809-11401-1-git-send-email-chander.kashyap@linaro.org>
+	<537A0247.1030503@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <df742b46-c630-49ea-b234-4d746bb66ec1@BL2FFO11FD040.protection.gbl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:36131 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbaETEAD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 00:00:03 -0400
+Received: by mail-ob0-f177.google.com with SMTP id wp4so6968092obc.8
+        for <linux-pm@vger.kernel.org>; Mon, 19 May 2014 21:00:03 -0700 (PDT)
+In-Reply-To: <537A0247.1030503@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Chander Kashyap <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
 
-Hello,
+On 19 May 2014 18:38, Nishanth Menon <nm@ti.com> wrote:
 
-On Mon, May 19, 2014 at 10:29:05AM -0700, S=F6ren Brinkmann wrote:
-> With the improvements suggested by you I have this now:
->=20
-> long clk_round_rate_nearest(struct clk *clk, unsigned long rate)
-> {
-> 	unsigned long lower, upper;
->=20
-> 	lower =3D clk_round_rate(clk, rate);
-> 	if (lower >=3D rate)
-> 		return lower;
->=20
-> 	upper =3D clk_round_rate(clk, rate + (rate - lower) - 1);
-> 	if (upper =3D=3D lower)
-> 		return upper;
->=20
-> 	lower =3D rate + 1;
-> 	while (lower < upper) {
-> 		unsigned long rounded, mid;
->=20
-> 		mid =3D lower + ((upper - lower) >> 1);
-> 		rounded =3D clk_round_rate(clk, mid);
-> 		if (rounded < lower)
-> 			lower =3D mid + 1;
-> 		else
-> 			upper =3D rounded;
-> 	}
->=20
-> 	return upper;
-> }
-This is nearly my version now. I just lacks the overflow check when
-calculating upper and I skipped the early return if (upper =3D=3D lower=
-).
-(Instead the while condition evaluates to false on the first hit and
-returns with the same result.)
+>> +     if (new_opp->rate == opp->rate) {
+>> +             mutex_unlock(&dev_opp_list_lock);
+>> +             kfree(new_opp);
+>> +             return 0;
+>
+> IF we decide on ensuring that the OPP additions are done one time[1] -
 
-Other than that I added a few comments. :-)
+Fingers crossed :)
 
-Something we still should resolve is the return type. It should match
-clk_round_rate, but should both be signed or unsigned?=20
+But that doesn't mean we covered everything. First of all platforms can
+still add OPPs directly and then there are other OPPs than CPU's.
 
-Uwe
+> then returning -EEXIST is appropriate here. we want to be able to
+> catch warnings of sequencing errors, and returning 0 is not the way to
+> do it.
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
-    |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
+I have asked this on the earlier thread as well, let me ask it again.
+What would callers do on return value of EEXIST ? Is there anything
+special we may want to handle ?
+
+Yes, we shouldn't fix everything silently and so a pr_warn() can/should
+be added here. But returning is zero is better in order not to complicate
+error handling at callers side.
+
+Isn't it ?
