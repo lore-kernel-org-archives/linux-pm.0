@@ -1,91 +1,28 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5] PM/OPP: discard duplicate OPPs
-Date: Tue, 20 May 2014 20:23:28 +0530
-Message-ID: <7cb6e0e039e0935e37c81d0f23d26b0b81ad8cda.1400597170.git.viresh.kumar@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V4] PM/OPP: discard duplicate OPPs
+Date: Tue, 20 May 2014 09:54:14 -0500
+Message-ID: <CAGo_u6p0VMEOxcvQMzyCjTN2MQqgdPCsuYvJdKRmdoqDs0qKLw@mail.gmail.com>
+References: <d0200ee9e30de19f69ca1b7e53a8cd7a047fa436.1400595283.git.viresh.kumar@linaro.org>
+	<537B6663.30005@ti.com>
+	<CAKohpok5QZvQzSkDxeLTnRK9F0Zf0kr2PD+gbP+FqmhL_dYLCQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok5QZvQzSkDxeLTnRK9F0Zf0kr2PD+gbP+FqmhL_dYLCQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, Chander Kashyap <k.chander@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Chander Kashyap <k.chander@samsung.com>, Viresh Kumar <viresh.kumar@linrao.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chander Kashyap <k.chander@samsung.com>
+On Tue, May 20, 2014 at 9:49 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> breaking printk string into multiple line isn't suggested as it affects
+> readability and so I kept it this way. Another was was to break printk
+> itself intro two-three printk lines, but that would have looked bad
+> on console.
+>
+> So, will retain it :(
+OK, dev_warn at least should be done.. we use dev_warn everywhere else.
 
-We don't have any protection against addition of duplicate OPPs currently and
-in case some code tries to add them it will end up corrupting OPP tables.
-
-There can be many combinations in which we may end up trying duplicate OPPs:
-- both freq and volt are same, but earlier OPP may or may not be active.
-- only freq is same and volt is different.
-
-This patch tries to implement below logic for these cases:
-
-Return 0 if new OPP was duplicate of existing one (i.e. same freq and volt) and
-return -EEXIST if new OPP had same freq but different volt as of an existing OPP
-OR if both freq/volt were same but earlier OPP was disabled.
-
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V4->V5:
-- Mention Return values under 'Return:' clause of doc style comment.
-- s/pr_warn/dev_warn
-- s/linrao/linaro in my email id :(
-
- drivers/base/power/opp.c | 27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 2553867..6a06d43 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -394,6 +394,13 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
-  * to keep the integrity of the internal data structures. Callers should ensure
-  * that this function is *NOT* called under RCU protection or in contexts where
-  * mutex cannot be locked.
-+ *
-+ * Returns:
-+ * 0:		On success OR
-+ *		Duplicate OPPs (both freq and volt are same) and opp->available
-+ * -EEXIST:	Freq are same and volt are different OR
-+ *		Duplicate OPPs (both freq and volt are same) and !opp->available
-+ * -ENOMEM:	Memory allocation failure
-  */
- int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- {
-@@ -443,15 +450,31 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 	new_opp->u_volt = u_volt;
- 	new_opp->available = true;
- 
--	/* Insert new OPP in order of increasing frequency */
-+	/*
-+	 * Insert new OPP in order of increasing frequency
-+	 * and discard if already present
-+	 */
- 	head = &dev_opp->opp_list;
- 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
--		if (new_opp->rate < opp->rate)
-+		if (new_opp->rate <= opp->rate)
- 			break;
- 		else
- 			head = &opp->node;
- 	}
- 
-+	/* Duplicate OPPs ? */
-+	if (new_opp->rate == opp->rate) {
-+		int ret = (new_opp->u_volt == opp->u_volt) && opp->available ?
-+			0 : -EEXIST;
-+
-+		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
-+			__func__, opp->rate, opp->u_volt, opp->available,
-+			new_opp->rate, new_opp->u_volt, new_opp->available);
-+		mutex_unlock(&dev_opp_list_lock);
-+		kfree(new_opp);
-+		return ret;
-+	}
-+
- 	list_add_rcu(&new_opp->node, head);
- 	mutex_unlock(&dev_opp_list_lock);
- 
--- 
-2.0.0.rc2
+Regards,
+Nishanth Menon
