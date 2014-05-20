@@ -1,72 +1,130 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / runtime: Update documentation to reflect the current
- code flow
-Date: Tue, 20 May 2014 09:53:45 +0200
-Message-ID: <CAPDyKFqaF9_YCuo6=6hO2m3E=AhFdA7pTAdnem1FFH_9Fa=b0w@mail.gmail.com>
-References: <1820626.RvqOqaKi2q@vostro.rjw.lan>
+From: Inderpal Singh <inderpal.s@samsung.com>
+Subject: Re: [PATCH] PM / OPP: Implement free_opp_table function
+Date: Tue, 20 May 2014 11:06:30 +0530
+Message-ID: <CAOqmu80avjT8cjKPLL-JFbP4w8dWqbfSTJQW9XDd16UviSSRDQ@mail.gmail.com>
+References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+	<537A037E.8000800@ti.com>
+	<CAOqmu83XqC_B1Abb_+FMc=DywUxL0=_NompWB4ED18UhxxqQNw@mail.gmail.com>
+	<CAGo_u6p+XWfQU64Uvbd2-5u5DumoSo1XsDt_s48MF5yXYZDBxA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1820626.RvqOqaKi2q@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f172.google.com ([209.85.213.172]:50086 "EHLO
+	mail-ig0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbaETFgb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 01:36:31 -0400
+In-Reply-To: <CAGo_u6p+XWfQU64Uvbd2-5u5DumoSo1XsDt_s48MF5yXYZDBxA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 16 May 2014 13:44, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, May 20, 2014 at 12:04 AM, Nishanth Menon <nm@ti.com> wrote:
+> On Mon, May 19, 2014 at 1:08 PM, Inderpal Singh <inderpal.s@samsung.com> wrote:
+>> Hi Nishanth,
+>>
+>> Thanks for the review comments.
+>>
+>> On Mon, May 19, 2014 at 6:43 PM, Nishanth Menon <nm@ti.com> wrote:
+>>> On 05/16/2014 04:09 AM, Inderpal Singh wrote:
+>>>> At the driver unloading time the associated opp table may need
+>>>> to be deleted. Otherwise it amounts to memory leak. The existing
+>>>> OPP library does not have provison to do so.
+>>>>
+>>>> Hence this patch implements the function to free the opp table.
+>>>>
+>>>> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+>>>> ---
+>>>>  drivers/base/power/opp.c | 41 +++++++++++++++++++++++++++++++++++++++++
+>>>>  include/linux/pm_opp.h   |  6 ++++++
+>>>>  2 files changed, 47 insertions(+)
+>>>>
+>>>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>>>> index d9e376a..d45ffd5 100644
+>>>> --- a/drivers/base/power/opp.c
+>>>> +++ b/drivers/base/power/opp.c
+>>>> @@ -654,4 +654,45 @@ int of_init_opp_table(struct device *dev)
+>>>>       return 0;
+>>>>  }
+>>>>  EXPORT_SYMBOL_GPL(of_init_opp_table);
+>>>> +
+>>>> +/**
+>>>> + * dev_pm_opp_free_opp_table() - free the opp table
+>>>> + * @dev:     device for which we do this operation
+>>>> + *
+>>>> + * Free up the allocated opp table
+>>>> + *
+>>>> + * Locking: The internal device_opp and opp structures are RCU protected.
+>>>> + * Hence this function internally uses RCU updater strategy with mutex locks to
+>>>> + * keep the integrity of the internal data structures. Callers should ensure
+>>>> + * that this function is *NOT* called under RCU protection or in contexts where
+>>>> + * mutex locking or synchronize_rcu() blocking calls cannot be used.
+>>>> + */
+>>>> +void dev_pm_opp_free_opp_table(struct device *dev)
+>>>> +{
+>>>> +     struct device_opp *dev_opp = NULL;
+>>>> +     struct dev_pm_opp *opp;
+>>>> +
+>>> if (!dev)
+>>>         return;
+>>>
+>>
+>> missed it. Will take care in the next version.
+>>
+>>>> +     /* Hold our list modification lock here */
+>>>> +     mutex_lock(&dev_opp_list_lock);
+>>>> +
+>>>> +     /* Check for existing list for 'dev' */
+>>>> +     dev_opp = find_device_opp(dev);
+>>>> +     if (IS_ERR(dev_opp)) {
+>>>> +             mutex_unlock(&dev_opp_list_lock);
+>>>> +             return;
+>>>> +     }
+>>>> +
+>>>> +     while (!list_empty(&dev_opp->opp_list)) {
+>>>> +             opp = list_entry_rcu(dev_opp->opp_list.next,
+>>>> +                                     struct dev_pm_opp, node);
+>>>> +             list_del_rcu(&opp->node);
+>>>> +             kfree_rcu(opp, head);
+>>>> +     }
+>>>
+>>> How about the OPP notifiers? should'nt we add a new event
+>>> OPP_EVENT_REMOVE?
+>>>
+>>
+>> As this function is to free the whole opp table. Hence, I think,
+>> notifier may not be needed. It may be required for per opp removal as
+>> is the case with opp addition and enable/disable. But at present there
+>> are no users of these notifiers at all. Let me know your view.
 >
-> The runtime PM documentation in runtime_pm.txt has not been updated
-> after some changes to the system suspend and resume core code, so
-> update it to reflect the current code flow.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> umm.. we do have devfreq which depends on OPPs :).
 
-Looks good!
+Yes, devfreq does depend on OPPs, but no devfreq driver is registering
+its notifier_block to handle OPP notifications.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@gmail.com>
+>
+>>> To maintain non-dt behavior coherency, should'nt we rather add a
+>>> opp_remove or an opp_del function?
+>>
+>> Yes we should have opp_remove as well, but what's the use case ?
+>> Should we go ahead and implement it Or, wait for the use-case?
+>
+> IMHO, if we are doing it properly, we should add the requisite
+> function as well. we dont want to have differing behavior device tree
+> Vs non-DT.
 
-> ---
+So we will have 2 functions then. One to remove the whole opp table
+and the the other to remove the individual OPPs.
+I will cover this in v2. Will also take care of the OPP_EVENT_REMOVE
+notification part.
+
+
+Regards,
+Inder
+
 >
-> This is independent of the "do not resume runtime-suspended devices" series.
->
-> Thanks!
->
-> ---
->  Documentation/power/runtime_pm.txt |   18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
->
-> Index: linux-pm/Documentation/power/runtime_pm.txt
-> ===================================================================
-> --- linux-pm.orig/Documentation/power/runtime_pm.txt
-> +++ linux-pm/Documentation/power/runtime_pm.txt
-> @@ -665,15 +665,17 @@ The PM core does its best to reduce the
->  the runtime PM and system suspend/resume (and hibernation) callbacks by carrying
->  out the following operations:
->
-> -  * During system suspend it calls pm_runtime_get_noresume() and
-> -    pm_runtime_barrier() for every device right before executing the
-> -    subsystem-level .suspend() callback for it.  In addition to that it calls
-> -    __pm_runtime_disable() with 'false' as the second argument for every device
-> -    right before executing the subsystem-level .suspend_late() callback for it.
-> +  * During system suspend pm_runtime_get_noresume() is called for every device
-> +    right before executing the subsystem-level .prepare() callback for it and
-> +    pm_runtime_barrier() is called for every device right before executing the
-> +    subsystem-level .suspend() callback for it.  In addition to that the PM core
-> +    calls  __pm_runtime_disable() with 'false' as the second argument for every
-> +    device right before executing the subsystem-level .suspend_late() callback
-> +    for it.
->
-> -  * During system resume it calls pm_runtime_enable() and pm_runtime_put()
-> -    for every device right after executing the subsystem-level .resume_early()
-> -    callback and right after executing the subsystem-level .resume() callback
-> +  * During system resume pm_runtime_enable() and pm_runtime_put() are called for
-> +    every device right after executing the subsystem-level .resume_early()
-> +    callback and right after executing the subsystem-level .complete() callback
->      for it, respectively.
->
->  7. Generic subsystem callbacks
->
+> Regards,
+> Nishanth Menon
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
