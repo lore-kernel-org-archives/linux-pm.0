@@ -1,51 +1,51 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Tue, 20 May 2014 10:48:43 -0700
-Message-ID: <537B957B.5010001@codeaurora.org>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com> <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com> <20140515073816.GI16662@pengutronix.de> <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl> <20140519161949.GG16662@pengutronix.de> <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl> <20140520073358.GJ16662@pengutronix.de> <4bb5f44a-60bb-4e34-8f88-f91b8419be8d@BL2FFO11FD050.protection.gbl>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: intel_pstate: Remove unused member name of cpudata
+Date: Tue, 20 May 2014 21:12:27 +0300
+Message-ID: <537B9B0B.1020404@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <4bb5f44a-60bb-4e34-8f88-f91b8419be8d@BL2FFO11FD050.protection.gbl>
-Sender: cpufreq-owner@vger.kernel.org
-To: =?UTF-8?B?U8O2cmVuIEJyaW5rbWFubg==?= <soren.brinkmann@xilinx.com>
-Cc: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= <u.kleine-koenig@pengutronix.de>, Mike Turquette <mturquette@linaro.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:59339 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751864AbaETSMb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 14:12:31 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org >> LKML" <linux-kernel@vger.kernel.org>
 
-On 05/20/14 09:01, S=C3=B6ren Brinkmann wrote:
->
->>>>> +{
->>>>> +	unsigned long lower, upper, cur, lower_last, upper_last;
->>>>> +
->>>>> +	lower =3D clk_round_rate(clk, rate);
->>>>> +	if (lower >=3D rate)
->>>>> +		return lower;
->>>> Is the >-case worth a warning?
->>> No, it's correct behavior. If you request a rate that is way lower =
-than what the
->>> clock can generate, returning something larger is perfectly valid, =
-IMHO.
->>> Which reveals one problem in this whole discussion. The API does no=
-t
->>> require clk_round_rate() to round down. It is actually an implement=
-ation
->>> choice that had been made for clk-divider.
->> I'm sure it's more than an implementation choice for clk-divider. Bu=
-t I
->> don't find any respective documentation (but I didn't try hard).
-> A similar discussion - without final conclusion:
-> https://lkml.org/lkml/2010/7/14/260
->
->
+Although, a value is assigned to member name of struct cpudata,
+it is never used.
 
-Please call this new API something like clk_find_nearest_rate() or
-something. clk_round_rate() is supposed to return the rate that will be
-set if you call clk_set_rate() with the same arguments. It's up to the
-implementation to decide if that means rounding the rate up or down or
-to the nearest value.
+We can safely remove it.
 
---=20
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/intel_pstate.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 24a534a..a6d5afa 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -88,8 +88,6 @@ struct _pid {
+ struct cpudata {
+ 	int cpu;
+ 
+-	char name[64];
+-
+ 	struct timer_list timer;
+ 
+ 	struct pstate_data pstate;
+@@ -544,8 +542,6 @@ static inline void intel_pstate_pstate_decrease(struct cpudata *cpu, int steps)
+ 
+ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ {
+-	sprintf(cpu->name, "Intel 2nd generation core");
+-
+ 	cpu->pstate.min_pstate = pstate_funcs.get_min();
+ 	cpu->pstate.max_pstate = pstate_funcs.get_max();
+ 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+-- 
+1.9.0
