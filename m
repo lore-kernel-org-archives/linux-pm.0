@@ -1,51 +1,103 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] PM / OPP: discard duplicate OPPs
-Date: Tue, 20 May 2014 19:06:29 +0530
-Message-ID: <CAKohpokwBK5gMU30CrN8KymyoMsDY-XtWU1vH6x927qqn9YCkQ@mail.gmail.com>
-References: <1400230809-11401-1-git-send-email-chander.kashyap@linaro.org>
-	<537A0247.1030503@ti.com>
-	<CAKohpoknoFuz8qnDpunA7oxr5E_18=+EQsFEy0P39fcU=4Ps9w@mail.gmail.com>
-	<CAGo_u6o+Vysq0LkdFTrP82WOpS1TT-=MD+zgP+Q_L=3RV8x5hA@mail.gmail.com>
-	<CAKohponAx=Hi_Ywgg4hXxrpmmaqy5=pYnb3nSBNUP3KtADTEeA@mail.gmail.com>
-	<CAKohpomKvPcioNmfzvx7vqJHqs_TrhnHH6yYb5w_0f+YvA5hvA@mail.gmail.com>
-	<CAGo_u6pJ0n5Z1-aXdGfh6RNgoe=Pp_9Xaf3sDK6zss1t=qU57Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Javi Merino <javi.merino@arm.com>
+Subject: [RFC PATCH v2 0/7] The power allocator thermal governor
+Date: Tue, 20 May 2014 15:10:50 +0100
+Message-ID: <1400595057-8585-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:56489 "EHLO
-	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbaETNga (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 09:36:30 -0400
-Received: by mail-oa0-f49.google.com with SMTP id eb12so505511oac.36
-        for <linux-pm@vger.kernel.org>; Tue, 20 May 2014 06:36:30 -0700 (PDT)
-In-Reply-To: <CAGo_u6pJ0n5Z1-aXdGfh6RNgoe=Pp_9Xaf3sDK6zss1t=qU57Q@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:36197 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751887AbaETOLR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 10:11:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Chander Kashyap <chander.kashyap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chander Kashyap <k.chander@samsung.com>, Inderpal Singh <inderpal.s@samsung.com>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Punit.Agrawal@arm.com, Javi Merino <javi.merino@arm.com>
 
-On 20 May 2014 18:02, Nishanth Menon <nm@ti.com> wrote:
->> +               if (new_opp->u_volt == opp->u_volt)
->> +                       ret = -EEXIST;
+Hi linux-pm,
 
-As I mentioned in the other mail in same thread, I screwed up
-again. I meant a s/==/!= here..
+This is v2 of the RFC we sent in [1].  The power allocator governor
+allocates device power to control temperature.  This requires
+transforming performance requests into requested power, which we do
+with the aid of power models.  Patch 5 (thermal: add a basic cpu power
+actor) implements a simple power model for cpus.  The division of
+power between the actors ensures that power is allocated where it is
+needed the most, based on the current workload.
 
-In words:
-- If we are adding duplicate OPPs (both freq/volt same), return 0 as
-we already have that.
-- if we are adding OPPs with same key (same freq, diff volt), return
--EEXIST and also print both old and new values of both freq and volt.
+[1] http://thread.gmane.org/gmane.linux.power-management.general/45000=20
 
-> Else -> we now have two OPPs with the same key (same frequency, but
-> different voltage) -> That does not make sense.
-> Example: why would you add:
-> If you already had {1GHz, 1.2V}
-> and you attempted:
-> {1GHz, 1.1V} (if you could do that, then you should added {1GHz, 1.1V}
-> in the first place)
-> OR
-> {1GHz, 1.3V} (if you could do that, then you should add {1GHz, 1.3V}
-> and the {1GHz, 1.2V} is wrong)
+Patches 1 and 2 are not proper parts of these series and can be merged
+separately.  Patch 1 (tracing: Add __bitmask() macro to trace events
+to cpumasks and other bitmasks) is already in for-next.  Patch 2
+(thermal: document struct thermal_zone_device and thermal_governor)
+has already been submitted to linux-pm[2] and is generic.
 
-Exactly, this is why I wanted to return -EEXIST here with some prints.
+[2] http://article.gmane.org/gmane.linux.power-management.general/45434
+
+Changes since v1:
+  - Fixed finding cpufreq cooling devices in cpufreq_frequency_change()
+  - Replaced the reworked cooling device interface with a separate
+    power actor API
+  - Addressed most of Eduardo's comments
+  - Incorporated ftrace support for bitmask to trace cpumasks
+
+Todo:
+  - Add static power to the cpu power model
+  - Change the PI controller into a PID controller
+  - Turn power actors into a device
+  - Let platforms override the power allocator governor parameters
+  - Add more tracing and provide scripts to evaluate the proposal.
+  - Tune it to achieve the temperature stability we are aiming for
+
+Cheers,
+Javi & Punit
+
+Javi Merino (6):
+  thermal: document struct thermal_zone_device and thermal_governor
+  thermal: let governors have private data for each thermal zone
+  thermal: introduce the Power Actor API
+  thermal: add a basic cpu power actor
+  thermal: introduce the Power Allocator governor
+  thermal: add trace events to the power allocator governor
+
+Steven Rostedt (Red Hat) (1):
+  tracing: Add __bitmask() macro to trace events to cpumasks and other
+    bitmasks
+
+ Documentation/thermal/power_actor.txt     |   75 +++++
+ Documentation/thermal/power_allocator.txt |   42 +++
+ drivers/thermal/Kconfig                   |   23 ++
+ drivers/thermal/Makefile                  |    3 +
+ drivers/thermal/power_actor/Kconfig       |    9 +
+ drivers/thermal/power_actor/Makefile      |    7 +
+ drivers/thermal/power_actor/cpu_actor.c   |  424 +++++++++++++++++++++++++=
+++
+ drivers/thermal/power_actor/power_actor.c |   66 +++++
+ drivers/thermal/power_actor/power_actor.h |   86 ++++++
+ drivers/thermal/power_allocator.c         |  452 +++++++++++++++++++++++++=
+++++
+ drivers/thermal/thermal_core.c            |   90 +++++-
+ drivers/thermal/thermal_core.h            |    8 +
+ include/linux/ftrace_event.h              |    3 +
+ include/linux/thermal.h                   |   58 +++-
+ include/linux/trace_seq.h                 |   10 +
+ include/trace/events/thermal.h            |   38 +++
+ include/trace/events/thermal_governor.h   |   35 +++
+ include/trace/ftrace.h                    |   57 +++-
+ kernel/trace/trace_output.c               |   41 +++
+ 19 files changed, 1515 insertions(+), 12 deletions(-)
+ create mode 100644 Documentation/thermal/power_actor.txt
+ create mode 100644 Documentation/thermal/power_allocator.txt
+ create mode 100644 drivers/thermal/power_actor/Kconfig
+ create mode 100644 drivers/thermal/power_actor/Makefile
+ create mode 100644 drivers/thermal/power_actor/cpu_actor.c
+ create mode 100644 drivers/thermal/power_actor/power_actor.c
+ create mode 100644 drivers/thermal/power_actor/power_actor.h
+ create mode 100644 drivers/thermal/power_allocator.c
+ create mode 100644 include/trace/events/thermal.h
+ create mode 100644 include/trace/events/thermal_governor.h
+
+--=20
+1.7.9.5
+
+
