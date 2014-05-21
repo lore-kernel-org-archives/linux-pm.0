@@ -1,30 +1,113 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5] PM/OPP: discard duplicate OPPs
-Date: Wed, 21 May 2014 09:33:42 +0530
-Message-ID: <CAKohponU2feK9+9sUn4tu0t4fhwSy6PZuaAO3zkF7qRejCwM1Q@mail.gmail.com>
-References: <7cb6e0e039e0935e37c81d0f23d26b0b81ad8cda.1400597170.git.viresh.kumar@linaro.org>
-	<1555967.8fxByr2j83@vostro.rjw.lan>
+Subject: Re: [PATCH V3 2/4] cpufreq: add support for intermediate (stable) frequencies
+Date: Wed, 21 May 2014 09:44:53 +0530
+Message-ID: <CAKohpok+WgikxY-YSXfF5DgfMdSqWd-Mvh=Y9B5CtjEB119Jmw@mail.gmail.com>
+References: <cover.1400302114.git.viresh.kumar@linaro.org>
+	<046e3785229754332de62854439d2a4a17d637b7.1400302114.git.viresh.kumar@linaro.org>
+	<CAD=FV=W3ngSVegSyeN9jRgmw4RBfFcypVDyTBNvzYOZ_XjsQwQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f52.google.com ([209.85.219.52]:41904 "EHLO
-	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbaEUEDn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 00:03:43 -0400
-Received: by mail-oa0-f52.google.com with SMTP id eb12so1624827oac.11
-        for <linux-pm@vger.kernel.org>; Tue, 20 May 2014 21:03:42 -0700 (PDT)
-In-Reply-To: <1555967.8fxByr2j83@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAD=FV=W3ngSVegSyeN9jRgmw4RBfFcypVDyTBNvzYOZ_XjsQwQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Anderson <dianders@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Russell King <linux@arm.linux.org.uk>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Chander Kashyap <k.chander@samsung.com>
 
-On 21 May 2014 02:39, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> +     /* Duplicate OPPs ? */
->> +     if (new_opp->rate == opp->rate) {
->> +             int ret = (new_opp->u_volt == opp->u_volt) && opp->available ?
->> +                     0 : -EEXIST;
+Doug,
+
+On 20 May 2014 22:18, Doug Anderson <dianders@chromium.org> wrote:
+
+> Is it worth documenting that if we implement target_intermediate()
+> that target_index() must not fail?  That means that any failure-prone
+> things (like setting a regulator) should happen in target_index().
+
+You meant target_intermediate() is the last line, right ?
+
+Yeah, we can add that..
+
+>>  2. Frequency Table Helpers
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 9bf12a2..f38f2f2 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1819,27 +1819,50 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+>>  static int __target_index(struct cpufreq_policy *policy,
+>>                           struct cpufreq_frequency_table *freq_table, int index)
+>>  {
+>> -       struct cpufreq_freqs freqs;
+>> +       struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
+>>         int retval = -EINVAL;
+>>         bool notify;
+>>
+>>         notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
+>> +       if (!notify)
+>> +               goto skip_notify;
 >
-> The parens are not necessary.  And is the direction correct?
+> I'm personally not a fan of using goto here.  All you're trying to do
+> is avoiding a level of indentation?  If it really matters that much
+> then create a sub function.  IMHO goto should generally be reserved
+> for error handling.
 
-What do you mean by direction here ?
+Yeah, I was trying that :) .. Another routine wouldn't be right here
+as the POST_NOTIFICATION will be handled in this routine only.
+
+I will try again to see if I can write some better code here, but wouldn't
+promise that :)
+
+>> -       if (notify) {
+>> -               freqs.old = policy->cur;
+>> -               freqs.new = freq_table[index].frequency;
+>> -               freqs.flags = 0;
+>> +       /* Handle switching to intermediate frequency */
+>> +       if (cpufreq_driver->get_intermediate) {
+>> +               freqs.new = cpufreq_driver->get_intermediate(policy, index);
+>
+> Would it be worth it to change this to?
+>
+> intermediate = 0
+> if (cpufreq_driver->get_intermediate)
+>   intermediate = cpufreq_driver->get_intermediate();
+> if (intermediate)
+>
+> ...the idea being that a driver may use an intermediate frequency for
+> some transitions but not for all.  For instance: on tegra if you
+> happen to change to the exact clock frequency of the intermediate PLL
+> it just stays there.  There's no need for two notifications in that
+> case.  There may be other systems that can optimize some transitions
+> to totally skip the intermediate stage (maybe you've got an
+> non-glitching divider somewhere so you can optimize a transition from
+> 1.4GHz to 700MHz to go w/ no intermediate jump).
+
+Hmm, will try to fix that as well. Looks like a valid point.
+
+>> -               pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
+>> +               pr_debug("%s: cpu: %d, switching to intermediate freq: oldfreq: %u, intermediate freq: %u\n",
+>>                                 __func__, policy->cpu, freqs.old, freqs.new);
+>>
+>>                 cpufreq_freq_transition_begin(policy, &freqs);
+>> +               retval = cpufreq_driver->target_intermediate(policy, freqs.new);
+>
+> It feels like you want to pass in "index" here too, just in case.  A
+> driver may need to make decisions about other clocks based on the
+> eventual final frequency.  They could cache it themselves from the
+> get_intermediate() call, but that seems ugly.
+
+I had index here initially, but then it looked like they may need to perform
+get_intermediate() again from this routine and so sending the intermediate
+freq is probably better. So, probably just wait for some drivers which may
+need index here ?
+
+>> @@ -2361,7 +2384,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>>             !(driver_data->setpolicy || driver_data->target_index ||
+>>                     driver_data->target) ||
+>>              (driver_data->setpolicy && (driver_data->target_index ||
+>> -                   driver_data->target)))
+>> +                   driver_data->target)) ||
+>> +            (!!driver_data->get_intermediate ^ !!driver_data->target_intermediate))
+>
+> I'm OK with the !! trick, but using ^ here seems more confusing.  Why
+> not use "!="?
+>   (!!driver_data->get_intermediate != !!driver_data->target_intermediate))
+
+Will work as well :)
