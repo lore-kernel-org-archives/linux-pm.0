@@ -1,106 +1,82 @@
-From: Johan Hovold <jhovold@gmail.com>
-Subject: Re: Performance regression in v3.14
-Date: Wed, 21 May 2014 11:00:51 +0200
-Message-ID: <20140521090051.GO21412@localhost>
-References: <20140506163559.GA5308@localhost>
- <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
- <536A3EE9.5050409@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <536A3EE9.5050409@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Johan Hovold <jhovold@gmail.com>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V4 0/3] cpufreq: add support for intermediate (stable) frequencies
+Date: Wed, 21 May 2014 14:29:28 +0530
+Message-ID: <cover.1400662383.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f171.google.com ([209.85.216.171]:42279 "EHLO
+	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751786AbaEUJEb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 05:04:31 -0400
+Received: by mail-qc0-f171.google.com with SMTP id x13so2760617qcv.30
+        for <linux-pm@vger.kernel.org>; Wed, 21 May 2014 02:04:30 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org, linux@arm.linux.org.uk, nicolas.pitre@linaro.org, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Wed, May 07, 2014 at 07:10:49AM -0700, Dirk Brandewie wrote:
-> On 05/06/2014 10:40 PM, Viresh Kumar wrote:
-> > Cc'ing Dirk who is taking care of intel-pstate driver.
-> >
-> 
-> Thanks Viresh I had seen this thread.
-> 
-> I am looking into it
+Doug raised many important concerns on V3:
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg645134.html
 
-Any updates on this, Dirk? 3.14 is still basically unusable with the
-intel_pstate driver.
+and so here is another iteration with improvements.
 
-Any fixes or workarounds posted elsewhere that I can apply in the
-meantime?
+@Stephen: I have dropped you Tested-by's as patches are updated and requires a
+retest, sorry for that :(
 
-Thanks,
-Johan
+Douglas Anderson, recently pointed out an interesting problem due to which
+udelay() was expiring earlier than it should.
 
-> > On 6 May 2014 22:05, Johan Hovold <jhovold@gmail.com> wrote:
-> >> After updating my main system from v3.13 to v3.14.2, I found that the
-> >> git bash-completion was extremely sluggish. Completing a file name would
-> >> take roughly six rather than one second on this Haswell machine
-> >> (i7-4770). (Other things, such as git rebase, also felt slower, but
-> >> the completion issue was much more obvious and easy to measure).
-> >>
-> >> I managed to reproduce the problem using the following minimal construct
-> >>
-> >>          cat dmesg.repeat | while read x; do true; done
-> >>
-> >> where dmesg.repeat is simply dmesg concatenated together to an
-> >> equivalent number of lines as produced by git ls-files in the
-> >> kernel-source tree root (45k), and where the actual processing of each
-> >> line has been removed.
-> >>
-> >> Most of the time I get:
-> >>
-> >>          $ time cat dmesg.repeat | while read x; do true; done
-> >>
-> >>          real    0m6.091s
-> >>          user    0m3.674s
-> >>          sys     0m2.447s
-> >>
-> >> but sometimes it only takes one second.
-> >>
-> >>          $ time cat dmesg.repeat | while read x; do true; done
-> >>
-> >>          real    0m1.100s
-> >>          user    0m0.544s
-> >>          sys     0m0.570s
-> >>
-> >> I don't seem to be able to reproduce the problem on 3.13 where the pipe
-> >> always takes about one second to finish.
-> >>
-> >> Taking all but one core offline seems to make the problem go away, and so
-> >> does using the performance rather than powersave governor of the
-> >> intel_pstate cpufreq driver (on at least one of two online cores).
-> >>
-> >> Moving the mouse cursor makes to loop finish faster, and so does
-> >> switching to a another terminal to print cpufreq/cpuinfo_cur_freq which
-> >> was around cpuinfo_min_freq several times (when tracing, see below).
-> >>
-> >> I could not reproduce the problem when using perf record, but I can get
-> >> function-profile traces using ftrace (in which case the loop takes about
-> >> 60 seconds instead of six seconds to finish).
-> >>
-> >> Comparing the traces I see a lot of functions taking ten times longer to
-> >> finish, but I guess that's expected if this is indeed a cpufreq issue.
-> >>
-> >> Since this is my main machine (and only multi-core machine at the
-> >> moment) I'm not able to bisect this myself. And for the same reason I
-> >> have not verified that the problem persists in v3.15-rc.
-> >>
-> >> I don't see any cpufreq patches in the v3.14.3 stable queue nor anything
-> >> obviously related and marked for stable in v3.15-rc.
-> >>
-> >> Any ideas about what might be going on?
-> >
-> > I tried to take a look at the diff for cpufreq between 3.13 and 3.14.2 and
-> > couldn't pin point on any change which might cause it. Don't have a clue
-> > of what's going on. I don't know how to help you on this.
-> >
-> > Normally I test my stuff on a ARM board and I don't remember facing
-> > any such behavior there. There might be something wrong with intel-pstate
-> > as well..
-> >
-> > Also, can you try to use acpi-cpufreq instead? And see how that is behaving?
-> >
-> > --
-> > viresh
+While transitioning between frequencies few platforms may temporarily switch to
+a stable frequency, waiting for the main PLL to stabilize.
+
+For example: When we transition between very low frequencies on exynos, like
+between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
+No CPUFREQ notification is sent for that. That means there's a period of time
+when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
+and 300MHz. And so udelay behaves badly.
+
+To get this fixed in a generic way, lets introduce another set of callbacks
+get_intermediate() and target_intermediate(), only for drivers with
+target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
+
+get_intermediate should return a stable intermediate frequency platform wants to
+switch to, and target_intermediate() should set CPU to to that frequency, before
+jumping to the frequency corresponding to 'index'. Core will take care of
+sending notifications and driver doesn't have to handle them in
+target_intermediate() or target_index().
+
+This patchset also update Tegra to use this new infrastructure and is already
+tested by Stephen.
+
+V3->V4:
+- Allow get_intermediate() to return zero when we don't need to switch to
+  intermediate first
+- Get rid of 'goto' and create another routine for handling intermediate freqs
+- Allow target_index() to fail, its not a crime :)
+- Fix tegra driver to return zero from get_intermediate() for few situations
+  (refer to patch 3/4)
+- Fix issues with tegra's patch, like s/rate/rate * 1000
+- Overall there are more modifications that what Doug requested as I felt we
+  need better support from core.
+- Looks much better now, thanks Doug :)
+
+V2-V3:
+- Fix spelling error: s/Uset/Used
+- Update tegra with the changes Stephen suggested
+- Include a dependency patch sent separately earlier (3/4)
+
+V1-V2: Almost changed completely, V1 was here: https://lkml.org/lkml/2014/5/15/40
+
+Viresh Kumar (3):
+  cpufreq: handle calls to ->target_index() in separate routine
+  cpufreq: add support for intermediate (stable) frequencies
+  cpufreq: Tegra: implement intermediate frequency callbacks
+
+ Documentation/cpu-freq/cpu-drivers.txt |  29 ++++++++-
+ drivers/cpufreq/cpufreq.c              | 111 ++++++++++++++++++++++++++-------
+ drivers/cpufreq/tegra-cpufreq.c        |  81 ++++++++++++++----------
+ include/linux/cpufreq.h                |  25 ++++++++
+ 4 files changed, 186 insertions(+), 60 deletions(-)
+
+-- 
+2.0.0.rc2
+
