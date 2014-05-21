@@ -1,56 +1,29 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V2 1/7] opp: remove -ENOSYS from dummy implementation
- of of_init_opp_table()
-Date: Wed, 21 May 2014 14:16:22 +0100
-Message-ID: <537CA726.5060909@arm.com>
-References: <cover.1400670427.git.viresh.kumar@linaro.org> <ddf99132a9b2a6aabef61cba20fffbbf56ec0985.1400670427.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/7] opp: remove -ENOSYS from dummy implementation of of_init_opp_table()
+Date: Wed, 21 May 2014 18:57:58 +0530
+Message-ID: <CAKohpokmO=QpzAgWTaOSFzYF2E29pxr3B6CSwNMZkq02khfFVg@mail.gmail.com>
+References: <cover.1400670427.git.viresh.kumar@linaro.org>
+	<ddf99132a9b2a6aabef61cba20fffbbf56ec0985.1400670427.git.viresh.kumar@linaro.org>
+	<537CA726.5060909@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ddf99132a9b2a6aabef61cba20fffbbf56ec0985.1400670427.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:57214 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbaEUN17 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 09:27:59 -0400
+Received: by mail-ob0-f175.google.com with SMTP id wo20so2150545obc.6
+        for <linux-pm@vger.kernel.org>; Wed, 21 May 2014 06:27:58 -0700 (PDT)
+In-Reply-To: <537CA726.5060909@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>
 
-Hi Viresh,
+On 21 May 2014 18:46, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> Hi Viresh,
+>
+> $subject perhaps should be "replace/remove -EINVAL.." instead of "remove
+> -ENOSYS ..."
 
-$subject perhaps should be "replace/remove -EINVAL.." instead of "remove
--ENOSYS ..."
-
-On 21/05/14 12:09, Viresh Kumar wrote:
-> When any of CONFIG_PM_OPP or CONFIG_OF isn't enabled we have a dummy
-> implementation of of_init_opp_table() routine, it returns -EINVAL currently.
-> -EINVAL can be returned from other places within the real implementations of
-> of_init_opp_table() and so caller wouldn't be able to differentiate between
-> those two cases.
->
-> Make it return -ENOSYS instead for better handling.
->
-[Nit] How about "it's more appropriate to return -ENOSYS as since the function
-is not implemented" ?
-
-Otherwise it looks fine to me.
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
-
-> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->   include/linux/pm_opp.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index 0330217..6668150 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -112,7 +112,7 @@ int of_init_opp_table(struct device *dev);
->   #else
->   static inline int of_init_opp_table(struct device *dev)
->   {
-> -	return -EINVAL;
-> +	return -ENOSYS;
->   }
->   #endif
->
->
+What's going on with my logs? Really annoying for me as well..
