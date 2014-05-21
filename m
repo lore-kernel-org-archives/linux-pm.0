@@ -1,122 +1,106 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [RFC PATCH v2 1/7] tracing: Add __bitmask() macro to trace
- events to cpumasks and other bitmasks
-Date: Wed, 21 May 2014 09:26:41 +0100
-Message-ID: <20140521082641.GA3025@e102654-lin.cambridge.arm.com>
-References: <1400595057-8585-1-git-send-email-javi.merino@arm.com>
- <1400595057-8585-2-git-send-email-javi.merino@arm.com>
- <1400638043.9759.5.camel@pippen.local.home>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH] thermal: hwmon: Make the check for critical temp valid consistent
+Date: Wed, 21 May 2014 16:33:27 +0800
+Message-ID: <537C64D7.4010900@intel.com>
+References: <CAKx2Y1mzLesGFYz30fH8xCZTkvNGPUNYkHptYLYq_hVExoh_8g@mail.gmail.com> <537C6262.5030500@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:59355 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752146AbaEUI0p convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 04:26:45 -0400
-In-Reply-To: <1400638043.9759.5.camel@pippen.local.home>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <537C6262.5030500@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Kui Zhang <kuizhang@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>
 
-Hi Steve,
+On 05/21/2014 04:22 PM, Aaron Lu wrote:
+> On 05/21/2014 01:57 PM, Kui Zhang wrote:
+>> Hello,
+>>
+>> I get following error when rmmod thermal.
+>>
+>> rmmod  thermal
+>> Killed
 
-On Wed, May 21, 2014 at 03:07:23AM +0100, Steven Rostedt wrote:
-> Hmm, I didn't think about cross tree dependencies. I already pushed this
-> patch to my for-next branch which is already in linux-next, and I do not
-> rebase this branch unless there's a really good need to.
-> 
-> I guess I needed to make a separate branch that you could have pulled
-> separately. I'm not sure how we want to proceed, unless you wait till
-> Linus pulls my branch before you add this to your tree.
-> 
-> Maybe it would be OK to cherry pick it? I'm not sure Linus would want
-> that.
-> 
-> Maybe I can make a separate branch that only has this patch and merge it
-> into my tree, where git will handle the duplicate. But then we have a
-> strange history.
-> 
-> How urgent is your change? Can it wait till my stuff makes it into
-> Linus's tree in the 3.16 merge window?
+While dealing with this problem, I found another problem that also
+results in a kernel crash on thermal module removal:
 
-Sorry for the confusion.  I was expecting you to merge this patch via
-your tree.  I said that in the cover letter for the series, but I
-should've repeated it in this patch.  I included it in the series for
-completeness and I'll remove it once it reaches mainline.
 
-Cheers,
-Javi
+From: Aaron Lu <aaron.lu@intel.com>
+Date: Wed, 21 May 2014 16:05:38 +0800
+Subject: [PATCH] thermal: hwmon: Make the check for critical temp valid consistent
 
-> On Tue, 2014-05-20 at 15:10 +0100, Javi Merino wrote:
-> > From: "Steven Rostedt (Red Hat)" <rostedt@goodmis.org>
-> > 
-> > Being able to show a cpumask of events can be useful as some events
-> > may affect only some CPUs. There is no standard way to record the
-> > cpumask and converting it to a string is rather expensive during
-> > the trace as traces happen in hotpaths. It would be better to record
-> > the raw event mask and be able to parse it at print time.
-> > 
-> > The following macros were added for use with the TRACE_EVENT() macro:
-> > 
-> >   __bitmask()
-> >   __assign_bitmask()
-> >   __get_bitmask()
-> > 
-> > To test this, I added this to the sched_migrate_task event, which
-> > looked like this:
-> > 
-> > TRACE_EVENT(sched_migrate_task,
-> > 
-> > 	TP_PROTO(struct task_struct *p, int dest_cpu, const struct cpumask *cpus),
-> > 
-> > 	TP_ARGS(p, dest_cpu, cpus),
-> > 
-> > 	TP_STRUCT__entry(
-> > 		__array(	char,	comm,	TASK_COMM_LEN	)
-> > 		__field(	pid_t,	pid			)
-> > 		__field(	int,	prio			)
-> > 		__field(	int,	orig_cpu		)
-> > 		__field(	int,	dest_cpu		)
-> > 		__bitmask(	cpumask, num_possible_cpus()	)
-> > 	),
-> > 
-> > 	TP_fast_assign(
-> > 		memcpy(__entry->comm, p->comm, TASK_COMM_LEN);
-> > 		__entry->pid		= p->pid;
-> > 		__entry->prio		= p->prio;
-> > 		__entry->orig_cpu	= task_cpu(p);
-> > 		__entry->dest_cpu	= dest_cpu;
-> > 		__assign_bitmask(cpumask, cpumask_bits(cpus), num_possible_cpus());
-> > 	),
-> > 
-> > 	TP_printk("comm=%s pid=%d prio=%d orig_cpu=%d dest_cpu=%d cpumask=%s",
-> > 		  __entry->comm, __entry->pid, __entry->prio,
-> > 		  __entry->orig_cpu, __entry->dest_cpu,
-> > 		  __get_bitmask(cpumask))
-> > );
-> > 
-> > With the output of:
-> > 
-> >         ksmtuned-3613  [003] d..2   485.220508: sched_migrate_task: comm=ksmtuned pid=3615 prio=120 orig_cpu=3 dest_cpu=2 cpumask=00000000,0000000f
-> >      migration/1-13    [001] d..5   485.221202: sched_migrate_task: comm=ksmtuned pid=3614 prio=120 orig_cpu=1 dest_cpu=0 cpumask=00000000,0000000f
-> >              awk-3615  [002] d.H5   485.221747: sched_migrate_task: comm=rcu_preempt pid=7 prio=120 orig_cpu=0 dest_cpu=1 cpumask=00000000,000000ff
-> >      migration/2-18    [002] d..5   485.222062: sched_migrate_task: comm=ksmtuned pid=3615 prio=120 orig_cpu=2 dest_cpu=3 cpumask=00000000,0000000f
-> > 
-> > Link: http://lkml.kernel.org/r/1399377998-14870-6-git-send-email-javi.merino@arm.com
-> > Link: http://lkml.kernel.org/r/20140506132238.22e136d1@gandalf.local.home
-> > 
-> > Suggested-by: Javi Merino <javi.merino@arm.com>
-> > Tested-by: Javi Merino <javi.merino@arm.com>
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+We used the tz->ops->get_crit_temp && !tz->ops->get_crit_temp(tz, temp)
+to decide if we need to create the temp_crit attribute file but we just
+check if tz->ops->get_crit_temp exists to decide if we need to remove
+that attribute file. Some ACPI thermal zone doesn't have a valid critical
+trip point and that would result in removing a non-existent device file
+on thermal module unload.
 
+Cc: All applicable <stable@vger.kernel.org>
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/thermal/thermal_hwmon.c | 33 ++++++++++++++++++---------------
+ 1 file changed, 18 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index fdb07199d9c2..1967bee4f076 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -140,6 +140,12 @@ thermal_hwmon_lookup_temp(const struct thermal_hwmon_device *hwmon,
+ 	return NULL;
+ }
+ 
++static bool thermal_zone_crit_temp_valid(struct thermal_zone_device *tz)
++{
++	unsigned long temp;
++	return tz->ops->get_crit_temp && !tz->ops->get_crit_temp(tz, &temp);
++}
++
+ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ {
+ 	struct thermal_hwmon_device *hwmon;
+@@ -189,21 +195,18 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	if (result)
+ 		goto free_temp_mem;
+ 
+-	if (tz->ops->get_crit_temp) {
+-		unsigned long temperature;
+-		if (!tz->ops->get_crit_temp(tz, &temperature)) {
+-			snprintf(temp->temp_crit.name,
+-				 sizeof(temp->temp_crit.name),
++	if (thermal_zone_crit_temp_valid(tz)) {
++		snprintf(temp->temp_crit.name,
++				sizeof(temp->temp_crit.name),
+ 				"temp%d_crit", hwmon->count);
+-			temp->temp_crit.attr.attr.name = temp->temp_crit.name;
+-			temp->temp_crit.attr.attr.mode = 0444;
+-			temp->temp_crit.attr.show = temp_crit_show;
+-			sysfs_attr_init(&temp->temp_crit.attr.attr);
+-			result = device_create_file(hwmon->device,
+-						    &temp->temp_crit.attr);
+-			if (result)
+-				goto unregister_input;
+-		}
++		temp->temp_crit.attr.attr.name = temp->temp_crit.name;
++		temp->temp_crit.attr.attr.mode = 0444;
++		temp->temp_crit.attr.show = temp_crit_show;
++		sysfs_attr_init(&temp->temp_crit.attr.attr);
++		result = device_create_file(hwmon->device,
++					    &temp->temp_crit.attr);
++		if (result)
++			goto unregister_input;
+ 	}
+ 
+ 	mutex_lock(&thermal_hwmon_list_lock);
+@@ -250,7 +253,7 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	}
+ 
+ 	device_remove_file(hwmon->device, &temp->temp_input.attr);
+-	if (tz->ops->get_crit_temp)
++	if (thermal_zone_crit_temp_valid(tz))
+ 		device_remove_file(hwmon->device, &temp->temp_crit.attr);
+ 
+ 	mutex_lock(&thermal_hwmon_list_lock);
+-- 
+1.9.0
