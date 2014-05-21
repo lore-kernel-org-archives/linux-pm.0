@@ -1,99 +1,62 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Wed, 21 May 2014 09:34:57 +0200
-Message-ID: <20140521073457.GD31687@pengutronix.de>
-References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
- <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
- <20140515073816.GI16662@pengutronix.de>
- <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
- <20140519161949.GG16662@pengutronix.de>
- <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
- <20140520073358.GJ16662@pengutronix.de>
- <4bb5f44a-60bb-4e34-8f88-f91b8419be8d@BL2FFO11FD050.protection.gbl>
- <537B957B.5010001@codeaurora.org>
- <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] PM / OPP: Implement opp_remove and free_opp_table functions
+Date: Wed, 21 May 2014 13:25:28 +0530
+Message-ID: <CAKohpo=UgVoBL2xNBwe_AoqtCOYj4Rcc=vHh2kb=64UHLjjiAw@mail.gmail.com>
+References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+	<1400651502-23703-1-git-send-email-inderpal.s@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:34599 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751425AbaEUHfI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 03:35:08 -0400
-Content-Disposition: inline
-In-Reply-To: <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:58105 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbaEUHz3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 03:55:29 -0400
+Received: by mail-oa0-f45.google.com with SMTP id l6so1835244oag.32
+        for <linux-pm@vger.kernel.org>; Wed, 21 May 2014 00:55:28 -0700 (PDT)
+In-Reply-To: <1400651502-23703-1-git-send-email-inderpal.s@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Russell King <linux@arm.linux.org.uk>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Inderpal Singh <inderpal.s@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
 
-Hello,
+On 21 May 2014 11:21, Inderpal Singh <inderpal.s@samsung.com> wrote:
+> At the driver unloading time the associated opps and its table may need
+> to be deleted. Otherwise it amounts to memory leak. The existing
+> OPP library does not have provision to do so.
+>
+> Hence this patch implements the required functions to free the same.
+>
+> Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+> ---
+> Changes in v2:
+>         - As suggested by Nishanth, added support to remove a single OPP
+>           for non-DT users
+>         - Added an internal helper function to avoid the code duplication
+>           between opp_remove and free_opp_table functions
+>
+>  drivers/base/power/opp.c | 122 ++++++++++++++++++++++++++++++++++++++++++++++-
+>  include/linux/pm_opp.h   |  14 +++++-
+>  2 files changed, 134 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index faae9cf..22adef3 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -89,6 +89,7 @@ struct device_opp {
+>         struct device *dev;
+>         struct srcu_notifier_head head;
+>         struct list_head opp_list;
+> +       struct rcu_head head_rcu;
 
-On Tue, May 20, 2014 at 02:48:20PM -0700, S=F6ren Brinkmann wrote:
-> On Tue, 2014-05-20 at 10:48AM -0700, Stephen Boyd wrote:
-> > On 05/20/14 09:01, S=F6ren Brinkmann wrote:
-> > >
-> > >>>>> +{
-> > >>>>> +	unsigned long lower, upper, cur, lower_last, upper_last;
-> > >>>>> +
-> > >>>>> +	lower =3D clk_round_rate(clk, rate);
-> > >>>>> +	if (lower >=3D rate)
-> > >>>>> +		return lower;
-> > >>>> Is the >-case worth a warning?
-> > >>> No, it's correct behavior. If you request a rate that is way lo=
-wer than what the
-> > >>> clock can generate, returning something larger is perfectly val=
-id, IMHO.
-> > >>> Which reveals one problem in this whole discussion. The API doe=
-s not
-> > >>> require clk_round_rate() to round down. It is actually an imple=
-mentation
-> > >>> choice that had been made for clk-divider.
-> > >> I'm sure it's more than an implementation choice for clk-divider=
-=2E But I
-> > >> don't find any respective documentation (but I didn't try hard).
-> > > A similar discussion - without final conclusion:
-> > > https://lkml.org/lkml/2010/7/14/260
-> > >
-> > >
-> >=20
-> > Please call this new API something like clk_find_nearest_rate() or
-> > something. clk_round_rate() is supposed to return the rate that wil=
-l be
-> > set if you call clk_set_rate() with the same arguments. It's up to =
-the
-> > implementation to decide if that means rounding the rate up or down=
- or
-> > to the nearest value.
->=20
-> Sounds good to me. Are there any cases of clocks that round up? I thi=
-nk
-> that case would not be handled correctly. But I also don't see a use
-> case for such an implementation.
-I don't really care which semantic (i.e. round up, round down or round
-closest) is picked, but I'd vote that all should pick up the same. I
-think the least surprising definition is to choose rounding down and ad=
-d
-the function that is under discussion here to get a nearest match.
+This isn't used ...
 
-So I suggest:
+>  };
+>
+>  /*
+> @@ -427,7 +428,6 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>                                 __func__);
+>                         return -ENOMEM;
+>                 }
+> -
 
-	- if round_rate is given a rate that is smaller than the
-	  smallest available rate, return 0
-	- add WARN_ONCE to round_rate and set_rate if they return with a
-	  rate bigger than requested
-	- change the return values to unsigned long
-
-Do we also need a round_up implementation?
-
-Mike? Russell? Any thoughts from your side?
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
-    |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
+Unrelated change.
