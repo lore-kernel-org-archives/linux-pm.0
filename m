@@ -1,39 +1,158 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH Resend] driver/core: cpu: initialize opp table
-Date: Wed, 21 May 2014 15:11:39 +0530
-Message-ID: <CAKohpo=F5gSPvVSAX=qePnudxiuKWLKGTZy8vd80=MJxESWJZQ@mail.gmail.com>
-References: <60d825e8bfe01f8a5ff98fffaf51ffbf04c7d175.1400480033.git.viresh.kumar@linaro.org>
-	<ca7cc76c49806ce1ac8f9617fa4266cfc29d1ea1.1400480592.git.viresh.kumar@linaro.org>
-	<537C7348.7060202@arm.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [RFC 2/2] PM / OPP: extend DT parsing to allow voltage ranges
+Date: Wed, 21 May 2014 11:47:14 +0200
+Message-ID: <1400665634.5926.18.camel@weser.hi.pengutronix.de>
+References: <1400596060-5330-1-git-send-email-l.stach@pengutronix.de>
+	 <1400596060-5330-3-git-send-email-l.stach@pengutronix.de>
+	 <537B6782.5080505@ti.com>
+	 <1400596877.4853.16.camel@weser.hi.pengutronix.de>
+	 <CAGo_u6qTFzVMhcWrk0L5Z4zykfLTMrkph0b4AJNEX7SS7pvWxQ@mail.gmail.com>
+	 <1400598429.4853.29.camel@weser.hi.pengutronix.de>
+	 <CAGo_u6ru5OgwCbJRrMNXUzeNLFMUvW=j8su6AAC4vmy3GOSM2g@mail.gmail.com>
+	 <CAGo_u6omOyuXvpDcirm36AnreGfa4nxisQ8BqZ8p2AVmWjfwbA@mail.gmail.com>
+	 <1400600908.4853.41.camel@weser.hi.pengutronix.de>
+	 <CAGo_u6pyU1O0uv-3CJc6OPoJ+bkcpNJ9_26JL3DxugX7dJhZfA@mail.gmail.com>
+	 <1400604324.4853.51.camel@weser.hi.pengutronix.de>
+	 <CAGo_u6ofuas-HBkAaKAUmKoOxjfWOpa7gmenS6Lspk9gWNt5cw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:61377 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbaEUJlk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 05:41:40 -0400
-Received: by mail-ob0-f173.google.com with SMTP id wm4so1867635obc.18
-        for <linux-pm@vger.kernel.org>; Wed, 21 May 2014 02:41:39 -0700 (PDT)
-In-Reply-To: <537C7348.7060202@arm.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:41338 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbaEUJse (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 05:48:34 -0400
+In-Reply-To: <CAGo_u6ofuas-HBkAaKAUmKoOxjfWOpa7gmenS6Lspk9gWNt5cw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
+To: Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 21 May 2014 15:05, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> As Rafael mentioned it's better to have a wrapper function to hide these
-> details. You should consider the fact that of_init_opp_table returns -EINVAL
-> if
-> CONFIG_PM_OPP not defined as well as when the list is invalid in the DT.
-> IMO we can return -ENOSYS if not implemented(i.e. !CONFIG_PM_OPP)
++CC: Mark Brown
 
-I didn't understood Rafael's comment as I couldn't figure out if he is just
-pointing to CONFIG_** or some arch specific thing..
+Hi Mark,
 
-But it looks more obvious that he asked me something similar to what you
-are saying :)
+we are having a discussion here about the interactions between the OPP
+and the regulator framework and I would like to get your input on this
+matter.
 
-Why do we need to return anything? Let that function have return type 'void'?
-Also would it make sense to move this into it as well?
+To summarize things: I'm working on a new cpufreq driver and I think the
+current practice of using a "voltage-tolerance" is bogus as most devices
+don't actually have a fixed tolerance but rather an absolute maximum
+rating which should not be exceeded.
 
-cpu->dev.of_node = of_get_cpu_node(num, NULL);
+The voltage tolerance is used as the regulator needs to be given a
+sensible range for set_voltage(). The minimum voltage is defined by the
+current OPP, maximum not so much. Now most cpufreq drivers just add a
+tolerance to the minimum to get the max value and call it a day, but
+actually I think it would be more sensible to stick the absolute maximum
+rating in there. The problem is a device driver currently doesn't know
+about the maximum rating of it's device.
+
+On the other hand Nishanth argues that regulator constraints should be
+set correctly to limit the voltage to the absolute maximum rating and I
+can see his point here. But only using regulator constraints would make
+the max voltage parameter in set_voltage() superfluous and we could just
+set it to INT_MAX, which feels really wrong.
+
+So with the realization that the maximum rating isn't really dependent
+on the current OPP it seems we could just have a generic
+"*-supply-max-voltage" property to describe a reasonable upper bound
+instead of this wobbly voltage-tolerance. Does this sound sensible to
+you?
+
+Regards,
+Lucas
+
+Am Dienstag, den 20.05.2014, 12:02 -0500 schrieb Nishanth Menon:
+> On Tue, May 20, 2014 at 11:45 AM, Lucas Stach <l.stach@pengutronix.de> wrote:
+> > Am Dienstag, den 20.05.2014, 11:09 -0500 schrieb Nishanth Menon:
+> >> On Tue, May 20, 2014 at 10:48 AM, Lucas Stach <l.stach@pengutronix.de> wrote:
+> >> > Am Dienstag, den 20.05.2014, 10:29 -0500 schrieb Nishanth Menon:
+> >> >> On Tue, May 20, 2014 at 10:23 AM, Nishanth Menon <nm@ti.com> wrote:
+> >>
+> >> [...]
+> >> >> If you need to handle PMIC accuracy, use voltage-tolerance.
+> >> >>
+> >> > And that's exactly one of the issues of the current binding, the
+> >> > tolerance isn't stable, but rather per OPP.
+> >> >
+> >> > As an example look at two operating points of the i.MX5:
+> >> >
+> >> > /*  kHz min(uV) nom(uV) max(uV) */
+> >> >  166666  850000  900000 1400000
+> >> > 1200000 1300000 1350000 1400000
+> >> >
+> >> > So for the 1,2GHz OPP the voltage tolerance is just 3,7% as anything
+> >> > bigger would exceed the absolute maximum rating, but for the 166MHz OPP
+> >> > it is already 64,7%.
+> >> >
+> >> > I agree that I could just cap the rail at 1,4V and give a max voltage
+> >> > equal to that as max_volt to the regulator API, but actually the device
+> >> > doesn't even know it's tolerance as it has no max defined. It makes
+> >> > having a max_volt in the regulator API kind of senseless, as connected
+> >> > devices don't know their maximum rating.
+> >>
+> >> Is'nt that(voltage-tolerance binding) a different problem that needs a
+> >> different solution rather than creating a new binding for OPP - which
+> >> actually makes no description sense (since the max is absolute max)?
+> >>
+> > Ok, I agree that having a nominal voltage isn't really required, so this
+> > leaves us with min...max, where min is already there in the OPP
+> > framework.
+> >
+> > The question here is: are there any devices out there where we could
+> > imagine a frequency dependent max-voltage? I could very well image such
+> > a thing for CPU devices, where thermal constraints would force us to
+> > reduce the regulator voltage to allow for a higher frequency. If any
+> > device on the same rail needs a higher voltage this would prevent using
+> > the higher OPP.
+> >
+> > I have never seen such a device in practice, so maybe just having a
+> > global max-voltage property is the right thing. I'll have to think about
+> > this.
+> 
+> That creates a new set of problem -> precisely because you will have
+> to handle that as part of DVFS sequencing to such an OPP. Further, for
+> lower OPP, if voltage X works for frequency F1, why would voltage X1>X
+> not work for frequency Y?
+> 
+[...]
+> 
+> >
+> >> How can we address that? should we add some logic that says:
+> >>
+> >> if voltage tolerance == 0, then try min_uV to max_opp_uV?
+> >> OR
+> >> introduce a new binding that says absolute-max-voltage (this is what I
+> >> was planning on doing with voltage domain btw).. and ensure that that
+> >> is used?
+> >>
+> >> Personally, I never liked voltage-tolerance binding precisely for the
+> >> same reason as you bring up.. but that is a ABI now and we need to see
+> >> if the requirements can match with it, or define a new one keeping the
+> >> old ABI alive..
+> >>
+> > I would like to keep the focus on new drivers using OPPs. How to fit in
+> > drivers with existing bindings is to be defined later. I'm working on a
+> > new cpufreq driver and would like to work out a solution that avoids
+> > using this wobbly voltage-tolerance.
+> 
+> 
+> Agreed, would love to see a proposal if something could be done with
+> this "voltage-tolerance" without loosing it's current meaning (without
+> breaking ABI - maybe we could deprecate it at a later point in time -
+> but I doubt that - older dtb argument :( ).
+> 
+> Meanwhile, based on our discussion so far, I'd say a NAK for the
+> moment for the current series.
+> 
+> [1] http://comments.gmane.org/gmane.linux.ports.arm.kernel/309466
+> 
+> Regards,
+> Nishanth Menon
+
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
+
