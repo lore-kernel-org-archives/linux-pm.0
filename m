@@ -1,56 +1,39 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH Resend] driver/core: cpu: initialize opp table
-Date: Wed, 21 May 2014 10:48:48 +0100
-Message-ID: <537C7680.7050305@arm.com>
-References: <60d825e8bfe01f8a5ff98fffaf51ffbf04c7d175.1400480033.git.viresh.kumar@linaro.org>	<ca7cc76c49806ce1ac8f9617fa4266cfc29d1ea1.1400480592.git.viresh.kumar@linaro.org>	<537C7348.7060202@arm.com> <CAKohpo=F5gSPvVSAX=qePnudxiuKWLKGTZy8vd80=MJxESWJZQ@mail.gmail.com>
+Date: Wed, 21 May 2014 15:24:47 +0530
+Message-ID: <CAKohpom_1cwXLM0FxkwtY_h3harjZ=XQfZgwtwoN4QDgs_pqQw@mail.gmail.com>
+References: <60d825e8bfe01f8a5ff98fffaf51ffbf04c7d175.1400480033.git.viresh.kumar@linaro.org>
+	<ca7cc76c49806ce1ac8f9617fa4266cfc29d1ea1.1400480592.git.viresh.kumar@linaro.org>
+	<537C7348.7060202@arm.com>
+	<CAKohpo=F5gSPvVSAX=qePnudxiuKWLKGTZy8vd80=MJxESWJZQ@mail.gmail.com>
+	<537C7680.7050305@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:42413 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076AbaEUJsq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 05:48:46 -0400
-In-Reply-To: <CAKohpo=F5gSPvVSAX=qePnudxiuKWLKGTZy8vd80=MJxESWJZQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <537C7680.7050305@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 
-
-
-On 21/05/14 10:41, Viresh Kumar wrote:
-> On 21 May 2014 15:05, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> As Rafael mentioned it's better to have a wrapper function to hide these
->> details. You should consider the fact that of_init_opp_table returns -EINVAL
->> if
->> CONFIG_PM_OPP not defined as well as when the list is invalid in the DT.
->> IMO we can return -ENOSYS if not implemented(i.e. !CONFIG_PM_OPP)
+On 21 May 2014 15:18, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> Why do we need to return anything? Let that function have return type
+>> 'void'?
 >
-> I didn't understood Rafael's comment as I couldn't figure out if he is just
-> pointing to CONFIG_** or some arch specific thing..
 >
-> But it looks more obvious that he asked me something similar to what you
-> are saying :)
+> Hmm, don't we still need to throw error if DT has invalid OPP ?
+> It doesn't may sense to me if no errors is returned and still CPUFreq fails
+> later.
+
+I wasn't sure if we should fail CPU's registration if it had bad OPPs.
+Maybe just print a good message and go ahead. CPU is usable atleast :)
+
+>> Also would it make sense to move this into it as well?
+>>
+>> cpu->dev.of_node = of_get_cpu_node(num, NULL);
+>>
 >
+> I don't quite understand what you mean here ?
 
-I believe so, mainly the non-DT case, since you are checking for error, it will
-end up with spurious messages as the return value is -EINVAL. Hence I was
-suggesting return -ENOSYS(which means Function not implemented)
-
-> Why do we need to return anything? Let that function have return type 'void'?
-
-Hmm, don't we still need to throw error if DT has invalid OPP ?
-It doesn't may sense to me if no errors is returned and still CPUFreq fails
-later.
-
-> Also would it make sense to move this into it as well?
->
-> cpu->dev.of_node = of_get_cpu_node(num, NULL);
->
-
-I don't quite understand what you mean here ?
-
-Regards,
-Sudeep
-
+This piece of code was added by you earlier to register_cpu(). As this was
+also DT specific, should I move this as well to the new routine we are creating?
