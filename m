@@ -1,46 +1,63 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V2 5/7] cpufreq: imx6q: don't initialize opp table
-Date: Wed, 21 May 2014 15:31:58 +0100
-Message-ID: <537CB8DE.2050001@arm.com>
-References: <cover.1400670427.git.viresh.kumar@linaro.org> <cc399206d57ef946d27a98203c6b0a247cd1b245.1400670427.git.viresh.kumar@linaro.org> <537CB328.6000400@arm.com> <20140521141622.GB27211@dragon>
+Subject: Re: [PATCH V2 3/7] driver/core: cpu: initialize opp table
+Date: Wed, 21 May 2014 15:42:20 +0100
+Message-ID: <537CBB4C.7000006@arm.com>
+References: <cover.1400670427.git.viresh.kumar@linaro.org>	<b59df199b373191791afcccd627d900ce07afa71.1400670427.git.viresh.kumar@linaro.org>	<537CADFB.1090305@arm.com> <CAKohpo=-kmfH9Z+m8E9HQXs4AvRoUCDzcrns6-HHLH=AqeJ-DQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:38414 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:51154 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbaEUOb4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 10:31:56 -0400
-In-Reply-To: <20140521141622.GB27211@dragon>
+	with ESMTP id S1752450AbaEUOmT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 10:42:19 -0400
+In-Reply-To: <CAKohpo=-kmfH9Z+m8E9HQXs4AvRoUCDzcrns6-HHLH=AqeJ-DQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 
 
 
-On 21/05/14 15:16, Shawn Guo wrote:
-> On Wed, May 21, 2014 at 03:07:36PM +0100, Sudeep Holla wrote:
->>> @@ -376,7 +356,7 @@ static void __init imx6q_init_late(void)
->>>   		imx6q_cpuidle_init();
->>>
->>>   	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ)) {
->>> -		imx6q_opp_init();
->>> +		imx6q_opp_check_speed_grading();
->>
->> [Query] Not exactly related to this patch, but asking it here to get clarified.
->>
->> This OPP limiting is done as part of late initcall and if the cpufreq driver is
->> built in the kernel, there will be a small window where the OPPs not supported
->> are still enabled ? Will that not be an issue if say performance governor is
->> selected by default.
+On 21/05/14 15:01, Viresh Kumar wrote:
+> On 21 May 2014 19:15, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> [Nit] Not sure if we need this logging on each cpu, may be dev_dbg if you
+>> still
+>> fancy one ? :)
 >
-> Even if cpufreq driver is built in the kernel, it won't be probed until
-> platform_device_register(&imx6q_cpufreq_pdev) is called.  And we make
-> this call only after the OPP limiting.
+> It wouldn't happen on each CPU, but one CPU per policy as others
+> would return -ENODEV.
 >
 
-Ah right, I missed that. Thanks for clarifying.
+Hmm agreed, but there are SoCs that support per CPU DVFS ;)
+
+> I added dev_dbg earlier but then I thought dev_info is better as we may
+> better show this to everybody as it about the most important device,
+> i.e. CPU :)
+>
+>>> +       /* Print error only if there is an issue with OPP table */
+>>> +       else if (error != -ENOSYS && error != -ENODEV)
+>>> +               dev_err(&cpu->dev, "%s: failed to init OPP table for
+>>> cpu%d, err: %d\n",
+>>> +                       __func__, cpu->dev.id, error);
+>>> +}
+>>> +#else
+>>> +static inline void of_init_cpu_opp_table(struct cpu *cpu) {}
+>>> +#endif
+>>> +
+>>
+>>
+>> IMO this could be more generic and applicable for any device if you replace
+>> "struct cpu" with "struct device". I know this is currently used by cpu but
+>> we can extend it's use for any device if needed in future. You can then move
+>> this to pm_opp.h as of_init_dev_opp_table may be.
+>
+> Probably we will call of_init_opp_table() directly for other devices, as this
+> function doesn't do anything else, apart from some prints.. So, probably
+> leave is as is for now, unless a real need arises ?
+>
+
+I don't see anything cpu specific there, but that's just my opinion.
 
 Regards,
 Sudeep
