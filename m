@@ -1,52 +1,100 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC] Migrate to Hz resolution for OPP binding
-Date: Tue, 20 May 2014 18:11:33 -0500
-Message-ID: <CAGo_u6rftjYAEy0wSFA6aqCDNsriC9r-cMVSqeX1xqKCVBqe7g@mail.gmail.com>
-References: <672dd8e9-2857-49fb-848f-d38d38b23c9b@BN1BFFO11FD024.protection.gbl>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH v2 1/7] tracing: Add __bitmask() macro to trace
+ events to cpumasks and other bitmasks
+Date: Tue, 20 May 2014 22:07:23 -0400
+Message-ID: <1400638043.9759.5.camel@pippen.local.home>
+References: <1400595057-8585-1-git-send-email-javi.merino@arm.com>
+	 <1400595057-8585-2-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:63017 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbaETXLf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 May 2014 19:11:35 -0400
-In-Reply-To: <672dd8e9-2857-49fb-848f-d38d38b23c9b@BN1BFFO11FD024.protection.gbl>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1400595057-8585-2-git-send-email-javi.merino@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Punit.Agrawal@arm.com, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, lkml <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, dt list <devicetree@vger.kernel.org>
 
-On Tue, May 20, 2014 at 5:30 PM, S=C3=B6ren Brinkmann
-<soren.brinkmann@xilinx.com> wrote:
-> Hi,
->
-> I guess this is just to evaluate how big the lynch mob will be. Anywa=
-y:
-> Triggered by this discussion https://lkml.org/lkml/2014/5/15/46, I
-> looked a little into what it would take to migrate everybody to Hz
-> frequency resolutions to avoid all the conversions between cpufreq, C=
-CF,
-> OPPs, etc.
-> Turns out, OPPs are already stored in Hz resolution in the kernel, bu=
-t the DT
-> bindings use kHz resolution to specify them in DT. So, code-wise ther=
-e
-> is just a removal of a multiplication in the OPP parser (see below), =
-but
-> then there are the DT bindings...
+Hmm, I didn't think about cross tree dependencies. I already pushed this
+patch to my for-next branch which is already in linux-next, and I do not
+rebase this branch unless there's a really good need to.
 
-Yep :( unfortunately, so :(
+I guess I needed to make a separate branch that you could have pulled
+separately. I'm not sure how we want to proceed, unless you wait till
+Linus pulls my branch before you add this to your tree.
 
->
-> As plan B, I was thinking to add the property 'operating-points-hz'..=
-=2E
->
-> Any better ideas?
+Maybe it would be OK to cherry pick it? I'm not sure Linus would want
+that.
 
-property operating-points-hz as a bool perhaps -> that modifies the
-description and maintains legacy dtb support sounds OK to me if DT
-folks and Rafael are ok with it as well.
+Maybe I can make a separate branch that only has this patch and merge it
+into my tree, where git will handle the duplicate. But then we have a
+strange history.
 
-Regards,
-Nishanth Menon
+How urgent is your change? Can it wait till my stuff makes it into
+Linus's tree in the 3.16 merge window?
+
+
+-- Steve
+
+
+On Tue, 2014-05-20 at 15:10 +0100, Javi Merino wrote:
+> From: "Steven Rostedt (Red Hat)" <rostedt@goodmis.org>
+> 
+> Being able to show a cpumask of events can be useful as some events
+> may affect only some CPUs. There is no standard way to record the
+> cpumask and converting it to a string is rather expensive during
+> the trace as traces happen in hotpaths. It would be better to record
+> the raw event mask and be able to parse it at print time.
+> 
+> The following macros were added for use with the TRACE_EVENT() macro:
+> 
+>   __bitmask()
+>   __assign_bitmask()
+>   __get_bitmask()
+> 
+> To test this, I added this to the sched_migrate_task event, which
+> looked like this:
+> 
+> TRACE_EVENT(sched_migrate_task,
+> 
+> 	TP_PROTO(struct task_struct *p, int dest_cpu, const struct cpumask *cpus),
+> 
+> 	TP_ARGS(p, dest_cpu, cpus),
+> 
+> 	TP_STRUCT__entry(
+> 		__array(	char,	comm,	TASK_COMM_LEN	)
+> 		__field(	pid_t,	pid			)
+> 		__field(	int,	prio			)
+> 		__field(	int,	orig_cpu		)
+> 		__field(	int,	dest_cpu		)
+> 		__bitmask(	cpumask, num_possible_cpus()	)
+> 	),
+> 
+> 	TP_fast_assign(
+> 		memcpy(__entry->comm, p->comm, TASK_COMM_LEN);
+> 		__entry->pid		= p->pid;
+> 		__entry->prio		= p->prio;
+> 		__entry->orig_cpu	= task_cpu(p);
+> 		__entry->dest_cpu	= dest_cpu;
+> 		__assign_bitmask(cpumask, cpumask_bits(cpus), num_possible_cpus());
+> 	),
+> 
+> 	TP_printk("comm=%s pid=%d prio=%d orig_cpu=%d dest_cpu=%d cpumask=%s",
+> 		  __entry->comm, __entry->pid, __entry->prio,
+> 		  __entry->orig_cpu, __entry->dest_cpu,
+> 		  __get_bitmask(cpumask))
+> );
+> 
+> With the output of:
+> 
+>         ksmtuned-3613  [003] d..2   485.220508: sched_migrate_task: comm=ksmtuned pid=3615 prio=120 orig_cpu=3 dest_cpu=2 cpumask=00000000,0000000f
+>      migration/1-13    [001] d..5   485.221202: sched_migrate_task: comm=ksmtuned pid=3614 prio=120 orig_cpu=1 dest_cpu=0 cpumask=00000000,0000000f
+>              awk-3615  [002] d.H5   485.221747: sched_migrate_task: comm=rcu_preempt pid=7 prio=120 orig_cpu=0 dest_cpu=1 cpumask=00000000,000000ff
+>      migration/2-18    [002] d..5   485.222062: sched_migrate_task: comm=ksmtuned pid=3615 prio=120 orig_cpu=2 dest_cpu=3 cpumask=00000000,0000000f
+> 
+> Link: http://lkml.kernel.org/r/1399377998-14870-6-git-send-email-javi.merino@arm.com
+> Link: http://lkml.kernel.org/r/20140506132238.22e136d1@gandalf.local.home
+> 
+> Suggested-by: Javi Merino <javi.merino@arm.com>
+> Tested-by: Javi Merino <javi.merino@arm.com>
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
