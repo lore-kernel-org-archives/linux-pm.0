@@ -1,233 +1,99 @@
-From: Inderpal Singh <inderpal.s@samsung.com>
-Subject: [PATCH v2] PM / OPP: Implement opp_remove and free_opp_table functions
-Date: Wed, 21 May 2014 11:21:42 +0530
-Message-ID: <1400651502-23703-1-git-send-email-inderpal.s@samsung.com>
-References: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Wed, 21 May 2014 09:34:57 +0200
+Message-ID: <20140521073457.GD31687@pengutronix.de>
+References: <1400106655-22465-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1400106655-22465-3-git-send-email-soren.brinkmann@xilinx.com>
+ <20140515073816.GI16662@pengutronix.de>
+ <91822600-39d0-4e71-b0f5-9eda35b76ec0@BN1AFFO11FD016.protection.gbl>
+ <20140519161949.GG16662@pengutronix.de>
+ <db8633e5-01a9-4d3a-80e8-74e23a456d52@BN1BFFO11FD051.protection.gbl>
+ <20140520073358.GJ16662@pengutronix.de>
+ <4bb5f44a-60bb-4e34-8f88-f91b8419be8d@BL2FFO11FD050.protection.gbl>
+ <537B957B.5010001@codeaurora.org>
+ <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:33364 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbaEUFvi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 01:51:38 -0400
-In-Reply-To: <1400231366-1221-1-git-send-email-inderpal.s@samsung.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:34599 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbaEUHfI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 03:35:08 -0400
+Content-Disposition: inline
+In-Reply-To: <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: nm@ti.com, rjw@rjwysocki.net, pavel@ucw.cz, viresh.kumar@linaro.org
+To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Russell King <linux@arm.linux.org.uk>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-At the driver unloading time the associated opps and its table may need
-to be deleted. Otherwise it amounts to memory leak. The existing
-OPP library does not have provision to do so.
+Hello,
 
-Hence this patch implements the required functions to free the same.
+On Tue, May 20, 2014 at 02:48:20PM -0700, S=F6ren Brinkmann wrote:
+> On Tue, 2014-05-20 at 10:48AM -0700, Stephen Boyd wrote:
+> > On 05/20/14 09:01, S=F6ren Brinkmann wrote:
+> > >
+> > >>>>> +{
+> > >>>>> +	unsigned long lower, upper, cur, lower_last, upper_last;
+> > >>>>> +
+> > >>>>> +	lower =3D clk_round_rate(clk, rate);
+> > >>>>> +	if (lower >=3D rate)
+> > >>>>> +		return lower;
+> > >>>> Is the >-case worth a warning?
+> > >>> No, it's correct behavior. If you request a rate that is way lo=
+wer than what the
+> > >>> clock can generate, returning something larger is perfectly val=
+id, IMHO.
+> > >>> Which reveals one problem in this whole discussion. The API doe=
+s not
+> > >>> require clk_round_rate() to round down. It is actually an imple=
+mentation
+> > >>> choice that had been made for clk-divider.
+> > >> I'm sure it's more than an implementation choice for clk-divider=
+=2E But I
+> > >> don't find any respective documentation (but I didn't try hard).
+> > > A similar discussion - without final conclusion:
+> > > https://lkml.org/lkml/2010/7/14/260
+> > >
+> > >
+> >=20
+> > Please call this new API something like clk_find_nearest_rate() or
+> > something. clk_round_rate() is supposed to return the rate that wil=
+l be
+> > set if you call clk_set_rate() with the same arguments. It's up to =
+the
+> > implementation to decide if that means rounding the rate up or down=
+ or
+> > to the nearest value.
+>=20
+> Sounds good to me. Are there any cases of clocks that round up? I thi=
+nk
+> that case would not be handled correctly. But I also don't see a use
+> case for such an implementation.
+I don't really care which semantic (i.e. round up, round down or round
+closest) is picked, but I'd vote that all should pick up the same. I
+think the least surprising definition is to choose rounding down and ad=
+d
+the function that is under discussion here to get a nearest match.
 
-Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
----
-Changes in v2:
-	- As suggested by Nishanth, added support to remove a single OPP
-	  for non-DT users
-	- Added an internal helper function to avoid the code duplication
-	  between opp_remove and free_opp_table functions
- 
- drivers/base/power/opp.c | 122 ++++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm_opp.h   |  14 +++++-
- 2 files changed, 134 insertions(+), 2 deletions(-)
+So I suggest:
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index faae9cf..22adef3 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -89,6 +89,7 @@ struct device_opp {
- 	struct device *dev;
- 	struct srcu_notifier_head head;
- 	struct list_head opp_list;
-+	struct rcu_head head_rcu;
- };
- 
- /*
-@@ -427,7 +428,6 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 				__func__);
- 			return -ENOMEM;
- 		}
--
- 		dev_opp->dev = dev;
- 		srcu_init_notifier_head(&dev_opp->head);
- 		INIT_LIST_HEAD(&dev_opp->opp_list);
-@@ -464,6 +464,82 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- EXPORT_SYMBOL_GPL(dev_pm_opp_add);
- 
- /**
-+ * opp_remove_and_free()  - Internal helper to remove and free an OPP
-+ * @dev_opp:	device_opp for which we do this operation
-+ * @opp:	OPP to be removed
-+ *
-+ * This function removes an opp from the opp list and frees it. And, if the
-+ * list is empty, it also removes the device_opp from the root list and
-+ * frees it.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * The callers need to use RCU updater strategy with mutex locks to keep the
-+ * integrity of the internal data structures.
-+ */
-+static void opp_remove_and_free(struct device_opp *dev_opp,
-+						struct dev_pm_opp *opp)
-+{
-+	list_del_rcu(&opp->node);
-+	/*
-+	 * Notify the removal of the opp
-+	 */
-+	srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_REMOVE, opp);
-+	kfree_rcu(opp, head);
-+
-+	if (list_empty(&dev_opp->opp_list)) {
-+		list_del_rcu(&dev_opp->node);
-+		kfree_rcu(dev_opp, head_rcu);
-+	}
-+}
-+
-+/**
-+ * dev_pm_opp_remove() - remove a specific OPP
-+ * @dev:	device for which we do this operation
-+ * @freq:	OPP frequency to remove
-+ *
-+ * Removes a provided opp.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks to
-+ * keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex locking cannot be used.
-+ */
-+void dev_pm_opp_remove(struct device *dev, unsigned long freq)
-+{
-+	struct device_opp *dev_opp = ERR_PTR(-ENODEV);
-+	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
-+
-+	if (IS_ERR_OR_NULL(dev))
-+		return;
-+
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
-+
-+	/* Check for existing list for 'dev' */
-+	dev_opp = find_device_opp(dev);
-+	if (IS_ERR(dev_opp))
-+		goto unlock;
-+
-+	/* Do we have the frequency? */
-+	list_for_each_entry(temp_opp, &dev_opp->opp_list, node)
-+		if (temp_opp->rate == freq) {
-+			opp = temp_opp;
-+			break;
-+		}
-+
-+	if (IS_ERR(opp)) {
-+		dev_warn(dev, "%s: OPP freq not found\n", __func__);
-+		goto unlock;
-+	}
-+
-+	opp_remove_and_free(dev_opp, opp);
-+unlock:
-+	mutex_unlock(&dev_opp_list_lock);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
-+
-+/**
-  * opp_set_availability() - helper to set the availability of an opp
-  * @dev:		device for which we do this operation
-  * @freq:		OPP frequency to modify availability
-@@ -653,3 +729,47 @@ int of_init_opp_table(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(of_init_opp_table);
- #endif
-+
-+/**
-+ * dev_pm_opp_free_opp_table() - free the opp table
-+ * @dev:	device for which we do this operation
-+ *
-+ * Free up the allocated opp table
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks to
-+ * keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex locking cannot be used.
-+ */
-+void dev_pm_opp_free_opp_table(struct device *dev)
-+{
-+	struct device_opp *dev_opp = ERR_PTR(-ENODEV);
-+	struct dev_pm_opp *opp;
-+	int count = 0;
-+
-+	if (IS_ERR_OR_NULL(dev))
-+		return;
-+
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
-+
-+	/* Check for existing list for 'dev' */
-+	dev_opp = find_device_opp(dev);
-+	if (IS_ERR(dev_opp)) {
-+		dev_warn(dev, "%s: OPP list not found\n", __func__);
-+		goto unlock;
-+	}
-+
-+	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node)
-+		count++;
-+
-+	while (count--) {
-+		opp = list_entry_rcu(dev_opp->opp_list.next,
-+					struct dev_pm_opp, node);
-+		opp_remove_and_free(dev_opp, opp);
-+	}
-+unlock:
-+	mutex_unlock(&dev_opp_list_lock);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_free_opp_table);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 0330217..13e6956 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -21,7 +21,7 @@ struct dev_pm_opp;
- struct device;
- 
- enum dev_pm_opp_event {
--	OPP_EVENT_ADD, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
-+	OPP_EVENT_ADD, OPP_EVENT_REMOVE, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
- };
- 
- #if defined(CONFIG_PM_OPP)
-@@ -49,7 +49,11 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
- 
- int dev_pm_opp_disable(struct device *dev, unsigned long freq);
- 
-+void dev_pm_opp_remove(struct device *dev, unsigned long freq);
-+
- struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
-+
-+void dev_pm_opp_free_opp_table(struct device *dev);
- #else
- static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- {
-@@ -100,11 +104,19 @@ static inline int dev_pm_opp_disable(struct device *dev, unsigned long freq)
- 	return 0;
- }
- 
-+static inline void dev_pm_opp_remove(struct device *dev, unsigned long freq)
-+{
-+}
-+
- static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
- 							struct device *dev)
- {
- 	return ERR_PTR(-EINVAL);
- }
-+
-+static inline void dev_pm_opp_free_opp_table(struct device *dev)
-+{
-+}
- #endif		/* CONFIG_PM_OPP */
- 
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
--- 
-1.8.3.2
+	- if round_rate is given a rate that is smaller than the
+	  smallest available rate, return 0
+	- add WARN_ONCE to round_rate and set_rate if they return with a
+	  rate bigger than requested
+	- change the return values to unsigned long
 
+Do we also need a round_up implementation?
+
+Mike? Russell? Any thoughts from your side?
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
+    |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
