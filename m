@@ -1,100 +1,30 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH v2 1/7] tracing: Add __bitmask() macro to trace
- events to cpumasks and other bitmasks
-Date: Tue, 20 May 2014 22:07:23 -0400
-Message-ID: <1400638043.9759.5.camel@pippen.local.home>
-References: <1400595057-8585-1-git-send-email-javi.merino@arm.com>
-	 <1400595057-8585-2-git-send-email-javi.merino@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5] PM/OPP: discard duplicate OPPs
+Date: Wed, 21 May 2014 09:33:42 +0530
+Message-ID: <CAKohponU2feK9+9sUn4tu0t4fhwSy6PZuaAO3zkF7qRejCwM1Q@mail.gmail.com>
+References: <7cb6e0e039e0935e37c81d0f23d26b0b81ad8cda.1400597170.git.viresh.kumar@linaro.org>
+	<1555967.8fxByr2j83@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1400595057-8585-2-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Punit.Agrawal@arm.com, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f52.google.com ([209.85.219.52]:41904 "EHLO
+	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbaEUEDn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 00:03:43 -0400
+Received: by mail-oa0-f52.google.com with SMTP id eb12so1624827oac.11
+        for <linux-pm@vger.kernel.org>; Tue, 20 May 2014 21:03:42 -0700 (PDT)
+In-Reply-To: <1555967.8fxByr2j83@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Chander Kashyap <k.chander@samsung.com>
 
-Hmm, I didn't think about cross tree dependencies. I already pushed this
-patch to my for-next branch which is already in linux-next, and I do not
-rebase this branch unless there's a really good need to.
+On 21 May 2014 02:39, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> +     /* Duplicate OPPs ? */
+>> +     if (new_opp->rate == opp->rate) {
+>> +             int ret = (new_opp->u_volt == opp->u_volt) && opp->available ?
+>> +                     0 : -EEXIST;
+>
+> The parens are not necessary.  And is the direction correct?
 
-I guess I needed to make a separate branch that you could have pulled
-separately. I'm not sure how we want to proceed, unless you wait till
-Linus pulls my branch before you add this to your tree.
-
-Maybe it would be OK to cherry pick it? I'm not sure Linus would want
-that.
-
-Maybe I can make a separate branch that only has this patch and merge it
-into my tree, where git will handle the duplicate. But then we have a
-strange history.
-
-How urgent is your change? Can it wait till my stuff makes it into
-Linus's tree in the 3.16 merge window?
-
-
--- Steve
-
-
-On Tue, 2014-05-20 at 15:10 +0100, Javi Merino wrote:
-> From: "Steven Rostedt (Red Hat)" <rostedt@goodmis.org>
-> 
-> Being able to show a cpumask of events can be useful as some events
-> may affect only some CPUs. There is no standard way to record the
-> cpumask and converting it to a string is rather expensive during
-> the trace as traces happen in hotpaths. It would be better to record
-> the raw event mask and be able to parse it at print time.
-> 
-> The following macros were added for use with the TRACE_EVENT() macro:
-> 
->   __bitmask()
->   __assign_bitmask()
->   __get_bitmask()
-> 
-> To test this, I added this to the sched_migrate_task event, which
-> looked like this:
-> 
-> TRACE_EVENT(sched_migrate_task,
-> 
-> 	TP_PROTO(struct task_struct *p, int dest_cpu, const struct cpumask *cpus),
-> 
-> 	TP_ARGS(p, dest_cpu, cpus),
-> 
-> 	TP_STRUCT__entry(
-> 		__array(	char,	comm,	TASK_COMM_LEN	)
-> 		__field(	pid_t,	pid			)
-> 		__field(	int,	prio			)
-> 		__field(	int,	orig_cpu		)
-> 		__field(	int,	dest_cpu		)
-> 		__bitmask(	cpumask, num_possible_cpus()	)
-> 	),
-> 
-> 	TP_fast_assign(
-> 		memcpy(__entry->comm, p->comm, TASK_COMM_LEN);
-> 		__entry->pid		= p->pid;
-> 		__entry->prio		= p->prio;
-> 		__entry->orig_cpu	= task_cpu(p);
-> 		__entry->dest_cpu	= dest_cpu;
-> 		__assign_bitmask(cpumask, cpumask_bits(cpus), num_possible_cpus());
-> 	),
-> 
-> 	TP_printk("comm=%s pid=%d prio=%d orig_cpu=%d dest_cpu=%d cpumask=%s",
-> 		  __entry->comm, __entry->pid, __entry->prio,
-> 		  __entry->orig_cpu, __entry->dest_cpu,
-> 		  __get_bitmask(cpumask))
-> );
-> 
-> With the output of:
-> 
->         ksmtuned-3613  [003] d..2   485.220508: sched_migrate_task: comm=ksmtuned pid=3615 prio=120 orig_cpu=3 dest_cpu=2 cpumask=00000000,0000000f
->      migration/1-13    [001] d..5   485.221202: sched_migrate_task: comm=ksmtuned pid=3614 prio=120 orig_cpu=1 dest_cpu=0 cpumask=00000000,0000000f
->              awk-3615  [002] d.H5   485.221747: sched_migrate_task: comm=rcu_preempt pid=7 prio=120 orig_cpu=0 dest_cpu=1 cpumask=00000000,000000ff
->      migration/2-18    [002] d..5   485.222062: sched_migrate_task: comm=ksmtuned pid=3615 prio=120 orig_cpu=2 dest_cpu=3 cpumask=00000000,0000000f
-> 
-> Link: http://lkml.kernel.org/r/1399377998-14870-6-git-send-email-javi.merino@arm.com
-> Link: http://lkml.kernel.org/r/20140506132238.22e136d1@gandalf.local.home
-> 
-> Suggested-by: Javi Merino <javi.merino@arm.com>
-> Tested-by: Javi Merino <javi.merino@arm.com>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+What do you mean by direction here ?
