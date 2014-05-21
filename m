@@ -1,29 +1,25 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/7] opp: remove -ENOSYS from dummy implementation of of_init_opp_table()
-Date: Wed, 21 May 2014 18:57:58 +0530
-Message-ID: <CAKohpokmO=QpzAgWTaOSFzYF2E29pxr3B6CSwNMZkq02khfFVg@mail.gmail.com>
+Subject: Re: [PATCH V2 4/7] cpufreq: arm_big_little: don't initialize opp table
+Date: Wed, 21 May 2014 18:59:44 +0530
+Message-ID: <CAKohpo=FAsaeAiXM-hfdCPHYrV8ALKk5AhLUHO2Ja2P2zyEbQw@mail.gmail.com>
 References: <cover.1400670427.git.viresh.kumar@linaro.org>
-	<ddf99132a9b2a6aabef61cba20fffbbf56ec0985.1400670427.git.viresh.kumar@linaro.org>
-	<537CA726.5060909@arm.com>
+	<2c310ea534ac3cc181937bc8adf87c4695d6eb70.1400670427.git.viresh.kumar@linaro.org>
+	<CAOqmu80Q6_isHyZ89qu7fEj6GQjst_sBCRUTVyopdMthq7d=mw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f175.google.com ([209.85.214.175]:57214 "EHLO
-	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbaEUN17 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 May 2014 09:27:59 -0400
-Received: by mail-ob0-f175.google.com with SMTP id wo20so2150545obc.6
-        for <linux-pm@vger.kernel.org>; Wed, 21 May 2014 06:27:58 -0700 (PDT)
-In-Reply-To: <537CA726.5060909@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAOqmu80Q6_isHyZ89qu7fEj6GQjst_sBCRUTVyopdMthq7d=mw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Inderpal Singh <inderpal.s@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <Arvind.Chauhan@arm.com>, "inderpal.s@samsung.com" <inderpal.s@samsung.com>, "nm@ti.com" <nm@ti.com>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>
 
-On 21 May 2014 18:46, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> Hi Viresh,
->
-> $subject perhaps should be "replace/remove -EINVAL.." instead of "remove
-> -ENOSYS ..."
+On 21 May 2014 17:05, Inderpal Singh <inderpal.s@samsung.com> wrote:
+> I guess you wanted to say "cpu core code" instead of "cpufreq core".
+> Correction may be needed here and in the subsequent patches as well.
 
-What's going on with my logs? Really annoying for me as well..
+When I started implementation, I added code to cpufreq core's init
+routine and later moved it to base/cpu.c .. And just forgot to update
+it later :(
+
+Thanks for letting me know
