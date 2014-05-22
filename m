@@ -1,43 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 8/8] cpufreq: exynos5440: don't initialize opp table
-Date: Thu, 22 May 2014 11:07:32 +0530
-Message-ID: <d4a48ceb8d4360d3c083f6d9c9f805b4c5cea818.1400736536.git.viresh.kumar@linaro.org>
-References: <cover.1400736536.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1400736536.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1400736536.git.viresh.kumar@linaro.org>
-References: <cover.1400736536.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: [PATCH] cpufreq: s5pv210: remove unused call of pr_err()
+Date: Thu, 22 May 2014 08:41:34 +0200
+Message-ID: <1400740894.21254.8.camel@x220>
+References: <1400702036.30334.6.camel@x220>
+	 <CAK9yfHz2kdfkf+o7fKMRu=nMXxbcHJ227bjpvA=WXt6ptH3QRA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cpsmtpb-ews05.kpnxchange.com ([213.75.39.8]:54103 "EHLO
+	cpsmtpb-ews05.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751184AbaEVGlh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 May 2014 02:41:37 -0400
+In-Reply-To: <CAK9yfHz2kdfkf+o7fKMRu=nMXxbcHJ227bjpvA=WXt6ptH3QRA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-CPU OPP tables are already initialized by CPU core and we don't need to
-reinitialize them from exynos5440's driver.
+Sachin,
 
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/exynos5440-cpufreq.c | 6 ------
- 1 file changed, 6 deletions(-)
+On Thu, 2014-05-22 at 08:52 +0530, Sachin Kamat wrote:
+> The config symbol itself is not defined and hence could be removed.
+> However I feel, the
+> error message could be retained after trimming down the arguments a bit.
 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index f33f25b..72a4206 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -360,12 +360,6 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 		goto err_put_node;
- 	}
- 
--	ret = of_init_opp_table(dvfs_info->dev);
--	if (ret) {
--		dev_err(dvfs_info->dev, "failed to init OPP table: %d\n", ret);
--		goto err_put_node;
--	}
--
- 	ret = dev_pm_opp_init_cpufreq_table(dvfs_info->dev,
- 					    &dvfs_info->freq_table);
- 	if (ret) {
--- 
-2.0.0.rc2
+My reasoning is, of course, that never used code can simply be dropped.
+
+But you want to print an error here. That's fine with me. I prefer if
+you'd submit a patch that does that, as I have no idea whatsoever why an
+error is needed here nor what that error should say.
+
+I do hope you don't mind me prodding you if that takes too long, and
+this pointless check of CONFIG_PM_VERBOSE is still here after, say,
+another development cycle.
+
+
+Paul Bolle
+
