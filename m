@@ -1,103 +1,67 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V6] PM/OPP: discard duplicate OPPs
-Date: Thu, 22 May 2014 10:36:26 +0530
-Message-ID: <087f56979fa572b3021f0fb9b2ad1bc791b55f66.1400734949.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f51.google.com ([209.85.192.51]:37440 "EHLO
-	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbaEVFGf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 May 2014 01:06:35 -0400
-Received: by mail-qg0-f51.google.com with SMTP id q107so4803555qgd.38
-        for <linux-pm@vger.kernel.org>; Wed, 21 May 2014 22:06:35 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V3 0/8] CPUFreq: Initialize CPU's OPP tables from CPU core
+Date: Thu, 22 May 2014 11:07:24 +0530
+Message-ID: <cover.1400736536.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Chander Kashyap <k.chander@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-From: Chander Kashyap <k.chander@samsung.com>
+This is third attempt to initialize CPU's OPPs from CPU core code. First two are
+here: https://lkml.org/lkml/2014/5/19/57 and https://lkml.org/lkml/2014/5/21/199
 
-We don't have any protection against addition of duplicate OPPs currently and in
-case some code tries to add them, it will end up corrupting OPP tables.
+Drivers expecting CPU's OPPs from device tree initialize OPP table themselves by
+calling of_init_opp_table() and there is nothing driver specific in that. They
+all do it in the same redundant way.
 
-We need to handle some duplication cases separately as returning error might not
-be the right thing always. The new list of return values for dev_pm_opp_add()
-are:
+It would be better if we can get rid of redundancy by initializing CPU OPPs from
+CPU core code for all CPUs (that have a "operating-points" property defined in
+their node).
 
-0:          On success OR
-            Duplicate OPPs (both freq and volt are same) and opp->available
--EEXIST:    Freq are same and volt are different OR
-            Duplicate OPPs (both freq and volt are same) and !opp->available
--ENOMEM:    Memory allocation failure
+This patchset is all about that.
 
-Acked-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-I took some rest before sending V6, just to make sure I don't send another
-version in hurry with any obvious mistake.
+The idea was initially discussed here: https://lkml.org/lkml/2014/5/17/123
 
-V5->V6:
-- Remove parenthesis around initialization of 'ret'.
-- s/Returns/Return
-- Fix checkpatch.pl --strict warning: 'Alignment should match open parenthesis'
-- Tried improving changelog..
+V2->V3:
+- s/dev_info/dev_dbg
+- Fixed changelogs
 
- drivers/base/power/opp.c | 27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+V1->V2:
+- Addition of two new patches: 1/2 & 2/2
+- Created separate routine of_init_cpu_opp_table() which wouldn't add any
+  overhead for the platforms which don't have OPP or OF enabled.
+- Added a print for success case as well
+- Added Acks from Shawn
+- Got rid of extra indentation level by returning early from register_cpu().
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index faae9cf..89ced95 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -393,6 +393,13 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
-  * to keep the integrity of the internal data structures. Callers should ensure
-  * that this function is *NOT* called under RCU protection or in contexts where
-  * mutex cannot be locked.
-+ *
-+ * Return:
-+ * 0:		On success OR
-+ *		Duplicate OPPs (both freq and volt are same) and opp->available
-+ * -EEXIST:	Freq are same and volt are different OR
-+ *		Duplicate OPPs (both freq and volt are same) and !opp->available
-+ * -ENOMEM:	Memory allocation failure
-  */
- int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- {
-@@ -442,15 +449,31 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 	new_opp->u_volt = u_volt;
- 	new_opp->available = true;
- 
--	/* Insert new OPP in order of increasing frequency */
-+	/*
-+	 * Insert new OPP in order of increasing frequency
-+	 * and discard if already present
-+	 */
- 	head = &dev_opp->opp_list;
- 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
--		if (new_opp->rate < opp->rate)
-+		if (new_opp->rate <= opp->rate)
- 			break;
- 		else
- 			head = &opp->node;
- 	}
- 
-+	/* Duplicate OPPs ? */
-+	if (new_opp->rate == opp->rate) {
-+		int ret = opp->available && new_opp->u_volt == opp->u_volt ?
-+			0 : -EEXIST;
-+
-+		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
-+			 __func__, opp->rate, opp->u_volt, opp->available,
-+			 new_opp->rate, new_opp->u_volt, new_opp->available);
-+		mutex_unlock(&dev_opp_list_lock);
-+		kfree(new_opp);
-+		return ret;
-+	}
-+
- 	list_add_rcu(&new_opp->node, head);
- 	mutex_unlock(&dev_opp_list_lock);
- 
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+
+Viresh Kumar (8):
+  cpufreq: cpufreq-cpu0: remove dependency on thermal
+  opp: of_init_opp_table(): return -ENOSYS when feature isn't
+    implemented
+  opp: call of_node_{get|put}() from of_init_opp_table()
+  driver/core: cpu: initialize opp table
+  cpufreq: arm_big_little: don't initialize opp table
+  cpufreq: imx6q: don't initialize opp table
+  cpufreq: cpufreq-cpu0: don't initialize opp table
+  cpufreq: exynos5440: don't initialize opp table
+
+ arch/arm/mach-imx/mach-imx6q.c       | 36 ++++++++----------------------------
+ drivers/base/cpu.c                   | 30 ++++++++++++++++++++++++++----
+ drivers/base/power/opp.c             |  4 ++++
+ drivers/cpufreq/Kconfig              |  2 +-
+ drivers/cpufreq/arm_big_little.c     | 12 +++++++-----
+ drivers/cpufreq/arm_big_little_dt.c  | 18 ------------------
+ drivers/cpufreq/cpufreq-cpu0.c       |  6 ------
+ drivers/cpufreq/exynos5440-cpufreq.c |  6 ------
+ drivers/cpufreq/imx6q-cpufreq.c      | 20 +-------------------
+ include/linux/pm_opp.h               |  2 +-
+ 10 files changed, 48 insertions(+), 88 deletions(-)
+
 -- 
 2.0.0.rc2
-
