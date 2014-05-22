@@ -1,70 +1,49 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [RFC] Migrate to Hz resolution for OPP binding
-Date: Thu, 22 May 2014 08:36:58 -0700
-Message-ID: <7a3a47bd-db95-4255-8507-e6494607ea69@BL2FFO11FD018.protection.gbl>
-References: <672dd8e9-2857-49fb-848f-d38d38b23c9b@BN1BFFO11FD024.protection.gbl>
- <CAL_Jsq+1_W_d1WWkMUsHZYKXV=t9MN70iR25bnA8Emzh8zb2mg@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency
+ callbacks
+Date: Thu, 22 May 2014 10:39:56 -0600
+Message-ID: <537E285C.6060608@wwwdotorg.org>
+References: <cover.1400662383.git.viresh.kumar@linaro.org> <dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1lp0141.outbound.protection.outlook.com ([207.46.163.141]:21487
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751088AbaEVPjM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 22 May 2014 11:39:12 -0400
-Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+1_W_d1WWkMUsHZYKXV=t9MN70iR25bnA8Emzh8zb2mg@mail.gmail.com>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:50947 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbaEVQkA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 May 2014 12:40:00 -0400
+In-Reply-To: <dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org, linux@arm.linux.org.uk, nicolas.pitre@linaro.org, thomas.abraham@linaro.org, pdeschrijver@nvidia.com
 
-Hi Rob,
+On 05/21/2014 02:59 AM, Viresh Kumar wrote:
+> Tegra had always been switching to intermediate frequency (pll_p_clk) since
+> ever. CPUFreq core has better support for handling notifications for these
+> frequencies and so we can adapt Tegra's driver to it.
+> 
+> Also do a WARN() if clk_set_parent() fails while moving back to pll_x as we
+> should have atleast restored to earlier frequency on error.
 
-On Thu, 2014-05-22 at 08:27AM -0500, Rob Herring wrote:
-> On Tue, May 20, 2014 at 5:30 PM, S=C3=B6ren Brinkmann
-> <soren.brinkmann@xilinx.com> wrote:
-> > Hi,
-> >
-> > I guess this is just to evaluate how big the lynch mob will be. Any=
-way:
-> > Triggered by this discussion https://lkml.org/lkml/2014/5/15/46, I
-> > looked a little into what it would take to migrate everybody to Hz
-> > frequency resolutions to avoid all the conversions between cpufreq,=
- CCF,
-> > OPPs, etc.
-> > Turns out, OPPs are already stored in Hz resolution in the kernel, =
-but the DT
-> > bindings use kHz resolution to specify them in DT. So, code-wise th=
-ere
-> > is just a removal of a multiplication in the OPP parser (see below)=
-, but
-> > then there are the DT bindings...
->=20
-> Add this to the list of issues with the current OPP binding and defin=
-e
-> a new binding, not a band-aid.
->=20
-> > As plan B, I was thinking to add the property 'operating-points-hz'=
-=2E..
-> >
-> > Any better ideas?
->=20
-> Fix clk_round_rate to specify how you want to round. There are
-> usecases for both rounding up and down. Don't you have the same
-> rounding problem with hz? Assume the person filling in OPP values
-> knows nothing about the kernel and you could have values rounded both
-> ways.
+> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 
-Yes the issue would not be resolved by this alone. But currently the CC=
-=46
-and OPPs in the kernel use Hz. And if you look at the interaction
-between those frameworks with cpufreq, there are plenty of
-multiplications/divisions by 1000 to convert between those, with even a
-greater loss of accuracy. So, I think agreeing on using Hz as smallest
-reasonable frequency resolution across all these frameworks would be a
-first step into the right direction.
+> @@ -98,10 +96,23 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
+>  	else
+>  		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
+>  
+> -	ret = tegra_cpu_clk_set_rate(rate * 1000);
+> +	/* target freq == pll_p */
+> +	if (rate * 1000 == clk_get_rate(pll_p_clk)) {
+> +		ret = tegra_target_intermediate(policy, index);
+> +		goto disable_pll_x;
+> +	}
 
-	Thanks,
-	S=C3=B6ren
+I think the call to tegra_target_intermediate() is wrong here; shouldn't
+the cpufreq core guarantee that tegra_target_intermediate() has always
+been called before tegra_target(), so there's no need to repeat that
+call here?
+
+Also, tegra_target() doesn't seem to follow the rule documented by patch
+2/3 that states ->target() should restore the orignal frequency on
+error. I'm not even sure if that's possible in general.
