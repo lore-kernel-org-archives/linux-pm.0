@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 4/8] driver/core: cpu: initialize opp table
-Date: Thu, 22 May 2014 11:07:28 +0530
-Message-ID: <6379a5109bf6b4875cc1656b025f9b8186bbb91a.1400736536.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 3/8] opp: call of_node_{get|put}() from of_init_opp_table()
+Date: Thu, 22 May 2014 11:07:27 +0530
+Message-ID: <a3c1c90c6df3b23df528f40ef653c189dec25832.1400736536.git.viresh.kumar@linaro.org>
 References: <cover.1400736536.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1400736536.git.viresh.kumar@linaro.org>
@@ -9,84 +9,42 @@ In-Reply-To: <cover.1400736536.git.viresh.kumar@linaro.org>
 References: <cover.1400736536.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Drivers expecting CPU's OPPs from device tree initialize OPP table themselves by
-calling of_init_opp_table() and there is nothing driver specific in that. They
-all do it in the same redundant way.
+All callers of of_init_opp_table() are required to take reference of
+dev->of_node, by initiating calls to of_node_{get|put}(), before and after
+calling of_init_opp_table().
 
-It would be better if we can get rid of redundancy by initializing CPU OPPs from
-CPU core code for all CPUs (that have a "operating-points" property defined in
-their node).
+Its better to call these from within of_init_opp_table(), no fun adding
+redundant code to every caller.
 
-This patch adds another routine in cpu.c: of_init_cpu_opp_table() and calls it
-right after CPU device is registered in register_cpu(). A dummy implementation
-is also provided to make it lightweight for platforms that don't need it.
-
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/cpu.c | 30 ++++++++++++++++++++++++++----
- 1 file changed, 26 insertions(+), 4 deletions(-)
+ drivers/base/power/opp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 006b1bc..818cfe8 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -16,6 +16,7 @@
- #include <linux/acpi.h>
- #include <linux/of.h>
- #include <linux/cpufeature.h>
-+#include <linux/pm_opp.h>
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index faae9cf..2b615b9 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -622,6 +622,9 @@ int of_init_opp_table(struct device *dev)
+ 	const __be32 *val;
+ 	int nr;
  
- #include "base.h"
++	if (!of_node_get(dev->of_node))
++		return -ENODEV;
++
+ 	prop = of_find_property(dev->of_node, "operating-points", NULL);
+ 	if (!prop)
+ 		return -ENODEV;
+@@ -649,6 +652,7 @@ int of_init_opp_table(struct device *dev)
+ 		nr -= 2;
+ 	}
  
-@@ -322,6 +323,25 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
++	of_node_put(dev->of_node);
+ 	return 0;
  }
- #endif
- 
-+#if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
-+static inline void of_init_cpu_opp_table(struct cpu *cpu)
-+{
-+	int error;
-+
-+	/* Initialize CPU's OPP table */
-+	error = of_init_opp_table(&cpu->dev);
-+	if (!error)
-+		dev_dbg(&cpu->dev, "%s: created OPP table for cpu: %d\n",
-+			__func__, cpu->dev.id);
-+	/* Print error only if there is an issue with OPP table */
-+	else if (error != -ENOSYS && error != -ENODEV)
-+		dev_err(&cpu->dev, "%s: failed to init OPP table for cpu%d, err: %d\n",
-+			__func__, cpu->dev.id, error);
-+}
-+#else
-+static inline void of_init_cpu_opp_table(struct cpu *cpu) {}
-+#endif
-+
- /*
-  * register_cpu - Setup a sysfs device for a CPU.
-  * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
-@@ -349,10 +369,12 @@ int register_cpu(struct cpu *cpu, int num)
- 	if (cpu->hotpluggable)
- 		cpu->dev.groups = hotplugable_cpu_attr_groups;
- 	error = device_register(&cpu->dev);
--	if (!error)
--		per_cpu(cpu_sys_devices, num) = &cpu->dev;
--	if (!error)
--		register_cpu_under_node(num, cpu_to_node(num));
-+	if (error)
-+		return error;
-+
-+	per_cpu(cpu_sys_devices, num) = &cpu->dev;
-+	register_cpu_under_node(num, cpu_to_node(num));
-+	of_init_cpu_opp_table(cpu);
- 
- 	return error;
- }
+ EXPORT_SYMBOL_GPL(of_init_opp_table);
 -- 
 2.0.0.rc2
