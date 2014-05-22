@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 3/8] opp: call of_node_{get|put}() from of_init_opp_table()
-Date: Thu, 22 May 2014 11:07:27 +0530
-Message-ID: <a3c1c90c6df3b23df528f40ef653c189dec25832.1400736536.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 5/8] cpufreq: arm_big_little: don't initialize opp table
+Date: Thu, 22 May 2014 11:07:29 +0530
+Message-ID: <4ee83883f4ce7f39010b0855ee1c63934970cacd.1400736536.git.viresh.kumar@linaro.org>
 References: <cover.1400736536.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1400736536.git.viresh.kumar@linaro.org>
@@ -12,39 +12,85 @@ To: rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-All callers of of_init_opp_table() are required to take reference of
-dev->of_node, by initiating calls to of_node_{get|put}(), before and after
-calling of_init_opp_table().
+CPU OPP tables are already initialized by CPU core and we don't need to
+reinitialize them from arm_big_little_dt driver.
 
-Its better to call these from within of_init_opp_table(), no fun adding
-redundant code to every caller.
+As the arm_big_little_dt driver doesn't have a .init_opp_table() callback
+anymore, make this callback optional.
 
+Cc: Sudeep Holla <sudeep.holla@arm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/cpufreq/arm_big_little.c    | 12 +++++++-----
+ drivers/cpufreq/arm_big_little_dt.c | 18 ------------------
+ 2 files changed, 7 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index faae9cf..2b615b9 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -622,6 +622,9 @@ int of_init_opp_table(struct device *dev)
- 	const __be32 *val;
- 	int nr;
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 1f4d4e3..561261e 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -325,11 +325,13 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
+ 	if (freq_table[cluster])
+ 		return 0;
  
-+	if (!of_node_get(dev->of_node))
-+		return -ENODEV;
-+
- 	prop = of_find_property(dev->of_node, "operating-points", NULL);
- 	if (!prop)
- 		return -ENODEV;
-@@ -649,6 +652,7 @@ int of_init_opp_table(struct device *dev)
- 		nr -= 2;
+-	ret = arm_bL_ops->init_opp_table(cpu_dev);
+-	if (ret) {
+-		dev_err(cpu_dev, "%s: init_opp_table failed, cpu: %d, err: %d\n",
++	if (arm_bL_ops->init_opp_table) {
++		ret = arm_bL_ops->init_opp_table(cpu_dev);
++		if (ret) {
++			dev_err(cpu_dev, "%s: init_opp_table failed, cpu: %d, err: %d\n",
+ 				__func__, cpu_dev->id, ret);
+-		goto out;
++			goto out;
++		}
  	}
  
-+	of_node_put(dev->of_node);
- 	return 0;
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table[cluster]);
+@@ -542,7 +544,7 @@ int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
+ 		return -EBUSY;
+ 	}
+ 
+-	if (!ops || !strlen(ops->name) || !ops->init_opp_table) {
++	if (!ops || !strlen(ops->name)) {
+ 		pr_err("%s: Invalid arm_bL_ops, exiting\n", __func__);
+ 		return -ENODEV;
+ 	}
+diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
+index 8d9d591..502182d 100644
+--- a/drivers/cpufreq/arm_big_little_dt.c
++++ b/drivers/cpufreq/arm_big_little_dt.c
+@@ -43,23 +43,6 @@ static struct device_node *get_cpu_node_with_valid_op(int cpu)
+ 	return np;
  }
- EXPORT_SYMBOL_GPL(of_init_opp_table);
+ 
+-static int dt_init_opp_table(struct device *cpu_dev)
+-{
+-	struct device_node *np;
+-	int ret;
+-
+-	np = of_node_get(cpu_dev->of_node);
+-	if (!np) {
+-		pr_err("failed to find cpu%d node\n", cpu_dev->id);
+-		return -ENOENT;
+-	}
+-
+-	ret = of_init_opp_table(cpu_dev);
+-	of_node_put(np);
+-
+-	return ret;
+-}
+-
+ static int dt_get_transition_latency(struct device *cpu_dev)
+ {
+ 	struct device_node *np;
+@@ -81,7 +64,6 @@ static int dt_get_transition_latency(struct device *cpu_dev)
+ static struct cpufreq_arm_bL_ops dt_bL_ops = {
+ 	.name	= "dt-bl",
+ 	.get_transition_latency = dt_get_transition_latency,
+-	.init_opp_table = dt_init_opp_table,
+ };
+ 
+ static int generic_bL_probe(struct platform_device *pdev)
 -- 
 2.0.0.rc2
