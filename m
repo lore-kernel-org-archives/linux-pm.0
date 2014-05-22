@@ -1,177 +1,79 @@
-From: Abhilash Kesavan <a.kesavan@samsung.com>
-Subject: [PATCH RFC v2 2/7] clk: exynos5420: Add aliases for clocks used by devfreq
-Date: Thu, 22 May 2014 22:51:57 +0530
-Message-ID: <1400779322-4410-3-git-send-email-a.kesavan@samsung.com>
+From: Abhilash Kesavan <a.kesavan-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH RFC v2 3/7] ARM: dts: Add PPMU device tree support for Exynos5250
+Date: Thu, 22 May 2014 22:51:58 +0530
+Message-ID: <1400779322-4410-4-git-send-email-a.kesavan@samsung.com>
 References: <1400779322-4410-1-git-send-email-a.kesavan@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f51.google.com ([209.85.160.51]:49318 "EHLO
-	mail-pb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbaEVRW2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 May 2014 13:22:28 -0400
-In-Reply-To: <1400779322-4410-1-git-send-email-a.kesavan@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1400779322-4410-1-git-send-email-a.kesavan-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, t.figa@samsung.com, myungjoo.ham@samsung.com, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: kesavan.abhilash@gmail.com
 
-From: "Arjun.K.V" <arjun.kv@samsung.com>
+PPMU is required by the exynos5250 devfreq driver. Add a device
+tree node for it.
 
-Devfreq does not support DT-based lookup of these peripheral clocks,
-so add aliases for them.
-
-Signed-off-by: Arun Kumar K <arun.kk@samsung.com>
-Signed-off-by: Arjun.K.V <arjun.kv@samsung.com>
-Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
-Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+Signed-off-by: Abhilash Kesavan <a.kesavan-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/clk/samsung/clk-exynos5420.c |   73 ++++++++++++++++++++--------------
- 1 file changed, 44 insertions(+), 29 deletions(-)
+ .../bindings/arm/exynos/ppmu-exynos5.txt           |   27 ++++++++++++++++++++
+ arch/arm/boot/dts/exynos5250.dtsi                  |    8 ++++++
+ 2 files changed, 35 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
 
-diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
-index 9d7d7ee..93b9422 100644
---- a/drivers/clk/samsung/clk-exynos5420.c
-+++ b/drivers/clk/samsung/clk-exynos5420.c
-@@ -554,21 +554,25 @@ struct samsung_mux_clock exynos5420_mux_clks[] __initdata = {
- 	MUX(0, "mout_aclk400_isp", mout_group1_p, SRC_TOP0, 0, 2),
- 	MUX_A(0, "mout_aclk400_mscl", mout_group1_p,
- 				SRC_TOP0, 4, 2, "aclk400_mscl"),
--	MUX(0, "mout_aclk400_wcore", mout_group1_p, SRC_TOP0, 16, 2),
--	MUX(0, "mout_aclk100_noc", mout_group1_p, SRC_TOP0, 20, 2),
--
-+	MUX_A(0, "mout_aclk400_wcore", mout_group1_p,
-+				SRC_TOP0, 16, 2, "aclk400_wcore"),
-+	MUX_A(0, "mout_aclk100_noc", mout_group1_p,
-+				SRC_TOP0, 20, 2, "aclk100_noc"),
- 	MUX(0, "mout_aclk333_432_gscl", mout_group4_p, SRC_TOP1, 0, 2),
- 	MUX(0, "mout_aclk333_432_isp", mout_group4_p,
- 				SRC_TOP1, 4, 2),
- 	MUX(0, "mout_aclk333_432_isp0", mout_group4_p, SRC_TOP1, 12, 2),
--	MUX(0, "mout_aclk266", mout_group1_p, SRC_TOP1, 20, 2),
-+	MUX_A(0, "mout_aclk266", mout_group1_p, SRC_TOP1, 20, 2, "aclk266"),
- 	MUX(0, "mout_aclk333", mout_group1_p, SRC_TOP1, 28, 2),
- 
--	MUX(0, "mout_aclk400_disp1", mout_group1_p, SRC_TOP2, 4, 2),
-+	MUX_A(0, "mout_aclk400_disp1", mout_group1_p,
-+				SRC_TOP2, 4, 2, "aclk400_disp1"),
- 	MUX(0, "mout_aclk333_g2d", mout_group1_p, SRC_TOP2, 8, 2),
- 	MUX(0, "mout_aclk266_g2d", mout_group1_p, SRC_TOP2, 12, 2),
--	MUX(0, "mout_aclk300_jpeg", mout_group1_p, SRC_TOP2, 20, 2),
--	MUX(0, "mout_aclk300_disp1", mout_group1_p, SRC_TOP2, 24, 2),
-+	MUX_A(0, "mout_aclk300_jpeg", mout_group1_p,
-+				SRC_TOP2, 20, 2, "aclk300_jpeg"),
-+	MUX_A(0, "mout_aclk300_disp1", mout_group1_p,
-+				SRC_TOP2, 24, 2, "aclk300_disp1"),
- 	MUX(0, "mout_aclk300_gscl", mout_group1_p, SRC_TOP2, 28, 2),
- 
- 	MUX(0, "mout_mau_epll_clk", mout_mau_epll_clk_p, SRC_TOP7, 20, 2),
-@@ -577,8 +581,8 @@ struct samsung_mux_clock exynos5420_mux_clks[] __initdata = {
+diff --git a/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+new file mode 100644
+index 0000000..08a4aaf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+@@ -0,0 +1,27 @@
++Exynos PPMU driver
++-------------------
++
++Performance events are primitive values used to get performance data. These
++events provide information about the behavior of the SoC that can be used
++when analyzing system performance. These events are made visible using the
++PPMU logic.
++Exynos PPMU driver is used by the exynos5 devfreq drivers to control the
++bus frequency/voltage.
++
++Required properties:
++- compatible: "samsung,exynos5250-int-busfreq", "samsung,exynos5420-int-busfreq"
++- reg:
++	* physical base address of the PPMUs (e.g DDR, Right Bus, Left bus etc)
++	and length of memory mapped region.
++
++Example:
++--------
++
++	ppmu {
++		compatible = "samsung,exynos5250-int-busfreq";
++		reg = <0x10C40000 0x2000
++		       0x10C50000 0x2000
++		       0x10C60000 0x2000
++		       0x10CB0000 0x2000
++		       0x13660000 0x2000>;
++	};
+diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+index 68a3e6f..f20355a 100644
+--- a/arch/arm/boot/dts/exynos5250.dtsi
++++ b/arch/arm/boot/dts/exynos5250.dtsi
+@@ -750,4 +750,12 @@
+ 		clocks = <&clock 348>;
+ 		clock-names = "secss";
+ 	};
++
++	ppmu {
++		compatible = "samsung,exynos5250-int-busfreq";
++	            reg = <0x10C40000 0x2000	/* PPMU_DDR_C */
++			   0x10C50000 0x2000	/* PPMU_DDR_L */
++			   0x10CB0000 0x2000	/* PPMU_DDR_R */
++			   0x13660000 0x2000>;	/* PPMU_RIGHT */
++	};
  };
- 
- struct samsung_div_clock exynos5420_div_clks[] __initdata = {
--	DIV(0, "dout_aclk400_wcore", "mout_aclk400_wcore_bpll",
--			DIV_TOP0, 16, 3),
-+	DIV_A(0, "dout_aclk400_wcore", "mout_aclk400_wcore_bpll",
-+			DIV_TOP0, 16, 3, "aclk400_wcore_d"),
- };
- 
- static struct samsung_mux_clock exynos5x_mux_clks[] __initdata = {
-@@ -593,12 +597,15 @@ static struct samsung_mux_clock exynos5x_mux_clks[] __initdata = {
- 	MUX(0, "mout_kfc", mout_kfc_p, SRC_KFC, 16, 1),
- 
- 	MUX(0, "mout_aclk200", mout_group1_p, SRC_TOP0, 8, 2),
--	MUX(0, "mout_aclk200_fsys2", mout_group1_p, SRC_TOP0, 12, 2),
--	MUX(0, "mout_pclk200_fsys", mout_group1_p, SRC_TOP0, 24, 2),
--	MUX(0, "mout_aclk200_fsys", mout_group1_p, SRC_TOP0, 28, 2),
-+	MUX_A(0, "mout_aclk200_fsys2", mout_group1_p,
-+		SRC_TOP0, 12, 2, "aclk200_fsys2"),
-+	MUX_A(0, "mout_pclk200_fsys", mout_group1_p,
-+		SRC_TOP0, 24, 2, "pclk200_fsys"),
-+	MUX_A(0, "mout_aclk200_fsys", mout_group1_p,
-+		SRC_TOP0, 28, 2, "aclk200_fsys"),
- 
--	MUX(0, "mout_aclk66", mout_group1_p, SRC_TOP1, 8, 2),
--	MUX(0, "mout_aclk166", mout_group1_p, SRC_TOP1, 24, 2),
-+	MUX_A(0, "mout_aclk66", mout_group1_p, SRC_TOP1, 8, 2, "aclk66"),
-+	MUX_A(0, "mout_aclk166", mout_group1_p, SRC_TOP1, 24, 2, "aclk166"),
- 
- 	MUX(0, "mout_aclk_g3d", mout_group5_p, SRC_TOP2, 16, 1),
- 
-@@ -650,14 +657,14 @@ static struct samsung_mux_clock exynos5x_mux_clks[] __initdata = {
- 	MUX(0, "mout_user_aclk300_gscl", mout_user_aclk300_gscl_p,
- 			SRC_TOP5, 28, 1),
- 
--	MUX(0, "mout_sclk_mpll", mout_mpll_p, SRC_TOP6, 0, 1),
-+	MUX_A(0, "mout_sclk_mpll", mout_mpll_p, SRC_TOP6, 0, 1, "mout_mpll"),
- 	MUX(CLK_MOUT_VPLL, "mout_sclk_vpll", mout_vpll_p, SRC_TOP6, 4, 1),
- 	MUX(0, "mout_sclk_spll", mout_spll_p, SRC_TOP6, 8, 1),
--	MUX(0, "mout_sclk_ipll", mout_ipll_p, SRC_TOP6, 12, 1),
-+	MUX_A(0, "mout_sclk_ipll", mout_ipll_p, SRC_TOP6, 12, 1, "mout_ipll"),
- 	MUX(0, "mout_sclk_rpll", mout_rpll_p, SRC_TOP6, 16, 1),
- 	MUX(0, "mout_sclk_epll", mout_epll_p, SRC_TOP6, 20, 1),
--	MUX(0, "mout_sclk_dpll", mout_dpll_p, SRC_TOP6, 24, 1),
--	MUX(0, "mout_sclk_cpll", mout_cpll_p, SRC_TOP6, 28, 1),
-+	MUX_A(0, "mout_sclk_dpll", mout_dpll_p, SRC_TOP6, 24, 1, "mout_dpll"),
-+	MUX_A(0, "mout_sclk_cpll", mout_cpll_p, SRC_TOP6, 28, 1, "mout_cpll"),
- 
- 	MUX(0, "mout_sw_aclk400_isp", mout_sw_aclk400_isp_p,
- 			SRC_TOP10, 0, 1),
-@@ -751,29 +758,36 @@ static struct samsung_div_clock exynos5x_div_clks[] __initdata = {
- 	DIV(0, "sclk_kpll", "mout_kpll", DIV_KFC0, 24, 3),
- 
- 	DIV(0, "dout_aclk400_isp", "mout_aclk400_isp", DIV_TOP0, 0, 3),
--	DIV(0, "dout_aclk400_mscl", "mout_aclk400_mscl", DIV_TOP0, 4, 3),
-+	DIV_A(0, "dout_aclk400_mscl", "mout_aclk400_mscl",
-+			DIV_TOP0, 4, 3, "aclk400_mscl_d"),
- 	DIV(0, "dout_aclk200", "mout_aclk200", DIV_TOP0, 8, 3),
--	DIV(0, "dout_aclk200_fsys2", "mout_aclk200_fsys2", DIV_TOP0, 12, 3),
--	DIV(0, "dout_aclk100_noc", "mout_aclk100_noc", DIV_TOP0, 20, 3),
--	DIV(0, "dout_pclk200_fsys", "mout_pclk200_fsys", DIV_TOP0, 24, 3),
--	DIV(0, "dout_aclk200_fsys", "mout_aclk200_fsys", DIV_TOP0, 28, 3),
-+	DIV_A(0, "dout_aclk200_fsys2", "mout_aclk200_fsys2",
-+			DIV_TOP0, 12, 3, "aclk200_fsys2_d"),
-+	DIV_A(0, "dout_aclk100_noc", "mout_aclk100_noc",
-+			DIV_TOP0, 20, 3, "aclk100_noc_d"),
-+	DIV_A(0, "dout_pclk200_fsys", "mout_pclk200_fsys",
-+			DIV_TOP0, 24, 3, "pclk200_fsys_d"),
-+	DIV_A(0, "dout_aclk200_fsys", "mout_aclk200_fsys",
-+			DIV_TOP0, 28, 3, "aclk200_fsys_d"),
- 
- 	DIV(0, "dout_aclk333_432_gscl", "mout_aclk333_432_gscl",
- 			DIV_TOP1, 0, 3),
- 	DIV(0, "dout_aclk333_432_isp", "mout_aclk333_432_isp",
- 			DIV_TOP1, 4, 3),
--	DIV(0, "dout_aclk66", "mout_aclk66", DIV_TOP1, 8, 6),
-+	DIV_A(0, "dout_aclk66", "mout_aclk66", DIV_TOP1, 8, 6, "aclk66_d"),
- 	DIV(0, "dout_aclk333_432_isp0", "mout_aclk333_432_isp0",
- 			DIV_TOP1, 16, 3),
--	DIV(0, "dout_aclk266", "mout_aclk266", DIV_TOP1, 20, 3),
--	DIV(0, "dout_aclk166", "mout_aclk166", DIV_TOP1, 24, 3),
-+	DIV_A(0, "dout_aclk266", "mout_aclk266", DIV_TOP1, 20, 3, "aclk266_d"),
-+	DIV_A(0, "dout_aclk166", "mout_aclk166", DIV_TOP1, 24, 3, "aclk166_d"),
- 	DIV(0, "dout_aclk333", "mout_aclk333", DIV_TOP1, 28, 3),
- 
- 	DIV(0, "dout_aclk333_g2d", "mout_aclk333_g2d", DIV_TOP2, 8, 3),
- 	DIV(0, "dout_aclk266_g2d", "mout_aclk266_g2d", DIV_TOP2, 12, 3),
- 	DIV(0, "dout_aclk_g3d", "mout_aclk_g3d", DIV_TOP2, 16, 3),
--	DIV(0, "dout_aclk300_jpeg", "mout_aclk300_jpeg", DIV_TOP2, 20, 3),
--	DIV(0, "dout_aclk300_disp1", "mout_aclk300_disp1", DIV_TOP2, 24, 3),
-+	DIV_A(0, "dout_aclk300_jpeg", "mout_aclk300_jpeg",
-+			DIV_TOP2, 20, 3, "aclk300_jpeg_d"),
-+	DIV_A(0, "dout_aclk300_disp1", "mout_aclk300_disp1",
-+			DIV_TOP2, 24, 3, "aclk300_disp1_d"),
- 	DIV(0, "dout_aclk300_gscl", "mout_aclk300_gscl", DIV_TOP2, 28, 3),
- 
- 	/* DISP1 Block */
-@@ -782,7 +796,8 @@ static struct samsung_div_clock exynos5x_div_clks[] __initdata = {
- 	DIV(0, "dout_dp1", "mout_dp1", DIV_DISP10, 24, 4),
- 	DIV(CLK_DOUT_PIXEL, "dout_hdmi_pixel", "mout_pixel", DIV_DISP10, 28, 4),
- 	DIV(0, "dout_disp1_blk", "aclk200_disp1", DIV2_RATIO0, 16, 2),
--	DIV(0, "dout_aclk400_disp1", "mout_aclk400_disp1", DIV_TOP2, 4, 3),
-+	DIV_A(0, "dout_aclk400_disp1", "mout_aclk400_disp1",
-+			DIV_TOP2, 4, 3, "aclk400_disp1_d"),
- 
- 	/* Audio Block */
- 	DIV(0, "dout_maudio0", "mout_maudio0", DIV_MAU, 20, 4),
 -- 
 1.7.9.5
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
