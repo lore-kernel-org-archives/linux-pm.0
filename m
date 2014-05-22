@@ -1,53 +1,103 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH] cpufreq: s5pv210: remove unused call of pr_err()
-Date: Thu, 22 May 2014 09:49:02 +0530
-Message-ID: <CAK9yfHym0mfi6E-_pqLThUcxHRJyrzjREGrkg5sXgZdOzspgsA@mail.gmail.com>
-References: <1400702036.30334.6.camel@x220>
-	<CAK9yfHz2kdfkf+o7fKMRu=nMXxbcHJ227bjpvA=WXt6ptH3QRA@mail.gmail.com>
-	<CAKohpomfYKd+Jr0YouCTR8CvhiRghHEiJoHcVPL-ApkEiX9RTQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomfYKd+Jr0YouCTR8CvhiRghHEiJoHcVPL-ApkEiX9RTQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Paul Bolle <pebolle@tiscali.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V6] PM/OPP: discard duplicate OPPs
+Date: Thu, 22 May 2014 10:36:26 +0530
+Message-ID: <087f56979fa572b3021f0fb9b2ad1bc791b55f66.1400734949.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:37440 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbaEVFGf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 May 2014 01:06:35 -0400
+Received: by mail-qg0-f51.google.com with SMTP id q107so4803555qgd.38
+        for <linux-pm@vger.kernel.org>; Wed, 21 May 2014 22:06:35 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Chander Kashyap <k.chander@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 22 May 2014 09:44, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22 May 2014 08:52, Sachin Kamat <sachin.kamat@linaro.org> wrote:
->> On 22 May 2014 01:23, Paul Bolle <pebolle@tiscali.nl> wrote:
->>> A call of pr_err() was added in v3.1. It was guarded by a check for
->>> CONFIG_PM_VERBOSE. The Kconfig symbol PM_VERBOSE was removed in v3.0. So
->>> this call of pr_err() has never been used. Remove it.
->>>
->>> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
->>> ---
->>> Untested.
->>>
->>>  drivers/cpufreq/s5pv210-cpufreq.c | 4 ----
->>>  1 file changed, 4 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
->>> index ab2c1a40d437..0873729135df 100644
->>> --- a/drivers/cpufreq/s5pv210-cpufreq.c
->>> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
->>> @@ -175,10 +175,6 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
->>>         mutex_lock(&set_freq_lock);
->>>
->>>         if (no_cpufreq_access) {
->>> -#ifdef CONFIG_PM_VERBOSE
->>> -               pr_err("%s:%d denied access to %s as it is disabled"
->>> -                               "temporarily\n", __FILE__, __LINE__, __func__);
->>> -#endif
->>
->> The config symbol itself is not defined and hence could be removed.
->
-> What do you meant by this? He already got rid of CONFIG_PM_VERBOSE..
+From: Chander Kashyap <k.chander@samsung.com>
 
-Yes, my ack for that change :)
+We don't have any protection against addition of duplicate OPPs currently and in
+case some code tries to add them, it will end up corrupting OPP tables.
 
+We need to handle some duplication cases separately as returning error might not
+be the right thing always. The new list of return values for dev_pm_opp_add()
+are:
 
+0:          On success OR
+            Duplicate OPPs (both freq and volt are same) and opp->available
+-EEXIST:    Freq are same and volt are different OR
+            Duplicate OPPs (both freq and volt are same) and !opp->available
+-ENOMEM:    Memory allocation failure
+
+Acked-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Signed-off-by: Inderpal Singh <inderpal.s@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+I took some rest before sending V6, just to make sure I don't send another
+version in hurry with any obvious mistake.
+
+V5->V6:
+- Remove parenthesis around initialization of 'ret'.
+- s/Returns/Return
+- Fix checkpatch.pl --strict warning: 'Alignment should match open parenthesis'
+- Tried improving changelog..
+
+ drivers/base/power/opp.c | 27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index faae9cf..89ced95 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -393,6 +393,13 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+  * to keep the integrity of the internal data structures. Callers should ensure
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
++ *
++ * Return:
++ * 0:		On success OR
++ *		Duplicate OPPs (both freq and volt are same) and opp->available
++ * -EEXIST:	Freq are same and volt are different OR
++ *		Duplicate OPPs (both freq and volt are same) and !opp->available
++ * -ENOMEM:	Memory allocation failure
+  */
+ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ {
+@@ -442,15 +449,31 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	new_opp->u_volt = u_volt;
+ 	new_opp->available = true;
+ 
+-	/* Insert new OPP in order of increasing frequency */
++	/*
++	 * Insert new OPP in order of increasing frequency
++	 * and discard if already present
++	 */
+ 	head = &dev_opp->opp_list;
+ 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+-		if (new_opp->rate < opp->rate)
++		if (new_opp->rate <= opp->rate)
+ 			break;
+ 		else
+ 			head = &opp->node;
+ 	}
+ 
++	/* Duplicate OPPs ? */
++	if (new_opp->rate == opp->rate) {
++		int ret = opp->available && new_opp->u_volt == opp->u_volt ?
++			0 : -EEXIST;
++
++		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
++			 __func__, opp->rate, opp->u_volt, opp->available,
++			 new_opp->rate, new_opp->u_volt, new_opp->available);
++		mutex_unlock(&dev_opp_list_lock);
++		kfree(new_opp);
++		return ret;
++	}
++
+ 	list_add_rcu(&new_opp->node, head);
+ 	mutex_unlock(&dev_opp_list_lock);
+ 
 -- 
-With warm regards,
-Sachin
+2.0.0.rc2
+
