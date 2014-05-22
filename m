@@ -1,54 +1,34 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Subject: Re: [PATCH RFC v2 4/7] ARM: dts: Add PPMU device tree support for
- Exynos5420
-Date: Thu, 22 May 2014 21:50:45 +0400
-Message-ID: <537E38F5.4020200@cogentembedded.com>
-References: <1400779322-4410-1-git-send-email-a.kesavan@samsung.com> <1400779322-4410-5-git-send-email-a.kesavan@samsung.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH] ARM: EXYNOS: Use wfi macro in platform_do_lowpower
+Date: Thu, 22 May 2014 13:55:16 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1405221353030.17310@knanqh.ubzr>
+References: <1400745455-27920-1-git-send-email-leela.krishna@linaro.org> <537DE530.3050205@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f44.google.com ([209.85.215.44]:52009 "EHLO
-	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbaEVRun (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 May 2014 13:50:43 -0400
-Received: by mail-la0-f44.google.com with SMTP id hr17so2930010lab.17
-        for <linux-pm@vger.kernel.org>; Thu, 22 May 2014 10:50:41 -0700 (PDT)
-In-Reply-To: <1400779322-4410-5-git-send-email-a.kesavan@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <537DE530.3050205@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Leela Krishna Amudala <leela.krishna@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Abhilash Kesavan <a.kesavan@samsung.com>, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, t.figa@samsung.com, myungjoo.ham@samsung.com, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: kesavan.abhilash@gmail.com
 
-On 05/22/2014 09:21 PM, Abhilash Kesavan wrote:
+On Thu, 22 May 2014, Daniel Lezcano wrote:
 
-> PPMU is required by the exynos5420 devfreq driver. Add a device
-> tree node for it.
+> On 05/22/2014 09:57 AM, Leela Krishna Amudala wrote:
+> > This patch is originally based on commit b3377d186572 ("ARM: 7064/1:
+> > vexpress: Use wfi macro in platform_do_lowpower.")
+> >
+> > Current Exynos CPU hotplug code includes a hardcoded WFI
+> > instruction, in ARM encoding.  When the kernel is compiled in Thumb-2
+> > mode, this is invalid and causes the machine to hang hard when a CPU
+> > is offlined.
+> >
+> > Use wfi macro instead of the hardcoded WFI instruction.
+> 
+> Is it possible to change it for cpu_do_idle() ?
 
-> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
-> ---
->   arch/arm/boot/dts/exynos5420.dtsi |    7 +++++++
->   1 file changed, 7 insertions(+)
+Please let's not encourage every wfi() to be turned into cpu_do_idle().  
+They are not always equivalent.  And semantically they are not.
 
-> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-> index 8e7e35c..6ab7b03 100644
-> --- a/arch/arm/boot/dts/exynos5420.dtsi
-> +++ b/arch/arm/boot/dts/exynos5420.dtsi
-> @@ -833,4 +833,11 @@
->   		samsung,pmu-syscon = <&pmu_system_controller>;
->   		#phy-cells = <1>;
->   	};
-> +
-> +	ppmu {
 
-    Shouldn't it have the unit-address part, like "ppmu@10d00000"?
-
-> +		compatible = "samsung,exynos5420-int-busfreq";
-> +		reg = <0x10D00000 0x2000	/* PPMU_DMC_0_0 */
-> +		       0x10D10000 0x2000	/* PPMU_DMC_0_1 */
-> +		       0x10D60000 0x2000>;	/* PPMU_DMC_1_0 */
-> +	};
->   };
-
-WBR, Sergei
-
+Nicolas
