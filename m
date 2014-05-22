@@ -1,46 +1,45 @@
-From: Leela Krishna Amudala <leela.krishna@linaro.org>
-Subject: [PATCH] ARM: EXYNOS: Use wfi macro in platform_do_lowpower
-Date: Thu, 22 May 2014 13:27:35 +0530
-Message-ID: <1400745455-27920-1-git-send-email-leela.krishna@linaro.org>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: daniel.lezcano@linaro.org, kgene.kim@samsung.com, amit.kucheria@linaro.org
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH] cpufreq: s5pv210: remove unused call of pr_err()
+Date: Thu, 22 May 2014 13:53:41 +0530
+Message-ID: <CAK9yfHzf-Z3AQ4+-sF7xqqUw4dN8aULkCNvLQnmusp_ZiOg+Rw@mail.gmail.com>
+References: <1400702036.30334.6.camel@x220>
+	<CAK9yfHz2kdfkf+o7fKMRu=nMXxbcHJ227bjpvA=WXt6ptH3QRA@mail.gmail.com>
+	<1400740894.21254.8.camel@x220>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1400740894.21254.8.camel@x220>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch is originally based on commit b3377d186572 ("ARM: 7064/1:
-vexpress: Use wfi macro in platform_do_lowpower.")
+Hi Paul,
 
-Current Exynos CPU hotplug code includes a hardcoded WFI
-instruction, in ARM encoding.  When the kernel is compiled in Thumb-2
-mode, this is invalid and causes the machine to hang hard when a CPU
-is offlined.
+On 22 May 2014 12:11, Paul Bolle <pebolle@tiscali.nl> wrote:
+> Sachin,
+>
+> On Thu, 2014-05-22 at 08:52 +0530, Sachin Kamat wrote:
+>> The config symbol itself is not defined and hence could be removed.
+>> However I feel, the
+>> error message could be retained after trimming down the arguments a bit.
+>
+> My reasoning is, of course, that never used code can simply be dropped.
 
-Use wfi macro instead of the hardcoded WFI instruction.
+Yes, I agree. However the error message in this case should have been outside
+the ifdefs to begin with as it is not an extra information but an
+essential message
+reporting error condition.
 
-Signed-off-by: Leela Krishna Amudala <leela.krishna@linaro.org>
----
- arch/arm/mach-exynos/hotplug.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+>
+> But you want to print an error here. That's fine with me. I prefer if
+> you'd submit a patch that does that, as I have no idea whatsoever why an
+> error is needed here nor what that error should say.
 
-diff --git a/arch/arm/mach-exynos/hotplug.c b/arch/arm/mach-exynos/hotplug.c
-index 69fa483..8a134d0 100644
---- a/arch/arm/mach-exynos/hotplug.c
-+++ b/arch/arm/mach-exynos/hotplug.c
-@@ -46,13 +46,7 @@ static inline void platform_do_lowpower(unsigned int cpu, int *spurious)
- 		if (cpu == 1)
- 			exynos_cpu_power_down(cpu);
- 
--		/*
--		 * here's the WFI
--		 */
--		asm(".word	0xe320f003\n"
--		    :
--		    :
--		    : "memory", "cc");
-+		wfi();
- 
- 		if (pen_release == cpu_logical_map(cpu)) {
- 			/*
+You may just remove the __FILE__ and __LINE__ thing and leave the message as is.
+
+pr_err("Denied access to %s as it is disabled temporarily\n", __func__);
+
 -- 
-1.7.9.5
+With warm regards,
+Sachin
