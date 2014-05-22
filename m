@@ -1,223 +1,331 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Thu, 22 May 2014 16:44:53 -0700
-Message-ID: <a86642cb-855f-455f-b07c-a52bc6aa426f@BN1BFFO11FD050.protection.gbl>
-References: <537B957B.5010001@codeaurora.org>
- <668683e3-856e-4f30-9b11-8f3e91e12d1d@BL2FFO11FD038.protection.gbl>
- <20140521073457.GD31687@pengutronix.de>
- <e9090453-ce40-4662-a3ea-fbdaffdb2aa4@BN1AFFO11FD046.protection.gbl>
- <20140521182308.GN31687@pengutronix.de> <20140521203300.9521.67546@quantum>
- <ac335a38-b0f4-4d95-b111-56c05e1a6234@BN1BFFO11FD045.protection.gbl>
- <20140522182040.GB20155@pengutronix.de>
- <6612b069-1228-488f-81f7-ea8839f6c468@BN1BFFO11FD029.protection.gbl>
- <20140522210328.9521.34889@quantum>
+From: Todd E Brandt <todd.e.brandt@linux.intel.com>
+Subject: Re: [PATCH] PM: trace events for suspend/resume
+Date: Thu, 22 May 2014 16:50:31 -0700
+Message-ID: <20140522235031.GA21923@linux.intel.com>
+References: <20140519230226.GA14382@linux.intel.com>
+ <2794431.xZpr01emRq@vostro.rjw.lan>
+ <537E7756.1000503@linux.vnet.ibm.com>
+Reply-To: todd.e.brandt@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:32976 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbaEVXu2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 22 May 2014 19:50:28 -0400
 Content-Disposition: inline
-In-Reply-To: <20140522210328.9521.34889@quantum>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <537E7756.1000503@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steven Rostedt <rostedt@goodmis.org>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
 
-On Thu, 2014-05-22 at 02:03PM -0700, Mike Turquette wrote:
-> Quoting S=C3=B6ren Brinkmann (2014-05-22 13:32:09)
-> > On Thu, 2014-05-22 at 08:20PM +0200, Uwe Kleine-K=C3=B6nig wrote:
-> > > Hello S=C3=B6ren,
-> > >=20
-> > > On Thu, May 22, 2014 at 11:03:00AM -0700, S=C3=B6ren Brinkmann wr=
-ote:
-> > > > On Wed, 2014-05-21 at 01:33PM -0700, Mike Turquette wrote:
-> > > > > Quoting Uwe Kleine-K=C3=B6nig (2014-05-21 11:23:08)
-> > > > > > Hello S=C3=B6ren,
-> > > > > >=20
-> > > > > > On Wed, May 21, 2014 at 08:58:10AM -0700, S=C3=B6ren Brinkm=
-ann wrote:
-> > > > > > > On Wed, 2014-05-21 at 09:34AM +0200, Uwe Kleine-K=C3=B6ni=
-g wrote:
-> > > > > > > > On Tue, May 20, 2014 at 02:48:20PM -0700, S=C3=B6ren Br=
-inkmann wrote:
-> > > > > > > > > On Tue, 2014-05-20 at 10:48AM -0700, Stephen Boyd wro=
-te:
-> > > > > > > > > > On 05/20/14 09:01, S=C3=B6ren Brinkmann wrote:
-> > > > > > > > > > >
-> > > > > > > > > > >>>>> +{
-> > > > > > > > > > >>>>> + unsigned long lower, upper, cur, lower_last=
-, upper_last;
-> > > > > > > > > > >>>>> +
-> > > > > > > > > > >>>>> + lower =3D clk_round_rate(clk, rate);
-> > > > > > > > > > >>>>> + if (lower >=3D rate)
-> > > > > > > > > > >>>>> +         return lower;
-> > > > > > > > > > >>>> Is the >-case worth a warning?
-> > > > > > > > > > >>> No, it's correct behavior. If you request a rat=
-e that is way lower than what the
-> > > > > > > > > > >>> clock can generate, returning something larger =
-is perfectly valid, IMHO.
-> > > > > > > > > > >>> Which reveals one problem in this whole discuss=
-ion. The API does not
-> > > > > > > > > > >>> require clk_round_rate() to round down. It is a=
-ctually an implementation
-> > > > > > > > > > >>> choice that had been made for clk-divider.
-> > > > > > > > > > >> I'm sure it's more than an implementation choice=
- for clk-divider. But I
-> > > > > > > > > > >> don't find any respective documentation (but I d=
-idn't try hard).
-> > > > > > > > > > > A similar discussion - without final conclusion:
-> > > > > > > > > > > https://lkml.org/lkml/2010/7/14/260
-> > > > > > > > > > >
-> > > > > > > > > > >
-> > > > > > > > > >=20
-> > > > > > > > > > Please call this new API something like clk_find_ne=
-arest_rate() or
-> > > > > > > > > > something. clk_round_rate() is supposed to return t=
-he rate that will be
-> > > > > > > > > > set if you call clk_set_rate() with the same argume=
-nts. It's up to the
-> > > > > > > > > > implementation to decide if that means rounding the=
- rate up or down or
-> > > > > > > > > > to the nearest value.
-> > > > > > > > >=20
-> > > > > > > > > Sounds good to me. Are there any cases of clocks that=
- round up? I think
-> > > > > > > > > that case would not be handled correctly. But I also =
-don't see a use
-> > > > > > > > > case for such an implementation.
-> > > > > > > > I don't really care which semantic (i.e. round up, roun=
-d down or round
-> > > > > > > > closest) is picked, but I'd vote that all should pick u=
-p the same. I
-> > > > > > > > think the least surprising definition is to choose roun=
-ding down and add
-> > > > > > > > the function that is under discussion here to get a nea=
-rest match.
-> > > > > > > >=20
-> > > > > > > > So I suggest:
-> > > > > > > >=20
-> > > > > > > >     - if round_rate is given a rate that is smaller tha=
-n the
-> > > > > > > >       smallest available rate, return 0
-> > > > > > > >     - add WARN_ONCE to round_rate and set_rate if they =
-return with a
-> > > > > > > >       rate bigger than requested
-> > > > > > >=20
-> > > > > > > Why do you think 0 is always valid? I think for a clock t=
-hat can
-> > > > > > > generate 40, 70, 120, clk_round_rate(20) should return 40=
-=2E
-> > > > > > I didn't say it's a valid value. It just makes the it possi=
-ble to check
-> > > > > > for clk_round_rate(clk, rate) <=3D rate.
-> > > > > >=20
-> > > > > > I grepped a bit around and found da850_round_armrate which =
-implements a
-> > > > > > round_rate callback returning the best match.
-> > > > > > omap1_clk_round_rate_ckctl_arm can return a value < 0.
-> > > > > > s3c2412_roundrate_usbsrc can return values that are bigger =
-than
-> > > > > > requested. (I wonder if that is a bug though.)
-> > > > > >=20
-> > > > > > > >     - change the return values to unsigned long
-> > > > > > >=20
-> > > > > > > Yep, I agree, this should happen.
-> > > > > > And we're using 0 as error value? e.g. for the case where
-> > > > > > omap1_clk_round_rate_ckctl_arm returns -EIO now?
-> > > > >=20
-> > > > > No. clk_round_rate returns long for a reason, which is that w=
-e can
-> > > > > provide an error code to the caller. From include/linux/clk.h=
-:
-> > > > >=20
-> > > > > /**
-> > > > >  * clk_round_rate - adjust a rate to the exact rate a clock c=
-an provide
-> > > > >  * @clk: clock source
-> > > > >  * @rate: desired clock rate in Hz
-> > > > >  *
-> > > > >  * Returns rounded clock rate in Hz, or negative errno.
-> > > > >  */
-> > > > >=20
-> > > > > This has the unfortunate side effect that the max value we ca=
-n return
-> > > > > safely is 2147483647 (~2GHz). So another issue here is conver=
-ting clock
-> > > > > rates to 64-bit values.
-> > > >=20
-> > > > So, let's assume
-> > > >  - a clock does either of these
-> > > >    - round down
-> > > >    - round nearest
-> > > >    - round up (is there any such case? I don't see a use-case f=
-or this)
-> > > >  - or return an error
-> > > >=20
-> > > > I think my latest try handles such cases, with the limitation o=
-f
-> > > > for a clock that rounds up, the up-rounded value is found inste=
-ad of the
-> > > > nearest.
-> > > >=20
-> > > >=20
-> > > > static long clk_find_nearest_rate(struct clk *clk, unsigned lon=
-g rate)
-> > > > {
-> > > >     long ret;
-> > > >     unsigned long lower, upper;
-> > > >=20
-> > > >     clk_prepare_lock();
-> > > >=20
-> > > >     lower =3D __clk_round_rate(clk, rate);
-> > > this is CCF specific while I don't see a need for it. (But yes, a
-> > > lock-less clk_find_nearest_rate is of course racy.)
-> > Do we have to support non-CCF implementations? Isn't switching to t=
-he
-> > CCF encouraged?
->=20
-> No we don't. If you check out the ifdeffery in include/linux/clk.h
-> you'll see more function declarations for CONFIG_COMMON_CLK then for
-> !CONFIG_COMMON_CLK, so we're not breaking any ground here.
->=20
-> >=20
-> > >=20
-> > > >     if (lower >=3D rate || (long)lower < 0) {
-> > > If you made lower and upper a signed long, you could drop the cas=
-ting
-> > > here. BTW, why does __clk_round_rate return an unsigned long??
-> > > There seem to be several more type mismatches in that area.
-> > > Maybe we should add a waring if rate is > LONG_MAX?
-> > >=20
-> > > (And ISTR that the C standard doesn't specify what the result of
-> > > (long)lower is given that lower is of type unsigned long and hold=
-ing a
-> > > value > LONG_MAX.)
-> > Looks like you're right. This probably needs some polishing to get =
-types
-> > sorted out.
-> > Mike/Russel: As Uwe pointed out, shouldn't __clk_round_rate return =
-a
-> > long as well?
+On Fri, May 23, 2014 at 03:46:54AM +0530, Srivatsa S. Bhat wrote:
+> On 05/22/2014 05:31 AM, Rafael J. Wysocki wrote:
+> > On Monday, May 19, 2014 04:02:26 PM Todd E Brandt wrote:
+> >> Adds trace events that give finer resolution into suspend/resume. These
+> >> events are graphed in the timelines generated by the analyze_suspend.py
+> >> script. They represent large areas of time consumed that are typical in
+> >> suspend and resume.
+> >>
+> >> The event is triggered by calling the function "trace_suspend_resume"
+> >> with two arguments: a string (the name of the event to be displayed
+> >> in the timeline), and a boolean (where true is used to denote the start
+> >> of the timeline event, and false to denote the end).
+> >>
+> >> Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+> >> ---
+> >>  drivers/acpi/nvs.c           |  6 ++++++
+> >>  drivers/acpi/osl.c           |  3 +++
+> >>  drivers/base/syscore.c       |  5 +++++
+> >>  include/trace/events/power.h | 19 +++++++++++++++++++
+> >>  kernel/cpu.c                 |  9 +++++++++
+> >>  kernel/power/process.c       |  3 +++
+> >>  kernel/power/suspend.c       |  4 ++++
+> >>  7 files changed, 49 insertions(+)
+> >>
+> >> For more info see:
+> >> https://01.org/suspendresume/blogs/tebrandt/2014/custom-timeline-event-support-0
+> >>
+> >> I'm also interested to know if any tools depend on the machine_suspend
+> >> tracepoints, as this patch expands on the same info. I'd be willing to
+> >> merge the existing machine_suspend calls into this patch and rename
+> >> everything to suspend_resume provided it doesn't hurt any downstream tools.
+> >>
+> >> diff --git a/drivers/acpi/nvs.c b/drivers/acpi/nvs.c
+> >> index de4fe03..b52b686 100644
+> >> --- a/drivers/acpi/nvs.c
+> >> +++ b/drivers/acpi/nvs.c
+> >> @@ -12,6 +12,7 @@
+> >>  #include <linux/mm.h>
+> >>  #include <linux/slab.h>
+> >>  #include <linux/acpi.h>
+> >> +#include <trace/events/power.h>
+> >>  
+> >>  #include "internal.h"
+> >>  
+> >> @@ -171,6 +172,7 @@ int suspend_nvs_save(void)
+> >>  {
+> >>  	struct nvs_page *entry;
+> >>  
+> >> +	trace_suspend_resume("save_nvs_memory", true);
+> >>  	printk(KERN_INFO "PM: Saving platform NVS memory\n");
+> >>  
+> >>  	list_for_each_entry(entry, &nvs_list, node)
+> >> @@ -185,11 +187,13 @@ int suspend_nvs_save(void)
+> >>  			}
+> >>  			if (!entry->kaddr) {
+> >>  				suspend_nvs_free();
+> >> +				trace_suspend_resume("save_nvs_memory", false);
+> >>  				return -ENOMEM;
+> >>  			}
+> >>  			memcpy(entry->data, entry->kaddr, entry->size);
+> >>  		}
+> >>  
+> >> +	trace_suspend_resume("save_nvs_memory", false);
+> >>  	return 0;
+> >>  }
+> >>  
+> >> @@ -203,10 +207,12 @@ void suspend_nvs_restore(void)
+> >>  {
+> >>  	struct nvs_page *entry;
+> >>  
+> >> +	trace_suspend_resume("restore_nvs_memory", true);
+> >>  	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
+> >>  
+> >>  	list_for_each_entry(entry, &nvs_list, node)
+> >>  		if (entry->data)
+> >>  			memcpy(entry->kaddr, entry->data, entry->size);
+> >> +	trace_suspend_resume("restore_nvs_memory", false);
+> >>  }
+> >>  #endif
+> >> diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+> >> index 6776c59..b65a77a 100644
+> >> --- a/drivers/acpi/osl.c
+> >> +++ b/drivers/acpi/osl.c
+> >> @@ -44,6 +44,7 @@
+> >>  #include <linux/list.h>
+> >>  #include <linux/jiffies.h>
+> >>  #include <linux/semaphore.h>
+> >> +#include <trace/events/power.h>
+> >>  
+> >>  #include <asm/io.h>
+> >>  #include <asm/uaccess.h>
+> >> @@ -835,7 +836,9 @@ acpi_status acpi_os_remove_interrupt_handler(u32 irq, acpi_osd_handler handler)
+> >>  
+> >>  void acpi_os_sleep(u64 ms)
+> >>  {
+> >> +	trace_suspend_resume("acpi_os_sleep", true);
+> >>  	msleep(ms);
+> >> +	trace_suspend_resume("acpi_os_sleep", false);
+> >>  }
+> > 
+> > This function doesn't have anything to do with system suspend/resume.
+> > It is for waiting. :-)
+> > 
+> > The rest of the patch looks OK to me.
+> > 
+> > Steven, what about the tracing angle?
+> > 
+> 
+> Hi Todd,
+> 
+> This might be a silly question, but the suspend_enter() function invokes
+> ftrace_stop() before suspending the machine, and restarts ftrace after
+> resume. And your patch seems to instrument code further down (deeper)
+> in the suspend/resume path (such as disable_nonboot_cpus() for example).
+> Doesn't the ftrace stop/start pose any problem for this patch?
 
-Sorry, Russell, of course.
+I put a patch in the kernel a few months back that allowed ftrace to
+function all the way through to disable/enable_nonboot_cpus. So the
+actual trace code includes everything up to the actual CPU suspend/resume.
+And also (as Steven mentioned), the tracepoint activity isn't controlled
+via ftrace_start/ftrace_stop, those are for tracer based logging.
 
->=20
-> Yeah. The strange thing is that .round_rate and .determine_rate both
-> return long. I think I was asleep at the wheel on this one.
->=20
-> I count about a dozen call sites that need to be fixed up for this
-> change to happen. As we approach 3.15-rc6 I'm a bit nervous about
-> introducing this change. How do you feel about dropping this change i=
-n
-> first thing after 3.16-rc1 and layering in your new clk_find_*_rate
-> stuff on top of it?
->=20
-> I'll take a stab at fixing up __clk_round_rate early next week.
-
-Yeah, at some point this 'fix cpufreq stats'-series grew a little out o=
-f
-control. Targeting the 3.16 cycle sounds reasonable. Then we could prob=
-ably
-also look at moving from (unsigned) long to some 64-bit type as well ;)
-
-	Thanks,
-	S=C3=B6ren
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
+> 
+> >>  
+> >>  void acpi_os_stall(u32 us)
+> >> diff --git a/drivers/base/syscore.c b/drivers/base/syscore.c
+> >> index e8d11b6..c2fd5d4 100644
+> >> --- a/drivers/base/syscore.c
+> >> +++ b/drivers/base/syscore.c
+> >> @@ -10,6 +10,7 @@
+> >>  #include <linux/mutex.h>
+> >>  #include <linux/module.h>
+> >>  #include <linux/interrupt.h>
+> >> +#include <trace/events/power.h>
+> >>  
+> >>  static LIST_HEAD(syscore_ops_list);
+> >>  static DEFINE_MUTEX(syscore_ops_lock);
+> >> @@ -49,6 +50,7 @@ int syscore_suspend(void)
+> >>  	struct syscore_ops *ops;
+> >>  	int ret = 0;
+> >>  
+> >> +	trace_suspend_resume("syscore_suspend", true);
+> >>  	pr_debug("Checking wakeup interrupts\n");
+> >>  
+> >>  	/* Return error code if there are any wakeup interrupts pending. */
+> >> @@ -70,6 +72,7 @@ int syscore_suspend(void)
+> >>  				"Interrupts enabled after %pF\n", ops->suspend);
+> >>  		}
+> >>  
+> >> +	trace_suspend_resume("syscore_suspend", false);
+> >>  	return 0;
+> >>  
+> >>   err_out:
+> >> @@ -92,6 +95,7 @@ void syscore_resume(void)
+> >>  {
+> >>  	struct syscore_ops *ops;
+> >>  
+> >> +	trace_suspend_resume("syscore_resume", true);
+> >>  	WARN_ONCE(!irqs_disabled(),
+> >>  		"Interrupts enabled before system core resume.\n");
+> >>  
+> >> @@ -103,6 +107,7 @@ void syscore_resume(void)
+> >>  			WARN_ONCE(!irqs_disabled(),
+> >>  				"Interrupts enabled after %pF\n", ops->resume);
+> >>  		}
+> >> +	trace_suspend_resume("syscore_resume", false);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(syscore_resume);
+> >>  #endif /* CONFIG_PM_SLEEP */
+> >> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> >> index 9a7e08d..1d9fd76 100644
+> >> --- a/include/trace/events/power.h
+> >> +++ b/include/trace/events/power.h
+> >> @@ -151,6 +151,25 @@ TRACE_EVENT(device_pm_report_time,
+> >>  		__entry->ops_time, __entry->error)
+> >>  );
+> >>  
+> >> +TRACE_EVENT(suspend_resume,
+> >> +
+> >> +	TP_PROTO(char *action, bool start),
+> >> +
+> >> +	TP_ARGS(action, start),
+> >> +
+> >> +	TP_STRUCT__entry(
+> >> +		__string(action, action)
+> >> +		__field(bool, start)
+> >> +	),
+> >> +
+> >> +	TP_fast_assign(
+> >> +		__assign_str(action, action);
+> >> +		__entry->start = start;
+> >> +	),
+> >> +
+> >> +	TP_printk("%s %s", __get_str(action), (__entry->start)?"begin":"end")
+> >> +);
+> >> +
+> >>  DECLARE_EVENT_CLASS(wakeup_source,
+> >>  
+> >>  	TP_PROTO(const char *name, unsigned int state),
+> >> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> >> index a9e710e..7aa30ec 100644
+> >> --- a/kernel/cpu.c
+> >> +++ b/kernel/cpu.c
+> >> @@ -20,6 +20,7 @@
+> >>  #include <linux/gfp.h>
+> >>  #include <linux/suspend.h>
+> >>  #include <linux/lockdep.h>
+> >> +#include <trace/events/power.h>
+> >>  
+> >>  #include "smpboot.h"
+> >>  
+> >> @@ -509,6 +510,7 @@ static cpumask_var_t frozen_cpus;
+> >>  int disable_nonboot_cpus(void)
+> >>  {
+> >>  	int cpu, first_cpu, error = 0;
+> >> +	char buf[12];
+> >>  
+> >>  	cpu_maps_update_begin();
+> >>  	first_cpu = cpumask_first(cpu_online_mask);
+> >> @@ -522,7 +524,10 @@ int disable_nonboot_cpus(void)
+> >>  	for_each_online_cpu(cpu) {
+> >>  		if (cpu == first_cpu)
+> >>  			continue;
+> >> +		sprintf(buf, "CPU%u_OFF", cpu);
+> >> +		trace_suspend_resume(buf, true);
+> >>  		error = _cpu_down(cpu, 1);
+> >> +		trace_suspend_resume(buf, false);
+> >>  		if (!error)
+> >>  			cpumask_set_cpu(cpu, frozen_cpus);
+> >>  		else {
+> >> @@ -554,6 +559,7 @@ void __weak arch_enable_nonboot_cpus_end(void)
+> >>  void __ref enable_nonboot_cpus(void)
+> >>  {
+> >>  	int cpu, error;
+> >> +	char buf[10];
+> >>  
+> >>  	/* Allow everyone to use the CPU hotplug again */
+> >>  	cpu_maps_update_begin();
+> >> @@ -566,7 +572,10 @@ void __ref enable_nonboot_cpus(void)
+> >>  	arch_enable_nonboot_cpus_begin();
+> >>  
+> >>  	for_each_cpu(cpu, frozen_cpus) {
+> >> +		sprintf(buf, "CPU%u_ON", cpu);
+> >> +		trace_suspend_resume(buf, true);
+> >>  		error = _cpu_up(cpu, 1);
+> >> +		trace_suspend_resume(buf, false);
+> >>  		if (!error) {
+> >>  			printk(KERN_INFO "CPU%d is up\n", cpu);
+> >>  			continue;
+> >> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> >> index 06ec886..4aec2d9 100644
+> >> --- a/kernel/power/process.c
+> >> +++ b/kernel/power/process.c
+> >> @@ -17,6 +17,7 @@
+> >>  #include <linux/delay.h>
+> >>  #include <linux/workqueue.h>
+> >>  #include <linux/kmod.h>
+> >> +#include <trace/events/power.h>
+> >>  
+> >>  /* 
+> >>   * Timeout for stopping processes
+> >> @@ -175,6 +176,7 @@ void thaw_processes(void)
+> >>  	struct task_struct *g, *p;
+> >>  	struct task_struct *curr = current;
+> >>  
+> >> +	trace_suspend_resume("thaw_processes", true);
+> >>  	if (pm_freezing)
+> >>  		atomic_dec(&system_freezing_cnt);
+> >>  	pm_freezing = false;
+> >> @@ -201,6 +203,7 @@ void thaw_processes(void)
+> >>  
+> >>  	schedule();
+> >>  	printk("done.\n");
+> >> +	trace_suspend_resume("thaw_processes", false);
+> >>  }
+> >>  
+> >>  void thaw_kernel_threads(void)
+> >> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> >> index 8233cd4..c7e3e9f 100644
+> >> --- a/kernel/power/suspend.c
+> >> +++ b/kernel/power/suspend.c
+> >> @@ -147,7 +147,9 @@ static int suspend_prepare(suspend_state_t state)
+> >>  	if (error)
+> >>  		goto Finish;
+> >>  
+> >> +	trace_suspend_resume("freeze_processes", true);
+> >>  	error = suspend_freeze_processes();
+> >> +	trace_suspend_resume("freeze_processes", false);
+> >>  	if (!error)
+> >>  		return 0;
+> >>  
+> >> @@ -337,9 +339,11 @@ static int enter_state(suspend_state_t state)
+> >>  	if (state == PM_SUSPEND_FREEZE)
+> >>  		freeze_begin();
+> >>  
+> >> +	trace_suspend_resume("sync_filesystems", true);
+> >>  	printk(KERN_INFO "PM: Syncing filesystems ... ");
+> >>  	sys_sync();
+> >>  	printk("done.\n");
+> >> +	trace_suspend_resume("sync_filesystems", false);
+> >>  
+> >>  	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+> >>  	error = suspend_prepare(state);
+> 
+> 
