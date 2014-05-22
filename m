@@ -1,66 +1,39 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V3 1/8] cpufreq: cpufreq-cpu0: remove dependency on
- thermal
-Date: Thu, 22 May 2014 10:52:09 -0400
-Message-ID: <20140522145209.GA5246@developer>
-References: <cover.1400736536.git.viresh.kumar@linaro.org>
- <c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] ARM: EXYNOS: Use wfi macro in platform_do_lowpower
+Date: Thu, 22 May 2014 21:01:15 +0200
+Message-ID: <537E497B.9020404@linaro.org>
+References: <1400745455-27920-1-git-send-email-leela.krishna@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f47.google.com ([209.85.213.47]:58875 "EHLO
-	mail-yh0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbaEVS3z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 May 2014 14:29:55 -0400
-Content-Disposition: inline
-In-Reply-To: <c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1400745455-27920-1-git-send-email-leela.krishna@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Leela Krishna Amudala <leela.krishna@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: kgene.kim@samsung.com, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com
 
-Hello Viresh,
+On 05/22/2014 09:57 AM, Leela Krishna Amudala wrote:
+> This patch is originally based on commit b3377d186572 ("ARM: 7064/1:
+> vexpress: Use wfi macro in platform_do_lowpower.")
+>
+> Current Exynos CPU hotplug code includes a hardcoded WFI
+> instruction, in ARM encoding.  When the kernel is compiled in Thumb-2
+> mode, this is invalid and causes the machine to hang hard when a CPU
+> is offlined.
+>
+> Use wfi macro instead of the hardcoded WFI instruction.
+>
+> Signed-off-by: Leela Krishna Amudala <leela.krishna@linaro.org>
 
-On Thu, May 22, 2014 at 11:07:25AM +0530, Viresh Kumar wrote:
-> cpufreq-cpu0 uses thermal framework to register a cooling device, but doesn't
-> depend on it as there are dummy calls provided by thermal layer when
-> CONFIG_THERMAL=n. So, we don't really need to mention thermal as a dependency
-> for cpufreq-cpu0 in Kconfig.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 
-I see your point.
-> 
-> Remove it.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-However, on CPUs that needs thermal managment, it makes sense to have
-such dependency, from functional perspective. Mainly because scaling
-frequency and voltage up would be allowed only when thermal management
-is enabled.
-
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 1fbe11f..4310997 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -185,7 +185,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
->  
->  config GENERIC_CPUFREQ_CPU0
->  	tristate "Generic CPU0 cpufreq driver"
-> -	depends on HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL
-> +	depends on HAVE_CLK && REGULATOR && OF
->  	select PM_OPP
->  	help
->  	  This adds a generic cpufreq driver for CPU0 frequency management.
-> -- 
-> 2.0.0.rc2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
