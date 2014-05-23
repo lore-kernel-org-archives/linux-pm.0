@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFC PATCH 03/16] sched: Introduce sd energy data structures
-Date: Fri, 23 May 2014 19:16:30 +0100
-Message-ID: <1400869003-27769-4-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFC PATCH 09/16] sched, cpufreq: Introduce current cpu compute capacity into scheduler
+Date: Fri, 23 May 2014 19:16:36 +0100
+Message-ID: <1400869003-27769-10-git-send-email-morten.rasmussen@arm.com>
 References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
@@ -12,134 +12,88 @@ To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org
 Cc: rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+The scheduler is currently unaware of frequency changes and the current
+compute capacity offered by the cpus. This patch is not the solution.
+It is a hack to give us something to experiment with for now.
 
-The struct sched_energy represents the per scheduler group related data
-which is needed for the energy aware scheduler.
+A proper solution could be based on the frequency invariant load
+tracking proposed in the past: https://lkml.org/lkml/2013/4/16/289
 
-It contains a pointer to a struct capacity_state array which contains
-(compute capacity, power consumption @ this compute capacity) tuples.
+This patch should _not_ be considered safe.
 
-The struct sched_group_energy wraps struct sched_energy and an atomic
-reference counter, latter is used for scheduler internal bookkeeping of
-data allocation and freeing.
-
-Allocation and freeing of struct sched_group_energy uses the existing
-infrastructure of the scheduler which is currently used for the other sd
-hierarchy data structures (e.g. struct sched_domain).  That's why struct
-sd_data is provisioned with a per cpu struct sched_group_energy double
-pointer.
-
-The struct sched_group gets a pointer to a struct sched_group_energy.
-
-The function ptr sched_domain_energy_f is introduced into struct
-sched_domain_topology_level which will allow the arch to set a pass a
-particular struct sd_energy from the topology shim layer into the
-scheduler core.
-
-The function ptr sched_domain_energy_f has an 'int cpu' parameter since
-the folding of two adjacent sd levels via sd degenerate doesn't work
-for all sd levels.  E.g. it is not possible to use this feature to
-provide per-cpu sd energy in sd level DIE (former CPU) on ARM's TC2
-platform.
-
-It was discussed that the folding of sd levels approach is preferable
-over the cpu parameter approach, simply because the user (the arch
-specifying the sd topology table) can introduce less errors.  But since
-it is not working, the 'int cpu' parameter is the only way out.  It's
-possible to use the folding of sd levels approach for
-sched_domain_flags_f and the cpu parameter approach for the
-sched_domain_energy_f at the same time set-up though.  With the use of
-the 'int cpu' parameter, an extra check function has to be provided to
-make sure that all cpus spanned by a scheduler building block (e.g a
-sched domain or a group) are provisioned with the same energy data.
-
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- include/linux/sched.h |   24 ++++++++++++++++++++++++
- kernel/sched/sched.h  |   10 ++++++++++
- 2 files changed, 34 insertions(+)
+ drivers/cpufreq/cpufreq.c |    2 ++
+ include/linux/sched.h     |    2 ++
+ kernel/sched/fair.c       |    6 ++++++
+ kernel/sched/sched.h      |    2 ++
+ 4 files changed, 12 insertions(+)
 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index abda660..a2b788d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -28,6 +28,7 @@
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+ #include <linux/tick.h>
++#include <linux/sched.h>
+ #include <trace/events/power.h>
+=20
+ /**
+@@ -315,6 +316,7 @@ static void __cpufreq_notify_transition(struct cpufreq_=
+policy *policy,
+ =09=09pr_debug("FREQ: %lu - CPU: %lu\n",
+ =09=09=09 (unsigned long)freqs->new, (unsigned long)freqs->cpu);
+ =09=09trace_cpu_frequency(freqs->new, freqs->cpu);
++=09=09set_curr_capacity(freqs->cpu, (freqs->new*1024)/policy->max);
+ =09=09srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
+ =09=09=09=09CPUFREQ_POSTCHANGE, freqs);
+ =09=09if (likely(policy) && likely(policy->cpu =3D=3D freqs->cpu))
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 261a419..4eb149b 100644
+index 62d61b5..727b936 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -909,6 +909,21 @@ struct sched_domain_attr {
+@@ -3068,4 +3068,6 @@ static inline unsigned long rlimit_max(unsigned int l=
+imit)
+ =09return task_rlimit_max(current, limit);
+ }
 =20
- extern int sched_domain_level_max;
-=20
-+#ifdef CONFIG_SCHED_ENERGY
-+struct capacity_state {
-+=09int cap;=09/* compute capacity */
-+=09int power;=09/* power consumption at this compute capacity */
-+};
++void set_curr_capacity(int cpu, long capacity);
 +
-+struct sched_energy {
-+=09long max_capacity;=09/* maximal compute capacity */
-+=09int idle_power;=09=09/* power consumption in idle state */
-+=09int wakeup_energy;=09/* energy for wakeup->sleep cycle (x1024) */
-+=09int nr_cap_states;=09/* number of capacity states */
-+=09struct capacity_state *cap_states; /* ptr to capacity state array */
-+};
-+#endif
+ #endif
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 7570dd9..3a2aeee 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -7410,9 +7410,15 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
+ #ifdef CONFIG_SMP
+ =09atomic64_set(&cfs_rq->decay_counter, 1);
+ =09atomic_long_set(&cfs_rq->removed_load, 0);
++=09atomic_long_set(&cfs_rq->curr_capacity, 1024);
+ #endif
+ }
+=20
++void set_curr_capacity(int cpu, long capacity)
++{
++=09atomic_long_set(&cpu_rq(cpu)->cfs.curr_capacity, capacity);
++}
 +
- struct sched_group;
-=20
- struct sched_domain {
-@@ -1007,6 +1022,9 @@ bool cpus_share_cache(int this_cpu, int that_cpu);
-=20
- typedef const struct cpumask *(*sched_domain_mask_f)(int cpu);
- typedef const int (*sched_domain_flags_f)(void);
-+#ifdef CONFIG_SCHED_ENERGY
-+typedef const struct sched_energy *(*sched_domain_energy_f)(int cpu);
-+#endif
-=20
- #define SDTL_OVERLAP=090x01
-=20
-@@ -1014,11 +1032,17 @@ struct sd_data {
- =09struct sched_domain **__percpu sd;
- =09struct sched_group **__percpu sg;
- =09struct sched_group_power **__percpu sgp;
-+#ifdef CONFIG_SCHED_ENERGY
-+=09struct sched_group_energy **__percpu sge;
-+#endif
- };
-=20
- struct sched_domain_topology_level {
- =09sched_domain_mask_f mask;
- =09sched_domain_flags_f sd_flags;
-+#ifdef CONFIG_SCHED_ENERGY
-+=09sched_domain_energy_f energy;
-+#endif
- =09int=09=09    flags;
- =09int=09=09    numa_level;
- =09struct sd_data      data;
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ static void task_move_group_fair(struct task_struct *p, int on_rq)
+ {
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 456e492..c566f5e 100644
+index 9ff67a7..5a117b8 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
-@@ -755,12 +755,22 @@ struct sched_group_power {
- =09unsigned long cpumask[0]; /* iteration mask */
- };
+@@ -341,6 +341,8 @@ struct cfs_rq {
+ =09u64 last_decay;
+ =09atomic_long_t removed_load;
 =20
-+#ifdef CONFIG_SCHED_ENERGY
-+struct sched_group_energy {
-+=09atomic_t ref;
-+=09struct sched_energy data;
-+};
-+#endif
++=09atomic_long_t curr_capacity;
 +
- struct sched_group {
- =09struct sched_group *next;=09/* Must be a circular list */
- =09atomic_t ref;
-=20
- =09unsigned int group_weight;
- =09struct sched_group_power *sgp;
-+#ifdef CONFIG_SCHED_ENERGY
-+=09struct sched_group_energy *sge;
-+#endif
-=20
- =09/*
- =09 * The CPUs this group covers.
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ =09/* Required to track per-cpu representation of a task_group */
+ =09u32 tg_runnable_contrib;
 --=20
 1.7.9.5
