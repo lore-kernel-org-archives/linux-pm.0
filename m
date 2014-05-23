@@ -1,36 +1,39 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 4/4] tile: Update comments for generic idle conversion
-Date: Fri, 23 May 2014 10:54:25 +0200
-Message-ID: <1400835265-21956-5-git-send-email-geert+renesas@glider.be>
-References: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 0/4] cpuidle: Remove remaining cpu_idle() references
+Date: Fri, 23 May 2014 10:54:21 +0200
+Message-ID: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Metcalf <cmetcalf@tilera.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-As of commit 0dc8153cfebac68c9523b8852b14f10b31209f08 ("tile: Use generic
-idle loop"), this applies to arch_cpu_idle() instead of cpu_idle().
+	Hi Thomas,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Chris Metcalf <cmetcalf@tilera.com>
----
- arch/tile/include/asm/thread_info.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+After all architectures were converted to the generic idle framework,
+commit d190e8195b90bc1e65c494fe08e54e9e581bfd16 ("idle: Remove
+GENERIC_IDLE_LOOP config switch") removed the last caller of cpu_idle().
 
-diff --git a/arch/tile/include/asm/thread_info.h b/arch/tile/include/asm/thread_info.h
-index 729aa107f64e..80ba7d40ecc0 100644
---- a/arch/tile/include/asm/thread_info.h
-+++ b/arch/tile/include/asm/thread_info.h
-@@ -94,7 +94,7 @@ register unsigned long stack_pointer __asm__("sp");
- /* Sit on a nap instruction until interrupted. */
- extern void smp_nap(void);
- 
--/* Enable interrupts racelessly and nap forever: helper for cpu_idle(). */
-+/* Enable interrupts racelessly and nap forever: helper for arch_cpu_idle(). */
- extern void _cpu_idle(void);
- 
- #else /* __ASSEMBLY__ */
--- 
-1.9.1
+This series removes the remaining references to the no-longer existing
+cpu_idle() function.
+
+There are still a few references left, but these refer to the generic
+mechanism, not to the C function.
+
+  - [PATCH 1/4] idle: Remove cpu_idle() forward declarations
+  - [PATCH 2/4] cris: Update comments for generic idle conversion
+  - [PATCH 3/4] powerpc: Update comments for generic idle conversion
+  - [PATCH 4/4] tile: Update comments for generic idle conversion
+
+Please apply. Thanks!
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
