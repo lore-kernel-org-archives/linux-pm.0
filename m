@@ -1,176 +1,215 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and provide it to scheduler
-Date: Fri, 23 May 2014 19:16:33 +0100
-Message-ID: <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFC PATCH 05/16] sched: Add sd energy procfs interface
+Date: Fri, 23 May 2014 19:16:32 +0100
+Message-ID: <1400869003-27769-6-git-send-email-morten.rasmussen@arm.com>
 References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:36020 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbaEWSQw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 14:16:52 -0400
 In-Reply-To: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, dietmar.eggemann@arm.com
-List-Id: linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+=46rom: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-!!! This patch is only here to be able to test provisioning of sched
-energy related data from an arch topology shim layer to the scheduler.
-Since there is no code today which deals with extracting sched energy
-related data from the dtb or acpi, and process it in the topology shim
-layer, the struct sched_energy and the related struct capacity_state
-arrays are hard-coded here !!!
+This patch makes the values of the sd energy data structure available v=
+ia
+procfs.  The related files are placed as sub-directory named 'energy'
+inside the /proc/sys/kernel/sched_domain/cpuX/domainY/groupZ directory =
+for
+those cpu/domain/group tuples which have sd energy information.
 
-This patch defines the struct sched_energy and the related struct
-capacity_state array for the cluster (relates to sg's in DIE sd level)
-and for the core (relates to sg's in MC sd level) for a Cortex A7 as
-well as for a Cortex A15. It further provides related implementations of
-the sched_domain_energy_f functions (cpu_cluster_energy() and
-cpu_core_energy()).
+The following example depicts the contents of
+/proc/sys/kernel/sched_domain/cpu0/domain0/group[01] for a system which
+has sd energy information attached to domain level 0.
 
-To be able to propagate this information from the topology shim layer to
-the scheduler, the elements of the arm_topology[] table have been
-provisioned with the appropriate sched_domain_energy_f functions.
+=E2=94=9C=E2=94=80=E2=94=80 cpu0
+=E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80 domain0
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ busy_factor
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ busy_idx
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ cache_nice_tries
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ flags
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ forkexec_idx
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ group0
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=
+=94=E2=94=80=E2=94=80 energy
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 cap_states
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 idle_power
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 max_capacity
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 nr_cap_states
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=94=E2=94=80=E2=94=80 wakeup_energy
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ group1
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=
+=94=E2=94=80=E2=94=80 energy
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 cap_states
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 idle_power
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 max_capacity
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=9C=E2=94=80=E2=94=80 nr_cap_states
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0     =E2=
+=94=94=E2=94=80=E2=94=80 wakeup_energy
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ idle_idx
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ imbalance_pct
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ max_interval
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ max_newidle_lb_cost
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ min_interval
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ name
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=9C=E2=94=80=E2=94=80=
+ newidle_idx
+=E2=94=82=C2=A0=C2=A0 =E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=80=
+ wake_idx
+=E2=94=82=C2=A0=C2=A0 =E2=94=94=E2=94=80=E2=94=80 domain1
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 busy_factor
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 busy_idx
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 cache_nice_tries
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 flags
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 forkexec_idx
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 idle_idx
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 imbalance_pct
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 max_interval
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 max_newidle_lb_co=
+st
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 min_interval
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 name
+=E2=94=82=C2=A0=C2=A0     =E2=94=9C=E2=94=80=E2=94=80 newidle_idx
+=E2=94=82=C2=A0=C2=A0     =E2=94=94=E2=94=80=E2=94=80 wake_idx
+
+The files 'idle_power', 'max_capacity', 'nr_cap_states' and 'wakeup_ene=
+rgy'
+contain a scalar value whereas 'cap_states' contains a vector of
+(compute capacity, power consumption @ this compute capacity) tuples.
 
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- arch/arm/kernel/topology.c |  109 ++++++++++++++++++++++++++++++++++++++++=
-++++
- 1 file changed, 109 insertions(+)
+ kernel/sched/core.c |   73 +++++++++++++++++++++++++++++++++++++++++++=
+++++++--
+ 1 file changed, 71 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 71e1fec..4050348 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -275,6 +275,107 @@ void store_cpu_topology(unsigned int cpuid)
- =09=09cpu_topology[cpuid].socket_id, mpidr);
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 785b61d..096fa55 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -4837,10 +4837,66 @@ set_table_entry(struct ctl_table *entry,
+ 	}
  }
 =20
 +#ifdef CONFIG_SCHED_ENERGY
-+/*
-+ * ARM TC2 specific energy cost model data. There are no unit requirements=
- for
-+ * the data. Data can be normalized to any reference point, but the
-+ * normalization must be consistent. That is, one bogo-joule/watt must be =
-the
-+ * same quantity for all data, but we don't care what it is.
-+ */
-+static struct capacity_state cap_states_cluster_a7[] =3D {
-+=09/* Cluster only power */
-+=09 { .cap =3D  358, .power =3D 2967, }, /*  350 MHz */
-+=09 { .cap =3D  410, .power =3D 2792, }, /*  400 MHz */
-+=09 { .cap =3D  512, .power =3D 2810, }, /*  500 MHz */
-+=09 { .cap =3D  614, .power =3D 2815, }, /*  600 MHz */
-+=09 { .cap =3D  717, .power =3D 2919, }, /*  700 MHz */
-+=09 { .cap =3D  819, .power =3D 2847, }, /*  800 MHz */
-+=09 { .cap =3D  922, .power =3D 3917, }, /*  900 MHz */
-+=09 { .cap =3D 1024, .power =3D 4905, }, /* 1000 MHz */
-+=09};
-+
-+static struct capacity_state cap_states_cluster_a15[] =3D {
-+=09/* Cluster only power */
-+=09 { .cap =3D  840, .power =3D  7920, }, /*  500 MHz */
-+=09 { .cap =3D 1008, .power =3D  8165, }, /*  600 MHz */
-+=09 { .cap =3D 1176, .power =3D  8172, }, /*  700 MHz */
-+=09 { .cap =3D 1343, .power =3D  8195, }, /*  800 MHz */
-+=09 { .cap =3D 1511, .power =3D  8265, }, /*  900 MHz */
-+=09 { .cap =3D 1679, .power =3D  8446, }, /* 1000 MHz */
-+=09 { .cap =3D 1847, .power =3D 11426, }, /* 1100 MHz */
-+=09 { .cap =3D 2015, .power =3D 15200, }, /* 1200 MHz */
-+=09};
-+
-+static struct sched_energy energy_cluster_a7 =3D {
-+=09  .max_capacity   =3D 1024,
-+=09  .idle_power     =3D   10, /* Cluster power-down */
-+=09  .wakeup_energy  =3D    6, /* << 10 */
-+=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_cluster_a7),
-+=09  .cap_states     =3D cap_states_cluster_a7,
-+};
-+
-+static struct sched_energy energy_cluster_a15 =3D {
-+=09  .max_capacity   =3D 2015,
-+=09  .idle_power     =3D   25, /* Cluster power-down */
-+=09  .wakeup_energy  =3D  210, /* << 10 */
-+=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_cluster_a15),
-+=09  .cap_states     =3D cap_states_cluster_a15,
-+};
-+
-+static struct capacity_state cap_states_core_a7[] =3D {
-+=09/* Power per cpu */
-+=09 { .cap =3D  358, .power =3D  187, }, /*  350 MHz */
-+=09 { .cap =3D  410, .power =3D  275, }, /*  400 MHz */
-+=09 { .cap =3D  512, .power =3D  334, }, /*  500 MHz */
-+=09 { .cap =3D  614, .power =3D  407, }, /*  600 MHz */
-+=09 { .cap =3D  717, .power =3D  447, }, /*  700 MHz */
-+=09 { .cap =3D  819, .power =3D  549, }, /*  800 MHz */
-+=09 { .cap =3D  922, .power =3D  761, }, /*  900 MHz */
-+=09 { .cap =3D 1024, .power =3D 1024, }, /* 1000 MHz */
-+=09};
-+
-+static struct capacity_state cap_states_core_a15[] =3D {
-+=09/* Power per cpu */
-+=09 { .cap =3D  840, .power =3D 2021, }, /*  500 MHz */
-+=09 { .cap =3D 1008, .power =3D 2312, }, /*  600 MHz */
-+=09 { .cap =3D 1176, .power =3D 2756, }, /*  700 MHz */
-+=09 { .cap =3D 1343, .power =3D 3125, }, /*  800 MHz */
-+=09 { .cap =3D 1511, .power =3D 3524, }, /*  900 MHz */
-+=09 { .cap =3D 1679, .power =3D 3846, }, /* 1000 MHz */
-+=09 { .cap =3D 1847, .power =3D 5177, }, /* 1100 MHz */
-+=09 { .cap =3D 2015, .power =3D 6997, }, /* 1200 MHz */
-+=09};
-+
-+static struct sched_energy energy_core_a7 =3D {
-+=09  .max_capacity   =3D 1024,
-+=09  .idle_power     =3D    0, /* No power gating */
-+=09  .wakeup_energy  =3D    0, /* << 10 */
-+=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_core_a7),
-+=09  .cap_states     =3D cap_states_core_a7,
-+};
-+
-+static struct sched_energy energy_core_a15 =3D {
-+=09  .max_capacity   =3D 2015,
-+=09  .idle_power     =3D    0, /* No power gating */
-+=09  .wakeup_energy  =3D    5, /* << 10 */
-+=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_core_a15),
-+=09  .cap_states     =3D cap_states_core_a15,
-+};
-+
-+/* sd energy functions */
-+static inline const struct sched_energy *cpu_cluster_energy(int cpu)
++static struct ctl_table *
++sd_alloc_ctl_energy_table(struct sched_group_energy *sge)
 +{
-+=09return cpu_topology[cpu].socket_id ? &energy_cluster_a7 :
-+=09=09=09&energy_cluster_a15;
++	struct ctl_table *table =3D sd_alloc_ctl_entry(6);
++
++	if (table =3D=3D NULL)
++		return NULL;
++
++	set_table_entry(&table[0], "max_capacity", &sge->data.max_capacity,
++			sizeof(long), 0644, proc_doulongvec_minmax, false);
++	set_table_entry(&table[1], "idle_power", &sge->data.idle_power,
++			sizeof(int), 0644, proc_dointvec_minmax, false);
++	set_table_entry(&table[2], "wakeup_energy", &sge->data.wakeup_energy,
++			sizeof(int), 0644, proc_dointvec_minmax, false);
++	set_table_entry(&table[3], "nr_cap_states", &sge->data.nr_cap_states,
++			sizeof(int), 0644, proc_dointvec_minmax, false);
++	set_table_entry(&table[4], "cap_states", &sge->data.cap_states[0].cap=
+,
++			sge->data.nr_cap_states*2*sizeof(int), 0644,
++			proc_dointvec_minmax, false);
++
++	return table;
 +}
 +
-+static inline const struct sched_energy *cpu_core_energy(int cpu)
++static struct ctl_table *
++sd_alloc_ctl_group_table(struct sched_group *sg)
 +{
-+=09return cpu_topology[cpu].socket_id ? &energy_core_a7 :
-+=09=09=09&energy_core_a15;
-+}
-+#endif /* CONFIG_SCHED_ENERGY */
++	struct ctl_table *table =3D sd_alloc_ctl_entry(2);
 +
- static inline const int cpu_corepower_flags(void)
++	if (table =3D=3D NULL)
++		return NULL;
++
++	table->procname =3D kstrdup("energy", GFP_KERNEL);
++	table->mode =3D 0555;
++	table->child =3D sd_alloc_ctl_energy_table(sg->sge);
++
++	return table;
++}
++#endif
++
+ static struct ctl_table *
+ sd_alloc_ctl_domain_table(struct sched_domain *sd)
  {
- =09return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
-@@ -282,10 +383,18 @@ static inline const int cpu_corepower_flags(void)
-=20
- static struct sched_domain_topology_level arm_topology[] =3D {
- #ifdef CONFIG_SCHED_MC
+-	struct ctl_table *table =3D sd_alloc_ctl_entry(14);
++	struct ctl_table *table;
++	unsigned int nr_entries =3D 14;
++
 +#ifdef CONFIG_SCHED_ENERGY
-+=09{ cpu_coregroup_mask, cpu_corepower_flags, cpu_core_energy, SD_INIT_NAM=
-E(MC) },
-+#else
- =09{ cpu_corepower_mask, cpu_corepower_flags, SD_INIT_NAME(GMC) },
- =09{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
- #endif
++	int i =3D 0;
++	struct sched_group *sg =3D sd->groups;
++
++	if (sg->sge) {
++		int nr_sgs =3D 0;
++
++		do {} while (nr_sgs++, sg =3D sg->next, sg !=3D sd->groups);
++
++		nr_entries +=3D nr_sgs;
++	}
 +#endif
-+#ifdef CONFIG_SCHED_ENERGY
-+=09{ cpu_cpu_mask, 0, cpu_cluster_energy, SD_INIT_NAME(DIE) },
-+#else
- =09{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
-+#endif
- =09{ NULL, },
- };
++
++	table =3D sd_alloc_ctl_entry(nr_entries);
 =20
+ 	if (table =3D=3D NULL)
+ 		return NULL;
+@@ -4873,7 +4929,20 @@ sd_alloc_ctl_domain_table(struct sched_domain *s=
+d)
+ 		sizeof(long), 0644, proc_doulongvec_minmax, false);
+ 	set_table_entry(&table[12], "name", sd->name,
+ 		CORENAME_MAX_SIZE, 0444, proc_dostring, false);
+-	/* &table[13] is terminator */
++#ifdef CONFIG_SCHED_ENERGY
++	sg =3D sd->groups;
++	if (sg->sge) {
++		char buf[32];
++		struct ctl_table *entry =3D &table[13];
++		do {
++			snprintf(buf, 32, "group%d", i);
++			entry->procname =3D kstrdup(buf, GFP_KERNEL);
++			entry->mode =3D 0555;
++			entry->child =3D sd_alloc_ctl_group_table(sg);
++		} while (entry++, i++, sg =3D sg->next, sg !=3D sd->groups);
++	}
++#endif
++	/* &table[nr_entries-1] is terminator */
+=20
+ 	return table;
+ }
 --=20
 1.7.9.5
+
+
