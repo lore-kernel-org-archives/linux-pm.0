@@ -1,46 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/8] cpufreq: cpufreq-cpu0: remove dependency on thermal
-Date: Fri, 23 May 2014 10:03:27 +0530
-Message-ID: <CAKohpo=e62HPRF0N7kDvZEBAVPMFUeXVoL4jU--i7bZhn6Kjgw@mail.gmail.com>
-References: <cover.1400736536.git.viresh.kumar@linaro.org>
-	<c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org>
-	<20140522145209.GA5246@developer>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: remove checks for CONFIG_EXYNOS_ASV
+Date: Fri, 23 May 2014 04:52:44 +0000 (GMT)
+Message-ID: <7638065.14871400820762911.JavaMail.weblogic@epml08>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:51144 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbaEWEd2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 00:33:28 -0400
-Received: by mail-ob0-f172.google.com with SMTP id wp18so4882109obc.31
-        for <linux-pm@vger.kernel.org>; Thu, 22 May 2014 21:33:27 -0700 (PDT)
-In-Reply-To: <20140522145209.GA5246@developer>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, =?euc-kr?Q?=B1=E8=B1=B9=C1=F8?= <kgene.kim@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
 
-On 22 May 2014 20:22, Eduardo Valentin <edubezval@gmail.com> wrote:
-> However, on CPUs that needs thermal managment, it makes sense to have
-> such dependency, from functional perspective. Mainly because scaling
-> frequency and voltage up would be allowed only when thermal management
-> is enabled.
-
-AFAIK, dependencies in KCONFIG are only for fixing compilation time issues.
-As some APIs wouldn't be available without enabling some config options..
-
-If drivers fail at runtime because some API returned error, fix it for your
-platform instead and not bug KCONFIG for that.
-
-Thought we might consider some runtime dependencies here as well. For
-example regulators. There probably are dummy routine available for cases
-where CONFIG_REGULATOR (or whatever) isn't enabled and driver would
-still compile, but it is guaranteed to fail as we don't continue when we get
-errors from regulator APIs..
-
-Though I still feel that this driver should still support platforms without
-regulators (atleast in software, they might always have them on board :))..
-And so dependencies for regulators may also die out one day..
-
-The dependencies here mean: "This driver would never ever work/compile
-if the dependencies aren't met.."
+T24gVGh1LCBNYXkgMjIsIDIwMTQgYXQgNTozNyBBTSwgUGF1bCBCb2xsZSA8cGVib2xsZUB0aXNj
+YWxpLm5sPiB3cm90ZToNCj4gQ2hlY2tzIGZvciBDT05GSUdfRVhZTk9TX0FTViB3ZXJlIGFkZGVk
+IGluIHYzLjMuIEJ1dCB0aGUgcmVsYXRlZCBLY29uZmlnDQo+IHN5bWJvbCBoYXMgbmV2ZXIgYmVl
+biBhZGRlZCB0byB0aGUgdHJlZS4gUmVtb3ZlIHRoZXNlIGNoZWNrcywgYXMgdGhleQ0KPiBhbHdh
+eXMgZXZhbHVhdGUgdG8gZmFsc2UuDQo+DQo+IFNpZ25lZC1vZmYtYnk6IFBhdWwgQm9sbGUgPHBl
+Ym9sbGVAdGlzY2FsaS5ubD4NCg0KVGhhbmtzIGZvciBwb2ludGluZyB0aGlzIG91dC4NCg0KQVNW
+IHdhcyBzdXBwb3NlZCB0byBiZSBtZXJnZWQsIGJ1dCBpdCBhcHBlYXJzIGl0IGZhaWxlZCBvciBu
+ZXZlciBhdHRlbXB0ZWQuDQoNCkkgd2lsbCBtZXJnZSB3aXRoIHRoZSBuZXh0IGJhdGNoICh0aGlz
+IHdlZWspLg0KDQoNCkNoZWVycywNCk15dW5nSm9vLg0KDQo+IC0tLQ0KPiAwKSBVbnRlc3RlZC4N
+Cj4NCj4gMSkgSSBkbyBub3QgcmVhbGx5IGNhcmUgbXVjaCBmb3IgdGhpcyBwYXRjaC4gVHdvIHll
+YXJzIGlzIG5vdCB2ZXJ5IGxvbmcNCj4gZm9yIGRlYWQgY29kZSB0byByZW1haW4gaW4gdGhlIHRy
+ZWUuIFRoZXJlIGlzLCBob3dldmVyLCBhIHRyaXZpYWwgaXNzdWUNCj4gdGhhdCBtYWtlcyB0aGlz
+IHBhdGNoIHN0YW5kIG91dCBmcm9tIHRoZSBvdGhlciBwYXRjaGVzIGluIG15IGN1cnJlbnQNCj4g
+c3dlZXAgb2YgdGhlIHRyZWUgZm9yIEtjb25maWcgcmVsYXRlZCBwcm9ibGVtcy4NCj4NCj4gU2Vl
+LCBoZXJlIHRoZSB1c2Ugb2YgYW4gdW5rbm93biBLY29uZmlnIG1hY3JvIGhpZGVzIGFuIG9idmlv
+dXMgdHlwbzogaXQNCj4gc2hvdWxkIGVpdGhlciBiZSAiZXh5bm9zX3Jlc3VsdF9vZl9hc3YiIG9y
+ICJleHlub3M0X3Jlc3VsdF9vZl9hc3YiLCBidXQNCj4gbm90IGJvdGguIEllLCB0aGlzIGFsbW9z
+dCBjZXJ0YWlubHkgd291bGRuJ3QgaGF2ZSBjb21waWxlZCBldmVuIGlmIHRoZQ0KPiBLY29uZmln
+IHN5bWJvbCBFWFlOT1NfQVNWIHdvdWxkIGhhdmUgYmVlbiBwYXJ0IG9mIHRoZSB0cmVlLg0KPg0K
+PiAyKSBTbyB0aGlzIG1ha2VzIG1lIHdvbmRlciB3aGV0aGVyIHRoZXJlIGFyZSBhbnkgZ3VpZGVs
+aW5lcyBmb3IgdXNpbmcNCj4gS2NvbmZpZyBtYWNyb3MgYmVmb3JlIHRoZSByZWxhdGVkIEtjb25m
+aWcgc3ltYm9scyBhcmUgbWVyZ2VkPw0KPg0KPiAgZHJpdmVycy9kZXZmcmVxL0tjb25maWcgICAg
+ICAgICAgICAgIHwgIDMgKy0tDQo+ICBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVz
+LmMgfCAxMyAtLS0tLS0tLS0tLS0tDQo+ICAyIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCsp
+LCAxNSBkZWxldGlvbnMoLSk=
