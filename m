@@ -1,39 +1,37 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/4] cpuidle: Remove remaining cpu_idle() references
-Date: Fri, 23 May 2014 10:54:21 +0200
-Message-ID: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 3/4] powerpc: Update comments for generic idle conversion
+Date: Fri, 23 May 2014 10:54:24 +0200
+Message-ID: <1400835265-21956-4-git-send-email-geert+renesas@glider.be>
+References: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-	Hi Thomas,
+As of commit 799fef06123f86ff69cf754f996219e6ad1678f8 ("powerpc: Use
+generic idle loop"), this applies to arch_cpu_idle() instead of cpu_idle().
 
-After all architectures were converted to the generic idle framework,
-commit d190e8195b90bc1e65c494fe08e54e9e581bfd16 ("idle: Remove
-GENERIC_IDLE_LOOP config switch") removed the last caller of cpu_idle().
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/irq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This series removes the remaining references to the no-longer existing
-cpu_idle() function.
-
-There are still a few references left, but these refer to the generic
-mechanism, not to the C function.
-
-  - [PATCH 1/4] idle: Remove cpu_idle() forward declarations
-  - [PATCH 2/4] cris: Update comments for generic idle conversion
-  - [PATCH 3/4] powerpc: Update comments for generic idle conversion
-  - [PATCH 4/4] tile: Update comments for generic idle conversion
-
-Please apply. Thanks!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index ca1cd7459c4a..248ee7e5bebd 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -304,7 +304,7 @@ void notrace restore_interrupts(void)
+  * being re-enabled and generally sanitized the lazy irq state,
+  * and in the latter case it will leave with interrupts hard
+  * disabled and marked as such, so the local_irq_enable() call
+- * in cpu_idle() will properly re-enable everything.
++ * in arch_cpu_idle() will properly re-enable everything.
+  */
+ bool prep_irq_for_idle(void)
+ {
+-- 
+1.9.1
