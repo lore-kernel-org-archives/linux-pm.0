@@ -1,81 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 2/3] cpufreq: add support for intermediate (stable) frequencies
-Date: Fri, 23 May 2014 09:54:56 +0530
-Message-ID: <CAKohpokhiTpTd-ByFUuOL1hR7MnKPPQj-peH7S5oFxowKt0BeQ@mail.gmail.com>
-References: <cover.1400662383.git.viresh.kumar@linaro.org>
-	<59e1185a31e61c428aca9f4b8f0a69f182ee458e.1400662383.git.viresh.kumar@linaro.org>
-	<537E27DA.9040709@wwwdotorg.org>
+Subject: Re: [PATCH V3 1/8] cpufreq: cpufreq-cpu0: remove dependency on thermal
+Date: Fri, 23 May 2014 10:03:27 +0530
+Message-ID: <CAKohpo=e62HPRF0N7kDvZEBAVPMFUeXVoL4jU--i7bZhn6Kjgw@mail.gmail.com>
+References: <cover.1400736536.git.viresh.kumar@linaro.org>
+	<c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org>
+	<20140522145209.GA5246@developer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <537E27DA.9040709@wwwdotorg.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:51144 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020AbaEWEd2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 00:33:28 -0400
+Received: by mail-ob0-f172.google.com with SMTP id wp18so4882109obc.31
+        for <linux-pm@vger.kernel.org>; Thu, 22 May 2014 21:33:27 -0700 (PDT)
+In-Reply-To: <20140522145209.GA5246@developer>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
 
-On 22 May 2014 22:07, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> It seems rather odd to set both freqs->old and freqs->new to the
-> intermediate frequency upon success. It feels like it would make more
-> sense to remove that final else clause above, and do the following where
-> this function is called:
->
->         intermediate_freq = freqs.new;
->         if (intermediate_freq)
->                 freqs.old = intermediate_freq
->         freqs.new = freq_table[index].frequency
+On 22 May 2014 20:22, Eduardo Valentin <edubezval@gmail.com> wrote:
+> However, on CPUs that needs thermal managment, it makes sense to have
+> such dependency, from functional perspective. Mainly because scaling
+> frequency and voltage up would be allowed only when thermal management
+> is enabled.
 
-Looks better.
+AFAIK, dependencies in KCONFIG are only for fixing compilation time issues.
+As some APIs wouldn't be available without enabling some config options..
 
-> (or even return the intermediate frequency from the function)
+If drivers fail at runtime because some API returned error, fix it for your
+platform instead and not bug KCONFIG for that.
 
-It can return errors as well and so I didn't tried to return frequency
-from it. Though there are routines that return both error and freq
-from such calls :)
+Thought we might consider some runtime dependencies here as well. For
+example regulators. There probably are dummy routine available for cases
+where CONFIG_REGULATOR (or whatever) isn't enabled and driver would
+still compile, but it is guaranteed to fail as we don't continue when we get
+errors from regulator APIs..
 
-> ?
->
-> But I suppose isolating all the inside __target_intermediate() isn't so bad.
+Though I still feel that this driver should still support platforms without
+regulators (atleast in software, they might always have them on board :))..
+And so dependencies for regulators may also die out one day..
 
-:)
-
->>  static int __target_index(struct cpufreq_policy *policy,
->>                         struct cpufreq_frequency_table *freq_table, int index)
->>  {
->> -     struct cpufreq_freqs freqs;
->> +     struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
->> +     unsigned int intermediate_freq = 0;
->>       int retval = -EINVAL;
->>       bool notify;
->>
->>       notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
->> -
->>       if (notify) {
->> -             freqs.old = policy->cur;
->> -             freqs.new = freq_table[index].frequency;
->> -             freqs.flags = 0;
->> +             /* Handle switching to intermediate frequency */
->> +             if (cpufreq_driver->get_intermediate) {
->> +                     retval = __target_intermediate(policy, &freqs, index);
->> +                     if (retval)
->> +                             return retval;
->
-> Shouldn't this all be outside the if (notify) block, so that
-> __target_intermediate is always called, and it's just the notify
-> callbacks that gets skipped if (!notify)?
-
-So, this is logic I had:
-
-Should we support 'intermediate freq' infrastructure when driver wants
-to handle notifications themselves?
-
-Probably not.
-
-The whole point of implementing this 'intermediate freq' infrastructure is to
-get rid of code redundancy while sending notifications. If drivers want to
-handle notifications then they better handle intermediate freqs as well in
-their target_index() callback. They don't need to implement another routine
-for intermediate stuff..
-
---
-viresh
+The dependencies here mean: "This driver would never ever work/compile
+if the dependencies aren't met.."
