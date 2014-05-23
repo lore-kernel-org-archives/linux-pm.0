@@ -1,32 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/8] cpufreq: cpufreq-cpu0: remove dependency on thermal
-Date: Fri, 23 May 2014 18:58:24 +0530
-Message-ID: <711BA092-F65D-4D62-9D94-E246387065A4@linaro.org>
-References: <cover.1400736536.git.viresh.kumar@linaro.org> <c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org> <20140522145209.GA5246@developer> <CAKohpo=e62HPRF0N7kDvZEBAVPMFUeXVoL4jU--i7bZhn6Kjgw@mail.gmail.com> <20140523132144.GA3138@developer>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+From: Thomas Abraham <thomas.ab@samsung.com>
+Subject: [PATCH v4 0/2] cpufreq: opp: Add device tree based lookup of boost mode frequency
+Date: Fri, 23 May 2014 19:07:40 +0530
+Message-ID: <1400852262-6290-1-git-send-email-thomas.ab@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:58093 "EHLO
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:39722 "EHLO
 	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbaEWN2O convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 09:28:14 -0400
-Received: by mail-pa0-f48.google.com with SMTP id rd3so4129194pab.35
-        for <linux-pm@vger.kernel.org>; Fri, 23 May 2014 06:28:14 -0700 (PDT)
-In-Reply-To: <20140523132144.GA3138@developer>
+	with ESMTP id S1750981AbaEWNiO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 09:38:14 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
+To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, nm@ti.com
+
+Changes since v3:
+- Minor changes as suggested in the last version.
+
+Changes since v2:
+- Reworked based on the "PM / OPP: move cpufreq specific helpers out of OPP 
+  layer" patch series posted by Nishanth Menon <n...@ti.com>.
+
+Changes since v1:
+- Boost mode frequencies are specfied as a set of frequencies instead of
+  specifying them as OPPs. Thanks to Nishanth, Lukasz and Rob for the
+  feedback.
+
+Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
+support for CPU boost mode for CPUfreq drivers. To use the new boost
+mode, CPUfreq drivers have to specify the boost mode frequency and
+voltage within the CPUfreq driver, which is the case for Exynos4x12
+CPUfreq driver.
+
+But for CPUfreq drivers which obtain the OPPs from cpus node, this
+patch series adds support to specify boost mode frequencies in the
+cpu device tree node. This requirement came up when Lukasz pointed
+out the regression caused by the Exynos CPUfreq driver consolidation
+patches.
+
+Thomas Abraham (2):
+  cpufreq / OPP: Allow boost frequency to be looked up from device tree
+  Documentation: devicetree: Add boost-frequency binding to list boost
+    mode frequency
+
+ .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   38 +++++++++++++++++
+ drivers/cpufreq/cpufreq_opp.c                      |   44 ++++++++++++++++++++
+ 2 files changed, 82 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+
+-- 
+1.7.9.5
 
 
-> On 23-May-2014, at 6:51 pm, Eduardo Valentin <edubezval@gmail.com> wrote:
-> I agree. We need to have runtime dependency, and that is the major
-> concern on my behalf. The problem of Kconfig dependency is that it
-> imposes sequencing only on module loading, not at boot sequencing.
-> 
-> Another way around is returning -EPROBE_DEFER when some API is not ready at device probing for instance.
-
-Okay, coming back to this patch. This driver is usable without thermal.
-And so the dependencies better be dropped ?
