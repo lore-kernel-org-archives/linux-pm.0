@@ -1,81 +1,129 @@
-From: Thomas Abraham <thomas.ab@samsung.com>
-Subject: [PATCH v4 2/2] Documentation: devicetree: Add boost-frequency binding to list boost mode frequency
-Date: Fri, 23 May 2014 19:07:42 +0530
-Message-ID: <1400852262-6290-3-git-send-email-thomas.ab@samsung.com>
-References: <1400852262-6290-1-git-send-email-thomas.ab@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: document struct thermal_zone_device and
+ thermal_governor
+Date: Fri, 23 May 2014 09:44:51 -0400
+Message-ID: <20140523134451.GA3399@developer>
+References: <1400238968-8816-1-git-send-email-javi.merino@arm.com>
+ <20140522152730.GB5246@developer>
+ <20140523093552.GB4723@e104805>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f53.google.com ([209.85.160.53]:44268 "EHLO
-	mail-pb0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbaEWNiY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 09:38:24 -0400
-In-Reply-To: <1400852262-6290-1-git-send-email-thomas.ab@samsung.com>
+Received: from mail-yh0-f54.google.com ([209.85.213.54]:35117 "EHLO
+	mail-yh0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752428AbaEWOVN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 10:21:13 -0400
+Content-Disposition: inline
+In-Reply-To: <20140523093552.GB4723@e104805>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, nm@ti.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+To: Javi Merino <javi@e104805.cambridge.arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-From: Thomas Abraham <thomas.ab@samsung.com>
+Hello Javi,
 
-Add a new optional boost-frequency binding for specifying the frequencies
-usable in boost mode.
+On Fri, May 23, 2014 at 10:35:52AM +0100, Javi Merino wrote:
+> On Thu, May 22, 2014 at 04:27:30PM +0100, Eduardo Valentin wrote:
+> > Hello Javi,
+> > 
+> > On Fri, May 16, 2014 at 12:16:08PM +0100, Javi Merino wrote:
+> > 
+> > > Document struct struct thermal_zone_device and struct thermal_governor
+> > > fields and their use by the thermal framework code.
+> > > 
+> > > Cc: Zhang Rui <rui.zhang@intel.com>
+> > > Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+> > > Signed-off-by: Javi Merino <javi.merino@arm.com>
+> > > 
+> > > ---
+> > > 
+> > > Hi linux-pm,
+> > > 
+> > > I have some patches that add new fields to these structures but I
+> > > don't have a good place to describe those fields as these structs are
+> > > mostly undocumented so I thought I'd document them.
+> > > 
+> > > I'm unsure about some of the descriptions, specially for passive and
+> > > forced_passive so please review them.
+> > > 
+> > >  include/linux/thermal.h |   44 ++++++++++++++++++++++++++++++++++++++++++--
+> > >  1 file changed, 42 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > > index f7e11c7ea7d9..af928c667dba 100644
+> > > --- a/include/linux/thermal.h
+> > > +++ b/include/linux/thermal.h
+> > > @@ -158,6 +158,40 @@ struct thermal_attr {
+> > >  	char name[THERMAL_NAME_LENGTH];
+> > >  };
+> > >  
+> > > +/**
+> > > + * struct thermal_zone_device - structure for a thermal zone
+> > > + * @id:		unique id number for each thermal zone
+> > > + * @type:	the thermal zone device type
+> > > + * @device:	struct device for this thermal zone
+> > > + * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
+> > > + * @trip_type_attrs:	attributes for trip points for sysfs: trip type
+> > > + * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
+> > > + * @devdata:	private pointer for device private data
+> > > + * @trips:	number of trip points the thermal zone supports
+> > > + * @passive_delay:	number of milliseconds to wait between polls when
+> > > + *			performing passive cooling.  Only used by the step-wise
+> > 
+> > I don't think this parameter is specific to step-wise.
+> 
+> It's only used by step-wise, all the other governors always poll at
+> polling_delay.
 
-Cc: Nishanth Menon <nm@ti.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
----
- .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   38 ++++++++++++++++++++
- 1 file changed, 38 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+Agreed, but the fact we have only one governor using it, it does not
+imply it is a specific concept for that governor. The concept can and
+should be reused by other governors. Idea is simple, you have different
+temporal / thermal evolution when idle, when monitoring passive cooling actions. And this fact won't change, no matter the policy you apply.
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-new file mode 100644
-index 0000000..63ed0fc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-@@ -0,0 +1,38 @@
-+* Device tree binding for CPU boost frequency (aka over-clocking)
-+
-+Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
-+overclocking) in which the CPU can operate at frequencies which are not
-+specified by the manufacturer as CPU's operating frequency.
-+
-+Optional Properties:
-+- boost-frequencies: list of frequencies in KHz to be used only in boost mode.
-+  This list should be a subset of frequencies listed in "operating-points"
-+  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
-+  details about "operating-points" property.
-+
-+Example:
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <0>;
-+
-+			operating-points = <
-+				1500000 1350000
-+				1400000 1287500
-+				1300000 1250000
-+				1200000 1187500
-+				1100000 1137500
-+				1000000 1087500
-+			>;
-+			boost-frequencies = <1500000 1400000>;
-+		};
-+		cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <1>;
-+		};
-+	};
--- 
-1.7.9.5
+> 
+> While we are at it, can we change the name so that it's more generic and
+> can be reused by other governors?  Something like idle_poll and
+> active_poll?  I'm open to suggestions for a better name.
+> 
 
+active_poll means when cooling devices are active? which kind of cooling
+devices?
+
+> > > + *			governor
+> > > + * @polling_delay:	number of milliseconds to wait between polls when
+> > > + *			checking whether trip points have been crossed (0 for
+> > > + *			interrupt driven systems)
+> > > + * @temperature:	current temperature.  This is only for core code,
+> > > + *			drivers should use thermal_zone_get_temp() to get the
+> > > + *			current temperature
+> > > + * @last_temperature:	previous temperature read
+> > > + * @emul_temperature:	emulated temperature when using CONFIG_THERMAL_EMULATION
+> > > + * @passive:	step-wise specific parameter.  1 if you've crossed a passive
+> > > + *		trip point, 0 otherwise
+> > 
+> > ditto.
+> 
+> ditto, no other governor changes passive and it can't be changed from
+> sysfs.
+> 
+> > > + * @forced_passive:	step-wise specific parameter.  If > 0, temperature at
+> > > + *			which to switch on all cpufreq cooling devices.
+> > 
+> > ditto.
+> 
+> Again, this is step-wise specific.  You can change it from sysfs, but
+> the other governors (userspace and fair-share) will happily ignore
+> you.
+> 
+> > Also, governors are not aware of specific cooling devices. 
+> 
+> I didn't say that governors are aware of specific cooling devices.  I
+> said that if forced_passive is greater than 0, then only cpufreq
+> cooling devices are switched on.  It's wrong, it's not cpufreq cooling
+> devices, it's ACPI Processor cooling devices.
+> 
+
+I mean, we don't have only cpufreq cooling devices. 
+
+> Cheers,
+> Javi
