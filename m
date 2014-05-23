@@ -1,58 +1,81 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency callbacks
-Date: Fri, 23 May 2014 09:35:28 +0530
-Message-ID: <CAKohpomdOEspgfxNR5p=PVLCeSUYcUWZ2cWGGQo0b__ptKiYtw@mail.gmail.com>
+Subject: Re: [PATCH V4 2/3] cpufreq: add support for intermediate (stable) frequencies
+Date: Fri, 23 May 2014 09:54:56 +0530
+Message-ID: <CAKohpokhiTpTd-ByFUuOL1hR7MnKPPQj-peH7S5oFxowKt0BeQ@mail.gmail.com>
 References: <cover.1400662383.git.viresh.kumar@linaro.org>
-	<dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>
-	<537E285C.6060608@wwwdotorg.org>
+	<59e1185a31e61c428aca9f4b8f0a69f182ee458e.1400662383.git.viresh.kumar@linaro.org>
+	<537E27DA.9040709@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:57117 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbaEWEF2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 May 2014 00:05:28 -0400
-Received: by mail-ob0-f182.google.com with SMTP id wn1so4900656obc.27
-        for <linux-pm@vger.kernel.org>; Thu, 22 May 2014 21:05:28 -0700 (PDT)
-In-Reply-To: <537E285C.6060608@wwwdotorg.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <537E27DA.9040709@wwwdotorg.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Stephen Warren <swarren@wwwdotorg.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 22 May 2014 22:09, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> I think the call to tegra_target_intermediate() is wrong here; shouldn't
-> the cpufreq core guarantee that tegra_target_intermediate() has always
-> been called before tegra_target(), so there's no need to repeat that
-> call here?
+On 22 May 2014 22:07, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> It seems rather odd to set both freqs->old and freqs->new to the
+> intermediate frequency upon success. It feels like it would make more
+> sense to remove that final else clause above, and do the following where
+> this function is called:
+>
+>         intermediate_freq = freqs.new;
+>         if (intermediate_freq)
+>                 freqs.old = intermediate_freq
+>         freqs.new = freq_table[index].frequency
 
-That's what Doug requested in the previous version. get_intermediate()
-can return zero in case drivers don't want to switch to intermediate
-frequency for some target frequency.
+Looks better.
 
-Core should rather guarantee that target_index() is always called, if you
-want core to guarantee that target_intermediate() is also always called,
-then don't ever return zero from get_intermediate.
+> (or even return the intermediate frequency from the function)
 
-I did it that way for tegra as both target_intermediate() & target_index()
-would have tried to set the same frequency for this particular case,
-i.e. when target freq == intermediate frequency.
+It can return errors as well and so I didn't tried to return frequency
+from it. Though there are routines that return both error and freq
+from such calls :)
 
-And both would have sent notification and the last notification wouldn't
-have made any sense, both old-freq & new-freq would have been
-intermediate freqs.
+> ?
+>
+> But I suppose isolating all the inside __target_intermediate() isn't so bad.
 
-So, yes I see the feature suggested by Doug quite useful. Like in your
-case.
+:)
 
-> Also, tegra_target() doesn't seem to follow the rule documented by patch
-> 2/3 that states ->target() should restore the orignal frequency on
-> error. I'm not even sure if that's possible in general.
+>>  static int __target_index(struct cpufreq_policy *policy,
+>>                         struct cpufreq_frequency_table *freq_table, int index)
+>>  {
+>> -     struct cpufreq_freqs freqs;
+>> +     struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
+>> +     unsigned int intermediate_freq = 0;
+>>       int retval = -EINVAL;
+>>       bool notify;
+>>
+>>       notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
+>> -
+>>       if (notify) {
+>> -             freqs.old = policy->cur;
+>> -             freqs.new = freq_table[index].frequency;
+>> -             freqs.flags = 0;
+>> +             /* Handle switching to intermediate frequency */
+>> +             if (cpufreq_driver->get_intermediate) {
+>> +                     retval = __target_intermediate(policy, &freqs, index);
+>> +                     if (retval)
+>> +                             return retval;
+>
+> Shouldn't this all be outside the if (notify) block, so that
+> __target_intermediate is always called, and it's just the notify
+> callbacks that gets skipped if (!notify)?
 
-I thought I took care of that. Can you please give some example when
-we aren't restoring original frequency on failure ?
+So, this is logic I had:
 
-About the rule, that has to be the expectation from core as there is no
-way out that for core to know what happened at end of target_index()..
+Should we support 'intermediate freq' infrastructure when driver wants
+to handle notifications themselves?
 
-It can call get_rate() but that would be over engineering it looks ..
+Probably not.
+
+The whole point of implementing this 'intermediate freq' infrastructure is to
+get rid of code redundancy while sending notifications. If drivers want to
+handle notifications then they better handle intermediate freqs as well in
+their target_index() callback. They don't need to implement another routine
+for intermediate stuff..
+
+--
+viresh
