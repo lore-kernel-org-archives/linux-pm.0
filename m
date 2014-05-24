@@ -1,76 +1,33 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: remove checks for CONFIG_EXYNOS_ASV
-Date: Sat, 24 May 2014 21:40:31 +0900
-Message-ID: <CAJ0PZbS_Xcu=OJuiy=xs7k_A1=ajp34KEdi4KGC3e-y8t3EUGw@mail.gmail.com>
-References: <7638065.14871400820762911.JavaMail.weblogic@epml08>
-Reply-To: myungjoo.ham@gmail.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V3 1/8] cpufreq: cpufreq-cpu0: remove dependency on
+ thermal
+Date: Sat, 24 May 2014 14:59:47 +0200
+Message-ID: <20140524125946.GA31533@Nokia-N900>
+References: <cover.1400736536.git.viresh.kumar@linaro.org>
+ <c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org>
+ <20140522145209.GA5246@developer>
+ <CAKohpo=e62HPRF0N7kDvZEBAVPMFUeXVoL4jU--i7bZhn6Kjgw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f179.google.com ([209.85.220.179]:56398 "EHLO
-	mail-vc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbaEXMkc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 24 May 2014 08:40:32 -0400
-In-Reply-To: <7638065.14871400820762911.JavaMail.weblogic@epml08>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38390 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbaEXM7y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 24 May 2014 08:59:54 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=e62HPRF0N7kDvZEBAVPMFUeXVoL4jU--i7bZhn6Kjgw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, =?UTF-8?B?6rmA6rWt7KeE?= <kgene.kim@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Fri, May 23, 2014 at 1:52 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> On Thu, May 22, 2014 at 5:37 AM, Paul Bolle <pebolle@tiscali.nl> wrote:
->> Checks for CONFIG_EXYNOS_ASV were added in v3.3. But the related Kconfig
->> symbol has never been added to the tree. Remove these checks, as they
->> always evaluate to false.
->>
->> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
->
-> Thanks for pointing this out.
->
-> ASV was supposed to be merged, but it appears it failed or never attempted.
->
-> I will merge with the next batch (this week).
->
->
-> Cheers,
-> MyungJoo.
+On Fri 2014-05-23 10:03:27, Viresh Kumar wrote:
+> On 22 May 2014 20:22, Eduardo Valentin <edubezval@gmail.com> wrote:
+> > However, on CPUs that needs thermal managment, it makes sense to have
+> > such dependency, from functional perspective. Mainly because scaling
+> > frequency and voltage up would be allowed only when thermal management
+> > is enabled.
+> 
+> AFAIK, dependencies in KCONFIG are only for fixing compilation time issues.
 
-Uh.. ASV itself affects the power efficiency; thus, I'd like to keep
-it alive, but not as the current form.
-
-For 3.16, I'll correct the name following your report. (not going for
-3.15RCx anyway)
-
-
-Then, I'll let it merged into struct busfreq_data for later RCx.
-
-
-Cheers,
-MyungJoo.
-
->
->> ---
->> 0) Untested.
->>
->> 1) I do not really care much for this patch. Two years is not very long
->> for dead code to remain in the tree. There is, however, a trivial issue
->> that makes this patch stand out from the other patches in my current
->> sweep of the tree for Kconfig related problems.
->>
->> See, here the use of an unknown Kconfig macro hides an obvious typo: it
->> should either be "exynos_result_of_asv" or "exynos4_result_of_asv", but
->> not both. Ie, this almost certainly wouldn't have compiled even if the
->> Kconfig symbol EXYNOS_ASV would have been part of the tree.
->>
->> 2) So this makes me wonder whether there are any guidelines for using
->> Kconfig macros before the related Kconfig symbols are merged?
->>
->>  drivers/devfreq/Kconfig              |  3 +--
->>  drivers/devfreq/exynos/exynos4_bus.c | 13 -------------
->>  2 files changed, 1 insertion(+), 15 deletions(-)
-
-
-
--- 
-MyungJoo Ham, Ph.D.
-System S/W Lab, S/W Center, Samsung Electronics
+I do not think that's correct.
