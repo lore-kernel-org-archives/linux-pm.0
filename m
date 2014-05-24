@@ -1,17 +1,76 @@
-From: "Linux msdos" <achizitii@elcen.ro>
-Subject: Get designer watches for less
-Date: Fri, 23 May 2014 20:40:27 +0200
-Message-ID: <EEEAFB73.08830623@elcen.ro>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: remove checks for CONFIG_EXYNOS_ASV
+Date: Sat, 24 May 2014 21:40:31 +0900
+Message-ID: <CAJ0PZbS_Xcu=OJuiy=xs7k_A1=ajp34KEdi4KGC3e-y8t3EUGw@mail.gmail.com>
+References: <7638065.14871400820762911.JavaMail.weblogic@epml08>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain;	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-msdos-owner@vger.kernel.org>
-Sender: linux-msdos-owner@vger.kernel.org
-To: linux-msdos@vger.kernel.org, linux-net@vger.kernel.org, linux-newbie-owner@vger.kernel.org, linux-newbie@vger.kernel.org, linux-next@vger.kernel.org, linux-nfs@vger.kernel.org, linux-numa@vger.kernel.org, linux-omap@vger.kernel.org, linux-parisc@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-ppp-owner@vger.kernel.org, linux-ppp@vger.kernel.org, linux-raid-owner@vger.kernel.org, linux-raid@vger.kernel.org, linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org, linux-serial@vger.kernel.org, linux-sh@vger.kernel.org, linux-smp-owner@vger.kernel.org, linux-smp@vger.kernel.org, linux-sound-owner@vger.kernel.org, linux-sound@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f179.google.com ([209.85.220.179]:56398 "EHLO
+	mail-vc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbaEXMkc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 24 May 2014 08:40:32 -0400
+In-Reply-To: <7638065.14871400820762911.JavaMail.weblogic@epml08>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, =?UTF-8?B?6rmA6rWt7KeE?= <kgene.kim@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-I now know where to get my trusted branded goods 
+On Fri, May 23, 2014 at 1:52 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> On Thu, May 22, 2014 at 5:37 AM, Paul Bolle <pebolle@tiscali.nl> wrote:
+>> Checks for CONFIG_EXYNOS_ASV were added in v3.3. But the related Kconfig
+>> symbol has never been added to the tree. Remove these checks, as they
+>> always evaluate to false.
+>>
+>> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+>
+> Thanks for pointing this out.
+>
+> ASV was supposed to be merged, but it appears it failed or never attempted.
+>
+> I will merge with the next batch (this week).
+>
+>
+> Cheers,
+> MyungJoo.
 
-http://smilingsoulcoaching.com/llltdud.php
+Uh.. ASV itself affects the power efficiency; thus, I'd like to keep
+it alive, but not as the current form.
+
+For 3.16, I'll correct the name following your report. (not going for
+3.15RCx anyway)
 
 
+Then, I'll let it merged into struct busfreq_data for later RCx.
+
+
+Cheers,
+MyungJoo.
+
+>
+>> ---
+>> 0) Untested.
+>>
+>> 1) I do not really care much for this patch. Two years is not very long
+>> for dead code to remain in the tree. There is, however, a trivial issue
+>> that makes this patch stand out from the other patches in my current
+>> sweep of the tree for Kconfig related problems.
+>>
+>> See, here the use of an unknown Kconfig macro hides an obvious typo: it
+>> should either be "exynos_result_of_asv" or "exynos4_result_of_asv", but
+>> not both. Ie, this almost certainly wouldn't have compiled even if the
+>> Kconfig symbol EXYNOS_ASV would have been part of the tree.
+>>
+>> 2) So this makes me wonder whether there are any guidelines for using
+>> Kconfig macros before the related Kconfig symbols are merged?
+>>
+>>  drivers/devfreq/Kconfig              |  3 +--
+>>  drivers/devfreq/exynos/exynos4_bus.c | 13 -------------
+>>  2 files changed, 1 insertion(+), 15 deletions(-)
+
+
+
+-- 
+MyungJoo Ham, Ph.D.
+System S/W Lab, S/W Center, Samsung Electronics
