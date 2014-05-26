@@ -1,95 +1,46 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3][update] PM / sleep: Introduce command line argument
- for sleep state enumeration
-Date: Mon, 26 May 2014 16:25:56 +0530
-Message-ID: <53831DBC.8080404@linux.vnet.ibm.com>
-References: <1817539.9KW2IGGbDV@vostro.rjw.lan> <1579932.qSkFQPvI6f@vostro.rjw.lan> <5382FBD2.3070908@linux.vnet.ibm.com> <2276224.JN17nYXlNX@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Mon, 26 May 2014 13:22:32 +0200
+Message-ID: <9956925.Qsz2bH3rDg@vostro.rjw.lan>
+References: <20140521073457.GD31687@pengutronix.de> <00f65d1c-a375-40e7-b30a-cd8cb3ca87fc@BN1BFFO11FD020.protection.gbl> <CAKohpomb+h6ZNDgJ8AwJ_J9DjMB7AP_v-cp8coG3CACo5Wt4vQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:58537 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbaEZK5O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 06:57:14 -0400
-Received: from /spool/local
-	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 26 May 2014 20:57:12 +1000
-In-Reply-To: <2276224.JN17nYXlNX@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:64855 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751716AbaEZLF3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 07:05:29 -0400
+In-Reply-To: <CAKohpomb+h6ZNDgJ8AwJ_J9DjMB7AP_v-cp8coG3CACo5Wt4vQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 05/26/2014 04:30 PM, Rafael J. Wysocki wrote:
-> On Monday, May 26, 2014 02:01:14 PM Srivatsa S. Bhat wrote:
->> On 05/23/2014 06:33 PM, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> On some systems the platform doesn't support neither
->>> PM_SUSPEND_MEM nor PM_SUSPEND_STANDBY, so PM_SUSPEND_FREEZE is the
->>> only available system sleep state.  However, some user space frameworks
->>> only use the "mem" and (sometimes) "standby" sleep state labels, so
->>> the users of those systems need to modify user space in order to be
->>> able to use system suspend at all and that is not always possible.
->>>
->>
->> So, is this going to be a temporary solution until all the user-space
->> frameworks have been fixed? I certainly hope so, because this clearly looks
->> like a bug (or a lack of feature) in user-space to me... in the sense that
->> those user-space frameworks don't have support for (i.e., don't know how to
->> deal with) freeze-only systems yet.
->>
->> The more elegant long term solution would have been to teach the kernel to
->> export *truly* relative names such as SUSPEND_DEEP, SUSPEND_SHALLOW,
->> and SUSPEND_LIGHT or something like that (of course, we can debate on what
->> naming would suit best).
-> 
-> I agree and that's a logical next step, so I have a plan to rename the kernel
-> symbols corresponding to each state so that they reflect the code more closely
-> (for example, the current PM_SUSPEND_MEM and PM_SUSPEND_STANDBY depend on the
-> platform to support them, but that is not clear from the symbol naming, and on
-> many platforms _MEM doesn't mean "suspend-to-RAM" anyway).
-> 
+On Monday, May 26, 2014 11:59:09 AM Viresh Kumar wrote:
+> On 23 May 2014 21:44, S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.co=
+m> wrote:
+> > Viresh: Could you imagine something similar for cpufreq? You sugges=
+ted
+> > migrating to Hz resolution. I guess that would ideally mean to foll=
+ow
+> > the CCF to a 64-bit type for frequencies and increasing the resolut=
+ion.
+> > I have a messy patch migrating cpufreq and OPP to Hz and unsigned l=
+ong
+> > that works on Zynq. But cpufreq has so many users that it would bec=
+ome
+> > quite an undertaking.
+> > And we'd need some new/amended OPP DT binding.
+>=20
+> If we are going to migrate to Hz from KHz, I think we must consider t=
+he
+> 64 bit stuff right now, otherwise it will bite us later.
+>=20
+> @Rafael: What do you think?
 
-Ok..
+I agree as far as the 64-bit thing goes, but is switching to Hz really
+necessary?
 
-> The strings in the interface are a somewhat different matter, because user
-> space already depends on them (which is the source of the problem here), so we
-> may need to keep them or at least respond to them as expected when written to
-> /sys/power/state.
->
-
-Right, I see your point..
- 
-> I personally think that we should use "sleep", "snooze" and "pause" to reflect
-> the "sleep depth".  And possibly "hibernate" instead of "disk".
-> 
-
-Yeah, that sounds good.
-
->> But this patch continues to keep the names 'SUSPEND_MEM' ("mem") etc., which
->> still implies that we are doing Suspend-to-RAM, because the name itself betrays
->> that info. So IMHO it doesn't really match what the command-line-switch
->> 'relative_sleep_states' says.
->>
->> But I understand that this is a quick hack to make existing user-space work
->> with systems that support only the freeze state. However, for the reasons
->> mentioned above, I hope that this is a temporary solution and we can remove
->> or enhance this once all those user-space frameworks have been fixed.
-> 
-> Well, it is supposed to be temporary, but I'm not sure if we can count on all
-> user space to be fixed in any reasonable time frame (think about Android, for
-> example).
-> 
-
-Hmm, that's sad. But anyway, I just wanted to point out issues with this patch
-and suggest possible enhancements. But since you seem to have already thought
-through all of this, I have no objections to this patch.
-
-Thank you!
- 
-Regards,
-Srivatsa S. Bhat
+Rafael
 
