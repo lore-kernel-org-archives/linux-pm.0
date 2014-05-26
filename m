@@ -1,52 +1,126 @@
-From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Mon, 26 May 2014 14:52:47 -0700
-Message-ID: <2827f20b-b489-4eb0-8ec9-9db957e28788@BL2FFO11FD008.protection.gbl>
-References: <20140521073457.GD31687@pengutronix.de>
- <9956925.Qsz2bH3rDg@vostro.rjw.lan>
- <CAKohpomam0qKdkMMMRDOfWN9QnZ3DzCviV=RuZ5f_7JbmYNDNw@mail.gmail.com>
- <9956935.0oj56vcaUh@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V4 1/3] cpufreq: handle calls to ->target_index() in separate routine
+Date: Tue, 27 May 2014 01:21:31 +0200
+Message-ID: <2164172.cubRkjSW1o@vostro.rjw.lan>
+References: <cover.1400662383.git.viresh.kumar@linaro.org> <b2ed4e111222c2367a77a1382a6a7ea232ef9b59.1400662383.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <9956935.0oj56vcaUh@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mturquette@linaro.org>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64807 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751577AbaEZXE2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 19:04:28 -0400
+In-Reply-To: <b2ed4e111222c2367a77a1382a6a7ea232ef9b59.1400662383.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org, linux@arm.linux.org.uk, nicolas.pitre@linaro.org, thomas.abraham@linaro.org, pdeschrijver@nvidia.com
 
-On Mon, 2014-05-26 at 01:47PM +0200, Rafael J. Wysocki wrote:
-> On Monday, May 26, 2014 04:37:13 PM Viresh Kumar wrote:
-> > On 26 May 2014 16:52, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > I agree as far as the 64-bit thing goes, but is switching to Hz r=
-eally
-> > > necessary?
-> >=20
-> > Don't really know that.. It seems that there will always be problem=
-s with
-> > close enough frequencies whenever rounding is done.
->=20
-> Well, rounding errors are a problem, but question is if that is enoug=
-h of
-> a problem to justify expanding the storage size twice.  Also, that'd =
-be
-> a performance hit on 32-bit systems.
->=20
-> > More can be elaborated by Soren.
->=20
-> OK
+On Wednesday, May 21, 2014 02:29:29 PM Viresh Kumar wrote:
+> Handling calls to ->target_index() has got complex over time and might become
+> more complex. So, its better to take target_index() bits out in another routine
+> __target_index() for better code readability. Shouldn't have any functional
+> impact.
+> 
+> Tested-by: Stephen Warren <swarren@nvidia.com>
+> Reviewed-by: Doug Anderson <dianders@chromium.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I'd say it's probably not worth switching. As you and I said, rounding
-issues are likely to happen no matter what. In this particular case,
-switching would not remove the need for the patch I proposed to allow
-for rounding errors. The error margin could be reduced, but that's it.
-I think it would be nice if CCF, OPP and cpufreq would use the same
-resolution and types, since it would remove the need for all these
-conversions that are going on in cpufreq drivers, but looking at the
-wide usage of cpufreq and the potential drawbacks Rafael pointed at:
-nice-to-have is probably not enough of a justification.
+I guess I can take this one without the rest of the series?
 
-	S=C3=B6ren
+> ---
+>  drivers/cpufreq/cpufreq.c | 56 ++++++++++++++++++++++++++++-------------------
+>  1 file changed, 33 insertions(+), 23 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index a05c921..ae11dd5 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1816,12 +1816,43 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+>   *                              GOVERNORS                            *
+>   *********************************************************************/
+>  
+> +static int __target_index(struct cpufreq_policy *policy,
+> +			  struct cpufreq_frequency_table *freq_table, int index)
+> +{
+> +	struct cpufreq_freqs freqs;
+> +	int retval = -EINVAL;
+> +	bool notify;
+> +
+> +	notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
+> +
+> +	if (notify) {
+> +		freqs.old = policy->cur;
+> +		freqs.new = freq_table[index].frequency;
+> +		freqs.flags = 0;
+> +
+> +		pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
+> +			 __func__, policy->cpu, freqs.old, freqs.new);
+> +
+> +		cpufreq_freq_transition_begin(policy, &freqs);
+> +	}
+> +
+> +	retval = cpufreq_driver->target_index(policy, index);
+> +	if (retval)
+> +		pr_err("%s: Failed to change cpu frequency: %d\n", __func__,
+> +		       retval);
+> +
+> +	if (notify)
+> +		cpufreq_freq_transition_end(policy, &freqs, retval);
+> +
+> +	return retval;
+> +}
+> +
+>  int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>  			    unsigned int target_freq,
+>  			    unsigned int relation)
+>  {
+> -	int retval = -EINVAL;
+>  	unsigned int old_target_freq = target_freq;
+> +	int retval = -EINVAL;
+>  
+>  	if (cpufreq_disabled())
+>  		return -ENODEV;
+> @@ -1848,8 +1879,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>  		retval = cpufreq_driver->target(policy, target_freq, relation);
+>  	else if (cpufreq_driver->target_index) {
+>  		struct cpufreq_frequency_table *freq_table;
+> -		struct cpufreq_freqs freqs;
+> -		bool notify;
+>  		int index;
+>  
+>  		freq_table = cpufreq_frequency_get_table(policy->cpu);
+> @@ -1870,26 +1899,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>  			goto out;
+>  		}
+>  
+> -		notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
+> -
+> -		if (notify) {
+> -			freqs.old = policy->cur;
+> -			freqs.new = freq_table[index].frequency;
+> -			freqs.flags = 0;
+> -
+> -			pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
+> -				 __func__, policy->cpu, freqs.old, freqs.new);
+> -
+> -			cpufreq_freq_transition_begin(policy, &freqs);
+> -		}
+> -
+> -		retval = cpufreq_driver->target_index(policy, index);
+> -		if (retval)
+> -			pr_err("%s: Failed to change cpu frequency: %d\n",
+> -			       __func__, retval);
+> -
+> -		if (notify)
+> -			cpufreq_freq_transition_end(policy, &freqs, retval);
+> +		retval = __target_index(policy, freq_table, index);
+>  	}
+>  
+>  out:
+> 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
