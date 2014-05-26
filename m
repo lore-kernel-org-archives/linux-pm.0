@@ -1,42 +1,115 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/4] cpufreq: add i.MX5 cpufreq driver
-Date: Mon, 26 May 2014 21:52:21 +0530
-Message-ID: <CAKohpo=0VoOEz=SmvU+m6rX3beJ_nMpCUCx504Hsw2jRj2_QSg@mail.gmail.com>
-References: <1401099308-9658-1-git-send-email-l.stach@pengutronix.de>
-	<1401099308-9658-2-git-send-email-l.stach@pengutronix.de>
-	<CAKohpoksbFHyX=r0=URMedJNi68c3xAX4OrXzSFqgf1-bCm4+Q@mail.gmail.com>
-	<1401101131.4829.29.camel@weser.hi.pengutronix.de>
-	<CAKohponTUsYLf-8_iSnttwK8oXyJEZVWpF+a=vLC7r_jZ8AzOQ@mail.gmail.com>
-	<1401107748.4829.39.camel@weser.hi.pengutronix.de>
-	<CAKohpo=ncHUmtJOEw4FZG1BWUSuiQK4n+ETEMJWJj9UoPz2cnw@mail.gmail.com>
-	<1401109863.4829.46.camel@weser.hi.pengutronix.de>
-	<CAKohponzJma6yNueMef2Q4k+qT-n7boV0tx0pCqjFmuQWj6TXg@mail.gmail.com>
-	<1401112697.4829.56.camel@weser.hi.pengutronix.de>
-	<CAKohponvWLVfBL06HURnTq4nmdKjROV-bd4pVcbNmsAUYYC+nA@mail.gmail.com>
-	<1401118115.4829.60.camel@weser.hi.pengutronix.de>
-	<CAKohpo=yShVa+5On0cPU68ooQGO8dFXP+amPHf3taP_aYYe1Qg@mail.gmail.com>
-	<1401119853.4829.65.camel@weser.hi.pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Johan Hovold <jhovold@gmail.com>
+Subject: [PATCH 00/63] USB: (mostly runtime PM) patches for v3.16-rc
+Date: Mon, 26 May 2014 19:22:49 +0200
+Message-ID: <1401125032-28490-1-git-send-email-jhovold@gmail.com>
+References: <20140524204235.GA24047@localhost>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:46128 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbaEZQWX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 12:22:23 -0400
-Received: by mail-ob0-f170.google.com with SMTP id uy5so8178320obc.15
-        for <linux-pm@vger.kernel.org>; Mon, 26 May 2014 09:22:22 -0700 (PDT)
-In-Reply-To: <1401119853.4829.65.camel@weser.hi.pengutronix.de>
+Received: from mail-lb0-f180.google.com ([209.85.217.180]:51215 "EHLO
+	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751308AbaEZRZ0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 13:25:26 -0400
+In-Reply-To: <20140524204235.GA24047@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Oliver Neukum <oneukum@suse.de>, Alan Stern <stern@rowland.harvard.edu>, Xiao Jin <jin.xiao@intel.com>, linux-usb@vger.kernel.org, Johan Hovold <jhovold@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, Peter Hurley <peter@hurleysoftware.com>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, david.a.cohen@linux.intel.com, yanmin.zhang@intel.com
 
-On 26 May 2014 21:27, Lucas Stach <l.stach@pengutronix.de> wrote:
-> No, we need the regulator to determine which OPPs are actually useable.
-> If the regulator is only supplying 1.1V we can only scale to 800MHz max,
-> which is the case for some of the industrial i.MX53 versions.
+Turns out that the three current implementations of aggressive runtime
+power management in USB-TTY drivers were quite badly broken (and has so
+been since first merged in v2.6.27 and v2.6.32).
 
-Go and add another binding for this max-volt.. And lets see how others
-respond.
+These patches fix this runtime PM mess, but also do some clean up and
+fix a few other issues.
 
-You can give a link to this discussion as others might find this very helpful.
+Note that all patches but the cdc-acm ones (and the single wusbcore one)
+are usb-serial, but I decided to include them all in one series as
+several bugs were reproduced in both cdc-acm and usb-serial.
+
+For reference, I'm responding to the thread with Xiao Jin's initial bug
+report, but the full thread is posted to linux-usb only.
+
+Johan
+
+
+Johan Hovold (61):
+  USB: sierra: fix AA deadlock in open error path
+  USB: sierra: fix use after free at suspend/resume
+  USB: sierra: fix urb and memory leak in resume error path
+  USB: sierra: fix urb and memory leak on disconnect
+  USB: sierra: fix remote wakeup
+  USB: sierra: fix characters being dropped at close
+  USB: sierra: fix urbs not being killed on shutdown
+  USB: sierra: fix resume error reporting
+  USB: sierra: fix line-control pipe direction
+  USB: sierra: remove bogus endpoint test
+  USB: sierra: remove unused variable
+  USB: sierra: remove unimplemented set_termios
+  USB: sierra: remove disconnected test from close
+  USB: sierra: do not resume I/O on closed ports
+  USB: sierra: remove redundant modem-control requests
+  USB: sierra: use interface-data accessors
+  USB: sierra: clean up suspend
+  USB: sierra: refactor delayed-urb submission
+  USB: sierra: minimise no-suspend window during close
+  USB: sierra: do not resume I/O on closing ports
+  USB: option: fix runtime PM handling
+  USB: option: fix line-control pipe direction
+  USB: option: add missing usb_mark_last_busy
+  USB: usb_wwan: fix write and suspend race
+  USB: usb_wwan: fix urb leak at shutdown
+  USB: usb_wwan: fix potential NULL-deref at resume
+  USB: usb_wwan: fix potential blocked I/O after resume
+  USB: usb_wwan: fix discarded writes on resume errors
+  USB: usb_wwan: fix remote wakeup
+  USB: usb_wwan: remove redundant modem-control request
+  USB: usb_wwan: remove unimplemented set_termios
+  USB: usb_wwan: remove redundant urb kill from port remove
+  USB: usb_wwan: kill interrupt urb explicitly at suspend
+  USB: usb_wwan: make resume error messages uniform
+  USB: usb_wwan: use interface-data accessors
+  USB: usb_wwan: clean up delayed-urb submission
+  USB: usb_wwan: remove comment from close
+  USB: usb_wwan: remove some superfluous comments
+  USB: usb_wwan: remove bogus function prototype
+  USB: usb_wwan: report failed submissions as errors
+  USB: usb_wwan: do not resume I/O on closing ports
+  USB: serial: fix potential runtime pm imbalance at device remove
+  USB: serial: remove overly defensive port tests
+  USB: kobil_sct: fix control requests without data stage
+  USB: cdc-acm: fix write and suspend race
+  USB: cdc-acm: fix write and resume race
+  USB: cdc-acm: fix broken runtime suspend
+  USB: cdc-acm: fix runtime PM for control messages
+  USB: cdc-acm: fix shutdown and suspend race
+  USB: cdc-acm: fix potential urb leak and PM imbalance in write
+  USB: cdc-acm: fix open and suspend race
+  USB: cdc-acm: fix failed open not being detected
+  USB: cdc-acm: fix I/O after failed open
+  USB: cdc-acm: fix runtime PM imbalance at shutdown
+  USB: cdc-acm: simplify runtime PM locking
+  USB: cdc-acm: remove redundant disconnected test from shutdown
+  USB: cdc-acm: minimise no-suspend window during shutdown
+  USB: cdc-acm: do not update PM busy on read errors
+  USB: cdc-acm: remove redundant usb_mark_last_busy
+  USB: cdc-acm: use tty-port dtr_rts
+  USB: wusbcore: fix control-pipe directions
+
+xiao jin (2):
+  USB: usb_wwan: fix urb leak in write error path
+  USB: usb_wwan: fix race between write and resume
+
+ drivers/usb/class/cdc-acm.c     | 177 +++++++++++++++++-------------
+ drivers/usb/class/cdc-acm.h     |   2 +-
+ drivers/usb/serial/bus.c        |  14 ++-
+ drivers/usb/serial/kobil_sct.c  |  22 ++--
+ drivers/usb/serial/option.c     |  13 ++-
+ drivers/usb/serial/sierra.c     | 198 ++++++++++++++++++++--------------
+ drivers/usb/serial/usb-serial.c |  38 +++----
+ drivers/usb/serial/usb-wwan.h   |   6 +-
+ drivers/usb/serial/usb_wwan.c   | 234 ++++++++++++++++++++--------------------
+ drivers/usb/wusbcore/wa-rpipe.c |   4 +-
+ 10 files changed, 390 insertions(+), 318 deletions(-)
+
+-- 
+1.8.5.5
+
