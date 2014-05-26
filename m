@@ -1,72 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3][update] PM / sleep: Introduce command line argument for sleep state enumeration
-Date: Mon, 26 May 2014 13:00:02 +0200
-Message-ID: <2276224.JN17nYXlNX@vostro.rjw.lan>
-References: <1817539.9KW2IGGbDV@vostro.rjw.lan> <1579932.qSkFQPvI6f@vostro.rjw.lan> <5382FBD2.3070908@linux.vnet.ibm.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH 2/4] cpufreq: add i.MX5 cpufreq driver
+Date: Mon, 26 May 2014 12:45:31 +0200
+Message-ID: <1401101131.4829.29.camel@weser.hi.pengutronix.de>
+References: <1401099308-9658-1-git-send-email-l.stach@pengutronix.de>
+	 <1401099308-9658-2-git-send-email-l.stach@pengutronix.de>
+	 <CAKohpoksbFHyX=r0=URMedJNi68c3xAX4OrXzSFqgf1-bCm4+Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63037 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751128AbaEZKm7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 06:42:59 -0400
-In-Reply-To: <5382FBD2.3070908@linux.vnet.ibm.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49545 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbaEZKqx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 06:46:53 -0400
+In-Reply-To: <CAKohpoksbFHyX=r0=URMedJNi68c3xAX4OrXzSFqgf1-bCm4+Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>
 
-On Monday, May 26, 2014 02:01:14 PM Srivatsa S. Bhat wrote:
-> On 05/23/2014 06:33 PM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > On some systems the platform doesn't support neither
-> > PM_SUSPEND_MEM nor PM_SUSPEND_STANDBY, so PM_SUSPEND_FREEZE is the
-> > only available system sleep state.  However, some user space frameworks
-> > only use the "mem" and (sometimes) "standby" sleep state labels, so
-> > the users of those systems need to modify user space in order to be
-> > able to use system suspend at all and that is not always possible.
+Am Montag, den 26.05.2014, 16:02 +0530 schrieb Viresh Kumar:
+> On 26 May 2014 15:45, Lucas Stach <l.stach@pengutronix.de> wrote:
+> > SoC specific driver to be able to handle PLL reprogramming
+> > for exact OPP frequencies and additional power saving.
 > >
+> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> > ---
+> >  .../devicetree/bindings/cpufreq/cpufreq-imx5.txt   |  43 +++
+> >  drivers/cpufreq/Kconfig.arm                        |   8 +
+> >  drivers/cpufreq/Makefile                           |   1 +
+> >  drivers/cpufreq/imx5-cpufreq.c                     | 302 +++++++++++++++++++++
+> >  4 files changed, 354 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-imx5.txt
+> >  create mode 100644 drivers/cpufreq/imx5-cpufreq.c
 > 
-> So, is this going to be a temporary solution until all the user-space
-> frameworks have been fixed? I certainly hope so, because this clearly looks
-> like a bug (or a lack of feature) in user-space to me... in the sense that
-> those user-space frameworks don't have support for (i.e., don't know how to
-> deal with) freeze-only systems yet.
-> 
-> The more elegant long term solution would have been to teach the kernel to
-> export *truly* relative names such as SUSPEND_DEEP, SUSPEND_SHALLOW,
-> and SUSPEND_LIGHT or something like that (of course, we can debate on what
-> naming would suit best).
+> What stops you to use cpufreq-cpu0 driver with a CPU clock
+> driver? Its highly discouraged to add a new driver here if you
+> can reuse it.. Which is more or less confirmed from a broad look..
 
-I agree and that's a logical next step, so I have a plan to rename the kernel
-symbols corresponding to each state so that they reflect the code more closely
-(for example, the current PM_SUSPEND_MEM and PM_SUSPEND_STANDBY depend on the
-platform to support them, but that is not clear from the symbol naming, and on
-many platforms _MEM doesn't mean "suspend-to-RAM" anyway).
+This driver handles the i.MX5 specific clock reparenting to be able to
+reprogramm the PLL. cpufreq-cpu0 can only change a postdivider of the
+PLL, which means we can't reach the exact OPP frequencies and can not
+profit from the additional power savings of a slower running PLL.
 
-The strings in the interface are a somewhat different matter, because user
-space already depends on them (which is the source of the problem here), so we
-may need to keep them or at least respond to them as expected when written to
-/sys/power/state.
+Also without reprogramming the PLL we could possibly not scale to the
+highest OPPs if the bootloader left the PLL at a slower rate. This is
+the case for many i.MX53 boards, as the CPU regulator normally does
+start up with the voltage required for 800MHz operation. If the
+bootloader decides to not touch the regulator and set the PLL to 800MHz
+the 1GHz and 1.2GHz operating points won't be useable.
 
-I personally think that we should use "sleep", "snooze" and "pause" to reflect
-the "sleep depth".  And possibly "hibernate" instead of "disk".
-
-> But this patch continues to keep the names 'SUSPEND_MEM' ("mem") etc., which
-> still implies that we are doing Suspend-to-RAM, because the name itself betrays
-> that info. So IMHO it doesn't really match what the command-line-switch
-> 'relative_sleep_states' says.
-> 
-> But I understand that this is a quick hack to make existing user-space work
-> with systems that support only the freeze state. However, for the reasons
-> mentioned above, I hope that this is a temporary solution and we can remove
-> or enhance this once all those user-space frameworks have been fixed.
-
-Well, it is supposed to be temporary, but I'm not sure if we can count on all
-user space to be fixed in any reasonable time frame (think about Android, for
-example).
-
-Rafael
+Regards,
+Lucas
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
 
