@@ -1,62 +1,41 @@
-From: Lucas Stach <l.stach@pengutronix.de>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH 2/4] cpufreq: add i.MX5 cpufreq driver
-Date: Mon, 26 May 2014 17:28:35 +0200
-Message-ID: <1401118115.4829.60.camel@weser.hi.pengutronix.de>
+Date: Mon, 26 May 2014 21:05:38 +0530
+Message-ID: <CAKohpo=yShVa+5On0cPU68ooQGO8dFXP+amPHf3taP_aYYe1Qg@mail.gmail.com>
 References: <1401099308-9658-1-git-send-email-l.stach@pengutronix.de>
- <1401099308-9658-2-git-send-email-l.stach@pengutronix.de>
- <CAKohpoksbFHyX=r0=URMedJNi68c3xAX4OrXzSFqgf1-bCm4+Q@mail.gmail.com>
- <1401101131.4829.29.camel@weser.hi.pengutronix.de>
- <CAKohponTUsYLf-8_iSnttwK8oXyJEZVWpF+a=vLC7r_jZ8AzOQ@mail.gmail.com>
- <1401107748.4829.39.camel@weser.hi.pengutronix.de>
- <CAKohpo=ncHUmtJOEw4FZG1BWUSuiQK4n+ETEMJWJj9UoPz2cnw@mail.gmail.com>
- <1401109863.4829.46.camel@weser.hi.pengutronix.de>
- <CAKohponzJma6yNueMef2Q4k+qT-n7boV0tx0pCqjFmuQWj6TXg@mail.gmail.com>
- <1401112697.4829.56.camel@weser.hi.pengutronix.de>
- <CAKohponvWLVfBL06HURnTq4nmdKjROV-bd4pVcbNmsAUYYC+nA@mail.gmail.com>
+	<1401099308-9658-2-git-send-email-l.stach@pengutronix.de>
+	<CAKohpoksbFHyX=r0=URMedJNi68c3xAX4OrXzSFqgf1-bCm4+Q@mail.gmail.com>
+	<1401101131.4829.29.camel@weser.hi.pengutronix.de>
+	<CAKohponTUsYLf-8_iSnttwK8oXyJEZVWpF+a=vLC7r_jZ8AzOQ@mail.gmail.com>
+	<1401107748.4829.39.camel@weser.hi.pengutronix.de>
+	<CAKohpo=ncHUmtJOEw4FZG1BWUSuiQK4n+ETEMJWJj9UoPz2cnw@mail.gmail.com>
+	<1401109863.4829.46.camel@weser.hi.pengutronix.de>
+	<CAKohponzJma6yNueMef2Q4k+qT-n7boV0tx0pCqjFmuQWj6TXg@mail.gmail.com>
+	<1401112697.4829.56.camel@weser.hi.pengutronix.de>
+	<CAKohponvWLVfBL06HURnTq4nmdKjROV-bd4pVcbNmsAUYYC+nA@mail.gmail.com>
+	<1401118115.4829.60.camel@weser.hi.pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAKohponvWLVfBL06HURnTq4nmdKjROV-bd4pVcbNmsAUYYC+nA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawn.guo@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1401118115.4829.60.camel-WzVe3FnzCwFR6QfukMTsflXZhhPuCNm+@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Shawn Guo <shawn.guo-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag, den 26.05.2014, 20:52 +0530 schrieb Viresh Kumar:
-> On 26 May 2014 19:28, Lucas Stach <l.stach@pengutronix.de> wrote:
-> > Right, the OPP in my example define the minimum required voltage for
-> > each frequency. This is in accordance to the OPP binding. But for this
-> > chip the datasheet explicitly says that it is ok to power the cpu rail
-> > with up to 1.4V, regardless of the current operating frequency. So this
-> > 1.4V is really the upper bound I would like to pass to the regulator
-> > framework. This ensures that the driver still works properly even if the
-> > external regulator can't scale down to the minimum (or in other words
-> > optimal) voltage.
-> 
-> One more query. You have mentioned earlier and I just wanted to confirm
-> this. In your platform/board regulator only supports one voltage, i.e. 1.4 uV,
-> and it we can't get lower values out of regulator ?
-> 
-> If that's the case, why are you looking to use regulator at all?
+On 26 May 2014 20:58, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org> wrote:
+> The platform I'm working on supports cpu rail voltage regulation just
+> fine.
 
-The platform I'm working on supports cpu rail voltage regulation just
-fine.
-I just want to make sure that the driver works properly on platforms
-where this isn't the case. As the datasheet explicitly allows this case
-I want to make sure to not introduce a software only restriction, where
-there isn't any in hardware.
+So, the regulator can be scaled to support all values from your dts
+and we can work without MAX-volt parameter here..
 
-Regards,
-Lucas
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+> I just want to make sure that the driver works properly on platforms
+> where this isn't the case.
+
+Can we just take care of this simply by not adding any regulators at
+all? In that case cpufreq-cpu0 will try working without a regulator..
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
