@@ -1,30 +1,35 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 2/3] cpufreq: add support for intermediate (stable) frequencies
-Date: Mon, 26 May 2014 09:31:32 +0530
-Message-ID: <CAKohpomz5_Q=68QP7+-qbSrp-uSgSDD2ptmTnQdxASVO8jhDuw@mail.gmail.com>
-References: <cover.1400662383.git.viresh.kumar@linaro.org>
-	<59e1185a31e61c428aca9f4b8f0a69f182ee458e.1400662383.git.viresh.kumar@linaro.org>
-	<537E27DA.9040709@wwwdotorg.org>
-	<CAKohpokhiTpTd-ByFUuOL1hR7MnKPPQj-peH7S5oFxowKt0BeQ@mail.gmail.com>
-	<537F6F94.7040900@wwwdotorg.org>
+Subject: Re: [PATCH V3 1/8] cpufreq: cpufreq-cpu0: remove dependency on thermal
+Date: Mon, 26 May 2014 09:34:24 +0530
+Message-ID: <CAKohpomN=e2ygpv_y+PXaPQM_7ULkQoKa0UrU5CN9Yeqtp3v_g@mail.gmail.com>
+References: <cover.1400736536.git.viresh.kumar@linaro.org>
+	<c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org>
+	<20140522145209.GA5246@developer>
+	<CAKohpo=e62HPRF0N7kDvZEBAVPMFUeXVoL4jU--i7bZhn6Kjgw@mail.gmail.com>
+	<20140524125946.GA31533@Nokia-N900>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:48501 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbaEZEBd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 00:01:33 -0400
-Received: by mail-oa0-f44.google.com with SMTP id o6so7827336oag.3
-        for <linux-pm@vger.kernel.org>; Sun, 25 May 2014 21:01:32 -0700 (PDT)
-In-Reply-To: <537F6F94.7040900@wwwdotorg.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140524125946.GA31533@Nokia-N900>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-On 23 May 2014 21:26, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> Oh OK, I guess the "notify" value is static then, and driver defined, so
-> this is fine.
+On 24 May 2014 18:29, Pavel Machek <pavel@ucw.cz> wrote:
+> On Fri 2014-05-23 10:03:27, Viresh Kumar wrote:
+>> On 22 May 2014 20:22, Eduardo Valentin <edubezval@gmail.com> wrote:
+>> > However, on CPUs that needs thermal managment, it makes sense to have
+>> > such dependency, from functional perspective. Mainly because scaling
+>> > frequency and voltage up would be allowed only when thermal management
+>> > is enabled.
+>>
+>> AFAIK, dependencies in KCONFIG are only for fixing compilation time issues.
+>
+> I do not think that's correct.
 
-Correct!! Can you reply on the tegra patch also? So that we can close this
-thread ASAP?
+Yeah, that what I accepted later as well.. Dependency is whatever without which
+the module is unusable.
+
+And cpufreq-cpu0 is usable without THERMAL and so this dependency should
+go away..
