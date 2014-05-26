@@ -1,35 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/8] cpufreq: cpufreq-cpu0: remove dependency on thermal
-Date: Mon, 26 May 2014 09:34:24 +0530
-Message-ID: <CAKohpomN=e2ygpv_y+PXaPQM_7ULkQoKa0UrU5CN9Yeqtp3v_g@mail.gmail.com>
-References: <cover.1400736536.git.viresh.kumar@linaro.org>
-	<c73c825beda0207867bd29e40fece217cbf15925.1400736536.git.viresh.kumar@linaro.org>
-	<20140522145209.GA5246@developer>
-	<CAKohpo=e62HPRF0N7kDvZEBAVPMFUeXVoL4jU--i7bZhn6Kjgw@mail.gmail.com>
-	<20140524125946.GA31533@Nokia-N900>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [PATCH v6 0/6] add cpuidle support for Exynos5420
+Date: Mon, 26 May 2014 10:10:12 +0530
+Message-ID: <CANuQgHFeDXozQH4LRuidKBOvmhPn8afTpdUg0U4csbsbsyz-OA@mail.gmail.com>
+References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com>
+	<1400227438-27155-1-git-send-email-chander.kashyap@linaro.org>
+	<CANuQgHH1_O-8XHhRREdu5WjOwz1oeASdVf7TQFdGxjr0WDSvhQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140524125946.GA31533@Nokia-N900>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CANuQgHH1_O-8XHhRREdu5WjOwz1oeASdVf7TQFdGxjr0WDSvhQ@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chander Kashyap <chander.kashyap@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 May 2014 18:29, Pavel Machek <pavel@ucw.cz> wrote:
-> On Fri 2014-05-23 10:03:27, Viresh Kumar wrote:
->> On 22 May 2014 20:22, Eduardo Valentin <edubezval@gmail.com> wrote:
->> > However, on CPUs that needs thermal managment, it makes sense to have
->> > such dependency, from functional perspective. Mainly because scaling
->> > frequency and voltage up would be allowed only when thermal management
->> > is enabled.
->>
->> AFAIK, dependencies in KCONFIG are only for fixing compilation time issues.
+On 19 May 2014 11:10, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+> Hi Daniel/Kgene,
 >
-> I do not think that's correct.
+> On 16 May 2014 13:33, Chander Kashyap <chander.kashyap@linaro.org> wrote:
+>> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
+>>
+>> This patchset adds cpuidle support for Exynos5420 SoC based on
+>> generic big.little cpuidle driver.
+>>
+>> Tested on SMDK5420.
+>>
+>> This patch set depends on:
+>>         1. [PATCH 0/5] MCPM backend for Exynos5420
+>>            http://www.spinics.net/lists/arm-kernel/msg331100.html
+>> Changelog is in respective patches.
+>> Chander Kashyap (5):
+>>   driver: cpuidle-big-little: add of_device_id structure
+>>   arm: exynos: add generic function to calculate cpu number
+>>   cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little
+>>     driver
+>>   driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+>>   exynos: cpuidle: do not allow cpuidle registration for Exynos5420
+>>   mcpm: exynos: populate suspend and powered_up callbacks
+>>
+>>  arch/arm/mach-exynos/exynos.c        |    4 +++-
+>>  arch/arm/mach-exynos/mcpm-exynos.c   |   36 ++++++++++++++++++++++++++++++++++
+>>  arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
+>>  drivers/cpuidle/Kconfig.arm          |    2 +-
+>>  drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
+>>  5 files changed, 60 insertions(+), 3 deletions(-)
+>>
+>> --
+>> 1.7.9.5
+>>
+>
+> As dependency patches are merged. If their are no further comment, can
+> these patches be taken?
+>
 
-Yeah, that what I accepted later as well.. Dependency is whatever without which
-the module is unusable.
+ping
 
-And cpufreq-cpu0 is usable without THERMAL and so this dependency should
-go away..
+> --
+> with warm regards,
+> Chander Kashyap
+
+
+
+-- 
+with warm regards,
+Chander Kashyap
