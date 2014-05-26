@@ -1,81 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 2/2] Documentation: devicetree: Add boost-frequency
- binding to list boost mode frequency
-Date: Mon, 26 May 2014 11:39:23 +0530
-Message-ID: <CAKohpokB8qg7aZ6tncvU8LSL09EAi+X6a2UnZDA7rA1SymLAQg@mail.gmail.com>
-References: <1400852262-6290-1-git-send-email-thomas.ab@samsung.com>
-	<1400852262-6290-3-git-send-email-thomas.ab@samsung.com>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Mon, 26 May 2014 11:59:09 +0530
+Message-ID: <CAKohpomb+h6ZNDgJ8AwJ_J9DjMB7AP_v-cp8coG3CACo5Wt4vQ@mail.gmail.com>
+References: <20140521073457.GD31687@pengutronix.de>
+	<e9090453-ce40-4662-a3ea-fbdaffdb2aa4@BN1AFFO11FD046.protection.gbl>
+	<20140521182308.GN31687@pengutronix.de>
+	<20140521203300.9521.67546@quantum>
+	<ac335a38-b0f4-4d95-b111-56c05e1a6234@BN1BFFO11FD045.protection.gbl>
+	<20140522182040.GB20155@pengutronix.de>
+	<6612b069-1228-488f-81f7-ea8839f6c468@BN1BFFO11FD029.protection.gbl>
+	<20140522210328.9521.34889@quantum>
+	<a86642cb-855f-455f-b07c-a52bc6aa426f@BN1BFFO11FD050.protection.gbl>
+	<20140523013732.9521.70820@quantum>
+	<00f65d1c-a375-40e7-b30a-cd8cb3ca87fc@BN1BFFO11FD020.protection.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1400852262-6290-3-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:47215 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546AbaEZG3K convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 02:29:10 -0400
+Received: by mail-oa0-f43.google.com with SMTP id l6so7966635oag.2
+        for <linux-pm@vger.kernel.org>; Sun, 25 May 2014 23:29:10 -0700 (PDT)
+In-Reply-To: <00f65d1c-a375-40e7-b30a-cd8cb3ca87fc@BN1BFFO11FD020.protection.gbl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 23 May 2014 19:07, Thomas Abraham <thomas.ab@samsung.com> wrote:
-> From: Thomas Abraham <thomas.ab@samsung.com>
->
-> Add a new optional boost-frequency binding for specifying the frequencies
-> usable in boost mode.
->
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   38 ++++++++++++++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
->
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-> new file mode 100644
-> index 0000000..63ed0fc
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-> @@ -0,0 +1,38 @@
-> +* Device tree binding for CPU boost frequency (aka over-clocking)
-> +
-> +Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
-> +overclocking) in which the CPU can operate at frequencies which are not
-> +specified by the manufacturer as CPU's operating frequency.
-> +
-> +Optional Properties:
-> +- boost-frequencies: list of frequencies in KHz to be used only in boost mode.
-> +  This list should be a subset of frequencies listed in "operating-points"
-> +  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
-> +  details about "operating-points" property.
-> +
-> +Example:
-> +
-> +       cpus {
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +               cpu@0 {
-> +                       device_type = "cpu";
-> +                       compatible = "arm,cortex-a9";
-> +                       reg = <0>;
-> +
-> +                       operating-points = <
-> +                               1500000 1350000
-> +                               1400000 1287500
-> +                               1300000 1250000
-> +                               1200000 1187500
-> +                               1100000 1137500
-> +                               1000000 1087500
-> +                       >;
-> +                       boost-frequencies = <1500000 1400000>;
-> +               };
-> +               cpu@1 {
-> +                       device_type = "cpu";
-> +                       compatible = "arm,cortex-a9";
-> +                       reg = <1>;
-> +               };
-> +       };
+On 23 May 2014 21:44, S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.com>=
+ wrote:
+> Viresh: Could you imagine something similar for cpufreq? You suggeste=
+d
+> migrating to Hz resolution. I guess that would ideally mean to follow
+> the CCF to a 64-bit type for frequencies and increasing the resolutio=
+n.
+> I have a messy patch migrating cpufreq and OPP to Hz and unsigned lon=
+g
+> that works on Zynq. But cpufreq has so many users that it would becom=
+e
+> quite an undertaking.
+> And we'd need some new/amended OPP DT binding.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+If we are going to migrate to Hz from KHz, I think we must consider the
+64 bit stuff right now, otherwise it will bite us later.
+
+@Rafael: What do you think?
