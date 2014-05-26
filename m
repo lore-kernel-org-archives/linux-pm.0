@@ -1,98 +1,30 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [GIT PULL] devfreq update for Linux 3.16
-Date: Sat, 24 May 2014 23:06:09 +0900
-Message-ID: <CAJ0PZbSpcT3A+z0axkkPZD06bX1SNcKszJuYMDWHrUDiApooGA@mail.gmail.com>
-Reply-To: myungjoo.ham@gmail.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 2/3] cpufreq: add support for intermediate (stable) frequencies
+Date: Mon, 26 May 2014 09:31:32 +0530
+Message-ID: <CAKohpomz5_Q=68QP7+-qbSrp-uSgSDD2ptmTnQdxASVO8jhDuw@mail.gmail.com>
+References: <cover.1400662383.git.viresh.kumar@linaro.org>
+	<59e1185a31e61c428aca9f4b8f0a69f182ee458e.1400662383.git.viresh.kumar@linaro.org>
+	<537E27DA.9040709@wwwdotorg.org>
+	<CAKohpokhiTpTd-ByFUuOL1hR7MnKPPQj-peH7S5oFxowKt0BeQ@mail.gmail.com>
+	<537F6F94.7040900@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f180.google.com ([209.85.128.180]:49467 "EHLO
-	mail-ve0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbaEXOGK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 24 May 2014 10:06:10 -0400
+Received: from mail-oa0-f44.google.com ([209.85.219.44]:48501 "EHLO
+	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbaEZEBd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 May 2014 00:01:33 -0400
+Received: by mail-oa0-f44.google.com with SMTP id o6so7827336oag.3
+        for <linux-pm@vger.kernel.org>; Sun, 25 May 2014 21:01:32 -0700 (PDT)
+In-Reply-To: <537F6F94.7040900@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, =?UTF-8?B?7ZWo66qF7KO8?= <myungjoo.ham@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Bolle <pebolle@tiscali.nl>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-Dear Rafael,
+On 23 May 2014 21:26, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> Oh OK, I guess the "notify" value is static then, and driver defined, so
+> this is fine.
 
-Here goes the pull request of devfreq for 3.16
-
-
-Cheers,
-MyungJoo
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-The following changes since commit 4b660a7f5c8099d88d1a43d8ae138965112592c7:
-
-  Linux 3.15-rc6 (2014-05-22 06:42:02 +0900)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/for-3.16
-
-for you to fetch changes up to cb7063f453e543b97285a10343cfc02983d792ad:
-
-  PM / devfreq: remove checks for CONFIG_EXYNOS_ASV (2014-05-24 22:33:51 +0900)
-
-- ----------------------------------------------------------------
-Pull Request for Rafael.
-
-Merge target is Linux 3.16
-
-- - Clean up with modern macro in the core and drivers.
-- - Fix incorrect error returns
-- - Remove dead CONFIG check.
-- - Fix resource leak in a driver.
-
-- ----------------------------------------------------------------
-Bartlomiej Zolnierkiewicz (3):
-      PM / devfreq: exynos4: introduce struct busfreq_ppmu_data
-      PM / devfreq: exynos5: introduce struct busfreq_ppmu_data
-      PM / devfreq: exynos: make more PPMU code common
-
-Chanwoo Choi (11):
-      PM / devfreq: exynos4: Fix bug of resource leak and code clean on probe()
-      PM / devfreq: exynos4: Use SIMPLE_DEV_PM_OPS macro
-      PM / devfreq: exynos4: Add CONFIG_PM_OPP dependency to fix probe fail
-      PM / devfreq: exynos5: Use SIMPLE_DEV_PM_OPS macro
-      PM / devfreq: exynos5: Add CONFIG_PM_OPP dependency to fix probe fail
-      PM / devfreq: exynos4: use common PPMU code
-      PM / devfreq: Fix devfreq_remove_device() to improve the sequence ...
-      PM / devfreq: Add resource-managed function for devfreq device
-      PM / devfreq: Add devm_devfreq_{register,unregister}_opp_notfierfunction
-      PM / devfreq: exynos4: Use devm_devfreq_* function using device ...
-      PM / devfreq: exynos5: Use devm_devfreq_* function using device ...
-
-Paul Bolle (1):
-      PM / devfreq: remove checks for CONFIG_EXYNOS_ASV
-
- drivers/devfreq/Kconfig              |   5 +-
- drivers/devfreq/devfreq.c            | 125 ++++++++++++++++++--
- drivers/devfreq/exynos/Makefile      |   2 +-
- drivers/devfreq/exynos/exynos4_bus.c | 219 ++++++++++-------------------------
- drivers/devfreq/exynos/exynos5_bus.c | 130 ++++++---------------
- drivers/devfreq/exynos/exynos_ppmu.c |  60 ++++++++++
- drivers/devfreq/exynos/exynos_ppmu.h |   8 ++
- include/linux/devfreq.h              |  35 +++++-
- 8 files changed, 317 insertions(+), 267 deletions(-)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.14 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTgKWPAAoJEDv/jgS9xknFYlMP/0zIsdDGxtJA3NdxJGT/dA+d
-z7sDIBSOCQCBQv8CSMCY6HgtejgbtpRX8coKaSYGjLP9sL43hHCRkJesQdYNo5vE
-xuU0Zo80ERBZvXj9pXC76ojmvBMRmynYPnbMC7ZgzGEFA2kSf/SoEAwSu6y+5uiF
-b5igBp22QNd73V5c+Vjr6pzDfSXDyGDv5Km8jDFPvx3YLNChY471VtK+KMikGwGp
-FplzfNSCThMPertAxKuWRlZMS8v0YVyO9TN4KHNQuwdGotiQcYweeAFL+G183ZaC
-8m+komdIP2oct0h19j8298cGPQSH/NpCXTwXSFMhn/QEU6W3WtaTF3crURjhTxja
-EZiSOClumMnZPJt6di10vV6TOS0e4pWgfP2ZX9sNRBYLf5Vs/P46kB3mzAM1LSeV
-D/93dkv5mAoZPTt/eruB/4jOeQDewAtOf/o3/vOjXUu4QwQ7JARGUEZ8RKJktVHs
-R5q7nrEFOckyoSME131ePODy5EUgYv2kFGmaLqwulZaUN7ooslBZiaph7Fc0f1VB
-2TEQKLtbkPIYiDqTHF8MAkIjwzhuul02NpEN7UccHfc4RIkoyhNnOrhwsi2ktAJw
-ID7x2ofVKvevHp2qiLWlAHAryEJ+aTYNpiDRByZiUWFrt8LlLIZuCkdxWYGWcyOY
-dkeARTmbHnqfdYAeuTNn
-=ZUxh
------END PGP SIGNATURE-----
+Correct!! Can you reply on the tegra patch also? So that we can close this
+thread ASAP?
