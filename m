@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 6/8] cpufreq: imx6q: don't initialize opp table
-Date: Tue, 27 May 2014 17:20:55 +0530
-Message-ID: <65d800de10bded80443852af0b36959e1d9ddf33.1401191054.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 4/8] driver/core: cpu: initialize opp table
+Date: Tue, 27 May 2014 17:20:53 +0530
+Message-ID: <ce68a1ba333ab080a2428242d8fa4d4629064a4d.1401191054.git.viresh.kumar@linaro.org>
 References: <cover.1401191054.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1401191054.git.viresh.kumar@linaro.org>
@@ -9,116 +9,59 @@ In-Reply-To: <cover.1401191054.git.viresh.kumar@linaro.org>
 References: <cover.1401191054.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-CPU OPP tables are already initialized by CPU core and we don't need to
-reinitialize them from imx6q specific code.
+Drivers expecting CPU's OPPs from device tree initialize OPP table themselves by
+calling of_init_opp_table() and there is nothing driver specific in that. They
+all do it in the same redundant way.
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+It would be better if we can get rid of redundancy by initializing CPU OPPs from
+CPU core code for all CPUs (that have a "operating-points" property defined in
+their node).
+
+This patch calls of_init_opp_table() right after CPU device is registered in
+register_cpu(). of_init_opp_table() also has a dummy implementation which simply
+returns -ENOSYS when CONFIG_OPP or CONFIG_OF isn't supported by some platform.
+
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-imx/mach-imx6q.c  | 36 ++++++++----------------------------
- drivers/cpufreq/imx6q-cpufreq.c | 20 +-------------------
- 2 files changed, 9 insertions(+), 47 deletions(-)
+ drivers/base/cpu.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-imx/mach-imx6q.c b/arch/arm/mach-imx/mach-imx6q.c
-index e60456d..03819e7 100644
---- a/arch/arm/mach-imx/mach-imx6q.c
-+++ b/arch/arm/mach-imx/mach-imx6q.c
-@@ -290,12 +290,18 @@ static void __init imx6q_init_machine(void)
- #define OCOTP_CFG3_SPEED_996MHZ		0x2
- #define OCOTP_CFG3_SPEED_852MHZ		0x1
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 006b1bc..790183f 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -16,6 +16,7 @@
+ #include <linux/acpi.h>
+ #include <linux/of.h>
+ #include <linux/cpufeature.h>
++#include <linux/pm_opp.h>
  
--static void __init imx6q_opp_check_speed_grading(struct device *cpu_dev)
-+static void __init imx6q_opp_check_speed_grading(void)
- {
-+	struct device *cpu_dev = get_cpu_device(0);
- 	struct device_node *np;
- 	void __iomem *base;
- 	u32 val;
+ #include "base.h"
  
-+	if (!cpu_dev) {
-+		pr_warn("failed to get cpu0 device\n");
-+		return;
-+	}
+@@ -349,10 +350,12 @@ int register_cpu(struct cpu *cpu, int num)
+ 	if (cpu->hotpluggable)
+ 		cpu->dev.groups = hotplugable_cpu_attr_groups;
+ 	error = device_register(&cpu->dev);
+-	if (!error)
+-		per_cpu(cpu_sys_devices, num) = &cpu->dev;
+-	if (!error)
+-		register_cpu_under_node(num, cpu_to_node(num));
++	if (error)
++		return error;
 +
- 	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
- 	if (!np) {
- 		pr_warn("failed to find ocotp node\n");
-@@ -336,32 +342,6 @@ put_node:
- 	of_node_put(np);
++	per_cpu(cpu_sys_devices, num) = &cpu->dev;
++	register_cpu_under_node(num, cpu_to_node(num));
++	of_init_opp_table(&cpu->dev);
+ 
+ 	return error;
  }
- 
--static void __init imx6q_opp_init(void)
--{
--	struct device_node *np;
--	struct device *cpu_dev = get_cpu_device(0);
--
--	if (!cpu_dev) {
--		pr_warn("failed to get cpu0 device\n");
--		return;
--	}
--	np = of_node_get(cpu_dev->of_node);
--	if (!np) {
--		pr_warn("failed to find cpu0 node\n");
--		return;
--	}
--
--	if (of_init_opp_table(cpu_dev)) {
--		pr_warn("failed to init OPP table\n");
--		goto put_node;
--	}
--
--	imx6q_opp_check_speed_grading(cpu_dev);
--
--put_node:
--	of_node_put(np);
--}
--
- static struct platform_device imx6q_cpufreq_pdev = {
- 	.name = "imx6q-cpufreq",
- };
-@@ -376,7 +356,7 @@ static void __init imx6q_init_late(void)
- 		imx6q_cpuidle_init();
- 
- 	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ)) {
--		imx6q_opp_init();
-+		imx6q_opp_check_speed_grading();
- 		platform_device_register(&imx6q_cpufreq_pdev);
- 	}
- }
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index af366c2..b72e94f 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -190,26 +190,8 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		goto put_reg;
- 	}
- 
--	/*
--	 * We expect an OPP table supplied by platform.
--	 * Just, incase the platform did not supply the OPP
--	 * table, it will try to get it.
--	 */
- 	num = dev_pm_opp_get_opp_count(cpu_dev);
--	if (num < 0) {
--		ret = of_init_opp_table(cpu_dev);
--		if (ret < 0) {
--			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
--			goto put_reg;
--		}
--
--		num = dev_pm_opp_get_opp_count(cpu_dev);
--		if (num < 0) {
--			ret = num;
--			dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
--			goto put_reg;
--		}
--	}
-+	WARN_ON(num < 0);
- 
- 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
- 	if (ret) {
 -- 
 2.0.0.rc2
