@@ -1,47 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/2] cpufreq: cpufreq-cpu0: remove dependency on THERMAL and REGULATOR
-Date: Tue, 27 May 2014 17:37:30 +0530
-Message-ID: <9ce16082a5851781b49b0fe5918a55588126b3d9.1401192160.git.viresh.kumar@linaro.org>
-References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-In-Reply-To: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, edubezval@gmail.com, pavel@ucw.cz, lgirdwood@gmail.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH] ARM: EXYNOS: Use wfi macro in platform_do_lowpower
+Date: Wed, 28 May 2014 00:33:53 +0900
+Message-ID: <5384B061.7070507@samsung.com>
+References: <1400745455-27920-1-git-send-email-leela.krishna@linaro.org> <537E497B.9020404@linaro.org> <CAM7CM0kG-fWcAo9rTwRj1iPD7EFSDVZWaPc93XmLVE=s_ePDpw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f54.google.com ([209.85.160.54]:48019 "EHLO
+	mail-pb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751711AbaE0Pd7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 May 2014 11:33:59 -0400
+In-Reply-To: <CAM7CM0kG-fWcAo9rTwRj1iPD7EFSDVZWaPc93XmLVE=s_ePDpw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Leela Krishna Amudala <leela.krishna@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Kucheria <amit.kucheria@linaro.org>
 
-cpufreq-cpu0 uses thermal framework to register a cooling device, but doesn't
-depend on it as there are dummy calls provided by thermal layer when
-CONFIG_THERMAL=n. And when these calls fail, the driver is still usable.
+On 05/23/14 15:13, Leela Krishna Amudala wrote:
+> Hi Kgene,
+>
+Hi,
 
-Similar explanation is valid for regulators as well. We do have dummy calls
-available for regulator APIs and the driver can work even when those calls
-fail.
+>
+> On Fri, May 23, 2014 at 12:31 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org>  wrote:
+>> On 05/22/2014 09:57 AM, Leela Krishna Amudala wrote:
+>>>
+>>> This patch is originally based on commit b3377d186572 ("ARM: 7064/1:
+>>> vexpress: Use wfi macro in platform_do_lowpower.")
+>>>
+>>> Current Exynos CPU hotplug code includes a hardcoded WFI
+>>> instruction, in ARM encoding.  When the kernel is compiled in Thumb-2
+>>> mode, this is invalid and causes the machine to hang hard when a CPU
+>>> is offlined.
+>>>
+>>> Use wfi macro instead of the hardcoded WFI instruction.
+>>>
+>>> Signed-off-by: Leela Krishna Amudala<leela.krishna@linaro.org>
+>>
+>>
+>> Acked-by: Daniel Lezcano<daniel.lezcano@linaro.org>
+>>
+>
+> Can you please take action on this patch.
+>
+Applied, thanks.
 
-So, we don't really need to mention thermal and regulators as a dependency for
-cpufreq-cpu0 in Kconfig. Remove it.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1-V2: Remove dependency on REGULATORs as well.
-
- drivers/cpufreq/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 1fbe11f..e473d65 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -185,7 +185,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 
- config GENERIC_CPUFREQ_CPU0
- 	tristate "Generic CPU0 cpufreq driver"
--	depends on HAVE_CLK && REGULATOR && OF && THERMAL && CPU_THERMAL
-+	depends on HAVE_CLK && OF
- 	select PM_OPP
- 	help
- 	  This adds a generic cpufreq driver for CPU0 frequency management.
--- 
-2.0.0.rc2
+- Kukjin
