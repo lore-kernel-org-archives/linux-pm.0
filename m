@@ -1,101 +1,38 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [RFC Patch V1 3/4] x86, irq, ACPI: implement interface to support ACPI based IOAPIC hot-addition
-Date: Tue, 27 May 2014 16:24:36 +0800
-Message-ID: <1401179077-2020-4-git-send-email-jiang.liu@linux.intel.com>
-References: <1401179077-2020-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1401179077-2020-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 4/8] driver/core: cpu: initialize opp table
+Date: Tue, 27 May 2014 13:30:09 +0200
+Message-ID: <11801597.a0CDeJOEp5@vostro.rjw.lan>
+References: <cover.1400736536.git.viresh.kumar@linaro.org> <CAKohponagSjOVbn-C64yh7=py9kE0m2VGbdquo_1+UzbPFsJ+w@mail.gmail.com> <CAKohpokZSw430PWjJfYOPA6KXOJiKFhxRi4BuEf6ouMgUHQ+gw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64429 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751577AbaE0LNF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 May 2014 07:13:05 -0400
+In-Reply-To: <CAKohpokZSw430PWjJfYOPA6KXOJiKFhxRi4BuEf6ouMgUHQ+gw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 
-Implement acpi_register_ioapic() and enhance mp_register_ioapic()
-to support ACPI based IOAPIC hot-addition.
+On Tuesday, May 27, 2014 05:48:27 AM Viresh Kumar wrote:
+> On 27 May 2014 05:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > We are also using it for cpu->dev_id, but that's not so important. This
+> > routine wouldn't have existed if you wouldn't have asked for it. It is
+> > just a wrapper over of_init_opp_table, which also has a dummy
+> > implementation when its not supported.
+> >
+> > So, it might not be worth enough for any other code to use it. :)
+> > And so I added it here.
+> >
+> > Let me know how/where do you want it and I will resend it quickly.
+> 
+> There is another option here, add these print messages in
+> of_init_opp_table() ? That's the only difference new wrapper has.
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/kernel/acpi/boot.c    |   18 ++++++++++++++++--
- arch/x86/kernel/apic/io_apic.c |   24 +++++++++++++++++++++---
- 2 files changed, 37 insertions(+), 5 deletions(-)
+Yeah, put them into of_init_opp_table() rather I'd say.
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index a1b388e88bcb..d807e16f8fec 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -655,8 +655,22 @@ EXPORT_SYMBOL(acpi_unmap_lsapic);
- 
- int acpi_register_ioapic(acpi_handle handle, u64 phys_addr, u32 gsi_base)
- {
--	/* TBD */
--	return -EINVAL;
-+	int ret = -ENOSYS;
-+#ifdef CONFIG_X86_IO_APIC
-+	unsigned long long uid;
-+	acpi_status status;
-+
-+	status = acpi_evaluate_integer(handle, METHOD_NAME__UID, NULL, &uid);
-+	if (ACPI_FAILURE(status))
-+		uid = 0;
-+
-+	down_write(&acpi_ioapic_rwsem);
-+	ret  = mp_register_ioapic((int)uid, phys_addr, gsi_base,
-+				  acpi_create_irqdomain, NULL);
-+	up_write(&acpi_ioapic_rwsem);
-+#endif
-+
-+	return ret;
- }
- 
- EXPORT_SYMBOL(acpi_register_ioapic);
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index f70fa239f34b..4bddff760ff4 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3802,7 +3802,13 @@ static int bad_ioapic_register(int idx)
- 
- static int find_free_ioapic_entry(void)
- {
--	return nr_ioapics;
-+	int idx;
-+
-+	for (idx = 0; idx < MAX_IO_APICS; idx++)
-+		if (ioapics[idx].nr_registers == 0)
-+			return idx;
-+
-+	return MAX_IO_APICS;
- }
- 
- int mp_register_ioapic(int id, u32 address, u32 gsi_base,
-@@ -3818,8 +3824,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
- 	}
- 	for_each_ioapic(ioapic)
- 		if (ioapics[ioapic].mp_config.apicaddr == address) {
--			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
--				address, ioapic);
-+			/*
-+			 * IOAPIC unit may also be visible in PCI scope.
-+			 * When ioapic PCI driver's probe() is called,
-+			 * the IOAPIC unit may have already been initialized
-+			 * at boot time.
-+			 */
-+			if (!ioapic_initialized)
-+				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
-+					address, ioapic);
- 			return -EEXIST;
- 		}
- 
-@@ -3875,6 +3888,11 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
- 	if (nr_ioapics <= idx)
- 		nr_ioapics = idx + 1;
- 
-+	if (ioapic_initialized && ioapic_create_irqdomain(idx)) {
-+		clear_fixmap(FIX_IO_APIC_BASE_0 + idx);
-+		return -ENOMEM;
-+	}
-+
- 	/* Set nr_registers to mark entry present */
- 	ioapics[idx].nr_registers = entries;
- 
--- 
-1.7.10.4
+Rafael
+
