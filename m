@@ -1,50 +1,69 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH] ARM: EXYNOS: Use wfi macro in platform_do_lowpower
-Date: Wed, 28 May 2014 00:33:53 +0900
-Message-ID: <5384B061.7070507@samsung.com>
-References: <1400745455-27920-1-git-send-email-leela.krishna@linaro.org> <537E497B.9020404@linaro.org> <CAM7CM0kG-fWcAo9rTwRj1iPD7EFSDVZWaPc93XmLVE=s_ePDpw@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of
+ regulator_set_voltage_time() for !CONFIG_REGULATOR
+Date: Tue, 27 May 2014 20:29:23 +0100
+Message-ID: <20140527192923.GC12304@sirena.org.uk>
+References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wJgPvdDu+gj56kJ8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f54.google.com ([209.85.160.54]:48019 "EHLO
-	mail-pb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbaE0Pd7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 May 2014 11:33:59 -0400
-In-Reply-To: <CAM7CM0kG-fWcAo9rTwRj1iPD7EFSDVZWaPc93XmLVE=s_ePDpw@mail.gmail.com>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:44684 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbaE0T3r (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 May 2014 15:29:47 -0400
+Content-Disposition: inline
+In-Reply-To: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leela Krishna Amudala <leela.krishna@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Kucheria <amit.kucheria@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, edubezval@gmail.com, pavel@ucw.cz, lgirdwood@gmail.com
 
-On 05/23/14 15:13, Leela Krishna Amudala wrote:
-> Hi Kgene,
->
-Hi,
 
->
-> On Fri, May 23, 2014 at 12:31 AM, Daniel Lezcano
-> <daniel.lezcano@linaro.org>  wrote:
->> On 05/22/2014 09:57 AM, Leela Krishna Amudala wrote:
->>>
->>> This patch is originally based on commit b3377d186572 ("ARM: 7064/1:
->>> vexpress: Use wfi macro in platform_do_lowpower.")
->>>
->>> Current Exynos CPU hotplug code includes a hardcoded WFI
->>> instruction, in ARM encoding.  When the kernel is compiled in Thumb-2
->>> mode, this is invalid and causes the machine to hang hard when a CPU
->>> is offlined.
->>>
->>> Use wfi macro instead of the hardcoded WFI instruction.
->>>
->>> Signed-off-by: Leela Krishna Amudala<leela.krishna@linaro.org>
->>
->>
->> Acked-by: Daniel Lezcano<daniel.lezcano@linaro.org>
->>
->
-> Can you please take action on this patch.
->
-Applied, thanks.
+--wJgPvdDu+gj56kJ8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-- Kukjin
+On Tue, May 27, 2014 at 05:37:29PM +0530, Viresh Kumar wrote:
+
+> Liam/Broonie: Please see if this can go through Rafael as 2nd patch is dependent
+> on it.
+
+Is that likely to happen before the merge window?
+
+> +static inline int regulator_set_voltage_time(struct regulator *regulator,
+> +					     int old_uV, int new_uV)
+> +{
+> +	return 0;
+> +}
+> +
+
+Hrm, I'd have expected this to return -EINVAL when stubbed.  I'd also
+have expected regulator_set_voltage() to return -EINVAL mind you.  I
+*suppose* that something that doesn't actually depend on regulator like
+cpufreq might not care if the voltage really did change (I bet this was
+added for cpufreq) but it's not awesome.
+
+--wJgPvdDu+gj56kJ8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJThOeQAAoJELSic+t+oim9FCEP/1CuJKOmQKwxTvltj3Ypv7SZ
+cU1Rnf9gfnttYRAopHz9JRumLV3ynyWON7pLk4rliDWwf0Z/TMVnWt4vAiUINW/6
+/tplfmTwSiYi2iwZdbA2osXaWSKD0BuCIIqRuLdtRqVz/MShaWcmlnEOW0aUqMp+
+qn9DUdqbyJpXTIJOQKW1qZSGPmQ07c9opRKXY4bMiNKAIfnt804yqiENSj2RxrVf
+BGx2RsCER1pTuqYN0FoVC+qjrPIg9jRhtGJ0N5KxrnHb6LaP/3F55rnNAA9sZeFp
+RBRnVpkCWD8aK9ie+JI2JtkmNLpCcj5VWxmZZw1L52qQ83VRejN+NWhSv7T/ic3d
+3JkvWdhS7cCPKOD0qLIP7lKadLOVSeTYow7UbchcPSslSWf3eAYYBj1C/Ag+qyNi
+U9R6uLE+0Dptyj83yuG8Gzt6hFTNWKRhMwrN7D2CIYUv2BJlrRx5ov2VjK7fWO7A
+1Az+2mBwC5vHzH6A7tDJRh2stJZU+z+82CDfOw2ynGpRv/iPBT635fjxA9r/uz2G
+qups7vqohRmqY1U8UBvv8CtK6uJrlBL5kaCdKuEgmkVESYNnVU28e3Ocp6MpE5o8
+5xES7aBgf8ZvbW9VVAM5LH8m7n+W6de62zMJ6+oGYkkYZAq+LFUpfi+WNjsnaaHX
+Vpoum2tXB+r8+IdfRJR+
+=fEEO
+-----END PGP SIGNATURE-----
+
+--wJgPvdDu+gj56kJ8--
