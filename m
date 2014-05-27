@@ -1,38 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 4/8] driver/core: cpu: initialize opp table
-Date: Tue, 27 May 2014 13:30:09 +0200
-Message-ID: <11801597.a0CDeJOEp5@vostro.rjw.lan>
-References: <cover.1400736536.git.viresh.kumar@linaro.org> <CAKohponagSjOVbn-C64yh7=py9kE0m2VGbdquo_1+UzbPFsJ+w@mail.gmail.com> <CAKohpokZSw430PWjJfYOPA6KXOJiKFhxRi4BuEf6ouMgUHQ+gw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64429 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751577AbaE0LNF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 May 2014 07:13:05 -0400
-In-Reply-To: <CAKohpokZSw430PWjJfYOPA6KXOJiKFhxRi4BuEf6ouMgUHQ+gw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V4 2/8] opp: call of_node_{get|put}() from of_init_opp_table()
+Date: Tue, 27 May 2014 17:20:51 +0530
+Message-ID: <4139797fe7501ba99adf63ec8e5cf9fa9b24c197.1401191054.git.viresh.kumar@linaro.org>
+References: <cover.1401191054.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1401191054.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1401191054.git.viresh.kumar@linaro.org>
+References: <cover.1401191054.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, nm@ti.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Ips Gandhi <inderpal.s@samsung.com>, Nishanth Menon <nm@ti.com>, Chander Kashyap <chander.kashyap@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Sudeep Holla <sudeep.holla@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On Tuesday, May 27, 2014 05:48:27 AM Viresh Kumar wrote:
-> On 27 May 2014 05:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > We are also using it for cpu->dev_id, but that's not so important. This
-> > routine wouldn't have existed if you wouldn't have asked for it. It is
-> > just a wrapper over of_init_opp_table, which also has a dummy
-> > implementation when its not supported.
-> >
-> > So, it might not be worth enough for any other code to use it. :)
-> > And so I added it here.
-> >
-> > Let me know how/where do you want it and I will resend it quickly.
-> 
-> There is another option here, add these print messages in
-> of_init_opp_table() ? That's the only difference new wrapper has.
+All callers of of_init_opp_table() are required to take reference of
+dev->of_node, by initiating calls to of_node_{get|put}(), before and after
+calling of_init_opp_table().
 
-Yeah, put them into of_init_opp_table() rather I'd say.
+Its better to call these from within of_init_opp_table(), no fun adding
+redundant code to every caller.
 
-Rafael
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index faae9cf..2b615b9 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -622,6 +622,9 @@ int of_init_opp_table(struct device *dev)
+ 	const __be32 *val;
+ 	int nr;
+ 
++	if (!of_node_get(dev->of_node))
++		return -ENODEV;
++
+ 	prop = of_find_property(dev->of_node, "operating-points", NULL);
+ 	if (!prop)
+ 		return -ENODEV;
+@@ -649,6 +652,7 @@ int of_init_opp_table(struct device *dev)
+ 		nr -= 2;
+ 	}
+ 
++	of_node_put(dev->of_node);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(of_init_opp_table);
+-- 
+2.0.0.rc2
