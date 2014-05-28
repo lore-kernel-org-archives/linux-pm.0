@@ -1,65 +1,65 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Tue, 27 May 2014 19:05:31 -0700
-Message-ID: <20140528020531.7816.5349@quantum>
-References: <20140521073457.GD31687@pengutronix.de>
- <00f65d1c-a375-40e7-b30a-cd8cb3ca87fc@BN1BFFO11FD020.protection.gbl>
- <CAKohpomb+h6ZNDgJ8AwJ_J9DjMB7AP_v-cp8coG3CACo5Wt4vQ@mail.gmail.com>
- <9956925.Qsz2bH3rDg@vostro.rjw.lan>
+From: Chander Kashyap <chander.kashyap@linaro.org>
+Subject: Re: [PATCH v6 0/6] add cpuidle support for Exynos5420
+Date: Wed, 28 May 2014 09:58:15 +0530
+Message-ID: <CANuQgHH284A9QY7M5zGbSE-mXjm2KDqr54VWmtKVkbma3zZvvw@mail.gmail.com>
+References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com>
+	<1400227438-27155-1-git-send-email-chander.kashyap@linaro.org>
+	<53831795.9070006@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <9956925.Qsz2bH3rDg@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: =?utf-8?q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>, =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <53831795.9070006@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Rafael J. Wysocki (2014-05-26 04:22:32)
-> On Monday, May 26, 2014 11:59:09 AM Viresh Kumar wrote:
-> > On 23 May 2014 21:44, S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.=
-com> wrote:
-> > > Viresh: Could you imagine something similar for cpufreq? You sugg=
-ested
-> > > migrating to Hz resolution. I guess that would ideally mean to fo=
-llow
-> > > the CCF to a 64-bit type for frequencies and increasing the resol=
-ution.
-> > > I have a messy patch migrating cpufreq and OPP to Hz and unsigned=
- long
-> > > that works on Zynq. But cpufreq has so many users that it would b=
-ecome
-> > > quite an undertaking.
-> > > And we'd need some new/amended OPP DT binding.
-> >=20
-> > If we are going to migrate to Hz from KHz, I think we must consider=
- the
-> > 64 bit stuff right now, otherwise it will bite us later.
-> >=20
-> > @Rafael: What do you think?
->=20
-> I agree as far as the 64-bit thing goes, but is switching to Hz reall=
-y
-> necessary?
+On 26 May 2014 15:59, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+> Hi Chander,
+>
+> On 16.05.2014 10:03, Chander Kashyap wrote:
+>> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
+>>
+>> This patchset adds cpuidle support for Exynos5420 SoC based on
+>> generic big.little cpuidle driver.
+>>
+>> Tested on SMDK5420.
+>>
+>> This patch set depends on:
+>>       1. [PATCH 0/5] MCPM backend for Exynos5420
+>>          http://www.spinics.net/lists/arm-kernel/msg331100.html
+>> Changelog is in respective patches.
+>> Chander Kashyap (5):
+>>   driver: cpuidle-big-little: add of_device_id structure
+>>   arm: exynos: add generic function to calculate cpu number
+>>   cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little
+>>     driver
+>>   driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+>>   exynos: cpuidle: do not allow cpuidle registration for Exynos5420
+>>   mcpm: exynos: populate suspend and powered_up callbacks
+>>
+>>  arch/arm/mach-exynos/exynos.c        |    4 +++-
+>>  arch/arm/mach-exynos/mcpm-exynos.c   |   36 ++++++++++++++++++++++++++++++++++
+>>  arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
+>>  drivers/cpuidle/Kconfig.arm          |    2 +-
+>>  drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
+>>  5 files changed, 60 insertions(+), 3 deletions(-)
+>>
+>
+> For the whole series,
+>
+> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 
-Rafael,
+Thanks Tomasz.
 
-Why should CPUfreq migrate to 64-bit if not switching to Hz? CPU clock
-rates are specified as KHz in CPUfreq via an unsigned int. On 32-bit
-systems that comes out to a max of 4.29THz (terahertz!)!
+Dear Kukjin,
+Can you take these patches.
+>
+> Best regards,
+> Tomasz
 
-Or maybe you meant, "I agree that the clock framework should switch to
-the 64-bit thing"?
 
-Personally I'd like to see the clock framework and cpufreq get on the
-same page (data type) for specifying clock rates, and the clock
-framework really should not use a granularity like KHz. In fact we have
-some fractional rates like 13.25Hz ...
 
-Thanks,
-Mike
-
->=20
-> Rafael
->=20
+-- 
+with warm regards,
+Chander Kashyap
