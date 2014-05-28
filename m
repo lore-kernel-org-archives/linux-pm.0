@@ -1,70 +1,33 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch V3 19/37] x86, irq: introduce mechanisms to support
- dynamically allocate IRQ for IOAPIC
-Date: Wed, 28 May 2014 12:07:50 +0200 (CEST)
-Message-ID: <alpine.DEB.2.02.1405281159030.21720@ionos.tec.linutronix.de>
-References: <1401178092-1228-1-git-send-email-jiang.liu@linux.intel.com> <1401178092-1228-20-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.02.1405271445050.21720@ionos.tec.linutronix.de> <538597F0.1040003@linutronix.de>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [Patch V3 19/37] x86, irq: introduce mechanisms to support dynamically
+ allocate IRQ for IOAPIC
+Date: Wed, 28 May 2014 12:39:12 +0200
+Message-ID: <5385BCD0.1080802@linutronix.de>
+References: <1401178092-1228-1-git-send-email-jiang.liu@linux.intel.com> <1401178092-1228-20-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.02.1405271445050.21720@ionos.tec.linutronix.de> <538597F0.1040003@linutronix.de> <alpine.DEB.2.02.1405281159030.21720@ionos.tec.linutronix.de>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <538597F0.1040003@linutronix.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.02.1405281159030.21720@ionos.tec.linutronix.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Jiang Liu <jiang.liu@linux.intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 28 May 2014, Sebastian Andrzej Siewior wrote:
-> On 05/27/2014 09:58 PM, Thomas Gleixner wrote:
-> > ce4100 is an oddball though. The ioapic is registered way before the
-> > interrupt subsystem is initialized and I have a hard time to
-> > understand that comment:
-> > 
-> >         /* We can't set this earlier, because we need to calibrate the timer */
-> >         legacy_pic = &null_legacy_pic;
-> > 
-> > The timer calibration happens after the interrupts are set up. I
-> > assume it's check_timer() which wants that, but we know exactly how
-> > the ce4100 works, so we might be able to avoid that whole "testing"
-> > stuff. Sebastian, any input on this?
+On 05/28/2014 12:07 PM, Thomas Gleixner wrote:
 > 
-> According to my memory there was some PIC init we need but I don't
-> recall the details. However, booting the system with "legacy_pic =
-> &null_legacy_pic;" in x86_ce4100_early_setup() gives me this:
+> Right, so it needs the setup of irq 0 and that only happens when the
+> legacy_pic->nr_legacy_irqs > 0.
+>
+> Do you remember, why we switch to the null_pic later on?
+
+According to my memory all interrupts are serviced by the IOAPIC. The
+first 16 by the first IOAPIC, 17+ (everything behind the "PCI-bus") by
+the second IOAPIC. For that reason I didn't see a reason for the legacy
+PIC and set it to null_pic. Due to the timer problem it is delayed.
+
+> Thanks,
 > 
-> [    0.001000] Enabling APIC mode:  Flat.  Using 2 I/O APICs
-> [    0.001000] leaving PIC mode, enabling APIC mode.
-> [    0.001000] enabled ExtINT on CPU#0
-> [    0.001000] ENABLING IO-APIC IRQs
-> [    0.001000] Setting 1 in the phys_id_present_map
-> [    0.001000] ...changing IO-APIC physical APIC ID to 1 ... ok.
-> [    0.001000] Setting 2 in the phys_id_present_map
-> [    0.001000] ...changing IO-APIC physical APIC ID to 2 ... ok.
-> [    0.001000] smpboot: CPU0: Intel(R) Atom(TM) CPU CE4150   @ 1.20GHz
-> (fam: 06, model: 1c, stepping: 0a)
-> [    0.001000] Using local APIC timer interrupts.
-> [    0.001000] calibrating APIC timer ...
-> 
-> and we stand still. With the assignment as it is now:
-> 
-> [    0.001000] Enabling APIC mode:  Flat.  Using 2 I/O APICs
-> [    0.001000] leaving PIC mode, enabling APIC mode.
-> [    0.001000] enabled ExtINT on CPU#0
-> [    0.002312] ENABLING IO-APIC IRQs
-> [    0.003009] Setting 1 in the phys_id_present_map
-> [    0.004007] ...changing IO-APIC physical APIC ID to 1 ... ok.
-> [    0.005533] Setting 2 in the phys_id_present_map
-> [    0.006006] ...changing IO-APIC physical APIC ID to 2 ... ok.
-> [    0.008373] ..TIMER: vector=0x30 apic1=-1 pin1=-1 apic2=-1 pin2=-1
-> [    0.009000] ...trying to set up timer as Virtual Wire IRQ...
-> [    0.019490] ..... works.
+> 	tglx
 
-Right, so it needs the setup of irq 0 and that only happens when the
-legacy_pic->nr_legacy_irqs > 0.
-
-Do you remember, why we switch to the null_pic later on?
-
-Thanks,
-
-	tglx
-
-
+Sebastian
