@@ -1,72 +1,97 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
-Date: Wed, 28 May 2014 18:17:10 +0200
-Message-ID: <1731476.hDvqXAW3JF@vostro.rjw.lan>
-References: <20140521073457.GD31687@pengutronix.de> <9956925.Qsz2bH3rDg@vostro.rjw.lan> <20140528020531.7816.5349@quantum>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: Performance regression in v3.14
+Date: Wed, 28 May 2014 09:00:43 -0700
+Message-ID: <002401cf7a8d$fc6d9090$f548b1b0$@net>
+References: <20140506163559.GA5308@localhost> <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com> <536A3EE9.5050409@intel.com> <20140521090051.GO21412@localhost> <20140528075945.GA21705@localhost> <20140528003540.GA2296@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140528020531.7816.5349@quantum>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140528003540.GA2296@intel.com>
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: 'Yuyang Du' <yuyang.du@intel.com>, 'Johan Hovold' <jhovold@gmail.com>
+Cc: 'Dirk Brandewie' <dirk.brandewie@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 27, 2014 07:05:31 PM Mike Turquette wrote:
-> Quoting Rafael J. Wysocki (2014-05-26 04:22:32)
-> > On Monday, May 26, 2014 11:59:09 AM Viresh Kumar wrote:
-> > > On 23 May 2014 21:44, S=C3=B6ren Brinkmann <soren.brinkmann@xilin=
-x.com> wrote:
-> > > > Viresh: Could you imagine something similar for cpufreq? You su=
-ggested
-> > > > migrating to Hz resolution. I guess that would ideally mean to =
-follow
-> > > > the CCF to a 64-bit type for frequencies and increasing the res=
-olution.
-> > > > I have a messy patch migrating cpufreq and OPP to Hz and unsign=
-ed long
-> > > > that works on Zynq. But cpufreq has so many users that it would=
- become
-> > > > quite an undertaking.
-> > > > And we'd need some new/amended OPP DT binding.
-> > >=20
-> > > If we are going to migrate to Hz from KHz, I think we must consid=
-er the
-> > > 64 bit stuff right now, otherwise it will bite us later.
-> > >=20
-> > > @Rafael: What do you think?
-> >=20
-> > I agree as far as the 64-bit thing goes, but is switching to Hz rea=
-lly
-> > necessary?
->=20
-> Rafael,
->=20
-> Why should CPUfreq migrate to 64-bit if not switching to Hz? CPU cloc=
-k
-> rates are specified as KHz in CPUfreq via an unsigned int. On 32-bit
-> systems that comes out to a max of 4.29THz (terahertz!)!
->=20
-> Or maybe you meant, "I agree that the clock framework should switch t=
-o
-> the 64-bit thing"?
 
-That should have been something like "If we were to switch to Hz
-resolution, it would be necessary to switch over to 64-bit too".
+On 2014.05.27 01:40 Yuyang Du wrote:
+>> On 2014.05.27 01:00, Johan Hovold wrote:
+>> I tried applying your (rejected) patch "intel_pstate: Remove C0
+>> tracking" posted here:
+>> 
+>> 	https://lkml.org/lkml/2014/5/8/574
+>> 
+>> to v3.14.4 and it fixes the problem as expected.
+>> 
+>> So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
+>> account for core busy calculation") that went into v3.14-rc2 (and was
+>> even marked for *stable*) that first broke Greg KH's system:
+>> 
+>> 	https://lkml.org/lkml/2014/2/19/626
+>> 
+>> That was apparently fixed by e66c17683746 ("intel_pstate: Change
+>> busy calculation to use fixed point math."), but still left v3.14
+>> basically unusable for lower-intensity workloads such as my
+>> bash-completion example and other reported regressions:
+>> 
+>> 	https://bugzilla.kernel.org/show_bug.cgi?id=75121
+>> 
+>> Sure there may be issues with v3.13 not hitting the lowest frequencies
+>> but at least the system was *usable*.
+>> 
+>> In my opinion there's really no other option than to restore the 3.13
+>> behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
+>> core C0 time into account for core busy calculation") until you have
+>> figured out a way to take C0 into account without breaking things too
+>> badly.
 
-> Personally I'd like to see the clock framework and cpufreq get on the
-> same page (data type) for specifying clock rates, and the clock
-> framework really should not use a granularity like KHz. In fact we ha=
-ve
-> some fractional rates like 13.25Hz ...
+> Hi all,
 
-Well, as I said.  There's a cost to that and it is not particularly
-clear to me whether or not that cost is justifiable.  And some architec=
-tures
-don't even use the clock framework for cpufreq, mind you.  How many of =
-them
-do, actually?
+> My posts before and now are only relevant to why C0 tracking can't be
+> removed. Maybe I need to elaborate on it a little bit more.
 
-Rafael
+> In a nutshell, without C0 tracking, the intel_pstate is effectively
+> performance governor in terms of frequency control.
 
+That is not true. The CPU Frequency Verses Load response curve
+is different and considerably more aggressive for performance mode
+when compared to powersave mode with C0 tracking removed.
+
+I'll add a relevant graph to the bugzilla report referenced above.
+(but it will be a few hours before I do.)
+
+> Why? Without C0 trakcing, the machinery of the freq control
+> is as I formed:
+> last_freq_average / last_requested_freq ==> setpoint
+> which can be virtually formed into:
+> last_freq_average / last_requested_freq * last_C0_pct ==>
+> setpoint * last_C0_pct
+
+> which said, the control machinery will increase the frequency
+> at ANY frequency at ANY C0_pct (which is the CPU utilization),
+> since setpoint is less then 100 percent.
+
+That is not true. Yes, and due to the setpoint being less than
+100, which is needed or the driver won't work at all, there is
+a tendency to drive the target pstate upwards.
+However that is tempered by both the PID proportional gain,
+and ultimately integer math. More importantly, the CPU
+itself tells the driver when it is operating below the target
+pstate and driver responds.
+
+Additionally, the tendency to drive up the target pstate
+too much is exasperated by some extra rounding up at a
+couple of spots. Dirk has a pending fix.
+
+> And a few iterations
+> later, we will reach max (possible) frequency,
+> then we are effectively performance governor
+> (highest frequency all the time).
+
+Please do not confuse highest target pstate with
+highest frequency. They are not the same. The processor
+itself can back off.
+
+... Doug
