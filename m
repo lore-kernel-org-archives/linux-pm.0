@@ -1,41 +1,50 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch V3 19/37] x86, irq: introduce mechanisms to support
- dynamically allocate IRQ for IOAPIC
-Date: Wed, 28 May 2014 23:22:06 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1405282320430.3952@nanos>
-References: <1401178092-1228-1-git-send-email-jiang.liu@linux.intel.com> <1401178092-1228-20-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.02.1405271445050.21720@ionos.tec.linutronix.de> <53856D8E.3010401@linux.intel.com>
- <alpine.DEB.2.10.1405282301310.3952@nanos>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: Performance regression in v3.14
+Date: Thu, 29 May 2014 00:53:38 +0800
+Message-ID: <20140528165337.GB2296@intel.com>
+References: <20140506163559.GA5308@localhost>
+ <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+ <536A3EE9.5050409@intel.com>
+ <20140521090051.GO21412@localhost>
+ <20140528075945.GA21705@localhost>
+ <20140528003540.GA2296@intel.com>
+ <002401cf7a8d$fc6d9090$f548b1b0$@net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.10.1405282301310.3952@nanos>
-Sender: linux-pci-owner@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <002401cf7a8d$fc6d9090$f548b1b0$@net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Johan Hovold' <jhovold@gmail.com>, 'Dirk Brandewie' <dirk.brandewie@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 28 May 2014, Thomas Gleixner wrote:
-> On Wed, 28 May 2014, Jiang Liu wrote:
-> > This is used to work around special non-ISA interrupts with GSI below
-> > NR_IRQS_LEGACY. The original code for the special case is:
-> > /*
-> >  * Provide an identity mapping of gsi == irq except on truly
-> >  * weird platforms that have non isa irqs in the first 16 gsis.
-> >  */
-> > return gsi >= NR_IRQS_LEGACY ? gsi : gsi_top + gsi;
+> That is not true. Yes, and due to the setpoint being less than
+> 100, which is needed or the driver won't work at all, there is
+> a tendency to drive the target pstate upwards.
+> However that is tempered by both the PID proportional gain,
+> and ultimately integer math. More importantly, the CPU
+> itself tells the driver when it is operating below the target
+> pstate and driver responds.
 > 
-> That looks really, really wrong. What's wrong with assigning that irq
-> irq number on those platforms?
+> Additionally, the tendency to drive up the target pstate
+> too much is exasperated by some extra rounding up at a
+> couple of spots. Dirk has a pending fix.
 > 
-> The weird stuff is SFI and devicetree, if I understand your code
-> correctly.
+> > And a few iterations
+> > later, we will reach max (possible) frequency,
+> > then we are effectively performance governor
+> > (highest frequency all the time).
 > 
-> So if those platforms do not have actual legacy irqs, what's wrong
-> with giving out the legacy numbers?
+> Please do not confuse highest target pstate with
+> highest frequency. They are not the same. The processor
+> itself can back off.
+> 
+Hi Doug,
 
-Though if it's a real issue, we can simply mark the ioapic on those
-devices as DYNAMIC and avoid that whole magic.
+All you said is about the hardware will not give whatever software wants
+(e.g., requested freq too high). Agreed.
 
-Thanks,
+But does it matter to this discussion?
 
-	tglx
+Yuyang 
