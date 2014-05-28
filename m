@@ -1,81 +1,74 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: Performance regression in v3.14
-Date: Wed, 28 May 2014 08:35:40 +0800
-Message-ID: <20140528003540.GA2296@intel.com>
-References: <20140506163559.GA5308@localhost>
- <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
- <536A3EE9.5050409@intel.com>
- <20140521090051.GO21412@localhost>
- <20140528075945.GA21705@localhost>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v6 1/6] driver: cpuidle-big-little: add of_device_id structure
+Date: Wed, 28 May 2014 10:58:32 +0200
+Message-ID: <5385A538.8020504@linaro.org>
+References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com> <1400227438-27155-1-git-send-email-chander.kashyap@linaro.org> <1400227438-27155-2-git-send-email-chander.kashyap@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:29934 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754252AbaE1Ij6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 May 2014 04:39:58 -0400
-Content-Disposition: inline
-In-Reply-To: <20140528075945.GA21705@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1400227438-27155-2-git-send-email-chander.kashyap@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chander Kashyap <chander.kashyap@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Doug Smythies <dsmythies@telus.net>, Stratos Karafotis <stratosk@semaphore.gr>
 
-> I tried applying your (rejected) patch "intel_pstate: Remove C0
-> tracking" posted here:
-> 
-> 	https://lkml.org/lkml/2014/5/8/574
-> 
-> to v3.14.4 and it fixes the problem as expected.
-> 
-> So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
-> account for core busy calculation") that went into v3.14-rc2 (and was
-> even marked for *stable*) that first broke Greg KH's system:
-> 
-> 	https://lkml.org/lkml/2014/2/19/626
-> 
-> That was apparently fixed by e66c17683746 ("intel_pstate: Change
-> busy calculation to use fixed point math."), but still left v3.14
-> basically unusable for lower-intensity workloads such as my
-> bash-completion example and other reported regressions:
-> 
-> 	https://bugzilla.kernel.org/show_bug.cgi?id=75121
-> 
-> Sure there may be issues with v3.13 not hitting the lowest frequencies
-> but at least the system was *usable*.
-> 
-> In my opinion there's really no other option than to restore the 3.13
-> behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
-> core C0 time into account for core busy calculation") until you have
-> figured out a way to take C0 into account without breaking things too
-> badly.
+On 05/16/2014 10:03 AM, Chander Kashyap wrote:
+> This driver will be used by many big.Little Soc's. As of now it does
+> string matching of hardcoded compatible string to init the driver. Th=
+is
+> comparison list will keep on growing with addition of new SoC's.
+> Hence add of_device_id structure to collect the compatible strings of
+> SoC's using this driver.
+>
+> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
 
-Hi all,
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-My posts before and now are only relevant to why C0 tracking can't be
-removed. Maybe I need to elaborate on it a little bit more.
+> ---
+>   drivers/cpuidle/cpuidle-big_little.c |   11 ++++++++++-
+>   1 file changed, 10 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/c=
+puidle-big_little.c
+> index b45fc62..4cd02bd 100644
+> --- a/drivers/cpuidle/cpuidle-big_little.c
+> +++ b/drivers/cpuidle/cpuidle-big_little.c
+> @@ -163,14 +163,23 @@ static int __init bl_idle_driver_init(struct cp=
+uidle_driver *drv, int cpu_id)
+>   	return 0;
+>   }
+>
+> +static const struct of_device_id compatible_machine_match[] =3D {
+> +	{ .compatible =3D "arm,vexpress,v2p-ca15_a7" },
+> +	{},
+> +};
+> +
+>   static int __init bl_idle_init(void)
+>   {
+>   	int ret;
+> +	struct device_node *root =3D of_find_node_by_path("/");
+> +
+> +	if (!root)
+> +		return -ENODEV;
+>
+>   	/*
+>   	 * Initialize the driver just for a compliant set of machines
+>   	 */
+> -	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7"))
+> +	if (!of_match_node(compatible_machine_match, root))
+>   		return -ENODEV;
+>   	/*
+>   	 * For now the differentiation between little and big cores
+>
 
-In a nutshell, without C0 tracking, the intel_pstate is effectively performance
-governor in terms of frequency control. Why?
 
-Without C0 trakcing, the machinery of the freq control is as I formed:
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-last_freq_average / last_requested_freq ==> setpoint
-
-which can be virtually formed into:
-
-last_freq_average / last_requested_freq * last_C0_pct ==> setpoint * last_C0_pct
-
-which said, the control machinery will increase the freuqency at ANY frequency at
-ANY C0_pct (which is the CPU utilization), since setpoint is less then 100
-percent. And a few iterations later, we will reach max (possible) frequency,
-then we are effectively performance governor (highest frequency all the time).
-
-So, sure, without C0 tracking, the performance issues should be fixed. But
-let's simply set highest frequency, that should be better.
-
-It is your decision whether we should remove C0 tracking as a no-other option fix
-right now. I am ok either way.
-
-Thanks,
-Yuyang
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
