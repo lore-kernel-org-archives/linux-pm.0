@@ -1,56 +1,74 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v6 3/6] cpuidle: config: Add ARCH_EXYNOS entry to select
- cpuidle-big-little driver
-Date: Wed, 28 May 2014 11:00:26 +0200
-Message-ID: <5385A5AA.8070402@linaro.org>
-References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com> <1400227438-27155-1-git-send-email-chander.kashyap@linaro.org> <1400227438-27155-4-git-send-email-chander.kashyap@linaro.org>
+Subject: Re: [PATCH v6 0/6] add cpuidle support for Exynos5420
+Date: Wed, 28 May 2014 11:02:48 +0200
+Message-ID: <5385A638.2000001@linaro.org>
+References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com> <1400227438-27155-1-git-send-email-chander.kashyap@linaro.org> <53831795.9070006@gmail.com> <CANuQgHH284A9QY7M5zGbSE-mXjm2KDqr54VWmtKVkbma3zZvvw@mail.gmail.com> <015f01cf7a2e$3b141590$b13c40b0$@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1400227438-27155-4-git-send-email-chander.kashyap@linaro.org>
+In-Reply-To: <015f01cf7a2e$3b141590$b13c40b0$@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chander Kashyap <chander.kashyap@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, Chander Kashyap <k.chander@samsung.com>
+To: Kukjin Kim <kgene.kim@samsung.com>, 'Chander Kashyap' <chander.kashyap@linaro.org>, 'Tomasz Figa' <tomasz.figa@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 'Lorenzo Pieralisi' <lorenzo.pieralisi@arm.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/16/2014 10:03 AM, Chander Kashyap wrote:
-> Add support to select generic big-little cpuidle driver for Samsung E=
-xynos
-> series SoC's. This is required for Exynos big-llittle SoC's eg, Exyno=
-s5420.
->
-> Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-> Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+On 05/28/2014 06:35 AM, Kukjin Kim wrote:
+> Chander Kashyap wrote:
+>>
+>> On 26 May 2014 15:59, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+>>> Hi Chander,
+>>>
+>>> On 16.05.2014 10:03, Chander Kashyap wrote:
+>>>> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7
+>> cores.
+>>>>
+>>>> This patchset adds cpuidle support for Exynos5420 SoC based on
+>>>> generic big.little cpuidle driver.
+>>>>
+>>>> Tested on SMDK5420.
+>>>>
+>>>> This patch set depends on:
+>>>>        1. [PATCH 0/5] MCPM backend for Exynos5420
+>>>>           http://www.spinics.net/lists/arm-kernel/msg331100.html
+>>>> Changelog is in respective patches.
+>>>> Chander Kashyap (5):
+>>>>    driver: cpuidle-big-little: add of_device_id structure
+>>>>    arm: exynos: add generic function to calculate cpu number
+>>>>    cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-li=
+ttle
+>>>>      driver
+>>>>    driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+>>>>    exynos: cpuidle: do not allow cpuidle registration for Exynos54=
+20
+>>>>    mcpm: exynos: populate suspend and powered_up callbacks
+>>>>
+>>>>   arch/arm/mach-exynos/exynos.c        |    4 +++-
+>>>>   arch/arm/mach-exynos/mcpm-exynos.c   |   36
+>> ++++++++++++++++++++++++++++++++++
+>>>>   arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
+>>>>   drivers/cpuidle/Kconfig.arm          |    2 +-
+>>>>   drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
+>>>>   5 files changed, 60 insertions(+), 3 deletions(-)
+>>>>
+>>>
+>>> For the whole series,
+>>>
+>>> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+>>
+>> Thanks Tomasz.
+>>
+>> Dear Kukjin,
+>> Can you take these patches.
+>>>
+> When I looked at this series quickly, looks good to me but I need to =
+get ack from cpuidle maintainer Rafael or Daniel.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked the different cpuidle bits.
 
-> ---
-> Changes in v4:
-> 	1. Typo fixed from SOC_EXYNOS5420 to ARCH_EXYNOS
-> 	2. Commit message updated
-> Changes in v3: None
-> Changes in v2:
-> 	1. Changed config macro from SOC_EXYNOS5420 to ARCH_EXYNOS
->   drivers/cpuidle/Kconfig.arm |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
-m
-> index 97ccc31..d9596e7 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -4,7 +4,7 @@
->
->   config ARM_BIG_LITTLE_CPUIDLE
->   	bool "Support for ARM big.LITTLE processors"
-> -	depends on ARCH_VEXPRESS_TC2_PM
-> +	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS
->   	select ARM_CPU_SUSPEND
->   	select CPU_IDLE_MULTIPLE_DRIVERS
->   	help
->
+Thanks
+   -- Daniel
 
 
 --=20
