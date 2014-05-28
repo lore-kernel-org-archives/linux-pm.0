@@ -1,97 +1,27 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: Performance regression in v3.14
-Date: Wed, 28 May 2014 09:00:43 -0700
-Message-ID: <002401cf7a8d$fc6d9090$f548b1b0$@net>
-References: <20140506163559.GA5308@localhost> <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com> <536A3EE9.5050409@intel.com> <20140521090051.GO21412@localhost> <20140528075945.GA21705@localhost> <20140528003540.GA2296@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
+ for !CONFIG_REGULATOR
+Date: Wed, 28 May 2014 21:59:37 +0530
+Message-ID: <CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
+	<20140527192923.GC12304@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140528003540.GA2296@intel.com>
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: 'Yuyang Du' <yuyang.du@intel.com>, 'Johan Hovold' <jhovold@gmail.com>
-Cc: 'Dirk Brandewie' <dirk.brandewie@gmail.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>, Doug Smythies <dsmythies@telus.net>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:52477 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753998AbaE1Q3h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 May 2014 12:29:37 -0400
+Received: by mail-oa0-f46.google.com with SMTP id g18so690277oah.19
+        for <linux-pm@vger.kernel.org>; Wed, 28 May 2014 09:29:37 -0700 (PDT)
+In-Reply-To: <20140527192923.GC12304@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 
+On 28 May 2014 00:59, Mark Brown <broonie@kernel.org> wrote:
+> Hrm, I'd have expected this to return -EINVAL when stubbed.  I'd also
+> have expected regulator_set_voltage() to return -EINVAL mind you.  I
 
-On 2014.05.27 01:40 Yuyang Du wrote:
->> On 2014.05.27 01:00, Johan Hovold wrote:
->> I tried applying your (rejected) patch "intel_pstate: Remove C0
->> tracking" posted here:
->> 
->> 	https://lkml.org/lkml/2014/5/8/574
->> 
->> to v3.14.4 and it fixes the problem as expected.
->> 
->> So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
->> account for core busy calculation") that went into v3.14-rc2 (and was
->> even marked for *stable*) that first broke Greg KH's system:
->> 
->> 	https://lkml.org/lkml/2014/2/19/626
->> 
->> That was apparently fixed by e66c17683746 ("intel_pstate: Change
->> busy calculation to use fixed point math."), but still left v3.14
->> basically unusable for lower-intensity workloads such as my
->> bash-completion example and other reported regressions:
->> 
->> 	https://bugzilla.kernel.org/show_bug.cgi?id=75121
->> 
->> Sure there may be issues with v3.13 not hitting the lowest frequencies
->> but at least the system was *usable*.
->> 
->> In my opinion there's really no other option than to restore the 3.13
->> behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
->> core C0 time into account for core busy calculation") until you have
->> figured out a way to take C0 into account without breaking things too
->> badly.
-
-> Hi all,
-
-> My posts before and now are only relevant to why C0 tracking can't be
-> removed. Maybe I need to elaborate on it a little bit more.
-
-> In a nutshell, without C0 tracking, the intel_pstate is effectively
-> performance governor in terms of frequency control.
-
-That is not true. The CPU Frequency Verses Load response curve
-is different and considerably more aggressive for performance mode
-when compared to powersave mode with C0 tracking removed.
-
-I'll add a relevant graph to the bugzilla report referenced above.
-(but it will be a few hours before I do.)
-
-> Why? Without C0 trakcing, the machinery of the freq control
-> is as I formed:
-> last_freq_average / last_requested_freq ==> setpoint
-> which can be virtually formed into:
-> last_freq_average / last_requested_freq * last_C0_pct ==>
-> setpoint * last_C0_pct
-
-> which said, the control machinery will increase the frequency
-> at ANY frequency at ANY C0_pct (which is the CPU utilization),
-> since setpoint is less then 100 percent.
-
-That is not true. Yes, and due to the setpoint being less than
-100, which is needed or the driver won't work at all, there is
-a tendency to drive the target pstate upwards.
-However that is tempered by both the PID proportional gain,
-and ultimately integer math. More importantly, the CPU
-itself tells the driver when it is operating below the target
-pstate and driver responds.
-
-Additionally, the tendency to drive up the target pstate
-too much is exasperated by some extra rounding up at a
-couple of spots. Dirk has a pending fix.
-
-> And a few iterations
-> later, we will reach max (possible) frequency,
-> then we are effectively performance governor
-> (highest frequency all the time).
-
-Please do not confuse highest target pstate with
-highest frequency. They are not the same. The processor
-itself can back off.
-
-... Doug
+Or ENOSYS ? I will fix both routines once you confirm..
