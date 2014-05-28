@@ -1,80 +1,72 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH v2 1/7] tracing: Add __bitmask() macro to trace
- events to cpumasks and other bitmasks
-Date: Wed, 28 May 2014 10:25:51 -0400
-Message-ID: <20140528102551.1b4e3da6@gandalf.local.home>
-References: <1400595057-8585-1-git-send-email-javi.merino@arm.com>
-	<1400595057-8585-2-git-send-email-javi.merino@arm.com>
-	<1400638043.9759.5.camel@pippen.local.home>
-	<20140521082641.GA3025@e102654-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH 2/5] clk: Introduce 'clk_round_rate_nearest()'
+Date: Wed, 28 May 2014 18:17:10 +0200
+Message-ID: <1731476.hDvqXAW3JF@vostro.rjw.lan>
+References: <20140521073457.GD31687@pengutronix.de> <9956925.Qsz2bH3rDg@vostro.rjw.lan> <20140528020531.7816.5349@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cdptpa-outbound-snat.email.rr.com ([107.14.166.232]:43505 "EHLO
-	cdptpa-oedge-vip.email.rr.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752995AbaE1OZx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 May 2014 10:25:53 -0400
-In-Reply-To: <20140521082641.GA3025@e102654-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20140528020531.7816.5349@quantum>
+Sender: cpufreq-owner@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michal Simek <michal.simek@xilinx.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Wed, 21 May 2014 09:26:41 +0100
-Javi Merino <javi.merino@arm.com> wrote:
+On Tuesday, May 27, 2014 07:05:31 PM Mike Turquette wrote:
+> Quoting Rafael J. Wysocki (2014-05-26 04:22:32)
+> > On Monday, May 26, 2014 11:59:09 AM Viresh Kumar wrote:
+> > > On 23 May 2014 21:44, S=C3=B6ren Brinkmann <soren.brinkmann@xilin=
+x.com> wrote:
+> > > > Viresh: Could you imagine something similar for cpufreq? You su=
+ggested
+> > > > migrating to Hz resolution. I guess that would ideally mean to =
+follow
+> > > > the CCF to a 64-bit type for frequencies and increasing the res=
+olution.
+> > > > I have a messy patch migrating cpufreq and OPP to Hz and unsign=
+ed long
+> > > > that works on Zynq. But cpufreq has so many users that it would=
+ become
+> > > > quite an undertaking.
+> > > > And we'd need some new/amended OPP DT binding.
+> > >=20
+> > > If we are going to migrate to Hz from KHz, I think we must consid=
+er the
+> > > 64 bit stuff right now, otherwise it will bite us later.
+> > >=20
+> > > @Rafael: What do you think?
+> >=20
+> > I agree as far as the 64-bit thing goes, but is switching to Hz rea=
+lly
+> > necessary?
+>=20
+> Rafael,
+>=20
+> Why should CPUfreq migrate to 64-bit if not switching to Hz? CPU cloc=
+k
+> rates are specified as KHz in CPUfreq via an unsigned int. On 32-bit
+> systems that comes out to a max of 4.29THz (terahertz!)!
+>=20
+> Or maybe you meant, "I agree that the clock framework should switch t=
+o
+> the 64-bit thing"?
 
-> Hi Steve,
-> 
-> On Wed, May 21, 2014 at 03:07:23AM +0100, Steven Rostedt wrote:
-> > Hmm, I didn't think about cross tree dependencies. I already pushed this
-> > patch to my for-next branch which is already in linux-next, and I do not
-> > rebase this branch unless there's a really good need to.
-> > 
-> > I guess I needed to make a separate branch that you could have pulled
-> > separately. I'm not sure how we want to proceed, unless you wait till
-> > Linus pulls my branch before you add this to your tree.
-> > 
-> > Maybe it would be OK to cherry pick it? I'm not sure Linus would want
-> > that.
-> > 
-> > Maybe I can make a separate branch that only has this patch and merge it
-> > into my tree, where git will handle the duplicate. But then we have a
-> > strange history.
-> > 
-> > How urgent is your change? Can it wait till my stuff makes it into
-> > Linus's tree in the 3.16 merge window?
-> 
-> Sorry for the confusion.  I was expecting you to merge this patch via
-> your tree.  I said that in the cover letter for the series, but I
-> should've repeated it in this patch.  I included it in the series for
-> completeness and I'll remove it once it reaches mainline.
-> 
+That should have been something like "If we were to switch to Hz
+resolution, it would be necessary to switch over to 64-bit too".
 
-At LinuxCon Japan I talked with Linus about how to handle this.
+> Personally I'd like to see the clock framework and cpufreq get on the
+> same page (data type) for specifying clock rates, and the clock
+> framework really should not use a granularity like KHz. In fact we ha=
+ve
+> some fractional rates like 13.25Hz ...
 
-If you look in my for-next branch on my git repo that's here:
+Well, as I said.  There's a cost to that and it is not particularly
+clear to me whether or not that cost is justifiable.  And some architec=
+tures
+don't even use the clock framework for cpufreq, mind you.  How many of =
+them
+do, actually?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
+Rafael
 
-You can cherry pick my commit:
-
-https://git.kernel.org/cgit/linux/kernel/git/rostedt/linux-trace.git/commit/?h=for-next&id=4449bf927b61bdb4389393c6fea6837214d1ace7
-
-commit 4449bf927b61bdb4389393c6fea6837214d1ace7
-
-Since I don't have anything else built on top of it, and it is rather
-independent (I just tried cherry-picking it to Linus's tree and it
-comes in with no conflicts), he said it's fine if you just cherry pick
-the commit into your tree and base the rest of your patches on top of
-it.
-
-Just state that you did so in the pull commit to Linus.
-
-Now, I would use git to do this. Don't make a patch for it. Whoever you
-send patches to should cherry pick my change and then apply the rest of
-your patches.
-
-Thanks,
-
--- Steve
