@@ -1,88 +1,68 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 4/4] ACPI battery: wakeup the system only when necessary
-Date: Wed, 28 May 2014 15:23:38 +0800
-Message-ID: <1401261818-2978-5-git-send-email-rui.zhang@intel.com>
-References: <1401261818-2978-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:40127 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbaE1HXv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 May 2014 03:23:51 -0400
-In-Reply-To: <1401261818-2978-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Johan Hovold <jhovold@gmail.com>
+Subject: Re: Performance regression in v3.14
+Date: Wed, 28 May 2014 09:59:45 +0200
+Message-ID: <20140528075945.GA21705@localhost>
+References: <20140506163559.GA5308@localhost>
+ <CAKohpokYEvazxm0-JJXPzq-4OgLXmROfaCMcgHDZwugChOxtsQ@mail.gmail.com>
+ <536A3EE9.5050409@intel.com>
+ <20140521090051.GO21412@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140521090051.GO21412@localhost>
+Sender: cpufreq-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Johan Hovold <jhovold@gmail.com>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Doug Smythies <dsmythies@telus.net>, Yuyang Du <yuyang.du@intel.com>, Stratos Karafotis <stratosk@semaphore.gr>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rafael.j.wysocki@intel.com, anton@enomsg.org, Zhang Rui <rui.zhang@intel.com>
 
-ACPI Battery device receives notifications from firmware frequently,
-and most of these notifications are some general events, like battery
-remaining capacity change, etc, which should not wake the system up
-if the system is in suspend/hibernate state.
+[ +CC: Greg, Doug, Stratos, Yuyang ]
 
-This causes a problem that the system wakes up from suspend to freeze
-shortly, because there is an ACPI battery notification every 10 seconds.
-https://bugzilla.kernel.org/show_bug.cgi?id=76221
+On Wed, May 21, 2014 at 11:00:51AM +0200, Johan Hovold wrote:
+> On Wed, May 07, 2014 at 07:10:49AM -0700, Dirk Brandewie wrote:
+> > On 05/06/2014 10:40 PM, Viresh Kumar wrote:
+> > > Cc'ing Dirk who is taking care of intel-pstate driver.
+> > >
+> > 
+> > Thanks Viresh I had seen this thread.
+> > 
+> > I am looking into it
+> 
+> Any updates on this, Dirk? 3.14 is still basically unusable with the
+> intel_pstate driver.
+> 
+> Any fixes or workarounds posted elsewhere that I can apply in the
+> meantime?
 
-Fix the problem in this patch by registering ACPI battery device'
-own wakeup source, and waking up the system only when the battery remaining
-capacity is critical low, or lower than the alarm capacity set via _BTP.
+Another week and still no reply, Dirk?
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/acpi/battery.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+I tried applying your (rejected) patch "intel_pstate: Remove C0
+tracking" posted here:
 
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index b508bd0..e6afe28 100644
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -595,7 +595,8 @@ static int sysfs_add_battery(struct acpi_battery *battery)
- 	battery->bat.type = POWER_SUPPLY_TYPE_BATTERY;
- 	battery->bat.get_property = acpi_battery_get_property;
- 
--	result = power_supply_register(&battery->device->dev, &battery->bat);
-+	result = power_supply_register_no_ws(&battery->device->dev, &battery->bat);
-+
- 	if (result)
- 		return result;
- 	return device_create_file(battery->bat.dev, &alarm_attr);
-@@ -710,7 +711,19 @@ static int acpi_battery_update(struct acpi_battery *battery)
- 			return result;
- 	}
- 	result = acpi_battery_get_state(battery);
-+	if (result)
-+		return result;
- 	acpi_battery_quirks(battery);
-+
-+	/*
-+	 * Wakeup the system if battery is critical low
-+	 * or lower than the alarm level
-+	 */
-+	if ((battery->state & ACPI_BATTERY_STATE_CRITICAL) ||
-+	    (test_bit(ACPI_BATTERY_ALARM_PRESENT, &battery->flags) &&
-+            (battery->capacity_now <= battery->alarm)))
-+		pm_wakeup_event(&battery->device->dev, 0);
-+
- 	return result;
- }
- 
-@@ -815,6 +828,8 @@ static int acpi_battery_add(struct acpi_device *device)
- 	battery->pm_nb.notifier_call = battery_notify;
- 	register_pm_notifier(&battery->pm_nb);
- 
-+	device_init_wakeup(&device->dev, 1);
-+
- 	return result;
- 
- fail:
-@@ -831,6 +846,7 @@ static int acpi_battery_remove(struct acpi_device *device)
- 
- 	if (!device || !acpi_driver_data(device))
- 		return -EINVAL;
-+	device_init_wakeup(&device->dev, 0);
- 	battery = acpi_driver_data(device);
- 	unregister_pm_notifier(&battery->pm_nb);
- 	sysfs_remove_battery(battery);
--- 
-1.8.3.2
+	https://lkml.org/lkml/2014/5/8/574
 
+to v3.14.4 and it fixes the problem as expected.
+
+So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
+account for core busy calculation") that went into v3.14-rc2 (and was
+even marked for *stable*) that first broke Greg KH's system:
+
+	https://lkml.org/lkml/2014/2/19/626
+
+That was apparently fixed by e66c17683746 ("intel_pstate: Change
+busy calculation to use fixed point math."), but still left v3.14
+basically unusable for lower-intensity workloads such as my
+bash-completion example and other reported regressions:
+
+	https://bugzilla.kernel.org/show_bug.cgi?id=75121
+
+Sure there may be issues with v3.13 not hitting the lowest frequencies
+but at least the system was *usable*.
+
+In my opinion there's really no other option than to restore the 3.13
+behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
+core C0 time into account for core busy calculation") until you have
+figured out a way to take C0 into account without breaking things too
+badly.
+
+Johan
