@@ -1,108 +1,88 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 2/4] ACPI battery: introduce support for POWER_SUPPLY_PROP_CAPACITY_LEVEL
-Date: Wed, 28 May 2014 15:23:36 +0800
-Message-ID: <1401261818-2978-3-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 4/4] ACPI battery: wakeup the system only when necessary
+Date: Wed, 28 May 2014 15:23:38 +0800
+Message-ID: <1401261818-2978-5-git-send-email-rui.zhang@intel.com>
 References: <1401261818-2978-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga11.intel.com ([192.55.52.93]:40127 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbaE1HXq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 May 2014 03:23:46 -0400
+	id S1752006AbaE1HXv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 28 May 2014 03:23:51 -0400
 In-Reply-To: <1401261818-2978-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: rafael.j.wysocki@intel.com, anton@enomsg.org, Zhang Rui <rui.zhang@intel.com>
 
-ACPI battery device receives notifications when
-1. the remaining battery capacity becomes critical low
-2. the trip point set by the _BTP (Design capacity of Warning by default)
-   is reached or crossed.
+ACPI Battery device receives notifications from firmware frequently,
+and most of these notifications are some general events, like battery
+remaining capacity change, etc, which should not wake the system up
+if the system is in suspend/hibernate state.
 
-So it is able to support POWER_SUPPLY_PROP_CAPACITY_LEVEL to report
-        POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL,
-        POWER_SUPPLY_CAPACITY_LEVEL_LOW,
-        POWER_SUPPLY_CAPACITY_LEVEL_NORMAL,
-        POWER_SUPPLY_CAPACITY_LEVEL_FULL,
-capacity levels to power supply core and user space.
+This causes a problem that the system wakes up from suspend to freeze
+shortly, because there is an ACPI battery notification every 10 seconds.
+https://bugzilla.kernel.org/show_bug.cgi?id=76221
 
-Introduce support for POWER_SUPPLY_PROP_CAPACITY_LEVEL in this patch.
+Fix the problem in this patch by registering ACPI battery device'
+own wakeup source, and waking up the system only when the battery remaining
+capacity is critical low, or lower than the alarm capacity set via _BTP.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/acpi/battery.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ drivers/acpi/battery.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index 9a2c63b..b508bd0 100644
+index b508bd0..e6afe28 100644
 --- a/drivers/acpi/battery.c
 +++ b/drivers/acpi/battery.c
-@@ -50,6 +50,10 @@
- /* Battery power unit: 0 means mW, 1 means mA */
- #define ACPI_BATTERY_POWER_UNIT_MA	1
+@@ -595,7 +595,8 @@ static int sysfs_add_battery(struct acpi_battery *battery)
+ 	battery->bat.type = POWER_SUPPLY_TYPE_BATTERY;
+ 	battery->bat.get_property = acpi_battery_get_property;
  
-+#define ACPI_BATTERY_STATE_DISCHARGING	0x1
-+#define ACPI_BATTERY_STATE_CHARGING	0x2
-+#define ACPI_BATTERY_STATE_CRITICAL	0x4
+-	result = power_supply_register(&battery->device->dev, &battery->bat);
++	result = power_supply_register_no_ws(&battery->device->dev, &battery->bat);
 +
- #define _COMPONENT		ACPI_BATTERY_COMPONENT
+ 	if (result)
+ 		return result;
+ 	return device_create_file(battery->bat.dev, &alarm_attr);
+@@ -710,7 +711,19 @@ static int acpi_battery_update(struct acpi_battery *battery)
+ 			return result;
+ 	}
+ 	result = acpi_battery_get_state(battery);
++	if (result)
++		return result;
+ 	acpi_battery_quirks(battery);
++
++	/*
++	 * Wakeup the system if battery is critical low
++	 * or lower than the alarm level
++	 */
++	if ((battery->state & ACPI_BATTERY_STATE_CRITICAL) ||
++	    (test_bit(ACPI_BATTERY_ALARM_PRESENT, &battery->flags) &&
++            (battery->capacity_now <= battery->alarm)))
++		pm_wakeup_event(&battery->device->dev, 0);
++
+ 	return result;
+ }
  
- ACPI_MODULE_NAME("battery");
-@@ -150,7 +154,7 @@ static int acpi_battery_get_state(struct acpi_battery *battery);
+@@ -815,6 +828,8 @@ static int acpi_battery_add(struct acpi_device *device)
+ 	battery->pm_nb.notifier_call = battery_notify;
+ 	register_pm_notifier(&battery->pm_nb);
  
- static int acpi_battery_is_charged(struct acpi_battery *battery)
- {
--	/* either charging or discharging */
-+	/* charging, discharging or critical low */
- 	if (battery->state != 0)
- 		return 0;
++	device_init_wakeup(&device->dev, 1);
++
+ 	return result;
  
-@@ -185,9 +189,9 @@ static int acpi_battery_get_property(struct power_supply *psy,
- 		return -ENODEV;
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
--		if (battery->state & 0x01)
-+		if (battery->state & ACPI_BATTERY_STATE_DISCHARGING)
- 			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
--		else if (battery->state & 0x02)
-+		else if (battery->state & ACPI_BATTERY_STATE_CHARGING)
- 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
- 		else if (acpi_battery_is_charged(battery))
- 			val->intval = POWER_SUPPLY_STATUS_FULL;
-@@ -250,6 +254,17 @@ static int acpi_battery_get_property(struct power_supply *psy,
- 		else
- 			val->intval = 0;
- 		break;
-+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-+		if (battery->state & ACPI_BATTERY_STATE_CRITICAL)
-+			val->intval = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-+		else if (test_bit(ACPI_BATTERY_ALARM_PRESENT, &battery->flags) &&
-+			(battery->capacity_now <= battery->alarm))
-+			val->intval = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-+		else if (acpi_battery_is_charged(battery))
-+			val->intval = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-+		else
-+			val->intval = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = battery->model_number;
- 		break;
-@@ -277,6 +292,7 @@ static enum power_supply_property charge_battery_props[] = {
- 	POWER_SUPPLY_PROP_CHARGE_FULL,
- 	POWER_SUPPLY_PROP_CHARGE_NOW,
- 	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-@@ -294,6 +310,7 @@ static enum power_supply_property energy_battery_props[] = {
- 	POWER_SUPPLY_PROP_ENERGY_FULL,
- 	POWER_SUPPLY_PROP_ENERGY_NOW,
- 	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
+ fail:
+@@ -831,6 +846,7 @@ static int acpi_battery_remove(struct acpi_device *device)
+ 
+ 	if (!device || !acpi_driver_data(device))
+ 		return -EINVAL;
++	device_init_wakeup(&device->dev, 0);
+ 	battery = acpi_driver_data(device);
+ 	unregister_pm_notifier(&battery->pm_nb);
+ 	sysfs_remove_battery(battery);
 -- 
 1.8.3.2
 
