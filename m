@@ -1,80 +1,70 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v6 0/6] add cpuidle support for Exynos5420
-Date: Wed, 28 May 2014 11:02:48 +0200
-Message-ID: <5385A638.2000001@linaro.org>
-References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com> <1400227438-27155-1-git-send-email-chander.kashyap@linaro.org> <53831795.9070006@gmail.com> <CANuQgHH284A9QY7M5zGbSE-mXjm2KDqr54VWmtKVkbma3zZvvw@mail.gmail.com> <015f01cf7a2e$3b141590$b13c40b0$@samsung.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Patch V3 19/37] x86, irq: introduce mechanisms to support
+ dynamically allocate IRQ for IOAPIC
+Date: Wed, 28 May 2014 12:07:50 +0200 (CEST)
+Message-ID: <alpine.DEB.2.02.1405281159030.21720@ionos.tec.linutronix.de>
+References: <1401178092-1228-1-git-send-email-jiang.liu@linux.intel.com> <1401178092-1228-20-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.02.1405271445050.21720@ionos.tec.linutronix.de> <538597F0.1040003@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <015f01cf7a2e$3b141590$b13c40b0$@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>, 'Chander Kashyap' <chander.kashyap@linaro.org>, 'Tomasz Figa' <tomasz.figa@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 'Lorenzo Pieralisi' <lorenzo.pieralisi@arm.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <538597F0.1040003@linutronix.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/28/2014 06:35 AM, Kukjin Kim wrote:
-> Chander Kashyap wrote:
->>
->> On 26 May 2014 15:59, Tomasz Figa <tomasz.figa@gmail.com> wrote:
->>> Hi Chander,
->>>
->>> On 16.05.2014 10:03, Chander Kashyap wrote:
->>>> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7
->> cores.
->>>>
->>>> This patchset adds cpuidle support for Exynos5420 SoC based on
->>>> generic big.little cpuidle driver.
->>>>
->>>> Tested on SMDK5420.
->>>>
->>>> This patch set depends on:
->>>>        1. [PATCH 0/5] MCPM backend for Exynos5420
->>>>           http://www.spinics.net/lists/arm-kernel/msg331100.html
->>>> Changelog is in respective patches.
->>>> Chander Kashyap (5):
->>>>    driver: cpuidle-big-little: add of_device_id structure
->>>>    arm: exynos: add generic function to calculate cpu number
->>>>    cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-li=
-ttle
->>>>      driver
->>>>    driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
->>>>    exynos: cpuidle: do not allow cpuidle registration for Exynos54=
-20
->>>>    mcpm: exynos: populate suspend and powered_up callbacks
->>>>
->>>>   arch/arm/mach-exynos/exynos.c        |    4 +++-
->>>>   arch/arm/mach-exynos/mcpm-exynos.c   |   36
->> ++++++++++++++++++++++++++++++++++
->>>>   arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
->>>>   drivers/cpuidle/Kconfig.arm          |    2 +-
->>>>   drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
->>>>   5 files changed, 60 insertions(+), 3 deletions(-)
->>>>
->>>
->>> For the whole series,
->>>
->>> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
->>
->> Thanks Tomasz.
->>
->> Dear Kukjin,
->> Can you take these patches.
->>>
-> When I looked at this series quickly, looks good to me but I need to =
-get ack from cpuidle maintainer Rafael or Daniel.
+On Wed, 28 May 2014, Sebastian Andrzej Siewior wrote:
+> On 05/27/2014 09:58 PM, Thomas Gleixner wrote:
+> > ce4100 is an oddball though. The ioapic is registered way before the
+> > interrupt subsystem is initialized and I have a hard time to
+> > understand that comment:
+> > 
+> >         /* We can't set this earlier, because we need to calibrate the timer */
+> >         legacy_pic = &null_legacy_pic;
+> > 
+> > The timer calibration happens after the interrupts are set up. I
+> > assume it's check_timer() which wants that, but we know exactly how
+> > the ce4100 works, so we might be able to avoid that whole "testing"
+> > stuff. Sebastian, any input on this?
+> 
+> According to my memory there was some PIC init we need but I don't
+> recall the details. However, booting the system with "legacy_pic =
+> &null_legacy_pic;" in x86_ce4100_early_setup() gives me this:
+> 
+> [    0.001000] Enabling APIC mode:  Flat.  Using 2 I/O APICs
+> [    0.001000] leaving PIC mode, enabling APIC mode.
+> [    0.001000] enabled ExtINT on CPU#0
+> [    0.001000] ENABLING IO-APIC IRQs
+> [    0.001000] Setting 1 in the phys_id_present_map
+> [    0.001000] ...changing IO-APIC physical APIC ID to 1 ... ok.
+> [    0.001000] Setting 2 in the phys_id_present_map
+> [    0.001000] ...changing IO-APIC physical APIC ID to 2 ... ok.
+> [    0.001000] smpboot: CPU0: Intel(R) Atom(TM) CPU CE4150   @ 1.20GHz
+> (fam: 06, model: 1c, stepping: 0a)
+> [    0.001000] Using local APIC timer interrupts.
+> [    0.001000] calibrating APIC timer ...
+> 
+> and we stand still. With the assignment as it is now:
+> 
+> [    0.001000] Enabling APIC mode:  Flat.  Using 2 I/O APICs
+> [    0.001000] leaving PIC mode, enabling APIC mode.
+> [    0.001000] enabled ExtINT on CPU#0
+> [    0.002312] ENABLING IO-APIC IRQs
+> [    0.003009] Setting 1 in the phys_id_present_map
+> [    0.004007] ...changing IO-APIC physical APIC ID to 1 ... ok.
+> [    0.005533] Setting 2 in the phys_id_present_map
+> [    0.006006] ...changing IO-APIC physical APIC ID to 2 ... ok.
+> [    0.008373] ..TIMER: vector=0x30 apic1=-1 pin1=-1 apic2=-1 pin2=-1
+> [    0.009000] ...trying to set up timer as Virtual Wire IRQ...
+> [    0.019490] ..... works.
 
-Acked the different cpuidle bits.
+Right, so it needs the setup of irq 0 and that only happens when the
+legacy_pic->nr_legacy_irqs > 0.
 
-Thanks
-   -- Daniel
+Do you remember, why we switch to the null_pic later on?
+
+Thanks,
+
+	tglx
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
