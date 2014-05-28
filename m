@@ -1,33 +1,80 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [Patch V3 19/37] x86, irq: introduce mechanisms to support dynamically
- allocate IRQ for IOAPIC
-Date: Wed, 28 May 2014 12:39:12 +0200
-Message-ID: <5385BCD0.1080802@linutronix.de>
-References: <1401178092-1228-1-git-send-email-jiang.liu@linux.intel.com> <1401178092-1228-20-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.02.1405271445050.21720@ionos.tec.linutronix.de> <538597F0.1040003@linutronix.de> <alpine.DEB.2.02.1405281159030.21720@ionos.tec.linutronix.de>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH v2 1/7] tracing: Add __bitmask() macro to trace
+ events to cpumasks and other bitmasks
+Date: Wed, 28 May 2014 10:25:51 -0400
+Message-ID: <20140528102551.1b4e3da6@gandalf.local.home>
+References: <1400595057-8585-1-git-send-email-javi.merino@arm.com>
+	<1400595057-8585-2-git-send-email-javi.merino@arm.com>
+	<1400638043.9759.5.camel@pippen.local.home>
+	<20140521082641.GA3025@e102654-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.02.1405281159030.21720@ionos.tec.linutronix.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cdptpa-outbound-snat.email.rr.com ([107.14.166.232]:43505 "EHLO
+	cdptpa-oedge-vip.email.rr.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752995AbaE1OZx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 May 2014 10:25:53 -0400
+In-Reply-To: <20140521082641.GA3025@e102654-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On 05/28/2014 12:07 PM, Thomas Gleixner wrote:
+On Wed, 21 May 2014 09:26:41 +0100
+Javi Merino <javi.merino@arm.com> wrote:
+
+> Hi Steve,
 > 
-> Right, so it needs the setup of irq 0 and that only happens when the
-> legacy_pic->nr_legacy_irqs > 0.
->
-> Do you remember, why we switch to the null_pic later on?
-
-According to my memory all interrupts are serviced by the IOAPIC. The
-first 16 by the first IOAPIC, 17+ (everything behind the "PCI-bus") by
-the second IOAPIC. For that reason I didn't see a reason for the legacy
-PIC and set it to null_pic. Due to the timer problem it is delayed.
-
-> Thanks,
+> On Wed, May 21, 2014 at 03:07:23AM +0100, Steven Rostedt wrote:
+> > Hmm, I didn't think about cross tree dependencies. I already pushed this
+> > patch to my for-next branch which is already in linux-next, and I do not
+> > rebase this branch unless there's a really good need to.
+> > 
+> > I guess I needed to make a separate branch that you could have pulled
+> > separately. I'm not sure how we want to proceed, unless you wait till
+> > Linus pulls my branch before you add this to your tree.
+> > 
+> > Maybe it would be OK to cherry pick it? I'm not sure Linus would want
+> > that.
+> > 
+> > Maybe I can make a separate branch that only has this patch and merge it
+> > into my tree, where git will handle the duplicate. But then we have a
+> > strange history.
+> > 
+> > How urgent is your change? Can it wait till my stuff makes it into
+> > Linus's tree in the 3.16 merge window?
 > 
-> 	tglx
+> Sorry for the confusion.  I was expecting you to merge this patch via
+> your tree.  I said that in the cover letter for the series, but I
+> should've repeated it in this patch.  I included it in the series for
+> completeness and I'll remove it once it reaches mainline.
+> 
 
-Sebastian
+At LinuxCon Japan I talked with Linus about how to handle this.
+
+If you look in my for-next branch on my git repo that's here:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
+
+You can cherry pick my commit:
+
+https://git.kernel.org/cgit/linux/kernel/git/rostedt/linux-trace.git/commit/?h=for-next&id=4449bf927b61bdb4389393c6fea6837214d1ace7
+
+commit 4449bf927b61bdb4389393c6fea6837214d1ace7
+
+Since I don't have anything else built on top of it, and it is rather
+independent (I just tried cherry-picking it to Linus's tree and it
+comes in with no conflicts), he said it's fine if you just cherry pick
+the commit into your tree and base the rest of your patches on top of
+it.
+
+Just state that you did so in the pull commit to Linus.
+
+Now, I would use git to do this. Don't make a patch for it. Whoever you
+send patches to should cherry pick my change and then apply the rest of
+your patches.
+
+Thanks,
+
+-- Steve
