@@ -1,103 +1,58 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
 Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency
  callbacks
-Date: Thu, 29 May 2014 11:40:19 -0600
-Message-ID: <53877103.8070604@wwwdotorg.org>
-References: <cover.1400662383.git.viresh.kumar@linaro.org> <dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>
+Date: Thu, 29 May 2014 11:42:49 -0600
+Message-ID: <53877199.5090009@wwwdotorg.org>
+References: <cover.1400662383.git.viresh.kumar@linaro.org>	<dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>	<537E285C.6060608@wwwdotorg.org> <CAKohpomdOEspgfxNR5p=PVLCeSUYcUWZ2cWGGQo0b__ptKiYtw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:41669 "EHLO
+Received: from avon.wwwdotorg.org ([70.85.31.133]:56820 "EHLO
 	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932640AbaE2RkX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 13:40:23 -0400
-In-Reply-To: <dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>
+	with ESMTP id S932691AbaE2Rmx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 13:42:53 -0400
+In-Reply-To: <CAKohpomdOEspgfxNR5p=PVLCeSUYcUWZ2cWGGQo0b__ptKiYtw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org, linux@arm.linux.org.uk, nicolas.pitre@linaro.org, thomas.abraham@linaro.org, pdeschrijver@nvidia.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-On 05/21/2014 02:59 AM, Viresh Kumar wrote:
-> Tegra had always been switching to intermediate frequency (pll_p_clk) since
-> ever. CPUFreq core has better support for handling notifications for these
-> frequencies and so we can adapt Tegra's driver to it.
+On 05/22/2014 10:05 PM, Viresh Kumar wrote:
+> On 22 May 2014 22:09, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> I think the call to tegra_target_intermediate() is wrong here; shouldn't
+>> the cpufreq core guarantee that tegra_target_intermediate() has always
+>> been called before tegra_target(), so there's no need to repeat that
+>> call here?
+
+>> Also, tegra_target() doesn't seem to follow the rule documented by patch
+>> 2/3 that states ->target() should restore the orignal frequency on
+>> error. I'm not even sure if that's possible in general.
 > 
-> Also do a WARN() if clk_set_parent() fails while moving back to pll_x as we
-> should have atleast restored to earlier frequency on error.
+> I thought I took care of that. Can you please give some example when
+> we aren't restoring original frequency on failure ?
+> 
+> About the rule, that has to be the expectation from core as there is no
+> way out that for core to know what happened at end of target_index()..
+> 
+> It can call get_rate() but that would be over engineering it looks ..
 
-This patch breaks Tegra. The reason is below.
+E.g. in the following code after the series is applied:
 
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+> 	ret = clk_set_rate(pll_x_clk, rate * 1000);
+> 	/* Restore to earlier frequency on error, i.e. pll_x */
+> 	if (ret)
+> 		pr_err("Failed to change pll_x to %lu\n", rate);
+> 
+> 	ret = clk_set_parent(cpu_clk, pll_x_clk);
 
-> -static int tegra_cpu_clk_set_rate(unsigned long rate)
-> +static unsigned int
-> +tegra_get_intermediate(struct cpufreq_policy *policy, unsigned int index)
+If the clk_set_rate() failed, we have no idea what the pll_x rate is; I
+don't think the clock API guarantees that zero HW changes have been made
+if the function fails. Yet the code switches the CPU clock back to pll_x
+without attempting to fix the pll_x rate to be the old rate. Perhaps
+there's not much that can be done here though, since if one
+clk_set_rate() failed, perhaps the one to fix it will too.
 
-(BTW, can we please not put the return type on a separate line; it's
-inconsistent with the rest of the code in this file)
-
-> +{
-> +	unsigned int ifreq = clk_get_rate(pll_p_clk) / 1000;
-> +
-> +	/*
-> +	 * Don't switch to intermediate freq if:
-> +	 * - we are already at it, i.e. policy->cur == ifreq
-> +	 * - index corresponds to ifreq
-> +	 */
-> +	if ((freq_table[index].frequency == ifreq) || (policy->cur == ifreq))
-> +		return 0;
-
-If policy->cur == ifreq here, then tegra_target_intermediate() isn't
-called by the cpufreq core, so ...
-
-> +static int
-> +tegra_target_intermediate(struct cpufreq_policy *policy, unsigned int index)
->  {
->  	int ret;
->  
-> 	/*
-> 	 * Take an extra reference to the main pll so it doesn't turn
-> 	 * off when we move the cpu off of it
-> 	 */
-> 	clk_prepare_enable(pll_x_clk);
-
-... that reference isn't added...
-
-> @@ -98,10 +96,23 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
->  	else
->  		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
->  
-> -	ret = tegra_cpu_clk_set_rate(rate * 1000);
-> +	/* target freq == pll_p */
-> +	if (rate * 1000 == clk_get_rate(pll_p_clk)) {
-> +		ret = tegra_target_intermediate(policy, index);
-> +		goto disable_pll_x;
-> +	}
-
-... and this code doesn't call it either, since we could be switching
-from the pll_p rate to something faster ...
-
-> +
-> +	ret = clk_set_rate(pll_x_clk, rate * 1000);
-> +	/* Restore to earlier frequency on error, i.e. pll_x */
->  	if (ret)
-> -		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
-> -			rate);
-> +		pr_err("Failed to change pll_x to %lu\n", rate);
-> +
-> +	ret = clk_set_parent(cpu_clk, pll_x_clk);
-> +	/* This shouldn't fail while changing or restoring */
-> +	WARN_ON(ret);
-> +
-> +disable_pll_x:
-> +	clk_disable_unprepare(pll_x_clk);
-
-... so this turns off pll_x even though we're running from it.
-
-It would be simpler if Tegra *always* used an intermediate frequency,
-and hence the core *always* called tegra_target_intermediate().
-Admittedly, this would result in tegra_target() sometimes (when
-switching CPU clock rate to the pll_p rate) doing nothing other than
-removing the extra reference on pll_x, but I think that the code would
-be simpler to follow and more robust.
+I suspect there are other issues, like switching between pll_p/pllx
+might not be restored on error, and the EMC frequency isn't switched
+back, etc.
