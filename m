@@ -1,7 +1,7 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 1/4] intel_pstate: Remove C0 tracking
-Date: Thu, 29 May 2014 09:32:22 -0700
-Message-ID: <1401381145-17745-2-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH 2/4] intel_pstate: Correct rounding in busy calculation
+Date: Thu, 29 May 2014 09:32:23 -0700
+Message-ID: <1401381145-17745-3-git-send-email-dirk.j.brandewie@intel.com>
 References: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <stable-owner@vger.kernel.org>
 In-Reply-To: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com>
@@ -12,89 +12,65 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Commit fcb6a15c intel_pstate: Take core C0 time into account for core busy
-introduced a regression referenced below.  The issue with "lockup"
-after suspend that this commit was addressing is now dealt with in the
-suspend path.
-
-
-References:
-   https://bugzilla.kernel.org/show_bug.cgi?id=66581
-   https://bugzilla.kernel.org/show_bug.cgi?id=75121
+Changing to fixed point math throughout the busy calculation in
+commit e66c1768 Change busy calculation to use fixed point
+math. Introduced some inaccuracies by rounding the busy value at two
+points in the calculation.  This change removes roundings and moves
+the rounding to the output of the PID where the calculations are
+complete and the value returned as an integer.
 
 Reported-by: Doug Smythies <dsmythies@telus.net>
 Cc: <stable@vger.kernel.org> # 3.14.x
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index a6d5afa..ffef765 100644
+index ffef765..db8a992 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -57,7 +57,6 @@ struct sample {
- 	int32_t core_pct_busy;
- 	u64 aperf;
- 	u64 mperf;
--	unsigned long long tsc;
- 	int freq;
- };
+@@ -38,10 +38,10 @@
+ #define BYT_TURBO_VIDS		0x66d
  
-@@ -96,7 +95,6 @@ struct cpudata {
  
- 	u64	prev_aperf;
- 	u64	prev_mperf;
--	unsigned long long prev_tsc;
- 	struct sample sample;
- };
+-#define FRAC_BITS 6
++#define FRAC_BITS 8
+ #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+ #define fp_toint(X) ((X) >> FRAC_BITS)
+-#define FP_ROUNDUP(X) ((X) += 1 << FRAC_BITS)
++
  
-@@ -555,45 +553,36 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+ static inline int32_t mul_fp(int32_t x, int32_t y)
  {
- 	struct sample *sample = &cpu->sample;
- 	int32_t core_pct;
--	int32_t c0_pct;
+@@ -194,7 +194,10 @@ static signed int pid_calc(struct _pid *pid, int32_t busy)
+ 	pid->last_err = fp_error;
+ 
+ 	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
+-
++	if (result >= 0)
++		result = result + (1 << (FRAC_BITS-1));
++	else
++		result = result - (1 << (FRAC_BITS-1));
+ 	return (signed int)fp_toint(result);
+ }
+ 
+@@ -556,7 +559,6 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
  
  	core_pct = div_fp(int_tofp(sample->aperf), int_tofp(sample->mperf));
  	core_pct = mul_fp(core_pct, int_tofp(100));
- 	FP_ROUNDUP(core_pct);
+-	FP_ROUNDUP(core_pct);
  
--	c0_pct = div_fp(int_tofp(sample->mperf), int_tofp(sample->tsc));
--
  	sample->freq = fp_toint(
  		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
- 
--	sample->core_pct_busy = mul_fp(core_pct, c0_pct);
-+	sample->core_pct_busy = core_pct;
+@@ -602,7 +604,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 	max_pstate = int_tofp(cpu->pstate.max_pstate);
+ 	current_pstate = int_tofp(cpu->pstate.current_pstate);
+ 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+-	return FP_ROUNDUP(core_busy);
++	return core_busy;
  }
  
- static inline void intel_pstate_sample(struct cpudata *cpu)
- {
- 	u64 aperf, mperf;
--	unsigned long long tsc;
- 
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
--	tsc = native_read_tsc();
- 
- 	aperf = aperf >> FRAC_BITS;
- 	mperf = mperf >> FRAC_BITS;
--	tsc = tsc >> FRAC_BITS;
- 
- 	cpu->sample.aperf = aperf;
- 	cpu->sample.mperf = mperf;
--	cpu->sample.tsc = tsc;
- 	cpu->sample.aperf -= cpu->prev_aperf;
- 	cpu->sample.mperf -= cpu->prev_mperf;
--	cpu->sample.tsc -= cpu->prev_tsc;
- 
- 	intel_pstate_calc_busy(cpu);
- 
- 	cpu->prev_aperf = aperf;
- 	cpu->prev_mperf = mperf;
--	cpu->prev_tsc = tsc;
- }
- 
- static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
 -- 
 1.9.0
