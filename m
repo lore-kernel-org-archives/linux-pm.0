@@ -1,177 +1,77 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [PATCH v1 3/6] thermal: thermal-core: Add notifications support
- for the cooling states
-Date: Thu, 29 May 2014 13:24:38 +0100
-Message-ID: <20140529122438.GB2593@e104805>
+Subject: Re: [PATCH v1 6/6] ACPI: thermal: processor: Use the generic cpufreq
+ infrastructure
+Date: Thu, 29 May 2014 13:42:49 +0100
+Message-ID: <20140529124248.GC2593@e104805>
 References: <1401351334-11210-1-git-send-email-amit.daniel@samsung.com>
- <1401351334-11210-4-git-send-email-amit.daniel@samsung.com>
+ <1401351334-11210-7-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:55115 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756844AbaE2MYm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 08:24:42 -0400
-In-Reply-To: <1401351334-11210-4-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1401351334-11210-7-git-send-email-amit.daniel@samsung.com>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Amit Daniel Kachhap <amit.daniel@samsung.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "amit.kachhap@gmail.com" <amit.kachhap@gmail.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 Hi Amit,
 
-On Thu, May 29, 2014 at 09:15:31AM +0100, Amit Daniel Kachhap wrote:
-> This patch adds notification infrastructure for any requests related to cooling
-> states. The notifier structure passed is of both Get/Set type. So the receiver
-> of these can sense the new/cur/max cooling state as decided by thermal governor.
-> In addition to that it can also override the cooling state and may do something
-> interesting after receiving these CPU cooling events such as masking some
-> states, enabling some extra conditional states or perform any extra operation
-> for aggressive thermal cooling.
-> The notfications events can be of type,
-> 
-> 1. COOLING_SET_STATE_PRE
-> 2. COOLING_SET_STATE_POST
-> 3. COOLING_GET_CUR_STATE
-> 4. COOLING_GET_MAX_STATE
+On Thu, May 29, 2014 at 09:15:34AM +0100, Amit Daniel Kachhap wrote:
+> This patch upgrades the ACPI cpufreq cooling portions to use the generic
+> cpufreq cooling infrastructure. There should not be any functionality
+> related changes as the same behaviour is provided by the generic
+> cpufreq APIs with the notifier mechanism.
 > 
 > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 > ---
->  Documentation/thermal/sysfs-api.txt |   21 +++++++++++
->  drivers/thermal/thermal_core.c      |   69 ++++++++++++++++++++++++++++++++++-
->  include/linux/thermal.h             |   21 +++++++++++
->  3 files changed, 109 insertions(+), 2 deletions(-)
+>  drivers/acpi/processor_driver.c  |    6 +-
+>  drivers/acpi/processor_thermal.c |  235 ++++++++++++++++++--------------------
+>  include/acpi/processor.h         |    3 +-
+>  3 files changed, 115 insertions(+), 129 deletions(-)
 > 
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index 87519cb..5f45e03 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -92,6 +92,27 @@ temperature) and throttle appropriate devices.
->      It deletes the corresponding entry form /sys/class/thermal folder and
->      unbind itself from all the thermal zone devices using it.
->  
-> +1.2.3 int thermal_cooling_register_notifier(struct notifier_block *nb)
-> +
-> +    This interface function registers the client notifier handler. The notifier
-> +    handler can use this to monitor or update any cooling state requests.
-> +    nb: notifier structure containing client notifier handler.
-> +
-> +1.2.4 int thermal_cooling_unregister_notifier(struct notifier_block *nb)
-> +
-> +    This interface function unregisters the client notifier handler.
-> +    nb: notifier structure containing client notifier handler.
-> +
-> +1.2.5 int thermal_cooling_notify_states(struct thermal_cooling_status *request,enum cooling_state_ops op)
-> +
-> +    This interface function invokes the earlier registered cooling states handler.
-> +    request: holds the relevant cooling state value.
-> +	.cur_state: current cooling state.
-> +	.new_state: new cooling state to be set.
-> +	.max_state: max cooling state.
-> +	.devdata: driver private data pointer.
-> +    op: describes various operation supported.
-> +
->  1.3 interface for binding a thermal zone device with a thermal cooling device
->  1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
->  	int trip, struct thermal_cooling_device *cdev,
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 71b0ec0..1a60f83 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -52,6 +52,8 @@ static DEFINE_MUTEX(thermal_idr_lock);
->  static LIST_HEAD(thermal_tz_list);
->  static LIST_HEAD(thermal_cdev_list);
->  static LIST_HEAD(thermal_governor_list);
-> +/* Notfier list to validates/updates the cpufreq cooling states */
-> +static BLOCKING_NOTIFIER_HEAD(cooling_state_notifier_list);
->  
->  static DEFINE_MUTEX(thermal_list_lock);
->  static DEFINE_MUTEX(thermal_governor_lock);
-> @@ -1073,8 +1075,71 @@ static struct class thermal_class = {
->  };
->  
->  /**
-> - * __thermal_cooling_device_register() - register a new thermal cooling device
-> - * @np:		a pointer to a device tree node.
-> + * thermal_cooling_notify_states - Invoke the necessary cooling states handler.
-> + * @request: holds the relevant cooling state value. say if the cooling state
-> + * operation is of type COOLING_GET_MAX_STATE, then request holds
-> + * the current max cooling state value.
-> + * @op: different operations supported
-> + *
-> + * This API allows the registered user to recieve the different cooling
-> + * notifications like current state, max state and set state.
-> + *
-> + * Return: 0 (success)
-> + */
-> +int thermal_cooling_notify_states(struct thermal_cooling_status *request,
-> +				enum cooling_state_ops op)
-> +{
-> +	/* Invoke the notifiers which have registered for this state change */
-> +	if (op == COOLING_SET_STATE_PRE ||
-> +		op == COOLING_SET_STATE_POST ||
-> +		op == COOLING_GET_MAX_STATE ||
-> +		op == COOLING_GET_CUR_STATE) {
-> +		blocking_notifier_call_chain(
-> +			&cooling_state_notifier_list, op, request);
-> +	}
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_cooling_notify_states);
-> +
-> +/**
-> + * thermal_cooling_register_notifier - registers a notifier with thermal cooling.
-> + * @nb:	notifier function to register.
-> + *
-> + * Add a driver to receive all cooling notifications like current state,
-> + * max state and set state. The drivers after reading the events can perform
-> + * some mapping like grouping some P states into 1 cooling state.
-> + *
-> + * Return: 0 (success)
-> + */
-> +int thermal_cooling_register_notifier(struct notifier_block *nb)
-> +{
-> +	int ret = 0;
-> +	ret = blocking_notifier_chain_register(
-> +				&cooling_state_notifier_list, nb);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_cooling_register_notifier);
-> +
-> +/**
-> + * thermal_cooling_unregister_notifier - unregisters a notifier with thermal
-> + * cooling.
-> + * @nb:	notifier function to unregister.
-> + *
-> + * Removes a driver to receive further cooling notifications.
-> + *
-> + * Return: 0 (success)
+> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+> index 7f70f31..10aba4a 100644
+> --- a/drivers/acpi/processor_driver.c
+> +++ b/drivers/acpi/processor_driver.c
+> @@ -36,6 +36,7 @@
+>  #include <linux/cpuidle.h>
+>  #include <linux/slab.h>
+>  #include <linux/acpi.h>
+> +#include <linux/cpu_cooling.h>
+> 
+>  #include <acpi/processor.h>
+> 
+> @@ -178,8 +179,7 @@ static int __acpi_processor_start(struct acpi_device *device)
+>         if (!cpuidle_get_driver() || cpuidle_get_driver() == &acpi_idle_driver)
+>                 acpi_processor_power_init(pr);
+> 
+> -       pr->cdev = thermal_cooling_device_register("Processor", device,
+> -                                                  &processor_cooling_ops);
+> +       pr->cdev = acpi_processor_cooling_register(device);
 
-Or %-ENOENT if the notifier is not registered.
+With this you have removed the only cooling device whose type was
+"Processor".  There's special code for dealing with this cooling
+device in drivers/thermal/thermal_core.c:passive_store():
 
-> + */
-> +int thermal_cooling_unregister_notifier(struct notifier_block *nb)
-> +{
-> +	int ret = 0;
-> +	ret = blocking_notifier_chain_unregister(
-> +				&cooling_state_notifier_list, nb);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_cooling_unregister_notifier);
-> +
-> +/**
-> + * thermal_cooling_device_register() - register a new thermal cooling device
+		list_for_each_entry(cdev, &thermal_cdev_list, node) {
+			if (!strncmp("Processor", cdev->type,
+				     sizeof("Processor")))
+				thermal_zone_bind_cooling_device(tz,
+						THERMAL_TRIPS_NONE, cdev,
+						THERMAL_NO_LIMIT,
+						THERMAL_NO_LIMIT);
+		}
+		mutex_unlock(&thermal_list_lock);
+		if (!tz->passive_delay)
 
-This is wrong, the function below this comment is still
-__thermal_cooling_device_register() whose first parameter is np, not
-type.
-
->   * @type:	the thermal cooling device type.
->   * @devdata:	device private data.
->   * @ops:		standard thermal cooling devices callbacks.
+With your change, that code is now "dead" as it can't do anything.  No
+I don't know what should you do with it, either remove it or make it
+match the cpufreq cooling device.  But this patch should deal with
+that code as well.
 
 Cheers,
 Javi
+
 
