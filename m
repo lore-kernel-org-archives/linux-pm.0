@@ -1,122 +1,60 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v5 1/2] cpufreq / OPP: Allow boost frequency to be looked
- up from device tree
-Date: Thu, 29 May 2014 15:51:36 -0500
-Message-ID: <53879DD8.1060906@ti.com>
-References: <1401374319-4480-1-git-send-email-thomas.ab@samsung.com> <1401374319-4480-2-git-send-email-thomas.ab@samsung.com>
+Subject: Re: [PATCH V4 1/8] opp: of_init_opp_table(): return -ENOSYS when
+ feature isn't implemented
+Date: Thu, 29 May 2014 17:19:51 -0500
+Message-ID: <5387B287.5050007@ti.com>
+References: <cover.1401191054.git.viresh.kumar@linaro.org> <231be85cd01bcdc00a0a7936cd9ba57ccba52749.1401191054.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1401374319-4480-2-git-send-email-thomas.ab@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:40903 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751321AbaE2WUV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 29 May 2014 18:20:21 -0400
+In-Reply-To: <231be85cd01bcdc00a0a7936cd9ba57ccba52749.1401191054.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com
 
-On 05/29/2014 09:38 AM, Thomas Abraham wrote:
-> From: Thomas Abraham <thomas.ab@samsung.com>
-> 
-> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
-> support for CPU boost mode. This patch adds support for finding available
-> boost frequencies from device tree and marking them as usable in boost mode.
-> 
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> ---
->  drivers/cpufreq/cpufreq_opp.c |   45 +++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
-> index c0c6f4a..05fb115 100644
-> --- a/drivers/cpufreq/cpufreq_opp.c
-> +++ b/drivers/cpufreq/cpufreq_opp.c
-> @@ -19,6 +19,7 @@
->  #include <linux/pm_opp.h>
->  #include <linux/rcupdate.h>
->  #include <linux/slab.h>
-> +#include <linux/of.h>
->  
->  /**
->   * dev_pm_opp_init_cpufreq_table() - create a cpufreq table for a device
-> @@ -51,6 +52,11 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
->  	struct cpufreq_frequency_table *freq_table = NULL;
->  	int i, max_opps, ret = 0;
->  	unsigned long rate;
-> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
-> +	struct cpufreq_frequency_table *ft;
-> +	int len, count;
-> +	u32 *boost_freqs = NULL;
-> +#endif
->  
->  	rcu_read_lock();
->  
-> @@ -82,6 +88,45 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
->  
->  	*table = &freq_table[0];
->  
-> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
-> +	if (!of_find_property(dev->of_node, "boost-frequencies", &len))
-> +		goto out;
-> +
-> +	if (!len || !IS_ALIGNED(len, sizeof(u32))) {
-> +		dev_err(dev, "%s: invalid boost frequency\n", __func__);
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
-> +
-> +	boost_freqs = kmalloc(len, GFP_KERNEL);
-> +	if (!boost_freqs) {
-> +		dev_err(dev, "%s: no memory for boost freq table\n", __func__);
-> +		ret = -ENOMEM;
-> +		goto out;
-> +	}
-> +
-> +	count = len / sizeof(u32);
-> +	of_property_read_u32_array(dev->of_node, "boost-frequencies",
-> +			boost_freqs, count);
-> +
-> +	for (i = 0; i < count; i++) {
-> +		cpufreq_for_each_valid_entry(ft, *table) {
-> +			if (boost_freqs[i] == ft->frequency) {
-> +				ft->flags |= CPUFREQ_BOOST_FREQ;
-> +				pr_debug("%s: marked %d as boost frequency\n",
-> +					__func__, boost_freqs[i]);
-> +				break;
-> +			}
-> +		}
-> +
-> +		if (ft->frequency == CPUFREQ_TABLE_END)
-> +			dev_err(dev, "%s: invalid boost frequency %d\n",
-> +				__func__, boost_freqs[i]);
-> +	}
-> +
-> +	kfree(boost_freqs);
-> +#endif
-> +
->  out:
->  	rcu_read_unlock();
->  	if (ret)
-> 
-I suggest the following checkpatch --strict warnings should be fixed.
+minor (Rafael usually fixes it up, but still):
+$subject: PM / OPP:
 
-@@ -0,0 +1,10 @@
-+CHECK: Alignment should match open parenthesis
-+#65: FILE: drivers/cpufreq/cpufreq_opp.c:110:
-++      of_property_read_u32_array(dev->of_node, "boost-frequencies",
-++                      boost_freqs, count);
-+CHECK: Alignment should match open parenthesis
-+#72: FILE: drivers/cpufreq/cpufreq_opp.c:117:
-++                              pr_debug("%s: marked %d as boost
-frequency\n",
-++                                      __func__, boost_freqs[i]);
-+If any of these errors are false positives, please report
-+them to the maintainer, see CHECKPATCH in MAINTAINERS.
+On 05/27/2014 06:50 AM, Viresh Kumar wrote:
+> When none of CONFIG_PM_OPP or CONFIG_OF is enabled we use the dummy
+> implementation of of_init_opp_table() routine, which returns -EINVAL currently.
+> -EINVAL can confuse the callers a bit as it can have other meanings for the
+> actual implementation of this routine.
+> 
+> It is more appropriate to return -ENOSYS instead to avoid confusion at caller.
+> 
+> Suggested-and-reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Otherwise,
-For the entire series:
+otherwise,
+
 Acked-by: Nishanth Menon <nm@ti.com>
+
+> ---
+>  include/linux/pm_opp.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index 0330217..6668150 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -112,7 +112,7 @@ int of_init_opp_table(struct device *dev);
+>  #else
+>  static inline int of_init_opp_table(struct device *dev)
+>  {
+> -	return -EINVAL;
+> +	return -ENOSYS;
+>  }
+>  #endif
+>  
+> 
+
 
 -- 
 Regards,
