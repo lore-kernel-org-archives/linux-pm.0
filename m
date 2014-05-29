@@ -1,60 +1,60 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH V4 1/8] opp: of_init_opp_table(): return -ENOSYS when
- feature isn't implemented
-Date: Thu, 29 May 2014 17:19:51 -0500
-Message-ID: <5387B287.5050007@ti.com>
-References: <cover.1401191054.git.viresh.kumar@linaro.org> <231be85cd01bcdc00a0a7936cd9ba57ccba52749.1401191054.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 2/8] opp: call of_node_{get|put}() from of_init_opp_table()
+Date: Thu, 29 May 2014 17:32:37 -0500
+Message-ID: <5387B585.3020404@ti.com>
+References: <cover.1401191054.git.viresh.kumar@linaro.org> <4139797fe7501ba99adf63ec8e5cf9fa9b24c197.1401191054.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:40903 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbaE2WUV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 29 May 2014 18:20:21 -0400
-In-Reply-To: <231be85cd01bcdc00a0a7936cd9ba57ccba52749.1401191054.git.viresh.kumar@linaro.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:36884 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbaE2Wcz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 18:32:55 -0400
+In-Reply-To: <4139797fe7501ba99adf63ec8e5cf9fa9b24c197.1401191054.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, inderpal.s@samsung.com, chander.kashyap@linaro.org, pavel@ucw.cz, len.brown@intel.com, sudeep.holla@arm.com
 
-minor (Rafael usually fixes it up, but still):
-$subject: PM / OPP:
-
 On 05/27/2014 06:50 AM, Viresh Kumar wrote:
-> When none of CONFIG_PM_OPP or CONFIG_OF is enabled we use the dummy
-> implementation of of_init_opp_table() routine, which returns -EINVAL currently.
-> -EINVAL can confuse the callers a bit as it can have other meanings for the
-> actual implementation of this routine.
+> All callers of of_init_opp_table() are required to take reference of
+> dev->of_node, by initiating calls to of_node_{get|put}(), before and after
+> calling of_init_opp_table().
 > 
-> It is more appropriate to return -ENOSYS instead to avoid confusion at caller.
+> Its better to call these from within of_init_opp_table(), no fun adding
+> redundant code to every caller.
 > 
-> Suggested-and-reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-otherwise,
-
-Acked-by: Nishanth Menon <nm@ti.com>
-
 > ---
->  include/linux/pm_opp.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/base/power/opp.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index 0330217..6668150 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -112,7 +112,7 @@ int of_init_opp_table(struct device *dev);
->  #else
->  static inline int of_init_opp_table(struct device *dev)
->  {
-> -	return -EINVAL;
-> +	return -ENOSYS;
->  }
->  #endif
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index faae9cf..2b615b9 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -622,6 +622,9 @@ int of_init_opp_table(struct device *dev)
+>  	const __be32 *val;
+>  	int nr;
 >  
+> +	if (!of_node_get(dev->of_node))
+> +		return -ENODEV;
+> +
+>  	prop = of_find_property(dev->of_node, "operating-points", NULL);
+>  	if (!prop)
+>  		return -ENODEV;
+> @@ -649,6 +652,7 @@ int of_init_opp_table(struct device *dev)
+>  		nr -= 2;
+>  	}
+>  
+> +	of_node_put(dev->of_node);
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(of_init_opp_table);
 > 
-
+With the same $subject comment as patch #1:
+Acked-by: Nishanth Menon <nm@ti.com>
 
 -- 
 Regards,
