@@ -1,47 +1,100 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 0/4] intel_pstate fixes for v3.16
-Date: Thu, 29 May 2014 09:32:21 -0700
-Message-ID: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:37620 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757052AbaE2Qce (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 12:32:34 -0400
-Received: by mail-pa0-f42.google.com with SMTP id rd3so629006pab.15
-        for <linux-pm@vger.kernel.org>; Thu, 29 May 2014 09:32:34 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/4] intel_pstate: Remove C0 tracking
+Date: Thu, 29 May 2014 09:32:22 -0700
+Message-ID: <1401381145-17745-2-git-send-email-dirk.j.brandewie@intel.com>
+References: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com>
+Sender: stable-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: dirk.brandewie@gmail.com, rjw@rjwysocki.net, dsmythies@telus.net, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: dirk.brandewie@gmail.com, rjw@rjwysocki.net, dsmythies@telus.net, Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Based on Rafael's linux-next branch at:
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Commit 0c932c3ecbba60bc5f9e08d579891cdbedfdd1c1
+Commit fcb6a15c intel_pstate: Take core C0 time into account for core busy
+introduced a regression referenced below.  The issue with "lockup"
+after suspend that this commit was addressing is now dealt with in the
+suspend path.
 
-Fixes the regression where intel_pstate was being too reactive
-reducing the P state caused by the C0 tracking which was added to
-ensure that on an idle system intel_pstate converge on the lowest
-reasonable P state.  The C0 tracking mechanism is replaced with a
-mechanism that looks at sample time and scales the busy calculation
-only if the sample time is *much* larger than the requested sample time.
 
-Reference:
+References:
+   https://bugzilla.kernel.org/show_bug.cgi?id=66581
    https://bugzilla.kernel.org/show_bug.cgi?id=75121
-   https://lkml.org/lkml/2014/5/6/597
 
-Dirk Brandewie (3):
-  intel_pstate: Remove C0 tracking
-  intel_pstate: Correct rounding in busy calculation
-  intel_pstate: add sample time scaling
+Reported-by: Doug Smythies <dsmythies@telus.net>
+Cc: <stable@vger.kernel.org> # 3.14.x
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-Doug Smythies (1):
-  intel_pstate: Improve initial busy calculation
-
- drivers/cpufreq/intel_pstate.c | 52 +++++++++++++++++++++++++-----------------
- 1 file changed, 31 insertions(+), 21 deletions(-)
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index a6d5afa..ffef765 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -57,7 +57,6 @@ struct sample {
+ 	int32_t core_pct_busy;
+ 	u64 aperf;
+ 	u64 mperf;
+-	unsigned long long tsc;
+ 	int freq;
+ };
+ 
+@@ -96,7 +95,6 @@ struct cpudata {
+ 
+ 	u64	prev_aperf;
+ 	u64	prev_mperf;
+-	unsigned long long prev_tsc;
+ 	struct sample sample;
+ };
+ 
+@@ -555,45 +553,36 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
+ 	int32_t core_pct;
+-	int32_t c0_pct;
+ 
+ 	core_pct = div_fp(int_tofp(sample->aperf), int_tofp(sample->mperf));
+ 	core_pct = mul_fp(core_pct, int_tofp(100));
+ 	FP_ROUNDUP(core_pct);
+ 
+-	c0_pct = div_fp(int_tofp(sample->mperf), int_tofp(sample->tsc));
+-
+ 	sample->freq = fp_toint(
+ 		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
+ 
+-	sample->core_pct_busy = mul_fp(core_pct, c0_pct);
++	sample->core_pct_busy = core_pct;
+ }
+ 
+ static inline void intel_pstate_sample(struct cpudata *cpu)
+ {
+ 	u64 aperf, mperf;
+-	unsigned long long tsc;
+ 
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
+-	tsc = native_read_tsc();
+ 
+ 	aperf = aperf >> FRAC_BITS;
+ 	mperf = mperf >> FRAC_BITS;
+-	tsc = tsc >> FRAC_BITS;
+ 
+ 	cpu->sample.aperf = aperf;
+ 	cpu->sample.mperf = mperf;
+-	cpu->sample.tsc = tsc;
+ 	cpu->sample.aperf -= cpu->prev_aperf;
+ 	cpu->sample.mperf -= cpu->prev_mperf;
+-	cpu->sample.tsc -= cpu->prev_tsc;
+ 
+ 	intel_pstate_calc_busy(cpu);
+ 
+ 	cpu->prev_aperf = aperf;
+ 	cpu->prev_mperf = mperf;
+-	cpu->prev_tsc = tsc;
+ }
+ 
+ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
 -- 
 1.9.0
-
