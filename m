@@ -1,82 +1,97 @@
 From: Thomas Abraham <thomas.ab@samsung.com>
-Subject: [PATCH v5 2/2] Documentation: devicetree: Add boost-frequency binding to list boost mode frequency
-Date: Thu, 29 May 2014 20:08:39 +0530
-Message-ID: <1401374319-4480-3-git-send-email-thomas.ab@samsung.com>
+Subject: [PATCH v5 1/2] cpufreq / OPP: Allow boost frequency to be looked up from device tree
+Date: Thu, 29 May 2014 20:08:38 +0530
+Message-ID: <1401374319-4480-2-git-send-email-thomas.ab@samsung.com>
 References: <1401374319-4480-1-git-send-email-thomas.ab@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:57821 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932605AbaE2OjI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 10:39:08 -0400
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1401374319-4480-1-git-send-email-thomas.ab@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, Nishanth Menon <nm@ti.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Abraham <thomas.ab@samsung.com>
 
-Add a new optional boost-frequency binding for specifying the frequencies
-usable in boost mode.
+Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
+support for CPU boost mode. This patch adds support for finding available
+boost frequencies from device tree and marking them as usable in boost mode.
 
 Cc: Nishanth Menon <nm@ti.com>
 Cc: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
 Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   38 ++++++++++++++++++++
- 1 file changed, 38 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+ drivers/cpufreq/cpufreq_opp.c |   45 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-new file mode 100644
-index 0000000..63ed0fc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-@@ -0,0 +1,38 @@
-+* Device tree binding for CPU boost frequency (aka over-clocking)
+diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
+index c0c6f4a..05fb115 100644
+--- a/drivers/cpufreq/cpufreq_opp.c
++++ b/drivers/cpufreq/cpufreq_opp.c
+@@ -19,6 +19,7 @@
+ #include <linux/pm_opp.h>
+ #include <linux/rcupdate.h>
+ #include <linux/slab.h>
++#include <linux/of.h>
+ 
+ /**
+  * dev_pm_opp_init_cpufreq_table() - create a cpufreq table for a device
+@@ -51,6 +52,11 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+ 	struct cpufreq_frequency_table *freq_table = NULL;
+ 	int i, max_opps, ret = 0;
+ 	unsigned long rate;
++#ifdef CONFIG_CPU_FREQ_BOOST_SW
++	struct cpufreq_frequency_table *ft;
++	int len, count;
++	u32 *boost_freqs = NULL;
++#endif
+ 
+ 	rcu_read_lock();
+ 
+@@ -82,6 +88,45 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+ 
+ 	*table = &freq_table[0];
+ 
++#ifdef CONFIG_CPU_FREQ_BOOST_SW
++	if (!of_find_property(dev->of_node, "boost-frequencies", &len))
++		goto out;
 +
-+Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
-+overclocking) in which the CPU can operate at frequencies which are not
-+specified by the manufacturer as CPU's operating frequency.
++	if (!len || !IS_ALIGNED(len, sizeof(u32))) {
++		dev_err(dev, "%s: invalid boost frequency\n", __func__);
++		ret = -EINVAL;
++		goto out;
++	}
 +
-+Optional Properties:
-+- boost-frequencies: list of frequencies in KHz to be used only in boost mode.
-+  This list should be a subset of frequencies listed in "operating-points"
-+  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
-+  details about "operating-points" property.
++	boost_freqs = kmalloc(len, GFP_KERNEL);
++	if (!boost_freqs) {
++		dev_err(dev, "%s: no memory for boost freq table\n", __func__);
++		ret = -ENOMEM;
++		goto out;
++	}
 +
-+Example:
++	count = len / sizeof(u32);
++	of_property_read_u32_array(dev->of_node, "boost-frequencies",
++			boost_freqs, count);
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <0>;
++	for (i = 0; i < count; i++) {
++		cpufreq_for_each_valid_entry(ft, *table) {
++			if (boost_freqs[i] == ft->frequency) {
++				ft->flags |= CPUFREQ_BOOST_FREQ;
++				pr_debug("%s: marked %d as boost frequency\n",
++					__func__, boost_freqs[i]);
++				break;
++			}
++		}
 +
-+			operating-points = <
-+				1500000 1350000
-+				1400000 1287500
-+				1300000 1250000
-+				1200000 1187500
-+				1100000 1137500
-+				1000000 1087500
-+			>;
-+			boost-frequencies = <1500000 1400000>;
-+		};
-+		cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <1>;
-+		};
-+	};
++		if (ft->frequency == CPUFREQ_TABLE_END)
++			dev_err(dev, "%s: invalid boost frequency %d\n",
++				__func__, boost_freqs[i]);
++	}
++
++	kfree(boost_freqs);
++#endif
++
+ out:
+ 	rcu_read_unlock();
+ 	if (ret)
 -- 
 1.7.9.5
-
