@@ -1,58 +1,123 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency
- callbacks
-Date: Thu, 29 May 2014 11:42:49 -0600
-Message-ID: <53877199.5090009@wwwdotorg.org>
-References: <cover.1400662383.git.viresh.kumar@linaro.org>	<dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>	<537E285C.6060608@wwwdotorg.org> <CAKohpomdOEspgfxNR5p=PVLCeSUYcUWZ2cWGGQo0b__ptKiYtw@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v5 1/2] cpufreq / OPP: Allow boost frequency to be looked
+ up from device tree
+Date: Thu, 29 May 2014 15:51:36 -0500
+Message-ID: <53879DD8.1060906@ti.com>
+References: <1401374319-4480-1-git-send-email-thomas.ab@samsung.com> <1401374319-4480-2-git-send-email-thomas.ab@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:56820 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932691AbaE2Rmx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 13:42:53 -0400
-In-Reply-To: <CAKohpomdOEspgfxNR5p=PVLCeSUYcUWZ2cWGGQo0b__ptKiYtw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1401374319-4480-2-git-send-email-thomas.ab@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-On 05/22/2014 10:05 PM, Viresh Kumar wrote:
-> On 22 May 2014 22:09, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> I think the call to tegra_target_intermediate() is wrong here; shouldn't
->> the cpufreq core guarantee that tegra_target_intermediate() has always
->> been called before tegra_target(), so there's no need to repeat that
->> call here?
-
->> Also, tegra_target() doesn't seem to follow the rule documented by patch
->> 2/3 that states ->target() should restore the orignal frequency on
->> error. I'm not even sure if that's possible in general.
+On 05/29/2014 09:38 AM, Thomas Abraham wrote:
+> From: Thomas Abraham <thomas.ab@samsung.com>
 > 
-> I thought I took care of that. Can you please give some example when
-> we aren't restoring original frequency on failure ?
+> Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
+> support for CPU boost mode. This patch adds support for finding available
+> boost frequencies from device tree and marking them as usable in boost mode.
 > 
-> About the rule, that has to be the expectation from core as there is no
-> way out that for core to know what happened at end of target_index()..
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> ---
+>  drivers/cpufreq/cpufreq_opp.c |   45 +++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 45 insertions(+)
 > 
-> It can call get_rate() but that would be over engineering it looks ..
-
-E.g. in the following code after the series is applied:
-
-> 	ret = clk_set_rate(pll_x_clk, rate * 1000);
-> 	/* Restore to earlier frequency on error, i.e. pll_x */
-> 	if (ret)
-> 		pr_err("Failed to change pll_x to %lu\n", rate);
+> diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
+> index c0c6f4a..05fb115 100644
+> --- a/drivers/cpufreq/cpufreq_opp.c
+> +++ b/drivers/cpufreq/cpufreq_opp.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/pm_opp.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/slab.h>
+> +#include <linux/of.h>
+>  
+>  /**
+>   * dev_pm_opp_init_cpufreq_table() - create a cpufreq table for a device
+> @@ -51,6 +52,11 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>  	struct cpufreq_frequency_table *freq_table = NULL;
+>  	int i, max_opps, ret = 0;
+>  	unsigned long rate;
+> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> +	struct cpufreq_frequency_table *ft;
+> +	int len, count;
+> +	u32 *boost_freqs = NULL;
+> +#endif
+>  
+>  	rcu_read_lock();
+>  
+> @@ -82,6 +88,45 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
+>  
+>  	*table = &freq_table[0];
+>  
+> +#ifdef CONFIG_CPU_FREQ_BOOST_SW
+> +	if (!of_find_property(dev->of_node, "boost-frequencies", &len))
+> +		goto out;
+> +
+> +	if (!len || !IS_ALIGNED(len, sizeof(u32))) {
+> +		dev_err(dev, "%s: invalid boost frequency\n", __func__);
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+> +
+> +	boost_freqs = kmalloc(len, GFP_KERNEL);
+> +	if (!boost_freqs) {
+> +		dev_err(dev, "%s: no memory for boost freq table\n", __func__);
+> +		ret = -ENOMEM;
+> +		goto out;
+> +	}
+> +
+> +	count = len / sizeof(u32);
+> +	of_property_read_u32_array(dev->of_node, "boost-frequencies",
+> +			boost_freqs, count);
+> +
+> +	for (i = 0; i < count; i++) {
+> +		cpufreq_for_each_valid_entry(ft, *table) {
+> +			if (boost_freqs[i] == ft->frequency) {
+> +				ft->flags |= CPUFREQ_BOOST_FREQ;
+> +				pr_debug("%s: marked %d as boost frequency\n",
+> +					__func__, boost_freqs[i]);
+> +				break;
+> +			}
+> +		}
+> +
+> +		if (ft->frequency == CPUFREQ_TABLE_END)
+> +			dev_err(dev, "%s: invalid boost frequency %d\n",
+> +				__func__, boost_freqs[i]);
+> +	}
+> +
+> +	kfree(boost_freqs);
+> +#endif
+> +
+>  out:
+>  	rcu_read_unlock();
+>  	if (ret)
 > 
-> 	ret = clk_set_parent(cpu_clk, pll_x_clk);
+I suggest the following checkpatch --strict warnings should be fixed.
 
-If the clk_set_rate() failed, we have no idea what the pll_x rate is; I
-don't think the clock API guarantees that zero HW changes have been made
-if the function fails. Yet the code switches the CPU clock back to pll_x
-without attempting to fix the pll_x rate to be the old rate. Perhaps
-there's not much that can be done here though, since if one
-clk_set_rate() failed, perhaps the one to fix it will too.
+@@ -0,0 +1,10 @@
++CHECK: Alignment should match open parenthesis
++#65: FILE: drivers/cpufreq/cpufreq_opp.c:110:
+++      of_property_read_u32_array(dev->of_node, "boost-frequencies",
+++                      boost_freqs, count);
++CHECK: Alignment should match open parenthesis
++#72: FILE: drivers/cpufreq/cpufreq_opp.c:117:
+++                              pr_debug("%s: marked %d as boost
+frequency\n",
+++                                      __func__, boost_freqs[i]);
++If any of these errors are false positives, please report
++them to the maintainer, see CHECKPATCH in MAINTAINERS.
 
-I suspect there are other issues, like switching between pll_p/pllx
-might not be restored on error, and the EMC frequency isn't switched
-back, etc.
+Otherwise,
+For the entire series:
+Acked-by: Nishanth Menon <nm@ti.com>
+
+-- 
+Regards,
+Nishanth Menon
