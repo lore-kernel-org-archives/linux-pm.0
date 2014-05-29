@@ -1,111 +1,61 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: Re: [PATCH v6 0/6] add cpuidle support for Exynos5420
-Date: Thu, 29 May 2014 10:07:15 +0530
-Message-ID: <CANuQgHGM_PsDO0RmEKDVXSs1u50VMuLrx-=0sYhDut1gSjspcg@mail.gmail.com>
-References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com>
-	<1400227438-27155-1-git-send-email-chander.kashyap@linaro.org>
-	<53831795.9070006@gmail.com>
-	<CANuQgHH284A9QY7M5zGbSE-mXjm2KDqr54VWmtKVkbma3zZvvw@mail.gmail.com>
-	<015f01cf7a2e$3b141590$b13c40b0$@samsung.com>
-	<5385A638.2000001@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5385A638.2000001@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH v1 0/6] ACPI: thermal: Migrate cpufreq cooling to generic cpu_cooling layer
+Date: Thu, 29 May 2014 13:45:28 +0530
+Message-ID: <1401351334-11210-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:64455 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932560AbaE2IPy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 04:15:54 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, edubezval@gmail.com, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 
-On 28 May 2014 14:32, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> On 05/28/2014 06:35 AM, Kukjin Kim wrote:
->>
->> Chander Kashyap wrote:
->>>
->>>
->>> On 26 May 2014 15:59, Tomasz Figa <tomasz.figa@gmail.com> wrote:
->>>>
->>>> Hi Chander,
->>>>
->>>> On 16.05.2014 10:03, Chander Kashyap wrote:
->>>>>
->>>>> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A=
-7
->>>
->>> cores.
->>>>>
->>>>>
->>>>> This patchset adds cpuidle support for Exynos5420 SoC based on
->>>>> generic big.little cpuidle driver.
->>>>>
->>>>> Tested on SMDK5420.
->>>>>
->>>>> This patch set depends on:
->>>>>        1. [PATCH 0/5] MCPM backend for Exynos5420
->>>>>           http://www.spinics.net/lists/arm-kernel/msg331100.html
->>>>> Changelog is in respective patches.
->>>>> Chander Kashyap (5):
->>>>>    driver: cpuidle-big-little: add of_device_id structure
->>>>>    arm: exynos: add generic function to calculate cpu number
->>>>>    cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-l=
-ittle
->>>>>      driver
->>>>>    driver: cpuidle: cpuidle-big-little: init driver for Exynos542=
-0
->>>>>    exynos: cpuidle: do not allow cpuidle registration for Exynos5=
-420
->>>>>    mcpm: exynos: populate suspend and powered_up callbacks
->>>>>
->>>>>   arch/arm/mach-exynos/exynos.c        |    4 +++-
->>>>>   arch/arm/mach-exynos/mcpm-exynos.c   |   36
->>>
->>> ++++++++++++++++++++++++++++++++++
->>>>>
->>>>>   arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
->>>>>   drivers/cpuidle/Kconfig.arm          |    2 +-
->>>>>   drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
->>>>>   5 files changed, 60 insertions(+), 3 deletions(-)
->>>>>
->>>>
->>>> For the whole series,
->>>>
->>>> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
->>>
->>>
->>> Thanks Tomasz.
->>>
->>> Dear Kukjin,
->>> Can you take these patches.
->>>>
->>>>
->> When I looked at this series quickly, looks good to me but I need to=
- get
->> ack from cpuidle maintainer Rafael or Daniel.
->
->
-> Acked the different cpuidle bits.
+Changes since RFC:
+* Moved the cooling state notification support to thermal core from cpu cooling
+  as suggested by Eduardo.
+* Used per cpu notifier structure in the cpufreq cooling implementation. This
+  is a fix for race condition.
+* One more comment from Eduardo was to take care when multiple listeners try to
+  modify the cooling state. This is however not implemented in this patch series.
+  One idea is to allow only 1 set type of clients and multiple get type of clients.
+  The point to consider in these case is that cooling state management logic is now
+  in control of client driver and thermal governor cooling state decisions can be
+  overriden.
+* Fixed other minor review comments and updated documentation section.
 
-Hi Kukjin,
-Can you take it now?
+This patch adds notification support for those clients of cpu_cooling
+APIs which may want to do something extra after receiving these
+cpu_cooling events shown below. The notifier structure passed is of both Set/Get type.
+The notfications events can be of the following type,
 
+1. COOLING_SET_STATE_PRE
+2. COOLING_SET_STATE_POST
+3. COOLING_GET_CUR_STATE
+4. COOLING_GET_MAX_STATE
 
->
-> Thanks
->   -- Daniel
->
->
-> --
->  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
-or ARM SoCs
->
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
->
+The advantages of these notfications is to differentiate between different
+P states in the cpufreq table and the cooling states. The clients of these
+events may group few P states into 1 cooling states as done by ACPI .
+Also some more cooling states can be enabled when the maximum of P state is
+reached. In case of ACPI processor throttling are enabled when minimum
+P-state is reached. Post notification events can be used for those cases.
 
+All these changes are tested in samsung arndale(exynos5250) with Linaro ACPI
+kernel along with few tweaks. However only cpu frequency scaling down is tested
+for thermal cooling and throttling is untested as this feature is not supported
+in H/W. But since the functionality is not modified so expecting the changes to
+work in ACPI based platform also.  
 
+Amit Daniel Kachhap (6):
+  thermal: cpu_cooling: Fix the notification mechanism by using per cpu
+    structure
+  thermal: cpu_cooling: Support passing driver private data.
+  thermal: thermal-core: Add notifications support for the cooling
+    states
+  thermal: cpu_cooling: Add support to find up/low frequency levels.
+  thermal: thermal_core: Remove the max cooling limit check in
+    registration
+  ACPI: thermal: processor: Use the generic cpufreq infrastructure
 
---=20
-with warm regards,
-Chander Kashyap
