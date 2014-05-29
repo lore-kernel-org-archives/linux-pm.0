@@ -1,60 +1,113 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 4/4] intel_pstate: Improve initial busy calculation
-Date: Thu, 29 May 2014 09:32:25 -0700
-Message-ID: <1401381145-17745-5-git-send-email-dirk.j.brandewie@intel.com>
-References: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [GIT PULL] request to Rafael: devfreq update for Linux 3.16
+Date: Fri, 30 May 2014 01:43:32 +0900
+Message-ID: <CAJ0PZbQSKpbwkR7eGb7iLA6JwNKxVNYcV1VWbJuNTdQyy2sKLA@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:37993 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757568AbaE2Qcn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 12:32:43 -0400
-In-Reply-To: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com>
+Received: from mail-vc0-f182.google.com ([209.85.220.182]:51017 "EHLO
+	mail-vc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809AbaE2Qnd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 12:43:33 -0400
+Received: by mail-vc0-f182.google.com with SMTP id id10so689869vcb.13
+        for <linux-pm@vger.kernel.org>; Thu, 29 May 2014 09:43:33 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: dirk.brandewie@gmail.com, rjw@rjwysocki.net, dsmythies@telus.net, stable@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: rafael.j.wysocki@intel.com
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-From: Doug Smythies <dsmythies@telus.net>
+In case you've missed, updated the subject.
 
-This change makes the busy calculation using 64 bit math which prevents
-overflow for large values of aperf/mperf.
 
-Cc: <stable@vger.kernel.org> # 3.14.x
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+Cheers,
+MyungJoo.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index c4dad16..774d277 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -556,16 +556,19 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- 
- static inline void intel_pstate_calc_busy(struct cpudata *cpu)
- {
--	struct sample *sample = &cpu->sample;
--	int32_t core_pct;
-+	int64_t core_pct;
-+	int32_t rem;
- 
--	core_pct = div_fp(int_tofp(sample->aperf), int_tofp(sample->mperf));
--	core_pct = mul_fp(core_pct, int_tofp(100));
-+	core_pct = int_tofp(sample->aperf) * int_tofp(100);
-+	core_pct = div_u64_rem(core_pct, int_tofp(sample->mperf), &rem);
-+
-+	if ((rem << 1) >= int_tofp((sample->mperf)))
-+		core_pct += 1;
- 
- 	sample->freq = fp_toint(
- 		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
- 
--	sample->core_pct_busy = core_pct;
-+	sample->core_pct_busy = (int32_t)core_pct;
- }
- 
- static inline void intel_pstate_sample(struct cpudata *cpu)
+On Sat, May 24, 2014 at 11:06 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> Dear Rafael,
+>
+> Here goes the pull request of devfreq for 3.16
+>
+>
+> Cheers,
+> MyungJoo
+>
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> The following changes since commit 4b660a7f5c8099d88d1a43d8ae138965112592c7:
+>
+>   Linux 3.15-rc6 (2014-05-22 06:42:02 +0900)
+>
+> are available in the git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/for-3.16
+>
+> for you to fetch changes up to cb7063f453e543b97285a10343cfc02983d792ad:
+>
+>   PM / devfreq: remove checks for CONFIG_EXYNOS_ASV (2014-05-24 22:33:51 +0900)
+>
+> - ----------------------------------------------------------------
+> Pull Request for Rafael.
+>
+> Merge target is Linux 3.16
+>
+> - - Clean up with modern macro in the core and drivers.
+> - - Fix incorrect error returns
+> - - Remove dead CONFIG check.
+> - - Fix resource leak in a driver.
+>
+> - ----------------------------------------------------------------
+> Bartlomiej Zolnierkiewicz (3):
+>       PM / devfreq: exynos4: introduce struct busfreq_ppmu_data
+>       PM / devfreq: exynos5: introduce struct busfreq_ppmu_data
+>       PM / devfreq: exynos: make more PPMU code common
+>
+> Chanwoo Choi (11):
+>       PM / devfreq: exynos4: Fix bug of resource leak and code clean on probe()
+>       PM / devfreq: exynos4: Use SIMPLE_DEV_PM_OPS macro
+>       PM / devfreq: exynos4: Add CONFIG_PM_OPP dependency to fix probe fail
+>       PM / devfreq: exynos5: Use SIMPLE_DEV_PM_OPS macro
+>       PM / devfreq: exynos5: Add CONFIG_PM_OPP dependency to fix probe fail
+>       PM / devfreq: exynos4: use common PPMU code
+>       PM / devfreq: Fix devfreq_remove_device() to improve the sequence ...
+>       PM / devfreq: Add resource-managed function for devfreq device
+>       PM / devfreq: Add devm_devfreq_{register,unregister}_opp_notfierfunction
+>       PM / devfreq: exynos4: Use devm_devfreq_* function using device ...
+>       PM / devfreq: exynos5: Use devm_devfreq_* function using device ...
+>
+> Paul Bolle (1):
+>       PM / devfreq: remove checks for CONFIG_EXYNOS_ASV
+>
+>  drivers/devfreq/Kconfig              |   5 +-
+>  drivers/devfreq/devfreq.c            | 125 ++++++++++++++++++--
+>  drivers/devfreq/exynos/Makefile      |   2 +-
+>  drivers/devfreq/exynos/exynos4_bus.c | 219 ++++++++++-------------------------
+>  drivers/devfreq/exynos/exynos5_bus.c | 130 ++++++---------------
+>  drivers/devfreq/exynos/exynos_ppmu.c |  60 ++++++++++
+>  drivers/devfreq/exynos/exynos_ppmu.h |   8 ++
+>  include/linux/devfreq.h              |  35 +++++-
+>  8 files changed, 317 insertions(+), 267 deletions(-)
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.14 (GNU/Linux)
+>
+> iQIcBAEBAgAGBQJTgKWPAAoJEDv/jgS9xknFYlMP/0zIsdDGxtJA3NdxJGT/dA+d
+> z7sDIBSOCQCBQv8CSMCY6HgtejgbtpRX8coKaSYGjLP9sL43hHCRkJesQdYNo5vE
+> xuU0Zo80ERBZvXj9pXC76ojmvBMRmynYPnbMC7ZgzGEFA2kSf/SoEAwSu6y+5uiF
+> b5igBp22QNd73V5c+Vjr6pzDfSXDyGDv5Km8jDFPvx3YLNChY471VtK+KMikGwGp
+> FplzfNSCThMPertAxKuWRlZMS8v0YVyO9TN4KHNQuwdGotiQcYweeAFL+G183ZaC
+> 8m+komdIP2oct0h19j8298cGPQSH/NpCXTwXSFMhn/QEU6W3WtaTF3crURjhTxja
+> EZiSOClumMnZPJt6di10vV6TOS0e4pWgfP2ZX9sNRBYLf5Vs/P46kB3mzAM1LSeV
+> D/93dkv5mAoZPTt/eruB/4jOeQDewAtOf/o3/vOjXUu4QwQ7JARGUEZ8RKJktVHs
+> R5q7nrEFOckyoSME131ePODy5EUgYv2kFGmaLqwulZaUN7ooslBZiaph7Fc0f1VB
+> 2TEQKLtbkPIYiDqTHF8MAkIjwzhuul02NpEN7UccHfc4RIkoyhNnOrhwsi2ktAJw
+> ID7x2ofVKvevHp2qiLWlAHAryEJ+aTYNpiDRByZiUWFrt8LlLIZuCkdxWYGWcyOY
+> dkeARTmbHnqfdYAeuTNn
+> =ZUxh
+> -----END PGP SIGNATURE-----
+
+
+
 -- 
-1.9.0
-
+MyungJoo Ham, Ph.D.
+System S/W Lab, S/W Center, Samsung Electronics
