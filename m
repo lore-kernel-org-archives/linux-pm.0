@@ -1,163 +1,125 @@
-From: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-Subject: Re: [RFC PATCH 3/3] clk: tegra: Implement Tegra124 shared/cbus clks
-Date: Fri, 30 May 2014 08:24:37 -0500
-Message-ID: <53888695.2020507@ti.com>
-References: <1399990023-30318-1-git-send-email-pdeschrijver@nvidia.com> <1399990023-30318-4-git-send-email-pdeschrijver@nvidia.com> <53725FED.7050303@wwwdotorg.org> <20140514142739.GA8612@ulmo> <20140514193518.19795.64334@quantum> <20140526130725.GA1594@ulmo> <5387C145.8050609@ti.com> <20140530044749.10062.16436@quantum>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
+Date: Fri, 30 May 2014 15:53:09 +0200
+Message-ID: <2110279.TVBlLBzQV3@amdc1032>
+References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
+ <53884FD2.7020700@linaro.org> <53886CD5.8010301@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20140530044749.10062.16436@quantum>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:32021 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932299AbaE3Nxh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 09:53:37 -0400
+In-reply-to: <53886CD5.8010301@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, ccross@google.com
 
-On 05/29/2014 11:47 PM, Mike Turquette wrote:
-> Quoting Nishanth Menon (2014-05-29 16:22:45)
->> On 05/26/2014 08:07 AM, Thierry Reding wrote:
->>> On Wed, May 14, 2014 at 12:35:18PM -0700, Mike Turquette wrote:
->>>> Quoting Thierry Reding (2014-05-14 07:27:40)
->>> [...]
->>>>> As for shared clocks I'm only aware of one use-case, namely EMC scaling.
->>>>> Using clocks for that doesn't seem like the best option to me. While it
->>>>> can probably fix the immediate issue of choosing an appropriate
->>>>> frequency for the EMC clock it isn't a complete solution for the problem
->>>>> that we're trying to solve. From what I understand EMC scaling is one
->>>>> part of ensuring quality of service. The current implementations of that
->>>>> seems to abuse clocks (essentially one X.emc clock per X clock) to
->>>>> signal the amount of memory bandwidth required by any given device. But
->>>>> there are other parts to the puzzle. Latency allowance is one. The value
->>>>> programmed to the latency allowance registers for example depends on the
->>>>> EMC frequency.
->>>>>
->>>>> Has anyone ever looked into using a different framework to model all of
->>>>> these requirements? PM QoS looks like it might fit, but if none of the
->>>>> existing frameworks have what we need, perhaps something new can be
->>>>> created.
->>>>
->>>> It has been discussed. Using a QoS throughput constraint could help
->>>> scale frequency. But this deserves a wider discussion and starts to
->>>> stray into both PM QoS territory and also into "should we have a DVFS
->>>> framework" territory.
->>>
->>> I've looked into this for a bit and it doesn't look like PM QoS is going
->>> to be a good match after all. One of the issues I found was that PM QoS
->>> deals with individual devices and there's no builtin way to collect the
->>> requests from multiple devices to produce a global constraint. So if we
->>> want to add something like that either the API would need to be extended
->>> or it would need to be tacked on using the notifier mechanism and some
->>> way of tracking (and filtering) the individual devices.
->>>
->>> Looking at devfreq it seems to be the DVFS framework that you mentioned,
->>> but from what I can tell it suffers from mostly the same problems. The
->>> governor applies some frequency scaling policy to a single device and
->>> does not allow multiple devices to register constraints against a single
->>> (global) constraint so that the result can be accumulated.
->>>
->>> For Tegra EMC scaling what we need is something more along the lines of
->>> this: we have a resource (external memory) that is shared by multiple
->>> devices in the system. Each of those devices requires a certain amount
->>> of that resource (memory bandwidth). The resource driver will need to
->>> accumulate all requests for the resource and apply the resulting
->>> constraint so that all requests can be satisfied.
->>>
->>> One solution I could imagine to make this work with PM QoS would be to
->>> add the concept of a pm_qos_group to manage a set of pm_qos_requests,
->>> but that will require a bunch of extra checks to make sure that requests
->>> are of the correct type and so on. In other words it would still be
->>> tacked on.
->>
->> just a minor note from previous experience: We(at TI) had attempted in
->> our product kernel[1] to use QoS constraint for certain SoCs for
->> rather unspectacular results.
->>
->> Our use case was similar: devices -> L3(core bus)->memory. We had the
->> following intent:
->> a) wanted to scale L3 based on QoS requests coming in from various
->> device drivers. intent was to scale either to 133MHz or 266MHz (two
->> OPPs we supported on our devices) based on performance needs -> So we
->> asked drivers to report QoS requirements using an standard function -
->> except drivers cannot always report it satisfactorily - example bursty
->> transfer devices - ended up with consolidated requests > total
->> bandwidth possible on the bus -> (and never in practise hitting the
->> lower frequency).
+
+Hi,
+
+On Friday, May 30, 2014 01:34:45 PM Tomasz Figa wrote:
+> Hi Daniel,
 > 
-> My opinion on why L3 QoS failed on OMAP is that we only used it for
-> DVFS. The voltage domain corresponding to the L3 interconnect had only
-> two OPPs, which meant that drivers submitting their constraints only had
-> two options: slow vs fast in the best case, or non-functional vs
-> functional in the worst case (some IPs simply did not work at the lower
-> OPP).
+> On 30.05.2014 11:30, Daniel Lezcano wrote:
+> > On 04/24/2014 07:42 PM, Tomasz Figa wrote:
+> >> Hi Daniel,
+> >>
+> >> Please see my comments inline.
+> >>
+> >> Btw. Please fix your e-mail composer to properly wrap your messages
+> >> around 7xth column, as otherwise they're hard to read.
+> >>
+> >> On 04.04.2014 11:48, Daniel Lezcano wrote:
+> >>> The following driver is for exynos4210. I did not yet finished the
+> >>> other boards, so
+> >>> I created a specific driver for 4210 which could be merged later.
+> >>>
+> >>> The driver is based on Colin Cross's driver found at:
+> >>>
+> >>> https://android.googlesource.com/kernel/exynos/+/e686b1ec67423c40b4fdf811f9a4dfa3b393a010%5E%5E!/
+> >>>
+> >>>
+> >>>
+> >>> This one was based on a 3.4 kernel and an old API.
+> >>>
+> >>> It has been refreshed, simplified and based on the recent code cleanup
+> >>> I sent
+> >>> today.
+> >>>
+> >>> The AFTR could be entered when all the cpus (except cpu0) are down. In
+> >>> order to
+> >>> reach this situation, the couple idle states are used.
+> >>>
+> >>> There is a sync barrier at the entry and the exit of the low power
+> >>> function. So
+> >>> all cpus will enter and exit the function at the same time.
+> >>>
+> >>> At this point, CPU0 knows the other cpu will power down itself. CPU0
+> >>> waits for
+> >>> the CPU1 to be powered down and then initiate the AFTR power down
+> >>> sequence.
+> >>>
+> >>> No interrupts are handled by CPU1, this is why we switch to the timer
+> >>> broadcast
+> >>> even if the local timer is not impacted by the idle state.
+> >>>
+> >>> When CPU0 wakes up, it powers up CPU1 and waits for it to boot. Then
+> >>> they both
+> >>> exit the idle function.
+> >>>
+> >>> This driver allows the exynos4210 to have the same power consumption
+> >>> at idle
+> >>> time than the one when we have to unplug CPU1 in order to let CPU0 to
+> >>> reach
+> >>> the AFTR state.
+> >>>
+> >>> This patch is a RFC because, we have to find a way to remove the macros
+> >>> definitions and cpu powerdown function without pulling the arch
+> >>> dependent
+> >>> headers.
+> >>>
+> >>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>> ---
+> >>>   arch/arm/mach-exynos/common.c        |   11 +-
+> >>>   drivers/cpuidle/Kconfig.arm          |    8 ++
+> >>>   drivers/cpuidle/Makefile             |    1 +
+> >>>   drivers/cpuidle/cpuidle-exynos4210.c |  226
+> >>> ++++++++++++++++++++++++++++++++++
+> > 
+> > [ ... ]
+> > 
+> > 
+> >> Otherwise, I quite like the whole idea. I need to play a bit with CPU
+> >> hotplug and PMU to verify that things couldn't really be simplified a
+> >> bit, but in general this looks reasonably.
+> > 
+> > Hi Tomasz,
+> > 
+> > did you have time to look at this simplification ?
 > 
-> But the big failure in my opinion was that we did not use any of the
-> traffic-shaping or priority handling features of the L3 NoC. OMAP4 used
-> the Arteris NoC[1] which has plenty of capabilities for setting
-> initiator priorities and bandwidth-throttling on a point-to-point basis,
-> which is exactly that QoS is for. If these had been exposed a bit more
-> in software then I imagine some of the constraints that always resulted
-> in running at the fast OPP might have instead resulted in running at the
-> slow OPP, but with a fine-grained mixture of varying bandwidth
-> allocations and access priorities.
-
-Thanks Mike for reminding me about it, I agree that modelling of
-complete bus capability was never complete or accurate. that is just
-one factor, not to mention some of those abilities are not modifiable
-on secure devices without adequate handlers inside secure side code.
-but, for the discussion context, just details of implementation.
-
-
+> Unfortunately I got preempted with other things to do and now I'm on
+> vacation. I worked a bit with Bart (added on CC) on this and generally
+> the conclusion was that all the things are necessary. He was also
+> working to extend the driver to support Exynos4x12.
 > 
-> All of the hardware in the world doesn't do any good if we don't have
-> software that uses it. Anyways, just my $0.02.
+> Bart, has anything interesting showed up since we talked about this last
+> time?
 
-Yep, the key issue as far as I recollect(its been over a couple of
-years now:) ), from productization efforts of the approach has been
-the users. SoCs are rarely a single ARM centric world - they have
-GPUs, co-processors etc.. no matter how accurately we model the bus
-handling, it all boils down to ensuring every single user is
-appropriately using the defined functions and ensuring this central
-book-keeping authority has exact knowledge of the device requirements.
-That is always the hard part.
+Since we last looked into this I have fixed the "standard" AFTR support
+for Exynos3250 and started to work on adding Exynos3250 support to this
+driver (as Exynos3250 support has bigger priority than Exynos4x12 one).
+Unfortunately I also got preempted with other things so it is still
+unfinished and doesn't work yet.  Moreover I had no possibility to test
+the new driver on Exynos4210 based Origen yet (I hope to do this next
+week).
 
-> 
-> Regards,
-> Mike
-> 
-> [1] http://www.arteris.com/OMAP4_QoS_security_NoC
-> 
->> b) timing closure issues on certain devices such as USB - which can
->> only function based on async bridge closure requirements on the core
->> bus etc.. these would require bus to be at higher frequency - QoS
->> model was "misused" in such requirements.
->> b.1) a variation: interdependent constraints -> if MPU is > freq X,
->> timing closure required L3 to be at 266MHz. again - it is not a QoS
->> requirement perse, just a dependency requirement that cannot easily be
->> addressed doing a pure QoS like framework solution.
->>
->> Even though EMC does sound like (a) - I suspect you might want to be
->> 100% sure that you dont have variations of (b) in the SoC as well and
->> betting completely on QoS approach might not actually work in practice.
->>
->>>
->>> Adding the linux-pm mailing list for more visibility. Perhaps somebody
->> For folks new on the discussion: complete thread:
->> http://thread.gmane.org/gmane.linux.drivers.devicetree/73967
->>
->>> has some ideas on how to extend any of the existing frameworks to make
->>> it work for Tegra's EMC scaling (or how to implement the requirements of
->>> Tegra's EMC scaling within the existing frameworks).
->>>
->>
->>
->> [1]
->> https://android.googlesource.com/kernel/omap.git/+/android-omap-panda-3.0/arch/arm/plat-omap/omap-pm-helper.c
->>
->> -- 
->> Regards,
->> Nishanth Menon
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-
--- 
-Regards,
-Nishanth Menon
