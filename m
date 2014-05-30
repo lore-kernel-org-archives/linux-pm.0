@@ -1,102 +1,82 @@
 From: Thomas Abraham <thomas.ab@samsung.com>
-Subject: [PATCH v6 1/2] cpufreq / OPP: Allow boost frequency to be looked up from device tree
-Date: Fri, 30 May 2014 14:31:16 +0530
-Message-ID: <1401440477-4328-2-git-send-email-thomas.ab@samsung.com>
+Subject: [PATCH v6 2/2] Documentation: devicetree: Add boost-frequency binding to list boost mode frequency
+Date: Fri, 30 May 2014 14:31:17 +0530
+Message-ID: <1401440477-4328-3-git-send-email-thomas.ab@samsung.com>
 References: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:55235 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbaE3JBf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 05:01:35 -0400
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:45687 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752272AbaE3JBl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 05:01:41 -0400
 In-Reply-To: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, nm@ti.com
+Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, nm@ti.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
 From: Thomas Abraham <thomas.ab@samsung.com>
 
-Commit 6f19efc0 ("cpufreq: Add boost frequency support in core") adds
-support for CPU boost mode. This patch adds support for finding available
-boost frequencies from device tree and marking them as usable in boost mode.
+Add a new optional boost-frequency binding for specifying the frequencies
+usable in boost mode.
 
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
 Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Acked-by: Nishanth Menon <nm@ti.com>
 Acked-by: Lukasz Majewski <l.majewski@samsung.com>
 ---
- drivers/cpufreq/cpufreq_opp.c |   45 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
+ .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   38 ++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
 
-diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/cpufreq/cpufreq_opp.c
-index c0c6f4a..a13019a 100644
---- a/drivers/cpufreq/cpufreq_opp.c
-+++ b/drivers/cpufreq/cpufreq_opp.c
-@@ -19,6 +19,7 @@
- #include <linux/pm_opp.h>
- #include <linux/rcupdate.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- 
- /**
-  * dev_pm_opp_init_cpufreq_table() - create a cpufreq table for a device
-@@ -51,6 +52,11 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
- 	struct cpufreq_frequency_table *freq_table = NULL;
- 	int i, max_opps, ret = 0;
- 	unsigned long rate;
-+#ifdef CONFIG_CPU_FREQ_BOOST_SW
-+	struct cpufreq_frequency_table *ft;
-+	int len, count;
-+	u32 *boost_freqs = NULL;
-+#endif
- 
- 	rcu_read_lock();
- 
-@@ -82,6 +88,45 @@ int dev_pm_opp_init_cpufreq_table(struct device *dev,
- 
- 	*table = &freq_table[0];
- 
-+#ifdef CONFIG_CPU_FREQ_BOOST_SW
-+	if (!of_find_property(dev->of_node, "boost-frequencies", &len))
-+		goto out;
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+new file mode 100644
+index 0000000..63ed0fc
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
+@@ -0,0 +1,38 @@
++* Device tree binding for CPU boost frequency (aka over-clocking)
 +
-+	if (!len || !IS_ALIGNED(len, sizeof(u32))) {
-+		dev_err(dev, "%s: invalid boost frequency\n", __func__);
-+		ret = -EINVAL;
-+		goto out;
-+	}
++Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
++overclocking) in which the CPU can operate at frequencies which are not
++specified by the manufacturer as CPU's operating frequency.
 +
-+	boost_freqs = kmalloc(len, GFP_KERNEL);
-+	if (!boost_freqs) {
-+		dev_err(dev, "%s: no memory for boost freq table\n", __func__);
-+		ret = -ENOMEM;
-+		goto out;
-+	}
++Optional Properties:
++- boost-frequencies: list of frequencies in KHz to be used only in boost mode.
++  This list should be a subset of frequencies listed in "operating-points"
++  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
++  details about "operating-points" property.
 +
-+	count = len / sizeof(u32);
-+	of_property_read_u32_array(dev->of_node, "boost-frequencies",
-+				   boost_freqs, count);
++Example:
 +
-+	for (i = 0; i < count; i++) {
-+		cpufreq_for_each_valid_entry(ft, *table) {
-+			if (boost_freqs[i] == ft->frequency) {
-+				ft->flags |= CPUFREQ_BOOST_FREQ;
-+				pr_debug("%s: marked %d as boost frequency\n",
-+					 __func__, boost_freqs[i]);
-+				break;
-+			}
-+		}
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a9";
++			reg = <0>;
 +
-+		if (ft->frequency == CPUFREQ_TABLE_END)
-+			dev_err(dev, "%s: invalid boost frequency %d\n",
-+				__func__, boost_freqs[i]);
-+	}
-+
-+	kfree(boost_freqs);
-+#endif
-+
- out:
- 	rcu_read_unlock();
- 	if (ret)
++			operating-points = <
++				1500000 1350000
++				1400000 1287500
++				1300000 1250000
++				1200000 1187500
++				1100000 1137500
++				1000000 1087500
++			>;
++			boost-frequencies = <1500000 1400000>;
++		};
++		cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a9";
++			reg = <1>;
++		};
++	};
 -- 
 1.7.9.5
 
