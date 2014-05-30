@@ -1,7 +1,7 @@
 From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 15/16 v3] Intercept periodic nohz idle balancing
-Date: Fri, 30 May 2014 14:36:11 +0800
-Message-ID: <1401431772-14320-16-git-send-email-yuyang.du@intel.com>
+Subject: [RFC PATCH 13/16 v3] Intercept wakeup/fork/exec load balancing
+Date: Fri, 30 May 2014 14:36:09 +0800
+Message-ID: <1401431772-14320-14-git-send-email-yuyang.du@intel.com>
 References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
@@ -13,110 +13,40 @@ List-Id: linux-pm@vger.kernel.org
 We intercept load balancing to contain the load and load balancing in
 the consolidated CPUs according to our consolidating mechanism.
 
-In periodic nohz idle balance, we skip the idle but non-consolidated
-CPUs from load balancing.
+In wakeup/fork/exec load balaning, when to find the idlest sched_group,
+we first try to find the consolidated group
 
 Signed-off-by: Yuyang Du <yuyang.du@intel.com>
 ---
- kernel/sched/fair.c |   57 ++++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 47 insertions(+), 10 deletions(-)
+ kernel/sched/fair.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 220773f..1b8dd45 100644
+index d40ec9e..1c9ac08 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -6869,10 +6869,47 @@ static struct {
+@@ -4475,7 +4475,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+ 	}
  
- static inline int find_new_ilb(void)
- {
--	int ilb = cpumask_first(nohz.idle_cpus_mask);
-+	int ilb;
+ 	while (sd) {
+-		struct sched_group *group;
++		struct sched_group *group = NULL;
+ 		int weight;
  
--	if (ilb < nr_cpu_ids && idle_cpu(ilb))
--		return ilb;
-+	/*
-+	 * Optimize for the case when we have no idle CPUs or only one
-+	 * idle CPU. Don't walk the sched_domain hierarchy in such cases
-+	 */
-+	if (cpumask_weight(nohz.idle_cpus_mask) < 2)
-+		return nr_cpu_ids;
-+
-+	ilb = cpumask_first(nohz.idle_cpus_mask);
-+
-+	if (ilb < nr_cpu_ids && idle_cpu(ilb)) {
-+		struct sched_domain *sd;
-+		int this_cpu = smp_processor_id();
-+
-+		rcu_read_lock();
-+		sd = top_flag_domain(this_cpu, SD_WORKLOAD_CONSOLIDATION);
-+		if (sd) {
-+			struct cpumask *nonshielded_cpus = __get_cpu_var(load_balance_mask);
-+
-+			cpumask_copy(nonshielded_cpus, nohz.idle_cpus_mask);
-+
-+			wc_nonshielded_mask(this_cpu, sd, nonshielded_cpus);
-+			rcu_read_unlock();
-+
-+			if (cpumask_weight(nonshielded_cpus) < 2)
-+				return nr_cpu_ids;
-+
-+			/*
-+			 * get idle load balancer again
-+			 */
-+			ilb = cpumask_first(nonshielded_cpus);
-+
-+		    if (ilb < nr_cpu_ids && idle_cpu(ilb))
-+				return ilb;
-+		}
-+		else {
-+			rcu_read_unlock();
-+			return ilb;
-+		}
-+	}
- 
- 	return nr_cpu_ids;
- }
-@@ -7109,7 +7146,7 @@ out:
-  * In CONFIG_NO_HZ_COMMON case, the idle balance kickee will do the
-  * rebalancing for all the cpus for whom scheduler ticks are stopped.
-  */
--static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
-+static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle, struct cpumask *mask)
- {
- 	int this_cpu = this_rq->cpu;
- 	struct rq *rq;
-@@ -7119,7 +7156,7 @@ static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
- 	    !test_bit(NOHZ_BALANCE_KICK, nohz_flags(this_cpu)))
- 		goto end;
- 
--	for_each_cpu(balance_cpu, nohz.idle_cpus_mask) {
-+	for_each_cpu(balance_cpu, mask) {
- 		if (balance_cpu == this_cpu || !idle_cpu(balance_cpu))
+ 		if (!(sd->flags & sd_flag)) {
+@@ -4483,7 +4483,12 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
  			continue;
+ 		}
  
-@@ -7167,10 +7204,10 @@ static inline int nohz_kick_needed(struct rq *rq)
- 	if (unlikely(rq->idle_balance))
- 		return 0;
- 
--       /*
--	* We may be recently in ticked or tickless idle mode. At the first
--	* busy tick after returning from idle, we will update the busy stats.
--	*/
-+	/*
-+	 * We may be recently in ticked or tickless idle mode. At the first
-+	 * busy tick after returning from idle, we will update the busy stats.
-+	 */
- 	set_cpu_sd_state_busy();
- 	nohz_balance_exit_idle(cpu);
- 
-@@ -7213,7 +7250,7 @@ need_kick:
- 	return 1;
- }
- #else
--static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle) { }
-+static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle, struct cpumask *mask) { }
- #endif
- 
- /*
+-		group = find_idlest_group(sd, p, cpu, sd_flag);
++		if (sd->flags & SD_WORKLOAD_CONSOLIDATION)
++			group = wc_find_group(sd, p, cpu);
++
++		if (!group)
++			group = find_idlest_group(sd, p, cpu, sd_flag);
++
+ 		if (!group) {
+ 			sd = sd->child;
+ 			continue;
 -- 
 1.7.9.5
