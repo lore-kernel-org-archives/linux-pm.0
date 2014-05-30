@@ -1,20 +1,32 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
+From: Rob Herring <robherring2@gmail.com>
 Subject: Re: [PATCH v6 2/2] Documentation: devicetree: Add boost-frequency
  binding to list boost mode frequency
-Date: Fri, 30 May 2014 22:43:51 +0200
-Message-ID: <5388ED87.1090209@gmail.com>
-References: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com> <1401440477-4328-3-git-send-email-thomas.ab@samsung.com> <20140530130827.GK24233@leverpostej> <CAJuA9ajs6K1PVtXC4_U0vQsA0oPnpaF_PdMfiQJxBFStF3Z2aw@mail.gmail.com> <20140530185549.GN24233@leverpostej> <5388E105.3070609@ti.com> <5388E3D2.2060602@gmail.com> <5388E666.2090203@ti.com> <5388E7DC.40606@gmail.com> <5388EB21.5020300@ti.com>
+Date: Fri, 30 May 2014 15:45:55 -0500
+Message-ID: <CAL_JsqKvNsmJf_-hh+MHmopwGwDBWLMVH7H7Z4-EmLmRays0+w@mail.gmail.com>
+References: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com>
+	<1401440477-4328-3-git-send-email-thomas.ab@samsung.com>
+	<20140530130827.GK24233@leverpostej>
+	<CAJuA9ajs6K1PVtXC4_U0vQsA0oPnpaF_PdMfiQJxBFStF3Z2aw@mail.gmail.com>
+	<20140530185549.GN24233@leverpostej>
+	<5388E105.3070609@ti.com>
+	<5388E3D2.2060602@gmail.com>
+	<5388E666.2090203@ti.com>
+	<5388E7DC.40606@gmail.com>
+	<5388EB21.5020300@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f181.google.com ([209.85.220.181]:43386 "EHLO
+	mail-vc0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933084AbaE3Up4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 16:45:56 -0400
 In-Reply-To: <5388EB21.5020300@ti.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Mark Rutland <mark.rutland@arm.com>, Thomas Abraham <ta.omasab@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
-On 30.05.2014 22:33, Nishanth Menon wrote:
+On Fri, May 30, 2014 at 3:33 PM, Nishanth Menon <nm@ti.com> wrote:
 > On 05/30/2014 03:19 PM, Tomasz Figa wrote:
 >> On 30.05.2014 22:13, Nishanth Menon wrote:
 >>> On 05/30/2014 03:02 PM, Tomasz Figa wrote:
@@ -154,7 +166,7 @@ On 30.05.2014 22:33, Nishanth Menon wrote:
 >>
 >> No. The operating points bindings were defined far before this
 >> boost-frequency and so there is no requirement to support the latter.
-> 
+>
 > So, we dont add any new bindings ever again? /me blinks. *IF* we add a
 > new property in the future, do we expect the new description to be
 > supported in older kernel(which could not have known about it)? How
@@ -164,54 +176,26 @@ On 30.05.2014 22:33, Nishanth Menon wrote:
 >    the old binding. ie. add additional properties, but don't change the
 >    meaning of an existing property. For drivers, default to the original
 >    behaviour when a newly added property is missing.
-> 
+>
 > we are not changing the meaning of existing property, we are
 > augumenting it.
-> 
+
+You are changing the meaning of entries in that they can have
+additional data which changes their properties.
+
+If we accept the DT changes (as DT maintainers) and reject the kernel
+changes (as kernel maintainers), you would be left with a broken
+system.
+
 > In my opinion, *IF* we are concerned about polluting operating-points
 > description, why dont we enforce that the boost operating points
 > should NOT be defined in the current "operating-points" description -
 > and - just follow what Rob suggested and iMx already does - add such
 > operating points from platform code.
-> 
-> 
->>> We never said that "operating points" are "primary operating points".
->>> all we said is they are "operating points" for the device - we dont
->>> associate meanings to it. You may add to it[1] in platform code, as we
->>> decided to.
->>
->> Maybe generic OPP bindings don't state that, but I believe that at least
->> cpufreq-cpu0 bindings have been defined (and the driver implemented)
->> this way and changing the semantics now would be breaking DT ABI
->> compatibility.
-> Did you mean
-> Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt which
-> points to the generic bindings? Quote:
-> - operating-points: Refer to
-> Documentation/devicetree/bindings/power/opp.txt
->   for details
-> 
->>> boost-frequencies are describing "overclocked frequencies" - should it
->>> matter if the description of that comes from platform code OR existing
->>> opp tables or what ever? I dont think defining them as "operating
->>> point" style as the only way of describing overclocked frequencies are
->>> the right approach to describing it.
->>
->> Nobody said that it is the only way. The whole point here is that it
->> should be separate from the main operating-points property, as boost
->> operating points are not normal operating points and the OS must be
->> specifically aware how to handle them.
-> They are descriptions - I repeat myself when I state that they are
-> "overclocked frequencies" that happen to map to operating points on
-> the platforms of concern, but may not necessarily be OPP based on
-> other platforms which also be able to support "overclocked frequencies".
-> 
-> 
 
-OK, so you add overclocked frequencies to operating-points property,
-boost-frequency property, build a dtb, use it with a kernel that doesn't
-support boost-frequency and nicely overheat (and likely destroy) your
-board. I don't think this makes too much sense, sorry.
+I believe I also said on this and other attempts to bandage up the
+existing OPP binding, that we should not change/append it, but define
+a new binding for OPPs that addresses this and other issues.
+Otherwise, I'm going to just NAK every incomplete OPP binding bandaid.
 
-Best regards,
-Tomasz
+Rob
