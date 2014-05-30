@@ -1,59 +1,80 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: [PATCH 5/6] ARM: STi: DT: STiH416: Supply Thermal Controller Device Tree nodes
-Date: Fri, 30 May 2014 10:38:34 +0100
-Message-ID: <1401442715-6350-6-git-send-email-lee.jones@linaro.org>
+Subject: [PATCH 1/6] thermal: sti: Supply Device Tree documentation
+Date: Fri, 30 May 2014 10:38:30 +0100
+Message-ID: <1401442715-6350-2-git-send-email-lee.jones@linaro.org>
 References: <1401442715-6350-1-git-send-email-lee.jones@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f175.google.com ([209.85.223.175]:60681 "EHLO
-	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932860AbaE3JjP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 05:39:15 -0400
-Received: by mail-ie0-f175.google.com with SMTP id y20so1504380ier.34
-        for <linux-pm@vger.kernel.org>; Fri, 30 May 2014 02:39:14 -0700 (PDT)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1401442715-6350-1-git-send-email-lee.jones@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: lee.jones@linaro.org, kernel@stlinux.com, rui.zhang@intel.com, eduardo.valentin@ti.com, ajitpal.singh@st.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, maxime.coquelin@st.com, patrice.chotard@st.com
-
-We supply two of these.  The first is controlled by the System Configuration
-registers and the second one provided is a more traditional 'memory mapped'
-variant.  Each are handled by they own sub-driver.
+Cc: devicetree@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org, lee.jones@linaro.org, patrice.chotard@st.com, eduardo.valentin@ti.com, rui.zhang@intel.com, ajitpal.singh@st.com, maxime.coquelin@st.com
+List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Ajit Pal Singh <ajitpal.singh@st.com>
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- arch/arm/boot/dts/stih416.dtsi | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ .../devicetree/bindings/thermal/st-thermal.txt     | 42 ++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/st-thermal.txt
 
-diff --git a/arch/arm/boot/dts/stih416.dtsi b/arch/arm/boot/dts/stih416.dtsi
-index 06473c5..ed80220 100644
---- a/arch/arm/boot/dts/stih416.dtsi
-+++ b/arch/arm/boot/dts/stih416.dtsi
-@@ -236,5 +236,23 @@
- 			resets	= <&powerdown STIH416_KEYSCAN_POWERDOWN>,
- 				  <&softreset STIH416_KEYSCAN_SOFTRESET>;
- 		};
+diff --git a/Documentation/devicetree/bindings/thermal/st-thermal.txt b/Documentation/devicetree/bindings/thermal/st-thermal.txt
+new file mode 100644
+index 0000000..8537fdc
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/st-thermal.txt
+@@ -0,0 +1,42 @@
++Binding for Thermal Sensor driver for STMicroelectronics STi series of SoCs.
 +
-+		temp0 {
-+			compatible = "st,stih416-sas-thermal";
-+			clock-names = "thermal";
-+			clocks = <&clockgen_c_vcc 14>;
++Required parameters:
++-------------------
 +
-+			status = "okay";
-+		};
++compatible : 	st,<SoC>-<module>-thermal; should be one of:
++		  "st,stih415-sas-thermal",
++		  "st,stih415-mpe-thermal",
++		  "st,stih416-sas-thermal"
++		  "st,stih416-mpe-thermal"
++		  "st,stid127-thermal" or
++		  "st,stih407-thermal"
++		according to the SoC type (stih415, stih416, stid127, stih407)
++		and module type (sas or mpe). On stid127 & stih407 there is only
++		one die/module, so there is no module type in the compatible
++		string.
++clock-names : 	Should be "thermal".
++		  See: Documentation/devicetree/bindings/resource-names.txt
++clocks : 	Phandle of the clock used by the thermal sensor.
++		  See: Documentation/devicetree/bindings/clock/clock-bindings.txt
 +
-+		temp1@fdfe8000 {
-+			compatible = "st,stih416-mpe-thermal";
-+			reg = <0xfdfe8000 0x10>;
-+			clocks = <&clockgen_e 3>;
-+			clock-names = "thermal";
-+			interrupts = <GIC_SPI 23 IRQ_TYPE_EDGE_RISING>;
++Optional parameters:
++-------------------
 +
-+			status = "okay";
-+		};
- 	};
- };
++reg : 		For non-sysconf based sensors, this should be the physical base
++		address and length of the sensor's registers.
++interrupts :	Standard way to define interrupt number.
++		Interrupt is mandatory to be defined when compatible is
++		"stih416-mpe-thermal".
++		  NB: For thermal sensor's for which no interrupt has been
++		  defined, a polling delay of 1000ms will be used to read the
++		  temperature from device.
++
++Example:
++
++	temp1@fdfe8000 {
++		compatible	= "st,stih416-mpe-thermal";
++		reg		= <0xfdfe8000 0x10>;
++		clock-names	= "thermal";
++		clocks		= <&CLK_M_MPETHSENS>;
++		interrupts	= <GIC_SPI 23 IRQ_TYPE_NONE>;
++	};
 -- 
 1.8.3.2
-
