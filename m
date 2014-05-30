@@ -1,82 +1,114 @@
-From: Thomas Abraham <thomas.ab@samsung.com>
-Subject: [PATCH v6 2/2] Documentation: devicetree: Add boost-frequency binding to list boost mode frequency
-Date: Fri, 30 May 2014 14:31:17 +0530
-Message-ID: <1401440477-4328-3-git-send-email-thomas.ab@samsung.com>
-References: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
+Date: Fri, 30 May 2014 11:30:58 +0200
+Message-ID: <53884FD2.7020700@linaro.org>
+References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org> <53594D17.6020107@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:45687 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbaE3JBl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 05:01:41 -0400
-In-Reply-To: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:50943 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754750AbaE3Jal (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 05:30:41 -0400
+Received: by mail-wi0-f170.google.com with SMTP id bs8so765693wib.3
+        for <linux-pm@vger.kernel.org>; Fri, 30 May 2014 02:30:40 -0700 (PDT)
+In-Reply-To: <53594D17.6020107@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: rjw@rjwysocki.net, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, t.figa@samsung.com, l.majewski@samsung.com, viresh.kumar@linaro.org, thomas.ab@samsung.com, nm@ti.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+To: Tomasz Figa <t.figa@samsung.com>, kgene.kim@samsung.com
+Cc: linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, ccross@google.com
 
-From: Thomas Abraham <thomas.ab@samsung.com>
+On 04/24/2014 07:42 PM, Tomasz Figa wrote:
+> Hi Daniel,
+>
+> Please see my comments inline.
+>
+> Btw. Please fix your e-mail composer to properly wrap your messages
+> around 7xth column, as otherwise they're hard to read.
+>
+> On 04.04.2014 11:48, Daniel Lezcano wrote:
+>> The following driver is for exynos4210. I did not yet finished the
+>> other boards, so
+>> I created a specific driver for 4210 which could be merged later.
+>>
+>> The driver is based on Colin Cross's driver found at:
+>>
+>> https://android.googlesource.com/kernel/exynos/+/e686b1ec67423c40b4f=
+df811f9a4dfa3b393a010%5E%5E!/
+>>
+>>
+>> This one was based on a 3.4 kernel and an old API.
+>>
+>> It has been refreshed, simplified and based on the recent code clean=
+up
+>> I sent
+>> today.
+>>
+>> The AFTR could be entered when all the cpus (except cpu0) are down. =
+In
+>> order to
+>> reach this situation, the couple idle states are used.
+>>
+>> There is a sync barrier at the entry and the exit of the low power
+>> function. So
+>> all cpus will enter and exit the function at the same time.
+>>
+>> At this point, CPU0 knows the other cpu will power down itself. CPU0
+>> waits for
+>> the CPU1 to be powered down and then initiate the AFTR power down
+>> sequence.
+>>
+>> No interrupts are handled by CPU1, this is why we switch to the time=
+r
+>> broadcast
+>> even if the local timer is not impacted by the idle state.
+>>
+>> When CPU0 wakes up, it powers up CPU1 and waits for it to boot. Then
+>> they both
+>> exit the idle function.
+>>
+>> This driver allows the exynos4210 to have the same power consumption
+>> at idle
+>> time than the one when we have to unplug CPU1 in order to let CPU0 t=
+o
+>> reach
+>> the AFTR state.
+>>
+>> This patch is a RFC because, we have to find a way to remove the mac=
+ros
+>> definitions and cpu powerdown function without pulling the arch depe=
+ndent
+>> headers.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>   arch/arm/mach-exynos/common.c        |   11 +-
+>>   drivers/cpuidle/Kconfig.arm          |    8 ++
+>>   drivers/cpuidle/Makefile             |    1 +
+>>   drivers/cpuidle/cpuidle-exynos4210.c |  226
+>> ++++++++++++++++++++++++++++++++++
 
-Add a new optional boost-frequency binding for specifying the frequencies
-usable in boost mode.
+[ ... ]
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Nishanth Menon <nm@ti.com>
-Acked-by: Lukasz Majewski <l.majewski@samsung.com>
----
- .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   38 ++++++++++++++++++++
- 1 file changed, 38 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-new file mode 100644
-index 0000000..63ed0fc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-@@ -0,0 +1,38 @@
-+* Device tree binding for CPU boost frequency (aka over-clocking)
-+
-+Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
-+overclocking) in which the CPU can operate at frequencies which are not
-+specified by the manufacturer as CPU's operating frequency.
-+
-+Optional Properties:
-+- boost-frequencies: list of frequencies in KHz to be used only in boost mode.
-+  This list should be a subset of frequencies listed in "operating-points"
-+  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
-+  details about "operating-points" property.
-+
-+Example:
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <0>;
-+
-+			operating-points = <
-+				1500000 1350000
-+				1400000 1287500
-+				1300000 1250000
-+				1200000 1187500
-+				1100000 1137500
-+				1000000 1087500
-+			>;
-+			boost-frequencies = <1500000 1400000>;
-+		};
-+		cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <1>;
-+		};
-+	};
--- 
-1.7.9.5
+> Otherwise, I quite like the whole idea. I need to play a bit with CPU
+> hotplug and PMU to verify that things couldn't really be simplified a
+> bit, but in general this looks reasonably.
+
+Hi Tomasz,
+
+did you have time to look at this simplification ?
+
+Thanks
+   -- Daniel
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
