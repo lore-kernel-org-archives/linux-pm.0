@@ -1,119 +1,132 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v6 2/2] Documentation: devicetree: Add boost-frequency
- binding to list boost mode frequency
-Date: Fri, 30 May 2014 19:55:49 +0100
-Message-ID: <20140530185549.GN24233@leverpostej>
-References: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com>
- <1401440477-4328-3-git-send-email-thomas.ab@samsung.com>
- <20140530130827.GK24233@leverpostej>
- <CAJuA9ajs6K1PVtXC4_U0vQsA0oPnpaF_PdMfiQJxBFStF3Z2aw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] Thermal: int3403: Add CRT and PSV trip
+Date: Fri, 30 May 2014 12:10:32 -0700
+Message-ID: <1401477032-18627-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:35973 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752209AbaE3Szy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 14:55:54 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJuA9ajs6K1PVtXC4_U0vQsA0oPnpaF_PdMfiQJxBFStF3Z2aw@mail.gmail.com>
+Received: from mga02.intel.com ([134.134.136.20]:27509 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751525AbaE3TG0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 30 May 2014 15:06:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "nm@ti.com" <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+To: rui.zhang@intel.com, eduardo.valentin@ti.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Fri, May 30, 2014 at 07:05:43PM +0100, Thomas Abraham wrote:
-> Hi Mark,
-> 
-> On Fri, May 30, 2014 at 6:38 PM, Mark Rutland <mark.rutland@arm.com> wrote:
-> > Hi,
-> >
-> > Apologies for being somewhat late w.r.t. review on this.
-> >
-> > On Fri, May 30, 2014 at 10:01:17AM +0100, Thomas Abraham wrote:
-> >> From: Thomas Abraham <thomas.ab@samsung.com>
-> >>
-> >> Add a new optional boost-frequency binding for specifying the frequencies
-> >> usable in boost mode.
-> >>
-> >> Cc: Rob Herring <robh+dt@kernel.org>
-> >> Cc: Pawel Moll <pawel.moll@arm.com>
-> >> Cc: Mark Rutland <mark.rutland@arm.com>
-> >> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> >> Cc: Kumar Gala <galak@codeaurora.org>
-> >> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >> Acked-by: Nishanth Menon <nm@ti.com>
-> >> Acked-by: Lukasz Majewski <l.majewski@samsung.com>
-> >> ---
-> >>  .../devicetree/bindings/cpufreq/cpufreq-boost.txt  |   38 ++++++++++++++++++++
-> >>  1 file changed, 38 insertions(+)
-> >>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-> >> new file mode 100644
-> >> index 0000000..63ed0fc
-> >> --- /dev/null
-> >> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-boost.txt
-> >> @@ -0,0 +1,38 @@
-> >> +* Device tree binding for CPU boost frequency (aka over-clocking)
-> >> +
-> >> +Certain CPU's can be operated in optional 'boost' mode (or sometimes referred as
-> >
-> > Nit: CPUs (we're not greengrocers [1])
-> >
-> >> +overclocking) in which the CPU can operate at frequencies which are not
-> >> +specified by the manufacturer as CPU's operating frequency.
-> >> +
-> >> +Optional Properties:
-> >> +- boost-frequencies: list of frequencies in KHz to be used only in boost mode.
-> >> +  This list should be a subset of frequencies listed in "operating-points"
-> >> +  property. Refer to Documentation/devicetree/bindings/power/opp.txt for
-> >> +  details about "operating-points" property.
-> >
-> > What is 'boost-mode'?
-> 
-> boost-mode activates additional one or more cpu clock speeds (which
-> are not specified as operating frequency of the cpu by the
-> manufacturer). The cpu is allowed to operate in these boost mode
-> speeds when the boost mode is active. The boost mode speeds are
-> usually undocumented. Some of the chip samples could be clocked in
-> boost mode speeds and only such samples can be safely operated in
-> boost mode.
-> 
-> The mechanism of entry into and exit out of boost mode is outside the
-> scope of this documentation.
-> 
-> >
-> > What are the limitations on boost frequencies? When is a CPU expected to
-> > go to these frequencies and for now long? When should I as a dt author
-> > place elements in boost-frequencies?
-> 
-> I will add these details in the next revision of this patch.
+The ACPI object definition can contain passive and critical
+trip temperature. Export them via thermal sysfs.
 
-Cheers.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/int3403_thermal.c | 67 +++++++++++++++++++++++++++++++++++----
+ 1 file changed, 60 insertions(+), 7 deletions(-)
 
-> >
-> > Why are these in both operating-points and boost-frequencies? It'll be
-> > really easy to accidentally forget to mark something as a
-> > boost-frequency this way. Why not have a boost-points instead?
-> 
-> Does boost-points mean a set of clock speeds which are not listed as
-> part of operating-points property? If yes, that also is a possible
-> implementation (it was implemented in one of the earlier version of
-> this series). Could you confirm that you want the boost mode speeds to
-> be exclusive of the speeds listed in operating-points?
+diff --git a/drivers/thermal/int3403_thermal.c b/drivers/thermal/int3403_thermal.c
+index e93f025..17554ee 100644
+--- a/drivers/thermal/int3403_thermal.c
++++ b/drivers/thermal/int3403_thermal.c
+@@ -33,6 +33,10 @@
+ struct int3403_sensor {
+ 	struct thermal_zone_device *tzone;
+ 	unsigned long *thresholds;
++	unsigned long	crit_temp;
++	int		crit_trip_id;
++	unsigned long	psv_temp;
++	int		psv_trip_id;
+ };
+ 
+ static int sys_get_curr_temp(struct thermal_zone_device *tzone,
+@@ -79,12 +83,18 @@ static int sys_get_trip_temp(struct thermal_zone_device *tzone,
+ 	struct acpi_device *device = tzone->devdata;
+ 	struct int3403_sensor *obj = acpi_driver_data(device);
+ 
+-	/*
+-	 * get_trip_temp is a mandatory callback but
+-	 * PATx method doesn't return any value, so return
+-	 * cached value, which was last set from user space.
+-	 */
+-	*temp = obj->thresholds[trip];
++	if (trip == obj->crit_trip_id)
++		*temp = obj->crit_temp;
++	else if (trip == obj->psv_trip_id)
++		*temp = obj->psv_temp;
++	else {
++		/*
++		 * get_trip_temp is a mandatory callback but
++		 * PATx method doesn't return any value, so return
++		 * cached value, which was last set from user space.
++		 */
++		*temp = obj->thresholds[trip];
++	}
+ 
+ 	return 0;
+ }
+@@ -92,8 +102,14 @@ static int sys_get_trip_temp(struct thermal_zone_device *tzone,
+ static int sys_get_trip_type(struct thermal_zone_device *thermal,
+ 		int trip, enum thermal_trip_type *type)
+ {
++	struct acpi_device *device = thermal->devdata;
++	struct int3403_sensor *obj = acpi_driver_data(device);
++
+ 	/* Mandatory callback, may not mean much here */
+-	*type = THERMAL_TRIP_PASSIVE;
++	if (trip == obj->crit_trip_id)
++		*type = THERMAL_TRIP_CRITICAL;
++	else
++		*type = THERMAL_TRIP_PASSIVE;
+ 
+ 	return 0;
+ }
+@@ -155,6 +171,34 @@ static void acpi_thermal_notify(struct acpi_device *device, u32 event)
+ 	}
+ }
+ 
++static int sys_get_trip_crt(struct acpi_device *device, unsigned long *temp)
++{
++	unsigned long long crt;
++	acpi_status status;
++
++	status = acpi_evaluate_integer(device->handle, "_CRT", NULL, &crt);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(crt, KELVIN_OFFSET);
++
++	return 0;
++}
++
++static int sys_get_trip_psv(struct acpi_device *device, unsigned long *temp)
++{
++	unsigned long long psv;
++	acpi_status status;
++
++	status = acpi_evaluate_integer(device->handle, "_PSV", NULL, &psv);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	*temp = DECI_KELVIN_TO_MILLI_CELSIUS(psv, KELVIN_OFFSET);
++
++	return 0;
++}
++
+ static int acpi_int3403_add(struct acpi_device *device)
+ {
+ 	int result = 0;
+@@ -194,6 +238,15 @@ static int acpi_int3403_add(struct acpi_device *device)
+ 			return -ENOMEM;
+ 		trip_mask = BIT(trip_cnt) - 1;
+ 	}
++
++	obj->psv_trip_id = -1;
++	if (!sys_get_trip_psv(device, &obj->psv_temp))
++		obj->psv_trip_id = trip_cnt++;
++
++	obj->crit_trip_id = -1;
++	if (!sys_get_trip_crt(device, &obj->crit_temp))
++		obj->crit_trip_id = trip_cnt++;
++
+ 	obj->tzone = thermal_zone_device_register(acpi_device_bid(device),
+ 				trip_cnt, trip_mask, device, &tzone_ops,
+ 				NULL, 0, 0);
+-- 
+1.9.3
 
-If these boost mode operating points are not generally advisable for use
-as the other operating-points are, then they should IMO been in an
-entirely separate property exclusive of (but in the same format as) the
-operating-points property, e.g.
-
-operating points = <A B>, <C D>;
-boost-points = <E F>;
-
-Otherwise, without boost-mode support we have to parse the boost mode
-table to figure out which points to avoid. Or if someone typos a value
-in either table we might go into a boost mode when we didn't want to!
-
-Cheers,
-Mark.
