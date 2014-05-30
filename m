@@ -1,72 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Performance regression in v3.14
-Date: Fri, 30 May 2014 14:29:47 +0200
-Message-ID: <77867612.qQW44bBzL9@vostro.rjw.lan>
-References: <20140506163559.GA5308@localhost> <20140528075945.GA21705@localhost> <20140530022734.GC19080@kroah.com>
+From: Riku Voipio <riku.voipio@linaro.org>
+Subject: =?UTF-8?q?=5BPATCH=5D=20thermal=3A=20allow=20building=20dove=5Fthermal=20with=20mvebu?=
+Date: Fri, 30 May 2014 15:28:19 +0300
+Message-ID: <1401452899-13952-1-git-send-email-riku.voipio@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20140530022734.GC19080@kroah.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Johan Hovold <jhovold@gmail.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Yuyang Du <yuyang.du@intel.com>, Stratos Karafotis <stratosk@semaphore.gr>
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-pm@vger.kernel.org
+Cc: Eduardo Valentin <edubezval@gmail.com>, Riku Voipio <riku.voipio@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 29, 2014 07:27:34 PM Greg Kroah-Hartman wrote:
-> On Wed, May 28, 2014 at 09:59:45AM +0200, Johan Hovold wrote:
-> > [ +CC: Greg, Doug, Stratos, Yuyang ]
-> > 
-> > On Wed, May 21, 2014 at 11:00:51AM +0200, Johan Hovold wrote:
-> > > On Wed, May 07, 2014 at 07:10:49AM -0700, Dirk Brandewie wrote:
-> > > > On 05/06/2014 10:40 PM, Viresh Kumar wrote:
-> > > > > Cc'ing Dirk who is taking care of intel-pstate driver.
-> > > > >
-> > > > 
-> > > > Thanks Viresh I had seen this thread.
-> > > > 
-> > > > I am looking into it
-> > > 
-> > > Any updates on this, Dirk? 3.14 is still basically unusable with the
-> > > intel_pstate driver.
-> > > 
-> > > Any fixes or workarounds posted elsewhere that I can apply in the
-> > > meantime?
-> > 
-> > Another week and still no reply, Dirk?
-> > 
-> > I tried applying your (rejected) patch "intel_pstate: Remove C0
-> > tracking" posted here:
-> > 
-> > 	https://lkml.org/lkml/2014/5/8/574
-> > 
-> > to v3.14.4 and it fixes the problem as expected.
-> > 
-> > So we have a commit fcb6a15c2e7e ("intel_pstate: Take core C0 time into
-> > account for core busy calculation") that went into v3.14-rc2 (and was
-> > even marked for *stable*) that first broke Greg KH's system:
-> > 
-> > 	https://lkml.org/lkml/2014/2/19/626
-> > 
-> > That was apparently fixed by e66c17683746 ("intel_pstate: Change
-> > busy calculation to use fixed point math."), but still left v3.14
-> > basically unusable for lower-intensity workloads such as my
-> > bash-completion example and other reported regressions:
-> > 
-> > 	https://bugzilla.kernel.org/show_bug.cgi?id=75121
-> > 
-> > Sure there may be issues with v3.13 not hitting the lowest frequencies
-> > but at least the system was *usable*.
-> > 
-> > In my opinion there's really no other option than to restore the 3.13
-> > behaviour by effectively reverting fcb6a15c2e7e ("intel_pstate: Take
-> > core C0 time into account for core busy calculation") until you have
-> > figured out a way to take C0 into account without breaking things too
-> > badly.
-> 
-> Dirk has posted some patches, do they fix the problem for you?
-
-I'm queuing up this series for 3.16, BTW.
-
-Rafael
-
+RFQtZW5hYmxlZCBEb3ZlIGhhcyBtb3ZlZCBmcm9tIEFSQ0hfRE9WRSBpbiBtYWNoLWRvdmUgdG8g
+TUFDSF9ET1ZFCmluIG1hY2gtbXZlYnUuIEFzIG5vbi1EVCBBUkNIX0RPVkUgd2lsbCBzdGF5IHRv
+IHJvdCBmb3IgYSB3aGlsZSwgYWRkIGEgbmV3CkRULW9ubHkgTUFDSF9ET1ZFIHRvIHRoZXJtYWwg
+S2NvbmZpZy4KClRoaXMgd2FzIG9yaWdpbmFsbHkgc3VwcG9zZWQgdG8gZ28gaW4gdmlhICJBUk06
+IGRvdmU6IHByZXBhcmUgbmV3IERvdmUgRFQgS2NvbmZpZyIKcGF0Y2ggZnJvbSBTZWJhc3RpYW4g
+SGVzc2VsYmFydGggZm9yIDMuMTUsIGJ1dCBzbGlwcGVkIHRocm91Z2ggdGhlIGNyYWNrcy4KCkkn
+dmUgdGVzdGVkIG9uIEN1Qm94IHRoYXQgd2l0aG91dCB0aGlzIHBhdGNoIHlvdSBjYW4ndCBjb21w
+aWxlCmRvdmVfdGhlcm1hbCBpbnRvIGEgbWFjaC1tdmVidSBiYXNlZCBrZXJuZWwsIGFuZCB3aXRo
+IHRoaXMgcGF0Y2ggSSBjYW4KYnVpbGQgdGhlIGRyaXZlciBhbmQgaXQgd29ya3MgYXMgZXhwZWN0
+ZWQgcnVuLXRpbWUuCgpTaWduZWQtb2ZmLWJ5OiBSaWt1IFZvaXBpbyA8cmlrdS52b2lwaW9AbGlu
+YXJvLm9yZz4KQ2M6IFNlYmFzdGlhbiBIZXNzZWxiYXJ0aCA8c2ViYXN0aWFuLmhlc3NlbGJhcnRo
+QGdtYWlsLmNvbT4KQ2M6IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4KQ2M6IEVkdWFy
+ZG8gVmFsZW50aW4gPGVkdWJlenZhbEBnbWFpbC5jb20+CkNjOiBsaW51eC1wbUB2Z2VyLmtlcm5l
+bC5vcmcKQ2M6IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwotLS0KIGRyaXZl
+cnMvdGhlcm1hbC9LY29uZmlnIHwgMiArLQogMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCsp
+LCAxIGRlbGV0aW9uKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL0tjb25maWcgYi9k
+cml2ZXJzL3RoZXJtYWwvS2NvbmZpZwppbmRleCAyZDUxOTEyLi41NzgzYzcyIDEwMDY0NAotLS0g
+YS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZworKysgYi9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZwpA
+QCAtMTUxLDcgKzE1MSw3IEBAIGNvbmZpZyBLSVJLV09PRF9USEVSTUFMCiAKIGNvbmZpZyBET1ZF
+X1RIRVJNQUwKIAl0cmlzdGF0ZSAiVGVtcGVyYXR1cmUgc2Vuc29yIG9uIE1hcnZlbGwgRG92ZSBT
+b0NzIgotCWRlcGVuZHMgb24gQVJDSF9ET1ZFCisJZGVwZW5kcyBvbiBBUkNIX0RPVkUgfHzCoE1B
+Q0hfRE9WRQogCWRlcGVuZHMgb24gT0YKIAloZWxwCiAJICBTdXBwb3J0IGZvciB0aGUgRG92ZSB0
+aGVybWFsIHNlbnNvciBkcml2ZXIgaW4gdGhlIExpbnV4IHRoZXJtYWwKLS0gCjIuMC4wLnJjMgoK
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFy
+bS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9y
+ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1r
+ZXJuZWwK
