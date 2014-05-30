@@ -1,109 +1,117 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency callbacks
-Date: Fri, 30 May 2014 07:26:55 +0530
-Message-ID: <CAKohponsZOpV74+SLMDLy0oCV-j896wA9--bwbwk4GUL59m1ug@mail.gmail.com>
-References: <cover.1400662383.git.viresh.kumar@linaro.org>
-	<dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>
-	<53877103.8070604@wwwdotorg.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [GIT PULL] request to Rafael: devfreq update for Linux 3.16
+Date: Fri, 30 May 2014 04:15:13 +0200
+Message-ID: <2568920.gZb0G3l1Qp@vostro.rjw.lan>
+References: <CAJ0PZbQSKpbwkR7eGb7iLA6JwNKxVNYcV1VWbJuNTdQyy2sKLA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:61337 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752220AbaE3B44 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 21:56:56 -0400
-Received: by mail-oa0-f45.google.com with SMTP id l6so1234748oag.18
-        for <linux-pm@vger.kernel.org>; Thu, 29 May 2014 18:56:55 -0700 (PDT)
-In-Reply-To: <53877103.8070604@wwwdotorg.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:54892 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751919AbaE3B6H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 May 2014 21:58:07 -0400
+In-Reply-To: <CAJ0PZbQSKpbwkR7eGb7iLA6JwNKxVNYcV1VWbJuNTdQyy2sKLA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+To: myungjoo.ham@gmail.com
+Cc: rafael.j.wysocki@intel.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 29 May 2014 23:10, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> This patch breaks Tegra. The reason is below.
+On Friday, May 30, 2014 01:43:32 AM MyungJoo Ham wrote:
+> In case you've missed, updated the subject.
 
-Lets see what blunder I made :)
+I didn't miss it, but I didn't have the time to handle it.
 
->> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
->
->> -static int tegra_cpu_clk_set_rate(unsigned long rate)
->> +static unsigned int
->> +tegra_get_intermediate(struct cpufreq_policy *policy, unsigned int index)
->
-> (BTW, can we please not put the return type on a separate line; it's
-> inconsistent with the rest of the code in this file)
+Pulled now, thanks MyungJoo!
 
-Sure.
 
->> +{
->> +     unsigned int ifreq = clk_get_rate(pll_p_clk) / 1000;
->> +
->> +     /*
->> +      * Don't switch to intermediate freq if:
->> +      * - we are already at it, i.e. policy->cur == ifreq
->> +      * - index corresponds to ifreq
->> +      */
->> +     if ((freq_table[index].frequency == ifreq) || (policy->cur == ifreq))
->> +             return 0;
->
-> If policy->cur == ifreq here, then tegra_target_intermediate() isn't
-> called by the cpufreq core, so ...
->
->> +static int
->> +tegra_target_intermediate(struct cpufreq_policy *policy, unsigned int index)
->>  {
->>       int ret;
->>
->>       /*
->>        * Take an extra reference to the main pll so it doesn't turn
->>        * off when we move the cpu off of it
->>        */
->>       clk_prepare_enable(pll_x_clk);
->
-> ... that reference isn't added...
->
->> @@ -98,10 +96,23 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
->>       else
->>               clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
->>
->> -     ret = tegra_cpu_clk_set_rate(rate * 1000);
->> +     /* target freq == pll_p */
->> +     if (rate * 1000 == clk_get_rate(pll_p_clk)) {
->> +             ret = tegra_target_intermediate(policy, index);
->> +             goto disable_pll_x;
->> +     }
->
-> ... and this code doesn't call it either, since we could be switching
-> from the pll_p rate to something faster ...
->
->> +
->> +     ret = clk_set_rate(pll_x_clk, rate * 1000);
->> +     /* Restore to earlier frequency on error, i.e. pll_x */
->>       if (ret)
->> -             pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
->> -                     rate);
->> +             pr_err("Failed to change pll_x to %lu\n", rate);
->> +
->> +     ret = clk_set_parent(cpu_clk, pll_x_clk);
->> +     /* This shouldn't fail while changing or restoring */
->> +     WARN_ON(ret);
->> +
->> +disable_pll_x:
->> +     clk_disable_unprepare(pll_x_clk);
->
-> ... so this turns off pll_x even though we're running from it.
+> On Sat, May 24, 2014 at 11:06 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> > Dear Rafael,
+> >
+> > Here goes the pull request of devfreq for 3.16
+> >
+> >
+> > Cheers,
+> > MyungJoo
+> >
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
+> >
+> > The following changes since commit 4b660a7f5c8099d88d1a43d8ae138965112592c7:
+> >
+> >   Linux 3.15-rc6 (2014-05-22 06:42:02 +0900)
+> >
+> > are available in the git repository at:
+> >
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/for-3.16
+> >
+> > for you to fetch changes up to cb7063f453e543b97285a10343cfc02983d792ad:
+> >
+> >   PM / devfreq: remove checks for CONFIG_EXYNOS_ASV (2014-05-24 22:33:51 +0900)
+> >
+> > - ----------------------------------------------------------------
+> > Pull Request for Rafael.
+> >
+> > Merge target is Linux 3.16
+> >
+> > - - Clean up with modern macro in the core and drivers.
+> > - - Fix incorrect error returns
+> > - - Remove dead CONFIG check.
+> > - - Fix resource leak in a driver.
+> >
+> > - ----------------------------------------------------------------
+> > Bartlomiej Zolnierkiewicz (3):
+> >       PM / devfreq: exynos4: introduce struct busfreq_ppmu_data
+> >       PM / devfreq: exynos5: introduce struct busfreq_ppmu_data
+> >       PM / devfreq: exynos: make more PPMU code common
+> >
+> > Chanwoo Choi (11):
+> >       PM / devfreq: exynos4: Fix bug of resource leak and code clean on probe()
+> >       PM / devfreq: exynos4: Use SIMPLE_DEV_PM_OPS macro
+> >       PM / devfreq: exynos4: Add CONFIG_PM_OPP dependency to fix probe fail
+> >       PM / devfreq: exynos5: Use SIMPLE_DEV_PM_OPS macro
+> >       PM / devfreq: exynos5: Add CONFIG_PM_OPP dependency to fix probe fail
+> >       PM / devfreq: exynos4: use common PPMU code
+> >       PM / devfreq: Fix devfreq_remove_device() to improve the sequence ...
+> >       PM / devfreq: Add resource-managed function for devfreq device
+> >       PM / devfreq: Add devm_devfreq_{register,unregister}_opp_notfierfunction
+> >       PM / devfreq: exynos4: Use devm_devfreq_* function using device ...
+> >       PM / devfreq: exynos5: Use devm_devfreq_* function using device ...
+> >
+> > Paul Bolle (1):
+> >       PM / devfreq: remove checks for CONFIG_EXYNOS_ASV
+> >
+> >  drivers/devfreq/Kconfig              |   5 +-
+> >  drivers/devfreq/devfreq.c            | 125 ++++++++++++++++++--
+> >  drivers/devfreq/exynos/Makefile      |   2 +-
+> >  drivers/devfreq/exynos/exynos4_bus.c | 219 ++++++++++-------------------------
+> >  drivers/devfreq/exynos/exynos5_bus.c | 130 ++++++---------------
+> >  drivers/devfreq/exynos/exynos_ppmu.c |  60 ++++++++++
+> >  drivers/devfreq/exynos/exynos_ppmu.h |   8 ++
+> >  include/linux/devfreq.h              |  35 +++++-
+> >  8 files changed, 317 insertions(+), 267 deletions(-)
+> > -----BEGIN PGP SIGNATURE-----
+> > Version: GnuPG v1.4.14 (GNU/Linux)
+> >
+> > iQIcBAEBAgAGBQJTgKWPAAoJEDv/jgS9xknFYlMP/0zIsdDGxtJA3NdxJGT/dA+d
+> > z7sDIBSOCQCBQv8CSMCY6HgtejgbtpRX8coKaSYGjLP9sL43hHCRkJesQdYNo5vE
+> > xuU0Zo80ERBZvXj9pXC76ojmvBMRmynYPnbMC7ZgzGEFA2kSf/SoEAwSu6y+5uiF
+> > b5igBp22QNd73V5c+Vjr6pzDfSXDyGDv5Km8jDFPvx3YLNChY471VtK+KMikGwGp
+> > FplzfNSCThMPertAxKuWRlZMS8v0YVyO9TN4KHNQuwdGotiQcYweeAFL+G183ZaC
+> > 8m+komdIP2oct0h19j8298cGPQSH/NpCXTwXSFMhn/QEU6W3WtaTF3crURjhTxja
+> > EZiSOClumMnZPJt6di10vV6TOS0e4pWgfP2ZX9sNRBYLf5Vs/P46kB3mzAM1LSeV
+> > D/93dkv5mAoZPTt/eruB/4jOeQDewAtOf/o3/vOjXUu4QwQ7JARGUEZ8RKJktVHs
+> > R5q7nrEFOckyoSME131ePODy5EUgYv2kFGmaLqwulZaUN7ooslBZiaph7Fc0f1VB
+> > 2TEQKLtbkPIYiDqTHF8MAkIjwzhuul02NpEN7UccHfc4RIkoyhNnOrhwsi2ktAJw
+> > ID7x2ofVKvevHp2qiLWlAHAryEJ+aTYNpiDRByZiUWFrt8LlLIZuCkdxWYGWcyOY
+> > dkeARTmbHnqfdYAeuTNn
+> > =ZUxh
+> > -----END PGP SIGNATURE-----
+> 
+> 
+> 
+> 
 
-Can you describe the role of the enable/disable of this pll_x_clk please?
-Which all clocks depend on it, etc? So that I understand why its important
-to enable it and for which clocks. And also if we need to disable it after
-changing to any freq..
-
-> It would be simpler if Tegra *always* used an intermediate frequency,
-> and hence the core *always* called tegra_target_intermediate().
-> Admittedly, this would result in tegra_target() sometimes (when
-> switching CPU clock rate to the pll_p rate) doing nothing other than
-> removing the extra reference on pll_x, but I think that the code would
-> be simpler to follow and more robust.
-
-Ok, will check what suits best.
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
