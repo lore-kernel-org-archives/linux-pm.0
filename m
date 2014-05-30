@@ -1,31 +1,72 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v6 2/2] Documentation: devicetree: Add boost-frequency
- binding to list boost mode frequency
-Date: Fri, 30 May 2014 16:01:17 -0500
-Message-ID: <5388F19D.8070303@ti.com>
-References: <1401440477-4328-1-git-send-email-thomas.ab@samsung.com> <1401440477-4328-3-git-send-email-thomas.ab@samsung.com> <20140530130827.GK24233@leverpostej> <CAJuA9ajs6K1PVtXC4_U0vQsA0oPnpaF_PdMfiQJxBFStF3Z2aw@mail.gmail.com> <20140530185549.GN24233@leverpostej> <5388E105.3070609@ti.com> <5388E3D2.2060602@gmail.com> <5388E666.2090203@ti.com> <5388E7DC.40606@gmail.com> <5388EB21.5020300@ti.com> <5388ED87.1090209@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] intel_pstate: Improve initial busy calculation
+Date: Fri, 30 May 2014 23:35:57 +0200
+Message-ID: <20622011.cSTifjdH2d@vostro.rjw.lan>
+References: <1917099.8KOhsjZWCp@vostro.rjw.lan> <1401469857-4908-1-git-send-email-dirk.j.brandewie@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:38522 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752164AbaE3VCB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 30 May 2014 17:02:01 -0400
-In-Reply-To: <5388ED87.1090209@gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:62386 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933058AbaE3VSs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 May 2014 17:18:48 -0400
+In-Reply-To: <1401469857-4908-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Thomas Abraham <ta.omasab@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "t.figa@samsung.com" <t.figa@samsung.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+To: dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: linux-pm@vger.kernel.org, dsmythies@telus.net
 
-On 05/30/2014 03:43 PM, Tomasz Figa wrote:
-[...]
-> OK, so you add overclocked frequencies to operating-points property,
-> boost-frequency property, build a dtb, use it with a kernel that doesn't
-> support boost-frequency and nicely overheat (and likely destroy) your
-> board. I don't think this makes too much sense, sorry.
-Yes, that is unfortunately true as well :( Sigh.
+On Friday, May 30, 2014 10:10:57 AM dirk.brandewie@gmail.com wrote:
+> From: Doug Smythies <dsmythies@telus.net>
+> 
+> This change makes the busy calculation using 64 bit math which prevents
+> overflow for large values of aperf/mperf.
+> 
+> Cc: <stable@vger.kernel.org> # 3.14.x
+> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+
+This doesn't apply for me on top of bleeding-edge.  Is there a patch missing?
+
+Rafael
+
+
+> ---
+>  drivers/cpufreq/intel_pstate.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 032efe4f7..c034cde 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -563,16 +563,19 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+>  static inline void intel_pstate_calc_busy(struct cpudata *cpu,
+>  					struct sample *sample)
+>  {
+> -	int32_t core_pct;
+> +	int64_t core_pct;
+> +	int32_t rem;
+>  
+> -	core_pct = div_fp(int_tofp((sample->aperf)),
+> -			int_tofp((sample->mperf)));
+> -	core_pct = mul_fp(core_pct, int_tofp(100));
+> +	core_pct = int_tofp(sample->aperf) * int_tofp(100);
+> +	core_pct = div_u64_rem(core_pct, int_tofp(sample->mperf), &rem);
+> +
+> +	if ((rem << 1) >= int_tofp((sample->mperf)))
+> +		core_pct += 1;
+>  
+>  	sample->freq = fp_toint(
+>  		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
+>  
+> -	sample->core_pct_busy = core_pct;
+> +	sample->core_pct_busy = (int32_t)core_pct;
+>  }
+>  
+>  static inline void intel_pstate_sample(struct cpudata *cpu)
+> 
 
 -- 
-Regards,
-Nishanth Menon
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
