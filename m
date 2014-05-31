@@ -1,39 +1,55 @@
-From: Niv Yehezkel <executerx@gmail.com>
-Subject: [PATCH] power: fixed typo in comment
-Date: Sat, 31 May 2014 06:26:01 -0400
-Message-ID: <20140531102601.GA11021@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Riku Voipio <riku.voipio@linaro.org>
+Subject: [PATCH v2] thermal: allow building dove_thermal with mvebu
+Date: Sat, 31 May 2014 14:50:26 +0300
+Message-ID: <1401537027-32291-1-git-send-email-riku.voipio@linaro.org>
+References: <1401452899-13952-1-git-send-email-riku.voipio@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f180.google.com ([74.125.82.180]:45947 "EHLO
-	mail-we0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753968AbaEaK0L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 31 May 2014 06:26:11 -0400
-Content-Disposition: inline
+Received: from afflict.kos.to ([92.243.29.197]:48436 "EHLO afflict.kos.to"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754558AbaEaLvg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 31 May 2014 07:51:36 -0400
+In-Reply-To: <1401452899-13952-1-git-send-email-riku.voipio@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: linux-pm@vger.kernel.org
+Cc: Riku Voipio <riku.voipio@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-fixed a trivial comment typo (s/mam/map) in kernel/power/swap.c.
+DT-enabled Dove has moved from ARCH_DOVE in mach-dove to MACH_DOVE
+in mach-mvebu. As non-DT ARCH_DOVE will stay to rot for a while, add a new
+DT-only MACH_DOVE to thermal Kconfig.
 
-Signed-off-by: Niv Yehezkel <executerx@gmail.com>
+This was originally supposed to go in via "ARM: dove: prepare new Dove DT Kconfig"
+patch from Sebastian Hesselbarth for 3.15, but slipped through the cracks.
+
+I've tested on CuBox that without this patch you can't compile
+dove_thermal into a mach-mvebu based kernel, and with this patch I can
+build the driver and it works as expected run-time.
+
+v2: non-ascii char creeped in somehow
+
+Signed-off-by: Riku Voipio <riku.voipio@linaro.org>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
 ---
- kernel/power/swap.c |    2 +-
+ drivers/thermal/Kconfig | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 8c9a481..aaa3261 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -567,7 +567,7 @@ static int lzo_compress_threadfn(void *data)
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 2d51912..5783c72 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -151,7 +151,7 @@ config KIRKWOOD_THERMAL
  
- /**
-  * save_image_lzo - Save the suspend image data compressed with LZO.
-- * @handle: Swap mam handle to use for saving the image.
-+ * @handle: Swap map handle to use for saving the image.
-  * @snapshot: Image to read data from.
-  * @nr_to_write: Number of pages to save.
-  */
+ config DOVE_THERMAL
+ 	tristate "Temperature sensor on Marvell Dove SoCs"
+-	depends on ARCH_DOVE
++	depends on ARCH_DOVE || MACH_DOVE
+ 	depends on OF
+ 	help
+ 	  Support for the Dove thermal sensor driver in the Linux thermal
 -- 
-1.7.10.4
+2.0.0.rc2
 
