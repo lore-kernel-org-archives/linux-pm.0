@@ -1,48 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] power: fixed typo in comment
-Date: Sun, 01 Jun 2014 00:46:36 +0200
-Message-ID: <3171547.isM6f2dnGY@vostro.rjw.lan>
-References: <20140531102601.GA11021@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Subject: [PATCH] thermal: ti-soc-thermal: ti-bandgap.c:  Cleaning up memory leak
+Date: Sun,  1 Jun 2014 13:33:51 +0200
+Message-ID: <1401622431-13554-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51072 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753352AbaEaW30 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 31 May 2014 18:29:26 -0400
-In-Reply-To: <20140531102601.GA11021@localhost.localdomain>
+Received: from mail-we0-f177.google.com ([74.125.82.177]:60968 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbaFALc6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Jun 2014 07:32:58 -0400
+Received: by mail-we0-f177.google.com with SMTP id x48so3916271wes.36
+        for <linux-pm@vger.kernel.org>; Sun, 01 Jun 2014 04:32:57 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Niv Yehezkel <executerx@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On Saturday, May 31, 2014 06:26:01 AM Niv Yehezkel wrote:
-> fixed a trivial comment typo (s/mam/map) in kernel/power/swap.c.
-> 
-> Signed-off-by: Niv Yehezkel <executerx@gmail.com>
+There is a risk for memory leak in when something unexpected happens
+and the function returns.
 
-Applied, thanks!
+This was largely found by using a static code analysis program called cppcheck.
 
-> ---
->  kernel/power/swap.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 8c9a481..aaa3261 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -567,7 +567,7 @@ static int lzo_compress_threadfn(void *data)
->  
->  /**
->   * save_image_lzo - Save the suspend image data compressed with LZO.
-> - * @handle: Swap mam handle to use for saving the image.
-> + * @handle: Swap map handle to use for saving the image.
->   * @snapshot: Image to read data from.
->   * @nr_to_write: Number of pages to save.
->   */
-> 
+Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+---
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+index 3ab12ee..8401d2e 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -1155,8 +1155,9 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
+ 	/* register shadow for context save and restore */
+ 	bgp->regval = devm_kzalloc(&pdev->dev, sizeof(*bgp->regval) *
+ 				   bgp->conf->sensor_count, GFP_KERNEL);
+-	if (!bgp) {
++	if (!bgp->regval) {
+ 		dev_err(&pdev->dev, "Unable to allocate mem for driver ref\n");
++		devm_kfree(&pdev->dev, bgp);
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.10.4
+
