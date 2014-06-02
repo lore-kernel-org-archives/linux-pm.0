@@ -1,32 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
- for !CONFIG_REGULATOR
-Date: Mon, 2 Jun 2014 15:24:05 +0530
-Message-ID: <CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
-References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-	<20140527192923.GC12304@sirena.org.uk>
-	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
-	<20140528173858.GG5099@sirena.org.uk>
-	<CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
-	<20140602095112.GV5099@sirena.org.uk>
+Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency callbacks
+Date: Mon, 2 Jun 2014 15:31:20 +0530
+Message-ID: <CAKohpokeHPfKHBEVqAtm7d+nSDTWM+HwOQt_6BCgU=DCY=trXg@mail.gmail.com>
+References: <cover.1400662383.git.viresh.kumar@linaro.org>
+	<dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>
+	<537E285C.6060608@wwwdotorg.org>
+	<CAKohpomdOEspgfxNR5p=PVLCeSUYcUWZ2cWGGQo0b__ptKiYtw@mail.gmail.com>
+	<53877199.5090009@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:65050 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753007AbaFBJyF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 05:54:05 -0400
-Received: by mail-oa0-f53.google.com with SMTP id m1so4382822oag.40
-        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 02:54:05 -0700 (PDT)
-In-Reply-To: <20140602095112.GV5099@sirena.org.uk>
+Received: from mail-oa0-f52.google.com ([209.85.219.52]:56485 "EHLO
+	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbaFBKBV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 06:01:21 -0400
+Received: by mail-oa0-f52.google.com with SMTP id eb12so4393860oac.11
+        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 03:01:20 -0700 (PDT)
+In-Reply-To: <53877199.5090009@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-On 2 June 2014 15:21, Mark Brown <broonie@kernel.org> wrote:
-> When you say they check for a valid regulator how are they doing that?
-> The stub will come into play if there isn't a dependency on REGULATOR.
+On 29 May 2014 23:12, Stephen Warren <swarren@wwwdotorg.org> wrote:
 
-I meant they fail and quit if regulator_get() failed and so the first parameter
-to regulator_set_voltage() is guaranteed to be valid.
+> E.g. in the following code after the series is applied:
+>
+>>       ret = clk_set_rate(pll_x_clk, rate * 1000);
+>>       /* Restore to earlier frequency on error, i.e. pll_x */
+>>       if (ret)
+>>               pr_err("Failed to change pll_x to %lu\n", rate);
+>>
+>>       ret = clk_set_parent(cpu_clk, pll_x_clk);
+>
+> If the clk_set_rate() failed, we have no idea what the pll_x rate is; I
+> don't think the clock API guarantees that zero HW changes have been made
+> if the function fails. Yet the code switches the CPU clock back to pll_x
+> without attempting to fix the pll_x rate to be the old rate. Perhaps
+> there's not much that can be done here though, since if one
+> clk_set_rate() failed, perhaps the one to fix it will too.
+
+This was the case here with the existing driver as well. CPUFreq core
+expects this today as well and so sends reverse notification in case of
+failures.
+
+> I suspect there are other issues, like switching between pll_p/pllx
+> might not be restored on error
+
+Another example would be useful..
+
+> and the EMC frequency isn't switched back, etc.
+
+It wasn't in the existing code as well and so left it as is..
