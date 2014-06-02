@@ -1,49 +1,46 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency
- callbacks
-Date: Mon, 02 Jun 2014 10:50:20 -0600
-Message-ID: <538CAB4C.9070103@wwwdotorg.org>
-References: <cover.1400662383.git.viresh.kumar@linaro.org>	<dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>	<53877103.8070604@wwwdotorg.org>	<CAKohponsZOpV74+SLMDLy0oCV-j896wA9--bwbwk4GUL59m1ug@mail.gmail.com>	<5388B134.9090307@wwwdotorg.org> <CAKohpokxnyu5qk+Jb+LAfHsoFe0iFAg55k1DPN3PO7t+0obBkg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
+ for !CONFIG_REGULATOR
+Date: Mon, 2 Jun 2014 22:25:18 +0530
+Message-ID: <CAKohpo=4gY42TJ0CcUBarHRnUvFKkXTykTYCfGUnAZ+CFwYE9g@mail.gmail.com>
+References: <20140527192923.GC12304@sirena.org.uk>
+	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+	<20140528173858.GG5099@sirena.org.uk>
+	<CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
+	<20140602095112.GV5099@sirena.org.uk>
+	<CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
+	<20140602100201.GX5099@sirena.org.uk>
+	<CAKohpomj5-tHPkBLMrgGpsDCaCxW-8hGMunMTmJgXGgEgTR=vA@mail.gmail.com>
+	<20140602122332.GA31751@sirena.org.uk>
+	<CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
+	<20140602152014.GL31751@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokxnyu5qk+Jb+LAfHsoFe0iFAg55k1DPN3PO7t+0obBkg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f48.google.com ([209.85.219.48]:36681 "EHLO
+	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013AbaFBQzT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 12:55:19 -0400
+Received: by mail-oa0-f48.google.com with SMTP id g18so4855199oah.7
+        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 09:55:19 -0700 (PDT)
+In-Reply-To: <20140602152014.GL31751@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 
-On 06/02/2014 04:06 AM, Viresh Kumar wrote:
-> On 30 May 2014 21:56, Stephen Warren <swarren@wwwdotorg.org> wrote:
->> ... [This patch causes issues on Tegra20] ...
->> I believe the issue is this:
-...
-> Okay, that was very helpful..
-> 
-> What about this ? (Attached for testing) :
-> 
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Fri May 16 14:22:40 2014 +0530
-> 
->     cpufreq: Tegra: implement intermediate frequency callbacks
-> 
->     Tegra had always been switching to intermediate frequency (pll_p_clk) since
->     ever. CPUFreq core has better support for handling notifications for these
->     frequencies and so we can adapt Tegra's driver to it.
-> 
->     Also do a WARN() if clk_set_parent() fails while moving back to pll_x as we
->     should have atleast restored to earlier frequency on error.
+On 2 June 2014 20:50, Mark Brown <broonie@kernel.org> wrote:
+> No, not at all and I don't think it applies to the clock API either -
+> it's got similar issues with real physical clocks not always supporting
+> all operations.  Consider for a moment what happens if we try to set and
+> then use a clock rate ona fixed clock.
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
+Okay, so the patch 1/3 isn't enough as we need to fix other drivers as
+well which are expected to work with CONFIG_REGULATOR=n. That
+would be some work and will try to send a patchset for that..
 
-I'd prefer a couple of changes though:
+As Rafael has asked you to apply the patches, can you please apply
+patch 2-3 for now?
 
-a) Rename "pll_p_clk_count" to better describe what it represents. It
-represents the fact that pll_x has been prepare_enabled, so why not call
-it "pll_x_prepared"?
-
-b) I think it should be a Boolean not an integer; there should never be
-a case where the value is not 0 or 1. The only way that could happen is
-if the cpufreq core called tegra_target_intermediate() out of sequence
-too many times.
+--
+viresh
