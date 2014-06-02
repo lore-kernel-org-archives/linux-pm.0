@@ -1,106 +1,49 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 7/7] ARM: EXYNOS: cpuidle: add secure firmware support
- to AFTR mode code
-Date: Mon, 02 Jun 2014 18:28:55 +0200
-Message-ID: <538CA647.8040207@linaro.org>
-References: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com> <1401712543-14281-8-git-send-email-b.zolnierkie@samsung.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V4 3/3] cpufreq: Tegra: implement intermediate frequency
+ callbacks
+Date: Mon, 02 Jun 2014 10:50:20 -0600
+Message-ID: <538CAB4C.9070103@wwwdotorg.org>
+References: <cover.1400662383.git.viresh.kumar@linaro.org>	<dc2702973028425e3ded689a6da227658fb914c4.1400662383.git.viresh.kumar@linaro.org>	<53877103.8070604@wwwdotorg.org>	<CAKohponsZOpV74+SLMDLy0oCV-j896wA9--bwbwk4GUL59m1ug@mail.gmail.com>	<5388B134.9090307@wwwdotorg.org> <CAKohpokxnyu5qk+Jb+LAfHsoFe0iFAg55k1DPN3PO7t+0obBkg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1401712543-14281-8-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokxnyu5qk+Jb+LAfHsoFe0iFAg55k1DPN3PO7t+0obBkg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Doug Anderson <dianders@chromium.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/02/2014 02:35 PM, Bartlomiej Zolnierkiewicz wrote:
-> * Use do_idle firmware method instead of cpu_do_idle() on boards with
->    secure firmware enabled.
->
-> * Use sysram_ns_base_addr + 0x24 address for exynos_boot_vector_addr(=
-)
->    and sysram_ns_base_addr + 0x20 one for exynos_boot_vector_flag() o=
-n
->    boards with secure firmware enabled.
->
-> This patch fixes hang on an attempt to enter AFTR mode for TRATS2
-> board (which uses EXYNOS4412 SoC with secure firmware enabled).
->
-> This patch shouldn't cause any functionality changes on boards that
-> don't use secure firmware.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
->   arch/arm/mach-exynos/pm.c        | 8 ++++++--
->   drivers/cpuidle/cpuidle-exynos.c | 7 ++++++-
->   2 files changed, 12 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index 0fb9a5a..62a0a5e 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -169,7 +169,9 @@ int exynos_cluster_power_state(int cluster)
->
->   static inline void __iomem *exynos_boot_vector_addr(void)
->   {
-> -	if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
-> +	if (firmware_run())
-> +		return sysram_ns_base_addr + 0x24;
-> +	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
->   		return S5P_INFORM7;
->   	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_0)
->   		return sysram_base_addr + 0x24;
-> @@ -178,7 +180,9 @@ static inline void __iomem *exynos_boot_vector_ad=
-dr(void)
->
->   static inline void __iomem *exynos_boot_vector_flag(void)
->   {
-> -	if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
-> +	if (firmware_run())
-> +		return sysram_ns_base_addr + 0x20;
-> +	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
->   		return S5P_INFORM6;
->   	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_0)
->   		return sysram_base_addr + 0x20;
-> diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuid=
-le-exynos.c
-> index 7c01512..f90a4a0 100644
-> --- a/drivers/cpuidle/cpuidle-exynos.c
-> +++ b/drivers/cpuidle/cpuidle-exynos.c
-> @@ -17,13 +17,18 @@
->   #include <asm/proc-fns.h>
->   #include <asm/suspend.h>
->   #include <asm/cpuidle.h>
-> +#include <asm/firmware.h>
->
->   static void (*exynos_enter_aftr)(void);
->
->   static int idle_finisher(unsigned long flags)
->   {
->   	exynos_enter_aftr();
-> -	cpu_do_idle();
-> +	if (firmware_run())
-> +		/* no need to check the return value on EXYNOS SoCs */
-> +		call_firmware_op(do_idle, FW_DO_IDLE_AFTR);
-> +	else
-> +		cpu_do_idle();
+On 06/02/2014 04:06 AM, Viresh Kumar wrote:
+> On 30 May 2014 21:56, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> ... [This patch causes issues on Tegra20] ...
+>> I believe the issue is this:
+...
+> Okay, that was very helpful..
+> 
+> What about this ? (Attached for testing) :
+> 
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Fri May 16 14:22:40 2014 +0530
+> 
+>     cpufreq: Tegra: implement intermediate frequency callbacks
+> 
+>     Tegra had always been switching to intermediate frequency (pll_p_clk) since
+>     ever. CPUFreq core has better support for handling notifications for these
+>     frequencies and so we can adapt Tegra's driver to it.
+> 
+>     Also do a WARN() if clk_set_parent() fails while moving back to pll_x as we
+>     should have atleast restored to earlier frequency on error.
 
-Why not move this code into the exynos_enter_aftr() function, so=20
-preventing more dependency ?
+Tested-by: Stephen Warren <swarren@nvidia.com>
 
+I'd prefer a couple of changes though:
 
->   	return 1;
->   }
->
+a) Rename "pll_p_clk_count" to better describe what it represents. It
+represents the fact that pll_x has been prepare_enabled, so why not call
+it "pll_x_prepared"?
 
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+b) I think it should be a Boolean not an integer; there should never be
+a case where the value is not 0 or 1. The only way that could happen is
+if the cpufreq core called tegra_target_intermediate() out of sequence
+too many times.
