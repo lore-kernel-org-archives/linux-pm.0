@@ -1,56 +1,51 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH v2 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12
- for AFTR mode code
-Date: Mon, 02 Jun 2014 15:10:05 +0200
-Message-ID: <538C77AD.1000801@gmail.com>
-References: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com> <1401712543-14281-7-git-send-email-b.zolnierkie@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
+ for !CONFIG_REGULATOR
+Date: Mon, 2 Jun 2014 18:44:35 +0530
+Message-ID: <CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
+References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
+	<20140527192923.GC12304@sirena.org.uk>
+	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+	<20140528173858.GG5099@sirena.org.uk>
+	<CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
+	<20140602095112.GV5099@sirena.org.uk>
+	<CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
+	<20140602100201.GX5099@sirena.org.uk>
+	<CAKohpomj5-tHPkBLMrgGpsDCaCxW-8hGMunMTmJgXGgEgTR=vA@mail.gmail.com>
+	<20140602122332.GA31751@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1401712543-14281-7-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140602122332.GA31751@sirena.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 2 June 2014 17:53, Mark Brown <broonie@kernel.org> wrote:
+> If the consumer tried to set a voltage presumably it cares if that
+> voltage was set - for example if your cpufreq driver tries to increase
+> the voltage of a core supply so that it can then raise the frequency the
+> user is going to be upset if the voltage was not actually raised and it
+> goes off and raises the clock rate causing the system to become unstable.
 
-On 02.06.2014 14:35, Bartlomiej Zolnierkiewicz wrote:
-> Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
-> mode code.  Without this setup AFTR mode doesn't show any benefit
-> over WFI one.  When this setup is applied AFTR mode reduces power
-> consumption by ~12% (as measured on Trats2 board).
-> 
-> This change is a preparation for adding secure firmware support to
-> EXYNOS cpuidle driver.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
->  arch/arm/mach-exynos/pm.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index aeff99e..0fb9a5a 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -456,6 +456,10 @@ static int exynos_cpu_pm_notifier(struct notifier_block *self,
->  	case CPU_PM_ENTER:
->  		if (cpu == 0) {
->  			exynos_pm_central_suspend();
-> +			if (soc_is_exynos4212() || soc_is_exynos4412())
-> +				__raw_writel(S5P_USE_STANDBY_WFI0 |
-> +					     S5P_USE_STANDBY_WFE0,
-> +					     S5P_CENTRAL_SEQ_OPTION);
+If the driver continued despite getting regulator as NULL, it means that
+regulator isn't a MUST for it. For example a CPUFreq driver may work
+with or without a regulator.
 
-I wonder whether this isn't required on any Exynos SoC in general, as
-this mask decides which STANDBY_WFI/WFE signals are considered before
-entering the lower power state.
+Now if the dummy calls return *error* for some cases then these driver
+will have to do
+if(xyz)
+    API-call()..
 
-Also you should check the behavior with Krzysztof's patch adding support
-for delayed reset assertion, which should cause WFI/WFE signals of CPUs
-powered down to be kept asserted.
+And so dummy APIs like clk_set_rate(), clk_get_rate(),
+regulator_set_voltage() must return zero..
 
-Best regards,
-Tomasz
+To get rid of this in drivers these dummy routines *must* behave as
+they passed, if the drivers really care about them then they must
+quit as soon as regulator_get() returned NULL.
+
+This is why we have such implementations in clk framework which are
+very well thought earlier.
+
+Does this make sense?
