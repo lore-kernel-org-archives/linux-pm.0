@@ -1,57 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 1/3] regulator: return -EINVAL from regulator_set_voltage() for !CONFIG_REGULATOR
-Date: Mon, 02 Jun 2014 14:15:58 +0200
-Message-ID: <5936444.Yl1Pz41PpD@vostro.rjw.lan>
-References: <788accde56086078d69d3eba0d913114315de43a.1401693980.git.viresh.kumar@linaro.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12 for
+ AFTR mode code
+Date: Mon, 02 Jun 2014 14:08:29 +0200
+Message-ID: <2762097.QhkViWyNLQ@amdc1032>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com>
+ <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com>
+ <5375D44F.7000505@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52993 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754519AbaFBL6o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 07:58:44 -0400
-In-Reply-To: <788accde56086078d69d3eba0d913114315de43a.1401693980.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <5375D44F.7000505@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, edubezval@gmail.com, pavel@ucw.cz, lgirdwood@gmail.com, broonie@kernel.org
 
-On Monday, June 02, 2014 12:59:23 PM Viresh Kumar wrote:
-> Currently regulator_set_voltage() returns zero when support for regulators isn't
-> present in kernel, i.e. CONFIG_REGULATOR=n.
-> 
-> Make it return -EINVAL to propagate error instead of success here.
-> Audit of all users of this routine is done to make sure nothing breaks due to
-> this change.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Well, I'd say this patch series is for Mark and I'm fine with patch [3/3].
+Hi,
 
-Thanks!
+On Friday, May 16, 2014 11:03:11 AM Daniel Lezcano wrote:
+> On 05/05/2014 12:57 PM, Bartlomiej Zolnierkiewicz wrote:
+> > Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
+> > mode code.  Without this setup AFTR mode doesn't show any benefit
+> > over WFI one.  When this setup is applied AFTR mode reduces power
+> > consumption by ~12% (as measured on Trats2 board).
+> >
+> > This change is a preparation for adding secure firmware support to
+> > EXYNOS cpuidle driver.
+> >
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > ---
+> >   arch/arm/mach-exynos/pm.c | 4 ++++
+> >   1 file changed, 4 insertions(+)
+> >
+> > diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> > index 18f6bf8..3922968 100644
+> > --- a/arch/arm/mach-exynos/pm.c
+> > +++ b/arch/arm/mach-exynos/pm.c
+> > @@ -391,6 +391,10 @@ static int exynos_cpu_pm_notifier(struct notifier_block *self,
+> >   	case CPU_PM_ENTER:
+> >   		if (cpu == 0) {
+> >   			exynos_pm_central_suspend();
+> > +			if (soc_is_exynos4212() || soc_is_exynos4412())
+> > +				__raw_writel(S5P_USE_STANDBY_WFI0 |
+> > +					     S5P_USE_STANDBY_WFE0,
+> > +					     S5P_CENTRAL_SEQ_OPTION);
+> 
+> Why not put this code in the exynos_enter_aftr() ?
 
-> ---
-> V1->V2: - New patch as suggested by Mark.
-> 
->  include/linux/regulator/consumer.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
-> index 1a4a8c1..28fa089 100644
-> --- a/include/linux/regulator/consumer.h
-> +++ b/include/linux/regulator/consumer.h
-> @@ -394,7 +394,7 @@ static inline void regulator_bulk_free(int num_consumers,
->  static inline int regulator_set_voltage(struct regulator *regulator,
->  					int min_uV, int max_uV)
->  {
-> -	return 0;
-> +	return -EINVAL;
->  }
->  
->  static inline int regulator_get_voltage(struct regulator *regulator)
-> 
+I would prefer to keep this code close to exynos_pm_central_suspend()
+because exynos_pm_suspend() (which calls exynos_pm_central_suspend()
+too) also contains S5P_USE_STANDBY_WF[I,E]0 setting code (done for all
+SoCs).  If possible I would like to make this code common for AFTR &
+suspend in the future (once it is tested on Exynos4210 and Exynos5250)
+by moving S5P_USE_STANDBY_WF[I,E]0 setting to exynos_pm_central_suspend()
+and doing it for all SoCs.  Are you okay with this?
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> >   			exynos_cpu_save_register();
+> >   		}
+> >   		break;
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
