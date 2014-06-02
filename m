@@ -1,99 +1,85 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [PATCH v1 6/6] ACPI: thermal: processor: Use the generic cpufreq
- infrastructure
-Date: Mon, 2 Jun 2014 11:20:48 +0100
-Message-ID: <20140602102047.GB2795@e104805>
-References: <1401351334-11210-1-git-send-email-amit.daniel@samsung.com>
- <1401351334-11210-7-git-send-email-amit.daniel@samsung.com>
- <20140529124248.GC2593@e104805>
- <CADGdYn7FZCjhzbFMtNPFtQV_naQhVk+nR1VFNH88M92_NQmfsA@mail.gmail.com>
+From: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
+Subject: [RFC] PM / Runtime: Make autosuspend_delay == 0 work as intended
+Date: Mon,  2 Jun 2014 12:29:12 +0200
+Message-ID: <1401704952-32046-1-git-send-email-bjorn@mork.no>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn7FZCjhzbFMtNPFtQV_naQhVk+nR1VFNH88M92_NQmfsA@mail.gmail.com>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Amit Kachhap <amit.kachhap@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from canardo.mork.no ([148.122.252.1]:47758 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753610AbaFBK3V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Jun 2014 06:29:21 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
 
-On Mon, Jun 02, 2014 at 10:21:48AM +0100, Amit Kachhap wrote:
-> Hi Javi,
-> 
-> On 5/29/14, Javi Merino <javi.merino@arm.com> wrote:
-> > Hi Amit,
-> >
-> > On Thu, May 29, 2014 at 09:15:34AM +0100, Amit Daniel Kachhap wrote:
-> >> This patch upgrades the ACPI cpufreq cooling portions to use the generic
-> >> cpufreq cooling infrastructure. There should not be any functionality
-> >> related changes as the same behaviour is provided by the generic
-> >> cpufreq APIs with the notifier mechanism.
-> >>
-> >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> >> ---
-> >>  drivers/acpi/processor_driver.c  |    6 +-
-> >>  drivers/acpi/processor_thermal.c |  235
-> >> ++++++++++++++++++--------------------
-> >>  include/acpi/processor.h         |    3 +-
-> >>  3 files changed, 115 insertions(+), 129 deletions(-)
-> >>
-> >> diff --git a/drivers/acpi/processor_driver.c
-> >> b/drivers/acpi/processor_driver.c
-> >> index 7f70f31..10aba4a 100644
-> >> --- a/drivers/acpi/processor_driver.c
-> >> +++ b/drivers/acpi/processor_driver.c
-> >> @@ -36,6 +36,7 @@
-> >>  #include <linux/cpuidle.h>
-> >>  #include <linux/slab.h>
-> >>  #include <linux/acpi.h>
-> >> +#include <linux/cpu_cooling.h>
-> >>
-> >>  #include <acpi/processor.h>
-> >>
-> >> @@ -178,8 +179,7 @@ static int __acpi_processor_start(struct acpi_device
-> >> *device)
-> >>         if (!cpuidle_get_driver() || cpuidle_get_driver() ==
-> >> &acpi_idle_driver)
-> >>                 acpi_processor_power_init(pr);
-> >>
-> >> -       pr->cdev = thermal_cooling_device_register("Processor", device,
-> >> -
-> >> &processor_cooling_ops);
-> >> +       pr->cdev = acpi_processor_cooling_register(device);
-> >
-> > With this you have removed the only cooling device whose type was
-> > "Processor".  There's special code for dealing with this cooling
-> > device in drivers/thermal/thermal_core.c:passive_store():
-> >
-> > 		list_for_each_entry(cdev, &thermal_cdev_list, node) {
-> > 			if (!strncmp("Processor", cdev->type,
-> > 				     sizeof("Processor")))
-> > 				thermal_zone_bind_cooling_device(tz,
-> > 						THERMAL_TRIPS_NONE, cdev,
-> > 						THERMAL_NO_LIMIT,
-> > 						THERMAL_NO_LIMIT);
-> > 		}
-> > 		mutex_unlock(&thermal_list_lock);
-> > 		if (!tz->passive_delay)
-> >
-> > With your change, that code is now "dead" as it can't do anything.  No
-> > I don't know what should you do with it, either remove it or make it
-> > match the cpufreq cooling device.  But this patch should deal with
-> > that code as well.
-> nice catch. I somehow missed modifying this section.
-> I think the following changes should fix this,
-> -                       if (!strncmp("Processor", cdev->type,
-> -                                    sizeof("Processor")))
-> +                       if (!strncmp("thermal-cpufreq", cdev->type,
-> +                                    sizeof("thermal-cpufreq")))
->                                 thermal_zone_bind_cooling_device(tz,
-> 
+OK, I don't like the result I came up with here.  So I am sending this
+as an RFC in the hope that smarter people than me can come up with
+something nicer. I hope the patch illustrates my problem:  While
+trying do debug some runtime suspend issues in a driver, I temporarily
+set autosuspend to 0 to deliberately make it aggressive enough for my
+driver to fail. I was surprised to learn than this effectively
+*disabled* autosuspend if the driver ever return -EBUSY from the
+runtime suspend callback.  I believe that is too unexpected to be
+acceptable. Either we should not allow 0, or we should make it work
+at least as well as 1.
 
-That should do it.  I don't really understand why this code is
-specifically looking for ACPI processor cooling devices but I guess
-that's the least disrupting change you can make.
 
-Cheers,
-Javi
+Bj=C3=B8rn
+8<--------------
+We should always reschedule if the driver runtime suspend callback
+returns -EBUSY and the driver updated the last_busy time.  But if
+autosuspend_delay is 0, then this cannot be detected because
+pm_runtime_autosuspend_expiration() always returns 0.
+
+=46ix by rescheduling if autosuspend_delay is 0.
+
+Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
+---
+ drivers/base/power/runtime.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.=
+c
+index 67c7938e430b..c52e630a2e54 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -421,6 +421,7 @@ static int rpm_suspend(struct device *dev, int rpmf=
+lags)
+ {
+ 	int (*callback)(struct device *);
+ 	struct device *parent =3D NULL;
++	unsigned long retry_delay =3D 0;
+ 	int retval;
+=20
+ 	trace_rpm_suspend(dev, rpmflags);
+@@ -441,7 +442,7 @@ static int rpm_suspend(struct device *dev, int rpmf=
+lags)
+ 	/* If the autosuspend_delay time hasn't expired yet, reschedule. */
+ 	if ((rpmflags & RPM_AUTO)
+ 	    && dev->power.runtime_status !=3D RPM_SUSPENDING) {
+-		unsigned long expires =3D pm_runtime_autosuspend_expiration(dev);
++		unsigned long expires =3D pm_runtime_autosuspend_expiration(dev) + r=
+etry_delay;
+=20
+ 		if (expires !=3D 0) {
+ 			/* Pending requests need to be canceled. */
+@@ -571,8 +572,11 @@ static int rpm_suspend(struct device *dev, int rpm=
+flags)
+ 		 * reschedule another autosuspend.
+ 		 */
+ 		if ((rpmflags & RPM_AUTO) &&
+-		    pm_runtime_autosuspend_expiration(dev) !=3D 0)
++		    (pm_runtime_autosuspend_expiration(dev) !=3D 0 ||
++		     ACCESS_ONCE(dev->power.autosuspend_delay) =3D=3D 0)) {
++			retry_delay++;
+ 			goto repeat;
++		}
+ 	} else {
+ 		pm_runtime_cancel_pending(dev);
+ 	}
+--=20
+1.7.10.4
 
