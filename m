@@ -1,95 +1,85 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] PM / Runtime: Make autosuspend_delay == 0 work as intended
-Date: Mon, 2 Jun 2014 11:35:29 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1406021119020.1280-100000@iolanthe.rowland.org>
-References: <87ppir4h4c.fsf@nemi.mork.no>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12
+ for AFTR mode code
+Date: Mon, 02 Jun 2014 18:05:04 +0200
+Message-ID: <538CA0B0.2030200@linaro.org>
+References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com> <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com> <5375D44F.7000505@linaro.org> <2762097.QhkViWyNLQ@amdc1032>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:42557 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752390AbaFBPfb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 11:35:31 -0400
-In-Reply-To: <87ppir4h4c.fsf@nemi.mork.no>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <2762097.QhkViWyNLQ@amdc1032>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Mon, 2 Jun 2014, Bj=C3=B8rn Mork wrote:
+On 06/02/2014 02:08 PM, Bartlomiej Zolnierkiewicz wrote:
+>
+> Hi,
+>
+> On Friday, May 16, 2014 11:03:11 AM Daniel Lezcano wrote:
+>> On 05/05/2014 12:57 PM, Bartlomiej Zolnierkiewicz wrote:
+>>> Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
+>>> mode code.  Without this setup AFTR mode doesn't show any benefit
+>>> over WFI one.  When this setup is applied AFTR mode reduces power
+>>> consumption by ~12% (as measured on Trats2 board).
+>>>
+>>> This change is a preparation for adding secure firmware support to
+>>> EXYNOS cpuidle driver.
+>>>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>>> ---
+>>>    arch/arm/mach-exynos/pm.c | 4 ++++
+>>>    1 file changed, 4 insertions(+)
+>>>
+>>> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+>>> index 18f6bf8..3922968 100644
+>>> --- a/arch/arm/mach-exynos/pm.c
+>>> +++ b/arch/arm/mach-exynos/pm.c
+>>> @@ -391,6 +391,10 @@ static int exynos_cpu_pm_notifier(struct notif=
+ier_block *self,
+>>>    	case CPU_PM_ENTER:
+>>>    		if (cpu =3D=3D 0) {
+>>>    			exynos_pm_central_suspend();
+>>> +			if (soc_is_exynos4212() || soc_is_exynos4412())
+>>> +				__raw_writel(S5P_USE_STANDBY_WFI0 |
+>>> +					     S5P_USE_STANDBY_WFE0,
+>>> +					     S5P_CENTRAL_SEQ_OPTION);
+>>
+>> Why not put this code in the exynos_enter_aftr() ?
+>
+> I would prefer to keep this code close to exynos_pm_central_suspend()
+> because exynos_pm_suspend() (which calls exynos_pm_central_suspend()
+> too) also contains S5P_USE_STANDBY_WF[I,E]0 setting code (done for al=
+l
+> SoCs).  If possible I would like to make this code common for AFTR &
+> suspend in the future (once it is tested on Exynos4210 and Exynos5250=
+)
+> by moving S5P_USE_STANDBY_WF[I,E]0 setting to exynos_pm_central_suspe=
+nd()
+> and doing it for all SoCs.  Are you okay with this?
 
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->=20
-> > Alan has to see this in the first place.
-> >
-> > On Monday, June 02, 2014 12:29:12 PM Bj=C3=B8rn Mork wrote:
-> >> OK, I don't like the result I came up with here.  So I am sending =
-this
-> >> as an RFC in the hope that smarter people than me can come up with
-> >> something nicer. I hope the patch illustrates my problem:  While
-> >> trying do debug some runtime suspend issues in a driver, I tempora=
-rily
-> >> set autosuspend to 0 to deliberately make it aggressive enough for=
- my
-> >> driver to fail. I was surprised to learn than this effectively
-> >> *disabled* autosuspend if the driver ever return -EBUSY from the
-> >> runtime suspend callback.
-> >
-> > That results from pm_runtime_autosuspend_expiration() always return=
-ing 0 in
-> > that case.
->=20
-> Yup.
+Yeah, no problem.
 
-> > Well, as I said.
-> >
-> > Perhaps pm_runtime_autosuspend_expiration() could simply treat
-> > power.autosuspend_delay equal to 0 in a special way, but then what =
-about
-> > power.autosuspend_delay equal to 1?
->=20
-> Is that going to cause similar problems? Hmm, I guess it is if the
-> callback takes so long that the timeout is reached when we get here?
->=20
-> In which cases do you *not* want to retry runtime suspend on -EBUSY f=
-rom
-> the driver callback? If you don't retry, then the device will not
-> runtime suspend at all until the next time the driver updates last_bu=
-sy.
-> And if the driver always is busy some time after such updates, then
-> runtime suspend is effectively disabled.
 
-We don't want to get into a tight retry loop.  That's what I was trying
-to avoid.  Notice that although the comment mentions last_busy being
-updated, the code doesn't actually look at last_busy.  Instead, it
-looks to see if the new expiration time is in the future (which won't
-happen unless last_busy gets updated) -- that's how it avoids going
-into a tight loop.
+>>>    			exynos_cpu_save_register();
+>>>    		}
+>>>    		break;
+>
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+>
 
-> Should drivers just update last_busy more agressively, and make sure =
-to
-> update it both when starting some hardware transaction and when
-> finishing it? That would make the suspend callback run again when the
-> hardware is not busy anymore, and would probably make stuff work with=
-out
-> any PM core changes.
 
-We want to minimize the amount of work that drivers need to do.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-I like your idea of adding an explicit retry delay.  In fact, I would=20
-like to go farther and make the delay automatically back off=20
-exponentially.
-
-How about something like this?  Let t =3D jiffies - last_busy.  If t <=3D=
- 1=20
-ms then set retry_delay to 1 ms, otherwise set retry_delay to min(t*2,=20
-1000 ms).  Or even use a larger cap, such as 60 s.
-
-Alan Stern
-
-PS: You don't need to use ACCESS_ONCE the way you did.  It's important
-only when the same value is used several times and you want the
-compiler to store a local copy instead of re-reading the original (in
-case the original gets changed by another CPU).
-
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
