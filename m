@@ -1,34 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
- for !CONFIG_REGULATOR
-Date: Mon, 2 Jun 2014 12:50:59 +0530
-Message-ID: <CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
-References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-	<20140527192923.GC12304@sirena.org.uk>
-	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
-	<20140528173858.GG5099@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH V2 1/3] regulator: return -EINVAL from regulator_set_voltage() for !CONFIG_REGULATOR
+Date: Mon,  2 Jun 2014 12:59:23 +0530
+Message-ID: <788accde56086078d69d3eba0d913114315de43a.1401693980.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f47.google.com ([209.85.219.47]:63637 "EHLO
-	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796AbaFBHVA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 03:21:00 -0400
-Received: by mail-oa0-f47.google.com with SMTP id i7so4224939oag.20
-        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 00:20:59 -0700 (PDT)
-In-Reply-To: <20140528173858.GG5099@sirena.org.uk>
+Received: from mail-qa0-f51.google.com ([209.85.216.51]:49501 "EHLO
+	mail-qa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbaFBH3k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 03:29:40 -0400
+Received: by mail-qa0-f51.google.com with SMTP id w8so2219082qac.10
+        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 00:29:40 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, edubezval@gmail.com, pavel@ucw.cz, lgirdwood@gmail.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 28 May 2014 23:08, Mark Brown <broonie@kernel.org> wrote:
-> Whatever - I don't think the particular code makes any practical
-> difference.  We would need to audit existing users who don't have a
-> REGULATOR dependency for breakage though.
+Currently regulator_set_voltage() returns zero when support for regulators isn't
+present in kernel, i.e. CONFIG_REGULATOR=n.
 
-I tried auditing all 29 files which had this symbol: regulator_set_voltage
-and couldn't find anything which might break with the proposed change.
+Make it return -EINVAL to propagate error instead of success here.
+Audit of all users of this routine is done to make sure nothing breaks due to
+this change.
 
-Either these are making sure that we have a valid regulator or they have
-code inside #ifdef CONFIG_REGULATOR ..
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2: - New patch as suggested by Mark.
+
+ include/linux/regulator/consumer.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
+index 1a4a8c1..28fa089 100644
+--- a/include/linux/regulator/consumer.h
++++ b/include/linux/regulator/consumer.h
+@@ -394,7 +394,7 @@ static inline void regulator_bulk_free(int num_consumers,
+ static inline int regulator_set_voltage(struct regulator *regulator,
+ 					int min_uV, int max_uV)
+ {
+-	return 0;
++	return -EINVAL;
+ }
+ 
+ static inline int regulator_get_voltage(struct regulator *regulator)
+-- 
+2.0.0.rc2
+
