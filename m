@@ -1,46 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
- for !CONFIG_REGULATOR
-Date: Mon, 2 Jun 2014 22:25:18 +0530
-Message-ID: <CAKohpo=4gY42TJ0CcUBarHRnUvFKkXTykTYCfGUnAZ+CFwYE9g@mail.gmail.com>
-References: <20140527192923.GC12304@sirena.org.uk>
-	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
-	<20140528173858.GG5099@sirena.org.uk>
-	<CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
-	<20140602095112.GV5099@sirena.org.uk>
-	<CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
-	<20140602100201.GX5099@sirena.org.uk>
-	<CAKohpomj5-tHPkBLMrgGpsDCaCxW-8hGMunMTmJgXGgEgTR=vA@mail.gmail.com>
-	<20140602122332.GA31751@sirena.org.uk>
-	<CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
-	<20140602152014.GL31751@sirena.org.uk>
+From: Sebastian Capella <sebastian.capella@linaro.org>
+Subject: Re: [PATCH v6 2/2] ARM hibernation / suspend-to-disk
+Date: Mon, 2 Jun 2014 09:57:35 -0700
+Message-ID: <CADHgK6sHzzXETU3UYYtag_+EdPj_v9utMeMC7+Y1OofyrULAoQ@mail.gmail.com>
+References: <1393545478-14908-1-git-send-email-sebastian.capella@linaro.org>
+	<1393545478-14908-3-git-send-email-sebastian.capella@linaro.org>
+	<530FD3CF.2040900@codeaurora.org>
+	<530FEAA9.7040601@ti.com>
+	<530FF245.7070300@codeaurora.org>
+	<20140228102018.GP21483@n2100.arm.linux.org.uk>
+	<20140228181731.29118.41809@capellas-linux>
+	<53168bd7.426b440a.14d5.7306@mx.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:36681 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752013AbaFBQzT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 12:55:19 -0400
-Received: by mail-oa0-f48.google.com with SMTP id g18so4855199oah.7
-        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 09:55:19 -0700 (PDT)
-In-Reply-To: <20140602152014.GL31751@sirena.org.uk>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:37207 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbaFBQ5g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 12:57:36 -0400
+Received: by mail-ob0-f181.google.com with SMTP id wm4so4896712obc.12
+        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 09:57:36 -0700 (PDT)
+In-Reply-To: <53168bd7.426b440a.14d5.7306@mx.google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
+To: Sebastian Capella <sebastian.capella@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, sebcape@gmail.com
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Nicolas Pitre <nico@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Will Deacon <will.deacon@arm.com>, Jonathan Austin <jonathan.austin@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russ Dill <Russ.Dill@ti.com>
 
-On 2 June 2014 20:50, Mark Brown <broonie@kernel.org> wrote:
-> No, not at all and I don't think it applies to the clock API either -
-> it's got similar issues with real physical clocks not always supporting
-> all operations.  Consider for a moment what happens if we try to set and
-> then use a clock rate ona fixed clock.
+Want to log my new email with this thread in case any questions arise
+later and people have trouble finding me.
 
-Okay, so the patch 1/3 isn't enough as we need to fix other drivers as
-well which are expected to work with CONFIG_REGULATOR=n. That
-would be some work and will try to send a patchset for that..
+sebcape@gmail.com
 
-As Rafael has asked you to apply the patches, can you please apply
-patch 2-3 for now?
+Thanks!
 
---
-viresh
+Sebastian Capella
