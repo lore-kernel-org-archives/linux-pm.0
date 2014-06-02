@@ -1,170 +1,118 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 2/2] cpufreq: Tegra: implement intermediate frequency callbacks
-Date: Mon,  2 Jun 2014 22:49:29 +0530
-Message-ID: <41e5e755638334388a14821a625b703a1f851185.1401728995.git.viresh.kumar@linaro.org>
-References: <cover.1401728994.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1401728994.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1401728994.git.viresh.kumar@linaro.org>
-References: <cover.1401728994.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org, linux@arm.linux.org.uk, nicolas.pitre@linaro.org, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: [PATCH] thermal: document struct thermal_zone_device and thermal_governor
+Date: Mon,  2 Jun 2014 18:25:56 +0100
+Message-ID: <1401729956-26122-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:38776 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbaFBR0d (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 13:26:33 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Tegra had always been switching to intermediate frequency (pll_p_clk) since
-ever. CPUFreq core has better support for handling notifications for these
-frequencies and so we can adapt Tegra's driver to it.
+Document struct thermal_zone_device and struct thermal_governor fields
+and their use by the thermal framework code.
 
-Also do a WARN() if clk_set_parent() fails while moving back to pll_x as we
-should have atleast restored to earlier frequency on error.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
 
-Tested-by: Stephen Warren <swarren@nvidia.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 97 ++++++++++++++++++++++++++---------------
- 1 file changed, 62 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index 6e774c6..a5fbc0a 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -45,46 +45,51 @@ static struct clk *cpu_clk;
- static struct clk *pll_x_clk;
- static struct clk *pll_p_clk;
- static struct clk *emc_clk;
-+static bool pll_x_prepared;
- 
--static int tegra_cpu_clk_set_rate(unsigned long rate)
-+static unsigned int tegra_get_intermediate(struct cpufreq_policy *policy,
-+					   unsigned int index)
-+{
-+	unsigned int ifreq = clk_get_rate(pll_p_clk) / 1000;
-+
-+	/*
-+	 * Don't switch to intermediate freq if:
-+	 * - we are already at it, i.e. policy->cur == ifreq
-+	 * - index corresponds to ifreq
-+	 */
-+	if ((freq_table[index].frequency == ifreq) || (policy->cur == ifreq))
-+		return 0;
-+
-+	return ifreq;
-+}
-+
-+static int tegra_target_intermediate(struct cpufreq_policy *policy,
-+				     unsigned int index)
- {
- 	int ret;
- 
- 	/*
- 	 * Take an extra reference to the main pll so it doesn't turn
--	 * off when we move the cpu off of it
-+	 * off when we move the cpu off of it as enabling it again while we
-+	 * switch to it from tegra_target() would take additional time. Though
-+	 * when target-freq is intermediate freq, we don't need to take this
-+	 * reference.
- 	 */
- 	clk_prepare_enable(pll_x_clk);
- 
- 	ret = clk_set_parent(cpu_clk, pll_p_clk);
--	if (ret) {
--		pr_err("Failed to switch cpu to clock pll_p\n");
--		goto out;
--	}
--
--	if (rate == clk_get_rate(pll_p_clk))
--		goto out;
--
--	ret = clk_set_rate(pll_x_clk, rate);
--	if (ret) {
--		pr_err("Failed to change pll_x to %lu\n", rate);
--		goto out;
--	}
--
--	ret = clk_set_parent(cpu_clk, pll_x_clk);
--	if (ret) {
--		pr_err("Failed to switch cpu to clock pll_x\n");
--		goto out;
--	}
-+	if (ret)
-+		clk_disable_unprepare(pll_x_clk);
-+	else
-+		pll_x_prepared = true;
- 
--out:
--	clk_disable_unprepare(pll_x_clk);
- 	return ret;
- }
- 
- static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- {
- 	unsigned long rate = freq_table[index].frequency;
-+	unsigned int ifreq = clk_get_rate(pll_p_clk) / 1000;
- 	int ret = 0;
- 
- 	/*
-@@ -98,10 +103,30 @@ static int tegra_target(struct cpufreq_policy *policy, unsigned int index)
- 	else
- 		clk_set_rate(emc_clk, 100000000);  /* emc 50Mhz */
- 
--	ret = tegra_cpu_clk_set_rate(rate * 1000);
-+	/*
-+	 * target freq == pll_p, don't need to take extra reference to pll_x_clk
-+	 * as it isn't used anymore.
-+	 */
-+	if (rate == ifreq)
-+		return clk_set_parent(cpu_clk, pll_p_clk);
-+
-+	ret = clk_set_rate(pll_x_clk, rate * 1000);
-+	/* Restore to earlier frequency on error, i.e. pll_x */
- 	if (ret)
--		pr_err("cpu-tegra: Failed to set cpu frequency to %lu kHz\n",
--			rate);
-+		pr_err("Failed to change pll_x to %lu\n", rate);
-+
-+	ret = clk_set_parent(cpu_clk, pll_x_clk);
-+	/* This shouldn't fail while changing or restoring */
-+	WARN_ON(ret);
-+
-+	/*
-+	 * Drop count to pll_x clock only if we switched to intermediate freq
-+	 * earlier while transitioning to a target frequency.
-+	 */
-+	if (pll_x_prepared) {
-+		clk_disable_unprepare(pll_x_clk);
-+		pll_x_prepared = false;
-+	}
- 
- 	return ret;
- }
-@@ -137,16 +162,18 @@ static int tegra_cpu_exit(struct cpufreq_policy *policy)
- }
- 
- static struct cpufreq_driver tegra_cpufreq_driver = {
--	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
--	.verify		= cpufreq_generic_frequency_table_verify,
--	.target_index	= tegra_target,
--	.get		= cpufreq_generic_get,
--	.init		= tegra_cpu_init,
--	.exit		= tegra_cpu_exit,
--	.name		= "tegra",
--	.attr		= cpufreq_generic_attr,
-+	.flags			= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify			= cpufreq_generic_frequency_table_verify,
-+	.get_intermediate	= tegra_get_intermediate,
-+	.target_intermediate	= tegra_target_intermediate,
-+	.target_index		= tegra_target,
-+	.get			= cpufreq_generic_get,
-+	.init			= tegra_cpu_init,
-+	.exit			= tegra_cpu_exit,
-+	.name			= "tegra",
-+	.attr			= cpufreq_generic_attr,
- #ifdef CONFIG_PM
--	.suspend	= cpufreq_generic_suspend,
-+	.suspend		= cpufreq_generic_suspend,
- #endif
+Hi linux-pm,
+
+I have some patches that add new fields to these structures but I
+don't have a good place to describe those fields as these structs are
+mostly undocumented so I thought I'd document them.
+
+Changes since v1:
+  * Clarified that some parameters are currently only used by the
+    step-wise governor.
+  * Clarified that forced_passive operates on ACPI processor cooling
+    devices.
+
+ include/linux/thermal.h | 45 +++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 43 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index f7e11c7ea7d9..6fca46c82c4d 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -158,6 +158,41 @@ struct thermal_attr {
+ =09char name[THERMAL_NAME_LENGTH];
  };
- 
--- 
-2.0.0.rc2
+=20
++/**
++ * struct thermal_zone_device - structure for a thermal zone
++ * @id:=09=09unique id number for each thermal zone
++ * @type:=09the thermal zone device type
++ * @device:=09struct device for this thermal zone
++ * @trip_temp_attrs:=09attributes for trip points for sysfs: trip temperat=
+ure
++ * @trip_type_attrs:=09attributes for trip points for sysfs: trip type
++ * @trip_hyst_attrs:=09attributes for trip points for sysfs: trip hysteres=
+is
++ * @devdata:=09private pointer for device private data
++ * @trips:=09number of trip points the thermal zone supports
++ * @passive_delay:=09number of milliseconds to wait between polls when
++ *=09=09=09performing passive cooling.  Currenty only used by the
++ *=09=09=09step-wise governor
++ * @polling_delay:=09number of milliseconds to wait between polls when
++ *=09=09=09checking whether trip points have been crossed (0 for
++ *=09=09=09interrupt driven systems)
++ * @temperature:=09current temperature.  This is only for core code,
++ *=09=09=09drivers should use thermal_zone_get_temp() to get the
++ *=09=09=09current temperature
++ * @last_temperature:=09previous temperature read
++ * @emul_temperature:=09emulated temperature when using CONFIG_THERMAL_EMU=
+LATION
++ * @passive:=09=091 if you've crossed a passive trip point, 0 otherwise.
++ *=09=09=09Currenty only used by the step-wise governor.
++ * @forced_passive:=09If > 0, temperature at which to switch on all ACPI
++ *=09=09=09processor cooling devices.  Currently only used by the
++ *=09=09=09step-wise governor.
++ * @ops:=09operations this thermal_zone_device supports
++ * @tzp:=09thermal zone parameters
++ * @governor:=09pointer to the governor for this thermal zone
++ * @thermal_instances:=09list of struct thermal_instance of this thermal z=
+one
++ * @idr:=09struct idr to generate unique id for this zone's cooling device=
+s
++ * @lock:=09lock to protect thermal_instances list
++ * @node:=09node in thermal_tz_list (in thermal_core.c)
++ * @poll_queue:=09delayed work for polling
++ */
+ struct thermal_zone_device {
+ =09int id;
+ =09char type[THERMAL_NAME_LENGTH];
+@@ -179,12 +214,18 @@ struct thermal_zone_device {
+ =09struct thermal_governor *governor;
+ =09struct list_head thermal_instances;
+ =09struct idr idr;
+-=09struct mutex lock; /* protect thermal_instances list */
++=09struct mutex lock;
+ =09struct list_head node;
+ =09struct delayed_work poll_queue;
+ };
+=20
+-/* Structure that holds thermal governor information */
++/**
++ * struct thermal_governor - structure that holds thermal governor informa=
+tion
++ * @name:=09name of the governor
++ * @throttle:=09callback called for every trip point even if temperature i=
+s
++ *=09=09below the trip point temperature
++ * @governor_list:=09node in thermal_governor_list (in thermal_core.c)
++ */
+ struct thermal_governor {
+ =09char name[THERMAL_NAME_LENGTH];
+ =09int (*throttle)(struct thermal_zone_device *tz, int trip);
+--=20
+1.9.1
+
+
