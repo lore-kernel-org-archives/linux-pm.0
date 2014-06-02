@@ -1,51 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
- for !CONFIG_REGULATOR
-Date: Mon, 2 Jun 2014 18:44:35 +0530
-Message-ID: <CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
-References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-	<20140527192923.GC12304@sirena.org.uk>
-	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
-	<20140528173858.GG5099@sirena.org.uk>
-	<CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
-	<20140602095112.GV5099@sirena.org.uk>
-	<CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
-	<20140602100201.GX5099@sirena.org.uk>
-	<CAKohpomj5-tHPkBLMrgGpsDCaCxW-8hGMunMTmJgXGgEgTR=vA@mail.gmail.com>
-	<20140602122332.GA31751@sirena.org.uk>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH v2 7/7] ARM: EXYNOS: cpuidle: add secure firmware support
+ to AFTR mode code
+Date: Mon, 02 Jun 2014 15:15:07 +0200
+Message-ID: <538C78DB.1060809@gmail.com>
+References: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com> <1401712543-14281-8-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140602122332.GA31751@sirena.org.uk>
+In-Reply-To: <1401712543-14281-8-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2 June 2014 17:53, Mark Brown <broonie@kernel.org> wrote:
-> If the consumer tried to set a voltage presumably it cares if that
-> voltage was set - for example if your cpufreq driver tries to increase
-> the voltage of a core supply so that it can then raise the frequency the
-> user is going to be upset if the voltage was not actually raised and it
-> goes off and raises the clock rate causing the system to become unstable.
+Hi,
 
-If the driver continued despite getting regulator as NULL, it means that
-regulator isn't a MUST for it. For example a CPUFreq driver may work
-with or without a regulator.
+On 02.06.2014 14:35, Bartlomiej Zolnierkiewicz wrote:
+> * Use do_idle firmware method instead of cpu_do_idle() on boards with
+>   secure firmware enabled.
+> 
+> * Use sysram_ns_base_addr + 0x24 address for exynos_boot_vector_addr()
+>   and sysram_ns_base_addr + 0x20 one for exynos_boot_vector_flag() on
+>   boards with secure firmware enabled.
+> 
+> This patch fixes hang on an attempt to enter AFTR mode for TRATS2
+> board (which uses EXYNOS4412 SoC with secure firmware enabled).
+> 
+> This patch shouldn't cause any functionality changes on boards that
+> don't use secure firmware.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>  arch/arm/mach-exynos/pm.c        | 8 ++++++--
+>  drivers/cpuidle/cpuidle-exynos.c | 7 ++++++-
+>  2 files changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> index 0fb9a5a..62a0a5e 100644
+> --- a/arch/arm/mach-exynos/pm.c
+> +++ b/arch/arm/mach-exynos/pm.c
+> @@ -169,7 +169,9 @@ int exynos_cluster_power_state(int cluster)
+>  
+>  static inline void __iomem *exynos_boot_vector_addr(void)
+>  {
+> -	if (samsung_rev() == EXYNOS4210_REV_1_1)
+> +	if (firmware_run())
+> +		return sysram_ns_base_addr + 0x24;
+> +	else if (samsung_rev() == EXYNOS4210_REV_1_1)
 
-Now if the dummy calls return *error* for some cases then these driver
-will have to do
-if(xyz)
-    API-call()..
+Aha, so this is the use case for the function added by patch 1/7.
 
-And so dummy APIs like clk_set_rate(), clk_get_rate(),
-regulator_set_voltage() must return zero..
+Well, I don't see the need to do it this way and complicate the API. As
+I mentioned in my comments to patches 2/7 and 5/7, more general firmware
+operations should be taking care of setting those registers to
+appropriate values and so there shouldn't be any need to use them
+directly outside the implementation of firmware ops.
 
-To get rid of this in drivers these dummy routines *must* behave as
-they passed, if the drivers really care about them then they must
-quit as soon as regulator_get() returned NULL.
+[snip]
 
-This is why we have such implementations in clk framework which are
-very well thought earlier.
+>  static int idle_finisher(unsigned long flags)
+>  {
+>  	exynos_enter_aftr();
+> -	cpu_do_idle();
+> +	if (firmware_run())
+> +		/* no need to check the return value on EXYNOS SoCs */
+> +		call_firmware_op(do_idle, FW_DO_IDLE_AFTR);
+> +	else
+> +		cpu_do_idle();
 
-Does this make sense?
+This could be done just by
+
+	if (call_firmware_op(do_idle, FW_DO_IDLE_AFTR) == -ENOSYS)
+		cpu_do_idle();
+
+which is 3 lines less than with a function that is suppose to simplify
+the code.
+
+Best regards,
+Tomasz
