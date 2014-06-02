@@ -1,78 +1,85 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12
- for AFTR mode code
-Date: Mon, 02 Jun 2014 18:05:04 +0200
-Message-ID: <538CA0B0.2030200@linaro.org>
-References: <1399287439-31376-1-git-send-email-b.zolnierkie@samsung.com> <1399287439-31376-7-git-send-email-b.zolnierkie@samsung.com> <5375D44F.7000505@linaro.org> <2762097.QhkViWyNLQ@amdc1032>
+Subject: Re: [PATCH v2 4/7] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_*
+ macros by static inlines
+Date: Mon, 02 Jun 2014 18:13:42 +0200
+Message-ID: <538CA2B6.4080805@linaro.org>
+References: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com> <1401712543-14281-5-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <2762097.QhkViWyNLQ@amdc1032>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1401712543-14281-5-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/02/2014 02:08 PM, Bartlomiej Zolnierkiewicz wrote:
+On 06/02/2014 02:35 PM, Bartlomiej Zolnierkiewicz wrote:
+> Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
+> by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
+> inlines.
 >
-> Hi,
+> This patch shouldn't cause any functionality changes.
 >
-> On Friday, May 16, 2014 11:03:11 AM Daniel Lezcano wrote:
->> On 05/05/2014 12:57 PM, Bartlomiej Zolnierkiewicz wrote:
->>> Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
->>> mode code.  Without this setup AFTR mode doesn't show any benefit
->>> over WFI one.  When this setup is applied AFTR mode reduces power
->>> consumption by ~12% (as measured on Trats2 board).
->>>
->>> This change is a preparation for adding secure firmware support to
->>> EXYNOS cpuidle driver.
->>>
->>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->>> ---
->>>    arch/arm/mach-exynos/pm.c | 4 ++++
->>>    1 file changed, 4 insertions(+)
->>>
->>> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
->>> index 18f6bf8..3922968 100644
->>> --- a/arch/arm/mach-exynos/pm.c
->>> +++ b/arch/arm/mach-exynos/pm.c
->>> @@ -391,6 +391,10 @@ static int exynos_cpu_pm_notifier(struct notif=
-ier_block *self,
->>>    	case CPU_PM_ENTER:
->>>    		if (cpu =3D=3D 0) {
->>>    			exynos_pm_central_suspend();
->>> +			if (soc_is_exynos4212() || soc_is_exynos4412())
->>> +				__raw_writel(S5P_USE_STANDBY_WFI0 |
->>> +					     S5P_USE_STANDBY_WFE0,
->>> +					     S5P_CENTRAL_SEQ_OPTION);
->>
->> Why not put this code in the exynos_enter_aftr() ?
->
-> I would prefer to keep this code close to exynos_pm_central_suspend()
-> because exynos_pm_suspend() (which calls exynos_pm_central_suspend()
-> too) also contains S5P_USE_STANDBY_WF[I,E]0 setting code (done for al=
-l
-> SoCs).  If possible I would like to make this code common for AFTR &
-> suspend in the future (once it is tested on Exynos4210 and Exynos5250=
-)
-> by moving S5P_USE_STANDBY_WF[I,E]0 setting to exynos_pm_central_suspe=
-nd()
-> and doing it for all SoCs.  Are you okay with this?
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-Yeah, no problem.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-
->>>    			exynos_cpu_save_register();
->>>    		}
->>>    		break;
+> ---
+>   arch/arm/mach-exynos/pm.c | 28 ++++++++++++++++++++--------
+>   1 file changed, 20 insertions(+), 8 deletions(-)
 >
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
+> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
+> index 87c0d34..cf09383 100644
+> --- a/arch/arm/mach-exynos/pm.c
+> +++ b/arch/arm/mach-exynos/pm.c
+> @@ -166,12 +166,23 @@ int exynos_cluster_power_state(int cluster)
+>   			S5P_CORE_LOCAL_PWR_EN);
+>   }
+>
+> -#define EXYNOS_BOOT_VECTOR_ADDR	(samsung_rev() =3D=3D EXYNOS4210_REV=
+_1_1 ? \
+> -			S5P_INFORM7 : (samsung_rev() =3D=3D EXYNOS4210_REV_1_0 ? \
+> -			(sysram_base_addr + 0x24) : S5P_INFORM0))
+> -#define EXYNOS_BOOT_VECTOR_FLAG	(samsung_rev() =3D=3D EXYNOS4210_REV=
+_1_1 ? \
+> -			S5P_INFORM6 : (samsung_rev() =3D=3D EXYNOS4210_REV_1_0 ? \
+> -			(sysram_base_addr + 0x20) : S5P_INFORM1))
+> +static inline void __iomem *exynos_boot_vector_addr(void)
+> +{
+> +	if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
+> +		return S5P_INFORM7;
+> +	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_0)
+> +		return sysram_base_addr + 0x24;
+> +	return S5P_INFORM0;
+> +}
+> +
+> +static inline void __iomem *exynos_boot_vector_flag(void)
+> +{
+> +	if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
+> +		return S5P_INFORM6;
+> +	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_0)
+> +		return sysram_base_addr + 0x20;
+> +	return S5P_INFORM1;
+> +}
+>
+>   #define S5P_CHECK_AFTR  0xFCBA0D10
+>   #define S5P_CHECK_SLEEP 0x00000BAD
+> @@ -184,8 +195,9 @@ static void exynos_set_wakeupmask(long mask)
+>
+>   static void exynos_cpu_set_boot_vector(long flags)
+>   {
+> -	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_AD=
+DR);
+> -	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
+> +	__raw_writel(virt_to_phys(exynos_cpu_resume),
+> +		     exynos_boot_vector_addr());
+> +	__raw_writel(flags, exynos_boot_vector_flag());
+>   }
+>
+>   void exynos_enter_aftr(void)
 >
 
 
