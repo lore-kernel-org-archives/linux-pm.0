@@ -1,99 +1,140 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2 7/7] ARM: EXYNOS: cpuidle: add secure firmware support
- to AFTR mode code
-Date: Mon, 02 Jun 2014 15:40:21 +0200
-Message-ID: <2929163.ygQuOcYWlC@amdc1032>
-References: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com>
- <1401712543-14281-8-git-send-email-b.zolnierkie@samsung.com>
- <538C78DB.1060809@gmail.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Mon, 2 Jun 2014 15:15:36 +0100
+Message-ID: <20140602141536.GL19967@e103034-lin>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
+ <20140530120424.GD30445@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:24986 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754438AbaFBNku (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 09:40:50 -0400
-In-reply-to: <538C78DB.1060809@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140530120424.GD30445@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Monday, June 02, 2014 03:15:07 PM Tomasz Figa wrote:
-> Hi,
+On Fri, May 30, 2014 at 01:04:24PM +0100, Peter Zijlstra wrote:
+> On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
+> > +static struct capacity_state cap_states_cluster_a7[] = {
+> > +	/* Cluster only power */
+> > +	 { .cap =  358, .power = 2967, }, /*  350 MHz */
+> > +	 { .cap =  410, .power = 2792, }, /*  400 MHz */
+> > +	 { .cap =  512, .power = 2810, }, /*  500 MHz */
+> > +	 { .cap =  614, .power = 2815, }, /*  600 MHz */
+> > +	 { .cap =  717, .power = 2919, }, /*  700 MHz */
+> > +	 { .cap =  819, .power = 2847, }, /*  800 MHz */
+> > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
+> > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
+> > +	};
 > 
-> On 02.06.2014 14:35, Bartlomiej Zolnierkiewicz wrote:
-> > * Use do_idle firmware method instead of cpu_do_idle() on boards with
-> >   secure firmware enabled.
-> > 
-> > * Use sysram_ns_base_addr + 0x24 address for exynos_boot_vector_addr()
-> >   and sysram_ns_base_addr + 0x20 one for exynos_boot_vector_flag() on
-> >   boards with secure firmware enabled.
-> > 
-> > This patch fixes hang on an attempt to enter AFTR mode for TRATS2
-> > board (which uses EXYNOS4412 SoC with secure firmware enabled).
-> > 
-> > This patch shouldn't cause any functionality changes on boards that
-> > don't use secure firmware.
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
-> > ---
-> >  arch/arm/mach-exynos/pm.c        | 8 ++++++--
-> >  drivers/cpuidle/cpuidle-exynos.c | 7 ++++++-
-> >  2 files changed, 12 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> > index 0fb9a5a..62a0a5e 100644
-> > --- a/arch/arm/mach-exynos/pm.c
-> > +++ b/arch/arm/mach-exynos/pm.c
-> > @@ -169,7 +169,9 @@ int exynos_cluster_power_state(int cluster)
-> >  
-> >  static inline void __iomem *exynos_boot_vector_addr(void)
-> >  {
-> > -	if (samsung_rev() == EXYNOS4210_REV_1_1)
-> > +	if (firmware_run())
-> > +		return sysram_ns_base_addr + 0x24;
-> > +	else if (samsung_rev() == EXYNOS4210_REV_1_1)
+> > +static struct capacity_state cap_states_core_a7[] = {
+> > +	/* Power per cpu */
+> > +	 { .cap =  358, .power =  187, }, /*  350 MHz */
+> > +	 { .cap =  410, .power =  275, }, /*  400 MHz */
+> > +	 { .cap =  512, .power =  334, }, /*  500 MHz */
+> > +	 { .cap =  614, .power =  407, }, /*  600 MHz */
+> > +	 { .cap =  717, .power =  447, }, /*  700 MHz */
+> > +	 { .cap =  819, .power =  549, }, /*  800 MHz */
+> > +	 { .cap =  922, .power =  761, }, /*  900 MHz */
+> > +	 { .cap = 1024, .power = 1024, }, /* 1000 MHz */
+> > +	};
 > 
-> Aha, so this is the use case for the function added by patch 1/7.
+> Talk to me about this core vs cluster thing.
 > 
-> Well, I don't see the need to do it this way and complicate the API. As
-> I mentioned in my comments to patches 2/7 and 5/7, more general firmware
-> operations should be taking care of setting those registers to
-> appropriate values and so there shouldn't be any need to use them
-> directly outside the implementation of firmware ops.
+> Why would an architecture have multiple energy domains like this?
+> 
+> That is, if a cpu can set P states per core, why does it need a cluster
+> wide thing.
 
-More general firmware operations would handle the secure firmware case
-fine but how would you like to handle a fallback case given that you
-cannot use samsung_rev() etc. in drivers/cpuidle/cpuidle-exynos.c?
+The reason is that power domains are often organized in a hierarchy
+where you may be able to power down just a cpu or the entire cluster
+along with cluster wide shared resources. This is quite typical for ARM
+systems. Frequency domains (P-states) typically cover the same hardware
+as one of the power domain levels. That is, there might be several
+smaller power domains sharing the same frequency (P-state) or there
+might be a power domain spanning multiple frequency domains.
 
-> [snip]
-> 
-> >  static int idle_finisher(unsigned long flags)
-> >  {
-> >  	exynos_enter_aftr();
-> > -	cpu_do_idle();
-> > +	if (firmware_run())
-> > +		/* no need to check the return value on EXYNOS SoCs */
-> > +		call_firmware_op(do_idle, FW_DO_IDLE_AFTR);
-> > +	else
-> > +		cpu_do_idle();
-> 
-> This could be done just by
-> 
-> 	if (call_firmware_op(do_idle, FW_DO_IDLE_AFTR) == -ENOSYS)
-> 		cpu_do_idle();
-> 
-> which is 3 lines less than with a function that is suppose to simplify
-> the code.
+The main reason why we need to worry about all this is that it typically
+cost a lot more energy to use the first cpu in a cluster since you
+also need to power up all the shared hardware resources than the energy
+cost of waking and using additional cpus in the same cluster.
 
-OK.
+IMHO, the most natural way to model the energy is therefore something
+like:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+    energy = energy_cluster + n * energy_cpu
 
+Where 'n' is the number of cpus powered up and energy_cluster is the
+cost paid as soon as any cpu in the cluster is powered up.
+
+If we take TC2 as an example, we have per-cluster frequency domains
+(P-states) and idle-states for both the individual cpus and the
+clusters. WFI for individual cpus and cluster power down for the
+cluster, which takes down the per-cluster L2 cache and other cluster
+resources. When we wake the first cpu in a cluster, the cluster will
+exit cluster power down and put all other into WFI. Powering on the
+first cpu (A7) and fully utilizing it at 1000 MHz will cost:
+
+    power_one = 4905 + 1024
+
+Waking up an additional cpu and fully utilizing it we get:
+
+    power_two = 4905 + 2*1024
+
+So if we need two cpu's worth of compute capacity (at max capacity) we
+can save quite a lot of energy by picking two in the same cluster rather
+than paying the cluster power twice.
+
+Now if one of the cpus is only 50% utilized, it will be in WFI half the
+time:
+
+    power = power_cluster + \sum{n}^{cpus} util(n) * power_cpu +
+					(1-util(n)) * idle_power_cpu
+
+    power_100_50 = 4905 + (1.0*1024 + 0.0*0) + (0.5*1024 + 0.5*0)
+
+I have normalized the utilization factor to 1.0 for simplicity. We also
+need to factor in the cost of the wakeups on the 50% loaded cpu, but I
+will leave that out here to keep it simpler.
+
+If we now consider a slightly different scenario where one cpu is 50%
+utilized and the other is 25% utilized. We assume that the busy period
+starts at the same time on both cpus (overlapped). In this case, we can
+power down the whole cluster 50% of the time (assuming that the idle
+period is long enough to allow it). We can expand power_cluster to
+factor that in:
+
+    power_cluster' = util(cluster) * power_cluster + 
+				(1-util(cluster)) * idle_power_cluster
+
+    power_50_25 = 0.5*4905 + 0.5*10 + (0.5*1024 + 0.0*0) +
+    						(0.25*1024 + 0.75*0)
+
+> Also, in general, why would we need to walk the domain tree all the way
+> up, typically I would expect to stop walking once we've covered the two
+> cpu's we're interested in, because above that nothing changes.
+
+True. In some cases we don't have to go all the way up. There is a
+condition in energy_diff_load() that bails out if the energy doesn't
+change further up the hierarchy. There might be scope for improving that
+condition though.
+
+We can basically stop going up if the utilization of the domain is
+unchanged by the change we want to do. For example, we can ignore the
+next level above if a third cpu is keeping the domain up all the time
+anyway. In the 100% + 50% case above, putting another 50% task on the
+50% cpu wouldn't affect the cluster according the proposed model, so it
+can be ignored. However, if we did the same on any of the two cpus in
+the 50% + 25% example we affect the cluster utilization and have to do
+the cluster level maths.
+
+So we do sometimes have to go all the way up even if we are balancing
+two sibling cpus to determine the energy implications. At least if we
+want an energy score like energy_diff_load() produces. However, we might
+be able to take some other shortcuts if we are balancing load between
+two specific cpus (not wakeup/fork/exec balancing) as you point out. But
+there are cases where we need to continue up until the domain
+utilization is unchanged.
