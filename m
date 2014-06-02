@@ -1,140 +1,95 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
- provide it to scheduler
-Date: Mon, 2 Jun 2014 15:15:36 +0100
-Message-ID: <20140602141536.GL19967@e103034-lin>
-References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
- <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
- <20140530120424.GD30445@twins.programming.kicks-ass.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] PM / Runtime: Make autosuspend_delay == 0 work as intended
+Date: Mon, 2 Jun 2014 11:35:29 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1406021119020.1280-100000@iolanthe.rowland.org>
+References: <87ppir4h4c.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140530120424.GD30445@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:42557 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752390AbaFBPfb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 11:35:31 -0400
+In-Reply-To: <87ppir4h4c.fsf@nemi.mork.no>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Fri, May 30, 2014 at 01:04:24PM +0100, Peter Zijlstra wrote:
-> On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
-> > +static struct capacity_state cap_states_cluster_a7[] = {
-> > +	/* Cluster only power */
-> > +	 { .cap =  358, .power = 2967, }, /*  350 MHz */
-> > +	 { .cap =  410, .power = 2792, }, /*  400 MHz */
-> > +	 { .cap =  512, .power = 2810, }, /*  500 MHz */
-> > +	 { .cap =  614, .power = 2815, }, /*  600 MHz */
-> > +	 { .cap =  717, .power = 2919, }, /*  700 MHz */
-> > +	 { .cap =  819, .power = 2847, }, /*  800 MHz */
-> > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
-> > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
-> > +	};
-> 
-> > +static struct capacity_state cap_states_core_a7[] = {
-> > +	/* Power per cpu */
-> > +	 { .cap =  358, .power =  187, }, /*  350 MHz */
-> > +	 { .cap =  410, .power =  275, }, /*  400 MHz */
-> > +	 { .cap =  512, .power =  334, }, /*  500 MHz */
-> > +	 { .cap =  614, .power =  407, }, /*  600 MHz */
-> > +	 { .cap =  717, .power =  447, }, /*  700 MHz */
-> > +	 { .cap =  819, .power =  549, }, /*  800 MHz */
-> > +	 { .cap =  922, .power =  761, }, /*  900 MHz */
-> > +	 { .cap = 1024, .power = 1024, }, /* 1000 MHz */
-> > +	};
-> 
-> Talk to me about this core vs cluster thing.
-> 
-> Why would an architecture have multiple energy domains like this?
-> 
-> That is, if a cpu can set P states per core, why does it need a cluster
-> wide thing.
+On Mon, 2 Jun 2014, Bj=C3=B8rn Mork wrote:
 
-The reason is that power domains are often organized in a hierarchy
-where you may be able to power down just a cpu or the entire cluster
-along with cluster wide shared resources. This is quite typical for ARM
-systems. Frequency domains (P-states) typically cover the same hardware
-as one of the power domain levels. That is, there might be several
-smaller power domains sharing the same frequency (P-state) or there
-might be a power domain spanning multiple frequency domains.
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>=20
+> > Alan has to see this in the first place.
+> >
+> > On Monday, June 02, 2014 12:29:12 PM Bj=C3=B8rn Mork wrote:
+> >> OK, I don't like the result I came up with here.  So I am sending =
+this
+> >> as an RFC in the hope that smarter people than me can come up with
+> >> something nicer. I hope the patch illustrates my problem:  While
+> >> trying do debug some runtime suspend issues in a driver, I tempora=
+rily
+> >> set autosuspend to 0 to deliberately make it aggressive enough for=
+ my
+> >> driver to fail. I was surprised to learn than this effectively
+> >> *disabled* autosuspend if the driver ever return -EBUSY from the
+> >> runtime suspend callback.
+> >
+> > That results from pm_runtime_autosuspend_expiration() always return=
+ing 0 in
+> > that case.
+>=20
+> Yup.
 
-The main reason why we need to worry about all this is that it typically
-cost a lot more energy to use the first cpu in a cluster since you
-also need to power up all the shared hardware resources than the energy
-cost of waking and using additional cpus in the same cluster.
+> > Well, as I said.
+> >
+> > Perhaps pm_runtime_autosuspend_expiration() could simply treat
+> > power.autosuspend_delay equal to 0 in a special way, but then what =
+about
+> > power.autosuspend_delay equal to 1?
+>=20
+> Is that going to cause similar problems? Hmm, I guess it is if the
+> callback takes so long that the timeout is reached when we get here?
+>=20
+> In which cases do you *not* want to retry runtime suspend on -EBUSY f=
+rom
+> the driver callback? If you don't retry, then the device will not
+> runtime suspend at all until the next time the driver updates last_bu=
+sy.
+> And if the driver always is busy some time after such updates, then
+> runtime suspend is effectively disabled.
 
-IMHO, the most natural way to model the energy is therefore something
-like:
+We don't want to get into a tight retry loop.  That's what I was trying
+to avoid.  Notice that although the comment mentions last_busy being
+updated, the code doesn't actually look at last_busy.  Instead, it
+looks to see if the new expiration time is in the future (which won't
+happen unless last_busy gets updated) -- that's how it avoids going
+into a tight loop.
 
-    energy = energy_cluster + n * energy_cpu
+> Should drivers just update last_busy more agressively, and make sure =
+to
+> update it both when starting some hardware transaction and when
+> finishing it? That would make the suspend callback run again when the
+> hardware is not busy anymore, and would probably make stuff work with=
+out
+> any PM core changes.
 
-Where 'n' is the number of cpus powered up and energy_cluster is the
-cost paid as soon as any cpu in the cluster is powered up.
+We want to minimize the amount of work that drivers need to do.
 
-If we take TC2 as an example, we have per-cluster frequency domains
-(P-states) and idle-states for both the individual cpus and the
-clusters. WFI for individual cpus and cluster power down for the
-cluster, which takes down the per-cluster L2 cache and other cluster
-resources. When we wake the first cpu in a cluster, the cluster will
-exit cluster power down and put all other into WFI. Powering on the
-first cpu (A7) and fully utilizing it at 1000 MHz will cost:
+I like your idea of adding an explicit retry delay.  In fact, I would=20
+like to go farther and make the delay automatically back off=20
+exponentially.
 
-    power_one = 4905 + 1024
+How about something like this?  Let t =3D jiffies - last_busy.  If t <=3D=
+ 1=20
+ms then set retry_delay to 1 ms, otherwise set retry_delay to min(t*2,=20
+1000 ms).  Or even use a larger cap, such as 60 s.
 
-Waking up an additional cpu and fully utilizing it we get:
+Alan Stern
 
-    power_two = 4905 + 2*1024
+PS: You don't need to use ACCESS_ONCE the way you did.  It's important
+only when the same value is used several times and you want the
+compiler to store a local copy instead of re-reading the original (in
+case the original gets changed by another CPU).
 
-So if we need two cpu's worth of compute capacity (at max capacity) we
-can save quite a lot of energy by picking two in the same cluster rather
-than paying the cluster power twice.
-
-Now if one of the cpus is only 50% utilized, it will be in WFI half the
-time:
-
-    power = power_cluster + \sum{n}^{cpus} util(n) * power_cpu +
-					(1-util(n)) * idle_power_cpu
-
-    power_100_50 = 4905 + (1.0*1024 + 0.0*0) + (0.5*1024 + 0.5*0)
-
-I have normalized the utilization factor to 1.0 for simplicity. We also
-need to factor in the cost of the wakeups on the 50% loaded cpu, but I
-will leave that out here to keep it simpler.
-
-If we now consider a slightly different scenario where one cpu is 50%
-utilized and the other is 25% utilized. We assume that the busy period
-starts at the same time on both cpus (overlapped). In this case, we can
-power down the whole cluster 50% of the time (assuming that the idle
-period is long enough to allow it). We can expand power_cluster to
-factor that in:
-
-    power_cluster' = util(cluster) * power_cluster + 
-				(1-util(cluster)) * idle_power_cluster
-
-    power_50_25 = 0.5*4905 + 0.5*10 + (0.5*1024 + 0.0*0) +
-    						(0.25*1024 + 0.75*0)
-
-> Also, in general, why would we need to walk the domain tree all the way
-> up, typically I would expect to stop walking once we've covered the two
-> cpu's we're interested in, because above that nothing changes.
-
-True. In some cases we don't have to go all the way up. There is a
-condition in energy_diff_load() that bails out if the energy doesn't
-change further up the hierarchy. There might be scope for improving that
-condition though.
-
-We can basically stop going up if the utilization of the domain is
-unchanged by the change we want to do. For example, we can ignore the
-next level above if a third cpu is keeping the domain up all the time
-anyway. In the 100% + 50% case above, putting another 50% task on the
-50% cpu wouldn't affect the cluster according the proposed model, so it
-can be ignored. However, if we did the same on any of the two cpus in
-the 50% + 25% example we affect the cluster utilization and have to do
-the cluster level maths.
-
-So we do sometimes have to go all the way up even if we are balancing
-two sibling cpus to determine the energy implications. At least if we
-want an energy score like energy_diff_load() produces. However, we might
-be able to take some other shortcuts if we are balancing load between
-two specific cpus (not wakeup/fork/exec balancing) as you point out. But
-there are cases where we need to continue up until the domain
-utilization is unchanged.
