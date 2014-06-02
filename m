@@ -1,8 +1,8 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 6/7] ARM: EXYNOS: PM: fix register setup on EXYNOS4x12 for
+Subject: [PATCH v2 7/7] ARM: EXYNOS: cpuidle: add secure firmware support to
  AFTR mode code
-Date: Mon, 02 Jun 2014 14:35:42 +0200
-Message-ID: <1401712543-14281-7-git-send-email-b.zolnierkie@samsung.com>
+Date: Mon, 02 Jun 2014 14:35:43 +0200
+Message-ID: <1401712543-14281-8-git-send-email-b.zolnierkie@samsung.com>
 References: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com>
@@ -11,34 +11,75 @@ To: Kukjin Kim <kgene.kim@samsung.com>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Add S5P_CENTRAL_SEQ_OPTION register setup for EXYNOS4x12 to AFTR
-mode code.  Without this setup AFTR mode doesn't show any benefit
-over WFI one.  When this setup is applied AFTR mode reduces power
-consumption by ~12% (as measured on Trats2 board).
+* Use do_idle firmware method instead of cpu_do_idle() on boards with
+  secure firmware enabled.
 
-This change is a preparation for adding secure firmware support to
-EXYNOS cpuidle driver.
+* Use sysram_ns_base_addr + 0x24 address for exynos_boot_vector_addr()
+  and sysram_ns_base_addr + 0x20 one for exynos_boot_vector_flag() on
+  boards with secure firmware enabled.
+
+This patch fixes hang on an attempt to enter AFTR mode for TRATS2
+board (which uses EXYNOS4412 SoC with secure firmware enabled).
+
+This patch shouldn't cause any functionality changes on boards that
+don't use secure firmware.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm/mach-exynos/pm.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm/mach-exynos/pm.c        | 8 ++++++--
+ drivers/cpuidle/cpuidle-exynos.c | 7 ++++++-
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index aeff99e..0fb9a5a 100644
+index 0fb9a5a..62a0a5e 100644
 --- a/arch/arm/mach-exynos/pm.c
 +++ b/arch/arm/mach-exynos/pm.c
-@@ -456,6 +456,10 @@ static int exynos_cpu_pm_notifier(struct notifier_block *self,
- 	case CPU_PM_ENTER:
- 		if (cpu == 0) {
- 			exynos_pm_central_suspend();
-+			if (soc_is_exynos4212() || soc_is_exynos4412())
-+				__raw_writel(S5P_USE_STANDBY_WFI0 |
-+					     S5P_USE_STANDBY_WFE0,
-+					     S5P_CENTRAL_SEQ_OPTION);
- 			exynos_cpu_save_register();
- 		}
- 		break;
+@@ -169,7 +169,9 @@ int exynos_cluster_power_state(int cluster)
+ 
+ static inline void __iomem *exynos_boot_vector_addr(void)
+ {
+-	if (samsung_rev() == EXYNOS4210_REV_1_1)
++	if (firmware_run())
++		return sysram_ns_base_addr + 0x24;
++	else if (samsung_rev() == EXYNOS4210_REV_1_1)
+ 		return S5P_INFORM7;
+ 	else if (samsung_rev() == EXYNOS4210_REV_1_0)
+ 		return sysram_base_addr + 0x24;
+@@ -178,7 +180,9 @@ static inline void __iomem *exynos_boot_vector_addr(void)
+ 
+ static inline void __iomem *exynos_boot_vector_flag(void)
+ {
+-	if (samsung_rev() == EXYNOS4210_REV_1_1)
++	if (firmware_run())
++		return sysram_ns_base_addr + 0x20;
++	else if (samsung_rev() == EXYNOS4210_REV_1_1)
+ 		return S5P_INFORM6;
+ 	else if (samsung_rev() == EXYNOS4210_REV_1_0)
+ 		return sysram_base_addr + 0x20;
+diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+index 7c01512..f90a4a0 100644
+--- a/drivers/cpuidle/cpuidle-exynos.c
++++ b/drivers/cpuidle/cpuidle-exynos.c
+@@ -17,13 +17,18 @@
+ #include <asm/proc-fns.h>
+ #include <asm/suspend.h>
+ #include <asm/cpuidle.h>
++#include <asm/firmware.h>
+ 
+ static void (*exynos_enter_aftr)(void);
+ 
+ static int idle_finisher(unsigned long flags)
+ {
+ 	exynos_enter_aftr();
+-	cpu_do_idle();
++	if (firmware_run())
++		/* no need to check the return value on EXYNOS SoCs */
++		call_firmware_op(do_idle, FW_DO_IDLE_AFTR);
++	else
++		cpu_do_idle();
+ 
+ 	return 1;
+ }
 -- 
 1.8.2.3
