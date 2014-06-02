@@ -1,111 +1,154 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v1 6/6] ACPI: thermal: processor: Use the generic cpufreq
- infrastructure
-Date: Mon, 2 Jun 2014 13:36:02 -0400
-Message-ID: <20140602173602.GB5902@developer>
+Subject: Re: [PATCH v1 2/6] thermal: cpu_cooling: Support passing driver
+ private data.
+Date: Mon, 2 Jun 2014 14:57:39 -0400
+Message-ID: <20140602185739.GC5902@developer>
 References: <1401351334-11210-1-git-send-email-amit.daniel@samsung.com>
- <1401351334-11210-7-git-send-email-amit.daniel@samsung.com>
- <20140529124248.GC2593@e104805>
- <CADGdYn7FZCjhzbFMtNPFtQV_naQhVk+nR1VFNH88M92_NQmfsA@mail.gmail.com>
- <20140602102047.GB2795@e104805>
+ <1401351334-11210-3-git-send-email-amit.daniel@samsung.com>
+ <20140529120624.GA2593@e104805>
+ <CADGdYn6_cxfxR9+CA+pez00ViOVpTbv=r3eaGsk94CJ8PhF1tA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f48.google.com ([209.85.213.48]:48081 "EHLO
+	mail-yh0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbaFBS5x (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 14:57:53 -0400
 Content-Disposition: inline
-In-Reply-To: <20140602102047.GB2795@e104805>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Amit Kachhap <amit.kachhap@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
+In-Reply-To: <CADGdYn6_cxfxR9+CA+pez00ViOVpTbv=r3eaGsk94CJ8PhF1tA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Kachhap <amit.kachhap@gmail.com>
+Cc: Javi Merino <javi.merino@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
 
-Hello Amit, Javi,
+On Mon, Jun 02, 2014 at 02:54:04PM +0530, Amit Kachhap wrote:
+> On 5/29/14, Javi Merino <javi.merino@arm.com> wrote:
+> > Hi Amit,
+> >
+> > One minor comment.
+> >
+> > On Thu, May 29, 2014 at 09:15:30AM +0100, Amit Daniel Kachhap wrote:
+> >> This patch allows the caller of cpufreq cooling APIs to register along
+> >> with their driver data which will be useful while receiving any cooling
+> >> states
+> >> notifications.
+> >> This patch is in preparation to add notfication support for cpufrequency
+> >> cooling changes. This change also removes the unnecessary exposing of
+> >> internal housekeeping structure via thermal_cooling_device->devdata to
+> >> the
+> >> users of cpufreq cooling APIs. As part of this implmentation, this private
+> >> local
+> >> structure (cpufreq_dev) is now stored in a list and scanned for each call
+> >> to
+> >> cpu cooling interfaces.
+> >>
+> >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> >> ---
+> >>  Documentation/thermal/cpu-cooling-api.txt          |    3 +-
+> >>  drivers/thermal/cpu_cooling.c                      |   89
+> >> ++++++++++++++++----
+> >>  drivers/thermal/db8500_cpufreq_cooling.c           |    2 +-
+> >>  drivers/thermal/samsung/exynos_thermal_common.c    |    2 +-
+> >>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |    2 +-
+> >>  include/linux/cpu_cooling.h                        |    5 +-
+> >>  6 files changed, 80 insertions(+), 23 deletions(-)
+> >>
+> >> diff --git a/Documentation/thermal/cpu-cooling-api.txt
+> >> b/Documentation/thermal/cpu-cooling-api.txt
+> >> index fca24c9..aaa07c6 100644
+> >> --- a/Documentation/thermal/cpu-cooling-api.txt
+> >> +++ b/Documentation/thermal/cpu-cooling-api.txt
+> >> @@ -17,13 +17,14 @@ the user. The registration APIs returns the cooling
+> >> device pointer.
+> >>
+> >>  1.1 cpufreq registration/unregistration APIs
+> >>  1.1.1 struct thermal_cooling_device *cpufreq_cooling_register(
+> >> -       struct cpumask *clip_cpus)
+> >> +       struct cpumask *clip_cpus, void *devdata)
+> >>
+> >>      This interface function registers the cpufreq cooling device with the
+> >> name
+> >>      "thermal-cpufreq-%x". This api can support multiple instances of
+> >> cpufreq
+> >>      cooling devices.
+> >>
+> >>     clip_cpus: cpumask of cpus where the frequency constraints will
+> >> happen.
+> >> +   devdata: driver private data pointer.
+> >>
+> >>  1.1.2 void cpufreq_cooling_unregister(struct thermal_cooling_device
+> >> *cdev)
+> >>
+> >> diff --git a/drivers/thermal/cpu_cooling.c
+> >> b/drivers/thermal/cpu_cooling.c
+> >> index 16388b0..6d145d5 100644
+> >> --- a/drivers/thermal/cpu_cooling.c
+> >> +++ b/drivers/thermal/cpu_cooling.c
+> >> @@ -50,16 +50,18 @@ struct cpufreq_cooling_device {
+> >>         unsigned int cpufreq_state;
+> >>         unsigned int cpufreq_val;
+> >>         struct cpumask allowed_cpus;
+> >> +       struct list_head node;
+> >>  };
+> >>  static DEFINE_IDR(cpufreq_idr);
+> >>  static DEFINE_MUTEX(cooling_cpufreq_lock);
+> >>
+> >> -static unsigned int cpufreq_dev_count;
+> >> -
+> >>  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
+> >>  #define NOTIFY_INVALID NULL
+> >>  static DEFINE_PER_CPU(struct cpufreq_cooling_device *, notify_device);
+> >>
+> >> +/* A list to hold all the cpufreq cooling devices registered */
+> >> +static LIST_HEAD(cpufreq_cooling_list);
+> >> +
+> >>  /**
+> >>   * get_idr - function to get a unique id.
+> >>   * @idr: struct idr * handle used to create a id.
+> >> @@ -98,6 +100,26 @@ static void release_idr(struct idr *idr, int id)
+> >>
+> >>  /* Below code defines functions to be used for cpufreq as cooling device
+> >> */
+> >>
+> >> +/**
+> >> + * cpufreq_cooling_get_info - function to cpufreq_dev for the
+> >> corresponding cdev
+> >> + * @cdev: pointer of the cooling device
+> >> + *
+> >> + * This function will loop through the cpufreq_cooling_device list and
+> >> + * return the matching device
+> >> + *
+> >
+> > You should add a "Locking:" section here which documents that this
+> > function must be called with cooling_cpufreq_lock held.
+> Yes agreed. Will update in the next version.
 
-On Mon, Jun 02, 2014 at 11:20:48AM +0100, Javi Merino wrote:
-> On Mon, Jun 02, 2014 at 10:21:48AM +0100, Amit Kachhap wrote:
-> > Hi Javi,
-> > 
-> > On 5/29/14, Javi Merino <javi.merino@arm.com> wrote:
-> > > Hi Amit,
-> > >
-> > > On Thu, May 29, 2014 at 09:15:34AM +0100, Amit Daniel Kachhap wrote:
-> > >> This patch upgrades the ACPI cpufreq cooling portions to use the generic
-> > >> cpufreq cooling infrastructure. There should not be any functionality
-> > >> related changes as the same behaviour is provided by the generic
-> > >> cpufreq APIs with the notifier mechanism.
-> > >>
-> > >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> > >> ---
-> > >>  drivers/acpi/processor_driver.c  |    6 +-
-> > >>  drivers/acpi/processor_thermal.c |  235
-> > >> ++++++++++++++++++--------------------
-> > >>  include/acpi/processor.h         |    3 +-
-> > >>  3 files changed, 115 insertions(+), 129 deletions(-)
-> > >>
-> > >> diff --git a/drivers/acpi/processor_driver.c
-> > >> b/drivers/acpi/processor_driver.c
-> > >> index 7f70f31..10aba4a 100644
-> > >> --- a/drivers/acpi/processor_driver.c
-> > >> +++ b/drivers/acpi/processor_driver.c
-> > >> @@ -36,6 +36,7 @@
-> > >>  #include <linux/cpuidle.h>
-> > >>  #include <linux/slab.h>
-> > >>  #include <linux/acpi.h>
-> > >> +#include <linux/cpu_cooling.h>
-> > >>
-> > >>  #include <acpi/processor.h>
-> > >>
-> > >> @@ -178,8 +179,7 @@ static int __acpi_processor_start(struct acpi_device
-> > >> *device)
-> > >>         if (!cpuidle_get_driver() || cpuidle_get_driver() ==
-> > >> &acpi_idle_driver)
-> > >>                 acpi_processor_power_init(pr);
-> > >>
-> > >> -       pr->cdev = thermal_cooling_device_register("Processor", device,
-> > >> -
-> > >> &processor_cooling_ops);
-> > >> +       pr->cdev = acpi_processor_cooling_register(device);
-> > >
-> > > With this you have removed the only cooling device whose type was
-> > > "Processor".  There's special code for dealing with this cooling
-> > > device in drivers/thermal/thermal_core.c:passive_store():
-> > >
-> > > 		list_for_each_entry(cdev, &thermal_cdev_list, node) {
-> > > 			if (!strncmp("Processor", cdev->type,
-> > > 				     sizeof("Processor")))
-> > > 				thermal_zone_bind_cooling_device(tz,
-> > > 						THERMAL_TRIPS_NONE, cdev,
-> > > 						THERMAL_NO_LIMIT,
-> > > 						THERMAL_NO_LIMIT);
-> > > 		}
-> > > 		mutex_unlock(&thermal_list_lock);
-> > > 		if (!tz->passive_delay)
-> > >
-> > > With your change, that code is now "dead" as it can't do anything.  No
-> > > I don't know what should you do with it, either remove it or make it
-> > > match the cpufreq cooling device.  But this patch should deal with
-> > > that code as well.
-> > nice catch. I somehow missed modifying this section.
-> > I think the following changes should fix this,
-> > -                       if (!strncmp("Processor", cdev->type,
-> > -                                    sizeof("Processor")))
-> > +                       if (!strncmp("thermal-cpufreq", cdev->type,
-> > +                                    sizeof("thermal-cpufreq")))
-> >                                 thermal_zone_bind_cooling_device(tz,
-> > 
+One good practice is to check the output of scripts/kerneldoc on your
+changed file.
+
+Cheers
+
 > 
-> That should do it.  I don't really understand why this code is
-> specifically looking for ACPI processor cooling devices but I guess
-> that's the least disrupting change you can make.
-
-Well, I suggest we move slightly carefuly here. The problem is that this
-change actually breaks ABI. If so, we need to follow the kernel ABI
-change rules. We should never break userspace.
-
-Rui, Do you recall what users are aware of this sysfs entry?
-
-Cheers,
-
-> 
-> Cheers,
-> Javi
-> 
+> Thanks,
+> Amit
+> >
+> > Cheers,
+> > Javi
+> >
+> >> + * Return: cpufreq_cooling_device if matched with the cdev or NULL if
+> >> not
+> >> + * matched.
+> >> + */
+> >> +static inline struct cpufreq_cooling_device *
+> >> +cpufreq_cooling_get_info(struct thermal_cooling_device *cdev)
+> >> +{
+> >> +       struct cpufreq_cooling_device *cpufreq_dev = NULL;
+> >> +       list_for_each_entry(cpufreq_dev, &cpufreq_cooling_list, node)
+> >> +               if (cpufreq_dev->cool_dev == cdev)
+> >> +                       break;
+> >> +       return cpufreq_dev;
+> >> +}
+> >> +
+> >
+> >
+> >
