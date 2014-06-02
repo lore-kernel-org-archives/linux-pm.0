@@ -1,145 +1,201 @@
 From: Amit Kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH v1 2/6] thermal: cpu_cooling: Support passing driver
- private data.
-Date: Mon, 2 Jun 2014 14:54:04 +0530
-Message-ID: <CADGdYn6_cxfxR9+CA+pez00ViOVpTbv=r3eaGsk94CJ8PhF1tA@mail.gmail.com>
+Subject: Re: [PATCH v1 3/6] thermal: thermal-core: Add notifications support
+ for the cooling states
+Date: Mon, 2 Jun 2014 15:01:19 +0530
+Message-ID: <CADGdYn4+dA=vDV23bx7dDz2j9k9RFW1Apa153-FrtWgbVqEGYw@mail.gmail.com>
 References: <1401351334-11210-1-git-send-email-amit.daniel@samsung.com>
-	<1401351334-11210-3-git-send-email-amit.daniel@samsung.com>
-	<20140529120624.GA2593@e104805>
+	<1401351334-11210-4-git-send-email-amit.daniel@samsung.com>
+	<20140529122438.GB2593@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f180.google.com ([209.85.160.180]:52531 "EHLO
-	mail-yk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752402AbaFBJYG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 05:24:06 -0400
-In-Reply-To: <20140529120624.GA2593@e104805>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20140529122438.GB2593@e104805>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 On 5/29/14, Javi Merino <javi.merino@arm.com> wrote:
 > Hi Amit,
 >
-> One minor comment.
->
-> On Thu, May 29, 2014 at 09:15:30AM +0100, Amit Daniel Kachhap wrote:
->> This patch allows the caller of cpufreq cooling APIs to register along
->> with their driver data which will be useful while receiving any cooling
->> states
->> notifications.
->> This patch is in preparation to add notfication support for cpufrequency
->> cooling changes. This change also removes the unnecessary exposing of
->> internal housekeeping structure via thermal_cooling_device->devdata to
->> the
->> users of cpufreq cooling APIs. As part of this implmentation, this private
->> local
->> structure (cpufreq_dev) is now stored in a list and scanned for each call
->> to
->> cpu cooling interfaces.
+> On Thu, May 29, 2014 at 09:15:31AM +0100, Amit Daniel Kachhap wrote:
+>> This patch adds notification infrastructure for any requests related to
+>> cooling
+>> states. The notifier structure passed is of both Get/Set type. So the
+>> receiver
+>> of these can sense the new/cur/max cooling state as decided by thermal
+>> governor.
+>> In addition to that it can also override the cooling state and may do
+>> something
+>> interesting after receiving these CPU cooling events such as masking some
+>> states, enabling some extra conditional states or perform any extra
+>> operation
+>> for aggressive thermal cooling.
+>> The notfications events can be of type,
+>>
+>> 1. COOLING_SET_STATE_PRE
+>> 2. COOLING_SET_STATE_POST
+>> 3. COOLING_GET_CUR_STATE
+>> 4. COOLING_GET_MAX_STATE
 >>
 >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 >> ---
->>  Documentation/thermal/cpu-cooling-api.txt          |    3 +-
->>  drivers/thermal/cpu_cooling.c                      |   89
->> ++++++++++++++++----
->>  drivers/thermal/db8500_cpufreq_cooling.c           |    2 +-
->>  drivers/thermal/samsung/exynos_thermal_common.c    |    2 +-
->>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |    2 +-
->>  include/linux/cpu_cooling.h                        |    5 +-
->>  6 files changed, 80 insertions(+), 23 deletions(-)
+>>  Documentation/thermal/sysfs-api.txt |   21 +++++++++++
+>>  drivers/thermal/thermal_core.c      |   69
+>> ++++++++++++++++++++++++++++++++++-
+>>  include/linux/thermal.h             |   21 +++++++++++
+>>  3 files changed, 109 insertions(+), 2 deletions(-)
 >>
->> diff --git a/Documentation/thermal/cpu-cooling-api.txt
->> b/Documentation/thermal/cpu-cooling-api.txt
->> index fca24c9..aaa07c6 100644
->> --- a/Documentation/thermal/cpu-cooling-api.txt
->> +++ b/Documentation/thermal/cpu-cooling-api.txt
->> @@ -17,13 +17,14 @@ the user. The registration APIs returns the cooling
->> device pointer.
+>> diff --git a/Documentation/thermal/sysfs-api.txt
+>> b/Documentation/thermal/sysfs-api.txt
+>> index 87519cb..5f45e03 100644
+>> --- a/Documentation/thermal/sysfs-api.txt
+>> +++ b/Documentation/thermal/sysfs-api.txt
+>> @@ -92,6 +92,27 @@ temperature) and throttle appropriate devices.
+>>      It deletes the corresponding entry form /sys/class/thermal folder
+>> and
+>>      unbind itself from all the thermal zone devices using it.
 >>
->>  1.1 cpufreq registration/unregistration APIs
->>  1.1.1 struct thermal_cooling_device *cpufreq_cooling_register(
->> -       struct cpumask *clip_cpus)
->> +       struct cpumask *clip_cpus, void *devdata)
->>
->>      This interface function registers the cpufreq cooling device with the
->> name
->>      "thermal-cpufreq-%x". This api can support multiple instances of
->> cpufreq
->>      cooling devices.
->>
->>     clip_cpus: cpumask of cpus where the frequency constraints will
->> happen.
->> +   devdata: driver private data pointer.
->>
->>  1.1.2 void cpufreq_cooling_unregister(struct thermal_cooling_device
->> *cdev)
->>
->> diff --git a/drivers/thermal/cpu_cooling.c
->> b/drivers/thermal/cpu_cooling.c
->> index 16388b0..6d145d5 100644
->> --- a/drivers/thermal/cpu_cooling.c
->> +++ b/drivers/thermal/cpu_cooling.c
->> @@ -50,16 +50,18 @@ struct cpufreq_cooling_device {
->>         unsigned int cpufreq_state;
->>         unsigned int cpufreq_val;
->>         struct cpumask allowed_cpus;
->> +       struct list_head node;
->>  };
->>  static DEFINE_IDR(cpufreq_idr);
->>  static DEFINE_MUTEX(cooling_cpufreq_lock);
->>
->> -static unsigned int cpufreq_dev_count;
->> -
->>  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
->>  #define NOTIFY_INVALID NULL
->>  static DEFINE_PER_CPU(struct cpufreq_cooling_device *, notify_device);
->>
->> +/* A list to hold all the cpufreq cooling devices registered */
->> +static LIST_HEAD(cpufreq_cooling_list);
+>> +1.2.3 int thermal_cooling_register_notifier(struct notifier_block *nb)
 >> +
+>> +    This interface function registers the client notifier handler. The
+>> notifier
+>> +    handler can use this to monitor or update any cooling state
+>> requests.
+>> +    nb: notifier structure containing client notifier handler.
+>> +
+>> +1.2.4 int thermal_cooling_unregister_notifier(struct notifier_block *nb)
+>> +
+>> +    This interface function unregisters the client notifier handler.
+>> +    nb: notifier structure containing client notifier handler.
+>> +
+>> +1.2.5 int thermal_cooling_notify_states(struct thermal_cooling_status
+>> *request,enum cooling_state_ops op)
+>> +
+>> +    This interface function invokes the earlier registered cooling states
+>> handler.
+>> +    request: holds the relevant cooling state value.
+>> +	.cur_state: current cooling state.
+>> +	.new_state: new cooling state to be set.
+>> +	.max_state: max cooling state.
+>> +	.devdata: driver private data pointer.
+>> +    op: describes various operation supported.
+>> +
+>>  1.3 interface for binding a thermal zone device with a thermal cooling
+>> device
+>>  1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device
+>> *tz,
+>>  	int trip, struct thermal_cooling_device *cdev,
+>> diff --git a/drivers/thermal/thermal_core.c
+>> b/drivers/thermal/thermal_core.c
+>> index 71b0ec0..1a60f83 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -52,6 +52,8 @@ static DEFINE_MUTEX(thermal_idr_lock);
+>>  static LIST_HEAD(thermal_tz_list);
+>>  static LIST_HEAD(thermal_cdev_list);
+>>  static LIST_HEAD(thermal_governor_list);
+>> +/* Notfier list to validates/updates the cpufreq cooling states */
+>> +static BLOCKING_NOTIFIER_HEAD(cooling_state_notifier_list);
+>>
+>>  static DEFINE_MUTEX(thermal_list_lock);
+>>  static DEFINE_MUTEX(thermal_governor_lock);
+>> @@ -1073,8 +1075,71 @@ static struct class thermal_class = {
+>>  };
+>>
 >>  /**
->>   * get_idr - function to get a unique id.
->>   * @idr: struct idr * handle used to create a id.
->> @@ -98,6 +100,26 @@ static void release_idr(struct idr *idr, int id)
->>
->>  /* Below code defines functions to be used for cpufreq as cooling device
->> */
->>
+>> - * __thermal_cooling_device_register() - register a new thermal cooling
+>> device
+>> - * @np:		a pointer to a device tree node.
+>> + * thermal_cooling_notify_states - Invoke the necessary cooling states
+>> handler.
+>> + * @request: holds the relevant cooling state value. say if the cooling
+>> state
+>> + * operation is of type COOLING_GET_MAX_STATE, then request holds
+>> + * the current max cooling state value.
+>> + * @op: different operations supported
+>> + *
+>> + * This API allows the registered user to recieve the different cooling
+>> + * notifications like current state, max state and set state.
+>> + *
+>> + * Return: 0 (success)
+>> + */
+>> +int thermal_cooling_notify_states(struct thermal_cooling_status
+>> *request,
+>> +				enum cooling_state_ops op)
+>> +{
+>> +	/* Invoke the notifiers which have registered for this state change */
+>> +	if (op == COOLING_SET_STATE_PRE ||
+>> +		op == COOLING_SET_STATE_POST ||
+>> +		op == COOLING_GET_MAX_STATE ||
+>> +		op == COOLING_GET_CUR_STATE) {
+>> +		blocking_notifier_call_chain(
+>> +			&cooling_state_notifier_list, op, request);
+>> +	}
+>> +	return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(thermal_cooling_notify_states);
+>> +
 >> +/**
->> + * cpufreq_cooling_get_info - function to cpufreq_dev for the
->> corresponding cdev
->> + * @cdev: pointer of the cooling device
+>> + * thermal_cooling_register_notifier - registers a notifier with thermal
+>> cooling.
+>> + * @nb:	notifier function to register.
 >> + *
->> + * This function will loop through the cpufreq_cooling_device list and
->> + * return the matching device
+>> + * Add a driver to receive all cooling notifications like current state,
+>> + * max state and set state. The drivers after reading the events can
+>> perform
+>> + * some mapping like grouping some P states into 1 cooling state.
 >> + *
+>> + * Return: 0 (success)
+>> + */
+>> +int thermal_cooling_register_notifier(struct notifier_block *nb)
+>> +{
+>> +	int ret = 0;
+>> +	ret = blocking_notifier_chain_register(
+>> +				&cooling_state_notifier_list, nb);
+>> +	return ret;
+>> +}
+>> +EXPORT_SYMBOL_GPL(thermal_cooling_register_notifier);
+>> +
+>> +/**
+>> + * thermal_cooling_unregister_notifier - unregisters a notifier with
+>> thermal
+>> + * cooling.
+>> + * @nb:	notifier function to unregister.
+>> + *
+>> + * Removes a driver to receive further cooling notifications.
+>> + *
+>> + * Return: 0 (success)
 >
-> You should add a "Locking:" section here which documents that this
-> function must be called with cooling_cpufreq_lock held.
-Yes agreed. Will update in the next version.
+> Or %-ENOENT if the notifier is not registered.
+>
+>> + */
+>> +int thermal_cooling_unregister_notifier(struct notifier_block *nb)
+>> +{
+>> +	int ret = 0;
+>> +	ret = blocking_notifier_chain_unregister(
+>> +				&cooling_state_notifier_list, nb);
+>> +	return ret;
+>> +}
+>> +EXPORT_SYMBOL_GPL(thermal_cooling_unregister_notifier);
+>> +
+>> +/**
+>> + * thermal_cooling_device_register() - register a new thermal cooling
+>> device
+>
+> This is wrong, the function below this comment is still
+> __thermal_cooling_device_register() whose first parameter is np, not
+> type.
+I did not add this. This seems wrong. Will modify this as a fix in the version.
 
 Thanks,
 Amit
 >
+>>   * @type:	the thermal cooling device type.
+>>   * @devdata:	device private data.
+>>   * @ops:		standard thermal cooling devices callbacks.
+>
 > Cheers,
 > Javi
->
->> + * Return: cpufreq_cooling_device if matched with the cdev or NULL if
->> not
->> + * matched.
->> + */
->> +static inline struct cpufreq_cooling_device *
->> +cpufreq_cooling_get_info(struct thermal_cooling_device *cdev)
->> +{
->> +       struct cpufreq_cooling_device *cpufreq_dev = NULL;
->> +       list_for_each_entry(cpufreq_dev, &cpufreq_cooling_list, node)
->> +               if (cpufreq_dev->cool_dev == cdev)
->> +                       break;
->> +       return cpufreq_dev;
->> +}
->> +
->
 >
 >
