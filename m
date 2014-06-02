@@ -1,73 +1,81 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: [PATCH] tools/thermal: tmon: fix compilation errors when building statically
-Date: Mon,  2 Jun 2014 18:08:17 +0100
-Message-ID: <1401728897-25188-1-git-send-email-javi.merino@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V5 0/2] cpufreq: add support for intermediate (stable) frequencies
+Date: Mon,  2 Jun 2014 22:49:27 +0530
+Message-ID: <cover.1401728994.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:33767 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbaFBRIm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 13:08:42 -0400
+Received: from mail-pd0-f182.google.com ([209.85.192.182]:37145 "EHLO
+	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbaFBRTj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 13:19:39 -0400
+Received: by mail-pd0-f182.google.com with SMTP id r10so3626590pdi.13
+        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 10:19:39 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org, linux@arm.linux.org.uk, nicolas.pitre@linaro.org, thomas.abraham@linaro.org, pdeschrijver@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-tmon fails to build statically with the following error:
+Douglas Anderson, recently pointed out an interesting problem due to which
+udelay() was expiring earlier than it should.
 
-$ make LDFLAGS=3D-static
-gcc -O1 -Wall -Wshadow -W -Wformat -Wimplicit-function-declaration -Wimplic=
-it-int -fstack-protector -D VERSION=3D\"1.0\" -static tmon.o tui.o sysfs.o =
-pid.o   -o tmon -lm -lpanel -lncursesw  -lpthread
-tmon.o: In function `tmon_sig_handler':
-tmon.c:(.text+0x21): undefined reference to `stdscr'
-tmon.o: In function `tmon_cleanup':
-tmon.c:(.text+0xb9): undefined reference to `stdscr'
-tmon.c:(.text+0x11e): undefined reference to `stdscr'
-tmon.c:(.text+0x123): undefined reference to `keypad'
-tmon.c:(.text+0x12d): undefined reference to `nocbreak'
-tmon.o: In function `main':
-tmon.c:(.text+0x785): undefined reference to `stdscr'
-tmon.c:(.text+0x78a): undefined reference to `nodelay'
-tui.o: In function `setup_windows':
-tui.c:(.text+0x131): undefined reference to `stdscr'
-tui.c:(.text+0x176): undefined reference to `stdscr'
-tui.c:(.text+0x19f): undefined reference to `stdscr'
-tui.c:(.text+0x1cc): undefined reference to `stdscr'
-tui.c:(.text+0x1ff): undefined reference to `stdscr'
-tui.o:tui.c:(.text+0x229): more undefined references to `stdscr' follow
-tui.o: In function `show_cooling_device':
-[...]
+While transitioning between frequencies few platforms may temporarily switch to
+a stable frequency, waiting for the main PLL to stabilize.
 
-stdscr() and friends are in libtinfo (part of ncurses) so add it to
-the libraries that are linked in when compiling tmon to fix it.
+For example: When we transition between very low frequencies on exynos, like
+between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
+No CPUFREQ notification is sent for that. That means there's a period of time
+when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
+and 300MHz. And so udelay behaves badly.
 
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- tools/thermal/tmon/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+To get this fixed in a generic way, lets introduce another set of callbacks
+get_intermediate() and target_intermediate(), only for drivers with
+target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
 
-diff --git a/tools/thermal/tmon/Makefile b/tools/thermal/tmon/Makefile
-index 447321104ec0..e775adcbd29f 100644
---- a/tools/thermal/tmon/Makefile
-+++ b/tools/thermal/tmon/Makefile
-@@ -21,7 +21,7 @@ OBJS =3D tmon.o tui.o sysfs.o pid.o
- OBJS +=3D
-=20
- tmon: $(OBJS) Makefile tmon.h
--=09$(CC) ${CFLAGS} $(LDFLAGS) $(OBJS)  -o $(TARGET) -lm -lpanel -lncursesw=
-  -lpthread
-+=09$(CC) ${CFLAGS} $(LDFLAGS) $(OBJS)  -o $(TARGET) -lm -lpanel -lncursesw=
- -ltinfo -lpthread
-=20
- valgrind: tmon
- =09 sudo valgrind -v --track-origins=3Dyes --tool=3Dmemcheck --leak-check=
-=3Dyes --show-reachable=3Dyes --num-callers=3D20 --track-fds=3Dyes ./$(TARG=
-ET)  1> /dev/null
---=20
-1.9.1
+get_intermediate() should return a stable intermediate frequency platform wants
+to switch to, and target_intermediate() should set CPU to to that frequency,
+before jumping to the frequency corresponding to 'index'. Core will take care of
+sending notifications and driver doesn't have to handle them in
+target_intermediate() or target_index().
 
+This patchset also update Tegra to use this new infrastructure and is already
+tested by Stephen.
+
+V4->V5:
+- Moved setting old frequency to __target_index() from __target_intermediate()
+- Replaced retval with 0 during call to cpufreq_freq_transition_end() for
+  restoring to restored freq.
+- Fix important issues with Tegra driver as reported by Stephen.
+- Dropped patch 1, already applied: "cpufreq: handle calls to ->target_index()
+  in separate routine"
+
+V3->V4:
+- Allow get_intermediate() to return zero when we don't need to switch to
+  intermediate first
+- Get rid of 'goto' and create another routine for handling intermediate freqs
+- Allow target_index() to fail, its not a crime :)
+- Fix tegra driver to return zero from get_intermediate() for few situations
+  (refer to patch 3/4)
+- Fix issues with tegra's patch, like s/rate/rate * 1000
+- Overall there are more modifications that what Doug requested as I felt we
+  need better support from core.
+- Looks much better now, thanks Doug :)
+
+V2-V3:
+- Fix spelling error: s/Uset/Used
+- Update tegra with the changes Stephen suggested
+- Include a dependency patch sent separately earlier (3/4)
+
+V1-V2: Almost changed completely, V1 was here: https://lkml.org/lkml/2014/5/15/40
+
+Viresh Kumar (2):
+  cpufreq: add support for intermediate (stable) frequencies
+  cpufreq: Tegra: implement intermediate frequency callbacks
+
+ Documentation/cpu-freq/cpu-drivers.txt | 29 +++++++++-
+ drivers/cpufreq/cpufreq.c              | 67 ++++++++++++++++++++---
+ drivers/cpufreq/tegra-cpufreq.c        | 97 ++++++++++++++++++++++------------
+ include/linux/cpufreq.h                | 25 +++++++++
+ 4 files changed, 174 insertions(+), 44 deletions(-)
+
+-- 
+2.0.0.rc2
 
