@@ -1,67 +1,68 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: ti-bandgap.c:  Cleaning up
- memory leak
-Date: Mon, 2 Jun 2014 13:08:00 -0400
-Message-ID: <20140602170800.GA5198@developer>
-References: <1401622431-13554-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Subject: Re: [PATCH] MAINTAINERS: Update Eduardo Valentin's email address
+Date: Mon, 2 Jun 2014 13:28:00 -0400
+Message-ID: <20140602172800.GA5902@developer>
+References: <1401444208-6887-1-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f48.google.com ([209.85.213.48]:62507 "EHLO
+Received: from mail-yh0-f48.google.com ([209.85.213.48]:36280 "EHLO
 	mail-yh0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbaFBSZ7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 14:25:59 -0400
+	with ESMTP id S1751189AbaFBSqV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 14:46:21 -0400
 Content-Disposition: inline
-In-Reply-To: <1401622431-13554-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1401444208-6887-1-git-send-email-lee.jones@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-On Sun, Jun 01, 2014 at 01:33:51PM +0200, Rickard Strandqvist wrote:
-> There is a risk for memory leak in when something unexpected happens
-> and the function returns.
+Hello Lee Jones,
 
-I don't think there is a risk of memory leak, but wrong address access,
-in this case.
-
+On Fri, May 30, 2014 at 11:03:28AM +0100, Lee Jones wrote:
+> Eduardo TI address is bouncing, but it looks like he's still
+> contributing via his Gmail address.
 > 
-> This was largely found by using a static code analysis program called cppcheck.
-> 
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+
+Thanks for being proactive! I actually sent the very same patch a while
+ago:
+
+
+https://lkml.org/lkml/2014/4/2/644
+
+
+Maybe it's fallen into the cracks.
+
+Rui, any idea what is the status of that patch?
+
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Lee Jones <lee.jones@linaro.org>
 > ---
->  drivers/thermal/ti-soc-thermal/ti-bandgap.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  MAINTAINERS | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> index 3ab12ee..8401d2e 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> @@ -1155,8 +1155,9 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
->  	/* register shadow for context save and restore */
->  	bgp->regval = devm_kzalloc(&pdev->dev, sizeof(*bgp->regval) *
->  				   bgp->conf->sensor_count, GFP_KERNEL);
-> -	if (!bgp) {
-> +	if (!bgp->regval) {
-
-I agree with this fix.
-
->  		dev_err(&pdev->dev, "Unable to allocate mem for driver ref\n");
-> +		devm_kfree(&pdev->dev, bgp);
-
-But I think this is unnecessary, as it has been managed allocated.
-
-Cheers,
-
-Eduardo
-
->  		return ERR_PTR(-ENOMEM);
->  	}
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 6dc67b1..a9dc15b 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -8850,7 +8850,7 @@ F:	drivers/media/radio/radio-raremono.c
 >  
+>  THERMAL
+>  M:	Zhang Rui <rui.zhang@intel.com>
+> -M:	Eduardo Valentin <eduardo.valentin@ti.com>
+> +M:	Eduardo Valentin <edubezval@gmail.com>
+>  L:	linux-pm@vger.kernel.org
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+> @@ -8877,7 +8877,7 @@ S:	Maintained
+>  F:	drivers/platform/x86/thinkpad_acpi.c
+>  
+>  TI BANDGAP AND THERMAL DRIVER
+> -M:	Eduardo Valentin <eduardo.valentin@ti.com>
+> +M:	Eduardo Valentin <edubezval@gmail.com>
+>  L:	linux-pm@vger.kernel.org
+>  S:	Supported
+>  F:	drivers/thermal/ti-soc-thermal/
 > -- 
-> 1.7.10.4
+> 1.8.3.2
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
