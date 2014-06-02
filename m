@@ -1,201 +1,68 @@
-From: Amit Kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH v1 3/6] thermal: thermal-core: Add notifications support
- for the cooling states
-Date: Mon, 2 Jun 2014 15:01:19 +0530
-Message-ID: <CADGdYn4+dA=vDV23bx7dDz2j9k9RFW1Apa153-FrtWgbVqEGYw@mail.gmail.com>
-References: <1401351334-11210-1-git-send-email-amit.daniel@samsung.com>
-	<1401351334-11210-4-git-send-email-amit.daniel@samsung.com>
-	<20140529122438.GB2593@e104805>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of
+ regulator_set_voltage_time() for !CONFIG_REGULATOR
+Date: Mon, 2 Jun 2014 10:51:12 +0100
+Message-ID: <20140602095112.GV5099@sirena.org.uk>
+References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
+ <20140527192923.GC12304@sirena.org.uk>
+ <CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+ <20140528173858.GG5099@sirena.org.uk>
+ <CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20140529122438.GB2593@e104805>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lenb@kernel.org" <lenb@kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="E/fydkOSwztHu2te"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:50682 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbaFBJve (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 05:51:34 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 
-On 5/29/14, Javi Merino <javi.merino@arm.com> wrote:
-> Hi Amit,
->
-> On Thu, May 29, 2014 at 09:15:31AM +0100, Amit Daniel Kachhap wrote:
->> This patch adds notification infrastructure for any requests related to
->> cooling
->> states. The notifier structure passed is of both Get/Set type. So the
->> receiver
->> of these can sense the new/cur/max cooling state as decided by thermal
->> governor.
->> In addition to that it can also override the cooling state and may do
->> something
->> interesting after receiving these CPU cooling events such as masking some
->> states, enabling some extra conditional states or perform any extra
->> operation
->> for aggressive thermal cooling.
->> The notfications events can be of type,
->>
->> 1. COOLING_SET_STATE_PRE
->> 2. COOLING_SET_STATE_POST
->> 3. COOLING_GET_CUR_STATE
->> 4. COOLING_GET_MAX_STATE
->>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  Documentation/thermal/sysfs-api.txt |   21 +++++++++++
->>  drivers/thermal/thermal_core.c      |   69
->> ++++++++++++++++++++++++++++++++++-
->>  include/linux/thermal.h             |   21 +++++++++++
->>  3 files changed, 109 insertions(+), 2 deletions(-)
->>
->> diff --git a/Documentation/thermal/sysfs-api.txt
->> b/Documentation/thermal/sysfs-api.txt
->> index 87519cb..5f45e03 100644
->> --- a/Documentation/thermal/sysfs-api.txt
->> +++ b/Documentation/thermal/sysfs-api.txt
->> @@ -92,6 +92,27 @@ temperature) and throttle appropriate devices.
->>      It deletes the corresponding entry form /sys/class/thermal folder
->> and
->>      unbind itself from all the thermal zone devices using it.
->>
->> +1.2.3 int thermal_cooling_register_notifier(struct notifier_block *nb)
->> +
->> +    This interface function registers the client notifier handler. The
->> notifier
->> +    handler can use this to monitor or update any cooling state
->> requests.
->> +    nb: notifier structure containing client notifier handler.
->> +
->> +1.2.4 int thermal_cooling_unregister_notifier(struct notifier_block *nb)
->> +
->> +    This interface function unregisters the client notifier handler.
->> +    nb: notifier structure containing client notifier handler.
->> +
->> +1.2.5 int thermal_cooling_notify_states(struct thermal_cooling_status
->> *request,enum cooling_state_ops op)
->> +
->> +    This interface function invokes the earlier registered cooling states
->> handler.
->> +    request: holds the relevant cooling state value.
->> +	.cur_state: current cooling state.
->> +	.new_state: new cooling state to be set.
->> +	.max_state: max cooling state.
->> +	.devdata: driver private data pointer.
->> +    op: describes various operation supported.
->> +
->>  1.3 interface for binding a thermal zone device with a thermal cooling
->> device
->>  1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device
->> *tz,
->>  	int trip, struct thermal_cooling_device *cdev,
->> diff --git a/drivers/thermal/thermal_core.c
->> b/drivers/thermal/thermal_core.c
->> index 71b0ec0..1a60f83 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -52,6 +52,8 @@ static DEFINE_MUTEX(thermal_idr_lock);
->>  static LIST_HEAD(thermal_tz_list);
->>  static LIST_HEAD(thermal_cdev_list);
->>  static LIST_HEAD(thermal_governor_list);
->> +/* Notfier list to validates/updates the cpufreq cooling states */
->> +static BLOCKING_NOTIFIER_HEAD(cooling_state_notifier_list);
->>
->>  static DEFINE_MUTEX(thermal_list_lock);
->>  static DEFINE_MUTEX(thermal_governor_lock);
->> @@ -1073,8 +1075,71 @@ static struct class thermal_class = {
->>  };
->>
->>  /**
->> - * __thermal_cooling_device_register() - register a new thermal cooling
->> device
->> - * @np:		a pointer to a device tree node.
->> + * thermal_cooling_notify_states - Invoke the necessary cooling states
->> handler.
->> + * @request: holds the relevant cooling state value. say if the cooling
->> state
->> + * operation is of type COOLING_GET_MAX_STATE, then request holds
->> + * the current max cooling state value.
->> + * @op: different operations supported
->> + *
->> + * This API allows the registered user to recieve the different cooling
->> + * notifications like current state, max state and set state.
->> + *
->> + * Return: 0 (success)
->> + */
->> +int thermal_cooling_notify_states(struct thermal_cooling_status
->> *request,
->> +				enum cooling_state_ops op)
->> +{
->> +	/* Invoke the notifiers which have registered for this state change */
->> +	if (op == COOLING_SET_STATE_PRE ||
->> +		op == COOLING_SET_STATE_POST ||
->> +		op == COOLING_GET_MAX_STATE ||
->> +		op == COOLING_GET_CUR_STATE) {
->> +		blocking_notifier_call_chain(
->> +			&cooling_state_notifier_list, op, request);
->> +	}
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(thermal_cooling_notify_states);
->> +
->> +/**
->> + * thermal_cooling_register_notifier - registers a notifier with thermal
->> cooling.
->> + * @nb:	notifier function to register.
->> + *
->> + * Add a driver to receive all cooling notifications like current state,
->> + * max state and set state. The drivers after reading the events can
->> perform
->> + * some mapping like grouping some P states into 1 cooling state.
->> + *
->> + * Return: 0 (success)
->> + */
->> +int thermal_cooling_register_notifier(struct notifier_block *nb)
->> +{
->> +	int ret = 0;
->> +	ret = blocking_notifier_chain_register(
->> +				&cooling_state_notifier_list, nb);
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(thermal_cooling_register_notifier);
->> +
->> +/**
->> + * thermal_cooling_unregister_notifier - unregisters a notifier with
->> thermal
->> + * cooling.
->> + * @nb:	notifier function to unregister.
->> + *
->> + * Removes a driver to receive further cooling notifications.
->> + *
->> + * Return: 0 (success)
->
-> Or %-ENOENT if the notifier is not registered.
->
->> + */
->> +int thermal_cooling_unregister_notifier(struct notifier_block *nb)
->> +{
->> +	int ret = 0;
->> +	ret = blocking_notifier_chain_unregister(
->> +				&cooling_state_notifier_list, nb);
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(thermal_cooling_unregister_notifier);
->> +
->> +/**
->> + * thermal_cooling_device_register() - register a new thermal cooling
->> device
->
-> This is wrong, the function below this comment is still
-> __thermal_cooling_device_register() whose first parameter is np, not
-> type.
-I did not add this. This seems wrong. Will modify this as a fix in the version.
 
-Thanks,
-Amit
->
->>   * @type:	the thermal cooling device type.
->>   * @devdata:	device private data.
->>   * @ops:		standard thermal cooling devices callbacks.
->
-> Cheers,
-> Javi
->
->
+--E/fydkOSwztHu2te
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Mon, Jun 02, 2014 at 12:50:59PM +0530, Viresh Kumar wrote:
+> On 28 May 2014 23:08, Mark Brown <broonie@kernel.org> wrote:
+> > Whatever - I don't think the particular code makes any practical
+> > difference.  We would need to audit existing users who don't have a
+> > REGULATOR dependency for breakage though.
+
+> I tried auditing all 29 files which had this symbol: regulator_set_voltage
+> and couldn't find anything which might break with the proposed change.
+
+> Either these are making sure that we have a valid regulator or they have
+> code inside #ifdef CONFIG_REGULATOR ..
+
+When you say they check for a valid regulator how are they doing that?
+The stub will come into play if there isn't a dependency on REGULATOR.
+
+--E/fydkOSwztHu2te
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTjEkNAAoJELSic+t+oim9yi8P/2OE21qPypEX7bRroMjlSRCv
+o2eibMvSm2DhSrxqrx75x0wp4ykDGlZbc4NsKJXVFkU1zzJL2H4LDir13R7mhh+j
+ghP04uLzdvTp53VzNut8Ig0TKDI2liN1vTv/RDlamQiWhd+uw/UPA0FrPraFebJq
+F0fP9mJKAR9IidmlR8MrctRBkiNsAM7Kk9F3mx8pPiZKGvIRvyCnTUbxdCVL3c1o
+RmihWFd5wVOX1i5oWYfHep9D60LxJMXc13TfjI9oIGfz1RYpI9jXq/9ggLifgrhf
+jvo6nSqCBBQkwo60lusFWIKKrGLml3Pp3dspbYDRpCjvkRiHz9alGgWaAuJR2jKa
+apPsNfyBFJHtc2HFOcxIwY68iI9nibt92jYFqDpvVOey9MmHwW1iAOUZPilH3bEO
+0XreXDeob1UIMCfoUgIipWKdVK2/QzDDVVNiAcz2AQbN/oMHHI46dtF3FMCBkH+m
+27IUDaeau34YJc/7tOuSBDgJBfhw5ZyPH/2TxTJpZWH/SVdI9wA82MbAarpTLrzA
+iRaM8Tt+jO2QlB4T+ZSl8boeEoTzsXhyVNfvGasJBCbxnLmO8DRUB/Jny+K+dwEq
+nX3GfgUiPzBSWbkIStGLnrhVueJd6kWnQpOrZupNGNLEcVemwtsT2JBaHAx+DDVE
+ZdzdBDvXKCzFlr+iaBSg
+=a4Mr
+-----END PGP SIGNATURE-----
+
+--E/fydkOSwztHu2te--
