@@ -1,92 +1,103 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 4/7] ARM: EXYNOS: PM: replace EXYNOS_BOOT_VECTOR_*
- macros by static inlines
-Date: Mon, 02 Jun 2014 18:13:42 +0200
-Message-ID: <538CA2B6.4080805@linaro.org>
-References: <1401712543-14281-1-git-send-email-b.zolnierkie@samsung.com> <1401712543-14281-5-git-send-email-b.zolnierkie@samsung.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of
+ regulator_set_voltage_time() for !CONFIG_REGULATOR
+Date: Mon, 2 Jun 2014 16:20:14 +0100
+Message-ID: <20140602152014.GL31751@sirena.org.uk>
+References: <20140527192923.GC12304@sirena.org.uk>
+ <CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+ <20140528173858.GG5099@sirena.org.uk>
+ <CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
+ <20140602095112.GV5099@sirena.org.uk>
+ <CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
+ <20140602100201.GX5099@sirena.org.uk>
+ <CAKohpomj5-tHPkBLMrgGpsDCaCxW-8hGMunMTmJgXGgEgTR=vA@mail.gmail.com>
+ <20140602122332.GA31751@sirena.org.uk>
+ <CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="2EnvhqpWJq810sZn"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1401712543-14281-5-git-send-email-b.zolnierkie@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: Tomasz Figa <t.figa@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/02/2014 02:35 PM, Bartlomiej Zolnierkiewicz wrote:
-> Replace EXYNOS_BOOT_VECTOR_ADDR and EXYNOS_BOOT_VECTOR_FLAG macros
-> by exynos_boot_vector_addr() and exynos_boot_vector_flag() static
-> inlines.
->
-> This patch shouldn't cause any functionality changes.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+--2EnvhqpWJq810sZn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> ---
->   arch/arm/mach-exynos/pm.c | 28 ++++++++++++++++++++--------
->   1 file changed, 20 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index 87c0d34..cf09383 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -166,12 +166,23 @@ int exynos_cluster_power_state(int cluster)
->   			S5P_CORE_LOCAL_PWR_EN);
->   }
->
-> -#define EXYNOS_BOOT_VECTOR_ADDR	(samsung_rev() =3D=3D EXYNOS4210_REV=
-_1_1 ? \
-> -			S5P_INFORM7 : (samsung_rev() =3D=3D EXYNOS4210_REV_1_0 ? \
-> -			(sysram_base_addr + 0x24) : S5P_INFORM0))
-> -#define EXYNOS_BOOT_VECTOR_FLAG	(samsung_rev() =3D=3D EXYNOS4210_REV=
-_1_1 ? \
-> -			S5P_INFORM6 : (samsung_rev() =3D=3D EXYNOS4210_REV_1_0 ? \
-> -			(sysram_base_addr + 0x20) : S5P_INFORM1))
-> +static inline void __iomem *exynos_boot_vector_addr(void)
-> +{
-> +	if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
-> +		return S5P_INFORM7;
-> +	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_0)
-> +		return sysram_base_addr + 0x24;
-> +	return S5P_INFORM0;
-> +}
-> +
-> +static inline void __iomem *exynos_boot_vector_flag(void)
-> +{
-> +	if (samsung_rev() =3D=3D EXYNOS4210_REV_1_1)
-> +		return S5P_INFORM6;
-> +	else if (samsung_rev() =3D=3D EXYNOS4210_REV_1_0)
-> +		return sysram_base_addr + 0x20;
-> +	return S5P_INFORM1;
-> +}
->
->   #define S5P_CHECK_AFTR  0xFCBA0D10
->   #define S5P_CHECK_SLEEP 0x00000BAD
-> @@ -184,8 +195,9 @@ static void exynos_set_wakeupmask(long mask)
->
->   static void exynos_cpu_set_boot_vector(long flags)
->   {
-> -	__raw_writel(virt_to_phys(exynos_cpu_resume), EXYNOS_BOOT_VECTOR_AD=
-DR);
-> -	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
-> +	__raw_writel(virt_to_phys(exynos_cpu_resume),
-> +		     exynos_boot_vector_addr());
-> +	__raw_writel(flags, exynos_boot_vector_flag());
->   }
->
->   void exynos_enter_aftr(void)
->
+On Mon, Jun 02, 2014 at 06:44:35PM +0530, Viresh Kumar wrote:
+> On 2 June 2014 17:53, Mark Brown <broonie@kernel.org> wrote:
 
+> > If the consumer tried to set a voltage presumably it cares if that
+> > voltage was set - for example if your cpufreq driver tries to increase
+> > the voltage of a core supply so that it can then raise the frequency the
+> > user is going to be upset if the voltage was not actually raised and it
+> > goes off and raises the clock rate causing the system to become unstable.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+> If the driver continued despite getting regulator as NULL, it means that
+> regulator isn't a MUST for it. For example a CPUFreq driver may work
+> with or without a regulator.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+No, NULL is a perfectly valid regulator - the *only* thing that a caller
+should check for is IS_ERR().  You are missing the point of the stubs,
+and indeed the fact that real physical supplies can have exactly the
+same limitations as the dummy supplies do and therefore the presence of
+a physical regulator should not in itself indcate anything about what
+you can do with it.
+
+> Now if the dummy calls return *error* for some cases then these driver
+> will have to do
+> if(xyz)
+>     API-call()..
+
+Consumers should be implementing error checking code regardless.  If we
+don't need to implement any error checking there's rather a lot of the
+kernel we can go and delete...
+
+> And so dummy APIs like clk_set_rate(), clk_get_rate(),
+> regulator_set_voltage() must return zero..
+
+Please re-read and think about my CPUfreq example.  How do you expect
+that to work sanely if we don't care if any of the operations worked?
+
+> To get rid of this in drivers these dummy routines *must* behave as
+> they passed, if the drivers really care about them then they must
+> quit as soon as regulator_get() returned NULL.
+
+> This is why we have such implementations in clk framework which are
+> very well thought earlier.
+
+> Does this make sense?
+
+No, not at all and I don't think it applies to the clock API either -
+it's got similar issues with real physical clocks not always supporting
+all operations.  Consider for a moment what happens if we try to set and
+then use a clock rate ona fixed clock.
+
+--2EnvhqpWJq810sZn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTjJYjAAoJELSic+t+oim9zUgP/RlBJfyJKfiN5sS1FF3WjZeI
+gT0JcwqcNBHAUwdm3DNOlW8l9KwHeY16gTa5uK//asN+CcE9eb7s8/LV3Ex5aYAU
+JG4IE22AWxRSKTxDR+gfQZKrr+Cyyhg4PnMBN3ulv+uRh5Q1shyC5BUpGSTjEg0r
+9H/9sVBlBWh5kGGuHMA1GDgImFA8+UtyMuRYq5tqKKdFD1JgwA/erJXATKOsfMyP
+exMqcMjj+i4995HEC89FKOwWMS/Pp2wtPlFYPes56e53gwkx9hEb55i82zRchCWZ
+KoqrTZqGlvgzN3spU8U67Q2gfFZoIhb93Qlgm7dWpxes5ESDnsSt20sTjy8R+JaO
+lUhakqlRyyBtB284xQVBR4Dkrsp1bZxhSWEMd9Zyv98xLFv8+82h4WDENoeRkKMA
+V1qldJFrUQ93LNUeiWt7/iaYuL1v2b55ikf6eANU0QgEzaeJpFVlJo+/Z17rygzl
+dxA07cviEttnuB+IM7esi9uFiol2c5Xk84pN73D27pBx8YufPTh8Rv2H+tzmsbQ7
+eObJ5PzQYMGcsv9qkywTIFFsEQJKV0a4cVe25CICQtjVqnshhvN7cr2m6AoKRavq
+OP5RzhDMBZ1erJ9x03VKyCmI0HHVpDdhfQsCQLpkzg9o1L2eEFF5gllsCD4grMUP
+msFlfQ9gKX0UoEtGbE69
+=TwzK
+-----END PGP SIGNATURE-----
+
+--2EnvhqpWJq810sZn--
