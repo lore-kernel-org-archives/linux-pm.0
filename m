@@ -1,118 +1,67 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: [PATCH] thermal: document struct thermal_zone_device and thermal_governor
-Date: Mon,  2 Jun 2014 18:25:56 +0100
-Message-ID: <1401729956-26122-1-git-send-email-javi.merino@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: ti-bandgap.c:  Cleaning up
+ memory leak
+Date: Mon, 2 Jun 2014 13:08:00 -0400
+Message-ID: <20140602170800.GA5198@developer>
+References: <1401622431-13554-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:38776 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbaFBR0d (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 13:26:33 -0400
+Received: from mail-yh0-f48.google.com ([209.85.213.48]:62507 "EHLO
+	mail-yh0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbaFBSZ7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 14:25:59 -0400
+Content-Disposition: inline
+In-Reply-To: <1401622431-13554-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Document struct thermal_zone_device and struct thermal_governor fields
-and their use by the thermal framework code.
+On Sun, Jun 01, 2014 at 01:33:51PM +0200, Rickard Strandqvist wrote:
+> There is a risk for memory leak in when something unexpected happens
+> and the function returns.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
+I don't think there is a risk of memory leak, but wrong address access,
+in this case.
 
----
+> 
+> This was largely found by using a static code analysis program called cppcheck.
+> 
+> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+> ---
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> index 3ab12ee..8401d2e 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -1155,8 +1155,9 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
+>  	/* register shadow for context save and restore */
+>  	bgp->regval = devm_kzalloc(&pdev->dev, sizeof(*bgp->regval) *
+>  				   bgp->conf->sensor_count, GFP_KERNEL);
+> -	if (!bgp) {
+> +	if (!bgp->regval) {
 
-Hi linux-pm,
+I agree with this fix.
 
-I have some patches that add new fields to these structures but I
-don't have a good place to describe those fields as these structs are
-mostly undocumented so I thought I'd document them.
+>  		dev_err(&pdev->dev, "Unable to allocate mem for driver ref\n");
+> +		devm_kfree(&pdev->dev, bgp);
 
-Changes since v1:
-  * Clarified that some parameters are currently only used by the
-    step-wise governor.
-  * Clarified that forced_passive operates on ACPI processor cooling
-    devices.
+But I think this is unnecessary, as it has been managed allocated.
 
- include/linux/thermal.h | 45 +++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 43 insertions(+), 2 deletions(-)
+Cheers,
 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index f7e11c7ea7d9..6fca46c82c4d 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -158,6 +158,41 @@ struct thermal_attr {
- =09char name[THERMAL_NAME_LENGTH];
- };
-=20
-+/**
-+ * struct thermal_zone_device - structure for a thermal zone
-+ * @id:=09=09unique id number for each thermal zone
-+ * @type:=09the thermal zone device type
-+ * @device:=09struct device for this thermal zone
-+ * @trip_temp_attrs:=09attributes for trip points for sysfs: trip temperat=
-ure
-+ * @trip_type_attrs:=09attributes for trip points for sysfs: trip type
-+ * @trip_hyst_attrs:=09attributes for trip points for sysfs: trip hysteres=
-is
-+ * @devdata:=09private pointer for device private data
-+ * @trips:=09number of trip points the thermal zone supports
-+ * @passive_delay:=09number of milliseconds to wait between polls when
-+ *=09=09=09performing passive cooling.  Currenty only used by the
-+ *=09=09=09step-wise governor
-+ * @polling_delay:=09number of milliseconds to wait between polls when
-+ *=09=09=09checking whether trip points have been crossed (0 for
-+ *=09=09=09interrupt driven systems)
-+ * @temperature:=09current temperature.  This is only for core code,
-+ *=09=09=09drivers should use thermal_zone_get_temp() to get the
-+ *=09=09=09current temperature
-+ * @last_temperature:=09previous temperature read
-+ * @emul_temperature:=09emulated temperature when using CONFIG_THERMAL_EMU=
-LATION
-+ * @passive:=09=091 if you've crossed a passive trip point, 0 otherwise.
-+ *=09=09=09Currenty only used by the step-wise governor.
-+ * @forced_passive:=09If > 0, temperature at which to switch on all ACPI
-+ *=09=09=09processor cooling devices.  Currently only used by the
-+ *=09=09=09step-wise governor.
-+ * @ops:=09operations this thermal_zone_device supports
-+ * @tzp:=09thermal zone parameters
-+ * @governor:=09pointer to the governor for this thermal zone
-+ * @thermal_instances:=09list of struct thermal_instance of this thermal z=
-one
-+ * @idr:=09struct idr to generate unique id for this zone's cooling device=
-s
-+ * @lock:=09lock to protect thermal_instances list
-+ * @node:=09node in thermal_tz_list (in thermal_core.c)
-+ * @poll_queue:=09delayed work for polling
-+ */
- struct thermal_zone_device {
- =09int id;
- =09char type[THERMAL_NAME_LENGTH];
-@@ -179,12 +214,18 @@ struct thermal_zone_device {
- =09struct thermal_governor *governor;
- =09struct list_head thermal_instances;
- =09struct idr idr;
--=09struct mutex lock; /* protect thermal_instances list */
-+=09struct mutex lock;
- =09struct list_head node;
- =09struct delayed_work poll_queue;
- };
-=20
--/* Structure that holds thermal governor information */
-+/**
-+ * struct thermal_governor - structure that holds thermal governor informa=
-tion
-+ * @name:=09name of the governor
-+ * @throttle:=09callback called for every trip point even if temperature i=
-s
-+ *=09=09below the trip point temperature
-+ * @governor_list:=09node in thermal_governor_list (in thermal_core.c)
-+ */
- struct thermal_governor {
- =09char name[THERMAL_NAME_LENGTH];
- =09int (*throttle)(struct thermal_zone_device *tz, int trip);
---=20
-1.9.1
+Eduardo
 
-
+>  		return ERR_PTR(-ENOMEM);
+>  	}
+>  
+> -- 
+> 1.7.10.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
