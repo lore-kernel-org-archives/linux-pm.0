@@ -1,39 +1,35 @@
-From: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Subject: [PATCH] thermal: ti-soc-thermal: ti-bandgap.c:  Cleaning up wrong address is checked
-Date: Mon,  2 Jun 2014 23:25:30 +0200
-Message-ID: <1401744330-25966-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH 0/2] Update smb347 charger driver.
+Date: Tue, 03 Jun 2014 10:47:00 +0900
+Message-ID: <1401760022-16621-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:52792 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752756AbaFBVYj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 17:24:39 -0400
-Received: by mail-wi0-f173.google.com with SMTP id bs8so5410873wib.6
-        for <linux-pm@vger.kernel.org>; Mon, 02 Jun 2014 14:24:38 -0700 (PDT)
+Received: from mailout3.samsung.com ([203.254.224.33]:61114 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbaFCBrK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 21:47:10 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N6K00F3RKYK8ND0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 03 Jun 2014 10:47:08 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-Wrong address is checked after memory allocation.
+This patch set updates smb347 driver to support dt-binding and smb358 chip.
 
-Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
----
- drivers/thermal/ti-soc-thermal/ti-bandgap.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Jonghwa Lee (2):
+  power: smb347-charger: Support devicetree binding for smb347 driver.
+  power: smb347-charger: Support Summit SMB358 charger IC.
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 3ab12ee..43c0f83 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -1155,7 +1155,7 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
- 	/* register shadow for context save and restore */
- 	bgp->regval = devm_kzalloc(&pdev->dev, sizeof(*bgp->regval) *
- 				   bgp->conf->sensor_count, GFP_KERNEL);
--	if (!bgp) {
-+	if (!bgp->regval) {
- 		dev_err(&pdev->dev, "Unable to allocate mem for driver ref\n");
- 		return ERR_PTR(-ENOMEM);
- 	}
+ .../bindings/power_supply/smb347_charger.txt       |   58 +++++
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ drivers/power/smb347-charger.c                     |  242 +++++++++++++-------
+ 3 files changed, 214 insertions(+), 87 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power_supply/smb347_charger.txt
+
 -- 
-1.7.10.4
+1.7.9.5
 
