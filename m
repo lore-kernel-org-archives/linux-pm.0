@@ -1,97 +1,33 @@
-From: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
-Subject: autosleep suspend too frquent problem
-Date: Tue, 3 Jun 2014 15:18:17 +0800
-Message-ID: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: governor: Be friendly towards latency-sensitive
+ bursty workloads
+Date: Tue, 3 Jun 2014 13:48:46 +0530
+Message-ID: <CAKohpokdnHag=79cXuwgNjX-k+JJU9GE3KUBhixcj3PZ6y78GQ@mail.gmail.com>
+References: <20140526205337.1100.55275.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'len.brown@intel.com'" <len.brown@intel.com>, "'pavel@ucw.cz'" <pavel@ucw.cz>, "'rjw@sisk.pl'" <rjw@sisk.pl>, "'linux-pm@vger.kernel.org'" <linux-pm@vger.kernel.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:53767 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932109AbaFCISq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 04:18:46 -0400
+Received: by mail-ob0-f174.google.com with SMTP id uz6so5736696obc.33
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jun 2014 01:18:46 -0700 (PDT)
+In-Reply-To: <20140526205337.1100.55275.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi 
+On 27 May 2014 02:23, Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com> wrote:
 
-I found sd card sometimes are damaged/ destroyed 
-On our devices .
-And seems it is caused by kernel's frequently suspend/resume,
-Because during suspend/resume, the driver will suspend/resume sdcard
-Very frequently, this will damaged the sdcard sometimes, and the damage
-is not recoverable ..
+Looks fine, some nits..
 
-Sometimes kernel will enter suspend and exit suspend very frequently,
-Especially when the system is in idle, but some driver is not idle,
-And it will  wake up the system by irq frequently.
-By our power test result, if system enter suspend /resume very frequently,
-Will consume more power , because it will enable /disable many devices
-During a short time .
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> -void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+> +void dbs_check_cpu(struct dbs_data *dbs_data, int cpu,
+> +                  unsigned int sampling_rate)
 
-I make a patch to prevent the system to enter suspend/resume state
-More than one time during 2 seconds：
-
-diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
-index ca304046..78fb06a 100644
---- a/kernel/power/autosleep.c
-+++ b/kernel/power/autosleep.c
-@@ -11,7 +15,7 @@
- #include <linux/pm_wakeup.h>
-
- #include "power.h"
--
-+#define SUSPEND_TIME_SLICE (2 * HZ)
- static suspend_state_t autosleep_state;
- static struct workqueue_struct *autosleep_wq;
- /*
-@@ -26,7 +30,8 @@ static struct wakeup_source *autosleep_ws;
- static void try_to_suspend(struct work_struct *work)
- {
-        unsigned int initial_count, final_count;
--
-+       int ret;
-+       static unsigned long last_suspend_exit_time;
-        if (!pm_get_wakeup_count(&initial_count, true))
-                goto out;
-
-@@ -43,8 +48,24 @@ static void try_to_suspend(struct work_struct *work)
-        }
-        if (autosleep_state >= PM_SUSPEND_MAX)
-                hibernate();
--       else
--               pm_suspend(autosleep_state);
-+       else {
-+               if (last_suspend_exit_time == 0 ||
-+                       time_after(jiffies,
-+                               last_suspend_exit_time + SUSPEND_TIME_SLICE)) {
-+suspend:
-+                       ret = pm_suspend(autosleep_state);
-+                       if (ret == 0)
-+                               last_suspend_exit_time = jiffies;
-+               } else {
-+                       unsigned long sleep_time =
-+                               SUSPEND_TIME_SLICE -
-+                               (jiffies - last_suspend_exit_time);
-+                       if (sleep_time > 0)
-+                               schedule_timeout_uninterruptible(sleep_time);
-+                       else
-+                               goto suspend;
-+               }
-+       }
-
-        mutex_unlock(&autosleep_lock);
-
-
-seems works ok ,
-my question is that should we change the autosleep module to make sure
-not enter suspend/resume  in a short time,
-or it is driver's problems? The driver should not wake up system
-very frequently ?
-
-Thanks
-
-
-
-Wang Yalin
-Engineer
-OSDD
-Sony Mobile Communications
+We don't need to pass a new argument, we can get all the information from
+dbs_data alone. Its already done for multiple routines. Let me know if you
+find it difficult to figure out..
