@@ -1,65 +1,83 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of
- regulator_set_voltage_time() for !CONFIG_REGULATOR
-Date: Tue, 3 Jun 2014 11:52:23 +0100
-Message-ID: <20140603105223.GB31751@sirena.org.uk>
-References: <20140528173858.GG5099@sirena.org.uk>
- <CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
- <20140602095112.GV5099@sirena.org.uk>
- <CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
- <20140602100201.GX5099@sirena.org.uk>
- <CAKohpomj5-tHPkBLMrgGpsDCaCxW-8hGMunMTmJgXGgEgTR=vA@mail.gmail.com>
- <20140602122332.GA31751@sirena.org.uk>
- <CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
- <20140602152014.GL31751@sirena.org.uk>
- <CAKohpo=4gY42TJ0CcUBarHRnUvFKkXTykTYCfGUnAZ+CFwYE9g@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Tue, 3 Jun 2014 13:44:28 +0200
+Message-ID: <20140603114428.GY11096@twins.programming.kicks-ass.net>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="4rQ9lIe3OahbhU4J"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:51719 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbaFCKwx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 06:52:53 -0400
+	protocol="application/pgp-signature"; boundary="cbwY24+csKcE3jo0"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKohpo=4gY42TJ0CcUBarHRnUvFKkXTykTYCfGUnAZ+CFwYE9g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@kernel.org, rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 
 
---4rQ9lIe3OahbhU4J
+--cbwY24+csKcE3jo0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Mon, Jun 02, 2014 at 10:25:18PM +0530, Viresh Kumar wrote:
+On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
+> +static struct capacity_state cap_states_cluster_a7[] = {
+> +	/* Cluster only power */
+> +	 { .cap =  358, .power = 2967, }, /*  350 MHz */
+> +	 { .cap =  410, .power = 2792, }, /*  400 MHz */
+> +	 { .cap =  512, .power = 2810, }, /*  500 MHz */
+> +	 { .cap =  614, .power = 2815, }, /*  600 MHz */
+> +	 { .cap =  717, .power = 2919, }, /*  700 MHz */
+> +	 { .cap =  819, .power = 2847, }, /*  800 MHz */
+> +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
+> +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
+> +	};
+> +
+> +static struct capacity_state cap_states_cluster_a15[] = {
+> +	/* Cluster only power */
+> +	 { .cap =  840, .power =  7920, }, /*  500 MHz */
+> +	 { .cap = 1008, .power =  8165, }, /*  600 MHz */
+> +	 { .cap = 1176, .power =  8172, }, /*  700 MHz */
+> +	 { .cap = 1343, .power =  8195, }, /*  800 MHz */
+> +	 { .cap = 1511, .power =  8265, }, /*  900 MHz */
+> +	 { .cap = 1679, .power =  8446, }, /* 1000 MHz */
+> +	 { .cap = 1847, .power = 11426, }, /* 1100 MHz */
+> +	 { .cap = 2015, .power = 15200, }, /* 1200 MHz */
+> +	};
 
-> As Rafael has asked you to apply the patches, can you please apply
-> patch 2-3 for now?
 
-Not right now, the merge window is open.
+So how did you obtain these numbers? Did you use numbers provided by the
+hardware people, or did you run a particular benchmark and record the
+power usage?
 
---4rQ9lIe3OahbhU4J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Does that benchmark do some actual work (as opposed to a while(1) loop)
+to keep more silicon lit up?
+
+If you have a setup for measuring these, should we try and publish that
+too so that people can run it on their platform and provide these
+numbers?
+
+
+--cbwY24+csKcE3jo0
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTjajkAAoJELSic+t+oim9Ow4QAIhWWs6UURz9kji0vixZ+C0n
-J7vE1ecXtBRDehYtogFCPra27e+IDwkNkqyoO5U/4Uj9Bh+xYrQRzG/R60hCYi+0
-kcRkcASxKGF6ILzMft+kXjFp/wuZnVyfUZFGRZAnkH63XUCln7WotRz5Ra184icx
-ZBXwxIf5OHbq+0/7m9q0Yl1VO1th7+5XsiEo1g3WCinKXi8CSOgcPTsLuHBADOAx
-RQwh9nos/cHtBl3shKtvJsqDhjv8DYxlwH09w7ChwsGsV2ddXnLi6Hw08xiPVsD7
-2BSON2f96e5gwewNqRAXTF3kejBhfc+/gx6YSCcXXWgKyQS/M8ncSmHxReDjdl9c
-3ekRNJ9HeoA1+iXxmYx76+p2muKKsNZD9BkmZwMG1lrQOaC3mRn+LCGTXLJlcu5a
-IjHtPKgFyHMaRYNZ2HWymZZl3zbWYZuSZtWEvs2/l0Th07Pu+UhmK8qmcIBnamtw
-HcyMh7BpMYsaq2pDTJrMaFGuVK67Ya2W0WMMLW0STIwo9QO807doi91wFujd+moL
-v+ZCe4UHhVUCpZB6NYUAuducb0lhRLycErana0wRSBvGyBNcnTpOaQco510Bo1NR
-y1AojI8Cv+ltQvWxDetRVlMZ73JB260ze3G3+n0nfMuVIH5q6H1VQVUs+XWcS9G6
-jlRknsEY6qbGoaS0fQL0
-=+Scx
+iQIcBAEBAgAGBQJTjbUcAAoJEHZH4aRLwOS6o90P/Ao4nAHv9AwwZYPeuQCsfh7R
+vh1MRPz1OXBqkcygPpSAbnFPG52KRYKGk8rDfW/WUIg2RMy/SZsdJyGu/ZfiOYfE
+U8A69S+IMGYH1tTvS9jm9uvdp+k3NGn2zzEGVw0k5LIcemPhMoF4Ss3+pQ7gxaCk
+0y4tVXL3Pi0FvTIiCXZqBiydJ7QZ3bV2u/oOxzrmPM96FZACBq5cWV0QlYHV44hw
+RHDHbN4NLI4P5jtPojimM2TCE76mntPMkh9yf2kmzZ3IsMChNylQ4o/EwYQkc3YM
+vM8uKOLqEYgKqn7t9AdiAOmDRn457y+l7oybLuOOSYxmo8F0qUOcLSxOvaFl4FeY
+GFhJRfpdC1xu0e1wgoR6ssXuoSjrEaBJAqu1nfiXdPaSgBkvEF5AxQfkVlKZWflH
+Lg6Ni3NV0HbixCZ2VD2X6prMpWHgj3nzul0hWMct8+9Kz+QOfHaD92uurIOivjhC
+OQ6Ckxfj58Q67ZlrkwDm0W3dKCJ78p3ZLJwtc+JMk77aYUzBTjCAwEAuBZpOiFqy
+T52il0LeYCVC3uTpLDjEix6JJFSvTV4OxT6RzLL+a/1BCABoQMeDQVZGUb5Xb/4r
+SAksq2pjT9WrqDCTJqSCCpppSRYSZ176PN5d2kJRhEwtlYNmy4CxeEpTdg4IgTnI
+mMbp9S5j4jw3in5l3RGw
+=hs4y
 -----END PGP SIGNATURE-----
 
---4rQ9lIe3OahbhU4J--
+--cbwY24+csKcE3jo0--
