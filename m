@@ -1,7 +1,7 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: [RFC PATCH v3 5/7] thermal: add a basic cpu power actor
-Date: Tue,  3 Jun 2014 11:18:33 +0100
-Message-ID: <1401790715-5630-6-git-send-email-javi.merino@arm.com>
+Subject: [RFC PATCH v3 6/7] thermal: introduce the Power Allocator governor
+Date: Tue,  3 Jun 2014 11:18:34 +0100
+Message-ID: <1401790715-5630-7-git-send-email-javi.merino@arm.com>
 References: <1401790715-5630-1-git-send-email-javi.merino@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
@@ -12,215 +12,146 @@ To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: punit.agrawal@arm.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Introduce a power actor for cpus.  It has a basic power model to get
-the current power utilization and uses cpufreq cooling devices to set
-the desired power.  It uses the current frequency (as reported by
-cpufreq) as well as load and OPPs for the power calculations.  The
-cpus must have registered their OPPs in the OPP library.
+The power allocator governor is a thermal governor that controls system
+and device power allocation to control temperature.  Conceptually, the
+implementation divides the sustainable power of a thermal zone among
+all the heat sources in that zone.
+
+This governor relies on "power actors", entities that represent heat
+sources.  They can report current and maximum power consumption and
+can set a given maximum power consumption, usually via a cooling
+device.
+
+The governor uses a Proportional Integral Derivative (PID) controller
+driven by the temperature of the thermal zone.  The output of the
+controller is a power budget that is then allocated to each power
+actor that can have bearing on the temperature we are trying to
+control.  It decides how much power to give each cooling device based
+on the performance they are requesting.  The PID controller ensures
+that the total power budget does not exceed the control temperature.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- Documentation/thermal/power_actor.txt     | 126 +++++++
- drivers/thermal/Kconfig                   |   5 +
- drivers/thermal/power_actor/Kconfig       |   9 +
- drivers/thermal/power_actor/Makefile      |   2 +
- drivers/thermal/power_actor/cpu_actor.c   | 601 ++++++++++++++++++++++++++=
+ Documentation/thermal/power_allocator.txt |  42 +++
+ drivers/thermal/Kconfig                   |  15 +
+ drivers/thermal/Makefile                  |   1 +
+ drivers/thermal/power_allocator.c         | 455 ++++++++++++++++++++++++++=
 ++++
- drivers/thermal/power_actor/power_actor.h |  41 ++
- 6 files changed, 784 insertions(+)
- create mode 100644 drivers/thermal/power_actor/Kconfig
- create mode 100644 drivers/thermal/power_actor/cpu_actor.c
+ drivers/thermal/thermal_core.c            |   7 +-
+ drivers/thermal/thermal_core.h            |   8 +
+ include/linux/thermal.h                   |   8 +
+ 7 files changed, 535 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/thermal/power_allocator.txt
+ create mode 100644 drivers/thermal/power_allocator.c
 
-diff --git a/Documentation/thermal/power_actor.txt b/Documentation/thermal/=
-power_actor.txt
-index 5a61f32ec143..fd51760615bf 100644
---- a/Documentation/thermal/power_actor.txt
-+++ b/Documentation/thermal/power_actor.txt
-@@ -36,3 +36,129 @@ temperature.
- milliwatts.
-=20
- Returns 0 on success, -E* on error.
+diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/ther=
+mal/power_allocator.txt
+new file mode 100644
+index 000000000000..cfa66933af86
+--- /dev/null
++++ b/Documentation/thermal/power_allocator.txt
+@@ -0,0 +1,42 @@
 +
-+CPU Power Actor API
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++Integration of the power_allocator governor in a platform
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
 +
-+A simple power model for CPUs.  The current power is calculated as
-+dynamic + (optionally) static power.  This power model requires that
-+the operating-points of the CPUs are registered using the kernel's opp
-+library and the `cpufreq_frequency_table` is assigned to the `struct
-+device` of the cpu.  If you are using the `cpufreq-cpu0.c` driver then
-+the `cpufreq_frequency_table` should already be assigned to the cpu
-+device.
++Registering thermal_zone_device
++-------------------------------
 +
-+The `tz` and `plat_static_func` parameters of
-+`power_cpu_actor_register()` are optional.  If you don't provide them,
-+only dynamic power will be considered.
++An estimate of the sustainable dissipatable power (in mW) should be
++provided while registering the thermal zone.  This is the maximum
++sustained power for allocation at the desired maximum temperature.
++This number can vary for different conditions, but the closed-loop of
++the controller should take care of those variations, the
++`sustainable_power` should be an estimation of it.  Register your
++thermal zone with `thermal_zone_params` that have a
++`sustainable_power`.  If you weren't passing any
++`thermal_zone_params`, then something like this will do:
 +
-+Dynamic power
-+-------------
++=09static const struct thermal_zone_params tz_params =3D {
++=09=09.sustainable_power =3D 3500,
++=09};
 +
-+The dynamic power consumption of a processor depends
-+on many factors.  For a given processor implementation the primary
-+factors are:
++and then pass `tz_params` as the 5th parameter to
++`thermal_zone_device_register()`
 +
-+- The time the processor spends running, consuming dynamic power, as
-+  compared to the time in idle states where dynamic consumption is
-+  negligible.  Herein we refer to this as 'utilisation'.
-+- The voltage and frequency levels as a result of DVFS.  The DVFS
-+  level is a dominant factor governing power consumption.
-+- In running time the 'execution' behaviour (instruction types, memory
-+  access patterns and so forth) causes, in most cases, a second order
-+  variation.  In pathological cases this variation can be significant,
-+  but typically it is of a much lesser impact than the factors above.
++Trip points
++-----------
 +
-+A high level dynamic power consumption model may then be represented as:
++The governor requires the following two trip points:
 +
-+Pdyn =3D f(run) * Voltage^2 * Frequency * Utilisation
++1.  "switch on" trip point: temperature above which the governor
++    control loop starts operating
++2.  "desired temperature" trip point: it should be higher than the
++    "switch on" trip point. It is the target temperature the governor
++    is controlling for.
 +
-+f(run) here represents the described execution behaviour and its
-+result has a units of Watts/Hz/Volt^2 (this often expressed in
-+mW/MHz/uVolt^2)
++The trip points can be either active or passive.
 +
-+The detailed behaviour for f(run) could be modelled on-line.  However,
-+in practice, such an on-line model has dependencies on a number of
-+implementation specific processor support and characterisation
-+factors.  Therefore, in initial implementation that contribution is
-+represented as a constant coefficient.  This is a simplification
-+consistent with the relative contribution to overall power variation.
-+
-+In this simplified representation our model becomes:
-+
-+Pdyn =3D Kd * Voltage^2 * Frequency * Utilisation
-+
-+Where Kd (capacitance) represents an indicative running time dynamic
-+power coefficient in fundamental units of mW/MHz/uVolt^2
-+
-+Static Power
++Power actors
 +------------
 +
-+Static leakage power consumption depends on a number of factors.  For a
-+given circuit implementation the primary factors are:
-+
-+- Time the circuit spends in each 'power state'
-+- Temperature
-+- Operating voltage
-+- Process grade
-+
-+The time the circuit spends in each 'power state' for a given
-+evaluation period at first order means OFF or ON.  However,
-+'retention' states can also be supported that reduce power during
-+inactive periods without loss of context.
-+
-+Note: The visibility of state entries to the OS can vary, according to
-+platform specifics, and this can then impact the accuracy of a model
-+based on OS state information alone.  It might be possible in some
-+cases to extract more accurate information from system resources.
-+
-+The temperature, operating voltage and process 'grade' (slow to fast)
-+of the circuit are all significant factors in static leakage power
-+consumption.  All of these have complex relationships to static power.
-+
-+Circuit implementation specific factors include the chosen silicon
-+process as well as the type, number and size of transistors in both
-+the logic gates and any RAM elements included.
-+
-+The static power consumption modelling must take into account the
-+power managed regions that are implemented.  Taking the example of an
-+ARM processor cluster, the modelling would take into account whether
-+each CPU can be powered OFF separately or if only a single power
-+region is implemented for the complete cluster.
-+
-+In one view, there are others, a static power consumption model can
-+then start from a set of reference values for each power managed
-+region (e.g. CPU, Cluster/L2) in each state (e.g. ON, OFF) at an
-+arbitrary process grade, voltage and temperature point.  These values
-+are then scaled for all of the following: the time in each state, the
-+process grade, the current temperature and the operating
-+voltage.  However, since both implementation specific and complex
-+relationships dominate the estimate, the appropriate interface to the
-+model from the cpu power actor is to provide a function callback that
-+calculates the static power in this platform.  When registering the
-+power cpu actor, pass the thermal zone closest to the cpu (to get the
-+temperature) and a function pointer that follows the `get_static_t`
-+prototype:
-+
-+    u32 plat_get_static(cpumask_t *cpumask, unsigned long voltage,
-+=09=09=09=09unsigned long temperature);
-+
-+with `cpumask` a cpumask of the cpus involved in the calculation,
-+`voltage` the voltage at which they are opperating and `temperature`
-+their current temperature.
-+
-+If both `tz` and `plat_static_func` are NULL when registering the
-+power cpu actor, static power is considered to be negligible for this
-+platform and only dynamic power is considered.
-+
-+The platform specific callback can then use any combination of tables
-+and/or equations to permute the estimated value.  Process grade
-+information is not passed to the model since access to such data, from
-+on-chip measurement capability or manufacture time data, is platform
-+specific.
-+
-+Note: the significance of static power for CPUs in comparison to
-+dynamic power is highly dependent on implementation.  Given the
-+potential complexity in implementation, the importance and accuracy of
-+its inclusion when using cpu power actors should be assessed on a case by
-+cases basis.
++Devices controlled by this governor must be registered with the power
++actor API.  Read `power_actor.txt` for more information about them.
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 47e2f15537ca..1818c4fa60b8 100644
+index 1818c4fa60b8..e5b338a7cab9 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
-@@ -92,6 +92,11 @@ config THERMAL_GOV_USER_SPACE
+@@ -71,6 +71,14 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
+ =09  Select this if you want to let the user space manage the
+ =09  platform thermals.
+=20
++config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
++=09bool "power_allocator"
++=09select THERMAL_GOV_POWER_ALLOCATOR
++=09help
++=09  Select this if you want to control temperature based on
++=09  system and device power allocation. This governor relies on
++=09  power actors to operate.
++
+ endchoice
+=20
+ config THERMAL_GOV_FAIR_SHARE
+@@ -89,6 +97,13 @@ config THERMAL_GOV_USER_SPACE
+ =09help
+ =09  Enable this to let the user space manage the platform thermals.
+=20
++config THERMAL_GOV_POWER_ALLOCATOR
++=09bool "Power allocator thermal governor"
++=09select THERMAL_POWER_ACTOR
++=09help
++=09  Enable this to manage platform thermals by dynamically
++=09  allocating and limiting power to devices.
++
  config THERMAL_POWER_ACTOR
  =09bool
 =20
-+menu "Power actors"
-+depends on THERMAL_POWER_ACTOR
-+source "drivers/thermal/power_actor/Kconfig"
-+endmenu
-+
- config CPU_THERMAL
- =09bool "generic cpu cooling support"
- =09depends on CPU_FREQ
-diff --git a/drivers/thermal/power_actor/Kconfig b/drivers/thermal/power_ac=
-tor/Kconfig
-new file mode 100644
-index 000000000000..fa542ca99cdb
---- /dev/null
-+++ b/drivers/thermal/power_actor/Kconfig
-@@ -0,0 +1,9 @@
-+#
-+# Thermal power actor configuration
-+#
-+
-+config THERMAL_POWER_ACTOR_CPU
-+=09bool
-+=09prompt "Simple power model for a CPU"
-+=09help
-+=09  A simple CPU power model
-diff --git a/drivers/thermal/power_actor/Makefile b/drivers/thermal/power_a=
-ctor/Makefile
-index 46478f4928be..6f04b92997e6 100644
---- a/drivers/thermal/power_actor/Makefile
-+++ b/drivers/thermal/power_actor/Makefile
-@@ -3,3 +3,5 @@
- #
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 878a02cab7d1..c5b47f058675 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -13,6 +13,7 @@ thermal_sys-$(CONFIG_THERMAL_OF)=09=09+=3D of-thermal.o
+ thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)=09+=3D fair_share.o
+ thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)=09+=3D step_wise.o
+ thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)=09+=3D user_space.o
++thermal_sys-$(CONFIG_THERMAL_GOV_POWER_ALLOCATOR)=09+=3D power_allocator.o
 =20
- obj-y +=3D power_actor.o
-+
-+obj-$(CONFIG_THERMAL_POWER_ACTOR_CPU) +=3D cpu_actor.o
-diff --git a/drivers/thermal/power_actor/cpu_actor.c b/drivers/thermal/powe=
-r_actor/cpu_actor.c
+ obj-$(CONFIG_THERMAL_POWER_ACTOR) +=3D power_actor/
+=20
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allo=
+cator.c
 new file mode 100644
-index 000000000000..6eac80d119a5
+index 000000000000..9c7e7f212eb6
 --- /dev/null
-+++ b/drivers/thermal/power_actor/cpu_actor.c
-@@ -0,0 +1,601 @@
++++ b/drivers/thermal/power_allocator.c
+@@ -0,0 +1,455 @@
 +/*
-+ * A basic cpu actor
++ * A power allocator to manage temperature
 + *
 + * Copyright (C) 2014 ARM Ltd.
 + *
@@ -234,670 +165,529 @@ index 000000000000..6eac80d119a5
 + * GNU General Public License for more details.
 + */
 +
-+#define pr_fmt(fmt) "CPU actor: " fmt
++#define pr_fmt(fmt) "Power allocator: " fmt
 +
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/cpumask.h>
-+#include <linux/cpu_cooling.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
 +#include <linux/list.h>
-+#include <linux/pm_opp.h>
-+#include <linux/printk.h>
 +#include <linux/slab.h>
++#include <linux/thermal.h>
 +
-+#include "power_actor.h"
++#include "power_actor/power_actor.h"
++#include "thermal_core.h"
++
++#define FRAC_BITS 8
++#define int_to_frac(x) ((x) << FRAC_BITS)
++#define frac_to_int(x) ((x) >> FRAC_BITS)
 +
 +/**
-+ * struct power_table - frequency to power conversion
-+ * @frequency:=09frequency in KHz
-+ * @power:=09power in mW
++ * mul_frac - multiply two fixed-point numbers
++ * @x:=09first multiplicand
++ * @y:=09second multiplicand
 + *
-+ * This structure is built when the cooling device registers and helps
-+ * in translating frequency to power and viceversa.
++ * Returns the result of multiplying two fixed-point numbers.  The
++ * result is also a fixed-point number.
 + */
-+struct power_table {
-+=09u32 frequency;
-+=09u32 power;
++static inline s64 mul_frac(s64 x, s64 y)
++{
++=09return (x * y) >> FRAC_BITS;
++}
++
++enum power_allocator_trip_levels {
++=09TRIP_SWITCH_ON =3D 0,=09/* Switch on PID controller */
++=09TRIP_MAX_DESIRED_TEMPERATURE, /* Temperature we are controlling for */
 +};
 +
 +/**
-+ * struct cpu_actor - information for each cpu actor
-+ * @cpumask:=09cpus covered by this actor
-+ * @freq:=09frequency in KHz of the cpus represented by the cooling device
-+ * @last_load:=09load measured by the latest call to cpu_get_req_power()
-+ * @time_in_idle:=09previous reading of the absolute time that this cpu wa=
-s
-+ *=09=09=09idle
-+ * @time_in_idle_timestamp: wall time of the last invocation of
-+ *=09=09=09    get_cpu_idle_time_us()
-+ * @dyn_power_table:=09array of struct power_table for frequency to power
-+ *=09=09=09conversion
-+ * @dyn_power_table_entries: number of entries in the @dyn_power_table arr=
-ay
-+ * @cdev:=09cpufreq cooling device associated with this actor
-+ * @tz:=09=09thermal zone for the sensor closest to the cpus
-+ * @plat_get_static_power:=09callback to calculate the static power
++ * struct power_allocator_params - parameters for the power allocator gove=
+rnor
++ * @k_po:=09Proportional parameter of the PID controller when overshooting
++ *=09=09(i.e., when temperature is below the target)
++ * @k_pi:=09Proportional parameter of the PID controller when undershootin=
+g
++ * @k_i:=09Integral parameter of the PID controller
++ * @k_d:=09Derivative parameter of the PID controller
++ * @integral_cutoff:=09threshold below which the error is no longer accumu=
+lated
++=09=09=09in the PID controller
++ * @err_integral:=09accumulated error in the PID controller.
++ * @prev_err:=09error in the previous iteration of the PID controller.
++ *=09=09Used to calculate the derivative term.
 + */
-+struct cpu_actor {
-+=09cpumask_t cpumask;
-+=09u32 freq;
-+=09u32 last_load;
-+=09u64 time_in_idle[NR_CPUS];
-+=09u64 time_in_idle_timestamp[NR_CPUS];
-+=09struct power_table *dyn_power_table;
-+=09int dyn_power_table_entries;
-+=09struct thermal_cooling_device *cdev;
-+=09struct thermal_zone_device *tz;
-+=09get_static_t plat_get_static_power;
-+};
-+
-+static DEFINE_MUTEX(cpu_power_actor_lock);
-+
-+static unsigned int cpu_power_actors_registered;
-+
-+static u32 cpu_freq_to_power(struct cpu_actor *cpu_actor, u32 freq)
-+{
-+=09int i;
-+=09struct power_table *pt =3D cpu_actor->dyn_power_table;
-+
-+=09for (i =3D 0; i < cpu_actor->dyn_power_table_entries - 1; i++)
-+=09=09if (freq <=3D pt[i].frequency)
-+=09=09=09break;
-+
-+=09return pt[i].power;
-+}
-+
-+static u32 cpu_power_to_freq(struct cpu_actor *cpu_actor, u32 power)
-+{
-+=09int i;
-+=09struct power_table *pt =3D cpu_actor->dyn_power_table;
-+
-+=09for (i =3D 0; i < cpu_actor->dyn_power_table_entries - 1; i++)
-+=09=09if (power <=3D pt[i].power)
-+=09=09=09break;
-+
-+=09return pt[i].frequency;
-+}
-+
-+/**
-+ * get_load - get load for a cpu since last updated
-+ * @cpu_actor: struct cpu_actor for this actor
-+ * @cpu: cpu number
-+ *
-+ * Return the average load of cpu @cpu in percentage since this
-+ * function was last called.
-+ */
-+static u32 get_load(struct cpu_actor *cpu_actor, int cpu)
-+{
-+=09u32 load;
-+=09u64 now, now_idle, delta_time, delta_idle;
-+
-+=09now_idle =3D get_cpu_idle_time(cpu, &now, 0);
-+=09delta_idle =3D now_idle - cpu_actor->time_in_idle[cpu];
-+=09delta_time =3D now - cpu_actor->time_in_idle_timestamp[cpu];
-+
-+=09if (delta_time <=3D delta_idle)
-+=09=09load =3D 0;
-+=09else
-+=09=09load =3D div64_u64(100 * (delta_time - delta_idle), delta_time);
-+
-+=09cpu_actor->time_in_idle[cpu] =3D now_idle;
-+=09cpu_actor->time_in_idle_timestamp[cpu] =3D now;
-+
-+=09return load;
-+}
-+
-+/**
-+ * __get_static_power() - calculate the static power consumed by the cpus
-+ * @cpu_actor:=09&struct cpu_actor for this cpu
-+ * @freq:=09frequency in KHz
-+ *
-+ * Calculate the static power consumed by the cpus described by
-+ * @cpu_actor running at frequency @freq.  This function relies on a
-+ * platform specific function that should have been provided when the
-+ * actor was registered.  If it wasn't, the static power is assumed to
-+ * be negligible.
-+ *
-+ * Return: The static power consumed by the cpus.  It returns 0 on
-+ * error or if there is no plat_get_static_power().
-+ */
-+static u32 __get_static_power(struct cpu_actor *cpu_actor, unsigned long f=
-req)
-+{
-+=09int err;
-+=09struct device *cpu_dev;
-+=09struct dev_pm_opp *opp;
-+=09unsigned long voltage, temperature;
-+=09cpumask_t *cpumask =3D &cpu_actor->cpumask;
-+=09unsigned long freq_hz =3D freq * 1000;
-+
-+=09if (!cpu_actor->plat_get_static_power)
-+=09=09return 0;
-+
-+=09if (freq =3D=3D 0)
-+=09=09return 0;
-+
-+=09cpu_dev =3D get_cpu_device(cpumask_any(cpumask));
-+
-+=09rcu_read_lock();
-+
-+=09opp =3D dev_pm_opp_find_freq_exact(cpu_dev, freq_hz, true);
-+=09voltage =3D dev_pm_opp_get_voltage(opp);
-+
-+=09rcu_read_unlock();
-+
-+=09if (voltage =3D=3D 0) {
-+=09=09dev_warn_ratelimited(cpu_dev,
-+=09=09=09=09"Failed to get voltage for frequency %lu: %ld\n",
-+=09=09=09=09freq_hz, IS_ERR(opp) ? PTR_ERR(opp) : 0);
-+=09=09return 0;
-+=09}
-+
-+=09err =3D thermal_zone_get_temp(cpu_actor->tz, &temperature);
-+=09if (err) {
-+=09=09dev_warn(&cpu_actor->tz->device, "Unable to read temperature: %d\n",
-+=09=09=09err);
-+=09=09return 0;
-+=09}
-+
-+=09return cpu_actor->plat_get_static_power(cpumask, voltage, temperature);
-+}
-+
-+static u32 get_static_power(struct cpu_actor *cpu_actor)
-+{
-+=09return __get_static_power(cpu_actor, cpu_actor->freq);
-+}
-+
-+/**
-+ * get_dynamic_power - calculate the dynamic power
-+ * @cpu_actor: cpu_actor pointer
-+ *
-+ * Return the dynamic power consumed by the cpus described by
-+ * cpu_actor.
-+ */
-+static u32 get_dynamic_power(struct cpu_actor *cpu_actor)
-+{
-+=09int cpu;
-+=09u32 power =3D 0, raw_cpu_power, total_load =3D 0;
-+=09raw_cpu_power =3D cpu_freq_to_power(cpu_actor, cpu_actor->freq);
-+
-+=09for_each_cpu(cpu, &cpu_actor->cpumask) {
-+=09=09u32 load;
-+
-+=09=09if (!cpu_online(cpu))
-+=09=09=09continue;
-+
-+=09=09load =3D get_load(cpu_actor, cpu);
-+=09=09power +=3D (raw_cpu_power * load) / 100;
-+=09=09total_load +=3D load;
-+=09}
-+
-+=09cpu_actor->last_load =3D total_load;
-+
-+=09return power;
-+}
-+
-+/**
-+ * cpu_get_req_power - get the current power
-+ * @actor:=09power actor pointer
-+ *
-+ * Callback for the power actor to return the current power
-+ * consumption in milliwatts.
-+ */
-+static u32 cpu_get_req_power(struct power_actor *actor)
-+{
-+=09u32 static_power, dynamic_power;
-+=09struct cpu_actor *cpu_actor =3D actor->data;
-+
-+=09static_power =3D get_static_power(cpu_actor);
-+=09dynamic_power =3D get_dynamic_power(cpu_actor);
-+
-+=09return static_power + dynamic_power;
-+}
-+
-+/**
-+ * cpu_get_max_power() - get the maximum power that the cpu could currentl=
-y consume
-+ * @actor:=09power actor pointer
-+ *
-+ * Callback for the power actor to return the maximum power
-+ * consumption in milliwatts that the cpu could currently consume.
-+ * The static power depends on temperature so the maximum power will
-+ * vary over time.
-+ */
-+static u32 cpu_get_max_power(struct power_actor *actor)
-+{
-+=09u32 max_static_power, max_dyn_power;
-+=09cpumask_t *cpumask;
-+=09unsigned int max_freq, last_entry, num_cpus;
-+=09struct cpu_actor *cpu_actor =3D actor->data;
-+
-+=09cpumask =3D &cpu_actor->cpumask;
-+=09max_freq =3D cpufreq_quick_get_max(cpumask_any(cpumask));
-+=09max_static_power =3D __get_static_power(cpu_actor, max_freq);
-+
-+=09last_entry =3D cpu_actor->dyn_power_table_entries - 1;
-+=09num_cpus =3D cpumask_weight(cpumask);
-+=09max_dyn_power =3D cpu_actor->dyn_power_table[last_entry].power * num_cp=
-us;
-+
-+=09return max_static_power + max_dyn_power;
-+}
-+
-+/**
-+ * cpu_set_power - set cpufreq cooling device to consume a certain power
-+ * @actor: power actor pointer
-+ * @power: the power in milliwatts that should be set
-+ *
-+ * Callback for the power actor to configure the power consumption of
-+ * the CPU to be @power milliwatts at most.  This function assumes
-+ * that the load will remain constant.  The power is translated into a
-+ * cooling state that the cpu cooling device then sets.
-+ *
-+ * Returns 0 on success, -EINVAL if it couldn't convert the frequency
-+ * to a cpufreq cooling device state.
-+ */
-+static int cpu_set_power(struct power_actor *actor, u32 power)
-+{
-+=09unsigned int cpu, freq;
-+=09unsigned long cdev_state;
-+=09u32 dyn_power, normalised_power, last_load;
-+=09struct thermal_cooling_device *cdev;
-+=09struct cpu_actor *cpu_actor =3D actor->data;
-+
-+=09cdev =3D cpu_actor->cdev;
-+
-+=09dyn_power =3D power - get_static_power(cpu_actor);
-+=09cpu =3D cpumask_any(&cpu_actor->cpumask);
-+=09last_load =3D cpu_actor->last_load ? cpu_actor->last_load : 1;
-+=09normalised_power =3D (dyn_power * 100) / last_load;
-+=09freq =3D cpu_power_to_freq(cpu_actor, normalised_power);
-+
-+=09cdev_state =3D cpufreq_cooling_get_level(cpu, freq);
-+=09if (cdev_state =3D=3D THERMAL_CSTATE_INVALID) {
-+=09=09pr_err("Failed to convert %dKHz for cpu %d into a cdev state\n",
-+=09=09=09freq, cpu);
-+=09=09return -EINVAL;
-+=09}
-+
-+=09return cdev->ops->set_cur_state(cdev, cdev_state);
-+}
-+
-+static struct power_actor_ops cpu_actor_ops =3D {
-+=09.get_req_power =3D cpu_get_req_power,
-+=09.get_max_power =3D cpu_get_max_power,
-+=09.set_power =3D cpu_set_power,
++struct power_allocator_params {
++=09s32 k_po;
++=09s32 k_pu;
++=09s32 k_i;
++=09s32 k_d;
++=09s32 integral_cutoff;
++=09s32 err_integral;
++=09s32 prev_err;
 +};
 +
 +/**
-+ * power_cpu_actor_add_static() - add static information to an existing cp=
-u actor
-+ * @cpu:=09a cpu represented by the cpu power actor
-+ * @tz:=09=09pointer to the closest thermal zone to the cpu
-+ * @plat_static_func:=09function to calculate the static power consumed by=
- these
-+ *=09=09=09cpus
++ * pid_controller() - PID controller
++ * @tz:=09thermal zone we are operating in
++ * @control_temp:=09The target temperature
++ * @max_allocatable_power:=09maximum allocatable power for this thermal zo=
+ne
 + *
-+ * A function to add static information to an actor after it has
-+ * registered.  In order to calculate the static power, we need the to
-+ * know the temperature of the cpu, which we get from its closest
-+ * thermal zone.  It is possible that when registering the
-+ * power_cpu_actor, the thermal zone hasn't been registered yet.  This
-+ * function allows you to add that information when the thermal zone
-+ * is registered.  @cpu should be one of the cpus represented by the
-+ * cpu actor you want to modify
++ * This PID controller increases the available power budget so that the
++ * temperature of the thermal zone gets as close as possible to
++ * @control_temp and limits the power if it exceeds it.  k_po is the
++ * proportional term when we are overshooting, k_pu is the
++ * proportional term when we are undershooting.  integral_cutoff is a
++ * threshold below which we stop accumulating the error.  The
++ * accumulated error is only valid if the requested power will make
++ * the system warmer.  If the system is mostly idle, there's no point
++ * in accumulating positive error.
 + *
-+ * Return: 0 on success.  -EINVAL if @tz or @plat_static_func are
-+ * NULL.  -ENOENT if there's no cpu power actor for @cpu.
++ * It returns the power budget for the next period.
 + */
-+int power_cpu_actor_add_static(unsigned int cpu, struct thermal_zone_devic=
-e *tz,
-+=09=09=09get_static_t plat_static_func)
++static u32 pid_controller(struct thermal_zone_device *tz,
++=09=09=09unsigned long current_temp, unsigned long control_temp,
++=09=09=09u32 max_allocatable_power)
 +{
-+=09struct power_actor *actor;
++=09s64 p, i, d, power_range;
++=09s32 err;
++=09struct power_allocator_params *params =3D tz->governor_data;
 +
-+=09if (!plat_static_func || !tz)
-+=09=09return -EINVAL;
++=09err =3D ((s32)control_temp - (s32)current_temp) / 1000;
++=09err =3D int_to_frac(err);
 +
-+=09list_for_each_entry(actor, &actor_list, actor_node) {
-+=09=09struct cpu_actor *cpu_actor;
++=09/* Calculate the proportional term */
++=09p =3D mul_frac(err < 0 ? params->k_po : params->k_pu, err);
 +
-+=09=09if (actor->type !=3D POWER_ACTOR_CPU)
-+=09=09=09continue;
++=09/*
++=09 * Calculate the integral term
++=09 *
++=09 * if the error s less than cut off allow integration (but
++=09 * the integral is limited to max power)
++=09 */
++=09i =3D mul_frac(params->k_i, params->err_integral);
 +
-+=09=09cpu_actor =3D actor->data;
-+
-+=09=09if (cpumask_test_cpu(cpu, &cpu_actor->cpumask)) {
-+=09=09=09cpu_actor->tz =3D tz;
-+=09=09=09cpu_actor->plat_get_static_power =3D plat_static_func;
-+=09=09=09return 0;
++=09if (err < int_to_frac(params->integral_cutoff)) {
++=09=09s64 tmpi =3D mul_frac(params->k_i, err);
++=09=09tmpi +=3D i;
++=09=09if (tmpi <=3D int_to_frac(max_allocatable_power)) {
++=09=09=09i =3D tmpi;
++=09=09=09params->err_integral +=3D err;
 +=09=09}
 +=09}
 +
-+=09return -ENOENT;
++=09/* Calculate the derivative term
++=09 *
++=09 * We do err - prev_err, so with a positive k_d, a decreasing
++=09 * error (i.e. driving closer to the line) results in less
++=09 * power being applied, slowing down the controller)
++=09 */
++=09d =3D mul_frac(params->k_d, err - params->prev_err);
++=09params->prev_err =3D err;
++
++=09power_range =3D p + i + d;
++
++=09/* feed-forward the known sustainable dissipatable power */
++=09power_range =3D tz->tzp->sustainable_power + frac_to_int(power_range);
++
++=09return clamp(power_range, (s64)0, (s64)max_allocatable_power);
 +}
 +
 +/**
-+ * cpufreq_frequency_change - notifier callback for cpufreq frequency chan=
-ges
-+ * @nb:=09=09struct notifier_block * with callback info
-+ * @event:=09value showing cpufreq event for which this function invoked
-+ * @data:=09callback-specific data
++ * divvy_up_power - divvy the allocated power between the actors
++ * @req_power:=09each actor's requested power
++ * @max_power:=09each actor's maximum available power
++ * @num_actors:=09size of the @req_power, @max_power and @granted_power's =
+array
++ * @total_req_power: sum of @req_power
++ * @power_range:=09total allocated power
++ * @granted_power:=09ouput array: each actor's granted power
 + *
-+ * Callback to get notifications of frequency changes.  In the
-+ * CPUFREQ_POSTCHANGE @event we store the new frequency so that
-+ * cpufreq_get_cur() knows the current frequency and can convert it
-+ * into power.
++ * This function divides the total allocated power (@power_range)
++ * fairly between the actors.  It first tries to give each actor a
++ * share of the @power_range according to how much power it requested
++ * compared to the rest of the actors.  For example, if only one actor
++ * requests power, then it receives all the @power_range.  If
++ * three actors each requests 1mW, each receives a third of the
++ * @power_range.
++ *
++ * If any actor received more than their maximum power, then that
++ * surplus is re-divvied among the actors based on how far they are
++ * from their respective maximums.
++ *
++ * Granted power for each actor is written to @granted_power, which
++ * should've been allocated by the calling function.
 + */
-+static int cpufreq_frequency_change(struct notifier_block *nb,
-+=09=09=09=09unsigned long event, void *data)
++static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
++=09=09=09u32 total_req_power, u32 power_range,
++=09=09=09u32 *granted_power)
++{
++=09u32 extra_power, capped_extra_power, extra_actor_power[num_actors];
++=09int i;
++
++=09if (!total_req_power) {
++=09=09/*
++=09=09 * Nobody requested anything, so just give everybody
++=09=09 * the maximum power
++=09=09 */
++=09=09for (i =3D 0; i < num_actors; i++)
++=09=09=09granted_power[i] =3D max_power[i];
++
++=09=09return;
++=09}
++
++=09capped_extra_power =3D 0;
++=09extra_power =3D 0;
++=09for (i =3D 0; i < num_actors; i++) {
++=09=09u64 req_range =3D req_power[i] * power_range;
++
++=09=09granted_power[i] =3D div_u64(req_range, total_req_power);
++
++=09=09if (granted_power[i] > max_power[i]) {
++=09=09=09extra_power +=3D granted_power[i] - max_power[i];
++=09=09=09granted_power[i] =3D max_power[i];
++=09=09}
++
++=09=09extra_actor_power[i] =3D max_power[i] - granted_power[i];
++=09=09capped_extra_power +=3D extra_actor_power[i];
++=09}
++
++=09if (!extra_power)
++=09=09return;
++
++=09/*
++=09 * Re-divvy the reclaimed extra among actors based on
++=09 * how far they are from the max
++=09 */
++=09extra_power =3D min(extra_power, capped_extra_power);
++=09if (capped_extra_power > 0)
++=09=09for (i =3D 0; i < num_actors; i++)
++=09=09=09granted_power[i] +=3D (extra_actor_power[i] *
++=09=09=09=09=09extra_power) / capped_extra_power;
++}
++
++static int allocate_power(struct thermal_zone_device *tz,
++=09=09=09unsigned long current_temp, unsigned long control_temp)
 +{
 +=09struct power_actor *actor;
-+=09struct cpufreq_freqs *freqs =3D data;
++=09u32 *req_power, *max_power, *granted_power;
++=09u32 total_req_power, max_allocatable_power;
++=09u32 power_range;
++=09int i, num_actors, ret =3D 0;
 +
-+=09/* Only update frequency on postchange */
-+=09if (event !=3D CPUFREQ_POSTCHANGE)
-+=09=09return NOTIFY_DONE;
++=09mutex_lock(&tz->lock);
 +
-+=09list_for_each_entry(actor, &actor_list, actor_node) {
-+=09=09struct cpu_actor *cpu_actor;
++=09num_actors =3D 0;
++=09list_for_each_entry(actor, &actor_list, actor_node)
++=09=09num_actors++;
 +
-+=09=09if (actor->type !=3D POWER_ACTOR_CPU)
-+=09=09=09continue;
-+
-+=09=09cpu_actor =3D actor->data;
-+
-+=09=09if (cpumask_test_cpu(freqs->cpu, &cpu_actor->cpumask))
-+=09=09=09cpu_actor->freq =3D freqs->new;
-+=09}
-+
-+=09return NOTIFY_OK;
-+}
-+
-+struct notifier_block cpufreq_transition_notifier =3D {
-+=09.notifier_call =3D cpufreq_frequency_change,
-+};
-+
-+/**
-+ * build_dyn_power_table - create a dynamic power to frequency table
-+ * @cpu_actor:=09the cpu_actor in which to store the table
-+ * @capacitance: dynamic power coefficient for these cpus
-+ *
-+ * Build a dynamic power to frequency table for this cpu and store it
-+ * in @cpu_actor.  This table will be used in cpu_power_to_freq() and
-+ * cpu_freq_to_power() to convert between power and frequency
-+ * efficiently.  Power is stored in mW, frequency in KHz.  The
-+ * resulting table is in ascending order.
-+ *
-+ * Returns 0 on success, -E* on error.
-+ */
-+static int build_dyn_power_table(struct cpu_actor *cpu_actor, u32 capacita=
-nce)
-+{
-+=09struct power_table *power_table;
-+=09struct dev_pm_opp *opp;
-+=09struct device *dev =3D NULL;
-+=09int num_opps, cpu, i, ret =3D 0;
-+=09unsigned long freq;
-+
-+=09num_opps =3D 0;
-+
-+=09rcu_read_lock();
-+
-+=09for_each_cpu(cpu, &cpu_actor->cpumask) {
-+=09=09dev =3D get_cpu_device(cpu);
-+=09=09if (!dev)
-+=09=09=09continue;
-+
-+=09=09num_opps =3D dev_pm_opp_get_opp_count(dev);
-+=09=09if (num_opps > 0) {
-+=09=09=09break;
-+=09=09} else if (num_opps < 0) {
-+=09=09=09ret =3D num_opps;
-+=09=09=09goto unlock;
-+=09=09}
-+=09}
-+
-+=09if (num_opps =3D=3D 0) {
-+=09=09ret =3D -EINVAL;
++=09req_power =3D devm_kcalloc(&tz->device, num_actors, sizeof(*req_power),
++=09=09=09=09GFP_KERNEL);
++=09if (!req_power) {
++=09=09ret =3D -ENOMEM;
 +=09=09goto unlock;
 +=09}
 +
-+=09power_table =3D kcalloc(num_opps, sizeof(*power_table), GFP_KERNEL);
++=09max_power =3D devm_kcalloc(&tz->device, num_actors, sizeof(*max_power),
++=09=09=09=09GFP_KERNEL);
++=09if (!max_power) {
++=09=09ret =3D -ENOMEM;
++=09=09goto free_req_power;
++=09}
++
++=09granted_power =3D devm_kcalloc(&tz->device, num_actors,
++=09=09=09=09sizeof(*granted_power), GFP_KERNEL);
++=09if (!granted_power) {
++=09=09ret =3D -ENOMEM;
++=09=09goto free_max_power;
++=09}
 +
 +=09i =3D 0;
-+=09for (freq =3D 0;
-+=09     opp =3D dev_pm_opp_find_freq_ceil(dev, &freq), !IS_ERR(opp);
-+=09     freq++) {
-+=09=09u32 freq_mhz, voltage_mv;
-+=09=09u64 power;
++=09total_req_power =3D 0;
++=09max_allocatable_power =3D 0;
 +
-+=09=09freq_mhz =3D freq / 1000000;
-+=09=09voltage_mv =3D dev_pm_opp_get_voltage(opp) / 1000;
++=09list_for_each_entry(actor, &actor_list, actor_node) {
++=09=09req_power[i] =3D actor->ops->get_req_power(actor);
++=09=09total_req_power +=3D req_power[i];
 +
-+=09=09/*
-+=09=09 * Do the multiplication with MHz and millivolt so as
-+=09=09 * to not overflow.
-+=09=09 */
-+=09=09power =3D (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-+=09=09do_div(power, 1000000000);
-+
-+=09=09/* frequency is stored in power_table in KHz */
-+=09=09power_table[i].frequency =3D freq / 1000;
-+=09=09power_table[i].power =3D power;
++=09=09max_power[i] =3D actor->ops->get_max_power(actor);
++=09=09max_allocatable_power +=3D max_power[i];
 +
 +=09=09i++;
 +=09}
 +
-+=09if (i =3D=3D 0) {
-+=09=09ret =3D PTR_ERR(opp);
-+=09=09goto unlock;
++=09power_range =3D pid_controller(tz, current_temp, control_temp,
++=09=09=09=09max_allocatable_power);
++
++=09divvy_up_power(req_power, max_power, num_actors, total_req_power,
++=09=09power_range, granted_power);
++
++=09i =3D 0;
++=09list_for_each_entry(actor, &actor_list, actor_node) {
++=09=09actor->ops->set_power(actor, granted_power[i]);
++=09=09i++;
 +=09}
 +
-+=09cpu_actor->dyn_power_table =3D power_table;
-+=09cpu_actor->dyn_power_table_entries =3D i;
-+
++=09devm_kfree(&tz->device, granted_power);
++free_max_power:
++=09devm_kfree(&tz->device, max_power);
++free_req_power:
++=09devm_kfree(&tz->device, req_power);
 +unlock:
-+=09rcu_read_unlock();
++=09mutex_unlock(&tz->lock);
++
 +=09return ret;
 +}
 +
-+/**
-+ * power_cpu_actor_register - register a cpu_actor within the power actor =
-API
-+ * @cpumask:=09cpumask of cpus covered by this power_actor
-+ * @tz:=09=09thermal zone closest to the cpus (optional)
-+ * @capacitance: dynamic power coefficient for these cpus
-+ * @plat_static_func:=09function to calculate the static power consumed by=
- these
-+ *=09=09=09cpus (optional)
-+ *
-+ * Create a cpufreq cooling device for the cpus in @cpumask and
-+ * register it with the power actor API using a simple cpu power
-+ * model.  The cpus must have registered their OPPs in the OPP
-+ * library.
-+ *
-+ * An optional @plat_static_func may be provided to calculate the
-+ * static power consumed by these cpus.  If the platform's static
-+ * power consumption is unknown or negligible, make it NULL.  If
-+ * @plat_static_fun is specified, @tz needs to be specified as well.
-+ * @tz should be a pointer to the thermal_zone_device whose sensor is
-+ * closer to the cpus in @cpumask.
-+ *
-+ * Return the power_actor created on success or the corresponding
-+ * ERR_PTR() on failure.  This actor should be freed with
-+ * power_cpu_actor_unregister() when it's no longer needed.
-+ */
-+struct power_actor *
-+power_cpu_actor_register(cpumask_t *cpumask,
-+=09=09=09struct thermal_zone_device *tz,
-+=09=09=09u32 capacitance,
-+=09=09=09get_static_t plat_static_func)
++static int check_trips(struct thermal_zone_device *tz)
 +{
 +=09int ret;
-+=09struct thermal_cooling_device *cdev;
-+=09struct device *cpu_dev;
-+=09struct power_actor *actor, *err_ret;
-+=09struct cpu_actor *cpu_actor;
++=09enum thermal_trip_type type;
 +
-+=09if (plat_static_func && !tz) {
-+=09=09pr_warn("plat_static_func provided without a thermal zone, ignoring =
-it\n");
-+=09=09plat_static_func =3D NULL;
++=09if (tz->trips < 2)
++=09=09return -EINVAL;
++
++=09ret =3D tz->ops->get_trip_type(tz, TRIP_SWITCH_ON, &type);
++=09if (ret)
++=09=09return ret;
++
++=09if ((type !=3D THERMAL_TRIP_PASSIVE) && (type !=3D THERMAL_TRIP_ACTIVE)=
+)
++=09=09return -EINVAL;
++
++=09ret =3D tz->ops->get_trip_type(tz, TRIP_MAX_DESIRED_TEMPERATURE, &type)=
+;
++=09if (ret)
++=09=09return ret;
++
++=09if ((type !=3D THERMAL_TRIP_PASSIVE) && (type !=3D THERMAL_TRIP_ACTIVE)=
+)
++=09=09return -EINVAL;
++
++=09return ret;
++}
++
++static void reset_pid_controller(struct power_allocator_params *params)
++{
++=09params->err_integral =3D 0;
++=09params->prev_err =3D 0;
++}
++
++static void allow_maximum_power(void)
++{
++=09struct power_actor *actor;
++
++=09list_for_each_entry(actor, &actor_list, actor_node) {
++=09=09u32 max_power =3D actor->ops->get_max_power(actor);
++
++=09=09actor->ops->set_power(actor, max_power);
 +=09}
++}
 +
-+=09cpu_dev =3D get_cpu_device(cpumask_any(cpumask));
-+=09if (!cpu_dev || !cpu_dev->of_node)
-+=09=09cdev =3D cpufreq_cooling_register(cpumask);
-+=09else
-+=09=09cdev =3D of_cpufreq_cooling_register(cpu_dev->of_node, cpumask);
++/**
++ * power_allocator_bind - bind the power_allocator governor to a thermal z=
+one
++ * @tz:=09thermal zone to bind it to
++ *
++ * Check that the thermal zone is valid for this governor: has two
++ * thermal trips.  If so, initialize the PID controller parameters and
++ * bind it to the thermal zone.
++ *
++ * Returns 0 on success, -EINVAL if the trips were invalid or -ENOMEM
++ * if we ran out of memory.
++ */
++static int power_allocator_bind(struct thermal_zone_device *tz)
++{
++=09int ret;
++=09struct power_allocator_params *params;
++=09unsigned long switch_on_temp, control_temp;
++=09u32 temperature_threshold;
 +
-+=09if (!cdev)
-+=09=09return ERR_PTR(PTR_ERR(cdev));
-+
-+=09cpu_actor =3D kzalloc(sizeof(*cpu_actor), GFP_KERNEL);
-+=09if (!cpu_actor) {
-+=09=09err_ret =3D ERR_PTR(-ENOMEM);
-+=09=09goto cdev_unregister;
-+=09}
-+
-+=09cpumask_copy(&cpu_actor->cpumask, cpumask);
-+=09cpu_actor->cdev =3D cdev;
-+=09cpu_actor->tz =3D tz;
-+=09cpu_actor->plat_get_static_power =3D plat_static_func;
-+
-+=09ret =3D build_dyn_power_table(cpu_actor, capacitance);
++=09ret =3D check_trips(tz);
 +=09if (ret) {
-+=09=09err_ret =3D ERR_PTR(ret);
-+=09=09goto kfree;
++=09=09dev_err(&tz->device,
++=09=09=09"thermal zone %s has the wrong number of trips for this governor\=
+n",
++=09=09=09tz->type);
++=09=09return ret;
 +=09}
 +
-+=09actor =3D power_actor_register(POWER_ACTOR_CPU, &cpu_actor_ops,
-+=09=09=09=09cpu_actor);
-+=09if (IS_ERR(actor)) {
-+=09=09err_ret =3D actor;
-+=09=09goto kfree;
++=09if (!tz->tzp || !tz->tzp->sustainable_power) {
++=09=09dev_err(&tz->device,
++=09=09=09"power_allocator: missing sustainable_power\n");
++=09=09return -EINVAL;
 +=09}
 +
-+=09mutex_lock(&cpu_power_actor_lock);
++=09params =3D devm_kzalloc(&tz->device, sizeof(*params), GFP_KERNEL);
++=09if (!params)
++=09=09return -ENOMEM;
++
++=09ret =3D tz->ops->get_trip_temp(tz, TRIP_SWITCH_ON, &switch_on_temp);
++=09if (ret)
++=09=09goto free;
++
++=09ret =3D tz->ops->get_trip_temp(tz, TRIP_MAX_DESIRED_TEMPERATURE,
++=09=09=09=09&control_temp);
++=09if (ret)
++=09=09goto free;
++
++=09temperature_threshold =3D (control_temp - switch_on_temp) / 1000;
++
++=09params->k_po =3D int_to_frac(tz->tzp->sustainable_power) /
++=09=09temperature_threshold;
++=09params->k_pu =3D int_to_frac(2 * tz->tzp->sustainable_power) /
++=09=09temperature_threshold;
++=09params->k_i =3D int_to_frac(10);
++=09params->k_d =3D int_to_frac(0);
++=09params->integral_cutoff =3D 0;
++
++=09reset_pid_controller(params);
++
++=09tz->governor_data =3D params;
++
++=09return 0;
++
++free:
++=09devm_kfree(&tz->device, params);
++=09return ret;
++}
++
++static void power_allocator_unbind(struct thermal_zone_device *tz)
++{
++=09dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
++=09devm_kfree(&tz->device, tz->governor_data);
++=09tz->governor_data =3D NULL;
++}
++
++static int power_allocator_throttle(struct thermal_zone_device *tz, int tr=
+ip)
++{
++=09int ret;
++=09unsigned long switch_on_temp, control_temp, current_temp;
++=09struct power_allocator_params *params =3D tz->governor_data;
 +
 +=09/*
-+=09 * You can't register multiple times the same notifier_block.
-+=09 * The first power actor registered is the only one that
-+=09 * registers the notifier.
++=09 * We get called for every trip point but we only need to do
++=09 * our calculations once
 +=09 */
-+=09if (!cpu_power_actors_registered) {
-+=09=09ret =3D cpufreq_register_notifier(&cpufreq_transition_notifier,
-+=09=09=09=09=09=09CPUFREQ_TRANSITION_NOTIFIER);
-+=09=09if (ret) {
-+=09=09=09err_ret =3D ERR_PTR(ret);
-+=09=09=09mutex_unlock(&cpu_power_actor_lock);
-+=09=09=09goto power_actor_unregister;
-+=09=09}
++=09if (trip !=3D TRIP_MAX_DESIRED_TEMPERATURE)
++=09=09return 0;
++
++=09ret =3D thermal_zone_get_temp(tz, &current_temp);
++=09if (ret) {
++=09=09dev_warn(&tz->device, "Failed to get temperature: %d\n", ret);
++=09=09return ret;
 +=09}
 +
-+=09cpu_power_actors_registered++;
-+=09mutex_unlock(&cpu_power_actor_lock);
++=09ret =3D tz->ops->get_trip_temp(tz, TRIP_SWITCH_ON, &switch_on_temp);
++=09if (ret) {
++=09=09dev_warn(&tz->device,
++=09=09=09"Failed to get switch on temperature: %d\n", ret);
++=09=09return ret;
++=09}
 +
-+=09return actor;
++=09if (current_temp < switch_on_temp) {
++=09=09reset_pid_controller(params);
++=09=09allow_maximum_power();
++=09=09return 0;
++=09}
 +
-+power_actor_unregister:
-+=09power_actor_unregister(actor);
-+kfree:
-+=09kfree(cpu_actor);
-+cdev_unregister:
-+=09cpufreq_cooling_unregister(cdev);
++=09ret =3D tz->ops->get_trip_temp(tz, TRIP_MAX_DESIRED_TEMPERATURE,
++=09=09=09=09&control_temp);
++=09if (ret) {
++=09=09dev_warn(&tz->device,
++=09=09=09"Failed to get the maximum desired temperature: %d\n",
++=09=09=09ret);
++=09=09return ret;
++=09}
 +
-+=09return err_ret;
++=09return allocate_power(tz, current_temp, control_temp);
 +}
 +
-+void power_cpu_actor_unregister(struct power_actor *actor)
++static struct thermal_governor thermal_gov_power_allocator =3D {
++=09.name=09=09=3D "power_allocator",
++=09.bind_to_tz=09=3D power_allocator_bind,
++=09.unbind_from_tz=09=3D power_allocator_unbind,
++=09.throttle=09=3D power_allocator_throttle,
++};
++
++int thermal_gov_power_allocator_register(void)
 +{
-+=09struct cpu_actor *cpu_actor =3D actor->data;
-+
-+=09kfree(cpu_actor->dyn_power_table);
-+
-+=09mutex_lock(&cpu_power_actor_lock);
-+
-+=09cpu_power_actors_registered--;
-+
-+=09if (!cpu_power_actors_registered)
-+=09=09cpufreq_unregister_notifier(&cpufreq_transition_notifier,
-+=09=09=09=09=09CPUFREQ_TRANSITION_NOTIFIER);
-+
-+=09mutex_unlock(&cpu_power_actor_lock);
-+
-+=09kfree(cpu_actor);
-+=09power_actor_unregister(actor);
++=09return thermal_register_governor(&thermal_gov_power_allocator);
 +}
-diff --git a/drivers/thermal/power_actor/power_actor.h b/drivers/thermal/po=
-wer_actor/power_actor.h
-index 28098f43630b..230317c284b2 100644
---- a/drivers/thermal/power_actor/power_actor.h
-+++ b/drivers/thermal/power_actor/power_actor.h
-@@ -17,11 +17,16 @@
- #ifndef __POWER_ACTOR_H__
- #define __POWER_ACTOR_H__
++
++void thermal_gov_power_allocator_unregister(void)
++{
++=09thermal_unregister_governor(&thermal_gov_power_allocator);
++}
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.=
+c
+index 1b13d8e0cfd1..17257376396b 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1857,7 +1857,11 @@ static int __init thermal_register_governors(void)
+ =09if (result)
+ =09=09return result;
 =20
-+#include <linux/cpumask.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
- #include <linux/list.h>
-+#include <linux/thermal.h>
+-=09return thermal_gov_user_space_register();
++=09result =3D thermal_gov_user_space_register();
++=09if (result)
++=09=09return result;
++
++=09return thermal_gov_power_allocator_register();
+ }
 =20
- #define MAX_NUM_ACTORS 8
+ static void thermal_unregister_governors(void)
+@@ -1865,6 +1869,7 @@ static void thermal_unregister_governors(void)
+ =09thermal_gov_step_wise_unregister();
+ =09thermal_gov_fair_share_unregister();
+ =09thermal_gov_user_space_unregister();
++=09thermal_gov_power_allocator_unregister();
+ }
 =20
- enum power_actor_types {
-+=09POWER_ACTOR_CPU,
+ static int __init thermal_init(void)
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.=
+h
+index 3db339fb636f..b24cde2c71cc 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -77,6 +77,14 @@ static inline int thermal_gov_user_space_register(void) =
+{ return 0; }
+ static inline void thermal_gov_user_space_unregister(void) {}
+ #endif /* CONFIG_THERMAL_GOV_USER_SPACE */
+=20
++#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
++int thermal_gov_power_allocator_register(void);
++void thermal_gov_power_allocator_unregister(void);
++#else
++static inline int thermal_gov_power_allocator_register(void) { return 0; }
++static inline void thermal_gov_power_allocator_unregister(void) {}
++#endif /* CONFIG_THERMAL_GOV_POWER_ALLOCATOR */
++
+ /* device tree support */
+ #ifdef CONFIG_THERMAL_OF
+ int of_parse_thermal_zones(void);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 8babc0a8cce0..526b694767f6 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -57,6 +57,8 @@
+ #define DEFAULT_THERMAL_GOVERNOR       "fair_share"
+ #elif defined(CONFIG_THERMAL_DEFAULT_GOV_USER_SPACE)
+ #define DEFAULT_THERMAL_GOVERNOR       "user_space"
++#elif defined(CONFIG_THERMAL_DEFAULT_GOV_POWER_ALLOCATOR)
++#define DEFAULT_THERMAL_GOVERNOR       "power_allocator"
+ #endif
+=20
+ struct thermal_zone_device;
+@@ -286,6 +288,12 @@ struct thermal_zone_params {
+=20
+ =09int num_tbps;=09/* Number of tbp entries */
+ =09struct thermal_bind_params *tbp;
++
++=09/*
++=09 * Sustainable power (heat) that this thermal zone can dissipate in
++=09 * mW
++=09 */
++=09u32 sustainable_power;
  };
 =20
- struct power_actor;
-@@ -59,6 +64,42 @@ struct power_actor *power_actor_register(enum power_acto=
-r_types type,
- =09=09=09=09=09void *privdata);
- void power_actor_unregister(struct power_actor *actor);
-=20
-+typedef u32 (*get_static_t)(cpumask_t *cpumask,
-+=09=09=09=09unsigned long voltage,
-+=09=09=09=09unsigned long temperature);
-+
-+#ifdef CONFIG_THERMAL_POWER_ACTOR_CPU
-+int power_cpu_actor_add_static(unsigned int cpu,
-+=09=09=09struct thermal_zone_device *tz,
-+=09=09=09get_static_t plat_static_func);
-+struct power_actor *
-+power_cpu_actor_register(cpumask_t *cpumask,
-+=09=09=09struct thermal_zone_device *tz,
-+=09=09=09u32 capacitance,
-+=09=09=09get_static_t plat_static_func);
-+void power_cpu_actor_unregister(struct power_actor *actor);
-+#else
-+static inline
-+int power_cpu_actor_add_static(unsigned int cpu,
-+=09=09=09=09=09struct thermal_zone_device *tz,
-+=09=09=09=09=09get_static_t plat_static_func)
-+{
-+=09return -ENOSYS;
-+}
-+static inline
-+struct power_actor *
-+power_cpu_actor_register(cpumask_t *cpumask,
-+=09=09=09struct thermal_zone_device *tz,
-+=09=09=09u32 capacitance,
-+=09=09=09get_static_t plat_static_func)
-+{
-+=09return ERR_PTR(-ENOSYS);
-+}
-+static inline void power_cpu_actor_unregister(struct power_actor *actor)
-+{
-+}
-+#endif
-+
- extern struct list_head actor_list;
-=20
- #endif /* __POWER_ACTOR_H__ */
+ struct thermal_genl_event {
 --=20
 1.9.1
