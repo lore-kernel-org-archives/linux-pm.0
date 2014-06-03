@@ -1,268 +1,192 @@
-From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH 2/2] power: smb347-charger: Support Summit SMB358 charger IC.
-Date: Tue, 03 Jun 2014 10:47:02 +0900
-Message-ID: <1401760022-16621-3-git-send-email-jonghwa3.lee@samsung.com>
-References: <1401760022-16621-1-git-send-email-jonghwa3.lee@samsung.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: governor: Be friendly towards latency-sensitive
+ bursty workloads
+Date: Tue, 3 Jun 2014 10:46:06 +0530
+Message-ID: <20140603051605.GA30422@in.ibm.com>
+References: <20140526205337.1100.55275.stgit@srivatsabhat.in.ibm.com>
+ <20140602073306.GA5220@in.ibm.com>
+ <538C32AA.5020401@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:34040 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbaFCBrQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 21:47:16 -0400
-Received: from epcpsbgr1.samsung.com
- (u141.gpu120.samsung.co.kr [203.254.230.141])
- by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0N6K00NJKKYQ1J00@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 03 Jun 2014 10:47:14 +0900 (KST)
-In-reply-to: <1401760022-16621-1-git-send-email-jonghwa3.lee@samsung.com>
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:51040 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732AbaFCFQO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 Jun 2014 01:16:14 -0400
+Received: from /spool/local
+	by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Tue, 3 Jun 2014 01:16:13 -0400
+Content-Disposition: inline
+In-Reply-To: <538C32AA.5020401@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: ego@linux.vnet.ibm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, svaidy@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Summit microelectronics' SMB358 charger chip has almost same register map
-and functionality with SMB347. The voltage and current table are only differed.
-Thus, SMB347 driver can support SMB358 chip fully with few modifications.
+On Mon, Jun 02, 2014 at 01:45:38PM +0530, Srivatsa S. Bhat wrote:
+> On 06/02/2014 01:03 PM, Gautham R Shenoy wrote:
+> > Hi,
+> > 
+> > On Tue, May 27, 2014 at 02:23:38AM +0530, Srivatsa S. Bhat wrote:
+> > 
+> > [..snip..]
+> >>
+> >> Experimental results:
+> >> ====================
+> >>
+> >> I ran a modified version of ebizzy (called 'sleeping-ebizzy') that sleeps in
+> >> between its execution such that its total utilization can be a user-defined
+> >> value, say 10% or 20% (higher the utilization specified, lesser the amount of
+> >> sleeps injected). This ebizzy was run with a single-thread, tied to CPU 8.
+> >>
+> >> Behavior observed with tracing (sample taken from 40% utilization runs):
+> >> ------------------------------------------------------------------------
+> >>
+> >> Without patch:
+> >> ~~~~~~~~~~~~~~
+> >> kworker/8:2-12137  416.335742: cpu_frequency: state=2061000 cpu_id=8
+> >> kworker/8:2-12137  416.335744: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40753  416.345741: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> kworker/8:2-12137  416.345744: cpu_frequency: state=4123000 cpu_id=8
+> >> kworker/8:2-12137  416.345746: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40753  416.355738: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> <snip>  ---------------------------------------------------------------------  <snip>
+> >>       <...>-40753  416.402202: sched_switch: prev_comm=ebizzy ==> next_comm=swapper/8
+> >>      <idle>-0      416.502130: sched_switch: prev_comm=swapper/8 ==> next_comm=ebizzy
+> >>       <...>-40753  416.505738: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> kworker/8:2-12137  416.505739: cpu_frequency: state=2061000 cpu_id=8
+> >> kworker/8:2-12137  416.505741: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40753  416.515739: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> kworker/8:2-12137  416.515742: cpu_frequency: state=4123000 cpu_id=8
+> >> kworker/8:2-12137  416.515744: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>
+> >> Observation: Ebizzy went idle at 416.402202, and started running again at
+> >> 416.502130. But cpufreq noticed the long idle period, and dropped the frequency
+> >> at 416.505739, only to increase it back again at 416.515742, realizing that the
+> >> workload is in-fact CPU bound. Thus ebizzy needlessly ran at the lowest frequency
+> >> for almost 13 milliseconds (almost 1 full sample period), and this pattern
+> >> repeats on every sleep-wakeup. This could hurt latency-sensitive workloads quite
+> >> a lot.
+> >>
+> >> With patch:
+> >> ~~~~~~~~~~~
+> >>
+> >> kworker/8:2-29802  464.832535: cpu_frequency: state=2061000 cpu_id=8
+> >> <snip>  ---------------------------------------------------------------------  <snip>
+> >> kworker/8:2-29802  464.962538: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40738  464.972533: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> kworker/8:2-29802  464.972536: cpu_frequency: state=4123000 cpu_id=8
+> >> kworker/8:2-29802  464.972538: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40738  464.982531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> <snip>  ---------------------------------------------------------------------  <snip>
+> >> kworker/8:2-29802  465.022533: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40738  465.032531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> kworker/8:2-29802  465.032532: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40738  465.035797: sched_switch: prev_comm=ebizzy ==> next_comm=swapper/8
+> >>      <idle>-0      465.240178: sched_switch: prev_comm=swapper/8 ==> next_comm=ebizzy
+> >>       <...>-40738  465.242533: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >> kworker/8:2-29802  465.242535: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+> >>       <...>-40738  465.252531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+> >>
+> > 
+> > Have the log entries emmitted by kworker/8 to report about the
+> > cpu_frequency states been snipped out in the entries post the
+> > "465.032531" mark ?
+> > 
+> 
+> No, why? Anything looks odd at that point?
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Acked-by : Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by : Myungjoo Ham <myungjoo.ham@samsung.com>
----
- .../bindings/power_supply/smb347_charger.txt       |    1 +
- drivers/power/smb347-charger.c                     |   98 +++++++++-----------
- 2 files changed, 47 insertions(+), 52 deletions(-)
+I was expecting to see log messages of the following kind after a
+kworker thread is scheduled in.
 
-diff --git a/Documentation/devicetree/bindings/power_supply/smb347_charger.txt b/Documentation/devicetree/bindings/power_supply/smb347_charger.txt
-index 91570a5..776ae29 100644
---- a/Documentation/devicetree/bindings/power_supply/smb347_charger.txt
-+++ b/Documentation/devicetree/bindings/power_supply/smb347_charger.txt
-@@ -3,6 +3,7 @@ smb347_charger bindings
- 
- [Required porperties]
- - compatible : "summit,smb347"
-+	       "summit,smb358"
- - reg : Slave address for i2c interface
- # At least one of followings should be set
-   - enable-usb-charging
-diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charger.c
-index 8073879..1bfb115 100644
---- a/drivers/power/smb347-charger.c
-+++ b/drivers/power/smb347-charger.c
-@@ -136,6 +136,7 @@
-  * @pdata: pointer to platform data
-  */
- struct smb347_charger {
-+	int			id;
- 	struct mutex		lock;
- 	struct device		*dev;
- 	struct regmap		*regmap;
-@@ -148,58 +149,46 @@ struct smb347_charger {
- 	const struct smb347_charger_platform_data *pdata;
- };
- 
-+enum smb_charger_chipid {
-+	SMB347,
-+	SMB358,
-+	NUM_CHIP_TYPES,
-+};
-+
- /* Fast charge current in uA */
--static const unsigned int fcc_tbl[] = {
--	700000,
--	900000,
--	1200000,
--	1500000,
--	1800000,
--	2000000,
--	2200000,
--	2500000,
-+static const unsigned int fcc_tbl[NUM_CHIP_TYPES][8] = {
-+	[SMB347] = { 700000, 900000, 1200000, 1500000,
-+			1800000, 2000000, 2200000, 2500000 },
-+	[SMB358] = { 200000, 450000, 600000, 900000,
-+			1300000, 1500000, 1800000, 2000000 },
- };
- 
- /* Pre-charge current in uA */
--static const unsigned int pcc_tbl[] = {
--	100000,
--	150000,
--	200000,
--	250000,
-+static const unsigned int pcc_tbl[NUM_CHIP_TYPES][4] = {
-+	[SMB347] = { 100000, 150000, 200000, 250000 },
-+	[SMB358] = { 150000, 250000, 350000, 450000 },
- };
- 
- /* Termination current in uA */
--static const unsigned int tc_tbl[] = {
--	37500,
--	50000,
--	100000,
--	150000,
--	200000,
--	250000,
--	500000,
--	600000,
-+static const unsigned int tc_tbl[NUM_CHIP_TYPES][8] = {
-+	[SMB347] = { 37500, 50000, 100000, 150000,
-+			200000, 250000, 500000, 600000 },
-+	[SMB358] = { 30000, 40000, 60000, 80000,
-+			100000, 125000, 150000, 200000 },
- };
- 
- /* Input current limit in uA */
--static const unsigned int icl_tbl[] = {
--	300000,
--	500000,
--	700000,
--	900000,
--	1200000,
--	1500000,
--	1800000,
--	2000000,
--	2200000,
--	2500000,
-+static const unsigned int icl_tbl[NUM_CHIP_TYPES][10] = {
-+	[SMB347] = { 300000, 500000, 700000, 900000, 1200000,
-+			1500000, 1800000, 2000000, 2200000, 2500000 },
-+	[SMB358] = { 300000, 500000, 700000, 1000000, 1500000,
-+			1800000, 2000000, 2000000, 2000000, 2000000 },
- };
- 
- /* Charge current compensation in uA */
--static const unsigned int ccc_tbl[] = {
--	250000,
--	700000,
--	900000,
--	1200000,
-+static const unsigned int ccc_tbl[NUM_CHIP_TYPES][4] = {
-+	[SMB347] = { 250000, 700000, 900000, 1200000 },
-+	[SMB358] = { 200000, 450000, 600000, 900000 },
- };
- 
- /* Convert register value to current using lookup table */
-@@ -354,10 +343,10 @@ static int smb347_start_stop_charging(struct smb347_charger *smb)
- 
- static int smb347_set_charge_current(struct smb347_charger *smb)
- {
--	int ret;
-+	int ret, id = smb->id;
- 
- 	if (smb->pdata->max_charge_current) {
--		ret = current_to_hw(fcc_tbl, ARRAY_SIZE(fcc_tbl),
-+		ret = current_to_hw(fcc_tbl[id], ARRAY_SIZE(fcc_tbl[id]),
- 				    smb->pdata->max_charge_current);
- 		if (ret < 0)
- 			return ret;
-@@ -370,7 +359,7 @@ static int smb347_set_charge_current(struct smb347_charger *smb)
- 	}
- 
- 	if (smb->pdata->pre_charge_current) {
--		ret = current_to_hw(pcc_tbl, ARRAY_SIZE(pcc_tbl),
-+		ret = current_to_hw(pcc_tbl[id], ARRAY_SIZE(pcc_tbl[id]),
- 				    smb->pdata->pre_charge_current);
- 		if (ret < 0)
- 			return ret;
-@@ -383,7 +372,7 @@ static int smb347_set_charge_current(struct smb347_charger *smb)
- 	}
- 
- 	if (smb->pdata->termination_current) {
--		ret = current_to_hw(tc_tbl, ARRAY_SIZE(tc_tbl),
-+		ret = current_to_hw(tc_tbl[id], ARRAY_SIZE(tc_tbl[id]),
- 				    smb->pdata->termination_current);
- 		if (ret < 0)
- 			return ret;
-@@ -399,10 +388,10 @@ static int smb347_set_charge_current(struct smb347_charger *smb)
- 
- static int smb347_set_current_limits(struct smb347_charger *smb)
- {
--	int ret;
-+	int ret, id = smb->id;
- 
- 	if (smb->pdata->mains_current_limit) {
--		ret = current_to_hw(icl_tbl, ARRAY_SIZE(icl_tbl),
-+		ret = current_to_hw(icl_tbl[id], ARRAY_SIZE(icl_tbl[id]),
- 				    smb->pdata->mains_current_limit);
- 		if (ret < 0)
- 			return ret;
-@@ -415,7 +404,7 @@ static int smb347_set_current_limits(struct smb347_charger *smb)
- 	}
- 
- 	if (smb->pdata->usb_hc_current_limit) {
--		ret = current_to_hw(icl_tbl, ARRAY_SIZE(icl_tbl),
-+		ret = current_to_hw(icl_tbl[id], ARRAY_SIZE(icl_tbl[id]),
- 				    smb->pdata->usb_hc_current_limit);
- 		if (ret < 0)
- 			return ret;
-@@ -467,7 +456,7 @@ static int smb347_set_temp_limits(struct smb347_charger *smb)
- {
- 	bool enable_therm_monitor = false;
- 	int ret = 0;
--	int val;
-+	int val, id = smb->id;
- 
- 	if (smb->pdata->chip_temp_threshold) {
- 		val = smb->pdata->chip_temp_threshold;
-@@ -589,7 +578,7 @@ static int smb347_set_temp_limits(struct smb347_charger *smb)
- 	}
- 
- 	if (smb->pdata->charge_current_compensation) {
--		val = current_to_hw(ccc_tbl, ARRAY_SIZE(ccc_tbl),
-+		val = current_to_hw(ccc_tbl[id], ARRAY_SIZE(ccc_tbl[id]),
- 				    smb->pdata->charge_current_compensation);
- 		if (val < 0)
- 			return val;
-@@ -879,7 +868,7 @@ out:
-  */
- static int get_const_charge_current(struct smb347_charger *smb)
- {
--	int ret, intval;
-+	int ret, intval, id = smb->id;
- 	unsigned int v;
- 
- 	if (!smb347_is_ps_online(smb))
-@@ -894,10 +883,12 @@ static int get_const_charge_current(struct smb347_charger *smb)
- 	 * and we can detect which table to use from bit 5.
- 	 */
- 	if (v & 0x20) {
--		intval = hw_to_current(fcc_tbl, ARRAY_SIZE(fcc_tbl), v & 7);
-+		intval = hw_to_current(fcc_tbl[id],
-+					ARRAY_SIZE(fcc_tbl[id]), v & 7);
- 	} else {
- 		v >>= 3;
--		intval = hw_to_current(pcc_tbl, ARRAY_SIZE(pcc_tbl), v & 7);
-+		intval = hw_to_current(pcc_tbl[id],
-+					ARRAY_SIZE(pcc_tbl[id]), v & 7);
- 	}
- 
- 	return intval;
-@@ -1282,6 +1273,7 @@ static int smb347_probe(struct i2c_client *client,
- 	i2c_set_clientdata(client, smb);
- 
- 	mutex_init(&smb->lock);
-+	smb->id = id->driver_data;
- 	smb->dev = &client->dev;
- 
- 	smb->regmap = devm_regmap_init_i2c(client, &smb347_regmap);
-@@ -1369,7 +1361,8 @@ static int smb347_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id smb347_id[] = {
--	{ "smb347", 0 },
-+	{ "smb347", SMB347 },
-+	{ "smb358", SMB358 },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, smb347_id);
-@@ -1377,6 +1370,7 @@ MODULE_DEVICE_TABLE(i2c, smb347_id);
- #ifdef CONFIG_OF
- static struct of_device_id of_smb347_ids[] = {
- 	{ .compatible = "summit,smb347" },
-+	{ .compatible = "summit,smb358" },
- 	{},
- };
- #endif
--- 
-1.7.9.5
+  "kworker/8:2-12137  416.505739: cpu_frequency: state=2061000 cpu_id=8"
+
+> 
+> Note that the CPU went idle from 465.035797 to 465.240178, and hence cpufreq's
+> deferrable timer didn't fire (and hence kworker didn't run). But once the CPU
+> became busy again at 465.240178, the kworker got scheduled on the CPU within
+> 2 ms (at 465.242533).
+
+Yes, but the logs don't show the frequency that the kworker thread
+would have set on that cpu.
+
+> [..snip...]
+> >>
+> >> -		load = 100 * (wall_time - idle_time) / wall_time;
+> >> +		/*
+> >> +		 * If the CPU had gone completely idle, and a task just woke up
+> >> +		 * on this CPU now, it would be unfair to calculate 'load' the
+> >> +		 * usual way for this elapsed time-window, because it will show
+> >> +		 * near-zero load, irrespective of how CPU intensive the new
+> >> +		 * task is. This is undesirable for latency-sensitive bursty
+> >> +		 * workloads.
+> >> +		 *
+> >> +		 * To avoid this, we reuse the 'load' from the previous
+> >> +		 * time-window and give this task a chance to start with a
+> >> +		 * reasonably high CPU frequency.
+> >> +		 *
+> >> +		 * Detecting this situation is easy: the governor's deferrable
+> >> +		 * timer would not have fired during CPU-idle periods. Hence
+> >> +		 * an unusually large 'wall_time' indicates this scenario.
+> >> +		 */
+> >> +		if (unlikely(wall_time > (2 * sampling_rate))) {
+> > 					     ^^^^^^^^^^^^^^^^^^
+> > 
+> > The sampling rate that you've passed is already multiplied by
+> > core_dbs_info->rate_mult. Wouldn't that be sufficient ?
+> >
+> 
+> Hmm, no. Strictly speaking, the sampling rate is not a constant in the ondemand
+> governor. It gets multiplied with ->rate_mult to dynamically change the sampling
+> rate (whenever that is desired). So in the core cpufreq governor code, we should
+> use this value (i.e., whatever the ondemand governor passes to dbs_check_cpu()
+> as the sampling_rate, _after_ multiplying with ->rate_mult), since that represents
+> the maximum sampling rate of the ondemand cpufreq governor.
+> 
+> However, the additional multiplication by 2 in this code is to ensure that we
+> give sufficient buffer or gap, before we start the new "were we idle for very
+> long?" logic that this patch introduces.
+> 
+> I didn't want to check for 'wall_time > sampling_rate' because the timer can fire
+> slightly after the expiration of the sampling period, during regular operation
+> as well. So we don't want to treat those instances as "very long idle periods",
+> because that would be incorrect. Hence I decided to give an additional buffer
+> of a full sampling-period.
+
+Ok this makes sense. Thanks for the explanation.
+
+
+> 
+> > The reason why I am mentioning this is that we could have performed
+> > all the scaling-up at one place.
+> > 
+> 
+> Indeed, the scaling-up is performed at only this one place: dbs_check_cpu().
+> This is not "scaling-up" per-se, but rather a means to ensure that we don't
+> kick off the "copy-previous-load" logic if the CPU wasn't actually
+> idle for long.
+
+Ok. Understood. 
+
+> 
+> And the multiplication with ->rate_mult in the ondemand governor is to avoid the
+> complication arising from the dynamic behaviour of the sampling-period, by simply
+> assuming the worst-case (largest) sampling period, all the time. This helps us
+> accurately recognize the true idle periods in dbs_check_cpu().
+> 
+> > 
+> > Other than this, the patch looks good.
+> > 
+> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 
+> Thank you!
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
+--
+Thanks and Regards
+gautham.
 
