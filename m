@@ -1,35 +1,345 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH 0/2] Update smb347 charger driver.
-Date: Tue, 03 Jun 2014 10:47:00 +0900
-Message-ID: <1401760022-16621-1-git-send-email-jonghwa3.lee@samsung.com>
+Subject: [PATCH 1/2] power: smb347-charger: Support devicetree binding for
+ smb347 driver.
+Date: Tue, 03 Jun 2014 10:47:01 +0900
+Message-ID: <1401760022-16621-2-git-send-email-jonghwa3.lee@samsung.com>
+References: <1401760022-16621-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mailout3.samsung.com ([203.254.224.33]:61114 "EHLO
 	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbaFCBrK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 21:47:10 -0400
+	with ESMTP id S1752050AbaFCBrM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jun 2014 21:47:12 -0400
 Received: from epcpsbgr1.samsung.com
  (u141.gpu120.samsung.co.kr [203.254.230.141])
  by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
  (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0N6K00F3RKYK8ND0@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 03 Jun 2014 10:47:08 +0900 (KST)
+ with ESMTP id <0N6K00EEHKYMLKD0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 03 Jun 2014 10:47:10 +0900 (KST)
+In-reply-to: <1401760022-16621-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-This patch set updates smb347 driver to support dt-binding and smb358 chip.
+This patch makes smb347 charger driver to support dt binding. All legacy
+platform data now can be parsed from dt.
+Because of that smb347 is i2c client driver, IRQ number can be passed
+automatically through client's irq variable if it is defined in dt.
+No more to use requesting gpio to irq manually in dt-way.
 
-Jonghwa Lee (2):
-  power: smb347-charger: Support devicetree binding for smb347 driver.
-  power: smb347-charger: Support Summit SMB358 charger IC.
-
- .../bindings/power_supply/smb347_charger.txt       |   58 +++++
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Acked-by : Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by : Myungjoo Ham <myungjoo.ham@samsung.com>
+---
+ .../bindings/power_supply/smb347_charger.txt       |   57 ++++++++
  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
- drivers/power/smb347-charger.c                     |  242 +++++++++++++-------
- 3 files changed, 214 insertions(+), 87 deletions(-)
+ drivers/power/smb347-charger.c                     |  144 +++++++++++++++-----
+ 3 files changed, 167 insertions(+), 35 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/power_supply/smb347_charger.txt
 
+diff --git a/Documentation/devicetree/bindings/power_supply/smb347_charger.txt b/Documentation/devicetree/bindings/power_supply/smb347_charger.txt
+new file mode 100644
+index 0000000..91570a5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power_supply/smb347_charger.txt
+@@ -0,0 +1,57 @@
++smb347_charger bindings
++~~~~~~~~~~~~~~~~~~~~~~~~
++
++[Required porperties]
++- compatible : "summit,smb347"
++- reg : Slave address for i2c interface
++# At least one of followings should be set
++  - enable-usb-charging
++  - enable-otg-charging
++  - enable-mains-charging
++
++[Optional properties]
++- interrupt-parent : The phandle for the interrupt controller
++- interrupts : Interrupt line index for mapping
++- enable-chg-ctrl : Enable charging control
++		<0> : SW (i2c interface)
++		<1> : Pin control (Active Low)
++		<2> : Pin control (Active High)
++# Charging constraints
++- max-chg-curr : Maximum current for charging (in uA)
++- max-chg-volt : Maximum voltage for charging (in uV)
++- pre-chg-curr : Pre-charging current (in uA)
++- term-curr : Charging cycle termination current (in uA)
++- fast-volt-thershold : Voltage threshold to transit to fast charge mode (in uV)
++- mains-curr-limit : Maximum input current from AC/DC input (in uA)
++- usb-curr-limit : Maximum input current from USB input (in uA)
++
++# Related thermometer monitoring (in degree C)
++- chip-temp-threshold : Chip temperature for thermal regulaton.   <100, 130>
++- soft-cold-temp-limit : Cold battery temperature for soft alarm. <0, 15>*
++- soft-hot-temp-limit : Hot battery temperature for soft alarm.   <40, 55>
++- hard-cold-temp-limit : Cold battery temperature for hard alarm. <0, 15>*
++- hard-hot-temp-limit : Hot battery temperature for hard alarm.   <55, 65>
++(* The written temperature has +5'C offset. 0'C -> -5'C, 15'C -> 10'C)
++- soft-comp-method : Soft temperature limit compensation method
++	(Not defined) : Use default setting
++		<0> : Compensation none
++		<1> : Charge current compensation
++		<2> : Voltage compensation
++
++Example:
++	smb347@7f {
++		compatible = "summit,smb347";
++		reg = <0x7f>;
++		status = "okay";
++
++		max-chg-curr = <1800000>;
++		mains-curr-limit = <2000000>;
++		usb-curr-limit = <450000>;
++
++		chip-temp-thershold = <110>;
++
++		enable-usb-charging;
++		enable-mains-charging;
++
++		enable-chg-ctrl = <2>;	/* Pin control (Active High) */
++	};
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+index 13fda72..616e2a1 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.txt
++++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+@@ -121,6 +121,7 @@ spansion	Spansion Inc.
+ st	STMicroelectronics
+ ste	ST-Ericsson
+ stericsson	ST-Ericsson
++summit	Summit microelectronics
+ synology	Synology, Inc.
+ ti	Texas Instruments
+ tlm	Trusted Logic Mobility
+diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charger.c
+index acf84e8..8073879 100644
+--- a/drivers/power/smb347-charger.c
++++ b/drivers/power/smb347-charger.c
+@@ -835,20 +835,28 @@ static int smb347_irq_init(struct smb347_charger *smb,
+ 			   struct i2c_client *client)
+ {
+ 	const struct smb347_charger_platform_data *pdata = smb->pdata;
+-	int ret, irq = gpio_to_irq(pdata->irq_gpio);
++	int ret;
+ 
+-	ret = gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
+-	if (ret < 0)
+-		goto fail;
++	/* Requesting GPIO for IRQ is only needed in non-DT way */
++	if (!client->irq) {
++		int irq = gpio_to_irq(pdata->irq_gpio);
++		ret = devm_gpio_request_one(smb->dev, pdata->irq_gpio,
++						GPIOF_IN, client->name);
++		if (ret < 0)
++			goto out;
+ 
+-	ret = request_threaded_irq(irq, NULL, smb347_interrupt,
+-				   IRQF_TRIGGER_FALLING, client->name, smb);
++		client->irq = irq;
++	}
++
++	ret = devm_request_threaded_irq(smb->dev, client->irq, NULL,
++					smb347_interrupt, IRQF_TRIGGER_FALLING,
++					client->name, smb);
+ 	if (ret < 0)
+-		goto fail_gpio;
++		goto out;
+ 
+ 	ret = smb347_set_writable(smb, true);
+ 	if (ret < 0)
+-		goto fail_irq;
++		goto out;
+ 
+ 	/*
+ 	 * Configure the STAT output to be suitable for interrupts: disable
+@@ -858,20 +866,10 @@ static int smb347_irq_init(struct smb347_charger *smb,
+ 				 CFG_STAT_ACTIVE_HIGH | CFG_STAT_DISABLED,
+ 				 CFG_STAT_DISABLED);
+ 	if (ret < 0)
+-		goto fail_readonly;
+-
+-	smb347_set_writable(smb, false);
+-	client->irq = irq;
+-	return 0;
++		client->irq = 0;
+ 
+-fail_readonly:
+ 	smb347_set_writable(smb, false);
+-fail_irq:
+-	free_irq(irq, smb);
+-fail_gpio:
+-	gpio_free(pdata->irq_gpio);
+-fail:
+-	client->irq = 0;
++out:
+ 	return ret;
+ }
+ 
+@@ -1180,6 +1178,80 @@ static bool smb347_readable_reg(struct device *dev, unsigned int reg)
+ 	return smb347_volatile_reg(dev, reg);
+ }
+ 
++static void smb347_dt_parse_pdata(struct device_node *np,
++				 struct smb347_charger_platform_data *pdata)
++{
++	/* Charing constraints */
++	of_property_read_u32(np, "max-chg-curr", &pdata->max_charge_current);
++	of_property_read_u32(np, "max-chg-volt", &pdata->max_charge_voltage);
++	of_property_read_u32(np, "pre-chg-curr", &pdata->pre_charge_current);
++	of_property_read_u32(np, "term-curr", &pdata->termination_current);
++	of_property_read_u32(np, "fast-volt-threshold",
++						&pdata->pre_to_fast_voltage);
++	of_property_read_u32(np, "mains-curr-limit",
++						&pdata->mains_current_limit);
++	of_property_read_u32(np, "usb-curr-limit",
++						&pdata->usb_hc_current_limit);
++
++	/* For thermometer monitoring */
++	of_property_read_u32(np, "chip-temp-threshold",
++				&pdata->chip_temp_threshold);
++	if (of_property_read_u32(np, "soft-cold-temp-limit",
++				&pdata->soft_cold_temp_limit))
++		pdata->soft_cold_temp_limit = SMB347_TEMP_USE_DEFAULT;
++	if (of_property_read_u32(np, "soft-hot-temp-limit",
++				&pdata->soft_hot_temp_limit))
++		pdata->soft_hot_temp_limit = SMB347_TEMP_USE_DEFAULT;
++	if (of_property_read_u32(np, "hard-cold-temp-limit",
++				&pdata->hard_cold_temp_limit))
++		pdata->hard_cold_temp_limit = SMB347_TEMP_USE_DEFAULT;
++	if (of_property_read_u32(np, "hard-hot-temp-limit",
++				&pdata->hard_hot_temp_limit))
++		pdata->hard_hot_temp_limit = SMB347_TEMP_USE_DEFAULT;
++
++	/* Suspend when battery temperature is outside hard limits */
++	if ((pdata->hard_cold_temp_limit != SMB347_TEMP_USE_DEFAULT)
++		|| (pdata->hard_hot_temp_limit != SMB347_TEMP_USE_DEFAULT))
++		pdata->suspend_on_hard_temp_limit = true;
++
++	if (of_property_read_u32(np, "soft-comp-method",
++				&pdata->soft_temp_limit_compensation))
++		pdata->soft_temp_limit_compensation =
++				SMB347_SOFT_TEMP_COMPENSATE_DEFAULT;
++
++	of_property_read_u32(np, "chg-curr-comp",
++				&pdata->charge_current_compensation);
++
++	/* Supported charging mode */
++	pdata->use_mains = of_property_read_bool(np, "enable-mains-charging");
++	pdata->use_usb = of_property_read_bool(np, "enable-usb-charging");
++	pdata->use_usb_otg = of_property_read_bool(np, "enable-otg-charging");
++
++	/* Enable charging method */
++	of_property_read_u32(np, "enable-chg-ctrl", &pdata->enable_control);
++
++	/* If IRQ is enabled or not */
++	if (!of_get_property(np, "interrupts", NULL))
++		pdata->irq_gpio = -1;
++
++	return;
++}
++
++static struct smb347_charger_platform_data
++			*smb347_get_platdata(struct device *dev)
++{
++	struct smb347_charger_platform_data *pdata = NULL;
++
++	if (dev->of_node) {
++		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
++		smb347_dt_parse_pdata(dev->of_node, pdata);
++	} else {
++		pdata = dev_get_platdata(dev);
++	}
++
++	return pdata;
++}
++
+ static const struct regmap_config smb347_regmap = {
+ 	.reg_bits	= 8,
+ 	.val_bits	= 8,
+@@ -1192,27 +1264,25 @@ static int smb347_probe(struct i2c_client *client,
+ 			const struct i2c_device_id *id)
+ {
+ 	static char *battery[] = { "smb347-battery" };
+-	const struct smb347_charger_platform_data *pdata;
+ 	struct device *dev = &client->dev;
+ 	struct smb347_charger *smb;
+ 	int ret;
+ 
+-	pdata = dev->platform_data;
+-	if (!pdata)
+-		return -EINVAL;
+-
+-	if (!pdata->use_mains && !pdata->use_usb)
+-		return -EINVAL;
+-
+ 	smb = devm_kzalloc(dev, sizeof(*smb), GFP_KERNEL);
+ 	if (!smb)
+ 		return -ENOMEM;
+ 
++	smb->pdata = smb347_get_platdata(dev);
++	if (IS_ERR_OR_NULL(smb->pdata))
++		return -ENODEV;
++
++	if (!smb->pdata->use_mains && !smb->pdata->use_usb)
++		return -EINVAL;
++
+ 	i2c_set_clientdata(client, smb);
+ 
+ 	mutex_init(&smb->lock);
+ 	smb->dev = &client->dev;
+-	smb->pdata = pdata;
+ 
+ 	smb->regmap = devm_regmap_init_i2c(client, &smb347_regmap);
+ 	if (IS_ERR(smb->regmap))
+@@ -1257,7 +1327,6 @@ static int smb347_probe(struct i2c_client *client,
+ 	smb->battery.properties = smb347_battery_properties;
+ 	smb->battery.num_properties = ARRAY_SIZE(smb347_battery_properties);
+ 
+-
+ 	ret = power_supply_register(dev, &smb->battery);
+ 	if (ret < 0) {
+ 		if (smb->pdata->use_usb)
+@@ -1271,7 +1340,7 @@ static int smb347_probe(struct i2c_client *client,
+ 	 * Interrupt pin is optional. If it is connected, we setup the
+ 	 * interrupt support here.
+ 	 */
+-	if (pdata->irq_gpio >= 0) {
++	if (smb->pdata->irq_gpio >= 0) {
+ 		ret = smb347_irq_init(smb, client);
+ 		if (ret < 0) {
+ 			dev_warn(dev, "failed to initialize IRQ: %d\n", ret);
+@@ -1288,11 +1357,8 @@ static int smb347_remove(struct i2c_client *client)
+ {
+ 	struct smb347_charger *smb = i2c_get_clientdata(client);
+ 
+-	if (client->irq) {
++	if (client->irq)
+ 		smb347_irq_disable(smb);
+-		free_irq(client->irq, smb);
+-		gpio_free(smb->pdata->irq_gpio);
+-	}
+ 
+ 	power_supply_unregister(&smb->battery);
+ 	if (smb->pdata->use_usb)
+@@ -1308,9 +1374,17 @@ static const struct i2c_device_id smb347_id[] = {
+ };
+ MODULE_DEVICE_TABLE(i2c, smb347_id);
+ 
++#ifdef CONFIG_OF
++static struct of_device_id of_smb347_ids[] = {
++	{ .compatible = "summit,smb347" },
++	{},
++};
++#endif
++
+ static struct i2c_driver smb347_driver = {
+ 	.driver = {
+ 		.name = "smb347",
++		.of_match_table = of_match_ptr(of_smb347_ids),
+ 	},
+ 	.probe        = smb347_probe,
+ 	.remove       = smb347_remove,
 -- 
 1.7.9.5
 
