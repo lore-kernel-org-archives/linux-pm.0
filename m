@@ -1,68 +1,41 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 13/16 v3] Intercept wakeup/fork/exec load balancing
-Date: Tue, 3 Jun 2014 14:27:02 +0200
-Message-ID: <20140603122702.GM30445@twins.programming.kicks-ass.net>
-References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
- <1401431772-14320-14-git-send-email-yuyang.du@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
+ for !CONFIG_REGULATOR
+Date: Tue, 3 Jun 2014 20:10:00 +0530
+Message-ID: <CAKohpo=T3BG9X0gHfRA-x8B3ou3Y=XHcs=OTYAHikX61iAJ9xw@mail.gmail.com>
+References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
+	<20140527192923.GC12304@sirena.org.uk>
+	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+	<20140528173858.GG5099@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gK07V1xo3z7kEGDf"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:46702 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753617AbaFCM1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 08:27:19 -0400
-Content-Disposition: inline
-In-Reply-To: <1401431772-14320-14-git-send-email-yuyang.du@intel.com>
+Received: from mail-oa0-f52.google.com ([209.85.219.52]:35882 "EHLO
+	mail-oa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbaFCOkB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 10:40:01 -0400
+Received: by mail-oa0-f52.google.com with SMTP id eb12so6178635oac.25
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jun 2014 07:40:00 -0700 (PDT)
+In-Reply-To: <20140528173858.GG5099@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuyang Du <yuyang.du@intel.com>
-Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, pjt@google.com, bsegall@google.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 
+On 28 May 2014 23:08, Mark Brown <broonie@kernel.org> wrote:
+> Whatever - I don't think the particular code makes any practical
+> difference.  We would need to audit existing users who don't have a
+> REGULATOR dependency for breakage though.
 
---gK07V1xo3z7kEGDf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Exactly what kind of drivers are we looking to fix here? These might
+be the possible cases:
+- We are checking 'regulator pointer' before calling and don't need to
+handle anything there..
+- drivers depend on CONFIG_REGULATOR and so again we don't need
+to handle anything
+- None of above are true and drivers aren't checking return value of
+regulator_set_voltage()
+OR
+They are checking it and failing when it failed..
 
-On Fri, May 30, 2014 at 02:36:09PM +0800, Yuyang Du wrote:
-> We intercept load balancing to contain the load and load balancing in
-> the consolidated CPUs according to our consolidating mechanism.
->=20
-> In wakeup/fork/exec load balaning, when to find the idlest sched_group,
-> we first try to find the consolidated group
-
-Anything with intercept in is a complete non-starter. You still fully
-duplicate the logic.
-
-You really didn't get anything I said, did you?
-
-Please as to go back to square 1 and read again.
-
-So take a step back and try and explain what and why you're doing
-things, also try and look at what other people are doing. If I see
-another patch from you within two weeks I'll simply delete it, there's
-no way you can read up and fix everything in such a short time.
-
---gK07V1xo3z7kEGDf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTjb8WAAoJEHZH4aRLwOS6oOsQAKI26ZCB9FRgjaYeVHLoa0+z
-iap1EvqblYx19ew9ph7mzJlLHwUCcPWaD9ZiSzSYDnhFfZ7TR8mqfvDyzGnFkIbD
-zpGVoKZRG22NerM9udYrsuNZihXo8WqMh5FbtX3baGoLDWgdIKOb/e+LQhaiy1Gq
-WJJNwhjKEYT5tzNvTWXPd8sTKbL9Nvb6r7xhSUGBnBXDbRxa3Q5vryk2+nrDqgwr
-KvalXbVH9Jm/HB6VVUHa6r/V6Q/LJfz8BkW9UqC9kgXXfQhYl+OmADLQC8UMGJcH
-tH/O/scwJDBtCyj0SUSDbGrT8/mHpf6SpSah3kWvm75WR9FhKJpkxjbb1wOIq5OD
-neMmV4sUT0wjtdP+XXAb1Tfr2iMUu4TegIwl752tplO5fJpey0sjnklXAu7mnaSM
-TqQ5TZGZVbWgwxv0E7PTaEoQsKHdRw1SECL0KN8cweSzDWGn8XdWcX3+U/seKgF2
-uo0P/ZhdoP+rmNbAsEi8OHpb1OkFGIrZZIQILzSIa2Yq6lvFtRfYBVyVDMK3834A
-36rEY1+PqkNwZ1BPmpcw4Sl8SZ6lBBDTZroBe3UXF522t9OiBqWg9LELjPJVqotW
-HevL2Mf+k8yGIJOW1KB5i95QZFa+XSdD6PYGfFPrFVt1Jr7iXGjFwbm8Flyikr22
-qT+gEZLw59s1AU6Zy+07
-=FJAB
------END PGP SIGNATURE-----
-
---gK07V1xo3z7kEGDf--
+What do we want to do in these cases?
