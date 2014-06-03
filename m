@@ -1,266 +1,65 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: [RFC PATCH v3 4/7] thermal: introduce the Power Actor API
-Date: Tue,  3 Jun 2014 11:18:32 +0100
-Message-ID: <1401790715-5630-5-git-send-email-javi.merino@arm.com>
-References: <1401790715-5630-1-git-send-email-javi.merino@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1401790715-5630-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of
+ regulator_set_voltage_time() for !CONFIG_REGULATOR
+Date: Tue, 3 Jun 2014 11:52:23 +0100
+Message-ID: <20140603105223.GB31751@sirena.org.uk>
+References: <20140528173858.GG5099@sirena.org.uk>
+ <CAKohpokk_sNQ7Be5F8NLa7pLrssPm9qPf-fDEUYkiurJ6Etrpg@mail.gmail.com>
+ <20140602095112.GV5099@sirena.org.uk>
+ <CAKohpom7XNFJ7dBzNVW0TX3gyxo4RJdJ4yriYLa_noforhyciw@mail.gmail.com>
+ <20140602100201.GX5099@sirena.org.uk>
+ <CAKohpomj5-tHPkBLMrgGpsDCaCxW-8hGMunMTmJgXGgEgTR=vA@mail.gmail.com>
+ <20140602122332.GA31751@sirena.org.uk>
+ <CAKohpo=vPojhX_9u6Coa=2Kiu0jY9hCTg2B0WiWfJS8ZQxK4Rg@mail.gmail.com>
+ <20140602152014.GL31751@sirena.org.uk>
+ <CAKohpo=4gY42TJ0CcUBarHRnUvFKkXTykTYCfGUnAZ+CFwYE9g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="4rQ9lIe3OahbhU4J"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:51719 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751223AbaFCKwx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 06:52:53 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=4gY42TJ0CcUBarHRnUvFKkXTykTYCfGUnAZ+CFwYE9g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 
-This patch introduces the Power Actor API in the thermal framework.
-With it, devices that can report their power consumption and control
-it can be registered.  This base interface is meant to be used to
-derive specific power actors, such as a cpu power actor.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- Documentation/thermal/power_actor.txt     | 38 ++++++++++++++++++
- drivers/thermal/Kconfig                   |  3 ++
- drivers/thermal/Makefile                  |  2 +
- drivers/thermal/power_actor/Makefile      |  5 +++
- drivers/thermal/power_actor/power_actor.c | 64 +++++++++++++++++++++++++++=
-++++
- drivers/thermal/power_actor/power_actor.h | 64 +++++++++++++++++++++++++++=
-++++
- 6 files changed, 176 insertions(+)
- create mode 100644 Documentation/thermal/power_actor.txt
- create mode 100644 drivers/thermal/power_actor/Makefile
- create mode 100644 drivers/thermal/power_actor/power_actor.c
- create mode 100644 drivers/thermal/power_actor/power_actor.h
+--4rQ9lIe3OahbhU4J
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/Documentation/thermal/power_actor.txt b/Documentation/thermal/=
-power_actor.txt
-new file mode 100644
-index 000000000000..5a61f32ec143
---- /dev/null
-+++ b/Documentation/thermal/power_actor.txt
-@@ -0,0 +1,38 @@
-+
-+Power Actor API
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+The base power actor API is meant to be used to derive specific power
-+actors, such as a cpu power actor.  When registering, they should call
-+`power_actor_register()` with a unique `enum power_actor_types`.  When
-+unregistering, the power actor should call `power_actor_unregister()`
-+with the `struct power_actor *` received in the call to
-+`power_actor_register()`.
-+
-+Callbacks
-+---------
-+
-+1. u32 get_req_power(struct power_actor *actor)
-+@actor: a valid `struct power_actor *` registered with
-+        `power_actor_register()`
-+
-+`get_req_power()` returns the current requested power in milliwatts.
-+
-+2. u32 get_max_power(struct power_actor *actor)
-+@actor: a valid `struct power_actor *` registered with
-+        `power_actor_register()`
-+
-+`get_max_power()` returns the maximum power that the device could
-+consume if it was fully utilized.  It's a function as some devices'
-+maximum power consumption can change due to external factors such as
-+temperature.
-+
-+3. int set_power(struct power_actor *actor, u32 power)
-+@actor: a valid `struct power_actor *` registered with
-+        `power_actor_register()`
-+@power: power in milliwatts
-+
-+`set_power()` should configure the device to consume @power
-+milliwatts.
-+
-+Returns 0 on success, -E* on error.
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 2d51912a6e40..47e2f15537ca 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -89,6 +89,9 @@ config THERMAL_GOV_USER_SPACE
- =09help
- =09  Enable this to let the user space manage the platform thermals.
-=20
-+config THERMAL_POWER_ACTOR
-+=09bool
-+
- config CPU_THERMAL
- =09bool "generic cpu cooling support"
- =09depends on CPU_FREQ
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 54e4ec9eb5df..878a02cab7d1 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -14,6 +14,8 @@ thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)=09+=3D fair_=
-share.o
- thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)=09+=3D step_wise.o
- thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)=09+=3D user_space.o
-=20
-+obj-$(CONFIG_THERMAL_POWER_ACTOR) +=3D power_actor/
-+
- # cpufreq cooling
- thermal_sys-$(CONFIG_CPU_THERMAL)=09+=3D cpu_cooling.o
-=20
-diff --git a/drivers/thermal/power_actor/Makefile b/drivers/thermal/power_a=
-ctor/Makefile
-new file mode 100644
-index 000000000000..46478f4928be
---- /dev/null
-+++ b/drivers/thermal/power_actor/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for the power actors
-+#
-+
-+obj-y +=3D power_actor.o
-diff --git a/drivers/thermal/power_actor/power_actor.c b/drivers/thermal/po=
-wer_actor/power_actor.c
-new file mode 100644
-index 000000000000..d891deb0e2a1
---- /dev/null
-+++ b/drivers/thermal/power_actor/power_actor.c
-@@ -0,0 +1,64 @@
-+/*
-+ * Basic interface for power actors
-+ *
-+ * Copyright (C) 2014 ARM Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#define pr_fmt(fmt) "Power actor: " fmt
-+
-+#include <linux/err.h>
-+#include <linux/list.h>
-+#include <linux/slab.h>
-+
-+#include "power_actor.h"
-+
-+LIST_HEAD(actor_list);
-+
-+/**
-+ * power_actor_register - Register an actor in the power actor API
-+ * @type:=09actor type
-+ * @ops:=09struct power_actor_ops for this actor
-+ * @privdata:=09pointer to private data related to the actor
-+ *
-+ * Returns the struct power_actor * on success, ERR_PTR() on failure
-+ */
-+struct power_actor *power_actor_register(enum power_actor_types type,
-+=09=09=09=09=09struct power_actor_ops *ops,
-+=09=09=09=09=09void *privdata)
-+{
-+=09struct power_actor *actor;
-+
-+=09if (!ops->get_req_power || !ops->get_max_power || !ops->set_power)
-+=09=09return ERR_PTR(-EINVAL);
-+
-+=09actor =3D kzalloc(sizeof(*actor), GFP_KERNEL);
-+=09if (!actor)
-+=09=09return ERR_PTR(-ENOMEM);
-+
-+=09actor->type =3D type;
-+=09actor->ops =3D ops;
-+=09actor->data =3D privdata;
-+
-+=09list_add(&actor->actor_node, &actor_list);
-+
-+=09return actor;
-+}
-+
-+/**
-+ * power_actor_unregister - Unregister an actor
-+ * @actor:=09the actor to unregister
-+ */
-+void power_actor_unregister(struct power_actor *actor)
-+{
-+=09list_del(&actor->actor_node);
-+=09kfree(actor);
-+}
-diff --git a/drivers/thermal/power_actor/power_actor.h b/drivers/thermal/po=
-wer_actor/power_actor.h
-new file mode 100644
-index 000000000000..28098f43630b
---- /dev/null
-+++ b/drivers/thermal/power_actor/power_actor.h
-@@ -0,0 +1,64 @@
-+/*
-+ * Copyright (C) 2014 ARM Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef __POWER_ACTOR_H__
-+#define __POWER_ACTOR_H__
-+
-+#include <linux/list.h>
-+
-+#define MAX_NUM_ACTORS 8
-+
-+enum power_actor_types {
-+};
-+
-+struct power_actor;
-+
-+/**
-+ * struct power_actor_ops - callbacks for power actors
-+ * @get_req_power:=09return the current requested power in milliwatts
-+ * @get_max_power:=09return the max power that the device can currently
-+ *=09=09=09consume in milliwatts
-+ * @set_power:=09=09configure the device to consume a certain power in
-+ *=09=09=09milliwatts
-+ */
-+struct power_actor_ops {
-+=09u32 (*get_req_power)(struct power_actor *);
-+=09u32 (*get_max_power)(struct power_actor *);
-+=09int (*set_power)(struct power_actor *, u32);
-+};
-+
-+/**
-+ * struct power_actor - structure for a power actor
-+ * @type:=09the type of power actor.
-+ * @ops:=09callbacks for the power actor
-+ * @data:=09a private pointer for type-specific data
-+ * @actor_node:=09node in actor_list
-+ */
-+struct power_actor {
-+=09enum power_actor_types type;
-+=09struct power_actor_ops *ops;
-+=09void *data;
-+=09struct list_head actor_node;
-+};
-+
-+struct power_actor *power_actor_register(enum power_actor_types type,
-+=09=09=09=09=09struct power_actor_ops *ops,
-+=09=09=09=09=09void *privdata);
-+void power_actor_unregister(struct power_actor *actor);
-+
-+extern struct list_head actor_list;
-+
-+#endif /* __POWER_ACTOR_H__ */
---=20
-1.9.1
+On Mon, Jun 02, 2014 at 10:25:18PM +0530, Viresh Kumar wrote:
+
+> As Rafael has asked you to apply the patches, can you please apply
+> patch 2-3 for now?
+
+Not right now, the merge window is open.
+
+--4rQ9lIe3OahbhU4J
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTjajkAAoJELSic+t+oim9Ow4QAIhWWs6UURz9kji0vixZ+C0n
+J7vE1ecXtBRDehYtogFCPra27e+IDwkNkqyoO5U/4Uj9Bh+xYrQRzG/R60hCYi+0
+kcRkcASxKGF6ILzMft+kXjFp/wuZnVyfUZFGRZAnkH63XUCln7WotRz5Ra184icx
+ZBXwxIf5OHbq+0/7m9q0Yl1VO1th7+5XsiEo1g3WCinKXi8CSOgcPTsLuHBADOAx
+RQwh9nos/cHtBl3shKtvJsqDhjv8DYxlwH09w7ChwsGsV2ddXnLi6Hw08xiPVsD7
+2BSON2f96e5gwewNqRAXTF3kejBhfc+/gx6YSCcXXWgKyQS/M8ncSmHxReDjdl9c
+3ekRNJ9HeoA1+iXxmYx76+p2muKKsNZD9BkmZwMG1lrQOaC3mRn+LCGTXLJlcu5a
+IjHtPKgFyHMaRYNZ2HWymZZl3zbWYZuSZtWEvs2/l0Th07Pu+UhmK8qmcIBnamtw
+HcyMh7BpMYsaq2pDTJrMaFGuVK67Ya2W0WMMLW0STIwo9QO807doi91wFujd+moL
+v+ZCe4UHhVUCpZB6NYUAuducb0lhRLycErana0wRSBvGyBNcnTpOaQco510Bo1NR
+y1AojI8Cv+ltQvWxDetRVlMZ73JB260ze3G3+n0nfMuVIH5q6H1VQVUs+XWcS9G6
+jlRknsEY6qbGoaS0fQL0
+=+Scx
+-----END PGP SIGNATURE-----
+
+--4rQ9lIe3OahbhU4J--
