@@ -1,56 +1,83 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 11/16 v3] Make wakeup bias threshold changeable via
- sysctl
-Date: Tue, 3 Jun 2014 14:23:09 +0200
-Message-ID: <20140603122309.GK30445@twins.programming.kicks-ass.net>
+Subject: Re: [RFC PATCH 12/16 v3] Bias select wakee than waker in WAKE_AFFINE
+Date: Tue, 3 Jun 2014 14:24:01 +0200
+Message-ID: <20140603122401.GL30445@twins.programming.kicks-ass.net>
 References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
- <1401431772-14320-12-git-send-email-yuyang.du@intel.com>
+ <1401431772-14320-13-git-send-email-yuyang.du@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+9Nh279w3tr8TrRk"
+	protocol="application/pgp-signature"; boundary="lUGOeNWztp/TKlGK"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1401431772-14320-12-git-send-email-yuyang.du@intel.com>
+In-Reply-To: <1401431772-14320-13-git-send-email-yuyang.du@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Yuyang Du <yuyang.du@intel.com>
 Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, pjt@google.com, bsegall@google.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com
 List-Id: linux-pm@vger.kernel.org
 
 
---+9Nh279w3tr8TrRk
+--lUGOeNWztp/TKlGK
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 30, 2014 at 02:36:07PM +0800, Yuyang Du wrote:
-> In wakeup balance, we bias wakee and waker (in this order) if it is capab=
-le
-> of handling the wakee task.
+On Fri, May 30, 2014 at 02:36:08PM +0800, Yuyang Du wrote:
+> In WAKE_AFFINE, we do not simply select idle, but bias wakee than waker
+> if the cc of the wakee and waker (in this order) is capable of handling
+> the wakee task
 >=20
-> sysctl_sched_cc_wakeup_threshold is the threshold to see whether the CPU
-> is capable, and can be changed by sysctl tool
+> Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+> ---
+>  kernel/sched/fair.c |   13 ++++++++++++-
+>  1 file changed, 12 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 0c188df..d40ec9e 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4370,7 +4370,18 @@ static int select_idle_sibling(struct task_struct =
+*p, int target)
+>  	struct sched_group *sg;
+>  	int i =3D task_cpu(p);
+> =20
+> -	if (idle_cpu(target))
+> +	/*
+> +	 * we do not select idle, if the cc of the wakee and
+> +	 * waker (in this order) is capable of handling the wakee task
+> +	 */
+> +	if (sysctl_sched_cc_wakeup_threshold) {
+> +		if (idle_cpu(i) || cpu_cc_capable(i))
+> +			return i;
+> +
+> +		if (i !=3D target && (idle_cpu(target) || cpu_cc_capable(target)))
+> +			return target;
+> +	}
+> +	else if (idle_cpu(target))
+>  		return target;
+> =20
 
-This must strive for the most useless changelog ever..=20
+So now you make a function called: select_idle_sibling() explicitly not
+pick an idle cpu, and you don't think there's anything wrong with that?
 
---+9Nh279w3tr8TrRk
+--lUGOeNWztp/TKlGK
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTjb4tAAoJEHZH4aRLwOS61sMP/1HHLdLOKb/ULUoa7I3lDEmh
-JZWMdwhn+XfHH3u5imbStMapLaxfk1SnhfcZluzpj+5qxsSY2mwnMng62fW+9Auy
-9Uw6oADoUe/rrAMziNzxFgj8va2tvcB7eyjQHCLy5aTe3nV12iHg3g8Ox4zIJTyc
-hzp5MFzbsLxYNu1SQ2kL+L8ZW6y2CT5ci2wK62wYskwCDY0FnG5Hd0nTjLtnjXXa
-RjGmAu8fxvAji2AUfaoqC4HCacRP85FnoqI95EohcmJs3eZzh2ADrJ3xBSmF339A
-X3WFWfqrJo8Js5GsQYr11XfshjiyXT79vVUpj67xPtdWp4sFnZHww/eSGidJAFcC
-+0biQEt37WKXArbZqyxr8u80D4cJM+ja3lj6JFDDuaiTpKMqJe2HmqoX08e/UuHg
-gqu4tGCtIEUI/UqNNIl7Un1ySxcIa3dwj0H6jcGD10xcPKUx8GDaISuvvouMS02o
-YsNDwAQ/c4tJuGLMV2DOW/FxRnuD3ehiYv+3dvwCzmR6/1fuQqo7eDz/vIp4dj5g
-9mPCaLZK48OSfQgNm9d64aYra6q4N5iulhdq1fMtc0/0xBGtfSnqRQkId0st82pT
-2YSyZkHTru5YovTXG2KgbI2Jk+kGv5fkZRq4Z3cyj/2oVJVhvlLtqHGWJ1Z7Tv8r
-r9/tXvpNpltvyehZCcPM
-=IlEk
+iQIcBAEBAgAGBQJTjb5hAAoJEHZH4aRLwOS6KKMP/2N05J50/zNv5isvZPeo3Dkg
+QZ1716bNVDS5WZh/Pg2M2oL7+DXFdh9yE+CyiS0YZ/T8oIbQLBJJIGw/lrWPsnYm
+wqElJ5oSKs6kHMBdQ5w3iNzkKe5d2kMiPEswfMxjLCnRLa6S96hzJZbGFrK7z22U
+utqSW1dZpo0mD6vW5t1Zcu/iUFtlDisIFn7E4obl6SDDtpa6F/9clMv3tNayeWOW
+GIPOngxDQWh2PxX+4qNbp6D6iV17iY88aE3mAkxRHERUf0FCMSFkBkruG7hPAbbn
+mu8DbVuNSH4uMRf8et7JFmf08SKdOZbqADBucOFUzhpU7veM4drF4Kau1jl4NobS
+Yy/gzjngt8Zd3hglb5YASetw2hMTK5fXzftZo/hm4VV3rHljrNDGK7DhDwx/zT8S
+4wiqvHzN5X8LZbcYIcWJxOP2S2DPmrrv4ThHg6x/9E6glFWnvPQD5RSF3DHrXbSo
+d3cw0E+5zNSIqhhn2jm8QUMhEYBYDVIqSnc0AQTqwlBfs8bqYfnfnrYC/7QvMyab
+m13nxNGzanT7vkDCDr2Feuk0jWaGIiAdwaBfZuBTJcfrDFN6Dlus0E1eo13H9+x3
+DBXxiCdpJGktahocDn0JRhHw3RKOzEZCl3zfNRmcgPSEorCKZXLPbkJtyLU8WrdN
+2SD1sILfHYUhVYu8uPWz
+=bFzb
 -----END PGP SIGNATURE-----
 
---+9Nh279w3tr8TrRk--
+--lUGOeNWztp/TKlGK--
