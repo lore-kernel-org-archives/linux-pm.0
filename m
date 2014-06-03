@@ -1,23 +1,27 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
  provide it to scheduler
-Date: Tue, 3 Jun 2014 13:44:28 +0200
-Message-ID: <20140603114428.GY11096@twins.programming.kicks-ass.net>
+Date: Tue, 3 Jun 2014 13:50:15 +0200
+Message-ID: <20140603115015.GZ11096@twins.programming.kicks-ass.net>
 References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
  <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cbwY24+csKcE3jo0"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="vRyMahX6VF+pdQvX"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:39319 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932238AbaFCLu0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 07:50:26 -0400
 Content-Disposition: inline
 In-Reply-To: <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Morten Rasmussen <morten.rasmussen@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@kernel.org, rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, dietmar.eggemann@arm.com
-List-Id: linux-pm@vger.kernel.org
 
 
---cbwY24+csKcE3jo0
+--vRyMahX6VF+pdQvX
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -33,51 +37,33 @@ On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
 > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
 > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
 > +	};
-> +
-> +static struct capacity_state cap_states_cluster_a15[] = {
-> +	/* Cluster only power */
-> +	 { .cap =  840, .power =  7920, }, /*  500 MHz */
-> +	 { .cap = 1008, .power =  8165, }, /*  600 MHz */
-> +	 { .cap = 1176, .power =  8172, }, /*  700 MHz */
-> +	 { .cap = 1343, .power =  8195, }, /*  800 MHz */
-> +	 { .cap = 1511, .power =  8265, }, /*  900 MHz */
-> +	 { .cap = 1679, .power =  8446, }, /* 1000 MHz */
-> +	 { .cap = 1847, .power = 11426, }, /* 1100 MHz */
-> +	 { .cap = 2015, .power = 15200, }, /* 1200 MHz */
-> +	};
 
+So one thing I remember was that we spoke about restricting this to
+frequency levels where the voltage changed.
 
-So how did you obtain these numbers? Did you use numbers provided by the
-hardware people, or did you run a particular benchmark and record the
-power usage?
+Because voltage jumps were the biggest factor to energy usage.
 
-Does that benchmark do some actual work (as opposed to a while(1) loop)
-to keep more silicon lit up?
+Any word on that?
 
-If you have a setup for measuring these, should we try and publish that
-too so that people can run it on their platform and provide these
-numbers?
-
-
---cbwY24+csKcE3jo0
+--vRyMahX6VF+pdQvX
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTjbUcAAoJEHZH4aRLwOS6o90P/Ao4nAHv9AwwZYPeuQCsfh7R
-vh1MRPz1OXBqkcygPpSAbnFPG52KRYKGk8rDfW/WUIg2RMy/SZsdJyGu/ZfiOYfE
-U8A69S+IMGYH1tTvS9jm9uvdp+k3NGn2zzEGVw0k5LIcemPhMoF4Ss3+pQ7gxaCk
-0y4tVXL3Pi0FvTIiCXZqBiydJ7QZ3bV2u/oOxzrmPM96FZACBq5cWV0QlYHV44hw
-RHDHbN4NLI4P5jtPojimM2TCE76mntPMkh9yf2kmzZ3IsMChNylQ4o/EwYQkc3YM
-vM8uKOLqEYgKqn7t9AdiAOmDRn457y+l7oybLuOOSYxmo8F0qUOcLSxOvaFl4FeY
-GFhJRfpdC1xu0e1wgoR6ssXuoSjrEaBJAqu1nfiXdPaSgBkvEF5AxQfkVlKZWflH
-Lg6Ni3NV0HbixCZ2VD2X6prMpWHgj3nzul0hWMct8+9Kz+QOfHaD92uurIOivjhC
-OQ6Ckxfj58Q67ZlrkwDm0W3dKCJ78p3ZLJwtc+JMk77aYUzBTjCAwEAuBZpOiFqy
-T52il0LeYCVC3uTpLDjEix6JJFSvTV4OxT6RzLL+a/1BCABoQMeDQVZGUb5Xb/4r
-SAksq2pjT9WrqDCTJqSCCpppSRYSZ176PN5d2kJRhEwtlYNmy4CxeEpTdg4IgTnI
-mMbp9S5j4jw3in5l3RGw
-=hs4y
+iQIcBAEBAgAGBQJTjbZ3AAoJEHZH4aRLwOS6k+wP/iAWSFRkz+/cs5djHQ20w4aH
+tpHWsW49yNN9nv1xuO765uGlosjocwsommQN00MqkYmeEh1J58AI0BhW+WmtXhW2
+duQUix1z1mN3pFnK5lFt/EKK1OMIqh8q8Z9ML9nLLAYSvAOSqAzFKoMHNtn1C5tP
+hnduYqHH0d9hX8u3g1rt+mpL5HpSv9QKgI7qzeVo2luyMzKcgN89EhnvmTF5amMz
+gATpdy3hYMsbiykHJRoTpW83hlA/G3ACv/VKqsppiS48pwA5RLbBQxhQU9ZQG7Fl
+pxuSiQGx8uxskcHnMmMp3xdkIDRry0wb7bKfPnDYeCPN2YZT33dR0fgIoNZLcga2
+0Ccogu980hjil8LwbptMJ7WyRZbPmloL3jct+37E2Y2RGeN5x3zeOMWvypCmvauj
+GWR+C/nadmhct2FH2Dn0OFTMpFN0St+p06oJAAjb5mew3pL9y9zDaC4pOUD65PnP
+RL5Bbx4qIUoWlYCQNVzohfIcWEjsKKMkHJkF8Ja8lt/4dpwSzLhncpOMhb82n9pB
+lJhJLqzloWvRgTTiINMdoZOlh6BApb7lX12um2l2uLZxBnGzSePW39kiqF9mtdmJ
+4nkhR8mB9BXvMTaB6AF+VkjFEz0BxVE7bQLcKlzMg0EmIOiwnhBDALHDMJAVFc6i
+QO3yoz+0JU7Q6q+Pp2+J
+=oEeP
 -----END PGP SIGNATURE-----
 
---cbwY24+csKcE3jo0--
+--vRyMahX6VF+pdQvX--
