@@ -1,63 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
- for !CONFIG_REGULATOR
-Date: Wed, 4 Jun 2014 11:16:37 +0530
-Message-ID: <CAKohpon9G=JdZ1jSStHZH29VZDggZXm+EOqDAwedk2K0ZxD0Qg@mail.gmail.com>
-References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
-	<20140527192923.GC12304@sirena.org.uk>
-	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
-	<20140528173858.GG5099@sirena.org.uk>
-	<CAKohpo=T3BG9X0gHfRA-x8B3ou3Y=XHcs=OTYAHikX61iAJ9xw@mail.gmail.com>
-	<20140603145347.GE31751@sirena.org.uk>
-	<CAKohpo=VLCf2nz1WsL-iGw6BWwpmqZ+8JwGFFHFFtjZyAS9LrA@mail.gmail.com>
-	<20140603154854.GG31751@sirena.org.uk>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC PATCH 13/16 v3] Intercept wakeup/fork/exec load balancing
+Date: Wed, 4 Jun 2014 07:46:59 +0800
+Message-ID: <20140603234659.GA24315@intel.com>
+References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
+ <1401431772-14320-14-git-send-email-yuyang.du@intel.com>
+ <20140603122702.GM30445@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:39454 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755223AbaFDFqi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 01:46:38 -0400
-Received: by mail-ob0-f172.google.com with SMTP id wp18so7182690obc.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Jun 2014 22:46:38 -0700 (PDT)
-In-Reply-To: <20140603154854.GG31751@sirena.org.uk>
+Received: from mga03.intel.com ([143.182.124.21]:34532 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755250AbaFDHvF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 4 Jun 2014 03:51:05 -0400
+Content-Disposition: inline
+In-Reply-To: <20140603122702.GM30445@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, pjt@google.com, bsegall@google.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com
 
-On 3 June 2014 21:18, Mark Brown <broonie@kernel.org> wrote:
-> No, as I've explained repeatedly NULL is a perfectly valid regulator and
+On Tue, Jun 03, 2014 at 02:27:02PM +0200, Peter Zijlstra wrote:
+> On Fri, May 30, 2014 at 02:36:09PM +0800, Yuyang Du wrote:
+> > We intercept load balancing to contain the load and load balancing in
+> > the consolidated CPUs according to our consolidating mechanism.
+> > 
+> > In wakeup/fork/exec load balaning, when to find the idlest sched_group,
+> > we first try to find the consolidated group
+> 
+> Anything with intercept in is a complete non-starter. You still fully
+> duplicate the logic.
+> 
+> You really didn't get anything I said, did you?
+> 
+> Please as to go back to square 1 and read again.
+> 
+> So take a step back and try and explain what and why you're doing
+> things, also try and look at what other people are doing. If I see
+> another patch from you within two weeks I'll simply delete it, there's
+> no way you can read up and fix everything in such a short time.
 
-Okay, its been checked at multiple places already and that's obviously
-wrong then.
+Hi Peter,
 
-> that's not going to work reliably.  As I've previously requested please
-> think about what happens to cpufreq if we fail to ramp voltages.
+Thanks for your reply, it hurts though, :(
 
-Okay, so here is the scenario:
+I was concerned about what you said back, which should be this one:
 
-- driver is generic (like cpufreq-cpu0) and some user platforms may have
-regulator support and others might not..
+PeterZ: Fourthly, I'm _never_ going to merge anything that hijacks the load balancer
+and does some random other thing. There's going to be a single load-balancer
+full stop.
 
-- For platforms with regulators support, we _must_ check if the voltage
-change is successful or not and fail if regulator_set_voltage() failed.
+But some explanation to this interception/hijack. It is driven by a sched
+policy (SD_WORKLOAD_CONSOLIDATION) and the resulting effect of that policy if
+enabled, or still part of the load balancer. Can't do/call it that way?
 
-- But for platforms without regulators support (CONFIG_REGULATOR=n),
-regulator_get() will return NULL (a valid regulator though) and
-regulator_set_voltage() will fail. Because the platform doesn't care much
-about regulators it must go on and change frequency as if nothing
-happened.
-
-How can we achieve both these requirements by a generic piece of
-code?
-
-The only way I could think of currently is by returning something
-special like -ENOSYS from regulator_set_voltage() when
-regulators aren't configured in kernel and check return value of
-regulator_set_voltage() against this..
-
-This also holds true for regulator_get_voltage() which is returning
--EINVAL currently..
-
-Please share if you have some other solution in mind..
+Thanks,
+Yuyang
