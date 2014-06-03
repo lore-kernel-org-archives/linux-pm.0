@@ -1,57 +1,83 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: autosleep suspend too frquent problem
-Date: Tue, 3 Jun 2014 14:01:28 +0200
-Message-ID: <20140603120128.GA5080@amd.pavel.ucw.cz>
-References: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 03/16 v3] How CC accrues with run queue change and
+ time
+Date: Tue, 3 Jun 2014 14:12:42 +0200
+Message-ID: <20140603121242.GG30445@twins.programming.kicks-ass.net>
+References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
+ <1401431772-14320-4-git-send-email-yuyang.du@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MiYnpxbAAMzII6w/"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
+In-Reply-To: <1401431772-14320-4-git-send-email-yuyang.du@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
-Cc: "'len.brown@intel.com'" <len.brown@intel.com>, "'rjw@sisk.pl'" <rjw@sisk.pl>, "'linux-pm@vger.kernel.org'" <linux-pm@vger.kernel.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+To: Yuyang Du <yuyang.du@intel.com>
+Cc: mingo@redhat.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, pjt@google.com, bsegall@google.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, fengguang.wu@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
+--MiYnpxbAAMzII6w/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I found sd card sometimes are damaged/ destroyed=20
-> On our devices .
-> And seems it is caused by kernel's frequently suspend/resume,
-> Because during suspend/resume, the driver will suspend/resume sdcard
-> Very frequently, this will damaged the sdcard sometimes, and the dama=
-ge
-> is not recoverable ..
+On Fri, May 30, 2014 at 02:35:59PM +0800, Yuyang Du wrote:
+> It is natural to use task concurrency (running tasks in the rq) as load
+> indicator. We calculate CC for task concurrency by two steps:
 >=20
-> Sometimes kernel will enter suspend and exit suspend very frequently,
-> Especially when the system is in idle, but some driver is not idle,
-> And it will  wake up the system by irq frequently.
-> By our power test result, if system enter suspend /resume very freque=
-ntly,
-> Will consume more power , because it will enable /disable many device=
-s
-> During a short time .
+> 1) Divide continuous time into periods of time, and average task concurre=
+ncy
+> in period, for tolerating the transient bursts:
 >=20
-> I make a patch to prevent the system to enter suspend/resume state
-> More than one time during 2 seconds=EF=BC=9A
+> a =3D sum(concurrency * time) / period
+>=20
+> 2) Exponentially decay past periods, and synthesize them all, for hystere=
+sis
+> to load drops or resilience to load rises (let f be decaying factor, and =
+a_x
+> the xth period average since period 0):
+>=20
+> s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, ..., + f^(n-1) * a_1 + f^n * a_0
+>=20
+> To sum up, CPU CC is 1) decayed average run queue length, or 2) run-queue=
+-lengh-
+> weighted CPU utilization.
 
-It is good you managed to diagnose the problem, but this si not the
-right solution.
+why!? what benefit does it have over utilization.
 
-Either:
+Also, not a mention of dvfs or how that would impact things.
 
-1) don't power down SD card during system suspend
+> Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+> ---
+>  kernel/sched/fair.c |  255 +++++++++++++++++++++++++++++++++++++++++++++=
+++++++
+>  1 file changed, 255 insertions(+)
 
-or maybe even better
+And not a single word on why you cannot use the existing per-task
+accounting infrastructure and not a single attempt to merge the two.
 
-2) don't power _up_ SD card during system resume. Let it be powered
-down until the first access.
 
-Thanks,
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+
+--MiYnpxbAAMzII6w/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTjbu6AAoJEHZH4aRLwOS6zXIQAK1J5cxTiJJb+Gvqo1Sdrzzr
+HDGYRXiL7oiuQ1ndt0NgFLQK2MqWeJV4vyUJVSTonnlx5syPIqou26cSb9mcTYUL
+T2i4WvwU7IYvH3AfliNHDROIKN7CeCc8cr7xfMwyAhG0mHbS4z+DtXz0PAUUQuwl
+ZKWKfSRNAoIn/06am5mrWnmEB9RjTol5VJWao8lmc4BXdKqdWeAbGLWSv0yxW6FF
+pTcQW/U+G5djlSgspbHWFIeNShLMigHeCuAw6XYM2svRrYF+HvwcqN8mBY0rHO8N
+WM3CfnuAIs0uNzw4T2je+VfbVbo4aFG/UnBPfAxbTGagtItL/WehwEmBOb284Hrw
+oEaaOeh/wGcVl99fR7hPWCobKinHkeeGorVpJhvm0ld6RMoqvYl/OKChwvh+nRFr
+KYGhmeX3fEMLeZCMCJyqlabRQ7vGWcdEcPeVTj3qfnI1yrxcmWYHkBFkhz7exPV0
+YpZjRvCgDr+hkjl5+/ShhHgWT23ZIA8/7LvksAY/HR+agCQYdAiZWPnFVG/BNep+
+HtUb7LOCd4LR0CYt2ZXPE06lFbmsUGB9RW0QcAIQOS9NwLZ3bvi99x9SDX+hTzeD
+MC8SqoaoQ2iWi/YtBXUErXXgSHPRplr0LIORAzkOlTdkj4Q4TT8gyiGv9rXoC4B0
+SfJ9axxYrILy315bBdUV
+=GLqW
+-----END PGP SIGNATURE-----
+
+--MiYnpxbAAMzII6w/--
