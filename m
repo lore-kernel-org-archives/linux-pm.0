@@ -1,126 +1,97 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: governor: Be friendly towards latency-sensitive
- bursty workloads
-Date: Tue, 03 Jun 2014 11:19:35 +0530
-Message-ID: <538D61EF.4070404@linux.vnet.ibm.com>
-References: <20140526205337.1100.55275.stgit@srivatsabhat.in.ibm.com> <20140602073306.GA5220@in.ibm.com> <538C32AA.5020401@linux.vnet.ibm.com> <20140603051605.GA30422@in.ibm.com>
+From: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
+Subject: autosleep suspend too frquent problem
+Date: Tue, 3 Jun 2014 15:18:17 +0800
+Message-ID: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:50232 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbaFCFu5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 01:50:57 -0400
-Received: from /spool/local
-	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 3 Jun 2014 11:20:54 +0530
-In-Reply-To: <20140603051605.GA30422@in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "'len.brown@intel.com'" <len.brown@intel.com>, "'pavel@ucw.cz'" <pavel@ucw.cz>, "'rjw@sisk.pl'" <rjw@sisk.pl>, "'linux-pm@vger.kernel.org'" <linux-pm@vger.kernel.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: ego@linux.vnet.ibm.com
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, svaidy@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 06/03/2014 10:46 AM, Gautham R Shenoy wrote:
-> On Mon, Jun 02, 2014 at 01:45:38PM +0530, Srivatsa S. Bhat wrote:
->> On 06/02/2014 01:03 PM, Gautham R Shenoy wrote:
->>> Hi,
->>>
->>> On Tue, May 27, 2014 at 02:23:38AM +0530, Srivatsa S. Bhat wrote:
->>>
->>> [..snip..]
->>>>
->>>> Experimental results:
->>>> ====================
->>>>
->>>> I ran a modified version of ebizzy (called 'sleeping-ebizzy') that sleeps in
->>>> between its execution such that its total utilization can be a user-defined
->>>> value, say 10% or 20% (higher the utilization specified, lesser the amount of
->>>> sleeps injected). This ebizzy was run with a single-thread, tied to CPU 8.
->>>>
->>>> Behavior observed with tracing (sample taken from 40% utilization runs):
->>>> ------------------------------------------------------------------------
->>>>
->>>> Without patch:
->>>> ~~~~~~~~~~~~~~
->>>> kworker/8:2-12137  416.335742: cpu_frequency: state=2061000 cpu_id=8
->>>> kworker/8:2-12137  416.335744: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40753  416.345741: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> kworker/8:2-12137  416.345744: cpu_frequency: state=4123000 cpu_id=8
->>>> kworker/8:2-12137  416.345746: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40753  416.355738: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> <snip>  ---------------------------------------------------------------------  <snip>
->>>>       <...>-40753  416.402202: sched_switch: prev_comm=ebizzy ==> next_comm=swapper/8
->>>>      <idle>-0      416.502130: sched_switch: prev_comm=swapper/8 ==> next_comm=ebizzy
->>>>       <...>-40753  416.505738: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> kworker/8:2-12137  416.505739: cpu_frequency: state=2061000 cpu_id=8
->>>> kworker/8:2-12137  416.505741: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40753  416.515739: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> kworker/8:2-12137  416.515742: cpu_frequency: state=4123000 cpu_id=8
->>>> kworker/8:2-12137  416.515744: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>
->>>> Observation: Ebizzy went idle at 416.402202, and started running again at
->>>> 416.502130. But cpufreq noticed the long idle period, and dropped the frequency
->>>> at 416.505739, only to increase it back again at 416.515742, realizing that the
->>>> workload is in-fact CPU bound. Thus ebizzy needlessly ran at the lowest frequency
->>>> for almost 13 milliseconds (almost 1 full sample period), and this pattern
->>>> repeats on every sleep-wakeup. This could hurt latency-sensitive workloads quite
->>>> a lot.
->>>>
->>>> With patch:
->>>> ~~~~~~~~~~~
->>>>
->>>> kworker/8:2-29802  464.832535: cpu_frequency: state=2061000 cpu_id=8
->>>> <snip>  ---------------------------------------------------------------------  <snip>
->>>> kworker/8:2-29802  464.962538: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40738  464.972533: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> kworker/8:2-29802  464.972536: cpu_frequency: state=4123000 cpu_id=8
->>>> kworker/8:2-29802  464.972538: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40738  464.982531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> <snip>  ---------------------------------------------------------------------  <snip>
->>>> kworker/8:2-29802  465.022533: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40738  465.032531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> kworker/8:2-29802  465.032532: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40738  465.035797: sched_switch: prev_comm=ebizzy ==> next_comm=swapper/8
->>>>      <idle>-0      465.240178: sched_switch: prev_comm=swapper/8 ==> next_comm=ebizzy
->>>>       <...>-40738  465.242533: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>> kworker/8:2-29802  465.242535: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
->>>>       <...>-40738  465.252531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
->>>>
->>>
->>> Have the log entries emmitted by kworker/8 to report about the
->>> cpu_frequency states been snipped out in the entries post the
->>> "465.032531" mark ?
->>>
->>
->> No, why? Anything looks odd at that point?
-> 
-> I was expecting to see log messages of the following kind after a
-> kworker thread is scheduled in.
-> 
->   "kworker/8:2-12137  416.505739: cpu_frequency: state=2061000 cpu_id=8"
->
+Hi 
 
-But this gets printed only if the frequency is changed. If the frequency is left at the
-same value as it was previously set at (that's the point of this patch), then we won't
-get this print. [Note that these logs are with the patch applied.]
- 
->>
->> Note that the CPU went idle from 465.035797 to 465.240178, and hence cpufreq's
->> deferrable timer didn't fire (and hence kworker didn't run). But once the CPU
->> became busy again at 465.240178, the kworker got scheduled on the CPU within
->> 2 ms (at 465.242533).
-> 
-> Yes, but the logs don't show the frequency that the kworker thread
-> would have set on that cpu.
-> 
+I found sd card sometimes are damaged/ destroyed 
+On our devices .
+And seems it is caused by kernel's frequently suspend/resume,
+Because during suspend/resume, the driver will suspend/resume sdcard
+Very frequently, this will damaged the sdcard sometimes, and the damage
+is not recoverable ..
 
-Yes, and that's expected, because we copy the previous load to the present interval,
-and hence kworker won't change the frequency (in most cases), because it finds that
-the frequency is already set suitably for the perceived load in this interval.
-Hence we don't see any prints in the logs indicating a change in frequency.
+Sometimes kernel will enter suspend and exit suspend very frequently,
+Especially when the system is in idle, but some driver is not idle,
+And it will  wake up the system by irq frequently.
+By our power test result, if system enter suspend /resume very frequently,
+Will consume more power , because it will enable /disable many devices
+During a short time .
 
-Regards,
-Srivatsa S. Bhat
+I make a patch to prevent the system to enter suspend/resume state
+More than one time during 2 seconds：
 
+diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
+index ca304046..78fb06a 100644
+--- a/kernel/power/autosleep.c
++++ b/kernel/power/autosleep.c
+@@ -11,7 +15,7 @@
+ #include <linux/pm_wakeup.h>
+
+ #include "power.h"
+-
++#define SUSPEND_TIME_SLICE (2 * HZ)
+ static suspend_state_t autosleep_state;
+ static struct workqueue_struct *autosleep_wq;
+ /*
+@@ -26,7 +30,8 @@ static struct wakeup_source *autosleep_ws;
+ static void try_to_suspend(struct work_struct *work)
+ {
+        unsigned int initial_count, final_count;
+-
++       int ret;
++       static unsigned long last_suspend_exit_time;
+        if (!pm_get_wakeup_count(&initial_count, true))
+                goto out;
+
+@@ -43,8 +48,24 @@ static void try_to_suspend(struct work_struct *work)
+        }
+        if (autosleep_state >= PM_SUSPEND_MAX)
+                hibernate();
+-       else
+-               pm_suspend(autosleep_state);
++       else {
++               if (last_suspend_exit_time == 0 ||
++                       time_after(jiffies,
++                               last_suspend_exit_time + SUSPEND_TIME_SLICE)) {
++suspend:
++                       ret = pm_suspend(autosleep_state);
++                       if (ret == 0)
++                               last_suspend_exit_time = jiffies;
++               } else {
++                       unsigned long sleep_time =
++                               SUSPEND_TIME_SLICE -
++                               (jiffies - last_suspend_exit_time);
++                       if (sleep_time > 0)
++                               schedule_timeout_uninterruptible(sleep_time);
++                       else
++                               goto suspend;
++               }
++       }
+
+        mutex_unlock(&autosleep_lock);
+
+
+seems works ok ,
+my question is that should we change the autosleep module to make sure
+not enter suspend/resume  in a short time,
+or it is driver's problems? The driver should not wake up system
+very frequently ?
+
+Thanks
+
+
+
+Wang Yalin
+Engineer
+OSDD
+Sony Mobile Communications
