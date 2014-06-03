@@ -1,8 +1,8 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
  for !CONFIG_REGULATOR
-Date: Tue, 3 Jun 2014 20:52:04 +0530
-Message-ID: <CAKohpokRk+PDokcgRdQc+EfRs6t7Uduk8mJinBfANCs36-5_oQ@mail.gmail.com>
+Date: Tue, 3 Jun 2014 20:55:25 +0530
+Message-ID: <CAKohpo=VLCf2nz1WsL-iGw6BWwpmqZ+8JwGFFHFFtjZyAS9LrA@mail.gmail.com>
 References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
 	<20140527192923.GC12304@sirena.org.uk>
 	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
@@ -19,10 +19,12 @@ Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@
 List-Id: linux-pm@vger.kernel.org
 
 On 3 June 2014 20:23, Mark Brown <broonie@kernel.org> wrote:
->> - We are checking 'regulator pointer' before calling and don't need to
->> handle anything there..
->
-> I'm not sure what you mean by this.
+> Well, we would need to look at what the drivers were doing and figure
+> out something sensible - it really depends why they're trying to set the
+> regulator and what would happen if it doesn't work.
 
-I meant that sometimes regulator_set_voltage() is only called when pointer
-to regulator is valid.
+For example, few cpufreq drivers are calling it during frequency
+transition and are checking return value as well.. And fail if it failed.
+
+One way out might be checking if pointer to regulator is valid or not
+and only call it if pointer is not NULL..
