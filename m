@@ -1,102 +1,78 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
 Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
  provide it to scheduler
-Date: Wed, 4 Jun 2014 14:49:50 +0100
-Message-ID: <20140604134950.GQ29593@e103034-lin>
+Date: Wed, 4 Jun 2014 16:42:27 +0100
+Message-ID: <20140604154227.GR29593@e103034-lin>
 References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
  <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
- <20140530120424.GD30445@twins.programming.kicks-ass.net>
- <20140602141536.GL19967@e103034-lin>
- <20140603114145.GX11096@twins.programming.kicks-ass.net>
+ <20140603114428.GY11096@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.austin.arm.com ([217.140.110.23]:11675 "EHLO
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:13155 "EHLO
 	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752598AbaFDNtt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 09:49:49 -0400
+	by vger.kernel.org with ESMTP id S1751995AbaFDPmV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 11:42:21 -0400
 Content-Disposition: inline
-In-Reply-To: <20140603114145.GX11096@twins.programming.kicks-ass.net>
+In-Reply-To: <20140603114428.GY11096@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
-On Tue, Jun 03, 2014 at 12:41:45PM +0100, Peter Zijlstra wrote:
-> On Mon, Jun 02, 2014 at 03:15:36PM +0100, Morten Rasmussen wrote:
-> > > 
-> > > Talk to me about this core vs cluster thing.
-> > > 
-> > > Why would an architecture have multiple energy domains like this?
+On Tue, Jun 03, 2014 at 12:44:28PM +0100, Peter Zijlstra wrote:
+> On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
+> > +static struct capacity_state cap_states_cluster_a7[] = {
+> > +	/* Cluster only power */
+> > +	 { .cap =  358, .power = 2967, }, /*  350 MHz */
+> > +	 { .cap =  410, .power = 2792, }, /*  400 MHz */
+> > +	 { .cap =  512, .power = 2810, }, /*  500 MHz */
+> > +	 { .cap =  614, .power = 2815, }, /*  600 MHz */
+> > +	 { .cap =  717, .power = 2919, }, /*  700 MHz */
+> > +	 { .cap =  819, .power = 2847, }, /*  800 MHz */
+> > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
+> > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
+> > +	};
+> > +
+> > +static struct capacity_state cap_states_cluster_a15[] = {
+> > +	/* Cluster only power */
+> > +	 { .cap =  840, .power =  7920, }, /*  500 MHz */
+> > +	 { .cap = 1008, .power =  8165, }, /*  600 MHz */
+> > +	 { .cap = 1176, .power =  8172, }, /*  700 MHz */
+> > +	 { .cap = 1343, .power =  8195, }, /*  800 MHz */
+> > +	 { .cap = 1511, .power =  8265, }, /*  900 MHz */
+> > +	 { .cap = 1679, .power =  8446, }, /* 1000 MHz */
+> > +	 { .cap = 1847, .power = 11426, }, /* 1100 MHz */
+> > +	 { .cap = 2015, .power = 15200, }, /* 1200 MHz */
+> > +	};
 > 
-> > The reason is that power domains are often organized in a hierarchy
-> > where you may be able to power down just a cpu or the entire cluster
-> > along with cluster wide shared resources. This is quite typical for ARM
-> > systems. Frequency domains (P-states) typically cover the same hardware
-> > as one of the power domain levels. That is, there might be several
-> > smaller power domains sharing the same frequency (P-state) or there
-> > might be a power domain spanning multiple frequency domains.
-> > 
-> > The main reason why we need to worry about all this is that it typically
-> > cost a lot more energy to use the first cpu in a cluster since you
-> > also need to power up all the shared hardware resources than the energy
-> > cost of waking and using additional cpus in the same cluster.
-> > 
-> > IMHO, the most natural way to model the energy is therefore something
-> > like:
-> > 
-> >     energy = energy_cluster + n * energy_cpu
-> > 
-> > Where 'n' is the number of cpus powered up and energy_cluster is the
-> > cost paid as soon as any cpu in the cluster is powered up.
 > 
-> OK, that makes sense, thanks! Maybe expand the doc/changelogs with this
-> because it wasn't immediately clear to me.
+> So how did you obtain these numbers? Did you use numbers provided by the
+> hardware people, or did you run a particular benchmark and record the
+> power usage?
+>
+> Does that benchmark do some actual work (as opposed to a while(1) loop)
+> to keep more silicon lit up?
 
-I will add more documention to the next round, it is indeed needed.
+Hardware people don't like sharing data, so I did my own measurements
+and calculations to get the numbers above.
 
-> 
-> > > Also, in general, why would we need to walk the domain tree all the way
-> > > up, typically I would expect to stop walking once we've covered the two
-> > > cpu's we're interested in, because above that nothing changes.
-> > 
-> > True. In some cases we don't have to go all the way up. There is a
-> > condition in energy_diff_load() that bails out if the energy doesn't
-> > change further up the hierarchy. There might be scope for improving that
-> > condition though.
-> > 
-> > We can basically stop going up if the utilization of the domain is
-> > unchanged by the change we want to do. For example, we can ignore the
-> > next level above if a third cpu is keeping the domain up all the time
-> > anyway. In the 100% + 50% case above, putting another 50% task on the
-> > 50% cpu wouldn't affect the cluster according the proposed model, so it
-> > can be ignored. However, if we did the same on any of the two cpus in
-> > the 50% + 25% example we affect the cluster utilization and have to do
-> > the cluster level maths.
-> > 
-> > So we do sometimes have to go all the way up even if we are balancing
-> > two sibling cpus to determine the energy implications. At least if we
-> > want an energy score like energy_diff_load() produces. However, we might
-> > be able to take some other shortcuts if we are balancing load between
-> > two specific cpus (not wakeup/fork/exec balancing) as you point out. But
-> > there are cases where we need to continue up until the domain
-> > utilization is unchanged.
-> 
-> Right.. so my worry with this is scalability. We typically want to avoid
-> having to scan the entire machine, even for power aware balancing.
+ARM TC2 has on-chip energy counters for counting energy consumed by the
+A7 and A15 clusters. They are fairly accurate. I used sysbench cpu
+benchmark as test workload for the above numbers. sysbench might not be
+a representative workload, but it is easy to use. I think, ideally,
+vendors would run their own mix of workloads they care about and derrive
+their numbers for their platform based on that.
 
-I haven't looked at power management for really big machines, but I hope
-that we can stop a socket level or wherever utilization changes won't
-affect the energy of the rest of the system. If we can power off groups
-of sockets or something like that, we could scan at that level less
-frequently (like we do now). The cost and latency of powering off
-multiple sockets is probably high and not something we want to do often.
+> If you have a setup for measuring these, should we try and publish that
+> too so that people can run it on their platform and provide these
+> numbers?
 
-> That said, I don't think we have a 'sane' model for really big hardware
-> (yet). Intel still hasn't really said anything much on that iirc, as
-> long as a single core is up, all the memory controllers in the numa
-> fabric need to be awake, not to mention to cost of keeping the dram
-> alive.
+The workload setup I used quite simple. I ran sysbench with taskset with
+different numbers of threads to extrapolate power consumed by each
+individual cpu and how much comes from just powering on the domain.
 
-Right. I'm hoping that we can roll that in once we know more about power
-management on big hardware.
+Measuring the actual power is very platform specific. Developing a fully
+automated tool do it for any given platform isn't straigt forward, but
+I'm happy to share how I did it. I can add a description of the method I
+used on TC2 to the documentation so others can use it as reference.
