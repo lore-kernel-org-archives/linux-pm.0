@@ -1,52 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] idle, thermal, acpi: Remove home grown idle implementations
-Date: Wed, 04 Jun 2014 23:34:51 +0200
-Message-ID: <1509308.hu7EZQqxxC@vostro.rjw.lan>
-References: <20140604085418.GA11096@twins.programming.kicks-ass.net> <20140604015812.140a00d1@jacob-desktop>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and provide it to scheduler
+Date: Wed, 04 Jun 2014 23:56:55 +0200
+Message-ID: <2484761.vkWavnsDx3@vostro.rjw.lan>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com> <20140604160230.GS29593@e103034-lin> <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54168 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751410AbaFDVRf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 17:17:35 -0400
-In-Reply-To: <20140604015812.140a00d1@jacob-desktop>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lenb@kernel.org, mingo@kernel.org, tglx@linutronix.de, hpa@zytor.com, arjan@linux.intel.com, rui.zhang@intel.com, luto@amacapital.net
 
-On Wednesday, June 04, 2014 01:58:12 AM Jacob Pan wrote:
-> On Wed, 4 Jun 2014 10:54:18 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
+On Wednesday, June 04, 2014 07:27:12 PM Peter Zijlstra wrote:
+> On Wed, Jun 04, 2014 at 05:02:30PM +0100, Morten Rasmussen wrote:
+> > On Tue, Jun 03, 2014 at 12:50:15PM +0100, Peter Zijlstra wrote:
+> > > On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
+> > > > +static struct capacity_state cap_states_cluster_a7[] = {
+> > > > +	/* Cluster only power */
+> > > > +	 { .cap =  358, .power = 2967, }, /*  350 MHz */
+> > > > +	 { .cap =  410, .power = 2792, }, /*  400 MHz */
+> > > > +	 { .cap =  512, .power = 2810, }, /*  500 MHz */
+> > > > +	 { .cap =  614, .power = 2815, }, /*  600 MHz */
+> > > > +	 { .cap =  717, .power = 2919, }, /*  700 MHz */
+> > > > +	 { .cap =  819, .power = 2847, }, /*  800 MHz */
+> > > > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
+> > > > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
+> > > > +	};
+> > > 
+> > > So one thing I remember was that we spoke about restricting this to
+> > > frequency levels where the voltage changed.
+> > > 
+> > > Because voltage jumps were the biggest factor to energy usage.
+> > > 
+> > > Any word on that?
 > > 
-> > I'm still sitting on this patch. Jacub you were going to make it play
-> > nice with QoS?
-> > 
-> I had a patchset to work through system PM QOS and still maintain the
-> idle injection efficiency. When I saw you did not merge the patch
-> below, I thought you have abandoned it :)
+> > Since we don't drive P-state changes from the scheduler, I think we
+> > could leave out P-states from the table without too much trouble. Good
+> > point.
 > 
-> The only issue as per our last discussion is the lack of notification
-> when PM QOS cannot be met. But that is intrinsic to PM QOS itself.
-> 
-> I also consulted with Arjan and looked at directly intercept with
-> intel_idle since both intel_powerclamp and intel_idle are arch specific
-> drivers. But I think that is hard to do at per idle period basis,
-> since we should still allow "natural" idle during the forced idle time.
-> 
-> So, I think we can take a two stepped approach,
-> 1. integrate your patch with a
-> updated version of https://lkml.org/lkml/2013/11/26/534 such that there
-> is no performance/efficiency regression.
-> 2. add notification mechanism to system qos when constraints cannot be
-> met.
+> Well, we eventually want to go there I think. Although we still needed
+> to come up with something for Intel, because I'm not at all sure how all
+> that works.
 
-And then there's a question about how the notification would be supposed to
-work.  So I guess we can proceed with 1. and really leave 2. for some time
-in the future ATM.
+Do you mean power numbers or how P-states work on Intel in general?
 
 Rafael
-
