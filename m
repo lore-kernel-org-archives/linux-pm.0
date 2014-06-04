@@ -1,78 +1,102 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of
- regulator_set_voltage_time() for !CONFIG_REGULATOR
-Date: Wed, 4 Jun 2014 13:33:00 +0100
-Message-ID: <20140604123300.GI2520@sirena.org.uk>
-References: <20140527192923.GC12304@sirena.org.uk>
- <CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
- <20140528173858.GG5099@sirena.org.uk>
- <CAKohpo=T3BG9X0gHfRA-x8B3ou3Y=XHcs=OTYAHikX61iAJ9xw@mail.gmail.com>
- <20140603145347.GE31751@sirena.org.uk>
- <CAKohpo=VLCf2nz1WsL-iGw6BWwpmqZ+8JwGFFHFFtjZyAS9LrA@mail.gmail.com>
- <20140603154854.GG31751@sirena.org.uk>
- <CAKohpon9G=JdZ1jSStHZH29VZDggZXm+EOqDAwedk2K0ZxD0Qg@mail.gmail.com>
- <20140604103846.GF2520@sirena.org.uk>
- <CAKohpomS24eoqJ7h9d_5mPsyXhmnRSMW4fiCT0JnLRy5U6ARgw@mail.gmail.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Wed, 4 Jun 2014 14:49:50 +0100
+Message-ID: <20140604134950.GQ29593@e103034-lin>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
+ <20140530120424.GD30445@twins.programming.kicks-ass.net>
+ <20140602141536.GL19967@e103034-lin>
+ <20140603114145.GX11096@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="y96v7rNg6HAoELs5"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:53123 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbaFDMdn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 08:33:43 -0400
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:11675 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752598AbaFDNtt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 09:49:49 -0400
 Content-Disposition: inline
-In-Reply-To: <CAKohpomS24eoqJ7h9d_5mPsyXhmnRSMW4fiCT0JnLRy5U6ARgw@mail.gmail.com>
+In-Reply-To: <20140603114145.GX11096@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
+On Tue, Jun 03, 2014 at 12:41:45PM +0100, Peter Zijlstra wrote:
+> On Mon, Jun 02, 2014 at 03:15:36PM +0100, Morten Rasmussen wrote:
+> > > 
+> > > Talk to me about this core vs cluster thing.
+> > > 
+> > > Why would an architecture have multiple energy domains like this?
+> 
+> > The reason is that power domains are often organized in a hierarchy
+> > where you may be able to power down just a cpu or the entire cluster
+> > along with cluster wide shared resources. This is quite typical for ARM
+> > systems. Frequency domains (P-states) typically cover the same hardware
+> > as one of the power domain levels. That is, there might be several
+> > smaller power domains sharing the same frequency (P-state) or there
+> > might be a power domain spanning multiple frequency domains.
+> > 
+> > The main reason why we need to worry about all this is that it typically
+> > cost a lot more energy to use the first cpu in a cluster since you
+> > also need to power up all the shared hardware resources than the energy
+> > cost of waking and using additional cpus in the same cluster.
+> > 
+> > IMHO, the most natural way to model the energy is therefore something
+> > like:
+> > 
+> >     energy = energy_cluster + n * energy_cpu
+> > 
+> > Where 'n' is the number of cpus powered up and energy_cluster is the
+> > cost paid as soon as any cpu in the cluster is powered up.
+> 
+> OK, that makes sense, thanks! Maybe expand the doc/changelogs with this
+> because it wasn't immediately clear to me.
 
---y96v7rNg6HAoELs5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I will add more documention to the next round, it is indeed needed.
 
-On Wed, Jun 04, 2014 at 04:27:48PM +0530, Viresh Kumar wrote:
-> On 4 June 2014 16:08, Mark Brown <broonie@kernel.org> wrote:
-> > Please, go and *think* about what's going on here.  I've repeatedly
+> 
+> > > Also, in general, why would we need to walk the domain tree all the way
+> > > up, typically I would expect to stop walking once we've covered the two
+> > > cpu's we're interested in, because above that nothing changes.
+> > 
+> > True. In some cases we don't have to go all the way up. There is a
+> > condition in energy_diff_load() that bails out if the energy doesn't
+> > change further up the hierarchy. There might be scope for improving that
+> > condition though.
+> > 
+> > We can basically stop going up if the utilization of the domain is
+> > unchanged by the change we want to do. For example, we can ignore the
+> > next level above if a third cpu is keeping the domain up all the time
+> > anyway. In the 100% + 50% case above, putting another 50% task on the
+> > 50% cpu wouldn't affect the cluster according the proposed model, so it
+> > can be ignored. However, if we did the same on any of the two cpus in
+> > the 50% + 25% example we affect the cluster utilization and have to do
+> > the cluster level maths.
+> > 
+> > So we do sometimes have to go all the way up even if we are balancing
+> > two sibling cpus to determine the energy implications. At least if we
+> > want an energy score like energy_diff_load() produces. However, we might
+> > be able to take some other shortcuts if we are balancing load between
+> > two specific cpus (not wakeup/fork/exec balancing) as you point out. But
+> > there are cases where we need to continue up until the domain
+> > utilization is unchanged.
+> 
+> Right.. so my worry with this is scalability. We typically want to avoid
+> having to scan the entire machine, even for power aware balancing.
 
-> > If the code fails to change the voltage it needs to handle that
-> > (including remembering that attempts to lower the voltage fail); if the
-> > code handles the errors sensibly I would expect that to handle
-> > everything.
+I haven't looked at power management for really big machines, but I hope
+that we can stop a socket level or wherever utilization changes won't
+affect the energy of the rest of the system. If we can power off groups
+of sockets or something like that, we could scan at that level less
+frequently (like we do now). The cost and latency of powering off
+multiple sockets is probably high and not something we want to do often.
 
-> That's what I was asking, how should the code handle it? Code also
-> has to take care of platforms which haven't configured regulators
-> in kernel and want to use this generic driver.
+> That said, I don't think we have a 'sane' model for really big hardware
+> (yet). Intel still hasn't really said anything much on that iirc, as
+> long as a single core is up, all the memory controllers in the numa
+> fabric need to be awake, not to mention to cost of keeping the dram
+> alive.
 
-If the code gets an error back when it tries to change the voltage then
-it should assume that the attempt to change the voltage did not succeed.
-Should an attempt to change the voltage not succeed it seems reasonable
-to assume that the voltage did not change and is the same as before.
-The obvious thing would therefore appear to be for the code to proceed
-with that assumption and act accordingly.
-
---y96v7rNg6HAoELs5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTjxH5AAoJELSic+t+oim9EoMP/3vlAKcgrF3MFhq8bGisqJgX
-B1noqP1XKZC+Z8v4KydVVA7w7C19+ah6cBAG7Wq+uze90c6o4SumT+PyWs1lyrew
-hAZMh79OS9qPj77LI1L3b/ohRfNgAtvHjvg+a3FThUMMX/ZbMLowjRD5OmTjURTY
-SAFwqtJ5pUabexKNUl6B6+EPuDu0Rg9vdvBIOoo8XnUrO9szDks8XIRvWRp8UC9Z
-v4zjjcT8HAxLr9J+zs5hzNppl6pg0dhQC8yYUaympkwlczBX8tFKv5yoRuOroh7U
-1U/vq0dBhxaadZOAAPPbsyjAubEGi0SMSChP7eGm/z+qhQ2aTGrpFEuDHlgY23SP
-upd0fX8HvcoCG1KvSYJMwLMpz6lg3I6NCgxgzeMXIHnogl2qjBrnJT6hCmJ/saNf
-oru/uwVBRyXQKJ1EFEGRLZq6m/OQw59NoqyogqcTFfLWCEKPRG/ABPyo2yADDEUp
-zCJAk6PRGKgHTlqmBLluyNbAyCIQp7LO3+LpL61151Mr5rOyqvzQRIoo4aFWj1Bo
-r/rXr/5nx2+f6zThnc10b2WKD6J3851WKbpEfsfWbDTClQfr9Gq1fMeo1FI4Mksh
-8b1G/akJMIJ+d48FqXoRchMIC2kdwCzOtP66wLwXJ+XTqeNNzGQ1QxLN7MTCkBkk
-EMg7HSeWYVL4TNEcs0r5
-=/ily
------END PGP SIGNATURE-----
-
---y96v7rNg6HAoELs5--
+Right. I'm hoping that we can roll that in once we know more about power
+management on big hardware.
