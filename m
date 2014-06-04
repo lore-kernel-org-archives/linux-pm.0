@@ -1,102 +1,63 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: autosleep suspend too frquent problem
-Date: Tue, 3 Jun 2014 23:53:23 +0200
-Message-ID: <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
-References: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
-	<20140603120128.GA5080@amd.pavel.ucw.cz>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
+ for !CONFIG_REGULATOR
+Date: Wed, 4 Jun 2014 11:16:37 +0530
+Message-ID: <CAKohpon9G=JdZ1jSStHZH29VZDggZXm+EOqDAwedk2K0ZxD0Qg@mail.gmail.com>
+References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
+	<20140527192923.GC12304@sirena.org.uk>
+	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+	<20140528173858.GG5099@sirena.org.uk>
+	<CAKohpo=T3BG9X0gHfRA-x8B3ou3Y=XHcs=OTYAHikX61iAJ9xw@mail.gmail.com>
+	<20140603145347.GE31751@sirena.org.uk>
+	<CAKohpo=VLCf2nz1WsL-iGw6BWwpmqZ+8JwGFFHFFtjZyAS9LrA@mail.gmail.com>
+	<20140603154854.GG31751@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f54.google.com ([209.85.216.54]:43309 "EHLO
-	mail-qa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbaFCVxY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jun 2014 17:53:24 -0400
-Received: by mail-qa0-f54.google.com with SMTP id j15so5909556qaq.27
-        for <linux-pm@vger.kernel.org>; Tue, 03 Jun 2014 14:53:23 -0700 (PDT)
-In-Reply-To: <20140603120128.GA5080@amd.pavel.ucw.cz>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:39454 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755223AbaFDFqi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 01:46:38 -0400
+Received: by mail-ob0-f172.google.com with SMTP id wp18so7182690obc.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jun 2014 22:46:38 -0700 (PDT)
+In-Reply-To: <20140603154854.GG31751@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Wang, Yalin" <Yalin.Wang@sonymobile.com>, "len.brown@intel.com" <len.brown@intel.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
 
-On 3 June 2014 14:01, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->
->> I found sd card sometimes are damaged/ destroyed
->> On our devices .
->> And seems it is caused by kernel's frequently suspend/resume,
->> Because during suspend/resume, the driver will suspend/resume sdcard
->> Very frequently, this will damaged the sdcard sometimes, and the dam=
-age
->> is not recoverable ..
->>
->> Sometimes kernel will enter suspend and exit suspend very frequently=
-,
->> Especially when the system is in idle, but some driver is not idle,
->> And it will  wake up the system by irq frequently.
->> By our power test result, if system enter suspend /resume very frequ=
-ently,
->> Will consume more power , because it will enable /disable many devic=
-es
->> During a short time .
->>
->> I make a patch to prevent the system to enter suspend/resume state
->> More than one time during 2 seconds=EF=BC=9A
->
-> It is good you managed to diagnose the problem, but this si not the
-> right solution.
->
-> Either:
->
-> 1) don't power down SD card during system suspend
+On 3 June 2014 21:18, Mark Brown <broonie@kernel.org> wrote:
+> No, as I've explained repeatedly NULL is a perfectly valid regulator and
 
-NAK. The amount of power a card (even if there are good behaving cards
-as well) may utilize, in powered but idle state could be significant.
-I have seen cases of constant power consumption of several mA here.
+Okay, its been checked at multiple places already and that's obviously
+wrong then.
 
->
-> or maybe even better
->
-> 2) don't power _up_ SD card during system resume. Let it be powered
-> down until the first access.
+> that's not going to work reliably.  As I've previously requested please
+> think about what happens to cpufreq if we fail to ramp voltages.
 
-Good news! This is "almost" supported already by the mmc subsystem.
+Okay, so here is the scenario:
 
-If your mmc host has set the capability flag MMC_CAP_RUNTIME_RESUME,
-that means the card won't be powered up (and initialized) until the
-next request.
+- driver is generic (like cpufreq-cpu0) and some user platforms may have
+regulator support and others might not..
 
-However, for removable cards (!MMC_CAP_NONREMOVABLE), during system
-resume phase, the mmc core will trigger a "rescan" of the card, to
-verify it has not been removed. Thus, unfortunate for this use case,
-the first request (for removable cards) will be triggered during the
-system resume phase.
+- For platforms with regulators support, we _must_ check if the voltage
+change is successful or not and fail if regulator_set_voltage() failed.
 
-I suppose we should add some extra conditions/flags which makes the
-mmc core to handle the above scenario. Actually I have been thinking
-of putting together a patch for this, but it never pops up on the top
-of my TODO list. :-)
+- But for platforms without regulators support (CONFIG_REGULATOR=n),
+regulator_get() will return NULL (a valid regulator though) and
+regulator_set_voltage() will fail. Because the platform doesn't care much
+about regulators it must go on and change frequency as if nothing
+happened.
 
-Additionally, I wonder if this bouncing up and down from suspend to
-resume, could have other negative impact for other subsystems? Is it
-just a mmc subsystem problem? I am not so sure.
+How can we achieve both these requirements by a generic piece of
+code?
 
-Kind regards
-Ulf Hansson
+The only way I could think of currently is by returning something
+special like -ENOSYS from regulator_set_voltage() when
+regulators aren't configured in kernel and check return value of
+regulator_set_voltage() against this..
 
->
-> Thanks,
->                                                                      =
-   Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/hors=
-es/blog.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+This also holds true for regulator_get_voltage() which is returning
+-EINVAL currently..
+
+Please share if you have some other solution in mind..
