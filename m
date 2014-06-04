@@ -1,26 +1,26 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
 Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
  provide it to scheduler
-Date: Wed, 4 Jun 2014 16:42:27 +0100
-Message-ID: <20140604154227.GR29593@e103034-lin>
+Date: Wed, 4 Jun 2014 17:02:30 +0100
+Message-ID: <20140604160230.GS29593@e103034-lin>
 References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
  <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
- <20140603114428.GY11096@twins.programming.kicks-ass.net>
+ <20140603115015.GZ11096@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.austin.arm.com ([217.140.110.23]:13155 "EHLO
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:14234 "EHLO
 	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751995AbaFDPmV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 11:42:21 -0400
+	by vger.kernel.org with ESMTP id S1751129AbaFDQCf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 12:02:35 -0400
 Content-Disposition: inline
-In-Reply-To: <20140603114428.GY11096@twins.programming.kicks-ass.net>
+In-Reply-To: <20140603115015.GZ11096@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
-On Tue, Jun 03, 2014 at 12:44:28PM +0100, Peter Zijlstra wrote:
+On Tue, Jun 03, 2014 at 12:50:15PM +0100, Peter Zijlstra wrote:
 > On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
 > > +static struct capacity_state cap_states_cluster_a7[] = {
 > > +	/* Cluster only power */
@@ -33,46 +33,22 @@ On Tue, Jun 03, 2014 at 12:44:28PM +0100, Peter Zijlstra wrote:
 > > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
 > > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
 > > +	};
-> > +
-> > +static struct capacity_state cap_states_cluster_a15[] = {
-> > +	/* Cluster only power */
-> > +	 { .cap =  840, .power =  7920, }, /*  500 MHz */
-> > +	 { .cap = 1008, .power =  8165, }, /*  600 MHz */
-> > +	 { .cap = 1176, .power =  8172, }, /*  700 MHz */
-> > +	 { .cap = 1343, .power =  8195, }, /*  800 MHz */
-> > +	 { .cap = 1511, .power =  8265, }, /*  900 MHz */
-> > +	 { .cap = 1679, .power =  8446, }, /* 1000 MHz */
-> > +	 { .cap = 1847, .power = 11426, }, /* 1100 MHz */
-> > +	 { .cap = 2015, .power = 15200, }, /* 1200 MHz */
-> > +	};
 > 
+> So one thing I remember was that we spoke about restricting this to
+> frequency levels where the voltage changed.
 > 
-> So how did you obtain these numbers? Did you use numbers provided by the
-> hardware people, or did you run a particular benchmark and record the
-> power usage?
->
-> Does that benchmark do some actual work (as opposed to a while(1) loop)
-> to keep more silicon lit up?
+> Because voltage jumps were the biggest factor to energy usage.
+> 
+> Any word on that?
 
-Hardware people don't like sharing data, so I did my own measurements
-and calculations to get the numbers above.
+Since we don't drive P-state changes from the scheduler, I think we
+could leave out P-states from the table without too much trouble. Good
+point.
 
-ARM TC2 has on-chip energy counters for counting energy consumed by the
-A7 and A15 clusters. They are fairly accurate. I used sysbench cpu
-benchmark as test workload for the above numbers. sysbench might not be
-a representative workload, but it is easy to use. I think, ideally,
-vendors would run their own mix of workloads they care about and derrive
-their numbers for their platform based on that.
-
-> If you have a setup for measuring these, should we try and publish that
-> too so that people can run it on their platform and provide these
-> numbers?
-
-The workload setup I used quite simple. I ran sysbench with taskset with
-different numbers of threads to extrapolate power consumed by each
-individual cpu and how much comes from just powering on the domain.
-
-Measuring the actual power is very platform specific. Developing a fully
-automated tool do it for any given platform isn't straigt forward, but
-I'm happy to share how I did it. I can add a description of the method I
-used on TC2 to the documentation so others can use it as reference.
+TC2 is an early development platform and somewhat different from what
+you find in end user products. TC2 actually uses the same voltage for
+all states except the highest 2-3 states. That is not typical. The
+voltage is typically slightly different for each state, however, the
+difference get bigger for higher P-states. We could probably get away
+with representing multiple states as one in the energy model if the
+voltage change is minimal.
