@@ -1,83 +1,49 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] regulators: Add definition of
- regulator_set_voltage_time() for !CONFIG_REGULATOR
-Date: Wed, 4 Jun 2014 11:38:46 +0100
-Message-ID: <20140604103846.GF2520@sirena.org.uk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] regulators: Add definition of regulator_set_voltage_time()
+ for !CONFIG_REGULATOR
+Date: Wed, 4 Jun 2014 16:27:48 +0530
+Message-ID: <CAKohpomS24eoqJ7h9d_5mPsyXhmnRSMW4fiCT0JnLRy5U6ARgw@mail.gmail.com>
 References: <1780c3205893be8567fa29ccd86674e2f32555b4.1401192160.git.viresh.kumar@linaro.org>
- <20140527192923.GC12304@sirena.org.uk>
- <CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
- <20140528173858.GG5099@sirena.org.uk>
- <CAKohpo=T3BG9X0gHfRA-x8B3ou3Y=XHcs=OTYAHikX61iAJ9xw@mail.gmail.com>
- <20140603145347.GE31751@sirena.org.uk>
- <CAKohpo=VLCf2nz1WsL-iGw6BWwpmqZ+8JwGFFHFFtjZyAS9LrA@mail.gmail.com>
- <20140603154854.GG31751@sirena.org.uk>
- <CAKohpon9G=JdZ1jSStHZH29VZDggZXm+EOqDAwedk2K0ZxD0Qg@mail.gmail.com>
+	<20140527192923.GC12304@sirena.org.uk>
+	<CAKohpo=AnusM2FGs=JLozSyTc0N7SDXQxe+rPiLEHP6ewxY4ow@mail.gmail.com>
+	<20140528173858.GG5099@sirena.org.uk>
+	<CAKohpo=T3BG9X0gHfRA-x8B3ou3Y=XHcs=OTYAHikX61iAJ9xw@mail.gmail.com>
+	<20140603145347.GE31751@sirena.org.uk>
+	<CAKohpo=VLCf2nz1WsL-iGw6BWwpmqZ+8JwGFFHFFtjZyAS9LrA@mail.gmail.com>
+	<20140603154854.GG31751@sirena.org.uk>
+	<CAKohpon9G=JdZ1jSStHZH29VZDggZXm+EOqDAwedk2K0ZxD0Qg@mail.gmail.com>
+	<20140604103846.GF2520@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FeAIMMcddNRN4P4/"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:52916 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbaFDKjY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 06:39:24 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKohpon9G=JdZ1jSStHZH29VZDggZXm+EOqDAwedk2K0ZxD0Qg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140604103846.GF2520@sirena.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
+On 4 June 2014 16:08, Mark Brown <broonie@kernel.org> wrote:
+> Please, go and *think* about what's going on here.  I've repeatedly
+> asked you to consider the case where we need to raise the voltage prior
+> to raising the frequency for cpufreq but you've not responded to these
+> requests either directly or in showing any sign of having understood the
+> issue.
 
---FeAIMMcddNRN4P4/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I replied to that only when I said:
 
-On Wed, Jun 04, 2014 at 11:16:37AM +0530, Viresh Kumar wrote:
+- For platforms with regulators support, we _must_ check if the voltage
+change is successful or not and fail if regulator_set_voltage() failed.
 
-> - But for platforms without regulators support (CONFIG_REGULATOR=n),
-> regulator_get() will return NULL (a valid regulator though) and
-> regulator_set_voltage() will fail. Because the platform doesn't care much
-> about regulators it must go on and change frequency as if nothing
-> happened.
+And what you wrote earlier was correct, we may end up with unstable
+systems if we ramp frequencies even when changing voltage failed.
 
-No, approximately none of this is true.  CONFIG_REGULATOR tells you
-nothing about the hardware, it tells you what someone selected in the
-kernel config.  There is nothing stopping anyone enabling the API on any
-platform, and there is nothing stopping anyone disabling the API when
-building a kernel for a platform which can do something with regulators
-with CONFIG_REGULATOR disabled.
+> If the code fails to change the voltage it needs to handle that
+> (including remembering that attempts to lower the voltage fail); if the
+> code handles the errors sensibly I would expect that to handle
+> everything.
 
-Please, go and *think* about what's going on here.  I've repeatedly
-asked you to consider the case where we need to raise the voltage prior
-to raising the frequency for cpufreq but you've not responded to these
-requests either directly or in showing any sign of having understood the
-issue.
+That's what I was asking, how should the code handle it? Code also
+has to take care of platforms which haven't configured regulators
+in kernel and want to use this generic driver.
 
-If the code fails to change the voltage it needs to handle that
-(including remembering that attempts to lower the voltage fail); if the
-code handles the errors sensibly I would expect that to handle
-everything.
-
---FeAIMMcddNRN4P4/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTjvczAAoJELSic+t+oim9AEMQAJVEwGI59MNoz7sFpAYba7Lz
-3PJUK+QsWIXiMzvikzSbf9Cc7+JvISb1vRywEvTCZlGhvODXd51tTQDCZw7aIKFn
-wgN/5c5rmIzekqz+hrCpG4E2LHmL1QQ+x5gIzecWak38PL8AlSil/TsEOo65GZ9Q
-06gQHctBK64yhPywpKkVdfDr7ShlWYe0+9BFYTi0DzArglR2XaIaxwFryMY66ivo
-kW/TofAt84eV/KU1rRIsFnz5HUzxn+Id+tSg8yjOOw3pix3AmffLnJqZCPXyF1w9
-3pwIlJu/MyCaLtCWBJy2HzVxDL8y4IfL45fcqoBqz+hzZ6UGm0c6iP2UVpjvW11+
-xAmUOZSTN7oBRECeSf4/IyH239UM7LuHTUrHRF89Hg7DN4ALFhAgSUacOiA+XidM
-KU3XnOqf0aOwFr6kSdr8tDFgLuF9Xwo+ITYsEX6fzy4NqbE0kx0fM0EpUVtXz6rn
-xz94BVsxtgSnayMexg2Q0D0+EXZiLSf/XTveGJwP8YH4T1bpv0iGVdPu02gMifLQ
-rwJZ3gFeSGKRaYB6Rs71zIwy2x5m/+ZUUAgBUTrldS4GBRfnvE/HikN/cjh2zPlZ
-VE8e7gv0ke02Cy9yfMM6Iy/u0sCEIuO/Y39+g7u3JLl75QFLLoXb2NNellQT9XEP
-w8LHe0tKQJ5oo4T3EnuS
-=J+fe
------END PGP SIGNATURE-----
-
---FeAIMMcddNRN4P4/--
+Sorry if I still didn't answer it properly :(
