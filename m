@@ -1,122 +1,82 @@
-From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH 3/4] power: max17042_battery: Fix deadlock caused by deferred
- initialization
-Date: Thu, 05 Jun 2014 12:46:16 +0900
-Message-ID: <1401939977-20328-4-git-send-email-jonghwa3.lee@samsung.com>
-References: <1401939977-20328-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:49756 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751667AbaFEDq3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 23:46:29 -0400
-Received: from epcpsbgr2.samsung.com
- (u142.gpu120.samsung.co.kr [203.254.230.142])
- by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0N6O00JAGFTCWU30@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 05 Jun 2014 12:46:24 +0900 (KST)
-In-reply-to: <1401939977-20328-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
+Subject: RE: autosleep suspend too frquent problem
+Date: Thu, 5 Jun 2014 14:51:41 +0800
+Message-ID: <35FD53F367049845BC99AC72306C23D1029A27656A38@CNBJMBX05.corpusers.net>
+References: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
+	<20140603120128.GA5080@amd.pavel.ucw.cz>
+ <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: 'Ulf Hansson' <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "len.brown@intel.com" <len.brown@intel.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, Tomasz Figa <t.figa@samsung.com>
 
-From: Tomasz Figa <t.figa@samsung.com>
-
-There is no need to defer chip initialization from probe. In addition,
-current implementation caused a deadlock, which made boot hang from time
-to time.
-
-This patch removes deffered initialization and adds chip initialization
-to probe, before the power supply is registered.
-
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
----
- drivers/power/max17042_battery.c |   32 ++++++++++++++------------------
- 1 file changed, 14 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
-index cee3912..0178a32 100644
---- a/drivers/power/max17042_battery.c
-+++ b/drivers/power/max17042_battery.c
-@@ -76,8 +76,6 @@ struct max17042_chip {
- 	enum max170xx_chip_type chip_type;
- 	enum max17042_operation_mode mode;
- 	struct max17042_platform_data *pdata;
--	struct work_struct work;
--	int    init_complete;
- };
- 
- static enum power_supply_property max17042_battery_props[] = {
-@@ -108,9 +106,6 @@ static int max17042_get_property(struct power_supply *psy,
- 	int ret;
- 	u32 data;
- 
--	if (!chip->init_complete)
--		return -EAGAIN;
--
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_PRESENT:
- 		ret = regmap_read(map, MAX17042_STATUS, &data);
-@@ -609,7 +604,7 @@ static irqreturn_t max17042_thread_handler(int id, void *dev)
- 	return IRQ_HANDLED;
- }
- 
--static void max17042_init_worker(struct work_struct *work)
-+static int max17042_init_worker(struct max17042_chip *chip)
- {
- 	struct max17042_chip *chip = container_of(work,
- 				struct max17042_chip, work);
-@@ -619,10 +614,10 @@ static void max17042_init_worker(struct work_struct *work)
- 	if (chip->pdata->enable_por_init && chip->pdata->config_data) {
- 		ret = max17042_init_chip(chip);
- 		if (ret)
--			return;
-+			return ret;
- 	}
- 
--	chip->init_complete = 1;
-+	return 0;
- }
- 
- #ifdef CONFIG_OF
-@@ -738,12 +733,6 @@ static int max17042_probe(struct i2c_client *client,
- 					chip->pdata->init_data[i].addr,
- 					chip->pdata->init_data[i].data);
- 
--	ret = power_supply_register(&client->dev, &chip->battery);
--	if (ret) {
--		dev_err(&client->dev, "failed: power supply register\n");
--		return ret;
--	}
--
- 	if (client->irq) {
- 		ret = devm_request_threaded_irq(&client->dev, client->irq,
- 					NULL, max17042_thread_handler,
-@@ -763,10 +752,17 @@ static int max17042_probe(struct i2c_client *client,
- 
- 	regmap_read(chip->regmap, MAX17042_STATUS, &val);
- 	if (val & STATUS_POR_BIT) {
--		INIT_WORK(&chip->work, max17042_init_worker);
--		schedule_work(&chip->work);
--	} else {
--		chip->init_complete = 1;
-+		ret = max17042_init_worker(chip);
-+		if (ret) {
-+			dev_err(&client->dev, "failed: init chip\n");
-+			return ret;
-+		}
-+	}
-+
-+	ret = power_supply_register(&client->dev, &chip->battery);
-+	if (ret) {
-+		dev_err(&client->dev, "failed: power supply register\n");
-+		return ret;
- 	}
- 
- 	return 0;
--- 
-1.7.9.5
-
+SGkgIA0KDQpUaGFua3MgZm9yIHlvdXIgY2xhcmlmaWNhdGlvbi4NCg0KT25lIHByb2JsZW0gaXMg
+dGhlIHNkIGNhcmQgZHJpdmVyIGl0c2VsZiAuDQoNCkluIGFkZGl0aW9uLCBJIGFsc28gdGhpbmsg
+a2VybmVsJ3MgYXV0b3NsZWVwLmMgbW9kdWxlDQpIYXZlIHByb2JsZW0gdG9vLg0KSXQganVzdCB0
+ZXN0IHdha2UgdXAgY291bnQgLGlmIHRoZSBjb3VudCBpcyB6ZXJvLCB0aGVuIGVudGVyIHN1c3Bl
+bmQuDQoNClRoaXMgd2lsbCByZXN1bHQgaW4gZnJlcXVlbnQgc3VzcGVuZCAvIHJlc3VtZSBwcm9i
+bGVtcyBzb21ldGltZXMsDQpJdCBpcyBub3QgYWNjZXB0YWJsZSwgSSB0aGluayBhbHNvIG5lZWQg
+dG8gYmUgZml4ZWQgdG8gDQpBdm9pZCB0aGlzIHNwZWNpYWwgc2NlbmFyaW8gLg0KDQpUaGFua3MN
+Cg0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogVWxmIEhhbnNzb24gW21haWx0
+bzp1bGYuaGFuc3NvbkBsaW5hcm8ub3JnXSANClNlbnQ6IFdlZG5lc2RheSwgSnVuZSAwNCwgMjAx
+NCA1OjUzIEFNDQpUbzogUGF2ZWwgTWFjaGVrDQpDYzogV2FuZywgWWFsaW47IGxlbi5icm93bkBp
+bnRlbC5jb207IHJqd0BzaXNrLnBsOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LW1tYw0KU3ViamVjdDogUmU6IGF1dG9zbGVlcCBz
+dXNwZW5kIHRvbyBmcnF1ZW50IHByb2JsZW0NCg0KT24gMyBKdW5lIDIwMTQgMTQ6MDEsIFBhdmVs
+IE1hY2hlayA8cGF2ZWxAdWN3LmN6PiB3cm90ZToNCj4gSGkhDQo+DQo+DQo+PiBJIGZvdW5kIHNk
+IGNhcmQgc29tZXRpbWVzIGFyZSBkYW1hZ2VkLyBkZXN0cm95ZWQgT24gb3VyIGRldmljZXMgLg0K
+Pj4gQW5kIHNlZW1zIGl0IGlzIGNhdXNlZCBieSBrZXJuZWwncyBmcmVxdWVudGx5IHN1c3BlbmQv
+cmVzdW1lLCBCZWNhdXNlIA0KPj4gZHVyaW5nIHN1c3BlbmQvcmVzdW1lLCB0aGUgZHJpdmVyIHdp
+bGwgc3VzcGVuZC9yZXN1bWUgc2RjYXJkIFZlcnkgDQo+PiBmcmVxdWVudGx5LCB0aGlzIHdpbGwg
+ZGFtYWdlZCB0aGUgc2RjYXJkIHNvbWV0aW1lcywgYW5kIHRoZSBkYW1hZ2UgaXMgDQo+PiBub3Qg
+cmVjb3ZlcmFibGUgLi4NCj4+DQo+PiBTb21ldGltZXMga2VybmVsIHdpbGwgZW50ZXIgc3VzcGVu
+ZCBhbmQgZXhpdCBzdXNwZW5kIHZlcnkgZnJlcXVlbnRseSwgDQo+PiBFc3BlY2lhbGx5IHdoZW4g
+dGhlIHN5c3RlbSBpcyBpbiBpZGxlLCBidXQgc29tZSBkcml2ZXIgaXMgbm90IGlkbGUsIA0KPj4g
+QW5kIGl0IHdpbGwgIHdha2UgdXAgdGhlIHN5c3RlbSBieSBpcnEgZnJlcXVlbnRseS4NCj4+IEJ5
+IG91ciBwb3dlciB0ZXN0IHJlc3VsdCwgaWYgc3lzdGVtIGVudGVyIHN1c3BlbmQgL3Jlc3VtZSB2
+ZXJ5IA0KPj4gZnJlcXVlbnRseSwgV2lsbCBjb25zdW1lIG1vcmUgcG93ZXIgLCBiZWNhdXNlIGl0
+IHdpbGwgZW5hYmxlIC9kaXNhYmxlIA0KPj4gbWFueSBkZXZpY2VzIER1cmluZyBhIHNob3J0IHRp
+bWUgLg0KPj4NCj4+IEkgbWFrZSBhIHBhdGNoIHRvIHByZXZlbnQgdGhlIHN5c3RlbSB0byBlbnRl
+ciBzdXNwZW5kL3Jlc3VtZSBzdGF0ZSANCj4+IE1vcmUgdGhhbiBvbmUgdGltZSBkdXJpbmcgMiBz
+ZWNvbmRz77yaDQo+DQo+IEl0IGlzIGdvb2QgeW91IG1hbmFnZWQgdG8gZGlhZ25vc2UgdGhlIHBy
+b2JsZW0sIGJ1dCB0aGlzIHNpIG5vdCB0aGUgDQo+IHJpZ2h0IHNvbHV0aW9uLg0KPg0KPiBFaXRo
+ZXI6DQo+DQo+IDEpIGRvbid0IHBvd2VyIGRvd24gU0QgY2FyZCBkdXJpbmcgc3lzdGVtIHN1c3Bl
+bmQNCg0KTkFLLiBUaGUgYW1vdW50IG9mIHBvd2VyIGEgY2FyZCAoZXZlbiBpZiB0aGVyZSBhcmUg
+Z29vZCBiZWhhdmluZyBjYXJkcyBhcyB3ZWxsKSBtYXkgdXRpbGl6ZSwgaW4gcG93ZXJlZCBidXQg
+aWRsZSBzdGF0ZSBjb3VsZCBiZSBzaWduaWZpY2FudC4NCkkgaGF2ZSBzZWVuIGNhc2VzIG9mIGNv
+bnN0YW50IHBvd2VyIGNvbnN1bXB0aW9uIG9mIHNldmVyYWwgbUEgaGVyZS4NCg0KPg0KPiBvciBt
+YXliZSBldmVuIGJldHRlcg0KPg0KPiAyKSBkb24ndCBwb3dlciBfdXBfIFNEIGNhcmQgZHVyaW5n
+IHN5c3RlbSByZXN1bWUuIExldCBpdCBiZSBwb3dlcmVkIA0KPiBkb3duIHVudGlsIHRoZSBmaXJz
+dCBhY2Nlc3MuDQoNCkdvb2QgbmV3cyEgVGhpcyBpcyAiYWxtb3N0IiBzdXBwb3J0ZWQgYWxyZWFk
+eSBieSB0aGUgbW1jIHN1YnN5c3RlbS4NCg0KSWYgeW91ciBtbWMgaG9zdCBoYXMgc2V0IHRoZSBj
+YXBhYmlsaXR5IGZsYWcgTU1DX0NBUF9SVU5USU1FX1JFU1VNRSwgdGhhdCBtZWFucyB0aGUgY2Fy
+ZCB3b24ndCBiZSBwb3dlcmVkIHVwIChhbmQgaW5pdGlhbGl6ZWQpIHVudGlsIHRoZSBuZXh0IHJl
+cXVlc3QuDQoNCkhvd2V2ZXIsIGZvciByZW1vdmFibGUgY2FyZHMgKCFNTUNfQ0FQX05PTlJFTU9W
+QUJMRSksIGR1cmluZyBzeXN0ZW0gcmVzdW1lIHBoYXNlLCB0aGUgbW1jIGNvcmUgd2lsbCB0cmln
+Z2VyIGEgInJlc2NhbiIgb2YgdGhlIGNhcmQsIHRvIHZlcmlmeSBpdCBoYXMgbm90IGJlZW4gcmVt
+b3ZlZC4gVGh1cywgdW5mb3J0dW5hdGUgZm9yIHRoaXMgdXNlIGNhc2UsIHRoZSBmaXJzdCByZXF1
+ZXN0IChmb3IgcmVtb3ZhYmxlIGNhcmRzKSB3aWxsIGJlIHRyaWdnZXJlZCBkdXJpbmcgdGhlIHN5
+c3RlbSByZXN1bWUgcGhhc2UuDQoNCkkgc3VwcG9zZSB3ZSBzaG91bGQgYWRkIHNvbWUgZXh0cmEg
+Y29uZGl0aW9ucy9mbGFncyB3aGljaCBtYWtlcyB0aGUgbW1jIGNvcmUgdG8gaGFuZGxlIHRoZSBh
+Ym92ZSBzY2VuYXJpby4gQWN0dWFsbHkgSSBoYXZlIGJlZW4gdGhpbmtpbmcgb2YgcHV0dGluZyB0
+b2dldGhlciBhIHBhdGNoIGZvciB0aGlzLCBidXQgaXQgbmV2ZXIgcG9wcyB1cCBvbiB0aGUgdG9w
+IG9mIG15IFRPRE8gbGlzdC4gOi0pDQoNCkFkZGl0aW9uYWxseSwgSSB3b25kZXIgaWYgdGhpcyBi
+b3VuY2luZyB1cCBhbmQgZG93biBmcm9tIHN1c3BlbmQgdG8gcmVzdW1lLCBjb3VsZCBoYXZlIG90
+aGVyIG5lZ2F0aXZlIGltcGFjdCBmb3Igb3RoZXIgc3Vic3lzdGVtcz8gSXMgaXQganVzdCBhIG1t
+YyBzdWJzeXN0ZW0gcHJvYmxlbT8gSSBhbSBub3Qgc28gc3VyZS4NCg0KS2luZCByZWdhcmRzDQpV
+bGYgSGFuc3Nvbg0KDQo+DQo+IFRoYW5rcywNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+IFBhdmVsDQo+
+IC0tDQo+IChlbmdsaXNoKSBodHRwOi8vd3d3LmxpdmVqb3VybmFsLmNvbS9+cGF2ZWxtYWNoZWsN
+Cj4gKGNlc2t5LCBwaWN0dXJlcykgDQo+IGh0dHA6Ly9hdHJleS5rYXJsaW4ubWZmLmN1bmkuY3ov
+fnBhdmVsL3BpY3R1cmUvaG9yc2VzL2Jsb2cuaHRtbA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBm
+cm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgDQo+IGxpbnV4LWtlcm5l
+bCIgaW4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcg
+DQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jk
+b21vLWluZm8uaHRtbA0KPiBQbGVhc2UgcmVhZCB0aGUgRkFRIGF0ICBodHRwOi8vd3d3LnR1eC5v
+cmcvbGttbC8NCg==
