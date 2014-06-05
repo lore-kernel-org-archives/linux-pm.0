@@ -1,138 +1,77 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: autosleep suspend too frquent problem
-Date: Thu, 5 Jun 2014 15:51:08 +0200
-Message-ID: <20140605135108.GA14162@amd.pavel.ucw.cz>
-References: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
- <20140603120128.GA5080@amd.pavel.ucw.cz>
- <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
- <35FD53F367049845BC99AC72306C23D1029A27656A38@CNBJMBX05.corpusers.net>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [PATCH v1 1/6] thermal: sti: Supply Device Tree documentation
+Date: Thu, 5 Jun 2014 15:56:18 +0100
+Message-ID: <20140605145618.GF24240@lee--X1>
+References: <1401442715-6350-1-git-send-email-lee.jones@linaro.org>
+ <1401442715-6350-2-git-send-email-lee.jones@linaro.org>
+ <20140605120147.GA7446@griffinp-ThinkPad-X1-Carbon-2nd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-mmc-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f176.google.com ([209.85.213.176]:51657 "EHLO
+	mail-ig0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbaFEO4Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jun 2014 10:56:25 -0400
+Received: by mail-ig0-f176.google.com with SMTP id a13so3316537igq.9
+        for <linux-pm@vger.kernel.org>; Thu, 05 Jun 2014 07:56:24 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <35FD53F367049845BC99AC72306C23D1029A27656A38@CNBJMBX05.corpusers.net>
-Sender: linux-mmc-owner@vger.kernel.org
-To: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
-Cc: 'Ulf Hansson' <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
+In-Reply-To: <20140605120147.GA7446@griffinp-ThinkPad-X1-Carbon-2nd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Griffin <peter.griffin@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org, eduardo.valentin@ti.com, rui.zhang@intel.com
 
-On Thu 2014-06-05 14:51:41, Wang, Yalin wrote:
-> Hi =20
->=20
-> Thanks for your clarification.
->=20
-> One problem is the sd card driver itself .
->=20
-> In addition, I also think kernel's autosleep.c module
-> Have problem too.
-> It just test wake up count ,if the count is zero, then enter suspend.
->=20
-> This will result in frequent suspend / resume problems sometimes,
-> It is not acceptable, I think also need to be fixed to=20
-> Avoid this special scenario .
+thermal: sti: Supply Device Tree documentation
 
-Android phones pretty much want to sleep very very often. But if you
-think there's coding bug in there, let us know..
-								Pavel
+Signed-off-by: Ajit Pal Singh <ajitpal.singh@st.com>
+Acked-by: Peter Griffin <peter.griffin@linaro.org>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
 
-> Thanks
->=20
->=20
-> -----Original Message-----
-> From: Ulf Hansson [mailto:ulf.hansson@linaro.org]=20
-> Sent: Wednesday, June 04, 2014 5:53 AM
-> To: Pavel Machek
-> Cc: Wang, Yalin; len.brown@intel.com; rjw@sisk.pl; linux-pm@vger.kern=
-el.org; linux-kernel@vger.kernel.org; linux-mmc
-> Subject: Re: autosleep suspend too frquent problem
->=20
-> On 3 June 2014 14:01, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >
-> >> I found sd card sometimes are damaged/ destroyed On our devices .
-> >> And seems it is caused by kernel's frequently suspend/resume, Beca=
-use=20
-> >> during suspend/resume, the driver will suspend/resume sdcard Very=20
-> >> frequently, this will damaged the sdcard sometimes, and the damage=
- is=20
-> >> not recoverable ..
-> >>
-> >> Sometimes kernel will enter suspend and exit suspend very frequent=
-ly,=20
-> >> Especially when the system is in idle, but some driver is not idle=
-,=20
-> >> And it will  wake up the system by irq frequently.
-> >> By our power test result, if system enter suspend /resume very=20
-> >> frequently, Will consume more power , because it will enable /disa=
-ble=20
-> >> many devices During a short time .
-> >>
-> >> I make a patch to prevent the system to enter suspend/resume state=
-=20
-> >> More than one time during 2 seconds=EF=BC=9A
-> >
-> > It is good you managed to diagnose the problem, but this si not the=
-=20
-> > right solution.
-> >
-> > Either:
-> >
-> > 1) don't power down SD card during system suspend
->=20
-> NAK. The amount of power a card (even if there are good behaving card=
-s as well) may utilize, in powered but idle state could be significant.
-> I have seen cases of constant power consumption of several mA here.
->=20
-> >
-> > or maybe even better
-> >
-> > 2) don't power _up_ SD card during system resume. Let it be powered=
-=20
-> > down until the first access.
->=20
-> Good news! This is "almost" supported already by the mmc subsystem.
->=20
-> If your mmc host has set the capability flag MMC_CAP_RUNTIME_RESUME, =
-that means the card won't be powered up (and initialized) until the nex=
-t request.
->=20
-> However, for removable cards (!MMC_CAP_NONREMOVABLE), during system r=
-esume phase, the mmc core will trigger a "rescan" of the card, to verif=
-y it has not been removed. Thus, unfortunate for this use case, the fir=
-st request (for removable cards) will be triggered during the system re=
-sume phase.
->=20
-> I suppose we should add some extra conditions/flags which makes the m=
-mc core to handle the above scenario. Actually I have been thinking of =
-putting together a patch for this, but it never pops up on the top of m=
-y TODO list. :-)
->=20
-> Additionally, I wonder if this bouncing up and down from suspend to r=
-esume, could have other negative impact for other subsystems? Is it jus=
-t a mmc subsystem problem? I am not so sure.
->=20
-> Kind regards
-> Ulf Hansson
->=20
-> >
-> > Thanks,
-> >                                                                    =
-    =20
-> > Pavel
-> > --
-> > (english) http://www.livejournal.com/~pavelmachek
-> > (cesky, pictures)=20
-> > http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe=20
-> > linux-kernel" in the body of a message to majordomo@vger.kernel.org=
-=20
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+diff --git a/Documentation/devicetree/bindings/thermal/st-thermal.txt b/Documentation/devicetree/bindings/thermal/st-thermal.txt
+new file mode 100644
+index 0000000..3b9251b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/st-thermal.txt
+@@ -0,0 +1,42 @@
++Binding for Thermal Sensor driver for STMicroelectronics STi series of SoCs.
++
++Required parameters:
++-------------------
++
++compatible : 	st,<SoC>-<module>-thermal; should be one of:
++		  "st,stih415-sas-thermal",
++		  "st,stih415-mpe-thermal",
++		  "st,stih416-sas-thermal"
++		  "st,stih416-mpe-thermal"
++		  "st,stid127-thermal" or
++		  "st,stih407-thermal"
++		according to the SoC type (stih415, stih416, stid127, stih407)
++		and module type (sas or mpe). On stid127 & stih407 there is only
++		one die/module, so there is no module type in the compatible
++		string.
++clock-names : 	Should be "thermal".
++		  See: Documentation/devicetree/bindings/resource-names.txt
++clocks : 	Phandle of the clock used by the thermal sensor.
++		  See: Documentation/devicetree/bindings/clock/clock-bindings.txt
++
++Optional parameters:
++-------------------
++
++reg : 		For non-sysconf based sensors, this should be the physical base
++		address and length of the sensor's registers.
++interrupts :	Standard way to define interrupt number.
++		Interrupt is mandatory to be defined when compatible is
++		"stih416-mpe-thermal".
++		  NB: For thermal sensor's for which no interrupt has been
++		  defined, a polling delay of 1000ms will be used to read the
++		  temperature from device.
++
++Example:
++
++	temp1@fdfe8000 {
++		compatible	= "st,stih416-mpe-thermal";
++		reg		= <0xfdfe8000 0x10>;
++		clock-names	= "thermal";
++		clocks		= <&clk_m_mpethsens>;
++		interrupts	= <GIC_SPI 23 IRQ_TYPE_NONE>;
++	};
