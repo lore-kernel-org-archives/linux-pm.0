@@ -1,82 +1,79 @@
-From: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
-Subject: RE: autosleep suspend too frquent problem
-Date: Thu, 5 Jun 2014 14:51:41 +0800
-Message-ID: <35FD53F367049845BC99AC72306C23D1029A27656A38@CNBJMBX05.corpusers.net>
-References: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
-	<20140603120128.GA5080@amd.pavel.ucw.cz>
- <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Thu, 5 Jun 2014 08:52:05 +0200
+Message-ID: <20140605065205.GA3213@twins.programming.kicks-ass.net>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <20140604160230.GS29593@e103034-lin>
+ <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+ <2484761.vkWavnsDx3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: 'Ulf Hansson' <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "len.brown@intel.com" <len.brown@intel.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:33422 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbaFEGwQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jun 2014 02:52:16 -0400
+Content-Disposition: inline
+In-Reply-To: <2484761.vkWavnsDx3@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com
 
-SGkgIA0KDQpUaGFua3MgZm9yIHlvdXIgY2xhcmlmaWNhdGlvbi4NCg0KT25lIHByb2JsZW0gaXMg
-dGhlIHNkIGNhcmQgZHJpdmVyIGl0c2VsZiAuDQoNCkluIGFkZGl0aW9uLCBJIGFsc28gdGhpbmsg
-a2VybmVsJ3MgYXV0b3NsZWVwLmMgbW9kdWxlDQpIYXZlIHByb2JsZW0gdG9vLg0KSXQganVzdCB0
-ZXN0IHdha2UgdXAgY291bnQgLGlmIHRoZSBjb3VudCBpcyB6ZXJvLCB0aGVuIGVudGVyIHN1c3Bl
-bmQuDQoNClRoaXMgd2lsbCByZXN1bHQgaW4gZnJlcXVlbnQgc3VzcGVuZCAvIHJlc3VtZSBwcm9i
-bGVtcyBzb21ldGltZXMsDQpJdCBpcyBub3QgYWNjZXB0YWJsZSwgSSB0aGluayBhbHNvIG5lZWQg
-dG8gYmUgZml4ZWQgdG8gDQpBdm9pZCB0aGlzIHNwZWNpYWwgc2NlbmFyaW8gLg0KDQpUaGFua3MN
-Cg0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogVWxmIEhhbnNzb24gW21haWx0
-bzp1bGYuaGFuc3NvbkBsaW5hcm8ub3JnXSANClNlbnQ6IFdlZG5lc2RheSwgSnVuZSAwNCwgMjAx
-NCA1OjUzIEFNDQpUbzogUGF2ZWwgTWFjaGVrDQpDYzogV2FuZywgWWFsaW47IGxlbi5icm93bkBp
-bnRlbC5jb207IHJqd0BzaXNrLnBsOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LW1tYw0KU3ViamVjdDogUmU6IGF1dG9zbGVlcCBz
-dXNwZW5kIHRvbyBmcnF1ZW50IHByb2JsZW0NCg0KT24gMyBKdW5lIDIwMTQgMTQ6MDEsIFBhdmVs
-IE1hY2hlayA8cGF2ZWxAdWN3LmN6PiB3cm90ZToNCj4gSGkhDQo+DQo+DQo+PiBJIGZvdW5kIHNk
-IGNhcmQgc29tZXRpbWVzIGFyZSBkYW1hZ2VkLyBkZXN0cm95ZWQgT24gb3VyIGRldmljZXMgLg0K
-Pj4gQW5kIHNlZW1zIGl0IGlzIGNhdXNlZCBieSBrZXJuZWwncyBmcmVxdWVudGx5IHN1c3BlbmQv
-cmVzdW1lLCBCZWNhdXNlIA0KPj4gZHVyaW5nIHN1c3BlbmQvcmVzdW1lLCB0aGUgZHJpdmVyIHdp
-bGwgc3VzcGVuZC9yZXN1bWUgc2RjYXJkIFZlcnkgDQo+PiBmcmVxdWVudGx5LCB0aGlzIHdpbGwg
-ZGFtYWdlZCB0aGUgc2RjYXJkIHNvbWV0aW1lcywgYW5kIHRoZSBkYW1hZ2UgaXMgDQo+PiBub3Qg
-cmVjb3ZlcmFibGUgLi4NCj4+DQo+PiBTb21ldGltZXMga2VybmVsIHdpbGwgZW50ZXIgc3VzcGVu
-ZCBhbmQgZXhpdCBzdXNwZW5kIHZlcnkgZnJlcXVlbnRseSwgDQo+PiBFc3BlY2lhbGx5IHdoZW4g
-dGhlIHN5c3RlbSBpcyBpbiBpZGxlLCBidXQgc29tZSBkcml2ZXIgaXMgbm90IGlkbGUsIA0KPj4g
-QW5kIGl0IHdpbGwgIHdha2UgdXAgdGhlIHN5c3RlbSBieSBpcnEgZnJlcXVlbnRseS4NCj4+IEJ5
-IG91ciBwb3dlciB0ZXN0IHJlc3VsdCwgaWYgc3lzdGVtIGVudGVyIHN1c3BlbmQgL3Jlc3VtZSB2
-ZXJ5IA0KPj4gZnJlcXVlbnRseSwgV2lsbCBjb25zdW1lIG1vcmUgcG93ZXIgLCBiZWNhdXNlIGl0
-IHdpbGwgZW5hYmxlIC9kaXNhYmxlIA0KPj4gbWFueSBkZXZpY2VzIER1cmluZyBhIHNob3J0IHRp
-bWUgLg0KPj4NCj4+IEkgbWFrZSBhIHBhdGNoIHRvIHByZXZlbnQgdGhlIHN5c3RlbSB0byBlbnRl
-ciBzdXNwZW5kL3Jlc3VtZSBzdGF0ZSANCj4+IE1vcmUgdGhhbiBvbmUgdGltZSBkdXJpbmcgMiBz
-ZWNvbmRz77yaDQo+DQo+IEl0IGlzIGdvb2QgeW91IG1hbmFnZWQgdG8gZGlhZ25vc2UgdGhlIHBy
-b2JsZW0sIGJ1dCB0aGlzIHNpIG5vdCB0aGUgDQo+IHJpZ2h0IHNvbHV0aW9uLg0KPg0KPiBFaXRo
-ZXI6DQo+DQo+IDEpIGRvbid0IHBvd2VyIGRvd24gU0QgY2FyZCBkdXJpbmcgc3lzdGVtIHN1c3Bl
-bmQNCg0KTkFLLiBUaGUgYW1vdW50IG9mIHBvd2VyIGEgY2FyZCAoZXZlbiBpZiB0aGVyZSBhcmUg
-Z29vZCBiZWhhdmluZyBjYXJkcyBhcyB3ZWxsKSBtYXkgdXRpbGl6ZSwgaW4gcG93ZXJlZCBidXQg
-aWRsZSBzdGF0ZSBjb3VsZCBiZSBzaWduaWZpY2FudC4NCkkgaGF2ZSBzZWVuIGNhc2VzIG9mIGNv
-bnN0YW50IHBvd2VyIGNvbnN1bXB0aW9uIG9mIHNldmVyYWwgbUEgaGVyZS4NCg0KPg0KPiBvciBt
-YXliZSBldmVuIGJldHRlcg0KPg0KPiAyKSBkb24ndCBwb3dlciBfdXBfIFNEIGNhcmQgZHVyaW5n
-IHN5c3RlbSByZXN1bWUuIExldCBpdCBiZSBwb3dlcmVkIA0KPiBkb3duIHVudGlsIHRoZSBmaXJz
-dCBhY2Nlc3MuDQoNCkdvb2QgbmV3cyEgVGhpcyBpcyAiYWxtb3N0IiBzdXBwb3J0ZWQgYWxyZWFk
-eSBieSB0aGUgbW1jIHN1YnN5c3RlbS4NCg0KSWYgeW91ciBtbWMgaG9zdCBoYXMgc2V0IHRoZSBj
-YXBhYmlsaXR5IGZsYWcgTU1DX0NBUF9SVU5USU1FX1JFU1VNRSwgdGhhdCBtZWFucyB0aGUgY2Fy
-ZCB3b24ndCBiZSBwb3dlcmVkIHVwIChhbmQgaW5pdGlhbGl6ZWQpIHVudGlsIHRoZSBuZXh0IHJl
-cXVlc3QuDQoNCkhvd2V2ZXIsIGZvciByZW1vdmFibGUgY2FyZHMgKCFNTUNfQ0FQX05PTlJFTU9W
-QUJMRSksIGR1cmluZyBzeXN0ZW0gcmVzdW1lIHBoYXNlLCB0aGUgbW1jIGNvcmUgd2lsbCB0cmln
-Z2VyIGEgInJlc2NhbiIgb2YgdGhlIGNhcmQsIHRvIHZlcmlmeSBpdCBoYXMgbm90IGJlZW4gcmVt
-b3ZlZC4gVGh1cywgdW5mb3J0dW5hdGUgZm9yIHRoaXMgdXNlIGNhc2UsIHRoZSBmaXJzdCByZXF1
-ZXN0IChmb3IgcmVtb3ZhYmxlIGNhcmRzKSB3aWxsIGJlIHRyaWdnZXJlZCBkdXJpbmcgdGhlIHN5
-c3RlbSByZXN1bWUgcGhhc2UuDQoNCkkgc3VwcG9zZSB3ZSBzaG91bGQgYWRkIHNvbWUgZXh0cmEg
-Y29uZGl0aW9ucy9mbGFncyB3aGljaCBtYWtlcyB0aGUgbW1jIGNvcmUgdG8gaGFuZGxlIHRoZSBh
-Ym92ZSBzY2VuYXJpby4gQWN0dWFsbHkgSSBoYXZlIGJlZW4gdGhpbmtpbmcgb2YgcHV0dGluZyB0
-b2dldGhlciBhIHBhdGNoIGZvciB0aGlzLCBidXQgaXQgbmV2ZXIgcG9wcyB1cCBvbiB0aGUgdG9w
-IG9mIG15IFRPRE8gbGlzdC4gOi0pDQoNCkFkZGl0aW9uYWxseSwgSSB3b25kZXIgaWYgdGhpcyBi
-b3VuY2luZyB1cCBhbmQgZG93biBmcm9tIHN1c3BlbmQgdG8gcmVzdW1lLCBjb3VsZCBoYXZlIG90
-aGVyIG5lZ2F0aXZlIGltcGFjdCBmb3Igb3RoZXIgc3Vic3lzdGVtcz8gSXMgaXQganVzdCBhIG1t
-YyBzdWJzeXN0ZW0gcHJvYmxlbT8gSSBhbSBub3Qgc28gc3VyZS4NCg0KS2luZCByZWdhcmRzDQpV
-bGYgSGFuc3Nvbg0KDQo+DQo+IFRoYW5rcywNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+IFBhdmVsDQo+
-IC0tDQo+IChlbmdsaXNoKSBodHRwOi8vd3d3LmxpdmVqb3VybmFsLmNvbS9+cGF2ZWxtYWNoZWsN
-Cj4gKGNlc2t5LCBwaWN0dXJlcykgDQo+IGh0dHA6Ly9hdHJleS5rYXJsaW4ubWZmLmN1bmkuY3ov
-fnBhdmVsL3BpY3R1cmUvaG9yc2VzL2Jsb2cuaHRtbA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBm
-cm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgDQo+IGxpbnV4LWtlcm5l
-bCIgaW4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcg
-DQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jk
-b21vLWluZm8uaHRtbA0KPiBQbGVhc2UgcmVhZCB0aGUgRkFRIGF0ICBodHRwOi8vd3d3LnR1eC5v
-cmcvbGttbC8NCg==
+
+--n8g4imXOkfNTN/H1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jun 04, 2014 at 11:56:55PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, June 04, 2014 07:27:12 PM Peter Zijlstra wrote:
+
+> > Well, we eventually want to go there I think. Although we still needed
+> > to come up with something for Intel, because I'm not at all sure how all
+> > that works.
+>=20
+> Do you mean power numbers or how P-states work on Intel in general?
+
+P-states, I'm still not at all sure how all that works on Intel and what
+we can sanely do with them.
+
+Supposedly Intel has a means of setting P-states (there's a driver after
+all), but then is completely free to totally ignore it and do something
+entirely different anyhow.
+
+And while APERF/MPERF allows observing what it did, its afaik, nigh on
+impossible to predict wtf its going to do, and therefore any such energy
+computation is going to be a PRNG at best.
+
+Now, given all that I'm not sure what we need that P-state driver for,
+so supposedly I'm missing something.
+
+Ideally Len (or someone equally in-the-know) would explain to me how
+exactly all that works and what we can rely upon. All I've gotten so far
+is, you can't rely on anything, and magik. Which is entirely useless.
+
+--n8g4imXOkfNTN/H1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTkBOHAAoJEHZH4aRLwOS64+kQAKlCijXlyN6C5acpPZH1Yqkm
++32a0/SWifD93YqgslU2Vq0ml9LhSJ+5FyTxZxJ80/hkGaAf3tbvCfq7u2UOJCzS
+HSuXKk9ZSLl+hTGD+M1MSx3YMFUUWyb1+9Gm+oaaV2FydG51eN/7c5/QEzT9lzKf
+PgJnlPi8TnI9n/FYJ3nQ134lBlmHvwWvyTTkzi0FvdChyUj2VlhHyf5PybQcZdM8
+zDvcMt9E4a825XDyFK74ubqE9RicCydRg8e3aVSMvKUJbsMg9QKJzoez34eAwo6P
+H7rk3vU6nwIJCd0/OQwOkAi0ENU+WyXxg+SxDsQ+it67YeRGa0zBLHQ9IGw09/H/
+sstGV1+pR7ep5/NMGBovAG8ukBxbABTU+AllrDOlffBhWxTRSl/V3nA0ZPPE8hNX
+7aeIxHAYYXGFSe+JI5JfhECVQSXvDi92Sjg/MSz0KRvliTTE8F9ly3Sppk6RU7Gd
+2ZBfNXBy5W11htNTHpUjumFiOnI/cjF2fvYUCTDbnA11Eo1iDPKOrcBqpujYNEiL
+86s156ve23zDpRx1D8VblyphlHOIo8kHiZLdSF2N91ZLYgTEaVO7wEqL+SNzzveS
+8wFAbJ2r31UE103YqvZQIgX/u3o4Z05DHu39dmtt5UG3OAGM4oAdCTY9Lnt/7FJM
+ZzFMi25FO5NUoHgpvXol
+=V40h
+-----END PGP SIGNATURE-----
+
+--n8g4imXOkfNTN/H1--
