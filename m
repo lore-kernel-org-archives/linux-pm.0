@@ -1,46 +1,60 @@
-From: Peter Griffin <peter.griffin@linaro.org>
-Subject: Re: [STLinux Kernel] [PATCH 4/6] thermal: sti: Add support for ST's
- Memory Mapped based Thermal controller
-Date: Thu, 5 Jun 2014 16:26:20 +0100
-Message-ID: <20140605152620.GD7446@griffinp-ThinkPad-X1-Carbon-2nd>
-References: <1401442715-6350-1-git-send-email-lee.jones@linaro.org>
- <1401442715-6350-5-git-send-email-lee.jones@linaro.org>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH V5 1/2] cpufreq: add support for intermediate (stable) frequencies
+Date: Thu, 5 Jun 2014 12:51:30 -0700
+Message-ID: <CAD=FV=W3gOMaJ3gFCA1p4-Ee8f5b+ntvgfmMX5Zj62-Wu9htzQ@mail.gmail.com>
+References: <cover.1401728994.git.viresh.kumar@linaro.org>
+	<204d5b72194f81e638bd72bcc4b5ef9f089a56b2.1401728995.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f42.google.com ([74.125.82.42]:58675 "EHLO
-	mail-wg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbaFEP0Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jun 2014 11:26:24 -0400
-Received: by mail-wg0-f42.google.com with SMTP id y10so1293997wgg.13
-        for <linux-pm@vger.kernel.org>; Thu, 05 Jun 2014 08:26:23 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1401442715-6350-5-git-send-email-lee.jones@linaro.org>
+Received: from mail-ve0-f178.google.com ([209.85.128.178]:35612 "EHLO
+	mail-ve0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbaFETvb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jun 2014 15:51:31 -0400
+Received: by mail-ve0-f178.google.com with SMTP id sa20so1831659veb.23
+        for <linux-pm@vger.kernel.org>; Thu, 05 Jun 2014 12:51:30 -0700 (PDT)
+In-Reply-To: <204d5b72194f81e638bd72bcc4b5ef9f089a56b2.1401728995.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org, eduardo.valentin@ti.com, rui.zhang@intel.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-Hi,
+Viresh,
 
-On Fri, 30 May 2014, Lee Jones wrote:
-
-> This is the traditional way of obtaining a device driver's register
-> address space.  The aim of this driver is to supply controller specific
-> information to the ST Thermal Core.
-> 
-> Signed-off-by: Ajit Pal Singh <ajitpal.singh@st.com>
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+On Mon, Jun 2, 2014 at 10:19 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Douglas Anderson, recently pointed out an interesting problem due to which
+> udelay() was expiring earlier than it should.
+>
+> While transitioning between frequencies few platforms may temporarily switch to
+> a stable frequency, waiting for the main PLL to stabilize.
+>
+> For example: When we transition between very low frequencies on exynos, like
+> between 200MHz and 300MHz, we may temporarily switch to a PLL running at 800MHz.
+> No CPUFREQ notification is sent for that. That means there's a period of time
+> when we're running at 800MHz but loops_per_jiffy is calibrated at between 200MHz
+> and 300MHz. And so udelay behaves badly.
+>
+> To get this fixed in a generic way, lets introduce another set of callbacks
+> get_intermediate() and target_intermediate(), only for drivers with
+> target_index() and CPUFREQ_ASYNC_NOTIFICATION unset.
+>
+> get_intermediate() should return a stable intermediate frequency platform wants
+> to switch to, and target_intermediate() should set CPU to to that frequency,
+> before jumping to the frequency corresponding to 'index'. Core will take care of
+> sending notifications and driver doesn't have to handle them in
+> target_intermediate() or target_index().
+>
+> NOTE: ->target_index() should restore to policy->restore_freq in case of
+> failures as core would send notifications for that.
+>
+> Tested-by: Stephen Warren <swarren@nvidia.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/thermal/st/Kconfig             |   4 +
->  drivers/thermal/st/Makefile            |   1 +
->  drivers/thermal/st/st_thermal_memmap.c | 209 +++++++++++++++++++++++++++++++++
->  3 files changed, 214 insertions(+)
->  create mode 100644 drivers/thermal/st/st_thermal_memmap.c
+>  Documentation/cpu-freq/cpu-drivers.txt | 29 ++++++++++++++-
+>  drivers/cpufreq/cpufreq.c              | 67 ++++++++++++++++++++++++++++++----
+>  include/linux/cpufreq.h                | 25 +++++++++++++
+>  3 files changed, 112 insertions(+), 9 deletions(-)
 
-For the rest of the series [4 to 6]: 
- Acked-by: Peter Griffin <peter.griffin@linaro.org>> 
+LGTM.  Thanks for doing this!  :)
 
-regards,
-
-Peter.
+Reviewed-by: Doug Anderson <dianders@chromium.org>
