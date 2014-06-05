@@ -1,79 +1,70 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH V5 2/2] cpufreq: Tegra: implement intermediate frequency callbacks
-Date: Thu, 5 Jun 2014 12:51:46 -0700
-Message-ID: <CAD=FV=UHWEv4WNYdDvvFZ_Ars6TB=YRWf298aKPSjECwjD6a6w@mail.gmail.com>
-References: <cover.1401728994.git.viresh.kumar@linaro.org>
-	<41e5e755638334388a14821a625b703a1f851185.1401728995.git.viresh.kumar@linaro.org>
+From: Ed Swarthout <Ed.Swarthout@freescale.com>
+Subject: [PATCH] cpufreq: ppc-corenet-cpu-freq: do_div use quotient
+Date: Thu, 5 Jun 2014 18:56:17 -0500
+Message-ID: <1402012577-27354-1-git-send-email-Ed.Swarthout@freescale.com>
+References: <1401917713-20792-1-git-send-email-Ed.Swarthout@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <41e5e755638334388a14821a625b703a1f851185.1401728995.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1lp0140.outbound.protection.outlook.com ([207.46.163.140]:57813
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751419AbaFEX4f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 5 Jun 2014 19:56:35 -0400
+In-Reply-To: <1401917713-20792-1-git-send-email-Ed.Swarthout@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: scottwood@freescale.com, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Ed Swarthout <Ed.Swarthout@freescale.com>
 
-Viresh,
+6712d2931933ada259b82f06c03a855b19937074 (cpufreq:
+ppc-corenet-cpufreq: Fix __udivdi3 modpost error) used the remainder
+from do_div instead of the quotient. Fix that and add one to ensure
+minimum is met.
 
-On Mon, Jun 2, 2014 at 10:19 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Tegra had always been switching to intermediate frequency (pll_p_clk) since
-> ever. CPUFreq core has better support for handling notifications for these
-> frequencies and so we can adapt Tegra's driver to it.
->
-> Also do a WARN() if clk_set_parent() fails while moving back to pll_x as we
-> should have atleast restored to earlier frequency on error.
->
-> Tested-by: Stephen Warren <swarren@nvidia.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/tegra-cpufreq.c | 97 ++++++++++++++++++++++++++---------------
->  1 file changed, 62 insertions(+), 35 deletions(-)
->
-> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-> index 6e774c6..a5fbc0a 100644
-> --- a/drivers/cpufreq/tegra-cpufreq.c
-> +++ b/drivers/cpufreq/tegra-cpufreq.c
-> @@ -45,46 +45,51 @@ static struct clk *cpu_clk;
->  static struct clk *pll_x_clk;
->  static struct clk *pll_p_clk;
->  static struct clk *emc_clk;
-> +static bool pll_x_prepared;
->
-> -static int tegra_cpu_clk_set_rate(unsigned long rate)
-> +static unsigned int tegra_get_intermediate(struct cpufreq_policy *policy,
-> +                                          unsigned int index)
-> +{
-> +       unsigned int ifreq = clk_get_rate(pll_p_clk) / 1000;
-> +
-> +       /*
-> +        * Don't switch to intermediate freq if:
-> +        * - we are already at it, i.e. policy->cur == ifreq
-> +        * - index corresponds to ifreq
-> +        */
-> +       if ((freq_table[index].frequency == ifreq) || (policy->cur == ifreq))
-> +               return 0;
-> +
-> +       return ifreq;
-> +}
-> +
-> +static int tegra_target_intermediate(struct cpufreq_policy *policy,
-> +                                    unsigned int index)
->  {
->         int ret;
->
->         /*
->          * Take an extra reference to the main pll so it doesn't turn
-> -        * off when we move the cpu off of it
-> +        * off when we move the cpu off of it as enabling it again while we
-> +        * switch to it from tegra_target() would take additional time. Though
-> +        * when target-freq is intermediate freq, we don't need to take this
-> +        * reference.
+Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
+---
 
-The "Though when target-freq is intermediate freq, we don't need to
-take this reference." makes me think that this function is actually
-called when target-freq is intermediate freq.  I don't think it is,
-right?
+Resend to include linux-pm list.
 
-I don't think that's a huge deal, though and code wise this looks good to me.
+Decided to rename the temporary variable since the value isn't
+a latency until after the division and then it is in nsec.
 
-Reviewed-by: Doug Anderson <dianders@chromium.org>
+Tested on t4240qds and p4080ds.
+
+https://patchwork.kernel.org/patch/4296811/
+http://patchwork.ozlabs.org/patch/356096/
+
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+index 0af618a..3607070 100644
+--- a/drivers/cpufreq/ppc-corenet-cpufreq.c
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -138,7 +138,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	struct cpufreq_frequency_table *table;
+ 	struct cpu_data *data;
+ 	unsigned int cpu = policy->cpu;
+-	u64 transition_latency_hz;
++	u64 u64temp;
+ 
+ 	np = of_get_cpu_node(cpu, NULL);
+ 	if (!np)
+@@ -206,9 +206,10 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	for_each_cpu(i, per_cpu(cpu_mask, cpu))
+ 		per_cpu(cpu_data, i) = data;
+ 
+-	transition_latency_hz = 12ULL * NSEC_PER_SEC;
+-	policy->cpuinfo.transition_latency =
+-		do_div(transition_latency_hz, fsl_get_sys_freq());
++	/* Minimum transition latency is 12 platform clocks */
++	u64temp = 12ULL * NSEC_PER_SEC;
++	do_div(u64temp, fsl_get_sys_freq());
++	policy->cpuinfo.transition_latency = u64temp + 1;
+ 
+ 	of_node_put(np);
+ 
+-- 
+1.9.1
+
