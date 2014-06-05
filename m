@@ -1,59 +1,60 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] idle, thermal, acpi: Remove home grown idle
- implementations
-Date: Wed, 4 Jun 2014 15:59:20 -0700
-Message-ID: <20140604155920.3fd4e94d@ultegra>
-References: <20140604085418.GA11096@twins.programming.kicks-ass.net>
-	<20140604015812.140a00d1@jacob-desktop>
-	<1509308.hu7EZQqxxC@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1509308.hu7EZQqxxC@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lenb@kernel.org, mingo@kernel.org, tglx@linutronix.de, hpa@zytor.com, arjan@linux.intel.com, rui.zhang@intel.com, luto@amacapital.net
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH 2/4] power: max17042_battery: Use devm_* function for
+ requesting irq
+Date: Thu, 05 Jun 2014 12:46:15 +0900
+Message-ID: <1401939977-20328-3-git-send-email-jonghwa3.lee@samsung.com>
+References: <1401939977-20328-1-git-send-email-jonghwa3.lee@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:18603 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbaFEDq0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jun 2014 23:46:26 -0400
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N6O003YFFTCLC70@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 05 Jun 2014 12:46:24 +0900 (KST)
+In-reply-to: <1401939977-20328-1-git-send-email-jonghwa3.lee@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-On Wed, 04 Jun 2014 23:34:51 +0200
-"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+This patch modifies driver to use devm_request_threaded_irq() to simplify
+the driver.
 
-> On Wednesday, June 04, 2014 01:58:12 AM Jacob Pan wrote:
-> > On Wed, 4 Jun 2014 10:54:18 +0200
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > 
-> > > I'm still sitting on this patch. Jacub you were going to make it
-> > > play nice with QoS?
-> > > 
-> > I had a patchset to work through system PM QOS and still maintain
-> > the idle injection efficiency. When I saw you did not merge the
-> > patch below, I thought you have abandoned it :)
-> > 
-> > The only issue as per our last discussion is the lack of
-> > notification when PM QOS cannot be met. But that is intrinsic to PM
-> > QOS itself.
-> > 
-> > I also consulted with Arjan and looked at directly intercept with
-> > intel_idle since both intel_powerclamp and intel_idle are arch
-> > specific drivers. But I think that is hard to do at per idle period
-> > basis, since we should still allow "natural" idle during the forced
-> > idle time.
-> > 
-> > So, I think we can take a two stepped approach,
-> > 1. integrate your patch with a
-> > updated version of https://lkml.org/lkml/2013/11/26/534 such that
-> > there is no performance/efficiency regression.
-> > 2. add notification mechanism to system qos when constraints cannot
-> > be met.
-> 
-> And then there's a question about how the notification would be
-> supposed to work.  So I guess we can proceed with 1. and really leave
-> 2. for some time in the future ATM.
-Sounds good. Let me test/integrate Peter's patch with PM QoS change,
-powerclamp and acpipad then come up with a patchset.
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ drivers/power/max17042_battery.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Thanks,
+diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
+index 1266760..cee3912 100644
+--- a/drivers/power/max17042_battery.c
++++ b/drivers/power/max17042_battery.c
+@@ -745,8 +745,8 @@ static int max17042_probe(struct i2c_client *client,
+ 	}
+ 
+ 	if (client->irq) {
+-		ret = request_threaded_irq(client->irq, NULL,
+-					max17042_thread_handler,
++		ret = devm_request_threaded_irq(&client->dev, client->irq,
++					NULL, max17042_thread_handler,
+ 					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+ 					chip->battery.name, chip);
+ 		if (!ret) {
+@@ -776,8 +776,6 @@ static int max17042_remove(struct i2c_client *client)
+ {
+ 	struct max17042_chip *chip = i2c_get_clientdata(client);
+ 
+-	if (client->irq)
+-		free_irq(client->irq, chip);
+ 	power_supply_unregister(&chip->battery);
+ 	return 0;
+ }
+-- 
+1.7.9.5
 
-Jacob
