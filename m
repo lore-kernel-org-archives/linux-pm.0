@@ -1,30 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 1/2] cpufreq: add support for intermediate (stable) frequencies
-Date: Fri, 6 Jun 2014 09:55:23 +0530
-Message-ID: <CAKohpom64AxZsGGyc3SLQRB2R0hCHRR9w5Ktg2OTXX5qP7cy7Q@mail.gmail.com>
-References: <cover.1401728994.git.viresh.kumar@linaro.org>
-	<204d5b72194f81e638bd72bcc4b5ef9f089a56b2.1401728995.git.viresh.kumar@linaro.org>
-	<CAD=FV=W3gOMaJ3gFCA1p4-Ee8f5b+ntvgfmMX5Zj62-Wu9htzQ@mail.gmail.com>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Fri, 6 Jun 2014 04:29:30 +0800
+Message-ID: <20140605202930.GA15484@intel.com>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <20140604160230.GS29593@e103034-lin>
+ <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+ <2484761.vkWavnsDx3@vostro.rjw.lan>
+ <20140605065205.GA3213@twins.programming.kicks-ass.net>
+ <539086B3.2010804@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:39780 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752310AbaFFEZY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 00:25:24 -0400
-Received: by mail-ob0-f179.google.com with SMTP id vb8so2141167obc.38
-        for <linux-pm@vger.kernel.org>; Thu, 05 Jun 2014 21:25:23 -0700 (PDT)
-In-Reply-To: <CAD=FV=W3gOMaJ3gFCA1p4-Ee8f5b+ntvgfmMX5Zj62-Wu9htzQ@mail.gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:3908 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbaFFEdt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 Jun 2014 00:33:49 -0400
+Content-Disposition: inline
+In-Reply-To: <539086B3.2010804@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Stephen Warren <swarren@nvidia.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Abraham <thomas.abraham@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com
 
-On 6 June 2014 01:21, Doug Anderson <dianders@chromium.org> wrote:
-> LGTM.  Thanks for doing this!  :)
+On Thu, Jun 05, 2014 at 08:03:15AM -0700, Dirk Brandewie wrote:
+> 
+> You can request a P state per core but the package does coordination at
+> a package level for the P state that will be used based on all requests.
+> This is due to the fact that most SKUs have a single VR and PLL. So
+> the highest P state wins.  When a core goes idle it loses it's vote
+> for the current package P state and that cores clock it turned off.
+> 
 
-Thanks and yours welcome :)
+You need to differentiate Turbo and non-Turbo. The highest P state wins? Not
+really. Actually, silicon supports indepdent non-Turbo pstate, but just not enabled.
+For Turbo, it basically depends on power budget of both core and gfx (because
+they share) for each core to get which Turbo point.
 
-> Reviewed-by: Doug Anderson <dianders@chromium.org>
+> >
+> >And while APERF/MPERF allows observing what it did, its afaik, nigh on
+> >impossible to predict wtf its going to do, and therefore any such energy
+> >computation is going to be a PRNG at best.
+> >
+> >Now, given all that I'm not sure what we need that P-state driver for,
+> >so supposedly I'm missing something.
+> 
+> intel_pstate tries to keep the core P state as low as possible to satisfy
+> the given load, so when various cores go idle the package P state can be
+> as low as possible.  The big power win is a core going idle.
+> 
 
-Thanks a lot. Its pushed by Rafael now :)
+In terms of prediction, it is definitely can't be 100% right. But the
+performance of most workloads does scale with pstate (frequency), may not be
+linearly. So it is to some point predictable FWIW. And this is all governors
+and Intel_pstate's basic assumption.
+
+Thanks,
+Yuyang
