@@ -1,63 +1,95 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V2 1/2] sched: idle: Encapsulate the code to compile it
- out
-Date: Fri, 6 Jun 2014 10:09:03 +0200
-Message-ID: <20140606080903.GS6758@twins.programming.kicks-ass.net>
-References: <1398859263-7632-1-git-send-email-daniel.lezcano@linaro.org>
- <2782801.UzoMhgfu56@vostro.rjw.lan>
- <53639F1B.5080000@linaro.org>
- <8539453.ED7vQGf2Gc@vostro.rjw.lan>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Fri, 6 Jun 2014 08:35:21 +0800
+Message-ID: <20140606003520.GB22261@intel.com>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <20140604160230.GS29593@e103034-lin>
+ <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+ <2484761.vkWavnsDx3@vostro.rjw.lan>
+ <20140605065205.GA3213@twins.programming.kicks-ass.net>
+ <539086B3.2010804@gmail.com>
+ <20140605202930.GA15484@intel.com>
+ <20140606080543.GR6758@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xe2geHXJg22At20M"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:49672 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751204AbaFFIJP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 04:09:15 -0400
-Content-Disposition: inline
-In-Reply-To: <8539453.ED7vQGf2Gc@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, mingo@elte.hu, amit.kucheria@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-
-
---xe2geHXJg22At20M
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20140606080543.GR6758@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com, jacob.jun.pan@linux.intel.com
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 02, 2014 at 05:32:25PM +0200, Rafael J. Wysocki wrote:
+On Fri, Jun 06, 2014 at 10:05:43AM +0200, Peter Zijlstra wrote:
+> On Fri, Jun 06, 2014 at 04:29:30AM +0800, Yuyang Du wrote:
+> > On Thu, Jun 05, 2014 at 08:03:15AM -0700, Dirk Brandewie wrote:
+> > > 
+> > > You can request a P state per core but the package does coordination at
+> > > a package level for the P state that will be used based on all requests.
+> > > This is due to the fact that most SKUs have a single VR and PLL. So
+> > > the highest P state wins.  When a core goes idle it loses it's vote
+> > > for the current package P state and that cores clock it turned off.
+> > > 
+> > 
+> > You need to differentiate Turbo and non-Turbo. The highest P state wins? Not
+> > really.
+> 
+> *sigh* and here we go again.. someone please, write something coherent
+> and have all intel people sign off on it and stop saying different
+> things.
+> 
+> > Actually, silicon supports indepdent non-Turbo pstate, but just not enabled.
+> 
+> Then it doesn't exist, so no point in mentioning it.
+> 
 
-> That would be perfectly fine by me, but I'm not sure what Ingo and Peter =
-think
-> about that.
->=20
-> I can set up a branch with sched/idle/cpuidle changes.
+Well, things actually get more complicated. Not-enabled is for Core. For Atom
+Baytrail, each core indeed can operate on difference frequency. I am not sure for
+Xeon, :)
 
-Ingo typically likes things like that. I'm still a git Luddite, I'll
-learn someday :-)
+> > For Turbo, it basically depends on power budget of both core and gfx (because
+> > they share) for each core to get which Turbo point.
+> 
+> And RAPL controls can give preference of which gfx/core gets most,
+> right?
+>
 
---xe2geHXJg22At20M
-Content-Type: application/pgp-signature
+Maybe Jacob knows that.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+> > > intel_pstate tries to keep the core P state as low as possible to satisfy
+> > > the given load, so when various cores go idle the package P state can be
+> > > as low as possible.  The big power win is a core going idle.
+> > > 
+> > 
+> > In terms of prediction, it is definitely can't be 100% right. But the
+> > performance of most workloads does scale with pstate (frequency), may not be
+> > linearly. So it is to some point predictable FWIW. And this is all governors
+> > and Intel_pstate's basic assumption.
+> 
+> So frequency isn't _that_ interesting, voltage is. And while
+> predictability it might be their assumption, is it actually true? I
+> mean, there's really nothing else except to assume that, if its not you
+> can't do anything at all, so you _have_ to assume this.
+> 
+> But again, is the assumption true? Or just happy thoughts in an attempt
+> to do something.
 
-iQIcBAEBAgAGBQJTkXcfAAoJEHZH4aRLwOS68mMP/RyoRIURdFUmubVYm6NJNhWn
-fqakN77Zt73bS20BCTVg5f5ALBSK2WALIC7KELGgpBfeMcPyhZyS361YYpOS8DgM
-bWAo7yxs8S81UX/RdV5c3wAv/PRwHTy//U/KOGH1Tyijo30OFqH8Nyp9/9S3x/De
-iwJ7EbvWxu2biqwT2it6nG3LtoPhqoGaxd3bMsMrIRzBzG1iBJGU/izcnbeHCejz
-aVklrzeyinjLvgRgfu8nPFReI1pgUUhkylUwrKV2jMfNqC4O8q5XSeLzFLiAbpAr
-T9mFT8wPxzX7++plHDdRVLFCHYavEqtzDI5nYJqjYdPO5SsTfQUp1qQZSlcjmUQA
-zUyYPM5VS3VjoanLrkOJOVE/WNG8LsM7eKJw5p63pLYrJuznVv7mU9k/YO89xy+v
-wP4Sr2ncH4bbymyRBk4kqnOhngVWxLtBRGT95bbv5ze3Hde/LLoqnKid39MljLyd
-oqf09PW9+HDV/bQx0kqMhz+gVixFvbKBv6o0JoNM7KITWes6DP4ff3THuPujQtIu
-xnNWb0mV51lc8Flr28ORyxVPw9Ipk6Rnktukrxa8xp5YQPXPsoGrH1FKVystbCdK
-JIxXR9whGCgkinpMm8vN8sEdvjneTa6yZICFXV74h12aa9fHMJ8gujT/fRLfvZcY
-joSHz4Op2jQIkVUmEVus
-=PYU+
------END PGP SIGNATURE-----
+Voltage is combined with frequency, roughly, voltage is proportional to freuquecy, so
+roughly, power is proportionaly to voltage^3. You can't say which is more important,
+or there is no reason to raise voltage without raising frequency.
 
---xe2geHXJg22At20M--
+If only one word to say: true of false, it is true. Because given any fixed
+workload, I can't see why performance would be worse if frequency is higher.
+
+The reality as opposed to the assumption is in two-fold:
+1) if workload is CPU bound, performance scales with frequency absolutely. if workload is
+   memory bound, it does not scale. But from kernel, we don't know whether it is CPU bound
+   or not (or it is hard to know). uArch statistics can model that.
+2) the workload is not fixed in real-time, changing all the time.
+
+But still, the assumption is a must or no guilty, because we adjust frequency continuously,
+for example, if the workload is fixed, and if the performance does not scale with freq we stop
+increasing frequency. So a good frequency governor or driver should and can continuously
+pursue "good" frequency with the changing workload. Therefore, in the long term, we will be
+better off.
