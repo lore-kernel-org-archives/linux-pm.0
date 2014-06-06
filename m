@@ -1,106 +1,61 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] cpufreq: governor: Be friendly towards latency-sensitive
- bursty workloads
-Date: Sat, 07 Jun 2014 02:55:32 +0530
-Message-ID: <539231CC.8070803@linux.vnet.ibm.com>
-References: <20140603214625.723.58779.stgit@srivatsabhat.in.ibm.com> <1574521.TWqGMgFGby@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3] PM: trace events for suspend/resume
+Date: Sat, 07 Jun 2014 00:38:16 +0200
+Message-ID: <14469281.jxS3xYD5Hm@vostro.rjw.lan>
+References: <20140606124017.GA15833@linux.intel.com> <20140606093734.2c82f989@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp04.in.ibm.com ([122.248.162.4]:54571 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbaFFV05 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 17:26:57 -0400
-Received: from /spool/local
-	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Sat, 7 Jun 2014 02:56:55 +0530
-In-Reply-To: <1574521.TWqGMgFGby@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:59177 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752092AbaFFWU6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 18:20:58 -0400
+In-Reply-To: <20140606093734.2c82f989@gandalf.local.home>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: viresh.kumar@linaro.org, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>, todd.e.brandt@linux.intel.com
+Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
 
-On 06/07/2014 03:07 AM, Rafael J. Wysocki wrote:
-> On Wednesday, June 04, 2014 03:17:00 AM Srivatsa S. Bhat wrote:
->> Cpufreq governors like the ondemand governor calculate the load on the CPU
->> periodically by employing deferrable timers. A deferrable timer won't fire
->> if the CPU is completely idle (and there are no other timers to be run), in
->> order to avoid unnecessary wakeups and thus save CPU power.
->>
->> However, the load calculation logic is agnostic to all this, and this can
->> lead to the problem described below.
->>
->>
->> Time (ms)               CPU 1
->>
->> 100                Task-A running
->>
->> 110                Governor's timer fires, finds load as 100% in the last
->>                    10ms interval and increases the CPU frequency.
->>
->> 110.5              Task-A running
->>
->> 120		   Governor's timer fires, finds load as 100% in the last
->> 		   10ms interval and increases the CPU frequency.
->>
->> 125		   Task-A went to sleep. With nothing else to do, CPU 1
->> 		   went completely idle.
->>
->> 200		   Task-A woke up and started running again.
->>
->> 200.5		   Governor's deferred timer (which was originally programmed
->> 		   to fire at time 130) fires now. It calculates load for the
->> 		   time period 120 to 200.5, and finds the load is almost zero.
->> 		   Hence it decreases the CPU frequency to the minimum.
->>
->> 210		   Governor's timer fires, finds load as 100% in the last
->> 		   10ms interval and increases the CPU frequency.
->>
->>
->> So, after the workload woke up and started running, the frequency was suddenly
->> dropped to absolute minimum, and after that, there was an unnecessary delay of
->> 10ms (sampling period) to increase the CPU frequency back to a reasonable value.
->> And this pattern repeats for every wake-up-from-cpu-idle for that workload.
->> This can be quite undesirable for latency- or response-time sensitive bursty
->> workloads. So we need to fix the governor's logic to detect such wake-up-from-
->> cpu-idle scenarios and start the workload at a reasonably high CPU frequency.
->>
->> One extreme solution would be to fake a load of 100% in such scenarios. But
->> that might lead to undesirable side-effects such as frequency spikes (which
->> might also need voltage changes) especially if the previous frequency happened
->> to be very low.
->>
->> We just want to avoid the stupidity of dropping down the frequency to a minimum
->> and then enduring a needless (and long) delay before ramping it up back again.
->> So, let us simply carry forward the previous load - that is, let us just pretend
->> that the 'load' for the current time-window is the same as the load for the
->> previous window. That way, the frequency and voltage will continue to be set
->> to whatever values they were set at previously. This means that bursty workloads
->> will get a chance to influence the CPU frequency at which they wake up from
->> cpu-idle, based on their past execution history. Thus, they might be able to
->> avoid suffering from slow wakeups and long response-times.
->>
->> [ The right way to solve this problem is to teach the CPU frequency governors
->> to track load on a per-task basis, not a per-CPU basis, and set the appropriate
->> frequency on whichever CPU the task executes. But that involves redesigning
->> the cpufreq subsystem, so this patch should make the situation bearable until
->> then. ]
->>
->> Experimental results:
->> ====================
+On Friday, June 06, 2014 09:37:34 AM Steven Rostedt wrote:
+> On Fri, 6 Jun 2014 05:40:17 -0700
+> Todd E Brandt <todd.e.brandt@linux.intel.com> wrote:
 > 
-> This formatting of the changelog evidently confused Patchwork.
+> > From: Todd E Brandt <todd.e.brandt@linux.intel.com>
+> > To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
+> > Cc: rjw@rjwysocki.net, rostedt@goodmis.org
+> > Subject: [PATCH v3] PM: trace events for suspend/resume
+> > Date: Fri, 6 Jun 2014 05:40:17 -0700
+> > Reply-To: todd.e.brandt@linux.intel.com
+> > User-Agent: Mutt/1.5.21 (2010-09-15)
+> > Message-ID: <20140606124017.GA15833@linux.intel.com>
+> > 
+> > Adds trace events that give finer resolution into suspend/resume. These
+> > events are graphed in the timelines generated by the analyze_suspend.py
+> > script. They represent large areas of time consumed that are typical to
+> > suspend and resume.
+> > 
+> > The event is triggered by calling the function "trace_suspend_resume"
+> > with three arguments: a string (the name of the event to be displayed
+> > in the timeline), an integer (case specific number, such as the power
+> > state or cpu number), and a boolean (where true is used to denote the start
+> > of the timeline event, and false to denote the end).
+> > 
+> > The suspend_resume trace event reproduces the data that the machine_suspend
+> > trace event did, so the latter has been removed.
+> > 
+> > Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
 > 
-
-Oh, I didn't realize that that would create problems!
-
-> That's not a big deal, but please try to avoid that in the future if possible.
+> Looks good to me.
 > 
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-Sorry, I'll be careful next time. Thanks for letting me know!
+Applied after some rebasing.
 
-Regards,
-Srivatsa S. Bhat
+Todd please check the bleeding-edge branch.
 
+Thanks!
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
