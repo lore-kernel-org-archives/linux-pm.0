@@ -1,85 +1,106 @@
-From: Todd E Brandt <todd.e.brandt@linux.intel.com>
-Subject: Re: [PATCH v2] PM: trace events for suspend/resume
-Date: Thu, 5 Jun 2014 23:46:39 -0700
-Message-ID: <20140606064638.GA13947@linux.intel.com>
-References: <20140531015247.GA27737@linux.intel.com>
- <20140530223349.5f33b0fd@gandalf.local.home>
- <20140531025852.GA24238@linux.intel.com>
- <20140530230745.7388be84@gandalf.local.home>
-Reply-To: todd.e.brandt@linux.intel.com
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Fri, 6 Jun 2014 10:05:43 +0200
+Message-ID: <20140606080543.GR6758@twins.programming.kicks-ass.net>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <20140604160230.GS29593@e103034-lin>
+ <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+ <2484761.vkWavnsDx3@vostro.rjw.lan>
+ <20140605065205.GA3213@twins.programming.kicks-ass.net>
+ <539086B3.2010804@gmail.com>
+ <20140605202930.GA15484@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JKGvNdIvrY8Ovf7Z"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:61774 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbaFFGqg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 6 Jun 2014 02:46:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56252 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752180AbaFFIFu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 04:05:50 -0400
 Content-Disposition: inline
-In-Reply-To: <20140530230745.7388be84@gandalf.local.home>
+In-Reply-To: <20140605202930.GA15484@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, rjw@rjwysocki.net
+To: Yuyang Du <yuyang.du@intel.com>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com
 
-Upon further reflection I think I want to keep the trace point
-as it is: a basic const char string without relying on TPS. Trace 
-processing time isn't an issue since each of those is called at 
-maximum once per suspend/resume. Also, I'm trying to encourage 
-people to add additional instances of suspend_resume trace calls 
-to further customize their own analyzesuspend testing (and
-having to go through and update the TPS string table each time
-makes things alot harder to work with). i.e. it's not really
-a fixed table, it's meant to be customizeable.
 
-I think I'll also break out the tracepoint into two versions, one for
-cpu trace and one for everything else, that way it will always just
-be two args.
+--JKGvNdIvrY8Ovf7Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 30, 2014 at 11:07:45PM -0400, Steven Rostedt wrote:
-> On Fri, 30 May 2014 19:58:52 -0700
-> Todd E Brandt <todd.e.brandt@linux.intel.com> wrote:
-> 
-> 
-> > > This will export the strings into debugfs/tracing/printk_formats so
-> > > that the pointer can be mapped to a string.
-> > 
-> > ahh, ok, yea if there's some performance impact of using tracepoints this
-> > way then I'll definately change that, thanks for the example.
-> 
-> It speeds up the tracing and compacts it a bit. It has no affect when
-> tracing is disabled.
-> 
-> > 
-> > > 
-> > > This is assuming that all of these calls are in core kernel code and
-> > > not in modules. Are they?
-> > 
-> > No these are all core code. I double-checked all the Kconfigs to make
-> > sure none of those files are configured by tristate options, they're
-> > all bool. I also test ran a few compiles with CONFIG_PM disabled just
-> > to be sure that nothing broke in kernel/cpu.c and all was well.
-> 
-> After checking, it didn't really matter if they were used by modules or
-> not. Just that their strings were all constants.
->  
-> > > Here you would have:
-> > > 
-> > > 	TP_printk("%s[%u] %s", entry->action,
-> > > 
-> > > You just need to add that TPS() around all strings where it is passed
-> > > to the tracepoint and it will still work with trace-cmd and perf.
-> > 
-> > Is is legal to pass a format string to a tracepoint which then gets fed
-> > into TP_printk? i.e.
-> > 
-> > TP_printk(__get_str(fmtstring), __entry->val)
-> > 
-> > I didn't do that since I couldn't find a single example of that in the other
-> > trace events, but theoretically it should be safe.
-> 
-> Hmm, was there an example where you wanted that? That's not what I was
-> suggesting. It may work for a tracepoint, but it will definitely screw
-> up trace-cmd and perf.
-> 
-> -- Steve
-> 
+On Fri, Jun 06, 2014 at 04:29:30AM +0800, Yuyang Du wrote:
+> On Thu, Jun 05, 2014 at 08:03:15AM -0700, Dirk Brandewie wrote:
+> >=20
+> > You can request a P state per core but the package does coordination at
+> > a package level for the P state that will be used based on all requests.
+> > This is due to the fact that most SKUs have a single VR and PLL. So
+> > the highest P state wins.  When a core goes idle it loses it's vote
+> > for the current package P state and that cores clock it turned off.
+> >=20
+>=20
+> You need to differentiate Turbo and non-Turbo. The highest P state wins? =
+Not
+> really.
+
+*sigh* and here we go again.. someone please, write something coherent
+and have all intel people sign off on it and stop saying different
+things.
+
+> Actually, silicon supports indepdent non-Turbo pstate, but just not enabl=
+ed.
+
+Then it doesn't exist, so no point in mentioning it.
+
+> For Turbo, it basically depends on power budget of both core and gfx (bec=
+ause
+> they share) for each core to get which Turbo point.
+
+And RAPL controls can give preference of which gfx/core gets most,
+right?
+
+> > intel_pstate tries to keep the core P state as low as possible to satis=
+fy
+> > the given load, so when various cores go idle the package P state can be
+> > as low as possible.  The big power win is a core going idle.
+> >=20
+>=20
+> In terms of prediction, it is definitely can't be 100% right. But the
+> performance of most workloads does scale with pstate (frequency), may not=
+ be
+> linearly. So it is to some point predictable FWIW. And this is all govern=
+ors
+> and Intel_pstate's basic assumption.
+
+So frequency isn't _that_ interesting, voltage is. And while
+predictability it might be their assumption, is it actually true? I
+mean, there's really nothing else except to assume that, if its not you
+can't do anything at all, so you _have_ to assume this.
+
+But again, is the assumption true? Or just happy thoughts in an attempt
+to do something.
+
+--JKGvNdIvrY8Ovf7Z
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTkXZXAAoJEHZH4aRLwOS6Rr0QALHzVn13dqJC5ID0gp82Koqr
+Z2ICa/DvF9U9fAVTRMasiU0M8QubtwEXU0hk24inAn+wimMN9MXcCUgdCuZ3Dd6K
+eoOpH2mY4JtBH0zu7yuKF181PqSZHdPayBccToMzEAKBqvkAUe+pTFjf+mjrW6Pg
+/9q4M5r4A/CKEArgPKKGigxpDFSyr+1gHlrvL9zYJoRsByoxNrjH16sOTPK1D4K9
+pqPmkefxas8XwP9s5jR4ifNzdndsDce7cIFkpJVKOXMt84XRw1Q+iCRe0gMw1j4w
+fq73KlasoFbznmGpAcGYjxPMc+9wBnGXN4mATzheJZn83Poh9bW4YqzmUYFR2F5S
+ErBJCWNL4/Z0GIZNI7DLVH2jFwuIu/PYRtqq2xkUb47Xag6NR6DrcSvxB6y7/A0u
+lmw2cQ0m0CvcH8+hcfEvlReCHc82rbM3X2Xkadnj5EGHPWrpDYzsdGki/U6BdLwZ
+4dn6rwHj0F/KXeXuD2tnGjeAPUIoqqfDAsGibOeGV25D6dYNHhqpdcz3WsXoVVsL
+6kxxCm1MOnfUhW73lGc+wC4Eo9KLivqEZ2+KgPAy0Q6vHEOyKJw4/Tm+sXxtiFrm
+6qT2Y5HpcMF0kxg9Gl5TEEtXzpbLaXJmologk5y37/DEQ3XxEnlJXZqDI6+bdyn0
+jLZijbdI5wZwHMhXMx1R
+=wowj
+-----END PGP SIGNATURE-----
+
+--JKGvNdIvrY8Ovf7Z--
