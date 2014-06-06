@@ -1,84 +1,166 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: autosleep suspend too frquent problem
-Date: Fri, 6 Jun 2014 12:30:56 +0200
-Message-ID: <20140606103056.GA2175@amd.pavel.ucw.cz>
-References: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
- <20140603120128.GA5080@amd.pavel.ucw.cz>
- <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
- <35FD53F367049845BC99AC72306C23D1029A27656A38@CNBJMBX05.corpusers.net>
- <20140605135108.GA14162@amd.pavel.ucw.cz>
- <35FD53F367049845BC99AC72306C23D1029A27656A3E@CNBJMBX05.corpusers.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-mmc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <35FD53F367049845BC99AC72306C23D1029A27656A3E@CNBJMBX05.corpusers.net>
-Sender: linux-mmc-owner@vger.kernel.org
-To: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
-Cc: 'Ulf Hansson' <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: [PATCH] PM / OPP: Remove ARCH_HAS_OPP
+Date: Fri,  6 Jun 2014 11:36:56 +0100
+Message-ID: <1402051016-28853-1-git-send-email-broonie@kernel.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Sascha Hauer <kernel@pengutronix.de>, Tony Lindgren <tony@atomide.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org, Mark Brown <broonie@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2014-06-06 10:59:13, Wang, Yalin wrote:
-> Hi  Pavel,
-> 
-> 
-> This is kernel log from a Android phone:
-> 
-> <6>[ 7262.353794] PM: suspend exit 2014-05-07 21:19:17.438320072 UTC
-> <6>[ 7262.353820] PM: suspend entry 2014-05-07 21:19:17.438348353 UTC
-> <6>[ 7264.822367] PM: suspend exit 2014-05-07 21:19:19.906892259 UTC
-> <6>[ 7264.822391] PM: suspend entry 2014-05-07 21:19:19.906919447 UTC
-> <6>[ 7266.100346] PM: suspend exit 2014-05-07 21:19:21.184872206 UTC
-> <6>[ 7266.100371] PM: suspend entry 2014-05-07 21:19:21.184899342 UTC
-> <6>[ 7268.650852] PM: suspend exit 2014-05-07 21:19:23.735377778 UTC
-> <6>[ 7268.650876] PM: suspend entry 2014-05-07 21:19:23.735404393 UTC
-> <6>[ 7269.023665] PM: suspend exit 2014-05-07 21:19:26.398622725 UTC
-> <6>[ 7269.023691] PM: suspend entry 2014-05-07 21:19:26.398651787 UTC
-> <6>[ 7269.232675] PM: suspend exit 2014-05-07 21:19:28.959217201 UTC
-> <6>[ 7269.250878] PM: suspend entry 2014-05-07 21:19:28.977414076 UTC
-> <6>[ 7269.256004] PM: suspend exit 2014-05-07 21:19:28.982547202 UTC
-> <6>[ 7269.260040] PM: suspend entry 2014-05-07 21:19:28.986580588 UTC
-> <6>[ 7269.265169] PM: suspend exit 2014-05-07 21:19:28.991711785 UTC
-> <6>[ 7269.269311] PM: suspend entry 2014-05-07 21:19:28.995851004 UTC
-> <6>[ 7270.410962] PM: suspend exit 2014-05-07 21:19:30.137503920 UTC
-> <6>[ 7270.410986] PM: suspend entry 2014-05-07 21:19:30.137529389 UTC
-> <6>[ 7272.970123] PM: suspend exit 2014-05-07 21:19:32.696662461 UTC
-> <6>[ 7272.973330] PM: suspend entry 2014-05-07 21:19:32.699869909 UTC
-> <6>[ 7275.534527] PM: suspend exit 2014-05-07 21:19:35.261069387 UTC
-> <6>[ 7275.534551] PM: suspend entry 2014-05-07 21:19:35.261095846 UTC
-> <6>[ 7275.556227] PM: suspend exit 2014-05-07 21:19:35.282769491 UTC
-> <6>[ 7275.579152] PM: suspend entry 2014-05-07 21:19:35.305686210 UTC
-> <6>[ 7275.822618] PM: suspend exit 2014-05-07 21:19:37.918187092 UTC
-> <6>[ 7275.822644] PM: suspend entry 2014-05-07 21:19:37.918215894 UTC
-> <6>[ 7276.122721] PM: suspend exit 2014-05-07 21:19:40.479243344 UTC
-> <6>[ 7276.122745] PM: suspend entry 2014-05-07 21:19:40.479269125 UTC
-> <6>[ 7278.578212] PM: suspend exit 2014-05-07 21:19:42.934733395 UTC
-> <6>[ 7278.578237] PM: suspend entry 2014-05-07 21:19:42.934761520 UTC
-> 
-> You can see there is several times suspend / resume status change 
-> Form 2014-05-07 21:19:28. 959217201  to 2014-05-07 21:19:28.995851004
-> 
-> There is also some suspend fail in this log , the suspend return -EBUSY  
-> Because of driver wake up system during suspend process .
-> 
-> During our power test , suspend frequently like this will consume more
-> Power , because it will suspend/resume lots of
-> Devices . Why don't we make a time window to make sure there is no more than
-> 1 time suspend during the time window ?
+From: Mark Brown <broonie@linaro.org>
 
-If you can optimize power consumption on your hardware, by all means
-go ahead. But arbitrary limit "don't suspend more than twice a second"
-is probably not a way to go... not without some analysis.
+Since the OPP layer is a kernel library which has been converted to be
+directly selectable by its callers rather than user selectable and
+requiring architectures to enable it explicitly the ARCH_HAS_OPP symbol
+has become redundant and can be removed. Do so.
 
-You may want to take a look at n900 -- it uses regular idle, not
-suspend, to save power. 
+Signed-off-by: Mark Brown <broonie@linaro.org>
+---
+ Documentation/power/opp.txt    | 3 ---
+ arch/arm/mach-exynos/Kconfig   | 1 -
+ arch/arm/mach-highbank/Kconfig | 1 -
+ arch/arm/mach-imx/Kconfig      | 1 -
+ arch/arm/mach-omap2/Kconfig    | 1 -
+ arch/arm/mach-shmobile/Kconfig | 2 --
+ arch/arm/mach-vexpress/Kconfig | 1 -
+ arch/arm/mach-zynq/Kconfig     | 1 -
+ drivers/devfreq/Kconfig        | 1 -
+ kernel/power/Kconfig           | 3 ---
+ 10 files changed, 15 deletions(-)
 
-> I remember Android use wakelock for suspend in older linux kernel ,
-> The wakelock will make some time window check to make sure
-> Not suspend frequently ,  could autosleep also add this ?
-
-Are you sure autosleep does not already have equivalent functionality?
-									Pavel
+diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
+index a9adad8..c6279c2 100644
+--- a/Documentation/power/opp.txt
++++ b/Documentation/power/opp.txt
+@@ -51,9 +51,6 @@ Typical usage of the OPP library is as follows:
+ SoC framework	-> modifies on required cases certain OPPs	-> OPP layer
+ 		-> queries to search/retrieve information	->
+ 
+-Architectures that provide a SoC framework for OPP should select ARCH_HAS_OPP
+-to make the OPP layer available.
+-
+ OPP layer expects each domain to be represented by a unique device pointer. SoC
+ framework registers a set of initial OPPs per device with the OPP layer. This
+ list is expected to be an optimally small number typically around 5 per device.
+diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
+index d58995c9..3f78c45 100644
+--- a/arch/arm/mach-exynos/Kconfig
++++ b/arch/arm/mach-exynos/Kconfig
+@@ -103,7 +103,6 @@ config SOC_EXYNOS5440
+ 	default y
+ 	depends on ARCH_EXYNOS5
+ 	select ARCH_DMA_ADDR_T_64BIT if ARM_LPAE
+-	select ARCH_HAS_OPP
+ 	select HAVE_ARM_ARCH_TIMER
+ 	select AUTO_ZRELADDR
+ 	select MIGHT_HAVE_PCI
+diff --git a/arch/arm/mach-highbank/Kconfig b/arch/arm/mach-highbank/Kconfig
+index 830b76e..bef970f 100644
+--- a/arch/arm/mach-highbank/Kconfig
++++ b/arch/arm/mach-highbank/Kconfig
+@@ -3,7 +3,6 @@ config ARCH_HIGHBANK
+ 	select ARCH_DMA_ADDR_T_64BIT if ARM_LPAE
+ 	select ARCH_HAS_CPUFREQ
+ 	select ARCH_HAS_HOLES_MEMORYMODEL
+-	select ARCH_HAS_OPP
+ 	select ARCH_SUPPORTS_BIG_ENDIAN
+ 	select ARM_AMBA
+ 	select ARM_ERRATA_764369 if SMP
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 4cce93d..95690e4 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -1,7 +1,6 @@
+ config ARCH_MXC
+ 	bool "Freescale i.MX family" if ARCH_MULTI_V4_V5 || ARCH_MULTI_V6_V7
+ 	select ARCH_HAS_CPUFREQ
+-	select ARCH_HAS_OPP
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select ARM_CPU_SUSPEND if PM
+ 	select CLKSRC_MMIO
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index 0ba4826..524b027 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -12,7 +12,6 @@ config ARCH_OMAP3
+ 	bool "TI OMAP3"
+ 	depends on ARCH_MULTI_V7
+ 	select ARCH_OMAP2PLUS
+-	select ARCH_HAS_OPP
+ 	select ARM_CPU_SUSPEND if PM
+ 	select OMAP_INTERCONNECT
+ 	select PM_OPP if PM
+diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+index dbd954e..b51d142 100644
+--- a/arch/arm/mach-shmobile/Kconfig
++++ b/arch/arm/mach-shmobile/Kconfig
+@@ -86,7 +86,6 @@ config ARCH_R8A73A4
+ 	select SH_CLK_CPG
+ 	select RENESAS_IRQC
+ 	select ARCH_HAS_CPUFREQ
+-	select ARCH_HAS_OPP
+ 	select SYS_SUPPORTS_SH_CMT
+ 	select SYS_SUPPORTS_SH_TMU
+ 
+@@ -265,7 +264,6 @@ config MACH_KZM9G
+ 	bool "KZM-A9-GT board"
+ 	depends on ARCH_SH73A0
+ 	select ARCH_HAS_CPUFREQ
+-	select ARCH_HAS_OPP
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select REGULATOR_FIXED_VOLTAGE if REGULATOR
+ 	select SND_SOC_AK4642 if SND_SIMPLE_CARD
+diff --git a/arch/arm/mach-vexpress/Kconfig b/arch/arm/mach-vexpress/Kconfig
+index 90249cf..71629fe 100644
+--- a/arch/arm/mach-vexpress/Kconfig
++++ b/arch/arm/mach-vexpress/Kconfig
+@@ -66,7 +66,6 @@ config ARCH_VEXPRESS_DCSCB
+ config ARCH_VEXPRESS_SPC
+ 	bool "Versatile Express Serial Power Controller (SPC)"
+ 	select ARCH_HAS_CPUFREQ
+-	select ARCH_HAS_OPP
+ 	select PM_OPP
+ 	help
+ 	  The TC2 (A15x2 A7x3) versatile express core tile integrates a logic
+diff --git a/arch/arm/mach-zynq/Kconfig b/arch/arm/mach-zynq/Kconfig
+index 573e0db..bc485f2 100644
+--- a/arch/arm/mach-zynq/Kconfig
++++ b/arch/arm/mach-zynq/Kconfig
+@@ -1,7 +1,6 @@
+ config ARCH_ZYNQ
+ 	bool "Xilinx Zynq ARM Cortex A9 Platform" if ARCH_MULTI_V7
+ 	select ARCH_HAS_CPUFREQ
+-	select ARCH_HAS_OPP
+ 	select ARCH_SUPPORTS_BIG_ENDIAN
+ 	select ARM_AMBA
+ 	select ARM_GIC
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 49e74c1..3dced0a 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -68,7 +68,6 @@ comment "DEVFREQ Drivers"
+ config ARM_EXYNOS4_BUS_DEVFREQ
+ 	bool "ARM Exynos4210/4212/4412 Memory Bus DEVFREQ Driver"
+ 	depends on (CPU_EXYNOS4210 || SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
+-	select ARCH_HAS_OPP
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select PM_OPP
+ 	help
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 9a83d78..e4e4121 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -253,9 +253,6 @@ config APM_EMULATION
+ 	  anything, try disabling/enabling this option (or disabling/enabling
+ 	  APM in your BIOS).
+ 
+-config ARCH_HAS_OPP
+-	bool
+-
+ config PM_OPP
+ 	bool
+ 	---help---
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.0.0
+
