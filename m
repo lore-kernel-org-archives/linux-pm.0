@@ -1,30 +1,30 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
 Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
  provide it to scheduler
-Date: Fri, 6 Jun 2014 14:03:52 +0100
-Message-ID: <20140606130352.GU29593@e103034-lin>
+Date: Fri, 6 Jun 2014 14:15:10 +0100
+Message-ID: <20140606131510.GV29593@e103034-lin>
 References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
  <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com>
- <20140603115015.GZ11096@twins.programming.kicks-ass.net>
- <20140604160230.GS29593@e103034-lin>
- <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+ <20140603114428.GY11096@twins.programming.kicks-ass.net>
+ <20140604154227.GR29593@e103034-lin>
+ <20140604161618.GQ30445@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.austin.arm.com ([217.140.110.23]:45509 "EHLO
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:11185 "EHLO
 	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750759AbaFFNDu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 09:03:50 -0400
+	by vger.kernel.org with ESMTP id S1750993AbaFFNPN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 09:15:13 -0400
 Content-Disposition: inline
-In-Reply-To: <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+In-Reply-To: <20140604161618.GQ30445@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
-On Wed, Jun 04, 2014 at 06:27:12PM +0100, Peter Zijlstra wrote:
-> On Wed, Jun 04, 2014 at 05:02:30PM +0100, Morten Rasmussen wrote:
-> > On Tue, Jun 03, 2014 at 12:50:15PM +0100, Peter Zijlstra wrote:
+On Wed, Jun 04, 2014 at 05:16:18PM +0100, Peter Zijlstra wrote:
+> On Wed, Jun 04, 2014 at 04:42:27PM +0100, Morten Rasmussen wrote:
+> > On Tue, Jun 03, 2014 at 12:44:28PM +0100, Peter Zijlstra wrote:
 > > > On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
 > > > > +static struct capacity_state cap_states_cluster_a7[] = {
 > > > > +	/* Cluster only power */
@@ -37,38 +37,77 @@ On Wed, Jun 04, 2014 at 06:27:12PM +0100, Peter Zijlstra wrote:
 > > > > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
 > > > > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
 > > > > +	};
-
-[...]
-
-> > TC2 is an early development platform and somewhat different from what
-> > you find in end user products. TC2 actually uses the same voltage for
-> > all states except the highest 2-3 states. That is not typical. The
-> > voltage is typically slightly different for each state, however, the
-> > difference get bigger for higher P-states. We could probably get away
-> > with representing multiple states as one in the energy model if the
-> > voltage change is minimal.
+> > > > +
+> > > > +static struct capacity_state cap_states_cluster_a15[] = {
+> > > > +	/* Cluster only power */
+> > > > +	 { .cap =  840, .power =  7920, }, /*  500 MHz */
+> > > > +	 { .cap = 1008, .power =  8165, }, /*  600 MHz */
+> > > > +	 { .cap = 1176, .power =  8172, }, /*  700 MHz */
+> > > > +	 { .cap = 1343, .power =  8195, }, /*  800 MHz */
+> > > > +	 { .cap = 1511, .power =  8265, }, /*  900 MHz */
+> > > > +	 { .cap = 1679, .power =  8446, }, /* 1000 MHz */
+> > > > +	 { .cap = 1847, .power = 11426, }, /* 1100 MHz */
+> > > > +	 { .cap = 2015, .power = 15200, }, /* 1200 MHz */
+> > > > +	};
+> > > 
+> > > 
+> > > So how did you obtain these numbers? Did you use numbers provided by the
+> > > hardware people, or did you run a particular benchmark and record the
+> > > power usage?
+> > >
+> > > Does that benchmark do some actual work (as opposed to a while(1) loop)
+> > > to keep more silicon lit up?
+> > 
+> > Hardware people don't like sharing data, so I did my own measurements
+> > and calculations to get the numbers above.
+> > 
+> > ARM TC2 has on-chip energy counters for counting energy consumed by the
+> > A7 and A15 clusters. They are fairly accurate. 
 > 
-> So while I don't mind the full table, esp. if its fairly easy to
-> generate using that tool you spoke about, I just wondered if it made
-> sense to somewhat reduce it.
+> Recent Intel chips have that too; they come packaged as:
 > 
-> Now that I look at the actual .power values, you can indeed see that all
-> except the last two are pretty much similar in power usage.
+>   perf stat -a -e "power/energy-cores/" -- cmd
 > 
-> On that, is that fluctuation measurement noise, or is that stable?
+> (through the perf_event_intel_rapl.c driver), It would be ideal if the
+> ARM equivalent was available through a similar interface.
+> 
+> http://lwn.net/Articles/573602/
 
-It would make sense to reduce it for this particular platform. In fact
-it is questionable whether we should use frequencies below 800 MHz at
-all. On TC2 the voltage is same for 800 MHz and below and it seems that
-leakage (static) power is dominating the power consumption. Since the
-power is almost constant in the range 350 to 800 MHz energy-efficiency
-(performance/watt ~ cap/power) is actually getting *better* as we run
-faster until we get to 800 MHz. Beyond 800 MHz energy-efficiency goes
-down due to increased voltages.
+Nice. On ARM it is not mandatory to have energy counters and what they
+actually measure if they are implemented is implementation dependent.
+However, each vendor does extensive evaluation and characterization of
+their implementation already, so I don't think would be a problem for
+them to provide the numbers.
 
-The proposed platform energy model is an extremely simplified view of
-the platform. The numbers are pretty much the raw data normalized and
-averaged as appropriate. I haven't tweaked them in any way to make them
-look more perfect. So, the small variations (within 4%) may be
-measurement noise and the fact I model something complex with a simple
-model.
+> > I used sysbench cpu
+> > benchmark as test workload for the above numbers. sysbench might not be
+> > a representative workload, but it is easy to use. I think, ideally,
+> > vendors would run their own mix of workloads they care about and derrive
+> > their numbers for their platform based on that.
+> > 
+> > > If you have a setup for measuring these, should we try and publish that
+> > > too so that people can run it on their platform and provide these
+> > > numbers?
+> > 
+> > The workload setup I used quite simple. I ran sysbench with taskset with
+> > different numbers of threads to extrapolate power consumed by each
+> > individual cpu and how much comes from just powering on the domain.
+> > 
+> > Measuring the actual power is very platform specific. Developing a fully
+> > automated tool do it for any given platform isn't straigt forward, but
+> > I'm happy to share how I did it. I can add a description of the method I
+> > used on TC2 to the documentation so others can use it as reference.
+> 
+> That would be good I think, esp. if we can get similar perf based energy
+> measurement things sorted. And if we make the tool consume the machine
+> topology present in sysfs we can get a long way towards automating this
+> I think.
+
+Some of the measurements could be automated. Others are hard to
+automate as they require extensive knowledge about the platform. wakeup
+energy, for example. You may need to do various tricks and hacks to
+force the platform to use a specific idle-state so you know what you are
+measuring.
+
+I will add the TC2 recipe as a start and then see if my ugly scripts can
+be turned into something generally useful.
