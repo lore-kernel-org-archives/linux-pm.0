@@ -1,36 +1,60 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP
-Date: Fri, 6 Jun 2014 09:33:19 -0500
-Message-ID: <5391D12F.4020501@ti.com>
-References: <1402051016-28853-1-git-send-email-broonie@kernel.org>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] idle, thermal, acpi: Remove home grown idle
+ implementations
+Date: Fri, 6 Jun 2014 08:47:42 -0700
+Message-ID: <20140606084742.1ff06c12@ultegra>
+References: <20140604085418.GA11096@twins.programming.kicks-ass.net>
+	<20140604015812.140a00d1@jacob-desktop>
+	<20140605065520.GB3213@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1402051016-28853-1-git-send-email-broonie@kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Sascha Hauer <kernel@pengutronix.de>, Tony Lindgren <tony@atomide.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org, Mark Brown <broonie@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:49279 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751692AbaFFPsG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 Jun 2014 11:48:06 -0400
+In-Reply-To: <20140605065520.GB3213@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lenb@kernel.org, mingo@kernel.org, tglx@linutronix.de, hpa@zytor.com, arjan@linux.intel.com, rui.zhang@intel.com, luto@amacapital.net
 
-On 06/06/2014 05:36 AM, Mark Brown wrote:
-[...]
-> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> index 0ba4826..524b027 100644
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -12,7 +12,6 @@ config ARCH_OMAP3
->  	bool "TI OMAP3"
->  	depends on ARCH_MULTI_V7
->  	select ARCH_OMAP2PLUS
-> -	select ARCH_HAS_OPP
->  	select ARM_CPU_SUSPEND if PM
->  	select OMAP_INTERCONNECT
->  	select PM_OPP if PM
+On Thu, 5 Jun 2014 08:55:20 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-For OMAP portion:
-Acked-by: Nishanth Menon <nm@ti.com>
+> On Wed, Jun 04, 2014 at 01:58:12AM -0700, Jacob Pan wrote:
+> > On Wed, 4 Jun 2014 10:54:18 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > 
+> > > I'm still sitting on this patch. Jacub you were going to make it
+> > > play nice with QoS?
+> > > 
+> > I had a patchset to work through system PM QOS and still maintain
+> > the idle injection efficiency. When I saw you did not merge the
+> > patch below, I thought you have abandoned it :)
+> 
+> I was waiting for you to do the QoS bits :-)
+> 
+> > The only issue as per our last discussion is the lack of
+> > notification when PM QOS cannot be met. But that is intrinsic to PM
+> > QOS itself.
+> > 
+> > I also consulted with Arjan and looked at directly intercept with
+> > intel_idle since both intel_powerclamp and intel_idle are arch
+> > specific drivers. But I think that is hard to do at per idle period
+> > basis, since we should still allow "natural" idle during the forced
+> > idle time.
+> > 
+> > So, I think we can take a two stepped approach,
+> > 1. integrate your patch with a
+> > updated version of https://lkml.org/lkml/2013/11/26/534 such that
+> > there is no performance/efficiency regression.
+> > 2. add notification mechanism to system qos when constraints cannot
+> > be met.
+> 
+> That's fine with me; can you respin those bits?
 
--- 
-Regards,
-Nishanth Menon
+yes, working on it. it may take some time since lots of testing needed.
+will include acpipad as well.
