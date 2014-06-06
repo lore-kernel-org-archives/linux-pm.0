@@ -1,95 +1,84 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
- provide it to scheduler
-Date: Fri, 6 Jun 2014 08:35:21 +0800
-Message-ID: <20140606003520.GB22261@intel.com>
-References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
- <20140604160230.GS29593@e103034-lin>
- <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
- <2484761.vkWavnsDx3@vostro.rjw.lan>
- <20140605065205.GA3213@twins.programming.kicks-ass.net>
- <539086B3.2010804@gmail.com>
- <20140605202930.GA15484@intel.com>
- <20140606080543.GR6758@twins.programming.kicks-ass.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: autosleep suspend too frquent problem
+Date: Fri, 6 Jun 2014 12:30:56 +0200
+Message-ID: <20140606103056.GA2175@amd.pavel.ucw.cz>
+References: <35FD53F367049845BC99AC72306C23D1029A27656A2D@CNBJMBX05.corpusers.net>
+ <20140603120128.GA5080@amd.pavel.ucw.cz>
+ <CAPDyKFqnC1u_Nhe7sJrAzBc8YktDUJC4KAKTPtYVK-Qk6mmk0A@mail.gmail.com>
+ <35FD53F367049845BC99AC72306C23D1029A27656A38@CNBJMBX05.corpusers.net>
+ <20140605135108.GA14162@amd.pavel.ucw.cz>
+ <35FD53F367049845BC99AC72306C23D1029A27656A3E@CNBJMBX05.corpusers.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-mmc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140606080543.GR6758@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com, jacob.jun.pan@linux.intel.com
+In-Reply-To: <35FD53F367049845BC99AC72306C23D1029A27656A3E@CNBJMBX05.corpusers.net>
+Sender: linux-mmc-owner@vger.kernel.org
+To: "Wang, Yalin" <Yalin.Wang@sonymobile.com>
+Cc: 'Ulf Hansson' <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 06, 2014 at 10:05:43AM +0200, Peter Zijlstra wrote:
-> On Fri, Jun 06, 2014 at 04:29:30AM +0800, Yuyang Du wrote:
-> > On Thu, Jun 05, 2014 at 08:03:15AM -0700, Dirk Brandewie wrote:
-> > > 
-> > > You can request a P state per core but the package does coordination at
-> > > a package level for the P state that will be used based on all requests.
-> > > This is due to the fact that most SKUs have a single VR and PLL. So
-> > > the highest P state wins.  When a core goes idle it loses it's vote
-> > > for the current package P state and that cores clock it turned off.
-> > > 
-> > 
-> > You need to differentiate Turbo and non-Turbo. The highest P state wins? Not
-> > really.
+On Fri 2014-06-06 10:59:13, Wang, Yalin wrote:
+> Hi  Pavel,
 > 
-> *sigh* and here we go again.. someone please, write something coherent
-> and have all intel people sign off on it and stop saying different
-> things.
 > 
-> > Actually, silicon supports indepdent non-Turbo pstate, but just not enabled.
+> This is kernel log from a Android phone:
 > 
-> Then it doesn't exist, so no point in mentioning it.
+> <6>[ 7262.353794] PM: suspend exit 2014-05-07 21:19:17.438320072 UTC
+> <6>[ 7262.353820] PM: suspend entry 2014-05-07 21:19:17.438348353 UTC
+> <6>[ 7264.822367] PM: suspend exit 2014-05-07 21:19:19.906892259 UTC
+> <6>[ 7264.822391] PM: suspend entry 2014-05-07 21:19:19.906919447 UTC
+> <6>[ 7266.100346] PM: suspend exit 2014-05-07 21:19:21.184872206 UTC
+> <6>[ 7266.100371] PM: suspend entry 2014-05-07 21:19:21.184899342 UTC
+> <6>[ 7268.650852] PM: suspend exit 2014-05-07 21:19:23.735377778 UTC
+> <6>[ 7268.650876] PM: suspend entry 2014-05-07 21:19:23.735404393 UTC
+> <6>[ 7269.023665] PM: suspend exit 2014-05-07 21:19:26.398622725 UTC
+> <6>[ 7269.023691] PM: suspend entry 2014-05-07 21:19:26.398651787 UTC
+> <6>[ 7269.232675] PM: suspend exit 2014-05-07 21:19:28.959217201 UTC
+> <6>[ 7269.250878] PM: suspend entry 2014-05-07 21:19:28.977414076 UTC
+> <6>[ 7269.256004] PM: suspend exit 2014-05-07 21:19:28.982547202 UTC
+> <6>[ 7269.260040] PM: suspend entry 2014-05-07 21:19:28.986580588 UTC
+> <6>[ 7269.265169] PM: suspend exit 2014-05-07 21:19:28.991711785 UTC
+> <6>[ 7269.269311] PM: suspend entry 2014-05-07 21:19:28.995851004 UTC
+> <6>[ 7270.410962] PM: suspend exit 2014-05-07 21:19:30.137503920 UTC
+> <6>[ 7270.410986] PM: suspend entry 2014-05-07 21:19:30.137529389 UTC
+> <6>[ 7272.970123] PM: suspend exit 2014-05-07 21:19:32.696662461 UTC
+> <6>[ 7272.973330] PM: suspend entry 2014-05-07 21:19:32.699869909 UTC
+> <6>[ 7275.534527] PM: suspend exit 2014-05-07 21:19:35.261069387 UTC
+> <6>[ 7275.534551] PM: suspend entry 2014-05-07 21:19:35.261095846 UTC
+> <6>[ 7275.556227] PM: suspend exit 2014-05-07 21:19:35.282769491 UTC
+> <6>[ 7275.579152] PM: suspend entry 2014-05-07 21:19:35.305686210 UTC
+> <6>[ 7275.822618] PM: suspend exit 2014-05-07 21:19:37.918187092 UTC
+> <6>[ 7275.822644] PM: suspend entry 2014-05-07 21:19:37.918215894 UTC
+> <6>[ 7276.122721] PM: suspend exit 2014-05-07 21:19:40.479243344 UTC
+> <6>[ 7276.122745] PM: suspend entry 2014-05-07 21:19:40.479269125 UTC
+> <6>[ 7278.578212] PM: suspend exit 2014-05-07 21:19:42.934733395 UTC
+> <6>[ 7278.578237] PM: suspend entry 2014-05-07 21:19:42.934761520 UTC
 > 
-
-Well, things actually get more complicated. Not-enabled is for Core. For Atom
-Baytrail, each core indeed can operate on difference frequency. I am not sure for
-Xeon, :)
-
-> > For Turbo, it basically depends on power budget of both core and gfx (because
-> > they share) for each core to get which Turbo point.
+> You can see there is several times suspend / resume status change 
+> Form 2014-05-07 21:19:28. 959217201  to 2014-05-07 21:19:28.995851004
 > 
-> And RAPL controls can give preference of which gfx/core gets most,
-> right?
->
-
-Maybe Jacob knows that.
-
-> > > intel_pstate tries to keep the core P state as low as possible to satisfy
-> > > the given load, so when various cores go idle the package P state can be
-> > > as low as possible.  The big power win is a core going idle.
-> > > 
-> > 
-> > In terms of prediction, it is definitely can't be 100% right. But the
-> > performance of most workloads does scale with pstate (frequency), may not be
-> > linearly. So it is to some point predictable FWIW. And this is all governors
-> > and Intel_pstate's basic assumption.
+> There is also some suspend fail in this log , the suspend return -EBUSY  
+> Because of driver wake up system during suspend process .
 > 
-> So frequency isn't _that_ interesting, voltage is. And while
-> predictability it might be their assumption, is it actually true? I
-> mean, there's really nothing else except to assume that, if its not you
-> can't do anything at all, so you _have_ to assume this.
-> 
-> But again, is the assumption true? Or just happy thoughts in an attempt
-> to do something.
+> During our power test , suspend frequently like this will consume more
+> Power , because it will suspend/resume lots of
+> Devices . Why don't we make a time window to make sure there is no more than
+> 1 time suspend during the time window ?
 
-Voltage is combined with frequency, roughly, voltage is proportional to freuquecy, so
-roughly, power is proportionaly to voltage^3. You can't say which is more important,
-or there is no reason to raise voltage without raising frequency.
+If you can optimize power consumption on your hardware, by all means
+go ahead. But arbitrary limit "don't suspend more than twice a second"
+is probably not a way to go... not without some analysis.
 
-If only one word to say: true of false, it is true. Because given any fixed
-workload, I can't see why performance would be worse if frequency is higher.
+You may want to take a look at n900 -- it uses regular idle, not
+suspend, to save power. 
 
-The reality as opposed to the assumption is in two-fold:
-1) if workload is CPU bound, performance scales with frequency absolutely. if workload is
-   memory bound, it does not scale. But from kernel, we don't know whether it is CPU bound
-   or not (or it is hard to know). uArch statistics can model that.
-2) the workload is not fixed in real-time, changing all the time.
+> I remember Android use wakelock for suspend in older linux kernel ,
+> The wakelock will make some time window check to make sure
+> Not suspend frequently ,  could autosleep also add this ?
 
-But still, the assumption is a must or no guilty, because we adjust frequency continuously,
-for example, if the workload is fixed, and if the performance does not scale with freq we stop
-increasing frequency. So a good frequency governor or driver should and can continuously
-pursue "good" frequency with the changing workload. Therefore, in the long term, we will be
-better off.
+Are you sure autosleep does not already have equivalent functionality?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
