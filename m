@@ -1,180 +1,87 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP
-Date: Fri, 6 Jun 2014 20:14:11 +0900
-Message-ID: <20140606111411.GD25896@verge.net.au>
-References: <1402051016-28853-1-git-send-email-broonie@kernel.org>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Fri, 6 Jun 2014 14:13:05 +0200
+Message-ID: <20140606121305.GA8571@gmail.com>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <20140604160230.GS29593@e103034-lin>
+ <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+ <2484761.vkWavnsDx3@vostro.rjw.lan>
+ <20140605065205.GA3213@twins.programming.kicks-ass.net>
+ <539086B3.2010804@gmail.com>
+ <20140605202930.GA15484@intel.com>
+ <20140606080543.GR6758@twins.programming.kicks-ass.net>
+ <20140606003520.GB22261@intel.com>
+ <20140606105036.GQ3213@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:34944 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbaFFLOP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 07:14:15 -0400
+Received: from mail-we0-f171.google.com ([74.125.82.171]:48470 "EHLO
+	mail-we0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbaFFMNK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 08:13:10 -0400
 Content-Disposition: inline
-In-Reply-To: <1402051016-28853-1-git-send-email-broonie@kernel.org>
+In-Reply-To: <20140606105036.GQ3213@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Sascha Hauer <kernel@pengutronix.de>, Tony Lindgren <tony@atomide.com>, Magnus Damm <magnus.damm@gmail.com>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org, Mark Brown <broonie@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Yuyang Du <yuyang.du@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com, jacob.jun.pan@linux.intel.com
 
-On Fri, Jun 06, 2014 at 11:36:56AM +0100, Mark Brown wrote:
-> From: Mark Brown <broonie@linaro.org>
-> 
-> Since the OPP layer is a kernel library which has been converted to be
-> directly selectable by its callers rather than user selectable and
-> requiring architectures to enable it explicitly the ARCH_HAS_OPP symbol
-> has become redundant and can be removed. Do so.
-> 
-> Signed-off-by: Mark Brown <broonie@linaro.org>
-> ---
->  Documentation/power/opp.txt    | 3 ---
->  arch/arm/mach-exynos/Kconfig   | 1 -
->  arch/arm/mach-highbank/Kconfig | 1 -
->  arch/arm/mach-imx/Kconfig      | 1 -
->  arch/arm/mach-omap2/Kconfig    | 1 -
->  arch/arm/mach-shmobile/Kconfig | 2 --
->  arch/arm/mach-vexpress/Kconfig | 1 -
->  arch/arm/mach-zynq/Kconfig     | 1 -
->  drivers/devfreq/Kconfig        | 1 -
->  kernel/power/Kconfig           | 3 ---
->  10 files changed, 15 deletions(-)
 
-shmobile portion:
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-Acked-by: Simon Horman <horms+renesas@verge.net.au>
+> > Voltage is combined with frequency, roughly, voltage is=20
+> > proportional to freuquecy, so roughly, power is proportionaly to=20
+> > voltage^3. You
+>=20
+> P ~ V^2, last time I checked.
 
-> diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
-> index a9adad8..c6279c2 100644
-> --- a/Documentation/power/opp.txt
-> +++ b/Documentation/power/opp.txt
-> @@ -51,9 +51,6 @@ Typical usage of the OPP library is as follows:
->  SoC framework	-> modifies on required cases certain OPPs	-> OPP layer
->  		-> queries to search/retrieve information	->
->  
-> -Architectures that provide a SoC framework for OPP should select ARCH_HAS_OPP
-> -to make the OPP layer available.
-> -
->  OPP layer expects each domain to be represented by a unique device pointer. SoC
->  framework registers a set of initial OPPs per device with the OPP layer. This
->  list is expected to be an optimally small number typically around 5 per device.
-> diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-> index d58995c9..3f78c45 100644
-> --- a/arch/arm/mach-exynos/Kconfig
-> +++ b/arch/arm/mach-exynos/Kconfig
-> @@ -103,7 +103,6 @@ config SOC_EXYNOS5440
->  	default y
->  	depends on ARCH_EXYNOS5
->  	select ARCH_DMA_ADDR_T_64BIT if ARM_LPAE
-> -	select ARCH_HAS_OPP
->  	select HAVE_ARM_ARCH_TIMER
->  	select AUTO_ZRELADDR
->  	select MIGHT_HAVE_PCI
-> diff --git a/arch/arm/mach-highbank/Kconfig b/arch/arm/mach-highbank/Kconfig
-> index 830b76e..bef970f 100644
-> --- a/arch/arm/mach-highbank/Kconfig
-> +++ b/arch/arm/mach-highbank/Kconfig
-> @@ -3,7 +3,6 @@ config ARCH_HIGHBANK
->  	select ARCH_DMA_ADDR_T_64BIT if ARM_LPAE
->  	select ARCH_HAS_CPUFREQ
->  	select ARCH_HAS_HOLES_MEMORYMODEL
-> -	select ARCH_HAS_OPP
->  	select ARCH_SUPPORTS_BIG_ENDIAN
->  	select ARM_AMBA
->  	select ARM_ERRATA_764369 if SMP
-> diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
-> index 4cce93d..95690e4 100644
-> --- a/arch/arm/mach-imx/Kconfig
-> +++ b/arch/arm/mach-imx/Kconfig
-> @@ -1,7 +1,6 @@
->  config ARCH_MXC
->  	bool "Freescale i.MX family" if ARCH_MULTI_V4_V5 || ARCH_MULTI_V6_V7
->  	select ARCH_HAS_CPUFREQ
-> -	select ARCH_HAS_OPP
->  	select ARCH_REQUIRE_GPIOLIB
->  	select ARM_CPU_SUSPEND if PM
->  	select CLKSRC_MMIO
-> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> index 0ba4826..524b027 100644
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -12,7 +12,6 @@ config ARCH_OMAP3
->  	bool "TI OMAP3"
->  	depends on ARCH_MULTI_V7
->  	select ARCH_OMAP2PLUS
-> -	select ARCH_HAS_OPP
->  	select ARM_CPU_SUSPEND if PM
->  	select OMAP_INTERCONNECT
->  	select PM_OPP if PM
-> diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-> index dbd954e..b51d142 100644
-> --- a/arch/arm/mach-shmobile/Kconfig
-> +++ b/arch/arm/mach-shmobile/Kconfig
-> @@ -86,7 +86,6 @@ config ARCH_R8A73A4
->  	select SH_CLK_CPG
->  	select RENESAS_IRQC
->  	select ARCH_HAS_CPUFREQ
-> -	select ARCH_HAS_OPP
->  	select SYS_SUPPORTS_SH_CMT
->  	select SYS_SUPPORTS_SH_TMU
->  
-> @@ -265,7 +264,6 @@ config MACH_KZM9G
->  	bool "KZM-A9-GT board"
->  	depends on ARCH_SH73A0
->  	select ARCH_HAS_CPUFREQ
-> -	select ARCH_HAS_OPP
->  	select ARCH_REQUIRE_GPIOLIB
->  	select REGULATOR_FIXED_VOLTAGE if REGULATOR
->  	select SND_SOC_AK4642 if SND_SIMPLE_CARD
-> diff --git a/arch/arm/mach-vexpress/Kconfig b/arch/arm/mach-vexpress/Kconfig
-> index 90249cf..71629fe 100644
-> --- a/arch/arm/mach-vexpress/Kconfig
-> +++ b/arch/arm/mach-vexpress/Kconfig
-> @@ -66,7 +66,6 @@ config ARCH_VEXPRESS_DCSCB
->  config ARCH_VEXPRESS_SPC
->  	bool "Versatile Express Serial Power Controller (SPC)"
->  	select ARCH_HAS_CPUFREQ
-> -	select ARCH_HAS_OPP
->  	select PM_OPP
->  	help
->  	  The TC2 (A15x2 A7x3) versatile express core tile integrates a logic
-> diff --git a/arch/arm/mach-zynq/Kconfig b/arch/arm/mach-zynq/Kconfig
-> index 573e0db..bc485f2 100644
-> --- a/arch/arm/mach-zynq/Kconfig
-> +++ b/arch/arm/mach-zynq/Kconfig
-> @@ -1,7 +1,6 @@
->  config ARCH_ZYNQ
->  	bool "Xilinx Zynq ARM Cortex A9 Platform" if ARCH_MULTI_V7
->  	select ARCH_HAS_CPUFREQ
-> -	select ARCH_HAS_OPP
->  	select ARCH_SUPPORTS_BIG_ENDIAN
->  	select ARM_AMBA
->  	select ARM_GIC
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 49e74c1..3dced0a 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -68,7 +68,6 @@ comment "DEVFREQ Drivers"
->  config ARM_EXYNOS4_BUS_DEVFREQ
->  	bool "ARM Exynos4210/4212/4412 Memory Bus DEVFREQ Driver"
->  	depends on (CPU_EXYNOS4210 || SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
-> -	select ARCH_HAS_OPP
->  	select DEVFREQ_GOV_SIMPLE_ONDEMAND
->  	select PM_OPP
->  	help
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 9a83d78..e4e4121 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -253,9 +253,6 @@ config APM_EMULATION
->  	  anything, try disabling/enabling this option (or disabling/enabling
->  	  APM in your BIOS).
->  
-> -config ARCH_HAS_OPP
-> -	bool
-> -
->  config PM_OPP
->  	bool
->  	---help---
-> -- 
-> 2.0.0
-> 
+Yes, that's a good approximation for CMOS gates:
+
+  The switching power dissipated by a chip using static CMOS gates is=20
+  C=B7V^2=B7f, where C is the capacitance being switched per clock cycl=
+e,=20
+  V is the supply voltage, and f is the switching frequency,[1] so=20
+  this part of the power consumption decreases quadratically with=20
+  voltage. The formula is not exact however, as many modern chips are=20
+  not implemented using 100% CMOS, but also use special memory=20
+  circuits, dynamic logic such as domino logic, etc. Moreover, there=20
+  is also a static leakage current, which has become more and more=20
+  accentuated as feature sizes have become smaller (below 90=20
+  nanometres) and threshold levels lower.
+
+  Accordingly, dynamic voltage scaling is widely used as part of=20
+  strategies to manage switching power consumption in battery powered=20
+  devices such as cell phones and laptop computers. Low voltage modes=20
+  are used in conjunction with lowered clock frequencies to minimize=20
+  power consumption associated with components such as CPUs and DSPs;=20
+  only when significant computational power is needed will the voltage=20
+  and frequency be raised.
+
+  Some peripherals also support low voltage operational modes. For=20
+  example, low power MMC and SD cards can run at 1.8 V as well as at=20
+  3.3 V, and driver stacks may conserve power by switching to the=20
+  lower voltage after detecting a card which supports it.
+
+  When leakage current is a significant factor in terms of power=20
+  consumption, chips are often designed so that portions of them can=20
+  be powered completely off. This is not usually viewed as being=20
+  dynamic voltage scaling, because it is not transparent to software.=20
+  When sections of chips can be turned off, as for example on TI OMAP3=20
+  processors, drivers and other support software need to support that.
+
+  http://en.wikipedia.org/wiki/Dynamic_voltage_scaling
+
+Leakage current typically gets higher with higher frequencies, but=20
+it's also highly process dependent AFAIK.
+
+If switching power dissipation is the main factor in power use, then=20
+we can essentially assume that P ~ V^2, at the same frequency - and=20
+scales linearly with frequency - but real work performed also scales=20
+semi-linearly with frequency for many workloads, so that's an=20
+invariant for everything except highly memory bound workloads.
+
+Thanks,
+
+	Ingo
