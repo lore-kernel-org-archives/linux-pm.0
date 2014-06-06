@@ -1,87 +1,60 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
- provide it to scheduler
-Date: Fri, 6 Jun 2014 14:13:05 +0200
-Message-ID: <20140606121305.GA8571@gmail.com>
-References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
- <20140604160230.GS29593@e103034-lin>
- <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
- <2484761.vkWavnsDx3@vostro.rjw.lan>
- <20140605065205.GA3213@twins.programming.kicks-ass.net>
- <539086B3.2010804@gmail.com>
- <20140605202930.GA15484@intel.com>
- <20140606080543.GR6758@twins.programming.kicks-ass.net>
- <20140606003520.GB22261@intel.com>
- <20140606105036.GQ3213@twins.programming.kicks-ass.net>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP
+Date: Fri, 6 Jun 2014 21:14:01 +0900
+Message-ID: <CANqRtoTy_LwSiZgRFEw5Ly4ojfinoCichxrX7cO6m2XB9JGoww@mail.gmail.com>
+References: <1402051016-28853-1-git-send-email-broonie@kernel.org>
+	<20140606111411.GD25896@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f171.google.com ([74.125.82.171]:48470 "EHLO
-	mail-we0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbaFFMNK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 08:13:10 -0400
-Content-Disposition: inline
-In-Reply-To: <20140606105036.GQ3213@twins.programming.kicks-ass.net>
+Received: from mail-ie0-f173.google.com ([209.85.223.173]:38026 "EHLO
+	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbaFFMOC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 08:14:02 -0400
+In-Reply-To: <20140606111411.GD25896@verge.net.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Yuyang Du <yuyang.du@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com, jacob.jun.pan@linux.intel.com
+To: Simon Horman <horms@verge.net.au>
+Cc: Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Sascha Hauer <kernel@pengutronix.de>, Tony Lindgren <tony@atomide.com>, Michal Simek <michal.simek@xilinx.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Mark Brown <broonie@linaro.org>
 
+On Fri, Jun 6, 2014 at 8:14 PM, Simon Horman <horms@verge.net.au> wrote:
+> On Fri, Jun 06, 2014 at 11:36:56AM +0100, Mark Brown wrote:
+>> From: Mark Brown <broonie@linaro.org>
+>>
+>> Since the OPP layer is a kernel library which has been converted to be
+>> directly selectable by its callers rather than user selectable and
+>> requiring architectures to enable it explicitly the ARCH_HAS_OPP symbol
+>> has become redundant and can be removed. Do so.
+>>
+>> Signed-off-by: Mark Brown <broonie@linaro.org>
+>> ---
+>>  Documentation/power/opp.txt    | 3 ---
+>>  arch/arm/mach-exynos/Kconfig   | 1 -
+>>  arch/arm/mach-highbank/Kconfig | 1 -
+>>  arch/arm/mach-imx/Kconfig      | 1 -
+>>  arch/arm/mach-omap2/Kconfig    | 1 -
+>>  arch/arm/mach-shmobile/Kconfig | 2 --
+>>  arch/arm/mach-vexpress/Kconfig | 1 -
+>>  arch/arm/mach-zynq/Kconfig     | 1 -
+>>  drivers/devfreq/Kconfig        | 1 -
+>>  kernel/power/Kconfig           | 3 ---
+>>  10 files changed, 15 deletions(-)
+>
+> shmobile portion:
+>
+> Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Hi Simon, Mark,
 
-> > Voltage is combined with frequency, roughly, voltage is=20
-> > proportional to freuquecy, so roughly, power is proportionaly to=20
-> > voltage^3. You
->=20
-> P ~ V^2, last time I checked.
+Nice to see cleanups in this area. Reducing the number of Kconfig
+symbols must be a good thing.
 
-Yes, that's a good approximation for CMOS gates:
+I'm not sure about the expected merge order for this kind of change vs
+queued up stuff in the renesas git tree, but I believe the following
+patch selects ARCH_HAS_OPP:
 
-  The switching power dissipated by a chip using static CMOS gates is=20
-  C=B7V^2=B7f, where C is the capacitance being switched per clock cycl=
-e,=20
-  V is the supply voltage, and f is the switching frequency,[1] so=20
-  this part of the power consumption decreases quadratically with=20
-  voltage. The formula is not exact however, as many modern chips are=20
-  not implemented using 100% CMOS, but also use special memory=20
-  circuits, dynamic logic such as domino logic, etc. Moreover, there=20
-  is also a static leakage current, which has become more and more=20
-  accentuated as feature sizes have become smaller (below 90=20
-  nanometres) and threshold levels lower.
+[PATCH v3] ARM: shmobile: Mark all SoCs in shmobile as CPUFreq, capable
 
-  Accordingly, dynamic voltage scaling is widely used as part of=20
-  strategies to manage switching power consumption in battery powered=20
-  devices such as cell phones and laptop computers. Low voltage modes=20
-  are used in conjunction with lowered clock frequencies to minimize=20
-  power consumption associated with components such as CPUs and DSPs;=20
-  only when significant computational power is needed will the voltage=20
-  and frequency be raised.
+Cheers,
 
-  Some peripherals also support low voltage operational modes. For=20
-  example, low power MMC and SD cards can run at 1.8 V as well as at=20
-  3.3 V, and driver stacks may conserve power by switching to the=20
-  lower voltage after detecting a card which supports it.
-
-  When leakage current is a significant factor in terms of power=20
-  consumption, chips are often designed so that portions of them can=20
-  be powered completely off. This is not usually viewed as being=20
-  dynamic voltage scaling, because it is not transparent to software.=20
-  When sections of chips can be turned off, as for example on TI OMAP3=20
-  processors, drivers and other support software need to support that.
-
-  http://en.wikipedia.org/wiki/Dynamic_voltage_scaling
-
-Leakage current typically gets higher with higher frequencies, but=20
-it's also highly process dependent AFAIK.
-
-If switching power dissipation is the main factor in power use, then=20
-we can essentially assume that P ~ V^2, at the same frequency - and=20
-scales linearly with frequency - but real work performed also scales=20
-semi-linearly with frequency for many workloads, so that's an=20
-invariant for everything except highly memory bound workloads.
-
-Thanks,
-
-	Ingo
+/ magnus
