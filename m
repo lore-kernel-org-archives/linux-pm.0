@@ -1,32 +1,68 @@
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
 Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
  provide it to scheduler
-Date: Fri, 6 Jun 2014 22:33:58 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1406062224090.25775@knanqh.ubzr>
-References: <20140604160230.GS29593@e103034-lin> <20140604172712.GJ13930@laptop.programming.kicks-ass.net> <2484761.vkWavnsDx3@vostro.rjw.lan> <20140605065205.GA3213@twins.programming.kicks-ass.net> <539086B3.2010804@gmail.com> <20140605202930.GA15484@intel.com>
- <20140606080543.GR6758@twins.programming.kicks-ass.net> <20140606003520.GB22261@intel.com> <20140606105036.GQ3213@twins.programming.kicks-ass.net> <20140606121305.GA8571@gmail.com> <20140606122740.GA9318@gmail.com>
+Date: Fri, 6 Jun 2014 22:52:49 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1406062242360.25775@knanqh.ubzr>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com> <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com> <20140603115015.GZ11096@twins.programming.kicks-ass.net> <20140604160230.GS29593@e103034-lin>
+ <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140606122740.GA9318@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Yuyang Du <yuyang.du@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com, jacob.jun.pan@linux.intel.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f52.google.com ([209.85.192.52]:62006 "EHLO
+	mail-qg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbaFGCwv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Jun 2014 22:52:51 -0400
+Received: by mail-qg0-f52.google.com with SMTP id a108so6054661qge.25
+        for <linux-pm@vger.kernel.org>; Fri, 06 Jun 2014 19:52:51 -0700 (PDT)
+In-Reply-To: <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
-On Fri, 6 Jun 2014, Ingo Molnar wrote:
+On Wed, 4 Jun 2014, Peter Zijlstra wrote:
 
-> In any case, even with turbo frequencies, switching power use is 
-> probably an order of magnitude higher than leakage current power use, 
-> on any marketable chip, so we should concentrate on being able to 
-> cover this first order effect (P/work ~ V^2), before considering any 
-> second order effects (leakage current).
+> On Wed, Jun 04, 2014 at 05:02:30PM +0100, Morten Rasmussen wrote:
+> > On Tue, Jun 03, 2014 at 12:50:15PM +0100, Peter Zijlstra wrote:
+> > > On Fri, May 23, 2014 at 07:16:33PM +0100, Morten Rasmussen wrote:
+> > > > +static struct capacity_state cap_states_cluster_a7[] = {
+> > > > +	/* Cluster only power */
+> > > > +	 { .cap =  358, .power = 2967, }, /*  350 MHz */
+> > > > +	 { .cap =  410, .power = 2792, }, /*  400 MHz */
+> > > > +	 { .cap =  512, .power = 2810, }, /*  500 MHz */
+> > > > +	 { .cap =  614, .power = 2815, }, /*  600 MHz */
+> > > > +	 { .cap =  717, .power = 2919, }, /*  700 MHz */
+> > > > +	 { .cap =  819, .power = 2847, }, /*  800 MHz */
+> > > > +	 { .cap =  922, .power = 3917, }, /*  900 MHz */
+> > > > +	 { .cap = 1024, .power = 4905, }, /* 1000 MHz */
+> > > > +	};
+> > > 
+> > > So one thing I remember was that we spoke about restricting this to
+> > > frequency levels where the voltage changed.
+> > > 
+> > > Because voltage jumps were the biggest factor to energy usage.
+> > > 
+> > > Any word on that?
+> > 
+> > Since we don't drive P-state changes from the scheduler, I think we
+> > could leave out P-states from the table without too much trouble. Good
+> > point.
+> 
+> Well, we eventually want to go there I think.
 
-Just so that people are aware... We'll have to introduce thermal 
-constraint management into the scheduler mix as well at some point.  
-Right now what we have is an ad hoc subsystem that simply monitors 
-temperature and apply crude cooling strategies when some thresholds are 
-met. But a better strategy would imply thermal "provisioning".
+People within Linaro have initial code for this.  Should be posted as an 
+RFC soon.
+
+> Although we still needed
+> to come up with something for Intel, because I'm not at all sure how all
+> that works.
+
+Our initial code reuse whatever existing platform specific cpufreq 
+drivers.  The idea is to bypass the cpufreq governors.
+
+If Intel hardware doesn't provide/allow much control here then the 
+platform driver should already tell the cpufreq core (and by extension 
+the scheduler) about the extent of what can be done.
 
 
 Nicolas
