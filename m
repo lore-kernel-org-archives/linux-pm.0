@@ -1,103 +1,212 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: governor: Be friendly towards latency-sensitive
+Subject: [PATCH v3] cpufreq: governor: Be friendly towards latency-sensitive
  bursty workloads
-Date: Sat, 07 Jun 2014 18:05:10 +0530
-Message-ID: <539306FE.9090200@linux.vnet.ibm.com>
-References: <20140526205337.1100.55275.stgit@srivatsabhat.in.ibm.com> <20140607095559.GA23815@amd.pavel.ucw.cz>
+Date: Sun, 08 Jun 2014 02:11:43 +0530
+Message-ID: <20140607204114.25673.87194.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:53495 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752672AbaFGMgj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Jun 2014 08:36:39 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:45575 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753204AbaFGUnM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Jun 2014 16:43:12 -0400
 Received: from /spool/local
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Sat, 7 Jun 2014 22:36:36 +1000
-In-Reply-To: <20140607095559.GA23815@amd.pavel.ucw.cz>
+	Sun, 8 Jun 2014 06:43:09 +1000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, pavel@ucw.cz
+Cc: svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
-On 06/07/2014 03:25 PM, Pavel Machek wrote:
-> Hi!
-> 
->> We just want to avoid the stupidity of dropping down the frequency to a minimum
->> and then enduring a needless (and long) delay before ramping it up back again.
->> So, let us simply carry forward the previous load - that is, let us just pretend
->> that the 'load' for the current time-window is the same as the load for the
->> previous window. That way, the frequency and voltage will continue to be set
->> to whatever values they were set at previously. This means that bursty workloads
->> will get a chance to influence the CPU frequency at which they wake up from
->> cpu-idle, based on their past execution history. Thus, they might be able to
->> avoid suffering from slow wakeups and long response-times.
->>
->> [ The right way to solve this problem is to teach the CPU frequency governors
->> to track load on a per-task basis, not a per-CPU basis, and set the appropriate
->> frequency on whichever CPU the task executes. But that involves redesigning
->> the cpufreq subsystem, so this patch should make the situation bearable until
->> then. ]
-> 
-> Are you sure? For example "./configure" load consists of a lot of
-> short-lived tasks. Per-task basis may not be option for that.
-> 
+Cpufreq governors like the ondemand governor calculate the load on the CPU
+periodically by employing deferrable timers. A deferrable timer won't fire
+if the CPU is completely idle (and there are no other timers to be run), in
+order to avoid unnecessary wakeups and thus save CPU power.
 
-True, but then there is no guarantee that all the tasks spawned by ./configure
-run on a single CPU. So per-CPU tracking may or may not help, depending on the
-scheduling pattern.
+However, the load calculation logic is agnostic to all this, and this can
+lead to the problem described below.
 
-For very-short-lived tasks, per-task tracking won't give much benefit, but it
-will for medium to long-lived tasks. So I guess we might need some sort of a
-combination of both methods of tracking, to handle all the scenarios well.
 
->> A rudimentary and somewhat approximately latency-sensitive workload such as
->> sleeping-ebizzy itself showed a consistent, noticeable performance improvement
->> with this patch. Hence, workloads that are truly latency-sensitive will benefit
->> quite a bit from this change. Moreover, this is an overall win-win since this
->> patch does not hurt power-savings at all (because, this patch does not reduce
->> the idle time or idle residency; and the high frequency of the CPU when it goes
->> to cpu-idle does not affect/hurt the power-savings of deep idle
->> states).
-> 
-> Are you sure about win-win?
-> 
-> AFAICT, your patch helps
-> 
-> ##########.........#########.........###########...........##########............
-> 
-> case (not surprising, that's why you wrote the patch :-), but what happens in
-> 
-> ##########.........#.................#.....................#.....................
-> 
-> case? (That is idle system, with some tasks taking very small ammounts
-> of CPU).
-> 
-> AFAICT, it will remember the (high) prev_load over the idle period,
-> and use too high frequency for mostly idle system, no?
-> 
+Time (ms)               CPU 1
 
-Wow, great catch! I think the problem is that the prev-load is getting copied
-over too many times; we need to restrict it to just one-copy and leave the
-next sampling interval to the cpufreq governor's regular ramp-up, even if it
-was an idle interval.
+100                Task-A running
 
-Below is an untested patch that implements that logic (and it also fixes the
-64 bit division problem reported by Fengguang's build robot in the v2 of the
-patch).
+110                Governor's timer fires, finds load as 100% in the last
+                   10ms interval and increases the CPU frequency.
 
-I'll test this patch and then send out the v3 later today. Please let me
-know your thoughts!
+110.5              Task-A running
 
-Regards,
-Srivatsa S. Bhat
+120		   Governor's timer fires, finds load as 100% in the last
+		   10ms interval and increases the CPU frequency.
 
----------------------------------------------------------------------------
+125		   Task-A went to sleep. With nothing else to do, CPU 1
+		   went completely idle.
+
+200		   Task-A woke up and started running again.
+
+200.5		   Governor's deferred timer (which was originally programmed
+		   to fire at time 130) fires now. It calculates load for the
+		   time period 120 to 200.5, and finds the load is almost zero.
+		   Hence it decreases the CPU frequency to the minimum.
+
+210		   Governor's timer fires, finds load as 100% in the last
+		   10ms interval and increases the CPU frequency.
+
+
+So, after the workload woke up and started running, the frequency was suddenly
+dropped to absolute minimum, and after that, there was an unnecessary delay of
+10ms (sampling period) to increase the CPU frequency back to a reasonable value.
+And this pattern repeats for every wake-up-from-cpu-idle for that workload.
+This can be quite undesirable for latency- or response-time sensitive bursty
+workloads. So we need to fix the governor's logic to detect such wake-up-from-
+cpu-idle scenarios and start the workload at a reasonably high CPU frequency.
+
+One extreme solution would be to fake a load of 100% in such scenarios. But
+that might lead to undesirable side-effects such as frequency spikes (which
+might also need voltage changes) especially if the previous frequency happened
+to be very low.
+
+We just want to avoid the stupidity of dropping down the frequency to a minimum
+and then enduring a needless (and long) delay before ramping it up back again.
+So, let us simply carry forward the previous load - that is, let us just pretend
+that the 'load' for the current time-window is the same as the load for the
+previous window. That way, the frequency and voltage will continue to be set
+to whatever values they were set at previously. This means that bursty workloads
+will get a chance to influence the CPU frequency at which they wake up from
+cpu-idle, based on their past execution history. Thus, they might be able to
+avoid suffering from slow wakeups and long response-times.
+
+However, we should take care not to over-do this. For example, such a "copy
+previous load" logic will benefit cases like this: (where # represents busy
+and . represents idle)
+
+##########.........#########.........###########...........##########........
+
+but it will be detrimental in cases like the one shown below, because it will
+retain the high frequency (copied from the previous interval) even in a mostly
+idle system:
+
+##########.........#.................#.....................#...............
+
+(i.e., the workload finished and the remaining tasks are such that their busy
+periods are smaller than the sampling interval, which causes the timer to
+always get deferred. So, this will make the copy-previous-load logic copy
+the initial high load to subsequent idle periods over and over again, thus
+keeping the frequency high unnecessarily).
+
+So, we modify this copy-previous-load logic such that it is used only once
+upon every wakeup-from-idle. Thus if we have 2 consecutive idle periods, the
+previous load won't get blindly copied over; cpufreq will freshly evaluate the
+load in the second idle interval, thus ensuring that the system comes back to
+its normal state.
+
+[ The right way to solve this whole problem is to teach the CPU frequency
+governors to also track load on a per-task basis, not just a per-CPU basis,
+and then use both the data sources intelligently to set the appropriate
+frequency on the CPUs. But that involves redesigning the cpufreq subsystem,
+so this patch should make the situation bearable until then. ]
+
+Experimental results:
++-------------------+
+
+I ran a modified version of ebizzy (called 'sleeping-ebizzy') that sleeps in
+between its execution such that its total utilization can be a user-defined
+value, say 10% or 20% (higher the utilization specified, lesser the amount of
+sleeps injected). This ebizzy was run with a single-thread, tied to CPU 8.
+
+Behavior observed with tracing (sample taken from 40% utilization runs):
+------------------------------------------------------------------------
+
+Without patch:
+~~~~~~~~~~~~~~
+kworker/8:2-12137  416.335742: cpu_frequency: state=2061000 cpu_id=8
+kworker/8:2-12137  416.335744: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40753  416.345741: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+kworker/8:2-12137  416.345744: cpu_frequency: state=4123000 cpu_id=8
+kworker/8:2-12137  416.345746: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40753  416.355738: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+<snip>  ---------------------------------------------------------------------  <snip>
+      <...>-40753  416.402202: sched_switch: prev_comm=ebizzy ==> next_comm=swapper/8
+     <idle>-0      416.502130: sched_switch: prev_comm=swapper/8 ==> next_comm=ebizzy
+      <...>-40753  416.505738: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+kworker/8:2-12137  416.505739: cpu_frequency: state=2061000 cpu_id=8
+kworker/8:2-12137  416.505741: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40753  416.515739: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+kworker/8:2-12137  416.515742: cpu_frequency: state=4123000 cpu_id=8
+kworker/8:2-12137  416.515744: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+
+Observation: Ebizzy went idle at 416.402202, and started running again at
+416.502130. But cpufreq noticed the long idle period, and dropped the frequency
+at 416.505739, only to increase it back again at 416.515742, realizing that the
+workload is in-fact CPU bound. Thus ebizzy needlessly ran at the lowest frequency
+for almost 13 milliseconds (almost 1 full sample period), and this pattern
+repeats on every sleep-wakeup. This could hurt latency-sensitive workloads quite
+a lot.
+
+With patch:
+~~~~~~~~~~~
+
+kworker/8:2-29802  464.832535: cpu_frequency: state=2061000 cpu_id=8
+<snip>  ---------------------------------------------------------------------  <snip>
+kworker/8:2-29802  464.962538: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40738  464.972533: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+kworker/8:2-29802  464.972536: cpu_frequency: state=4123000 cpu_id=8
+kworker/8:2-29802  464.972538: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40738  464.982531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+<snip>  ---------------------------------------------------------------------  <snip>
+kworker/8:2-29802  465.022533: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40738  465.032531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+kworker/8:2-29802  465.032532: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40738  465.035797: sched_switch: prev_comm=ebizzy ==> next_comm=swapper/8
+     <idle>-0      465.240178: sched_switch: prev_comm=swapper/8 ==> next_comm=ebizzy
+      <...>-40738  465.242533: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+kworker/8:2-29802  465.242535: sched_switch: prev_comm=kworker/8:2 ==> next_comm=ebizzy
+      <...>-40738  465.252531: sched_switch: prev_comm=ebizzy ==> next_comm=kworker/8:2
+
+Observation: Ebizzy went idle at 465.035797, and started running again at
+465.240178. Since ebizzy was the only real workload running on this CPU,
+cpufreq retained the frequency at 4.1Ghz throughout the run of ebizzy, no
+matter how many times ebizzy slept and woke-up in-between. Thus, ebizzy
+got the 10ms worth of 4.1 Ghz benefit during every sleep-wakeup (as compared
+to the run without the patch) and this boost gave a modest improvement in total
+throughput, as shown below.
+
+Sleeping-ebizzy records-per-second:
+-----------------------------------
+
+Utilization  Without patch  With patch  Difference (Absolute and % values)
+    10%         274767        277046        +  2279 (+0.829%)
+    20%         543429        553484        + 10055 (+1.850%)
+    40%        1090744       1107959        + 17215 (+1.578%)
+    60%        1634908       1662018        + 27110 (+1.658%)
+
+A rudimentary and somewhat approximately latency-sensitive workload such as
+sleeping-ebizzy itself showed a consistent, noticeable performance improvement
+with this patch. Hence, workloads that are truly latency-sensitive will benefit
+quite a bit from this change. Moreover, this is an overall win-win since this
+patch does not hurt power-savings at all (because, this patch does not reduce
+the idle time or idle residency; and the high frequency of the CPU when it goes
+to cpu-idle does not affect/hurt the power-savings of deep idle states).
+
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+
+Changes in v3:
+* Modified the "copy-previous-load" logic to copy only once, upon the first
+  wakeup from idle, to fix the flaw pointed out by Pavel Machek.
+
+* Fixed the 64 bit division issue reported by Fengguang Wu's build robot.
+
+ drivers/cpufreq/cpufreq_governor.c |   58 ++++++++++++++++++++++++++++++++++--
+ drivers/cpufreq/cpufreq_governor.h |    6 ++++
+ 2 files changed, 61 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index e1c6433..3856a6b 100644
+index e1c6433..9004450 100644
 --- a/drivers/cpufreq/cpufreq_governor.c
 +++ b/drivers/cpufreq/cpufreq_governor.c
 @@ -36,14 +36,29 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
@@ -141,8 +250,8 @@ index e1c6433..3856a6b 100644
 +		 * If the CPU had gone completely idle, and a task just woke up
 +		 * on this CPU now, it would be unfair to calculate 'load' the
 +		 * usual way for this elapsed time-window, because it will show
-+		 * near-zero load, irrespective of how CPU intensive the new
-+		 * task is. This is undesirable for latency-sensitive bursty
++		 * near-zero load, irrespective of how CPU intensive that task
++		 * actually is. This is undesirable for latency-sensitive bursty
 +		 * workloads.
 +		 *
 +		 * To avoid this, we reuse the 'load' from the previous
