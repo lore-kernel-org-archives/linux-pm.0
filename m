@@ -1,68 +1,90 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch V4 25/42] x86, ACPI, irq: provide basic irqdomain support
-Date: Mon,  9 Jun 2014 16:19:54 +0800
-Message-ID: <1402302011-23642-26-git-send-email-jiang.liu@linux.intel.com>
+Subject: [Patch V4 22/42] x86, irq, ACPI: change __acpi_register_gsi to return IRQ number instead of GSI
+Date: Mon,  9 Jun 2014 16:19:51 +0800
+Message-ID: <1402302011-23642-23-git-send-email-jiang.liu@linux.intel.com>
 References: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pci-owner@vger.kernel.org
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
 Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Enhance ACPI driver to provide basic irqdomain support for IOAPIC.
+Currently __acpi_register_gsi is defined to return GSI number and
+may be set to acpi_register_gsi_pic(), acpi_register_gsi_ioapic(),
+acpi_register_gsi_xen_hvm() and acpi_register_gsi_xen().
 
-We will build identity mapping for IOAPICs hosting legacy IRQs,
-otherwise dynamically allocate IRQ numbers for IOAPIC pins on demand.
+Among which, acpi_register_gsi_ioapic() returns GSI number, but
+acpi_register_gsi_xen_hvm() and acpi_register_gsi_xen() actually
+returns IRQ number instead of GSI. And for acpi_register_gsi_pic(),
+GSI number equals to IRQ number.
+
+So change acpi_register_gsi_ioapic() to return IRQ number, it also
+simplifies the code.
 
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/x86/kernel/acpi/boot.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ arch/x86/kernel/acpi/boot.c |   21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 15d988cfa335..82ec56a4c6f4 100644
+index e5e645fdd690..0c9dcf6824b6 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -31,6 +31,7 @@
- #include <linux/module.h>
- #include <linux/dmi.h>
- #include <linux/irq.h>
-+#include <linux/irqdomain.h>
- #include <linux/slab.h>
- #include <linux/bootmem.h>
- #include <linux/ioport.h>
-@@ -449,10 +450,16 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
- 	return irq;
+@@ -419,7 +419,7 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 
+ 	irq = map_gsi_to_irq(gsi);
+ 	if (irq < 0)
+-		return ACPI_INVALID_GSI;
++		return irq;
+ 
+ 	ioapic = mp_find_ioapic(gsi);
+ 	if (ioapic < 0) {
+@@ -444,12 +444,11 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 			     polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
+ 	ret = io_apic_set_pci_routing(dev, irq, &irq_attr);
+ 	if (ret < 0)
+-		gsi = ACPI_INVALID_GSI;
++		irq = -1;
+ 
+-	return gsi;
++	return irq;
  }
  
-+static struct irq_domain_ops acpi_irqdomain_ops;
-+
+-
  static int __init
  acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
  {
- 	struct acpi_madt_io_apic *ioapic = NULL;
-+	struct ioapic_domain_cfg cfg = {
-+		.type = IOAPIC_DOMAIN_DYNAMIC,
-+		.ops = &acpi_irqdomain_ops,
-+	};
- 
- 	ioapic = (struct acpi_madt_io_apic *)header;
- 
-@@ -461,8 +468,12 @@ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
- 
- 	acpi_table_print_madt_entry(header);
- 
--	mp_register_ioapic(ioapic->id,
--			   ioapic->address, ioapic->global_irq_base, NULL);
-+	/* Statically assign IRQ numbers for IOAPICs hosting legacy IRQs */
-+	if (ioapic->global_irq_base < nr_legacy_irqs())
-+		cfg.type = IOAPIC_DOMAIN_LEGACY;
+@@ -652,11 +651,13 @@ static int acpi_register_gsi_pic(struct device *dev, u32 gsi,
+ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
+ 				    int trigger, int polarity)
+ {
++	int irq = gsi;
 +
-+	mp_register_ioapic(ioapic->id, ioapic->address, ioapic->global_irq_base,
-+			   &cfg);
+ #ifdef CONFIG_X86_IO_APIC
+-	gsi = mp_register_gsi(dev, gsi, trigger, polarity);
++	irq = mp_register_gsi(dev, gsi, trigger, polarity);
+ #endif
  
- 	return 0;
+-	return gsi;
++	return irq;
  }
+ 
+ int (*__acpi_register_gsi)(struct device *dev, u32 gsi,
+@@ -674,13 +675,7 @@ int (*acpi_suspend_lowlevel)(void);
+  */
+ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+ {
+-	unsigned int plat_gsi;
+-
+-	plat_gsi = (*__acpi_register_gsi)(dev, gsi, trigger, polarity);
+-	if (plat_gsi != ACPI_INVALID_GSI)
+-		return map_gsi_to_irq(plat_gsi);
+-
+-	return -1;
++	return (*__acpi_register_gsi)(dev, gsi, trigger, polarity);
+ }
+ EXPORT_SYMBOL_GPL(acpi_register_gsi);
+ 
 -- 
 1.7.10.4
