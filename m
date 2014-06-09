@@ -1,157 +1,163 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: governor: remove copy_prev_load from 'struct
- cpu_dbs_common_info'
-Date: Mon, 09 Jun 2014 12:36:08 +0530
-Message-ID: <53955CE0.1090408@linux.vnet.ibm.com>
-References: <d4241c6ef57c901dde270380cce74e24effa4852.1402291351.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:37720 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbaFIHHl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 03:07:41 -0400
-Received: from /spool/local
-	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 9 Jun 2014 17:07:39 +1000
-In-Reply-To: <d4241c6ef57c901dde270380cce74e24effa4852.1402291351.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch V4 03/42] x86, mpparse: simplify arch/x86/include/asm/mpspec.h
+Date: Mon,  9 Jun 2014 16:19:32 +0800
+Message-ID: <1402302011-23642-4-git-send-email-jiang.liu@linux.intel.com>
+References: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, David Rientjes <rientjes@google.com>, Seiji Aguchi <seiji.aguchi@hds.com>, Jiang Liu <jiang.liu@linux.intel.com>, HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Richard Weinberger <richard@nod.at>, Andi Kleen <ak@linux.intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@linux.intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, pavel@ucw.cz
 
-On 06/09/2014 10:54 AM, Viresh Kumar wrote:
-> 'copy_prev_load' was recently added by commit: 18b46ab (cpufreq: governor: Be
-> friendly towards latency-sensitive bursty workloads).
-> 
-> It actually is a bit redundant as we also have 'prev_load' which can store any
-> integer value and can be used instead of 'copy_prev_load' by setting it to zero
-> when we don't want to use previous load.
-> 
-> So, drop 'copy_prev_load' and use 'prev_load' instead.
+Simplify arch/x86/include/asm/mpspec.h by
+1) Change max_physical_apicid to static as it's only used in apic.c.
+2) Kill declaration of mpc_default_type, it's never defined.
+3) Delete default_acpi_madt_oem_check(), it has already been declared
+   in apic.h.
+4) Make default_acpi_madt_oem_check() depends on CONFIG_X86_LOCAL_APIC
+   instead of CONFIG_X86_64 to support i386.
+5) Change mp_override_legacy_irq(), mp_config_acpi_legacy_irqs() and
+   mp_register_gsi() as static because they are only used in acpi/boot.c.
 
-Well, to be honest, I'm not a great fan of writing tricky code (i.e.,
-overloading multiple semantics onto one single thing). However, in this case,
-it does save a bool for every CPU in the system, and this savings might be
-worthwhile on some systems.
+Acked-by: David Rientjes <rientjes@google.com>
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/x86/include/asm/apic.h    |    4 ++--
+ arch/x86/include/asm/io_apic.h |    3 ---
+ arch/x86/include/asm/mpspec.h  |   13 -------------
+ arch/x86/kernel/acpi/boot.c    |   12 +++++++++---
+ arch/x86/kernel/apic/apic.c    |    2 +-
+ 5 files changed, 12 insertions(+), 22 deletions(-)
 
-Perhaps you should also mention in the changelog that the true load can also
-turn out to be zero during long idle intervals (and hence the actual value of
-'prev_load' and the overloaded value can clash). However this is not a problem
-because, if the true load was really zero in the previous interval, it makes
-more sense to evaluate the load afresh for the current interval rather than
-copying the previous load.
-
-> 
-> Update comments as well to make it more clear.
-> 
-> There is another change here which was probably missed by Srivatsa during the
-> last version of updates he made. The unlikely in the 'if' statement was covering
-> only half of the condition and the whole line should actually come under it.
-> 
-
-Well, I had thought about that too, but I felt that the second AND condition
-was actually not that infrequent when compared to the first AND condition. And
-the C language already guarantees that the second part won't be evaluated if
-the first one turns out to be false. So I thought of making use of that and
-hence wrapped only the first part within unlikely(), so that we can just
-evaluate a subset of the 'if' condition most of the time. But anyway, your
-version looks good too, so I don't mind.
-
-> Also checkpatch is made more silent as it was reporting this (--strict option):
-> 
-> CHECK: Alignment should match open parenthesis
-> +		if (unlikely(wall_time > (2 * sampling_rate) &&
-> +						j_cdbs->prev_load)) {
-
-Sure, this one is a welcome cleanup, thanks!
-
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 13 ++++++++-----
->  drivers/cpufreq/cpufreq_governor.h |  8 ++++----
->  2 files changed, 12 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 9004450..a1ad804 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -132,14 +132,18 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  		 * an unusually large 'wall_time' (as compared to the sampling
->  		 * rate) indicates this scenario.
->  		 */
-> -		if (unlikely(wall_time > (2 * sampling_rate)) &&
-> -						j_cdbs->copy_prev_load) {
-> +		if (unlikely(wall_time > (2 * sampling_rate) &&
-> +			     j_cdbs->prev_load)) {
->  			load = j_cdbs->prev_load;
-> -			j_cdbs->copy_prev_load = false;
-> +
-> +			/*
-> +			 * Ensure that we copy the previous load only once, upon
-> +			 * the first wake-up from idle.
-> +			 */
-
-Can you also add the term 'destructive copy' to the comment, while you are at it?
-Because, that term (which means that we destroy the source during a copy) explains
-the situation very aptly. Something like this:
-
-Perform a destructive copy, to ensure that we copy the previous load only once,
-upon the first wake-up from idle.
-
-> +			j_cdbs->prev_load = 0;
->  		} else {
->  			load = 100 * (wall_time - idle_time) / wall_time;
->  			j_cdbs->prev_load = load;
-> -			j_cdbs->copy_prev_load = true;
->  		}
-> 
->  		if (load > max_load)
-> @@ -373,7 +377,6 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  				(j_cdbs->prev_cpu_wall - j_cdbs->prev_cpu_idle);
->  			j_cdbs->prev_load = 100 * prev_load /
->  					(unsigned int) j_cdbs->prev_cpu_wall;
-> -			j_cdbs->copy_prev_load = true;
-> 
->  			if (ignore_nice)
->  				j_cdbs->prev_cpu_nice =
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index c2a5b7e..d3082ee 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -134,12 +134,12 @@ struct cpu_dbs_common_info {
->  	u64 prev_cpu_idle;
->  	u64 prev_cpu_wall;
->  	u64 prev_cpu_nice;
-> -	unsigned int prev_load;
->  	/*
-> -	 * Flag to ensure that we copy the previous load only once, upon the
-> -	 * first wake-up from idle.
-> +	 * Used to store system load before going into idle, when set to zero:
-> +	 * used as a flag to ensure that we copy the previous load only once,
-> +	 * upon the first wake-up from idle.
-
-Perhaps a bit of a touch-up to the comment would be worthwhile. Something
-like this:
-
-Used to keep track of the load in the previous interval. However, when
-explicitly set to zero, it is used as a flag to ensure that we copy the
-previous load to the current interval only once, upon the first wake-up
-from idle.
-
->  	 */
-> -	bool copy_prev_load;
-> +	unsigned int prev_load;
->  	struct cpufreq_policy *cur_policy;
->  	struct delayed_work work;
->  	/*
-> 
-
-Thank you!
-
-Regards,
-Srivatsa S. Bhat
-
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 19b0ebafcd3e..69ed79aa9085 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -502,8 +502,6 @@ static inline unsigned default_get_apic_id(unsigned long x)
+ #define DEFAULT_TRAMPOLINE_PHYS_HIGH		0x469
+ 
+ #ifdef CONFIG_X86_64
+-extern int default_acpi_madt_oem_check(char *, char *);
+-
+ extern void apic_send_IPI_self(int vector);
+ 
+ DECLARE_PER_CPU(int, x2apic_extra_bits);
+@@ -552,6 +550,8 @@ static inline int default_apic_id_valid(int apicid)
+ 	return (apicid < 255);
+ }
+ 
++extern int default_acpi_madt_oem_check(char *, char *);
++
+ extern void default_setup_apic_routing(void);
+ 
+ extern struct apic apic_noop;
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index 90f97b4b9347..9121abbc8c8f 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -118,9 +118,6 @@ extern int mp_irq_entries;
+ /* MP IRQ source entries */
+ extern struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
+ 
+-/* non-0 if default (table-less) MP configuration */
+-extern int mpc_default_type;
+-
+ /* Older SiS APIC requires we rewrite the index register */
+ extern int sis_apic_bug;
+ 
+diff --git a/arch/x86/include/asm/mpspec.h b/arch/x86/include/asm/mpspec.h
+index f5a617956735..7bef40a01a1d 100644
+--- a/arch/x86/include/asm/mpspec.h
++++ b/arch/x86/include/asm/mpspec.h
+@@ -40,8 +40,6 @@ extern int mp_bus_id_to_type[MAX_MP_BUSSES];
+ extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+ 
+ extern unsigned int boot_cpu_physical_apicid;
+-extern unsigned int max_physical_apicid;
+-extern int mpc_default_type;
+ extern unsigned long mp_lapic_addr;
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+@@ -88,15 +86,6 @@ static inline void early_reserve_e820_mpc_new(void) { }
+ #endif
+ 
+ int generic_processor_info(int apicid, int version);
+-#ifdef CONFIG_ACPI
+-extern void mp_register_ioapic(int id, u32 address, u32 gsi_base);
+-extern void mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+-				   u32 gsi);
+-extern void mp_config_acpi_legacy_irqs(void);
+-struct device;
+-extern int mp_register_gsi(struct device *dev, u32 gsi, int edge_level,
+-				 int active_high_low);
+-#endif /* CONFIG_ACPI */
+ 
+ #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_LOCAL_APIC)
+ 
+@@ -163,6 +152,4 @@ extern physid_mask_t phys_cpu_present_map;
+ 
+ extern int generic_mps_oem_check(struct mpc_table *, char *, char *);
+ 
+-extern int default_acpi_madt_oem_check(char *, char *);
+-
+ #endif /* _ASM_X86_MPSPEC_H */
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 86281ffb96d6..b41b47021f53 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -345,6 +345,10 @@ acpi_parse_lapic_nmi(struct acpi_subtable_header * header, const unsigned long e
+ #endif				/*CONFIG_X86_LOCAL_APIC */
+ 
+ #ifdef CONFIG_X86_IO_APIC
++static void  mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
++				    u32 gsi);
++static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
++			   int polarity);
+ 
+ static int __init
+ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+@@ -903,7 +907,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
+ #ifdef	CONFIG_X86_IO_APIC
+ #define MP_ISA_BUS		0
+ 
+-void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
++static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
++					  u32 gsi)
+ {
+ 	int ioapic;
+ 	int pin;
+@@ -938,7 +943,7 @@ void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
+ 	isa_irq_to_gsi[bus_irq] = gsi;
+ }
+ 
+-void __init mp_config_acpi_legacy_irqs(void)
++static void __init mp_config_acpi_legacy_irqs(void)
+ {
+ 	int i;
+ 	struct mpc_intsrc mp_irq;
+@@ -1040,7 +1045,8 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+ 	return 0;
+ }
+ 
+-int mp_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
++static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
++			   int polarity)
+ {
+ 	int ioapic;
+ 	int ioapic_pin;
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index ad28db7e6bde..ca1bd75e3de2 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -67,7 +67,7 @@ EXPORT_SYMBOL_GPL(boot_cpu_physical_apicid);
+ /*
+  * The highest APIC ID seen during enumeration.
+  */
+-unsigned int max_physical_apicid;
++static unsigned int max_physical_apicid;
+ 
+ /*
+  * Bitmask of physically existing CPUs:
+-- 
+1.7.10.4
