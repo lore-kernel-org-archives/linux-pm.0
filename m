@@ -1,63 +1,45 @@
-From: "Srivatsa S. Bhat" <srivatsa@MIT.EDU>
-Subject: Re: [PATCH] PM / Documentation: Update Srivatsa S. Bhat's email address
-Date: Mon, 09 Jun 2014 16:12:05 +0530
-Message-ID: <53958F7D.4000007@mit.edu>
-References: <20140609102426.26530.15670.stgit@srivatsabhat.in.ibm.com> <CAKohpongn3qi+nKXtqdaZNyrLD=DB8p=V7Fi30OE8aDAC+RwfA@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] cpufreq: governor: remove copy_prev_load from 'struct
+ cpu_dbs_common_info'
+Date: Mon, 9 Jun 2014 12:52:48 +0200
+Message-ID: <20140609105248.GA25705@amd.pavel.ucw.cz>
+References: <d4241c6ef57c901dde270380cce74e24effa4852.1402291351.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <CAKohpongn3qi+nKXtqdaZNyrLD=DB8p=V7Fi30OE8aDAC+RwfA@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <d4241c6ef57c901dde270380cce74e24effa4852.1402291351.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 06/09/2014 04:02 PM, Viresh Kumar wrote:
-> On 9 June 2014 15:54, Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> My @linux.vnet.ibm.com email address is going to disappear soon, as I will be
->> beginning my M.S./PhD studies at MIT in a few months. So update my email
->> address in the documentation.
+On Mon 2014-06-09 10:54:17, Viresh Kumar wrote:
+> 'copy_prev_load' was recently added by commit: 18b46ab (cpufreq: governor: Be
+> friendly towards latency-sensitive bursty workloads).
 > 
-> Congratulations once again buddy!!
-
-Thank you very much! :-)
-
-> We will surely miss you specially for
-> discussions around cpufreq stuff :( ..
->
-
-Actually, I think I'll still be able to remain active on LKML, since the
-area I'll be working on is going to be very closely related :-) So hopefully
-I'll continue to have the opportunity to take part in our enlightening
-discussions on the mailing lists :-)
- 
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> Signed-off-by: Srivatsa S. Bhat <srivatsa@mit.edu>
->> ---
->>
->>  Documentation/power/suspend-and-cpuhotplug.txt |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
+> It actually is a bit redundant as we also have 'prev_load' which can store any
+> integer value and can be used instead of 'copy_prev_load' by setting it to zero
+> when we don't want to use previous load.
 > 
-> That's it ? I am not sure if you are planning to send few more
-> mails like this, but these can all go as a single commit via
-> Andrew Morton...
-
-Well, that's the only file that has my name/email-id on it ;-)
-
+> So, drop 'copy_prev_load' and use 'prev_load' instead.
 > 
-> Also see if you wanna update .mailmap
+> Update comments as well to make it more clear.
 > 
-> Here is how I moved, 10d8935 :)
+> There is another change here which was probably missed by Srivatsa during the
+> last version of updates he made. The unlikely in the 'if' statement was covering
+> only half of the condition and the whole line should actually come under it.
 > 
-
-Ah, I see. I was not aware of the mailmap thing, thank you!
-
-> I hope you don't need my Ack here :)
+> Also checkpatch is made more silent as it was reporting this (--strict option):
 > 
+> CHECK: Alignment should match open parenthesis
+> +		if (unlikely(wall_time > (2 * sampling_rate) &&
+> +						j_cdbs->prev_load)) {
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I guess I don't need it, but thanks a lot for your inputs! I'll send
-an updated patch which updates the mailmap as well.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Regards,
-Srivatsa S. Bhat
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
