@@ -1,37 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP
-Date: Mon, 9 Jun 2014 10:19:20 +0530
-Message-ID: <CAOh2x=ms6Z421AqGAQxJFA3v63fDGu+=+zfrVzNzrfQOZoZGjg@mail.gmail.com>
-References: <1402051016-28853-1-git-send-email-broonie@kernel.org>
+Subject: Re: [PATCH v3] cpufreq: governor: Be friendly towards
+ latency-sensitive bursty workloads
+Date: Mon, 9 Jun 2014 10:35:39 +0530
+Message-ID: <CAKohpo=OSQ0MQuRUPYe39u19_+jGFYH0mqziPvMKx1GcTHB92g@mail.gmail.com>
+References: <20140607204114.25673.87194.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1402051016-28853-1-git-send-email-broonie@kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Sascha Hauer <kernel@pengutronix.de>, Tony Lindgren <tony@atomide.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michal Simek <michal.simek@xilinx.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org, Mark Brown <broonie@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:55283 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbaFIFFk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 01:05:40 -0400
+Received: by mail-ob0-f182.google.com with SMTP id wn1so5338816obc.41
+        for <linux-pm@vger.kernel.org>; Sun, 08 Jun 2014 22:05:39 -0700 (PDT)
+In-Reply-To: <20140607204114.25673.87194.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, Jun 6, 2014 at 4:06 PM, Mark Brown <broonie@kernel.org> wrote:
-> From: Mark Brown <broonie@linaro.org>
->
-> Since the OPP layer is a kernel library which has been converted to be
-> directly selectable by its callers rather than user selectable and
-> requiring architectures to enable it explicitly the ARCH_HAS_OPP symbol
-> has become redundant and can be removed. Do so.
->
-> Signed-off-by: Mark Brown <broonie@linaro.org>
-> ---
->  Documentation/power/opp.txt    | 3 ---
->  arch/arm/mach-exynos/Kconfig   | 1 -
->  arch/arm/mach-highbank/Kconfig | 1 -
->  arch/arm/mach-imx/Kconfig      | 1 -
->  arch/arm/mach-omap2/Kconfig    | 1 -
->  arch/arm/mach-shmobile/Kconfig | 2 --
->  arch/arm/mach-vexpress/Kconfig | 1 -
->  arch/arm/mach-zynq/Kconfig     | 1 -
->  drivers/devfreq/Kconfig        | 1 -
->  kernel/power/Kconfig           | 3 ---
->  10 files changed, 15 deletions(-)
+On 8 June 2014 02:11, Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> +               if (unlikely(wall_time > (2 * sampling_rate)) &&
+> +                                               j_cdbs->copy_prev_load) {
+> +                       load = j_cdbs->prev_load;
+> +                       j_cdbs->copy_prev_load = false;
+> +               } else {
+> +                       load = 100 * (wall_time - idle_time) / wall_time;
+> +                       j_cdbs->prev_load = load;
+> +                       j_cdbs->copy_prev_load = true;
+> +               }
+
+Hmm, slight modifications over the weekend :) ..
+What do you think about removing this extra variable and using prev_load
+only, i.e. make it zero in the else part? Also adding a comment for this would
+be helpful ?
+
+I will try a patch before you come to office :)
