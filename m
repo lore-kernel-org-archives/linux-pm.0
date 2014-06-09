@@ -1,43 +1,58 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] PM / Documentation: Update copyright in
- suspend-and-cpuhotplug.txt
-Date: Mon, 09 Jun 2014 18:01:42 +0530
-Message-ID: <20140609123103.11086.12353.stgit@srivatsabhat.in.ibm.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Mon, 9 Jun 2014 09:22:49 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1406090920540.25775@knanqh.ubzr>
+References: <2484761.vkWavnsDx3@vostro.rjw.lan> <20140605065205.GA3213@twins.programming.kicks-ass.net> <539086B3.2010804@gmail.com> <20140605202930.GA15484@intel.com> <20140606080543.GR6758@twins.programming.kicks-ass.net> <20140606003520.GB22261@intel.com>
+ <20140606105036.GQ3213@twins.programming.kicks-ass.net> <20140606121305.GA8571@gmail.com> <20140606122740.GA9318@gmail.com> <alpine.LFD.2.11.1406062224090.25775@knanqh.ubzr> <20140609082739.GY29593@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp05.in.ibm.com ([122.248.162.5]:51184 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754188AbaFIMdQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 08:33:16 -0400
-Received: from /spool/local
-	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 9 Jun 2014 18:03:13 +0530
+Received: from mail-qa0-f41.google.com ([209.85.216.41]:42133 "EHLO
+	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754752AbaFINWv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 09:22:51 -0400
+Received: by mail-qa0-f41.google.com with SMTP id cm18so384812qab.14
+        for <linux-pm@vger.kernel.org>; Mon, 09 Jun 2014 06:22:50 -0700 (PDT)
+In-Reply-To: <20140609082739.GY29593@e103034-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: rdunlap@infradead.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Yuyang Du <yuyang.du@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "len.brown@intel.com" <len.brown@intel.com>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
 
-Extend the year to 2014 in the copyright.
+On Mon, 9 Jun 2014, Morten Rasmussen wrote:
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
+> On Sat, Jun 07, 2014 at 03:33:58AM +0100, Nicolas Pitre wrote:
+> > On Fri, 6 Jun 2014, Ingo Molnar wrote:
+> > 
+> > > In any case, even with turbo frequencies, switching power use is 
+> > > probably an order of magnitude higher than leakage current power use, 
+> > > on any marketable chip, so we should concentrate on being able to 
+> > > cover this first order effect (P/work ~ V^2), before considering any 
+> > > second order effects (leakage current).
+> > 
+> > Just so that people are aware... We'll have to introduce thermal 
+> > constraint management into the scheduler mix as well at some point.  
+> > Right now what we have is an ad hoc subsystem that simply monitors 
+> > temperature and apply crude cooling strategies when some thresholds are 
+> > met. But a better strategy would imply thermal "provisioning".
+> 
+> There is already work going on to improve thermal management:
+> 
+> http://lwn.net/Articles/599598/
+> 
+> The proposal is based on power/energy models (too). The goal is to
+> allocate power intelligently based on performance requirements.
 
- Documentation/power/suspend-and-cpuhotplug.txt |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Ah, great!  I missed that.
 
-diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.txt
-index e13dafc..2850df3 100644
---- a/Documentation/power/suspend-and-cpuhotplug.txt
-+++ b/Documentation/power/suspend-and-cpuhotplug.txt
-@@ -1,6 +1,6 @@
- Interaction of Suspend code (S3) with the CPU hotplug infrastructure
- 
--     (C) 2011 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-+     (C) 2011 - 2014 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
- 
- 
- I. How does the regular CPU hotplug code differ from how the Suspend-to-RAM
+> While it is related to energy-aware scheduling and I fully agree that it
+> is something we need to consider, I think it is worth developing the two
+> ideas in parallel and look at sharing things like the power model later
+> once things mature. Energy-aware scheduling is complex enough on its
+> own to keep us entertained for a while :-)
 
+Absolutely.  This is why I said "at some point".
+
+
+Nicolas
