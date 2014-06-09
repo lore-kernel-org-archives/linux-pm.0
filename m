@@ -1,58 +1,48 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
- provide it to scheduler
-Date: Mon, 9 Jun 2014 09:22:49 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1406090920540.25775@knanqh.ubzr>
-References: <2484761.vkWavnsDx3@vostro.rjw.lan> <20140605065205.GA3213@twins.programming.kicks-ass.net> <539086B3.2010804@gmail.com> <20140605202930.GA15484@intel.com> <20140606080543.GR6758@twins.programming.kicks-ass.net> <20140606003520.GB22261@intel.com>
- <20140606105036.GQ3213@twins.programming.kicks-ass.net> <20140606121305.GA8571@gmail.com> <20140606122740.GA9318@gmail.com> <alpine.LFD.2.11.1406062224090.25775@knanqh.ubzr> <20140609082739.GY29593@e103034-lin>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Mark CPU0 driver with CPUFREQ_NEED_INITIAL_FREQ_CHECK flag
+Date: Mon,  9 Jun 2014 19:06:17 +0530
+Message-ID: <c736c858802b417f264c86195e9c69c731ede6ba.1402320949.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f41.google.com ([209.85.216.41]:42133 "EHLO
-	mail-qa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754752AbaFINWv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 09:22:51 -0400
-Received: by mail-qa0-f41.google.com with SMTP id cm18so384812qab.14
-        for <linux-pm@vger.kernel.org>; Mon, 09 Jun 2014 06:22:50 -0700 (PDT)
-In-Reply-To: <20140609082739.GY29593@e103034-lin>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:53824 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932709AbaFINg3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 09:36:29 -0400
+Received: by mail-pb0-f46.google.com with SMTP id rq2so4869704pbb.5
+        for <linux-pm@vger.kernel.org>; Mon, 09 Jun 2014 06:36:28 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Yuyang Du <yuyang.du@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "len.brown@intel.com" <len.brown@intel.com>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, sachin.kamat@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Mon, 9 Jun 2014, Morten Rasmussen wrote:
+Sometimes boot loaders set CPU frequency to a value outside of frequency table
+present with cpufreq core. In such cases CPU might be unstable if it has to run
+on that frequency for long duration of time and so its better to set it to a
+frequency which is specified in frequency table.
 
-> On Sat, Jun 07, 2014 at 03:33:58AM +0100, Nicolas Pitre wrote:
-> > On Fri, 6 Jun 2014, Ingo Molnar wrote:
-> > 
-> > > In any case, even with turbo frequencies, switching power use is 
-> > > probably an order of magnitude higher than leakage current power use, 
-> > > on any marketable chip, so we should concentrate on being able to 
-> > > cover this first order effect (P/work ~ V^2), before considering any 
-> > > second order effects (leakage current).
-> > 
-> > Just so that people are aware... We'll have to introduce thermal 
-> > constraint management into the scheduler mix as well at some point.  
-> > Right now what we have is an ad hoc subsystem that simply monitors 
-> > temperature and apply crude cooling strategies when some thresholds are 
-> > met. But a better strategy would imply thermal "provisioning".
-> 
-> There is already work going on to improve thermal management:
-> 
-> http://lwn.net/Articles/599598/
-> 
-> The proposal is based on power/energy models (too). The goal is to
-> allocate power intelligently based on performance requirements.
+Sachin recently found this problem with cpufreq-cpu0 driver when he was testing
+it for Exynos.
 
-Ah, great!  I missed that.
+Set this flag for cpufreq-cpu0 driver.
 
-> While it is related to energy-aware scheduling and I fully agree that it
-> is something we need to consider, I think it is worth developing the two
-> ideas in parallel and look at sharing things like the power model later
-> once things mature. Energy-aware scheduling is complex enough on its
-> own to keep us entertained for a while :-)
+Reported-and-tested-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-cpu0.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Absolutely.  This is why I said "at some point".
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 09b9129..ee1ae30 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -104,7 +104,7 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ }
+ 
+ static struct cpufreq_driver cpu0_cpufreq_driver = {
+-	.flags = CPUFREQ_STICKY,
++	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target_index = cpu0_set_target,
+ 	.get = cpufreq_generic_get,
+-- 
+2.0.0.rc2
 
-
-Nicolas
