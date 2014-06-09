@@ -1,52 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/7] cpufreq: intel_pstate: Remove duplicate CPU ID check
-Date: Tue, 10 Jun 2014 10:51:49 +0530
-Message-ID: <CAKohpokABMSRr88Tf=+Kn4b4=r7ThE+mjdAZcU+dvo28b47Kcg@mail.gmail.com>
-References: <53962059.6070306@semaphore.gr>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC PATCH 07/16 v3] Init Workload Consolidation flags in
+ sched_domain
+Date: Tue, 10 Jun 2014 05:18:20 +0800
+Message-ID: <20140609211820.GA5361@intel.com>
+References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
+ <1401431772-14320-8-git-send-email-yuyang.du@intel.com>
+ <20140603121416.GH30445@twins.programming.kicks-ass.net>
+ <5395F541.60604@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:64127 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbaFJFVu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 01:21:50 -0400
-Received: by mail-oa0-f48.google.com with SMTP id g18so6917662oah.7
-        for <linux-pm@vger.kernel.org>; Mon, 09 Jun 2014 22:21:49 -0700 (PDT)
-In-Reply-To: <53962059.6070306@semaphore.gr>
+Received: from mga11.intel.com ([192.55.52.93]:55374 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750823AbaFJFWJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 Jun 2014 01:22:09 -0400
+Content-Disposition: inline
+In-Reply-To: <5395F541.60604@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 10 June 2014 02:30, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> We check the CPU ID during driver init. There is no need
-> to do it again per logical CPU initialization.
->
-> So, remove the duplicate check.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/intel_pstate.c | 6 ------
->  1 file changed, 6 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index aebd457..4e7f492 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -691,14 +691,8 @@ MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
->
->  static int intel_pstate_init_cpu(unsigned int cpunum)
->  {
-> -
-> -       const struct x86_cpu_id *id;
->         struct cpudata *cpu;
->
-> -       id = x86_match_cpu(intel_pstate_cpu_ids);
-> -       if (!id)
-> -               return -ENODEV;
-> -
->         all_cpu_data[cpunum] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
->         if (!all_cpu_data[cpunum])
->                 return -ENOMEM;
+On Mon, Jun 09, 2014 at 06:56:17PM +0100, Dietmar Eggemann wrote:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thanks, Dietmar.
+
+> I'm running these patches on my ARM TC2 on top of
+> kernel/git/torvalds/linux.git (v3.15-rc7-79-gfe45736f4134). There're
+> considerable changes in the area of sched domain setup since Vincent's
+> patchset 'rework sched_domain topology description' (destined for v3.16)
+> which you can find on kernel/git/tip/tip.git .
+> 
+
+Yeah, PeterZ pointed it out. It was on top of mainline not tip.
+
+> Why did you make SD_WORKLOAD_CONSOLIDATION controllable via sysctl? All
+> the other SD flags are set during setup.
+> 
+
+I don't understand. Any flag or parameter in sched_domain can be modified
+on-the-fly after booting via sysctl. The SD_XXX_INIT is a template to make
+the sched_domain initialization easier, IIUC.
+
+Yes, I should not unconditionally enable SD_WORKLOAD_CONSOLIDATION in MC
+and CPU domain (pointed out by PeterZ), but I did so for the purpose of
+testing this patchset at this moment. Eventually, this flag should not be
+turned on for any domain by default for many reasons, not to mention CPU
+topology is getting more diverse/complex.
+
+I just checked Vincent's "rework sched_domain topology description". The
+general picture for init sched_domain does not change. If you work on top
+of tip tree, you can simply skip this patch (0007), and after booting
+enable SD_WORKLOAD_CONSOLIDATION by:
+
+sysctl -w kernel.sched_domain.cpuX.domainY.flags += 0x8000
+sysctl -w kernel.sched_domain.cpu0.domain1.consolidating_coeff=180
+sysctl -w kernel.sched_cc_wakeup_threshold=80
+
+> Your top_flag_domain() function
+> takes care of figuring out what is the highest sd level this is set on
+> during load-balance but I can't find any good reason to do it this way
+> other then for testing purposes?
+
+Any flag is used for testing whether it is set on or not when encountering
+it, including the flags in sched_domain for load balancing, this is why flag
+is called flag. My flag is any excpetion?
+
+Thanks,
+Yuyang
