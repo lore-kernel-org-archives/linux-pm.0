@@ -1,124 +1,65 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH Resend] cpufreq: governor: remove copy_prev_load from
- 'struct cpu_dbs_common_info'
-Date: Mon, 09 Jun 2014 14:41:12 +0530
-Message-ID: <53957A30.4030003@linux.vnet.ibm.com>
-References: <c7add1b66e706fc52c493f765d0ddfc8c83f3b2e.1402303829.git.viresh.kumar@linaro.org>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Mon, 9 Jun 2014 10:15:16 +0800
+Message-ID: <20140609021516.GE22261@intel.com>
+References: <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
+ <2484761.vkWavnsDx3@vostro.rjw.lan>
+ <20140605065205.GA3213@twins.programming.kicks-ass.net>
+ <539086B3.2010804@gmail.com>
+ <20140605202930.GA15484@intel.com>
+ <20140606080543.GR6758@twins.programming.kicks-ass.net>
+ <20140606003520.GB22261@intel.com>
+ <20140606105036.GQ3213@twins.programming.kicks-ass.net>
+ <20140607232628.GC22261@intel.com>
+ <20140609085952.GZ29593@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c7add1b66e706fc52c493f765d0ddfc8c83f3b2e.1402303829.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, pavel@ucw.cz
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:60243 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753950AbaFIKTK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Jun 2014 06:19:10 -0400
+Content-Disposition: inline
+In-Reply-To: <20140609085952.GZ29593@e103034-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "len.brown@intel.com" <len.brown@intel.com>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
 
-On 06/09/2014 02:21 PM, Viresh Kumar wrote:
-> 'copy_prev_load' was recently added by commit: 18b46ab (cpufreq: governor: Be
-> friendly towards latency-sensitive bursty workloads).
+On Mon, Jun 09, 2014 at 09:59:52AM +0100, Morten Rasmussen wrote:
+> IMHO, the per-entity load-tracking does a fair job representing the task
+> compute capacity requirements. Sure it isn't perfect, particularly not
+> for memory bound tasks, but it is way better than not having any task
+> history at all, which was the case before.
 > 
-> It actually is a bit redundant as we also have 'prev_load' which can store any
-> integer value and can be used instead of 'copy_prev_load' by setting it zero.
-> 
-> True load can also turn out to be zero during long idle intervals (and hence the
-> actual value of 'prev_load' and the overloaded value can clash). However this is
-> not a problem because, if the true load was really zero in the previous
-> interval, it makes sense to evaluate the load afresh for the current interval
-> rather than copying the previous load.
-> 
-> So, drop 'copy_prev_load' and use 'prev_load' instead.
-> 
-> Update comments as well to make it more clear.
-> 
-> There is another change here which was probably missed by Srivatsa during the
-> last version of updates he made. The unlikely in the 'if' statement was covering
-> only half of the condition and the whole line should actually come under it.
-> 
-> Also checkpatch is made more silent as it was reporting this (--strict option):
-> 
-> CHECK: Alignment should match open parenthesis
-> +		if (unlikely(wall_time > (2 * sampling_rate) &&
-> +						j_cdbs->prev_load)) {
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Resend: Updated comments/logs as suggested by Srivatsa.
+> The story is more or less the same for performance scaling. It is not
+> taken into account at all in the scheduler at the moment. cpufreq is
+> actually messing up load-balancing decisions after task load-tracking
+> was introduced. Adding performance scaling awareness should only make
+> things better even if predictions are not accurate for all workloads. I
+> don't see why it shouldn't given the current state of energy-awareness
+> in the scheduler.
 > 
 
-Looks good!
+Optimized IPC is good for sure (with regard to pstate adjustment). My point is
+how it is practical to rightly correlate to scheduler and pstate
+power-efficiency. Put another way, with fixed workload, you really can do such
+a thing by offline running the workload several times to conclude with a very
+power-efficient solution which takes IPC into account. Actually, lots of
+people have done that in papers/reports (for SPECXXX or TPC-X for example). But
+I can't see how online realtime workload can be done like it.
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > Currently, all freq governors take CPU utilization (load%) as the indicator
+> > (target), which can server both: workload and perf scaling.
+> 
+> With a bunch of hacks on top to make it more reactive because the
+> current cpu utilization metric is not responsive enough to deal with
+> workload changes. That is at least the case for ondemand and interactive
+> (in Android).
+> 
 
-Regards,
-Srivatsa S. Bhat
+To what end it is not responsive enough? And how it is related here?
 
->  drivers/cpufreq/cpufreq_governor.c | 19 ++++++++++++++-----
->  drivers/cpufreq/cpufreq_governor.h |  9 +++++----
->  2 files changed, 19 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 9004450..1b44496 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -131,15 +131,25 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  		 * timer would not have fired during CPU-idle periods. Hence
->  		 * an unusually large 'wall_time' (as compared to the sampling
->  		 * rate) indicates this scenario.
-> +		 *
-> +		 * prev_load can be zero in two cases and we must recalculate it
-> +		 * for both cases:
-> +		 * - during long idle intervals
-> +		 * - explicitly set to zero
->  		 */
-> -		if (unlikely(wall_time > (2 * sampling_rate)) &&
-> -						j_cdbs->copy_prev_load) {
-> +		if (unlikely(wall_time > (2 * sampling_rate) &&
-> +			     j_cdbs->prev_load)) {
->  			load = j_cdbs->prev_load;
-> -			j_cdbs->copy_prev_load = false;
-> +
-> +			/*
-> +			 * Perform a destructive copy, to ensure that we copy
-> +			 * the previous load only once, upon the first wake-up
-> +			 * from idle.
-> +			 */
-> +			j_cdbs->prev_load = 0;
->  		} else {
->  			load = 100 * (wall_time - idle_time) / wall_time;
->  			j_cdbs->prev_load = load;
-> -			j_cdbs->copy_prev_load = true;
->  		}
-> 
->  		if (load > max_load)
-> @@ -373,7 +383,6 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  				(j_cdbs->prev_cpu_wall - j_cdbs->prev_cpu_idle);
->  			j_cdbs->prev_load = 100 * prev_load /
->  					(unsigned int) j_cdbs->prev_cpu_wall;
-> -			j_cdbs->copy_prev_load = true;
-> 
->  			if (ignore_nice)
->  				j_cdbs->prev_cpu_nice =
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index c2a5b7e..cc401d1 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -134,12 +134,13 @@ struct cpu_dbs_common_info {
->  	u64 prev_cpu_idle;
->  	u64 prev_cpu_wall;
->  	u64 prev_cpu_nice;
-> -	unsigned int prev_load;
->  	/*
-> -	 * Flag to ensure that we copy the previous load only once, upon the
-> -	 * first wake-up from idle.
-> +	 * Used to keep track of load in the previous interval. However, when
-> +	 * explicitly set to zero, it is used as a flag to ensure that we copy
-> +	 * the previous load to the current interval only once, upon the first
-> +	 * wake-up from idle.
->  	 */
-> -	bool copy_prev_load;
-> +	unsigned int prev_load;
->  	struct cpufreq_policy *cur_policy;
->  	struct delayed_work work;
->  	/*
-> 
+Thanks,
+Yuyang
