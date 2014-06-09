@@ -1,217 +1,117 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH 3/4] intel_pstate: add sample time scaling
-Date: Mon, 9 Jun 2014 08:58:27 -0700
-Message-ID: <001601cf83fb$a7652f50$f62f8df0$@net>
-References: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com> <1401381145-17745-4-git-send-email-dirk.j.brandewie@intel.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH 07/16 v3] Init Workload Consolidation flags in sched_domain
+Date: Mon, 09 Jun 2014 18:56:17 +0100
+Message-ID: <5395F541.60604@arm.com>
+References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com> <1401431772-14320-8-git-send-email-yuyang.du@intel.com> <20140603121416.GH30445@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta3.telus.net ([209.171.16.76]:58098 "EHLO cmta3.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933265AbaFIP6a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Jun 2014 11:58:30 -0400
-In-Reply-To: <1401381145-17745-4-git-send-email-dirk.j.brandewie@intel.com>
-Content-Language: en-ca
+Received: from service87.mimecast.com ([91.220.42.44]:39282 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752019AbaFIR4P convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 13:56:15 -0400
+In-Reply-To: <20140603121416.GH30445@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dirk.brandewie@gmail.com, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, 'Dirk Brandewie' <dirk.j.brandewie@intel.com>, stable@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
+To: Peter Zijlstra <peterz@infradead.org>, Yuyang Du <yuyang.du@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+... turned out that probably the cc list was too big for lkml. Dropping
+all the individual email addresses on CC.
 
-On 2014.05.29 09:32 Dirk wrote:
+... it seems that this message hasn't made it to the list. Apologies to
+everyone on To: and Cc: receiving it again.
 
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
-
-> The PID assumes that samples are of equal time, which for a deferable
-> timers this is not true when the system goes idle.  This causes the
-> PID to take a long time to converge to the min P state and depending
-> on the pattern of the idle load can make the P state appear stuck.
-
-> The hold-off value of three sample times before using the scaling is
-> to give a grace period for applications that have high performance
-> requirements and spend a lot of time idle,  The poster child for this
-> behavior is the ffmpeg benchmark in the Phoronix test suite.
-
-> Cc: <stable@vger.kernel.org> # 3.14.x
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
-> drivers/cpufreq/intel_pstate.c | 18 +++++++++++++++++-
-> 1 file changed, 17 insertions(+), 1 deletion(-)
-
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index db8a992..c4dad16 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -58,6 +58,7 @@ struct sample {
-> 	u64 aperf;
-> 	u64 mperf;
-> 	int freq;
-> +	ktime_t time;
-> };
+On 03/06/14 13:14, Peter Zijlstra wrote:
+> On Fri, May 30, 2014 at 02:36:03PM +0800, Yuyang Du wrote:
+>> Workload Consolidation can be enabled/disabled on the fly. This patchset
+>> enables MC and CPU domain WC by default.
+>>
+>> To enable CPU WC (SD_WORKLOAD_CONSOLIDATION=0x8000):
+>>
+>> sysctl -w kernel.sched_domain.cpuX.domainY.flags += 0x8000
+>>
+>> To disable CPU WC:
+>>
+>> sysctl -w kernel.sched_domain.cpuX.domainY.flags -= 0x8000
+>>
+>> Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+>> ---
+>>  include/linux/topology.h |    6 ++++++
+>>  1 file changed, 6 insertions(+)
+>>
+>> diff --git a/include/linux/topology.h b/include/linux/topology.h
+>> index 7062330..ebc339c3 100644
+>> --- a/include/linux/topology.h
+>> +++ b/include/linux/topology.h
+>> @@ -102,12 +102,14 @@ int arch_update_cpu_topology(void);
+>>  				| 0*SD_SERIALIZE			\
+>>  				| 0*SD_PREFER_SIBLING			\
+>>  				| arch_sd_sibling_asym_packing()	\
+>> +				| 0*SD_WORKLOAD_CONSOLIDATION	\
+>>  				,					\
+>>  	.last_balance		= jiffies,				\
+>>  	.balance_interval	= 1,					\
+>>  	.smt_gain		= 1178,	/* 15% */			\
+>>  	.max_newidle_lb_cost	= 0,					\
+>>  	.next_decay_max_lb_cost	= jiffies,				\
+>> +	.consolidating_coeff = 0,					\
+>>  }
+>>  #endif
+>>  #endif /* CONFIG_SCHED_SMT */
+>> @@ -134,11 +136,13 @@ int arch_update_cpu_topology(void);
+>>  				| 0*SD_SHARE_CPUPOWER			\
+>>  				| 1*SD_SHARE_PKG_RESOURCES		\
+>>  				| 0*SD_SERIALIZE			\
+>> +				| 1*SD_WORKLOAD_CONSOLIDATION	\
+>>  				,					\
+>>  	.last_balance		= jiffies,				\
+>>  	.balance_interval	= 1,					\
+>>  	.max_newidle_lb_cost	= 0,					\
+>>  	.next_decay_max_lb_cost	= jiffies,				\
+>> +	.consolidating_coeff = 180,					\
+>>  }
+>>  #endif
+>>  #endif /* CONFIG_SCHED_MC */
+>> @@ -167,11 +171,13 @@ int arch_update_cpu_topology(void);
+>>  				| 0*SD_SHARE_PKG_RESOURCES		\
+>>  				| 0*SD_SERIALIZE			\
+>>  				| 1*SD_PREFER_SIBLING			\
+>> +				| 1*SD_WORKLOAD_CONSOLIDATION	\
+>>  				,					\
+>>  	.last_balance		= jiffies,				\
+>>  	.balance_interval	= 1,					\
+>>  	.max_newidle_lb_cost	= 0,					\
+>>  	.next_decay_max_lb_cost	= jiffies,				\
+>> +	.consolidating_coeff = 180,					\
+>>  }
+>>  #endif
 > 
-> struct pstate_data {
-> @@ -93,6 +94,7 @@ struct cpudata {
-> 	struct vid_data vid;
-> 	struct _pid pid;
+> What tree are you working against, non of that exists anymore. Also, you
+> cannot unconditionally set this.
 > 
-> +	ktime_t last_sample_time;
-> 	u64	prev_aperf;
-> 	u64	prev_mperf;
-> 	struct sample sample;
-> @@ -576,6 +578,8 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
-> 	aperf = aperf >> FRAC_BITS;
-> 	mperf = mperf >> FRAC_BITS;
-> 
-> +	cpu->last_sample_time = cpu->sample.time;
-> +	cpu->sample.time = ktime_get();
-> 	cpu->sample.aperf = aperf;
->	cpu->sample.mperf = mperf;
-> 	cpu->sample.aperf -= cpu->prev_aperf;
-> @@ -598,12 +602,24 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
-> 
-> static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
-> {
-> -	int32_t core_busy, max_pstate, current_pstate;
-> +	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
-> +	u32 duration_us;
-> +	u32 sample_time;
-> 
-> 	core_busy = cpu->sample.core_pct_busy;
-> 	max_pstate = int_tofp(cpu->pstate.max_pstate);
-> 	current_pstate = int_tofp(cpu->pstate.current_pstate);
-> 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-> +
-> +	sample_time = (pid_params.sample_rate_ms  * USEC_PER_MSEC);
-> +	duration_us = (u32) ktime_us_delta(cpu->sample.time,
-> +					cpu->last_sample_time);
-> +	if (duration_us > sample_time * 3) {
-> +		sample_ratio = div_fp(int_tofp(sample_time),
-> +				int_tofp(duration_us));
-> +		core_busy = mul_fp(core_busy, sample_ratio);
-> +	}
-> +
-> 	return core_busy;
-> }
-> 
-> -- 
-> 1.9.0
 
-The inclusion of deferrable timer run times subjects
-this driver to any issues with them. Indeed, there
-seems to be a problem with the deferrable timers
-and periodic workflows that can result in the driver
-incorrectly pushing the CPU frequency downwards.
+Hi Yuyang,
 
-This driver will suffer collateral damage if the
-root issue is not fixed.
+I'm running these patches on my ARM TC2 on top of
+kernel/git/torvalds/linux.git (v3.15-rc7-79-gfe45736f4134). There're
+considerable changes in the area of sched domain setup since Vincent's
+patchset 'rework sched_domain topology description' (destined for v3.16)
+which you can find on kernel/git/tip/tip.git .
 
-Summary:
+Why did you make SD_WORKLOAD_CONSOLIDATION controllable via sysctl? All
+the other SD flags are set during setup. Your top_flag_domain() function
+takes care of figuring out what is the highest sd level this is set on
+during load-balance but I can't find any good reason to do it this way
+other then for testing purposes?
 
-For the periodic cases where the CPU wakes up and does
-its chunk of work and goes back to sleep all within
-one jiffy boundary, the deferred timer system does not
-realize this situation has occurred and the driver is
-not called. Eventually the driver is called and this
-patch kicks in and applies downward pressure on
-the CPU frequency.
+Setting SD_WORKLOAD_CONSOLIDATION  (which is probably a behavioural flag
+rather than a topology description related one) on a certain sd level
+requires you to also think about its implications in sd_init() and in sd
+degenerate functionality.
 
-A perfect example (1000 Hz kernel):
+-- Dietmar
 
-Consider a periodic workflow that has 600 microseconds
-of work to do at 100 hertz, and the job is started
-asynchronously with respect to the current jiffy count.
-Then it is 40% probable that the CPU frequency will
-be pushed to minimum, whereas (on my system) it should
-be about 2.4 GHz. The intel_pstate driver gets called
-only once in every 4 seconds.
-
-I did this 360 times and got the CPU frequency forced
-down on 38% of the runs (136 times out of 360).
-
-A simple method to check using timer stats:
-
-The script:
-
-doug@s15:~/temp$ cat set_cpu_timer_stats
-#! /bin/bash
-# Reset the counters
-echo "0" > /proc/timer_stats
-echo "1" > /proc/timer_stats
-# Apply a 6 percent load at 100 hertz for 20 seconds
-taskset -c 5 /home/doug/c/consume 6.0 100.0 20.0 &
-sleep 10
-# What is the CPU 5 frequency?
-echo -n "CPU 5 frequency (~ 1.6 GHz means forced low, ~2.4 GHz means O.K.): "
-cat /sys/devices/system/cpu/cpu5/cpufreq/cpuinfo_cur_freq
-sleep 11
-cat /proc/timer_stats | grep intel
-
-An example where the work is all done within one jiffy:
-
-Notice the CPU frequency is pinned low and there are only
-a few timer calls in the 20 seconds.
- 
-doug@s15:~/temp$ sudo ./set_cpu_timer_stats
-CPU 5 frequency (~ 1.6 GHz means forced low, ~2.4 GHz means O.K.): 1599992
-consume: 6.0 100.0 20.0  PID: 7530  Elapsed: 20000099  Now: 1402323478790491
-  19D,     0 swapper/6        intel_pstate_timer_func (intel_pstate_timer_func)
-  28D,     0 swapper/5        intel_pstate_timer_func (intel_pstate_timer_func)
-  29D,     0 swapper/3        intel_pstate_timer_func (intel_pstate_timer_func)
-  20D,     0 swapper/1        intel_pstate_timer_func (intel_pstate_timer_func)
-   9D,     0 swapper/7        intel_pstate_timer_func (intel_pstate_timer_func)
-  35D,     0 swapper/2        intel_pstate_timer_func (intel_pstate_timer_func)
-  12D,     0 swapper/0        intel_pstate_timer_func (intel_pstate_timer_func)
-  16D,     0 swapper/4        intel_pstate_timer_func (intel_pstate_timer_func)
-
-An example where the work spans a jiffy boundary:
-Notice the CPU frequency is not pinned low and there are
-the expected ~ 2000 driver calls.
-
-doug@s15:~/temp$ sudo ./set_cpu_timer_stats
-CPU 5 frequency (~ 1.6 GHz means forced low, ~2.4 GHz means O.K.): 2409750
-consume: 6.0 100.0 20.0  PID: 7543  Elapsed: 20000099  Now: 1402323597033729
-   8D,     0 swapper/4        intel_pstate_timer_func (intel_pstate_timer_func)
-2004D,     0 swapper/5        intel_pstate_timer_func (intel_pstate_timer_func)
-  43D,     0 swapper/3        intel_pstate_timer_func (intel_pstate_timer_func)
-  35D,     0 swapper/2        intel_pstate_timer_func (intel_pstate_timer_func)
-  24D,     0 swapper/1        intel_pstate_timer_func (intel_pstate_timer_func)
-  20D,     0 swapper/6        intel_pstate_timer_func (intel_pstate_timer_func)
-   8D,     0 swapper/7        intel_pstate_timer_func (intel_pstate_timer_func)
-  10D,     0 swapper/0        intel_pstate_timer_func (intel_pstate_timer_func)
-
-O.K. the above was a perfect example, done specifically
-for dramatic effect and for best exposure of the issue.
-What about the more generic, but still periodic, case?
-
-Well, then it comes down to beat frequencies between the
-process and the jiffy boundaries. I have run a great many
-different work/sleep frequencies and there are lots of
-cases where the driver call is deferred enough to cause
-this patch code to engage incorrectly. However in these
-scenarios the CPU frequency will oscillate in step with
-the beat frequency (I can supply a graph if needed).
-
-Note: Yes, fixed time work chunks does not consider the
-more realistic scenario where the work time would scale
-with CPU frequency. That just changes the threshold for
-the issue, but not the root issue itself.
-
-Note: Work was done on a 1000 Hz (1 jiffy = 1 mS) kernel.
-The issue is 4 times worse for 250 Hz kernels.
-
-Note: It has taken me until now to get to this point,
-such that I could comment on-list. One, of many, issues
-hindering progress, was that I was originally using
-a 250 Hertz Kernel and Dirk Brandewie was using a
-1000 Hertz Kernel. So I would ask Dirk to verify
-something and it would be fine for him.
-
-Note: I would need help to isolate the root issue
-further. I got lost in timer.c and the mapping
-.h file (I can not recall the name).
-
-... Doug
 
 
