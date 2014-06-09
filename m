@@ -1,379 +1,217 @@
 From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch V4 19/42] x86, irq: count legacy IRQs by legacy_pic->nr_legacy_irqs instead of NR_IRQS_LEGACY
-Date: Mon,  9 Jun 2014 16:19:48 +0800
-Message-ID: <1402302011-23642-20-git-send-email-jiang.liu@linux.intel.com>
+Subject: [Patch V4 21/42] x86, ACPI, irq: consolidate algorithm of mapping (ioapic, pin) to IRQ number
+Date: Mon,  9 Jun 2014 16:19:50 +0800
+Message-ID: <1402302011-23642-22-git-send-email-jiang.liu@linux.intel.com>
 References: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Jiang Liu <jiang.liu@linux.intel.com>, Rob Herring <rob.herring@calxeda.com>, Michal Simek <monstr@monstr.eu>, Tony Lindgren <tony@atomide.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Some platforms, such as Intel MID and mshypv, do not support legacy
-interrupt controllers. So count legacy IRQs by legacy_pic->nr_legacy_irqs
-instead of hard-coded NR_IRQS_LEGACY.
+Currently ACPI and ioapic both implement algorithms to map (ioapic, pin)
+to IRQ number. So consolidate the common part into one place, which is
+also preparing for irqdomain support.
+
+It introduces mp_map_gsi_to_irq(), which will be used to allocate IRQ
+number IOAPIC pins when irqdomain is enabled.
+
+Also rename gsi_to_irq() to map_gsi_to_irq(), later we will introduce
+unmap_gsi_to_irq() when enabling IOAPIC hotplug.
 
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/x86/include/asm/i8259.h   |    5 +++++
- arch/x86/kernel/acpi/boot.c    |   13 ++++++------
- arch/x86/kernel/apic/io_apic.c |   43 +++++++++++++++++++++++-----------------
- arch/x86/kernel/devicetree.c   |   13 ++++++------
- arch/x86/kernel/irqinit.c      |    6 +++---
- arch/x86/pci/xen.c             |    7 ++++---
- 6 files changed, 51 insertions(+), 36 deletions(-)
+ arch/x86/include/asm/io_apic.h |    2 ++
+ arch/x86/kernel/acpi/boot.c    |   47 +++++++++++++++++++---------------------
+ arch/x86/kernel/apic/io_apic.c |   27 +++++++++++++----------
+ 3 files changed, 39 insertions(+), 37 deletions(-)
 
-diff --git a/arch/x86/include/asm/i8259.h b/arch/x86/include/asm/i8259.h
-index a20365953bf8..ccffa53750a8 100644
---- a/arch/x86/include/asm/i8259.h
-+++ b/arch/x86/include/asm/i8259.h
-@@ -67,4 +67,9 @@ struct legacy_pic {
- extern struct legacy_pic *legacy_pic;
- extern struct legacy_pic null_legacy_pic;
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index b775cf3622c3..978e51fdcb59 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -172,6 +172,7 @@ extern u32 gsi_top;
+ extern int mp_find_ioapic(u32 gsi);
+ extern int mp_find_ioapic_pin(int ioapic, u32 gsi);
+ extern u32 mp_pin_to_gsi(int ioapic, int pin);
++extern int mp_map_gsi_to_irq(u32 gsi);
+ extern void __init mp_register_ioapic(int id, u32 address, u32 gsi_base);
+ extern void __init pre_init_apic_IRQ0(void);
  
-+static inline int nr_legacy_irqs(void)
-+{
-+	return legacy_pic->nr_legacy_irqs;
-+}
-+
- #endif /* _ASM_X86_I8259_H */
+@@ -214,6 +215,7 @@ static inline void ioapic_insert_resources(void) { }
+ #define gsi_top (NR_IRQS_LEGACY)
+ static inline int mp_find_ioapic(u32 gsi) { return 0; }
+ static inline u32 mp_pin_to_gsi(int ioapic, int pin) { return UINT_MAX; }
++static inline int mp_map_gsi_to_irq(u32 gsi) { return gsi; }
+ 
+ struct io_apic_irq_attr;
+ static inline int io_apic_set_pci_routing(struct device *dev, int irq,
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index d6493863bd4b..8b09249bb253 100644
+index 8b09249bb253..e5e645fdd690 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -43,6 +43,7 @@
- #include <asm/io.h>
- #include <asm/mpspec.h>
- #include <asm/smp.h>
-+#include <asm/i8259.h>
+@@ -100,27 +100,15 @@ static u32 isa_irq_to_gsi[NR_IRQS_LEGACY] __read_mostly = {
  
- #include "sleep.h" /* To include x86_acpi_suspend_lowlevel */
- static int __initdata acpi_force = 0;
-@@ -101,10 +102,10 @@ static u32 isa_irq_to_gsi[NR_IRQS_LEGACY] __read_mostly = {
+ #define	ACPI_INVALID_GSI		INT_MIN
  
- static unsigned int gsi_to_irq(unsigned int gsi)
+-static unsigned int gsi_to_irq(unsigned int gsi)
++static int map_gsi_to_irq(unsigned int gsi)
  {
--	unsigned int irq = gsi + NR_IRQS_LEGACY;
-+	unsigned int irq = gsi + nr_legacy_irqs();
- 	unsigned int i;
+-	unsigned int irq = gsi + nr_legacy_irqs();
+-	unsigned int i;
++	int i;
  
--	for (i = 0; i < NR_IRQS_LEGACY; i++) {
-+	for (i = 0; i < nr_legacy_irqs(); i++) {
- 		if (isa_irq_to_gsi[i] == gsi) {
+-	for (i = 0; i < nr_legacy_irqs(); i++) {
+-		if (isa_irq_to_gsi[i] == gsi) {
++	for (i = 0; i < nr_legacy_irqs(); i++)
++		if (isa_irq_to_gsi[i] == gsi)
  			return i;
- 		}
-@@ -114,7 +115,7 @@ static unsigned int gsi_to_irq(unsigned int gsi)
- 	 * except on truly weird platforms that have
- 	 * non isa irqs in the first 16 gsis.
- 	 */
--	if (gsi >= NR_IRQS_LEGACY)
-+	if (gsi >= nr_legacy_irqs())
- 		irq = gsi;
- 	else
- 		irq = gsi_top + gsi;
-@@ -371,7 +372,7 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
- 	 * otherwise there will be more than one entry with the same GSI
- 	 * and acpi_isa_irq_to_gsi() may give wrong result.
- 	 */
--	if (gsi < NR_IRQS_LEGACY && isa_irq_to_gsi[gsi] == gsi)
-+	if (gsi < nr_legacy_irqs() && isa_irq_to_gsi[gsi] == gsi)
- 		isa_irq_to_gsi[gsi] = ACPI_INVALID_GSI;
- 	isa_irq_to_gsi[bus_irq] = gsi;
- }
-@@ -628,7 +629,7 @@ EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
+-		}
+-	}
+-
+-	/* Provide an identity mapping of gsi == irq
+-	 * except on truly weird platforms that have
+-	 * non isa irqs in the first 16 gsis.
+-	 */
+-	if (gsi >= nr_legacy_irqs())
+-		irq = gsi;
+-	else
+-		irq = gsi_top + gsi;
  
- int acpi_isa_irq_to_gsi(unsigned isa_irq, u32 *gsi)
+-	return irq;
++	return mp_map_gsi_to_irq(gsi);
+ }
+ 
+ /*
+@@ -416,6 +404,7 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 			   int polarity)
  {
--	if (isa_irq < NR_IRQS_LEGACY &&
-+	if (isa_irq < nr_legacy_irqs() &&
- 	    isa_irq_to_gsi[isa_irq] != ACPI_INVALID_GSI) {
- 		*gsi = isa_irq_to_gsi[isa_irq];
- 		return 0;
-@@ -1017,7 +1018,7 @@ static void __init mp_config_acpi_legacy_irqs(void)
- 	 * Use the default configuration for the IRQs 0-15.  Unless
- 	 * overridden by (MADT) interrupt source override entries.
- 	 */
--	for (i = 0; i < NR_IRQS_LEGACY; i++) {
-+	for (i = 0; i < nr_legacy_irqs(); i++) {
- 		int ioapic, pin;
- 		unsigned int dstapic;
- 		int idx;
++	int irq;
+ 	int ioapic;
+ 	int ioapic_pin;
+ 	struct io_apic_irq_attr irq_attr;
+@@ -428,6 +417,10 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 	if (acpi_gbl_FADT.sci_interrupt == gsi)
+ 		return gsi;
+ 
++	irq = map_gsi_to_irq(gsi);
++	if (irq < 0)
++		return ACPI_INVALID_GSI;
++
+ 	ioapic = mp_find_ioapic(gsi);
+ 	if (ioapic < 0) {
+ 		printk(KERN_WARNING "No IOAPIC for GSI %u\n", gsi);
+@@ -449,7 +442,7 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+ 	set_io_apic_irq_attr(&irq_attr, ioapic, ioapic_pin,
+ 			     trigger == ACPI_EDGE_SENSITIVE ? 0 : 1,
+ 			     polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
+-	ret = io_apic_set_pci_routing(dev, gsi_to_irq(gsi), &irq_attr);
++	ret = io_apic_set_pci_routing(dev, irq, &irq_attr);
+ 	if (ret < 0)
+ 		gsi = ACPI_INVALID_GSI;
+ 
+@@ -614,16 +607,20 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
+ 	outb(new >> 8, 0x4d1);
+ }
+ 
+-int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
++int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
+ {
+-	*irq = gsi_to_irq(gsi);
++	int irq = map_gsi_to_irq(gsi);
+ 
++	if (irq >= 0) {
+ #ifdef CONFIG_X86_IO_APIC
+-	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
+-		setup_IO_APIC_irq_extra(gsi);
++		if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
++			setup_IO_APIC_irq_extra(gsi);
+ #endif
++		*irqp = irq;
++		return 0;
++	}
+ 
+-	return 0;
++	return -1;
+ }
+ EXPORT_SYMBOL_GPL(acpi_gsi_to_irq);
+ 
+@@ -677,11 +674,11 @@ int (*acpi_suspend_lowlevel)(void);
+  */
+ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+ {
+-	unsigned int plat_gsi = gsi;
++	unsigned int plat_gsi;
+ 
+ 	plat_gsi = (*__acpi_register_gsi)(dev, gsi, trigger, polarity);
+ 	if (plat_gsi != ACPI_INVALID_GSI)
+-		return gsi_to_irq(plat_gsi);
++		return map_gsi_to_irq(plat_gsi);
+ 
+ 	return -1;
+ }
 diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 02faa7104aa5..72cbb92ca401 100644
+index 12d12f897107..ed159cd36971 100644
 --- a/arch/x86/kernel/apic/io_apic.c
 +++ b/arch/x86/kernel/apic/io_apic.c
-@@ -129,10 +129,17 @@ u32 mp_pin_to_gsi(int ioapic, int pin)
- 	return mp_ioapic_gsi_routing(ioapic)->gsi_base + pin;
+@@ -959,11 +959,19 @@ static int irq_trigger(int idx)
+ 	return trigger;
  }
  
--/* Initialize all legacy IRQs and all pins on the first IOAPIC at boot */
-+/*
-+ * Initialize all legacy IRQs and all pins on the first IOAPIC
-+ * if we have legacy interrupt controller. Kernel boot option "pirq="
-+ * may rely on non-legacy pins on the first IOAPIC.
-+ */
- static inline int mp_init_irq_at_boot(int ioapic, int irq)
- {
--	return ioapic == 0 || (irq >= 0 && irq < NR_IRQS_LEGACY);
-+	if (!nr_legacy_irqs())
-+		return 0;
++int mp_map_gsi_to_irq(u32 gsi)
++{
++	/*
++	 * Provide an identity mapping of gsi == irq except on truly weird
++	 * platforms that have non isa irqs in the first 16 gsis.
++	 */
++	return gsi >= nr_legacy_irqs() ? gsi : gsi_top + gsi;
++}
 +
-+	return ioapic == 0 || (irq >= 0 && irq < nr_legacy_irqs());
- }
+ static int pin_2_irq(int idx, int apic, int pin)
+ {
+ 	int irq;
+ 	int bus = mp_irqs[idx].srcbus;
+-	struct mp_ioapic_gsi *gsi_cfg = mp_ioapic_gsi_routing(apic);
  
- int nr_ioapics;
-@@ -216,7 +223,7 @@ int __init arch_early_irq_init(void)
- 	struct irq_cfg *cfg;
- 	int count, node, i;
+ 	/*
+ 	 * Debugging check, we are in big trouble if this message pops up!
+@@ -971,17 +979,6 @@ static int pin_2_irq(int idx, int apic, int pin)
+ 	if (mp_irqs[idx].dstirq != pin)
+ 		pr_err("broken BIOS or MPTABLE parser, ayiee!!\n");
  
--	if (!legacy_pic->nr_legacy_irqs)
-+	if (!nr_legacy_irqs())
- 		io_apic_irqs = ~0UL;
- 
- 	for_each_ioapic(i) {
-@@ -239,7 +246,7 @@ int __init arch_early_irq_init(void)
- 		 * For legacy IRQ's, start with assigning irq0 to irq15 to
- 		 * IRQ0_VECTOR to IRQ15_VECTOR for all cpu's.
- 		 */
--		if (i < legacy_pic->nr_legacy_irqs) {
-+		if (i < nr_legacy_irqs()) {
- 			cfg[i].vector = IRQ0_VECTOR + i;
- 			cpumask_setall(cfg[i].domain);
+-	if (test_bit(bus, mp_bus_not_pci)) {
+-		irq = mp_irqs[idx].srcbusirq;
+-	} else {
+-		u32 gsi = gsi_cfg->gsi_base + pin;
+-
+-		if (gsi >= nr_legacy_irqs())
+-			irq = gsi;
+-		else
+-			irq = gsi_top + gsi;
+-	}
+-
+ #ifdef CONFIG_X86_32
+ 	/*
+ 	 * PCI IRQ command line redirection. Yes, limits are hardcoded.
+@@ -996,11 +993,17 @@ static int pin_2_irq(int idx, int apic, int pin)
+ 				apic_printk(APIC_VERBOSE, KERN_DEBUG
+ 						"using PIRQ%d -> IRQ %d\n",
+ 						pin-16, irq);
++				return irq;
+ 			}
  		}
-@@ -823,7 +830,7 @@ static int __init find_isa_irq_apic(int irq, int type)
-  */
- static int EISA_ELCR(unsigned int irq)
- {
--	if (irq < legacy_pic->nr_legacy_irqs) {
-+	if (irq < nr_legacy_irqs()) {
- 		unsigned int port = 0x4d0 + (irq >> 3);
- 		return (inb(port) >> (irq & 7)) & 1;
  	}
-@@ -980,7 +987,7 @@ static int pin_2_irq(int idx, int apic, int pin)
- 	} else {
- 		u32 gsi = gsi_cfg->gsi_base + pin;
- 
--		if (gsi >= NR_IRQS_LEGACY)
-+		if (gsi >= nr_legacy_irqs())
- 			irq = gsi;
- 		else
- 			irq = gsi_top + gsi;
-@@ -1357,7 +1364,7 @@ static void setup_ioapic_irq(unsigned int irq, struct irq_cfg *cfg,
- 	}
- 
- 	ioapic_register_intr(irq, cfg, attr->trigger);
--	if (irq < legacy_pic->nr_legacy_irqs)
-+	if (irq < nr_legacy_irqs())
- 		legacy_pic->mask(irq);
- 
- 	ioapic_write_entry(attr->ioapic, attr->ioapic_pin, entry);
-@@ -1782,7 +1789,7 @@ __apicdebuginit(void) print_PIC(void)
- 	unsigned int v;
- 	unsigned long flags;
- 
--	if (!legacy_pic->nr_legacy_irqs)
-+	if (!nr_legacy_irqs())
- 		return;
- 
- 	printk(KERN_DEBUG "\nprinting PIC contents\n");
-@@ -1854,7 +1861,7 @@ void __init enable_IO_APIC(void)
- 	int i8259_apic, i8259_pin;
- 	int apic, pin;
- 
--	if (!legacy_pic->nr_legacy_irqs)
-+	if (!nr_legacy_irqs())
- 		return;
- 
- 	for_each_ioapic_pin(apic, pin) {
-@@ -1939,7 +1946,7 @@ void disable_IO_APIC(void)
- 	 */
- 	clear_IO_APIC();
- 
--	if (!legacy_pic->nr_legacy_irqs)
-+	if (!nr_legacy_irqs())
- 		return;
- 
- 	x86_io_apic_ops.disable();
-@@ -2143,7 +2150,7 @@ static unsigned int startup_ioapic_irq(struct irq_data *data)
- 	unsigned long flags;
- 
- 	raw_spin_lock_irqsave(&ioapic_lock, flags);
--	if (irq < legacy_pic->nr_legacy_irqs) {
-+	if (irq < nr_legacy_irqs()) {
- 		legacy_pic->mask(irq);
- 		if (legacy_pic->irq_pending(irq))
- 			was_pending = 1;
-@@ -2542,7 +2549,7 @@ static inline void init_IO_APIC_traps(void)
- 			 * so default to an old-fashioned 8259
- 			 * interrupt if we can..
- 			 */
--			if (irq < legacy_pic->nr_legacy_irqs)
-+			if (irq < nr_legacy_irqs())
- 				legacy_pic->make_irq(irq);
- 			else
- 				/* Strange. Oh, well.. */
-@@ -2839,7 +2846,7 @@ void __init setup_IO_APIC(void)
- 	/*
- 	 * calling enable_IO_APIC() is moved to setup_local_APIC for BP
- 	 */
--	io_apic_irqs = legacy_pic->nr_legacy_irqs ? ~PIC_IRQS : ~0UL;
-+	io_apic_irqs = nr_legacy_irqs() ? ~PIC_IRQS : ~0UL;
- 
- 	apic_printk(APIC_VERBOSE, "ENABLING IO-APIC IRQs\n");
- 	/*
-@@ -2850,7 +2857,7 @@ void __init setup_IO_APIC(void)
- 	sync_Arb_IDs();
- 	setup_IO_APIC_irqs();
- 	init_IO_APIC_traps();
--	if (legacy_pic->nr_legacy_irqs)
-+	if (nr_legacy_irqs())
- 		check_timer();
- }
- 
-@@ -3344,7 +3351,7 @@ static int __init io_apic_get_redir_entries(int ioapic)
- 
- unsigned int arch_dynirq_lower_bound(unsigned int from)
- {
--	unsigned int min = gsi_top + NR_IRQS_LEGACY;
-+	unsigned int min = gsi_top + nr_legacy_irqs();
- 
- 	return from < min ? min : from;
- }
-@@ -3356,17 +3363,17 @@ int __init arch_probe_nr_irqs(void)
- 	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
- 		nr_irqs = NR_VECTORS * nr_cpu_ids;
- 
--	nr = (gsi_top + NR_IRQS_LEGACY) + 8 * nr_cpu_ids;
-+	nr = (gsi_top + nr_legacy_irqs()) + 8 * nr_cpu_ids;
- #if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
- 	/*
- 	 * for MSI and HT dyn irq
- 	 */
--	nr += (gsi_top + NR_IRQS_LEGACY) * 16;
-+	nr += gsi_top * 16;
- #endif
- 	if (nr < nr_irqs)
- 		nr_irqs = nr;
- 
--	return NR_IRQS_LEGACY;
-+	return nr_legacy_irqs();
- }
- 
- int io_apic_set_pci_routing(struct device *dev, int irq,
-diff --git a/arch/x86/kernel/devicetree.c b/arch/x86/kernel/devicetree.c
-index d35078ea1446..e08a007bdacf 100644
---- a/arch/x86/kernel/devicetree.c
-+++ b/arch/x86/kernel/devicetree.c
-@@ -21,6 +21,7 @@
- #include <asm/apic.h>
- #include <asm/pci_x86.h>
- #include <asm/setup.h>
-+#include <asm/i8259.h>
- 
- __initdata u64 initial_dtb;
- char __initdata cmd_line[COMMAND_LINE_SIZE];
-@@ -316,7 +317,7 @@ static void dt_add_ioapic_domain(unsigned int ioapic_num,
- 	struct irq_domain *id;
- 	struct mp_ioapic_gsi *gsi_cfg;
- 	int ret;
--	int num;
-+	int num, legacy_irqs = nr_legacy_irqs();
- 
- 	gsi_cfg = mp_ioapic_gsi_routing(ioapic_num);
- 	num = gsi_cfg->gsi_end - gsi_cfg->gsi_base + 1;
-@@ -326,17 +327,17 @@ static void dt_add_ioapic_domain(unsigned int ioapic_num,
- 	BUG_ON(!id);
- 	if (gsi_cfg->gsi_base == 0) {
- 		/*
--		 * The first NR_IRQS_LEGACY irq descs are allocated in
-+		 * The first nr_legacy_irqs() irq descs are allocated in
- 		 * early_irq_init() and need just a mapping. The
- 		 * remaining irqs need both. All of them are preallocated
- 		 * and assigned so we can keep the 1:1 mapping which the ioapic
- 		 * is having.
- 		 */
--		irq_domain_associate_many(id, 0, 0, NR_IRQS_LEGACY);
-+		irq_domain_associate_many(id, 0, 0, legacy_irqs);
- 
--		if (num > NR_IRQS_LEGACY) {
--			ret = irq_create_strict_mappings(id, NR_IRQS_LEGACY,
--					NR_IRQS_LEGACY, num - NR_IRQS_LEGACY);
-+		if (num > legacy_irqs) {
-+			ret = irq_create_strict_mappings(id, legacy_irqs,
-+					legacy_irqs, num - legacy_irqs);
- 			if (ret)
- 				pr_err("Error creating mapping for the "
- 						"remaining IRQs: %d\n", ret);
-diff --git a/arch/x86/kernel/irqinit.c b/arch/x86/kernel/irqinit.c
-index 7f50156542fb..a0111e91eb4b 100644
---- a/arch/x86/kernel/irqinit.c
-+++ b/arch/x86/kernel/irqinit.c
-@@ -78,7 +78,7 @@ void __init init_ISA_irqs(void)
- #endif
- 	legacy_pic->init(0);
- 
--	for (i = 0; i < legacy_pic->nr_legacy_irqs; i++)
-+	for (i = 0; i < nr_legacy_irqs(); i++)
- 		irq_set_chip_and_handler_name(i, chip, handle_level_irq, name);
- }
- 
-@@ -100,7 +100,7 @@ void __init init_IRQ(void)
- 	 * then this vector space can be freed and re-used dynamically as the
- 	 * irq's migrate etc.
- 	 */
--	for (i = 0; i < legacy_pic->nr_legacy_irqs; i++)
-+	for (i = 0; i < nr_legacy_irqs(); i++)
- 		per_cpu(vector_irq, 0)[IRQ0_VECTOR + i] = i;
- 
- 	x86_init.irqs.intr_init();
-@@ -121,7 +121,7 @@ void setup_vector_irq(int cpu)
- 	 * legacy PIC, for the new cpu that is coming online, setup the static
- 	 * legacy vector to irq mapping:
- 	 */
--	for (irq = 0; irq < legacy_pic->nr_legacy_irqs; irq++)
-+	for (irq = 0; irq < nr_legacy_irqs(); irq++)
- 		per_cpu(vector_irq, cpu)[IRQ0_VECTOR + irq] = irq;
  #endif
  
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index 905956f16465..093f5f4272d3 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -23,6 +23,7 @@
- #include <xen/features.h>
- #include <xen/events.h>
- #include <asm/xen/pci.h>
-+#include <asm/i8259.h>
++	if (test_bit(bus, mp_bus_not_pci))
++		irq = mp_irqs[idx].srcbusirq;
++	else
++		irq = mp_map_gsi_to_irq(mp_pin_to_gsi(apic, pin));
++
+ 	return irq;
+ }
  
- static int xen_pcifront_enable_irq(struct pci_dev *dev)
- {
-@@ -40,7 +41,7 @@ static int xen_pcifront_enable_irq(struct pci_dev *dev)
- 	/* In PV DomU the Xen PCI backend puts the PIRQ in the interrupt line.*/
- 	pirq = gsi;
- 
--	if (gsi < NR_IRQS_LEGACY)
-+	if (gsi < nr_legacy_irqs())
- 		share = 0;
- 
- 	rc = xen_bind_pirq_gsi_to_irq(gsi, pirq, share, "pcifront");
-@@ -511,7 +512,7 @@ int __init pci_xen_initial_domain(void)
- 	xen_setup_acpi_sci();
- 	__acpi_register_gsi = acpi_register_gsi_xen;
- 	/* Pre-allocate legacy irqs */
--	for (irq = 0; irq < NR_IRQS_LEGACY; irq++) {
-+	for (irq = 0; irq < nr_legacy_irqs(); irq++) {
- 		int trigger, polarity;
- 
- 		if (acpi_get_override_irq(irq, &trigger, &polarity) == -1)
-@@ -522,7 +523,7 @@ int __init pci_xen_initial_domain(void)
- 			true /* Map GSI to PIRQ */);
- 	}
- 	if (0 == nr_ioapics) {
--		for (irq = 0; irq < NR_IRQS_LEGACY; irq++)
-+		for (irq = 0; irq < nr_legacy_irqs(); irq++)
- 			xen_bind_pirq_gsi_to_irq(irq, irq, 0, "xt-pic");
- 	}
- 	return 0;
 -- 
 1.7.10.4
