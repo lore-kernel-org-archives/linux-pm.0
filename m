@@ -1,45 +1,57 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] cpufreq: governor: remove copy_prev_load from 'struct
- cpu_dbs_common_info'
-Date: Mon, 9 Jun 2014 12:52:48 +0200
-Message-ID: <20140609105248.GA25705@amd.pavel.ucw.cz>
-References: <d4241c6ef57c901dde270380cce74e24effa4852.1402291351.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Documentation: Update Srivatsa S. Bhat's email address
+Date: Mon, 09 Jun 2014 13:28:36 +0200
+Message-ID: <1465703.Zlfm9gi0xo@vostro.rjw.lan>
+References: <20140609102426.26530.15670.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d4241c6ef57c901dde270380cce74e24effa4852.1402291351.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, srivatsa.bhat@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58882 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932067AbaFILLO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jun 2014 07:11:14 -0400
+In-Reply-To: <20140609102426.26530.15670.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: rdunlap@infradead.org, viresh.kumar@linaro.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon 2014-06-09 10:54:17, Viresh Kumar wrote:
-> 'copy_prev_load' was recently added by commit: 18b46ab (cpufreq: governor: Be
-> friendly towards latency-sensitive bursty workloads).
-> 
-> It actually is a bit redundant as we also have 'prev_load' which can store any
-> integer value and can be used instead of 'copy_prev_load' by setting it to zero
-> when we don't want to use previous load.
-> 
-> So, drop 'copy_prev_load' and use 'prev_load' instead.
-> 
-> Update comments as well to make it more clear.
-> 
-> There is another change here which was probably missed by Srivatsa during the
-> last version of updates he made. The unlikely in the 'if' statement was covering
-> only half of the condition and the whole line should actually come under it.
-> 
-> Also checkpatch is made more silent as it was reporting this (--strict option):
-> 
-> CHECK: Alignment should match open parenthesis
-> +		if (unlikely(wall_time > (2 * sampling_rate) &&
-> +						j_cdbs->prev_load)) {
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Monday, June 09, 2014 03:54:49 PM Srivatsa S. Bhat wrote:
+> My @linux.vnet.ibm.com email address is going to disappear soon, as I will be
+> beginning my M.S./PhD studies at MIT in a few months.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Congratulations!
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> So update my email address in the documentation.
+> 
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa@mit.edu>
+> ---
+> 
+>  Documentation/power/suspend-and-cpuhotplug.txt |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.txt
+> index e13dafc..3813703 100644
+> --- a/Documentation/power/suspend-and-cpuhotplug.txt
+> +++ b/Documentation/power/suspend-and-cpuhotplug.txt
+> @@ -1,6 +1,6 @@
+>  Interaction of Suspend code (S3) with the CPU hotplug infrastructure
+>  
+> -     (C) 2011 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> +     (C) 2011-2014 Srivatsa S. Bhat <srivatsa@mit.edu>
+
+I'm actually unsure if updating copyright notices like that is OK.
+
+Yes, you're moving, but the address in the notice documents the status at
+the time you added it.
+
+You still can add a new copyright notice with the new address when you update
+the document in the future. :-)
+
+Updating the address where it is a "contact info" or in MAINTAINERS is a
+different matter, of course.
+
+Rafael
+
