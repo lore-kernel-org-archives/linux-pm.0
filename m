@@ -1,95 +1,124 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
- provide it to scheduler
-Date: Mon, 9 Jun 2014 09:59:52 +0100
-Message-ID: <20140609085952.GZ29593@e103034-lin>
-References: <20140604160230.GS29593@e103034-lin>
- <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
- <2484761.vkWavnsDx3@vostro.rjw.lan>
- <20140605065205.GA3213@twins.programming.kicks-ass.net>
- <539086B3.2010804@gmail.com>
- <20140605202930.GA15484@intel.com>
- <20140606080543.GR6758@twins.programming.kicks-ass.net>
- <20140606003520.GB22261@intel.com>
- <20140606105036.GQ3213@twins.programming.kicks-ass.net>
- <20140607232628.GC22261@intel.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH Resend] cpufreq: governor: remove copy_prev_load from
+ 'struct cpu_dbs_common_info'
+Date: Mon, 09 Jun 2014 14:41:12 +0530
+Message-ID: <53957A30.4030003@linux.vnet.ibm.com>
+References: <c7add1b66e706fc52c493f765d0ddfc8c83f3b2e.1402303829.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140607232628.GC22261@intel.com>
+In-Reply-To: <c7add1b66e706fc52c493f765d0ddfc8c83f3b2e.1402303829.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yuyang Du <yuyang.du@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "len.brown@intel.com" <len.brown@intel.com>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 08, 2014 at 12:26:29AM +0100, Yuyang Du wrote:
-> On Fri, Jun 06, 2014 at 12:50:36PM +0200, Peter Zijlstra wrote:
-> > > Voltage is combined with frequency, roughly, voltage is proportional
-> > > to freuquecy, so roughly, power is proportionaly to voltage^3. You
-> > 
-> > P ~ V^2, last time I checked.
-> > 
-> > > can't say which is more important, or there is no reason to raise
-> > > voltage without raising frequency.
-> > 
-> > Well, some chips have far fewer voltage steps than freq steps; or,
-> > differently put, they have multiple freq steps for a single voltage
-> > level.
-> > 
-> > And since the power (Watts) is proportional to Voltage squared, its the
-> > biggest term.
-> > 
-> > If you have a distinct voltage level for each freq, it all doesn't
-> > matter.
-> > 
+On 06/09/2014 02:21 PM, Viresh Kumar wrote:
+> 'copy_prev_load' was recently added by commit: 18b46ab (cpufreq: governor: Be
+> friendly towards latency-sensitive bursty workloads).
 > 
-> Ok. I think we understand each other. But one more thing, I said P ~ V^3,
-> because P ~ V^2*f and f ~ V, so P ~ V^3. Maybe some frequencies share the same
-> voltage, but you can still safely assume V changes with f in general, and it
-> will be more and more so, since we do need finer control over power consumption.
-
-Agreed. Voltage typically changes with frequency.
-
+> It actually is a bit redundant as we also have 'prev_load' which can store any
+> integer value and can be used instead of 'copy_prev_load' by setting it zero.
 > 
-> > Sure, but realize that we must fully understand this governor and
-> > integrate it in the scheduler if we're to attain the goal of IPC/watt
-> > optimized scheduling behaviour.
-> > 
+> True load can also turn out to be zero during long idle intervals (and hence the
+> actual value of 'prev_load' and the overloaded value can clash). However this is
+> not a problem because, if the true load was really zero in the previous
+> interval, it makes sense to evaluate the load afresh for the current interval
+> rather than copying the previous load.
 > 
-> Attain the goal of IPC/watt optimized?
+> So, drop 'copy_prev_load' and use 'prev_load' instead.
 > 
-> I don't see how it can be done like this. As I said, what is unknown for
-> prediction is perf scaling *and* changing workload. So the challenge for pstate
-> control is in both. But I see more chanllenge in the changing workload than
-> in the performance scaling or the resulting IPC impact (if workload is
-> fixed).
+> Update comments as well to make it more clear.
+> 
+> There is another change here which was probably missed by Srivatsa during the
+> last version of updates he made. The unlikely in the 'if' statement was covering
+> only half of the condition and the whole line should actually come under it.
+> 
+> Also checkpatch is made more silent as it was reporting this (--strict option):
+> 
+> CHECK: Alignment should match open parenthesis
+> +		if (unlikely(wall_time > (2 * sampling_rate) &&
+> +						j_cdbs->prev_load)) {
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Resend: Updated comments/logs as suggested by Srivatsa.
+> 
 
-IMHO, the per-entity load-tracking does a fair job representing the task
-compute capacity requirements. Sure it isn't perfect, particularly not
-for memory bound tasks, but it is way better than not having any task
-history at all, which was the case before.
+Looks good!
 
-The story is more or less the same for performance scaling. It is not
-taken into account at all in the scheduler at the moment. cpufreq is
-actually messing up load-balancing decisions after task load-tracking
-was introduced. Adding performance scaling awareness should only make
-things better even if predictions are not accurate for all workloads. I
-don't see why it shouldn't given the current state of energy-awareness
-in the scheduler.
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-> Currently, all freq governors take CPU utilization (load%) as the indicator
-> (target), which can server both: workload and perf scaling.
+Regards,
+Srivatsa S. Bhat
 
-With a bunch of hacks on top to make it more reactive because the
-current cpu utilization metric is not responsive enough to deal with
-workload changes. That is at least the case for ondemand and interactive
-(in Android).
-
-> As for IPC/watt optimized, I don't see how it can be practical. Too micro to
-> be used for the general well-being?
-
-That is why I propose to have a platform specific energy model. You tell
-the scheduler enough about your platform that it understands the most
-basic power/performance trade-offs of your platform and thereby enable
-the scheduler to make better decisions.
+>  drivers/cpufreq/cpufreq_governor.c | 19 ++++++++++++++-----
+>  drivers/cpufreq/cpufreq_governor.h |  9 +++++----
+>  2 files changed, 19 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 9004450..1b44496 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -131,15 +131,25 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  		 * timer would not have fired during CPU-idle periods. Hence
+>  		 * an unusually large 'wall_time' (as compared to the sampling
+>  		 * rate) indicates this scenario.
+> +		 *
+> +		 * prev_load can be zero in two cases and we must recalculate it
+> +		 * for both cases:
+> +		 * - during long idle intervals
+> +		 * - explicitly set to zero
+>  		 */
+> -		if (unlikely(wall_time > (2 * sampling_rate)) &&
+> -						j_cdbs->copy_prev_load) {
+> +		if (unlikely(wall_time > (2 * sampling_rate) &&
+> +			     j_cdbs->prev_load)) {
+>  			load = j_cdbs->prev_load;
+> -			j_cdbs->copy_prev_load = false;
+> +
+> +			/*
+> +			 * Perform a destructive copy, to ensure that we copy
+> +			 * the previous load only once, upon the first wake-up
+> +			 * from idle.
+> +			 */
+> +			j_cdbs->prev_load = 0;
+>  		} else {
+>  			load = 100 * (wall_time - idle_time) / wall_time;
+>  			j_cdbs->prev_load = load;
+> -			j_cdbs->copy_prev_load = true;
+>  		}
+> 
+>  		if (load > max_load)
+> @@ -373,7 +383,6 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  				(j_cdbs->prev_cpu_wall - j_cdbs->prev_cpu_idle);
+>  			j_cdbs->prev_load = 100 * prev_load /
+>  					(unsigned int) j_cdbs->prev_cpu_wall;
+> -			j_cdbs->copy_prev_load = true;
+> 
+>  			if (ignore_nice)
+>  				j_cdbs->prev_cpu_nice =
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index c2a5b7e..cc401d1 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -134,12 +134,13 @@ struct cpu_dbs_common_info {
+>  	u64 prev_cpu_idle;
+>  	u64 prev_cpu_wall;
+>  	u64 prev_cpu_nice;
+> -	unsigned int prev_load;
+>  	/*
+> -	 * Flag to ensure that we copy the previous load only once, upon the
+> -	 * first wake-up from idle.
+> +	 * Used to keep track of load in the previous interval. However, when
+> +	 * explicitly set to zero, it is used as a flag to ensure that we copy
+> +	 * the previous load to the current interval only once, upon the first
+> +	 * wake-up from idle.
+>  	 */
+> -	bool copy_prev_load;
+> +	unsigned int prev_load;
+>  	struct cpufreq_policy *cur_policy;
+>  	struct delayed_work work;
+>  	/*
+> 
