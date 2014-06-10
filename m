@@ -1,72 +1,98 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 02/16] sched: Introduce CONFIG_SCHED_ENERGY
-Date: Tue, 10 Jun 2014 12:23:53 +0200
-Message-ID: <20140610102353.GC6758@twins.programming.kicks-ass.net>
-References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
- <1400869003-27769-3-git-send-email-morten.rasmussen@arm.com>
- <20140608060316.GA18179@austad.us>
- <20140609102027.GA29593@e103034-lin>
- <20140610093943.GA6758@twins.programming.kicks-ass.net>
- <20140610100641.GB1581@e103034-lin>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="TCH5zSpbvKOKdCih"
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 00/24] PM / Domains: Generic OF-based support and cleanups
+Date: Tue, 10 Jun 2014 12:51:13 +0200
+Message-ID: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:48392 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbaFJKX5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 06:23:57 -0400
-Content-Disposition: inline
-In-Reply-To: <20140610100641.GB1581@e103034-lin>
+Received: from mail-la0-f41.google.com ([209.85.215.41]:56152 "EHLO
+	mail-la0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbaFJKwC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 06:52:02 -0400
+Received: by mail-la0-f41.google.com with SMTP id e16so3829052lan.14
+        for <linux-pm@vger.kernel.org>; Tue, 10 Jun 2014 03:52:00 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Henrik Austad <henrik@austad.us>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+
+Parts of this patchset has been posted earlier. To be able to smoothly continue
+my work in re-factoring genpd I have collected patches into this patchset.
+
+The complete patchset is available at the linux-pm_linux-next_genpd branch at:
+git.linaro.org/people/ulf.hansson/linux-2.6.git
+This branch is based upon Rafael's linux-pm tree's linux-next branch.
+
+And important note. There are dependencies througout this patchset, which means
+the all need to go together. I suggest we use Rafael's tree, thus I seek for
+acks from the affected ARM SoC maintainers.
 
 
---TCH5zSpbvKOKdCih
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Tomasz Figa (3):
+  base: power: Add generic OF-based power domain look-up
+  drivercore: Bind/unbind power domain on probe/remove
+  ARM: exynos: Move to generic power domain bindings
 
-On Tue, Jun 10, 2014 at 11:06:41AM +0100, Morten Rasmussen wrote:
-> How would you like to disable the energy stuff for users for whom
-> latency is everything?
->=20
-> I mean, we are adding some extra load/utilization tracking. While I
-> think we should do everything possible to minimize the overhead, I think
-> it is unrealistic to assume that it will be zero. Is a some extra 'if
-> (energy_enabled)' acceptable?
->=20
-> I'm open for other suggestions.
+Ulf Hansson (21):
+  PM / Domains: Ignore callbacks for subsys generic_pm_domain_data
+  PM / Domains: Remove the pm_genpd_add|remove_callbacks APIs
+  PM / Domains: Remove system PM callbacks from gpd_dev_ops
+  ARM: shmobile: Drop dev_irq_safe from r8a7779 genpd config
+  ARM: shmobile: Drop dev_irq_safe from R-mobile genpd config
+  PM / Domains: Remove dev_irq_safe from genpd config
+  PM / Domains: Remove redundant check for CONFIG_PM
+  PM / Domains: Remove legacy API for adding devices through DT
+  PM / Domains: Remove pm_genpd_syscore_switch() API
+  PM / Domains: Remove genpd_queue_power_off_work() API
+  PM / Domains: Add late_initcall to disable unused domains
+  ARM: exynos: Leave disabling of unused pm domains to genpd
+  ARM: s3c64xx: Leave disabling of unused pm domains to genpd
+  drivers: sh: Leave disabling of unused pm domains to genpd
+  PM / Domains: Remove default_stop_ok() API
+  dt: bindings: ux500: Add documentation for power domains
+  dt: bindings: ux500: Add header for power domains specifiers
+  ARM: ux500: Initial support for power domains
+  ARM: ux500: Enable Kconfig for the generic power domain
+  ARM: ux500: Add DT node for ux500 power domains
+  ARM: ux500: Add sdi[n] devices to VAPE power domain
 
-We have the jump-label stuff to do self modifying code ;-) The only
-thing we need to be careful with is data-layout.
+ .../bindings/arm/exynos/power_domain.txt           |   12 +-
+ .../devicetree/bindings/arm/ux500/power_domain.txt |   35 ++
+ .../devicetree/bindings/power/power_domain.txt     |   51 ++
+ arch/arm/boot/dts/ste-dbx5x0.dtsi                  |   11 +
+ arch/arm/mach-exynos/exynos.c                      |    1 -
+ arch/arm/mach-exynos/pm_domains.c                  |   81 +--
+ arch/arm/mach-s3c64xx/common.c                     |    5 -
+ arch/arm/mach-s3c64xx/common.h                     |    7 -
+ arch/arm/mach-s3c64xx/mach-anw6410.c               |    1 -
+ arch/arm/mach-s3c64xx/mach-crag6410.c              |    1 -
+ arch/arm/mach-s3c64xx/mach-hmt.c                   |    1 -
+ arch/arm/mach-s3c64xx/mach-mini6410.c              |    1 -
+ arch/arm/mach-s3c64xx/mach-ncp.c                   |    1 -
+ arch/arm/mach-s3c64xx/mach-real6410.c              |    1 -
+ arch/arm/mach-s3c64xx/mach-smartq5.c               |    1 -
+ arch/arm/mach-s3c64xx/mach-smartq7.c               |    1 -
+ arch/arm/mach-s3c64xx/mach-smdk6400.c              |    1 -
+ arch/arm/mach-s3c64xx/mach-smdk6410.c              |    1 -
+ arch/arm/mach-s3c64xx/pm.c                         |    7 -
+ arch/arm/mach-shmobile/pm-r8a7779.c                |    1 -
+ arch/arm/mach-shmobile/pm-rmobile.c                |    1 -
+ arch/arm/mach-ux500/Kconfig                        |    1 +
+ arch/arm/mach-ux500/Makefile                       |    1 +
+ arch/arm/mach-ux500/pm.c                           |    4 +
+ arch/arm/mach-ux500/pm_domains.c                   |   77 +++
+ arch/arm/mach-ux500/pm_domains.h                   |   17 +
+ drivers/base/dd.c                                  |    9 +-
+ drivers/base/power/domain.c                        |  638 ++++++++++----------
+ drivers/base/power/domain_governor.c               |    7 +-
+ drivers/sh/pm_runtime.c                            |   11 -
+ include/dt-bindings/arm/ux500_pm_domains.h         |   15 +
+ include/linux/pm_domain.h                          |  107 ++--
+ kernel/power/Kconfig                               |    4 +
+ 33 files changed, 593 insertions(+), 520 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/ux500/power_domain.txt
+ create mode 100644 Documentation/devicetree/bindings/power/power_domain.txt
+ create mode 100644 arch/arm/mach-ux500/pm_domains.c
+ create mode 100644 arch/arm/mach-ux500/pm_domains.h
+ create mode 100644 include/dt-bindings/arm/ux500_pm_domains.h
 
-So I'm _hoping_ we can do all this without more CONFIG knobs, because
-{PREEMPT*SMP*CGROUP^3*NUMA^2} is already entirely annoying to
-build and run test, not to mention that distro builds will have no other
-option than to enable everything anyhow.
-
---TCH5zSpbvKOKdCih
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTlty5AAoJEHZH4aRLwOS66xEP/Ru/QFVrwW9QzSFBB21RaEWg
-jiGy4mGP3a8LxpXiYqb18hti7bONnpJeokH1gVXxidwICARbcoXhnbxy8sTpo1A1
-sZ2JnWXKbRcgLqCd52RnGOWQxTpPY2qBIntS2WR/HYhfoekltqtCr3/EgjzE7kxj
-gjOo3y5r5iTupd6EnzzEf5Ghv4IhC1ecBn8sMhVpBvEqB1OWSWy5qeBXD+HUWCGQ
-DWQqhSNan0XToadzwUprKTZaM/8zf+KJ8DKFyc0m2GXM64PFXBWs4SWy5AWmTFXn
-9Xoola+LkgSsjEI59qD3a2q+qwxsg7saKa78onbDmsvu5Nl42gBqO409yrKx7d9B
-pewDmaTl0Rb5ZJn4mla3wath5WZnL/me4CVmK/a4PVGoLsv0w+BTiiMHZLWtOU4S
-yk397Zq78vEf0XYNSkuMlLi7Da8U4+NAx4KWOG9Ddb7HuL1UdJqcYATiUtRpGGLQ
-zkvKHjIsDMPYNFpxOjlN1nBoIM0a4/gy0zHUk2NPlnuDcBusnqZNS6gl9rXxAUa6
-AG/7cgNj4WJdtvqVhGmDDwG16gyov+eSCqiHtYEM+STj0+5L+p4fsilv+0RoAGoR
-sOu6RxEaYE38+cZKaHMjAB0ekOJhakt/JWooTbTZepxRfG+9FdQM2mL0ZlOcgNMY
-DAcn1iA5uDg4lqOsGCoi
-=7xrz
------END PGP SIGNATURE-----
-
---TCH5zSpbvKOKdCih--
+-- 
+1.7.9.5
