@@ -1,65 +1,100 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/7] cpufreq: intel_pstate: Remove redundant includes
-Date: Tue, 10 Jun 2014 10:59:25 +0530
-Message-ID: <CAKohpokJfS=wFFFuqc26tnojTViuejVQMXGn18DAqrN+j0Zihw@mail.gmail.com>
-References: <53962087.8000706@semaphore.gr>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [Patch V4 08/42] x86, ACPI, irq: enhance error handling in function
+ acpi_register_gsi()
+Date: Tue, 10 Jun 2014 13:49:12 +0800
+Message-ID: <53969C58.5010209@linux.intel.com>
+References: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com> <1402302011-23642-9-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.10.1406100113070.3830@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:64676 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751079AbaFJF30 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 01:29:26 -0400
-Received: by mail-oa0-f53.google.com with SMTP id l6so1124415oag.26
-        for <linux-pm@vger.kernel.org>; Mon, 09 Jun 2014 22:29:25 -0700 (PDT)
-In-Reply-To: <53962087.8000706@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.10.1406100113070.3830@nanos>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 10 June 2014 02:30, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Also put them in alphabetical order.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/intel_pstate.c | 17 ++---------------
->  1 file changed, 2 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 26a0262..d4f0518 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -10,26 +10,13 @@
->   * of the License.
->   */
->
-> -#include <linux/kernel.h>
-> -#include <linux/kernel_stat.h>
-> -#include <linux/module.h>
-> -#include <linux/ktime.h>
-> -#include <linux/hrtimer.h>
-> -#include <linux/tick.h>
-> -#include <linux/slab.h>
-> -#include <linux/sched.h>
-> -#include <linux/list.h>
-> +#include <linux/acpi.h>
->  #include <linux/cpu.h>
->  #include <linux/cpufreq.h>
-> -#include <linux/sysfs.h>
-> -#include <linux/types.h>
-> -#include <linux/fs.h>
->  #include <linux/debugfs.h>
-> -#include <linux/acpi.h>
-> +#include <linux/module.h>
->  #include <trace/events/power.h>
->
-> -#include <asm/div64.h>
-> -#include <asm/msr.h>
->  #include <asm/cpu_device_id.h>
 
-As a rule, header files for all the symbols directly used by a file must
-be included directly by the file and must not depend on indirect inclusions.
 
-So even if it compiles, its the wrong thing to do. Though you can obviously
-remove the headers which aren't used.
+On 2014/6/10 7:19, Thomas Gleixner wrote:
+> On Mon, 9 Jun 2014, Jiang Liu wrote:
+> 
+>> Function mp_register_gsi() may return invalid GSI if error happens,
+>> so enhance acpi_register_gsi() to handle possible error cases.
+> 
+> Can you please explain how that happens? I think I know it, but it'd
+> be nice if it would be documented.
+Sure.
+
+> 
+>> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+>> ---
+>>  arch/x86/kernel/acpi/boot.c |   10 ++++++----
+>>  1 file changed, 6 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+>> index 392360c607dc..f201579cd0df 100644
+>> --- a/arch/x86/kernel/acpi/boot.c
+>> +++ b/arch/x86/kernel/acpi/boot.c
+>> @@ -97,6 +97,8 @@ static u32 isa_irq_to_gsi[NR_IRQS_LEGACY] __read_mostly = {
+>>  	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+>>  };
+>>  
+>> +#define	ACPI_INVALID_GSI		INT_MIN
+>> +
+>>  static unsigned int gsi_to_irq(unsigned int gsi)
+>>  {
+>>  	unsigned int irq = gsi + NR_IRQS_LEGACY;
+>> @@ -441,7 +443,7 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+>>  			     polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
+>>  	ret = io_apic_set_pci_routing(dev, gsi_to_irq(gsi), &irq_attr);
+>>  	if (ret < 0)
+>> -		gsi = INT_MIN;
+>> +		gsi = ACPI_INVALID_GSI;
+>>  
+>>  	return gsi;
+>>  }
+>> @@ -666,13 +668,13 @@ int (*acpi_suspend_lowlevel)(void);
+>>   */
+>>  int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+>>  {
+>> -	unsigned int irq;
+>>  	unsigned int plat_gsi = gsi;
+> 
+> The assignemend of gsi to plat_gsi is pointless
+This was done in patch 21. And eventually function acpi_register_gsi()
+will be simplified as below by patch 21 and 22.
+int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int
+polarity)
+{
+        return (*__acpi_register_gsi)(dev, gsi, trigger, polarity);
+}
+
+I will rework and resend patch 8, 21 and 22.
+>   
+>>  	plat_gsi = (*__acpi_register_gsi)(dev, gsi, trigger, polarity);
+> 
+> __acpi_register_gsi is a function pointer, so
+> 
+>   	plat_gsi = __acpi_register_gsi(dev, gsi, trigger, polarity);
+> 
+> is completely correct and way simpler to read.
+Thanks, will change to the simpler way.
+
+> 
+>> -	irq = gsi_to_irq(plat_gsi);
+>> +	if (plat_gsi != ACPI_INVALID_GSI)
+>> +		return gsi_to_irq(plat_gsi);
+>>  
+>> -	return irq;
+>> +	return -1;
+>>  }
+>>  EXPORT_SYMBOL_GPL(acpi_register_gsi);
+> 
+> No need to repost the whole series. Just reply with a new version to
+> this.
+> 
+> Thanks,
+> 
+> 	tglx
+> 
