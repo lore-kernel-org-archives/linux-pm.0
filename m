@@ -1,67 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 6/7] cpufreq: intel_pstate: Trivial code cleanup
-Date: Tue, 10 Jun 2014 22:43:35 +0200
-Message-ID: <1875587.zmLYOIAyby@vostro.rjw.lan>
-References: <5396208F.6070400@semaphore.gr> <5753346.hxK14sqO5y@vostro.rjw.lan> <5397673D.8010200@semaphore.gr>
+Subject: Re: [PATCH Resend] cpufreq: tegra: update comment for clarity
+Date: Tue, 10 Jun 2014 23:15:20 +0200
+Message-ID: <2122590.Au0hJVo2lP@vostro.rjw.lan>
+References: <594cf0e6982c471eb314fe4a00647bfaf59a3456.1402029512.git.viresh.kumar@linaro.org> <3eb9a48877bbb208f3c1f3e121f8d78b1d306bd9.1402376112.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5397673D.8010200@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52602 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753000AbaFJU54 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 16:57:56 -0400
+In-Reply-To: <3eb9a48877bbb208f3c1f3e121f8d78b1d306bd9.1402376112.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org
 
-On Tuesday, June 10, 2014 11:14:53 PM Stratos Karafotis wrote:
-> On 10/06/2014 11:17 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> > On Tuesday, June 10, 2014 10:26:44 AM Dirk Brandewie wrote:
-> >> On 06/10/2014 08:31 AM, Rafael J. Wysocki wrote:
-> >>> On Tuesday, June 10, 2014 08:12:48 AM Dirk Brandewie wrote:
-> >>>> On 06/09/2014 02:01 PM, Stratos Karafotis wrote:
-> >>>>> Remove unnecessary blank lines.
-> >>>>> Remove unnecessary parentheses.
-> >>>>> Remove unnecessary braces.
-> >>>>> Put the code in one line where possible.
-> >>>>> Add blank lines after variable declarations.
-> >>>>> Alignment to open parenthesis.
-> >>>>>
-> >>>>
-> >>>> I don't have an issue with this patch in general but I would rat=
-her
-> >>>> the cleanup be done when there is a functional change in the giv=
-en
-> >>>> hunk of code otherwise you are setting up a fence for stable/bac=
-kporters
-> >>>> of functional changes in the future.
-> >>>
-> >>> I actually prefer separate cleanups so as to avoid doing multiple=
- things
-> >>> in one patch.
-> >>>
-> >>> Rafael
-> >>>
-> >> I don't have strong feelings either way I was just trying to be ki=
-nd
-> >> to the maintainers of distro kernels.
-> >=20
-> > And mixing fixes with cleanups in one patch doesn't do any good to =
-them.
-> >=20
-> > Trust me, I used to work for a distro. :-)
-> >=20
->=20
-> So, should I proceed and split the patch or drop it? :)
+On Tuesday, June 10, 2014 10:27:12 AM Viresh Kumar wrote:
+> Tegra's driver got updated a bit (00917dd cpufreq: Tegra: implement intermediate
+> frequency callbacks) and implements new 'intermediate freq' infrastructure of
+> core. Above commit updated comments about when to call
+> clk_prepare_enable(pll_x_clk) and Doug wasn't satisfied with those comments and
+> said this:
+> 
+> > The "Though when target-freq is intermediate freq, we don't need to
+> > take this reference." makes me think that this function is actually
+> > called when target-freq is intermediate freq.  I don't think it is,
+> > right?
+> 
+> For better clarity just make that comment more explicit about when we call
+> tegra_target_intermediate().
+> 
+> Reviewed-by: Stephen Warren <swarren@nvidia.com>
+> Reported-and-reviewed-by: Doug Anderson <dianders@chromium.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Resend: Improved comment as suggested by Stephen.
 
-I'm not sure why you'd want to split it?
+Applied to bleeding-edge, thanks!
 
-That said you're changing things that are intentional.  For example,
-the
-
-	if (acpi_disabled
-	    || ...)
-
-is.  And the result of (a * 100) / b may generally be different from
-a * 100 / b for integers (if the division is carried out first).
-
-Rafael
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
