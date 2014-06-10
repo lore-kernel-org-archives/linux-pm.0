@@ -1,67 +1,78 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFC PATCH 02/16] sched: Introduce CONFIG_SCHED_ENERGY
-Date: Tue, 10 Jun 2014 15:41:00 +0100
-Message-ID: <20140610144100.GD1581@e103034-lin>
-References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
- <1400869003-27769-3-git-send-email-morten.rasmussen@arm.com>
- <20140608060316.GA18179@austad.us>
- <20140609102027.GA29593@e103034-lin>
- <20140610093943.GA6758@twins.programming.kicks-ass.net>
- <20140610100641.GB1581@e103034-lin>
- <20140610102353.GC6758@twins.programming.kicks-ass.net>
- <20140610112403.GC1581@e103034-lin>
- <20140610122435.GG6758@twins.programming.kicks-ass.net>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH 6/7] cpufreq: intel_pstate: Trivial code cleanup
+Date: Tue, 10 Jun 2014 17:43:23 +0300
+Message-ID: <5397198B.7070407@semaphore.gr>
+References: <5396208F.6070400@semaphore.gr> <1402348962.3142.32.camel@joe-AO725>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.austin.arm.com ([217.140.110.23]:25658 "EHLO
-	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750808AbaFJOlC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 10:41:02 -0400
-Content-Disposition: inline
-In-Reply-To: <20140610122435.GG6758@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1402348962.3142.32.camel@joe-AO725>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Henrik Austad <henrik@austad.us>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
 
-On Tue, Jun 10, 2014 at 01:24:35PM +0100, Peter Zijlstra wrote:
-> On Tue, Jun 10, 2014 at 12:24:03PM +0100, Morten Rasmussen wrote:
-> > On Tue, Jun 10, 2014 at 11:23:53AM +0100, Peter Zijlstra wrote:
-> > > On Tue, Jun 10, 2014 at 11:06:41AM +0100, Morten Rasmussen wrote:
-> > > > How would you like to disable the energy stuff for users for whom
-> > > > latency is everything?
-> > > > 
-> > > > I mean, we are adding some extra load/utilization tracking. While I
-> > > > think we should do everything possible to minimize the overhead, I think
-> > > > it is unrealistic to assume that it will be zero. Is a some extra 'if
-> > > > (energy_enabled)' acceptable?
-> > > > 
-> > > > I'm open for other suggestions.
-> > > 
-> > > We have the jump-label stuff to do self modifying code ;-) The only
-> > > thing we need to be careful with is data-layout.
-> > 
-> > Thanks. I can see that it is already used in for various bit in
-> > kernel/sched/*. I didn't catch anything in Documentation/static-keys.txt
-> > related to data-layout caveats. Is there some other
-> > documentation/patches I should read before messing everything up? ;-)
-> 
-> So the data-layout was mostly referring to things like making sure that
-> struct sched_avg doesn't end up straddling a cacheline somewhere by
-> accident.
-> 
-> The most expensive part of the per-task accounting nonsense is the
-> amount of memory we need to touch to do so, the actual instructions come
-> second, unless of course we go put tons of divisions in there :-)
+On 10/06/2014 12:22 =CF=80=CE=BC, Joe Perches wrote:
+> On Tue, 2014-06-10 at 00:01 +0300, Stratos Karafotis wrote:
+>> Remove unnecessary braces.
+>=20
+> []
+>=20
+>> @@ -204,20 +203,16 @@ static inline void intel_pstate_busy_pid_reset=
+(struct cpudata *cpu)
+>=20
+>>  static inline void intel_pstate_reset_all_pid(void)
+>>  {
+>>  	unsigned int cpu;
+>> -	for_each_online_cpu(cpu) {
+>> +
+>> +	for_each_online_cpu(cpu)
+>>  		if (all_cpu_data[cpu])
+>>  			intel_pstate_busy_pid_reset(all_cpu_data[cpu]);
+>> -	}
+>=20
+> It's pretty traditional to keep the braces here
+> as it generally makes it clearer for the reader.
+>=20
+> 	for (...) {
+> 		if (foo)
+> 			bar();
+> 	}
+>=20
+> is generally used over
+>=20
+> 	for (...)
+> 		if (foo)
+> 			bar();
+>=20
+> Just like using
+>=20
+> 	if (foo) {
+> 		/* commment */
+> 		bar();
+> 	}
 
-Make sense.
+OK, I will revert these changes in v2.
 
-> BTW, are cachelines 64 bytes for you ARM people too?
+>> @@ -748,15 +744,14 @@ static int intel_pstate_init_cpu(unsigned int =
+cpunum)
+> []
+>> -	pr_info("Intel pstate controlling: cpu %d\n", cpunum);
+>> +	pr_info("Intel pstate controlling: CPU %d\n", cpunum);
+>=20
+> cpu is very slightly preferred lower case.
+>=20
+> $ git grep -E -i '^[^"]*"[^"]*\bcpu\b'|grep -w -i -o cpu | sort |uniq=
+ -c | sort -rn
+>    2705 cpu
+>    2084 CPU
+>      17 Cpu
+>=20
 
-Mostly yes, but as with a lot of other things on ARM it is
-implementation defined. The cacheline sizes are probeable at runtime,
-but for things where we don't know I think 64 bytes is the current
-assumption.
+Although, I believe that the term 'CPU' is more appropriate, I'll rever=
+t this
+as the majority and Dirk prefer it. :)
 
-Catalin or Will would be able to provide a more detailed answer.
+Thanks for your comments!
+Stratos
