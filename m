@@ -1,44 +1,212 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH Resend] cpufreq: tegra: update comment for clarity
-Date: Tue, 10 Jun 2014 23:15:20 +0200
-Message-ID: <2122590.Au0hJVo2lP@vostro.rjw.lan>
-References: <594cf0e6982c471eb314fe4a00647bfaf59a3456.1402029512.git.viresh.kumar@linaro.org> <3eb9a48877bbb208f3c1f3e121f8d78b1d306bd9.1402376112.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM: trace events for device pm callbacks
+Date: Tue, 10 Jun 2014 23:17:46 +0200
+Message-ID: <3737184.526pO4COlv@vostro.rjw.lan>
+References: <20140610143122.GA12851@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52602 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:65227 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753000AbaFJU54 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 16:57:56 -0400
-In-Reply-To: <3eb9a48877bbb208f3c1f3e121f8d78b1d306bd9.1402376112.git.viresh.kumar@linaro.org>
+	with SMTP id S1753152AbaFJVAX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 17:00:23 -0400
+In-Reply-To: <20140610143122.GA12851@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, swarren@nvidia.com, dianders@chromium.org
+To: todd.e.brandt@linux.intel.com
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, June 10, 2014 10:27:12 AM Viresh Kumar wrote:
-> Tegra's driver got updated a bit (00917dd cpufreq: Tegra: implement intermediate
-> frequency callbacks) and implements new 'intermediate freq' infrastructure of
-> core. Above commit updated comments about when to call
-> clk_prepare_enable(pll_x_clk) and Doug wasn't satisfied with those comments and
-> said this:
+On Tuesday, June 10, 2014 07:31:22 AM Todd E Brandt wrote:
+> Adds two trace events which supply the same info that initcall_debug 
+> provides, but via ftrace instead of dmesg. The existing initcall_debug
+> calls require the pm_print_times_enabled var to be set (either via
+> sysfs or via the kernel cmd line). The new trace events provide all the
+> same info as the initcall_debug prints but with less overhead, and also
+> with coverage of device prepare and complete device callbacks.
 > 
-> > The "Though when target-freq is intermediate freq, we don't need to
-> > take this reference." makes me think that this function is actually
-> > called when target-freq is intermediate freq.  I don't think it is,
-> > right?
+> These events replace the device_pm_report_time event (which has been
+> removed). device_pm_callback_start is called first and provides the device
+> and callback info. device_pm_callback_end is called after with the
+> device name and error info. The time and pid are gathered from the trace
+> data headers.
 > 
-> For better clarity just make that comment more explicit about when we call
-> tegra_target_intermediate().
-> 
-> Reviewed-by: Stephen Warren <swarren@nvidia.com>
-> Reported-and-reviewed-by: Doug Anderson <dianders@chromium.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Resend: Improved comment as suggested by Stephen.
+> Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
 
-Applied to bleeding-edge, thanks!
+Steve needs to see this (CCed).
+
+> ----
+>  drivers/base/power/main.c    | 14 ++++++++++----
+>  include/trace/events/power.h | 60 ++++++++++++++++++++++++++++++++++++++++++------------------
+>  2 files changed, 52 insertions(+), 22 deletions(-)
+> 
+> Raphael, I know we discussed this a while back as an alternative to
+> the initcall_debug calls so as to reduce the dmesg traffic. Do you want
+> to completely remove the pm_print_times_enabled option and initcall_debug
+> calls?
+
+Yes, eventually, but not immediately.  Perhaps around two cycles after merging
+the trace points.
+
+> Also, I applied this patch to the bleeding-edge branch of your linux-pm
+> tree.
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index de3fe4f..bf41296 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -214,9 +214,6 @@ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+>  		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
+>  			error, (unsigned long long)nsecs >> 10);
+>  	}
+> -
+> -	trace_device_pm_report_time(dev, info, nsecs, pm_verb(state.event),
+> -				    error);
+>  }
+>  
+>  /**
+> @@ -387,7 +384,9 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+>  	calltime = initcall_debug_start(dev);
+>  
+>  	pm_dev_dbg(dev, state, info);
+> +	trace_device_pm_callback_start(dev, info, state.event);
+>  	error = cb(dev);
+> +	trace_device_pm_callback_end(dev, error);
+>  	suspend_report_result(cb, error);
+>  
+>  	initcall_debug_report(dev, calltime, error, state, info);
+> @@ -919,7 +918,9 @@ static void device_complete(struct device *dev, pm_message_t state)
+>  
+>  	if (callback) {
+>  		pm_dev_dbg(dev, state, info);
+> +		trace_device_pm_callback_start(dev, info, state.event);
+>  		callback(dev);
+> +		trace_device_pm_callback_end(dev, 0);
+>  	}
+>  
+>  	device_unlock(dev);
+> @@ -1307,7 +1308,9 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
+>  
+>  	calltime = initcall_debug_start(dev);
+>  
+> +	trace_device_pm_callback_start(dev, info, state.event);
+>  	error = cb(dev, state);
+> +	trace_device_pm_callback_end(dev, error);
+>  	suspend_report_result(cb, error);
+>  
+>  	initcall_debug_report(dev, calltime, error, state, info);
+> @@ -1563,8 +1566,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>  		callback = dev->driver->pm->prepare;
+>  	}
+>  
+> -	if (callback)
+> +	if (callback) {
+> +		trace_device_pm_callback_start(dev, info, state.event);
+>  		ret = callback(dev);
+> +		trace_device_pm_callback_end(dev, ret);
+> +	}
+>  
+>  	device_unlock(dev);
+>  
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> index f88c857..d19840b 100644
+> --- a/include/trace/events/power.h
+> +++ b/include/trace/events/power.h
+> @@ -93,6 +93,17 @@ TRACE_EVENT(pstate_sample,
+>  #define PWR_EVENT_EXIT -1
+>  #endif
+>  
+> +#define pm_verb_symbolic(event) \
+> +	__print_symbolic(event, \
+> +		{ PM_EVENT_SUSPEND, "suspend" }, \
+> +		{ PM_EVENT_RESUME, "resume" }, \
+> +		{ PM_EVENT_FREEZE, "freeze" }, \
+> +		{ PM_EVENT_QUIESCE, "quiesce" }, \
+> +		{ PM_EVENT_HIBERNATE, "hibernate" }, \
+> +		{ PM_EVENT_THAW, "thaw" }, \
+> +		{ PM_EVENT_RESTORE, "restore" }, \
+> +		{ PM_EVENT_RECOVER, "recover" })
+> +
+>  DEFINE_EVENT(cpu, cpu_frequency,
+>  
+>  	TP_PROTO(unsigned int frequency, unsigned int cpu_id),
+> @@ -100,41 +111,54 @@ DEFINE_EVENT(cpu, cpu_frequency,
+>  	TP_ARGS(frequency, cpu_id)
+>  );
+>  
+> -TRACE_EVENT(device_pm_report_time,
+> +TRACE_EVENT(device_pm_callback_start,
+>  
+> -	TP_PROTO(struct device *dev, const char *pm_ops, s64 ops_time,
+> -		 char *pm_event_str, int error),
+> +	TP_PROTO(struct device *dev, const char *pm_ops, int event),
+>  
+> -	TP_ARGS(dev, pm_ops, ops_time, pm_event_str, error),
+> +	TP_ARGS(dev, pm_ops, event),
+>  
+>  	TP_STRUCT__entry(
+>  		__string(device, dev_name(dev))
+>  		__string(driver, dev_driver_string(dev))
+>  		__string(parent, dev->parent ? dev_name(dev->parent) : "none")
+>  		__string(pm_ops, pm_ops ? pm_ops : "none ")
+> -		__string(pm_event_str, pm_event_str)
+> -		__field(s64, ops_time)
+> -		__field(int, error)
+> +		__field(int, event)
+>  	),
+>  
+>  	TP_fast_assign(
+> -		const char *tmp = dev->parent ? dev_name(dev->parent) : "none";
+> -		const char *tmp_i = pm_ops ? pm_ops : "none ";
+> +		__assign_str(device, dev_name(dev));
+> +		__assign_str(driver, dev_driver_string(dev));
+> +		__assign_str(parent,
+> +			dev->parent ? dev_name(dev->parent) : "none");
+> +		__assign_str(pm_ops, pm_ops ? pm_ops : "none ");
+> +		__entry->event = event;
+> +	),
+> +
+> +	TP_printk("%s %s, parent: %s, %s[%s]", __get_str(driver),
+> +		__get_str(device), __get_str(parent), __get_str(pm_ops),
+> +		pm_verb_symbolic(__entry->event))
+> +);
+> +
+> +TRACE_EVENT(device_pm_callback_end,
+> +
+> +	TP_PROTO(struct device *dev, int error),
+>  
+> +	TP_ARGS(dev, error),
+> +
+> +	TP_STRUCT__entry(
+> +		__string(device, dev_name(dev))
+> +		__string(driver, dev_driver_string(dev))
+> +		__field(int, error)
+> +	),
+> +
+> +	TP_fast_assign(
+>  		__assign_str(device, dev_name(dev));
+>  		__assign_str(driver, dev_driver_string(dev));
+> -		__assign_str(parent, tmp);
+> -		__assign_str(pm_ops, tmp_i);
+> -		__assign_str(pm_event_str, pm_event_str);
+> -		__entry->ops_time = ops_time;
+>  		__entry->error = error;
+>  	),
+>  
+> -	/* ops_str has an extra space at the end */
+> -	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
+> -		__get_str(driver), __get_str(device), __get_str(parent),
+> -		__get_str(pm_event_str), __get_str(pm_ops),
+> -		__entry->ops_time, __entry->error)
+> +	TP_printk("%s %s, err=%d",
+> +		__get_str(driver), __get_str(device), __entry->error)
+>  );
+>  
+>  TRACE_EVENT(suspend_resume,
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
