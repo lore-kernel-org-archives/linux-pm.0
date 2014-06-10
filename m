@@ -1,37 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / OPP: Remove ARCH_HAS_OPP
-Date: Tue, 10 Jun 2014 02:15:16 +0200
-Message-ID: <1857766.e38RV3V2OT@vostro.rjw.lan>
-References: <1402051016-28853-1-git-send-email-broonie@kernel.org> <1976508.Da0u8DZI5B@vostro.rjw.lan> <20140609225142.GA5099@sirena.org.uk>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [REGRESSION] 3.15: Seems to turbo mode Intel Sandybridge Dual Core without need, overheating CPU
+Date: Mon, 9 Jun 2014 19:37:35 -0700
+Message-ID: <003801cf8454$f0d84ba0$d288e2e0$@net>
+References: <1996399.buoKlNI5nG@merkaba> <13232691.DxAv2jorp8@merkaba> <4677478.c1YrKzctMH@merkaba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20140609225142.GA5099@sirena.org.uk>
-Sender: linux-sh-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@arm.linux.org.uk>, Kukjin Kim <kgene.kim@samsung.com>, Rob Herring <robh@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Sascha Hauer <kernel@pengutronix.de>, Tony Lindgren <tony@atomide.com>, Michal Simek <michal.simek@xilinx.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4677478.c1YrKzctMH@merkaba>
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: 'Martin Steigerwald' <Martin@lichtvoll.de>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 09, 2014 11:51:42 PM Mark Brown wrote:
-> 
-> --fYgRtaZIy+F1uhp1
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> 
-> On Tue, Jun 10, 2014 at 12:22:07AM +0200, Rafael J. Wysocki wrote:
-> > On Monday, June 09, 2014 08:49:17 PM Mark Brown wrote:
-> 
-> > > Yes, looks like it is.
-> 
-> > But it doesn't apply for me on top of the current Linus' tree.
-> 
-> > Can you please rebase?
-> 
-> It probably depends on other people's trees too, I just killed all the
-> usages in -next - I gather the SH trees added some new ones for example.
-> I'd expect it'll apply after the merge window, if not that's the time to
-> look at it.
+On 2014.06.08 14:42 Martin Steigerwald wrote:
 
-OK
+> Its not just me:
 
+> Please change intel_pstate default to disable
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1188647
+
+That bug report is old, and made some sense at the time
+it was entered.
+
+Recent entries are all calling for it to be enabled by default again.
+
+For my part of it, I was merely suggesting caution.
+
+... Doug
