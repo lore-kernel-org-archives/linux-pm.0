@@ -1,101 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 6/7] cpufreq: intel_pstate: Trivial code cleanup
-Date: Tue, 10 Jun 2014 23:38:51 +0200
-Message-ID: <1894836.tjrHdJ7Duz@vostro.rjw.lan>
-References: <5396208F.6070400@semaphore.gr> <1875587.zmLYOIAyby@vostro.rjw.lan> <53977251.2090804@semaphore.gr>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 02/24] drivercore: Bind/unbind power domain on
+ probe/remove
+Date: Tue, 10 Jun 2014 14:27:31 -0700
+Message-ID: <20140610212731.GA11191@kroah.com>
+References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0hUT0QPGWeDM9WoxnobaL5eoNi5UFrUUZrQ1gSBCX=aVg@mail.gmail.com>
+ <CAPDyKFqWZdA4ZisJvCDP8j6D2_A8oRAHkjikddyGSwpToFg-Gw@mail.gmail.com>
+ <1894835.cKK4602bPf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <53977251.2090804@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:40015 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbaFJVXm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 17:23:42 -0400
+Content-Disposition: inline
+In-Reply-To: <1894835.cKK4602bPf@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Tomasz Figa <t.figa@samsung.com>
 
-On Wednesday, June 11, 2014 12:02:09 AM Stratos Karafotis wrote:
-> On 10/06/2014 11:43 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> > On Tuesday, June 10, 2014 11:14:53 PM Stratos Karafotis wrote:
-> >> On 10/06/2014 11:17 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> >>> On Tuesday, June 10, 2014 10:26:44 AM Dirk Brandewie wrote:
-> >>>> On 06/10/2014 08:31 AM, Rafael J. Wysocki wrote:
-> >>>>> On Tuesday, June 10, 2014 08:12:48 AM Dirk Brandewie wrote:
-> >>>>>> On 06/09/2014 02:01 PM, Stratos Karafotis wrote:
-> >>>>>>> Remove unnecessary blank lines.
-> >>>>>>> Remove unnecessary parentheses.
-> >>>>>>> Remove unnecessary braces.
-> >>>>>>> Put the code in one line where possible.
-> >>>>>>> Add blank lines after variable declarations.
-> >>>>>>> Alignment to open parenthesis.
-> >>>>>>>
-> >>>>>>
-> >>>>>> I don't have an issue with this patch in general but I would r=
-ather
-> >>>>>> the cleanup be done when there is a functional change in the g=
-iven
-> >>>>>> hunk of code otherwise you are setting up a fence for stable/b=
-ackporters
-> >>>>>> of functional changes in the future.
-> >>>>>
-> >>>>> I actually prefer separate cleanups so as to avoid doing multip=
-le things
-> >>>>> in one patch.
-> >>>>>
-> >>>>> Rafael
-> >>>>>
-> >>>> I don't have strong feelings either way I was just trying to be =
-kind
-> >>>> to the maintainers of distro kernels.
-> >>>
-> >>> And mixing fixes with cleanups in one patch doesn't do any good t=
-o them.
-> >>>
-> >>> Trust me, I used to work for a distro. :-)
-> >>>
-> >>
-> >> So, should I proceed and split the patch or drop it? :)
-> >=20
-> > I'm not sure why you'd want to split it?
->=20
-> Forgive me, but I'm totally confused. I asked because you mentioned t=
-hat
-> you prefer separate cleanups.
+On Tue, Jun 10, 2014 at 11:27:45PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, June 10, 2014 02:53:26 PM Ulf Hansson wrote:
+> > On 10 June 2014 14:11, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > On Tue, Jun 10, 2014 at 12:51 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >> From: Tomasz Figa <t.figa@samsung.com>
+> > >>
+> > >> On a number of platforms, devices are part of controllable power
+> > >> domains, which need to be enabled before such devices can be accessed
+> > >> and may be powered down when the device is idle to save some power.
+> > >> This means that on systems that support power domain control using
+> > >> generic power domains subsystem, it is necessary to add device to its
+> > >> power domain before binding a driver to it and remove it from its power
+> > >> domain after its driver is unbound to make sure that an unused device
+> > >> does not affect power domain state.
+> > >>
+> > >> Since this is not limited to particular busses and specific
+> > >> archs/platforms,
+> > >
+> > > Actually, this isn't correrct.  It is limited to the platforms that
+> > > use Device Trees now.
+> > 
+> > Correct, we should update the commit message/docs.
+> > 
+> > >
+> > > Moreover, it is not consistent with the way we add devices to the ACPI PM
+> > > domain, which is the ACPI counterpart of this.
+> > 
+> > I am not sure why you think consistency for ACPI is important here.
+> > ACPI PM will still be able to handle it's domain/device registering as
+> > before. There are even other pm_domains that don't use genpd which
+> > need to handle this themselves.
+> 
+> My point is that doing things like that in different places for different
+> firmware interfaces is confusing and likely to lead to coding mistakes in
+> the future.
+> 
+> > Or are you saying that you prefer bus notifiers in favour of making
+> > use of the driver core for this matter?
+> 
+> Well, please grep for acpi_dev_pm_attach() and see where it is done.
+> Surely not in drivers/base/dd.c.  Also I'm not sure why you're talking
+> about bus notifiers in this context.
+> 
+> > Shouldn't the driver core handle most of the common things for a device
+> > driver?
+> 
+> Common, yes.  Platform-specific, no.
+> 
+> > Let's compare how the pinctrls are being managed in the driver core, for
+> > example.
+> 
+> pinctrl has Device Trees support only at the moment (as far as firmware
+> interfaces go) and quite frankly I'm not sure if/how we'll need to change
+> it to cover ACPI as well.
+> 
+> But for power domains, please keep that stuff away from dd.c.  That is,
+> unless Greg specifically disagrees with me and decides to apply this
+> patch regardless. :-)
 
-That was in a reply to Dirk who suggested doing cleanups along with
-fixes (or at least I understood what he said this way).
+Nope, no disagreement from me toward you at all here, keep up the good
+work :)
 
-I tried to explain why I didn't think that this was a good idea.
-
-> So, my question was if you want me to separate this patch into more (=
-one
-> per change) or entirely drop it (because it would cause problems to b=
-ackporters
-> or maintainers).
-
-Cleanups are generally OK, but it's better to do one kind of a cleanup
-per patch.  Like whitespace fixes in one patch, cleanup of expressions =
-in
-another.
-
->=20
-> > That said you're changing things that are intentional.  For example=
-,
-> > the
-> >=20
-> > 	if (acpi_disabled
-> > 	    || ...)
-> >=20
-> > is.  And the result of (a * 100) / b may generally be different fro=
-m
-> > a * 100 / b for integers (if the division is carried out first).
->=20
-> I thought that (a * 100) / b is always equivalent to a * 100 / b.
-
-I'm not actually sure if that's guaranteed by C standards.  It surely
-wasn't some time ago (when there was no formal C standard).
-
-Either way, in my opinion it's better to put the parens into the expres=
-sion
-in this particular case to clearly state the intention.
-
-Rafael
+greg k-h
