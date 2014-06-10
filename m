@@ -1,88 +1,131 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 02/16] sched: Introduce CONFIG_SCHED_ENERGY
-Date: Tue, 10 Jun 2014 14:24:35 +0200
-Message-ID: <20140610122435.GG6758@twins.programming.kicks-ass.net>
-References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
- <1400869003-27769-3-git-send-email-morten.rasmussen@arm.com>
- <20140608060316.GA18179@austad.us>
- <20140609102027.GA29593@e103034-lin>
- <20140610093943.GA6758@twins.programming.kicks-ass.net>
- <20140610100641.GB1581@e103034-lin>
- <20140610102353.GC6758@twins.programming.kicks-ass.net>
- <20140610112403.GC1581@e103034-lin>
+From: "Chander M. Kashyap" <chander.kashyap@gmail.com>
+Subject: Re: [PATCH v6 0/6] add cpuidle support for Exynos5420
+Date: Tue, 10 Jun 2014 18:08:28 +0530
+Message-ID: <CADWw7OiQs7H_EeRBVTNEWP-5fRjCgEWQmy=MAmePBday9PQ5Dw@mail.gmail.com>
+References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com>
+	<1400227438-27155-1-git-send-email-chander.kashyap@linaro.org>
+	<53831795.9070006@gmail.com>
+	<CANuQgHH284A9QY7M5zGbSE-mXjm2KDqr54VWmtKVkbma3zZvvw@mail.gmail.com>
+	<015f01cf7a2e$3b141590$b13c40b0$@samsung.com>
+	<5385A638.2000001@linaro.org>
+	<CANuQgHGM_PsDO0RmEKDVXSs1u50VMuLrx-=0sYhDut1gSjspcg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gJgGjUUWrnN4mpen"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:49195 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbaFJMYk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 08:24:40 -0400
-Content-Disposition: inline
-In-Reply-To: <20140610112403.GC1581@e103034-lin>
+Received: from mail-oa0-f46.google.com ([209.85.219.46]:52444 "EHLO
+	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbaFJMi3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 08:38:29 -0400
+In-Reply-To: <CANuQgHGM_PsDO0RmEKDVXSs1u50VMuLrx-=0sYhDut1gSjspcg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Henrik Austad <henrik@austad.us>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
+To: Chander Kashyap <chander.kashyap@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+
+On Thu, May 29, 2014 at 10:07 AM, Chander Kashyap
+<chander.kashyap@linaro.org> wrote:
+> On 28 May 2014 14:32, Daniel Lezcano <daniel.lezcano@linaro.org> wrot=
+e:
+>> On 05/28/2014 06:35 AM, Kukjin Kim wrote:
+>>>
+>>> Chander Kashyap wrote:
+>>>>
+>>>>
+>>>> On 26 May 2014 15:59, Tomasz Figa <tomasz.figa@gmail.com> wrote:
+>>>>>
+>>>>> Hi Chander,
+>>>>>
+>>>>> On 16.05.2014 10:03, Chander Kashyap wrote:
+>>>>>>
+>>>>>> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 =
+A7
+>>>>
+>>>> cores.
+>>>>>>
+>>>>>>
+>>>>>> This patchset adds cpuidle support for Exynos5420 SoC based on
+>>>>>> generic big.little cpuidle driver.
+>>>>>>
+>>>>>> Tested on SMDK5420.
+>>>>>>
+>>>>>> This patch set depends on:
+>>>>>>        1. [PATCH 0/5] MCPM backend for Exynos5420
+>>>>>>           http://www.spinics.net/lists/arm-kernel/msg331100.html
+>>>>>> Changelog is in respective patches.
+>>>>>> Chander Kashyap (5):
+>>>>>>    driver: cpuidle-big-little: add of_device_id structure
+>>>>>>    arm: exynos: add generic function to calculate cpu number
+>>>>>>    cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-=
+little
+>>>>>>      driver
+>>>>>>    driver: cpuidle: cpuidle-big-little: init driver for Exynos54=
+20
+>>>>>>    exynos: cpuidle: do not allow cpuidle registration for Exynos=
+5420
+>>>>>>    mcpm: exynos: populate suspend and powered_up callbacks
+>>>>>>
+>>>>>>   arch/arm/mach-exynos/exynos.c        |    4 +++-
+>>>>>>   arch/arm/mach-exynos/mcpm-exynos.c   |   36
+>>>>
+>>>> ++++++++++++++++++++++++++++++++++
+>>>>>>
+>>>>>>   arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
+>>>>>>   drivers/cpuidle/Kconfig.arm          |    2 +-
+>>>>>>   drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
+>>>>>>   5 files changed, 60 insertions(+), 3 deletions(-)
+>>>>>>
+>>>>>
+>>>>> For the whole series,
+>>>>>
+>>>>> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+>>>>
+>>>>
+>>>> Thanks Tomasz.
+>>>>
+>>>> Dear Kukjin,
+>>>> Can you take these patches.
+>>>>>
+>>>>>
+>>> When I looked at this series quickly, looks good to me but I need t=
+o get
+>>> ack from cpuidle maintainer Rafael or Daniel.
+>>
+>>
+>> Acked the different cpuidle bits.
+>
+> Hi Kukjin,
+> Can you take it now?
+
+ping
+Sorry for previous html messages.
+
+>
+>
+>>
+>> Thanks
+>>   -- Daniel
+>>
+>>
+>> --
+>>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software =
+for ARM SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
+>>
+>
+>
+>
+> --
+> with warm regards,
+> Chander Kashyap
 
 
---gJgGjUUWrnN4mpen
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 10, 2014 at 12:24:03PM +0100, Morten Rasmussen wrote:
-> On Tue, Jun 10, 2014 at 11:23:53AM +0100, Peter Zijlstra wrote:
-> > On Tue, Jun 10, 2014 at 11:06:41AM +0100, Morten Rasmussen wrote:
-> > > How would you like to disable the energy stuff for users for whom
-> > > latency is everything?
-> > >=20
-> > > I mean, we are adding some extra load/utilization tracking. While I
-> > > think we should do everything possible to minimize the overhead, I th=
-ink
-> > > it is unrealistic to assume that it will be zero. Is a some extra 'if
-> > > (energy_enabled)' acceptable?
-> > >=20
-> > > I'm open for other suggestions.
-> >=20
-> > We have the jump-label stuff to do self modifying code ;-) The only
-> > thing we need to be careful with is data-layout.
->=20
-> Thanks. I can see that it is already used in for various bit in
-> kernel/sched/*. I didn't catch anything in Documentation/static-keys.txt
-> related to data-layout caveats. Is there some other
-> documentation/patches I should read before messing everything up? ;-)
-
-So the data-layout was mostly referring to things like making sure that
-struct sched_avg doesn't end up straddling a cacheline somewhere by
-accident.
-
-The most expensive part of the per-task accounting nonsense is the
-amount of memory we need to touch to do so, the actual instructions come
-second, unless of course we go put tons of divisions in there :-)
-
-BTW, are cachelines 64 bytes for you ARM people too?
-
-
---gJgGjUUWrnN4mpen
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTlvkDAAoJEHZH4aRLwOS65qQP/RkQjZTvnviSG5PwG4lCiBgk
-W53tNIdEKmkqpX/Nv0jomq0JGrd+GaVifrj1iNxXJVZ7ZnLR8lGdJvbL59Kxesl2
-5mW6SyWXHil4M8ILHRDTWqtMsQVo6oMNTUYj+TfU6h1rsNk7kZDNL0tVTH/jsXTX
-uK6Q/zUz4BH3R+ohxOULbl15J+/YUFgVKi8e3R+07vHrh8M1ig+eBh4FtTZpBjVT
-J1Jgh3OxOraz3RQh1g0EC6vg04lw1QDOCMvy5DGGR8ZXYOsVEekDznzSosbLO19e
-j0aqMt2VPwZBqQKrj+xsg160cWbUPK+3pjIBRi5ZAu5wvpqJW7vZL3cXFgundU8d
-bFLFWh20aw0hOep2MTeVjbt8wlcJOUgyct7lFm4GP75iHWT6hB9AxaFEH+yjfrPP
-nzTnKH558n31Xgg8uHOvaQCjDZ0L+vmypuVP3CKVYaTBwpHLiWyKfJM9/OkW+kd8
-rM8sxDJW/BB62c1cFaV1gee7wFbYYVBWSwitA0FnSfgiRn2XBJgCNJ1DV6/5yKw5
-f6ifI3js93grHRkEWU3T04RFlMTKtoD1ABl2Y1MVAj+sr9oiqSdHi5l4iuZYkRbI
-IB+QBZqNMx+P9yptZC9MU2Uuxh/cYpRtYTdQ4sCg2pkNRb8fcHiRWAR+GLmK4Sp7
-vt4GOOBI02Kt/8WjAzbH
-=YZNU
------END PGP SIGNATURE-----
-
---gJgGjUUWrnN4mpen--
+--=20
+thanks and regards,
+Chander M. Kashyap
+Contact Number: +918123738320
+------- TENSION LENE KA NAHI, DENE KE-----
