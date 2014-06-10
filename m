@@ -1,100 +1,79 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch V4 38/42] x86, irq, ACPI: release IOAPIC pin when PCI device is disabled
-Date: Tue, 10 Jun 2014 14:16:27 +0800
-Message-ID: <1402380987-32577-1-git-send-email-jiang.liu@linux.intel.com>
-References: <1402302011-23642-39-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1402302011-23642-39-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+From: Martin Steigerwald <Martin@lichtvoll.de>
+Subject: Re: [REGRESSION] 3.15: Seems to turbo mode Intel Sandybridge Dual Core without need, overheating CPU
+Date: Tue, 10 Jun 2014 11:31:01 +0200
+Message-ID: <2227580.NQeh4KI5E8@merkaba>
+References: <1996399.buoKlNI5nG@merkaba> <1773550.hda5I1At4Q@vostro.rjw.lan> <2491989.M5MhllcFpf@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:60000 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbaFJJbe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 05:31:34 -0400
+In-Reply-To: <2491989.M5MhllcFpf@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Release IOAPIC pin associated with PCI device when the PCI device
-is disabled.
+Am Dienstag, 10. Juni 2014, 00:29:52 schrieb Rafael J. Wysocki:
+> On Tuesday, June 10, 2014 12:20:20 AM Rafael J. Wysocki wrote:
+> > On Monday, June 09, 2014 11:41:40 PM Martin Steigerwald wrote:
+> > > Am Montag, 9. Juni 2014, 23:33:43 schrieb Martin Steigerwald:
+> > > > Hi!
+> > > >=20
+> > > > Added linux-pm to Cc. Also reboots seems to fix up the conditio=
+n:
+> > > >=20
+> > > > merkaba:~> grep . /sys/devices/system/cpu/cpu[0-3]/cpufreq/cpui=
+nfo_cur_freq
+> > > > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:830957
+> > > > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:819628
+> > > > /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq:800000
+> > > > /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq:813476
+> > > > merkaba:~> sensors                                             =
+           =20
+> > > > acpitz-virtual-0
+> > > > Adapter: Virtual device
+> > > > temp1:        +71.0=B0C  (crit =3D +98.0=B0C)
+> > > >=20
+> > > > coretemp-isa-0000
+> > > > Adapter: ISA adapter
+> > > > Physical id 0:  +71.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=
+=B0C)
+> > > > Core 0:         +70.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=
+=B0C)
+> > > > Core 1:         +71.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=
+=B0C)
+> > > >=20
+> > > > thinkpad-isa-0000
+> > > > Adapter: ISA adapter
+> > > > fan1:        3137 R
+> > > >=20
+> > > >=20
+> > > > Still hot in here and after reboot and login into KDE session t=
+here is quite
+> > > > some CPU activity for a while.
+> > > >=20
+> > > > But way better than before.
+> > > >=20
+> > > > I can test whether this also happens with ACPI cpufreq driver.
+> > > >=20
+> > > > I think I didn=B4t see this with 3.14.
+> > >=20
+> > > Its not just me:
+> > >=20
+> > > Please change intel_pstate default to disable
+> > > https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1188647
+> >=20
+> > Did you test the 3.15-rc kernels?  If so, do they have this problem=
+ too?
+>=20
+> Or is that just you have tried intel_pstate for the first time?
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
-Minor change, simplify usage of function pointer.
----
- arch/x86/kernel/acpi/boot.c |   27 +++++++++++++++++++++++++++
- drivers/acpi/pci_irq.c      |    3 ++-
- 2 files changed, 29 insertions(+), 1 deletion(-)
+No. Have intel_pstate running since some kernel releases.
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index fd4b6d2e436c..8c28023924bf 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -421,8 +421,24 @@ static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
- 	return irq;
- }
- 
-+static void mp_unregister_gsi(u32 gsi)
-+{
-+	int irq;
-+
-+	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
-+		return;
-+
-+	if (acpi_gbl_FADT.sci_interrupt == gsi)
-+		return;
-+
-+	irq = mp_map_gsi_to_irq(gsi, 0);
-+	if (irq > 0)
-+		mp_unmap_irq(irq);
-+}
-+
- static struct irq_domain_ops acpi_irqdomain_ops = {
- 	.map = mp_irqdomain_map,
-+	.unmap = mp_irqdomain_unmap,
- };
- 
- static int __init
-@@ -640,8 +656,16 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- 	return irq;
- }
- 
-+static void acpi_unregister_gsi_ioapic(u32 gsi)
-+{
-+#ifdef CONFIG_X86_IO_APIC
-+	mp_unregister_gsi(gsi);
-+#endif
-+}
-+
- int (*__acpi_register_gsi)(struct device *dev, u32 gsi,
- 			   int trigger, int polarity) = acpi_register_gsi_pic;
-+void (*__acpi_unregister_gsi)(u32 gsi) = NULL;
- 
- #ifdef CONFIG_ACPI_SLEEP
- int (*acpi_suspend_lowlevel)(void) = x86_acpi_suspend_lowlevel;
-@@ -661,6 +685,8 @@ EXPORT_SYMBOL_GPL(acpi_register_gsi);
- 
- void acpi_unregister_gsi(u32 gsi)
- {
-+	if (__acpi_unregister_gsi)
-+		__acpi_unregister_gsi(gsi);
- }
- EXPORT_SYMBOL_GPL(acpi_unregister_gsi);
- 
-@@ -668,6 +694,7 @@ static void __init acpi_set_irq_model_ioapic(void)
- {
- 	acpi_irq_model = ACPI_IRQ_MODEL_IOAPIC;
- 	__acpi_register_gsi = acpi_register_gsi_ioapic;
-+	__acpi_unregister_gsi = acpi_unregister_gsi_ioapic;
- 	acpi_ioapic = 1;
- }
- 
-diff --git a/drivers/acpi/pci_irq.c b/drivers/acpi/pci_irq.c
-index 9c62340c2360..6ba463ceccc6 100644
---- a/drivers/acpi/pci_irq.c
-+++ b/drivers/acpi/pci_irq.c
-@@ -498,5 +498,6 @@ void acpi_pci_irq_disable(struct pci_dev *dev)
- 	 */
- 
- 	dev_dbg(&dev->dev, "PCI INT %c disabled\n", pin_name(pin));
--	acpi_unregister_gsi(gsi);
-+	if (gsi >= 0 && dev->irq > 0)
-+		acpi_unregister_gsi(gsi);
- }
--- 
-1.7.10.4
+--=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
