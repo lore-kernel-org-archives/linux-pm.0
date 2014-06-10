@@ -1,197 +1,67 @@
-From: Todd E Brandt <todd.e.brandt@linux.intel.com>
-Subject: [PATCH] PM: trace events for device pm callbacks
-Date: Tue, 10 Jun 2014 07:31:22 -0700
-Message-ID: <20140610143122.GA12851@linux.intel.com>
-Reply-To: todd.e.brandt@linux.intel.com
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFC PATCH 02/16] sched: Introduce CONFIG_SCHED_ENERGY
+Date: Tue, 10 Jun 2014 15:41:00 +0100
+Message-ID: <20140610144100.GD1581@e103034-lin>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <1400869003-27769-3-git-send-email-morten.rasmussen@arm.com>
+ <20140608060316.GA18179@austad.us>
+ <20140609102027.GA29593@e103034-lin>
+ <20140610093943.GA6758@twins.programming.kicks-ass.net>
+ <20140610100641.GB1581@e103034-lin>
+ <20140610102353.GC6758@twins.programming.kicks-ass.net>
+ <20140610112403.GC1581@e103034-lin>
+ <20140610122435.GG6758@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:5381 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750969AbaFJObr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 10 Jun 2014 10:31:47 -0400
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:25658 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750808AbaFJOlC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 10:41:02 -0400
 Content-Disposition: inline
+In-Reply-To: <20140610122435.GG6758@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Henrik Austad <henrik@austad.us>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
 
-Adds two trace events which supply the same info that initcall_debug 
-provides, but via ftrace instead of dmesg. The existing initcall_debug
-calls require the pm_print_times_enabled var to be set (either via
-sysfs or via the kernel cmd line). The new trace events provide all the
-same info as the initcall_debug prints but with less overhead, and also
-with coverage of device prepare and complete device callbacks.
+On Tue, Jun 10, 2014 at 01:24:35PM +0100, Peter Zijlstra wrote:
+> On Tue, Jun 10, 2014 at 12:24:03PM +0100, Morten Rasmussen wrote:
+> > On Tue, Jun 10, 2014 at 11:23:53AM +0100, Peter Zijlstra wrote:
+> > > On Tue, Jun 10, 2014 at 11:06:41AM +0100, Morten Rasmussen wrote:
+> > > > How would you like to disable the energy stuff for users for whom
+> > > > latency is everything?
+> > > > 
+> > > > I mean, we are adding some extra load/utilization tracking. While I
+> > > > think we should do everything possible to minimize the overhead, I think
+> > > > it is unrealistic to assume that it will be zero. Is a some extra 'if
+> > > > (energy_enabled)' acceptable?
+> > > > 
+> > > > I'm open for other suggestions.
+> > > 
+> > > We have the jump-label stuff to do self modifying code ;-) The only
+> > > thing we need to be careful with is data-layout.
+> > 
+> > Thanks. I can see that it is already used in for various bit in
+> > kernel/sched/*. I didn't catch anything in Documentation/static-keys.txt
+> > related to data-layout caveats. Is there some other
+> > documentation/patches I should read before messing everything up? ;-)
+> 
+> So the data-layout was mostly referring to things like making sure that
+> struct sched_avg doesn't end up straddling a cacheline somewhere by
+> accident.
+> 
+> The most expensive part of the per-task accounting nonsense is the
+> amount of memory we need to touch to do so, the actual instructions come
+> second, unless of course we go put tons of divisions in there :-)
 
-These events replace the device_pm_report_time event (which has been
-removed). device_pm_callback_start is called first and provides the device
-and callback info. device_pm_callback_end is called after with the
-device name and error info. The time and pid are gathered from the trace
-data headers.
+Make sense.
 
-Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
-----
- drivers/base/power/main.c    | 14 ++++++++++----
- include/trace/events/power.h | 60 ++++++++++++++++++++++++++++++++++++++++++------------------
- 2 files changed, 52 insertions(+), 22 deletions(-)
+> BTW, are cachelines 64 bytes for you ARM people too?
 
-Raphael, I know we discussed this a while back as an alternative to
-the initcall_debug calls so as to reduce the dmesg traffic. Do you want
-to completely remove the pm_print_times_enabled option and initcall_debug
-calls?
+Mostly yes, but as with a lot of other things on ARM it is
+implementation defined. The cacheline sizes are probeable at runtime,
+but for things where we don't know I think 64 bytes is the current
+assumption.
 
-Also, I applied this patch to the bleeding-edge branch of your linux-pm
-tree.
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index de3fe4f..bf41296 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -214,9 +214,6 @@ static void initcall_debug_report(struct device *dev, ktime_t calltime,
- 		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
- 			error, (unsigned long long)nsecs >> 10);
- 	}
--
--	trace_device_pm_report_time(dev, info, nsecs, pm_verb(state.event),
--				    error);
- }
- 
- /**
-@@ -387,7 +384,9 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	calltime = initcall_debug_start(dev);
- 
- 	pm_dev_dbg(dev, state, info);
-+	trace_device_pm_callback_start(dev, info, state.event);
- 	error = cb(dev);
-+	trace_device_pm_callback_end(dev, error);
- 	suspend_report_result(cb, error);
- 
- 	initcall_debug_report(dev, calltime, error, state, info);
-@@ -919,7 +918,9 @@ static void device_complete(struct device *dev, pm_message_t state)
- 
- 	if (callback) {
- 		pm_dev_dbg(dev, state, info);
-+		trace_device_pm_callback_start(dev, info, state.event);
- 		callback(dev);
-+		trace_device_pm_callback_end(dev, 0);
- 	}
- 
- 	device_unlock(dev);
-@@ -1307,7 +1308,9 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
- 
- 	calltime = initcall_debug_start(dev);
- 
-+	trace_device_pm_callback_start(dev, info, state.event);
- 	error = cb(dev, state);
-+	trace_device_pm_callback_end(dev, error);
- 	suspend_report_result(cb, error);
- 
- 	initcall_debug_report(dev, calltime, error, state, info);
-@@ -1563,8 +1566,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 		callback = dev->driver->pm->prepare;
- 	}
- 
--	if (callback)
-+	if (callback) {
-+		trace_device_pm_callback_start(dev, info, state.event);
- 		ret = callback(dev);
-+		trace_device_pm_callback_end(dev, ret);
-+	}
- 
- 	device_unlock(dev);
- 
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index f88c857..d19840b 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -93,6 +93,17 @@ TRACE_EVENT(pstate_sample,
- #define PWR_EVENT_EXIT -1
- #endif
- 
-+#define pm_verb_symbolic(event) \
-+	__print_symbolic(event, \
-+		{ PM_EVENT_SUSPEND, "suspend" }, \
-+		{ PM_EVENT_RESUME, "resume" }, \
-+		{ PM_EVENT_FREEZE, "freeze" }, \
-+		{ PM_EVENT_QUIESCE, "quiesce" }, \
-+		{ PM_EVENT_HIBERNATE, "hibernate" }, \
-+		{ PM_EVENT_THAW, "thaw" }, \
-+		{ PM_EVENT_RESTORE, "restore" }, \
-+		{ PM_EVENT_RECOVER, "recover" })
-+
- DEFINE_EVENT(cpu, cpu_frequency,
- 
- 	TP_PROTO(unsigned int frequency, unsigned int cpu_id),
-@@ -100,41 +111,54 @@ DEFINE_EVENT(cpu, cpu_frequency,
- 	TP_ARGS(frequency, cpu_id)
- );
- 
--TRACE_EVENT(device_pm_report_time,
-+TRACE_EVENT(device_pm_callback_start,
- 
--	TP_PROTO(struct device *dev, const char *pm_ops, s64 ops_time,
--		 char *pm_event_str, int error),
-+	TP_PROTO(struct device *dev, const char *pm_ops, int event),
- 
--	TP_ARGS(dev, pm_ops, ops_time, pm_event_str, error),
-+	TP_ARGS(dev, pm_ops, event),
- 
- 	TP_STRUCT__entry(
- 		__string(device, dev_name(dev))
- 		__string(driver, dev_driver_string(dev))
- 		__string(parent, dev->parent ? dev_name(dev->parent) : "none")
- 		__string(pm_ops, pm_ops ? pm_ops : "none ")
--		__string(pm_event_str, pm_event_str)
--		__field(s64, ops_time)
--		__field(int, error)
-+		__field(int, event)
- 	),
- 
- 	TP_fast_assign(
--		const char *tmp = dev->parent ? dev_name(dev->parent) : "none";
--		const char *tmp_i = pm_ops ? pm_ops : "none ";
-+		__assign_str(device, dev_name(dev));
-+		__assign_str(driver, dev_driver_string(dev));
-+		__assign_str(parent,
-+			dev->parent ? dev_name(dev->parent) : "none");
-+		__assign_str(pm_ops, pm_ops ? pm_ops : "none ");
-+		__entry->event = event;
-+	),
-+
-+	TP_printk("%s %s, parent: %s, %s[%s]", __get_str(driver),
-+		__get_str(device), __get_str(parent), __get_str(pm_ops),
-+		pm_verb_symbolic(__entry->event))
-+);
-+
-+TRACE_EVENT(device_pm_callback_end,
-+
-+	TP_PROTO(struct device *dev, int error),
- 
-+	TP_ARGS(dev, error),
-+
-+	TP_STRUCT__entry(
-+		__string(device, dev_name(dev))
-+		__string(driver, dev_driver_string(dev))
-+		__field(int, error)
-+	),
-+
-+	TP_fast_assign(
- 		__assign_str(device, dev_name(dev));
- 		__assign_str(driver, dev_driver_string(dev));
--		__assign_str(parent, tmp);
--		__assign_str(pm_ops, tmp_i);
--		__assign_str(pm_event_str, pm_event_str);
--		__entry->ops_time = ops_time;
- 		__entry->error = error;
- 	),
- 
--	/* ops_str has an extra space at the end */
--	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
--		__get_str(driver), __get_str(device), __get_str(parent),
--		__get_str(pm_event_str), __get_str(pm_ops),
--		__entry->ops_time, __entry->error)
-+	TP_printk("%s %s, err=%d",
-+		__get_str(driver), __get_str(device), __entry->error)
- );
- 
- TRACE_EVENT(suspend_resume,
+Catalin or Will would be able to provide a more detailed answer.
