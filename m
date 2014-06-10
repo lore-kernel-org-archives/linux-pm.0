@@ -1,131 +1,62 @@
-From: "Chander M. Kashyap" <chander.kashyap@gmail.com>
-Subject: Re: [PATCH v6 0/6] add cpuidle support for Exynos5420
-Date: Tue, 10 Jun 2014 18:08:28 +0530
-Message-ID: <CADWw7OiQs7H_EeRBVTNEWP-5fRjCgEWQmy=MAmePBday9PQ5Dw@mail.gmail.com>
-References: <CANuQgHGSA+R__raSa_tzrgpceqLD2SZw+s0XQUHGF4wscgh6Kg@mail.gmail.com>
-	<1400227438-27155-1-git-send-email-chander.kashyap@linaro.org>
-	<53831795.9070006@gmail.com>
-	<CANuQgHH284A9QY7M5zGbSE-mXjm2KDqr54VWmtKVkbma3zZvvw@mail.gmail.com>
-	<015f01cf7a2e$3b141590$b13c40b0$@samsung.com>
-	<5385A638.2000001@linaro.org>
-	<CANuQgHGM_PsDO0RmEKDVXSs1u50VMuLrx-=0sYhDut1gSjspcg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 02/24] drivercore: Bind/unbind power domain on probe/remove
+Date: Tue, 10 Jun 2014 14:53:26 +0200
+Message-ID: <CAPDyKFqWZdA4ZisJvCDP8j6D2_A8oRAHkjikddyGSwpToFg-Gw@mail.gmail.com>
+References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
+	<1402397497-26737-3-git-send-email-ulf.hansson@linaro.org>
+	<CAJZ5v0hUT0QPGWeDM9WoxnobaL5eoNi5UFrUUZrQ1gSBCX=aVg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f46.google.com ([209.85.219.46]:52444 "EHLO
-	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751890AbaFJMi3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 08:38:29 -0400
-In-Reply-To: <CANuQgHGM_PsDO0RmEKDVXSs1u50VMuLrx-=0sYhDut1gSjspcg@mail.gmail.com>
+Received: from mail-qa0-f47.google.com ([209.85.216.47]:57840 "EHLO
+	mail-qa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbaFJMx1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 08:53:27 -0400
+Received: by mail-qa0-f47.google.com with SMTP id s7so9010981qap.6
+        for <linux-pm@vger.kernel.org>; Tue, 10 Jun 2014 05:53:26 -0700 (PDT)
+In-Reply-To: <CAJZ5v0hUT0QPGWeDM9WoxnobaL5eoNi5UFrUUZrQ1gSBCX=aVg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chander Kashyap <chander.kashyap@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Tomasz Figa <t.figa@samsung.com>
 
-On Thu, May 29, 2014 at 10:07 AM, Chander Kashyap
-<chander.kashyap@linaro.org> wrote:
-> On 28 May 2014 14:32, Daniel Lezcano <daniel.lezcano@linaro.org> wrot=
-e:
->> On 05/28/2014 06:35 AM, Kukjin Kim wrote:
->>>
->>> Chander Kashyap wrote:
->>>>
->>>>
->>>> On 26 May 2014 15:59, Tomasz Figa <tomasz.figa@gmail.com> wrote:
->>>>>
->>>>> Hi Chander,
->>>>>
->>>>> On 16.05.2014 10:03, Chander Kashyap wrote:
->>>>>>
->>>>>> Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 =
-A7
->>>>
->>>> cores.
->>>>>>
->>>>>>
->>>>>> This patchset adds cpuidle support for Exynos5420 SoC based on
->>>>>> generic big.little cpuidle driver.
->>>>>>
->>>>>> Tested on SMDK5420.
->>>>>>
->>>>>> This patch set depends on:
->>>>>>        1. [PATCH 0/5] MCPM backend for Exynos5420
->>>>>>           http://www.spinics.net/lists/arm-kernel/msg331100.html
->>>>>> Changelog is in respective patches.
->>>>>> Chander Kashyap (5):
->>>>>>    driver: cpuidle-big-little: add of_device_id structure
->>>>>>    arm: exynos: add generic function to calculate cpu number
->>>>>>    cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-=
-little
->>>>>>      driver
->>>>>>    driver: cpuidle: cpuidle-big-little: init driver for Exynos54=
-20
->>>>>>    exynos: cpuidle: do not allow cpuidle registration for Exynos=
-5420
->>>>>>    mcpm: exynos: populate suspend and powered_up callbacks
->>>>>>
->>>>>>   arch/arm/mach-exynos/exynos.c        |    4 +++-
->>>>>>   arch/arm/mach-exynos/mcpm-exynos.c   |   36
->>>>
->>>> ++++++++++++++++++++++++++++++++++
->>>>>>
->>>>>>   arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
->>>>>>   drivers/cpuidle/Kconfig.arm          |    2 +-
->>>>>>   drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
->>>>>>   5 files changed, 60 insertions(+), 3 deletions(-)
->>>>>>
->>>>>
->>>>> For the whole series,
->>>>>
->>>>> Reviewed-by: Tomasz Figa <t.figa@samsung.com>
->>>>
->>>>
->>>> Thanks Tomasz.
->>>>
->>>> Dear Kukjin,
->>>> Can you take these patches.
->>>>>
->>>>>
->>> When I looked at this series quickly, looks good to me but I need t=
-o get
->>> ack from cpuidle maintainer Rafael or Daniel.
+On 10 June 2014 14:11, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Tue, Jun 10, 2014 at 12:51 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> From: Tomasz Figa <t.figa@samsung.com>
 >>
+>> On a number of platforms, devices are part of controllable power
+>> domains, which need to be enabled before such devices can be accessed
+>> and may be powered down when the device is idle to save some power.
+>> This means that on systems that support power domain control using
+>> generic power domains subsystem, it is necessary to add device to its
+>> power domain before binding a driver to it and remove it from its power
+>> domain after its driver is unbound to make sure that an unused device
+>> does not affect power domain state.
 >>
->> Acked the different cpuidle bits.
+>> Since this is not limited to particular busses and specific
+>> archs/platforms,
 >
-> Hi Kukjin,
-> Can you take it now?
+> Actually, this isn't correrct.  It is limited to the platforms that
+> use Device Trees now.
 
-ping
-Sorry for previous html messages.
+Correct, we should update the commit message/docs.
 
 >
->
->>
->> Thanks
->>   -- Daniel
->>
->>
->> --
->>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software =
-for ARM SoCs
->>
->> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> <http://twitter.com/#!/linaroorg> Twitter |
->> <http://www.linaro.org/linaro-blog/> Blog
->>
->
->
->
-> --
-> with warm regards,
-> Chander Kashyap
+> Moreover, it is not consistent with the way we add devices to the ACPI PM
+> domain, which is the ACPI counterpart of this.
 
+I am not sure why you think consistency for ACPI is important here.
+ACPI PM will still be able to handle it's domain/device registering as
+before. There are even other pm_domains that don't use genpd which
+need to handle this themselves.
 
+Or are you saying that you prefer bus notifiers in favour of making
+use of the driver core for this matter? Shouldn't the driver core
+handle most of the common things for a device driver? Let's compare
+how the pinctrls are being managed in the driver core, for example.
 
---=20
-thanks and regards,
-Chander M. Kashyap
-Contact Number: +918123738320
-------- TENSION LENE KA NAHI, DENE KE-----
+Kind regards
+Ulf Hansson
+
+>
+> Rafael
