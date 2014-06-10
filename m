@@ -1,7 +1,7 @@
-From: Henrik Austad <henrik@austad.us>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
 Subject: Re: [RFC PATCH 02/16] sched: Introduce CONFIG_SCHED_ENERGY
-Date: Tue, 10 Jun 2014 13:17:32 +0200
-Message-ID: <20140610111732.GA30139@austad.us>
+Date: Tue, 10 Jun 2014 12:24:03 +0100
+Message-ID: <20140610112403.GC1581@e103034-lin>
 References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
  <1400869003-27769-3-git-send-email-morten.rasmussen@arm.com>
  <20140608060316.GA18179@austad.us>
@@ -12,20 +12,18 @@ References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:47094 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbaFJLWS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 07:22:18 -0400
-Received: by mail-lb0-f178.google.com with SMTP id w7so3763088lbi.23
-        for <linux-pm@vger.kernel.org>; Tue, 10 Jun 2014 04:22:16 -0700 (PDT)
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:26409 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751038AbaFJLYE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 07:24:04 -0400
 Content-Disposition: inline
 In-Reply-To: <20140610102353.GC6758@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
+Cc: Henrik Austad <henrik@austad.us>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
-On Tue, Jun 10, 2014 at 12:23:53PM +0200, Peter Zijlstra wrote:
+On Tue, Jun 10, 2014 at 11:23:53AM +0100, Peter Zijlstra wrote:
 > On Tue, Jun 10, 2014 at 11:06:41AM +0100, Morten Rasmussen wrote:
 > > How would you like to disable the energy stuff for users for whom
 > > latency is everything?
@@ -40,26 +38,14 @@ On Tue, Jun 10, 2014 at 12:23:53PM +0200, Peter Zijlstra wrote:
 > We have the jump-label stuff to do self modifying code ;-) The only
 > thing we need to be careful with is data-layout.
 
-Isn't this asking for trouble?
-
-I do get the point of not introducing more make-ifdeffery, but I'm not
-so sure the alternative is much better. Do we really want to spend time
-tracing down bugs introduced via a self-modifying process in something
-as central as the scheduler?
+Thanks. I can see that it is already used in for various bit in
+kernel/sched/*. I didn't catch anything in Documentation/static-keys.txt
+related to data-layout caveats. Is there some other
+documentation/patches I should read before messing everything up? ;-)
 
 > So I'm _hoping_ we can do all this without more CONFIG knobs, because
 > {PREEMPT*SMP*CGROUP^3*NUMA^2} is already entirely annoying to
 > build and run test, not to mention that distro builds will have no other
 > option than to enable everything anyhow.
 
-True, but if that is the argument, how is adding this as a dynamic thing
-any better, you still end up with a test-matrix of the same size?
-
-Building a kernel isn't _that_ much work and it would make the
-test-scripts all the much simpler to maintain if we don't have to rely
-on some dynamic tweaking of the core.
-
-Just sayin'
-
--- 
-Henrik Austad
+Fair enough.
