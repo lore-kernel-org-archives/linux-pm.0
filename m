@@ -1,41 +1,47 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 6/7] cpufreq: intel_pstate: Trivial code cleanup
-Date: Tue, 10 Jun 2014 18:41:19 -0700
-Message-ID: <1402450879.4082.6.camel@joe-AO725>
-References: <5396208F.6070400@semaphore.gr>
-	 <1894836.tjrHdJ7Duz@vostro.rjw.lan> <1402435605.4082.3.camel@joe-AO725>
-	 <2859027.TirvIA2s2c@vostro.rjw.lan>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFC PATCH 07/16 v3] Init Workload Consolidation flags in
+ sched_domain
+Date: Wed, 11 Jun 2014 02:09:54 +0800
+Message-ID: <20140610180954.GB5487@intel.com>
+References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com>
+ <1401431772-14320-8-git-send-email-yuyang.du@intel.com>
+ <20140603121416.GH30445@twins.programming.kicks-ass.net>
+ <5395F541.60604@arm.com>
+ <20140609211820.GA5361@intel.com>
+ <5396F166.1030401@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0231.hostedemail.com ([216.40.44.231]:60342 "EHLO
-	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751255AbaFKBlZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 21:41:25 -0400
-In-Reply-To: <2859027.TirvIA2s2c@vostro.rjw.lan>
+Received: from mga09.intel.com ([134.134.136.24]:2825 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752916AbaFKCNl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 Jun 2014 22:13:41 -0400
+Content-Disposition: inline
+In-Reply-To: <5396F166.1030401@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, Dirk Brandewie <dirk.brandewie@gmail.com>, dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, 2014-06-11 at 02:23 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, June 10, 2014 02:26:45 PM Joe Perches wrote:
-> > c89 is 25 years ago now.
-> Apparently, I'm old.
+On Tue, Jun 10, 2014 at 12:52:06PM +0100, Dietmar Eggemann wrote:
 
-nah, just older than yesterday.
-No doubt better too.
+Hi Dietmar,
 
-> > > Either way, in my opinion it's better to put the parens into the expression
-> > > in this particular case to clearly state the intention.
-> > 
-> > I don't think so.
-> 
-> Of course, you're free to disagree, but I guess you'll admit that
-> a * b / c is generally different from b / c * a and if you see something
-> like this it is hard to say at first sight whether or not this is intentional
-> or an expression ordering bug.
+> Not in this sense but there is no functionality in the scheduler right
+> now to check constantly if an sd flag has been set/unset via sysctl.
 
-true enough.
+Sorry, I still don't understand. There are many "if (sd->flags & SD_XXX)"
+in fair.c. What does it mean to you?
 
+Probably you mean the SD_XX should be fixed in init and never changed via sysctl
+thereafter. Ah... I don't know about this...
+
+Overall, I think I should come up with a better way to implement the SD_WORKLOAD_CONSOLIDATION
+policy (enabled or disabled) in load balancing (as is also pointed out by PeterZ).
+But I just don't see the current implementation is any particular different than
+any other SD_XX's.
+
+Have you tried it on your platform?
+
+Thanks a lot,
+Yuyang
