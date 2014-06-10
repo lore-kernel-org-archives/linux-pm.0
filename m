@@ -1,43 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM: trace events for device pm callbacks
-Date: Tue, 10 Jun 2014 23:41:33 +0200
-Message-ID: <1740847.aJcviUsT1q@vostro.rjw.lan>
-References: <20140610143122.GA12851@linux.intel.com> <3737184.526pO4COlv@vostro.rjw.lan> <20140610171716.694c8414@gandalf.local.home>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 6/7] cpufreq: intel_pstate: Trivial code cleanup
+Date: Tue, 10 Jun 2014 14:26:45 -0700
+Message-ID: <1402435605.4082.3.camel@joe-AO725>
+References: <5396208F.6070400@semaphore.gr>
+	 <1875587.zmLYOIAyby@vostro.rjw.lan> <53977251.2090804@semaphore.gr>
+	 <1894836.tjrHdJ7Duz@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140610171716.694c8414@gandalf.local.home>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: todd.e.brandt@linux.intel.com, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay0115.hostedemail.com ([216.40.44.115]:47038 "EHLO
+	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752715AbaFJV0w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 17:26:52 -0400
+In-Reply-To: <1894836.tjrHdJ7Duz@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, Dirk Brandewie <dirk.brandewie@gmail.com>, dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Tuesday, June 10, 2014 05:17:16 PM Steven Rostedt wrote:
-> On Tue, 10 Jun 2014 23:17:46 +0200
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
-> 
-> > On Tuesday, June 10, 2014 07:31:22 AM Todd E Brandt wrote:
-> > > Adds two trace events which supply the same info that initcall_debug 
-> > > provides, but via ftrace instead of dmesg. The existing initcall_debug
-> > > calls require the pm_print_times_enabled var to be set (either via
-> > > sysfs or via the kernel cmd line). The new trace events provide all the
-> > > same info as the initcall_debug prints but with less overhead, and also
-> > > with coverage of device prepare and complete device callbacks.
-> > > 
-> > > These events replace the device_pm_report_time event (which has been
-> > > removed). device_pm_callback_start is called first and provides the device
-> > > and callback info. device_pm_callback_end is called after with the
-> > > device name and error info. The time and pid are gathered from the trace
-> > > data headers.
-> > > 
-> > > Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+On Tue, 2014-06-10 at 23:38 +0200, Rafael J. Wysocki wrote:
+
+> > > is.  And the result of (a * 100) / b may generally be different from
+> > > a * 100 / b for integers (if the division is carried out first).
 > > 
-> > Steve needs to see this (CCed).
+> > I thought that (a * 100) / b is always equivalent to a * 100 / b.
 > 
-> The trace events look fine. Is there anything else you wanted me to
-> look at?
+> I'm not actually sure if that's guaranteed by C standards.
 
-No, that's all, thanks!
+It is.  left to right, same precedence.
 
-Rafael
+> It surely
+> wasn't some time ago (when there was no formal C standard).
+
+c89 is 25 years ago now.
+
+> Either way, in my opinion it's better to put the parens into the expression
+> in this particular case to clearly state the intention.
+
+I don't think so.
+
+
