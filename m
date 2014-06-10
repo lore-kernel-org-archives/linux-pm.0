@@ -1,85 +1,79 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH 6/7] cpufreq: intel_pstate: Trivial code cleanup
-Date: Wed, 11 Jun 2014 00:02:09 +0300
-Message-ID: <53977251.2090804@semaphore.gr>
-References: <5396208F.6070400@semaphore.gr> <5753346.hxK14sqO5y@vostro.rjw.lan> <5397673D.8010200@semaphore.gr> <1875587.zmLYOIAyby@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 02/24] drivercore: Bind/unbind power domain on probe/remove
+Date: Tue, 10 Jun 2014 23:27:45 +0200
+Message-ID: <1894835.cKK4602bPf@vostro.rjw.lan>
+References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0hUT0QPGWeDM9WoxnobaL5eoNi5UFrUUZrQ1gSBCX=aVg@mail.gmail.com> <CAPDyKFqWZdA4ZisJvCDP8j6D2_A8oRAHkjikddyGSwpToFg-Gw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:58261 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752940AbaFJVCN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 17:02:13 -0400
-In-Reply-To: <1875587.zmLYOIAyby@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:64840 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752633AbaFJVKU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 17:10:20 -0400
+In-Reply-To: <CAPDyKFqWZdA4ZisJvCDP8j6D2_A8oRAHkjikddyGSwpToFg-Gw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, dirk.j.brandewie@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Tomasz Figa <t.figa@samsung.com>
 
-On 10/06/2014 11:43 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
-> On Tuesday, June 10, 2014 11:14:53 PM Stratos Karafotis wrote:
->> On 10/06/2014 11:17 =CE=BC=CE=BC, Rafael J. Wysocki wrote:
->>> On Tuesday, June 10, 2014 10:26:44 AM Dirk Brandewie wrote:
->>>> On 06/10/2014 08:31 AM, Rafael J. Wysocki wrote:
->>>>> On Tuesday, June 10, 2014 08:12:48 AM Dirk Brandewie wrote:
->>>>>> On 06/09/2014 02:01 PM, Stratos Karafotis wrote:
->>>>>>> Remove unnecessary blank lines.
->>>>>>> Remove unnecessary parentheses.
->>>>>>> Remove unnecessary braces.
->>>>>>> Put the code in one line where possible.
->>>>>>> Add blank lines after variable declarations.
->>>>>>> Alignment to open parenthesis.
->>>>>>>
->>>>>>
->>>>>> I don't have an issue with this patch in general but I would rat=
-her
->>>>>> the cleanup be done when there is a functional change in the giv=
-en
->>>>>> hunk of code otherwise you are setting up a fence for stable/bac=
-kporters
->>>>>> of functional changes in the future.
->>>>>
->>>>> I actually prefer separate cleanups so as to avoid doing multiple=
- things
->>>>> in one patch.
->>>>>
->>>>> Rafael
->>>>>
->>>> I don't have strong feelings either way I was just trying to be ki=
-nd
->>>> to the maintainers of distro kernels.
->>>
->>> And mixing fixes with cleanups in one patch doesn't do any good to =
-them.
->>>
->>> Trust me, I used to work for a distro. :-)
->>>
->>
->> So, should I proceed and split the patch or drop it? :)
->=20
-> I'm not sure why you'd want to split it?
+On Tuesday, June 10, 2014 02:53:26 PM Ulf Hansson wrote:
+> On 10 June 2014 14:11, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Tue, Jun 10, 2014 at 12:51 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >> From: Tomasz Figa <t.figa@samsung.com>
+> >>
+> >> On a number of platforms, devices are part of controllable power
+> >> domains, which need to be enabled before such devices can be accessed
+> >> and may be powered down when the device is idle to save some power.
+> >> This means that on systems that support power domain control using
+> >> generic power domains subsystem, it is necessary to add device to its
+> >> power domain before binding a driver to it and remove it from its power
+> >> domain after its driver is unbound to make sure that an unused device
+> >> does not affect power domain state.
+> >>
+> >> Since this is not limited to particular busses and specific
+> >> archs/platforms,
+> >
+> > Actually, this isn't correrct.  It is limited to the platforms that
+> > use Device Trees now.
+> 
+> Correct, we should update the commit message/docs.
+> 
+> >
+> > Moreover, it is not consistent with the way we add devices to the ACPI PM
+> > domain, which is the ACPI counterpart of this.
+> 
+> I am not sure why you think consistency for ACPI is important here.
+> ACPI PM will still be able to handle it's domain/device registering as
+> before. There are even other pm_domains that don't use genpd which
+> need to handle this themselves.
 
-=46orgive me, but I'm totally confused. I asked because you mentioned t=
-hat
-you prefer separate cleanups.
-So, my question was if you want me to separate this patch into more (on=
-e
-per change) or entirely drop it (because it would cause problems to bac=
-kporters
-or maintainers).
+My point is that doing things like that in different places for different
+firmware interfaces is confusing and likely to lead to coding mistakes in
+the future.
 
-> That said you're changing things that are intentional.  For example,
-> the
->=20
-> 	if (acpi_disabled
-> 	    || ...)
->=20
-> is.  And the result of (a * 100) / b may generally be different from
-> a * 100 / b for integers (if the division is carried out first).
+> Or are you saying that you prefer bus notifiers in favour of making
+> use of the driver core for this matter?
 
-I thought that (a * 100) / b is always equivalent to a * 100 / b.
+Well, please grep for acpi_dev_pm_attach() and see where it is done.
+Surely not in drivers/base/dd.c.  Also I'm not sure why you're talking
+about bus notifiers in this context.
 
+> Shouldn't the driver core handle most of the common things for a device
+> driver?
 
-Stratos
+Common, yes.  Platform-specific, no.
+
+> Let's compare how the pinctrls are being managed in the driver core, for
+> example.
+
+pinctrl has Device Trees support only at the moment (as far as firmware
+interfaces go) and quite frankly I'm not sure if/how we'll need to change
+it to cover ACPI as well.
+
+But for power domains, please keep that stuff away from dd.c.  That is,
+unless Greg specifically disagrees with me and decides to apply this
+patch regardless. :-)
+
+Rafael
 
