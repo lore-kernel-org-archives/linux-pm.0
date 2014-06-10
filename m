@@ -1,30 +1,197 @@
-From: David Vrabel <david.vrabel@citrix.com>
-Subject: Re: [Xen-devel] [Patch V4 19/42] x86, irq: count legacy IRQs by legacy_pic->nr_legacy_irqs
- instead of NR_IRQS_LEGACY
-Date: Tue, 10 Jun 2014 15:18:26 +0100
-Message-ID: <539713B2.1010506@citrix.com>
-References: <1402302011-23642-1-git-send-email-jiang.liu@linux.intel.com> <1402302011-23642-20-git-send-email-jiang.liu@linux.intel.com>
+From: Todd E Brandt <todd.e.brandt@linux.intel.com>
+Subject: [PATCH] PM: trace events for device pm callbacks
+Date: Tue, 10 Jun 2014 07:31:22 -0700
+Message-ID: <20140610143122.GA12851@linux.intel.com>
+Reply-To: todd.e.brandt@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1402302011-23642-20-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Rob Herring <rob.herring@calxeda.com>, Michal Simek <monstr@monstr.eu>, Tony Lindgren <tony@atomide.com>
-Cc: Tony Luck <tony.luck@intel.com>, linux-acpi@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joerg Roedel <joro@8bytes.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, linux-pci@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:5381 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750969AbaFJObr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 Jun 2014 10:31:47 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rafael.j.wysocki@intel.com
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net
 
-On 09/06/14 09:19, Jiang Liu wrote:
-> Some platforms, such as Intel MID and mshypv, do not support legacy
-> interrupt controllers. So count legacy IRQs by legacy_pic->nr_legacy_irqs
-> instead of hard-coded NR_IRQS_LEGACY.
-> 
-[...]
-> --- a/arch/x86/pci/xen.c
-> +++ b/arch/x86/pci/xen.c
+Adds two trace events which supply the same info that initcall_debug 
+provides, but via ftrace instead of dmesg. The existing initcall_debug
+calls require the pm_print_times_enabled var to be set (either via
+sysfs or via the kernel cmd line). The new trace events provide all the
+same info as the initcall_debug prints but with less overhead, and also
+with coverage of device prepare and complete device callbacks.
 
-Xen bits:
+These events replace the device_pm_report_time event (which has been
+removed). device_pm_callback_start is called first and provides the device
+and callback info. device_pm_callback_end is called after with the
+device name and error info. The time and pid are gathered from the trace
+data headers.
 
-Acked-by: David Vrabel <david.vrabel@citrix.com>
+Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+----
+ drivers/base/power/main.c    | 14 ++++++++++----
+ include/trace/events/power.h | 60 ++++++++++++++++++++++++++++++++++++++++++------------------
+ 2 files changed, 52 insertions(+), 22 deletions(-)
 
-David
+Raphael, I know we discussed this a while back as an alternative to
+the initcall_debug calls so as to reduce the dmesg traffic. Do you want
+to completely remove the pm_print_times_enabled option and initcall_debug
+calls?
+
+Also, I applied this patch to the bleeding-edge branch of your linux-pm
+tree.
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index de3fe4f..bf41296 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -214,9 +214,6 @@ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+ 		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
+ 			error, (unsigned long long)nsecs >> 10);
+ 	}
+-
+-	trace_device_pm_report_time(dev, info, nsecs, pm_verb(state.event),
+-				    error);
+ }
+ 
+ /**
+@@ -387,7 +384,9 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	calltime = initcall_debug_start(dev);
+ 
+ 	pm_dev_dbg(dev, state, info);
++	trace_device_pm_callback_start(dev, info, state.event);
+ 	error = cb(dev);
++	trace_device_pm_callback_end(dev, error);
+ 	suspend_report_result(cb, error);
+ 
+ 	initcall_debug_report(dev, calltime, error, state, info);
+@@ -919,7 +918,9 @@ static void device_complete(struct device *dev, pm_message_t state)
+ 
+ 	if (callback) {
+ 		pm_dev_dbg(dev, state, info);
++		trace_device_pm_callback_start(dev, info, state.event);
+ 		callback(dev);
++		trace_device_pm_callback_end(dev, 0);
+ 	}
+ 
+ 	device_unlock(dev);
+@@ -1307,7 +1308,9 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
+ 
+ 	calltime = initcall_debug_start(dev);
+ 
++	trace_device_pm_callback_start(dev, info, state.event);
+ 	error = cb(dev, state);
++	trace_device_pm_callback_end(dev, error);
+ 	suspend_report_result(cb, error);
+ 
+ 	initcall_debug_report(dev, calltime, error, state, info);
+@@ -1563,8 +1566,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 		callback = dev->driver->pm->prepare;
+ 	}
+ 
+-	if (callback)
++	if (callback) {
++		trace_device_pm_callback_start(dev, info, state.event);
+ 		ret = callback(dev);
++		trace_device_pm_callback_end(dev, ret);
++	}
+ 
+ 	device_unlock(dev);
+ 
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index f88c857..d19840b 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -93,6 +93,17 @@ TRACE_EVENT(pstate_sample,
+ #define PWR_EVENT_EXIT -1
+ #endif
+ 
++#define pm_verb_symbolic(event) \
++	__print_symbolic(event, \
++		{ PM_EVENT_SUSPEND, "suspend" }, \
++		{ PM_EVENT_RESUME, "resume" }, \
++		{ PM_EVENT_FREEZE, "freeze" }, \
++		{ PM_EVENT_QUIESCE, "quiesce" }, \
++		{ PM_EVENT_HIBERNATE, "hibernate" }, \
++		{ PM_EVENT_THAW, "thaw" }, \
++		{ PM_EVENT_RESTORE, "restore" }, \
++		{ PM_EVENT_RECOVER, "recover" })
++
+ DEFINE_EVENT(cpu, cpu_frequency,
+ 
+ 	TP_PROTO(unsigned int frequency, unsigned int cpu_id),
+@@ -100,41 +111,54 @@ DEFINE_EVENT(cpu, cpu_frequency,
+ 	TP_ARGS(frequency, cpu_id)
+ );
+ 
+-TRACE_EVENT(device_pm_report_time,
++TRACE_EVENT(device_pm_callback_start,
+ 
+-	TP_PROTO(struct device *dev, const char *pm_ops, s64 ops_time,
+-		 char *pm_event_str, int error),
++	TP_PROTO(struct device *dev, const char *pm_ops, int event),
+ 
+-	TP_ARGS(dev, pm_ops, ops_time, pm_event_str, error),
++	TP_ARGS(dev, pm_ops, event),
+ 
+ 	TP_STRUCT__entry(
+ 		__string(device, dev_name(dev))
+ 		__string(driver, dev_driver_string(dev))
+ 		__string(parent, dev->parent ? dev_name(dev->parent) : "none")
+ 		__string(pm_ops, pm_ops ? pm_ops : "none ")
+-		__string(pm_event_str, pm_event_str)
+-		__field(s64, ops_time)
+-		__field(int, error)
++		__field(int, event)
+ 	),
+ 
+ 	TP_fast_assign(
+-		const char *tmp = dev->parent ? dev_name(dev->parent) : "none";
+-		const char *tmp_i = pm_ops ? pm_ops : "none ";
++		__assign_str(device, dev_name(dev));
++		__assign_str(driver, dev_driver_string(dev));
++		__assign_str(parent,
++			dev->parent ? dev_name(dev->parent) : "none");
++		__assign_str(pm_ops, pm_ops ? pm_ops : "none ");
++		__entry->event = event;
++	),
++
++	TP_printk("%s %s, parent: %s, %s[%s]", __get_str(driver),
++		__get_str(device), __get_str(parent), __get_str(pm_ops),
++		pm_verb_symbolic(__entry->event))
++);
++
++TRACE_EVENT(device_pm_callback_end,
++
++	TP_PROTO(struct device *dev, int error),
+ 
++	TP_ARGS(dev, error),
++
++	TP_STRUCT__entry(
++		__string(device, dev_name(dev))
++		__string(driver, dev_driver_string(dev))
++		__field(int, error)
++	),
++
++	TP_fast_assign(
+ 		__assign_str(device, dev_name(dev));
+ 		__assign_str(driver, dev_driver_string(dev));
+-		__assign_str(parent, tmp);
+-		__assign_str(pm_ops, tmp_i);
+-		__assign_str(pm_event_str, pm_event_str);
+-		__entry->ops_time = ops_time;
+ 		__entry->error = error;
+ 	),
+ 
+-	/* ops_str has an extra space at the end */
+-	TP_printk("%s %s parent=%s state=%s ops=%snsecs=%lld err=%d",
+-		__get_str(driver), __get_str(device), __get_str(parent),
+-		__get_str(pm_event_str), __get_str(pm_ops),
+-		__entry->ops_time, __entry->error)
++	TP_printk("%s %s, err=%d",
++		__get_str(driver), __get_str(device), __entry->error)
+ );
+ 
+ TRACE_EVENT(suspend_resume,
