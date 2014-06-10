@@ -1,93 +1,65 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 24/24] ARM: ux500: Add sdi[n] devices to VAPE power domain
-Date: Tue, 10 Jun 2014 12:51:37 +0200
-Message-ID: <1402397497-26737-25-git-send-email-ulf.hansson@linaro.org>
-References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
+From: Henrik Austad <henrik@austad.us>
+Subject: Re: [RFC PATCH 02/16] sched: Introduce CONFIG_SCHED_ENERGY
+Date: Tue, 10 Jun 2014 13:17:32 +0200
+Message-ID: <20140610111732.GA30139@austad.us>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <1400869003-27769-3-git-send-email-morten.rasmussen@arm.com>
+ <20140608060316.GA18179@austad.us>
+ <20140609102027.GA29593@e103034-lin>
+ <20140610093943.GA6758@twins.programming.kicks-ass.net>
+ <20140610100641.GB1581@e103034-lin>
+ <20140610102353.GC6758@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f171.google.com ([209.85.217.171]:55454 "EHLO
-	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbaFJKxF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 06:53:05 -0400
-Received: by mail-lb0-f171.google.com with SMTP id 10so3858331lbg.30
-        for <linux-pm@vger.kernel.org>; Tue, 10 Jun 2014 03:53:04 -0700 (PDT)
-In-Reply-To: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-lb0-f178.google.com ([209.85.217.178]:47094 "EHLO
+	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbaFJLWS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 07:22:18 -0400
+Received: by mail-lb0-f178.google.com with SMTP id w7so3763088lbi.23
+        for <linux-pm@vger.kernel.org>; Tue, 10 Jun 2014 04:22:16 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20140610102353.GC6758@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
-Since ux500 uses the mmci host driver for these devices and since that
-driver are well behaving from a runtime PM perspective, we can now add
-these device to the VAPE power domain.
+On Tue, Jun 10, 2014 at 12:23:53PM +0200, Peter Zijlstra wrote:
+> On Tue, Jun 10, 2014 at 11:06:41AM +0100, Morten Rasmussen wrote:
+> > How would you like to disable the energy stuff for users for whom
+> > latency is everything?
+> > 
+> > I mean, we are adding some extra load/utilization tracking. While I
+> > think we should do everything possible to minimize the overhead, I think
+> > it is unrealistic to assume that it will be zero. Is a some extra 'if
+> > (energy_enabled)' acceptable?
+> > 
+> > I'm open for other suggestions.
+> 
+> We have the jump-label stuff to do self modifying code ;-) The only
+> thing we need to be careful with is data-layout.
 
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- arch/arm/boot/dts/ste-dbx5x0.dtsi |    7 +++++++
- 1 file changed, 7 insertions(+)
+Isn't this asking for trouble?
 
-diff --git a/arch/arm/boot/dts/ste-dbx5x0.dtsi b/arch/arm/boot/dts/ste-dbx5x0.dtsi
-index 29a7013..630690b 100644
---- a/arch/arm/boot/dts/ste-dbx5x0.dtsi
-+++ b/arch/arm/boot/dts/ste-dbx5x0.dtsi
-@@ -11,6 +11,7 @@
- 
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/mfd/dbx500-prcmu.h>
-+#include <dt-bindings/arm/ux500_pm_domains.h>
- #include "skeleton.dtsi"
- 
- / {
-@@ -840,6 +841,7 @@
- 
- 			clocks = <&prcc_kclk 1 5>, <&prcc_pclk 1 5>;
- 			clock-names = "sdi", "apb_pclk";
-+			power-domains = <&pm_domains DOMAIN_VAPE>;
- 
- 			status = "disabled";
- 		};
-@@ -855,6 +857,7 @@
- 
- 			clocks = <&prcc_kclk 2 4>, <&prcc_pclk 2 6>;
- 			clock-names = "sdi", "apb_pclk";
-+			power-domains = <&pm_domains DOMAIN_VAPE>;
- 
- 			status = "disabled";
- 		};
-@@ -870,6 +873,7 @@
- 
- 			clocks = <&prcc_kclk 3 4>, <&prcc_pclk 3 4>;
- 			clock-names = "sdi", "apb_pclk";
-+			power-domains = <&pm_domains DOMAIN_VAPE>;
- 
- 			status = "disabled";
- 		};
-@@ -881,6 +885,7 @@
- 
- 			clocks = <&prcc_kclk 2 5>, <&prcc_pclk 2 7>;
- 			clock-names = "sdi", "apb_pclk";
-+			power-domains = <&pm_domains DOMAIN_VAPE>;
- 
- 			status = "disabled";
- 		};
-@@ -896,6 +901,7 @@
- 
- 			clocks = <&prcc_kclk 2 2>, <&prcc_pclk 2 4>;
- 			clock-names = "sdi", "apb_pclk";
-+			power-domains = <&pm_domains DOMAIN_VAPE>;
- 
- 			status = "disabled";
- 		};
-@@ -907,6 +913,7 @@
- 
- 			clocks = <&prcc_kclk 3 7>, <&prcc_pclk 3 7>;
- 			clock-names = "sdi", "apb_pclk";
-+			power-domains = <&pm_domains DOMAIN_VAPE>;
- 
- 			status = "disabled";
- 		};
+I do get the point of not introducing more make-ifdeffery, but I'm not
+so sure the alternative is much better. Do we really want to spend time
+tracing down bugs introduced via a self-modifying process in something
+as central as the scheduler?
+
+> So I'm _hoping_ we can do all this without more CONFIG knobs, because
+> {PREEMPT*SMP*CGROUP^3*NUMA^2} is already entirely annoying to
+> build and run test, not to mention that distro builds will have no other
+> option than to enable everything anyhow.
+
+True, but if that is the argument, how is adding this as a dynamic thing
+any better, you still end up with a test-matrix of the same size?
+
+Building a kernel isn't _that_ much work and it would make the
+test-scripts all the much simpler to maintain if we don't have to rely
+on some dynamic tweaking of the core.
+
+Just sayin'
+
 -- 
-1.7.9.5
-
+Henrik Austad
