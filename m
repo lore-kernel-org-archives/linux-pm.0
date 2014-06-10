@@ -1,39 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 6/7] cpufreq: intel_pstate: Trivial code cleanup
-Date: Tue, 10 Jun 2014 17:31:38 +0200
-Message-ID: <1447217.dTmMAkaUnF@vostro.rjw.lan>
-References: <5396208F.6070400@semaphore.gr> <53972070.3020608@intel.com>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [PATCH] tools/thermal: tmon: fix compilation errors when
+ building statically
+Date: Tue, 10 Jun 2014 16:16:49 +0100
+Message-ID: <20140610151649.GB2798@e104805>
+References: <1401728897-25188-1-git-send-email-javi.merino@arm.com>
+ <20140602045457.6b519e43@jacob-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60808 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750843AbaFJPOP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 11:14:15 -0400
-In-Reply-To: <53972070.3020608@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140602045457.6b519e43@jacob-desktop>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Tuesday, June 10, 2014 08:12:48 AM Dirk Brandewie wrote:
-> On 06/09/2014 02:01 PM, Stratos Karafotis wrote:
-> > Remove unnecessary blank lines.
-> > Remove unnecessary parentheses.
-> > Remove unnecessary braces.
-> > Put the code in one line where possible.
-> > Add blank lines after variable declarations.
-> > Alignment to open parenthesis.
-> >
+Hi Rui,
+
+On Mon, Jun 02, 2014 at 12:54:57PM +0100, Jacob Pan wrote:
+> On Mon,  2 Jun 2014 18:08:17 +0100
+> "Javi Merino" <javi.merino@arm.com> wrote:
 > 
-> I don't have an issue with this patch in general but I would rather
-> the cleanup be done when there is a functional change in the given
-> hunk of code otherwise you are setting up a fence for stable/backporters
-> of functional changes in the future.
+> > tmon fails to build statically with the following error:
+> > 
+> > $ make LDFLAGS=-static
+> > gcc -O1 -Wall -Wshadow -W -Wformat -Wimplicit-function-declaration
+> > -Wimplicit-int -fstack-protector -D VERSION=\"1.0\" -static tmon.o
+> > tui.o sysfs.o pid.o   -o tmon -lm -lpanel -lncursesw  -lpthread
+> > tmon.o: In function `tmon_sig_handler': tmon.c:(.text+0x21):
+> > undefined reference to `stdscr' tmon.o: In function `tmon_cleanup':
+> > tmon.c:(.text+0xb9): undefined reference to `stdscr'
+> > tmon.c:(.text+0x11e): undefined reference to `stdscr'
+> > tmon.c:(.text+0x123): undefined reference to `keypad'
+> > tmon.c:(.text+0x12d): undefined reference to `nocbreak' tmon.o: In
+> > function `main': tmon.c:(.text+0x785): undefined reference to `stdscr'
+> > tmon.c:(.text+0x78a): undefined reference to `nodelay'
+> > tui.o: In function `setup_windows':
+> > tui.c:(.text+0x131): undefined reference to `stdscr'
+> > tui.c:(.text+0x176): undefined reference to `stdscr'
+> > tui.c:(.text+0x19f): undefined reference to `stdscr'
+> > tui.c:(.text+0x1cc): undefined reference to `stdscr'
+> > tui.c:(.text+0x1ff): undefined reference to `stdscr'
+> > tui.o:tui.c:(.text+0x229): more undefined references to `stdscr'
+> > follow tui.o: In function `show_cooling_device':
+> > [...]
+> > 
+> > stdscr() and friends are in libtinfo (part of ncurses) so add it to
+> > the libraries that are linked in when compiling tmon to fix it.
+> > 
+> Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-I actually prefer separate cleanups so as to avoid doing multiple things
-in one patch.
+Thanks!
 
-Rafael
+Rui, can you pick this up?
 
+Cheers,
+Javi
