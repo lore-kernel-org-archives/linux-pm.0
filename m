@@ -1,404 +1,78 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Re: [REGRESSION] 3.15: Seems to turbo mode Intel Sandybridge Dual Core without need, overheating CPU
-Date: Tue, 10 Jun 2014 11:33:53 +0200
-Message-ID: <6379600.GnlhQ4eMF4@merkaba>
-References: <1996399.buoKlNI5nG@merkaba> <2391586.plx21VNRFR@merkaba> <539638B2.1060404@gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 02/16] sched: Introduce CONFIG_SCHED_ENERGY
+Date: Tue, 10 Jun 2014 11:39:43 +0200
+Message-ID: <20140610093943.GA6758@twins.programming.kicks-ass.net>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com>
+ <1400869003-27769-3-git-send-email-morten.rasmussen@arm.com>
+ <20140608060316.GA18179@austad.us>
+ <20140609102027.GA29593@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fU5tsrXreH0/dVH0"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:44617 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbaFJJdz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 05:33:55 -0400
-In-Reply-To: <539638B2.1060404@gmail.com>
+Received: from bombadil.infradead.org ([198.137.202.9]:33222 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbaFJJjx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 05:39:53 -0400
+Content-Disposition: inline
+In-Reply-To: <20140609102027.GA29593@e103034-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Henrik Austad <henrik@austad.us>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 
-Am Montag, 9. Juni 2014, 15:44:02 schrieb Dirk Brandewie:
-> On 06/09/2014 03:02 PM, Martin Steigerwald wrote:
-> > Am Montag, 9. Juni 2014, 23:41:40 schrieb Martin Steigerwald:
-> >> Am Montag, 9. Juni 2014, 23:33:43 schrieb Martin Steigerwald:
-> >>> Hi!
-> >>>
-> >>> Added linux-pm to Cc. Also reboots seems to fix up the condition:
-> >>>
-> >>> merkaba:~> grep . /sys/devices/system/cpu/cpu[0-3]/cpufreq/cpuinf=
-o_cur_freq
-> >>> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:830957
-> >>> /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:819628
-> >>> /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq:800000
-> >>> /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq:813476
-> >>> merkaba:~> sensors
-> >>> acpitz-virtual-0
-> >>> Adapter: Virtual device
-> >>> temp1:        +71.0=B0C  (crit =3D +98.0=B0C)
-> >>>
-> >>> coretemp-isa-0000
-> >>> Adapter: ISA adapter
-> >>> Physical id 0:  +71.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0=
-C)
-> >>> Core 0:         +70.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0=
-C)
-> >>> Core 1:         +71.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0=
-C)
-> >>>
-> >>> thinkpad-isa-0000
-> >>> Adapter: ISA adapter
-> >>> fan1:        3137 R
-> >>>
-> >>>
-> >>> Still hot in here and after reboot and login into KDE session the=
-re is quite
-> >>> some CPU activity for a while.
-> >>>
-> >>> But way better than before.
-> >>>
-> >>> I can test whether this also happens with ACPI cpufreq driver.
-> >>>
-> >>> I think I didn=B4t see this with 3.14.
-> >>
-> >> Its not just me:
-> >>
-> >> Please change intel_pstate default to disable
-> >> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1188647
-> >
-> > Way better with ACPI cpufreq driver and ondemand governor:
-> >
-> > merkaba:~> grep . /sys/devices/system/cpu/cpu[0-3]/cpufreq/cpuinfo_=
-cur_freq
-> > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:2501000
-> > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:800000
-> > /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq:800000
-> > /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq:800000
-> > merkaba:~> grep . /sys/devices/system/cpu/cpu[0-3]/cpufreq/cpuinfo_=
-cur_freq
-> > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:1600000
-> > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:2500000
-> > /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq:800000
-> > /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq:1600000
-> > merkaba:~> grep . /sys/devices/system/cpu/cpu[0-3]/cpufreq/cpuinfo_=
-cur_freq
-> > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:1800000
-> > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:2501000
-> > /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq:2500000
-> > /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq:800000
-> > merkaba:~> grep . /sys/devices/system/cpu/cpu[0-3]/cpufreq/cpuinfo_=
-cur_freq
-> > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:800000
-> > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:2501000
-> > /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq:800000
-> > /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq:1800000
-> > merkaba:~> grep . /sys/devices/system/cpu/cpu[0-3]/cpufreq/cpuinfo_=
-cur_freq
-> > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:1200000
-> > /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:2501000
-> > /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq:800000
-> > /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq:800000
+
+--fU5tsrXreH0/dVH0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Jun 09, 2014 at 11:20:27AM +0100, Morten Rasmussen wrote:
+> On Sun, Jun 08, 2014 at 07:03:16AM +0100, Henrik Austad wrote:
+> > On Fri, May 23, 2014 at 07:16:29PM +0100, Morten Rasmussen wrote:
+> > > The Energy-aware scheduler implementation is guarded by
+> > > CONFIG_SCHED_ENERGY.
+> > >=20
+> > > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > > Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+> > > ---
+> > >  arch/arm/Kconfig |    5 +++++
+> > >  1 file changed, 5 insertions(+)
+> > >=20
+> > > diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> > > index ab438cb..bfc3a85 100644
+> > > --- a/arch/arm/Kconfig
+> > > +++ b/arch/arm/Kconfig
+> >=20
+> > Is this going to be duplicate for each architecture enabling this? Why
+> > not make a kernel/Kconfig.energy and link to that from those
+> > architectures using it?
 >=20
-> This is ondemand/acpi_cpufreq telling a well documented lie.  They te=
-ll you
-> what P state was requested not the frequency the core is running at.
->=20
-> /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq:2501000
-> is code for select the highest turbo P state in ACPI frequency table
-> terms.  With the HW coordination on the chip all the cores will actua=
-lly be
-> running at the frequency of the highest requested P state.
->=20
-> intel_pstate returns the measured/actual frequency the core ran at du=
-ring
-> the most recent sample that the driver took.
->=20
-> Something is convincing intel_pstate and ondemand that one(or more) c=
-ores
-> is very busy.
+> kernel/Kconfig.energy is better I think.
 
-Thing is: With intel_pstate after running PlaneShift *all* cores are in=
- turbo mode.
+Well, strictly speaking I'd prefer to not have more sched CONFIG knobs.
 
-With ondemand acpi only some. At least due to what it requests.
+Do we really need to have this CONFIG guarded?
 
-I expect one or maybe two cores busy while playing PS. One for PS, and =
-one
-for other stuff.
+--fU5tsrXreH0/dVH0
+Content-Type: application/pgp-signature
 
-I will try to make the tests you requested. Quite busy here now. So wil=
-l take
-some time.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Thanks,
-Martin
+iQIcBAEBAgAGBQJTltJfAAoJEHZH4aRLwOS6Z5kP/iiodeBs2kI+pKiL/FVQkZZP
+t3eNRtxiNSbqwEuBD5BcDPGVDug5tWQPOEw4ct+EKtzm5wRuqBG51Lad3PBtL4Hk
+GZ3b0ldXWRBtaZp1HE139RYklPhynXvuPcUlA5QjsL1DRa/i01bdEM4h26BifesM
+5/JgKzanwT06+5Nmk7LS9K3cw7z20cClgcCg8P1kXD86XibbzjUS80gMKtUdVxEx
+MiERFpkn5P2KNlojHYsTsmdykiJpslLoLfiuedT41f1DnTp6VugQzTIj96BU0ZPH
+Lkk+qjaILjA/Nc5oliarBzmGwYkKvLgCUOcBlBRejr3A7jraQ4oqVL//gWaueJkW
+mogpY0NvLejcmJmwyUD4r6EVPzHhifLAgV4Qsf/YbIRZo0RGkhaHyCXeI4NsInTJ
+JArOxCYS7qHdC53Gdd0Fo4xCJI7yYPmKw1E4RjpZIv2/llt5U1ibQXVE8m3xGabJ
+YfOKNeeyfUQzWBnuGNEgriZUyw/WgEZG+D/ET8hy3mnystiXkt3fa+Cuagx1U8kV
+8p/01yBjJurJWbilhmXSHzVDOk8PRVW0jyML78pW7+uUDpvN2wxiZtis2j3TBo4d
+6YkC/+uDtK+wmmDLtbuUyF+AcI1IvYMrcMa9F9jNWYNF2nnbkwTauulclo0uY+Yv
+5TXIUSkjBfK3duuykZhi
+=0qL6
+-----END PGP SIGNATURE-----
 
-> > merkaba:~> sensors
-> > acpitz-virtual-0
-> > Adapter: Virtual device
-> > temp1:        +83.0=B0C  (crit =3D +98.0=B0C)
-> >
-> > coretemp-isa-0000
-> > Adapter: ISA adapter
-> > Physical id 0:  +84.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0C=
-)
-> > Core 0:         +83.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0C=
-)
-> > Core 1:         +84.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0C=
-)
-> >
-> > thinkpad-isa-0000
-> > Adapter: ISA adapter
-> > fan1:        3586 RPM
-> >
-> >
-> >
-> > Its still hot in this room, but this definately looks saner.
-> >
-> > Thanks,
-> > Martin
-> >
-> >>>
-> >>>
-> >>>
-> >>> Am Montag, 9. Juni 2014, 23:24:54 schrieb Martin Steigerwald:
-> >>>> Hi!
-> >>>>
-> >>>> I get:
-> >>>>
-> >>>> Jun  9 22:41:32 merkaba kernel: [39978.006479] CPU0: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:41:32 merkaba kernel: [39978.006481] CPU3: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:41:32 merkaba kernel: [39978.006482] CPU2: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:41:32 merkaba kernel: [39978.006487] CPU1: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:44:02 merkaba kernel: [40127.673372] CPU2: Core temper=
-ature above threshold, cpu clock throttled (total events =3D 56554)
-> >>>> Jun  9 22:44:02 merkaba kernel: [40127.673383] CPU3: Core temper=
-ature above threshold, cpu clock throttled (total events =3D 56554)
-> >>>> Jun  9 22:44:02 merkaba kernel: [40127.674313] CPU3: Core temper=
-ature/speed normal
-> >>>> Jun  9 22:44:02 merkaba kernel: [40127.674352] CPU2: Core temper=
-ature/speed normal
-> >>>> Jun  9 22:45:21 merkaba kernel: [40207.302287] mce: [Hardware Er=
-ror]: Machine check events logged
-> >>>> Jun  9 22:46:32 merkaba kernel: [40278.054568] CPU0: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:46:32 merkaba kernel: [40278.054572] CPU3: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:46:32 merkaba kernel: [40278.054574] CPU2: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:46:32 merkaba kernel: [40278.054578] CPU1: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:48:06 merkaba kernel: [40371.570654] perf interrupt to=
-ok too long (19348 > 17857), lowering kernel.perf_event_max_sample_rate=
- to 7000
-> >>>> Jun  9 22:51:32 merkaba kernel: [40578.103629] CPU3: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:51:32 merkaba kernel: [40578.103633] CPU0: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:51:32 merkaba kernel: [40578.103638] CPU2: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:51:32 merkaba kernel: [40578.103639] CPU1: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.174734] CPU1: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 152620)
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.174737] CPU0: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 152620)
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.174742] CPU3: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 152620)
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.174744] CPU2: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 152620)
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.176744] CPU3: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.176746] CPU2: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.176748] CPU1: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:56:32 merkaba kernel: [40878.176749] CPU0: Package tem=
-perature/speed normal
-> >>>> Jun  9 22:59:11 merkaba kernel: [41037.278705] CPU3: Core temper=
-ature/speed normal
-> >>>> Jun  9 22:59:11 merkaba kernel: [41037.278707] CPU2: Core temper=
-ature/speed normal
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.225837] CPU2: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 177343)
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.225841] CPU0: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 177343)
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.225843] CPU3: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 177343)
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.225845] CPU1: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 177343)
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.237850] CPU1: Package tem=
-perature/speed normal
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.237853] CPU2: Package tem=
-perature/speed normal
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.237855] CPU0: Package tem=
-perature/speed normal
-> >>>> Jun  9 23:01:32 merkaba kernel: [41178.237856] CPU3: Package tem=
-perature/speed normal
-> >>>> Jun  9 23:01:36 merkaba kernel: [41182.452403] mce: [Hardware Er=
-ror]: Machine check events logged
-> >>>> Jun  9 23:06:32 merkaba kernel: [41478.291923] CPU1: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 204756)
-> >>>> Jun  9 23:06:32 merkaba kernel: [41478.291926] CPU0: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 204756)
-> >>>> Jun  9 23:06:32 merkaba kernel: [41478.291946] CPU3: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 204756)
-> >>>> Jun  9 23:06:32 merkaba kernel: [41478.291950] CPU2: Package tem=
-perature above threshold, cpu clock throttled (total events =3D 204756)
-> >>>> Jun  9 23:11:32 merkaba kernel: [41778.341992] CPU3: Package tem=
-perature/speed normal
-> >>>> Jun  9 23:11:32 merkaba kernel: [41778.341995] CPU0: Package tem=
-perature/speed normal
-> >>>> Jun  9 23:11:32 merkaba kernel: [41778.341996] CPU1: Package tem=
-perature/speed normal
-> >>>> Jun  9 23:11:32 merkaba kernel: [41778.341997] CPU2: Package tem=
-perature/speed normal
-> >>>>
-> >>>>
-> >>>> And this:
-> >>>>
-> >>>> merkaba:~> sensors
-> >>>> acpitz-virtual-0
-> >>>> Adapter: Virtual device
-> >>>> temp1:        +96.0=B0C  (crit =3D +98.0=B0C)
-> >>>>
-> >>>> coretemp-isa-0000
-> >>>> Adapter: ISA adapter
-> >>>> Physical id 0:  +98.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0=
-C)
-> >>>> Core 0:         +96.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0=
-C)
-> >>>> Core 1:         +96.0=B0C  (high =3D +86.0=B0C, crit =3D +100.0=B0=
-C)
-> >>>>
-> >>>> thinkpad-isa-0000
-> >>>> Adapter: ISA adapter
-> >>>> fan1:        3580 RPM
-> >>>>
-> >>>> merkaba:~> acpi -t
-> >>>> Thermal 0: ok, 96.0 degrees C
-> >>>>
-> >>>>
-> >>>> On
-> >>>>
-> >>>> martin@merkaba:~> phoronix-test-suite system-info
-> >>>>
-> >>>> Phoronix Test Suite v4.8.3
-> >>>> System Information
-> >>>>
-> >>>> Hardware:
-> >>>> Processor: Intel Core i5-2520M @ 3.20GHz (4 Cores), Motherboard:=
- LENOVO 42433WG, Chipset: Intel 2nd Generation Core Family DRAM, Memory=
-: 8192MB, Disk: 300GB INTEL SSDSA2CW30 + 480GB Crucial_CT480M50, Graphi=
-cs: Intel HD 3000 (1300MHz), Audio: Intel 6 /C200, Network: Intel 82579=
-LM Gigabit Connection + Intel Centrino Advanced-N 6205
-> >>>>
-> >>>> Software:
-> >>>> OS: Debian unstable, Kernel: 3.15.0-tp520 (x86_64), Desktop: KDE=
- 4.13.1, Display Server: X Server 1.15.1, Display Driver: intel 2.21.15=
-, OpenGL: 3.1 Mesa 10.1.4, Compiler: GCC 4.8, File-System: btrfs, Scree=
-n Resolution: 1920x1080
-> >>>>
-> >>>>
-> >>>> during playing PlaneShift with Intel gfx.
-> >>>>
-> >>>>
-> >>>> I get the impression that Intel P-State driver turbo modes all o=
-f the cores
-> >>>> needlessly *and* permanently once this condition is triggered. U=
-sually
-> >>>> temperature is just about 55-60 degree celsius. But not at maxim=
-um.
-> >>>>
-> >>>>
-> >>>> I see this:
-> >>>>
-> >>>> merkaba:/sys/devices/system/cpu> grep . cpu[0-3]/cpufreq/cpuinfo=
-_cur_freq
-> >>>> cpu0/cpufreq/cpuinfo_cur_freq:3015917
-> >>>> cpu1/cpufreq/cpuinfo_cur_freq:3008984
-> >>>> cpu2/cpufreq/cpuinfo_cur_freq:3000000
-> >>>> cpu3/cpufreq/cpuinfo_cur_freq:3000000
-> >>>>
-> >>>>
-> >>>> Without that much work to do:
-> >>>>
-> >>>> merkaba:~> mpstat -P ALL 10
-> >>>> Linux 3.15.0-tp520 (merkaba)    09.06.2014      _x86_64_        =
-(4 CPU)
-> >>>>
-> >>>> 23:21:42     CPU    %usr   %nice    %sys %iowait    %irq   %soft=
-  %steal  %guest  %gnice   %idle
-> >>>> 23:21:52     all   15,61    0,00    2,68   10,33    0,15    0,00=
-    0,00    0,00    0,00   71,23
-> >>>> 23:21:52       0   25,70    0,00    4,22   22,59    0,30    0,00=
-    0,00    0,00    0,00   47,19
-> >>>> 23:21:52       1   20,02    0,00    1,80   14,71    0,10    0,00=
-    0,00    0,00    0,00   63,36
-> >>>> 23:21:52       2   10,14    0,00    2,61    3,01    0,10    0,00=
-    0,00    0,00    0,00   84,14
-> >>>> 23:21:52       3    6,63    0,00    2,11    0,80    0,10    0,00=
-    0,00    0,00    0,00   90,36
-> >>>>
-> >>>> 23:21:52     CPU    %usr   %nice    %sys %iowait    %irq   %soft=
-  %steal  %guest  %gnice   %idle
-> >>>> 23:22:02     all   14,19    0,00    2,26   10,93    0,13    0,00=
-    0,00    0,00    0,00   72,50
-> >>>> 23:22:02       0   32,26    0,00    4,01   31,86    0,20    0,00=
-    0,00    0,00    0,00   31,66
-> >>>> 23:22:02       1   12,11    0,00    1,30    8,51    0,10    0,00=
-    0,00    0,00    0,00   77,98
-> >>>> 23:22:02       2    8,12    0,00    2,21    2,91    0,10    0,00=
-    0,00    0,00    0,00   86,66
-> >>>> 23:22:02       3    4,31    0,00    1,60    0,40    0,10    0,00=
-    0,00    0,00    0,00   93,59
-> >>>>
-> >>>> 23:22:02     CPU    %usr   %nice    %sys %iowait    %irq   %soft=
-  %steal  %guest  %gnice   %idle
-> >>>> 23:22:12     all   25,33    0,03    2,63    9,00    0,15    0,00=
-    0,00    0,00    0,00   62,87
-> >>>> 23:22:12       0   35,71    0,00    4,01   19,56    0,20    0,00=
-    0,00    0,00    0,00   40,52
-> >>>> 23:22:12       1   27,43    0,00    1,90   10,61    0,20    0,00=
-    0,00    0,00    0,00   59,86
-> >>>> 23:22:12       2   22,14    0,10    2,40    4,41    0,10    0,00=
-    0,00    0,00    0,00   70,84
-> >>>> 23:22:12       3   15,96    0,10    2,21    1,41    0,10    0,00=
-    0,00    0,00    0,00   80,22
-> >>>>
-> >>>> 23:22:12     CPU    %usr   %nice    %sys %iowait    %irq   %soft=
-  %steal  %guest  %gnice   %idle
-> >>>> 23:22:22     all   27,90    0,03    3,94    8,87    0,33    0,00=
-    0,00    0,00    0,00   58,94
-> >>>> 23:22:22       0   36,77    0,00    5,81   20,74    0,90    0,00=
-    0,00    0,00    0,00   35,77
-> >>>> 23:22:22       1   28,99    0,00    2,41   10,13    0,10    0,00=
-    0,00    0,00    0,00   58,38
-> >>>> 23:22:22       2   25,48    0,00    3,81    3,21    0,20    0,00=
-    0,00    0,00    0,00   67,30
-> >>>> 23:22:22       3   20,34    0,00    3,71    1,40    0,20    0,00=
-    0,00    0,00    0,00   74,35
-> >>>>
-> >>>>
-> >>>>
-> >>>> Will reboot now to see whether it resets that condition. Didn=B4=
-t happen during the whole
-> >>>> day.
-> >>>>
-> >>>> But seems to happen after a while of playing PlaneShift.
-> >>>>
-> >>>> Any hints?
-> >>>
-> >>> Thanks,
-> >>>
-> >>
-> >>
-> >
->=20
-
---=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+--fU5tsrXreH0/dVH0--
