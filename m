@@ -1,79 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 02/24] drivercore: Bind/unbind power domain on probe/remove
-Date: Tue, 10 Jun 2014 23:27:45 +0200
-Message-ID: <1894835.cKK4602bPf@vostro.rjw.lan>
-References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0hUT0QPGWeDM9WoxnobaL5eoNi5UFrUUZrQ1gSBCX=aVg@mail.gmail.com> <CAPDyKFqWZdA4ZisJvCDP8j6D2_A8oRAHkjikddyGSwpToFg-Gw@mail.gmail.com>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] PM: trace events for device pm callbacks
+Date: Tue, 10 Jun 2014 17:17:16 -0400
+Message-ID: <20140610171716.694c8414@gandalf.local.home>
+References: <20140610143122.GA12851@linux.intel.com>
+	<3737184.526pO4COlv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64840 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752633AbaFJVKU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 17:10:20 -0400
-In-Reply-To: <CAPDyKFqWZdA4ZisJvCDP8j6D2_A8oRAHkjikddyGSwpToFg-Gw@mail.gmail.com>
+Received: from cdptpa-outbound-snat.email.rr.com ([107.14.166.229]:7938 "EHLO
+	cdptpa-oedge-vip.email.rr.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753554AbaFJVR1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 17:17:27 -0400
+In-Reply-To: <3737184.526pO4COlv@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Tomasz Figa <t.figa@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: todd.e.brandt@linux.intel.com, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, June 10, 2014 02:53:26 PM Ulf Hansson wrote:
-> On 10 June 2014 14:11, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Tue, Jun 10, 2014 at 12:51 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >> From: Tomasz Figa <t.figa@samsung.com>
-> >>
-> >> On a number of platforms, devices are part of controllable power
-> >> domains, which need to be enabled before such devices can be accessed
-> >> and may be powered down when the device is idle to save some power.
-> >> This means that on systems that support power domain control using
-> >> generic power domains subsystem, it is necessary to add device to its
-> >> power domain before binding a driver to it and remove it from its power
-> >> domain after its driver is unbound to make sure that an unused device
-> >> does not affect power domain state.
-> >>
-> >> Since this is not limited to particular busses and specific
-> >> archs/platforms,
-> >
-> > Actually, this isn't correrct.  It is limited to the platforms that
-> > use Device Trees now.
+On Tue, 10 Jun 2014 23:17:46 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+
+> On Tuesday, June 10, 2014 07:31:22 AM Todd E Brandt wrote:
+> > Adds two trace events which supply the same info that initcall_debug 
+> > provides, but via ftrace instead of dmesg. The existing initcall_debug
+> > calls require the pm_print_times_enabled var to be set (either via
+> > sysfs or via the kernel cmd line). The new trace events provide all the
+> > same info as the initcall_debug prints but with less overhead, and also
+> > with coverage of device prepare and complete device callbacks.
+> > 
+> > These events replace the device_pm_report_time event (which has been
+> > removed). device_pm_callback_start is called first and provides the device
+> > and callback info. device_pm_callback_end is called after with the
+> > device name and error info. The time and pid are gathered from the trace
+> > data headers.
+> > 
+> > Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
 > 
-> Correct, we should update the commit message/docs.
-> 
-> >
-> > Moreover, it is not consistent with the way we add devices to the ACPI PM
-> > domain, which is the ACPI counterpart of this.
-> 
-> I am not sure why you think consistency for ACPI is important here.
-> ACPI PM will still be able to handle it's domain/device registering as
-> before. There are even other pm_domains that don't use genpd which
-> need to handle this themselves.
+> Steve needs to see this (CCed).
 
-My point is that doing things like that in different places for different
-firmware interfaces is confusing and likely to lead to coding mistakes in
-the future.
+The trace events look fine. Is there anything else you wanted me to
+look at?
 
-> Or are you saying that you prefer bus notifiers in favour of making
-> use of the driver core for this matter?
-
-Well, please grep for acpi_dev_pm_attach() and see where it is done.
-Surely not in drivers/base/dd.c.  Also I'm not sure why you're talking
-about bus notifiers in this context.
-
-> Shouldn't the driver core handle most of the common things for a device
-> driver?
-
-Common, yes.  Platform-specific, no.
-
-> Let's compare how the pinctrls are being managed in the driver core, for
-> example.
-
-pinctrl has Device Trees support only at the moment (as far as firmware
-interfaces go) and quite frankly I'm not sure if/how we'll need to change
-it to cover ACPI as well.
-
-But for power domains, please keep that stuff away from dd.c.  That is,
-unless Greg specifically disagrees with me and decides to apply this
-patch regardless. :-)
-
-Rafael
+-- Steve
 
