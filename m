@@ -1,22 +1,22 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [RFC PATCH 1/3] thermal: trace: Trace temperature changes
-Date: Wed, 11 Jun 2014 12:31:42 +0100
-Message-ID: <1402486305-4017-2-git-send-email-punit.agrawal@arm.com>
+Subject: [RFC PATCH 2/3] thermal: trace: Trace when a cooling device's state is updated
+Date: Wed, 11 Jun 2014 12:31:43 +0100
+Message-ID: <1402486305-4017-3-git-send-email-punit.agrawal@arm.com>
 References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:51593 "EHLO
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:51742 "EHLO
 	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753807AbaFKLcx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 07:32:53 -0400
+	by vger.kernel.org with ESMTP id S1754908AbaFKLdB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 07:33:01 -0400
 In-Reply-To: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: javi.merino@arm.com, Punit Agrawal <punit.agrawal@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
 
-Create a new event to trace the temperature of a thermal zone. Using
-this event trace the temperature changes of the thermal zone every-time
-it is updated.
+Introduce and use an event to trace when a cooling device's state is
+updated. This is useful to follow the effect of governor decisions on
+cooling devices.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
@@ -25,77 +25,52 @@ Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
 ---
- drivers/thermal/thermal_core.c |    4 ++++
- include/trace/events/thermal.h |   38 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+)
- create mode 100644 include/trace/events/thermal.h
+ drivers/thermal/thermal_core.c |    1 +
+ include/trace/events/thermal.h |   19 +++++++++++++++++++
+ 2 files changed, 20 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 71b0ec0..6b32391 100644
+index 6b32391..c74c78d 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -38,6 +38,9 @@
- #include <net/netlink.h>
- #include <net/genetlink.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/thermal.h>
-+
- #include "thermal_core.h"
- #include "thermal_hwmon.h"
- 
-@@ -463,6 +466,7 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	tz->temperature = temp;
- 	mutex_unlock(&tz->lock);
- 
-+	trace_thermal_temperature(tz);
- 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
- 				tz->last_temperature, tz->temperature);
+@@ -1291,6 +1291,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
+ 	mutex_unlock(&cdev->lock);
+ 	cdev->ops->set_cur_state(cdev, target);
+ 	cdev->updated = true;
++	trace_cdev_update(cdev, target);
+ 	dev_dbg(&cdev->device, "set to state %lu\n", target);
  }
+ EXPORT_SYMBOL(thermal_cdev_update);
 diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-new file mode 100644
-index 0000000..8c5ca96
---- /dev/null
+index 8c5ca96..894a79e 100644
+--- a/include/trace/events/thermal.h
 +++ b/include/trace/events/thermal.h
-@@ -0,0 +1,38 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM thermal
+@@ -32,6 +32,25 @@ TRACE_EVENT(thermal_temperature,
+ 		__entry->temp)
+ );
+ 
++TRACE_EVENT(cdev_update,
 +
-+#if !defined(_TRACE_THERMAL_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_THERMAL_H
++	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long target),
 +
-+#include <linux/thermal.h>
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(thermal_temperature,
-+
-+	TP_PROTO(struct thermal_zone_device *tz),
-+
-+	TP_ARGS(tz),
++	TP_ARGS(cdev, target),
 +
 +	TP_STRUCT__entry(
-+		__string(thermal_zone, tz->type)
-+		__field(int, id)
-+		__field(int, temp_prev)
-+		__field(int, temp)
++		__string(type, cdev->type)
++		__field(unsigned long, target)
 +	),
 +
 +	TP_fast_assign(
-+		__assign_str(thermal_zone, tz->type);
-+		__entry->id = tz->id;
-+		__entry->temp_prev = tz->last_temperature;
-+		__entry->temp = tz->temperature;
++		__assign_str(type, cdev->type);
++		__entry->target = target;
 +	),
 +
-+	TP_printk("thermal_zone=%s id=%d temp_prev=%d temp=%d",
-+		__get_str(thermal_zone), __entry->id, __entry->temp_prev,
-+		__entry->temp)
++	TP_printk("type=%s target=%lu", __get_str(type), __entry->target)
 +);
 +
-+#endif /* _TRACE_THERMAL_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
+ #endif /* _TRACE_THERMAL_H */
+ 
+ /* This part must be outside protection */
 -- 
 1.7.10.4
 
