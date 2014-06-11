@@ -1,201 +1,124 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC PATCH] PM: Domain: Add flag to assure that device's runtime
- pm callback is called at once.
-Date: Wed, 11 Jun 2014 10:27:48 +0200
-Message-ID: <CAPDyKFr6aoev3vSmxQOJWDGGFLWyE4eZ_0joQ45-GgZNztYdGA@mail.gmail.com>
-References: <1402446800-4043-1-git-send-email-jonghwa3.lee@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
+Date: Wed, 11 Jun 2014 10:50:43 +0200
+Message-ID: <1402476643.32147.6.camel@AMDC1943>
+References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f181.google.com ([209.85.216.181]:33747 "EHLO
-	mail-qc0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753429AbaFKI1t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 04:27:49 -0400
-Received: by mail-qc0-f181.google.com with SMTP id x13so269204qcv.12
-        for <linux-pm@vger.kernel.org>; Wed, 11 Jun 2014 01:27:49 -0700 (PDT)
-In-Reply-To: <1402446800-4043-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: kgene.kim@samsung.com, t.figa@samsung.com, ccross@google.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, cw00.choi@samsung.com, Myungjoo Ham <myungjoo.ham@samsung.com>, jy0922.shim@samsung.com, inki.dae@samsung.com
 
-On 11 June 2014 02:33, Jonghwa Lee <jonghwa3.lee@samsung.com> wrote:
-> When device uses generic pm domain, its own runtime suspend callback will be
-> executed only when all devices in the same domain are suspended. However, some
-> device needs sychronized runtime suspend and not to be deffered.
-> For those devices, Generic pm domain adds new API for adding device with flag,
-> which shows that it guerantees driver's runtime suspend will be executed right
-> away not at the time domain is really powered off.
-> Existed API, pm_genpd_add_device(), now adds device with flag representing this
-> device is not needed sychrnoized callback. It will work as same as before.
-
-Hi Jonghwa,
-
-I understand you have an issue of the behaviour of genpd here and I
-agree we need a solution, but I am not sure this is the correct one.
-:-)
-
-The current behaviour of how genpd deals with runtime PM suspend
-callbacks has two severe issues:
-
-1 ) It prevents fine grained power management within a domain. Simply
-because those resources that are controlled on levels below the
-pm_domain, can't be put in low power state until the complete domain
-will be dropped.
-2 ) All devices within a domain will be runtime PM suspended at the
-same time. This causes a thundering herd problem since latencies gets
-accumulated for each device in a domain.
-
-Instead I think we should try to change the default behaviour of genpd
-and let it invoke the runtime PM callbacks immediately and not wait
-for the domain to be dropped. Do you think that could work?
-
-Kind regards
-Ulf Hansson
-
->
-> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+On pi=C4=85, 2014-04-04 at 11:48 +0200, Daniel Lezcano wrote:
+> The following driver is for exynos4210. I did not yet finished the ot=
+her boards, so
+> I created a specific driver for 4210 which could be merged later.
+>=20
+> The driver is based on Colin Cross's driver found at:
+>=20
+> https://android.googlesource.com/kernel/exynos/+/e686b1ec67423c40b4fd=
+f811f9a4dfa3b393a010%5E%5E!/
+>=20
+> This one was based on a 3.4 kernel and an old API.
+>=20
+> It has been refreshed, simplified and based on the recent code cleanu=
+p I sent
+> today.
+>=20
+> The AFTR could be entered when all the cpus (except cpu0) are down. I=
+n order to
+> reach this situation, the couple idle states are used.
+>=20
+> There is a sync barrier at the entry and the exit of the low power fu=
+nction. So
+> all cpus will enter and exit the function at the same time.
+>=20
+> At this point, CPU0 knows the other cpu will power down itself. CPU0 =
+waits for
+> the CPU1 to be powered down and then initiate the AFTR power down seq=
+uence.
+>=20
+> No interrupts are handled by CPU1, this is why we switch to the timer=
+ broadcast
+> even if the local timer is not impacted by the idle state.
+>=20
+> When CPU0 wakes up, it powers up CPU1 and waits for it to boot. Then =
+they both
+> exit the idle function.
+>=20
+> This driver allows the exynos4210 to have the same power consumption =
+at idle
+> time than the one when we have to unplug CPU1 in order to let CPU0 to=
+ reach
+> the AFTR state.
+>=20
+> This patch is a RFC because, we have to find a way to remove the macr=
+os
+> definitions and cpu powerdown function without pulling the arch depen=
+dent
+> headers.
+>=20
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > ---
->  drivers/base/power/domain.c |   17 ++++++++++++++---
->  include/linux/pm_domain.h   |   19 ++++++++++++++++---
->  2 files changed, 30 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index ae098a2..6c7a786 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -503,6 +503,9 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->         genpd->poweroff_task = current;
->
->         list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
-> +               if (dev_gpd_data(pdd->dev)->rpmflags & GENPD_RPM_SYNC)
-> +                       continue;
+>  arch/arm/mach-exynos/common.c        |   11 +-
+>  drivers/cpuidle/Kconfig.arm          |    8 ++
+>  drivers/cpuidle/Makefile             |    1 +
+>  drivers/cpuidle/cpuidle-exynos4210.c |  226 ++++++++++++++++++++++++=
+++++++++++
+>  4 files changed, 245 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/cpuidle/cpuidle-exynos4210.c
+
+(...)
+
+> diff --git a/drivers/cpuidle/cpuidle-exynos4210.c b/drivers/cpuidle/c=
+puidle-exynos4210.c
+> new file mode 100644
+> index 0000000..56f6d51
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-exynos4210.c
+> @@ -0,0 +1,226 @@
+> +/*
+> + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+> + *		http://www.samsung.com
+> + *
+> + * Copyright (c) 2014 Linaro : Daniel Lezcano <daniel.lezcano@linaro=
+=2Eorg>
+> + *		http://www.linaro.org
+> + *
+> + * Based on the work of Colin Cross <ccross@android.com>
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
 > +
->                 ret = atomic_read(&genpd->sd_count) == 0 ?
->                         __pm_genpd_save_device(pdd, genpd) : -EBUSY;
->
-> @@ -625,6 +628,9 @@ static int pm_genpd_runtime_suspend(struct device *dev)
->         if (stop_ok && !stop_ok(dev))
->                 return -EBUSY;
->
-> +       if (dev_gpd_data(dev)->rpmflags & GENPD_RPM_SYNC)
-> +               genpd_save_dev(genpd, dev);
+> +#include <linux/cpuidle.h>
+> +#include <linux/cpu_pm.h>
+> +#include <linux/io.h>
+> +#include <linux/platform_device.h>
 > +
->         ret = genpd_stop_dev(genpd, dev);
->         if (ret)
->                 return ret;
-> @@ -1416,7 +1422,7 @@ static void __pm_genpd_free_dev_data(struct device *dev,
->   * @td: Set of PM QoS timing parameters to attach to the device.
->   */
->  int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
-> -                         struct gpd_timing_data *td)
-> +                         struct gpd_timing_data *td, enum genpd_rpmflags flags)
->  {
->         struct generic_pm_domain_data *gpd_data_new, *gpd_data = NULL;
->         struct pm_domain_data *pdd;
-> @@ -1472,6 +1478,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->         gpd_data->need_restore = genpd->status == GPD_STATE_POWER_OFF;
->         gpd_data->td.constraint_changed = true;
->         gpd_data->td.effective_constraint_ns = -1;
-> +       gpd_data->rpmflags = flags;
->         mutex_unlock(&gpd_data->lock);
->
->   out:
-> @@ -1494,6 +1501,7 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
->                              struct gpd_timing_data *td)
->  {
->         struct generic_pm_domain *genpd = NULL, *gpd;
-> +       enum genpd_rpmflags rpmflags;
->
->         dev_dbg(dev, "%s()\n", __func__);
->
-> @@ -1512,7 +1520,9 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
->         if (!genpd)
->                 return -EINVAL;
->
-> -       return __pm_genpd_add_device(genpd, dev, td);
-> +       rpmflags = of_property_read_bool(dev->of_node, "pm-genpd-rpmsync");
+> +#include <asm/proc-fns.h>
+> +#include <asm/suspend.h>
+> +#include <asm/cpuidle.h>
 > +
-> +       return __pm_genpd_add_device(genpd, dev, td, rpmflags);
->  }
->
->
-> @@ -1525,7 +1535,8 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
->  int __pm_genpd_name_add_device(const char *domain_name, struct device *dev,
->                                struct gpd_timing_data *td)
->  {
-> -       return __pm_genpd_add_device(pm_genpd_lookup_name(domain_name), dev, td);
-> +       struct generic_pm_domain *genpd = pm_genpd_lookup_name(domain_name);
-> +       return __pm_genpd_add_device(genpd, dev, td, GENPD_RPM_ASYNC);
->  }
->
->  /**
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 7c1d252..d36e5cf 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -106,6 +106,11 @@ struct gpd_timing_data {
->         bool cached_stop_ok;
->  };
->
-> +enum genpd_rpmflags {
-> +       GENPD_RPM_ASYNC = 0,
-> +       GENPD_RPM_SYNC,
-> +};
+> +#include <plat/pm.h>
+> +#include <plat/cpu.h>
+> +#include <plat/map-base.h>
+> +#include <plat/map-s5p.h>
 > +
->  struct generic_pm_domain_data {
->         struct pm_domain_data base;
->         struct gpd_dev_ops ops;
-> @@ -114,6 +119,7 @@ struct generic_pm_domain_data {
->         struct mutex lock;
->         unsigned int refcount;
->         bool need_restore;
-> +       enum genpd_rpmflags rpmflags;
->  };
->
->  #ifdef CONFIG_PM_GENERIC_DOMAINS
-> @@ -132,7 +138,8 @@ extern struct dev_power_governor simple_qos_governor;
->  extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
->  extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
->                                  struct device *dev,
-> -                                struct gpd_timing_data *td);
-> +                                struct gpd_timing_data *td,
-> +                                enum genpd_rpmflags flags);
->
->  extern int __pm_genpd_of_add_device(struct device_node *genpd_node,
->                                     struct device *dev,
-> @@ -180,7 +187,8 @@ static inline struct generic_pm_domain *dev_to_genpd(struct device *dev)
->  }
->  static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
->                                         struct device *dev,
-> -                                       struct gpd_timing_data *td)
-> +                                       struct gpd_timing_data *td,
-> +                                       enum genpd_rpmflags flags);
->  {
->         return -ENOSYS;
->  }
-> @@ -263,10 +271,15 @@ static inline bool default_stop_ok(struct device *dev)
->  #define pm_domain_always_on_gov NULL
->  #endif
->
-> +static inline int pm_genpd_add_device_rpmsync(struct generic_pm_domain *genpd,
-> +                                     struct device *dev)
-> +{
-> +       return __pm_genpd_add_device(genpd, dev, NULL, GENPD_RPM_SYNC);
-> +}
->  static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
->                                       struct device *dev)
->  {
-> -       return __pm_genpd_add_device(genpd, dev, NULL);
-> +       return __pm_genpd_add_device(genpd, dev, NULL, GENPD_RPM_ASYNC);
->  }
->
->  static inline int pm_genpd_of_add_device(struct device_node *genpd_node,
-> --
-> 1.7.9.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> +static atomic_t exynos_idle_barrier;
+
+Hi,
+
+Shouldn't the exynos_idle_barrier be initialized here?
+
+I know you sent the patch almost 2 months ago but I stomped on this
+while testing it on Exynos3250.
+
+Best regards,
+Krzysztof
