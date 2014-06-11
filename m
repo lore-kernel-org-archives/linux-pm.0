@@ -1,50 +1,42 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 00/24] PM / Domains: Generic OF-based support and cleanups
-Date: Wed, 11 Jun 2014 20:32:15 +0200
-Message-ID: <CAJZ5v0gcHSGf5DBYC-KLtOCveo---vQdSmdUKCqU7pNMKcXbww@mail.gmail.com>
-References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
-	<7hlht3gvas.fsf@paris.lan>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v4 3/6] drivers: cpuidle: implement OF based idle states
+ infrastructure
+Date: Wed, 11 Jun 2014 14:38:51 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1406111431080.25775@knanqh.ubzr>
+References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com> <1402503520-8611-4-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f180.google.com ([209.85.214.180]:65294 "EHLO
-	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752940AbaFKScQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 14:32:16 -0400
-In-Reply-To: <7hlht3gvas.fsf@paris.lan>
+Received: from mail-qa0-f42.google.com ([209.85.216.42]:43769 "EHLO
+	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbaFKSiy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 14:38:54 -0400
+Received: by mail-qa0-f42.google.com with SMTP id dc16so215409qab.15
+        for <linux-pm@vger.kernel.org>; Wed, 11 Jun 2014 11:38:53 -0700 (PDT)
+In-Reply-To: <1402503520-8611-4-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, devicetree@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Tomasz Figa <t.figa@samsung.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
 
-On Wed, Jun 11, 2014 at 8:23 PM, Kevin Hilman <khilman@linaro.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
->> Parts of this patchset has been posted earlier. To be able to smoothly continue
->> my work in re-factoring genpd I have collected patches into this patchset.
->>
->> The complete patchset is available at the linux-pm_linux-next_genpd branch at:
->> git.linaro.org/people/ulf.hansson/linux-2.6.git
->> This branch is based upon Rafael's linux-pm tree's linux-next branch.
->>
->> And important note. There are dependencies througout this patchset, which means
->> the all need to go together. I suggest we use Rafael's tree, thus I seek for
->> acks from the affected ARM SoC maintainers.
->
-> At least on the surface, there are at least 3 separate series going on
-> here
->
-> 1) DT support for genpd
-> 2) various genpd cleanups
-> 3) ux500 support
->
-> Clearly they are related, but it would be easier to review if a large
-> series like this is broken up into smaller series where the cover
-> letters describe the dependencies between them
+On Wed, 11 Jun 2014, Lorenzo Pieralisi wrote:
 
-Agreed.
+> On most common ARM systems, the low-power states a CPU can be put into are
+> not discoverable in HW and require device tree bindings to describe
+> power down suspend operations and idle states parameters.
+> 
+> In order to enable DT based idle states and configure idle drivers, this
+> patch implements the bulk infrastructure required to parse the device tree
+> idle states bindings and initialize the corresponding CPUidle driver states
+> data.
 
-And if they are sent in such an order that the bits the rest depends on
-go first and are settled before the next series is even submitted.
+Oh and another pet peeve of mine: given we always talk about "device 
+tree" all the time, could you s/OF/DT/ in the subject?  It's been a 
+while that DT has outgrown its OF origins.
 
-Rafael
+>  create mode 100644 drivers/cpuidle/of_idle_states.c
+>  create mode 100644 drivers/cpuidle/of_idle_states.h
+
+Ditto here, including any new symbols you introduced.
+
+Nicolas
