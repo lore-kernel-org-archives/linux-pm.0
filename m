@@ -1,127 +1,63 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal Management updates for v3.16-rc1
-Date: Wed, 11 Jun 2014 17:16:01 +0800
-Message-ID: <1402478161.15050.36.camel@rzhang1-toshiba>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH 07/16 v3] Init Workload Consolidation flags in sched_domain
+Date: Wed, 11 Jun 2014 10:27:34 +0100
+Message-ID: <53982106.2050504@arm.com>
+References: <1401431772-14320-1-git-send-email-yuyang.du@intel.com> <1401431772-14320-8-git-send-email-yuyang.du@intel.com> <20140603121416.GH30445@twins.programming.kicks-ass.net> <5395F541.60604@arm.com> <20140609211820.GA5361@intel.com> <5396F166.1030401@arm.com> <20140610180954.GB5487@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:53117 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbaFKJ1b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 05:27:31 -0400
+In-Reply-To: <20140610180954.GB5487@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Yuyang Du <yuyang.du@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi, Linus,
+On 10/06/14 19:09, Yuyang Du wrote:
+> On Tue, Jun 10, 2014 at 12:52:06PM +0100, Dietmar Eggemann wrote:
+> 
+> Hi Dietmar,
+> 
+>> Not in this sense but there is no functionality in the scheduler right
+>> now to check constantly if an sd flag has been set/unset via sysctl.
+> 
+> Sorry, I still don't understand. There are many "if (sd->flags & SD_XXX)"
+> in fair.c. What does it mean to you?
+> 
+> Probably you mean the SD_XX should be fixed in init and never changed via sysctl
+> thereafter. Ah... I don't know about this...
 
-Please pull from the git repository at
+yes :-) I'm referring to your top_flag_domain() function which you need
+to check what the highest sd level is where your flag is set. Existing
+code only relies on flag setup during startup and after cpu hotplug or
+on cached per-cpu sd pointers like sd_llc .
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+> 
+> Overall, I think I should come up with a better way to implement the SD_WORKLOAD_CONSOLIDATION
+> policy (enabled or disabled) in load balancing (as is also pointed out by PeterZ).
+> But I just don't see the current implementation is any particular different than
+> any other SD_XX's.
+> 
+> Have you tried it on your platform?
 
-to receive Thermal management updates for v3.16-rc1 with
-top-most commit 63745aa72ed16154b82a0c9ed22a88001d6ea0fa:
+I'm running these patches on my ARM TC2 (2 clusters (2 CPUs, 3 CPUs)) on
+top of kernel/git/torvalds/linux.git (v3.15-rc7-79-gfe45736f4134). By
+default, on this platform CC is enabled on MC and CPU level. Overall
+workloads show very different behaviour (CC enabled on MC and CPU level
+as well as only enabled on MC level) compared to testruns wo/ CC but I
+do not have the time to analyse it further. BTW, I hot-plugged out the
+3rd CPU on the 2. cluster (there is this comment on top of
+__nonshielded_groups() 'every sched_group has the same weight').
 
-  Merge branches 'armada-375-380-soc-support',
-'eduardo-thermal-soc-fixes', 'intel-soc-dts-thermal' and
-'thermal-soc-fixes' of .git into next (2014-05-15 17:18:02 +0800)
+-- Dietmar
 
-on top of commit d6d211db37e75de2ddc3a4f979038c40df7cc79c:
+> 
+> Thanks a lot,
+> Yuyang
+> 
 
-  Linux 3.15-rc5 (2014-05-09 13:10:52 -0700)
 
-Specifics:
-
-- fix a bug in Exynos thermal driver, which overwrites the hardware trip
-  point threshold when updating software trigger levels and results in
-  emergency shutdown. From: Tushar Behera.
-
-- add thermal sensor support for Armada 375 and 38x SoCs. From Ezequiel
-  Garcia.
-
-- add TMU (Thermal Management Unit) support for Exynos5260 and
-  Exynos5420 SoCs. From Naveen Krishna Chatradhi.
-
-- add support for the additional digital temperature sensors in the
-  Intel SoCs like Bay Trail. From: Srinivas Pandruvada.
-
-- a couple of cleanups and small fixes from Jingoo Han, Bartlomiej
-  Zolnierkiewicz, Geert Uytterhoeven, Jacob Pan, Paul Walmsley and
-  Lan,Tianyu.
- 
-----------------------------------------------------------------
-
-Bartlomiej Zolnierkiewicz (1):
-      thermal: offer Samsung thermal support only when ARCH_EXYNOS is
-defined
-
-Ezequiel Garcia (7):
-      thermal: armada: Rename armada_thermal_ops struct
-      thermal: armada: Add infrastructure to support generic formulas
-      thermal: armada: Add generic infrastructure to handle the sensor
-      thermal: armada: Pass the platform_device to init_sensor()
-      thermal: armada: Allow to specify an 'inverted readout' sensor
-      thermal: armada: Support Armada 375 SoC
-      thermal: armada: Support Armada 380 SoC
-
-Geert Uytterhoeven (1):
-      thermal: rcar: Use pm_runtime_put() i.s.o. pm_runtime_put_sync()
-
-Jacob Pan (1):
-      thermal/intel_powerclamp: add newer cpu ids
-
-Jingoo Han (3):
-      thermal: rcar: remove unnecessary OOM messages
-      thermal: exynos: remove unnecessary OOM messages
-      thermal: spear: remove unnecessary OOM messages
-
-Naveen Krishna Chatradhi (4):
-      thermal: samsung: replace inten_ bit fields with intclr_
-      thermal: samsung: change base_common to more meaningful
-base_second
-      thermal: samsung: Add TMU support for Exynos5420 SoCs
-      thermal: samsung: Add TMU support for Exynos5260 SoCs
-
-Paul Walmsley (1):
-      thermal: ti-soc-thermal: clk_round_rate() can return a zero upon
-error
-
-Srinivas Pandruvada (1):
-      thermal: Intel SoC DTS thermal
-
-Tushar Behera (1):
-      thermal: samsung: Only update available threshold limits
-
-Zhang Rui (2):
-      Merge branch 'next' of
-git://git.kernel.org/.../evalenti/linux-soc-thermal into
-thermal-soc-fixes
-      Merge branches 'armada-375-380-soc-support',
-'eduardo-thermal-soc-fixes', 'intel-soc-dts-thermal' and
-'thermal-soc-fixes' of .git into next
-
-lan,Tianyu (1):
-      Thermal/int3403: Fix thermal hysteresis unit conversion
-
- Documentation/devicetree/bindings/thermal/armada-thermal.txt |  12 +++-
- Documentation/devicetree/bindings/thermal/exynos-thermal.txt |  50
-++++++++++++++-
- drivers/thermal/Kconfig                                      |  14 +++-
- drivers/thermal/Makefile                                     |   1 +
- drivers/thermal/armada_thermal.c                             | 158
-+++++++++++++++++++++++++++++++++++++++------
- drivers/thermal/int3403_thermal.c                            |   8 ++-
- drivers/thermal/intel_powerclamp.c                           |   2 +
- drivers/thermal/intel_soc_dts_thermal.c                      | 479
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/thermal/rcar_thermal.c                               |   9 +--
- drivers/thermal/samsung/exynos_tmu.c                         |  86
-+++++++++++++++++++------
- drivers/thermal/samsung/exynos_tmu.h                         |  23
-++++---
- drivers/thermal/samsung/exynos_tmu_data.c                    | 211
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- drivers/thermal/samsung/exynos_tmu_data.h                    |  31
-++++++++-
- drivers/thermal/spear_thermal.c                              |   4 +-
- drivers/thermal/ti-soc-thermal/ti-bandgap.c                  |   2 +-
- 15 files changed, 1015 insertions(+), 75 deletions(-)
- create mode 100644 drivers/thermal/intel_soc_dts_thermal.c
