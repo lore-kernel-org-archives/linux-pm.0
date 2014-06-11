@@ -1,159 +1,100 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [RFC PATCH] PM: Domain: Add flag to assure that device's runtime pm
- callback is called at once.
-Date: Wed, 11 Jun 2014 09:33:20 +0900
-Message-ID: <1402446800-4043-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, cw00.choi@samsung.com, myungjoo.ham@samsung.com, jy0922.shim@samsung.com, inki.dae@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH 1/3] devfreq: exynos4_bus: Enable PPMU's source clock before
+ use.
+Date: Wed, 11 Jun 2014 10:17:54 +0900
+Message-ID: <1402449476-6782-2-git-send-email-jonghwa3.lee@samsung.com>
+References: <1402449476-6782-1-git-send-email-jonghwa3.lee@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:63311 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbaFKBSC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 21:18:02 -0400
+Received: from epcpsbgr2.samsung.com
+ (u142.gpu120.samsung.co.kr [203.254.230.142])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N6Z00HTBCY03Y80@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 11 Jun 2014 10:18:00 +0900 (KST)
+In-reply-to: <1402449476-6782-1-git-send-email-jonghwa3.lee@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-When device uses generic pm domain, its own runtime suspend callback will be
-executed only when all devices in the same domain are suspended. However, some
-device needs sychronized runtime suspend and not to be deffered.
-For those devices, Generic pm domain adds new API for adding device with flag,
-which shows that it guerantees driver's runtime suspend will be executed right
-away not at the time domain is really powered off.
-Existed API, pm_genpd_add_device(), now adds device with flag representing this
-device is not needed sychrnoized callback. It will work as same as before.
+Current exynos4_bus driver uses PPMUs for DMC0/1 to gauge bus utilization,
+and they has own operation clock. It's needed to be enabled before use.
+While it isn't gated by default, we should assure if clock is gated.
+It'll find related clocks with given name, and if it fails to find then
+assumes that they are enabled and keeps probing. Otherwise, it'll try to
+enable them and exit the probing unless clocks are enabled successfully.
 
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/base/power/domain.c |   17 ++++++++++++++---
- include/linux/pm_domain.h   |   19 ++++++++++++++++---
- 2 files changed, 30 insertions(+), 6 deletions(-)
+ drivers/devfreq/exynos/exynos4_bus.c |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index ae098a2..6c7a786 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -503,6 +503,9 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 	genpd->poweroff_task = current;
+diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
+index d9b08d3..cadad03 100644
+--- a/drivers/devfreq/exynos/exynos4_bus.c
++++ b/drivers/devfreq/exynos/exynos4_bus.c
+@@ -24,6 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/module.h>
++#include <linux/clk.h>
  
- 	list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
-+		if (dev_gpd_data(pdd->dev)->rpmflags & GENPD_RPM_SYNC)
-+			continue;
-+
- 		ret = atomic_read(&genpd->sd_count) == 0 ?
- 			__pm_genpd_save_device(pdd, genpd) : -EBUSY;
+ #include <mach/map.h>
  
-@@ -625,6 +628,9 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 	if (stop_ok && !stop_ok(dev))
- 		return -EBUSY;
+@@ -79,6 +80,7 @@ struct busfreq_data {
+ 	struct regulator *vdd_mif; /* Exynos4412/4212 only */
+ 	struct busfreq_opp_info curr_oppinfo;
+ 	struct busfreq_ppmu_data ppmu_data;
++	struct clk *clk_ppmu[PPMU_END];
  
-+	if (dev_gpd_data(dev)->rpmflags & GENPD_RPM_SYNC)
-+		genpd_save_dev(genpd, dev);
-+
- 	ret = genpd_stop_dev(genpd, dev);
- 	if (ret)
- 		return ret;
-@@ -1416,7 +1422,7 @@ static void __pm_genpd_free_dev_data(struct device *dev,
-  * @td: Set of PM QoS timing parameters to attach to the device.
-  */
- int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
--			  struct gpd_timing_data *td)
-+			  struct gpd_timing_data *td, enum genpd_rpmflags flags)
- {
- 	struct generic_pm_domain_data *gpd_data_new, *gpd_data = NULL;
- 	struct pm_domain_data *pdd;
-@@ -1472,6 +1478,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	gpd_data->need_restore = genpd->status == GPD_STATE_POWER_OFF;
- 	gpd_data->td.constraint_changed = true;
- 	gpd_data->td.effective_constraint_ns = -1;
-+	gpd_data->rpmflags = flags;
- 	mutex_unlock(&gpd_data->lock);
- 
-  out:
-@@ -1494,6 +1501,7 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
- 			     struct gpd_timing_data *td)
- {
- 	struct generic_pm_domain *genpd = NULL, *gpd;
-+	enum genpd_rpmflags rpmflags;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
-@@ -1512,7 +1520,9 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
- 	if (!genpd)
- 		return -EINVAL;
- 
--	return __pm_genpd_add_device(genpd, dev, td);
-+	rpmflags = of_property_read_bool(dev->of_node, "pm-genpd-rpmsync");
-+
-+	return __pm_genpd_add_device(genpd, dev, td, rpmflags);
- }
- 
- 
-@@ -1525,7 +1535,8 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
- int __pm_genpd_name_add_device(const char *domain_name, struct device *dev,
- 			       struct gpd_timing_data *td)
- {
--	return __pm_genpd_add_device(pm_genpd_lookup_name(domain_name), dev, td);
-+	struct generic_pm_domain *genpd = pm_genpd_lookup_name(domain_name);
-+	return __pm_genpd_add_device(genpd, dev, td, GENPD_RPM_ASYNC);
- }
- 
- /**
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 7c1d252..d36e5cf 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -106,6 +106,11 @@ struct gpd_timing_data {
- 	bool cached_stop_ok;
- };
- 
-+enum genpd_rpmflags {
-+	GENPD_RPM_ASYNC = 0,
-+	GENPD_RPM_SYNC,
-+};
-+
- struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_dev_ops ops;
-@@ -114,6 +119,7 @@ struct generic_pm_domain_data {
+ 	struct notifier_block pm_notifier;
  	struct mutex lock;
- 	unsigned int refcount;
- 	bool need_restore;
-+	enum genpd_rpmflags rpmflags;
- };
+@@ -955,6 +957,28 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
- #ifdef CONFIG_PM_GENERIC_DOMAINS
-@@ -132,7 +138,8 @@ extern struct dev_power_governor simple_qos_governor;
- extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
- extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
- 				 struct device *dev,
--				 struct gpd_timing_data *td);
-+				 struct gpd_timing_data *td,
-+				 enum genpd_rpmflags flags);
- 
- extern int __pm_genpd_of_add_device(struct device_node *genpd_node,
- 				    struct device *dev,
-@@ -180,7 +187,8 @@ static inline struct generic_pm_domain *dev_to_genpd(struct device *dev)
- }
- static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
- 					struct device *dev,
--					struct gpd_timing_data *td)
-+					struct gpd_timing_data *td,
-+					enum genpd_rpmflags flags);
++	data->clk_ppmu[PPMU_DMC0] = devm_clk_get(dev, "ppmudmc0");
++	if (IS_ERR(data->clk_ppmu[PPMU_DMC0])) {
++		dev_warn(dev, "Cannot get ppmudmc0 clock\n");
++	} else {
++		err = clk_prepare_enable(data->clk_ppmu[PPMU_DMC0]);
++		if (err) {
++			dev_err(dev, "Cannot enable ppmudmc0 clock\n");
++			return err;
++		}
++	}
++
++	data->clk_ppmu[PPMU_DMC1] = devm_clk_get(dev, "ppmudmc1");
++	if (IS_ERR(data->clk_ppmu[PPMU_DMC1])) {
++		dev_warn(dev, "Cannot get ppmudmc1 clock\n");
++	} else {
++		err = clk_prepare_enable(data->clk_ppmu[PPMU_DMC1]);
++		if (err) {
++			dev_err(dev, "Cannot enable ppmudmc0 clock\n");
++			return err;
++		}
++	}
++
+ 	rcu_read_lock();
+ 	opp = dev_pm_opp_find_freq_floor(dev,
+ 					 &exynos4_devfreq_profile.initial_freq);
+@@ -1001,6 +1025,10 @@ static int exynos4_busfreq_probe(struct platform_device *pdev)
+ static int exynos4_busfreq_remove(struct platform_device *pdev)
  {
- 	return -ENOSYS;
- }
-@@ -263,10 +271,15 @@ static inline bool default_stop_ok(struct device *dev)
- #define pm_domain_always_on_gov NULL
- #endif
+ 	struct busfreq_data *data = platform_get_drvdata(pdev);
++	int i;
++
++	for (i = 0; i < PPMU_END; i++)
++		clk_disable_unprepare(data->clk_ppmu[i]);
  
-+static inline int pm_genpd_add_device_rpmsync(struct generic_pm_domain *genpd,
-+				      struct device *dev)
-+{
-+	return __pm_genpd_add_device(genpd, dev, NULL, GENPD_RPM_SYNC);
-+}
- static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
- 				      struct device *dev)
- {
--	return __pm_genpd_add_device(genpd, dev, NULL);
-+	return __pm_genpd_add_device(genpd, dev, NULL, GENPD_RPM_ASYNC);
- }
- 
- static inline int pm_genpd_of_add_device(struct device_node *genpd_node,
+ 	/* Unregister all of notifier chain */
+ 	unregister_pm_notifier(&data->pm_notifier);
 -- 
 1.7.9.5
+
