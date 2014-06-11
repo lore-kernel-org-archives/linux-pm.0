@@ -1,84 +1,78 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
-Date: Wed, 11 Jun 2014 07:27:12 -0700
-Message-ID: <009c01cf8581$3d75a7f0$b860f7d0$@net>
-References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <009b01cf857a$d5032090$7f0961b0$@net>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above a trip point
+Date: Wed, 11 Jun 2014 15:53:42 +0100
+Message-ID: <9hhfvjbebux.fsf@arm.com>
+References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
+	<1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
+	<20140611084908.509a6950@gandalf.local.home> <9hhk38nedu1.fsf@arm.com>
+	<20140611102006.27cc145e@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta4.telus.net ([209.171.16.77]:35014 "EHLO cmta4.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbaFKO1Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 Jun 2014 10:27:16 -0400
-In-Reply-To: <009b01cf857a$d5032090$7f0961b0$@net>
-Content-Language: en-ca
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:54149 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751152AbaFKOx7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 10:53:59 -0400
+In-Reply-To: <20140611102006.27cc145e@gandalf.local.home> (Steven Rostedt's
+	message of "Wed, 11 Jun 2014 15:20:06 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Stratos Karafotis' <stratosk@semaphore.gr>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javi Merino <Javi.Merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
 
+Steven Rostedt <rostedt@goodmis.org> writes:
 
-On 2014.06.11 06:42 Doug Smythies wrote:
-On 2014.06.11 05:34 Stratos Karafotis wrote:
-
->> 	if ((rem << 1) >= int_tofp(sample->mperf))
->> -		core_pct += 1;
->> +		core_pct += int_tofp(1);
+> On Wed, 11 Jun 2014 15:11:02 +0100
+> Punit Agrawal <punit.agrawal@arm.com> wrote:
+>  
+>> I do indeed see the value of trip_type and it matches what's being
+>> traced.
 >> 
->> 	sample->freq = fp_toint(
->> 		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
->> -- 
->> 1.9.3
+>> ~# trace-cmd report | grep thermal_zone_trip | tail -n 5
+>>      kworker/2:2-1014  [002]   125.623213: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+>>      kworker/2:2-1014  [002]   125.743174: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+>>      kworker/2:2-1014  [002]   125.863196: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+>>      kworker/2:2-1014  [002]   125.983175: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+>>      kworker/2:2-1014  [002]   126.103173: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+>> ~# trace-cmd report -R | grep thermal_zone_trip | tail -n 5
+>>      kworker/2:2-1014  [002]   125.623213: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+>>      kworker/2:2-1014  [002]   125.743174: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+>>      kworker/2:2-1014  [002]   125.863196: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+>>      kworker/2:2-1014  [002]   125.983175: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+>>      kworker/2:2-1014  [002]   126.103173: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+>> 
+>> Is there something I should be doing to enable the translation to the
+>> string representation when reporting using trace-cmd?
+>
+> Out of curiosity, what does the format file for it look like?
 
-> No.
+I didn't know this was being exported. Thanks for the pointer.
 
-> The intent was only ever to round properly the pseudo floating
-> point result of the divide.
-> It was much more important (ugh, well 4 times more) when
-> FRACBITS was still 6, which also got changed to 8 in a recent
-> patch.
+>
+> /sys/kernel/debug/thermal/thermal_zone_trip/format
 
-I forgot to mention there are other related roundings that are being considered.
-I do not recall clearly, but I think Dirk and I agreed to hold off until
-the recent panics had settled.
+I don't have this file but found the following which seems to contain
+the format.
 
-The analysis as to the importance needs to be re-done, as it was all done when FRACBITS was 6. Things were very "chunky" when
-FRACBITS was 6.
+# pwd /sys/kernel/debug/tracing/events/thermal/thermal_zone_trip
+# cat format
+name: thermal_zone_trip
+ID: 463
+format:
+        field:unsigned short common_type;       offset:0;       size:2; signed:0;
+        field:unsigned char common_flags;       offset:2;       size:1; signed:0;
+        field:unsigned char common_preempt_count;       offset:3;       size:1; signed:0;
+        field:int common_pid;   offset:4;       size:4; signed:1;
 
-These are what I was considering putting forward:
+        field:__data_loc char[] thermal_zone;   offset:8;       size:4; signed:0;
+        field:int id;   offset:12;      size:4; signed:1;
+        field:int trip; offset:16;      size:4; signed:1;
+        field:enum thermal_trip_type trip_type; offset:20;      size:4; signed:0;
 
-static inline int32_t fp_toint(int32_t x)
-{
-        if (x >= 0)
-                x +=  (1 << (FRAC_BITS -1));
-         else
-                x -=  (1 << (FRAC_BITS -1));
-        return (x >> FRAC_BITS);
-}
+print fmt: "thermal_zone=%s id=%d trip=%d trip_type=%s", __get_str(thermal_zone), REC->id, REC->trip, __print_symbolic(REC->trip_type, { THERMAL_TRIP_ACTIVE, "active" }, { THERMAL_TRIP_PASSIVE, "passive" }, { THERMAL_TRIP_HOT, "hot" }, { THERMAL_TRIP_CRITICAL, "critical" })
 
-static inline int32_t mul_fp(int32_t x, int32_t y)
-{
-        int64_t temp;
-        temp = (int64_t)x * (int64_t)y;
-        if (temp >= 0)
-                temp +=  (1 << (FRAC_BITS -1));
-         else
-                temp -=  (1 << (FRAC_BITS -1));
-        return (temp >> FRAC_BITS);
-}
+Cheers,
+Punit
 
-static inline int32_t div_fp(int32_t x, int32_t y)
-{
-
-        /* currently, there are only positive numbers to worry about here */
-
-        int32_t rem;
-
-        x = div_s64_rem((int64_t)x << FRAC_BITS, (int64_t)y, &rem);
-        if((rem << 1) >= y) x++;
-        return(x);
-}
-
-
+>
+> -- Steve
