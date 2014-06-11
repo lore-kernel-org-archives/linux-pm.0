@@ -1,63 +1,159 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/7] cpufreq: intel_pstate: Remove duplicate CPU ID check
-Date: Wed, 11 Jun 2014 02:32:41 +0200
-Message-ID: <3882689.ERRzduavD8@vostro.rjw.lan>
-References: <53962059.6070306@semaphore.gr> <CAKohpokABMSRr88Tf=+Kn4b4=r7ThE+mjdAZcU+dvo28b47Kcg@mail.gmail.com> <53973CF5.4000201@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62147 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752183AbaFKAPR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 20:15:17 -0400
-In-Reply-To: <53973CF5.4000201@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [RFC PATCH] PM: Domain: Add flag to assure that device's runtime pm
+ callback is called at once.
+Date: Wed, 11 Jun 2014 09:33:20 +0900
+Message-ID: <1402446800-4043-1-git-send-email-jonghwa3.lee@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, cw00.choi@samsung.com, myungjoo.ham@samsung.com, jy0922.shim@samsung.com, inki.dae@samsung.com, Jonghwa Lee <jonghwa3.lee@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, dirk.j.brandewie@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Tuesday, June 10, 2014 10:14:29 AM Dirk Brandewie wrote:
-> On 06/09/2014 10:21 PM, Viresh Kumar wrote:
-> > On 10 June 2014 02:30, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> >> We check the CPU ID during driver init. There is no need
-> >> to do it again per logical CPU initialization.
-> >>
-> >> So, remove the duplicate check.
-> >>
-> >> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> >> ---
-> >>   drivers/cpufreq/intel_pstate.c | 6 ------
-> >>   1 file changed, 6 deletions(-)
-> >>
-> >> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> >> index aebd457..4e7f492 100644
-> >> --- a/drivers/cpufreq/intel_pstate.c
-> >> +++ b/drivers/cpufreq/intel_pstate.c
-> >> @@ -691,14 +691,8 @@ MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
-> >>
-> >>   static int intel_pstate_init_cpu(unsigned int cpunum)
-> >>   {
-> >> -
-> >> -       const struct x86_cpu_id *id;
-> >>          struct cpudata *cpu;
-> >>
-> >> -       id = x86_match_cpu(intel_pstate_cpu_ids);
-> >> -       if (!id)
-> >> -               return -ENODEV;
-> >> -
-> >>          all_cpu_data[cpunum] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
-> >>          if (!all_cpu_data[cpunum])
-> >>                  return -ENOMEM;
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+When device uses generic pm domain, its own runtime suspend callback will be
+executed only when all devices in the same domain are suspended. However, some
+device needs sychronized runtime suspend and not to be deffered.
+For those devices, Generic pm domain adds new API for adding device with flag,
+which shows that it guerantees driver's runtime suspend will be executed right
+away not at the time domain is really powered off.
+Existed API, pm_genpd_add_device(), now adds device with flag representing this
+device is not needed sychrnoized callback. It will work as same as before.
 
-[1/7] applied, please wait with the rest until after 3.16-rc1 is released.
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+---
+ drivers/base/power/domain.c |   17 ++++++++++++++---
+ include/linux/pm_domain.h   |   19 ++++++++++++++++---
+ 2 files changed, 30 insertions(+), 6 deletions(-)
 
-Thanks!
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index ae098a2..6c7a786 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -503,6 +503,9 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
+ 	genpd->poweroff_task = current;
+ 
+ 	list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
++		if (dev_gpd_data(pdd->dev)->rpmflags & GENPD_RPM_SYNC)
++			continue;
++
+ 		ret = atomic_read(&genpd->sd_count) == 0 ?
+ 			__pm_genpd_save_device(pdd, genpd) : -EBUSY;
+ 
+@@ -625,6 +628,9 @@ static int pm_genpd_runtime_suspend(struct device *dev)
+ 	if (stop_ok && !stop_ok(dev))
+ 		return -EBUSY;
+ 
++	if (dev_gpd_data(dev)->rpmflags & GENPD_RPM_SYNC)
++		genpd_save_dev(genpd, dev);
++
+ 	ret = genpd_stop_dev(genpd, dev);
+ 	if (ret)
+ 		return ret;
+@@ -1416,7 +1422,7 @@ static void __pm_genpd_free_dev_data(struct device *dev,
+  * @td: Set of PM QoS timing parameters to attach to the device.
+  */
+ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+-			  struct gpd_timing_data *td)
++			  struct gpd_timing_data *td, enum genpd_rpmflags flags)
+ {
+ 	struct generic_pm_domain_data *gpd_data_new, *gpd_data = NULL;
+ 	struct pm_domain_data *pdd;
+@@ -1472,6 +1478,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	gpd_data->need_restore = genpd->status == GPD_STATE_POWER_OFF;
+ 	gpd_data->td.constraint_changed = true;
+ 	gpd_data->td.effective_constraint_ns = -1;
++	gpd_data->rpmflags = flags;
+ 	mutex_unlock(&gpd_data->lock);
+ 
+  out:
+@@ -1494,6 +1501,7 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
+ 			     struct gpd_timing_data *td)
+ {
+ 	struct generic_pm_domain *genpd = NULL, *gpd;
++	enum genpd_rpmflags rpmflags;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+@@ -1512,7 +1520,9 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
+ 	if (!genpd)
+ 		return -EINVAL;
+ 
+-	return __pm_genpd_add_device(genpd, dev, td);
++	rpmflags = of_property_read_bool(dev->of_node, "pm-genpd-rpmsync");
++
++	return __pm_genpd_add_device(genpd, dev, td, rpmflags);
+ }
+ 
+ 
+@@ -1525,7 +1535,8 @@ int __pm_genpd_of_add_device(struct device_node *genpd_node, struct device *dev,
+ int __pm_genpd_name_add_device(const char *domain_name, struct device *dev,
+ 			       struct gpd_timing_data *td)
+ {
+-	return __pm_genpd_add_device(pm_genpd_lookup_name(domain_name), dev, td);
++	struct generic_pm_domain *genpd = pm_genpd_lookup_name(domain_name);
++	return __pm_genpd_add_device(genpd, dev, td, GENPD_RPM_ASYNC);
+ }
+ 
+ /**
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 7c1d252..d36e5cf 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -106,6 +106,11 @@ struct gpd_timing_data {
+ 	bool cached_stop_ok;
+ };
+ 
++enum genpd_rpmflags {
++	GENPD_RPM_ASYNC = 0,
++	GENPD_RPM_SYNC,
++};
++
+ struct generic_pm_domain_data {
+ 	struct pm_domain_data base;
+ 	struct gpd_dev_ops ops;
+@@ -114,6 +119,7 @@ struct generic_pm_domain_data {
+ 	struct mutex lock;
+ 	unsigned int refcount;
+ 	bool need_restore;
++	enum genpd_rpmflags rpmflags;
+ };
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS
+@@ -132,7 +138,8 @@ extern struct dev_power_governor simple_qos_governor;
+ extern struct generic_pm_domain *dev_to_genpd(struct device *dev);
+ extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 				 struct device *dev,
+-				 struct gpd_timing_data *td);
++				 struct gpd_timing_data *td,
++				 enum genpd_rpmflags flags);
+ 
+ extern int __pm_genpd_of_add_device(struct device_node *genpd_node,
+ 				    struct device *dev,
+@@ -180,7 +187,8 @@ static inline struct generic_pm_domain *dev_to_genpd(struct device *dev)
+ }
+ static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 					struct device *dev,
+-					struct gpd_timing_data *td)
++					struct gpd_timing_data *td,
++					enum genpd_rpmflags flags);
+ {
+ 	return -ENOSYS;
+ }
+@@ -263,10 +271,15 @@ static inline bool default_stop_ok(struct device *dev)
+ #define pm_domain_always_on_gov NULL
+ #endif
+ 
++static inline int pm_genpd_add_device_rpmsync(struct generic_pm_domain *genpd,
++				      struct device *dev)
++{
++	return __pm_genpd_add_device(genpd, dev, NULL, GENPD_RPM_SYNC);
++}
+ static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 				      struct device *dev)
+ {
+-	return __pm_genpd_add_device(genpd, dev, NULL);
++	return __pm_genpd_add_device(genpd, dev, NULL, GENPD_RPM_ASYNC);
+ }
+ 
+ static inline int pm_genpd_of_add_device(struct device_node *genpd_node,
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
