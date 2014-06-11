@@ -1,68 +1,64 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
-Date: Wed, 11 Jun 2014 23:20:27 +0300
-Message-ID: <5398BA0B.7070903@semaphore.gr>
-References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <009b01cf857a$d5032090$7f0961b0$@net> <539862DB.9060905@semaphore.gr> <00a001cf8586$24eb5c70$6ec21550$@net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 00/24] PM / Domains: Generic OF-based support and cleanups
+Date: Wed, 11 Jun 2014 22:21:43 +0200
+Message-ID: <CAPDyKFqpmqBUAFc-ztbF-Q4K=okAnzW0qqK9-+nr+-jwv=c1zQ@mail.gmail.com>
+References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
+	<7hlht3gvas.fsf@paris.lan>
+	<CAJZ5v0gcHSGf5DBYC-KLtOCveo---vQdSmdUKCqU7pNMKcXbww@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:32910 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751328AbaFKUUa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 16:20:30 -0400
-In-Reply-To: <00a001cf8586$24eb5c70$6ec21550$@net>
+Received: from mail-qc0-f182.google.com ([209.85.216.182]:59190 "EHLO
+	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbaFKUVo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 16:21:44 -0400
+Received: by mail-qc0-f182.google.com with SMTP id m20so476283qcx.27
+        for <linux-pm@vger.kernel.org>; Wed, 11 Jun 2014 13:21:43 -0700 (PDT)
+In-Reply-To: <CAJZ5v0gcHSGf5DBYC-KLtOCveo---vQdSmdUKCqU7pNMKcXbww@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Tomasz Figa <t.figa@samsung.com>
 
-On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
->=20
-> On 2104.06.11 07:08 Stratos Karafotis wrote:
->> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
+On 11 June 2014 20:32, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Jun 11, 2014 at 8:23 PM, Kevin Hilman <khilman@linaro.org> wrote:
+>> Ulf Hansson <ulf.hansson@linaro.org> writes:
 >>
->> No.
+>>> Parts of this patchset has been posted earlier. To be able to smoothly continue
+>>> my work in re-factoring genpd I have collected patches into this patchset.
+>>>
+>>> The complete patchset is available at the linux-pm_linux-next_genpd branch at:
+>>> git.linaro.org/people/ulf.hansson/linux-2.6.git
+>>> This branch is based upon Rafael's linux-pm tree's linux-next branch.
+>>>
+>>> And important note. There are dependencies througout this patchset, which means
+>>> the all need to go together. I suggest we use Rafael's tree, thus I seek for
+>>> acks from the affected ARM SoC maintainers.
 >>
->> The intent was only ever to round properly the pseudo floating point=
- result of the divide.
->> It was much more important (ugh, well 4 times more) when FRACBITS wa=
-s still 6, which also got changed to 8 in a recent patch.
+>> At least on the surface, there are at least 3 separate series going on
+>> here
 >>
->=20
-> Are you sure?
->=20
-> Yes.
->=20
->> This rounding was very recently added.
->> As far as I can understand, I don't see the meaning of this rounding=
-, as is.
->> Even if FRAC_BITS was 6, I think it would have almost no improvement=
- in
->> calculations.
->=20
-> Note: I had not seen this e-mail when I wrote a few minutes ago:
->=20
-> You may be correct.
-> If Dirk agrees, I will re-analyse the entire driver for rounding effe=
-cts soon.
-> When FRACBITS was 6 there were subtle cases where the driver would ge=
-t stuck, and not make a final pstate change, with the default PID gains=
-=2E
-> Other things have changed, and the analysis needs to be re-done.
->=20
+>> 1) DT support for genpd
+>> 2) various genpd cleanups
+>> 3) ux500 support
+>>
+>> Clearly they are related, but it would be easier to review if a large
+>> series like this is broken up into smaller series where the cover
+>> letters describe the dependencies between them
+>
+> Agreed.
+>
+> And if they are sent in such an order that the bits the rest depends on
+> go first and are settled before the next series is even submitted.
 
-Could you please elaborate a little bit more what we need these 2 lines=
- below?
+Right. Let me split it up and resend.
 
-        if ((rem << 1) >=3D int_tofp(sample->mperf))
-                core_pct +=3D 1;
+Also, note - the reason for adding the ux500 genpd support in this
+patchset, was to provide an example of how the new DT bindings would
+be used.
 
-Because nothing is mentioned for them in commit's changelog.
-Do we need to round core_pct or not?
-Because if we try to round it, I think this patch should work.
+Kind regards
+Ulf Hansson
 
-Thanks,
-Stratos
-
-
+>
+> Rafael
