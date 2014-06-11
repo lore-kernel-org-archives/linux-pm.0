@@ -1,78 +1,55 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above a trip point
-Date: Wed, 11 Jun 2014 15:53:42 +0100
-Message-ID: <9hhfvjbebux.fsf@arm.com>
-References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
-	<1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
-	<20140611084908.509a6950@gandalf.local.home> <9hhk38nedu1.fsf@arm.com>
-	<20140611102006.27cc145e@gandalf.local.home>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
+Date: Wed, 11 Jun 2014 08:02:19 -0700
+Message-ID: <00a001cf8586$24eb5c70$6ec21550$@net>
+References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <009b01cf857a$d5032090$7f0961b0$@net> <539862DB.9060905@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:54149 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751152AbaFKOx7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 10:53:59 -0400
-In-Reply-To: <20140611102006.27cc145e@gandalf.local.home> (Steven Rostedt's
-	message of "Wed, 11 Jun 2014 15:20:06 +0100")
+Received: from cmta18.telus.net ([209.171.16.91]:41974 "EHLO cmta18.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751049AbaFKPCX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 11:02:23 -0400
+In-Reply-To: <539862DB.9060905@semaphore.gr>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javi Merino <Javi.Merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
+To: 'Stratos Karafotis' <stratosk@semaphore.gr>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com
 
-Steven Rostedt <rostedt@goodmis.org> writes:
 
-> On Wed, 11 Jun 2014 15:11:02 +0100
-> Punit Agrawal <punit.agrawal@arm.com> wrote:
->  
->> I do indeed see the value of trip_type and it matches what's being
->> traced.
->> 
->> ~# trace-cmd report | grep thermal_zone_trip | tail -n 5
->>      kworker/2:2-1014  [002]   125.623213: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
->>      kworker/2:2-1014  [002]   125.743174: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
->>      kworker/2:2-1014  [002]   125.863196: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
->>      kworker/2:2-1014  [002]   125.983175: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
->>      kworker/2:2-1014  [002]   126.103173: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
->> ~# trace-cmd report -R | grep thermal_zone_trip | tail -n 5
->>      kworker/2:2-1014  [002]   125.623213: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
->>      kworker/2:2-1014  [002]   125.743174: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
->>      kworker/2:2-1014  [002]   125.863196: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
->>      kworker/2:2-1014  [002]   125.983175: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
->>      kworker/2:2-1014  [002]   126.103173: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
->> 
->> Is there something I should be doing to enable the translation to the
->> string representation when reporting using trace-cmd?
->
-> Out of curiosity, what does the format file for it look like?
+On 2104.06.11 07:08 Stratos Karafotis wrote:
+> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
+>=20
+> No.
+>=20
+> The intent was only ever to round properly the pseudo floating point =
+result of the divide.
+> It was much more important (ugh, well 4 times more) when FRACBITS was=
+ still 6, which also got changed to 8 in a recent patch.
+>=20
 
-I didn't know this was being exported. Thanks for the pointer.
+Are you sure?
 
->
-> /sys/kernel/debug/thermal/thermal_zone_trip/format
+Yes.
 
-I don't have this file but found the following which seems to contain
-the format.
+> This rounding was very recently added.
+> As far as I can understand, I don't see the meaning of this rounding,=
+ as is.
+> Even if FRAC_BITS was 6, I think it would have almost no improvement =
+in
+> calculations.
 
-# pwd /sys/kernel/debug/tracing/events/thermal/thermal_zone_trip
-# cat format
-name: thermal_zone_trip
-ID: 463
-format:
-        field:unsigned short common_type;       offset:0;       size:2; signed:0;
-        field:unsigned char common_flags;       offset:2;       size:1; signed:0;
-        field:unsigned char common_preempt_count;       offset:3;       size:1; signed:0;
-        field:int common_pid;   offset:4;       size:4; signed:1;
+Note: I had not seen this e-mail when I wrote a few minutes ago:
 
-        field:__data_loc char[] thermal_zone;   offset:8;       size:4; signed:0;
-        field:int id;   offset:12;      size:4; signed:1;
-        field:int trip; offset:16;      size:4; signed:1;
-        field:enum thermal_trip_type trip_type; offset:20;      size:4; signed:0;
+You may be correct.
+If Dirk agrees, I will re-analyse the entire driver for rounding effect=
+s soon.
+When FRACBITS was 6 there were subtle cases where the driver would get =
+stuck, and not make a final pstate change, with the default PID gains.
+Other things have changed, and the analysis needs to be re-done.
 
-print fmt: "thermal_zone=%s id=%d trip=%d trip_type=%s", __get_str(thermal_zone), REC->id, REC->trip, __print_symbolic(REC->trip_type, { THERMAL_TRIP_ACTIVE, "active" }, { THERMAL_TRIP_PASSIVE, "passive" }, { THERMAL_TRIP_HOT, "hot" }, { THERMAL_TRIP_CRITICAL, "critical" })
+=2E.. Doug
 
-Cheers,
-Punit
 
->
-> -- Steve
