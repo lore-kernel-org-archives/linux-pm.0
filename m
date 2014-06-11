@@ -1,93 +1,208 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
-Date: Wed, 11 Jun 2014 17:08:27 +0300
-Message-ID: <539862DB.9060905@semaphore.gr>
-References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <009b01cf857a$d5032090$7f0961b0$@net>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above a trip point
+Date: Wed, 11 Jun 2014 15:11:02 +0100
+Message-ID: <9hhk38nedu1.fsf@arm.com>
+References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
+	<1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
+	<20140611084908.509a6950@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:60034 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753971AbaFKOIb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 10:08:31 -0400
-In-Reply-To: <009b01cf857a$d5032090$7f0961b0$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140611084908.509a6950@gandalf.local.home> (Steven Rostedt's
+	message of "Wed, 11 Jun 2014 13:49:08 +0100")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javi Merino <Javi.Merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, rjw@rjwysocki.net, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
->=20
-> On 2014.06.11 05:34 Stratos Karafotis wrote:
->=20
->> Local variable core_pct holds fixed point values.
->> When we round it we add "1" to core_pct. This has almost
->> no effect.
->>
->> So, add int_toftp(1) to core_pct when rounding.
->>
->> For example, in a given sample point (values taken from
->> tracepoint) with:
->> aperf =3D 5024
->> mperf =3D 10619
->>
->> the core_pct is (before rounding):
->> core_pct =3D 12111
->> fp_toint(core_pct) =3D 47
->>
->> After rounding:
->> core_pct =3D 12112
->> fp_toint(core_pct) =3D 47
->>
->> After rounding with int_toftp(1):
->> core_pct =3D 12367
->> fp_toint(core_pct) =3D 48
->>
->> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+Thanks for the quick response.
+
+Steven Rostedt <rostedt@goodmis.org> writes:
+
+> On Wed, 11 Jun 2014 12:31:44 +0100
+> Punit Agrawal <punit.agrawal@arm.com> wrote:
+>
+>> Create a new event to trace when the temperature is above a trip
+>> point. Use the trace-point when handling non-critical and critical
+>> trip pionts.
+>> 
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>> Cc: Steven Rostedt <rostedt@goodmis.org>
+>> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+>> Cc: Ingo Molnar <mingo@redhat.com>
+>> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
 >> ---
->>
->> Hi Rafael,
->>
->> I'm sorry for submitting again in merge window, but
->> I thought that maybe we need this fix for 3.16.
->>
->>
->> drivers/cpufreq/intel_pstate.c | 2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_=
-pstate.c
->> index 4e7f492..dd80aa2 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -564,7 +564,7 @@ static inline void intel_pstate_calc_busy(struct=
- cpudata *cpu)
->> 	core_pct =3D div_u64_rem(core_pct, int_tofp(sample->mperf), &rem);
->>
->> 	if ((rem << 1) >=3D int_tofp(sample->mperf))
->> -		core_pct +=3D 1;
->> +		core_pct +=3D int_tofp(1);
->>
->> 	sample->freq =3D fp_toint(
->> 		mul_fp(int_tofp(cpu->pstate.max_pstate * 1000), core_pct));
->> --=20
->> 1.9.3
->=20
-> No.
->=20
-> The intent was only ever to round properly the pseudo floating point =
-result of the divide.
-> It was much more important (ugh, well 4 times more) when FRACBITS was=
- still 6, which also got changed to 8 in a recent patch.
->=20
+>> Hi Steven,
+>> 
+>> I am facing an issue with partial trace being emitted when using
+>> __print_symbolic in this patch. 
+>> 
+>> When the trip_type is THERMAL_TRIP_ACTIVE (i.e., the first value in
+>> the symbol map), the emitted trace contains the corresponding string
+>> ("active"). But for other values of trip_type an empty string is
+>> emitted in the trace.
+>> 
+>> I've looked at other uses of __print_symbolic in the kernel and don't
+>> see any difference in usage. Do you know what could be causing this or
+>> alternately have any pointers on how to debug this behaviour?
+>> 
+>
+> If you can use trace-cmd to record your events then we can look at the
+> raw data too.
+>
+> trace-cmd record -e thermal_zone_trip <some-command>
+>
+> where <some-command> would trigger your tracepoint.
+>
+> Then do: trace-cmd report -R
+>
+> You should see the raw value of trip_type.
+>
+> Make sure that it matches the enum values that you have listed.
+>
 
-Are you sure? This rounding was very recently added.
-As far as I can understand, I don't see the meaning of this rounding, a=
-s is.
-Even if FRAC_BITS was 6, I think it would have almost no improvement in
-calculations.
+I do indeed see the value of trip_type and it matches what's being
+traced.
 
+~# trace-cmd report | grep thermal_zone_trip | tail -n 5
+     kworker/2:2-1014  [002]   125.623213: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+     kworker/2:2-1014  [002]   125.743174: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+     kworker/2:2-1014  [002]   125.863196: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+     kworker/2:2-1014  [002]   125.983175: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+     kworker/2:2-1014  [002]   126.103173: thermal_zone_trip:    thermal_zone=soc_thermal id=0 trip=0 trip_type=
+~# trace-cmd report -R | grep thermal_zone_trip | tail -n 5
+     kworker/2:2-1014  [002]   125.623213: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+     kworker/2:2-1014  [002]   125.743174: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+     kworker/2:2-1014  [002]   125.863196: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+     kworker/2:2-1014  [002]   125.983175: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
+     kworker/2:2-1014  [002]   126.103173: thermal_zone_trip:     thermal_zone=soc_thermal id=0 trip=0 trip_type=1
 
-Stratos
+Is there something I should be doing to enable the translation to the
+string representation when reporting using trace-cmd?
 
+Cheers,
+Punit
+
+> -- Steve
+>
+>
+>> Thanks.
+>> Punit
+>> 
+>>  drivers/thermal/fair_share.c   |    7 ++++++-
+>>  drivers/thermal/step_wise.c    |    5 ++++-
+>>  drivers/thermal/thermal_core.c |    2 ++
+>>  include/trace/events/thermal.h |   30 ++++++++++++++++++++++++++++++
+>>  4 files changed, 42 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+>> index 944ba2f..2cddd68 100644
+>> --- a/drivers/thermal/fair_share.c
+>> +++ b/drivers/thermal/fair_share.c
+>> @@ -23,6 +23,7 @@
+>>   */
+>>  
+>>  #include <linux/thermal.h>
+>> +#include <trace/events/thermal.h>
+>>  
+>>  #include "thermal_core.h"
+>>  
+>> @@ -34,14 +35,18 @@ static int get_trip_level(struct thermal_zone_device *tz)
+>>  {
+>>  	int count = 0;
+>>  	unsigned long trip_temp;
+>> +	enum thermal_trip_type trip_type;
+>>  
+>>  	if (tz->trips == 0 || !tz->ops->get_trip_temp)
+>>  		return 0;
+>>  
+>>  	for (count = 0; count < tz->trips; count++) {
+>>  		tz->ops->get_trip_temp(tz, count, &trip_temp);
+>> -		if (tz->temperature < trip_temp)
+>> +		if (tz->temperature < trip_temp) {
+>> +			tz->ops->get_trip_type(tz, count, &trip_type);
+>> +			trace_thermal_zone_trip(tz, count, trip_type);
+>>  			break;
+>> +		}
+>>  	}
+>>  	return count;
+>>  }
+>> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+>> index f251521..3b54c2c 100644
+>> --- a/drivers/thermal/step_wise.c
+>> +++ b/drivers/thermal/step_wise.c
+>> @@ -23,6 +23,7 @@
+>>   */
+>>  
+>>  #include <linux/thermal.h>
+>> +#include <trace/events/thermal.h>
+>>  
+>>  #include "thermal_core.h"
+>>  
+>> @@ -129,8 +130,10 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>>  
+>>  	trend = get_tz_trend(tz, trip);
+>>  
+>> -	if (tz->temperature >= trip_temp)
+>> +	if (tz->temperature >= trip_temp) {
+>>  		throttle = true;
+>> +		trace_thermal_zone_trip(tz, trip, trip_type);
+>> +	}
+>>  
+>>  	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%ld]:trend=%d,throttle=%d\n",
+>>  				trip, trip_type, trip_temp, trend, throttle);
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index c74c78d..454884a 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -371,6 +371,8 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+>>  	if (tz->temperature < trip_temp)
+>>  		return;
+>>  
+>> +	trace_thermal_zone_trip(tz, trip, trip_type);
+>> +
+>>  	if (tz->ops->notify)
+>>  		tz->ops->notify(tz, trip, trip_type);
+>>  
+>> diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
+>> index 894a79e..5eeb1e7 100644
+>> --- a/include/trace/events/thermal.h
+>> +++ b/include/trace/events/thermal.h
+>> @@ -51,6 +51,36 @@ TRACE_EVENT(cdev_update,
+>>  	TP_printk("type=%s target=%lu", __get_str(type), __entry->target)
+>>  );
+>>  
+>> +TRACE_EVENT(,
+>> +
+>> +	TP_PROTO(struct thermal_zone_device *tz, int trip,
+>> +		enum thermal_trip_type trip_type),
+>> +
+>> +	TP_ARGS(tz, trip, trip_type),
+>> +
+>> +	TP_STRUCT__entry(
+>> +		__string(thermal_zone, tz->type)
+>> +		__field(int, id)
+>> +		__field(int, trip)
+>> +		__field(enum thermal_trip_type, trip_type)
+>> +	),
+>> +
+>> +	TP_fast_assign(
+>> +		__assign_str(thermal_zone, tz->type);
+>> +		__entry->id = tz->id;
+>> +		__entry->trip = trip;
+>> +		__entry->trip_type = trip_type;
+>> +	),
+>> +
+>> +	TP_printk("thermal_zone=%s id=%d trip=%d trip_type=%s",
+>> +		__get_str(thermal_zone), __entry->id, __entry->trip,
+>> +		__print_symbolic(__entry->trip_type,
+>> +				{ THERMAL_TRIP_ACTIVE, "active" },
+>> +				{ THERMAL_TRIP_PASSIVE, "passive" },
+>> +				{ THERMAL_TRIP_HOT, "hot" },
+>> +				{ THERMAL_TRIP_CRITICAL, "critical" }))
+>> +);
+>> +
+>>  #endif /* _TRACE_THERMAL_H */
+>>  
+>>  /* This part must be outside protection */
