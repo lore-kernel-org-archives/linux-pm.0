@@ -1,64 +1,122 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above
- a trip point
-Date: Wed, 11 Jun 2014 11:08:24 -0400
-Message-ID: <20140611110824.7aa2adc2@gandalf.local.home>
-References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
-	<1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
-	<20140611084908.509a6950@gandalf.local.home>
-	<9hhk38nedu1.fsf@arm.com>
-	<20140611102006.27cc145e@gandalf.local.home>
-	<9hhfvjbebux.fsf@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH v4 0/6] ARM generic idle states
+Date: Wed, 11 Jun 2014 17:18:34 +0100
+Message-ID: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cdptpa-outbound-snat.email.rr.com ([107.14.166.231]:55073 "EHLO
-	cdptpa-oedge-vip.email.rr.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751049AbaFKPI1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 11:08:27 -0400
-In-Reply-To: <9hhfvjbebux.fsf@arm.com>
+Received: from service87.mimecast.com ([91.220.42.44]:55189 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755609AbaFKQSj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 12:18:39 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javi Merino <Javi.Merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
 
-On Wed, 11 Jun 2014 15:53:42 +0100
-Punit Agrawal <punit.agrawal@arm.com> wrote:
+This patch is v4 of a previous posting:
+
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-May/253693.html
+
+Changes in v4:
+
+- States sorting using exit-latency
+- Added cosmetic review comments
+- Dropped RFC tag
+- Rebased against 3.15
+
+Changes in v3:
+
+- Streamlined the idle states bindings and added them to the series
+  http://www.spinics.net/lists/arm-kernel/msg316299.html
+- Sorting states through min-residency+exit-latency
+- Added debug strings formatting
+- Reworded min-residency-us idle state property
+- Removed power-domain properties from idle states waiting for code
+  examples requiring them to be defined
+
+Changes in v2:
+
+- Moved OF parsing code to drivers/cpuidle
+- Improved states detection and sorting through linked list
+- Split code in generic and ARM64 specific bits
+- Moved idle enter function into ARM64 idle driver
+- Refactored PSCI idle states register function
+- Renamed suspend operations and moved detection to ARM64 idle driver
+- Changed the way CPUIDLE_FLAG_TIMER_STOP is handled
+- Simplified idle state nodes parsing since according to the latest
+  bindings idle state nodes are a flat list, not hierarchical anymore
+- Used min-residency-us to sort the states, to be further discussed
+
+Idle states on most ARM platforms can be characterized by a set of
+parameters that are platform agnostic and describe the HW idle states
+features. So far, CPU idle drivers for ARM platforms required the definitio=
+n
+of parameters through static tables, duplicating control data for different
+platforms. Moreover, the lack of standardization on firmware interfaces
+hampered any standardization effort, resulting in CPU idle drivers for ARM
+platforms containing duplicated code and platform specific power down routi=
+nes.
+
+The introduction of the PSCI firmware interface, and more in general, well
+defined suspend back-ends, allows the definition of generic idle states and
+the respective kernel infrastructure to support them.
+
+Building on top of DT idle states bindings, that standardize idle states
+parameters and corresponding suspend back-ends, this patchset provides code
+that parses DT idle states nodes and builds at run-time the control data
+infrastructure required by the ARM CPU idle drivers.
+
+Idle states define an entry method (eg PSCI), that requires the respective
+ARM64 kernel back-end to be invoked to initialize idle states parameters, s=
+o
+that when the idle driver executes the back-end specific entry method a tab=
+le
+look-up can be carried out to retrieve the corresponding idle state paramet=
+er.
+
+On legacy ARM platforms, the OF idle states are just used to initialize
+states data.
+
+The idle states bindings can be extended with new back-ends; the ARM64 CPUi=
+dle
+driver must be updated accordingly so that the corresponding back
+end initializer can be invoked at boot time for parameters initialization.
+
+Patchset has been tested on AEM v8 models, on top of bootwrapper PSCI CPU
+SUSPEND implementation which provides simulated core power gating.
+
+[1] http://www.spinics.net/lists/arm-kernel/msg316299.html
+
+Lorenzo Pieralisi (6):
+  Documentation: arm: define DT idle states bindings
+  Documentation: devicetree: psci: define CPU suspend parameter
+  drivers: cpuidle: implement OF based idle states infrastructure
+  arm64: add PSCI CPU_SUSPEND based cpu_suspend support
+  drivers: cpuidle: CPU idle ARM64 driver
+  arm64: boot: dts: update rtsm aemv8 dts with PSCI and idle states
+
+ Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
+ .../devicetree/bindings/arm/idle-states.txt        | 507 +++++++++++++++++=
+++++
+ Documentation/devicetree/bindings/arm/psci.txt     |  12 +-
+ arch/arm64/boot/dts/rtsm_ve-aemv8a.dts             |  44 +-
+ arch/arm64/include/asm/psci.h                      |   4 +
+ arch/arm64/kernel/psci.c                           | 103 +++++
+ drivers/cpuidle/Kconfig                            |  14 +
+ drivers/cpuidle/Kconfig.arm64                      |  13 +
+ drivers/cpuidle/Makefile                           |   5 +
+ drivers/cpuidle/cpuidle-arm64.c                    | 168 +++++++
+ drivers/cpuidle/of_idle_states.c                   | 282 ++++++++++++
+ drivers/cpuidle/of_idle_states.h                   |   8 +
+ 12 files changed, 1159 insertions(+), 9 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
+ create mode 100644 drivers/cpuidle/Kconfig.arm64
+ create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+ create mode 100644 drivers/cpuidle/of_idle_states.c
+ create mode 100644 drivers/cpuidle/of_idle_states.h
+
+--=20
+1.8.4
 
 
-> >
-> > /sys/kernel/debug/thermal/thermal_zone_trip/format
-> 
-> I don't have this file but found the following which seems to contain
-> the format.
-
-Yeah, that was typed manually, forgot "tracing". I mount the debugfs
-system at /debug for easier typing. I hate the /sys/kernel/debug path.
-Too much typing.
-
-> 
-> # pwd /sys/kernel/debug/tracing/events/thermal/thermal_zone_trip
-> # cat format
-> name: thermal_zone_trip
-> ID: 463
-> format:
->         field:unsigned short common_type;       offset:0;       size:2; signed:0;
->         field:unsigned char common_flags;       offset:2;       size:1; signed:0;
->         field:unsigned char common_preempt_count;       offset:3;       size:1; signed:0;
->         field:int common_pid;   offset:4;       size:4; signed:1;
-> 
->         field:__data_loc char[] thermal_zone;   offset:8;       size:4; signed:0;
->         field:int id;   offset:12;      size:4; signed:1;
->         field:int trip; offset:16;      size:4; signed:1;
->         field:enum thermal_trip_type trip_type; offset:20;      size:4; signed:0;
-> 
-> print fmt: "thermal_zone=%s id=%d trip=%d trip_type=%s", __get_str(thermal_zone), REC->id, REC->trip, __print_symbolic(REC->trip_type, { THERMAL_TRIP_ACTIVE, "active" }, { THERMAL_TRIP_PASSIVE, "passive" }, { THERMAL_TRIP_HOT, "hot" }, { THERMAL_TRIP_CRITICAL, "critical" })
-> 
-
-For it to work with trace-cmd (and perf) you'll need to add a plugin to
-define what those enums are. This is the file that trace-cmd uses to
-foramat. But it has no idea how to convert something like
-THERMAL_TRIP_PASSIVE into a number.
-
--- Steve
