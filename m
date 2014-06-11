@@ -1,112 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] PM: Domain: Add flag to assure that device's runtime
- pm callback is called at once.
-Date: Wed, 11 Jun 2014 20:44:31 +0200
-Message-ID: <CAJZ5v0gNCFSwfmwaeGevbzica95ZD8CH-FUxD_2VN607-EhXCQ@mail.gmail.com>
-References: <1402446800-4043-1-git-send-email-jonghwa3.lee@samsung.com>
-	<CAPDyKFr6aoev3vSmxQOJWDGGFLWyE4eZ_0joQ45-GgZNztYdGA@mail.gmail.com>
-	<53982FF7.8030606@samsung.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
+Date: Wed, 11 Jun 2014 23:20:27 +0300
+Message-ID: <5398BA0B.7070903@semaphore.gr>
+References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <009b01cf857a$d5032090$7f0961b0$@net> <539862DB.9060905@semaphore.gr> <00a001cf8586$24eb5c70$6ec21550$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:51860 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755037AbaFKSoc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 14:44:32 -0400
-In-Reply-To: <53982FF7.8030606@samsung.com>
+Received: from sema.semaphore.gr ([78.46.194.137]:32910 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751328AbaFKUUa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 16:20:30 -0400
+In-Reply-To: <00a001cf8586$24eb5c70$6ec21550$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jonghwa3.lee@samsung.com
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, cw00.choi@samsung.com, Myungjoo Ham <myungjoo.ham@samsung.com>, jy0922.shim@samsung.com, inki.dae@samsung.com
+To: Doug Smythies <dsmythies@telus.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com
 
-On Wed, Jun 11, 2014 at 12:31 PM,  <jonghwa3.lee@samsung.com> wrote:
-> Hi Ulf,
-> On 2014=EB=85=84 06=EC=9B=94 11=EC=9D=BC 17:27, Ulf Hansson wrote:
->
->> On 11 June 2014 02:33, Jonghwa Lee <jonghwa3.lee@samsung.com> wrote:
->>> When device uses generic pm domain, its own runtime suspend callbac=
-k will be
->>> executed only when all devices in the same domain are suspended. Ho=
-wever, some
->>> device needs sychronized runtime suspend and not to be deffered.
->>> For those devices, Generic pm domain adds new API for adding device=
- with flag,
->>> which shows that it guerantees driver's runtime suspend will be exe=
-cuted right
->>> away not at the time domain is really powered off.
->>> Existed API, pm_genpd_add_device(), now adds device with flag repre=
-senting this
->>> device is not needed sychrnoized callback. It will work as same as =
-before.
+On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
+>=20
+> On 2104.06.11 07:08 Stratos Karafotis wrote:
+>> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
 >>
->> Hi Jonghwa,
+>> No.
 >>
->> I understand you have an issue of the behaviour of genpd here and I
->> agree we need a solution, but I am not sure this is the correct one.
->> :-)
+>> The intent was only ever to round properly the pseudo floating point=
+ result of the divide.
+>> It was much more important (ugh, well 4 times more) when FRACBITS wa=
+s still 6, which also got changed to 8 in a recent patch.
 >>
->> The current behaviour of how genpd deals with runtime PM suspend
->> callbacks has two severe issues:
->>
->> 1 ) It prevents fine grained power management within a domain. Simpl=
-y
->> because those resources that are controlled on levels below the
->> pm_domain, can't be put in low power state until the complete domain
->> will be dropped.
->> 2 ) All devices within a domain will be runtime PM suspended at the
->> same time. This causes a thundering herd problem since latencies get=
-s
->> accumulated for each device in a domain.
->>
->> Instead I think we should try to change the default behaviour of gen=
-pd
->> and let it invoke the runtime PM callbacks immediately and not wait
->> for the domain to be dropped. Do you think that could work?
->>
->
->
-> Yes, I think it could. I didn't understand why genpd prohibits device=
- to be
-> suspended separately but puts all devices suspended altogether.
-
-The reason why was because it assumed device-specific suspend to be car=
-ried
-out by genpd_stop_dev() and the device state to be saved by the runtime
-suspend callback of the driver.  Of course, it only makes sense to save
-device states if power is going to be removed from the domain and that'=
-s
-why it was done this way.
-
-
-> But, I'm just
-> afraid to change genpd's behavior totally due to my own inconvenience=
+>=20
+> Are you sure?
+>=20
+> Yes.
+>=20
+>> This rounding was very recently added.
+>> As far as I can understand, I don't see the meaning of this rounding=
+, as is.
+>> Even if FRAC_BITS was 6, I think it would have almost no improvement=
+ in
+>> calculations.
+>=20
+> Note: I had not seen this e-mail when I wrote a few minutes ago:
+>=20
+> You may be correct.
+> If Dirk agrees, I will re-analyse the entire driver for rounding effe=
+cts soon.
+> When FRACBITS was 6 there were subtle cases where the driver would ge=
+t stuck, and not make a final pstate change, with the default PID gains=
 =2E
->
-> And addition to above problems, there is one more problem due to genp=
-d's current
-> bust suspending.
->
-> 3) It would break the device dependency. Even if devices request to b=
-e suspended
-> sequentially considering their dependencies, genpd simply ignores it =
-and let
-> them suspended in order of registration. It means suspending order ab=
-solutely
-> depends on when device is bound to genpd.
->
-> Observing 3 definite problems, it looks genpd should be changed. Howe=
-ver,
-> someone might want to keep it work as like before, who knows? I respe=
-ctfully ask
-> Rafael's opinion.
+> Other things have changed, and the analysis needs to be re-done.
+>=20
 
-Well, I don't work on it directly any more.
+Could you please elaborate a little bit more what we need these 2 lines=
+ below?
 
-I'm also not against changing it if that's going to help.  What you nee=
-d to do,
-though, is to audit all code using it and figure out how your changes a=
-re going
-to affect that code.
+        if ((rem << 1) >=3D int_tofp(sample->mperf))
+                core_pct +=3D 1;
 
-Rafael
+Because nothing is mentioned for them in commit's changelog.
+Do we need to round core_pct or not?
+Because if we try to round it, I think this patch should work.
+
+Thanks,
+Stratos
+
+
