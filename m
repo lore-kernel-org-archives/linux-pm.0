@@ -1,146 +1,105 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH v4 1/6] Documentation: arm: define DT idle states
- bindings
-Date: Wed, 11 Jun 2014 14:15:16 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1406111240010.25775@knanqh.ubzr>
-References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com> <1402503520-8611-2-git-send-email-lorenzo.pieralisi@arm.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH 02/24] drivercore: Bind/unbind power domain on probe/remove
+Date: Wed, 11 Jun 2014 11:16:34 -0700
+Message-ID: <7h38fbia65.fsf@paris.lan>
+References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
+	<CAJZ5v0hUT0QPGWeDM9WoxnobaL5eoNi5UFrUUZrQ1gSBCX=aVg@mail.gmail.com>
+	<CAPDyKFqWZdA4ZisJvCDP8j6D2_A8oRAHkjikddyGSwpToFg-Gw@mail.gmail.com>
+	<1894835.cKK4602bPf@vostro.rjw.lan> <20140610212731.GA11191@kroah.com>
+	<53977BC1.5000301@gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f171.google.com ([209.85.216.171]:36148 "EHLO
-	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753894AbaFKSPU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 14:15:20 -0400
-Received: by mail-qc0-f171.google.com with SMTP id w7so209409qcr.2
-        for <linux-pm@vger.kernel.org>; Wed, 11 Jun 2014 11:15:20 -0700 (PDT)
-In-Reply-To: <1402503520-8611-2-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34887 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbaFKSQh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jun 2014 14:16:37 -0400
+Received: by mail-pa0-f42.google.com with SMTP id lj1so79276pab.15
+        for <linux-pm@vger.kernel.org>; Wed, 11 Jun 2014 11:16:37 -0700 (PDT)
+In-Reply-To: <53977BC1.5000301@gmail.com> (Tomasz Figa's message of "Tue, 10
+	Jun 2014 23:42:25 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Mark Brown <broonie@kernel.org>, Tomasz Figa <t.figa@samsung.com>
 
-On Wed, 11 Jun 2014, Lorenzo Pieralisi wrote:
+Tomasz Figa <tomasz.figa@gmail.com> writes:
 
-> ARM based platforms implement a variety of power management schemes that
-> allow processors to enter idle states at run-time.
-> The parameters defining these idle states vary on a per-platform basis forcing
-> the OS to hardcode the state parameters in platform specific static tables
-> whose size grows as the number of platforms supported in the kernel increases
-> and hampers device drivers standardization.
-> 
-> Therefore, this patch aims at standardizing idle state device tree bindings for
-> ARM platforms. Bindings define idle state parameters inclusive of entry methods
-> and state latencies, to allow operating systems to retrieve the configuration
-> entries from the device tree and initialize the related power management
-> drivers, paving the way for common code in the kernel to deal with idle
-> states and removing the need for static data in current and previous kernel
-> versions.
+> On 10.06.2014 23:27, Greg Kroah-Hartman wrote:
+>> On Tue, Jun 10, 2014 at 11:27:45PM +0200, Rafael J. Wysocki wrote:
+>>> On Tuesday, June 10, 2014 02:53:26 PM Ulf Hansson wrote:
+>>>> On 10 June 2014 14:11, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>>> On Tue, Jun 10, 2014 at 12:51 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>>>> From: Tomasz Figa <t.figa@samsung.com>
+>>>>>>
+>>>>>> On a number of platforms, devices are part of controllable power
+>>>>>> domains, which need to be enabled before such devices can be accessed
+>>>>>> and may be powered down when the device is idle to save some power.
+>>>>>> This means that on systems that support power domain control using
+>>>>>> generic power domains subsystem, it is necessary to add device to its
+>>>>>> power domain before binding a driver to it and remove it from its power
+>>>>>> domain after its driver is unbound to make sure that an unused device
+>>>>>> does not affect power domain state.
+>>>>>>
+>>>>>> Since this is not limited to particular busses and specific
+>>>>>> archs/platforms,
+>>>>>
+>>>>> Actually, this isn't correrct.  It is limited to the platforms that
+>>>>> use Device Trees now.
+>>>>
+>>>> Correct, we should update the commit message/docs.
+>>>>
+>>>>>
+>>>>> Moreover, it is not consistent with the way we add devices to the ACPI PM
+>>>>> domain, which is the ACPI counterpart of this.
+>>>>
+>>>> I am not sure why you think consistency for ACPI is important here.
+>>>> ACPI PM will still be able to handle it's domain/device registering as
+>>>> before. There are even other pm_domains that don't use genpd which
+>>>> need to handle this themselves.
+>>>
+>>> My point is that doing things like that in different places for different
+>>> firmware interfaces is confusing and likely to lead to coding mistakes in
+>>> the future.
+>>>
+>>>> Or are you saying that you prefer bus notifiers in favour of making
+>>>> use of the driver core for this matter?
+>>>
+>>> Well, please grep for acpi_dev_pm_attach() and see where it is done.
+>>> Surely not in drivers/base/dd.c.  Also I'm not sure why you're talking
+>>> about bus notifiers in this context.
+>>>
+>>>> Shouldn't the driver core handle most of the common things for a device
+>>>> driver?
+>>>
+>>> Common, yes.  Platform-specific, no.
+>>>
+>>>> Let's compare how the pinctrls are being managed in the driver core, for
+>>>> example.
+>>>
+>>> pinctrl has Device Trees support only at the moment (as far as firmware
+>>> interfaces go) and quite frankly I'm not sure if/how we'll need to change
+>>> it to cover ACPI as well.
+>>>
+>>> But for power domains, please keep that stuff away from dd.c.  That is,
+>>> unless Greg specifically disagrees with me and decides to apply this
+>>> patch regardless. :-)
+>> 
+>> Nope, no disagreement from me toward you at all here, keep up the good
+>> work :)
+>
+> OK, so proposed solution is to put this in:
+>
+> - platform_drv_probe(),
+> - spi_drv_probe(),
+> - i2c_device_probe(),
+> - amba_probe(),
+>
+> ...
+>
+> - and any other bus type, which can have devices instantiated from DT.
 
-Following the offline discussion with Charles, I've some comments.
+Since this is a DT feature, what about calling
+__pm_genpd_of_add_device()  when the power-domain nodes are discovered?
 
-[...]
-
-> +Idle state parameters (eg entry latency) are platform specific and 
-need to be
-> +characterized with bindings that provide the required information to OSPM
-> +code so that it can build the required tables and use them at runtime.
-
-[...]
-
-> +	- entry-latency-us
-> +		Usage: Required
-> +		Value type: <prop-encoded-array>
-> +		Definition: u32 value representing worst case latency
-> +			    in microseconds required to enter the idle state.
-> +
-> +	- exit-latency-us
-> +		Usage: Required
-> +		Value type: <prop-encoded-array>
-> +		Definition: u32 value representing worst case latency
-> +			    in microseconds required to exit the idle state.
-> +
-> +	- min-residency-us
-> +		Usage: Required
-> +		Value type: <prop-encoded-array>
-> +		Definition: u32 value representing duration in microseconds
-> +			    after which this state becomes more energy
-> +			    efficient than any shallower states.
-
-I think this would benefit from a clearer definition.  For example, 
-should the min-residency-us value include or exclude the entry and exit 
-delays?  I think it should since that's what the cpuidle code will have 
-to use when testing against expected delay before next wakeup event in 
-any case.  Some of your examples don't assume it is the case though, as 
-the min-residency-us is smaller than entry+exit delays.
-
-Also I think we'd need a 4th value to fully characterize a state: worst 
-case wake-up latency for QoS purposes.
-
-Let's illustrate the different periods on a time line to make it clearer
-(hmmm let's see how this can be managed on a braille display :-O ):
-
-EXEC:	Normal CPU execution.
-
-PREP:	Preparation phase before committing the hardware to idle mode
-	like cache flushing. This is abortable on pending wake-up 
-	event conditions. The abort latency is assumed to be negligible 
-	(i.e. less than the ENTRY + EXIT duration). If aborted, we go 
-	back to EXEC. This phase is optional. If not abortable, this 
-	should be included in the ENTRY phase instead.
-
-ENTRY:	The hardware is committed to idle mode. This period must run to
-	completion up to IDLE before anything else can happen.
-
-IDLE:	This is the actual power-saving idle period. This may last 
-	between 0 and infinite time, until a wake-up event occurs.
-
-EXIT:	Period during which the CPU is brought back to operational
-	mode (EXEC).
-
-...__[EXEC]__|__[PREP]--|__[ENTRY]__|__[IDLE]__|___[EXIT]_--|__[EXEC]__...
-             |          |           |          |            |
-
-             |<-- entry-latency --->|
-
-                                               |<- exit-  ->|
-                                               |  latency   |
-
-             |<-------------- min-residency --------------->|
-
-                        |<----- worst_wakeup_latency ------>|
-
-entry-latency: Worst case latency required to enter the idle state.  The 
-exit_latency may be guaranteed only after entry-latency has passed.
-
-min-residency: Minimum period, including preparation, entry and exit, 
-for a given power mode to be worthwhile energy wise.  It must be at 
-least equal to entry_latency + exit_latency.
-
-worst_wakeup_latency: Maximum delay between the signaling of a wake-up 
-event and the CPU being able to execute normal code again. If not 
-specified, this is assumed to be entry-latency + exit_latency.
-
-Notes:
-
-The cpuidle code would only care about min-residency to select the most 
-appropriate mode based on the expected delay before the next event.
-
-The scheduler will care about the following in the near future:
-
-wakeup_delay = exit_latency + max(entry_latency - (now - entry_timestamp), 0)
-
-In other words, the scheduler would wake up the CPU with the shortest 
-wake-up latency.  This wake-up latency must take into account the entry 
-latency if that period has not expired.  Here the abortable nature of 
-the PREP period is ignored on purpose because it cannot be relied upon 
-(e.g. if the cache is mostly clean then the PREP deadline may occur much 
-sooner than expected).
-
-And pmqos would only care about worst_wakeup_latency.
-
-So... I hope this is useful.  I think the above ascii art could be part 
-of your documentation to explain it all.
-
-
-
-Nicolas
+Kevin
