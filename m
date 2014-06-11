@@ -1,56 +1,52 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
- provide it to scheduler
-Date: Wed, 11 Jun 2014 02:35:05 +0800
-Message-ID: <20140610183505.GC5487@intel.com>
-References: <20140604172712.GJ13930@laptop.programming.kicks-ass.net>
- <2484761.vkWavnsDx3@vostro.rjw.lan>
- <20140605065205.GA3213@twins.programming.kicks-ass.net>
- <539086B3.2010804@gmail.com>
- <20140605202930.GA15484@intel.com>
- <20140606080543.GR6758@twins.programming.kicks-ass.net>
- <20140606003520.GB22261@intel.com>
- <20140606105036.GQ3213@twins.programming.kicks-ass.net>
- <20140607232628.GC22261@intel.com>
- <20140610101622.GB6758@twins.programming.kicks-ass.net>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 0/3] devfreq: exynos4_bus: Update Exynos4 busfreq driver
+Date: Wed, 11 Jun 2014 12:27:13 +0900
+Message-ID: <5397CC91.4050903@samsung.com>
+References: <1402449476-6782-1-git-send-email-jonghwa3.lee@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:44658 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbaFKCi7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 10 Jun 2014 22:38:59 -0400
-Content-Disposition: inline
-In-Reply-To: <20140610101622.GB6758@twins.programming.kicks-ass.net>
+Received: from mailout1.samsung.com ([203.254.224.24]:36663 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753461AbaFKD1P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jun 2014 23:27:15 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N6Z005R6IXD2Y50@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 11 Jun 2014 12:27:14 +0900 (KST)
+In-reply-to: <1402449476-6782-1-git-send-email-jonghwa3.lee@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Morten Rasmussen <morten.rasmussen@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, len.brown@intel.com, jacob.jun.pan@linux.intel.com
+To: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Cc: linux-pm@vger.kernel.org, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 
-On Tue, Jun 10, 2014 at 12:16:22PM +0200, Peter Zijlstra wrote:
-> What other target would you optimize for? The purpose here is to build
-> an energy aware scheduler, one that schedules tasks so that the total
-> amount of energy, for the given amount of work, is minimal.
-> 
-> So we can't measure in Watt, since if we forced the CPU into the lowest
-> P-state (or even C-state for that matter) work would simply not
-> complete. So we need a complete energy term.
-> 
-> Now. IPC is instructions/cycle, Watt is Joule/second, so IPC/Watt is
-> 
-> instructions   second
-> ------------ * ------ ~ instructions / joule
->   cycle        joule
-> 
-> Seeing how both cycles and seconds are time units.
-> 
-> So for any given amount of instructions, the work needs to be done, we
-> want the minimal amount of energy consumed, and IPC/Watt is the natural
-> metric to measure this over an entire workload.
+Hi Jonghwa,
 
-Ok, I understand. Whether we take IPC/watt as an input metric in scheduler or
-as a goal for scheduler, we definitely need to try both.
+I sent already this patchset to support dt for exynos4-busfreq[1].
+You can check history of exynos4-busfreq on following patchset[1].
+[1] https://lkml.org/lkml/2014/3/13/58
 
-Thanks, Peter.
+So, I'm preparing to implement common driver to support dt of PPMU.
 
-Yuyang
+Thanks,
+Chanwoo Choi
+
+
+On 06/11/2014 10:17 AM, Jonghwa Lee wrote:
+> Driver updates including devicetree supporting and some fixes.
+> 
+> Jonghwa Lee (3):
+>   devfreq: exynos4_bus: Enable PPMU's source clock before use.
+>   devfreq: exynos4_bus: Access memory mapped I/O region via dynamic
+>     allocation.
+>   devfreq: exynos4_bus: Support DT in exynos4 busfreq driver.
+> 
+>  .../devicetree/bindings/devfreq/exynos4_bus.txt    |   19 +++++
+>  drivers/devfreq/exynos/exynos4_bus.c               |   77 +++++++++++++++++---
+>  2 files changed, 87 insertions(+), 9 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/exynos4_bus.txt
+> 
+
