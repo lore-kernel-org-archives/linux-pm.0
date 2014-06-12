@@ -1,158 +1,63 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
-Date: Thu, 12 Jun 2014 17:35:59 +0300
-Message-ID: <5399BACF.6060201@semaphore.gr>
-References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <009b01cf857a$d5032090$7f0961b0$@net> <539862DB.9060905@semaphore.gr> <00a001cf8586$24eb5c70$6ec21550$@net> <5398BA0B.7070903@semaphore.gr> <00b301cf85ba$40fe4290$c2fac7b0$@net>
+From: Vince Weaver <vince@deater.net>
+Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
+ provide it to scheduler
+Date: Thu, 12 Jun 2014 11:05:12 -0400 (EDT)
+Message-ID: <alpine.DEB.2.10.1406121101110.23499@pianoman.cluster.toy>
+References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com> <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com> <20140603114428.GY11096@twins.programming.kicks-ass.net> <20140604154227.GR29593@e103034-lin> <20140604161618.GQ30445@twins.programming.kicks-ass.net>
+ <20140606131510.GV29593@e103034-lin> <20140606134303.GQ13930@laptop.programming.kicks-ass.net> <20140606142958.GX29593@e103034-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:34552 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752874AbaFLOgD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jun 2014 10:36:03 -0400
-In-Reply-To: <00b301cf85ba$40fe4290$c2fac7b0$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140606142958.GX29593@e103034-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, rjw@rjwysocki.net, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/06/2014 12:15 =CF=80=CE=BC, Doug Smythies wrote:
->=20
->=20
-> -----Original Message-----
-> From: Stratos Karafotis [mailto:stratosk@semaphore.gr]=20
-> Sent: June-11-2014 13:20
-> To: Doug Smythies
-> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; rjw@rjwys=
-ocki.net; viresh.kumar@linaro.org; dirk.j.brandewie@intel.com
-> Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
->=20
-> On 2014.06.11 13:20 Stratos Karafotis wrote:
->> On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
->>>
->>> On 2104.06.11 07:08 Stratos Karafotis wrote:
->>>> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
->>>>
->>>> No.
->>>
->>>> The intent was only ever to round properly the pseudo floating poi=
-nt result of the divide.
->>>> It was much more important (ugh, well 4 times more) when FRACBITS =
-was still 6, which also got changed to 8 in a recent patch.
->>>>
->>>
->>> Are you sure?
->>>
->>> Yes.
->>>
->>>> This rounding was very recently added.
->>>> As far as I can understand, I don't see the meaning of this roundi=
-ng, as is.
->>>> Even if FRAC_BITS was 6, I think it would have almost no improveme=
-nt in
->>>> calculations.
->>>
->>> Note: I had not seen this e-mail when I wrote a few minutes ago:
->>>
->>> You may be correct.
->>> If Dirk agrees, I will re-analyse the entire driver for rounding ef=
-fects soon.
->>> When FRACBITS was 6 there were subtle cases where the driver would =
-get stuck, and not make a final pstate change, with the default PID gai=
-ns.
->>> Other things have changed, and the analysis needs to be re-done.
->>>
->=20
->> Could you please elaborate a little bit more what we need these 2 li=
-nes below?
->>
->>        if ((rem << 1) >=3D int_tofp(sample->mperf))
->>                core_pct +=3D 1;
->>
->> Because nothing is mentioned for them in commit's changelog.
->> Do we need to round core_pct or not?
->> Because if we try to round it, I think this patch should work.
->=20
-> As mentioned originally, they are there just to round the pseudo floa=
-ting number, not the integer portion only.
-> Let us bring back the very numbers you originally gave and work throu=
-gh it.
->=20
-> aperf =3D 5024
-> mperf =3D 10619
->=20
-> core_pct =3D 47.31142292%
-> or 47 and 79.724267 256ths
-> or to the closest kept fractional part 47 and 80 256ths
-> or 12112 as a pseudo float.
-> The maximum error with this rounding will be 1 part in 512 and symmet=
-ric instead of the 1 part in 256 always in one direction without.
->=20
-> Now if FRACBITS was still 6:
-> core_pct =3D 47.31142292%
-> or 47 and 19.931 64ths
-> or to the closest kept fractional part 47 and 20 64ths
-> or 3028 as a pseudo float.
-> The maximum error with this rounding will be 1 part in 128 and symmet=
-ric instead of the 1 part in 64 (1.6% !!!) always in one direction with=
-out.
->=20
-> Hope this helps.
->=20
+On Fri, 6 Jun 2014, Morten Rasmussen wrote:
 
-Yes, it helps. Thanks a lot!
+> On Fri, Jun 06, 2014 at 02:43:03PM +0100, Peter Zijlstra wrote:
+> > On Fri, Jun 06, 2014 at 02:15:10PM +0100, Morten Rasmussen wrote:
+> > > > > ARM TC2 has on-chip energy counters for counting energy consumed by the
+> > > > > A7 and A15 clusters. They are fairly accurate. 
+> > > > 
+> > > > Recent Intel chips have that too; they come packaged as:
+> > > > 
+> > > >   perf stat -a -e "power/energy-cores/" -- cmd
+> > > > 
+> > > > (through the perf_event_intel_rapl.c driver), It would be ideal if the
+> > > > ARM equivalent was available through a similar interface.
+> > > > 
+> > > > http://lwn.net/Articles/573602/
+> > > 
+> > > Nice. On ARM it is not mandatory to have energy counters and what they
+> > > actually measure if they are implemented is implementation dependent.
+> > > However, each vendor does extensive evaluation and characterization of
+> > > their implementation already, so I don't think would be a problem for
+> > > them to provide the numbers.
+> > 
+> > How is the ARM energy thing exposed? Through the regular PMU but with
+> > vendor specific events, or through a separate interface, entirely vendor
+> > specific?
+> 
+> There is an upstream hwmon driver for TC2 already with an easy to use
+> sysfs interface for all the energy counters. So it is somewhat vendor
+> specific at the moment unfortunately.
 
-But please note that the maximum error without this rounding will be 1.=
-6% _only_
-in fractional part. In the real number it will be much smaller:
+What is the plan about future interfaces for energy info?
 
-47.19 instead of 47.20
+Intel RAPL of course has a perf_event interface.
 
-And using FRAC_BITS 8:
+However AMD's (somewhat unfortunately acronymed) Application Power 
+Management exports similar information via hwmon and the fam15h_power
+driver.
 
-47.79 instead of 47.80
+And it sounds like ARM systems also put things in hwmon.
 
-This is a 0.0002% difference. I can't see how this is can affect the ca=
-lculations
-even with FRAC_BITS 6.
+User tools like PAPI can sort of abstract this (for example it supports 
+getting RAPL data from perf_event while it also has a driver for getting 
+info from hwmon).  But users stuck with perf end up having to use multiple 
+tools to get energy and performance info simultaneously on non-intel 
+hardware.
 
-Another thing is that this algorithm generally is used to round to the
-nearest integer. I'm not sure if it's valid to apply it for the roundin=
-g of
-the fractional part of fixed point number.
-
-Please see below the algorithm (with numbers of the specific example pr=
-esented
-as real):
-
-aperf =3D 5024
-mperf =3D 10619
-
-aperf * 100 / mperf =3D 47.31142292
-
-core_pct =3D 47
-rem =3D 3307
-
-if (3307 * 2) >=3D 10619
-	core_pct =3D core_pct + 0.004
-
-The original algorithm adds 1 to the quotient to round the integer part=
- of the
-division. In the specific example we add 0.004 to round the fractional =
-part.
-
-=46ortunately, as you mentioned, this does not change the final calcula=
-tion
-considering that we do _not_ want an integer rounding.
-
-IMHO, If we need integer rounding we also need this patch, otherwise
-we can safely remove this rounding.
-
-
-Thanks,
-Stratos
-
-
-
-
+Vince
