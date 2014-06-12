@@ -1,197 +1,65 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: [PATCH v2 1/2] hibernate: create "nohibernate" boot parameter
-Date: Thu, 12 Jun 2014 14:00:32 -0700
-Message-ID: <1402606833-9825-2-git-send-email-keescook@chromium.org>
-References: <1402606833-9825-1-git-send-email-keescook@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1402606833-9825-1-git-send-email-keescook@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "H. Peter Anvin" <hpa@zytor.com>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
+From: Todd E Brandt <todd.e.brandt@linux.intel.com>
+Subject: Re: [PATCH] PM: trace events for device pm callbacks
+Date: Thu, 12 Jun 2014 16:48:12 -0700
+Message-ID: <20140612234810.GA17235@linux.intel.com>
+References: <20140610143122.GA12851@linux.intel.com>
+ <1740847.aJcviUsT1q@vostro.rjw.lan>
+ <20140611204215.GA8988@linux.intel.com>
+ <11508767.lTNI5hDeGY@vostro.rjw.lan>
+Reply-To: todd.e.brandt@linux.intel.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:18049 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750835AbaFLXsb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 12 Jun 2014 19:48:31 -0400
+Content-Disposition: inline
+In-Reply-To: <11508767.lTNI5hDeGY@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Steven Rostedt <rostedt@goodmis.org>, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-To support using kernel features that are not compatible with hibernation,
-this creates the "nohibernate" kernel boot parameter to disable both
-hibernation and resume. This allows hibernation support to be a boot-time
-choice instead of only a compile-time choice.
+Thanks!
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- Documentation/kernel-parameters.txt |    3 +++
- include/linux/suspend.h             |    2 ++
- kernel/power/hibernate.c            |   31 ++++++++++++++++++++++++++++++-
- kernel/power/main.c                 |    6 ++----
- kernel/power/user.c                 |    3 +++
- 5 files changed, 40 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 6eaa9cdb7094..f8f0466b8b1d 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2184,6 +2184,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			in certain environments such as networked servers or
- 			real-time systems.
- 
-+	nohibernate	[HIBERNATION] Disable hibernation and resume.
-+
- 	nohz=		[KNL] Boottime enable/disable dynamic ticks
- 			Valid arguments: on, off
- 			Default: on
-@@ -2980,6 +2982,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 		noresume	Don't check if there's a hibernation image
- 				present during boot.
- 		nocompress	Don't compress/decompress hibernation images.
-+		no		Disable hibernation and resume.
- 
- 	retain_initrd	[RAM] Keep initrd memory after extraction
- 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index f76994b9396c..519064e0c943 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -327,6 +327,7 @@ extern unsigned long get_safe_page(gfp_t gfp_mask);
- extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
- extern int hibernate(void);
- extern bool system_entering_hibernation(void);
-+extern bool hibernation_available(void);
- asmlinkage int swsusp_save(void);
- extern struct pbe *restore_pblist;
- #else /* CONFIG_HIBERNATION */
-@@ -339,6 +340,7 @@ static inline void swsusp_unset_page_free(struct page *p) {}
- static inline void hibernation_set_ops(const struct platform_hibernation_ops *ops) {}
- static inline int hibernate(void) { return -ENOSYS; }
- static inline bool system_entering_hibernation(void) { return false; }
-+static inline bool hibernation_available(void) { return false; }
- #endif /* CONFIG_HIBERNATION */
- 
- /* Hibernation and suspend events */
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index df88d55dc436..fd3e785dbc37 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -34,6 +34,7 @@
- 
- static int nocompress;
- static int noresume;
-+static int nohibernate;
- static int resume_wait;
- static unsigned int resume_delay;
- static char resume_file[256] = CONFIG_PM_STD_PARTITION;
-@@ -61,6 +62,11 @@ bool freezer_test_done;
- 
- static const struct platform_hibernation_ops *hibernation_ops;
- 
-+bool hibernation_available(void)
-+{
-+	return (nohibernate == 0);
-+}
-+
- /**
-  * hibernation_set_ops - Set the global hibernate operations.
-  * @ops: Hibernation operations to use in subsequent hibernation transitions.
-@@ -639,6 +645,11 @@ int hibernate(void)
- {
- 	int error;
- 
-+	if (!hibernation_available()) {
-+		pr_debug("PM: Hibernation not available.\n");
-+		return -EINVAL;
-+	}
-+
- 	lock_system_sleep();
- 	/* The snapshot device should not be opened while we're running */
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-@@ -731,7 +742,7 @@ static int software_resume(void)
- 	/*
- 	 * If the user said "noresume".. bail out early.
- 	 */
--	if (noresume)
-+	if (noresume || !hibernation_available())
- 		return 0;
- 
- 	/*
-@@ -897,6 +908,9 @@ static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
- 	int i;
- 	char *start = buf;
- 
-+	if (!hibernation_available())
-+		return sprintf(buf, "[disabled]\n");
-+
- 	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
- 		if (!hibernation_modes[i])
- 			continue;
-@@ -931,6 +945,9 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
- 	char *p;
- 	int mode = HIBERNATION_INVALID;
- 
-+	if (!hibernation_available())
-+		return -EINVAL;
-+
- 	p = memchr(buf, '\n', n);
- 	len = p ? p - buf : n;
- 
-@@ -1098,6 +1115,10 @@ static int __init hibernate_setup(char *str)
- 		noresume = 1;
- 	else if (!strncmp(str, "nocompress", 10))
- 		nocompress = 1;
-+	else if (!strncmp(str, "no", 2)) {
-+		noresume = 1;
-+		nohibernate = 1;
-+	}
- 	return 1;
- }
- 
-@@ -1122,9 +1143,17 @@ static int __init resumedelay_setup(char *str)
- 	return 1;
- }
- 
-+static int __init nohibernate_setup(char *str)
-+{
-+	noresume = 1;
-+	nohibernate = 1;
-+	return 1;
-+}
-+
- __setup("noresume", noresume_setup);
- __setup("resume_offset=", resume_offset_setup);
- __setup("resume=", resume_setup);
- __setup("hibernate=", hibernate_setup);
- __setup("resumewait", resumewait_setup);
- __setup("resumedelay=", resumedelay_setup);
-+__setup("nohibernate", nohibernate_setup);
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 573410d6647e..8e90f330f139 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -300,13 +300,11 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
- 			s += sprintf(s,"%s ", pm_states[i].label);
- 
- #endif
--#ifdef CONFIG_HIBERNATION
--	s += sprintf(s, "%s\n", "disk");
--#else
-+	if (hibernation_available())
-+		s += sprintf(s, "disk ");
- 	if (s != buf)
- 		/* convert the last space to a newline */
- 		*(s-1) = '\n';
--#endif
- 	return (s - buf);
- }
- 
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 98d357584cd6..000b94419182 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -49,6 +49,9 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 	struct snapshot_data *data;
- 	int error;
- 
-+	if (!hibernation_available())
-+		return -EINVAL;
-+
- 	lock_system_sleep();
- 
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
--- 
-1.7.9.5
+On Thu, Jun 12, 2014 at 01:14:48AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, June 11, 2014 01:42:16 PM Todd E Brandt wrote:
+> > Is this accepted?
+> 
+> Yes, applied.  Thanks!
+> 
+> > On Tue, Jun 10, 2014 at 11:41:33PM +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, June 10, 2014 05:17:16 PM Steven Rostedt wrote:
+> > > > On Tue, 10 Jun 2014 23:17:46 +0200
+> > > > "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+> > > > 
+> > > > > On Tuesday, June 10, 2014 07:31:22 AM Todd E Brandt wrote:
+> > > > > > Adds two trace events which supply the same info that initcall_debug 
+> > > > > > provides, but via ftrace instead of dmesg. The existing initcall_debug
+> > > > > > calls require the pm_print_times_enabled var to be set (either via
+> > > > > > sysfs or via the kernel cmd line). The new trace events provide all the
+> > > > > > same info as the initcall_debug prints but with less overhead, and also
+> > > > > > with coverage of device prepare and complete device callbacks.
+> > > > > > 
+> > > > > > These events replace the device_pm_report_time event (which has been
+> > > > > > removed). device_pm_callback_start is called first and provides the device
+> > > > > > and callback info. device_pm_callback_end is called after with the
+> > > > > > device name and error info. The time and pid are gathered from the trace
+> > > > > > data headers.
+> > > > > > 
+> > > > > > Signed-off-by: Todd Brandt <todd.e.brandt@intel.com>
+> > > > > 
+> > > > > Steve needs to see this (CCed).
+> > > > 
+> > > > The trace events look fine. Is there anything else you wanted me to
+> > > > look at?
+> > > 
+> > > No, that's all, thanks!
+> > > 
+> > > Rafael
+> > > 
+> 
+> -- 
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
