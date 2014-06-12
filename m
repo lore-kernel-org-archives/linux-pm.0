@@ -1,137 +1,200 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
-Date: Thu, 12 Jun 2014 22:03:15 +0200
-Message-ID: <1815178.vjJU51ubGD@vostro.rjw.lan>
-References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <00b301cf85ba$40fe4290$c2fac7b0$@net> <5399BACF.6060201@semaphore.gr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63729 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751247AbaFLTpt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jun 2014 15:45:49 -0400
-In-Reply-To: <5399BACF.6060201@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+From: Kees Cook <keescook@chromium.org>
+Subject: [PATCH 1/2] hibernate: create one-way disable mode
+Date: Thu, 12 Jun 2014 12:46:58 -0700
+Message-ID: <1402602419-27934-2-git-send-email-keescook@chromium.org>
+References: <1402602419-27934-1-git-send-email-keescook@chromium.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1402602419-27934-1-git-send-email-keescook@chromium.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Kees Cook <keescook@chromium.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Doug Smythies <dsmythies@telus.net>, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, June 12, 2014 05:35:59 PM Stratos Karafotis wrote:
-> On 12/06/2014 12:15 =CF=80=CE=BC, Doug Smythies wrote:
-> >=20
-> >=20
-> > -----Original Message-----
-> > From: Stratos Karafotis [mailto:stratosk@semaphore.gr]=20
-> > Sent: June-11-2014 13:20
-> > To: Doug Smythies
-> > Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; rjw@rjw=
-ysocki.net; viresh.kumar@linaro.org; dirk.j.brandewie@intel.com
-> > Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pc=
-t
-> >=20
-> > On 2014.06.11 13:20 Stratos Karafotis wrote:
-> >> On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
-> >>>
-> >>> On 2104.06.11 07:08 Stratos Karafotis wrote:
-> >>>> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
-> >>>>
-> >>>> No.
-> >>>
-> >>>> The intent was only ever to round properly the pseudo floating p=
-oint result of the divide.
-> >>>> It was much more important (ugh, well 4 times more) when FRACBIT=
-S was still 6, which also got changed to 8 in a recent patch.
-> >>>>
-> >>>
-> >>> Are you sure?
-> >>>
-> >>> Yes.
-> >>>
-> >>>> This rounding was very recently added.
-> >>>> As far as I can understand, I don't see the meaning of this roun=
-ding, as is.
-> >>>> Even if FRAC_BITS was 6, I think it would have almost no improve=
-ment in
-> >>>> calculations.
-> >>>
-> >>> Note: I had not seen this e-mail when I wrote a few minutes ago:
-> >>>
-> >>> You may be correct.
-> >>> If Dirk agrees, I will re-analyse the entire driver for rounding =
-effects soon.
-> >>> When FRACBITS was 6 there were subtle cases where the driver woul=
-d get stuck, and not make a final pstate change, with the default PID g=
-ains.
-> >>> Other things have changed, and the analysis needs to be re-done.
-> >>>
-> >=20
-> >> Could you please elaborate a little bit more what we need these 2 =
-lines below?
-> >>
-> >>        if ((rem << 1) >=3D int_tofp(sample->mperf))
-> >>                core_pct +=3D 1;
-> >>
-> >> Because nothing is mentioned for them in commit's changelog.
-> >> Do we need to round core_pct or not?
-> >> Because if we try to round it, I think this patch should work.
-> >=20
-> > As mentioned originally, they are there just to round the pseudo fl=
-oating number, not the integer portion only.
-> > Let us bring back the very numbers you originally gave and work thr=
-ough it.
-> >=20
-> > aperf =3D 5024
-> > mperf =3D 10619
-> >=20
-> > core_pct =3D 47.31142292%
-> > or 47 and 79.724267 256ths
-> > or to the closest kept fractional part 47 and 80 256ths
-> > or 12112 as a pseudo float.
-> > The maximum error with this rounding will be 1 part in 512 and symm=
-etric instead of the 1 part in 256 always in one direction without.
-> >=20
-> > Now if FRACBITS was still 6:
-> > core_pct =3D 47.31142292%
-> > or 47 and 19.931 64ths
-> > or to the closest kept fractional part 47 and 20 64ths
-> > or 3028 as a pseudo float.
-> > The maximum error with this rounding will be 1 part in 128 and symm=
-etric instead of the 1 part in 64 (1.6% !!!) always in one direction wi=
-thout.
-> >=20
-> > Hope this helps.
-> >=20
->=20
-> Yes, it helps. Thanks a lot!
->=20
-> But please note that the maximum error without this rounding will be =
-1.6% _only_
-> in fractional part. In the real number it will be much smaller:
->=20
-> 47.19 instead of 47.20
->=20
-> And using FRAC_BITS 8:
->=20
-> 47.79 instead of 47.80
->=20
-> This is a 0.0002% difference. I can't see how this is can affect the =
-calculations
-> even with FRAC_BITS 6.
->=20
-> Another thing is that this algorithm generally is used to round to th=
-e
-> nearest integer. I'm not sure if it's valid to apply it for the round=
-ing of
-> the fractional part of fixed point number.
+To support using kernel features that are not compatible with hibernation,
+this creates a "disabled" hibernation state so that hibernation selection
+can be a boot-time choice instead of only a compile-time choice.
 
-Depending on the original reason, it may or may not be.
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ include/linux/suspend.h  |    2 ++
+ kernel/power/hibernate.c |   55 +++++++++++++++++++++++++++++++---------------
+ kernel/power/main.c      |    6 ++---
+ kernel/power/user.c      |    3 +++
+ 4 files changed, 44 insertions(+), 22 deletions(-)
 
-In theory, it may help reduce numerical drift resulting from rounding a=
-lways in
-one direction only, but I'm not really sure if that matters here.
-
-Doug seems to have carried out full analysis, though.
-
-Rafael
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index f76994b9396c..519064e0c943 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -327,6 +327,7 @@ extern unsigned long get_safe_page(gfp_t gfp_mask);
+ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+ extern bool system_entering_hibernation(void);
++extern bool hibernation_available(void);
+ asmlinkage int swsusp_save(void);
+ extern struct pbe *restore_pblist;
+ #else /* CONFIG_HIBERNATION */
+@@ -339,6 +340,7 @@ static inline void swsusp_unset_page_free(struct page *p) {}
+ static inline void hibernation_set_ops(const struct platform_hibernation_ops *ops) {}
+ static inline int hibernate(void) { return -ENOSYS; }
+ static inline bool system_entering_hibernation(void) { return false; }
++static inline bool hibernation_available(void) { return false; }
+ #endif /* CONFIG_HIBERNATION */
+ 
+ /* Hibernation and suspend events */
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index df88d55dc436..32672da81114 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -43,6 +43,7 @@ __visible int in_suspend __nosavedata;
+ 
+ enum {
+ 	HIBERNATION_INVALID,
++	HIBERNATION_DISABLED,
+ 	HIBERNATION_PLATFORM,
+ 	HIBERNATION_SHUTDOWN,
+ 	HIBERNATION_REBOOT,
+@@ -61,6 +62,11 @@ bool freezer_test_done;
+ 
+ static const struct platform_hibernation_ops *hibernation_ops;
+ 
++bool hibernation_available(void)
++{
++	return (hibernation_mode > HIBERNATION_DISABLED);
++}
++
+ /**
+  * hibernation_set_ops - Set the global hibernate operations.
+  * @ops: Hibernation operations to use in subsequent hibernation transitions.
+@@ -75,10 +81,12 @@ void hibernation_set_ops(const struct platform_hibernation_ops *ops)
+ 	}
+ 	lock_system_sleep();
+ 	hibernation_ops = ops;
+-	if (ops)
+-		hibernation_mode = HIBERNATION_PLATFORM;
+-	else if (hibernation_mode == HIBERNATION_PLATFORM)
+-		hibernation_mode = HIBERNATION_SHUTDOWN;
++	if (hibernation_available()) {
++		if (ops)
++			hibernation_mode = HIBERNATION_PLATFORM;
++		else if (hibernation_mode == HIBERNATION_PLATFORM)
++			hibernation_mode = HIBERNATION_SHUTDOWN;
++	}
+ 
+ 	unlock_system_sleep();
+ }
+@@ -639,6 +647,11 @@ int hibernate(void)
+ {
+ 	int error;
+ 
++	if (!hibernation_available()) {
++		pr_debug("PM: Hibernation not available.\n");
++		return -EINVAL;
++	}
++
+ 	lock_system_sleep();
+ 	/* The snapshot device should not be opened while we're running */
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
+@@ -731,7 +744,7 @@ static int software_resume(void)
+ 	/*
+ 	 * If the user said "noresume".. bail out early.
+ 	 */
+-	if (noresume)
++	if (noresume || !hibernation_available())
+ 		return 0;
+ 
+ 	/*
+@@ -857,6 +870,7 @@ late_initcall_sync(software_resume);
+ 
+ 
+ static const char * const hibernation_modes[] = {
++	[HIBERNATION_DISABLED]	= "disabled",
+ 	[HIBERNATION_PLATFORM]	= "platform",
+ 	[HIBERNATION_SHUTDOWN]	= "shutdown",
+ 	[HIBERNATION_REBOOT]	= "reboot",
+@@ -931,6 +945,9 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 	char *p;
+ 	int mode = HIBERNATION_INVALID;
+ 
++	if (!hibernation_available())
++		return -EINVAL;
++
+ 	p = memchr(buf, '\n', n);
+ 	len = p ? p - buf : n;
+ 
+@@ -942,23 +959,25 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 			break;
+ 		}
+ 	}
+-	if (mode != HIBERNATION_INVALID) {
+-		switch (mode) {
+-		case HIBERNATION_SHUTDOWN:
+-		case HIBERNATION_REBOOT:
++	switch (mode) {
++	case HIBERNATION_DISABLED:
++	case HIBERNATION_SHUTDOWN:
++	case HIBERNATION_REBOOT:
+ #ifdef CONFIG_SUSPEND
+-		case HIBERNATION_SUSPEND:
++	case HIBERNATION_SUSPEND:
+ #endif
++		hibernation_mode = mode;
++		break;
++	case HIBERNATION_PLATFORM:
++		if (hibernation_ops)
+ 			hibernation_mode = mode;
+-			break;
+-		case HIBERNATION_PLATFORM:
+-			if (hibernation_ops)
+-				hibernation_mode = mode;
+-			else
+-				error = -EINVAL;
+-		}
+-	} else
++		else
++			error = -EINVAL;
++		break;
++	default:
+ 		error = -EINVAL;
++		break;
++	}
+ 
+ 	if (!error)
+ 		pr_debug("PM: Hibernation mode set to '%s'\n",
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 573410d6647e..8e90f330f139 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -300,13 +300,11 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 			s += sprintf(s,"%s ", pm_states[i].label);
+ 
+ #endif
+-#ifdef CONFIG_HIBERNATION
+-	s += sprintf(s, "%s\n", "disk");
+-#else
++	if (hibernation_available())
++		s += sprintf(s, "disk ");
+ 	if (s != buf)
+ 		/* convert the last space to a newline */
+ 		*(s-1) = '\n';
+-#endif
+ 	return (s - buf);
+ }
+ 
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 98d357584cd6..000b94419182 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -49,6 +49,9 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 	struct snapshot_data *data;
+ 	int error;
+ 
++	if (!hibernation_available())
++		return -EINVAL;
++
+ 	lock_system_sleep();
+ 
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
+-- 
+1.7.9.5
 
