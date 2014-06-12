@@ -1,919 +1,158 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [RFC PATCH v3 5/7] thermal: add a basic cpu power actor
-Date: Thu, 12 Jun 2014 15:26:50 +0100
-Message-ID: <20140612142650.GB2763@e104805>
-References: <1401790715-5630-1-git-send-email-javi.merino@arm.com>
- <1401790715-5630-6-git-send-email-javi.merino@arm.com>
- <20140611120537.GA7230@developer>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
+Date: Thu, 12 Jun 2014 17:35:59 +0300
+Message-ID: <5399BACF.6060201@semaphore.gr>
+References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <009b01cf857a$d5032090$7f0961b0$@net> <539862DB.9060905@semaphore.gr> <00a001cf8586$24eb5c70$6ec21550$@net> <5398BA0B.7070903@semaphore.gr> <00b301cf85ba$40fe4290$c2fac7b0$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:51281 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbaFLO0z convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jun 2014 10:26:55 -0400
-In-Reply-To: <20140611120537.GA7230@developer>
-Content-Disposition: inline
+Received: from sema.semaphore.gr ([78.46.194.137]:34552 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752874AbaFLOgD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jun 2014 10:36:03 -0400
+In-Reply-To: <00b301cf85ba$40fe4290$c2fac7b0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Zhang Rui <rui.zhang@intel.com>
+To: Doug Smythies <dsmythies@telus.net>, rjw@rjwysocki.net, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2014 at 01:05:37PM +0100, Eduardo Valentin wrote:
-> Hello Javi,
-> 
-> On Tue, Jun 03, 2014 at 11:18:33AM +0100, Javi Merino wrote:
-> > Introduce a power actor for cpus.  It has a basic power model to get
-> > the current power utilization and uses cpufreq cooling devices to set
-> > the desired power.  It uses the current frequency (as reported by
-> > cpufreq) as well as load and OPPs for the power calculations.  The
-> > cpus must have registered their OPPs in the OPP library.
-> >
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > ---
-> >  Documentation/thermal/power_actor.txt     | 126 +++++++
-> >  drivers/thermal/Kconfig                   |   5 +
-> >  drivers/thermal/power_actor/Kconfig       |   9 +
-> >  drivers/thermal/power_actor/Makefile      |   2 +
-> >  drivers/thermal/power_actor/cpu_actor.c   | 601 ++++++++++++++++++++++++++++++
-> >  drivers/thermal/power_actor/power_actor.h |  41 ++
-> >  6 files changed, 784 insertions(+)
-> >  create mode 100644 drivers/thermal/power_actor/Kconfig
-> >  create mode 100644 drivers/thermal/power_actor/cpu_actor.c
-> >
-> > diff --git a/Documentation/thermal/power_actor.txt b/Documentation/thermal/power_actor.txt
-> > index 5a61f32ec143..fd51760615bf 100644
-> > --- a/Documentation/thermal/power_actor.txt
-> > +++ b/Documentation/thermal/power_actor.txt
-> > @@ -36,3 +36,129 @@ temperature.
-> >  milliwatts.
-> >
-> >  Returns 0 on success, -E* on error.
-> > +
-> > +CPU Power Actor API
-> > +===================
-> > +
-> > +A simple power model for CPUs.  The current power is calculated as
-> > +dynamic + (optionally) static power.  This power model requires that
-> > +the operating-points of the CPUs are registered using the kernel's opp
-> > +library and the `cpufreq_frequency_table` is assigned to the `struct
-> > +device` of the cpu.  If you are using the `cpufreq-cpu0.c` driver then
-> > +the `cpufreq_frequency_table` should already be assigned to the cpu
-> > +device.
-> > +
-> > +The `tz` and `plat_static_func` parameters of
-> > +`power_cpu_actor_register()` are optional.  If you don't provide them,
-> > +only dynamic power will be considered.
-> > +
-> > +Dynamic power
-> > +-------------
-> > +
-> > +The dynamic power consumption of a processor depends
-> > +on many factors.  For a given processor implementation the primary
-> > +factors are:
-> > +
-> > +- The time the processor spends running, consuming dynamic power, as
-> > +  compared to the time in idle states where dynamic consumption is
-> > +  negligible.  Herein we refer to this as 'utilisation'.
-> > +- The voltage and frequency levels as a result of DVFS.  The DVFS
-> > +  level is a dominant factor governing power consumption.
-> > +- In running time the 'execution' behaviour (instruction types, memory
-> > +  access patterns and so forth) causes, in most cases, a second order
-> > +  variation.  In pathological cases this variation can be significant,
-> > +  but typically it is of a much lesser impact than the factors above.
-> > +
-> > +A high level dynamic power consumption model may then be represented as:
-> > +
-> > +Pdyn = f(run) * Voltage^2 * Frequency * Utilisation
-> > +
-> > +f(run) here represents the described execution behaviour and its
-> > +result has a units of Watts/Hz/Volt^2 (this often expressed in
-> > +mW/MHz/uVolt^2)
-> > +
-> > +The detailed behaviour for f(run) could be modelled on-line.  However,
-> > +in practice, such an on-line model has dependencies on a number of
-> > +implementation specific processor support and characterisation
-> > +factors.  Therefore, in initial implementation that contribution is
-> > +represented as a constant coefficient.  This is a simplification
-> > +consistent with the relative contribution to overall power variation.
-> > +
-> > +In this simplified representation our model becomes:
-> > +
-> > +Pdyn = Kd * Voltage^2 * Frequency * Utilisation
-> > +
-> > +Where Kd (capacitance) represents an indicative running time dynamic
-> > +power coefficient in fundamental units of mW/MHz/uVolt^2
-> > +
-> > +Static Power
-> > +------------
-> > +
-> > +Static leakage power consumption depends on a number of factors.  For a
-> > +given circuit implementation the primary factors are:
-> > +
-> > +- Time the circuit spends in each 'power state'
-> > +- Temperature
-> > +- Operating voltage
-> > +- Process grade
-> > +
-> > +The time the circuit spends in each 'power state' for a given
-> > +evaluation period at first order means OFF or ON.  However,
-> > +'retention' states can also be supported that reduce power during
-> > +inactive periods without loss of context.
-> > +
-> > +Note: The visibility of state entries to the OS can vary, according to
-> > +platform specifics, and this can then impact the accuracy of a model
-> > +based on OS state information alone.  It might be possible in some
-> > +cases to extract more accurate information from system resources.
-> > +
-> > +The temperature, operating voltage and process 'grade' (slow to fast)
-> > +of the circuit are all significant factors in static leakage power
-> > +consumption.  All of these have complex relationships to static power.
-> > +
-> > +Circuit implementation specific factors include the chosen silicon
-> > +process as well as the type, number and size of transistors in both
-> > +the logic gates and any RAM elements included.
-> > +
-> > +The static power consumption modelling must take into account the
-> > +power managed regions that are implemented.  Taking the example of an
-> > +ARM processor cluster, the modelling would take into account whether
-> > +each CPU can be powered OFF separately or if only a single power
-> > +region is implemented for the complete cluster.
-> > +
-> > +In one view, there are others, a static power consumption model can
-> > +then start from a set of reference values for each power managed
-> > +region (e.g. CPU, Cluster/L2) in each state (e.g. ON, OFF) at an
-> > +arbitrary process grade, voltage and temperature point.  These values
-> > +are then scaled for all of the following: the time in each state, the
-> > +process grade, the current temperature and the operating
-> > +voltage.  However, since both implementation specific and complex
-> > +relationships dominate the estimate, the appropriate interface to the
-> > +model from the cpu power actor is to provide a function callback that
-> > +calculates the static power in this platform.  When registering the
-> > +power cpu actor, pass the thermal zone closest to the cpu (to get the
-> > +temperature) and a function pointer that follows the `get_static_t`
-> > +prototype:
-> > +
-> > +    u32 plat_get_static(cpumask_t *cpumask, unsigned long voltage,
-> > +                             unsigned long temperature);
-> > +
-> > +with `cpumask` a cpumask of the cpus involved in the calculation,
-> > +`voltage` the voltage at which they are opperating and `temperature`
-> > +their current temperature.
-> > +
-> > +If both `tz` and `plat_static_func` are NULL when registering the
-> > +power cpu actor, static power is considered to be negligible for this
-> > +platform and only dynamic power is considered.
-> > +
-> > +The platform specific callback can then use any combination of tables
-> > +and/or equations to permute the estimated value.  Process grade
-> > +information is not passed to the model since access to such data, from
-> > +on-chip measurement capability or manufacture time data, is platform
-> > +specific.
-> > +
-> > +Note: the significance of static power for CPUs in comparison to
-> > +dynamic power is highly dependent on implementation.  Given the
-> > +potential complexity in implementation, the importance and accuracy of
-> > +its inclusion when using cpu power actors should be assessed on a case by
-> > +cases basis.
-> 
-> In one way or another, we are dealing with models here. Even the above
-> dynamic power model is still a model and has errors from reality. The
-> point is providing a good default model that works across platforms.
+On 12/06/2014 12:15 =CF=80=CE=BC, Doug Smythies wrote:
+>=20
+>=20
+> -----Original Message-----
+> From: Stratos Karafotis [mailto:stratosk@semaphore.gr]=20
+> Sent: June-11-2014 13:20
+> To: Doug Smythies
+> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; rjw@rjwys=
+ocki.net; viresh.kumar@linaro.org; dirk.j.brandewie@intel.com
+> Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
+>=20
+> On 2014.06.11 13:20 Stratos Karafotis wrote:
+>> On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
+>>>
+>>> On 2104.06.11 07:08 Stratos Karafotis wrote:
+>>>> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
+>>>>
+>>>> No.
+>>>
+>>>> The intent was only ever to round properly the pseudo floating poi=
+nt result of the divide.
+>>>> It was much more important (ugh, well 4 times more) when FRACBITS =
+was still 6, which also got changed to 8 in a recent patch.
+>>>>
+>>>
+>>> Are you sure?
+>>>
+>>> Yes.
+>>>
+>>>> This rounding was very recently added.
+>>>> As far as I can understand, I don't see the meaning of this roundi=
+ng, as is.
+>>>> Even if FRAC_BITS was 6, I think it would have almost no improveme=
+nt in
+>>>> calculations.
+>>>
+>>> Note: I had not seen this e-mail when I wrote a few minutes ago:
+>>>
+>>> You may be correct.
+>>> If Dirk agrees, I will re-analyse the entire driver for rounding ef=
+fects soon.
+>>> When FRACBITS was 6 there were subtle cases where the driver would =
+get stuck, and not make a final pstate change, with the default PID gai=
+ns.
+>>> Other things have changed, and the analysis needs to be re-done.
+>>>
+>=20
+>> Could you please elaborate a little bit more what we need these 2 li=
+nes below?
+>>
+>>        if ((rem << 1) >=3D int_tofp(sample->mperf))
+>>                core_pct +=3D 1;
+>>
+>> Because nothing is mentioned for them in commit's changelog.
+>> Do we need to round core_pct or not?
+>> Because if we try to round it, I think this patch should work.
+>=20
+> As mentioned originally, they are there just to round the pseudo floa=
+ting number, not the integer portion only.
+> Let us bring back the very numbers you originally gave and work throu=
+gh it.
+>=20
+> aperf =3D 5024
+> mperf =3D 10619
+>=20
+> core_pct =3D 47.31142292%
+> or 47 and 79.724267 256ths
+> or to the closest kept fractional part 47 and 80 256ths
+> or 12112 as a pseudo float.
+> The maximum error with this rounding will be 1 part in 512 and symmet=
+ric instead of the 1 part in 256 always in one direction without.
+>=20
+> Now if FRACBITS was still 6:
+> core_pct =3D 47.31142292%
+> or 47 and 19.931 64ths
+> or to the closest kept fractional part 47 and 20 64ths
+> or 3028 as a pseudo float.
+> The maximum error with this rounding will be 1 part in 128 and symmet=
+ric instead of the 1 part in 64 (1.6% !!!) always in one direction with=
+out.
+>=20
+> Hope this helps.
+>=20
 
-I know, but what we have been told is that there is no formula for
-static power that works across platforms.  If you know one, please let
-us know and we will add it.
- 
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index 47e2f15537ca..1818c4fa60b8 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -92,6 +92,11 @@ config THERMAL_GOV_USER_SPACE
-> >  config THERMAL_POWER_ACTOR
-> >       bool
-> >
-> > +menu "Power actors"
-> > +depends on THERMAL_POWER_ACTOR
-> > +source "drivers/thermal/power_actor/Kconfig"
-> > +endmenu
-> > +
-> >  config CPU_THERMAL
-> >       bool "generic cpu cooling support"
-> >       depends on CPU_FREQ
-> > diff --git a/drivers/thermal/power_actor/Kconfig b/drivers/thermal/power_actor/Kconfig
-> > new file mode 100644
-> > index 000000000000..fa542ca99cdb
-> > --- /dev/null
-> > +++ b/drivers/thermal/power_actor/Kconfig
-> > @@ -0,0 +1,9 @@
-> > +#
-> > +# Thermal power actor configuration
-> > +#
-> > +
-> > +config THERMAL_POWER_ACTOR_CPU
-> > +     bool
-> > +     prompt "Simple power model for a CPU"
-> > +     help
-> > +       A simple CPU power model
-> 
-> A better help is always welcome.
+Yes, it helps. Thanks a lot!
 
-I guess I can repeat some of the text in the Documentation here.
+But please note that the maximum error without this rounding will be 1.=
+6% _only_
+in fractional part. In the real number it will be much smaller:
 
-> > diff --git a/drivers/thermal/power_actor/Makefile b/drivers/thermal/power_actor/Makefile
-> > index 46478f4928be..6f04b92997e6 100644
-> > --- a/drivers/thermal/power_actor/Makefile
-> > +++ b/drivers/thermal/power_actor/Makefile
-> > @@ -3,3 +3,5 @@
-> >  #
-> >
-> >  obj-y += power_actor.o
-> > +
-> > +obj-$(CONFIG_THERMAL_POWER_ACTOR_CPU) += cpu_actor.o
-> > diff --git a/drivers/thermal/power_actor/cpu_actor.c b/drivers/thermal/power_actor/cpu_actor.c
-> > new file mode 100644
-> > index 000000000000..6eac80d119a5
-> > --- /dev/null
-> > +++ b/drivers/thermal/power_actor/cpu_actor.c
-> > @@ -0,0 +1,601 @@
-> > +/*
-> > + * A basic cpu actor
-> > + *
-> > + * Copyright (C) 2014 ARM Ltd.
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License version 2 as
-> > + * published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> > + * kind, whether express or implied; without even the implied warranty
-> > + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> > + * GNU General Public License for more details.
-> > + */
-> > +
-> > +#define pr_fmt(fmt) "CPU actor: " fmt
-> > +
-> > +#include <linux/cpu.h>
-> > +#include <linux/cpufreq.h>
-> > +#include <linux/cpumask.h>
-> > +#include <linux/cpu_cooling.h>
-> > +#include <linux/device.h>
-> > +#include <linux/err.h>
-> > +#include <linux/init.h>
-> > +#include <linux/list.h>
-> > +#include <linux/pm_opp.h>
-> > +#include <linux/printk.h>
-> > +#include <linux/slab.h>
-> > +
-> > +#include "power_actor.h"
-> > +
-> > +/**
-> > + * struct power_table - frequency to power conversion
-> > + * @frequency:       frequency in KHz
-> > + * @power:   power in mW
-> > + *
-> > + * This structure is built when the cooling device registers and helps
-> > + * in translating frequency to power and viceversa.
-> > + */
-> > +struct power_table {
-> > +     u32 frequency;
-> > +     u32 power;
-> > +};
-> > +
-> > +/**
-> > + * struct cpu_actor - information for each cpu actor
-> > + * @cpumask: cpus covered by this actor
-> > + * @freq:    frequency in KHz of the cpus represented by the cooling device
-> > + * @last_load:       load measured by the latest call to cpu_get_req_power()
-> > + * @time_in_idle:    previous reading of the absolute time that this cpu was
-> > + *                   idle
-> > + * @time_in_idle_timestamp: wall time of the last invocation of
-> > + *                       get_cpu_idle_time_us()
-> > + * @dyn_power_table: array of struct power_table for frequency to power
-> > + *                   conversion
-> > + * @dyn_power_table_entries: number of entries in the @dyn_power_table array
-> > + * @cdev:    cpufreq cooling device associated with this actor
-> > + * @tz:              thermal zone for the sensor closest to the cpus
-> > + * @plat_get_static_power:   callback to calculate the static power
-> > + */
-> > +struct cpu_actor {
-> > +     cpumask_t cpumask;
-> > +     u32 freq;
-> > +     u32 last_load;
-> > +     u64 time_in_idle[NR_CPUS];
-> > +     u64 time_in_idle_timestamp[NR_CPUS];
-> > +     struct power_table *dyn_power_table;
-> > +     int dyn_power_table_entries;
-> > +     struct thermal_cooling_device *cdev;
-> > +     struct thermal_zone_device *tz;
-> > +     get_static_t plat_get_static_power;
-> > +};
-> > +
-> > +static DEFINE_MUTEX(cpu_power_actor_lock);
-> > +
-> > +static unsigned int cpu_power_actors_registered;
-> > +
-> > +static u32 cpu_freq_to_power(struct cpu_actor *cpu_actor, u32 freq)
-> > +{
-> > +     int i;
-> > +     struct power_table *pt = cpu_actor->dyn_power_table;
-> > +
-> > +     for (i = 0; i < cpu_actor->dyn_power_table_entries - 1; i++)
-> > +             if (freq <= pt[i].frequency)
-> > +                     break;
-> > +
-> > +     return pt[i].power;
-> > +}
-> > +
-> > +static u32 cpu_power_to_freq(struct cpu_actor *cpu_actor, u32 power)
-> > +{
-> > +     int i;
-> > +     struct power_table *pt = cpu_actor->dyn_power_table;
-> > +
-> > +     for (i = 0; i < cpu_actor->dyn_power_table_entries - 1; i++)
-> > +             if (power <= pt[i].power)
-> > +                     break;
-> > +
-> > +     return pt[i].frequency;
-> > +}
-> > +
-> > +/**
-> > + * get_load - get load for a cpu since last updated
-> > + * @cpu_actor: struct cpu_actor for this actor
-> > + * @cpu: cpu number
-> > + *
-> > + * Return the average load of cpu @cpu in percentage since this
-> > + * function was last called.
-> > + */
-> > +static u32 get_load(struct cpu_actor *cpu_actor, int cpu)
-> > +{
-> > +     u32 load;
-> > +     u64 now, now_idle, delta_time, delta_idle;
-> > +
-> > +     now_idle = get_cpu_idle_time(cpu, &now, 0);
-> > +     delta_idle = now_idle - cpu_actor->time_in_idle[cpu];
-> > +     delta_time = now - cpu_actor->time_in_idle_timestamp[cpu];
-> > +
-> > +     if (delta_time <= delta_idle)
-> > +             load = 0;
-> > +     else
-> > +             load = div64_u64(100 * (delta_time - delta_idle), delta_time);
-> > +
-> > +     cpu_actor->time_in_idle[cpu] = now_idle;
-> > +     cpu_actor->time_in_idle_timestamp[cpu] = now;
-> > +
-> > +     return load;
-> > +}
-> > +
-> > +/**
-> > + * __get_static_power() - calculate the static power consumed by the cpus
-> > + * @cpu_actor:       &struct cpu_actor for this cpu
-> > + * @freq:    frequency in KHz
-> > + *
-> > + * Calculate the static power consumed by the cpus described by
-> > + * @cpu_actor running at frequency @freq.  This function relies on a
-> > + * platform specific function that should have been provided when the
-> > + * actor was registered.  If it wasn't, the static power is assumed to
-> > + * be negligible.
-> > + *
-> > + * Return: The static power consumed by the cpus.  It returns 0 on
-> > + * error or if there is no plat_get_static_power().
-> > + */
-> > +static u32 __get_static_power(struct cpu_actor *cpu_actor, unsigned long freq)
-> > +{
-> > +     int err;
-> > +     struct device *cpu_dev;
-> > +     struct dev_pm_opp *opp;
-> > +     unsigned long voltage, temperature;
-> > +     cpumask_t *cpumask = &cpu_actor->cpumask;
-> > +     unsigned long freq_hz = freq * 1000;
-> > +
-> > +     if (!cpu_actor->plat_get_static_power)
-> > +             return 0;
-> > +
-> > +     if (freq == 0)
-> > +             return 0;
-> > +
-> > +     cpu_dev = get_cpu_device(cpumask_any(cpumask));
-> > +
-> > +     rcu_read_lock();
-> > +
-> > +     opp = dev_pm_opp_find_freq_exact(cpu_dev, freq_hz, true);
-> > +     voltage = dev_pm_opp_get_voltage(opp);
-> > +
-> > +     rcu_read_unlock();
-> > +
-> > +     if (voltage == 0) {
-> > +             dev_warn_ratelimited(cpu_dev,
-> > +                             "Failed to get voltage for frequency %lu: %ld\n",
-> > +                             freq_hz, IS_ERR(opp) ? PTR_ERR(opp) : 0);
-> > +             return 0;
-> > +     }
-> > +
-> > +     err = thermal_zone_get_temp(cpu_actor->tz, &temperature);
-> > +     if (err) {
-> > +             dev_warn(&cpu_actor->tz->device, "Unable to read temperature: %d\n",
-> > +                     err);
-> > +             return 0;
-> > +     }
-> > +
-> > +     return cpu_actor->plat_get_static_power(cpumask, voltage, temperature);
-> 
-> How about if this could be optional? That is, something like:
+47.19 instead of 47.20
 
-It's already covered, see the begginning of the function, we return 0
-if the cpu_actor->plat_get_static_power is NULL.
+And using FRAC_BITS 8:
 
-> +       if (cpu_actor->plat_get_static_power)
-> +               return cpu_actor->plat_get_static_power(cpumask, voltage, temperature);
-> +       else
-> +               return default_static_power(cpumask, voltage, temperature);
-> 
-> > +}
-> > +
-> > +static u32 get_static_power(struct cpu_actor *cpu_actor)
-> > +{
-> > +     return __get_static_power(cpu_actor, cpu_actor->freq);
-> > +}
-> > +
-> > +/**
-> > + * get_dynamic_power - calculate the dynamic power
-> > + * @cpu_actor: cpu_actor pointer
-> > + *
-> > + * Return the dynamic power consumed by the cpus described by
-> > + * cpu_actor.
-> > + */
-> > +static u32 get_dynamic_power(struct cpu_actor *cpu_actor)
-> > +{
-> > +     int cpu;
-> > +     u32 power = 0, raw_cpu_power, total_load = 0;
-> > +     raw_cpu_power = cpu_freq_to_power(cpu_actor, cpu_actor->freq);
-> > +
-> > +     for_each_cpu(cpu, &cpu_actor->cpumask) {
-> > +             u32 load;
-> > +
-> > +             if (!cpu_online(cpu))
-> > +                     continue;
-> > +
-> > +             load = get_load(cpu_actor, cpu);
-> > +             power += (raw_cpu_power * load) / 100;
-> > +             total_load += load;
-> > +     }
-> > +
-> > +     cpu_actor->last_load = total_load;
-> > +
-> > +     return power;
-> > +}
-> > +
-> > +/**
-> > + * cpu_get_req_power - get the current power
-> > + * @actor:   power actor pointer
-> > + *
-> > + * Callback for the power actor to return the current power
-> > + * consumption in milliwatts.
-> > + */
-> > +static u32 cpu_get_req_power(struct power_actor *actor)
-> > +{
-> > +     u32 static_power, dynamic_power;
-> > +     struct cpu_actor *cpu_actor = actor->data;
-> > +
-> > +     static_power = get_static_power(cpu_actor);
-> > +     dynamic_power = get_dynamic_power(cpu_actor);
-> > +
-> > +     return static_power + dynamic_power;
-> > +}
-> > +
-> > +/**
-> > + * cpu_get_max_power() - get the maximum power that the cpu could currently consume
-> > + * @actor:   power actor pointer
-> > + *
-> > + * Callback for the power actor to return the maximum power
-> > + * consumption in milliwatts that the cpu could currently consume.
-> > + * The static power depends on temperature so the maximum power will
-> > + * vary over time.
-> > + */
-> > +static u32 cpu_get_max_power(struct power_actor *actor)
-> > +{
-> > +     u32 max_static_power, max_dyn_power;
-> > +     cpumask_t *cpumask;
-> > +     unsigned int max_freq, last_entry, num_cpus;
-> > +     struct cpu_actor *cpu_actor = actor->data;
-> > +
-> > +     cpumask = &cpu_actor->cpumask;
-> > +     max_freq = cpufreq_quick_get_max(cpumask_any(cpumask));
-> > +     max_static_power = __get_static_power(cpu_actor, max_freq);
-> > +
-> > +     last_entry = cpu_actor->dyn_power_table_entries - 1;
-> > +     num_cpus = cpumask_weight(cpumask);
-> > +     max_dyn_power = cpu_actor->dyn_power_table[last_entry].power * num_cpus;
-> > +
-> > +     return max_static_power + max_dyn_power;
-> > +}
-> > +
-> > +/**
-> > + * cpu_set_power - set cpufreq cooling device to consume a certain power
-> > + * @actor: power actor pointer
-> > + * @power: the power in milliwatts that should be set
-> > + *
-> > + * Callback for the power actor to configure the power consumption of
-> > + * the CPU to be @power milliwatts at most.  This function assumes
-> > + * that the load will remain constant.  The power is translated into a
-> > + * cooling state that the cpu cooling device then sets.
-> > + *
-> > + * Returns 0 on success, -EINVAL if it couldn't convert the frequency
-> > + * to a cpufreq cooling device state.
-> > + */
-> > +static int cpu_set_power(struct power_actor *actor, u32 power)
-> > +{
-> > +     unsigned int cpu, freq;
-> > +     unsigned long cdev_state;
-> > +     u32 dyn_power, normalised_power, last_load;
-> > +     struct thermal_cooling_device *cdev;
-> > +     struct cpu_actor *cpu_actor = actor->data;
-> > +
-> > +     cdev = cpu_actor->cdev;
-> > +
-> > +     dyn_power = power - get_static_power(cpu_actor);
-> > +     cpu = cpumask_any(&cpu_actor->cpumask);
-> > +     last_load = cpu_actor->last_load ? cpu_actor->last_load : 1;
-> > +     normalised_power = (dyn_power * 100) / last_load;
-> > +     freq = cpu_power_to_freq(cpu_actor, normalised_power);
-> > +
-> > +     cdev_state = cpufreq_cooling_get_level(cpu, freq);
-> > +     if (cdev_state == THERMAL_CSTATE_INVALID) {
-> > +             pr_err("Failed to convert %dKHz for cpu %d into a cdev state\n",
-> > +                     freq, cpu);
-> > +             return -EINVAL;
-> > +     }
-> > +
-> > +     return cdev->ops->set_cur_state(cdev, cdev_state);
-> > +}
-> > +
-> > +static struct power_actor_ops cpu_actor_ops = {
-> > +     .get_req_power = cpu_get_req_power,
-> > +     .get_max_power = cpu_get_max_power,
-> > +     .set_power = cpu_set_power,
-> > +};
-> 
-> Why the above cannot be done with current thermal API?
+47.79 instead of 47.80
 
-Our v1 of the patches used the cooling device API by adding "units" to
-it and we ended up stretching the abstraction too much.  The two main
-problems are:
+This is a 0.0002% difference. I can't see how this is can affect the ca=
+lculations
+even with FRAC_BITS 6.
 
-1.  get_max_state() gives you the maximum cooling state which, for
-    passive devices, is the minimum performance (frequency in case of
-    cpufreq cdev).  get_max_power() gives you the maximum power, which
-    gives you the maximum performance (frequency in the case of CPUs,
-    GPUs and buses)
+Another thing is that this algorithm generally is used to round to the
+nearest integer. I'm not sure if it's valid to apply it for the roundin=
+g of
+the fractional part of fixed point number.
 
-2.  Some power actors need additional parameters.  For example, to
-    calculate the static power consumed by the cpu you need to know
-    its temperature.  You can do that by registering the thermal zone
-    device that's closest to the cpu (what we're doing now) or by
-    passing the thermal zone device in every call to get_req_power(),
-    get_max_power() and set_power().  I'm unsure whether the latter
-    would be better, but again is something that the cooling device
-    API doesn't allow us to do.
+Please see below the algorithm (with numbers of the specific example pr=
+esented
+as real):
 
-> > +
-> > +/**
-> > + * power_cpu_actor_add_static() - add static information to an existing cpu actor
-> > + * @cpu:     a cpu represented by the cpu power actor
-> > + * @tz:              pointer to the closest thermal zone to the cpu
-> > + * @plat_static_func:        function to calculate the static power consumed by these
-> > + *                   cpus
-> > + *
-> > + * A function to add static information to an actor after it has
-> > + * registered.  In order to calculate the static power, we need the to
-> > + * know the temperature of the cpu, which we get from its closest
-> > + * thermal zone.  It is possible that when registering the
-> > + * power_cpu_actor, the thermal zone hasn't been registered yet.  This
-> > + * function allows you to add that information when the thermal zone
-> > + * is registered.  @cpu should be one of the cpus represented by the
-> > + * cpu actor you want to modify
-> > + *
-> > + * Return: 0 on success.  -EINVAL if @tz or @plat_static_func are
-> > + * NULL.  -ENOENT if there's no cpu power actor for @cpu.
-> > + */
-> > +int power_cpu_actor_add_static(unsigned int cpu, struct thermal_zone_device *tz,
-> > +                     get_static_t plat_static_func)
-> > +{
-> > +     struct power_actor *actor;
-> > +
-> > +     if (!plat_static_func || !tz)
-> > +             return -EINVAL;
-> > +
-> > +     list_for_each_entry(actor, &actor_list, actor_node) {
-> > +             struct cpu_actor *cpu_actor;
-> > +
-> > +             if (actor->type != POWER_ACTOR_CPU)
-> > +                     continue;
-> > +
-> > +             cpu_actor = actor->data;
-> > +
-> > +             if (cpumask_test_cpu(cpu, &cpu_actor->cpumask)) {
-> > +                     cpu_actor->tz = tz;
-> > +                     cpu_actor->plat_get_static_power = plat_static_func;
-> > +                     return 0;
-> > +             }
-> > +     }
-> > +
-> > +     return -ENOENT;
-> > +}
-> > +
-> > +/**
-> > + * cpufreq_frequency_change - notifier callback for cpufreq frequency changes
-> > + * @nb:              struct notifier_block * with callback info
-> > + * @event:   value showing cpufreq event for which this function invoked
-> > + * @data:    callback-specific data
-> > + *
-> > + * Callback to get notifications of frequency changes.  In the
-> > + * CPUFREQ_POSTCHANGE @event we store the new frequency so that
-> > + * cpufreq_get_cur() knows the current frequency and can convert it
-> > + * into power.
-> > + */
-> > +static int cpufreq_frequency_change(struct notifier_block *nb,
-> > +                             unsigned long event, void *data)
-> > +{
-> > +     struct power_actor *actor;
-> > +     struct cpufreq_freqs *freqs = data;
-> > +
-> > +     /* Only update frequency on postchange */
-> > +     if (event != CPUFREQ_POSTCHANGE)
-> > +             return NOTIFY_DONE;
-> > +
-> > +     list_for_each_entry(actor, &actor_list, actor_node) {
-> > +             struct cpu_actor *cpu_actor;
-> > +
-> > +             if (actor->type != POWER_ACTOR_CPU)
-> > +                     continue;
-> > +
-> > +             cpu_actor = actor->data;
-> > +
-> > +             if (cpumask_test_cpu(freqs->cpu, &cpu_actor->cpumask))
-> > +                     cpu_actor->freq = freqs->new;
-> > +     }
-> > +
-> > +     return NOTIFY_OK;
-> > +}
-> > +
-> > +struct notifier_block cpufreq_transition_notifier = {
-> > +     .notifier_call = cpufreq_frequency_change,
-> > +};
-> > +
-> > +/**
-> > + * build_dyn_power_table - create a dynamic power to frequency table
-> > + * @cpu_actor:       the cpu_actor in which to store the table
-> > + * @capacitance: dynamic power coefficient for these cpus
-> > + *
-> > + * Build a dynamic power to frequency table for this cpu and store it
-> > + * in @cpu_actor.  This table will be used in cpu_power_to_freq() and
-> > + * cpu_freq_to_power() to convert between power and frequency
-> > + * efficiently.  Power is stored in mW, frequency in KHz.  The
-> > + * resulting table is in ascending order.
-> > + *
-> > + * Returns 0 on success, -E* on error.
-> > + */
-> > +static int build_dyn_power_table(struct cpu_actor *cpu_actor, u32 capacitance)
-> > +{
-> > +     struct power_table *power_table;
-> > +     struct dev_pm_opp *opp;
-> > +     struct device *dev = NULL;
-> > +     int num_opps, cpu, i, ret = 0;
-> > +     unsigned long freq;
-> > +
-> > +     num_opps = 0;
-> > +
-> > +     rcu_read_lock();
-> > +
-> > +     for_each_cpu(cpu, &cpu_actor->cpumask) {
-> > +             dev = get_cpu_device(cpu);
-> > +             if (!dev)
-> > +                     continue;
-> > +
-> > +             num_opps = dev_pm_opp_get_opp_count(dev);
-> > +             if (num_opps > 0) {
-> > +                     break;
-> > +             } else if (num_opps < 0) {
-> > +                     ret = num_opps;
-> > +                     goto unlock;
-> > +             }
-> > +     }
-> > +
-> > +     if (num_opps == 0) {
-> > +             ret = -EINVAL;
-> > +             goto unlock;
-> > +     }
-> > +
-> > +     power_table = kcalloc(num_opps, sizeof(*power_table), GFP_KERNEL);
-> > +
-> > +     i = 0;
-> > +     for (freq = 0;
-> > +          opp = dev_pm_opp_find_freq_ceil(dev, &freq), !IS_ERR(opp);
-> > +          freq++) {
-> > +             u32 freq_mhz, voltage_mv;
-> > +             u64 power;
-> > +
-> > +             freq_mhz = freq / 1000000;
-> > +             voltage_mv = dev_pm_opp_get_voltage(opp) / 1000;
-> > +
-> > +             /*
-> > +              * Do the multiplication with MHz and millivolt so as
-> > +              * to not overflow.
-> > +              */
-> > +             power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-> > +             do_div(power, 1000000000);
-> > +
-> > +             /* frequency is stored in power_table in KHz */
-> > +             power_table[i].frequency = freq / 1000;
-> > +             power_table[i].power = power;
-> > +
-> > +             i++;
-> > +     }
-> > +
-> > +     if (i == 0) {
-> > +             ret = PTR_ERR(opp);
-> > +             goto unlock;
-> > +     }
-> > +
-> > +     cpu_actor->dyn_power_table = power_table;
-> > +     cpu_actor->dyn_power_table_entries = i;
-> > +
-> > +unlock:
-> > +     rcu_read_unlock();
-> > +     return ret;
-> > +}
-> > +
-> > +/**
-> > + * power_cpu_actor_register - register a cpu_actor within the power actor API
-> > + * @cpumask: cpumask of cpus covered by this power_actor
-> > + * @tz:              thermal zone closest to the cpus (optional)
-> > + * @capacitance: dynamic power coefficient for these cpus
-> > + * @plat_static_func:        function to calculate the static power consumed by these
-> > + *                   cpus (optional)
-> > + *
-> > + * Create a cpufreq cooling device for the cpus in @cpumask and
-> > + * register it with the power actor API using a simple cpu power
-> > + * model.  The cpus must have registered their OPPs in the OPP
-> > + * library.
-> > + *
-> > + * An optional @plat_static_func may be provided to calculate the
-> > + * static power consumed by these cpus.  If the platform's static
-> > + * power consumption is unknown or negligible, make it NULL.  If
-> > + * @plat_static_fun is specified, @tz needs to be specified as well.
-> > + * @tz should be a pointer to the thermal_zone_device whose sensor is
-> > + * closer to the cpus in @cpumask.
-> > + *
-> > + * Return the power_actor created on success or the corresponding
-> > + * ERR_PTR() on failure.  This actor should be freed with
-> > + * power_cpu_actor_unregister() when it's no longer needed.
-> > + */
-> > +struct power_actor *
-> > +power_cpu_actor_register(cpumask_t *cpumask,
-> > +                     struct thermal_zone_device *tz,
-> > +                     u32 capacitance,
-> > +                     get_static_t plat_static_func)
-> > +{
-> > +     int ret;
-> > +     struct thermal_cooling_device *cdev;
-> > +     struct device *cpu_dev;
-> > +     struct power_actor *actor, *err_ret;
-> > +     struct cpu_actor *cpu_actor;
-> > +
-> > +     if (plat_static_func && !tz) {
-> > +             pr_warn("plat_static_func provided without a thermal zone, ignoring it\n");
-> > +             plat_static_func = NULL;
-> 
-> 
-> You either make this one hard requirement (and do not fail gracefuly
-> like above) or you make it really optional and provide a good default
-> formula (which is preferrable).
+aperf =3D 5024
+mperf =3D 10619
 
-It's really optional.  If the function is NULL, the platform's static
-power consumption is assumed to be negligible.
+aperf * 100 / mperf =3D 47.31142292
 
-> > +     }
-> > +
-> > +     cpu_dev = get_cpu_device(cpumask_any(cpumask));
-> > +     if (!cpu_dev || !cpu_dev->of_node)
-> > +             cdev = cpufreq_cooling_register(cpumask);
-> > +     else
-> > +             cdev = of_cpufreq_cooling_register(cpu_dev->of_node, cpumask);
-> > +
-> > +     if (!cdev)
-> > +             return ERR_PTR(PTR_ERR(cdev));
-> > +
-> > +     cpu_actor = kzalloc(sizeof(*cpu_actor), GFP_KERNEL);
-> > +     if (!cpu_actor) {
-> > +             err_ret = ERR_PTR(-ENOMEM);
-> > +             goto cdev_unregister;
-> > +     }
-> > +
-> > +     cpumask_copy(&cpu_actor->cpumask, cpumask);
-> > +     cpu_actor->cdev = cdev;
-> > +     cpu_actor->tz = tz;
-> > +     cpu_actor->plat_get_static_power = plat_static_func;
-> > +
-> > +     ret = build_dyn_power_table(cpu_actor, capacitance);
-> > +     if (ret) {
-> > +             err_ret = ERR_PTR(ret);
-> > +             goto kfree;
-> > +     }
-> > +
-> > +     actor = power_actor_register(POWER_ACTOR_CPU, &cpu_actor_ops,
-> > +                             cpu_actor);
-> > +     if (IS_ERR(actor)) {
-> > +             err_ret = actor;
-> > +             goto kfree;
-> > +     }
-> > +
-> > +     mutex_lock(&cpu_power_actor_lock);
-> > +
-> > +     /*
-> > +      * You can't register multiple times the same notifier_block.
-> > +      * The first power actor registered is the only one that
-> > +      * registers the notifier.
-> > +      */
-> > +     if (!cpu_power_actors_registered) {
-> > +             ret = cpufreq_register_notifier(&cpufreq_transition_notifier,
-> > +                                             CPUFREQ_TRANSITION_NOTIFIER);
-> > +             if (ret) {
-> > +                     err_ret = ERR_PTR(ret);
-> > +                     mutex_unlock(&cpu_power_actor_lock);
-> > +                     goto power_actor_unregister;
-> > +             }
-> > +     }
-> > +
-> > +     cpu_power_actors_registered++;
-> > +     mutex_unlock(&cpu_power_actor_lock);
-> > +
-> > +     return actor;
-> > +
-> > +power_actor_unregister:
-> > +     power_actor_unregister(actor);
-> > +kfree:
-> > +     kfree(cpu_actor);
-> > +cdev_unregister:
-> > +     cpufreq_cooling_unregister(cdev);
-> > +
-> > +     return err_ret;
-> > +}
-> > +
-> > +void power_cpu_actor_unregister(struct power_actor *actor)
-> > +{
-> > +     struct cpu_actor *cpu_actor = actor->data;
-> > +
-> > +     kfree(cpu_actor->dyn_power_table);
-> > +
-> > +     mutex_lock(&cpu_power_actor_lock);
-> > +
-> > +     cpu_power_actors_registered--;
-> > +
-> > +     if (!cpu_power_actors_registered)
-> > +             cpufreq_unregister_notifier(&cpufreq_transition_notifier,
-> > +                                     CPUFREQ_TRANSITION_NOTIFIER);
-> > +
-> > +     mutex_unlock(&cpu_power_actor_lock);
-> > +
-> > +     kfree(cpu_actor);
-> > +     power_actor_unregister(actor);
-> > +}
-> > diff --git a/drivers/thermal/power_actor/power_actor.h b/drivers/thermal/power_actor/power_actor.h
-> > index 28098f43630b..230317c284b2 100644
-> > --- a/drivers/thermal/power_actor/power_actor.h
-> > +++ b/drivers/thermal/power_actor/power_actor.h
-> > @@ -17,11 +17,16 @@
-> >  #ifndef __POWER_ACTOR_H__
-> >  #define __POWER_ACTOR_H__
-> >
-> > +#include <linux/cpumask.h>
-> > +#include <linux/device.h>
-> > +#include <linux/err.h>
-> >  #include <linux/list.h>
-> > +#include <linux/thermal.h>
-> >
-> >  #define MAX_NUM_ACTORS 8
-> >
-> >  enum power_actor_types {
-> > +     POWER_ACTOR_CPU,
-> 
-> Using struct device is more scalable no? What if we want to provide a
-> power actor for a specific bus, or device, or coprocessor? Are we going
-> to maintain this enum for every single new user?
+core_pct =3D 47
+rem =3D 3307
 
-The counterargument would be, does every single device need to carry
-this?  Anyway, I'll see if we can add the power actor to the "struct
-device".
+if (3307 * 2) >=3D 10619
+	core_pct =3D core_pct + 0.004
 
-> Another point to think is if we are having more than one user of power
-> actor per device (type).
+The original algorithm adds 1 to the quotient to round the integer part=
+ of the
+division. In the specific example we add 0.004 to round the fractional =
+part.
 
-Some of our testing is done on big.LITTLE systems, which have two cpu
-actors: one for the big CPUs and one for the little ones.  So this is
-already covered.
+=46ortunately, as you mentioned, this does not change the final calcula=
+tion
+considering that we do _not_ want an integer rounding.
+
+IMHO, If we need integer rounding we also need this patch, otherwise
+we can safely remove this rounding.
+
+
+Thanks,
+Stratos
+
+
+
 
