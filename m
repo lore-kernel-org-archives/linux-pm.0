@@ -1,63 +1,50 @@
-From: Vince Weaver <vince@deater.net>
-Subject: Re: [RFC PATCH 06/16] arm: topology: Define TC2 sched energy and
- provide it to scheduler
-Date: Thu, 12 Jun 2014 11:05:12 -0400 (EDT)
-Message-ID: <alpine.DEB.2.10.1406121101110.23499@pianoman.cluster.toy>
-References: <1400869003-27769-1-git-send-email-morten.rasmussen@arm.com> <1400869003-27769-7-git-send-email-morten.rasmussen@arm.com> <20140603114428.GY11096@twins.programming.kicks-ass.net> <20140604154227.GR29593@e103034-lin> <20140604161618.GQ30445@twins.programming.kicks-ass.net>
- <20140606131510.GV29593@e103034-lin> <20140606134303.GQ13930@laptop.programming.kicks-ass.net> <20140606142958.GX29593@e103034-lin>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: [RFC PATCH 2/2] of/clk: use "clkops-clocks" to specify clocks handled by clock_ops domain
+Date: Thu, 12 Jun 2014 19:53:43 +0300
+Message-ID: <1402592023-13416-3-git-send-email-grygorii.strashko@ti.com>
+References: <1398334403-26181-1-git-send-email-geert+renesas@glider.be>
+ <1402592023-13416-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140606142958.GX29593@e103034-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:51694 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933235AbaFLQGY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 12 Jun 2014 12:06:24 -0400
+In-Reply-To: <1402592023-13416-1-git-send-email-grygorii.strashko@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: geert+renesas@glider.be
+Cc: laurent.pinchart@ideasonboard.com, ulf.hansson@linaro.org, khilman@linaro.org, grant.likely@secretlab.ca, mturquette@linaro.org, tomasz.figa@gmail.com, ben.dooks@codethink.co.uk, horms@verge.net.au, magnus.damm@gmail.com, rjw@rjwysocki.net, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
-On Fri, 6 Jun 2014, Morten Rasmussen wrote:
+Use "clkops-clocks" property to specify clocks handled by
+clock_ops domain PM domain. Only clocks defined in "clkops-clocks"
+set of clocks will be handled by Runtime PM through clock_ops
+Pm domain.
 
-> On Fri, Jun 06, 2014 at 02:43:03PM +0100, Peter Zijlstra wrote:
-> > On Fri, Jun 06, 2014 at 02:15:10PM +0100, Morten Rasmussen wrote:
-> > > > > ARM TC2 has on-chip energy counters for counting energy consumed by the
-> > > > > A7 and A15 clusters. They are fairly accurate. 
-> > > > 
-> > > > Recent Intel chips have that too; they come packaged as:
-> > > > 
-> > > >   perf stat -a -e "power/energy-cores/" -- cmd
-> > > > 
-> > > > (through the perf_event_intel_rapl.c driver), It would be ideal if the
-> > > > ARM equivalent was available through a similar interface.
-> > > > 
-> > > > http://lwn.net/Articles/573602/
-> > > 
-> > > Nice. On ARM it is not mandatory to have energy counters and what they
-> > > actually measure if they are implemented is implementation dependent.
-> > > However, each vendor does extensive evaluation and characterization of
-> > > their implementation already, so I don't think would be a problem for
-> > > them to provide the numbers.
-> > 
-> > How is the ARM energy thing exposed? Through the regular PMU but with
-> > vendor specific events, or through a separate interface, entirely vendor
-> > specific?
-> 
-> There is an upstream hwmon driver for TC2 already with an easy to use
-> sysfs interface for all the energy counters. So it is somewhat vendor
-> specific at the moment unfortunately.
+Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+---
+ drivers/of/of_clk.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-What is the plan about future interfaces for energy info?
+diff --git a/drivers/of/of_clk.c b/drivers/of/of_clk.c
+index 35f5e9f..5f9b90e 100644
+--- a/drivers/of/of_clk.c
++++ b/drivers/of/of_clk.c
+@@ -86,11 +86,8 @@ int of_clk_register_runtime_pm_clocks(struct device_node *np,
+ 	struct clk *clk;
+ 	int error;
+ 
+-	for (i = 0; (clk = of_clk_get(np, i)) && !IS_ERR(clk); i++) {
+-		if (!clk_may_runtime_pm(clk)) {
+-			clk_put(clk);
+-			continue;
+-		}
++	for (i = 0; (clk = of_clk_get_from_set(np, "clkops", i)) &&
++		     !IS_ERR(clk); i++) {
+ 
+ 		error = of_clk_register(dev, clk);
+ 		if (error) {
+-- 
+1.7.9.5
 
-Intel RAPL of course has a perf_event interface.
-
-However AMD's (somewhat unfortunately acronymed) Application Power 
-Management exports similar information via hwmon and the fam15h_power
-driver.
-
-And it sounds like ARM systems also put things in hwmon.
-
-User tools like PAPI can sort of abstract this (for example it supports 
-getting RAPL data from perf_event while it also has a driver for getting 
-info from hwmon).  But users stuck with perf end up having to use multiple 
-tools to get energy and performance info simultaneously on non-intel 
-hardware.
-
-Vince
