@@ -1,47 +1,137 @@
-From: Rafael Wysocki <rjwysocki@gmail.com>
-Subject: Re: [PATCH 02/24] drivercore: Bind/unbind power domain on probe/remove
-Date: Thu, 12 Jun 2014 21:33:42 +0200
-Message-ID: <CAJZ5v0goz_oE5V7kmYdTjKjMSuW33-sK+C60pS-iNe8Aim8UZQ@mail.gmail.com>
-References: <1402397497-26737-1-git-send-email-ulf.hansson@linaro.org>
-	<20140610212731.GA11191@kroah.com>
-	<53977BC1.5000301@gmail.com>
-	<2753039.YD6R0RpJkS@vostro.rjw.lan>
-	<20140612163901.GZ5099@sirena.org.uk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
+Date: Thu, 12 Jun 2014 22:03:15 +0200
+Message-ID: <1815178.vjJU51ubGD@vostro.rjw.lan>
+References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <00b301cf85ba$40fe4290$c2fac7b0$@net> <5399BACF.6060201@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:48722 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbaFLTdn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jun 2014 15:33:43 -0400
-In-Reply-To: <20140612163901.GZ5099@sirena.org.uk>
+Received: from v094114.home.net.pl ([79.96.170.134]:63729 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751247AbaFLTpt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jun 2014 15:45:49 -0400
+In-Reply-To: <5399BACF.6060201@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomasz Figa <tomasz.figa@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <philipp.zabel@gmail.com>, Tomasz Figa <t.figa@samsung.com>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Doug Smythies <dsmythies@telus.net>, viresh.kumar@linaro.org, dirk.j.brandewie@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2014 at 6:39 PM, Mark Brown <broonie@kernel.org> wrote:
-> On Wed, Jun 11, 2014 at 02:18:44AM +0200, Rafael J. Wysocki wrote:
->> On Tuesday, June 10, 2014 11:42:25 PM Tomasz Figa wrote:
->
->> > OK, so proposed solution is to put this in:
->
->> > - platform_drv_probe(),
->> > - spi_drv_probe(),
->> > - i2c_device_probe(),
->> > - amba_probe(),
->
->> Yes.  Specifically, those are bus types that don't do their own power
->> management.
->
-> This sounds tedious.  Can we not instead introduce some generic helpers
-> which all such buses call/use and then implement the hooks in there
-> (along with anything else that they should all do)?
+On Thursday, June 12, 2014 05:35:59 PM Stratos Karafotis wrote:
+> On 12/06/2014 12:15 =CF=80=CE=BC, Doug Smythies wrote:
+> >=20
+> >=20
+> > -----Original Message-----
+> > From: Stratos Karafotis [mailto:stratosk@semaphore.gr]=20
+> > Sent: June-11-2014 13:20
+> > To: Doug Smythies
+> > Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; rjw@rjw=
+ysocki.net; viresh.kumar@linaro.org; dirk.j.brandewie@intel.com
+> > Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pc=
+t
+> >=20
+> > On 2014.06.11 13:20 Stratos Karafotis wrote:
+> >> On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
+> >>>
+> >>> On 2104.06.11 07:08 Stratos Karafotis wrote:
+> >>>> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
+> >>>>
+> >>>> No.
+> >>>
+> >>>> The intent was only ever to round properly the pseudo floating p=
+oint result of the divide.
+> >>>> It was much more important (ugh, well 4 times more) when FRACBIT=
+S was still 6, which also got changed to 8 in a recent patch.
+> >>>>
+> >>>
+> >>> Are you sure?
+> >>>
+> >>> Yes.
+> >>>
+> >>>> This rounding was very recently added.
+> >>>> As far as I can understand, I don't see the meaning of this roun=
+ding, as is.
+> >>>> Even if FRAC_BITS was 6, I think it would have almost no improve=
+ment in
+> >>>> calculations.
+> >>>
+> >>> Note: I had not seen this e-mail when I wrote a few minutes ago:
+> >>>
+> >>> You may be correct.
+> >>> If Dirk agrees, I will re-analyse the entire driver for rounding =
+effects soon.
+> >>> When FRACBITS was 6 there were subtle cases where the driver woul=
+d get stuck, and not make a final pstate change, with the default PID g=
+ains.
+> >>> Other things have changed, and the analysis needs to be re-done.
+> >>>
+> >=20
+> >> Could you please elaborate a little bit more what we need these 2 =
+lines below?
+> >>
+> >>        if ((rem << 1) >=3D int_tofp(sample->mperf))
+> >>                core_pct +=3D 1;
+> >>
+> >> Because nothing is mentioned for them in commit's changelog.
+> >> Do we need to round core_pct or not?
+> >> Because if we try to round it, I think this patch should work.
+> >=20
+> > As mentioned originally, they are there just to round the pseudo fl=
+oating number, not the integer portion only.
+> > Let us bring back the very numbers you originally gave and work thr=
+ough it.
+> >=20
+> > aperf =3D 5024
+> > mperf =3D 10619
+> >=20
+> > core_pct =3D 47.31142292%
+> > or 47 and 79.724267 256ths
+> > or to the closest kept fractional part 47 and 80 256ths
+> > or 12112 as a pseudo float.
+> > The maximum error with this rounding will be 1 part in 512 and symm=
+etric instead of the 1 part in 256 always in one direction without.
+> >=20
+> > Now if FRACBITS was still 6:
+> > core_pct =3D 47.31142292%
+> > or 47 and 19.931 64ths
+> > or to the closest kept fractional part 47 and 20 64ths
+> > or 3028 as a pseudo float.
+> > The maximum error with this rounding will be 1 part in 128 and symm=
+etric instead of the 1 part in 64 (1.6% !!!) always in one direction wi=
+thout.
+> >=20
+> > Hope this helps.
+> >=20
+>=20
+> Yes, it helps. Thanks a lot!
+>=20
+> But please note that the maximum error without this rounding will be =
+1.6% _only_
+> in fractional part. In the real number it will be much smaller:
+>=20
+> 47.19 instead of 47.20
+>=20
+> And using FRAC_BITS 8:
+>=20
+> 47.79 instead of 47.80
+>=20
+> This is a 0.0002% difference. I can't see how this is can affect the =
+calculations
+> even with FRAC_BITS 6.
+>=20
+> Another thing is that this algorithm generally is used to round to th=
+e
+> nearest integer. I'm not sure if it's valid to apply it for the round=
+ing of
+> the fractional part of fixed point number.
 
-Well, good idea.
+Depending on the original reason, it may or may not be.
 
-> There must be other things that all these buses are having to cut'n'paste.
+In theory, it may help reduce numerical drift resulting from rounding a=
+lways in
+one direction only, but I'm not really sure if that matters here.
 
-Quite likely.
+Doug seems to have carried out full analysis, though.
 
 Rafael
+
