@@ -1,65 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: fix CPU_THERMAL dependency
-Date: Fri, 13 Jun 2014 14:56:22 +0530
-Message-ID: <CAKohpomOSPc_LCk6KPGYnZYB0dt+C-J6TVc9b-ufEJQW7F6Ykg@mail.gmail.com>
-References: <9629532.nBvvttN1Sz@wuerfel>
-	<CAKohponnsaPQ=XrdX5VYYBzdk1+KQxWp9WtGzXCtMMS7cwQy1A@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/2] make kASLR vs hibernation boot-time selectable
+Date: Fri, 13 Jun 2014 12:51:35 +0200
+Message-ID: <20140613105135.GA4876@amd.pavel.ucw.cz>
+References: <1402602419-27934-1-git-send-email-keescook@chromium.org>
+ <539A0422.9010000@zytor.com>
+ <CAGXu5jLvAr=f2MRP4Ni86-jbM7h3Mx3RQo=7coveE8ZEt12N=Q@mail.gmail.com>
+ <539A0DC2.1010203@zytor.com>
+ <CAGXu5jKanRjK66P9dFYctXfQxT+da_9z8vqy8s+WqgW1cw17-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:45910 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752170AbaFMJ0X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 05:26:23 -0400
-Received: by mail-ob0-f182.google.com with SMTP id nu7so2663862obb.27
-        for <linux-pm@vger.kernel.org>; Fri, 13 Jun 2014 02:26:22 -0700 (PDT)
-In-Reply-To: <CAKohponnsaPQ=XrdX5VYYBzdk1+KQxWp9WtGzXCtMMS7cwQy1A@mail.gmail.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50832 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbaFMKvi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 06:51:38 -0400
+Content-Disposition: inline
+In-Reply-To: <CAGXu5jKanRjK66P9dFYctXfQxT+da_9z8vqy8s+WqgW1cw17-Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 13 June 2014 14:53, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 13 June 2014 14:10, Arnd Bergmann <arnd@arndb.de> wrote:
->> 5fbfbcd3e842d ("cpufreq: cpufreq-cpu0: remove dependency on THERMAL and
->> REGULATOR") was a little too quick in completely removing the dependency
->> on the THERMAL driver.
->
-> Sigh
->
->> The problem is that while there are inline wrappers to turn the thermal
->> API calls into empty functions, those do not help if the cpu-thermal
->> driver is a loadable module and cpufreq-cpu0 is builtin.
->>
->> Since CONFIG_CPU_THERMAL is a bool option that decides whether the cpu
->> code is built into the thermal module or not, we have to use a dependency
->> on the thermal driver itself. However, if CPU_THERMAL is disabled, we
->> don't need the dependency, hence the strange '!CPU_THERMAL || THERMAL'
->> construct.
->
-> Yeah, it took me few minutes to make sure its perfectly fine :)
->
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->>
->> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
->> index e473d65..ffe350f 100644
->> --- a/drivers/cpufreq/Kconfig
->> +++ b/drivers/cpufreq/Kconfig
->> @@ -186,6 +186,8 @@ config CPU_FREQ_GOV_CONSERVATIVE
->>  config GENERIC_CPUFREQ_CPU0
->>         tristate "Generic CPU0 cpufreq driver"
->>         depends on HAVE_CLK && OF
->> +       # if CPU_THERMAL is on and THERMAL=m, CPU0 cannot be =y:
->> +       depends on !CPU_THERMAL || THERMAL
->>         select PM_OPP
->>         help
->>           This adds a generic cpufreq driver for CPU0 frequency management.
->
-> Since that was a corner case which I couldn't think of, can I be forgiven
-> for my incomplete patch ? :)
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi!
 
-Wait, I have tested it as well :)
 
-Acked-and-tested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >>> Any way we can make them work together instead?
+> >>
+> >> I'm sure there is, but I don't know the solution. :)
+> >>
+> >> At the very least this gets us one step closer (we can build them together).
+> >>
+> >
+> > But it is really invasive.
+> 
+> Well, I don't agree there. I actually would like to be able to turn
+> off hibernation support on distro kernels regardless of kASLR, so I
+> think this is really killing two birds with one stone.
+> 
+> > I have to admit to being somewhat fuzzy on what the core problem with
+> > hibernation and kASLR is... in both cases there is a set of pages that
+> > need to be installed, some of which will overlap the loader kernel.
+> > What am I missing?
+> 
+> I don't know how resume works, but I have assumed that the newly
+> loaded kernel stays in memory and pulls in the vmalloc, kmalloc,
+> modules, and userspace memory maps from disk. Since these things can
+> easily contain references to kernel text, if the newly loaded kernel
+> has moved with regard to the hibernated image, everything breaks.
+> IIUC, this is similar why you can't rebuild your kernel and resume
+> from a different version.
+
+x86-64 can resume from different kernel that did the suspend. kASLR
+should not be too different from that. (You just include kernel text
+in the hibernation image. It is small enough to do that.)
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
