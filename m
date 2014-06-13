@@ -1,120 +1,108 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
-Date: Fri, 13 Jun 2014 19:56:52 +0300
-Message-ID: <539B2D54.6070108@semaphore.gr>
-References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <00b301cf85ba$40fe4290$c2fac7b0$@net> <5399BACF.6060201@semaphore.gr> <1815178.vjJU51ubGD@vostro.rjw.lan> <539B0147.8020407@gmail.com>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [RFC PATCH v3 5/7] thermal: add a basic cpu power actor
+Date: Fri, 13 Jun 2014 18:01:15 +0100
+Message-ID: <20140613170115.GC3504@e104805>
+References: <1401790715-5630-1-git-send-email-javi.merino@arm.com>
+ <1401790715-5630-6-git-send-email-javi.merino@arm.com>
+ <20140611120537.GA7230@developer>
+ <20140612142650.GB2763@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:36909 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753490AbaFMQ44 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 12:56:56 -0400
-In-Reply-To: <539B0147.8020407@gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:40103 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531AbaFMRBT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 13:01:19 -0400
+In-Reply-To: <20140612142650.GB2763@e104805>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
-Cc: viresh.kumar@linaro.org, dirk.j.brandewie@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Zhang Rui <rui.zhang@intel.com>
 
-On 13/06/2014 04:48 =CE=BC=CE=BC, Dirk Brandewie wrote:
-> On 06/12/2014 01:03 PM, Rafael J. Wysocki wrote:
->> On Thursday, June 12, 2014 05:35:59 PM Stratos Karafotis wrote:
->>> On 12/06/2014 12:15 =CF=80=CE=BC, Doug Smythies wrote:
->>>>
->>>>
->>>> -----Original Message-----
->>>> From: Stratos Karafotis [mailto:stratosk@semaphore.gr]
->>>> Sent: June-11-2014 13:20
->>>> To: Doug Smythies
->>>> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; rjw@rj=
-wysocki.net; viresh.kumar@linaro.org; dirk.j.brandewie@intel.com
->>>> Subject: Re: [PATCH] cpufreq: intel_pstate: Fix rounding of core_p=
-ct
->>>>
->>>> On 2014.06.11 13:20 Stratos Karafotis wrote:
->>>>> On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
->>>>>>
->>>>>> On 2104.06.11 07:08 Stratos Karafotis wrote:
->>>>>>> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
->>>>>>>
->>>>>>> No.
->>>>>>
->>>>>>> The intent was only ever to round properly the pseudo floating =
-point result of the divide.
->>>>>>> It was much more important (ugh, well 4 times more) when FRACBI=
-TS was still 6, which also got changed to 8 in a recent patch.
->>>>>>>
->>>>>>
->>>>>> Are you sure?
->>>>>>
->>>>>> Yes.
->>>>>>
->>>>>>> This rounding was very recently added.
->>>>>>> As far as I can understand, I don't see the meaning of this rou=
-nding, as is.
->>>>>>> Even if FRAC_BITS was 6, I think it would have almost no improv=
-ement in
->>>>>>> calculations.
->>>>>>
->>>>>> Note: I had not seen this e-mail when I wrote a few minutes ago:
->>>>>>
->>>>>> You may be correct.
->>>>>> If Dirk agrees, I will re-analyse the entire driver for rounding=
- effects soon.
->>>>>> When FRACBITS was 6 there were subtle cases where the driver wou=
-ld get stuck, and not make a final pstate change, with the default PID =
-gains.
->>>>>> Other things have changed, and the analysis needs to be re-done.
->>>>>>
->>>>
->>>>> Could you please elaborate a little bit more what we need these 2=
- lines below?
->>>>>
->=20
-> Sorry for being MIA on this thread I have been up to my eyeballs.
->=20
->>>>>         if ((rem << 1) >=3D int_tofp(sample->mperf))
->>>>>                 core_pct +=3D 1;
->=20
-> The rounding should have been
->        core_pct +=3D (1 << (FRAC_BITS-1));
-> Since core_pct is is in fixeded point notation at this point. Adding =
-=2E5 to
-> core_pct to round up.
->=20
-> As Stratos pointed out the the current code only adds 1/256 to core_p=
-ct
->=20
-> Since core_pct_busy stays in fixed point through out the rest of the
-> calculations ans we only do the rounding when the PID is returning an
-> int I think we can safely remove these two lines.
->=20
+On Thu, Jun 12, 2014 at 03:26:50PM +0100, Javi Merino wrote:
+> On Wed, Jun 11, 2014 at 01:05:37PM +0100, Eduardo Valentin wrote:
+> > On Tue, Jun 03, 2014 at 11:18:33AM +0100, Javi Merino wrote:
+> > > Introduce a power actor for cpus.  It has a basic power model to get
+> > > the current power utilization and uses cpufreq cooling devices to set
+> > > the desired power.  It uses the current frequency (as reported by
+> > > cpufreq) as well as load and OPPs for the power calculations.  The
+> > > cpus must have registered their OPPs in the OPP library.
+> > >
+> > > Cc: Zhang Rui <rui.zhang@intel.com>
+> > > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+> > > Signed-off-by: Javi Merino <javi.merino@arm.com>
+> > > ---
+> > >  Documentation/thermal/power_actor.txt     | 126 +++++++
+> > >  drivers/thermal/Kconfig                   |   5 +
+> > >  drivers/thermal/power_actor/Kconfig       |   9 +
+> > >  drivers/thermal/power_actor/Makefile      |   2 +
+> > >  drivers/thermal/power_actor/cpu_actor.c   | 601 ++++++++++++++++++++++++++++++
+> > >  drivers/thermal/power_actor/power_actor.h |  41 ++
+> > >  6 files changed, 784 insertions(+)
+> > >  create mode 100644 drivers/thermal/power_actor/Kconfig
+> > >  create mode 100644 drivers/thermal/power_actor/cpu_actor.c
+> > >
+[...]
+> > > diff --git a/drivers/thermal/power_actor/Kconfig b/drivers/thermal/power_actor/Kconfig
+> > > new file mode 100644
+> > > index 000000000000..fa542ca99cdb
+> > > --- /dev/null
+> > > +++ b/drivers/thermal/power_actor/Kconfig
+> > > @@ -0,0 +1,9 @@
+> > > +#
+> > > +# Thermal power actor configuration
+> > > +#
+> > > +
+> > > +config THERMAL_POWER_ACTOR_CPU
+> > > +     bool
+> > > +     prompt "Simple power model for a CPU"
+> > > +     help
+> > > +       A simple CPU power model
+> >
+> > A better help is always welcome.
+> 
+> I guess I can repeat some of the text in the Documentation here.
 
-Please let me know if you want me to send a new patch for this (after t=
-he merge
-window). Or will you or Doug handle this?
+I've been thinking about it and I'd rather remove the prompt
+altogether.  There's no point in asking the user about this, drivers
+that use this API can select THERMAL_POWER_ACTOR_CPU themselves.  So
+I'll remove the help text.
 
+[...]
+> > > diff --git a/drivers/thermal/power_actor/power_actor.h b/drivers/thermal/power_actor/power_actor.h
+> > > index 28098f43630b..230317c284b2 100644
+> > > --- a/drivers/thermal/power_actor/power_actor.h
+> > > +++ b/drivers/thermal/power_actor/power_actor.h
+> > > @@ -17,11 +17,16 @@
+> > >  #ifndef __POWER_ACTOR_H__
+> > >  #define __POWER_ACTOR_H__
+> > >
+> > > +#include <linux/cpumask.h>
+> > > +#include <linux/device.h>
+> > > +#include <linux/err.h>
+> > >  #include <linux/list.h>
+> > > +#include <linux/thermal.h>
+> > >
+> > >  #define MAX_NUM_ACTORS 8
+> > >
+> > >  enum power_actor_types {
+> > > +     POWER_ACTOR_CPU,
+> >
+> > Using struct device is more scalable no? What if we want to provide a
+> > power actor for a specific bus, or device, or coprocessor? Are we going
+> > to maintain this enum for every single new user?
+> 
+> The counterargument would be, does every single device need to carry
+> this?  Anyway, I'll see if we can add the power actor to the "struct
+> device".
 
->> Depending on the original reason, it may or may not be.
->>
->> In theory, it may help reduce numerical drift resulting from roundin=
-g always in
->> one direction only, but I'm not really sure if that matters here.
->>
->> Doug seems to have carried out full analysis, though.
->>
->> Rafael
->>
->> --=20
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
-in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->=20
->=20
+I've decided to remove the only user of the power_actor_types enum and
+remove this field as well.  It's simplifies things which is always
+good.
 
-Thank you all, for your comments!
+Cheers,
+Javi
 
-Stratos
