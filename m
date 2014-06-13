@@ -1,84 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] make kASLR vs hibernation boot-time selectable
-Date: Sat, 14 Jun 2014 00:14:31 +0200
-Message-ID: <9502843.K96nxmtL8f@vostro.rjw.lan>
-References: <1402602419-27934-1-git-send-email-keescook@chromium.org> <20140613105135.GA4876@amd.pavel.ucw.cz> <CAGXu5jJTSqtOMBNeOGEXfj_1iWGbE7p_YooeHT9wc4WRDjcGyQ@mail.gmail.com>
+Subject: Re: [PATCH 3/3][update] PM / sleep: Introduce command line argument for sleep state enumeration
+Date: Sat, 14 Jun 2014 00:16:26 +0200
+Message-ID: <3836835.YaZPGXsEQ2@vostro.rjw.lan>
+References: <1817539.9KW2IGGbDV@vostro.rjw.lan> <1771964.SepbTGNdtD@vostro.rjw.lan> <20140613214612.GA25712@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGXu5jJTSqtOMBNeOGEXfj_1iWGbE7p_YooeHT9wc4WRDjcGyQ@mail.gmail.com>
+In-Reply-To: <20140613214612.GA25712@amd.pavel.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 13, 2014 10:32:56 AM Kees Cook wrote:
-> On Fri, Jun 13, 2014 at 3:51 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >
-> >> >>> Any way we can make them work together instead?
-> >> >>
-> >> >> I'm sure there is, but I don't know the solution. :)
-> >> >>
-> >> >> At the very least this gets us one step closer (we can build them together).
-> >> >>
-> >> >
-> >> > But it is really invasive.
-> >>
-> >> Well, I don't agree there. I actually would like to be able to turn
-> >> off hibernation support on distro kernels regardless of kASLR, so I
-> >> think this is really killing two birds with one stone.
-> >>
-> >> > I have to admit to being somewhat fuzzy on what the core problem with
-> >> > hibernation and kASLR is... in both cases there is a set of pages that
-> >> > need to be installed, some of which will overlap the loader kernel.
-> >> > What am I missing?
-> >>
-> >> I don't know how resume works, but I have assumed that the newly
-> >> loaded kernel stays in memory and pulls in the vmalloc, kmalloc,
-> >> modules, and userspace memory maps from disk. Since these things can
-> >> easily contain references to kernel text, if the newly loaded kernel
-> >> has moved with regard to the hibernated image, everything breaks.
-> >> IIUC, this is similar why you can't rebuild your kernel and resume
-> >> from a different version.
-> >
-> > x86-64 can resume from different kernel that did the suspend. kASLR
-> > should not be too different from that. (You just include kernel text
-> > in the hibernation image. It is small enough to do that.)
+On Friday, June 13, 2014 11:46:12 PM Pavel Machek wrote:
+> Hi!
 > 
-> Oooh, that's very exciting! How does that work (what happens to the
-> kernel that booted first, etc)? I assume physical memory layout can't
-> change between hibernation and resume? Or, where should I be reading
-> code that does this?
+> > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > > 
+> > > > > > On some systems the platform doesn't support neither
+> > > > > > PM_SUSPEND_MEM nor PM_SUSPEND_STANDBY, so PM_SUSPEND_FREEZE is the
+> > > > > > only available system sleep state.  However, some user space frameworks
+> > > > > > only use the "mem" and (sometimes) "standby" sleep state labels, so
+> > > > > > the users of those systems need to modify user space in order to be
+> > > > > > able to use system suspend at all and that is not always possible.
+> > > > > 
+> > > > > I'd say we should fix the frameworks, not add option to change kernel
+> > > > > interfaces.
+> > > > > 
+> > > > > Because, as you mentioned, if we add this, we are probably going to
+> > > > > get stuck with it forever :-(.
+> > > > 
+> > > > Unfortunately, fixing the frameworks is rather less than realistic in any
+> > > > reasonable time frame, since  Android. :-)
+> > > 
+> > > Actually, you still have the sources from android, and this issue
+> > > sounds almost simple enough for binary patch.
+> > > 
+> > > Android misuses /proc/sys/vm/drop_caches, too, IIRC. Are we going to
+> > > change interface to match their expectations? They have binder and
+> > > wakelocks. Are we going to apply those patches just because Android
+> > > wants that?
+> > 
+> > That depends on which versions of Android you're talking about.  The
+> > newest ones use the power management interfaces we have upstream.
+> 
+> Ok, good, so they can fix their code.
+> 
+> What problem are you solving? Do you have some weird hardware where
+> suspend to memory is impossible? 
+> 
+> > > Android people usually patch their kernels, anyway, so why not add
+> > > this one, too?
+> > 
+> > I'm not talking about Android kernels, but about Android user space.
+> 
+> I know. Android userspace usually runs on modified kernel, so you can
+> simply add your patch. But I don't think its suitable for mainline.  
+> 
+> > And this is not only about Android, other distros also have user space that
+> > uses "mem" only, because nobody has used anything else for a long time anyway.
+> > For the users of those distros, if they don't want to modify user space,
+> > having a kernel command line like this is actually helpful.
+> 
+> Yes, still its wrong place to fix it...
 
-I guess it would help if you were a bit less sarcastic, but perhaps that's
-just me.
+This isn't a fix.  It's a workaround.
 
-Anyway, the core hibernation code actually works with page frames rather
-than with virtual addresses.  Essentially, it creates a bitmap where each
-page frame is represented by a single bit and the bits representing free
-page frames are unset.  It then allocates as many new pages as there are
-set bits in the bitmap and copies the entire contents of the page frames
-represented by those bits to new pages it's just allocated. That covers
-the entire kernel with its data and all process memory and is saved to
-disk storage along with the PFNs of the page frames whose contents have
-been copied.
+> > So I'm really not sure what's the problem?  Do you think it's wrong to be
+> > helpful to users or something?
+> 
+> It is not wrong to be helpful, but messed up interface is too big a
+> price.
 
-During resume it simply restores the contents of the saved page frames
-into those same page frames if they are available at that time.  For the
-page frames that aren't free then it allocates memory to store their
-contents temporarily and creates a list of PFNs where that contents should
-be moved eventually.  Then, it quiesces all activity of the system and
-jumps to arch-specific code that copies data from the temporary memory to
-the target page frames (that generally overwrites the boot kernel, so there's
-no way back from it).  Finally, it jumps to a specific address where the
-hibernated kernel trampoline code should be present.
-
-I think what fails with kASLR is that last step, because everything else
-should be entirely agnostic to the way the virtual addresses are laid out.
-I'm not sure how to fix that at the moment, but it should be fixable at
-least on x86_64.
+Why?  I will have to maintain it after all, right?
 
 Rafael
