@@ -1,108 +1,104 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [RFC PATCH v3 5/7] thermal: add a basic cpu power actor
-Date: Fri, 13 Jun 2014 18:01:15 +0100
-Message-ID: <20140613170115.GC3504@e104805>
-References: <1401790715-5630-1-git-send-email-javi.merino@arm.com>
- <1401790715-5630-6-git-send-email-javi.merino@arm.com>
- <20140611120537.GA7230@developer>
- <20140612142650.GB2763@e104805>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v4 3/6] drivers: cpuidle: implement OF based idle states
+ infrastructure
+Date: Fri, 13 Jun 2014 18:16:18 +0100
+Message-ID: <20140613171618.GB16745@e102568-lin.cambridge.arm.com>
+References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1402503520-8611-4-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAJZ5v0gE2Jq709SXLpfrxXnHxmqcDV1FbrPPX1JYUUdHJFL_Dg@mail.gmail.com>
+ <20140612090339.GB29295@e102568-lin.cambridge.arm.com>
+ <539A7480.20606@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:40103 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753531AbaFMRBT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 13:01:19 -0400
-In-Reply-To: <20140612142650.GB2763@e104805>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <539A7480.20606@linux.vnet.ibm.com>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, "paul.burton@imgtec.com" <paul.burton@imgtec.com>, Peter De Schrijver <pdeschrijver@n>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Thu, Jun 12, 2014 at 03:26:50PM +0100, Javi Merino wrote:
-> On Wed, Jun 11, 2014 at 01:05:37PM +0100, Eduardo Valentin wrote:
-> > On Tue, Jun 03, 2014 at 11:18:33AM +0100, Javi Merino wrote:
-> > > Introduce a power actor for cpus.  It has a basic power model to get
-> > > the current power utilization and uses cpufreq cooling devices to set
-> > > the desired power.  It uses the current frequency (as reported by
-> > > cpufreq) as well as load and OPPs for the power calculations.  The
-> > > cpus must have registered their OPPs in the OPP library.
-> > >
-> > > Cc: Zhang Rui <rui.zhang@intel.com>
-> > > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> > > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > > ---
-> > >  Documentation/thermal/power_actor.txt     | 126 +++++++
-> > >  drivers/thermal/Kconfig                   |   5 +
-> > >  drivers/thermal/power_actor/Kconfig       |   9 +
-> > >  drivers/thermal/power_actor/Makefile      |   2 +
-> > >  drivers/thermal/power_actor/cpu_actor.c   | 601 ++++++++++++++++++++++++++++++
-> > >  drivers/thermal/power_actor/power_actor.h |  41 ++
-> > >  6 files changed, 784 insertions(+)
-> > >  create mode 100644 drivers/thermal/power_actor/Kconfig
-> > >  create mode 100644 drivers/thermal/power_actor/cpu_actor.c
-> > >
-[...]
-> > > diff --git a/drivers/thermal/power_actor/Kconfig b/drivers/thermal/power_actor/Kconfig
-> > > new file mode 100644
-> > > index 000000000000..fa542ca99cdb
-> > > --- /dev/null
-> > > +++ b/drivers/thermal/power_actor/Kconfig
-> > > @@ -0,0 +1,9 @@
-> > > +#
-> > > +# Thermal power actor configuration
-> > > +#
-> > > +
-> > > +config THERMAL_POWER_ACTOR_CPU
-> > > +     bool
-> > > +     prompt "Simple power model for a CPU"
-> > > +     help
-> > > +       A simple CPU power model
-> >
-> > A better help is always welcome.
-> 
-> I guess I can repeat some of the text in the Documentation here.
+Hi Preeti,
 
-I've been thinking about it and I'd rather remove the prompt
-altogether.  There's no point in asking the user about this, drivers
-that use this API can select THERMAL_POWER_ACTOR_CPU themselves.  So
-I'll remove the help text.
+On Fri, Jun 13, 2014 at 04:48:16AM +0100, Preeti U Murthy wrote:
 
 [...]
-> > > diff --git a/drivers/thermal/power_actor/power_actor.h b/drivers/thermal/power_actor/power_actor.h
-> > > index 28098f43630b..230317c284b2 100644
-> > > --- a/drivers/thermal/power_actor/power_actor.h
-> > > +++ b/drivers/thermal/power_actor/power_actor.h
-> > > @@ -17,11 +17,16 @@
-> > >  #ifndef __POWER_ACTOR_H__
-> > >  #define __POWER_ACTOR_H__
-> > >
-> > > +#include <linux/cpumask.h>
-> > > +#include <linux/device.h>
-> > > +#include <linux/err.h>
-> > >  #include <linux/list.h>
-> > > +#include <linux/thermal.h>
-> > >
-> > >  #define MAX_NUM_ACTORS 8
-> > >
-> > >  enum power_actor_types {
-> > > +     POWER_ACTOR_CPU,
-> >
-> > Using struct device is more scalable no? What if we want to provide a
-> > power actor for a specific bus, or device, or coprocessor? Are we going
-> > to maintain this enum for every single new user?
+
+> >> Do you want this to be generally useful or is it just ARM-specific?
+> > 
+> > The first series was targeting ARM64, then I noticed that it might be
+> > used for ARM too (Daniel is working on that). Actually, I discovered
+> > that Power and MIPS can reuse at least the code that initializes the
+> > states data too, but I have to point out three things:
+> > 
+> > 1) state enter function method: in my bindings it is common for all
+> >    idle states, need to check if it applies to Power and MIPS too.
 > 
-> The counterargument would be, does every single device need to carry
-> this?  Anyway, I'll see if we can add the power actor to the "struct
-> device".
+> On PowerPC, we have a state enter function for each idle state. It will
+> not be too difficult to consolidate them into one, but that is not on
+> the cards right now.
 
-I've decided to remove the only user of the power_actor_types enum and
-remove this field as well.  It's simplifies things which is always
-good.
+Ok, understood, it can become trickier to do when DT bindings for ARM are
+merged though, but I understand it is not your priority now.
 
-Cheers,
-Javi
+> > 2) CPUIDLE_FLAG_TIMER_STOP and how to set it. It is non-trivial to
+> >    add code that detects what idle states lose the tick device context.
+> >    At the moment I am adding the flag by default to all idle states
+> >    apart from standbywfi on ARM, but that can be optimised. Unless we
+> >    resort to power domains (but that's not trivial), we can add a flag
+> >    to the idle states in DT (ie local-timer-stop or suchlike) to support
+> >    that. I think that it will be frowned upon but it is worth trying, would
+> >    like to know what other people think about this.
+> 
+> On PowerPC we have a bit in flag property of the idle state device node,
+> which determines if timers will stop. Yes, maybe we can fix it at a
+> specific bit but it may be messy.
 
+It is the same information defined differently, and TIMER_STOP on Power
+is inferred from the entry method. I think that with a bit of work we
+could make ends meet, not sure it has to be done now though.
+
+> > 3) idle states bindings should be reviewed, I expect them to be valid
+> >    on other architectures too, but I need acknowledgments.
+> 
+> The major difference as I see it is the idle state bindings. In your
+> patch there is a device node for each idle state. On PowerPC however,
+> currently we have a single node with the property values of this node
+> determining the idle states' name, desc etc..
+> 
+> Besides this, the names of the device tree nodes for idle states could
+> be arch specific to meet some hierarchical requirements in the device
+> tree. This would make it difficult for this driver to parse the idle
+> states based on a generic idle state node name.
+> > 
+> > I think this series is not far from being ready to be upstreamed, I
+> > would be certainly happy if it can be reused for other archs too so
+> > just let me know.
+> 
+> On PowerPC there are a couple of other sanity checks that we ought to do
+> before initializing the driver.
+> 
+> So IMO, although we can press out the above mentioned differences in one
+> way or the other to make way for a generic idle driver which reads from
+> the device tree, I am not in favour of it since it has to concern itself
+> with quite a bit of arch-specific stuff. This would anyway make it less
+> and less of a generic idle driver. So its best to push this patch to be
+> ARM specific.
+
+We are not talking about having a common idle driver for all archs, we are
+talking about having a common way to initialize idle states data and I think,
+as you mentioned that it could be done (from what I read in your driver).
+I understand it is not a priority so I will go ahead and leave it ARM
+specific for now.
+
+Thanks,
+Lorenzo
