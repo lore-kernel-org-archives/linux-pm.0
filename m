@@ -1,61 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3][update] PM / sleep: Introduce command line argument for sleep state enumeration
-Date: Sat, 14 Jun 2014 01:19:18 +0200
-Message-ID: <2242480.eT2OxdNqLH@vostro.rjw.lan>
-References: <1817539.9KW2IGGbDV@vostro.rjw.lan> <3836835.YaZPGXsEQ2@vostro.rjw.lan> <34237308.7Kff3QYgup@vostro.rjw.lan>
+Subject: Re: [PATCH v3 0/2] make kASLR vs hibernation boot-time selectable
+Date: Sat, 14 Jun 2014 01:25:11 +0200
+Message-ID: <2113876.sBNaASbVKF@vostro.rjw.lan>
+References: <1402691436-20138-1-git-send-email-keescook@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55266 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51181 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751262AbaFMXBu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 19:01:50 -0400
-In-Reply-To: <34237308.7Kff3QYgup@vostro.rjw.lan>
+	with SMTP id S1753502AbaFMXHo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 19:07:44 -0400
+In-Reply-To: <1402691436-20138-1-git-send-email-keescook@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@fedoraproject.org>, "H. Peter Anvin" <hpa@zytor.com>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Saturday, June 14, 2014 12:23:15 AM Rafael J. Wysocki wrote:
-> On Saturday, June 14, 2014 12:16:26 AM Rafael J. Wysocki wrote:
-> > On Friday, June 13, 2014 11:46:12 PM Pavel Machek wrote:
+On Friday, June 13, 2014 01:30:34 PM Kees Cook wrote:
+> Distros want to be able to offer CONFIG_RANDOMIZE_BASE as well as
+> CONFIG_HIBERNATION in a single kernel. Instead of making kASLR depend on
+> !HIBERNATION at compile time, allow kaslr to be selectable at boot time
+> (via "kaslr" kernel command line), which will disable hibernation in the
+> kernel. In this way the end user can choose which feature they want more
+> with hibernation continuing to stay enabled by default (no surprises).
 > 
-> [...]
+> This also has the benefit of being able to entirely disable hibernation
+> from the kernel command line, regardless of kASLR, which is a separately
+> desired feature as well.
 > 
-> > > > So I'm really not sure what's the problem?  Do you think it's wrong to be
-> > > > helpful to users or something?
-> > > 
-> > > It is not wrong to be helpful, but messed up interface is too big a
-> > > price.
-> > 
-> > Why?  I will have to maintain it after all, right?
-> 
-> And by the way, the very fact that this workaround is even useful in some cases
-> indicates that the interface that we've invented originally is not particularly
-> useful to user space.  The reason why is because user space is supposed to
-> enumerate the sleep states and then present the ones that are present in a
-> consistent way to the user.  It basically has to do "Is 'mem' present"?  Use it
-> if so, but if not is 'standby' present?  Use it if so etc." every time or
-> squirrel that information somewhere which isn't particularly straightforward.
+> v3:
+> - switch from EINVAL to EPERM (pavel, jwboyer)
+> v2:
+> - rework using kernel command line instead of hibernation_mode (rjw)
 
-Moreover, the "mem" and "standby" states are not really well defined on anything
-different from ACPI, so "mem" is used by everybody having just one platform-supported
-state.  That's why user space doesn't bother to check the other ones in many
-cases and it is not really their problem.  It is the problem of our existing
-interface that wasn't designed correctly.
+That looks kind of OK.
 
-My first reaction to this issue was pretty much the same as yours, but when I started
-to think more about it, I've realized that we messed up things to start with and now
-we're just having to deal with the consequences.  So yes, we can put our heads in
-the ground and say "that's not our problem, it has to be addressed in user space",
-but quite frankly I'm not seeing how we can persuade user space developers address
-it given that the vast majority of systems use "mem" only anyway and that they don't
-really understand where the problem is.
-
-For this reason I'm considering changing the defaul behavior going forward (so
-that "mem" is always present and means "the deepest sleep state available other
-than hibernation"), but I don't want to do that in one go.
+Do you want me to push this through my tree?
 
 Rafael
 
