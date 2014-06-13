@@ -1,73 +1,116 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/2] make kASLR vs hibernation boot-time selectable
-Date: Fri, 13 Jun 2014 22:26:34 +0200
-Message-ID: <20140613202633.GA24170@amd.pavel.ucw.cz>
-References: <1402602419-27934-1-git-send-email-keescook@chromium.org>
- <539A0422.9010000@zytor.com>
- <CAGXu5jLvAr=f2MRP4Ni86-jbM7h3Mx3RQo=7coveE8ZEt12N=Q@mail.gmail.com>
- <539A0DC2.1010203@zytor.com>
- <CAGXu5jKanRjK66P9dFYctXfQxT+da_9z8vqy8s+WqgW1cw17-Q@mail.gmail.com>
- <20140613105135.GA4876@amd.pavel.ucw.cz>
- <CAGXu5jJTSqtOMBNeOGEXfj_1iWGbE7p_YooeHT9wc4WRDjcGyQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAGXu5jJTSqtOMBNeOGEXfj_1iWGbE7p_YooeHT9wc4WRDjcGyQ@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
+From: Kees Cook <keescook@chromium.org>
+Subject: [PATCH v3 2/2] x86, kaslr: boot-time selectable with hibernation
+Date: Fri, 13 Jun 2014 13:30:36 -0700
+Message-ID: <1402691436-20138-3-git-send-email-keescook@chromium.org>
+References: <1402691436-20138-1-git-send-email-keescook@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.outflux.net ([198.145.64.163]:35904 "EHLO smtp.outflux.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751741AbaFMUbm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 13 Jun 2014 16:31:42 -0400
+In-Reply-To: <1402691436-20138-1-git-send-email-keescook@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@fedoraproject.org>, "H. Peter Anvin" <hpa@zytor.com>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri 2014-06-13 10:32:56, Kees Cook wrote:
-> On Fri, Jun 13, 2014 at 3:51 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >
-> >> >>> Any way we can make them work together instead?
-> >> >>
-> >> >> I'm sure there is, but I don't know the solution. :)
-> >> >>
-> >> >> At the very least this gets us one step closer (we can build them together).
-> >> >>
-> >> >
-> >> > But it is really invasive.
-> >>
-> >> Well, I don't agree there. I actually would like to be able to turn
-> >> off hibernation support on distro kernels regardless of kASLR, so I
-> >> think this is really killing two birds with one stone.
-> >>
-> >> > I have to admit to being somewhat fuzzy on what the core problem with
-> >> > hibernation and kASLR is... in both cases there is a set of pages that
-> >> > need to be installed, some of which will overlap the loader kernel.
-> >> > What am I missing?
-> >>
-> >> I don't know how resume works, but I have assumed that the newly
-> >> loaded kernel stays in memory and pulls in the vmalloc, kmalloc,
-> >> modules, and userspace memory maps from disk. Since these things can
-> >> easily contain references to kernel text, if the newly loaded kernel
-> >> has moved with regard to the hibernated image, everything breaks.
-> >> IIUC, this is similar why you can't rebuild your kernel and resume
-> >> from a different version.
-> >
-> > x86-64 can resume from different kernel that did the suspend. kASLR
-> > should not be too different from that. (You just include kernel text
-> > in the hibernation image. It is small enough to do that.)
-> 
-> Oooh, that's very exciting! How does that work (what happens to the
-> kernel that booted first, etc)? I assume physical memory layout can't
-> change between hibernation and resume? Or, where should I be reading
-> code that does this?
+Changes kASLR from being compile-time selectable (blocked by
+CONFIG_HIBERNATION), to being boot-time selectable (with hibernation
+available by default) via the "kaslr" kernel command line.
 
-I'm not sure what you mean by "physical memory layout can't
-change". You may not remove RAM between suspend/resume, no.
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ Documentation/kernel-parameters.txt |   11 +++++++----
+ arch/x86/Kconfig                    |    1 -
+ arch/x86/boot/compressed/aslr.c     |    9 ++++++++-
+ kernel/power/hibernate.c            |    6 ++++++
+ 4 files changed, 21 insertions(+), 6 deletions(-)
 
-It is Rafael's design, actually, you can see it in
-arch/x86/power/hibernate_asm_64.S .
-
-32bit version does have that ability, IIRC.
-
-									Pavel
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index f8f0466b8b1d..884904975d0b 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1474,6 +1474,13 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 	js=		[HW,JOY] Analog joystick
+ 			See Documentation/input/joystick.txt.
+ 
++	kaslr/nokaslr	[X86]
++			Enable/disable kernel and module base offset ASLR
++			(Address Space Layout Randomization) if built into
++			the kernel. When CONFIG_HIBERNATION is selected,
++			kASLR is disabled by default. When kASLR is enabled,
++			hibernation will be disabled.
++
+ 	keepinitrd	[HW,ARM]
+ 
+ 	kernelcore=nn[KMG]	[KNL,X86,IA-64,PPC] This parameter
+@@ -2110,10 +2117,6 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 	noapic		[SMP,APIC] Tells the kernel to not make use of any
+ 			IOAPICs that may be present in the system.
+ 
+-	nokaslr		[X86]
+-			Disable kernel and module base offset ASLR (Address
+-			Space Layout Randomization) if built into the kernel.
+-
+ 	noautogroup	Disable scheduler automatic task group creation.
+ 
+ 	nobats		[PPC] Do not use BATs for mapping kernel lowmem
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index b660088c220d..7fdb639f1b63 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1671,7 +1671,6 @@ config RELOCATABLE
+ config RANDOMIZE_BASE
+ 	bool "Randomize the address of the kernel image"
+ 	depends on RELOCATABLE
+-	depends on !HIBERNATION
+ 	default n
+ 	---help---
+ 	   Randomizes the physical and virtual address at which the
+diff --git a/arch/x86/boot/compressed/aslr.c b/arch/x86/boot/compressed/aslr.c
+index 4dbf967da50d..fc6091abedb7 100644
+--- a/arch/x86/boot/compressed/aslr.c
++++ b/arch/x86/boot/compressed/aslr.c
+@@ -289,10 +289,17 @@ unsigned char *choose_kernel_location(unsigned char *input,
+ 	unsigned long choice = (unsigned long)output;
+ 	unsigned long random;
+ 
++#ifdef CONFIG_HIBERNATION
++	if (!cmdline_find_option_bool("kaslr")) {
++		debug_putstr("KASLR disabled by default...\n");
++		goto out;
++	}
++#else
+ 	if (cmdline_find_option_bool("nokaslr")) {
+-		debug_putstr("KASLR disabled...\n");
++		debug_putstr("KASLR disabled by cmdline...\n");
+ 		goto out;
+ 	}
++#endif
+ 
+ 	/* Record the various known unsafe memory ranges. */
+ 	mem_avoid_init((unsigned long)input, input_size,
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 258f492f0347..fcc2611d3f14 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -1153,6 +1153,11 @@ static int __init nohibernate_setup(char *str)
+ 	return 1;
+ }
+ 
++static int __init kaslr_nohibernate_setup(char *str)
++{
++	return nohibernate_setup(str);
++}
++
+ __setup("noresume", noresume_setup);
+ __setup("resume_offset=", resume_offset_setup);
+ __setup("resume=", resume_setup);
+@@ -1160,3 +1165,4 @@ __setup("hibernate=", hibernate_setup);
+ __setup("resumewait", resumewait_setup);
+ __setup("resumedelay=", resumedelay_setup);
+ __setup("nohibernate", nohibernate_setup);
++__setup("kaslr", kaslr_nohibernate_setup);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
+
