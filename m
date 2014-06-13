@@ -1,26 +1,73 @@
-From: Sebastian Capella <sebcape@gmail.com>
-Subject: Re: [PATCH v4 1/6] Documentation: arm: define DT idle states bindings
-Date: Fri, 13 Jun 2014 10:40:18 -0700
-Message-ID: <CAPd3N-86XRWHSBmAbbPMaWMqX56aB4ytbSebDrZ6ewBMw0-xow@mail.gmail.com>
-References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com>
-	<1402503520-8611-2-git-send-email-lorenzo.pieralisi@arm.com>
-	<alpine.LFD.2.11.1406111240010.25775@knanqh.ubzr>
-	<20140613164954.GA16745@e102568-lin.cambridge.arm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/2] make kASLR vs hibernation boot-time selectable
+Date: Fri, 13 Jun 2014 22:26:34 +0200
+Message-ID: <20140613202633.GA24170@amd.pavel.ucw.cz>
+References: <1402602419-27934-1-git-send-email-keescook@chromium.org>
+ <539A0422.9010000@zytor.com>
+ <CAGXu5jLvAr=f2MRP4Ni86-jbM7h3Mx3RQo=7coveE8ZEt12N=Q@mail.gmail.com>
+ <539A0DC2.1010203@zytor.com>
+ <CAGXu5jKanRjK66P9dFYctXfQxT+da_9z8vqy8s+WqgW1cw17-Q@mail.gmail.com>
+ <20140613105135.GA4876@amd.pavel.ucw.cz>
+ <CAGXu5jJTSqtOMBNeOGEXfj_1iWGbE7p_YooeHT9wc4WRDjcGyQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f194.google.com ([209.85.192.194]:47205 "EHLO
-	mail-pd0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753720AbaFMRkT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 13:40:19 -0400
-In-Reply-To: <20140613164954.GA16745@e102568-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAGXu5jJTSqtOMBNeOGEXfj_1iWGbE7p_YooeHT9wc4WRDjcGyQ@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie>
 
-I like these too!  Nice job!
+On Fri 2014-06-13 10:32:56, Kees Cook wrote:
+> On Fri, Jun 13, 2014 at 3:51 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> >
+> >> >>> Any way we can make them work together instead?
+> >> >>
+> >> >> I'm sure there is, but I don't know the solution. :)
+> >> >>
+> >> >> At the very least this gets us one step closer (we can build them together).
+> >> >>
+> >> >
+> >> > But it is really invasive.
+> >>
+> >> Well, I don't agree there. I actually would like to be able to turn
+> >> off hibernation support on distro kernels regardless of kASLR, so I
+> >> think this is really killing two birds with one stone.
+> >>
+> >> > I have to admit to being somewhat fuzzy on what the core problem with
+> >> > hibernation and kASLR is... in both cases there is a set of pages that
+> >> > need to be installed, some of which will overlap the loader kernel.
+> >> > What am I missing?
+> >>
+> >> I don't know how resume works, but I have assumed that the newly
+> >> loaded kernel stays in memory and pulls in the vmalloc, kmalloc,
+> >> modules, and userspace memory maps from disk. Since these things can
+> >> easily contain references to kernel text, if the newly loaded kernel
+> >> has moved with regard to the hibernated image, everything breaks.
+> >> IIUC, this is similar why you can't rebuild your kernel and resume
+> >> from a different version.
+> >
+> > x86-64 can resume from different kernel that did the suspend. kASLR
+> > should not be too different from that. (You just include kernel text
+> > in the hibernation image. It is small enough to do that.)
+> 
+> Oooh, that's very exciting! How does that work (what happens to the
+> kernel that booted first, etc)? I assume physical memory layout can't
+> change between hibernation and resume? Or, where should I be reading
+> code that does this?
 
-Thanks!
+I'm not sure what you mean by "physical memory layout can't
+change". You may not remove RAM between suspend/resume, no.
 
-Sebastian
+It is Rafael's design, actually, you can see it in
+arch/x86/power/hibernate_asm_64.S .
+
+32bit version does have that ability, IIRC.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
