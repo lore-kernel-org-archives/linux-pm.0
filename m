@@ -1,134 +1,147 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 3/6] drivers: cpuidle: implement OF based idle states
- infrastructure
-Date: Fri, 13 Jun 2014 09:18:16 +0530
-Message-ID: <539A7480.20606@linux.vnet.ibm.com>
-References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1402503520-8611-4-git-send-email-lorenzo.pieralisi@arm.com>
- <CAJZ5v0gE2Jq709SXLpfrxXnHxmqcDV1FbrPPX1JYUUdHJFL_Dg@mail.gmail.com>
- <20140612090339.GB29295@e102568-lin.cambridge.arm.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpufreq: intel_pstate: Fix rounding of core_pct
+Date: Thu, 12 Jun 2014 23:49:46 -0700
+Message-ID: <001e01cf86d3$ab314cb0$0193e610$@net>
+References: <1402490012-19969-1-git-send-email-stratosk@semaphore.gr> <00b301cf85ba$40fe4290$c2fac7b0$@net> <5399BACF.6060201@semaphore.gr> <1815178.vjJU51ubGD@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20140612090339.GB29295@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, paul.burton@imgtec.com, Peter De Schrijver <pdeschrijver@nvidia.com>Stephen Boyd <s>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta17.telus.net ([209.171.16.90]:48891 "EHLO cmta17.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752208AbaFMGts convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 02:49:48 -0400
+In-Reply-To: <1815178.vjJU51ubGD@vostro.rjw.lan>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Stratos Karafotis' <stratosk@semaphore.gr>
+Cc: viresh.kumar@linaro.org, dirk.j.brandewie@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Lorenzo,
-
-On 06/12/2014 02:33 PM, Lorenzo Pieralisi wrote:
-> [CC'ing Preeti and Paul to check their opinions]
-> 
-> Hi Rafael,
-> 
-> On Wed, Jun 11, 2014 at 07:25:49PM +0100, Rafael J. Wysocki wrote:
->> On Wed, Jun 11, 2014 at 6:18 PM, Lorenzo Pieralisi
->> <lorenzo.pieralisi@arm.com> wrote:
->>> On most common ARM systems, the low-power states a CPU can be put into are
->>> not discoverable in HW and require device tree bindings to describe
->>> power down suspend operations and idle states parameters.
->>>
->>> In order to enable DT based idle states and configure idle drivers, this
->>> patch implements the bulk infrastructure required to parse the device tree
->>> idle states bindings and initialize the corresponding CPUidle driver states
->>> data.
->>>
->>> Code that initializes idle states checks the CPU idle driver cpumask so
->>> that multiple CPU idle drivers can be initialized through it in the
->>> kernel. The CPU idle driver cpumask defines which idle states should be
->>> considered valid for the driver, ie idle states that are valid on a set
->>> of cpus the idle driver manages.
->>>
->>> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->>> ---
->>>  drivers/cpuidle/Kconfig          |   9 ++
->>>  drivers/cpuidle/Makefile         |   1 +
->>>  drivers/cpuidle/of_idle_states.c | 282 +++++++++++++++++++++++++++++++++++++++
->>>  drivers/cpuidle/of_idle_states.h |   8 ++
->>>  4 files changed, 300 insertions(+)
->>>  create mode 100644 drivers/cpuidle/of_idle_states.c
->>>  create mode 100644 drivers/cpuidle/of_idle_states.h
->>>
->>> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
->>> index 1b96fb9..760ce20 100644
->>> --- a/drivers/cpuidle/Kconfig
->>> +++ b/drivers/cpuidle/Kconfig
->>> @@ -30,6 +30,15 @@ config CPU_IDLE_GOV_MENU
->>>         bool "Menu governor (for tickless system)"
->>>         default y
->>>
->>> +config OF_IDLE_STATES
+On 2014.06.12 13:03 Rafael J. Wysocki wrote:
+> On Thursday, June 12, 2014 05:35:59 PM Stratos Karafotis wrote:
+>> On 12/06/2014 12:15 =CF=80=CE=BC, Doug Smythies wrote:
+>>>=20
+>>>=20
+>>> On 2014.06.11 13:20 Stratos Karafotis wrote:
+>>>> On 11/06/2014 06:02 =CE=BC=CE=BC, Doug Smythies wrote:
+>>>>>
+>>>>> On 2104.06.11 07:08 Stratos Karafotis wrote:
+>>>>>> On 11/06/2014 04:41 =CE=BC=CE=BC, Doug Smythies wrote:
+>>>>>>
+>>>>>> No.
+> >>>
+>>>>>> The intent was only ever to round properly the pseudo floating p=
+oint result of the divide.
+>>>>>> It was much more important (ugh, well 4 times more) when FRACBIT=
+S was still 6, which also got changed to 8 in a recent patch.
+>>>>>>
+>>>>>
+>>>>> Are you sure?
+>>>>>
+>>>>> Yes.
+>>>>>
+>>>>>> This rounding was very recently added.
+>>>>>> As far as I can understand, I don't see the meaning of this roun=
+ding, as is.
+>>>>>> Even if FRAC_BITS was 6, I think it would have almost no improve=
+ment in
+>>>>>> calculations.
+>>>>>
+>>>>> Note: I had not seen this e-mail when I wrote a few minutes ago:
+>>>>>
+>>>>> You may be correct.
+>>>>> If Dirk agrees, I will re-analyse the entire driver for rounding =
+effects soon.
+>>>>> When FRACBITS was 6 there were subtle cases where the driver woul=
+d get stuck, and not make a final pstate change, with the default PID g=
+ains.
+>>>>> Other things have changed, and the analysis needs to be re-done.
+>>>>>
+>>>=20
+>>>> Could you please elaborate a little bit more what we need these 2 =
+lines below?
+>>>>
+>>>>        if ((rem << 1) >=3D int_tofp(sample->mperf))
+>>>>                core_pct +=3D 1;
+>>>>
+>>>> Because nothing is mentioned for them in commit's changelog.
+>>>> Do we need to round core_pct or not?
+>>>> Because if we try to round it, I think this patch should work.
+>>>=20
+>>> As mentioned originally, they are there just to round the pseudo fl=
+oating number, not the integer portion only.
+>>> Let us bring back the very numbers you originally gave and work thr=
+ough it.
+>>>=20
+>>> aperf =3D 5024
+>>> mperf =3D 10619
+>>>=20
+>>> core_pct =3D 47.31142292%
+>>> or 47 and 79.724267 256ths
+>>> or to the closest kept fractional part 47 and 80 256ths
+>>> or 12112 as a pseudo float.
+>>> The maximum error with this rounding will be 1 part in 512 and symm=
+etric instead of the 1 part in 256 always in one direction without.
+>>>=20
+>>> Now if FRACBITS was still 6:
+>>> core_pct =3D 47.31142292%
+>>> or 47 and 19.931 64ths
+>>> or to the closest kept fractional part 47 and 20 64ths
+>>> or 3028 as a pseudo float.
+>>> The maximum error with this rounding will be 1 part in 128 and symm=
+etric instead of the 1 part in 64 (1.6% !!!) always in one direction wi=
+thout.
+>>>=20
+>>> Hope this helps.
+>>>=20
 >>
->> One question here.
+>> Yes, it helps. Thanks a lot!
+>>=20
+>> But please note that the maximum error without this rounding will be=
+ 1.6% _only_
+>> in fractional part. In the real number it will be much smaller:
+
+=46air comment. Thanks.
+
 >>
->> Do you want this to be generally useful or is it just ARM-specific?
-> 
-> The first series was targeting ARM64, then I noticed that it might be
-> used for ARM too (Daniel is working on that). Actually, I discovered
-> that Power and MIPS can reuse at least the code that initializes the
-> states data too, but I have to point out three things:
-> 
-> 1) state enter function method: in my bindings it is common for all
->    idle states, need to check if it applies to Power and MIPS too.
+>> 47.19 instead of 47.20
+>>=20
+>> And using FRAC_BITS 8:
+>>=20
+>> 47.79 instead of 47.80
+>>=20
 
-On PowerPC, we have a state enter function for each idle state. It will
-not be too difficult to consolidate them into one, but that is not on
-the cards right now.
+I really wouldn't write it that way, as I find it misleading. It is rea=
+lly 47 and 19 256ths...
+Anyway, I think we all understand.
 
-> 2) CPUIDLE_FLAG_TIMER_STOP and how to set it. It is non-trivial to
->    add code that detects what idle states lose the tick device context.
->    At the moment I am adding the flag by default to all idle states
->    apart from standbywfi on ARM, but that can be optimised. Unless we
->    resort to power domains (but that's not trivial), we can add a flag
->    to the idle states in DT (ie local-timer-stop or suchlike) to support
->    that. I think that it will be frowned upon but it is worth trying, would
->    like to know what other people think about this.
+>> This is a 0.0002% difference. I can't see how this is can affect the=
+ calculations
+>> even with FRAC_BITS 6.
 
-On PowerPC we have a bit in flag property of the idle state device node,
-which determines if timers will stop. Yes, maybe we can fix it at a
-specific bit but it may be messy.
+O.K. The solution is overkill and div_u64 could have been used instead =
+of div_u64_rem.
+On my list, it is the lowest of priorities.
 
-> 3) idle states bindings should be reviewed, I expect them to be valid
->    on other architectures too, but I need acknowledgments.
+>>=20
+>> Another thing is that this algorithm generally is used to round to t=
+he
+>> nearest integer. I'm not sure if it's valid to apply it for the roun=
+ding of
+>> the fractional part of fixed point number.
 
-The major difference as I see it is the idle state bindings. In your
-patch there is a device node for each idle state. On PowerPC however,
-currently we have a single node with the property values of this node
-determining the idle states' name, desc etc..
+I'm not sure how to reply, a pseudo floating point number is just an in=
+teger.
 
-Besides this, the names of the device tree nodes for idle states could
-be arch specific to meet some hierarchical requirements in the device
-tree. This would make it difficult for this driver to parse the idle
-states based on a generic idle state node name.
-> 
-> I think this series is not far from being ready to be upstreamed, I
-> would be certainly happy if it can be reused for other archs too so
-> just let me know.
+> Depending on the original reason, it may or may not be.
 
-On PowerPC there are a couple of other sanity checks that we ought to do
-before initializing the driver.
+The original reason for that overall code patch was to address the poss=
+ible overflow of the math, which (as far I know and have tested) it doe=
+s.
+I think we have gone down a bit of rat hole here in terms of the detail=
+=2E
 
-So IMO, although we can press out the above mentioned differences in one
-way or the other to make way for a generic idle driver which reads from
-the device tree, I am not in favour of it since it has to concern itself
-with quite a bit of arch-specific stuff. This would anyway make it less
-and less of a generic idle driver. So its best to push this patch to be
-ARM specific.
+=2E.. Doug
 
-Regards
-Preeti U Murthy
-> 
-> Thanks !
-> Lorenzo
-> 
+
