@@ -1,148 +1,125 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
-Date: Sat, 14 Jun 2014 00:43:00 +0200
-Message-ID: <539B7E74.7000605@linaro.org>
-References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org> <1402476643.32147.6.camel@AMDC1943>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH 0/2] make kASLR vs hibernation boot-time selectable
+Date: Fri, 13 Jun 2014 15:59:57 -0700
+Message-ID: <CAGXu5j+BTYup-9cbwSJsKNW4R1e2QY4wVubfpC3s2LVkE4Amow@mail.gmail.com>
+References: <1402602419-27934-1-git-send-email-keescook@chromium.org>
+	<9502843.K96nxmtL8f@vostro.rjw.lan>
+	<CAGXu5jLB8e2ZP6a2Q+_9R6qvHXwUoRr6eRVifdOVe0QmrfaTVw@mail.gmail.com>
+	<1737131.VlQuirUC3S@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:49106 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbaFMWnE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 18:43:04 -0400
-Received: by mail-wi0-f175.google.com with SMTP id r20so1618006wiv.8
-        for <linux-pm@vger.kernel.org>; Fri, 13 Jun 2014 15:43:02 -0700 (PDT)
-In-Reply-To: <1402476643.32147.6.camel@AMDC1943>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:59218 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbaFMW76 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jun 2014 18:59:58 -0400
+Received: by mail-oa0-f42.google.com with SMTP id eb12so3540790oac.15
+        for <linux-pm@vger.kernel.org>; Fri, 13 Jun 2014 15:59:58 -0700 (PDT)
+In-Reply-To: <1737131.VlQuirUC3S@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: kgene.kim@samsung.com, t.figa@samsung.com, ccross@google.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 06/11/2014 10:50 AM, Krzysztof Kozlowski wrote:
-> On pi=C4=85, 2014-04-04 at 11:48 +0200, Daniel Lezcano wrote:
->> The following driver is for exynos4210. I did not yet finished the o=
-ther boards, so
->> I created a specific driver for 4210 which could be merged later.
+On Fri, Jun 13, 2014 at 3:54 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, June 13, 2014 03:07:19 PM Kees Cook wrote:
+>> On Fri, Jun 13, 2014 at 3:14 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Friday, June 13, 2014 10:32:56 AM Kees Cook wrote:
+>> >> On Fri, Jun 13, 2014 at 3:51 AM, Pavel Machek <pavel@ucw.cz> wrote:
+>> >> > Hi!
+>> >> >
+>> >> >
+>> >> >> >>> Any way we can make them work together instead?
+>> >> >> >>
+>> >> >> >> I'm sure there is, but I don't know the solution. :)
+>> >> >> >>
+>> >> >> >> At the very least this gets us one step closer (we can build them together).
+>> >> >> >>
+>> >> >> >
+>> >> >> > But it is really invasive.
+>> >> >>
+>> >> >> Well, I don't agree there. I actually would like to be able to turn
+>> >> >> off hibernation support on distro kernels regardless of kASLR, so I
+>> >> >> think this is really killing two birds with one stone.
+>> >> >>
+>> >> >> > I have to admit to being somewhat fuzzy on what the core problem with
+>> >> >> > hibernation and kASLR is... in both cases there is a set of pages that
+>> >> >> > need to be installed, some of which will overlap the loader kernel.
+>> >> >> > What am I missing?
+>> >> >>
+>> >> >> I don't know how resume works, but I have assumed that the newly
+>> >> >> loaded kernel stays in memory and pulls in the vmalloc, kmalloc,
+>> >> >> modules, and userspace memory maps from disk. Since these things can
+>> >> >> easily contain references to kernel text, if the newly loaded kernel
+>> >> >> has moved with regard to the hibernated image, everything breaks.
+>> >> >> IIUC, this is similar why you can't rebuild your kernel and resume
+>> >> >> from a different version.
+>> >> >
+>> >> > x86-64 can resume from different kernel that did the suspend. kASLR
+>> >> > should not be too different from that. (You just include kernel text
+>> >> > in the hibernation image. It is small enough to do that.)
+>> >>
+>> >> Oooh, that's very exciting! How does that work (what happens to the
+>> >> kernel that booted first, etc)? I assume physical memory layout can't
+>> >> change between hibernation and resume? Or, where should I be reading
+>> >> code that does this?
+>> >
+>> > I guess it would help if you were a bit less sarcastic, but perhaps that's
+>> > just me.
 >>
->> The driver is based on Colin Cross's driver found at:
->>
->> https://android.googlesource.com/kernel/exynos/+/e686b1ec67423c40b4f=
-df811f9a4dfa3b393a010%5E%5E!/
->>
->> This one was based on a 3.4 kernel and an old API.
->>
->> It has been refreshed, simplified and based on the recent code clean=
-up I sent
->> today.
->>
->> The AFTR could be entered when all the cpus (except cpu0) are down. =
-In order to
->> reach this situation, the couple idle states are used.
->>
->> There is a sync barrier at the entry and the exit of the low power f=
-unction. So
->> all cpus will enter and exit the function at the same time.
->>
->> At this point, CPU0 knows the other cpu will power down itself. CPU0=
- waits for
->> the CPU1 to be powered down and then initiate the AFTR power down se=
-quence.
->>
->> No interrupts are handled by CPU1, this is why we switch to the time=
-r broadcast
->> even if the local timer is not impacted by the idle state.
->>
->> When CPU0 wakes up, it powers up CPU1 and waits for it to boot. Then=
- they both
->> exit the idle function.
->>
->> This driver allows the exynos4210 to have the same power consumption=
- at idle
->> time than the one when we have to unplug CPU1 in order to let CPU0 t=
-o reach
->> the AFTR state.
->>
->> This patch is a RFC because, we have to find a way to remove the mac=
-ros
->> definitions and cpu powerdown function without pulling the arch depe=
-ndent
->> headers.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>   arch/arm/mach-exynos/common.c        |   11 +-
->>   drivers/cpuidle/Kconfig.arm          |    8 ++
->>   drivers/cpuidle/Makefile             |    1 +
->>   drivers/cpuidle/cpuidle-exynos4210.c |  226 ++++++++++++++++++++++=
-++++++++++++
->>   4 files changed, 245 insertions(+), 1 deletion(-)
->>   create mode 100644 drivers/cpuidle/cpuidle-exynos4210.c
+>> Oh, er, I think that got misunderstood. I'm very rarely sarcastic in
+>> online communication. I wasn't being sarcastic here at all. I _do_
+>> find it exciting that one can resume with a different kernel! That's
+>> been a limitation that plagued me for years. I had no idea that
+>> restriction got lifted. I really did mean I was excited. Sorry if that
+>> was misunderstood!
 >
-> (...)
+> Sorry about my misunderstanding. :-)
 >
->> diff --git a/drivers/cpuidle/cpuidle-exynos4210.c b/drivers/cpuidle/=
-cpuidle-exynos4210.c
->> new file mode 100644
->> index 0000000..56f6d51
->> --- /dev/null
->> +++ b/drivers/cpuidle/cpuidle-exynos4210.c
->> @@ -0,0 +1,226 @@
->> +/*
->> + * Copyright (c) 2014 Samsung Electronics Co., Ltd.
->> + *		http://www.samsung.com
->> + *
->> + * Copyright (c) 2014 Linaro : Daniel Lezcano <daniel.lezcano@linar=
-o.org>
->> + *		http://www.linaro.org
->> + *
->> + * Based on the work of Colin Cross <ccross@android.com>
->> + *
->> + * This program is free software; you can redistribute it and/or mo=
-dify
->> + * it under the terms of the GNU General Public License version 2 a=
-s
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/cpuidle.h>
->> +#include <linux/cpu_pm.h>
->> +#include <linux/io.h>
->> +#include <linux/platform_device.h>
->> +
->> +#include <asm/proc-fns.h>
->> +#include <asm/suspend.h>
->> +#include <asm/cpuidle.h>
->> +
->> +#include <plat/pm.h>
->> +#include <plat/cpu.h>
->> +#include <plat/map-base.h>
->> +#include <plat/map-s5p.h>
->> +
->> +static atomic_t exynos_idle_barrier;
+>> > Anyway, the core hibernation code actually works with page frames rather
+>> > than with virtual addresses.  Essentially, it creates a bitmap where each
+>> > page frame is represented by a single bit and the bits representing free
+>> > page frames are unset.  It then allocates as many new pages as there are
+>> > set bits in the bitmap and copies the entire contents of the page frames
+>> > represented by those bits to new pages it's just allocated. That covers
+>> > the entire kernel with its data and all process memory and is saved to
+>> > disk storage along with the PFNs of the page frames whose contents have
+>> > been copied.
+>> >
+>> > During resume it simply restores the contents of the saved page frames
+>> > into those same page frames if they are available at that time.  For the
+>> > page frames that aren't free then it allocates memory to store their
+>> > contents temporarily and creates a list of PFNs where that contents should
+>> > be moved eventually.  Then, it quiesces all activity of the system and
+>> > jumps to arch-specific code that copies data from the temporary memory to
+>> > the target page frames (that generally overwrites the boot kernel, so there's
+>> > no way back from it).  Finally, it jumps to a specific address where the
+>> > hibernated kernel trampoline code should be present.
+>> >
+>> > I think what fails with kASLR is that last step, because everything else
+>> > should be entirely agnostic to the way the virtual addresses are laid out.
+>> > I'm not sure how to fix that at the moment, but it should be fixable at
+>> > least on x86_64.
+>>
+>> Very cool. How does the kernel doing the resume identify the
+>> trampoline location in the hibernated kernel? If it can handle a
+>> different kernel in the hibernation image, I assume there's been some
+>> specific identification in the image instead of using what
+>> kernel-doing-the-resume thinks the trampoline is (based on its own
+>> offsets).
 >
-> Hi,
+> There is a simple mechanism to pass the address to jump to in the image
+> header.  Unfortunately, that *is* a virtual address if I remember correctly.
 >
-> Shouldn't the exynos_idle_barrier be initialized here?
+> I'll have a closer look at that shortly (it's been quite some time since
+> I wrote that code).
 
-As it is a static data it will be initialized to zero.
+Thanks; I'm trying to get a test environment instrumented too so I can
+look at this. (At the very least, it sounds like we'll still need my
+patch series for other architectures.)
 
-> I know you sent the patch almost 2 months ago but I stomped on this
-> while testing it on Exynos3250.
+-Kees
 
-No problem. And what results on exynos3250 ?
-
-Thanks !
-
-   -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+Kees Cook
+Chrome OS Security
