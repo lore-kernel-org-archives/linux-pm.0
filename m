@@ -1,103 +1,50 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 0/2] make kASLR vs hibernation boot-time selectable
-Date: Sat, 14 Jun 2014 00:37:49 -0700
-Message-ID: <CAGXu5j+2bGNN0THZcMua7ft9EMbhQJnVYOX4v7W5-0BdjyQrOw@mail.gmail.com>
-References: <1402602419-27934-1-git-send-email-keescook@chromium.org>
-	<1517175.iyVMqh7r2z@vostro.rjw.lan>
-	<CAGXu5jJSqV2MeuofJP4OEiDytQBqKMgC3cj+tguiwTmpRX1wSQ@mail.gmail.com>
-	<13135927.OjVm86GPrt@vostro.rjw.lan>
+From: Allen Yu <alleny@nvidia.com>
+Subject: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
+Date: Sat, 14 Jun 2014 18:03:29 +0800
+Message-ID: <1402740209-16432-1-git-send-email-alleny@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:58288 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbaFNHht (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Jun 2014 03:37:49 -0400
-Received: by mail-ob0-f173.google.com with SMTP id va2so3784188obc.4
-        for <linux-pm@vger.kernel.org>; Sat, 14 Jun 2014 00:37:49 -0700 (PDT)
-In-Reply-To: <13135927.OjVm86GPrt@vostro.rjw.lan>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:19879 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754541AbaFNJ6l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Jun 2014 05:58:41 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Allen Yu <alleny@nvidia.com>
 
-On Fri, Jun 13, 2014 at 5:39 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, June 13, 2014 05:08:21 PM Kees Cook wrote:
->> On Fri, Jun 13, 2014 at 5:14 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Friday, June 13, 2014 03:59:57 PM Kees Cook wrote:
->> >> On Fri, Jun 13, 2014 at 3:54 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >> > On Friday, June 13, 2014 03:07:19 PM Kees Cook wrote:
->> >
->> > [cut]
->> >
->> >> > I'll have a closer look at that shortly (it's been quite some time since
->> >> > I wrote that code).
->> >>
->> >> Thanks; I'm trying to get a test environment instrumented too so I can
->> >> look at this. (At the very least, it sounds like we'll still need my
->> >> patch series for other architectures.)
->> >
->> > How can I obtain a kernel address of the beginning of a given page
->> > (as represented by struct page) on x86_64 today?
->>
->> I don't know off the top of my head. I've used virt_to_phys, but
->> things like PFN_PHYS(page_to_pfn(page)) maybe? I'm not entirely clear
->> which you need, but mm.h seems to have the bulk of what I've seen.
->
-> OK, I'm not sure how much sense this makes, but at least it should
-> illustrate the direction. :-)
->
-> ---
->  arch/x86/power/hibernate_64.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
->
-> Index: linux-pm/arch/x86/power/hibernate_64.c
-> ===================================================================
-> --- linux-pm.orig/arch/x86/power/hibernate_64.c
-> +++ linux-pm/arch/x86/power/hibernate_64.c
-> @@ -115,7 +115,7 @@ struct restore_data_record {
->         unsigned long magic;
->  };
->
-> -#define RESTORE_MAGIC  0x0123456789ABCDEFUL
-> +#define RESTORE_MAGIC  0x0123456789ABCDF0UL
->
->  /**
->   *     arch_hibernation_header_save - populate the architecture specific part
-> @@ -128,7 +128,8 @@ int arch_hibernation_header_save(void *a
->
->         if (max_size < sizeof(struct restore_data_record))
->                 return -EOVERFLOW;
-> -       rdr->jump_address = restore_jump_address;
-> +
-> +       rdr->jump_address = virt_to_phys((void *)restore_jump_address);
->         rdr->cr3 = restore_cr3;
->         rdr->magic = RESTORE_MAGIC;
->         return 0;
-> @@ -143,7 +144,7 @@ int arch_hibernation_header_restore(void
->  {
->         struct restore_data_record *rdr = addr;
->
-> -       restore_jump_address = rdr->jump_address;
-> +       restore_jump_address = (unsigned long)phys_to_virt(rdr->jump_address);
->         restore_cr3 = rdr->cr3;
->         return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
->  }
->
+dev->power.is_suspended is set after core suspends device during system suspend.
+This flag mostly means device is not operational (all I/O been quiesced, no more
+data read or write acceptible, etc.), hence it's dangerous to access hardware if
+device is suspended even though runtime PM status is RPM_ACTIVE.
 
-Hrm, well, at least for me, it doesn't look to be that simple. I tried
-phys_to_virt, page_to_virt, and pfn_to_virt -- but it always fell
-over. Is jump_address page aligned? Does the translation happen after
-the image page tables have been flushed?
+In turn, we should allow device to be accessed in case device is *not* suspended
+and runtime PM status is RPM_ACTIVE, even if runtime PM disabled. This corner case
+can happen to a device in a generic PM domain if the domain is not powered off while
+preparing for a system-wide power transition. In this case, runtime PM status will
+be set to RPM_ACTIVE and then runtime PM is disabled. After that, device driver may
+call pm_runtime_get_sync() and rpm_resume() should return 1, because the device is
+still active as long as not been suspended.
 
-It seems to me like we do actually want to virtual address, so this
-should already work without changes -- we want the image's expected
-entry point, which has already been read out of the saved image? I
-suspect there's some other assumption in the code that isn't jumping
-out at me yet.
+Signed-off-by: Allen Yu <alleny@nvidia.com>
+---
+ drivers/base/power/runtime.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--Kees
-
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 67c7938..39885f1 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -608,7 +608,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
+  repeat:
+ 	if (dev->power.runtime_error)
+ 		retval = -EINVAL;
+-	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
++	else if (dev->power.disable_depth == 1 && !dev->power.is_suspended
+ 	    && dev->power.runtime_status == RPM_ACTIVE)
+ 		retval = 1;
+ 	else if (dev->power.disable_depth > 0)
 -- 
-Kees Cook
-Chrome OS Security
+1.8.1.5
+
