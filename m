@@ -1,70 +1,61 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH 2/7] cpufreq: intel_pstate: Avoid duplicate call of intel_pstate_get_scaled_busy
-Date: Sat, 14 Jun 2014 21:10:05 +0300
-Message-ID: <539C8FFD.9030607@semaphore.gr>
-References: <53962067.4060504@semaphore.gr> <53972CE1.1060209@gmail.com> <539731D1.6040504@semaphore.gr> <000b01cf87e7$b06afb30$1140f190$@net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/6] thermal: sti: Introduce ST Thermal core code
+Date: Sun, 15 Jun 2014 00:31:56 +0200
+Message-ID: <20140614223156.GC1389@xo-6d-61-c0.localdomain>
+References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
+ <1401980819-19962-3-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000b01cf87e7$b06afb30$1140f190$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, 'Dirk Brandewie' <dirk.brandewie@gmail.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Dirk Brandewie' <dirk.j.brandewie@intel.com>
-Cc: linux-pm@vger.kernel.org, 'LKML' <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47052 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbaFNWcU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Jun 2014 18:32:20 -0400
+Content-Disposition: inline
+In-Reply-To: <1401980819-19962-3-git-send-email-lee.jones@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, ajitpal.singh@st.com, edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, maxime.coquelin@st.com, patrice.chotard@st.com
 
-On 14/06/2014 06:45 =CE=BC=CE=BC, Doug Smythies wrote:
-> I am sorry to be late chiming in on this one.
->=20
-> On 2014.06.10 09:27 Stratos Karafotis wrote:
->> On 10/06/2014 07:05 =CE=BC=CE=BC, Dirk Brandewie wrote:
->> On 06/09/2014 02:00 PM, Stratos Karafotis wrote:
->>> Store busy_scaled value to avoid to duplicate call of
->>> intel_pstate_get_scaled_busy on every sampling interval.
->>>
->>>
->>> The second call *only* happens if the tracepoint is being used othe=
-rwise
->>> the whole function call to  trace_pstate_sample() is a noop.
->=20
->> Yes, I'm sorry, I forgot to add this in my changelog. I have written=
- this
->> in cover letter.
->> I made this change mostly to support patch 3/7.
->=20
->>> This makes the code less readable IMHO the reader is left wondering
->>> how cpu->sample.busy_scaled was set in intel_pstate_adjust_busy_pst=
-ate()
->>>
->=20
->> I agree that the the original code is more readable. If we don't car=
-e
->> about the small overhead when tracing is on and forget patch 3/7,
->> of course the original code is by far better.
->=20
-> Actually, when reading the code, I found it odd to call the function
-> twice.
->=20
-> However by far the much more important issue here, in my opinion,
-> is that if one is using the tracepoint stuff, then the second call
-> to intel_pstate_get_scaled_busy can give a different result than
-> the first call. Why? Because "cpu->pstate.current_pstate" may have
-> changed between the two calls.
->=20
-> In the end the user (me in this case) of the tracepoint stuff can
-> end up pulling (what's left of) their hair out and going around in
-> circles attempting to figure out why doing the so simple math by
-> hand doesn't seem to agree with the tracepoint data.
+On Thu 2014-06-05 16:06:55, Lee Jones wrote:
+> This core is shared by both ST's 'memory mapped' and
+> 'system configuration register' based Thermal controllers.
+> 
+> Signed-off-by: Ajit Pal Singh <ajitpal.singh@st.com>
+> Signed-off-by: Lee Jones <lee.jones@linaro.org>
 
-:)
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-> As a side note: I am now pulling the tracepoint data into a
-> spreadsheet and calculating what "scaled" should be myself.
->=20
 
-I think you are right. Tracepoint data might be inconsistent.
-I will re-submit this patch in v2 series, updating the changelog.
 
-Thanks for pointing this out!
+> +++ b/drivers/thermal/st/st_thermal.c
+> @@ -0,0 +1,313 @@
+> +/*
+> + * ST Thermal Sensor Driver core routines
+> + * Author: Ajit Pal Singh <ajitpal.singh@st.com>
+> + *
+> + * Copyright (C) 2003-2014 STMicroelectronics (R&D) Limited
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/clk.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+> +
+> +#include "st_thermal.h"
+...
+> +/* Callback to get temperature from HW*/
 
-Stratos
+Add space before */, but feel free to do it in followup patch.
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
