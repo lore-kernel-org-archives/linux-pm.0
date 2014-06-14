@@ -1,60 +1,61 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/6] thermal: sti: Introduce ST Thermal core code
-Date: Sun, 15 Jun 2014 00:31:56 +0200
-Message-ID: <20140614223156.GC1389@xo-6d-61-c0.localdomain>
-References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
- <1401980819-19962-3-git-send-email-lee.jones@linaro.org>
+Subject: company copyrights. Re: [PATCH] PM / Documentation: Update Srivatsa
+ S. Bhat's email address
+Date: Sun, 15 Jun 2014 00:36:11 +0200
+Message-ID: <20140614223611.GD1389@xo-6d-61-c0.localdomain>
+References: <20140609102426.26530.15670.stgit@srivatsabhat.in.ibm.com>
+ <1465703.Zlfm9gi0xo@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47052 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbaFNWcU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Jun 2014 18:32:20 -0400
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1401980819-19962-3-git-send-email-lee.jones@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1465703.Zlfm9gi0xo@vostro.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, rdunlap@infradead.org, viresh.kumar@linaro.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, ajitpal.singh@st.com, edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, maxime.coquelin@st.com, patrice.chotard@st.com
 
-On Thu 2014-06-05 16:06:55, Lee Jones wrote:
-> This core is shared by both ST's 'memory mapped' and
-> 'system configuration register' based Thermal controllers.
+On Mon 2014-06-09 13:28:36, Rafael J. Wysocki wrote:
+> On Monday, June 09, 2014 03:54:49 PM Srivatsa S. Bhat wrote:
+> > My @linux.vnet.ibm.com email address is going to disappear soon, as I will be
+> > beginning my M.S./PhD studies at MIT in a few months.
 > 
-> Signed-off-by: Ajit Pal Singh <ajitpal.singh@st.com>
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+> Congratulations!
+> 
+> > So update my email address in the documentation.
+> > 
+> > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > Signed-off-by: Srivatsa S. Bhat <srivatsa@mit.edu>
+> > ---
+> > 
+> >  Documentation/power/suspend-and-cpuhotplug.txt |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.txt
+> > index e13dafc..3813703 100644
+> > --- a/Documentation/power/suspend-and-cpuhotplug.txt
+> > +++ b/Documentation/power/suspend-and-cpuhotplug.txt
+> > @@ -1,6 +1,6 @@
+> >  Interaction of Suspend code (S3) with the CPU hotplug infrastructure
+> >  
+> > -     (C) 2011 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > +     (C) 2011-2014 Srivatsa S. Bhat <srivatsa@mit.edu>
+> 
+> I'm actually unsure if updating copyright notices like that is OK.
+> 
+> Yes, you're moving, but the address in the notice documents the status at
+> the time you added it.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Well, invalid addresses in the comments are useless.
 
+If copyright is _yours_, updating the address is ok.
 
+If copyright is your company's, you should probably say that plainly, not
+just by email address.
 
-> +++ b/drivers/thermal/st/st_thermal.c
-> @@ -0,0 +1,313 @@
-> +/*
-> + * ST Thermal Sensor Driver core routines
-> + * Author: Ajit Pal Singh <ajitpal.singh@st.com>
-> + *
-> + * Copyright (C) 2003-2014 STMicroelectronics (R&D) Limited
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_device.h>
-> +
-> +#include "st_thermal.h"
-...
-> +/* Callback to get temperature from HW*/
+	(C) 2011 IBM (Srivatsa...) 
 
-Add space before */, but feel free to do it in followup patch.
-
+is what people do.
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
