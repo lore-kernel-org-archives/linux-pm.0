@@ -1,36 +1,70 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/4] intel_pstate: Correct rounding in busy calculation
-Date: Mon, 16 Jun 2014 00:46:07 +0200
-Message-ID: <3580748.fHY7I4AV1p@vostro.rjw.lan>
-References: <1401381145-17745-1-git-send-email-dirk.j.brandewie@intel.com> <1401381145-17745-3-git-send-email-dirk.j.brandewie@intel.com> <000601cf88a8$5bac8570$13059050$@net>
+Subject: Re: company copyrights. Re: [PATCH] PM / Documentation: Update Srivatsa S. Bhat's email address
+Date: Mon, 16 Jun 2014 00:56:52 +0200
+Message-ID: <2113679.6ZdJDAD0Zn@vostro.rjw.lan>
+References: <20140609102426.26530.15670.stgit@srivatsabhat.in.ibm.com> <1465703.Zlfm9gi0xo@vostro.rjw.lan> <20140614223611.GD1389@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <000601cf88a8$5bac8570$13059050$@net>
-Sender: stable-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: dirk.brandewie@gmail.com, linux-pm@vger.kernel.org, 'Dirk Brandewie' <dirk.j.brandewie@intel.com>, stable@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63931 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751067AbaFOWjV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 15 Jun 2014 18:39:21 -0400
+In-Reply-To: <20140614223611.GD1389@xo-6d-61-c0.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, rdunlap@infradead.org, viresh.kumar@linaro.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday, June 15, 2014 07:44:47 AM Doug Smythies wrote:
-> On 2014.05.29 09:32 Dirk Brandewie wrote:
+On Sunday, June 15, 2014 12:36:11 AM Pavel Machek wrote:
+> On Mon 2014-06-09 13:28:36, Rafael J. Wysocki wrote:
+> > On Monday, June 09, 2014 03:54:49 PM Srivatsa S. Bhat wrote:
+> > > My @linux.vnet.ibm.com email address is going to disappear soon, as I will be
+> > > beginning my M.S./PhD studies at MIT in a few months.
+> > 
+> > Congratulations!
+> > 
+> > > So update my email address in the documentation.
+> > > 
+> > > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > > Signed-off-by: Srivatsa S. Bhat <srivatsa@mit.edu>
+> > > ---
+> > > 
+> > >  Documentation/power/suspend-and-cpuhotplug.txt |    2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.txt
+> > > index e13dafc..3813703 100644
+> > > --- a/Documentation/power/suspend-and-cpuhotplug.txt
+> > > +++ b/Documentation/power/suspend-and-cpuhotplug.txt
+> > > @@ -1,6 +1,6 @@
+> > >  Interaction of Suspend code (S3) with the CPU hotplug infrastructure
+> > >  
+> > > -     (C) 2011 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > > +     (C) 2011-2014 Srivatsa S. Bhat <srivatsa@mit.edu>
+> > 
+> > I'm actually unsure if updating copyright notices like that is OK.
+> > 
+> > Yes, you're moving, but the address in the notice documents the status at
+> > the time you added it.
 > 
-> There is a mistake in this patch.
-> Even though the patch is from Dirk, the mistake is my fault, sorry.
+> Well, invalid addresses in the comments are useless.
 > 
-> Severity: Not very serious, but can increase target pstate by one extra value.
-> For real world work flows the issue should self correct (but I have no proof).
-> It is the equivalent of different PID gains for positive and negative numbers.
-> 
-> Why this e-mail? Why not just submit a patch?
-> Because I do not yet know how, particularly for v3.16
+> If copyright is _yours_, updating the address is ok.
 
-Quite straightforward.  Create a patch with a changelog saying that it
-fixes a bug, put the hash and subject of the commit that introduced
-the bug in that changelog and send it to linux-pm@vger.kernel.org with
-a CC to me (preferably at rjw@rjwysocki.net, but you can also use
-rafael@kernel.org if you like).  I will take care of the patch from
-that point on.
+It may be OK from the legal standpoint, but only as long as you change it to
+your private address (that is, one that you own personally).  Also it is
+changing history retroactively which I don't really find helpful.
+
+> If copyright is your company's, you should probably say that plainly, not
+> just by email address.
+> 
+> 	(C) 2011 IBM (Srivatsa...) 
+> 
+> is what people do.
+
+Yes, that's the preferred way to do that.
 
 Rafael
+
