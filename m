@@ -1,78 +1,59 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: company copyrights. Re: [PATCH] PM / Documentation: Update
- Srivatsa S. Bhat's email address
-Date: Mon, 16 Jun 2014 08:58:24 +0200
-Message-ID: <20140616065824.GA11379@atrey.karlin.mff.cuni.cz>
-References: <20140609102426.26530.15670.stgit@srivatsabhat.in.ibm.com>
- <1465703.Zlfm9gi0xo@vostro.rjw.lan>
- <20140614223611.GD1389@xo-6d-61-c0.localdomain>
- <2113679.6ZdJDAD0Zn@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2113679.6ZdJDAD0Zn@vostro.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, rdunlap@infradead.org, viresh.kumar@linaro.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: [Patch v7 1/6] driver: cpuidle-big-little: add of_device_id structure
+Date: Mon, 16 Jun 2014 15:56:18 +0530
+Message-ID: <1402914383-20471-2-git-send-email-k.chander@samsung.com>
+References: <1402914383-20471-1-git-send-email-k.chander@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1402914383-20471-1-git-send-email-k.chander@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-> On Sunday, June 15, 2014 12:36:11 AM Pavel Machek wrote:
-> > On Mon 2014-06-09 13:28:36, Rafael J. Wysocki wrote:
-> > > On Monday, June 09, 2014 03:54:49 PM Srivatsa S. Bhat wrote:
-> > > > My @linux.vnet.ibm.com email address is going to disappear soon, as I will be
-> > > > beginning my M.S./PhD studies at MIT in a few months.
-> > > 
-> > > Congratulations!
-> > > 
-> > > > So update my email address in the documentation.
-> > > > 
-> > > > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> > > > Signed-off-by: Srivatsa S. Bhat <srivatsa@mit.edu>
-> > > > ---
-> > > > 
-> > > >  Documentation/power/suspend-and-cpuhotplug.txt |    2 +-
-> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > 
-> > > > diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.txt
-> > > > index e13dafc..3813703 100644
-> > > > --- a/Documentation/power/suspend-and-cpuhotplug.txt
-> > > > +++ b/Documentation/power/suspend-and-cpuhotplug.txt
-> > > > @@ -1,6 +1,6 @@
-> > > >  Interaction of Suspend code (S3) with the CPU hotplug infrastructure
-> > > >  
-> > > > -     (C) 2011 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> > > > +     (C) 2011-2014 Srivatsa S. Bhat <srivatsa@mit.edu>
-> > > 
-> > > I'm actually unsure if updating copyright notices like that is OK.
-> > > 
-> > > Yes, you're moving, but the address in the notice documents the status at
-> > > the time you added it.
-> > 
-> > Well, invalid addresses in the comments are useless.
-> > 
-> > If copyright is _yours_, updating the address is ok.
-> 
-> It may be OK from the legal standpoint, but only as long as you change it to
-> your private address (that is, one that you own personally).  Also it is
-> changing history retroactively which I don't really find helpful.
+From: Chander Kashyap <chander.kashyap@linaro.org>
 
-People do fix invalid email addresses. That's what normally done on
-lkml. If people want to credit the companies at the same time, its
-easy to add note "for IBM", "in cooperation with IBM" or something...
+This driver will be used by many big.Little Soc's. As of now it does
+string matching of hardcoded compatible string to init the driver. This
+comparison list will keep on growing with addition of new SoC's.
+Hence add of_device_id structure to collect the compatible strings of
+SoC's using this driver.
 
-> > If copyright is your company's, you should probably say that plainly, not
-> > just by email address.
-> > 
-> > 	(C) 2011 IBM (Srivatsa...) 
-> > 
-> > is what people do.
-> 
-> Yes, that's the preferred way to do that.
+Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
+Signed-off-by: Chander Kashyap <k.chander@samsung.com>
+Reviewed-by: Tomasz Figa <t.figa@samsung.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/cpuidle-big_little.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Agreed.
-									Pavel
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index b45fc62..4cd02bd 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -163,14 +163,23 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
+ 	return 0;
+ }
+ 
++static const struct of_device_id compatible_machine_match[] = {
++	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
++	{},
++};
++
+ static int __init bl_idle_init(void)
+ {
+ 	int ret;
++	struct device_node *root = of_find_node_by_path("/");
++
++	if (!root)
++		return -ENODEV;
+ 
+ 	/*
+ 	 * Initialize the driver just for a compliant set of machines
+ 	 */
+-	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7"))
++	if (!of_match_node(compatible_machine_match, root))
+ 		return -ENODEV;
+ 	/*
+ 	 * For now the differentiation between little and big cores
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
