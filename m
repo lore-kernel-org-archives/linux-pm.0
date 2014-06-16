@@ -1,45 +1,42 @@
 From: Chander Kashyap <k.chander@samsung.com>
-Subject: [Patch v7 2/6] arm: exynos: add generic function to calculate cpu number
-Date: Mon, 16 Jun 2014 15:56:19 +0530
-Message-ID: <1402914383-20471-3-git-send-email-k.chander@samsung.com>
-References: <1402914383-20471-1-git-send-email-k.chander@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1402914383-20471-1-git-send-email-k.chander@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, Chander Kashyap <chander.kashyap@linaro.org>, Chander Kashyap <k.chander@samsung.com>
+Subject: [Patch v7 0/6] add cpuidle support for Exynos5420
+Date: Mon, 16 Jun 2014 15:56:17 +0530
+Message-ID: <1402914383-20471-1-git-send-email-k.chander@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:59055 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755332AbaFPK0j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jun 2014 06:26:39 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, kgene.kim@samsung.com, tomasz.figa@gmail.com, Chander Kashyap <k.chander@samsung.com>
 
-From: Chander Kashyap <chander.kashyap@linaro.org>
+Exynos5420 is a big-little Soc from Samsung. It has 4 A15 and 4 A7 cores.
 
-The address of cpu power registers in pmu is based on cpu number
-offsets. This function calculate the same. This is essentially
-required in case of multi-cluster SoC's e.g Exynos5420.
+This patchset adds cpuidle support for Exynos5420 SoC based on
+generic big.little cpuidle driver.
 
-Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
-Signed-off-by: Chander Kashyap <k.chander@samsung.com>
-Reviewed-by: Tomasz Figa <t.figa@samsung.com>
----
- arch/arm/mach-exynos/regs-pmu.h |    9 +++++++++
- 1 file changed, 9 insertions(+)
+Tested on SMDK5420.
+Rebased on 3.16-rc1
 
-diff --git a/arch/arm/mach-exynos/regs-pmu.h b/arch/arm/mach-exynos/regs-pmu.h
-index 1d13b08..aff23bd 100644
---- a/arch/arm/mach-exynos/regs-pmu.h
-+++ b/arch/arm/mach-exynos/regs-pmu.h
-@@ -323,4 +323,13 @@
- 
- #define EXYNOS5420_SWRESET_KFC_SEL				0x3
- 
-+#include <asm/cputype.h>
-+#define MAX_CPUS_IN_CLUSTER	4
-+
-+static inline unsigned int exynos_pmu_cpunr(unsigned int mpidr)
-+{
-+	return ((MPIDR_AFFINITY_LEVEL(mpidr, 1) * MAX_CPUS_IN_CLUSTER)
-+		 + MPIDR_AFFINITY_LEVEL(mpidr, 0));
-+}
-+
- #endif /* __ASM_ARCH_REGS_PMU_H */
+Changelog is in respective patches.
+Chander Kashyap (5):
+  driver: cpuidle-big-little: add of_device_id structure
+  arm: exynos: add generic function to calculate cpu number
+  cpuidle: config: Add ARCH_EXYNOS entry to select cpuidle-big-little
+    driver
+  driver: cpuidle: cpuidle-big-little: init driver for Exynos5420
+  exynos: cpuidle: do not allow cpuidle registration for Exynos5420
+  mcpm: exynos: populate suspend and powered_up callbacks
+
+ arch/arm/mach-exynos/exynos.c        |    4 +++-
+ arch/arm/mach-exynos/mcpm-exynos.c   |   36 ++++++++++++++++++++++++++++++++++
+ arch/arm/mach-exynos/regs-pmu.h      |    9 +++++++++
+ drivers/cpuidle/Kconfig.arm          |    2 +-
+ drivers/cpuidle/cpuidle-big_little.c |   12 +++++++++++-
+ 5 files changed, 60 insertions(+), 3 deletions(-)
+
 -- 
 1.7.9.5
+
