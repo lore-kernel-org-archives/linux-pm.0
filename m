@@ -1,66 +1,78 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH RFC v2 4/7] ARM: dts: Add PPMU device tree support for Exynos5420
-Date: Mon, 16 Jun 2014 12:31:23 +0530
-Message-ID: <CAM4voamge5W=YRb2WDSQjgTae-oeAiaUqx9ykLsQ0w1E-4LqsQ@mail.gmail.com>
-References: <1400779322-4410-1-git-send-email-a.kesavan@samsung.com>
-	<1400779322-4410-5-git-send-email-a.kesavan@samsung.com>
-	<537E38F5.4020200@cogentembedded.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: company copyrights. Re: [PATCH] PM / Documentation: Update
+ Srivatsa S. Bhat's email address
+Date: Mon, 16 Jun 2014 08:58:24 +0200
+Message-ID: <20140616065824.GA11379@atrey.karlin.mff.cuni.cz>
+References: <20140609102426.26530.15670.stgit@srivatsabhat.in.ibm.com>
+ <1465703.Zlfm9gi0xo@vostro.rjw.lan>
+ <20140614223611.GD1389@xo-6d-61-c0.localdomain>
+ <2113679.6ZdJDAD0Zn@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f177.google.com ([209.85.216.177]:49419 "EHLO
-	mail-qc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152AbaFPHBY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jun 2014 03:01:24 -0400
-In-Reply-To: <537E38F5.4020200@cogentembedded.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2113679.6ZdJDAD0Zn@vostro.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, rdunlap@infradead.org, viresh.kumar@linaro.org, "Srivatsa S. Bhat" <srivatsa@mit.edu>, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Kukjin Kim <kgene.kim@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "myungjoo.ham" <myungjoo.ham@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
 
-Hi Sergei,
+Hi!
+> On Sunday, June 15, 2014 12:36:11 AM Pavel Machek wrote:
+> > On Mon 2014-06-09 13:28:36, Rafael J. Wysocki wrote:
+> > > On Monday, June 09, 2014 03:54:49 PM Srivatsa S. Bhat wrote:
+> > > > My @linux.vnet.ibm.com email address is going to disappear soon, as I will be
+> > > > beginning my M.S./PhD studies at MIT in a few months.
+> > > 
+> > > Congratulations!
+> > > 
+> > > > So update my email address in the documentation.
+> > > > 
+> > > > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > > > Signed-off-by: Srivatsa S. Bhat <srivatsa@mit.edu>
+> > > > ---
+> > > > 
+> > > >  Documentation/power/suspend-and-cpuhotplug.txt |    2 +-
+> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > 
+> > > > diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.txt
+> > > > index e13dafc..3813703 100644
+> > > > --- a/Documentation/power/suspend-and-cpuhotplug.txt
+> > > > +++ b/Documentation/power/suspend-and-cpuhotplug.txt
+> > > > @@ -1,6 +1,6 @@
+> > > >  Interaction of Suspend code (S3) with the CPU hotplug infrastructure
+> > > >  
+> > > > -     (C) 2011 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > > > +     (C) 2011-2014 Srivatsa S. Bhat <srivatsa@mit.edu>
+> > > 
+> > > I'm actually unsure if updating copyright notices like that is OK.
+> > > 
+> > > Yes, you're moving, but the address in the notice documents the status at
+> > > the time you added it.
+> > 
+> > Well, invalid addresses in the comments are useless.
+> > 
+> > If copyright is _yours_, updating the address is ok.
+> 
+> It may be OK from the legal standpoint, but only as long as you change it to
+> your private address (that is, one that you own personally).  Also it is
+> changing history retroactively which I don't really find helpful.
 
-On Thu, May 22, 2014 at 11:20 PM, Sergei Shtylyov
-<sergei.shtylyov@cogentembedded.com> wrote:
-> On 05/22/2014 09:21 PM, Abhilash Kesavan wrote:
->
->> PPMU is required by the exynos5420 devfreq driver. Add a device
->> tree node for it.
->
->
->> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
->> ---
->>   arch/arm/boot/dts/exynos5420.dtsi |    7 +++++++
->>   1 file changed, 7 insertions(+)
->
->
->> diff --git a/arch/arm/boot/dts/exynos5420.dtsi
->> b/arch/arm/boot/dts/exynos5420.dtsi
->> index 8e7e35c..6ab7b03 100644
->> --- a/arch/arm/boot/dts/exynos5420.dtsi
->> +++ b/arch/arm/boot/dts/exynos5420.dtsi
->> @@ -833,4 +833,11 @@
->>                 samsung,pmu-syscon = <&pmu_system_controller>;
->>                 #phy-cells = <1>;
->>         };
->> +
->> +       ppmu {
->
->
->    Shouldn't it have the unit-address part, like "ppmu@10d00000"?
-Will fix.
+People do fix invalid email addresses. That's what normally done on
+lkml. If people want to credit the companies at the same time, its
+easy to add note "for IBM", "in cooperation with IBM" or something...
 
-Regards,
-Abhilash
->
->
->> +               compatible = "samsung,exynos5420-int-busfreq";
->> +               reg = <0x10D00000 0x2000        /* PPMU_DMC_0_0 */
->> +                      0x10D10000 0x2000        /* PPMU_DMC_0_1 */
->> +                      0x10D60000 0x2000>;      /* PPMU_DMC_1_0 */
->> +       };
->>   };
->
->
-> WBR, Sergei
->
+> > If copyright is your company's, you should probably say that plainly, not
+> > just by email address.
+> > 
+> > 	(C) 2011 IBM (Srivatsa...) 
+> > 
+> > is what people do.
+> 
+> Yes, that's the preferred way to do that.
+
+Agreed.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
