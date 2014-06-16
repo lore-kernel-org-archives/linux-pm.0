@@ -1,36 +1,65 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [RFC PATCH 3/4] drm/tegra: Request memory bandwidth for the
- display controller
-Date: Mon, 16 Jun 2014 14:06:43 -0600
-Message-ID: <539F4E53.6080205@wwwdotorg.org>
-References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
- <1402925713-25426-4-git-send-email-tomeu.vizoso@collabora.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
+Date: Mon, 16 Jun 2014 23:29:17 +0200
+Message-ID: <1901328.MvkshKEuEq@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1406161329350.1292-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1402925713-25426-4-git-send-email-tomeu.vizoso@collabora.com>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@linaro.org>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52910 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752582AbaFPVLp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jun 2014 17:11:45 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1406161329350.1292-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
-> Request it based solely on the current mode's refresh rate. More
-> accurate requirements can be requested in future patches.
+On Monday, June 16, 2014 01:40:05 PM Alan Stern wrote:
+> On Sat, 14 Jun 2014, Allen Yu wrote:
+> 
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -608,7 +608,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
+> >   repeat:
+> >  	if (dev->power.runtime_error)
+> >  		retval = -EINVAL;
+> > -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+> > +	else if (dev->power.disable_depth == 1 && !dev->power.is_suspended
+> >  	    && dev->power.runtime_status == RPM_ACTIVE)
+> >  		retval = 1;
+> 
+> For reasons having nothing to do with Allen's suggested change, I
+> wonder if we shouldn't replace this line with something like:
+> 
+> -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+> +	else if (dev->power.disable > 0 && !dev->power.is_suspended
+> 	    && dev->power.runtime_status == RPM_ACTIVE)
+> 		retval = 1;
+> 
+> It seems that I've been bitten by this several times in the past.  
+> When a device is disabled for runtime PM, and more or less permanently
+> stuck in the RPM_ACTIVE state, calls to pm_runtime_resume() or
+> pm_runtime_get_sync() shouldn't fail.
+> 
+> For example, suppose some devices of a certain type support runtime 
+> power management but others don't.  We naturally want to call 
+> pm_runtime_disable() for the ones that don't.  But we also want the 
+> same driver to work for all the devices, which means that 
+> pm_runtime_get_sync() should return success -- otherwise the driver 
+> will think that something has gone wrong.
+> 
+> Rafael, what do you think?
 
-> diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+That condition is there specifically to take care of the system suspend
+code path.  It means that if runtime PM is disabled, but it only has been
+disabled by the system suspend code path, we should treat the device as
+"active" (ie. return 1).  That won't work after the proposed change.
 
-> +	bandwidth = mode->clock * window.bits_per_pixel / 8;
-> +	err = tegra124_emc_reserve_bandwidth(TEGRA_EMC_CONSUMER_DISP1, bandwidth);
+I guess drivers that want to work with devices where runtime PM may be
+disabled can just check the return value of rpm_resume() for -EACCES?
 
-DISP1 shouldn't be hard-coded here; the code should use DISP1 or DISP2
-based on head or DC identity. We certainly have some boards capable of
-dual-head operation.
+Rafael
+
