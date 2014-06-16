@@ -1,7 +1,7 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [RFC PATCH 3/4] drm/tegra: Request memory bandwidth for the display controller
-Date: Mon, 16 Jun 2014 15:35:12 +0200
-Message-ID: <1402925713-25426-4-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [RFC PATCH 2/4] ARM: tegra: Add Tegra124 EMC support
+Date: Mon, 16 Jun 2014 15:35:11 +0200
+Message-ID: <1402925713-25426-3-git-send-email-tomeu.vizoso@collabora.com>
 References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
@@ -10,54 +10,32 @@ To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail
 Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-Request it based solely on the current mode's refresh rate. More
-accurate requirements can be requested in future patches.
+Add a device node for the EMC found on Tegra124.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
- drivers/gpu/drm/tegra/dc.c | 9 +++++++++
+ arch/arm/boot/dts/tegra124.dtsi | 9 +++++++++
  1 file changed, 9 insertions(+)
 
-diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
-index ef40381..6739d69 100644
---- a/drivers/gpu/drm/tegra/dc.c
-+++ b/drivers/gpu/drm/tegra/dc.c
-@@ -10,6 +10,7 @@
- #include <linux/clk.h>
- #include <linux/debugfs.h>
- #include <linux/reset.h>
-+#include <linux/platform_data/tegra_emc.h>
+diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+index 6e6bc4e..5aa42ff 100644
+--- a/arch/arm/boot/dts/tegra124.dtsi
++++ b/arch/arm/boot/dts/tegra124.dtsi
+@@ -449,6 +449,15 @@
+ 		clock-names = "pclk", "clk32k_in";
+ 	};
  
- #include "dc.h"
- #include "drm.h"
-@@ -683,6 +684,8 @@ static void tegra_crtc_disable(struct drm_crtc *crtc)
- 	}
- 
- 	drm_vblank_off(drm, dc->pipe);
++	memory-controller@7001b000 {
++		compatible = "nvidia,tegra124-emc";
++		reg = <0x00 0x7001b000 0x00 0x1000>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		clocks = <&tegra_car 57>;
++		clock-names = "emc";
++	};
 +
-+	tegra124_emc_reserve_bandwidth(TEGRA_EMC_CONSUMER_DISP1, 0);
- }
- 
- static bool tegra_crtc_mode_fixup(struct drm_crtc *crtc,
-@@ -769,6 +772,7 @@ static int tegra_crtc_mode_set(struct drm_crtc *crtc,
- 	struct tegra_dc *dc = to_tegra_dc(crtc);
- 	struct tegra_dc_window window;
- 	u32 value;
-+	unsigned long bandwidth;
- 	int err;
- 
- 	drm_vblank_pre_modeset(crtc->dev, dc->pipe);
-@@ -809,6 +813,11 @@ static int tegra_crtc_mode_set(struct drm_crtc *crtc,
- 	if (err < 0)
- 		dev_err(dc->dev, "failed to enable root plane\n");
- 
-+	bandwidth = mode->clock * window.bits_per_pixel / 8;
-+	err = tegra124_emc_reserve_bandwidth(TEGRA_EMC_CONSUMER_DISP1, bandwidth);
-+	if (err)
-+		dev_err(dc->dev, "failed to reserve EMC bandwidth: %d\n", err);
-+
- 	return 0;
- }
- 
+ 	sdhci@0,700b0000 {
+ 		compatible = "nvidia,tegra124-sdhci";
+ 		reg = <0x0 0x700b0000 0x0 0x200>;
 -- 
 1.9.3
