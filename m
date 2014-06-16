@@ -1,7 +1,7 @@
 From: Chander Kashyap <k.chander@samsung.com>
-Subject: [Patch v7 1/6] driver: cpuidle-big-little: add of_device_id structure
-Date: Mon, 16 Jun 2014 15:56:18 +0530
-Message-ID: <1402914383-20471-2-git-send-email-k.chander@samsung.com>
+Subject: [Patch v7 5/6] exynos: cpuidle: do not allow cpuidle registration for Exynos5420
+Date: Mon, 16 Jun 2014 15:56:22 +0530
+Message-ID: <1402914383-20471-6-git-send-email-k.chander@samsung.com>
 References: <1402914383-20471-1-git-send-email-k.chander@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1402914383-20471-1-git-send-email-k.chander@samsung.com>
@@ -12,48 +12,34 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Chander Kashyap <chander.kashyap@linaro.org>
 
-This driver will be used by many big.Little Soc's. As of now it does
-string matching of hardcoded compatible string to init the driver. This
-comparison list will keep on growing with addition of new SoC's.
-Hence add of_device_id structure to collect the compatible strings of
-SoC's using this driver.
+Exynos5420 is big.Little Soc. It uses cpuidle-big-litle generic cpuidle driver.
+Hence do not allow exynos cpuidle driver registration for Exynos5420.
 
 Signed-off-by: Chander Kashyap <chander.kashyap@linaro.org>
 Signed-off-by: Chander Kashyap <k.chander@samsung.com>
 Reviewed-by: Tomasz Figa <t.figa@samsung.com>
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpuidle/cpuidle-big_little.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+Changes in v6:
+	1. Move cpuidle registration check to exynos.c from cpuidle.c and
+	   use "samsung,exynos5420" compatible string to avvoid registration
+ arch/arm/mach-exynos/exynos.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index b45fc62..4cd02bd 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -163,14 +163,23 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
- 	return 0;
- }
+diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+index 90aab4d..f4c08d6 100644
+--- a/arch/arm/mach-exynos/exynos.c
++++ b/arch/arm/mach-exynos/exynos.c
+@@ -271,7 +271,9 @@ static void __init exynos_dt_machine_init(void)
+ 		}
+ 	}
  
-+static const struct of_device_id compatible_machine_match[] = {
-+	{ .compatible = "arm,vexpress,v2p-ca15_a7" },
-+	{},
-+};
+-	exynos_cpuidle_init();
++	if (!of_machine_is_compatible("samsung,exynos5420"))
++		exynos_cpuidle_init();
 +
- static int __init bl_idle_init(void)
- {
- 	int ret;
-+	struct device_node *root = of_find_node_by_path("/");
-+
-+	if (!root)
-+		return -ENODEV;
+ 	exynos_cpufreq_init();
  
- 	/*
- 	 * Initialize the driver just for a compliant set of machines
- 	 */
--	if (!of_machine_is_compatible("arm,vexpress,v2p-ca15_a7"))
-+	if (!of_match_node(compatible_machine_match, root))
- 		return -ENODEV;
- 	/*
- 	 * For now the differentiation between little and big cores
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
 -- 
 1.7.9.5
