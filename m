@@ -1,118 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] make kASLR vs hibernation boot-time selectable
-Date: Mon, 16 Jun 2014 01:16:05 +0200
-Message-ID: <2415013.PxG9yLJ1ji@vostro.rjw.lan>
-References: <1402602419-27934-1-git-send-email-keescook@chromium.org> <13135927.OjVm86GPrt@vostro.rjw.lan> <CAGXu5j+2bGNN0THZcMua7ft9EMbhQJnVYOX4v7W5-0BdjyQrOw@mail.gmail.com>
+From: Allen Yu <alleny@nvidia.com>
+Subject: RE: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled
+ and device suspended.
+Date: Mon, 16 Jun 2014 11:03:02 +0800
+Message-ID: <9E7892CE01168A46922BCCE04DB02F9828E62353@HKMAIL01.nvidia.com>
+References: <1402740209-16432-1-git-send-email-alleny@nvidia.com>
+ <Pine.LNX.4.44L0.1406141020070.3986-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <CAGXu5j+2bGNN0THZcMua7ft9EMbhQJnVYOX4v7W5-0BdjyQrOw@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:16149 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbaFPDDT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 15 Jun 2014 23:03:19 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1406141020070.3986-100000@netrider.rowland.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Saturday, June 14, 2014 12:37:49 AM Kees Cook wrote:
-> On Fri, Jun 13, 2014 at 5:39 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Friday, June 13, 2014 05:08:21 PM Kees Cook wrote:
-> >> On Fri, Jun 13, 2014 at 5:14 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Friday, June 13, 2014 03:59:57 PM Kees Cook wrote:
-> >> >> On Fri, Jun 13, 2014 at 3:54 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> >> > On Friday, June 13, 2014 03:07:19 PM Kees Cook wrote:
-> >> >
-> >> > [cut]
-> >> >
-> >> >> > I'll have a closer look at that shortly (it's been quite some time since
-> >> >> > I wrote that code).
-> >> >>
-> >> >> Thanks; I'm trying to get a test environment instrumented too so I can
-> >> >> look at this. (At the very least, it sounds like we'll still need my
-> >> >> patch series for other architectures.)
-> >> >
-> >> > How can I obtain a kernel address of the beginning of a given page
-> >> > (as represented by struct page) on x86_64 today?
-> >>
-> >> I don't know off the top of my head. I've used virt_to_phys, but
-> >> things like PFN_PHYS(page_to_pfn(page)) maybe? I'm not entirely clear
-> >> which you need, but mm.h seems to have the bulk of what I've seen.
+On Sat, 14 Jun 2014, Alan Stern wrote:
+
+> > dev->power.is_suspended is set after core suspends device during system
+> suspend.
+> > This flag mostly means device is not operational (all I/O been
+> > quiesced, no more data read or write acceptible, etc.), hence it's
+> > dangerous to access hardware if device is suspended even though runtime
+> PM status is RPM_ACTIVE.
 > >
-> > OK, I'm not sure how much sense this makes, but at least it should
-> > illustrate the direction. :-)
-> >
-> > ---
-> >  arch/x86/power/hibernate_64.c |    7 ++++---
-> >  1 file changed, 4 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-pm/arch/x86/power/hibernate_64.c
-> > ===================================================================
-> > --- linux-pm.orig/arch/x86/power/hibernate_64.c
-> > +++ linux-pm/arch/x86/power/hibernate_64.c
-> > @@ -115,7 +115,7 @@ struct restore_data_record {
-> >         unsigned long magic;
-> >  };
-> >
-> > -#define RESTORE_MAGIC  0x0123456789ABCDEFUL
-> > +#define RESTORE_MAGIC  0x0123456789ABCDF0UL
-> >
-> >  /**
-> >   *     arch_hibernation_header_save - populate the architecture specific part
-> > @@ -128,7 +128,8 @@ int arch_hibernation_header_save(void *a
-> >
-> >         if (max_size < sizeof(struct restore_data_record))
-> >                 return -EOVERFLOW;
-> > -       rdr->jump_address = restore_jump_address;
-> > +
-> > +       rdr->jump_address = virt_to_phys((void *)restore_jump_address);
-> >         rdr->cr3 = restore_cr3;
-> >         rdr->magic = RESTORE_MAGIC;
-> >         return 0;
-> > @@ -143,7 +144,7 @@ int arch_hibernation_header_restore(void
-> >  {
-> >         struct restore_data_record *rdr = addr;
-> >
-> > -       restore_jump_address = rdr->jump_address;
-> > +       restore_jump_address = (unsigned long)phys_to_virt(rdr->jump_address);
-> >         restore_cr3 = rdr->cr3;
-> >         return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
-> >  }
-> >
+> > In turn, we should allow device to be accessed in case device is *not*
+> > suspended and runtime PM status is RPM_ACTIVE, even if runtime PM
+> > disabled. This corner case can happen to a device in a generic PM
+> > domain if the domain is not powered off while preparing for a system-wide
+> power transition.
 > 
-> Hrm, well, at least for me, it doesn't look to be that simple. I tried
-> phys_to_virt, page_to_virt, and pfn_to_virt -- but it always fell
-> over.
+> I don't understand.  Even if the PM domain isn't powered off, the device's
+> is_suspended flag will still be set by __device_suspend().
 
-That's because of a missing piece I forgot about (below).
+Yes, is_suspended flag will be set by __device_suspend(). But runtime PM can be disabled in pm_genpd_prepare():
 
-> Is jump_address page aligned?
+914 static int pm_genpd_prepare(struct device *dev){
+...
+956         /*
+957          * The PM domain must be in the GPD_STATE_ACTIVE state at this point,
+958          * so pm_genpd_poweron() will return immediately, but if the device
+959          * is suspended (e.g. it's been stopped by genpd_stop_dev()), we need
+960          * to make it operational.
+961          */
+962         pm_runtime_resume(dev);
+963         __pm_runtime_disable(dev, false);
+...
+978 }
 
-It should be.
+And there is a gap between pm_genpd_prepare() and __device_suspend(), during which is_suspended flag is *not* yet set but runtime PM is disabled and device status is RPM_ACTIVE. 
 
-> Does the translation happen after the image page tables have been flushed?
+> 
+> >  In this case, runtime PM status will
+> > be set to RPM_ACTIVE and then runtime PM is disabled. After that,
+> > device driver may call pm_runtime_get_sync() and rpm_resume() should
+> > return 1, because the device is still active as long as not been suspended.
+> 
+> Isn't that what the existing code does already?  Your patch seems to change
+> it so that it _doesn't_ behave the way you want.
+> 
 
-I believe so, but it happens in the boot kernel still.
+The existing code return 1 for case is_suspended flag is set.  That means __device_suspend() has been called and device is not in operational state. Whereas the case I mentioned above is before device is suspended.
+It's dangerous to access device if it's in suspended state, so I propose only allowing access to a device if it's not suspended (i.e. value of "is_suspneded" flag is false).
 
-> It seems to me like we do actually want to virtual address, so this
-> should already work without changes -- we want the image's expected
-> entry point, which has already been read out of the saved image? I
-> suspect there's some other assumption in the code that isn't jumping
-> out at me yet.
-
-We're jumping from the boot kernel into the image kernel.  The virtual address
-comes from the image kernel, but the boot kernel has to use it.  The only way
-we can ensure that we'll jump to the right place is to pass the physical address
-in the header (otherwise we de facto assume that the virtual address of the
-target page frame will be the same in both the boot and the image kernels).
-
-The missing piece is that the code in swsusp_arch_resume() sets up temporary
-page tables to ensure that they won't be overwritten while copying the last
-remaining image kernel pages to the right page frames (those page tables
-have to be stored in page frames that are free from the kernel image perspective).
-
-But if the kernel address space is randomized, set_up_temporary_mappings()
-really should duplicate the existing layout instead of creating a new one from
-scratch.  Otherwise, virtual addresses before set_up_temporary_mappings() may
-be different from the ones after it.
-
-Rafael
+> > Signed-off-by: Allen Yu <alleny@nvidia.com>
+> > ---
+> >  drivers/base/power/runtime.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/base/power/runtime.c
+> > b/drivers/base/power/runtime.c index 67c7938..39885f1 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -608,7 +608,7 @@ static int rpm_resume(struct device *dev, int
+> rpmflags)
+> >   repeat:
+> >  	if (dev->power.runtime_error)
+> >  		retval = -EINVAL;
+> > -	else if (dev->power.disable_depth == 1 && dev-
+> >power.is_suspended
+> > +	else if (dev->power.disable_depth == 1 && !dev-
+> >power.is_suspended
+> >  	    && dev->power.runtime_status == RPM_ACTIVE)
+> >  		retval = 1;
+> 
+> Alan Stern
 
