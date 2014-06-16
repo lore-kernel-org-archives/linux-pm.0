@@ -1,80 +1,53 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: RE: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled
- and device suspended.
-Date: Mon, 16 Jun 2014 10:43:25 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1406161019160.1292-100000@iolanthe.rowland.org>
-References: <9E7892CE01168A46922BCCE04DB02F9828E62353@HKMAIL01.nvidia.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v4 1/6] Documentation: arm: define DT idle states
+ bindings
+Date: Mon, 16 Jun 2014 10:48:30 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1406161044180.31631@knanqh.ubzr>
+References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com> <1402503520-8611-2-git-send-email-lorenzo.pieralisi@arm.com> <alpine.LFD.2.11.1406111240010.25775@knanqh.ubzr> <20140613164954.GA16745@e102568-lin.cambridge.arm.com>
+ <alpine.LFD.2.11.1406131306160.25775@knanqh.ubzr> <20140616142259.GA6650@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:54141 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750775AbaFPOn1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jun 2014 10:43:27 -0400
-In-Reply-To: <9E7892CE01168A46922BCCE04DB02F9828E62353@HKMAIL01.nvidia.com>
+Received: from mail-qa0-f48.google.com ([209.85.216.48]:59338 "EHLO
+	mail-qa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbaFPOsd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jun 2014 10:48:33 -0400
+Received: by mail-qa0-f48.google.com with SMTP id x12so7471548qac.21
+        for <linux-pm@vger.kernel.org>; Mon, 16 Jun 2014 07:48:32 -0700 (PDT)
+In-Reply-To: <20140616142259.GA6650@e102568-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Allen Yu <alleny@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@ke>
 
-On Mon, 16 Jun 2014, Allen Yu wrote:
+On Mon, 16 Jun 2014, Lorenzo Pieralisi wrote:
 
-> On Sat, 14 Jun 2014, Alan Stern wrote:
-> 
-> > > dev->power.is_suspended is set after core suspends device during system
-> > suspend.
-> > > This flag mostly means device is not operational (all I/O been
-> > > quiesced, no more data read or write acceptible, etc.), hence it's
-> > > dangerous to access hardware if device is suspended even though runtime
-> > PM status is RPM_ACTIVE.
-> > >
-> > > In turn, we should allow device to be accessed in case device is *not*
-> > > suspended and runtime PM status is RPM_ACTIVE, even if runtime PM
-> > > disabled. This corner case can happen to a device in a generic PM
-> > > domain if the domain is not powered off while preparing for a system-wide
-> > power transition.
+> On Fri, Jun 13, 2014 at 06:33:35PM +0100, Nicolas Pitre wrote:
+> > >    idle_state.exit_latency = worst-wakeup-latency
+> > >    idle_state.target_residency = min-residency-us
 > > 
-> > I don't understand.  Even if the PM domain isn't powered off, the device's
-> > is_suspended flag will still be set by __device_suspend().
+> > But exit_latency is not necessarily equal to worst-wakeup-latency.  
+> > We'll need any of those 4 values depending on the context.  So I'd add 
+> > entry_latency and worst_wakeup_latency to struct cpuidle_state.  If a 
+> > driver doesn't initialize entry_latency then it can be left to 0, and if 
+> > worst_wakeup_latency is 0 then it should be set to entry_latency + 
+> > exit_latency by the core code.
 > 
-> Yes, is_suspended flag will be set by __device_suspend(). But runtime PM can be disabled in pm_genpd_prepare():
-> 
-> 914 static int pm_genpd_prepare(struct device *dev){
-> ...
-> 956         /*
-> 957          * The PM domain must be in the GPD_STATE_ACTIVE state at this point,
-> 958          * so pm_genpd_poweron() will return immediately, but if the device
-> 959          * is suspended (e.g. it's been stopped by genpd_stop_dev()), we need
-> 960          * to make it operational.
-> 961          */
-> 962         pm_runtime_resume(dev);
-> 963         __pm_runtime_disable(dev, false);
-> ...
-> 978 }
-> 
-> And there is a gap between pm_genpd_prepare() and __device_suspend(), during which is_suspended flag is *not* yet set but runtime PM is disabled and device status is RPM_ACTIVE. 
+> Well, that's why I mentioned idle_state.exit_latency, because in CPUidle
+> today, the struct cpuidle_state.exit_latency field corresponds to our
+> worst-wakeup-latency property, not to the exit_latency property; I know
+> it is confusing but at least by defining proper bindings the kernel
+> structures can be updated with clear semantics (I would not rename them
+> for the time being though).
 
-It sounds like the real problem lies in pm_genpd_prepare().  It 
-disables the device too early.
+Why not?  Adding more confusion or even simply keeping the existing one, 
+even if it is temporary, doesn't benefit anyone.
 
-> > >  In this case, runtime PM status will
-> > > be set to RPM_ACTIVE and then runtime PM is disabled. After that,
-> > > device driver may call pm_runtime_get_sync() and rpm_resume() should
-> > > return 1, because the device is still active as long as not been suspended.
-> > 
-> > Isn't that what the existing code does already?  Your patch seems to change
-> > it so that it _doesn't_ behave the way you want.
-> > 
-> 
-> The existing code return 1 for case is_suspended flag is set.  That means __device_suspend() has been called and device is not in operational state. Whereas the case I mentioned above is before device is suspended.
-> It's dangerous to access device if it's in suspended state, so I propose only allowing access to a device if it's not suspended (i.e. value of "is_suspneded" flag is false).
+> Fields required by the scheduler (ie entry_latency) can be added in 
+> the patches that rely on them, when we agreed on the bindings, adding 
+> the variables is no big deal.
 
-Okay, now I understand what you want to do.  I couldn't figure it out
-just from the patch description.
+Sure.
 
-A better solution might be to remove the __pm_runtime_disable() call 
-from pm_genpd_prepare().  There's no obvious reason for it to be there, 
-especially since the PM core does a disable in __device_suspend_late().
 
-Alan Stern
-
+Nicolas
