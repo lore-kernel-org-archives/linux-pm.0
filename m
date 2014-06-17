@@ -1,74 +1,94 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
-Date: Tue, 17 Jun 2014 22:37:03 +0200
-Message-ID: <1594380.FbALgJzamg@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1406171007000.1187-100000@iolanthe.rowland.org> <2320679.BykjsXib1x@vostro.rjw.lan>
+Date: Tue, 17 Jun 2014 22:46 +0200
+Message-ID: <2420304.GaXVpqVQD5@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1406171007000.1187-100000@iolanthe.rowland.org> <2320679.BykjsXib1x@vostro.rjw.lan> <1594380.FbALgJzamg@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52026 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:62167 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932927AbaFQUT3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 16:19:29 -0400
-In-Reply-To: <2320679.BykjsXib1x@vostro.rjw.lan>
+	with SMTP id S932927AbaFQU21 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 16:28:27 -0400
+In-Reply-To: <1594380.FbALgJzamg@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, June 17, 2014 10:26:14 PM Rafael J. Wysocki wrote:
-> On Tuesday, June 17, 2014 10:11:32 AM Alan Stern wrote:
-> > On Mon, 16 Jun 2014, Rafael J. Wysocki wrote:
-> > 
-> > > > For reasons having nothing to do with Allen's suggested change, I
-> > > > wonder if we shouldn't replace this line with something like:
-> > > > 
-> > > > -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
-> > > > +	else if (dev->power.disable > 0 && !dev->power.is_suspended
-> > > > 	    && dev->power.runtime_status == RPM_ACTIVE)
-> > > > 		retval = 1;
-> > > > 
-> > > > It seems that I've been bitten by this several times in the past.  
-> > > > When a device is disabled for runtime PM, and more or less permanently
-> > > > stuck in the RPM_ACTIVE state, calls to pm_runtime_resume() or
-> > > > pm_runtime_get_sync() shouldn't fail.
-> > > > 
-> > > > For example, suppose some devices of a certain type support runtime 
-> > > > power management but others don't.  We naturally want to call 
-> > > > pm_runtime_disable() for the ones that don't.  But we also want the 
-> > > > same driver to work for all the devices, which means that 
-> > > > pm_runtime_get_sync() should return success -- otherwise the driver 
-> > > > will think that something has gone wrong.
-> > > > 
-> > > > Rafael, what do you think?
+On Tuesday, June 17, 2014 10:37:03 PM Rafael J. Wysocki wrote:
+> On Tuesday, June 17, 2014 10:26:14 PM Rafael J. Wysocki wrote:
+> > On Tuesday, June 17, 2014 10:11:32 AM Alan Stern wrote:
+> > > On Mon, 16 Jun 2014, Rafael J. Wysocki wrote:
 > > > 
-> > > That condition is there specifically to take care of the system suspend
-> > > code path.  It means that if runtime PM is disabled, but it only has been
-> > > disabled by the system suspend code path, we should treat the device as
-> > > "active" (ie. return 1).  That won't work after the proposed change.
+> > > > > For reasons having nothing to do with Allen's suggested change, I
+> > > > > wonder if we shouldn't replace this line with something like:
+> > > > > 
+> > > > > -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+> > > > > +	else if (dev->power.disable > 0 && !dev->power.is_suspended
+> > > > > 	    && dev->power.runtime_status == RPM_ACTIVE)
+> > > > > 		retval = 1;
+> > > > > 
+> > > > > It seems that I've been bitten by this several times in the past.  
+> > > > > When a device is disabled for runtime PM, and more or less permanently
+> > > > > stuck in the RPM_ACTIVE state, calls to pm_runtime_resume() or
+> > > > > pm_runtime_get_sync() shouldn't fail.
+> > > > > 
+> > > > > For example, suppose some devices of a certain type support runtime 
+> > > > > power management but others don't.  We naturally want to call 
+> > > > > pm_runtime_disable() for the ones that don't.  But we also want the 
+> > > > > same driver to work for all the devices, which means that 
+> > > > > pm_runtime_get_sync() should return success -- otherwise the driver 
+> > > > > will think that something has gone wrong.
+> > > > > 
+> > > > > Rafael, what do you think?
+> > > > 
+> > > > That condition is there specifically to take care of the system suspend
+> > > > code path.  It means that if runtime PM is disabled, but it only has been
+> > > > disabled by the system suspend code path, we should treat the device as
+> > > > "active" (ie. return 1).  That won't work after the proposed change.
+> > > 
+> > > Ah, yes, quite true.  Okay, suppose we replace that line with just:
+> > > 
+> > > +	else if (dev->power.disable > 0
+> > > 
+> > > > I guess drivers that want to work with devices where runtime PM may be
+> > > > disabled can just check the return value of rpm_resume() for -EACCES?
+> > > 
+> > > They could, but it's extra work and it's extremely easy to forget 
+> > > about.  I'd prefer not to do things that way.
 > > 
-> > Ah, yes, quite true.  Okay, suppose we replace that line with just:
+> > In that case we need to audit all code that checks the return value of
+> > __pm_runtime_resume() to verify that it doesn't depend on the current
+> > behavior in any way.  It shouldn't, but still.
 > > 
-> > +	else if (dev->power.disable > 0
-> > 
-> > > I guess drivers that want to work with devices where runtime PM may be
-> > > disabled can just check the return value of rpm_resume() for -EACCES?
-> > 
-> > They could, but it's extra work and it's extremely easy to forget 
-> > about.  I'd prefer not to do things that way.
+> > Also we probably should drop the -EACCES return value from rpm_resume() in the
+> > same patch, because it specifically only covers the dev->power.disable > 0 case
+> > (which BTW is consistent with the suspend side of things, so I'm totally unsure
+> > about that being the right thing to do to be honest).
 > 
-> In that case we need to audit all code that checks the return value of
-> __pm_runtime_resume() to verify that it doesn't depend on the current
-> behavior in any way.  It shouldn't, but still.
-> 
-> Also we probably should drop the -EACCES return value from rpm_resume() in the
-> same patch, because it specifically only covers the dev->power.disable > 0 case
-> (which BTW is consistent with the suspend side of things, so I'm totally unsure
-> about that being the right thing to do to be honest).
+> Perhaps it'd be better to rework __pm_runtime_resume() to convert the -EACCES
+> return value from rpm_resume() into 0 if RPM_GET_PUT is set?
 
-Perhaps it'd be better to rework __pm_runtime_resume() to convert the -EACCES
-return value from rpm_resume() into 0 if RPM_GET_PUT is set?
+Or do something like this?
 
-Rafael
+---
+ drivers/base/power/runtime.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -608,7 +608,8 @@ static int rpm_resume(struct device *dev
+  repeat:
+ 	if (dev->power.runtime_error)
+ 		retval = -EINVAL;
+-	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
++	else if (((dev->power.disable_depth > 0 && (rpmflags & RPM_GET_PUT))
++	    || (dev->power.disable_depth == 1 && dev->power.is_suspended))
+ 	    && dev->power.runtime_status == RPM_ACTIVE)
+ 		retval = 1;
+ 	else if (dev->power.disable_depth > 0)
 
