@@ -1,105 +1,226 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: [RFC PATCH v4 0/7] The power allocator thermal governor
-Date: Tue, 17 Jun 2014 10:14:46 +0100
-Message-ID: <1402996493-3578-1-git-send-email-javi.merino@arm.com>
+Subject: [RFC PATCH v4 2/7] thermal: let governors have private data for each thermal zone
+Date: Tue, 17 Jun 2014 10:14:48 +0100
+Message-ID: <1402996493-3578-3-git-send-email-javi.merino@arm.com>
+References: <1402996493-3578-1-git-send-email-javi.merino@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:51666 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755479AbaFQJPM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 05:15:12 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1402996493-3578-1-git-send-email-javi.merino@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi linux-pm,
+A governor may need to store its current state between calls to
+throttle().  That state depends on the thermal zone, so store it as
+private data in struct thermal_zone_device.
 
-The power allocator governor allocates device power to control
-temperature.  This requires transforming performance requests into
-requested power, which we do with the aid of power models.  Patch 4
-(thermal: add a basic cpu power actor) implements a simple power model
-for cpus.  The division of power between the actors ensures that power
-is allocated where it is needed the most, based on the current
-workload.
+The governors may have two new ops: bind_to_tz() and unbind_from_tz().
+When provided, these functions let governors do some initialization
+and teardown when they are bound/unbound to a tz and possibly store that
+information in the governor_data field of the struct
+thermal_zone_device.
 
-Patch 1 is a generic documentation of the current thermal framework
-and can be merged separately.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+ drivers/thermal/thermal_core.c | 83 ++++++++++++++++++++++++++++++++++++++=
+----
+ include/linux/thermal.h        |  9 +++++
+ 2 files changed, 84 insertions(+), 8 deletions(-)
 
-Changes since v3:
-  - Use tz->passive to poll faster when the first trip point is hit.
-  - Don't make a special directory for power_actors
-  - Add a DT property for sustainable-power
-  - Simplify the static power interface and pass the current thermal
-    zone in every power_actor_ops to remove the controversial
-    enum power_actor_types
-  - Use locks with the actor_list list
-  - Use cpufreq_get() to get the frequency of the cpu instead of
-    using the notifiers.
-  - Remove the prompt for THERMAL_POWER_ACTOR_CPU when configuring
-    the kernel
-
-Changes since v2:
-  - Changed the PI controller into a PID controller
-  - Added static power to the cpu power model
-  - tz parameter max_dissipatable_power renamed to sustainable_power
-  - Register the cpufreq cooling device as part of the
-    power_cpu_actor registration.
-
-Changes since v1:
-  - Fixed finding cpufreq cooling devices in cpufreq_frequency_change()
-  - Replaced the cooling device interface with a separate power actor
-    API
-  - Addressed most of Eduardo's comments
-  - Incorporated ftrace support for bitmask to trace cpumasks
-
-Todo:
-  - Rethink the use of trip points and make it less intrusive
-  - Let platforms override the power allocator governor parameters
-  - Add more tracing and provide scripts to evaluate the proposal.
-  - Tune it to achieve the temperature stability we are aiming for
-
-Cheers,
-Javi & Punit
-
-Javi Merino (6):
-  thermal: document struct thermal_zone_device and thermal_governor
-  thermal: let governors have private data for each thermal zone
-  thermal: introduce the Power Actor API
-  thermal: add a basic cpu power actor
-  thermal: introduce the Power Allocator governor
-  thermal: add trace events to the power allocator governor
-
-Punit Agrawal (1):
-  of: thermal: Introduce sustainable power for a thermal zone
-
- .../devicetree/bindings/thermal/thermal.txt        |   4 +
- Documentation/thermal/power_actor.txt              | 181 ++++++++
- Documentation/thermal/power_allocator.txt          |  41 ++
- drivers/thermal/Kconfig                            |  21 +
- drivers/thermal/Makefile                           |   5 +
- drivers/thermal/cpu_actor.c                        | 484 +++++++++++++++++=
-++++
- drivers/thermal/of-thermal.c                       |   4 +
- drivers/thermal/power_actor.c                      |  68 +++
- drivers/thermal/power_actor.h                      |  91 ++++
- drivers/thermal/power_allocator.c                  | 477 +++++++++++++++++=
-+++
- drivers/thermal/thermal_core.c                     |  90 +++-
- drivers/thermal/thermal_core.h                     |   8 +
- include/linux/thermal.h                            |  63 ++-
- include/trace/events/thermal_power.h               |  62 +++
- 14 files changed, 1588 insertions(+), 11 deletions(-)
- create mode 100644 Documentation/thermal/power_actor.txt
- create mode 100644 Documentation/thermal/power_allocator.txt
- create mode 100644 drivers/thermal/cpu_actor.c
- create mode 100644 drivers/thermal/power_actor.c
- create mode 100644 drivers/thermal/power_actor.h
- create mode 100644 drivers/thermal/power_allocator.c
- create mode 100644 include/trace/events/thermal_power.h
-
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.=
+c
+index 71b0ec0c370d..3da99dd80ad5 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -72,6 +72,58 @@ static struct thermal_governor *__find_governor(const ch=
+ar *name)
+ =09return NULL;
+ }
+=20
++/**
++ * bind_previous_governor() - bind the previous governor of the thermal zo=
+ne
++ * @tz:=09=09a valid pointer to a struct thermal_zone_device
++ * @failed_gov_name:=09the name of the governor that failed to register
++ *
++ * Register the previous governor of the thermal zone after a new
++ * governor has failed to be bound.
++ */
++static void bind_previous_governor(struct thermal_zone_device *tz,
++=09=09=09=09const char *failed_gov_name)
++{
++=09if (tz->governor && tz->governor->bind_to_tz) {
++=09=09if (tz->governor->bind_to_tz(tz)) {
++=09=09=09dev_warn(&tz->device,
++=09=09=09=09"governor %s failed to bind and the previous one (%s) failed t=
+o register again, thermal zone %s has no governor\n",
++=09=09=09=09failed_gov_name, tz->governor->name, tz->type);
++=09=09=09tz->governor =3D NULL;
++=09=09}
++=09}
++}
++
++/**
++ * thermal_set_governor() - Switch to another governor
++ * @tz:=09=09a valid pointer to a struct thermal_zone_device
++ * @new_gov:=09pointer to the new governor
++ *
++ * Change the governor of thermal zone @tz.
++ *
++ * Return: 0 on success, an error if the new governor's bind_to_tz() faile=
+d.
++ */
++static int thermal_set_governor(struct thermal_zone_device *tz,
++=09=09=09=09struct thermal_governor *new_gov)
++{
++=09int ret =3D 0;
++
++=09if (tz->governor && tz->governor->unbind_from_tz)
++=09=09tz->governor->unbind_from_tz(tz);
++
++=09if (new_gov && new_gov->bind_to_tz) {
++=09=09ret =3D new_gov->bind_to_tz(tz);
++=09=09if (ret) {
++=09=09=09bind_previous_governor(tz, new_gov->name);
++
++=09=09=09return ret;
++=09=09}
++=09}
++
++=09tz->governor =3D new_gov;
++
++=09return ret;
++}
++
+ int thermal_register_governor(struct thermal_governor *governor)
+ {
+ =09int err;
+@@ -104,8 +156,15 @@ int thermal_register_governor(struct thermal_governor =
+*governor)
+=20
+ =09=09name =3D pos->tzp->governor_name;
+=20
+-=09=09if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
+-=09=09=09pos->governor =3D governor;
++=09=09if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH)) {
++=09=09=09int ret;
++
++=09=09=09ret =3D thermal_set_governor(pos, governor);
++=09=09=09if (ret)
++=09=09=09=09dev_warn(&pos->device,
++=09=09=09=09=09"Failed to set governor %s for thermal zone %s: %d\n",
++=09=09=09=09=09governor->name, pos->type, ret);
++=09=09}
+ =09}
+=20
+ =09mutex_unlock(&thermal_list_lock);
+@@ -131,7 +190,7 @@ void thermal_unregister_governor(struct thermal_governo=
+r *governor)
+ =09list_for_each_entry(pos, &thermal_tz_list, node) {
+ =09=09if (!strnicmp(pos->governor->name, governor->name,
+ =09=09=09=09=09=09THERMAL_NAME_LENGTH))
+-=09=09=09pos->governor =3D NULL;
++=09=09=09thermal_set_governor(pos, NULL);
+ =09}
+=20
+ =09mutex_unlock(&thermal_list_lock);
+@@ -756,8 +815,9 @@ policy_store(struct device *dev, struct device_attribut=
+e *attr,
+ =09if (!gov)
+ =09=09goto exit;
+=20
+-=09tz->governor =3D gov;
+-=09ret =3D count;
++=09ret =3D thermal_set_governor(tz, gov);
++=09if (!ret)
++=09=09ret =3D count;
+=20
+ exit:
+ =09mutex_unlock(&thermal_governor_lock);
+@@ -1452,6 +1512,7 @@ struct thermal_zone_device *thermal_zone_device_regis=
+ter(const char *type,
+ =09int result;
+ =09int count;
+ =09int passive =3D 0;
++=09struct thermal_governor *governor;
+=20
+ =09if (type && strlen(type) >=3D THERMAL_NAME_LENGTH)
+ =09=09return ERR_PTR(-EINVAL);
+@@ -1542,9 +1603,15 @@ struct thermal_zone_device *thermal_zone_device_regi=
+ster(const char *type,
+ =09mutex_lock(&thermal_governor_lock);
+=20
+ =09if (tz->tzp)
+-=09=09tz->governor =3D __find_governor(tz->tzp->governor_name);
++=09=09governor =3D __find_governor(tz->tzp->governor_name);
+ =09else
+-=09=09tz->governor =3D def_governor;
++=09=09governor =3D def_governor;
++
++=09result =3D thermal_set_governor(tz, governor);
++=09if (result) {
++=09=09mutex_unlock(&thermal_governor_lock);
++=09=09goto unregister;
++=09}
+=20
+ =09mutex_unlock(&thermal_governor_lock);
+=20
+@@ -1634,7 +1701,7 @@ void thermal_zone_device_unregister(struct thermal_zo=
+ne_device *tz)
+ =09=09device_remove_file(&tz->device, &dev_attr_mode);
+ =09device_remove_file(&tz->device, &dev_attr_policy);
+ =09remove_trip_attrs(tz);
+-=09tz->governor =3D NULL;
++=09thermal_set_governor(tz, NULL);
+=20
+ =09thermal_remove_hwmon_sysfs(tz);
+ =09release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 0305cde21a74..1124b7a9358a 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -187,6 +187,7 @@ struct thermal_attr {
+  * @ops:=09operations this &thermal_zone_device supports
+  * @tzp:=09thermal zone parameters
+  * @governor:=09pointer to the governor for this thermal zone
++ * @governor_data:=09private pointer for governor data
+  * @thermal_instances:=09list of &struct thermal_instance of this thermal =
+zone
+  * @idr:=09&struct idr to generate unique id for this zone's cooling
+  *=09=09devices
+@@ -213,6 +214,7 @@ struct thermal_zone_device {
+ =09struct thermal_zone_device_ops *ops;
+ =09const struct thermal_zone_params *tzp;
+ =09struct thermal_governor *governor;
++=09void *governor_data;
+ =09struct list_head thermal_instances;
+ =09struct idr idr;
+ =09struct mutex lock;
+@@ -223,12 +225,19 @@ struct thermal_zone_device {
+ /**
+  * struct thermal_governor - structure that holds thermal governor informa=
+tion
+  * @name:=09name of the governor
++ * @bind_to_tz: callback called when binding to a thermal zone.  If it
++ *=09=09returns 0, the governor is bound to the thermal zone,
++ *=09=09otherwise it fails.
++ * @unbind_from_tz:=09callback called when a governor is unbound from a
++ *=09=09=09thermal zone.
+  * @throttle:=09callback called for every trip point even if temperature i=
+s
+  *=09=09below the trip point temperature
+  * @governor_list:=09node in thermal_governor_list (in thermal_core.c)
+  */
+ struct thermal_governor {
+ =09char name[THERMAL_NAME_LENGTH];
++=09int (*bind_to_tz)(struct thermal_zone_device *tz);
++=09void (*unbind_from_tz)(struct thermal_zone_device *tz);
+ =09int (*throttle)(struct thermal_zone_device *tz, int trip);
+ =09struct list_head=09governor_list;
+ };
 --=20
 1.9.1
-
-
