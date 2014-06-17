@@ -1,74 +1,83 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 8/9] thermal: exynos: remove redundant pdata checks from
- exynos_tmu_control()
-Date: Tue, 17 Jun 2014 19:27:24 +0200
-Message-ID: <1403026045-16024-9-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 5/9] thermal: exynos: remove redundant threshold_code checks
+ from exynos_tmu_initialize()
+Date: Tue, 17 Jun 2014 19:27:21 +0200
+Message-ID: <1403026045-16024-6-git-send-email-b.zolnierkie@samsung.com>
 References: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:25874 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964772AbaFQRbJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 13:31:09 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+List-Id: linux-pm@vger.kernel.org
 
-pdata->reference_voltage and pdata->gain are always defined
-to non-zero values so remove the redundant checks from
-exynos_tmu_control().
+Remove runtime checks for negative return values of temp_to_code()
+from exynos_tmu_initialize().
 
-There should be no functional changes caused by this patch.
+The current level temperature data hardcoded in pdata will never
+cause a negative temp_to_code() return values and checking itself
+is not proper.  The checks in question are done at runtime in
+a production code for data that is hardcoded inside driver during
+development time and later it doesn't change.  Such data should
+be verified during development and review time (i.e. by a script
+parsing relevant data from exynos_tmu_data.c, one can also argue
+that verification to be done is so simple that the review by
+a maintainer should be enough).
+
+Theres should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 12 ++++--------
- drivers/thermal/samsung/exynos_tmu.h |  4 ++--
- 2 files changed, 6 insertions(+), 10 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c | 16 +---------------
+ 1 file changed, 1 insertion(+), 15 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 9455b23..b22f358 100644
+index f061580..204f811 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -229,15 +229,11 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
- 	if (pdata->test_mux)
- 		con |= (pdata->test_mux << reg->test_mux_addr_shift);
+@@ -180,10 +180,6 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 	if (data->soc == SOC_ARCH_EXYNOS4210) {
+ 		/* Write temperature code for threshold */
+ 		threshold_code = temp_to_code(data, pdata->threshold);
+-		if (threshold_code < 0) {
+-			ret = threshold_code;
+-			goto out;
+-		}
+ 		writeb(threshold_code,
+ 			data->base + reg->threshold_temp);
+ 		for (i = 0; i < trigger_levs; i++)
+@@ -197,19 +193,13 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 		i < trigger_levs && i < EXYNOS_MAX_TRIGGER_PER_REG; i++) {
+ 			threshold_code = temp_to_code(data,
+ 						pdata->trigger_levels[i]);
+-			if (threshold_code < 0) {
+-				ret = threshold_code;
+-				goto out;
+-			}
+ 			rising_threshold &= ~(0xff << 8 * i);
+ 			rising_threshold |= threshold_code << 8 * i;
+ 			if (pdata->threshold_falling) {
+ 				threshold_code = temp_to_code(data,
+ 						pdata->trigger_levels[i] -
+ 						pdata->threshold_falling);
+-				if (threshold_code > 0)
+-					falling_threshold |=
+-						threshold_code << 8 * i;
++				falling_threshold |= threshold_code << 8 * i;
+ 			}
+ 		}
  
--	if (pdata->reference_voltage) {
--		con &= ~(reg->buf_vref_sel_mask << reg->buf_vref_sel_shift);
--		con |= pdata->reference_voltage << reg->buf_vref_sel_shift;
--	}
-+	con &= ~(reg->buf_vref_sel_mask << reg->buf_vref_sel_shift);
-+	con |= pdata->reference_voltage << reg->buf_vref_sel_shift;
- 
--	if (pdata->gain) {
--		con &= ~(reg->buf_slope_sel_mask << reg->buf_slope_sel_shift);
--		con |= (pdata->gain << reg->buf_slope_sel_shift);
--	}
-+	con &= ~(reg->buf_slope_sel_mask << reg->buf_slope_sel_shift);
-+	con |= (pdata->gain << reg->buf_slope_sel_shift);
- 
- 	if (pdata->noise_cancel_mode) {
- 		con &= ~(reg->therm_trip_mode_mask <<
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index b1c9f8d..5d36708 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -188,10 +188,10 @@ struct exynos_tmu_registers {
-  * @max_trigger_level: max trigger level supported by the TMU
-  * @non_hw_trigger_levels: number of defined non-hardware trigger levels
-  * @gain: gain of amplifier in the positive-TC generator block
-- *	0 <= gain <= 15
-+ *	0 < gain <= 15
-  * @reference_voltage: reference voltage of amplifier
-  *	in the positive-TC generator block
-- *	0 <= reference_voltage <= 31
-+ *	0 < reference_voltage <= 31
-  * @noise_cancel_mode: noise cancellation mode
-  *	000, 100, 101, 110 and 111 can be different modes
-  * @type: determines the type of SOC
+@@ -228,10 +218,6 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 				(pdata->trigger_type[i] == HW_TRIP)) {
+ 			threshold_code = temp_to_code(data,
+ 						pdata->trigger_levels[i]);
+-			if (threshold_code < 0) {
+-				ret = threshold_code;
+-				goto out;
+-			}
+ 			if (i == EXYNOS_MAX_TRIGGER_PER_REG - 1) {
+ 				/* 1-4 level to be assigned in th0 reg */
+ 				rising_threshold &= ~(0xff << 8 * i);
 -- 
 1.8.2.3
-
