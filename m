@@ -1,14 +1,13 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [RFC PATCH 1/4] memory: tegra124-emc: Add EMC driver
-Date: Wed, 18 Jun 2014 00:35:27 +0200
-Message-ID: <20140617223518.GA25309@mithrandir>
+Subject: Re: [RFC PATCH 2/4] ARM: tegra: Add Tegra124 EMC support
+Date: Wed, 18 Jun 2014 00:38:00 +0200
+Message-ID: <20140617223759.GB25309@mithrandir>
 References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
- <1402925713-25426-2-git-send-email-tomeu.vizoso@collabora.com>
- <539F4D44.3070309@wwwdotorg.org> <53A03186.3040703@collabora.com>
+ <1402925713-25426-3-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0188949733=="
+Content-Type: multipart/mixed; boundary="===============0678171553=="
 Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <53A03186.3040703@collabora.com>
+In-Reply-To: <1402925713-25426-3-git-send-email-tomeu.vizoso@collabora.com>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
  <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
 List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
@@ -23,85 +22,56 @@ Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Stephen 
 List-Id: linux-pm@vger.kernel.org
 
 
---===============0188949733==
+--===============0678171553==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+	protocol="application/pgp-signature"; boundary="hQiwHBbRI9kgIhsi"
 Content-Disposition: inline
 
 
---rwEMma7ioTxnRzrJ
+--hQiwHBbRI9kgIhsi
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 17, 2014 at 02:16:06PM +0200, Tomeu Vizoso wrote:
-> On 06/16/2014 10:02 PM, Stephen Warren wrote:
-> >On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
-> >>+
-> >>+Child device nodes describe the memory settings for different configur=
-ations and
-> >>+clock rates.
-> >
-> >How do the child nodes do that? The binding needs to specify the format
-> >of the child node.
->=20
-> Sorry, that file was sent before I had finished removing the bits from
-> downstream that aren't needed yet. There's no current need for any child
-> nodes.
->=20
-> >This binding looks quite anaemic vs.
-> >Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-emc.txt; I
-> >would expect that this binding needs all the EMC register data from the
-> >tegra20-emc binding too. Can the two bindings be identical?
->=20
-> There's even less stuff needed right now, as all what ultimately the EMC
-> driver does is call clk_set_rate on the EMC clock. As the T124 EMC driver
-> gains more features, they should get more similar.
->=20
-> >Can you explain what the nvidia,mc and nvidia,pmc references are needed
-> >for? Hopefully, this driver isn't going to reach into those devices and
-> >touch their registers directly.
->=20
-> Not really needed, see above.
+On Mon, Jun 16, 2014 at 03:35:11PM +0200, Tomeu Vizoso wrote:
+[...]
+> +	memory-controller@7001b000 {
+> +		compatible = "nvidia,tegra124-emc";
+> +		reg = <0x00 0x7001b000 0x00 0x1000>;
 
-I've been working on a prototype driver for the memory controller. Part
-of what I've added is programming of the latency allowance registers (it
-doesn't yet expose an API to do so yet, though). I think that needs to
-eventually take into account the EMC frequency (and needs to be notified
-of changes to the same).
+For consistency, perhaps s/0x00/0x0/?
 
-Without having thought this through very thoroughly, I suspect that
-rather than referencing the MC from the EMC it might be better to have
-the MC register with the EMC for notifications.
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		clocks = <&tegra_car 57>;
 
-But perhaps there are other services from MC that EMC needs to work?
+TEGRA124_CLK_EMC?
 
 Thierry
 
---rwEMma7ioTxnRzrJ
+--hQiwHBbRI9kgIhsi
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJToMKmAAoJEN0jrNd/PrOh7tsP/1iiyCvf+gToYFTC5Oa277pT
-PsNiluavHj05CCD6ospTQ7adIPHx9jHBDVl7Wxcevo3VmWPVAX27dbhqHFNyHFtz
-wNi4JFOsbS1FzNoGFcgE/G8BnrsbBnjFTIp+ftzKoMWvS+yO09VEhbW5VOkfuDFY
-JX8usGCJznyj0kYFJEXLfh2dU+oy6y6TUcva3k2KGaPhzJw3071VIUqbpqq5ueCr
-+XwNefsZniVILBrIT1FX3IxHHOgrDBnI1W5Giv8Ui/0gJcFt/qbpkZiIKq94F9sN
-ZKqXTePJdPcYMr9lavezD3K77XnIbQe4//HgiQ6PQXmSO7L4utu2Da/UFA5ZDPFi
-eTUkQVooBGbbGa6igJYsl1/A79ZBHiOs+46B0/USCnFNH56JjGlABinCA1Jd5Gdc
-ghZ3iA4zFczm5RudD6JkZyLsG6xOxaaPGGnXyAnIG8MINWnEWUZkkNbsQLFnarpf
-4rfJT2JK47LAfUo/H9PfN9ld/MnV1A65dJLHNcEAYmaFE/rD2Rfnv3HRYtDNo/gE
-SEkRuHdNFT1MQnadRYz0p3c4G54qrPo+Kjb9simhOF1EFMu23BJL4krukv7DJsrb
-6bX8sya1NbmwaKYgunVht4NV3I5KqUHHmJ9vFLDqW2iMJtmL+squ4LuCqwzixs/d
-1x26cvcn6f2LCl1QxfPZ
-=evRg
+iQIcBAEBAgAGBQJToMNHAAoJEN0jrNd/PrOh4J0P/2Ajb9j2ajRa6Cndcx1T4twP
+XFlb1dyeZaiRslwkbckA8g5g/ZkNuyrsKOth9Q8a5U1r32o38IZCHBt8yKBKOgyc
+d/Gspq5rP7zWKZ94ixCtCt4CBx54ZEeZ7t8dFV2ybnR6YXYM9+lGrKkM2KQ1vg6v
+QhfQWVU5WHuRaxQGofbq/NWgznUp+IwXeYP5ci0sbekFeO0qKUkAs4zb5EtiDL3r
+dESbUFRYOezLR1JWQis4eD9lGB5CckcZ/bJ7k3LDcDcgQwAk7X7m/lH/vPxQZNZT
+VxtHYBlkjrt1GNHdzWSMiPjxE7FqZyX+TQQFO2IAli1CxrJQ6CbpiqzvVg3+clHU
+lIgcvOd1buTbjWu8KgS8zbociQ3gRjmmzum11sFLqrTmc90mqf+HnASxwCGKCqsA
+pjObfqdnG7+t/pJJyqjW5KcqOtna77X9HfUHLHe5+upeFqZueOHybbRS6OVcCdat
+dKfskedRd9e9thxDK4FJX6B7cXCg5Ttn0Uji2Aj5Ri+8gam+2ZYmiHNa3GRnk4uO
+9tUoNZh8eRx7hmT0KSyI5Pr+ieS/5m52HJqXoctkmZMpwDjVODim7z8sw3xBkNcn
+/eBcNh1KfLWrwm6rxZBJFyRcRNMDCC+UhAIOuWGIaILkGNw+puj+9xsOmjBxHmXN
+N9qMcdNIsyz/DqE1FA55
+=eL70
 -----END PGP SIGNATURE-----
 
---rwEMma7ioTxnRzrJ--
+--hQiwHBbRI9kgIhsi--
 
---===============0188949733==
+--===============0678171553==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -112,4 +82,4 @@ dri-devel mailing list
 dri-devel@lists.freedesktop.org
 http://lists.freedesktop.org/mailman/listinfo/dri-devel
 
---===============0188949733==--
+--===============0678171553==--
