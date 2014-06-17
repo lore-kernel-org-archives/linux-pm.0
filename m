@@ -1,13 +1,15 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [RFC PATCH 2/4] ARM: tegra: Add Tegra124 EMC support
-Date: Wed, 18 Jun 2014 00:38:00 +0200
-Message-ID: <20140617223759.GB25309@mithrandir>
+Subject: Re: [RFC PATCH 3/4] drm/tegra: Request memory bandwidth for the
+ display controller
+Date: Wed, 18 Jun 2014 00:43:35 +0200
+Message-ID: <20140617224334.GC25309@mithrandir>
 References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
- <1402925713-25426-3-git-send-email-tomeu.vizoso@collabora.com>
+ <1402925713-25426-4-git-send-email-tomeu.vizoso@collabora.com>
+ <539F4E53.6080205@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0678171553=="
+Content-Type: multipart/mixed; boundary="===============1954057530=="
 Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1402925713-25426-3-git-send-email-tomeu.vizoso@collabora.com>
+In-Reply-To: <539F4E53.6080205@wwwdotorg.org>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
  <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
 List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
@@ -17,61 +19,69 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
  <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.freedesktop.org
 Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============0678171553==
+--===============1954057530==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="hQiwHBbRI9kgIhsi"
+	protocol="application/pgp-signature"; boundary="5QAgd0e35j3NYeGe"
 Content-Disposition: inline
 
 
---hQiwHBbRI9kgIhsi
+--5QAgd0e35j3NYeGe
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 16, 2014 at 03:35:11PM +0200, Tomeu Vizoso wrote:
-[...]
-> +	memory-controller@7001b000 {
-> +		compatible = "nvidia,tegra124-emc";
-> +		reg = <0x00 0x7001b000 0x00 0x1000>;
+On Mon, Jun 16, 2014 at 02:06:43PM -0600, Stephen Warren wrote:
+> On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
+> > Request it based solely on the current mode's refresh rate. More
+> > accurate requirements can be requested in future patches.
+>=20
+> > diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+>=20
+> > +	bandwidth =3D mode->clock * window.bits_per_pixel / 8;
+> > +	err =3D tegra124_emc_reserve_bandwidth(TEGRA_EMC_CONSUMER_DISP1, band=
+width);
+>=20
+> DISP1 shouldn't be hard-coded here; the code should use DISP1 or DISP2
+> based on head or DC identity. We certainly have some boards capable of
+> dual-head operation.
 
-For consistency, perhaps s/0x00/0x0/?
-
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		clocks = <&tegra_car 57>;
-
-TEGRA124_CLK_EMC?
+On a general note, I think perhaps a better way to represent this in an
+API, and perhaps this would help with making the API more generic, too,
+would be to make drivers request some sort of handle in .probe() and use
+that handle subsequently when making requests. That's somewhat analogous
+to the PM QoS' struct pm_qos_request.
 
 Thierry
 
---hQiwHBbRI9kgIhsi
+--5QAgd0e35j3NYeGe
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJToMNHAAoJEN0jrNd/PrOh4J0P/2Ajb9j2ajRa6Cndcx1T4twP
-XFlb1dyeZaiRslwkbckA8g5g/ZkNuyrsKOth9Q8a5U1r32o38IZCHBt8yKBKOgyc
-d/Gspq5rP7zWKZ94ixCtCt4CBx54ZEeZ7t8dFV2ybnR6YXYM9+lGrKkM2KQ1vg6v
-QhfQWVU5WHuRaxQGofbq/NWgznUp+IwXeYP5ci0sbekFeO0qKUkAs4zb5EtiDL3r
-dESbUFRYOezLR1JWQis4eD9lGB5CckcZ/bJ7k3LDcDcgQwAk7X7m/lH/vPxQZNZT
-VxtHYBlkjrt1GNHdzWSMiPjxE7FqZyX+TQQFO2IAli1CxrJQ6CbpiqzvVg3+clHU
-lIgcvOd1buTbjWu8KgS8zbociQ3gRjmmzum11sFLqrTmc90mqf+HnASxwCGKCqsA
-pjObfqdnG7+t/pJJyqjW5KcqOtna77X9HfUHLHe5+upeFqZueOHybbRS6OVcCdat
-dKfskedRd9e9thxDK4FJX6B7cXCg5Ttn0Uji2Aj5Ri+8gam+2ZYmiHNa3GRnk4uO
-9tUoNZh8eRx7hmT0KSyI5Pr+ieS/5m52HJqXoctkmZMpwDjVODim7z8sw3xBkNcn
-/eBcNh1KfLWrwm6rxZBJFyRcRNMDCC+UhAIOuWGIaILkGNw+puj+9xsOmjBxHmXN
-N9qMcdNIsyz/DqE1FA55
-=eL70
+iQIcBAEBAgAGBQJToMSWAAoJEN0jrNd/PrOhfj8P/iyTsGARiA5Lne+A7aJZ5AFc
+ZX4Au48rgSI6RYvVl/0k/uTHr/G/DmE9XVzn+8uZQLioNJJ/jQKjxBnYC5jW/ix5
+Ntvi5tdJdNCbCSioEyP1dFJxc0jeUprQkaQB2ZN/jHiOL03PJHzFnYfOJUsp2pKg
+S7C9pjuc24Xcds/NKPYFkYVdm7eitG70WZmKwTu/eD0LTWwhc19WgMfMW8qsecpr
+4lEwpRXy+APalXmqQQwNwsEPDUClrk4VTq5m1nufTlqhn4GaAxiNtmP/3AH1DLME
+8O2IRzDjkYBl+L+CphQvI1f+TbbDxHIkGPgeAOnsANR5lrrSNA3Id6tGMfH+BKkj
+l52RjmyZCvOR2Dnab+13J7pG/qCNgHrKRBEV+Ldlsi9dido7IoSR61XEkp9HEKb4
+zoVNp317JgzCFV4ivsNKi9cPKPHzU8f1aun4U0y0nxN/4X4ZpsT9/rnx8C6O2h68
+3Li4RnyAXuqUfp7Chqn5C/3rIFAGy1TfW/JShV23PupLrv4bkl+21uX9b/0PyhCF
+dlvZeLJLHh9gRIL1jCfDE0HC7ZQYdw3KV/XpByWKhfaicUm4EglWWYuo0lCVi/0S
+fUFbCU2sEV5LKwqWjkQw8W0aaPSwhaSg9/+cSrsDlcPz489sM/KP65iPZ3J5oGRr
+eTk6nZwT2q2/NUc8W91u
+=vNlq
 -----END PGP SIGNATURE-----
 
---hQiwHBbRI9kgIhsi--
+--5QAgd0e35j3NYeGe--
 
---===============0678171553==
+--===============1954057530==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -82,4 +92,4 @@ dri-devel mailing list
 dri-devel@lists.freedesktop.org
 http://lists.freedesktop.org/mailman/listinfo/dri-devel
 
---===============0678171553==--
+--===============1954057530==--
