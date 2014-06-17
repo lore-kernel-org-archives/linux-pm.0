@@ -1,94 +1,105 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [RFC Patch V2 14/16] x86, irq: introduce helper to check whether an IOAPIC has been registered
-Date: Tue, 17 Jun 2014 13:29:53 +0800
-Message-ID: <1402982995-13747-15-git-send-email-jiang.liu@linux.intel.com>
-References: <1402982995-13747-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1402982995-13747-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: [RFC PATCH v4 0/7] The power allocator thermal governor
+Date: Tue, 17 Jun 2014 10:14:46 +0100
+Message-ID: <1402996493-3578-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:51666 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbaFQJPM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 05:15:12 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>
 
-Introduce acpi_ioapic_registered() to check whether an IOAPIC has already
-been registered, it will be used when enabling IOAPIC hotplug.
+Hi linux-pm,
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/include/asm/io_apic.h |    1 +
- arch/x86/kernel/acpi/boot.c    |   11 +++++++++++
- arch/x86/kernel/apic/io_apic.c |   11 +++++++++++
- include/linux/acpi.h           |    1 +
- 4 files changed, 24 insertions(+)
+The power allocator governor allocates device power to control
+temperature.  This requires transforming performance requests into
+requested power, which we do with the aid of power models.  Patch 4
+(thermal: add a basic cpu power actor) implements a simple power model
+for cpus.  The division of power between the actors ensures that power
+is allocated where it is needed the most, based on the current
+workload.
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index ce63cf34c93c..0db2b7037e4b 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -191,6 +191,7 @@ extern void mp_unmap_irq(int irq);
- extern int mp_register_ioapic(int id, u32 address, u32 gsi_base,
- 			      struct ioapic_domain_cfg *cfg);
- extern int mp_unregister_ioapic(u32 gsi_base);
-+extern int mp_ioapic_registered(u32 gsi_base);
- extern int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
- 			    irq_hw_number_t hwirq);
- extern void mp_irqdomain_unmap(struct irq_domain *domain, unsigned int virq);
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 8a1b25d2aa4c..bab37bd6296a 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -820,6 +820,17 @@ int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
- }
- EXPORT_SYMBOL(acpi_unregister_ioapic);
- 
-+int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base)
-+{
-+	int ret;
-+
-+	down_write(&acpi_ioapic_rwsem);
-+	ret  = mp_ioapic_registered(gsi_base);
-+	up_write(&acpi_ioapic_rwsem);
-+
-+	return ret;
-+}
-+
- static int __init acpi_parse_sbf(struct acpi_table_header *table)
- {
- 	struct acpi_table_boot *sb;
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 22bbecb05345..176433c03cf5 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -4001,6 +4001,17 @@ int mp_unregister_ioapic(u32 gsi_base)
- 	return 0;
- }
- 
-+int mp_ioapic_registered(u32 gsi_base)
-+{
-+	int ioapic;
-+
-+	for_each_ioapic(ioapic)
-+		if (ioapics[ioapic].gsi_config.gsi_base == gsi_base)
-+			return 1;
-+
-+	return 0;
-+}
-+
- int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
- 		     irq_hw_number_t hwirq)
- {
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index f478af87f575..7cf20a2e29cc 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -154,6 +154,7 @@ int acpi_get_ioapic_id(acpi_handle handle, u32 gsi_base, u64 *phys_addr);
- 
- int acpi_register_ioapic(acpi_handle handle, u64 phys_addr, u32 gsi_base);
- int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base);
-+int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base);
- void acpi_irq_stats_init(void);
- extern u32 acpi_irq_handled;
- extern u32 acpi_irq_not_handled;
--- 
-1.7.10.4
+Patch 1 is a generic documentation of the current thermal framework
+and can be merged separately.
+
+Changes since v3:
+  - Use tz->passive to poll faster when the first trip point is hit.
+  - Don't make a special directory for power_actors
+  - Add a DT property for sustainable-power
+  - Simplify the static power interface and pass the current thermal
+    zone in every power_actor_ops to remove the controversial
+    enum power_actor_types
+  - Use locks with the actor_list list
+  - Use cpufreq_get() to get the frequency of the cpu instead of
+    using the notifiers.
+  - Remove the prompt for THERMAL_POWER_ACTOR_CPU when configuring
+    the kernel
+
+Changes since v2:
+  - Changed the PI controller into a PID controller
+  - Added static power to the cpu power model
+  - tz parameter max_dissipatable_power renamed to sustainable_power
+  - Register the cpufreq cooling device as part of the
+    power_cpu_actor registration.
+
+Changes since v1:
+  - Fixed finding cpufreq cooling devices in cpufreq_frequency_change()
+  - Replaced the cooling device interface with a separate power actor
+    API
+  - Addressed most of Eduardo's comments
+  - Incorporated ftrace support for bitmask to trace cpumasks
+
+Todo:
+  - Rethink the use of trip points and make it less intrusive
+  - Let platforms override the power allocator governor parameters
+  - Add more tracing and provide scripts to evaluate the proposal.
+  - Tune it to achieve the temperature stability we are aiming for
+
+Cheers,
+Javi & Punit
+
+Javi Merino (6):
+  thermal: document struct thermal_zone_device and thermal_governor
+  thermal: let governors have private data for each thermal zone
+  thermal: introduce the Power Actor API
+  thermal: add a basic cpu power actor
+  thermal: introduce the Power Allocator governor
+  thermal: add trace events to the power allocator governor
+
+Punit Agrawal (1):
+  of: thermal: Introduce sustainable power for a thermal zone
+
+ .../devicetree/bindings/thermal/thermal.txt        |   4 +
+ Documentation/thermal/power_actor.txt              | 181 ++++++++
+ Documentation/thermal/power_allocator.txt          |  41 ++
+ drivers/thermal/Kconfig                            |  21 +
+ drivers/thermal/Makefile                           |   5 +
+ drivers/thermal/cpu_actor.c                        | 484 +++++++++++++++++=
+++++
+ drivers/thermal/of-thermal.c                       |   4 +
+ drivers/thermal/power_actor.c                      |  68 +++
+ drivers/thermal/power_actor.h                      |  91 ++++
+ drivers/thermal/power_allocator.c                  | 477 +++++++++++++++++=
++++
+ drivers/thermal/thermal_core.c                     |  90 +++-
+ drivers/thermal/thermal_core.h                     |   8 +
+ include/linux/thermal.h                            |  63 ++-
+ include/trace/events/thermal_power.h               |  62 +++
+ 14 files changed, 1588 insertions(+), 11 deletions(-)
+ create mode 100644 Documentation/thermal/power_actor.txt
+ create mode 100644 Documentation/thermal/power_allocator.txt
+ create mode 100644 drivers/thermal/cpu_actor.c
+ create mode 100644 drivers/thermal/power_actor.c
+ create mode 100644 drivers/thermal/power_actor.h
+ create mode 100644 drivers/thermal/power_allocator.c
+ create mode 100644 include/trace/events/thermal_power.h
+
+--=20
+1.9.1
+
 
