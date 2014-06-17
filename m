@@ -1,269 +1,78 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: [RFC PATCH v4 3/7] thermal: introduce the Power Actor API
-Date: Tue, 17 Jun 2014 10:14:49 +0100
-Message-ID: <1402996493-3578-4-git-send-email-javi.merino@arm.com>
+Subject: [RFC PATCH v4 7/7] of: thermal: Introduce sustainable power for a thermal zone
+Date: Tue, 17 Jun 2014 10:14:53 +0100
+Message-ID: <1402996493-3578-8-git-send-email-javi.merino@arm.com>
 References: <1402996493-3578-1-git-send-email-javi.merino@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:54424 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753304AbaFQJP4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 05:15:56 -0400
 In-Reply-To: <1402996493-3578-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: punit.agrawal@arm.com, broonie@kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: punit.agrawal@arm.com, broonie@kernel.org, devicetree@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-This patch introduces the Power Actor API in the thermal framework.
-With it, devices that can report their power consumption and control
-it can be registered.  This base interface is meant to be used to
-derive specific power actors, such as a cpu power actor.
+From: Punit Agrawal <punit.agrawal@arm.com>
+
+Introduce an optional property called, sustainable-power, which
+represents the power (in mW) which the thermal zone can safely
+dissipate.
+
+If provided the property is parsed and associated with the thermal
+zone via the thermal zone parameters.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
+Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
 ---
- Documentation/thermal/power_actor.txt | 56 +++++++++++++++++++++++++++++
- drivers/thermal/Kconfig               |  3 ++
- drivers/thermal/Makefile              |  3 ++
- drivers/thermal/power_actor.c         | 68 +++++++++++++++++++++++++++++++=
-++++
- drivers/thermal/power_actor.h         | 61 +++++++++++++++++++++++++++++++
- 5 files changed, 191 insertions(+)
- create mode 100644 Documentation/thermal/power_actor.txt
- create mode 100644 drivers/thermal/power_actor.c
- create mode 100644 drivers/thermal/power_actor.h
+ Documentation/devicetree/bindings/thermal/thermal.txt | 4 ++++
+ drivers/thermal/of-thermal.c                          | 4 ++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/Documentation/thermal/power_actor.txt b/Documentation/thermal/=
-power_actor.txt
-new file mode 100644
-index 000000000000..11ca2d0bf0bd
---- /dev/null
-+++ b/Documentation/thermal/power_actor.txt
-@@ -0,0 +1,56 @@
-+Power Actor API
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+The base power actor API is meant to be used to derive specific power
-+actors, such as a cpu power actor.  Power actors can be registered by
-+calling `power_actor_register()` and should be unregistered by calling
-+`power_actor_unregister()` with the `struct power_actor *` received in
-+the call to `power_actor_register()`.
-+
-+This can't be implemented using the cooling device API because:
-+
-+1.  get_max_state() gives you the maximum cooling state which, for
-+    passive devices, is the minimum performance (frequency in case of
-+    cpufreq cdev).  get_max_power() gives you the maximum power, which
-+    gives you the maximum performance (frequency in the case of CPUs,
-+    GPUs and buses)
-+
-+2.  You need to pass the thermal_zone_device to all the callbacks,
-+    something that the current cooling device API doesn't do.
-+
-+Callbacks
-+---------
-+
-+1. u32 get_req_power(struct power_actor *actor,
-+=09=09=09=09=09struct thermal_zone_device *tz)
-+@actor: a valid `struct power_actor *` registered with
-+        `power_actor_register()`
-+@tz:=09the thermal zone closest to the actor (typically, the thermal
-+=09=09zone the caller is operating on)
-+
-+`get_req_power()` returns the current requested power in milliwatts.
-+
-+2. u32 get_max_power(struct power_actor *actor,
-+=09=09=09=09=09struct thermal_zone_device *tz)
-+@actor: a valid `struct power_actor *` registered with
-+        `power_actor_register()`
-+@tz:=09the thermal zone closest to the actor (typically, the thermal
-+=09=09zone the caller is operating on)
-+
-+`get_max_power()` returns the maximum power that the device could
-+consume if it was fully utilized.  It's a function as some devices'
-+maximum power consumption can change due to external factors such as
-+temperature.
-+
-+3. int set_power(struct power_actor *actor,
-+=09=09=09=09struct thermal_zone_device *tz, u32 power)
-+@actor: a valid `struct power_actor *` registered with
-+        `power_actor_register()`
-+@tz:=09the thermal zone closest to the actor (typically, the thermal
-+=09=09zone the caller is operating on)
-+@power: power in milliwatts
-+
-+`set_power()` should configure the device to consume @power
-+milliwatts.
-+
-+Returns 0 on success, -E* on error.
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index f9a13867cb70..ce4ebe17252c 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -89,6 +89,9 @@ config THERMAL_GOV_USER_SPACE
- =09help
- =09  Enable this to let the user space manage the platform thermals.
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Docume=
+ntation/devicetree/bindings/thermal/thermal.txt
+index f5db6b72a36f..c6eb9a8d2aed 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -167,6 +167,10 @@ Optional property:
+ =09=09=09by means of sensor ID. Additional coefficients are
+ =09=09=09interpreted as constant offset.
 =20
-+config THERMAL_POWER_ACTOR
-+=09bool
++- sustainable-power:=09An estimate of the sustainable power (in mW) that t=
+he
++  Type: unsigned=09thermal zone can dissipate.
++  Size: one cell
 +
- config CPU_THERMAL
- =09bool "generic cpu cooling support"
- =09depends on CPU_FREQ
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index de0636a57a64..d83aa42ab573 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -14,6 +14,9 @@ thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)=09+=3D fair_=
-share.o
- thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)=09+=3D step_wise.o
- thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)=09+=3D user_space.o
+ Note: The delay properties are bound to the maximum dT/dt (temperature
+ derivative over time) in two situations for a thermal zone:
+ (i)  - when passive cooling is activated (polling-delay-passive); and
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 04b1be7fa018..eaf81ea654b9 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -769,6 +769,7 @@ int __init of_parse_thermal_zones(void)
+ =09for_each_child_of_node(np, child) {
+ =09=09struct thermal_zone_device *zone;
+ =09=09struct thermal_zone_params *tzp;
++=09=09u32 prop;
 =20
-+# power actors
-+obj-$(CONFIG_THERMAL_POWER_ACTOR) +=3D power_actor.o
-+
- # cpufreq cooling
- thermal_sys-$(CONFIG_CPU_THERMAL)=09+=3D cpu_cooling.o
+ =09=09tz =3D thermal_of_build_thermal_zone(child);
+ =09=09if (IS_ERR(tz)) {
+@@ -791,6 +792,9 @@ int __init of_parse_thermal_zones(void)
+ =09=09/* No hwmon because there might be hwmon drivers registering */
+ =09=09tzp->no_hwmon =3D true;
 =20
-diff --git a/drivers/thermal/power_actor.c b/drivers/thermal/power_actor.c
-new file mode 100644
-index 000000000000..d4f7bdbe371e
---- /dev/null
-+++ b/drivers/thermal/power_actor.c
-@@ -0,0 +1,68 @@
-+/*
-+ * Basic interface for power actors
-+ *
-+ * Copyright (C) 2014 ARM Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
++=09=09if (!of_property_read_u32(child, "sustainable-power", &prop))
++=09=09=09tzp->sustainable_power =3D prop;
 +
-+#define pr_fmt(fmt) "Power actor: " fmt
-+
-+#include <linux/err.h>
-+#include <linux/list.h>
-+#include <linux/mutex.h>
-+#include <linux/slab.h>
-+
-+#include "power_actor.h"
-+
-+LIST_HEAD(actor_list);
-+DEFINE_MUTEX(actor_list_lock);
-+
-+/**
-+ * power_actor_register() - Register an actor in the power actor API
-+ * @ops:=09&struct power_actor_ops for this actor
-+ * @privdata:=09pointer to private data related to the actor
-+ *
-+ * Return: The &struct power_actor * on success, ERR_PTR() on failure
-+ */
-+struct power_actor *power_actor_register(struct power_actor_ops *ops,
-+=09=09=09=09=09void *privdata)
-+{
-+=09struct power_actor *actor;
-+
-+=09if (!ops->get_req_power || !ops->get_max_power || !ops->set_power)
-+=09=09return ERR_PTR(-EINVAL);
-+
-+=09actor =3D kzalloc(sizeof(*actor), GFP_KERNEL);
-+=09if (!actor)
-+=09=09return ERR_PTR(-ENOMEM);
-+
-+=09actor->ops =3D ops;
-+=09actor->data =3D privdata;
-+
-+=09mutex_lock(&actor_list_lock);
-+=09list_add(&actor->actor_node, &actor_list);
-+=09mutex_unlock(&actor_list_lock);
-+
-+=09return actor;
-+}
-+
-+/**
-+ * power_actor_unregister() - Unregister an actor
-+ * @actor:=09the actor to unregister
-+ */
-+void power_actor_unregister(struct power_actor *actor)
-+{
-+=09mutex_lock(&actor_list_lock);
-+=09list_del(&actor->actor_node);
-+=09mutex_unlock(&actor_list_lock);
-+
-+=09kfree(actor);
-+}
-diff --git a/drivers/thermal/power_actor.h b/drivers/thermal/power_actor.h
-new file mode 100644
-index 000000000000..d3ae3ea80387
---- /dev/null
-+++ b/drivers/thermal/power_actor.h
-@@ -0,0 +1,61 @@
-+/*
-+ * Copyright (C) 2014 ARM Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef __POWER_ACTOR_H__
-+#define __POWER_ACTOR_H__
-+
-+#include <linux/list.h>
-+#include <linux/mutex.h>
-+
-+struct power_actor;
-+
-+/**
-+ * struct power_actor_ops - callbacks for power actors
-+ * @get_req_power:=09return the current requested power in milliwatts
-+ * @get_max_power:=09return the max power that the device can currently
-+ *=09=09=09consume in milliwatts
-+ * @set_power:=09=09configure the device to consume a certain power in
-+ *=09=09=09milliwatts
-+ */
-+struct power_actor_ops {
-+=09u32 (*get_req_power)(struct power_actor *,
-+=09=09=09struct thermal_zone_device *);
-+=09u32 (*get_max_power)(struct power_actor *,
-+=09=09=09struct thermal_zone_device *);
-+=09int (*set_power)(struct power_actor *, struct thermal_zone_device *,
-+=09=09=09u32);
-+};
-+
-+/**
-+ * struct power_actor - structure for a power actor
-+ * @ops:=09callbacks for the power actor
-+ * @data:=09a private pointer for type-specific data
-+ * @actor_node:=09node in actor_list
-+ */
-+struct power_actor {
-+=09struct power_actor_ops *ops;
-+=09void *data;
-+=09struct list_head actor_node;
-+};
-+
-+struct power_actor *power_actor_register(struct power_actor_ops *ops,
-+=09=09=09=09=09void *privdata);
-+void power_actor_unregister(struct power_actor *actor);
-+
-+extern struct list_head actor_list;
-+extern struct mutex actor_list_lock;
-+
-+#endif /* __POWER_ACTOR_H__ */
+ =09=09zone =3D thermal_zone_device_register(child->name, tz->ntrips,
+ =09=09=09=09=09=09    0, tz,
+ =09=09=09=09=09=09    ops, tzp,
 --=20
 1.9.1
+
+
