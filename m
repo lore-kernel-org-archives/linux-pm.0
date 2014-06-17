@@ -1,44 +1,40 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH] intel_pstate: Correct rounding in busy calculation again
-Date: Tue, 17 Jun 2014 09:56:19 -0700
-Message-ID: <1403024179-26280-1-git-send-email-dsmythies@telus.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:62856 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965332AbaFQQ4m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 12:56:42 -0400
-Received: by mail-pd0-f171.google.com with SMTP id fp1so2499725pdb.30
-        for <linux-pm@vger.kernel.org>; Tue, 17 Jun 2014 09:56:42 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: Re: [RFC PATCH 1/4] memory: tegra124-emc: Add EMC driver
+Date: Tue, 17 Jun 2014 19:59:35 +0300
+Message-ID: <53A073F7.20700@kapsi.fi>
+References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com> <1402925713-25426-2-git-send-email-tomeu.vizoso@collabora.com> <539F4D44.3070309@wwwdotorg.org> <53A03186.3040703@collabora.com> <53A069B6.6070902@wwwdotorg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53A069B6.6070902@wwwdotorg.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@linaro.org>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, dsmythies@telus.net, dirk.brandewie@gmail.com
 
-There was a mistake in the actual rounding portion of the previous patch,
-such that the rounding was asymetric and incorrect.
-(see also: f0fe3cd7e12d8290c82284b5c8aee723cbd0371a intel_pstate: Correct rounding in busy calculation)
+On 06/17/2014 07:15 PM, Stephen Warren wrote:
+> On 06/17/2014 06:16 AM, Tomeu Vizoso wrote:
+>> On 06/16/2014 10:02 PM, Stephen Warren wrote:
+>>> On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
+>
+>>> This binding looks quite anaemic vs.
+>>> Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-emc.txt; I
+>>> would expect that this binding needs all the EMC register data from the
+>>> tegra20-emc binding too. Can the two bindings be identical?
+>>
+>> There's even less stuff needed right now, as all what ultimately the EMC
+>> driver does is call clk_set_rate on the EMC clock. As the T124 EMC
+>> driver gains more features, they should get more similar.
+>
+> IIRC, even changing the EMC clock rate requires modifying the memory
+> controller's programming (e.g. delays/taps/tuning etc.). That's exactly
+> what the more complex stuff in the nvidia,tegra20-emc.txt is all about.
+> I not convinced that a driver that just modifies the clock rate without
+> adjusting the EMC programming will work reliably.
 
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
----
- drivers/cpufreq/intel_pstate.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 4e7f492..924bb2d 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -196,10 +196,7 @@ static signed int pid_calc(struct _pid *pid, int32_t busy)
- 	pid->last_err = fp_error;
- 
- 	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
--	if (result >= 0)
--		result = result + (1 << (FRAC_BITS-1));
--	else
--		result = result - (1 << (FRAC_BITS-1));
-+	result = result + (1 << (FRAC_BITS-1));
- 	return (signed int)fp_toint(result);
- }
- 
--- 
-1.9.1
-
+Indeed, changing the EMC clock rate is a somewhat complicated sequence 
+of ~10 steps. The kernel even won't let one the rate be change directly, 
+as the change would be propagated to PLL_M which cannot have its rate 
+changed while it is enabled. I suppose the sequence should be hidden in 
+the EMC clk's set_rate implementation, which I guess would leave just 
+the rate policy to this driver.
