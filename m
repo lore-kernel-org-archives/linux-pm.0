@@ -1,52 +1,49 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH] intel_pstate: Correct rounding in busy calculation
-Date: Tue, 17 Jun 2014 13:36:10 -0700
-Message-ID: <1403037370-3484-1-git-send-email-dsmythies@telus.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 0/2] make kASLR vs hibernation boot-time selectable
+Date: Tue, 17 Jun 2014 23:07:23 +0200
+Message-ID: <4620697.7oeP2zTOEF@vostro.rjw.lan>
+References: <1402691436-20138-1-git-send-email-keescook@chromium.org> <2113876.sBNaASbVKF@vostro.rjw.lan> <CAGXu5jKpSqu6-AeHoiEhBzEYSujthT_UeHNSUKQ6TXhg-S=SPg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:58081 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933275AbaFQUgc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 16:36:32 -0400
-Received: by mail-pa0-f50.google.com with SMTP id bj1so4320290pad.9
-        for <linux-pm@vger.kernel.org>; Tue, 17 Jun 2014 13:36:32 -0700 (PDT)
+Received: from v094114.home.net.pl ([79.96.170.134]:52296 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S964783AbaFQUtt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 16:49:49 -0400
+In-Reply-To: <CAGXu5jKpSqu6-AeHoiEhBzEYSujthT_UeHNSUKQ6TXhg-S=SPg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, dsmythies@telus.net, dirk.brandewie@gmail.com
+To: Kees Cook <keescook@chromium.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@fedoraproject.org>, "H. Peter Anvin" <hpa@zytor.com>, Randy Dunlap <rdunlap@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org
 
-There was a mistake in the actual rounding portion this previous patch:
-f0fe3cd7e12d8290c82284b5c8aee723cbd0371a intel_pstate: Correct rounding in busy calculation
-such that the rounding was asymetric and incorrect.
+On Friday, June 13, 2014 11:09:15 PM Kees Cook wrote:
+> On Fri, Jun 13, 2014 at 4:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Friday, June 13, 2014 01:30:34 PM Kees Cook wrote:
+> >> Distros want to be able to offer CONFIG_RANDOMIZE_BASE as well as
+> >> CONFIG_HIBERNATION in a single kernel. Instead of making kASLR depend on
+> >> !HIBERNATION at compile time, allow kaslr to be selectable at boot time
+> >> (via "kaslr" kernel command line), which will disable hibernation in the
+> >> kernel. In this way the end user can choose which feature they want more
+> >> with hibernation continuing to stay enabled by default (no surprises).
+> >>
+> >> This also has the benefit of being able to entirely disable hibernation
+> >> from the kernel command line, regardless of kASLR, which is a separately
+> >> desired feature as well.
+> >>
+> >> v3:
+> >> - switch from EINVAL to EPERM (pavel, jwboyer)
+> >> v2:
+> >> - rework using kernel command line instead of hibernation_mode (rjw)
+> >
+> > That looks kind of OK.
+> >
+> > Do you want me to push this through my tree?
+> 
+> Thanks, yes, that would be great.
 
-Severity: Not very serious, but can increase target pstate by one extra value.
-For real world work flows the issue should self correct (but I have no proof).
-It is the equivalent of different PID gains for positive and negative numbers.
+OK, both applied, thanks!
 
-Examples:
--3.000000 used to round to -4, rounds to -3 with this patch.
--3.503906 used to round to -5, rounds to -4 with this patch.
-
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
----
- drivers/cpufreq/intel_pstate.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 4e7f492..924bb2d 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -196,10 +196,7 @@ static signed int pid_calc(struct _pid *pid, int32_t busy)
- 	pid->last_err = fp_error;
- 
- 	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
--	if (result >= 0)
--		result = result + (1 << (FRAC_BITS-1));
--	else
--		result = result - (1 << (FRAC_BITS-1));
-+	result = result + (1 << (FRAC_BITS-1));
- 	return (signed int)fp_toint(result);
- }
- 
 -- 
-1.9.1
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
