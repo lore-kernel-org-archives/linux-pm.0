@@ -1,82 +1,60 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: Re: [RFC PATCH 1/4] memory: tegra124-emc: Add EMC driver
-Date: Tue, 17 Jun 2014 14:16:06 +0200
-Message-ID: <53A03186.3040703@collabora.com>
-References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com> <1402925713-25426-2-git-send-email-tomeu.vizoso@collabora.com> <539F4D44.3070309@wwwdotorg.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled
+ and device suspended.
+Date: Tue, 17 Jun 2014 10:11:32 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1406171007000.1187-100000@iolanthe.rowland.org>
+References: <1901328.MvkshKEuEq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <539F4D44.3070309-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:38545 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932316AbaFQOLd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 10:11:33 -0400
+In-Reply-To: <1901328.MvkshKEuEq@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 06/16/2014 10:02 PM, Stephen Warren wrote:
-> On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
->> +
->> +Child device nodes describe the memory settings for different configurations and
->> +clock rates.
->
-> How do the child nodes do that? The binding needs to specify the format
-> of the child node.
+On Mon, 16 Jun 2014, Rafael J. Wysocki wrote:
 
-Sorry, that file was sent before I had finished removing the bits from 
-downstream that aren't needed yet. There's no current need for any child 
-nodes.
+> > For reasons having nothing to do with Allen's suggested change, I
+> > wonder if we shouldn't replace this line with something like:
+> > 
+> > -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+> > +	else if (dev->power.disable > 0 && !dev->power.is_suspended
+> > 	    && dev->power.runtime_status == RPM_ACTIVE)
+> > 		retval = 1;
+> > 
+> > It seems that I've been bitten by this several times in the past.  
+> > When a device is disabled for runtime PM, and more or less permanently
+> > stuck in the RPM_ACTIVE state, calls to pm_runtime_resume() or
+> > pm_runtime_get_sync() shouldn't fail.
+> > 
+> > For example, suppose some devices of a certain type support runtime 
+> > power management but others don't.  We naturally want to call 
+> > pm_runtime_disable() for the ones that don't.  But we also want the 
+> > same driver to work for all the devices, which means that 
+> > pm_runtime_get_sync() should return success -- otherwise the driver 
+> > will think that something has gone wrong.
+> > 
+> > Rafael, what do you think?
+> 
+> That condition is there specifically to take care of the system suspend
+> code path.  It means that if runtime PM is disabled, but it only has been
+> disabled by the system suspend code path, we should treat the device as
+> "active" (ie. return 1).  That won't work after the proposed change.
 
-> This binding looks quite anaemic vs.
-> Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-emc.txt; I
-> would expect that this binding needs all the EMC register data from the
-> tegra20-emc binding too. Can the two bindings be identical?
+Ah, yes, quite true.  Okay, suppose we replace that line with just:
 
-There's even less stuff needed right now, as all what ultimately the EMC 
-driver does is call clk_set_rate on the EMC clock. As the T124 EMC 
-driver gains more features, they should get more similar.
++	else if (dev->power.disable > 0
 
-> Can you explain what the nvidia,mc and nvidia,pmc references are needed
-> for? Hopefully, this driver isn't going to reach into those devices and
-> touch their registers directly.
+> I guess drivers that want to work with devices where runtime PM may be
+> disabled can just check the return value of rpm_resume() for -EACCES?
 
-Not really needed, see above.
+They could, but it's extra work and it's extremely easy to forget 
+about.  I'd prefer not to do things that way.
 
->> diff --git a/include/linux/platform_data/tegra_emc.h b/include/linux/platform_data/tegra_emc.h
->
-> A header file that defines platform data format isn't the correct place
-> to put the definitions of public APIs. I'd expect something more like
-> <linux/tegra-soc.h>.
+Alan Stern
 
-Sounds better indeed, thanks.
-
->> +#ifdef CONFIG_TEGRA124_EMC
->> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsigned long rate);
->> +void tegra124_emc_set_floor(unsigned long freq);
->> +void tegra124_emc_set_ceiling(unsigned long freq);
->> +#else
->> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsigned long rate)
->> +{ return -ENODEV; }
->> +void tegra124_emc_set_floor(unsigned long freq)
->> +{ return; }
->> +void tegra124_emc_set_ceiling(unsigned long freq)
->> +{ return; }
->> +#endif
->
-> I'll repeat what I said off-list so that we can have the whole
-> conversation on the list:
->
-> That looks like a custom Tegra-specific API. I think it'd be much better
-> to integrate this into the common clock framework as a standard clock
-> constraints API. There are other use-cases for clock constraints besides
-> EMC scaling (e.g. some in audio on Tegra, and I'm sure many on other
-> SoCs too).
-
-Yes, I wrote a bit in the cover letter about our requirements and how 
-they map to the CCF. Could you please comment on that?
-
-Thanks,
-
-Tomeu
-
-> See https://lkml.org/lkml/2014/5/16/569 for some previous discussion on
-> this topic.
