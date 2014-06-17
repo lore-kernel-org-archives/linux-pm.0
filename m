@@ -1,65 +1,123 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
-Date: Mon, 16 Jun 2014 23:29:17 +0200
-Message-ID: <1901328.MvkshKEuEq@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1406161329350.1292-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52910 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752582AbaFPVLp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jun 2014 17:11:45 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1406161329350.1292-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [RFC Patch V2 12/16] x86, irq, ACPI: implement interface to support ACPI based IOAPIC hot-addition
+Date: Tue, 17 Jun 2014 13:29:51 +0800
+Message-ID: <1402982995-13747-13-git-send-email-jiang.liu@linux.intel.com>
+References: <1402982995-13747-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1402982995-13747-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Grant Likely <grant.likely@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, June 16, 2014 01:40:05 PM Alan Stern wrote:
-> On Sat, 14 Jun 2014, Allen Yu wrote:
-> 
-> > --- a/drivers/base/power/runtime.c
-> > +++ b/drivers/base/power/runtime.c
-> > @@ -608,7 +608,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
-> >   repeat:
-> >  	if (dev->power.runtime_error)
-> >  		retval = -EINVAL;
-> > -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
-> > +	else if (dev->power.disable_depth == 1 && !dev->power.is_suspended
-> >  	    && dev->power.runtime_status == RPM_ACTIVE)
-> >  		retval = 1;
-> 
-> For reasons having nothing to do with Allen's suggested change, I
-> wonder if we shouldn't replace this line with something like:
-> 
-> -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
-> +	else if (dev->power.disable > 0 && !dev->power.is_suspended
-> 	    && dev->power.runtime_status == RPM_ACTIVE)
-> 		retval = 1;
-> 
-> It seems that I've been bitten by this several times in the past.  
-> When a device is disabled for runtime PM, and more or less permanently
-> stuck in the RPM_ACTIVE state, calls to pm_runtime_resume() or
-> pm_runtime_get_sync() shouldn't fail.
-> 
-> For example, suppose some devices of a certain type support runtime 
-> power management but others don't.  We naturally want to call 
-> pm_runtime_disable() for the ones that don't.  But we also want the 
-> same driver to work for all the devices, which means that 
-> pm_runtime_get_sync() should return success -- otherwise the driver 
-> will think that something has gone wrong.
-> 
-> Rafael, what do you think?
+Implement acpi_register_ioapic() and enhance mp_register_ioapic()
+to support ACPI based IOAPIC hot-addition.
 
-That condition is there specifically to take care of the system suspend
-code path.  It means that if runtime PM is disabled, but it only has been
-disabled by the system suspend code path, we should treat the device as
-"active" (ie. return 1).  That won't work after the proposed change.
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/x86/kernel/acpi/boot.c    |   37 +++++++++++++++++++++++++++++++++++--
+ arch/x86/kernel/apic/io_apic.c |   27 ++++++++++++++++++++++++---
+ 2 files changed, 59 insertions(+), 5 deletions(-)
 
-I guess drivers that want to work with devices where runtime PM may be
-disabled can just check the return value of rpm_resume() for -EACCES?
-
-Rafael
-
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 120b573f1e96..85caf3221cde 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -768,8 +768,41 @@ EXPORT_SYMBOL(acpi_unmap_lsapic);
+ 
+ int acpi_register_ioapic(acpi_handle handle, u64 phys_addr, u32 gsi_base)
+ {
+-	/* TBD */
+-	return -EINVAL;
++	int ret = -ENOSYS;
++#ifdef CONFIG_ACPI_HOTPLUG_IOAPIC
++	int ioapic_id;
++	u64 addr;
++	struct ioapic_domain_cfg cfg = {
++		.type = IOAPIC_DOMAIN_DYNAMIC,
++		.ops = &acpi_irqdomain_ops,
++	};
++
++	ioapic_id = acpi_get_ioapic_id(handle, gsi_base, &addr);
++	if (ioapic_id >= 0) {
++		if (addr != phys_addr) {
++			acpi_handle_warn(handle,
++				"IOAPIC physical address doesn't match.\n");
++			return -EINVAL;
++		}
++	} else  {
++		unsigned long long uid;
++		acpi_status status;
++
++		status = acpi_evaluate_integer(handle, METHOD_NAME__UID,
++					       NULL, &uid);
++		if (ACPI_FAILURE(status)) {
++			acpi_handle_warn(handle, "failed to get IOAPIC ID.\n");
++			return -EINVAL;
++		}
++		ioapic_id = (int)uid;
++	}
++
++	down_write(&acpi_ioapic_rwsem);
++	ret  = mp_register_ioapic(ioapic_id, phys_addr, gsi_base, &cfg);
++	up_write(&acpi_ioapic_rwsem);
++#endif
++
++	return ret;
+ }
+ 
+ EXPORT_SYMBOL(acpi_register_ioapic);
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index e1cce02e9f55..d26fd3ac1b4b 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3842,7 +3842,13 @@ static int bad_ioapic_register(int idx)
+ 
+ static int find_free_ioapic_entry(void)
+ {
+-	return nr_ioapics;
++	int idx;
++
++	for (idx = 0; idx < MAX_IO_APICS; idx++)
++		if (ioapics[idx].nr_registers == 0)
++			return idx;
++
++	return MAX_IO_APICS;
+ }
+ 
+ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+@@ -3858,8 +3864,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+ 	}
+ 	for_each_ioapic(ioapic)
+ 		if (ioapics[ioapic].mp_config.apicaddr == address) {
+-			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+-				address, ioapic);
++			/*
++			 * IOAPIC unit may also be visible in PCI scope.
++			 * When ioapic PCI driver's probe() is called,
++			 * the IOAPIC unit may have already been initialized
++			 * at boot time.
++			 */
++			if (!ioapic_initialized)
++				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
++					address, ioapic);
+ 			return -EEXIST;
+ 		}
+ 
+@@ -3909,6 +3922,14 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+ 	ioapics[idx].irqdomain = NULL;
+ 	ioapics[idx].irqdomain_cfg = *cfg;
+ 
++	if (ioapic_initialized) {
++		if (mp_irqdomain_create(idx)) {
++			clear_fixmap(FIX_IO_APIC_BASE_0 + idx);
++			return -ENOMEM;
++		}
++		alloc_ioapic_saved_registers(idx);
++	}
++
+ 	if (gsi_cfg->gsi_end >= gsi_top)
+ 		gsi_top = gsi_cfg->gsi_end + 1;
+ 	if (nr_ioapics <= idx)
+-- 
+1.7.10.4
