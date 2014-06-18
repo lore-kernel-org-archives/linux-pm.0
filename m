@@ -1,94 +1,59 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [RFC PATCH 1/4] memory: tegra124-emc: Add EMC driver
-Date: Wed, 18 Jun 2014 11:46:49 -0600
-Message-ID: <53A1D089.8010605@wwwdotorg.org>
-References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
- <1402925713-25426-2-git-send-email-tomeu.vizoso@collabora.com>
- <539F4D44.3070309@wwwdotorg.org> <53A03186.3040703@collabora.com>
- <53A069B6.6070902@wwwdotorg.org> <53A1CB23.5090307@collabora.com>
+From: Sebastian Capella <sebcape@gmail.com>
+Subject: Re: [PATCH v4 1/6] Documentation: arm: define DT idle states bindings
+Date: Wed, 18 Jun 2014 11:20:11 -0700
+Message-ID: <CAPd3N-9J7m_cqLgG0PgkGaZvnqSr9WrdOtWAC5_gA4_9qjSOfQ@mail.gmail.com>
+References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com>
+	<1402503520-8611-2-git-send-email-lorenzo.pieralisi@arm.com>
+	<alpine.LFD.2.11.1406111240010.25775@knanqh.ubzr>
+	<20140613164954.GA16745@e102568-lin.cambridge.arm.com>
+	<alpine.LFD.2.11.1406131306160.25775@knanqh.ubzr>
+	<20140618173648.GB31573@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <53A1CB23.5090307@collabora.com>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@linaro.org>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f172.google.com ([209.85.213.172]:54930 "EHLO
+	mail-ig0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871AbaFRSUM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 14:20:12 -0400
+In-Reply-To: <20140618173648.GB31573@e102568-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie>
 
-On 06/18/2014 11:23 AM, Tomeu Vizoso wrote:
-> On 06/17/2014 06:15 PM, Stephen Warren wrote:
->> On 06/17/2014 06:16 AM, Tomeu Vizoso wrote:
->>> On 06/16/2014 10:02 PM, Stephen Warren wrote:
->>>> On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
->>>>> +#ifdef CONFIG_TEGRA124_EMC
->>>>> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsigned
->>>>> long rate);
->>>>> +void tegra124_emc_set_floor(unsigned long freq);
->>>>> +void tegra124_emc_set_ceiling(unsigned long freq);
->>>>> +#else
->>>>> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsigned
->>>>> long rate)
->>>>> +{ return -ENODEV; }
->>>>> +void tegra124_emc_set_floor(unsigned long freq)
->>>>> +{ return; }
->>>>> +void tegra124_emc_set_ceiling(unsigned long freq)
->>>>> +{ return; }
->>>>> +#endif
->>>>
->>>> I'll repeat what I said off-list so that we can have the whole
->>>> conversation on the list:
->>>>
->>>> That looks like a custom Tegra-specific API. I think it'd be much
->>>> better
->>>> to integrate this into the common clock framework as a standard clock
->>>> constraints API. There are other use-cases for clock constraints
->>>> besides
->>>> EMC scaling (e.g. some in audio on Tegra, and I'm sure many on other
->>>> SoCs too).
->>>
->>> Yes, I wrote a bit in the cover letter about our requirements and how
->>> they map to the CCF. Could you please comment on that?
+On Wed, Jun 18, 2014 at 10:36 AM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Fri, Jun 13, 2014 at 06:33:35PM +0100, Nicolas Pitre wrote:
+>> On Fri, 13 Jun 2014, Lorenzo Pieralisi wrote:
 >>
->> My comments remain the same. I believe this is something that belongs in
->> the clock driver, or at the least, some API that takes a struct clock as
->> its parameter, so that drivers can use the existing DT clock lookup
->> mechanism.
-> 
-> Ok, let me put this strawman here to see if I have gotten close to what
-> you have in mind:
-> 
-> * add per-client accounting (Rabin's patches referenced before)
-> 
-> * add clk_set_floor, to be used by cpufreq, load stats, etc.
-> 
-> * add clk_set_ceiling, to be used by battery drivers, thermal, etc.
+>> > On Wed, Jun 11, 2014 at 07:15:16PM +0100, Nicolas Pitre wrote:
+>> > >
+>> > > ...__[EXEC]__|__[PREP]--|__[ENTRY]__|__[IDLE]__|___[EXIT]_--|__[EXEC]__...
+>> > >              |          |           |          |            |
+>> > >              |<-- entry-latency --->|
+>> > >                                                |<- exit-  ->|
+>> > >                                                |  latency   |
+>> > >              |<-------------- min-residency --------------->|
+>> > >                         |<----- worst_wakeup_latency ------>|
+>> > >
+>> > > entry-latency: Worst case latency required to enter the idle state.  The
+>> > > exit_latency may be guaranteed only after entry-latency has passed.
+>> > >
+>> > > min-residency: Minimum period, including preparation, entry and exit,
+>> > > for a given power mode to be worthwhile energy wise.  It must be at
+>> > > least equal to entry_latency + exit_latency.
+>
+> Ok, a minor tweak to the diagram above, min-residency should include
+> energy costs related to idle entry and exit, but not the exit-latency
+> itself, as long as the energy costs implied by exiting the state are
+> factored out in the min-residency-us property.
 
-Yes. I'd expect those to be maintained per-client, and so the clock core
-(or whatever higher level code implements clk_set_floor/ceiling)
-performs the logic that "blends" together all the different requests
-from different clients.
+This makes sense to me..
 
-As an aside, for audio usage, I would expect clk_set_rate to be a
-per-client (rather than per HW clock) operation too, and to error out if
-one client says it wants to set pll_a to the rate needed for
-44.1KHz-based audio and a different client wants the rate for
-48KHz-based audio.
+It includes accounting for the energy cost vs WFI of prep/entry/exit,
+but timing is from the end of the previous exec, until the event is
+expected to trigger.
 
-> * an EMC driver would collect bandwidth and latency requests from
-> consumers and call clk_set_floor on the EMC clock.
-> 
-> * the EMC driver would also register for rate change notifications in
-> the EMC clock and would update the latency allowance registers at that
-> point.
-> 
-> How does it sound?
+Thanks!
 
-At a high level, yes this sounds about right to me.
+Sebastian
