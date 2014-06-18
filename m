@@ -1,264 +1,173 @@
-From: Erich Eickmeyer <erich@ericheickmeyer.com>
-Subject: Re: Kernel Fails on Acer Aspire E1-510P
-Date: Wed, 18 Jun 2014 23:09:50 -0007
-Message-ID: <1403133410.17996.3@smtp.gmail.com>
-References: <1403120393.5670.0@smtp.gmail.com> <53A20530.2000203@intel.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [RFC PATCH 1/4] memory: tegra124-emc: Add EMC driver
+Date: Thu, 19 Jun 2014 01:20:53 +0200
+Message-ID: <20140618232049.GH26514@mithrandir>
+References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1402925713-25426-2-git-send-email-tomeu.vizoso@collabora.com>
+ <539F4D44.3070309@wwwdotorg.org>
+ <53A03186.3040703@collabora.com>
+ <53A069B6.6070902@wwwdotorg.org>
+ <53A1CB23.5090307@collabora.com>
+ <20140618220008.GC26514@mithrandir>
+ <CACP_E+Jr5QyYm92Mc2=WVhKMbk=9Ty1fvJuH+fqOmDnYmdqFRg@mail.gmail.com>
+ <53A213C3.2020207@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <53A20530.2000203@intel.com>
-Sender: stable-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: dirk.j.brandewie@intel.com, stable <stable@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fd5uyaI9j6xoeUBo"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f42.google.com ([74.125.82.42]:42876 "EHLO
+	mail-wg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755053AbaFRXU7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 19:20:59 -0400
+Content-Disposition: inline
+In-Reply-To: <53A213C3.2020207@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: =?utf-8?B?U3TDqXBoYW5l?= Marchesin <stephane.marchesin@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, myungjoo.ham@samsung.com, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, linux-arm-kernel@lists.infradead.org
 
-Done. Thanks!
 
-Erich
+--fd5uyaI9j6xoeUBo
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 18, 2014 at 2:31 PM, Rafael J. Wysocki 
-<rafael.j.wysocki@intel.com> wrote:
-> On 6/18/2014 9:32 PM, Erich Eickmeyer wrote:
->> Dear Mr. Brandewie, et al,
->> 
->> I have noticed a kernel bug that causes it to fail to boot on my 
->> machine, an Acer Aspire E1-510P. The following is a transcription of 
->> the kernel panic:
->> 
-> 
-> Can you please add this information to bug 77951 at 
-> bugzilla.kernel.org
-> which is used to track problems with the commit you mention below?
-> 
-> Rafael
-> 
-> 
->>> Disabling lock debugging due to kernel taint
->>> mce: [Hardware Error]: CPU2: Machine Check Exception: 4 Bank 0: 
->>> b200000430000423
->>> mce: [Hardware Error]: TSC 365f6dc39e
->>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->>> APIC 4 microcode 31a
->>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>> mce: [Hardware Error]: CPU3: Machine Check Exception: 4 Bank 0: 
->>> b200000430000423
->>> mce: [Hardware Error]: TSC 365f6fa2e4
->>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->>> APIC 6 microcode 31a
->>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>> mce: [Hardware Error]: CPU1: Machine Check Exception: 4 Bank 0: 
->>> b200000010000000
->>> mce: [Hardware Error]: TSC 365f73e988
->>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->>> APIC 2 microcode 31a
->>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>> mce: [Hardware Error]: CPU0: Machine Check Exception: 4 Bank 0: 
->>> b200000010000000
->>> mce: [Hardware Error]: TSC 365f730e28
->>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 142862769 SOCKET 0 
->>> APIC 0 microcode 31a
->>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>> mce: [Hardware Error]: Machine Check: Processor context corrupt
->>> Kernel panic - not syncing: Fatal Machine check
->>> Kernel Offset: 0x0 from 0xffffffff81000000 (relocation range: 
->>> 0xffffffff80000000-0xfffffffff9fffffff)
->>> Rebooting in 90 seconds..
->>> 
->> 
->> Kernel bisection points to this commit:
->> 
->>> dd4c4afb005de0415ea06e3586b017e193c1539e is the first bad commit
->>> commit dd4c4afb005de0415ea06e3586b017e193c1539e
->>> Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>> Date: Thu May 8 12:57:23 2014 -0700
->>> 
->>>     intel_pstate: Set turbo VID for BayTrail
->>>         commit 21855ff5bcbdd075e1c99772827a84912ab083dd upstream.
->>>         A documentation update exposed that there is a separate set 
->>> of VID
->>>     values that must be used in the turbo/boost P state range. Add
->>>     enumerating and setting the correct VID for P states in the 
->>> turbo
->>>     range.
->>>         Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>     Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>> 
->>> :040000 040000 1a207dc8f511b005b02f023f0a4eaf74ee606181 
->>> a503e06ccecb12d7bdf1d8e2d87395d35a4c4ef0 M    drivers
->> 
->> Bisect log follows:
->> 
->>> git bisect start
->>> # good: [7261684765e4411dff5ec5ffbad52f5009a2941b] Linux 3.14.4
->>> git bisect good 7261684765e4411dff5ec5ffbad52f5009a2941b
->>> # bad: [a1bc295d7a4be9425bbeecc005d0cd013eb46cea] Linux 3.14.6
->>> git bisect bad a1bc295d7a4be9425bbeecc005d0cd013eb46cea
->>> # good: [0b86a50c92e0118117224d57a9b4aa79d33d98b0] hwmon: (emc1403) 
->>> fix inverted store_hyst()
->>> git bisect good 0b86a50c92e0118117224d57a9b4aa79d33d98b0
->>> # good: [512a588518fefae5dab75b89b734cfb64e53177b] Input: atkbd - 
->>> fix keyboard not working on some LG laptops
->>> git bisect good 512a588518fefae5dab75b89b734cfb64e53177b
->>> # good: [4cf3d5e62ea1868a963f6430eb7e40e46ac7295b] dm crypt: fix 
->>> cpu hotplug crash by removing per-cpu structure
->>> git bisect good 4cf3d5e62ea1868a963f6430eb7e40e46ac7295b
->>> # bad: [dd4c4afb005de0415ea06e3586b017e193c1539e] intel_pstate: Set 
->>> turbo VID for BayTrail
->>> git bisect bad dd4c4afb005de0415ea06e3586b017e193c1539e
->>> # good: [da33adbd92be1217c55adf3f164b35ff2238fd32] ACPI: Revert 
->>> "ACPI / Battery: Remove battery's proc directory"
->>> git bisect good da33adbd92be1217c55adf3f164b35ff2238fd32
->>> # good: [fcbe7574986518eb6896c18804dc77d8dfd879ea] ACPI / TPM: Fix 
->>> resume regression on Chromebooks
->>> git bisect good fcbe7574986518eb6896c18804dc77d8dfd879ea
->>> # good: [6a8702825dc2c66c7233c0b5d9b05a4cddec9eca] i2c: rcar: bail 
->>> out on zero length transfers
->>> git bisect good 6a8702825dc2c66c7233c0b5d9b05a4cddec9eca
->>> # good: [35493cad041359561d13dfd4c3c0df33cdd5ea4c] i2c: s3c2410: 
->>> resume race fix
->>> git bisect good 35493cad041359561d13dfd4c3c0df33cdd5ea4c
->>> # first bad commit: [dd4c4afb005de0415ea06e3586b017e193c1539e] 
->>> intel_pstate: Set turbo VID for BayTrail
->> 
->> /proc/cpuinfo:
->> 
->>> processor    : 0
->>> vendor_id    : GenuineIntel
->>> cpu family    : 6
->>> model        : 55
->>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>> stepping    : 3
->>> microcode    : 0x320
->>> cpu MHz        : 498.000
->>> cache size    : 1024 KB
->>> physical id    : 0
->>> siblings    : 4
->>> core id        : 0
->>> cpu cores    : 4
->>> apicid        : 0
->>> initial apicid    : 0
->>> fpu        : yes
->>> fpu_exception    : yes
->>> cpuid level    : 11
->>> wp        : yes
->>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->>> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->>> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good 
->>> nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor 
->>> ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->>> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->>> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->>> bogomips    : 4333.50
->>> clflush size    : 64
->>> cache_alignment    : 64
->>> address sizes    : 36 bits physical, 48 bits virtual
->>> power management:
->>> 
->>> processor    : 1
->>> vendor_id    : GenuineIntel
->>> cpu family    : 6
->>> model        : 55
->>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>> stepping    : 3
->>> microcode    : 0x320
->>> cpu MHz        : 1826.000
->>> cache size    : 1024 KB
->>> physical id    : 0
->>> siblings    : 4
->>> core id        : 1
->>> cpu cores    : 4
->>> apicid        : 2
->>> initial apicid    : 2
->>> fpu        : yes
->>> fpu_exception    : yes
->>> cpuid level    : 11
->>> wp        : yes
->>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->>> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->>> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good 
->>> nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor 
->>> ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->>> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->>> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->>> bogomips    : 4333.50
->>> clflush size    : 64
->>> cache_alignment    : 64
->>> address sizes    : 36 bits physical, 48 bits virtual
->>> power management:
->>> 
->>> processor    : 2
->>> vendor_id    : GenuineIntel
->>> cpu family    : 6
->>> model        : 55
->>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>> stepping    : 3
->>> microcode    : 0x320
->>> cpu MHz        : 498.000
->>> cache size    : 1024 KB
->>> physical id    : 0
->>> siblings    : 4
->>> core id        : 2
->>> cpu cores    : 4
->>> apicid        : 4
->>> initial apicid    : 4
->>> fpu        : yes
->>> fpu_exception    : yes
->>> cpuid level    : 11
->>> wp        : yes
->>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->>> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->>> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good 
->>> nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor 
->>> ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->>> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->>> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->>> bogomips    : 4333.50
->>> clflush size    : 64
->>> cache_alignment    : 64
->>> address sizes    : 36 bits physical, 48 bits virtual
->>> power management:
->>> 
->>> processor    : 3
->>> vendor_id    : GenuineIntel
->>> cpu family    : 6
->>> model        : 55
->>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>> stepping    : 3
->>> microcode    : 0x320
->>> cpu MHz        : 1992.000
->>> cache size    : 1024 KB
->>> physical id    : 0
->>> siblings    : 4
->>> core id        : 3
->>> cpu cores    : 4
->>> apicid        : 6
->>> initial apicid    : 6
->>> fpu        : yes
->>> fpu_exception    : yes
->>> cpuid level    : 11
->>> wp        : yes
->>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->>> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->>> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good 
->>> nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor 
->>> ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->>> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->>> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->>> bogomips    : 4333.50
->>> clflush size    : 64
->>> cache_alignment    : 64
->>> address sizes    : 36 bits physical, 48 bits virtual
->>> power management:
->> 
->> Let me know if you need any more information.
->> 
->> Thanks,
->> Erich Eickmeyer
->> 
->> 
->> 
->> -- To unsubscribe from this list: send the line "unsubscribe stable" 
->> in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Wed, Jun 18, 2014 at 04:33:39PM -0600, Stephen Warren wrote:
+> On 06/18/2014 04:19 PM, St=C3=A9phane Marchesin wrote:
+> > On Wed, Jun 18, 2014 at 3:00 PM, Thierry Reding
+> > <thierry.reding@gmail.com> wrote:
+> >> On Wed, Jun 18, 2014 at 07:23:47PM +0200, Tomeu Vizoso wrote:
+> >>> On 06/17/2014 06:15 PM, Stephen Warren wrote:
+> >>>> On 06/17/2014 06:16 AM, Tomeu Vizoso wrote:
+> >>>>> On 06/16/2014 10:02 PM, Stephen Warren wrote:
+> >>>>>> On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
+> >>>>>>> +#ifdef CONFIG_TEGRA124_EMC
+> >>>>>>> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsign=
+ed
+> >>>>>>> long rate);
+> >>>>>>> +void tegra124_emc_set_floor(unsigned long freq);
+> >>>>>>> +void tegra124_emc_set_ceiling(unsigned long freq);
+> >>>>>>> +#else
+> >>>>>>> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsign=
+ed
+> >>>>>>> long rate)
+> >>>>>>> +{ return -ENODEV; }
+> >>>>>>> +void tegra124_emc_set_floor(unsigned long freq)
+> >>>>>>> +{ return; }
+> >>>>>>> +void tegra124_emc_set_ceiling(unsigned long freq)
+> >>>>>>> +{ return; }
+> >>>>>>> +#endif
+> >>>>>>
+> >>>>>> I'll repeat what I said off-list so that we can have the whole
+> >>>>>> conversation on the list:
+> >>>>>>
+> >>>>>> That looks like a custom Tegra-specific API. I think it'd be much =
+better
+> >>>>>> to integrate this into the common clock framework as a standard cl=
+ock
+> >>>>>> constraints API. There are other use-cases for clock constraints b=
+esides
+> >>>>>> EMC scaling (e.g. some in audio on Tegra, and I'm sure many on oth=
+er
+> >>>>>> SoCs too).
+> >>>>>
+> >>>>> Yes, I wrote a bit in the cover letter about our requirements and h=
+ow
+> >>>>> they map to the CCF. Could you please comment on that?
+> >>>>
+> >>>> My comments remain the same. I believe this is something that belong=
+s in
+> >>>> the clock driver, or at the least, some API that takes a struct cloc=
+k as
+> >>>> its parameter, so that drivers can use the existing DT clock lookup
+> >>>> mechanism.
+> >>>
+> >>> Ok, let me put this strawman here to see if I have gotten close to wh=
+at you
+> >>> have in mind:
+> >>>
+> >>> * add per-client accounting (Rabin's patches referenced before)
+> >>>
+> >>> * add clk_set_floor, to be used by cpufreq, load stats, etc.
+> >>>
+> >>> * add clk_set_ceiling, to be used by battery drivers, thermal, etc.
+> >>>
+> >>> * an EMC driver would collect bandwidth and latency requests from con=
+sumers
+> >>> and call clk_set_floor on the EMC clock.
+> >>>
+> >>> * the EMC driver would also register for rate change notifications in=
+ the
+> >>> EMC clock and would update the latency allowance registers at that po=
+int.
+> >>
+> >> Latency allowance registers are part of the MC rather than the EMC. So=
+ I
+> >> think we have two options: a) have a unified driver for MC and EMC or =
+b)
+> >> provide two parts of the API in two drivers.
+> >>
+> >> Or perhaps c), create a generic framework that both MC and EMC can
+> >> register with (bandwidth for EMC, latency for MC).
+> >=20
+> > Is there any motivation for keeping MC and EMC separate? In my mind,
+> > the solution was always to handle those together.
+>=20
+> Well, they are documented as being separate HW modules in the TRM.
+>=20
+> I know there's an interlock in HW so that when the EMC clock is changed,
+> the EMC registers can flip atomically to a new configuration.
+>=20
+> I'm not aware of any similar HW interlock between MC and EMC registers.
+> That would imply that very tight co-ordination shouldn't be required.
+>=20
+> Do the MC latency allowance registers /really/ need to be *very tightly*
+> managed whenever the EMC clock is changed, or is it just a matter of it
+> being a good idea to update EMC clock and MC latency allowance registers
+> at roughly the same time?
+
+I guess depending on the timing you could get FIFO underflows if the
+registers aren't updated promptly enough. Once the programming takes
+effect things should be able to catch up again, but it's possible that
+there could be glitches.
+
+> Even if there's some co-ordination required,
+> maybe it can be handled rather like cpufreq notifications; use clock
+> pre-rate change notifications to set MC up in a way that'll work at both
+> old/new EMC clocks, and then clock post-rate notifications to the final
+> MC configuration?
+
+Yes, I think something like that should work. As I understand it, the
+latency allowance is dependent on the EMC frequency, so in case where
+the EMC frequency is increased, adjusting in a post-rate notifier should
+be fine. When the EMC frequency is decreased, then programming the
+latency allowance registers in a pre-rate notifier should allow glitch-
+free transition.
+
+Note that this is all purely theoretical knowledge, so I have no idea if
+it'll actually work like that in practice.
+
+Thierry
+
+--fd5uyaI9j6xoeUBo
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJToh7RAAoJEN0jrNd/PrOh54IQAKiTeCaIPral/GyzTMU3lq7N
+V4/msk3/27OFIIx2jEKBP1Lg62gEAcGH8ZQjjd/PXcE4ZVk72XolR6H9yrhRIMyr
+DilCFET9yik3vYyOoAL8aMRf6OHYyFw3owCWyV+s4P7ZFFKv3YWVRJ2ATD2l081G
+BbFVelm5uiarfMWLkUtqIGuN26MSl8Ynego8hYubZsgcDmU2y+KGW+JylQHyVL+k
+WSrMLDu/os8m2GK0q5XAeltfY24BSpE6DOTctjaE5ktqUzlTSjfh3AKZpHKbYucS
+1+0qdJrTJL8LWZjBvZMwO6kUdHmMMQTm1tWc+lNcxQmUANf4Yjv0TP0CV9zxLzmm
+czcHqBqevXvc6+Il/LYj4FbzVUJ2rovHLSTWcsq3K4Q6lxLPJFsZUZ0zQ9ravweu
+LHWxj2p8YRNFBmAUjSgBHSthAOvU4kFjwfv2e5FUHYRMHblrFODwdk5/OykfFujG
+g++sFoEWXslKk1zM2A+KUp8TNnBds0Iai+SyneTSxL3ULSw4zawO4BbmE2+xu4YD
+Fa78oGMMQTj+kI6IKOC2Tq0sNdZe8MigE6rdpKYtMFVSCQ6L7jl/D37UouKdYLvc
+cohbB4UqXPiVBHdyhbUyVWBCdvopI7MNG53JVbdB9VCMMAHqL6u7d/FrCn5Bfpq0
+cRIa9FnIdb3fmwjwM4zl
+=gKEi
+-----END PGP SIGNATURE-----
+
+--fd5uyaI9j6xoeUBo--
