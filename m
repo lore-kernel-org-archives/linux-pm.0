@@ -1,257 +1,308 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: Kernel Fails on Acer Aspire E1-510P
-Date: Wed, 18 Jun 2014 23:31:28 +0200
-Message-ID: <53A20530.2000203@intel.com>
-References: <1403120393.5670.0@smtp.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4 5/6] drivers: cpuidle: CPU idle ARM64 driver
+Date: Wed, 18 Jun 2014 23:34:06 +0200
+Message-ID: <53A205CE.4080201@linaro.org>
+References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com> <1402503520-8611-6-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1403120393.5670.0@smtp.gmail.com>
-Sender: stable-owner@vger.kernel.org
-To: Erich Eickmeyer <erich@ericheickmeyer.com>, dirk.j.brandewie@intel.com
-Cc: stable <stable@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:50043 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756046AbaFRVeI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 17:34:08 -0400
+Received: by mail-wi0-f182.google.com with SMTP id bs8so1869034wib.3
+        for <linux-pm@vger.kernel.org>; Wed, 18 Jun 2014 14:34:06 -0700 (PDT)
+In-Reply-To: <1402503520-8611-6-git-send-email-lorenzo.pieralisi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
 
-On 6/18/2014 9:32 PM, Erich Eickmeyer wrote:
-> Dear Mr. Brandewie, et al,
+On 06/11/2014 06:18 PM, Lorenzo Pieralisi wrote:
+> This patch implements a generic CPU idle driver for ARM64 machines.
 >
-> I have noticed a kernel bug that causes it to fail to boot on my 
-> machine, an Acer Aspire E1-510P. The following is a transcription of 
-> the kernel panic:
+> It relies on the DT idle states infrastructure to initialize idle
+> states count and respective parameters. Current code assumes the driv=
+er
+> is managing idle states on all possible CPUs but can be easily
+> generalized to support heterogenous systems and build cpumasks at
+> runtime using MIDRs or DT cpu nodes compatible properties.
+>
+> Suspend back-ends (eg PSCI) must register a suspend initializer with
+> the CPU idle driver so that the suspend backend call can be detected,
+> and the driver code can call the back-end infrastructure to complete =
+the
+> suspend backend initialization.
+>
+> Idle state index 0 is always initialized as a simple wfi state, ie al=
+ways
+> considered present and functional on all ARM64 platforms.
+>
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> ---
+>   drivers/cpuidle/Kconfig         |   5 ++
+>   drivers/cpuidle/Kconfig.arm64   |  13 ++++
+>   drivers/cpuidle/Makefile        |   4 +
+>   drivers/cpuidle/cpuidle-arm64.c | 168 +++++++++++++++++++++++++++++=
++++++++++++
+>   4 files changed, 190 insertions(+)
+>   create mode 100644 drivers/cpuidle/Kconfig.arm64
+>   create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+>
+> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+> index 760ce20..360c086 100644
+> --- a/drivers/cpuidle/Kconfig
+> +++ b/drivers/cpuidle/Kconfig
+> @@ -44,6 +44,11 @@ depends on ARM
+>   source "drivers/cpuidle/Kconfig.arm"
+>   endmenu
+>
+> +menu "ARM64 CPU Idle Drivers"
+> +depends on ARM64
+> +source "drivers/cpuidle/Kconfig.arm64"
+> +endmenu
+> +
+>   menu "MIPS CPU Idle Drivers"
+>   depends on MIPS
+>   source "drivers/cpuidle/Kconfig.mips"
+> diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.=
+arm64
+> new file mode 100644
+> index 0000000..b83612c
+> --- /dev/null
+> +++ b/drivers/cpuidle/Kconfig.arm64
+> @@ -0,0 +1,13 @@
+> +#
+> +# ARM64 CPU Idle drivers
+> +#
+> +
+> +config ARM64_CPUIDLE
+> +	bool "Generic ARM64 CPU idle Driver"
+> +	select OF_IDLE_STATES
+> +	help
+> +	  Select this to enable generic cpuidle driver for ARM v8.
+> +	  It provides a generic idle driver whose idle states are configure=
+d
+> +	  at run-time through DT nodes. The CPUidle suspend backend is
+> +	  initialized by the device tree parsing code on matching the entry
+> +	  method to the respective CPU operations.
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index d5ebf4b..e496242 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -23,6 +23,10 @@ obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        +=3D cpuid=
+le-exynos.o
+>   obj-$(CONFIG_MIPS_CPS_CPUIDLE)		+=3D cpuidle-cps.o
+>
+>   ###################################################################=
+############
+> +# ARM64 drivers
+> +obj-$(CONFIG_ARM64_CPUIDLE)		+=3D cpuidle-arm64.o
+> +
+> +####################################################################=
+###########
+>   # POWERPC drivers
+>   obj-$(CONFIG_PSERIES_CPUIDLE)		+=3D cpuidle-pseries.o
+>   obj-$(CONFIG_POWERNV_CPUIDLE)		+=3D cpuidle-powernv.o
+> diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidl=
+e-arm64.c
+> new file mode 100644
+> index 0000000..4c932f8
+> --- /dev/null
+> +++ b/drivers/cpuidle/cpuidle-arm64.c
+> @@ -0,0 +1,168 @@
+> +/*
+> + * ARM64 generic CPU idle driver.
+> + *
+> + * Copyright (C) 2014 ARM Ltd.
+> + * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#define pr_fmt(fmt) "CPUidle arm64: " fmt
+> +
+> +#include <linux/cpuidle.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/cpu_pm.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +
+> +#include <asm/psci.h>
+> +#include <asm/suspend.h>
+> +
+> +#include "of_idle_states.h"
+> +
+> +typedef int (*suspend_init_fn)(struct cpuidle_driver *,
+> +			       struct device_node *[]);
+> +
+> +struct cpu_suspend_ops {
+> +	const char *id;
+> +	suspend_init_fn init_fn;
+> +};
+> +
+> +static const struct cpu_suspend_ops suspend_operations[] __initconst=
+ =3D {
+> +	{"arm,psci", psci_dt_register_idle_states},
+> +	{}
+> +};
+> +
+> +static __init const struct cpu_suspend_ops *get_suspend_ops(const ch=
+ar *str)
+> +{
+> +	int i;
+> +
+> +	if (!str)
+> +		return NULL;
+> +
+> +	for (i =3D 0; suspend_operations[i].id; i++)
+> +		if (!strcmp(suspend_operations[i].id, str))
+> +			return &suspend_operations[i];
+> +
+> +	return NULL;
+> +}
+> +
+> +/*
+> + * arm_enter_idle_state - Programs CPU to enter the specified state
+> + *
+> + * dev: cpuidle device
+> + * drv: cpuidle driver
+> + * idx: state index
+> + *
+> + * Called from the CPUidle framework to program the device to the
+> + * specified target state selected by the governor.
+> + */
+> +static int arm_enter_idle_state(struct cpuidle_device *dev,
+> +				struct cpuidle_driver *drv, int idx)
+> +{
+> +	int ret;
+> +
+> +	if (!idx) {
+> +		cpu_do_idle();
+> +		return idx;
+> +	}
+> +
+> +	cpu_pm_enter();
+> +	/*
+> +	 * Pass idle state index to cpu_suspend which in turn will call
+> +	 * the CPU ops suspend protocol with idle index as a parameter.
+> +	 *
+> +	 * Some states would not require context to be saved and flushed
+> +	 * to DRAM, so calling cpu_suspend would not be stricly necessary.
+> +	 * When power domains specifications for ARM CPUs are finalized the=
+n
+> +	 * this code can be optimized to prevent saving registers if not
+> +	 * needed.
+> +	 */
+> +	ret =3D cpu_suspend(idx);
+> +
+> +	cpu_pm_exit();
+> +
+> +	return ret ? -1 : idx;
+
+Is it sure cpu_suspend will return always 0 on success ?
+
+> +}
+> +
+> +struct cpuidle_driver arm64_idle_driver =3D {
+> +	.name =3D "arm64_idle",
+> +	.owner =3D THIS_MODULE,
+> +};
+> +
+> +static struct device_node *state_nodes[CPUIDLE_STATE_MAX] __initdata=
+;
+> +
+> +/*
+> + * arm64_idle_init
+> + *
+> + * Registers the arm64 specific cpuidle driver with the cpuidle
+> + * framework. It relies on core code to parse the idle states
+> + * and initialize them using driver data structures accordingly.
+> + */
+> +static int __init arm64_idle_init(void)
+> +{
+> +	int i, ret;
+> +	const char *entry_method;
+> +	struct device_node *idle_states_node;
+> +	const struct cpu_suspend_ops *suspend_init;
+> +	struct cpuidle_driver *drv =3D &arm64_idle_driver;
+> +
+> +	idle_states_node =3D of_find_node_by_path("/cpus/idle-states");
+> +	if (!idle_states_node)
+> +		return -ENOENT;
+> +
+> +	if (of_property_read_string(idle_states_node, "entry-method",
+> +				    &entry_method)) {
+> +		pr_warn(" * %s missing entry-method property\n",
+> +			    idle_states_node->full_name);
+> +		of_node_put(idle_states_node);
+> +		ret =3D -EOPNOTSUPP;
+> +		goto put_node;
+> +	}
+> +
+> +	suspend_init =3D get_suspend_ops(entry_method);
+> +	if (!suspend_init) {
+> +		pr_warn("Missing suspend initializer\n");
+> +		ret =3D -EOPNOTSUPP;
+> +		goto put_node;
+> +	}
+> +
+> +	/*
+> +	 * State at index 0 is standby wfi and considered standard
+> +	 * on all ARM platforms. If in some platforms simple wfi
+> +	 * can't be used as "state 0", DT bindings must be implemented
+> +	 * to work around this issue and allow installing a special
+> +	 * handler for idle state index 0.
+> +	 */
+> +	drv->states[0].exit_latency =3D 1;
+> +	drv->states[0].target_residency =3D 1;
+> +	drv->states[0].flags =3D CPUIDLE_FLAG_TIME_VALID;
+> +	strncpy(drv->states[0].name, "ARM WFI", CPUIDLE_NAME_LEN);
+> +	strncpy(drv->states[0].desc, "ARM WFI", CPUIDLE_DESC_LEN);
+
+Please do not copy the state name and desc strings, they will be=20
+converted to 'const char *'.
+
+> +	drv->cpumask =3D (struct cpumask *) cpu_possible_mask;
+> +	/*
+> +	 * Start at index 1, request idle state nodes to be filled
+> +	 */
+> +	ret =3D of_init_idle_driver(drv, state_nodes, 1, true);
+> +	if (ret)
+> +		goto put_node;
+> +
+> +	if (suspend_init->init_fn(drv, state_nodes)) {
+> +		ret =3D -EOPNOTSUPP;
+> +		goto put_node;
+> +	}
+> +
+> +	for (i =3D 0; i < drv->state_count; i++)
+> +		drv->states[i].enter =3D arm_enter_idle_state;
+
+May be s/arm/arm64/ ?
+
+> +
+> +	ret =3D cpuidle_register(drv, NULL);
+> +
+> +put_node:
+> +	of_node_put(idle_states_node);
+> +	return ret;
+> +}
+> +device_initcall(arm64_idle_init);
 >
 
-Can you please add this information to bug 77951 at bugzilla.kernel.org
-which is used to track problems with the commit you mention below?
 
-Rafael
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
->> Disabling lock debugging due to kernel taint
->> mce: [Hardware Error]: CPU2: Machine Check Exception: 4 Bank 0: 
->> b200000430000423
->> mce: [Hardware Error]: TSC 365f6dc39e
->> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->> APIC 4 microcode 31a
->> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->> mce: [Hardware Error]: CPU3: Machine Check Exception: 4 Bank 0: 
->> b200000430000423
->> mce: [Hardware Error]: TSC 365f6fa2e4
->> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->> APIC 6 microcode 31a
->> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->> mce: [Hardware Error]: CPU1: Machine Check Exception: 4 Bank 0: 
->> b200000010000000
->> mce: [Hardware Error]: TSC 365f73e988
->> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->> APIC 2 microcode 31a
->> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->> mce: [Hardware Error]: CPU0: Machine Check Exception: 4 Bank 0: 
->> b200000010000000
->> mce: [Hardware Error]: TSC 365f730e28
->> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 142862769 SOCKET 0 APIC 
->> 0 microcode 31a
->> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->> mce: [Hardware Error]: Machine Check: Processor context corrupt
->> Kernel panic - not syncing: Fatal Machine check
->> Kernel Offset: 0x0 from 0xffffffff81000000 (relocation range: 
->> 0xffffffff80000000-0xfffffffff9fffffff)
->> Rebooting in 90 seconds..
->>
->
-> Kernel bisection points to this commit:
->
->> dd4c4afb005de0415ea06e3586b017e193c1539e is the first bad commit
->> commit dd4c4afb005de0415ea06e3586b017e193c1539e
->> Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
->> Date: Thu May 8 12:57:23 2014 -0700
->>
->>     intel_pstate: Set turbo VID for BayTrail
->>         commit 21855ff5bcbdd075e1c99772827a84912ab083dd upstream.
->>         A documentation update exposed that there is a separate set 
->> of VID
->>     values that must be used in the turbo/boost P state range. Add
->>     enumerating and setting the correct VID for P states in the turbo
->>     range.
->>         Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>     Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>
->> :040000 040000 1a207dc8f511b005b02f023f0a4eaf74ee606181 
->> a503e06ccecb12d7bdf1d8e2d87395d35a4c4ef0 M    drivers
->
-> Bisect log follows:
->
->> git bisect start
->> # good: [7261684765e4411dff5ec5ffbad52f5009a2941b] Linux 3.14.4
->> git bisect good 7261684765e4411dff5ec5ffbad52f5009a2941b
->> # bad: [a1bc295d7a4be9425bbeecc005d0cd013eb46cea] Linux 3.14.6
->> git bisect bad a1bc295d7a4be9425bbeecc005d0cd013eb46cea
->> # good: [0b86a50c92e0118117224d57a9b4aa79d33d98b0] hwmon: (emc1403) 
->> fix inverted store_hyst()
->> git bisect good 0b86a50c92e0118117224d57a9b4aa79d33d98b0
->> # good: [512a588518fefae5dab75b89b734cfb64e53177b] Input: atkbd - fix 
->> keyboard not working on some LG laptops
->> git bisect good 512a588518fefae5dab75b89b734cfb64e53177b
->> # good: [4cf3d5e62ea1868a963f6430eb7e40e46ac7295b] dm crypt: fix cpu 
->> hotplug crash by removing per-cpu structure
->> git bisect good 4cf3d5e62ea1868a963f6430eb7e40e46ac7295b
->> # bad: [dd4c4afb005de0415ea06e3586b017e193c1539e] intel_pstate: Set 
->> turbo VID for BayTrail
->> git bisect bad dd4c4afb005de0415ea06e3586b017e193c1539e
->> # good: [da33adbd92be1217c55adf3f164b35ff2238fd32] ACPI: Revert "ACPI 
->> / Battery: Remove battery's proc directory"
->> git bisect good da33adbd92be1217c55adf3f164b35ff2238fd32
->> # good: [fcbe7574986518eb6896c18804dc77d8dfd879ea] ACPI / TPM: Fix 
->> resume regression on Chromebooks
->> git bisect good fcbe7574986518eb6896c18804dc77d8dfd879ea
->> # good: [6a8702825dc2c66c7233c0b5d9b05a4cddec9eca] i2c: rcar: bail 
->> out on zero length transfers
->> git bisect good 6a8702825dc2c66c7233c0b5d9b05a4cddec9eca
->> # good: [35493cad041359561d13dfd4c3c0df33cdd5ea4c] i2c: s3c2410: 
->> resume race fix
->> git bisect good 35493cad041359561d13dfd4c3c0df33cdd5ea4c
->> # first bad commit: [dd4c4afb005de0415ea06e3586b017e193c1539e] 
->> intel_pstate: Set turbo VID for BayTrail
->
-> /proc/cpuinfo:
->
->> processor    : 0
->> vendor_id    : GenuineIntel
->> cpu family    : 6
->> model        : 55
->> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->> stepping    : 3
->> microcode    : 0x320
->> cpu MHz        : 498.000
->> cache size    : 1024 KB
->> physical id    : 0
->> siblings    : 4
->> core id        : 0
->> cpu cores    : 4
->> apicid        : 0
->> initial apicid    : 0
->> fpu        : yes
->> fpu_exception    : yes
->> cpuid level    : 11
->> wp        : yes
->> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl 
->> xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl 
->> vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->> bogomips    : 4333.50
->> clflush size    : 64
->> cache_alignment    : 64
->> address sizes    : 36 bits physical, 48 bits virtual
->> power management:
->>
->> processor    : 1
->> vendor_id    : GenuineIntel
->> cpu family    : 6
->> model        : 55
->> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->> stepping    : 3
->> microcode    : 0x320
->> cpu MHz        : 1826.000
->> cache size    : 1024 KB
->> physical id    : 0
->> siblings    : 4
->> core id        : 1
->> cpu cores    : 4
->> apicid        : 2
->> initial apicid    : 2
->> fpu        : yes
->> fpu_exception    : yes
->> cpuid level    : 11
->> wp        : yes
->> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl 
->> xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl 
->> vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->> bogomips    : 4333.50
->> clflush size    : 64
->> cache_alignment    : 64
->> address sizes    : 36 bits physical, 48 bits virtual
->> power management:
->>
->> processor    : 2
->> vendor_id    : GenuineIntel
->> cpu family    : 6
->> model        : 55
->> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->> stepping    : 3
->> microcode    : 0x320
->> cpu MHz        : 498.000
->> cache size    : 1024 KB
->> physical id    : 0
->> siblings    : 4
->> core id        : 2
->> cpu cores    : 4
->> apicid        : 4
->> initial apicid    : 4
->> fpu        : yes
->> fpu_exception    : yes
->> cpuid level    : 11
->> wp        : yes
->> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl 
->> xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl 
->> vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->> bogomips    : 4333.50
->> clflush size    : 64
->> cache_alignment    : 64
->> address sizes    : 36 bits physical, 48 bits virtual
->> power management:
->>
->> processor    : 3
->> vendor_id    : GenuineIntel
->> cpu family    : 6
->> model        : 55
->> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->> stepping    : 3
->> microcode    : 0x320
->> cpu MHz        : 1992.000
->> cache size    : 1024 KB
->> physical id    : 0
->> siblings    : 4
->> core id        : 3
->> cpu cores    : 4
->> apicid        : 6
->> initial apicid    : 6
->> fpu        : yes
->> fpu_exception    : yes
->> cpuid level    : 11
->> wp        : yes
->> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
->> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe 
->> syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl 
->> xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl 
->> vmx est tm2 ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt 
->> tsc_deadline_timer rdrand lahf_lm 3dnowprefetch ida arat epb dtherm 
->> tpr_shadow vnmi flexpriority ept vpid tsc_adjust smep erms
->> bogomips    : 4333.50
->> clflush size    : 64
->> cache_alignment    : 64
->> address sizes    : 36 bits physical, 48 bits virtual
->> power management:
->
-> Let me know if you need any more information.
->
-> Thanks,
-> Erich Eickmeyer
->
->
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe stable" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
