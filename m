@@ -1,18 +1,18 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
+From: Thierry Reding <thierry.reding@gmail.com>
 Subject: Re: [RFC PATCH 1/4] memory: tegra124-emc: Add EMC driver
-Date: Wed, 18 Jun 2014 16:33:39 -0600
-Message-ID: <53A213C3.2020207@wwwdotorg.org>
+Date: Thu, 19 Jun 2014 01:14:11 +0200
+Message-ID: <20140618231410.GG26514@mithrandir>
 References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
  <1402925713-25426-2-git-send-email-tomeu.vizoso@collabora.com>
  <539F4D44.3070309@wwwdotorg.org> <53A03186.3040703@collabora.com>
  <53A069B6.6070902@wwwdotorg.org> <53A1CB23.5090307@collabora.com>
- <20140618220008.GC26514@mithrandir>
- <CACP_E+Jr5QyYm92Mc2=WVhKMbk=9Ty1fvJuH+fqOmDnYmdqFRg@mail.gmail.com>
+ <53A1D089.8010605@wwwdotorg.org>
+ <20140618220343.GD26514@mithrandir>
+ <53A20E02.5050900@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============0098839161=="
 Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CACP_E+Jr5QyYm92Mc2=WVhKMbk=9Ty1fvJuH+fqOmDnYmdqFRg@mail.gmail.com>
+In-Reply-To: <53A20E02.5050900@wwwdotorg.org>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
  <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
 List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
@@ -22,76 +22,155 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
  <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.freedesktop.org
 Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: =?UTF-8?B?U3TDqXBoYW5lIE1hcmNoZXNpbg==?= <stephane.marchesin@gmail.com>, Thierry Reding <thierry.reding@gmail.com>
-Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Kyungmin Park <kyungmin.park@samsung.com>, myungjoo.ham@samsung.com, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, linux-arm-kernel@lists.infradead.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDYvMTgvMjAxNCAwNDoxOSBQTSwgU3TDqXBoYW5lIE1hcmNoZXNpbiB3cm90ZToKPiBPbiBX
-ZWQsIEp1biAxOCwgMjAxNCBhdCAzOjAwIFBNLCBUaGllcnJ5IFJlZGluZwo+IDx0aGllcnJ5LnJl
-ZGluZ0BnbWFpbC5jb20+IHdyb3RlOgo+PiBPbiBXZWQsIEp1biAxOCwgMjAxNCBhdCAwNzoyMzo0
-N1BNICswMjAwLCBUb21ldSBWaXpvc28gd3JvdGU6Cj4+PiBPbiAwNi8xNy8yMDE0IDA2OjE1IFBN
-LCBTdGVwaGVuIFdhcnJlbiB3cm90ZToKPj4+PiBPbiAwNi8xNy8yMDE0IDA2OjE2IEFNLCBUb21l
-dSBWaXpvc28gd3JvdGU6Cj4+Pj4+IE9uIDA2LzE2LzIwMTQgMTA6MDIgUE0sIFN0ZXBoZW4gV2Fy
-cmVuIHdyb3RlOgo+Pj4+Pj4gT24gMDYvMTYvMjAxNCAwNzozNSBBTSwgVG9tZXUgVml6b3NvIHdy
-b3RlOgo+Pj4+Pj4+ICsjaWZkZWYgQ09ORklHX1RFR1JBMTI0X0VNQwo+Pj4+Pj4+ICtpbnQgdGVn
-cmExMjRfZW1jX3Jlc2VydmVfYmFuZHdpZHRoKHVuc2lnbmVkIGludCBjb25zdW1lciwgdW5zaWdu
-ZWQKPj4+Pj4+PiBsb25nIHJhdGUpOwo+Pj4+Pj4+ICt2b2lkIHRlZ3JhMTI0X2VtY19zZXRfZmxv
-b3IodW5zaWduZWQgbG9uZyBmcmVxKTsKPj4+Pj4+PiArdm9pZCB0ZWdyYTEyNF9lbWNfc2V0X2Nl
-aWxpbmcodW5zaWduZWQgbG9uZyBmcmVxKTsKPj4+Pj4+PiArI2Vsc2UKPj4+Pj4+PiAraW50IHRl
-Z3JhMTI0X2VtY19yZXNlcnZlX2JhbmR3aWR0aCh1bnNpZ25lZCBpbnQgY29uc3VtZXIsIHVuc2ln
-bmVkCj4+Pj4+Pj4gbG9uZyByYXRlKQo+Pj4+Pj4+ICt7IHJldHVybiAtRU5PREVWOyB9Cj4+Pj4+
-Pj4gK3ZvaWQgdGVncmExMjRfZW1jX3NldF9mbG9vcih1bnNpZ25lZCBsb25nIGZyZXEpCj4+Pj4+
-Pj4gK3sgcmV0dXJuOyB9Cj4+Pj4+Pj4gK3ZvaWQgdGVncmExMjRfZW1jX3NldF9jZWlsaW5nKHVu
-c2lnbmVkIGxvbmcgZnJlcSkKPj4+Pj4+PiAreyByZXR1cm47IH0KPj4+Pj4+PiArI2VuZGlmCj4+
-Pj4+Pgo+Pj4+Pj4gSSdsbCByZXBlYXQgd2hhdCBJIHNhaWQgb2ZmLWxpc3Qgc28gdGhhdCB3ZSBj
-YW4gaGF2ZSB0aGUgd2hvbGUKPj4+Pj4+IGNvbnZlcnNhdGlvbiBvbiB0aGUgbGlzdDoKPj4+Pj4+
-Cj4+Pj4+PiBUaGF0IGxvb2tzIGxpa2UgYSBjdXN0b20gVGVncmEtc3BlY2lmaWMgQVBJLiBJIHRo
-aW5rIGl0J2QgYmUgbXVjaCBiZXR0ZXIKPj4+Pj4+IHRvIGludGVncmF0ZSB0aGlzIGludG8gdGhl
-IGNvbW1vbiBjbG9jayBmcmFtZXdvcmsgYXMgYSBzdGFuZGFyZCBjbG9jawo+Pj4+Pj4gY29uc3Ry
-YWludHMgQVBJLiBUaGVyZSBhcmUgb3RoZXIgdXNlLWNhc2VzIGZvciBjbG9jayBjb25zdHJhaW50
-cyBiZXNpZGVzCj4+Pj4+PiBFTUMgc2NhbGluZyAoZS5nLiBzb21lIGluIGF1ZGlvIG9uIFRlZ3Jh
-LCBhbmQgSSdtIHN1cmUgbWFueSBvbiBvdGhlcgo+Pj4+Pj4gU29DcyB0b28pLgo+Pj4+Pgo+Pj4+
-PiBZZXMsIEkgd3JvdGUgYSBiaXQgaW4gdGhlIGNvdmVyIGxldHRlciBhYm91dCBvdXIgcmVxdWly
-ZW1lbnRzIGFuZCBob3cKPj4+Pj4gdGhleSBtYXAgdG8gdGhlIENDRi4gQ291bGQgeW91IHBsZWFz
-ZSBjb21tZW50IG9uIHRoYXQ/Cj4+Pj4KPj4+PiBNeSBjb21tZW50cyByZW1haW4gdGhlIHNhbWUu
-IEkgYmVsaWV2ZSB0aGlzIGlzIHNvbWV0aGluZyB0aGF0IGJlbG9uZ3MgaW4KPj4+PiB0aGUgY2xv
-Y2sgZHJpdmVyLCBvciBhdCB0aGUgbGVhc3QsIHNvbWUgQVBJIHRoYXQgdGFrZXMgYSBzdHJ1Y3Qg
-Y2xvY2sgYXMKPj4+PiBpdHMgcGFyYW1ldGVyLCBzbyB0aGF0IGRyaXZlcnMgY2FuIHVzZSB0aGUg
-ZXhpc3RpbmcgRFQgY2xvY2sgbG9va3VwCj4+Pj4gbWVjaGFuaXNtLgo+Pj4KPj4+IE9rLCBsZXQg
-bWUgcHV0IHRoaXMgc3RyYXdtYW4gaGVyZSB0byBzZWUgaWYgSSBoYXZlIGdvdHRlbiBjbG9zZSB0
-byB3aGF0IHlvdQo+Pj4gaGF2ZSBpbiBtaW5kOgo+Pj4KPj4+ICogYWRkIHBlci1jbGllbnQgYWNj
-b3VudGluZyAoUmFiaW4ncyBwYXRjaGVzIHJlZmVyZW5jZWQgYmVmb3JlKQo+Pj4KPj4+ICogYWRk
-IGNsa19zZXRfZmxvb3IsIHRvIGJlIHVzZWQgYnkgY3B1ZnJlcSwgbG9hZCBzdGF0cywgZXRjLgo+
-Pj4KPj4+ICogYWRkIGNsa19zZXRfY2VpbGluZywgdG8gYmUgdXNlZCBieSBiYXR0ZXJ5IGRyaXZl
-cnMsIHRoZXJtYWwsIGV0Yy4KPj4+Cj4+PiAqIGFuIEVNQyBkcml2ZXIgd291bGQgY29sbGVjdCBi
-YW5kd2lkdGggYW5kIGxhdGVuY3kgcmVxdWVzdHMgZnJvbSBjb25zdW1lcnMKPj4+IGFuZCBjYWxs
-IGNsa19zZXRfZmxvb3Igb24gdGhlIEVNQyBjbG9jay4KPj4+Cj4+PiAqIHRoZSBFTUMgZHJpdmVy
-IHdvdWxkIGFsc28gcmVnaXN0ZXIgZm9yIHJhdGUgY2hhbmdlIG5vdGlmaWNhdGlvbnMgaW4gdGhl
-Cj4+PiBFTUMgY2xvY2sgYW5kIHdvdWxkIHVwZGF0ZSB0aGUgbGF0ZW5jeSBhbGxvd2FuY2UgcmVn
-aXN0ZXJzIGF0IHRoYXQgcG9pbnQuCj4+Cj4+IExhdGVuY3kgYWxsb3dhbmNlIHJlZ2lzdGVycyBh
-cmUgcGFydCBvZiB0aGUgTUMgcmF0aGVyIHRoYW4gdGhlIEVNQy4gU28gSQo+PiB0aGluayB3ZSBo
-YXZlIHR3byBvcHRpb25zOiBhKSBoYXZlIGEgdW5pZmllZCBkcml2ZXIgZm9yIE1DIGFuZCBFTUMg
-b3IgYikKPj4gcHJvdmlkZSB0d28gcGFydHMgb2YgdGhlIEFQSSBpbiB0d28gZHJpdmVycy4KPj4K
-Pj4gT3IgcGVyaGFwcyBjKSwgY3JlYXRlIGEgZ2VuZXJpYyBmcmFtZXdvcmsgdGhhdCBib3RoIE1D
-IGFuZCBFTUMgY2FuCj4+IHJlZ2lzdGVyIHdpdGggKGJhbmR3aWR0aCBmb3IgRU1DLCBsYXRlbmN5
-IGZvciBNQykuCj4gCj4gSXMgdGhlcmUgYW55IG1vdGl2YXRpb24gZm9yIGtlZXBpbmcgTUMgYW5k
-IEVNQyBzZXBhcmF0ZT8gSW4gbXkgbWluZCwKPiB0aGUgc29sdXRpb24gd2FzIGFsd2F5cyB0byBo
-YW5kbGUgdGhvc2UgdG9nZXRoZXIuCgpXZWxsLCB0aGV5IGFyZSBkb2N1bWVudGVkIGFzIGJlaW5n
-IHNlcGFyYXRlIEhXIG1vZHVsZXMgaW4gdGhlIFRSTS4KCkkga25vdyB0aGVyZSdzIGFuIGludGVy
-bG9jayBpbiBIVyBzbyB0aGF0IHdoZW4gdGhlIEVNQyBjbG9jayBpcyBjaGFuZ2VkLAp0aGUgRU1D
-IHJlZ2lzdGVycyBjYW4gZmxpcCBhdG9taWNhbGx5IHRvIGEgbmV3IGNvbmZpZ3VyYXRpb24uCgpJ
-J20gbm90IGF3YXJlIG9mIGFueSBzaW1pbGFyIEhXIGludGVybG9jayBiZXR3ZWVuIE1DIGFuZCBF
-TUMgcmVnaXN0ZXJzLgpUaGF0IHdvdWxkIGltcGx5IHRoYXQgdmVyeSB0aWdodCBjby1vcmRpbmF0
-aW9uIHNob3VsZG4ndCBiZSByZXF1aXJlZC4KCkRvIHRoZSBNQyBsYXRlbmN5IGFsbG93YW5jZSBy
-ZWdpc3RlcnMgL3JlYWxseS8gbmVlZCB0byBiZSAqdmVyeSB0aWdodGx5KgptYW5hZ2VkIHdoZW5l
-dmVyIHRoZSBFTUMgY2xvY2sgaXMgY2hhbmdlZCwgb3IgaXMgaXQganVzdCBhIG1hdHRlciBvZiBp
-dApiZWluZyBhIGdvb2QgaWRlYSB0byB1cGRhdGUgRU1DIGNsb2NrIGFuZCBNQyBsYXRlbmN5IGFs
-bG93YW5jZSByZWdpc3RlcnMKYXQgcm91Z2hseSB0aGUgc2FtZSB0aW1lPyBFdmVuIGlmIHRoZXJl
-J3Mgc29tZSBjby1vcmRpbmF0aW9uIHJlcXVpcmVkLAptYXliZSBpdCBjYW4gYmUgaGFuZGxlZCBy
-YXRoZXIgbGlrZSBjcHVmcmVxIG5vdGlmaWNhdGlvbnM7IHVzZSBjbG9jawpwcmUtcmF0ZSBjaGFu
-Z2Ugbm90aWZpY2F0aW9ucyB0byBzZXQgTUMgdXAgaW4gYSB3YXkgdGhhdCdsbCB3b3JrIGF0IGJv
-dGgKb2xkL25ldyBFTUMgY2xvY2tzLCBhbmQgdGhlbiBjbG9jayBwb3N0LXJhdGUgbm90aWZpY2F0
-aW9ucyB0byB0aGUgZmluYWwKTUMgY29uZmlndXJhdGlvbj8KX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2
-ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
-bG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
+
+--===============0098839161==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="df+09Je9rNq3P+GE"
+Content-Disposition: inline
+
+
+--df+09Je9rNq3P+GE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jun 18, 2014 at 04:09:06PM -0600, Stephen Warren wrote:
+> On 06/18/2014 04:03 PM, Thierry Reding wrote:
+> > On Wed, Jun 18, 2014 at 11:46:49AM -0600, Stephen Warren wrote:
+> >> On 06/18/2014 11:23 AM, Tomeu Vizoso wrote:
+> >>> On 06/17/2014 06:15 PM, Stephen Warren wrote:
+> >>>> On 06/17/2014 06:16 AM, Tomeu Vizoso wrote:
+> >>>>> On 06/16/2014 10:02 PM, Stephen Warren wrote:
+> >>>>>> On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
+> >>>>>>> +#ifdef CONFIG_TEGRA124_EMC
+> >>>>>>> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsign=
+ed
+> >>>>>>> long rate);
+> >>>>>>> +void tegra124_emc_set_floor(unsigned long freq);
+> >>>>>>> +void tegra124_emc_set_ceiling(unsigned long freq);
+> >>>>>>> +#else
+> >>>>>>> +int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsign=
+ed
+> >>>>>>> long rate)
+> >>>>>>> +{ return -ENODEV; }
+> >>>>>>> +void tegra124_emc_set_floor(unsigned long freq)
+> >>>>>>> +{ return; }
+> >>>>>>> +void tegra124_emc_set_ceiling(unsigned long freq)
+> >>>>>>> +{ return; }
+> >>>>>>> +#endif
+> >>>>>>
+> >>>>>> I'll repeat what I said off-list so that we can have the whole
+> >>>>>> conversation on the list:
+> >>>>>>
+> >>>>>> That looks like a custom Tegra-specific API. I think it'd be much
+> >>>>>> better
+> >>>>>> to integrate this into the common clock framework as a standard cl=
+ock
+> >>>>>> constraints API. There are other use-cases for clock constraints
+> >>>>>> besides
+> >>>>>> EMC scaling (e.g. some in audio on Tegra, and I'm sure many on oth=
+er
+> >>>>>> SoCs too).
+> >>>>>
+> >>>>> Yes, I wrote a bit in the cover letter about our requirements and h=
+ow
+> >>>>> they map to the CCF. Could you please comment on that?
+> >>>>
+> >>>> My comments remain the same. I believe this is something that belong=
+s in
+> >>>> the clock driver, or at the least, some API that takes a struct cloc=
+k as
+> >>>> its parameter, so that drivers can use the existing DT clock lookup
+> >>>> mechanism.
+> >>>
+> >>> Ok, let me put this strawman here to see if I have gotten close to wh=
+at
+> >>> you have in mind:
+> >>>
+> >>> * add per-client accounting (Rabin's patches referenced before)
+> >>>
+> >>> * add clk_set_floor, to be used by cpufreq, load stats, etc.
+> >>>
+> >>> * add clk_set_ceiling, to be used by battery drivers, thermal, etc.
+> >>
+> >> Yes. I'd expect those to be maintained per-client, and so the clock co=
+re
+> >> (or whatever higher level code implements clk_set_floor/ceiling)
+> >> performs the logic that "blends" together all the different requests
+> >> from different clients.
+> >>
+> >> As an aside, for audio usage, I would expect clk_set_rate to be a
+> >> per-client (rather than per HW clock) operation too, and to error out =
+if
+> >> one client says it wants to set pll_a to the rate needed for
+> >> 44.1KHz-based audio and a different client wants the rate for
+> >> 48KHz-based audio.
+> >=20
+> > From what I remember, Mike was fairly strongly opposing the idea of
+> > virtual clocks, but what you're proposing here sounds like it would
+> > assume the existence of virtual clocks. clk_set_rate() per client
+> > doesn't work with the current API as I understand it.
+> >=20
+> > Or perhaps what you're proposing isn't about the individual clocks at
+> > all but rather about a mechanism to express constraints for a set of
+> > clocks?
+>=20
+> This doesn't have anything to do with virtual clocks. As you mention,
+> it's just about constraints.
+>=20
+> One user of clock "cpu" wants min rate 216MHz. Another wants max rate
+> 1GHz. cpufreq will request some rate between the 2, or be capped to
+> those limits. These set of imposed constraints would need to be stored
+> per client of the clock, not per HW clock, since many clients could set
+> different max rates (e.g. thermal throttle 1.5GHz due to temperature,
+> CPU policy 1GHz due to the user selecting low CPU power, etc.)
+>=20
+> Similarly for audio, of there are N clients of 1 clock/PLL, and they
+> each want the PLL to run at a different rate, something needs to detect
+> that and deny it.
+
+I'm wondering how this should work with the current API. Could the clock
+core be modified to return a per-client struct clk * that references the
+hardware clock internally? Or do we need to add a new API?
+
+Thierry
+
+--df+09Je9rNq3P+GE
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJToh1CAAoJEN0jrNd/PrOhIVsQAMAZzYrgchipD42HZT5DLZAG
+M5sBFjsa5qU+mcbdMVT1kCO7wuMDjd0gr8YlJgjwxqk8ZidAAnkwfL6M1+SAuVKp
+OvSDinhea6C0WEEFUpyl0GH6gQnIbBATU68S0PG7h/1Sw61jvfPdI0dcXPj3UwGo
+lkUvXh5jy8C+Vt+N6Y3q3uv+DFUtcSHmk8rQtGtHH4qQe7uTcCxxJ9gz5kH4paUC
+t0uHdeaASgnBCKKVnqmirVDdTiFUsQZFIqxe4jFh0LwG6Gd1TunuW67aEhoKBxmI
+41GTBOvEKcRE91D4geKMQ2JrlGjD08dAKVE70sFnnRNG6JES3z0QIbMSlJ8AWUN9
+OcfbaP6pHc4f9ezpuW5X6TbDiB64RqTOs1pwA0ujXsy6pDHjxMyHpip3lSE+Mn+0
+pizcs8x79dpnP+K7oObhgT1mSIOyqt3+ySrTHUscASWwzG9/iK6jDJsAOgQfWF5Z
+u10Domphd395ECi8tGcRbrCAgiJNZRjFCLxldMi2LLtUhjjATAClBCG/NrcnKL1Y
+NQdg1q+JAr5tAszMKTo8CMz3CnPcJBWT8gCVIrt6JMkGW+CxMRVoAIduzbjEEgGK
+oUgkqYaiEjxYga5GX4yZ1yiMVQQj1L9o0MgmZM/4EFjZYscgmJMebKZx9R79YlYu
+jOQaRhGWAz8unXFfH+/g
+=rRC/
+-----END PGP SIGNATURE-----
+
+--df+09Je9rNq3P+GE--
+
+--===============0098839161==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+dri-devel mailing list
+dri-devel@lists.freedesktop.org
+http://lists.freedesktop.org/mailman/listinfo/dri-devel
+
+--===============0098839161==--
