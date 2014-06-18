@@ -1,308 +1,137 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 5/6] drivers: cpuidle: CPU idle ARM64 driver
-Date: Wed, 18 Jun 2014 23:34:06 +0200
-Message-ID: <53A205CE.4080201@linaro.org>
-References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com> <1402503520-8611-6-git-send-email-lorenzo.pieralisi@arm.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [RFC PATCH 1/4] memory: tegra124-emc: Add EMC driver
+Date: Thu, 19 Jun 2014 00:00:09 +0200
+Message-ID: <20140618220008.GC26514@mithrandir>
+References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1402925713-25426-2-git-send-email-tomeu.vizoso@collabora.com>
+ <539F4D44.3070309@wwwdotorg.org> <53A03186.3040703@collabora.com>
+ <53A069B6.6070902@wwwdotorg.org> <53A1CB23.5090307@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:50043 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756046AbaFRVeI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 17:34:08 -0400
-Received: by mail-wi0-f182.google.com with SMTP id bs8so1869034wib.3
-        for <linux-pm@vger.kernel.org>; Wed, 18 Jun 2014 14:34:06 -0700 (PDT)
-In-Reply-To: <1402503520-8611-6-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============1918013067=="
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <53A1CB23.5090307@collabora.com>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
 
-On 06/11/2014 06:18 PM, Lorenzo Pieralisi wrote:
-> This patch implements a generic CPU idle driver for ARM64 machines.
->
-> It relies on the DT idle states infrastructure to initialize idle
-> states count and respective parameters. Current code assumes the driv=
+
+--===============1918013067==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LwW0XdcUbUexiWVK"
+Content-Disposition: inline
+
+
+--LwW0XdcUbUexiWVK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jun 18, 2014 at 07:23:47PM +0200, Tomeu Vizoso wrote:
+> On 06/17/2014 06:15 PM, Stephen Warren wrote:
+> >On 06/17/2014 06:16 AM, Tomeu Vizoso wrote:
+> >>On 06/16/2014 10:02 PM, Stephen Warren wrote:
+> >>>On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
+> >>>>+#ifdef CONFIG_TEGRA124_EMC
+> >>>>+int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsigned
+> >>>>long rate);
+> >>>>+void tegra124_emc_set_floor(unsigned long freq);
+> >>>>+void tegra124_emc_set_ceiling(unsigned long freq);
+> >>>>+#else
+> >>>>+int tegra124_emc_reserve_bandwidth(unsigned int consumer, unsigned
+> >>>>long rate)
+> >>>>+{ return -ENODEV; }
+> >>>>+void tegra124_emc_set_floor(unsigned long freq)
+> >>>>+{ return; }
+> >>>>+void tegra124_emc_set_ceiling(unsigned long freq)
+> >>>>+{ return; }
+> >>>>+#endif
+> >>>
+> >>>I'll repeat what I said off-list so that we can have the whole
+> >>>conversation on the list:
+> >>>
+> >>>That looks like a custom Tegra-specific API. I think it'd be much bett=
 er
-> is managing idle states on all possible CPUs but can be easily
-> generalized to support heterogenous systems and build cpumasks at
-> runtime using MIDRs or DT cpu nodes compatible properties.
->
-> Suspend back-ends (eg PSCI) must register a suspend initializer with
-> the CPU idle driver so that the suspend backend call can be detected,
-> and the driver code can call the back-end infrastructure to complete =
-the
-> suspend backend initialization.
->
-> Idle state index 0 is always initialized as a simple wfi state, ie al=
-ways
-> considered present and functional on all ARM64 platforms.
->
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> ---
->   drivers/cpuidle/Kconfig         |   5 ++
->   drivers/cpuidle/Kconfig.arm64   |  13 ++++
->   drivers/cpuidle/Makefile        |   4 +
->   drivers/cpuidle/cpuidle-arm64.c | 168 +++++++++++++++++++++++++++++=
-+++++++++++
->   4 files changed, 190 insertions(+)
->   create mode 100644 drivers/cpuidle/Kconfig.arm64
->   create mode 100644 drivers/cpuidle/cpuidle-arm64.c
->
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> index 760ce20..360c086 100644
-> --- a/drivers/cpuidle/Kconfig
-> +++ b/drivers/cpuidle/Kconfig
-> @@ -44,6 +44,11 @@ depends on ARM
->   source "drivers/cpuidle/Kconfig.arm"
->   endmenu
->
-> +menu "ARM64 CPU Idle Drivers"
-> +depends on ARM64
-> +source "drivers/cpuidle/Kconfig.arm64"
-> +endmenu
-> +
->   menu "MIPS CPU Idle Drivers"
->   depends on MIPS
->   source "drivers/cpuidle/Kconfig.mips"
-> diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.=
-arm64
-> new file mode 100644
-> index 0000000..b83612c
-> --- /dev/null
-> +++ b/drivers/cpuidle/Kconfig.arm64
-> @@ -0,0 +1,13 @@
-> +#
-> +# ARM64 CPU Idle drivers
-> +#
-> +
-> +config ARM64_CPUIDLE
-> +	bool "Generic ARM64 CPU idle Driver"
-> +	select OF_IDLE_STATES
-> +	help
-> +	  Select this to enable generic cpuidle driver for ARM v8.
-> +	  It provides a generic idle driver whose idle states are configure=
-d
-> +	  at run-time through DT nodes. The CPUidle suspend backend is
-> +	  initialized by the device tree parsing code on matching the entry
-> +	  method to the respective CPU operations.
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index d5ebf4b..e496242 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -23,6 +23,10 @@ obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        +=3D cpuid=
-le-exynos.o
->   obj-$(CONFIG_MIPS_CPS_CPUIDLE)		+=3D cpuidle-cps.o
->
->   ###################################################################=
-############
-> +# ARM64 drivers
-> +obj-$(CONFIG_ARM64_CPUIDLE)		+=3D cpuidle-arm64.o
-> +
-> +####################################################################=
-###########
->   # POWERPC drivers
->   obj-$(CONFIG_PSERIES_CPUIDLE)		+=3D cpuidle-pseries.o
->   obj-$(CONFIG_POWERNV_CPUIDLE)		+=3D cpuidle-powernv.o
-> diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidl=
-e-arm64.c
-> new file mode 100644
-> index 0000000..4c932f8
-> --- /dev/null
-> +++ b/drivers/cpuidle/cpuidle-arm64.c
-> @@ -0,0 +1,168 @@
-> +/*
-> + * ARM64 generic CPU idle driver.
-> + *
-> + * Copyright (C) 2014 ARM Ltd.
-> + * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#define pr_fmt(fmt) "CPUidle arm64: " fmt
-> +
-> +#include <linux/cpuidle.h>
-> +#include <linux/cpumask.h>
-> +#include <linux/cpu_pm.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +
-> +#include <asm/psci.h>
-> +#include <asm/suspend.h>
-> +
-> +#include "of_idle_states.h"
-> +
-> +typedef int (*suspend_init_fn)(struct cpuidle_driver *,
-> +			       struct device_node *[]);
-> +
-> +struct cpu_suspend_ops {
-> +	const char *id;
-> +	suspend_init_fn init_fn;
-> +};
-> +
-> +static const struct cpu_suspend_ops suspend_operations[] __initconst=
- =3D {
-> +	{"arm,psci", psci_dt_register_idle_states},
-> +	{}
-> +};
-> +
-> +static __init const struct cpu_suspend_ops *get_suspend_ops(const ch=
-ar *str)
-> +{
-> +	int i;
-> +
-> +	if (!str)
-> +		return NULL;
-> +
-> +	for (i =3D 0; suspend_operations[i].id; i++)
-> +		if (!strcmp(suspend_operations[i].id, str))
-> +			return &suspend_operations[i];
-> +
-> +	return NULL;
-> +}
-> +
-> +/*
-> + * arm_enter_idle_state - Programs CPU to enter the specified state
-> + *
-> + * dev: cpuidle device
-> + * drv: cpuidle driver
-> + * idx: state index
-> + *
-> + * Called from the CPUidle framework to program the device to the
-> + * specified target state selected by the governor.
-> + */
-> +static int arm_enter_idle_state(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv, int idx)
-> +{
-> +	int ret;
-> +
-> +	if (!idx) {
-> +		cpu_do_idle();
-> +		return idx;
-> +	}
-> +
-> +	cpu_pm_enter();
-> +	/*
-> +	 * Pass idle state index to cpu_suspend which in turn will call
-> +	 * the CPU ops suspend protocol with idle index as a parameter.
-> +	 *
-> +	 * Some states would not require context to be saved and flushed
-> +	 * to DRAM, so calling cpu_suspend would not be stricly necessary.
-> +	 * When power domains specifications for ARM CPUs are finalized the=
-n
-> +	 * this code can be optimized to prevent saving registers if not
-> +	 * needed.
-> +	 */
-> +	ret =3D cpu_suspend(idx);
-> +
-> +	cpu_pm_exit();
-> +
-> +	return ret ? -1 : idx;
+> >>>to integrate this into the common clock framework as a standard clock
+> >>>constraints API. There are other use-cases for clock constraints besid=
+es
+> >>>EMC scaling (e.g. some in audio on Tegra, and I'm sure many on other
+> >>>SoCs too).
+> >>
+> >>Yes, I wrote a bit in the cover letter about our requirements and how
+> >>they map to the CCF. Could you please comment on that?
+> >
+> >My comments remain the same. I believe this is something that belongs in
+> >the clock driver, or at the least, some API that takes a struct clock as
+> >its parameter, so that drivers can use the existing DT clock lookup
+> >mechanism.
+>=20
+> Ok, let me put this strawman here to see if I have gotten close to what y=
+ou
+> have in mind:
+>=20
+> * add per-client accounting (Rabin's patches referenced before)
+>=20
+> * add clk_set_floor, to be used by cpufreq, load stats, etc.
+>=20
+> * add clk_set_ceiling, to be used by battery drivers, thermal, etc.
+>=20
+> * an EMC driver would collect bandwidth and latency requests from consume=
+rs
+> and call clk_set_floor on the EMC clock.
+>=20
+> * the EMC driver would also register for rate change notifications in the
+> EMC clock and would update the latency allowance registers at that point.
 
-Is it sure cpu_suspend will return always 0 on success ?
+Latency allowance registers are part of the MC rather than the EMC. So I
+think we have two options: a) have a unified driver for MC and EMC or b)
+provide two parts of the API in two drivers.
 
-> +}
-> +
-> +struct cpuidle_driver arm64_idle_driver =3D {
-> +	.name =3D "arm64_idle",
-> +	.owner =3D THIS_MODULE,
-> +};
-> +
-> +static struct device_node *state_nodes[CPUIDLE_STATE_MAX] __initdata=
-;
-> +
-> +/*
-> + * arm64_idle_init
-> + *
-> + * Registers the arm64 specific cpuidle driver with the cpuidle
-> + * framework. It relies on core code to parse the idle states
-> + * and initialize them using driver data structures accordingly.
-> + */
-> +static int __init arm64_idle_init(void)
-> +{
-> +	int i, ret;
-> +	const char *entry_method;
-> +	struct device_node *idle_states_node;
-> +	const struct cpu_suspend_ops *suspend_init;
-> +	struct cpuidle_driver *drv =3D &arm64_idle_driver;
-> +
-> +	idle_states_node =3D of_find_node_by_path("/cpus/idle-states");
-> +	if (!idle_states_node)
-> +		return -ENOENT;
-> +
-> +	if (of_property_read_string(idle_states_node, "entry-method",
-> +				    &entry_method)) {
-> +		pr_warn(" * %s missing entry-method property\n",
-> +			    idle_states_node->full_name);
-> +		of_node_put(idle_states_node);
-> +		ret =3D -EOPNOTSUPP;
-> +		goto put_node;
-> +	}
-> +
-> +	suspend_init =3D get_suspend_ops(entry_method);
-> +	if (!suspend_init) {
-> +		pr_warn("Missing suspend initializer\n");
-> +		ret =3D -EOPNOTSUPP;
-> +		goto put_node;
-> +	}
-> +
-> +	/*
-> +	 * State at index 0 is standby wfi and considered standard
-> +	 * on all ARM platforms. If in some platforms simple wfi
-> +	 * can't be used as "state 0", DT bindings must be implemented
-> +	 * to work around this issue and allow installing a special
-> +	 * handler for idle state index 0.
-> +	 */
-> +	drv->states[0].exit_latency =3D 1;
-> +	drv->states[0].target_residency =3D 1;
-> +	drv->states[0].flags =3D CPUIDLE_FLAG_TIME_VALID;
-> +	strncpy(drv->states[0].name, "ARM WFI", CPUIDLE_NAME_LEN);
-> +	strncpy(drv->states[0].desc, "ARM WFI", CPUIDLE_DESC_LEN);
+Or perhaps c), create a generic framework that both MC and EMC can
+register with (bandwidth for EMC, latency for MC).
 
-Please do not copy the state name and desc strings, they will be=20
-converted to 'const char *'.
+Thierry
 
-> +	drv->cpumask =3D (struct cpumask *) cpu_possible_mask;
-> +	/*
-> +	 * Start at index 1, request idle state nodes to be filled
-> +	 */
-> +	ret =3D of_init_idle_driver(drv, state_nodes, 1, true);
-> +	if (ret)
-> +		goto put_node;
-> +
-> +	if (suspend_init->init_fn(drv, state_nodes)) {
-> +		ret =3D -EOPNOTSUPP;
-> +		goto put_node;
-> +	}
-> +
-> +	for (i =3D 0; i < drv->state_count; i++)
-> +		drv->states[i].enter =3D arm_enter_idle_state;
+--LwW0XdcUbUexiWVK
+Content-Type: application/pgp-signature
 
-May be s/arm/arm64/ ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-> +
-> +	ret =3D cpuidle_register(drv, NULL);
-> +
-> +put_node:
-> +	of_node_put(idle_states_node);
-> +	return ret;
-> +}
-> +device_initcall(arm64_idle_init);
->
+iQIcBAEBAgAGBQJTogvoAAoJEN0jrNd/PrOhMf4QAKKMXnLhZIJ6WU1MXERj6DoH
+PamUhHa6MlEhXjygSdRiPJ5xMCdmEzwY/ZZfj1Tz+FmBELxbVdb0WrPbrzXmkE5v
+VDYTurEEV+yaaYBemZv1oRa/GjJwzgi9rYmKOBaMlO6ldLlsxsTYnVIPa5mWXnBO
+WVUGsOohbC05iVyL2tInJhyT0+GXmABsCNhFpPQ+xc8aqTHwT+bJcP/f37pSzxF2
+jzrVMXHCQtMSSyEBkbHQE9uVEbZY8SpF+YsZ7Fozzw7uMseL5LUpLWhuWPKJIcnq
+xSVEGXHGfOUu8DuSHohWcypgCulW9+ZcFxobhbnsvZFPCK4JGD6YYDt/Q6kWTypz
+AVD6te2pXYCGZHPfEuBkGDn4xY17AGpizMAgqMSKrLwB0My1JRfGqW/lNkJDu2JL
+TTQAJmlS3eClqwfx4hNnymVAvzI8TBiE6kpcQT2i8vg9d7PASEajh1ZOF/yUnSiB
+jVcqP3eJu5AujzLUKPTRrje5gjvnx5kIYFdELdP1s9W/ePwZ6K9cDbEIPhewuZbR
+cQ9C8bNWn+t7+xg53W73mZk/J/jTB6rN7tveLfAw9rWMKYK5SsYDWQ5nOkVIhbl8
+G4Vq1QZntqrpOvG1rxpq5hWHjhKfJKrrzBm34E5+SalexPuk1fEwPlIR8Jxz3BVf
+2b9lc5PRE4PG7qtBVE1n
+=CRS8
+-----END PGP SIGNATURE-----
 
+--LwW0XdcUbUexiWVK--
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+--===============1918013067==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+_______________________________________________
+dri-devel mailing list
+dri-devel@lists.freedesktop.org
+http://lists.freedesktop.org/mailman/listinfo/dri-devel
 
+--===============1918013067==--
