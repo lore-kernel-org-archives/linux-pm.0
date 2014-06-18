@@ -1,8 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCHv2 1/3] clk: samsung: cpu: Add support for cpu clocks of
- Exynos3250
-Date: Wed, 18 Jun 2014 17:40:00 +0900
-Message-ID: <1403080802-2794-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCHv2 2/3] clk: samsung: exynos3250: Use cpu-clock provider type to
+ support cpufreq
+Date: Wed, 18 Jun 2014 17:40:01 +0900
+Message-ID: <1403080802-2794-3-git-send-email-cw00.choi@samsung.com>
 References: <1403080802-2794-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1403080802-2794-1-git-send-email-cw00.choi@samsung.com>
@@ -11,84 +11,58 @@ To: t.figa@samsung.com, kgene.kim@samsung.com, thomas.ab@samsung.com, viresh.kum
 Cc: kyungmin.park@samsung.com, cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch add support for a new clock type for Exynos3250 CPU clock provider
-and modify little difference of DIV_CPU0 between Exynos4 and Exynos3250.
+This patch use cpu-clock provider type to support cpufreq for Exynos3250. The
+clock-exynos3250.c didn't add separate 'arm_clk' divider for 'div_core2'.
+The 'div_core2' can be represented as a cpu-clock type and then use 'div_core2'
+directly to change cpu clock.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/clk/samsung/clk-cpu.c | 31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ drivers/clk/samsung/clk-exynos3250.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/clk/samsung/clk-cpu.c b/drivers/clk/samsung/clk-cpu.c
-index c40f7b5..0d5a4d6 100644
---- a/drivers/clk/samsung/clk-cpu.c
-+++ b/drivers/clk/samsung/clk-cpu.c
-@@ -31,6 +31,10 @@
- #define E4210_DIV0_ATB_SHIFT	16
- #define E4210_DIV0_ATB_MASK	(DIV_MASK << E4210_DIV0_ATB_SHIFT)
- 
-+#define E3250_CPU_DIV0(apll, pclk_dbg, atb, corem)			\
-+		(((apll) << 24) | ((pclk_dbg) << 20) | ((atb) << 16) |	\
-+		((corem) <<  4))
-+
- #define E4210_CPU_DIV0(apll, pclk_dbg, atb, periph, corem1, corem0)	\
- 		(((apll) << 24) | ((pclk_dbg) << 20) | ((atb) << 16) |	\
- 		((periph) << 12) | ((corem1) << 8) | ((corem0) <<  4))
-@@ -50,6 +54,7 @@
- 		(((kpll << 24) | (pclk << 20) | (aclk << 4)))
- 
- enum cpuclk_type {
-+	EXYNOS3250,
- 	EXYNOS4210,
- 	EXYNOS5250,
- 	EXYNOS5420,
-@@ -426,6 +431,20 @@ static int exynos4210_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
- 	return 0;
- }
- 
-+static const struct exynos4210_cpuclk_data e3250_armclk_d[] __initconst = {
-+	{ 1000000, E3250_CPU_DIV0(1, 7, 4, 1), E4210_CPU_DIV1(7, 7), },
-+	{  900000, E3250_CPU_DIV0(1, 7, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  800000, E3250_CPU_DIV0(1, 7, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  700000, E3250_CPU_DIV0(1, 7, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  600000, E3250_CPU_DIV0(1, 7, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  500000, E3250_CPU_DIV0(1, 7, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  400000, E3250_CPU_DIV0(1, 7, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  300000, E3250_CPU_DIV0(1, 5, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  200000, E3250_CPU_DIV0(1, 3, 3, 1), E4210_CPU_DIV1(7, 7), },
-+	{  100000, E3250_CPU_DIV0(1, 1, 1, 1), E4210_CPU_DIV1(7, 7), },
-+	{  0 },
-+};
-+
- static const struct exynos4210_cpuclk_data e4210_armclk_d[] __initconst = {
- 	{ 1200000, E4210_CPU_DIV0(7, 1, 4, 3, 7, 3), E4210_CPU_DIV1(0, 5), },
- 	{ 1000000, E4210_CPU_DIV0(7, 1, 4, 3, 7, 3), E4210_CPU_DIV1(0, 4), },
-@@ -493,6 +512,16 @@ static const struct exynos4210_cpuclk_data e5420_kfcclk_d[] __initconst = {
- 	{  0 },
+diff --git a/drivers/clk/samsung/clk-exynos3250.c b/drivers/clk/samsung/clk-exynos3250.c
+index 775a4ee..60ce369 100644
+--- a/drivers/clk/samsung/clk-exynos3250.c
++++ b/drivers/clk/samsung/clk-exynos3250.c
+@@ -357,8 +357,10 @@ static struct samsung_mux_clock mux_clks[] __initdata = {
+ 	MUX(CLK_MOUT_MPLL_USER_C, "mout_mpll_user_c", mout_mpll_user_p,
+ 	    SRC_CPU, 24, 1),
+ 	MUX(CLK_MOUT_HPM, "mout_hpm", mout_hpm_p, SRC_CPU, 20, 1),
+-	MUX(CLK_MOUT_CORE, "mout_core", mout_core_p, SRC_CPU, 16, 1),
+-	MUX(CLK_MOUT_APLL, "mout_apll", mout_apll_p, SRC_CPU, 0, 1),
++	MUX_F(CLK_MOUT_CORE, "mout_core", mout_core_p, SRC_CPU, 16, 1, 0,
++			CLK_MUX_READ_ONLY),
++	MUX_F(CLK_MOUT_APLL, "mout_apll", mout_apll_p, SRC_CPU, 0, 1,
++			CLK_SET_RATE_PARENT, 0),
  };
  
-+static const struct exynos_cpuclk_soc_data e3250_clk_soc_data __initconst = {
-+	.ops = &exynos_cpuclk_clk_ops,
-+	.offset = 0x14200,
-+	.data = e3250_armclk_d,
-+	.data_size = sizeof(e3250_armclk_d),
-+	.type = EXYNOS3250,
-+	.pre_rate_cb = exynos4210_cpuclk_pre_rate_change,
-+	.post_rate_cb = exynos4210_cpuclk_post_rate_change,
-+};
-+
- static const struct exynos_cpuclk_soc_data e4210_clk_soc_data __initconst = {
- 	.ops = &exynos_cpuclk_clk_ops,
- 	.offset = 0x14200,
-@@ -536,6 +565,8 @@ static const struct exynos_cpuclk_soc_data e5420_clk_soc_data[] __initconst = {
- };
+ static struct samsung_div_clock div_clks[] __initdata = {
+@@ -447,11 +449,13 @@ static struct samsung_div_clock div_clks[] __initdata = {
  
- static const struct of_device_id exynos_cpuclk_ids[] __initconst = {
-+	{ .compatible = "samsung,exynos3250-cmu",
-+			.data = &e3250_clk_soc_data, },
- 	{ .compatible = "samsung,exynos4210-clock",
- 			.data = &e4210_clk_soc_data, },
- 	{ .compatible = "samsung,exynos5250-clock",
+ 	/* DIV_CPU0 */
+ 	DIV(CLK_DIV_CORE2, "div_core2", "div_core", DIV_CPU0, 28, 3),
+-	DIV(CLK_DIV_APLL, "div_apll", "mout_apll", DIV_CPU0, 24, 3),
++	DIV_F(CLK_DIV_APLL, "div_apll", "mout_apll", DIV_CPU0, 24, 3,
++			CLK_GET_RATE_NOCACHE, CLK_DIVIDER_READ_ONLY),
+ 	DIV(CLK_DIV_PCLK_DBG, "div_pclk_dbg", "div_core2", DIV_CPU0, 20, 3),
+ 	DIV(CLK_DIV_ATB, "div_atb", "div_core2", DIV_CPU0, 16, 3),
+ 	DIV(CLK_DIV_COREM, "div_corem", "div_core2", DIV_CPU0, 4, 3),
+-	DIV(CLK_DIV_CORE, "div_core", "mout_core", DIV_CPU0, 0, 3),
++	DIV_F(CLK_DIV_CORE, "div_core", "mout_core", DIV_CPU0, 0, 3,
++			CLK_GET_RATE_NOCACHE, CLK_DIVIDER_READ_ONLY),
+ 
+ 	/* DIV_CPU1 */
+ 	DIV(CLK_DIV_HPM, "div_hpm", "div_copy", DIV_CPU1, 4, 3),
+@@ -820,6 +824,8 @@ static void __init exynos3_cmu_init(struct device_node *np,
+ 	samsung_clk_register_mux(ctx, mux_clks, ARRAY_SIZE(mux_clks));
+ 	samsung_clk_register_div(ctx, div_clks, ARRAY_SIZE(div_clks));
+ 	samsung_clk_register_gate(ctx, gate_clks, ARRAY_SIZE(gate_clks));
++	exynos_register_cpu_clock(ctx, 0, CLK_DIV_CORE2, "armclk",
++				mout_core_p[0], mout_core_p[1], np);
+ 
+ 	if (soc == EXYNOS3472) {
+ 		samsung_clk_register_mux(ctx, exynos3472_mux_clks,
 -- 
 1.8.0
