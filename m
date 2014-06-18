@@ -1,95 +1,59 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [RFC PATCH 3/4] drm/tegra: Request memory bandwidth for the
- display controller
-Date: Wed, 18 Jun 2014 00:43:35 +0200
-Message-ID: <20140617224334.GC25309@mithrandir>
-References: <1402925713-25426-1-git-send-email-tomeu.vizoso@collabora.com>
- <1402925713-25426-4-git-send-email-tomeu.vizoso@collabora.com>
- <539F4E53.6080205@wwwdotorg.org>
+From: Aaron Plattner <aplattner@nvidia.com>
+Subject: [PATCH] cpufreq: unlock when failing cpufreq_update_policy()
+Date: Tue, 17 Jun 2014 17:12:42 -0700
+Message-ID: <1403050362-20809-1-git-send-email-aplattner@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1954057530=="
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <539F4E53.6080205@wwwdotorg.org>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: devicetree@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:5024 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753268AbaFRAMu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jun 2014 20:12:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Aaron Plattner <aplattner@nvidia.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
+Commit bd0fa9bb455d introduced a failure path to cpufreq_update_policy() if
+cpufreq_driver->get(cpu) returns NULL.  However, it jumps to the 'no_policy'
+label, which exits without unlocking any of the locks the function acquired
+earlier.  This causes later calls into cpufreq to hang.
 
---===============1954057530==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5QAgd0e35j3NYeGe"
-Content-Disposition: inline
+Fix this by creating a new 'unlock' label and jumping to that instead.
 
+Fixes: bd0fa9bb455d ("cpufreq: Return error if ->get() failed in cpufreq_update_policy()")
+Link: https://devtalk.nvidia.com/default/topic/751903/kernel-3-15-and-nv-drivers-337-340-failed-to-initialize-the-nvidia-kernel-module-gtx-550-ti-/
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+---
+I haven't reproduced this problem so I couldn't test it, but the bug and its
+solution seem obvious enough.
 
---5QAgd0e35j3NYeGe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ drivers/cpufreq/cpufreq.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-On Mon, Jun 16, 2014 at 02:06:43PM -0600, Stephen Warren wrote:
-> On 06/16/2014 07:35 AM, Tomeu Vizoso wrote:
-> > Request it based solely on the current mode's refresh rate. More
-> > accurate requirements can be requested in future patches.
->=20
-> > diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
->=20
-> > +	bandwidth =3D mode->clock * window.bits_per_pixel / 8;
-> > +	err =3D tegra124_emc_reserve_bandwidth(TEGRA_EMC_CONSUMER_DISP1, band=
-width);
->=20
-> DISP1 shouldn't be hard-coded here; the code should use DISP1 or DISP2
-> based on head or DC identity. We certainly have some boards capable of
-> dual-head operation.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index aed2b0cb83dc..5b6d04f3b9ea 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2264,7 +2264,7 @@ int cpufreq_update_policy(unsigned int cpu)
+ 		new_policy.cur = cpufreq_driver->get(cpu);
+ 		if (WARN_ON(!new_policy.cur)) {
+ 			ret = -EIO;
+-			goto no_policy;
++			goto unlock;
+ 		}
+ 
+ 		if (!policy->cur) {
+@@ -2279,6 +2279,7 @@ int cpufreq_update_policy(unsigned int cpu)
+ 
+ 	ret = cpufreq_set_policy(policy, &new_policy);
+ 
++unlock:
+ 	up_write(&policy->rwsem);
+ 
+ 	cpufreq_cpu_put(policy);
+-- 
+2.0.0
 
-On a general note, I think perhaps a better way to represent this in an
-API, and perhaps this would help with making the API more generic, too,
-would be to make drivers request some sort of handle in .probe() and use
-that handle subsequently when making requests. That's somewhat analogous
-to the PM QoS' struct pm_qos_request.
-
-Thierry
-
---5QAgd0e35j3NYeGe
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJToMSWAAoJEN0jrNd/PrOhfj8P/iyTsGARiA5Lne+A7aJZ5AFc
-ZX4Au48rgSI6RYvVl/0k/uTHr/G/DmE9XVzn+8uZQLioNJJ/jQKjxBnYC5jW/ix5
-Ntvi5tdJdNCbCSioEyP1dFJxc0jeUprQkaQB2ZN/jHiOL03PJHzFnYfOJUsp2pKg
-S7C9pjuc24Xcds/NKPYFkYVdm7eitG70WZmKwTu/eD0LTWwhc19WgMfMW8qsecpr
-4lEwpRXy+APalXmqQQwNwsEPDUClrk4VTq5m1nufTlqhn4GaAxiNtmP/3AH1DLME
-8O2IRzDjkYBl+L+CphQvI1f+TbbDxHIkGPgeAOnsANR5lrrSNA3Id6tGMfH+BKkj
-l52RjmyZCvOR2Dnab+13J7pG/qCNgHrKRBEV+Ldlsi9dido7IoSR61XEkp9HEKb4
-zoVNp317JgzCFV4ivsNKi9cPKPHzU8f1aun4U0y0nxN/4X4ZpsT9/rnx8C6O2h68
-3Li4RnyAXuqUfp7Chqn5C/3rIFAGy1TfW/JShV23PupLrv4bkl+21uX9b/0PyhCF
-dlvZeLJLHh9gRIL1jCfDE0HC7ZQYdw3KV/XpByWKhfaicUm4EglWWYuo0lCVi/0S
-fUFbCU2sEV5LKwqWjkQw8W0aaPSwhaSg9/+cSrsDlcPz489sM/KP65iPZ3J5oGRr
-eTk6nZwT2q2/NUc8W91u
-=vNlq
------END PGP SIGNATURE-----
-
---5QAgd0e35j3NYeGe--
-
---===============1954057530==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-dri-devel mailing list
-dri-devel@lists.freedesktop.org
-http://lists.freedesktop.org/mailman/listinfo/dri-devel
-
---===============1954057530==--
