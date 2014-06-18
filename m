@@ -1,59 +1,104 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / Documentation: Update copyright in
- suspend-and-cpuhotplug.txt
-Date: Wed, 18 Jun 2014 14:47:43 +0200
-Message-ID: <20140618124742.GA5665@amd.pavel.ucw.cz>
-References: <20140609123103.11086.12353.stgit@srivatsabhat.in.ibm.com>
+From: Aaron Plattner <aplattner@nvidia.com>
+Subject: Re: [PATCH] cpufreq: unlock when failing cpufreq_update_policy()
+Date: Wed, 18 Jun 2014 07:39:37 -0700
+Message-ID: <53A1A4A9.4060301@nvidia.com>
+References: <1403050362-20809-1-git-send-email-aplattner@nvidia.com> <CAKohpo=2fpi7GivgNGE+DgD3xPdku3WzKKD8+Ziz4gQ4P6pMxQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39322 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966140AbaFRMrq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 08:47:46 -0400
-Content-Disposition: inline
-In-Reply-To: <20140609123103.11086.12353.stgit@srivatsabhat.in.ibm.com>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:1451 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbaFROji (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 10:39:38 -0400
+In-Reply-To: <CAKohpo=2fpi7GivgNGE+DgD3xPdku3WzKKD8+Ziz4gQ4P6pMxQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, rdunlap@infradead.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Hi!
+On 06/18/2014 12:40 AM, Viresh Kumar wrote:
+> On 18 June 2014 05:42, Aaron Plattner <aplattner@nvidia.com> wrote:
+>> Commit bd0fa9bb455d introduced a failure path to cpufreq_update_policy() if
+>> cpufreq_driver->get(cpu) returns NULL.  However, it jumps to the 'no_policy'
+>> label, which exits without unlocking any of the locks the function acquired
+>> earlier.  This causes later calls into cpufreq to hang.
+>>
+>> Fix this by creating a new 'unlock' label and jumping to that instead.
+>>
+>> Fixes: bd0fa9bb455d ("cpufreq: Return error if ->get() failed in cpufreq_update_policy()")
+>> Link: https://devtalk.nvidia.com/default/topic/751903/kernel-3-15-and-nv-drivers-337-340-failed-to-initialize-the-nvidia-kernel-module-gtx-550-ti-/
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+>> ---
+>> I haven't reproduced this problem so I couldn't test it, but the bug and its
+>> solution seem obvious enough.
+>>
+>>   drivers/cpufreq/cpufreq.c | 3 ++-
+>>   1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index aed2b0cb83dc..5b6d04f3b9ea 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -2264,7 +2264,7 @@ int cpufreq_update_policy(unsigned int cpu)
+>>                  new_policy.cur = cpufreq_driver->get(cpu);
+>>                  if (WARN_ON(!new_policy.cur)) {
+>>                          ret = -EIO;
+>> -                       goto no_policy;
+>> +                       goto unlock;
+>>                  }
+>>
+>>                  if (!policy->cur) {
+>> @@ -2279,6 +2279,7 @@ int cpufreq_update_policy(unsigned int cpu)
+>>
+>>          ret = cpufreq_set_policy(policy, &new_policy);
+>>
+>> +unlock:
+>>          up_write(&policy->rwsem);
+>>
+>>          cpufreq_cpu_put(policy);
+>
+> Hmm, yes we do have a problem here but the code became a bit ugly
+> now.. Can you please consider this diff instead?
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index aed2b0c..6caced5 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2242,10 +2242,8 @@ int cpufreq_update_policy(unsigned int cpu)
+>          struct cpufreq_policy new_policy;
+>          int ret;
+>
+> -       if (!policy) {
+> -               ret = -ENODEV;
+> -               goto no_policy;
+> -       }
+> +       if (!policy)
+> +               return = -ENODEV;
 
-> Extend the year to 2014 in the copyright.
-> 
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+I assume you meant "return -ENODEV"?
 
-The file was updated in 
+>          down_write(&policy->rwsem);
+>
+> @@ -2279,10 +2277,10 @@ int cpufreq_update_policy(unsigned int cpu)
+>
+>          ret = cpufreq_set_policy(policy, &new_policy);
+>
+> +no_policy:
 
-commit 6237dd132d4eb408ffa80830fe395448e5657ab0
-Author: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
-Date:   Wed May 2 14:33:37 2012 +0200
+'no_policy' implied to me that policy was NULL, so this label should 
+still be renamed to 'unlock'.  I'll send out a v2 that does this.
 
-and by you in 2011:
-
-commit 7fef9fc83fbd7293ea9fe665d14046422ebf4219
-Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Date:   Wed Oct 19 23:59:05 2011 +0200
-
-So... copyright 2011 seems entirely correct.
-
-									Pavel
-
-> index e13dafc..2850df3 100644
-> --- a/Documentation/power/suspend-and-cpuhotplug.txt
-> +++ b/Documentation/power/suspend-and-cpuhotplug.txt
-> @@ -1,6 +1,6 @@
->  Interaction of Suspend code (S3) with the CPU hotplug infrastructure
->  
-> -     (C) 2011 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> +     (C) 2011 - 2014 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->  
->  
->  I. How does the regular CPU hotplug code differ from how the Suspend-to-RAM
-> 
-
+>          up_write(&policy->rwsem);
+>
+>          cpufreq_cpu_put(policy);
+> -no_policy:
+>          return ret;
+>   }
+>   EXPORT_SYMBOL(cpufreq_update_policy);
+>
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Aaron
