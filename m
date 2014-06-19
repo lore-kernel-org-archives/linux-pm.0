@@ -1,186 +1,135 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
-Date: Thu, 19 Jun 2014 15:55:31 +0200
-Message-ID: <4216316.IaLNu46z52@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1406181121220.1467-100000@iolanthe.rowland.org> <3528855.Z370J7O75B@vostro.rjw.lan> <9E7892CE01168A46922BCCE04DB02F9828F863E9@HKMAIL01.nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI and power management updates for v3.16-rc2
+Date: Thu, 19 Jun 2014 15:46:56 +0200
+Message-ID: <CAJZ5v0hH13nA1Qq5BYA+N5D0OBGozvNgiEGi4u8_-5i=vdjkPg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58996 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752668AbaFSNhz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 09:37:55 -0400
-In-Reply-To: <9E7892CE01168A46922BCCE04DB02F9828F863E9@HKMAIL01.nvidia.com>
+Received: from mail-oa0-f51.google.com ([209.85.219.51]:59591 "EHLO
+	mail-oa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754545AbaFSNq5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 09:46:57 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Allen Yu <alleny@nvidia.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
 
-On Thursday, June 19, 2014 04:23:29 PM Allen Yu wrote:
-> On Thursday, June 19, 2014, Rafael J. Wysocki wrote: 
-> > On Wednesday, June 18, 2014 11:30:51 AM Alan Stern wrote:
-> > > On Tue, 17 Jun 2014, Rafael J. Wysocki wrote:
-> > >
-> > > > On Tuesday, June 17, 2014 10:37:03 PM Rafael J. Wysocki wrote:
-> > > > > On Tuesday, June 17, 2014 10:26:14 PM Rafael J. Wysocki wrote:
-> > > > > > On Tuesday, June 17, 2014 10:11:32 AM Alan Stern wrote:
-> > > > > > > On Mon, 16 Jun 2014, Rafael J. Wysocki wrote:
-> > > > > > >
-> > > > > > > > > For reasons having nothing to do with Allen's suggested
-> > > > > > > > > change, I wonder if we shouldn't replace this line with
-> > something like:
-> > > > > > > > >
-> > > > > > > > > -	else if (dev->power.disable_depth == 1 && dev-
-> > >power.is_suspended
-> > > > > > > > > +	else if (dev->power.disable > 0 &&
-> > > > > > > > > +!dev->power.is_suspended
-> > > > > > > > > 	    && dev->power.runtime_status == RPM_ACTIVE)
-> > > > > > > > > 		retval = 1;
-> > > > > > > > >
-> > > > > > > > > It seems that I've been bitten by this several times in the past.
-> > > > > > > > > When a device is disabled for runtime PM, and more or less
-> > > > > > > > > permanently stuck in the RPM_ACTIVE state, calls to
-> > > > > > > > > pm_runtime_resume() or
-> > > > > > > > > pm_runtime_get_sync() shouldn't fail.
-> > > > > > > > >
-> > > > > > > > > For example, suppose some devices of a certain type
-> > > > > > > > > support runtime power management but others don't.  We
-> > > > > > > > > naturally want to call
-> > > > > > > > > pm_runtime_disable() for the ones that don't.  But we also
-> > > > > > > > > want the same driver to work for all the devices, which
-> > > > > > > > > means that
-> > > > > > > > > pm_runtime_get_sync() should return success -- otherwise
-> > > > > > > > > the driver will think that something has gone wrong.
-> > > > > > > > >
-> > > > > > > > > Rafael, what do you think?
-> > > > > > > >
-> > > > > > > > That condition is there specifically to take care of the
-> > > > > > > > system suspend code path.  It means that if runtime PM is
-> > > > > > > > disabled, but it only has been disabled by the system
-> > > > > > > > suspend code path, we should treat the device as "active" (ie.
-> > return 1).  That won't work after the proposed change.
-> > > > > > >
-> > > > > > > Ah, yes, quite true.  Okay, suppose we replace that line with just:
-> > > > > > >
-> > > > > > > +	else if (dev->power.disable > 0
-> > > > > > >
-> > > > > > > > I guess drivers that want to work with devices where runtime
-> > > > > > > > PM may be disabled can just check the return value of
-> > rpm_resume() for -EACCES?
-> > > > > > >
-> > > > > > > They could, but it's extra work and it's extremely easy to
-> > > > > > > forget about.  I'd prefer not to do things that way.
-> > > > > >
-> > > > > > In that case we need to audit all code that checks the return
-> > > > > > value of
-> > > > > > __pm_runtime_resume() to verify that it doesn't depend on the
-> > > > > > current behavior in any way.  It shouldn't, but still.
-> > > > > >
-> > > > > > Also we probably should drop the -EACCES return value from
-> > > > > > rpm_resume() in the same patch, because it specifically only
-> > > > > > covers the dev->power.disable > 0 case (which BTW is consistent
-> > > > > > with the suspend side of things, so I'm totally unsure about that being
-> > the right thing to do to be honest).
-> > >
-> > > It's still the correct action with runtime PM is disabled and the
-> > > device's runtime_status isn't RPM_ACTIVE.
-> > 
-> > Well, we used to have the notion that runtime_status is not meaningful for
-> > devices with dev->power.disable_depth greater than 0 (except for the
-> > special case in the suspend code path where we know why it is greater than
-> > 0).  I think it was useful. :-)
-> 
-> So what's the exact state of device if dev->power.is_suspended flag is set and runtime_status is RPM_ACTIVE? Is it a state like "suspended but still can be accessed"? 
-> 
-> I'm just afraid the existing code would cause a device hang if we allow it to be accessed even though it's suspended (at this point RPM_ACTIVE could be meaningless). I don't understand the original motivation of these code. If it's a valid case, most likely it should be handled in the specific device driver instead of the PM core.
-> 
-> > 
-> > > > > Perhaps it'd be better to rework __pm_runtime_resume() to convert
-> > > > > the -EACCES return value from rpm_resume() into 0 if RPM_GET_PUT is
-> > set?
-> > > >
-> > > > Or do something like this?
-> > > >
-> > > > ---
-> > > >  drivers/base/power/runtime.c |    3 ++-
-> > > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > >
-> > > > Index: linux-pm/drivers/base/power/runtime.c
-> > > >
-> > ==========================================================
-> > =========
-> > > > --- linux-pm.orig/drivers/base/power/runtime.c
-> > > > +++ linux-pm/drivers/base/power/runtime.c
-> > > > @@ -608,7 +608,8 @@ static int rpm_resume(struct device *dev
-> > > >   repeat:
-> > > >  	if (dev->power.runtime_error)
-> > > >  		retval = -EINVAL;
-> > > > -	else if (dev->power.disable_depth == 1 && dev-
-> > >power.is_suspended
-> > > > +	else if (((dev->power.disable_depth > 0 && (rpmflags &
-> > RPM_GET_PUT))
-> > > > +	    || (dev->power.disable_depth == 1 && dev-
-> > >power.is_suspended))
-> > > >  	    && dev->power.runtime_status == RPM_ACTIVE)
-> > > >  		retval = 1;
-> > > >  	else if (dev->power.disable_depth > 0)
-> > >
-> > > So pm_runtime_resume() and pm_request_resume() would still fail, but
-> > > pm_runtime_get() and pm_runtime_get_sync() would work?  I'm not sure
-> > > about the reason for this distinction.
-> > 
-> > The meaning of pm_runtime_get()/pm_runtime_get_sync() is "prevent the
-> > device from being suspended from now on and resume it if necessary" while
-> > "runtime PM disabled and runtime_status == RPM_ACTIVE" may be
-> > interpreted as "not necessary to resume", so it is reasonable to special case
-> > this particular situation for these particular routines IMHO.
-> 
-> As Rafael mentioned above that runtime_sataus is not meaningful if runtime PM
-> is disabled, so shouldn't we avoid using the runtime_staus here and instead use
-> dev->power.is_suspended only to decide the return value?
+Hi Linus,
 
-No, we shouldn't.
+Please pull from
 
-This is a special case. If dev->power.disable_depth == 1 and dev->power.is_suspended
-is set at the same time, we know for a fact that runtime PM was only disabled by the
-system suspend code path and it was enabled otherwise, so dev->power.runtime_status
-equal to RPM_ACTIVE is actually meaningful in that particular case.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-3.16-rc2
 
-> @@ -608,11 +608,13 @@ static int rpm_resume(struct device *dev, int rpmflags)
->   repeat:
->         if (dev->power.runtime_error)
->                 retval = -EINVAL;
-> -       else if (dev->power.disable_depth == 1 && dev->power.is_suspended
-> -           && dev->power.runtime_status == RPM_ACTIVE)
-> -               retval = 1;
-> -       else if (dev->power.disable_depth > 0)
-> -               retval = -EACCES;
-> +       else if (dev->power.disable_depth > 0) {
-> +               if (!dev->power.is_suspended)
-> +                       retval = 1;
-> +               else
-> +                       retval = -EACCES;
-> +       }
-> +
->         if (retval)
->                 goto out;
-> 
-> However, this requires us to make sure device is in full functional state if
-> it's not suspended before disabling runtime PM, just like the case runtime PM
-> is not configured at all.
+to receive ACPI and power management updates for v3.16-rc2
+with top-most commit 2ba87ea132a7364dbeb71126f3d7b8ec8e59d0e9
 
-If runtime PM is not configured at all, the device has to be in full functional
-state (from the PM perspective) outside of the system suspend-resume sequence.
+ Merge branches 'pm-cpufreq' and 'pm-cpuidle'
 
-The only problematic case I can see is when runtime PM is disabled, runtime_status
-is RPM_ACTIVE, but the device is actually suspended for some reason.  I'd say
-that avoiding it is the caller's problem.
+on top of commit 7171511eaec5bf23fb06078f59784a3a0626b38f
 
-> And also requires device suspend routine to check dev->power.usage_count before
-> suspending device.
+ Linux 3.16-rc1
 
-Why?  And which routine exactly are you talking about?
+These are fixes mostly (ia64 regression related to the ACPI
+enumeration of devices, cpufreq regressions, fix for I2C
+controllers included in Intel SoCs, mvebu cpuidle driver fix
+related to sysfs) plus additional kernel command line arguments
+from Kees to make it possible to build kernel images with hibernation
+and the kernel address space randomization included simultaneously,
+a new ACPI battery driver quirk for a system with a broken BIOS and
+a couple of ACPI core cleanups.
 
-Rafael
+Specifics:
 
+ - Fix for an ia64 regression introduced during the 3.11 cycle by a
+   commit that modified the hardware initialization ordering and made
+   device discovery fail on some systems.
+
+ - Fix for a build problem on systems where the cpufreq-cpu0 driver
+   is built-in and the cpu-thermal driver is modular from Arnd Bergmann.
+
+ - Fix for a recently introduced computational mistake in the
+   intel_pstate driver that leads to excessive rounding errors from
+   Doug Smythies.
+
+ - Fix for a failure code path in cpufreq_update_policy() that fails
+   to unlock the locks acquired previously from Aaron Plattner.
+
+ - Fix for the cpuidle mvebu driver to use shorter state names which
+   will prevent the sysfs interface from returning mangled strings.
+   From Gregory Clement.
+
+ - ACPI LPSS driver fix to make sure that the I2C controllers
+   included in BayTrail SoCs are not held in the reset state while
+   they are being probed from Mika Westerberg.
+
+ - New kernel command line arguments making it possible to build
+   kernel images with hibernation and kASLR included at the same
+   time and to select which of them will be used via the command
+   line (they are still functionally mutually exclusive, though).
+   From Kees Cook.
+
+ - ACPI battery driver quirk for Acer Aspire V5-573G that fails
+   to send battery status change notifications timely from
+   Alexander Mezin.
+
+ - Two ACPI core cleanups from Christoph Jaeger and Fabian Frederick.
+
+Thanks!
+
+
+
+---------------
+
+Aaron Plattner (1):
+      cpufreq: unlock when failing cpufreq_update_policy()
+
+Alexander Mezin (2):
+      ACPI / battery: use callback for setting up quirks
+      ACPI / battery: add quirk for Acer Aspire V5-573G
+
+Arnd Bergmann (1):
+      cpufreq: cpufreq-cpu0: fix CPU_THERMAL dependency
+
+Christoph Jaeger (1):
+      ACPI: use kstrto*() instead of simple_strto*()
+
+Doug Smythies (1):
+      intel_pstate: Correct rounding in busy calculation
+
+Fabian Frederick (1):
+      ACPI / processor replace __attribute__((packed)) by __packed
+
+Gregory CLEMENT (1):
+      cpuidle: mvebu: Fix the name of the states
+
+Kees Cook (2):
+      PM / hibernate: introduce "nohibernate" boot parameter
+      x86, kaslr: boot-time selectable with hibernation
+
+Mika Westerberg (1):
+      ACPI / LPSS: Take I2C host controllers out of reset
+
+Rafael J. Wysocki (1):
+      ACPI / ia64 / sba_iommu: Restore the working initialization ordering
+
+---------------
+
+ Documentation/kernel-parameters.txt     | 14 +++++---
+ arch/ia64/hp/common/sba_iommu.c         | 64 +++++++++++++++++++--------------
+ arch/x86/Kconfig                        |  1 -
+ arch/x86/boot/compressed/aslr.c         |  9 ++++-
+ drivers/acpi/acpi_lpss.c                | 15 ++++++++
+ drivers/acpi/battery.c                  | 39 ++++++++++++++++++--
+ drivers/acpi/osl.c                      |  3 +-
+ drivers/acpi/tables.c                   |  3 +-
+ drivers/cpufreq/Kconfig                 |  2 ++
+ drivers/cpufreq/cpufreq.c               | 10 +++---
+ drivers/cpufreq/intel_pstate.c          |  5 +--
+ drivers/cpuidle/cpuidle-armada-370-xp.c |  4 +--
+ include/acpi/processor.h                | 10 +++---
+ include/linux/suspend.h                 |  2 ++
+ kernel/power/hibernate.c                | 37 ++++++++++++++++++-
+ kernel/power/main.c                     |  6 ++--
+ kernel/power/user.c                     |  3 ++
+ 17 files changed, 167 insertions(+), 60 deletions(-)
