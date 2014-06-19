@@ -1,85 +1,157 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [RFC 0/5] Tegra124 thermal management
-Date: Thu, 19 Jun 2014 14:50:35 +0300
-Message-ID: <1403178640-16052-1-git-send-email-mperttunen@nvidia.com>
+From: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [RFC 3/5] ARM: tegra: Add thermal reset (thermtrip) support to PMC
+Date: Thu, 19 Jun 2014 14:50:38 +0300
+Message-ID: <1403178640-16052-4-git-send-email-mperttunen@nvidia.com>
+References: <1403178640-16052-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: swarren@wwwdotorg.org, thierry.reding@gmail.com, pdeschrijver@nvidia.com, rui.zhang@intel.com, edubezval@gmail.com
-Cc: devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mikko.perttunen@kapsi.fi, mlongnecker@nvidia.com, dtundlam@nvidia.com, talho@nvidia.com, Mikko Perttunen <mperttunen@nvidia.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1403178640-16052-1-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, dtundlam-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, talho-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, this patchset implements basic polled thermal sensing support and
-hardware initiated shutdown ("thermtrip") in an overheating situations 
-for the Tegra124 system-on-chip.
+This adds a device tree controlled option to enable PMC-based
+thermal reset in overheating situations. Thermtrip is supported on
+Tegra114 and Tegra124. The thermal reset only works when the thermal
+sensors are calibrated, so a soctherm driver is also required.
 
-The driver uses the of-thermal framework to expose the sensors to the
-thermal subsystem, and this works well for the simplest case of polled
-sensors. However, there are two features I'd like to implement that
-as far as I know the framework isn't really ready for:
-- hardware based trip points, i.e., interrupts at a configured temperature
-- hardware initiated cooling
+Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+---
+ arch/arm/mach-tegra/pmc.c | 95 +++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 91 insertions(+), 4 deletions(-)
 
-Thermtrip is an example of the latter, but the hardware is also capable
-of less drastic measures. Currently, the driver doesn't attempt to expose
-thermtrip using the framework, instead opting to use custom device tree
-properties, but this is something I'd like to move away from.
-
-To implement hardware based trip points, the sensor - of-thermal interface
-would need a new function, which the of-thermal framework would use to
-tell the driver of a new trip point. I suppose the best way to do this
-would be to have of-thermal manage trip points, and when one is reached,
-tell the driver to prepare for the next one. The sensor driver should
-be capable of managing two trip points, and below and one above the
-current temperature.
-
-Hardware initiated cooling is a bit more interesting. The hardware that
-initiates the cooling procedure necessarily has some view of the thermal
-sensors / thermal zones, so the thermal zones defined in the device tree
-should map exactly to those ones. Hardware based cooling devices should
-be defined in the device tree just like any other cooling devices.
-The problematic part is binding a trip point to a hardware cooling device.
-There would need some additional interface to tell the cooling device
-the temperature of the trip point it is bound to.
-
-Hardware cooling devices can also track multiple thermal zones (for example,
-thermtrip can trigger based on cpu, gpu, memory and tsense sensors). To
-distinguish between these in the device tree, I can think of two options:
-1. Implement each tracked zone as a separate cooling device. (Probably by 
-   having an additional cooling-cell) This would make the interface simpler 
-   but allow impossible cooling mappings to be made in the device tree.
-2. When telling the cooling device of a particular trip point, also tell it
-   which thermal zone it is related to. This would require the cooling device
-   to have some kind of ability to detect that a thermal zone object is a
-   specific thermal zone.
-
-One more question related to hardware-initiated reset in an overheating
-situation: the "critical" trip level is designed to initiate a controller
-shutdown. Should there be a new trip level for an uncontrolled shutdown?
-
-Any thoughts would be appreciated.
-
-Thanks,
-Mikko Perttunen
-
-Mikko Perttunen (5):
-  ARM: tegra: Add PMC thermtrip programming to Jetson TK1 device tree
-  ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
-  ARM: tegra: Add thermal reset (thermtrip) support to PMC
-  clk: tegra: Add soctherm and tsensor clocks to T124 initialization
-    table
-  thermal: Add Tegra SOCTHERM thermal management driver
-
- arch/arm/boot/dts/tegra124-jetson-tk1.dts |   5 +
- arch/arm/boot/dts/tegra124.dtsi           |  47 +++
- arch/arm/mach-tegra/pmc.c                 |  95 +++++-
- drivers/clk/tegra/clk-tegra124.c          |   2 +
- drivers/thermal/Kconfig                   |   6 +
- drivers/thermal/Makefile                  |   1 +
- drivers/thermal/tegra_soctherm.c          | 502 ++++++++++++++++++++++++++++++
- 7 files changed, 654 insertions(+), 4 deletions(-)
- create mode 100644 drivers/thermal/tegra_soctherm.c
-
+diff --git a/arch/arm/mach-tegra/pmc.c b/arch/arm/mach-tegra/pmc.c
+index e1677c0..69143cd 100644
+--- a/arch/arm/mach-tegra/pmc.c
++++ b/arch/arm/mach-tegra/pmc.c
+@@ -51,6 +51,22 @@
+ #define PMC_CPUPWRGOOD_TIMER	0xc8
+ #define PMC_CPUPWROFF_TIMER	0xcc
+ 
++#define PMC_SENSOR_CTRL			0x1b0
++#define PMC_SENSOR_CTRL_SCRATCH_WRITE	(1 << 2)
++#define PMC_SENSOR_CTRL_ENABLE_RST	(1 << 1)
++
++#define PMC_SCRATCH54			0x258
++#define PMC_SCRATCH54_DATA_SHIFT	8
++#define PMC_SCRATCH54_ADDR_SHIFT	0
++
++#define PMC_SCRATCH55			0x25c
++#define PMC_SCRATCH55_RESET_TEGRA	(1 << 31)
++#define PMC_SCRATCH55_CNTRL_ID_SHIFT	27
++#define PMC_SCRATCH55_PINMUX_SHIFT	24
++#define PMC_SCRATCH55_16BITOP		(1 << 15)
++#define PMC_SCRATCH55_CHECKSUM_SHIFT	16
++#define PMC_SCRATCH55_I2CSLV1_SHIFT	0
++
+ static u8 tegra_cpu_domains[] = {
+ 	0xFF,			/* not available for CPU0 */
+ 	TEGRA_POWERGATE_CPU1,
+@@ -295,11 +311,19 @@ void tegra_pmc_suspend_init(void)
+ }
+ #endif
+ 
++#define PMC_HAS_THERMAL_RESET (1 << 0)
++
+ static const struct of_device_id matches[] __initconst = {
+-	{ .compatible = "nvidia,tegra124-pmc" },
+-	{ .compatible = "nvidia,tegra114-pmc" },
+-	{ .compatible = "nvidia,tegra30-pmc" },
+-	{ .compatible = "nvidia,tegra20-pmc" },
++	{
++		.compatible = "nvidia,tegra124-pmc",
++		.data = (void *)PMC_HAS_THERMAL_RESET
++	},
++	{
++		.compatible = "nvidia,tegra114-pmc",
++		.data = (void *)PMC_HAS_THERMAL_RESET
++	},
++	{ .compatible = "nvidia,tegra30-pmc", .data = 0 },
++	{ .compatible = "nvidia,tegra20-pmc", .data = 0 },
+ 	{ }
+ };
+ 
+@@ -324,6 +348,67 @@ void __init tegra_pmc_init_irq(void)
+ 	tegra_pmc_writel(val, PMC_CTRL);
+ }
+ 
++void __init tegra_pmc_init_thermal_reset(struct device_node *np)
++{
++	u32 pmu_i2c_addr, i2c_ctrl_id, reg_addr, reg_data, pinmux;
++	bool pmu_16bit_ops;
++	u32 val, checksum;
++	const struct of_device_id *match = of_match_node(matches, np);
++
++	if (!((u32)match->data & PMC_HAS_THERMAL_RESET))
++		return;
++
++	pmu_16bit_ops =
++		of_property_read_bool(np, "nvidia,thermtrip-pmu-16bit-ops");
++	if (of_property_read_u32(
++		np, "nvidia,thermtrip-pmu-i2c-addr", &pmu_i2c_addr))
++		goto disabled;
++	if (of_property_read_u32(
++		np, "nvidia,thermtrip-i2c-controller", &i2c_ctrl_id))
++		goto disabled;
++	if (of_property_read_u32(
++		np, "nvidia,thermtrip-reg-addr", &reg_addr))
++		goto disabled;
++	if (of_property_read_u32(
++		np, "nvidia,thermtrip-reg-data", &reg_data))
++		goto disabled;
++	if (of_property_read_u32(
++		np, "nvidia,thermtrip-pinmux", &pinmux))
++		pinmux = 0;
++
++	val = tegra_pmc_readl(PMC_SENSOR_CTRL);
++	val |= PMC_SENSOR_CTRL_SCRATCH_WRITE | PMC_SENSOR_CTRL_ENABLE_RST;
++	tegra_pmc_writel(val, PMC_SENSOR_CTRL);
++
++	val = (reg_data << PMC_SCRATCH54_DATA_SHIFT) |
++	      (reg_addr << PMC_SCRATCH54_ADDR_SHIFT);
++	tegra_pmc_writel(val, PMC_SCRATCH54);
++
++	val = 0;
++	val |= PMC_SCRATCH55_RESET_TEGRA;
++	val |= i2c_ctrl_id << PMC_SCRATCH55_CNTRL_ID_SHIFT;
++	val |= pinmux << PMC_SCRATCH55_PINMUX_SHIFT;
++	if (pmu_16bit_ops)
++		val |= PMC_SCRATCH55_16BITOP;
++	val |= pmu_i2c_addr << PMC_SCRATCH55_I2CSLV1_SHIFT;
++
++	checksum = reg_addr + reg_data + (val & 0xFF) + ((val >> 8) & 0xFF) +
++		((val >> 24) & 0xFF);
++	checksum &= 0xFF;
++	checksum = 0x100 - checksum;
++
++	val |= checksum << PMC_SCRATCH55_CHECKSUM_SHIFT;
++
++	tegra_pmc_writel(val, PMC_SCRATCH55);
++
++	pr_info("Tegra: PMC thermal reset enabled\n");
++
++	return;
++
++disabled:
++	pr_warn("Tegra: PMC thermal reset disabled\n");
++}
++
+ void __init tegra_pmc_init(void)
+ {
+ 	struct device_node *np;
+@@ -399,4 +484,6 @@ void __init tegra_pmc_init(void)
+ 	pmc_pm_data.lp0_vec_size = lp0_vec[1];
+ 
+ 	pmc_pm_data.suspend_mode = suspend_mode;
++
++	tegra_pmc_init_thermal_reset(np);
+ }
 -- 
 1.8.1.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
