@@ -1,314 +1,94 @@
-From: Erich Eickmeyer <erich@ericheickmeyer.com>
-Subject: Re: Kernel Fails on Acer Aspire E1-510P
-Date: Thu, 19 Jun 2014 18:01:40 -0007
-Message-ID: <1403201320.14789.0@smtp.gmail.com>
-References: <1403120393.5670.0@smtp.gmail.com> <53A20530.2000203@intel.com>
-	<1403133410.17996.3@smtp.gmail.com> <53A30D62.30301@intel.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
+Date: Thu, 19 Jun 2014 12:25:14 -0700
+Message-ID: <7h61jwwvl1.fsf@paris.lan>
+References: <Pine.LNX.4.44L0.1406191049240.1247-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <53A30D62.30301@intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, dirk.j.brandewie@intel.com, stable <stable@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:39699 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964804AbaFSTZR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 15:25:17 -0400
+Received: by mail-pd0-f170.google.com with SMTP id z10so2144686pdj.29
+        for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2014 12:25:17 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.44L0.1406191049240.1247-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Thu, 19 Jun 2014 10:56:30 -0400 (EDT)")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Allen Yu <alleny@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-I will test this on my N3520 system.
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-Erich
+> On Thu, 19 Jun 2014, Allen Yu wrote:
+>
+>> So what's the exact state of device if dev->power.is_suspended flag
+>> is set and runtime_status is RPM_ACTIVE? Is it a state like
+>> "suspended but still can be accessed"?
+>> 
+>> I'm just afraid the existing code would cause a device hang if we
+>> allow it to be accessed even though it's suspended (at this point
+>> RPM_ACTIVE could be meaningless). I don't understand the original
+>> motivation of these code. If it's a valid case, most likely it should
+>> be handled in the specific device driver instead of the PM core.
+>
+> You should read the Changelog for commit 6f3c77b040f (PM / Runtime:  
+> let rpm_resume() succeed if RPM_ACTIVE, even when disabled, v2).  It
+> explains why the code looks the way it does.
+>
+> However, I'm starting to think the reasoning in that commit may not be
+> valid.  While perhaps it is okay for some I2C devices (mentioned in the
+> commit log), it probably isn't okay in general.
 
-On Thu, Jun 19, 2014 at 9:18 AM, Dirk Brandewie 
-<dirk.brandewie@gmail.com> wrote:
-> On 06/18/2014 04:16 PM, Erich Eickmeyer wrote:
->> Done. Thanks!
->> 
->> Erich
->> 
->> On Wed, Jun 18, 2014 at 2:31 PM, Rafael J. Wysocki 
->> <rafael.j.wysocki@intel.com>
->> wrote:
->>> On 6/18/2014 9:32 PM, Erich Eickmeyer wrote:
->>>> Dear Mr. Brandewie, et al,
->>>> 
->>>> I have noticed a kernel bug that causes it to fail to boot on my 
->>>> machine, an
->>>> Acer Aspire E1-510P. The following is a transcription of the 
->>>> kernel panic:
->>>> 
->>> 
->>> Can you please add this information to bug 77951 at 
->>> bugzilla.kernel.org
->>> which is used to track problems with the commit you mention below?
->>> 
-> Patch attached to
-> https://bugzilla.kernel.org/show_bug.cgi?id=77951
-> 
-> The patch fixes the issue on the N2820 in my test system.
-> 
-> --Dirk
->>> Rafael
->>> 
->>> 
->>>>> Disabling lock debugging due to kernel taint
->>>>> mce: [Hardware Error]: CPU2: Machine Check Exception: 4 Bank 0:
->>>>> b200000430000423
->>>>> mce: [Hardware Error]: TSC 365f6dc39e
->>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->>>>> APIC 4
->>>>> microcode 31a
->>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>>>> mce: [Hardware Error]: CPU3: Machine Check Exception: 4 Bank 0:
->>>>> b200000430000423
->>>>> mce: [Hardware Error]: TSC 365f6fa2e4
->>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->>>>> APIC 6
->>>>> microcode 31a
->>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>>>> mce: [Hardware Error]: CPU1: Machine Check Exception: 4 Bank 0:
->>>>> b200000010000000
->>>>> mce: [Hardware Error]: TSC 365f73e988
->>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
->>>>> APIC 2
->>>>> microcode 31a
->>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>>>> mce: [Hardware Error]: CPU0: Machine Check Exception: 4 Bank 0:
->>>>> b200000010000000
->>>>> mce: [Hardware Error]: TSC 365f730e28
->>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 142862769 SOCKET 0 
->>>>> APIC 0
->>>>> microcode 31a
->>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
->>>>> mce: [Hardware Error]: Machine Check: Processor context corrupt
->>>>> Kernel panic - not syncing: Fatal Machine check
->>>>> Kernel Offset: 0x0 from 0xffffffff81000000 (relocation range:
->>>>> 0xffffffff80000000-0xfffffffff9fffffff)
->>>>> Rebooting in 90 seconds..
->>>>> 
->>>> 
->>>> Kernel bisection points to this commit:
->>>> 
->>>>> dd4c4afb005de0415ea06e3586b017e193c1539e is the first bad commit
->>>>> commit dd4c4afb005de0415ea06e3586b017e193c1539e
->>>>> Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>>>> Date: Thu May 8 12:57:23 2014 -0700
->>>>> 
->>>>>     intel_pstate: Set turbo VID for BayTrail
->>>>>         commit 21855ff5bcbdd075e1c99772827a84912ab083dd upstream.
->>>>>         A documentation update exposed that there is a separate 
->>>>> set of VID
->>>>>     values that must be used in the turbo/boost P state range. Add
->>>>>     enumerating and setting the correct VID for P states in the 
->>>>> turbo
->>>>>     range.
->>>>>         Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
->>>>>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>>     Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>>>> 
->>>>> :040000 040000 1a207dc8f511b005b02f023f0a4eaf74ee606181
->>>>> a503e06ccecb12d7bdf1d8e2d87395d35a4c4ef0 M    drivers
->>>> 
->>>> Bisect log follows:
->>>> 
->>>>> git bisect start
->>>>> # good: [7261684765e4411dff5ec5ffbad52f5009a2941b] Linux 3.14.4
->>>>> git bisect good 7261684765e4411dff5ec5ffbad52f5009a2941b
->>>>> # bad: [a1bc295d7a4be9425bbeecc005d0cd013eb46cea] Linux 3.14.6
->>>>> git bisect bad a1bc295d7a4be9425bbeecc005d0cd013eb46cea
->>>>> # good: [0b86a50c92e0118117224d57a9b4aa79d33d98b0] hwmon: 
->>>>> (emc1403) fix
->>>>> inverted store_hyst()
->>>>> git bisect good 0b86a50c92e0118117224d57a9b4aa79d33d98b0
->>>>> # good: [512a588518fefae5dab75b89b734cfb64e53177b] Input: atkbd - 
->>>>> fix
->>>>> keyboard not working on some LG laptops
->>>>> git bisect good 512a588518fefae5dab75b89b734cfb64e53177b
->>>>> # good: [4cf3d5e62ea1868a963f6430eb7e40e46ac7295b] dm crypt: fix 
->>>>> cpu hotplug
->>>>> crash by removing per-cpu structure
->>>>> git bisect good 4cf3d5e62ea1868a963f6430eb7e40e46ac7295b
->>>>> # bad: [dd4c4afb005de0415ea06e3586b017e193c1539e] intel_pstate: 
->>>>> Set turbo
->>>>> VID for BayTrail
->>>>> git bisect bad dd4c4afb005de0415ea06e3586b017e193c1539e
->>>>> # good: [da33adbd92be1217c55adf3f164b35ff2238fd32] ACPI: Revert 
->>>>> "ACPI /
->>>>> Battery: Remove battery's proc directory"
->>>>> git bisect good da33adbd92be1217c55adf3f164b35ff2238fd32
->>>>> # good: [fcbe7574986518eb6896c18804dc77d8dfd879ea] ACPI / TPM: 
->>>>> Fix resume
->>>>> regression on Chromebooks
->>>>> git bisect good fcbe7574986518eb6896c18804dc77d8dfd879ea
->>>>> # good: [6a8702825dc2c66c7233c0b5d9b05a4cddec9eca] i2c: rcar: 
->>>>> bail out on
->>>>> zero length transfers
->>>>> git bisect good 6a8702825dc2c66c7233c0b5d9b05a4cddec9eca
->>>>> # good: [35493cad041359561d13dfd4c3c0df33cdd5ea4c] i2c: s3c2410: 
->>>>> resume race
->>>>> fix
->>>>> git bisect good 35493cad041359561d13dfd4c3c0df33cdd5ea4c
->>>>> # first bad commit: [dd4c4afb005de0415ea06e3586b017e193c1539e] 
->>>>> intel_pstate:
->>>>> Set turbo VID for BayTrail
->>>> 
->>>> /proc/cpuinfo:
->>>> 
->>>>> processor    : 0
->>>>> vendor_id    : GenuineIntel
->>>>> cpu family    : 6
->>>>> model        : 55
->>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>>>> stepping    : 3
->>>>> microcode    : 0x320
->>>>> cpu MHz        : 498.000
->>>>> cache size    : 1024 KB
->>>>> physical id    : 0
->>>>> siblings    : 4
->>>>> core id        : 0
->>>>> cpu cores    : 4
->>>>> apicid        : 0
->>>>> initial apicid    : 0
->>>>> fpu        : yes
->>>>> fpu_exception    : yes
->>>>> cpuid level    : 11
->>>>> wp        : yes
->>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
->>>>> pge mca cmov
->>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
->>>>> nx rdtscp
->>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
->>>>> nonstop_tsc
->>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
->>>>> cx16 xtpr
->>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
->>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
->>>>> ept vpid
->>>>> tsc_adjust smep erms
->>>>> bogomips    : 4333.50
->>>>> clflush size    : 64
->>>>> cache_alignment    : 64
->>>>> address sizes    : 36 bits physical, 48 bits virtual
->>>>> power management:
->>>>> 
->>>>> processor    : 1
->>>>> vendor_id    : GenuineIntel
->>>>> cpu family    : 6
->>>>> model        : 55
->>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>>>> stepping    : 3
->>>>> microcode    : 0x320
->>>>> cpu MHz        : 1826.000
->>>>> cache size    : 1024 KB
->>>>> physical id    : 0
->>>>> siblings    : 4
->>>>> core id        : 1
->>>>> cpu cores    : 4
->>>>> apicid        : 2
->>>>> initial apicid    : 2
->>>>> fpu        : yes
->>>>> fpu_exception    : yes
->>>>> cpuid level    : 11
->>>>> wp        : yes
->>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
->>>>> pge mca cmov
->>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
->>>>> nx rdtscp
->>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
->>>>> nonstop_tsc
->>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
->>>>> cx16 xtpr
->>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
->>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
->>>>> ept vpid
->>>>> tsc_adjust smep erms
->>>>> bogomips    : 4333.50
->>>>> clflush size    : 64
->>>>> cache_alignment    : 64
->>>>> address sizes    : 36 bits physical, 48 bits virtual
->>>>> power management:
->>>>> 
->>>>> processor    : 2
->>>>> vendor_id    : GenuineIntel
->>>>> cpu family    : 6
->>>>> model        : 55
->>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>>>> stepping    : 3
->>>>> microcode    : 0x320
->>>>> cpu MHz        : 498.000
->>>>> cache size    : 1024 KB
->>>>> physical id    : 0
->>>>> siblings    : 4
->>>>> core id        : 2
->>>>> cpu cores    : 4
->>>>> apicid        : 4
->>>>> initial apicid    : 4
->>>>> fpu        : yes
->>>>> fpu_exception    : yes
->>>>> cpuid level    : 11
->>>>> wp        : yes
->>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
->>>>> pge mca cmov
->>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
->>>>> nx rdtscp
->>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
->>>>> nonstop_tsc
->>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
->>>>> cx16 xtpr
->>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
->>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
->>>>> ept vpid
->>>>> tsc_adjust smep erms
->>>>> bogomips    : 4333.50
->>>>> clflush size    : 64
->>>>> cache_alignment    : 64
->>>>> address sizes    : 36 bits physical, 48 bits virtual
->>>>> power management:
->>>>> 
->>>>> processor    : 3
->>>>> vendor_id    : GenuineIntel
->>>>> cpu family    : 6
->>>>> model        : 55
->>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
->>>>> stepping    : 3
->>>>> microcode    : 0x320
->>>>> cpu MHz        : 1992.000
->>>>> cache size    : 1024 KB
->>>>> physical id    : 0
->>>>> siblings    : 4
->>>>> core id        : 3
->>>>> cpu cores    : 4
->>>>> apicid        : 6
->>>>> initial apicid    : 6
->>>>> fpu        : yes
->>>>> fpu_exception    : yes
->>>>> cpuid level    : 11
->>>>> wp        : yes
->>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
->>>>> pge mca cmov
->>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
->>>>> nx rdtscp
->>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
->>>>> nonstop_tsc
->>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
->>>>> cx16 xtpr
->>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
->>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
->>>>> ept vpid
->>>>> tsc_adjust smep erms
->>>>> bogomips    : 4333.50
->>>>> clflush size    : 64
->>>>> cache_alignment    : 64
->>>>> address sizes    : 36 bits physical, 48 bits virtual
->>>>> power management:
->>>> 
->>>> Let me know if you need any more information.
->>>> 
->>>> Thanks,
->>>> Erich Eickmeyer
->>>> 
->>>> 
->>>> 
->>>> -- To unsubscribe from this list: send the line "unsubscribe 
->>>> stable" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> 
+Why not?
+
+> Kevin, do have any comments on this matter?  What do you think about 
+> making the following change to rpm_resume():
+>
+>  repeat:
+> 	if (dev->power.runtime_error)
+> 		retval = -EINVAL;
+> -	else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+> +	else if (dev->power.disable_depth > 0
+> 	    && dev->power.runtime_status == RPM_ACTIVE)
+> 		retval = 1;
+> 	else if (dev->power.disable_depth > 0)
+>
+> Or even:
+>
+> +	else if (dev->power.disable_depth > 0 && !dev->power.is_suspended
+>
+> although this would require the I2C driver you mentioned in your commit 
+> to change.
+
+My change was introduced to catch a very specific case.  Namely, when we
+know that the core has successfully asked the device to do a system suspend
+(dev->power.is_suspended == true) *and* we know that runtime PM was
+disabled *only* by the PM core (disable_depth == 0) while the device was
+still active (runtime_status == RPM_ACTIVE.)
+
+In your first idea above, it would allow a _get() to succeed even if
+someone other than the core (including the driver itself) had called
+pm_runtime_disable().  I don't think we want that.
+
+In the second idea above, we'd completely miss the case where runtime PM
+has been disabled by the core (because the core would have set
+dev->power.is_suspended)
+
+In both cases, we're no longer just checking for that specific condition
+I was after, so I'd have to spend more time thinking about any other
+possible consequences as well.
+
+I think part of the confusion here is coming from what
+dev->power.is_suspended means.  From the core's perspective, it just
+means that the core has called the ->suspend callback, and didn't detect
+any errors.  
+
+Depending on the driver though, it doesn't have to mean that the device
+is actually fully suspended.  For example, there are several cases of
+"runtime PM centric" drivers are may be needed by other devices during
+the system suspend/resume process and so are runtime PM resumed during
+system suspend.
+
+Kevin
