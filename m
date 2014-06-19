@@ -1,498 +1,314 @@
-From: Olof Johansson <olof@lixom.net>
-Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
-Date: Thu, 19 Jun 2014 10:18:37 -0700
-Message-ID: <CAOesGMj6xp_cXZRuqL5HOPX4AeDuCkj69E32xuPVgGk4xABLbQ@mail.gmail.com>
-References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
-	<1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
+From: Erich Eickmeyer <erich@ericheickmeyer.com>
+Subject: Re: Kernel Fails on Acer Aspire E1-510P
+Date: Thu, 19 Jun 2014 18:01:40 -0007
+Message-ID: <1403201320.14789.0@smtp.gmail.com>
+References: <1403120393.5670.0@smtp.gmail.com> <53A20530.2000203@intel.com>
+	<1403133410.17996.3@smtp.gmail.com> <53A30D62.30301@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f178.google.com ([209.85.220.178]:38793 "EHLO
-	mail-vc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933287AbaFSRSi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 13:18:38 -0400
-Received: by mail-vc0-f178.google.com with SMTP id ij19so2556552vcb.9
-        for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2014 10:18:37 -0700 (PDT)
-In-Reply-To: <1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <53A30D62.30301@intel.com>
+Sender: stable-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, dirk.j.brandewie@intel.com, stable <stable@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Alexandre Courbot <gnurou@gmail.com>, Arend van Spriel <arend@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Chris Ball <chris@printf.net>, Chen-Yu Tsai <wens@csie.org>, Russell King <linux@arm.linux.org.uk>, Tomasz Figa <tomasz.figa@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>
 
-Hi,
+I will test this on my N3520 system.
 
+Erich
 
-
-On Thu, Jun 19, 2014 at 6:04 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The pwrseq subsystem handles complex power sequences, typically useful
-> for subsystems that makes use of discoverable buses, like for example
-> MMC and I2C.
->
-> The pwrseq subsystem is dependant on CONFIG_OF to be able to parse a DT
-> childnode to find out what power sequence method to bind for a device.
->
-> From the DT childnode, the pwrseq DT parser tries to locate a
-> "power-method" property, which string is matched towards the list of
-> supported pwrseq methods.
->
-> Each pwrseq method implements it's own power sequence and interfaces
-> the pwrseq core through a few callback functions.
->
-> To instantiate a pwrseq method, clients shall use the devm_pwrseq_get()
-> API. If needed, clients can explicity drop the references to a pwrseq
-> method using devm_pwrseq_put() API.
->
-> Besides instantiation, the pwrseq API provides clients opportunity to
-> select a certain power state. In this intial version, PWRSEQ_POWER_ON
-> and PWRSEQ_POWER_OFF are supported. Those are also mandatory for each
-> pwrseq method to support.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  .../devicetree/bindings/pwrseq/pwrseq.txt          |   48 ++++++
->  drivers/Makefile                                   |    2 +-
->  drivers/pwrseq/Makefile                            |    2 +
->  drivers/pwrseq/core.c                              |  175 ++++++++++++++++++++
->  drivers/pwrseq/core.h                              |   37 +++++
->  drivers/pwrseq/method.c                            |   38 +++++
->  include/linux/pwrseq.h                             |   50 ++++++
->  7 files changed, 351 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/devicetree/bindings/pwrseq/pwrseq.txt
->  create mode 100644 drivers/pwrseq/Makefile
->  create mode 100644 drivers/pwrseq/core.c
->  create mode 100644 drivers/pwrseq/core.h
->  create mode 100644 drivers/pwrseq/method.c
->  create mode 100644 include/linux/pwrseq.h
->
-> diff --git a/Documentation/devicetree/bindings/pwrseq/pwrseq.txt b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
-> new file mode 100644
-> index 0000000..80848ae
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
-> @@ -0,0 +1,48 @@
-> +Power sequence DT bindings
-> +
-> +Each power sequence method has a corresponding "power-method" property string.
-> +This property shall be set in a subnode for a device. That subnode should also
-> +describe resourses which are specific to that power method.
-> +
-> +Do note, power sequences as such isn't encoded through DT. Instead those are
-> +implemented by each power method.
-> +
-> +Required subnode properties:
-> +- power-method: should contain the string for the power method to bind.
-> +
-> +       Supported power methods: None.
-> +
-> +Example:
-> +
-> +Note, the "clock" power method in this example isn't actually supported, but
-> +used to visualize how a childnode could be described.
-> +
-> +// WLAN SDIO channel
-> +sdi1_per2@80118000 {
-> +       compatible = "arm,pl18x", "arm,primecell";
-> +       reg = <0x80118000 0x1000>;
-> +       interrupts = <0 50 IRQ_TYPE_LEVEL_HIGH>;
-> +
-> +       dmas = <&dma 32 0 0x2>, /* Logical - DevToMem */
-> +              <&dma 32 0 0x0>; /* Logical - MemToDev */
-> +       dma-names = "rx", "tx";
-> +
-> +       clocks = <&prcc_kclk 2 4>, <&prcc_pclk 2 6>;
-> +       clock-names = "sdi", "apb_pclk";
-> +
-> +       arm,primecell-periphid = <0x10480180>;
-> +       max-frequency = <100000000>;
-> +       bus-width = <4>;
-> +       non-removable;
-> +       pinctrl-names = "default", "sleep";
-> +       pinctrl-0 = <&sdi1_default_mode>;
-> +       pinctrl-1 = <&sdi1_sleep_mode>;
-> +
-> +       status = "okay";
-> +
-> +       pwrseq: pwrseq1 {
-> +               power-method = "clock";
-> +               clocks = <&someclk 1 2>, <&someclk 3 4>;
-> +               clock-names = "pwrseq1", "pwrseq2";
-> +       };
-
-I am strongly against the subnode approach as a general framework. We
-don't have a subnode for interrupts, nor for clocks or pinctrl. So why
-should we have it for the power sequencing?
-
-Sure, that fits the linux driver model better, but that's irrelevant
-w.r.t. describing the hardware.
-
-Power method needs to be strongly defined, since that's really the ABI
-here. They need to be documented, and you need to pre-populate the
-common ones to make this a useful thing.
-
-> +};
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index f98b50d..ac1bf5b 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -128,7 +128,7 @@ endif
->  obj-$(CONFIG_DCA)              += dca/
->  obj-$(CONFIG_HID)              += hid/
->  obj-$(CONFIG_PPC_PS3)          += ps3/
-> -obj-$(CONFIG_OF)               += of/
-> +obj-$(CONFIG_OF)               += of/ pwrseq/
-
-This should probably be added to driver core instead of having yet
-another drivers/ toplevel directory.
-
->  obj-$(CONFIG_SSB)              += ssb/
->  obj-$(CONFIG_BCMA)             += bcma/
->  obj-$(CONFIG_VHOST_RING)       += vhost/
-> diff --git a/drivers/pwrseq/Makefile b/drivers/pwrseq/Makefile
-> new file mode 100644
-> index 0000000..afb914f
-> --- /dev/null
-> +++ b/drivers/pwrseq/Makefile
-> @@ -0,0 +1,2 @@
-> +#Support for the power sequence subsystem
-> +obj-y = core.o method.o
-> diff --git a/drivers/pwrseq/core.c b/drivers/pwrseq/core.c
-> new file mode 100644
-> index 0000000..baf7bb6
-> --- /dev/null
-> +++ b/drivers/pwrseq/core.c
-> @@ -0,0 +1,175 @@
-> +/*
-> + * Core of the power sequence subsystem
-> + *
-> + * Copyright (C) 2014 Linaro Ltd
-> + *
-> + * Author: Ulf Hansson <ulf.hansson@linaro.org>
-> + *
-> + * License terms: GNU General Public License (GPL) version 2
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/export.h>
-> +#include <linux/device.h>
-> +#include <linux/string.h>
-> +#include <linux/err.h>
-> +#include <linux/of.h>
-> +
-> +#include <linux/pwrseq.h>
-> +#include "core.h"
-> +
-> +static int pwrseq_find(const char *power_method)
-> +{
-> +       int i;
-> +
-> +       for (i = 0; pwrseq_methods[i].bind_method != NULL; i++)
-> +               if (!strcasecmp(power_method, pwrseq_methods[i].method))
-> +                       return i;
-> +       return -ENODEV;
-> +}
-> +
-> +static void devm_pwrseq_release(struct device *dev, void *res)
-> +{
-> +       struct pwrseq *ps = res;
-> +
-> +       dev_dbg(dev, "%s: Release method=%s\n", __func__, ps->method);
-> +
-> +       ps->ps_ops->release(ps);
-> +       of_node_put(ps->np_child);
-> +}
-> +
-> +static struct pwrseq *pwrseq_get(struct device *dev,
-> +                               struct device_node *np,
-> +                               const char *power_method)
-> +{
-> +       struct pwrseq *ps;
-> +       int ret;
-> +
-> +       ret = pwrseq_find(power_method);
-> +       if (ret < 0)
-> +               return ERR_PTR(ret);
-> +
-> +       ps = devres_alloc(devm_pwrseq_release, sizeof(ps), GFP_KERNEL);
-> +       if (!ps)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       ps->dev = dev;
-> +       ps->np_child = np;
-> +       ps->method = pwrseq_methods[ret].method;
-> +
-> +       /*
-> +        * The on/off states is mandatory to be supported. Additional states
-> +        * shall be added by each method during binding.
-> +        */
-> +       ps->supported_states = PWRSEQ_POWER_OFF | PWRSEQ_POWER_ON;
-> +       /*
-> +        * The default current state is PWRSEQ_POWER_OFF, it may be updated
-> +        * during binding.
-> +        */
-> +       ps->current_state = PWRSEQ_POWER_OFF;
-> +
-> +       ret = pwrseq_methods[ret].bind_method(ps);
-> +       if (ret) {
-> +               devres_free(ps);
-> +               return ERR_PTR(ret);
-> +       }
-> +
-> +       devres_add(dev, ps);
-> +       return ps;
-> +}
-> +
-> +static int pwrseq_of_find(struct device *dev,
-> +                       struct device_node **np_child,
-> +                       const char **power_method)
-> +{
-> +       struct device_node *np;
-> +       const char *pm;
-> +
-> +       if (!dev->of_node)
-> +               return -ENODEV;
-> +
-> +       /* Parse childnodes to find a power-method property. */
-> +       for_each_child_of_node(dev->of_node, np) {
-> +               if (!of_property_read_string(np, "power-method", &pm)) {
-> +                       *np_child = np;
-> +                       *power_method = pm;
-> +                       return 1;
-> +               }
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static struct pwrseq *_devm_pwrseq_get(struct device *dev, bool optional)
-> +{
-> +       struct pwrseq *ps;
-> +       struct device_node *np;
-> +       const char *pm;
-> +       int ret;
-> +
-> +       if (!dev)
-> +               return ERR_PTR(-ENODEV);
-> +
-> +       ret = pwrseq_of_find(dev, &np, &pm);
-> +       if (ret < 0) {
-> +               return ERR_PTR(ret);
-> +       } else if (ret) {
-
-No need to make this an else, the return makes sure of that.
-
-> +               ps = pwrseq_get(dev, np, pm);
-> +               if (IS_ERR(ps))
-> +                       of_node_put(np);
-> +       } else if (optional) {
-
-I'd rather see standalone code with ps = NULL at declaration, then if
-(!ps && optional) here.
-
-Or move the optional code out to the get_optional function so that it
-does two calls if needed. Will need some refactoring of how np is
-handled though.
-
-> +               ps = pwrseq_get(dev, NULL, "dummy");
-> +       } else {
-> +               return ERR_PTR(-ENODEV);
-
-ps = ERR_PTR(-ENODEV) here.
-
-> +       }
-> +
-> +       if (!IS_ERR(ps))
-> +               dev_dbg(dev, "%s: Bound method=%s\n", __func__, ps->method);
-> +
-> +       return ps;
-> +}
-> +
-> +struct pwrseq *devm_pwrseq_get_optional(struct device *dev)
-> +{
-> +       return _devm_pwrseq_get(dev, true);
-> +}
-> +EXPORT_SYMBOL_GPL(devm_pwrseq_get_optional);
-> +
-> +struct pwrseq *devm_pwrseq_get(struct device *dev)
-> +{
-> +       return _devm_pwrseq_get(dev, false);
-> +}
-> +EXPORT_SYMBOL_GPL(devm_pwrseq_get);
-> +
-> +static int devm_pwrseq_match(struct device *dev, void *res, void *data)
-> +{
-> +       struct pwrseq **ps = res;
-> +
-> +       return *ps == data;
-> +}
-> +
-> +void devm_pwrseq_put(struct pwrseq *ps)
-> +{
-> +       devres_release(ps->dev, devm_pwrseq_release, devm_pwrseq_match, ps);
-> +}
-> +EXPORT_SYMBOL_GPL(devm_pwrseq_put);
-> +
-> +int pwrseq_select_state(struct pwrseq *ps, enum pwrseq_state ps_state)
-> +{
-> +       int ret = 0;
-> +
-> +       if (ps->current_state != ps_state)
-> +               ret = ps->ps_ops->select_state(ps, ps_state);
-> +
-> +       if (!ret)
-> +               ps->current_state = ps_state;
-> +
-> +       return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(pwrseq_select_state);
-> +
-> +unsigned int pwrseq_supported_states(struct pwrseq *ps)
-> +{
-> +       return ps->supported_states;
-> +}
-> +EXPORT_SYMBOL_GPL(pwrseq_supported_states);
-> diff --git a/drivers/pwrseq/core.h b/drivers/pwrseq/core.h
-> new file mode 100644
-> index 0000000..84a6449
-> --- /dev/null
-> +++ b/drivers/pwrseq/core.h
-> @@ -0,0 +1,37 @@
-> +/*
-> + * Core private header for the power sequence subsystem
-> + *
-> + * Copyright (C) 2014 Linaro Ltd
-> + *
-> + * Author: Ulf Hansson <ulf.hansson@linaro.org>
-> + *
-> + * License terms: GNU General Public License (GPL) version 2
-> + */
-> +
-> +#ifndef __PWRSEQ_PWRSEQ_H
-> +#define __PWRSEQ_PWRSEQ_H
-> +
-> +#include <linux/pwrseq.h>
-> +
-> +struct pwrseq_ops {
-> +       int (*select_state)(struct pwrseq *, enum pwrseq_state);
-> +       void (*release)(struct pwrseq *);
-> +};
-> +
-> +struct pwrseq {
-> +       struct device *dev;
-> +       struct device_node *np_child;
-> +       const char *method;
-> +       enum pwrseq_state supported_states;
-> +       enum pwrseq_state current_state;
-> +       struct pwrseq_ops *ps_ops;
-> +       void *data;
-> +};
-> +
-> +struct pwrseq_method {
-> +       int (*bind_method)(struct pwrseq *);
-> +       const char *method;
-> +};
-> +
-> +extern struct pwrseq_method pwrseq_methods[];
-> +#endif
-> diff --git a/drivers/pwrseq/method.c b/drivers/pwrseq/method.c
-> new file mode 100644
-> index 0000000..fe16579
-> --- /dev/null
-> +++ b/drivers/pwrseq/method.c
-> @@ -0,0 +1,38 @@
-> +/*
-> + * Implements a dummy power method for power sequence subsystem
-> + *
-> + * Copyright (C) 2014 Linaro Ltd
-> + *
-> + * Author: Ulf Hansson <ulf.hansson@linaro.org>
-> + *
-> + * License terms: GNU General Public License (GPL) version 2
-> + */
-> +
-> +#include <linux/kernel.h>
-> +
-> +#include <linux/pwrseq.h>
-> +#include "core.h"
-> +
-> +static int pwrseq_dummy_select_state(struct pwrseq *ps, enum pwrseq_state s)
-> +{
-> +       return 0;
-> +}
-> +
-> +static void pwrseq_dummy_release(struct pwrseq *ps) { }
-> +
-> +static struct pwrseq_ops pwrseq_dummy_ops = {
-> +       .select_state = pwrseq_dummy_select_state,
-> +       .release = pwrseq_dummy_release,
-> +};
-> +
-> +static int pwrseq_dummy_bind(struct pwrseq *ps)
-> +{
-> +       ps->ps_ops = &pwrseq_dummy_ops;
-> +       return 0;
-> +}
-> +
-> +/* The extern list of supported power sequence_methods */
-> +struct pwrseq_method pwrseq_methods[] = {
-> +       { pwrseq_dummy_bind, "dummy" },
-> +       { NULL, NULL },
-> +};
-> diff --git a/include/linux/pwrseq.h b/include/linux/pwrseq.h
-> new file mode 100644
-> index 0000000..528b544
-> --- /dev/null
-> +++ b/include/linux/pwrseq.h
-> @@ -0,0 +1,50 @@
-> +/*
-> + * Interface for the power sequence subsystem
-> + *
-> + * Copyright (C) 2014 Linaro Ltd
-> + *
-> + * Author: Ulf Hansson <ulf.hansson@linaro.org>
-> + *
-> + * License terms: GNU General Public License (GPL) version 2
-> + */
-> +#ifndef __LINUX_PWRSEQ_PWRSEQ_H
-> +#define __LINUX_PWRSEQ_PWRSEQ_H
-> +
-> +#include <linux/bitops.h>
-> +
-> +struct device;
-> +struct pwrseq;
-> +
-> +enum pwrseq_state {
-> +       PWRSEQ_POWER_OFF = BIT(0),
-> +       PWRSEQ_POWER_ON = BIT(1),
-> +};
-> +
-> +#ifdef CONFIG_OF
-> +extern struct pwrseq *devm_pwrseq_get(struct device *dev);
-> +extern struct pwrseq *devm_pwrseq_get_optional(struct device *dev);
-> +extern void devm_pwrseq_put(struct pwrseq *ps);
-> +extern int pwrseq_select_state(struct pwrseq *ps, unsigned int ps_state);
-> +extern unsigned int pwrseq_supported_states(struct pwrseq *ps);
-> +#else
-> +static inline struct pwrseq *devm_pwrseq_get(struct device *dev)
-> +{
-> +       return ERR_PTR(-ENODEV);
-> +}
-> +static inline struct pwrseq *devm_pwrseq_get_optional(struct device *dev)
-> +{
-> +       return ERR_PTR(-ENODEV);
-> +}
-> +static inline void devm_pwrseq_put(struct pwrseq *ps) {}
-> +static inline int pwrseq_select_state(struct pwrseq *ps,
-> +                               enum pwrseq_state ps_state)
-> +{
-> +       return 0;
-> +}
-> +static inline unsigned int pwrseq_supported_states(struct pwrseq *ps)
-> +{
-> +       return 0;
-> +}
-> +#endif
-> +
-> +#endif /* __LINUX_PWRSEQ_PWRSEQ_H */
-> --
-> 1.7.9.5
->
+On Thu, Jun 19, 2014 at 9:18 AM, Dirk Brandewie 
+<dirk.brandewie@gmail.com> wrote:
+> On 06/18/2014 04:16 PM, Erich Eickmeyer wrote:
+>> Done. Thanks!
+>> 
+>> Erich
+>> 
+>> On Wed, Jun 18, 2014 at 2:31 PM, Rafael J. Wysocki 
+>> <rafael.j.wysocki@intel.com>
+>> wrote:
+>>> On 6/18/2014 9:32 PM, Erich Eickmeyer wrote:
+>>>> Dear Mr. Brandewie, et al,
+>>>> 
+>>>> I have noticed a kernel bug that causes it to fail to boot on my 
+>>>> machine, an
+>>>> Acer Aspire E1-510P. The following is a transcription of the 
+>>>> kernel panic:
+>>>> 
+>>> 
+>>> Can you please add this information to bug 77951 at 
+>>> bugzilla.kernel.org
+>>> which is used to track problems with the commit you mention below?
+>>> 
+> Patch attached to
+> https://bugzilla.kernel.org/show_bug.cgi?id=77951
+> 
+> The patch fixes the issue on the N2820 in my test system.
+> 
+> --Dirk
+>>> Rafael
+>>> 
+>>> 
+>>>>> Disabling lock debugging due to kernel taint
+>>>>> mce: [Hardware Error]: CPU2: Machine Check Exception: 4 Bank 0:
+>>>>> b200000430000423
+>>>>> mce: [Hardware Error]: TSC 365f6dc39e
+>>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
+>>>>> APIC 4
+>>>>> microcode 31a
+>>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
+>>>>> mce: [Hardware Error]: CPU3: Machine Check Exception: 4 Bank 0:
+>>>>> b200000430000423
+>>>>> mce: [Hardware Error]: TSC 365f6fa2e4
+>>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
+>>>>> APIC 6
+>>>>> microcode 31a
+>>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
+>>>>> mce: [Hardware Error]: CPU1: Machine Check Exception: 4 Bank 0:
+>>>>> b200000010000000
+>>>>> mce: [Hardware Error]: TSC 365f73e988
+>>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 1402862769 SOCKET 0 
+>>>>> APIC 2
+>>>>> microcode 31a
+>>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
+>>>>> mce: [Hardware Error]: CPU0: Machine Check Exception: 4 Bank 0:
+>>>>> b200000010000000
+>>>>> mce: [Hardware Error]: TSC 365f730e28
+>>>>> mce: [Hardware Error]: PROCESSOR 0:30673 TIME 142862769 SOCKET 0 
+>>>>> APIC 0
+>>>>> microcode 31a
+>>>>> mce: [Hardware Error]: Run the above through 'mcelog --ascii'
+>>>>> mce: [Hardware Error]: Machine Check: Processor context corrupt
+>>>>> Kernel panic - not syncing: Fatal Machine check
+>>>>> Kernel Offset: 0x0 from 0xffffffff81000000 (relocation range:
+>>>>> 0xffffffff80000000-0xfffffffff9fffffff)
+>>>>> Rebooting in 90 seconds..
+>>>>> 
+>>>> 
+>>>> Kernel bisection points to this commit:
+>>>> 
+>>>>> dd4c4afb005de0415ea06e3586b017e193c1539e is the first bad commit
+>>>>> commit dd4c4afb005de0415ea06e3586b017e193c1539e
+>>>>> Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>>>>> Date: Thu May 8 12:57:23 2014 -0700
+>>>>> 
+>>>>>     intel_pstate: Set turbo VID for BayTrail
+>>>>>         commit 21855ff5bcbdd075e1c99772827a84912ab083dd upstream.
+>>>>>         A documentation update exposed that there is a separate 
+>>>>> set of VID
+>>>>>     values that must be used in the turbo/boost P state range. Add
+>>>>>     enumerating and setting the correct VID for P states in the 
+>>>>> turbo
+>>>>>     range.
+>>>>>         Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>>>>>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>>     Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>>>> 
+>>>>> :040000 040000 1a207dc8f511b005b02f023f0a4eaf74ee606181
+>>>>> a503e06ccecb12d7bdf1d8e2d87395d35a4c4ef0 M    drivers
+>>>> 
+>>>> Bisect log follows:
+>>>> 
+>>>>> git bisect start
+>>>>> # good: [7261684765e4411dff5ec5ffbad52f5009a2941b] Linux 3.14.4
+>>>>> git bisect good 7261684765e4411dff5ec5ffbad52f5009a2941b
+>>>>> # bad: [a1bc295d7a4be9425bbeecc005d0cd013eb46cea] Linux 3.14.6
+>>>>> git bisect bad a1bc295d7a4be9425bbeecc005d0cd013eb46cea
+>>>>> # good: [0b86a50c92e0118117224d57a9b4aa79d33d98b0] hwmon: 
+>>>>> (emc1403) fix
+>>>>> inverted store_hyst()
+>>>>> git bisect good 0b86a50c92e0118117224d57a9b4aa79d33d98b0
+>>>>> # good: [512a588518fefae5dab75b89b734cfb64e53177b] Input: atkbd - 
+>>>>> fix
+>>>>> keyboard not working on some LG laptops
+>>>>> git bisect good 512a588518fefae5dab75b89b734cfb64e53177b
+>>>>> # good: [4cf3d5e62ea1868a963f6430eb7e40e46ac7295b] dm crypt: fix 
+>>>>> cpu hotplug
+>>>>> crash by removing per-cpu structure
+>>>>> git bisect good 4cf3d5e62ea1868a963f6430eb7e40e46ac7295b
+>>>>> # bad: [dd4c4afb005de0415ea06e3586b017e193c1539e] intel_pstate: 
+>>>>> Set turbo
+>>>>> VID for BayTrail
+>>>>> git bisect bad dd4c4afb005de0415ea06e3586b017e193c1539e
+>>>>> # good: [da33adbd92be1217c55adf3f164b35ff2238fd32] ACPI: Revert 
+>>>>> "ACPI /
+>>>>> Battery: Remove battery's proc directory"
+>>>>> git bisect good da33adbd92be1217c55adf3f164b35ff2238fd32
+>>>>> # good: [fcbe7574986518eb6896c18804dc77d8dfd879ea] ACPI / TPM: 
+>>>>> Fix resume
+>>>>> regression on Chromebooks
+>>>>> git bisect good fcbe7574986518eb6896c18804dc77d8dfd879ea
+>>>>> # good: [6a8702825dc2c66c7233c0b5d9b05a4cddec9eca] i2c: rcar: 
+>>>>> bail out on
+>>>>> zero length transfers
+>>>>> git bisect good 6a8702825dc2c66c7233c0b5d9b05a4cddec9eca
+>>>>> # good: [35493cad041359561d13dfd4c3c0df33cdd5ea4c] i2c: s3c2410: 
+>>>>> resume race
+>>>>> fix
+>>>>> git bisect good 35493cad041359561d13dfd4c3c0df33cdd5ea4c
+>>>>> # first bad commit: [dd4c4afb005de0415ea06e3586b017e193c1539e] 
+>>>>> intel_pstate:
+>>>>> Set turbo VID for BayTrail
+>>>> 
+>>>> /proc/cpuinfo:
+>>>> 
+>>>>> processor    : 0
+>>>>> vendor_id    : GenuineIntel
+>>>>> cpu family    : 6
+>>>>> model        : 55
+>>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
+>>>>> stepping    : 3
+>>>>> microcode    : 0x320
+>>>>> cpu MHz        : 498.000
+>>>>> cache size    : 1024 KB
+>>>>> physical id    : 0
+>>>>> siblings    : 4
+>>>>> core id        : 0
+>>>>> cpu cores    : 4
+>>>>> apicid        : 0
+>>>>> initial apicid    : 0
+>>>>> fpu        : yes
+>>>>> fpu_exception    : yes
+>>>>> cpuid level    : 11
+>>>>> wp        : yes
+>>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
+>>>>> pge mca cmov
+>>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
+>>>>> nx rdtscp
+>>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
+>>>>> nonstop_tsc
+>>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
+>>>>> cx16 xtpr
+>>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
+>>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
+>>>>> ept vpid
+>>>>> tsc_adjust smep erms
+>>>>> bogomips    : 4333.50
+>>>>> clflush size    : 64
+>>>>> cache_alignment    : 64
+>>>>> address sizes    : 36 bits physical, 48 bits virtual
+>>>>> power management:
+>>>>> 
+>>>>> processor    : 1
+>>>>> vendor_id    : GenuineIntel
+>>>>> cpu family    : 6
+>>>>> model        : 55
+>>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
+>>>>> stepping    : 3
+>>>>> microcode    : 0x320
+>>>>> cpu MHz        : 1826.000
+>>>>> cache size    : 1024 KB
+>>>>> physical id    : 0
+>>>>> siblings    : 4
+>>>>> core id        : 1
+>>>>> cpu cores    : 4
+>>>>> apicid        : 2
+>>>>> initial apicid    : 2
+>>>>> fpu        : yes
+>>>>> fpu_exception    : yes
+>>>>> cpuid level    : 11
+>>>>> wp        : yes
+>>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
+>>>>> pge mca cmov
+>>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
+>>>>> nx rdtscp
+>>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
+>>>>> nonstop_tsc
+>>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
+>>>>> cx16 xtpr
+>>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
+>>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
+>>>>> ept vpid
+>>>>> tsc_adjust smep erms
+>>>>> bogomips    : 4333.50
+>>>>> clflush size    : 64
+>>>>> cache_alignment    : 64
+>>>>> address sizes    : 36 bits physical, 48 bits virtual
+>>>>> power management:
+>>>>> 
+>>>>> processor    : 2
+>>>>> vendor_id    : GenuineIntel
+>>>>> cpu family    : 6
+>>>>> model        : 55
+>>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
+>>>>> stepping    : 3
+>>>>> microcode    : 0x320
+>>>>> cpu MHz        : 498.000
+>>>>> cache size    : 1024 KB
+>>>>> physical id    : 0
+>>>>> siblings    : 4
+>>>>> core id        : 2
+>>>>> cpu cores    : 4
+>>>>> apicid        : 4
+>>>>> initial apicid    : 4
+>>>>> fpu        : yes
+>>>>> fpu_exception    : yes
+>>>>> cpuid level    : 11
+>>>>> wp        : yes
+>>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
+>>>>> pge mca cmov
+>>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
+>>>>> nx rdtscp
+>>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
+>>>>> nonstop_tsc
+>>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
+>>>>> cx16 xtpr
+>>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
+>>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
+>>>>> ept vpid
+>>>>> tsc_adjust smep erms
+>>>>> bogomips    : 4333.50
+>>>>> clflush size    : 64
+>>>>> cache_alignment    : 64
+>>>>> address sizes    : 36 bits physical, 48 bits virtual
+>>>>> power management:
+>>>>> 
+>>>>> processor    : 3
+>>>>> vendor_id    : GenuineIntel
+>>>>> cpu family    : 6
+>>>>> model        : 55
+>>>>> model name    : Intel(R) Pentium(R) CPU N3520 @ 2.16GHz
+>>>>> stepping    : 3
+>>>>> microcode    : 0x320
+>>>>> cpu MHz        : 1992.000
+>>>>> cache size    : 1024 KB
+>>>>> physical id    : 0
+>>>>> siblings    : 4
+>>>>> core id        : 3
+>>>>> cpu cores    : 4
+>>>>> apicid        : 6
+>>>>> initial apicid    : 6
+>>>>> fpu        : yes
+>>>>> fpu_exception    : yes
+>>>>> cpuid level    : 11
+>>>>> wp        : yes
+>>>>> flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr 
+>>>>> pge mca cmov
+>>>>> pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
+>>>>> nx rdtscp
+>>>>> lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
+>>>>> nonstop_tsc
+>>>>> aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 
+>>>>> cx16 xtpr
+>>>>> pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer rdrand lahf_lm
+>>>>> 3dnowprefetch ida arat epb dtherm tpr_shadow vnmi flexpriority 
+>>>>> ept vpid
+>>>>> tsc_adjust smep erms
+>>>>> bogomips    : 4333.50
+>>>>> clflush size    : 64
+>>>>> cache_alignment    : 64
+>>>>> address sizes    : 36 bits physical, 48 bits virtual
+>>>>> power management:
+>>>> 
+>>>> Let me know if you need any more information.
+>>>> 
+>>>> Thanks,
+>>>> Erich Eickmeyer
+>>>> 
+>>>> 
+>>>> 
+>>>> -- To unsubscribe from this list: send the line "unsubscribe 
+>>>> stable" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> 
