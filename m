@@ -1,109 +1,62 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH v4 1/6] Documentation: arm: define DT idle states bindings
-Date: Thu, 19 Jun 2014 10:08:31 -0400
-Message-ID: <53A2EEDF.4030403@ti.com>
-References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com> <1402503520-8611-2-git-send-email-lorenzo.pieralisi@arm.com> <alpine.LFD.2.11.1406111240010.25775@knanqh.ubzr> <20140613164954.GA16745@e102568-lin.cambridge.arm.com> <alpine.LFD.2.11.1406131306160.25775@knanqh.ubzr> <20140618173648.GB31573@e102568-lin.cambridge.arm.com> <53A1E818.6030400@ti.com> <000001cf8b90$d6a6f090$83f4d1b0$@arm.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
+Date: Thu, 19 Jun 2014 16:23:26 +0200
+Message-ID: <53A2F25E.80200@redhat.com>
+References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org> <1403183091-27876-2-git-send-email-ulf.hansson@linaro.org> <53A2EDCA.8080000@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:48458 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755658AbaFSOJY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 Jun 2014 10:09:24 -0400
-In-Reply-To: <000001cf8b90$d6a6f090$83f4d1b0$@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <53A2EDCA.8080000@redhat.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Charles Garcia-Tobin <charles.garcia-tobin@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
 
-Charles,
+Hi,
 
-On Thursday 19 June 2014 03:33 AM, Charles Garcia-Tobin wrote:
+On 06/19/2014 04:03 PM, Hans de Goede wrote:
+> Hi,
 > 
-> 
->> -----Original Message-----
->> From: Santosh Shilimkar [mailto:santosh.shilimkar@ti.com]
->> Sent: 18 June 2014 20:27
->> To: Lorenzo Pieralisi; Nicolas Pitre
 
-[..]
+<snip>
 
->>> +===========================================
->>> +3 - state node
->>> +===========================================
->>> +
->>> +A state node represents an idle state description and must be
->> defined as
->>> +follows:
->>> +
->>> +- state node
->>> +
->>> +	Description: must be child of the idle-states node
->>> +
->>> +	The state node name shall follow standard device tree naming
->>> +	rules ([5], 2.2.1 "Node names"), in particular state nodes which
->>> +	are siblings within a single common parent must be given a unique
->> name.
->>> +
->>> +	The idle state entered by executing the wfi instruction
->> (idle_standby
->>> +	SBSA,[3][4]) is considered standard on all ARM platforms and
->> therefore
->>> +	must not be listed.
->>> +
->>> +	To correctly specify idle states timing and energy related
->> properties,
->>> +	the following definitions identify the different execution phases
->>> +	a CPU goes through to enter and exit idle states and the implied
->>> +	energy metrics:
->>> +
->>> +
->> 	..__[EXEC]__|__[PREP]__|__[ENTRY]__|__[IDLE]__|__[EXIT]__|__[EXEC]
->> __..
->>> +		    |          |           |          |          |
->>> +
->>> +		    |<------ entry ------->|
->>> +		    |       latency        |
->>> +						      |<- exit ->|
->>> +						      |  latency |
->>> +		    |<-------- min-residency -------->|
->>> +			       |<-------  wakeup-latency ------->|
->>> +
->> I don't know the wakeup latency makes much sense and also correct.
->> Hardware wakeup latency is actually exit latency. Is it for failed
->> or abort-able ilde case ? We are adding this as a new parameter
->> at least from idle states perspective. I think we should just
->> avoid it.
->>
+> Also I'm not sold on how you're making this a devm only thing, and
+> are using devres_alloc to not only allocate memory for resource tracking,
+> but also the actual backing struct, that is not how devres_alloc is
+> intended to be used AFAIK.
 > 
-> Hi Santosh, 
+> A problem with having this one always devm managed is that it makes it
+> hard to use in library functions without side effects.
 > 
-> To me wake up latency makes up a lot of sense. It is not always the same as
-> exit latency, it will depend on your system, and just how smart it is. In
-> some cases the [ENTRY] period may not be negligible in which case exit
-> latency will be less than the wake up latency. 
-> In addition, it will generally always be shorter than entry+exit which is
-> the default value if omitted, this assumes the PREP time is not abortable,
-> but this is the safer assumption to make.
-> Wake up latency is really the number that folk have in their head for what
-> you'd stick into the pm_qos to veto entry into states when you are latency
-> constrained. 
-> The one thing that really is an optimisation here is having a separate exit
-> latency, which is being proposed for use in core selection for the
-> scheduler.
-> So if anything was going to be made optional pending new scheduler patches
-> should that not be entry/exit latency? 
->  
-PM QOS angle Nico pointed out and its clear. The wakeup latency as such is a
-worst case wakeup latency from QOS perspective so considering the aborted idle
-case it makes sense to have conservative number which includes entry + exit.
+> e.g. if you look at how your using this in mmc_of_parse in the next
+> patch, this gives mmc_of_parse the side-effect of having allocated
+> and bound the power-seq method, even if mmc_of_parse later
+> fails on e.g. gpio binding. If then for some reason the mmc host
+> probe method decides to not propagate the mmc_of_parse method
+> error (leading to freeing of all devm managed resources), then this is
+> undesirable.
+> 
+> Where as with a non devm version, it would be clear that on error
+> mmc_of_parse would need to explicitly release the pwrseq again.
+> 
+> I realize that pwrseq implementations likely will want to use
+> devm functions too, and I'm a great fan of devm. But this is something
+> to keep in mind. At a minimum the description of of_mmc_parse needs
+> to get updated with info about it having potential side-effects even
+> when it fails, and that failure should always be treated as a fatal
+> error and cause the host probe method to fail.
 
-If you look at current idle governors, only exit latency and target residency
-is being used. No matter how we represent it, as long idle governor or idle
-C-state selection logic gets that information, things should be fine. So
-from that view your point of entry/exit optional makes sense considering
-wakeup latency can convey that information indirectly.
+Thinking more about this, it may be a good idea to give the pwrseq
+its own struct device, turning it into a virtual device, this way the
+pwrseq-method can use devm managed resources bound to this device,
+we can set the of_node of this device to the actual powerseq
+childnode and it gets its own sysfs dir in which we could do useful things
+such as have an attribute to query the current power state.
+
+This would also mean introducing a non devm version of devm_pwrseq_get
++ an explicit release, which would be useful to avoid the side-effects
+mentioned above when used in library functions such as mmc_of_parse.
 
 Regards,
-Santosh
+
+Hans
