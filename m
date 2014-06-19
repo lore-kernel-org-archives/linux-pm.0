@@ -1,82 +1,81 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [RFC 2/5] ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
-Date: Thu, 19 Jun 2014 14:50:37 +0300
-Message-ID: <1403178640-16052-3-git-send-email-mperttunen@nvidia.com>
-References: <1403178640-16052-1-git-send-email-mperttunen@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403178640-16052-1-git-send-email-mperttunen@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: swarren@wwwdotorg.org, thierry.reding@gmail.com, pdeschrijver@nvidia.com, rui.zhang@intel.com, edubezval@gmail.com
-Cc: devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mikko.perttunen@kapsi.fi, mlongnecker@nvidia.com, dtundlam@nvidia.com, talho@nvidia.com, Mikko Perttunen <mperttunen@nvidia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [RFC 0/2] pwrseq: Add subsystem for power sequences
+Date: Thu, 19 Jun 2014 15:04:49 +0200
+Message-ID: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f46.google.com ([209.85.215.46]:62859 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752125AbaFSNFV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 09:05:21 -0400
+Received: by mail-la0-f46.google.com with SMTP id el20so1381603lab.5
+        for <linux-pm@vger.kernel.org>; Thu, 19 Jun 2014 06:05:19 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Alexandre Courbot <gnurou@gmail.com>, Arend van Spriel <arend@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Chris Ball <chris@printf.net>, Chen-Yu Tsai <wens@csie.org>, Olof Johansson <olof@lixom.net>, Russell King <linux@arm.linux.org.uk>, Tomasz Figa <tomasz.figa@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-This adds the soctherm thermal sensing and management unit to the
-Tegra124 device tree along with the four thermal zones it exports.
+Some background:
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
----
- arch/arm/boot/dts/tegra124.dtsi | 47 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+Subsystems using discoverable buses, sometimes requires to handle a complex
+power sequence, to be able to initialize their devices.
 
-diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
-index d675186..ca884e8 100644
---- a/arch/arm/boot/dts/tegra124.dtsi
-+++ b/arch/arm/boot/dts/tegra124.dtsi
-@@ -724,6 +724,53 @@
- 		status = "disabled";
- 	};
- 
-+	thermal-zones {
-+		cpu {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&soctherm 0>;
-+		};
-+
-+		mem {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&soctherm 1>;
-+		};
-+
-+		gpu {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&soctherm 2>;
-+		};
-+
-+		pllx {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&soctherm 3>;
-+		};
-+	};
-+
-+	soctherm: soctherm@0,700e2000 {
-+		compatible = "nvidia,tegra124-soctherm";
-+		reg = <0x0 0x700e2000 0x0 0x1000>;
-+		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
-+			<&tegra_car TEGRA124_CLK_SOC_THERM>;
-+		clock-names = "tsensor", "soc-therm";
-+		resets = <&tegra_car 78>;
-+		reset-names = "soc-therm";
-+
-+		nvidia,thermtrip-threshold-cpu = <105>;
-+		nvidia,thermtrip-threshold-gpu-mem = <105>;
-+		nvidia,thermtrip-threshold-tsense = <105>;
-+
-+		#thermal-sensor-cells = <1>;
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+Historically, there have been several attempts and posted patches to address
+this problem. Here are a some links to a subset of discussions:
+
+http://www.spinics.net/lists/linux-mmc/msg24411.html
+http://www.spinics.net/lists/linux-mmc/msg26564.html
+http://lwn.net/Articles/525422/
+http://linux-kernel.2935.n7.nabble.com/PATCHv9-0-3-Runtime-Interpreted-Power-Sequences-td555721.html
+
+
+What does the pwrseq subsystem do?
+
+The pwrseq subsystem handles complex power sequences, typically useful
+for subsystems that makes use of discoverable buses, like for example
+MMC and I2C.
+
+The pwrseq subsystem is dependant on CONFIG_OF to be able to parse a DT
+childnode to find out what power sequence method to bind for a device.
+
+>From the DT childnode, the pwrseq DT parser tries to locate a
+"power-method" property, which string is matched towards the list of
+supported pwrseq methods.
+
+Each pwrseq method implements it's own power sequence and interfaces
+the pwrseq core through a few callback functions.
+
+To instantiate a pwrseq method, clients shall use the devm_pwrseq_get()
+API. If needed, clients can explicity drop the references to a pwrseq
+method using devm_pwrseq_put() API.
+
+Besides instantiation, the pwrseq API provides clients opportunity to
+select a certain power state. In this intial version, PWRSEQ_POWER_ON
+and PWRSEQ_POWER_OFF are supported. Those are also mandatory for each
+pwrseq method to support.
+
+
+Ulf Hansson (2):
+  pwrseq: Add subsystem to handle complex power sequences
+  mmc: core: Add support for power sequences
+
+ .../devicetree/bindings/pwrseq/pwrseq.txt          |   48 ++++++
+ drivers/Makefile                                   |    2 +-
+ drivers/mmc/core/core.c                            |    7 +
+ drivers/mmc/core/host.c                            |    5 +
+ drivers/pwrseq/Makefile                            |    2 +
+ drivers/pwrseq/core.c                              |  175 ++++++++++++++++++++
+ drivers/pwrseq/core.h                              |   37 +++++
+ drivers/pwrseq/method.c                            |   38 +++++
+ include/linux/mmc/host.h                           |    3 +
+ include/linux/pwrseq.h                             |   50 ++++++
+ 10 files changed, 366 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/pwrseq/pwrseq.txt
+ create mode 100644 drivers/pwrseq/Makefile
+ create mode 100644 drivers/pwrseq/core.c
+ create mode 100644 drivers/pwrseq/core.h
+ create mode 100644 drivers/pwrseq/method.c
+ create mode 100644 include/linux/pwrseq.h
+
 -- 
-1.8.1.5
+1.7.9.5
+
