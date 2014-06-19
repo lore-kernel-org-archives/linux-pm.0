@@ -1,142 +1,312 @@
-From: Allen Yu <alleny@nvidia.com>
-Subject: RE: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled
- and device suspended.
-Date: Thu, 19 Jun 2014 16:23:29 +0800
-Message-ID: <9E7892CE01168A46922BCCE04DB02F9828F863E9@HKMAIL01.nvidia.com>
-References: <Pine.LNX.4.44L0.1406181121220.1467-100000@iolanthe.rowland.org>
- <3528855.Z370J7O75B@vostro.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v4 5/6] drivers: cpuidle: CPU idle ARM64 driver
+Date: Thu, 19 Jun 2014 10:08:27 +0100
+Message-ID: <20140619090826.GC5401@e102568-lin.cambridge.arm.com>
+References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1402503520-8611-6-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAL_JsqK_sRuns3sTnLXEfb9wC02q13wtDm4ZgXR8isWtQCxJ0A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3528855.Z370J7O75B@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:54425 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757879AbaFSJIc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 05:08:32 -0400
+In-Reply-To: <CAL_JsqK_sRuns3sTnLXEfb9wC02q13wtDm4ZgXR8isWtQCxJ0A@mail.gmail.com>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Amit Kucheria <amit.kucheria@linaro.o>
 
-T24gVGh1cnNkYXksIEp1bmUgMTksIDIwMTQsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOiANCj4g
-T24gV2VkbmVzZGF5LCBKdW5lIDE4LCAyMDE0IDExOjMwOjUxIEFNIEFsYW4gU3Rlcm4gd3JvdGU6
-DQo+ID4gT24gVHVlLCAxNyBKdW4gMjAxNCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6DQo+ID4N
-Cj4gPiA+IE9uIFR1ZXNkYXksIEp1bmUgMTcsIDIwMTQgMTA6Mzc6MDMgUE0gUmFmYWVsIEouIFd5
-c29ja2kgd3JvdGU6DQo+ID4gPiA+IE9uIFR1ZXNkYXksIEp1bmUgMTcsIDIwMTQgMTA6MjY6MTQg
-UE0gUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6DQo+ID4gPiA+ID4gT24gVHVlc2RheSwgSnVuZSAx
-NywgMjAxNCAxMDoxMTozMiBBTSBBbGFuIFN0ZXJuIHdyb3RlOg0KPiA+ID4gPiA+ID4gT24gTW9u
-LCAxNiBKdW4gMjAxNCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6DQo+ID4gPiA+ID4gPg0KPiA+
-ID4gPiA+ID4gPiA+IEZvciByZWFzb25zIGhhdmluZyBub3RoaW5nIHRvIGRvIHdpdGggQWxsZW4n
-cyBzdWdnZXN0ZWQNCj4gPiA+ID4gPiA+ID4gPiBjaGFuZ2UsIEkgd29uZGVyIGlmIHdlIHNob3Vs
-ZG4ndCByZXBsYWNlIHRoaXMgbGluZSB3aXRoDQo+IHNvbWV0aGluZyBsaWtlOg0KPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gLQllbHNlIGlmIChkZXYtPnBvd2VyLmRpc2FibGVfZGVw
-dGggPT0gMSAmJiBkZXYtDQo+ID5wb3dlci5pc19zdXNwZW5kZWQNCj4gPiA+ID4gPiA+ID4gPiAr
-CWVsc2UgaWYgKGRldi0+cG93ZXIuZGlzYWJsZSA+IDAgJiYNCj4gPiA+ID4gPiA+ID4gPiArIWRl
-di0+cG93ZXIuaXNfc3VzcGVuZGVkDQo+ID4gPiA+ID4gPiA+ID4gCSAgICAmJiBkZXYtPnBvd2Vy
-LnJ1bnRpbWVfc3RhdHVzID09IFJQTV9BQ1RJVkUpDQo+ID4gPiA+ID4gPiA+ID4gCQlyZXR2YWwg
-PSAxOw0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gSXQgc2VlbXMgdGhhdCBJJ3Zl
-IGJlZW4gYml0dGVuIGJ5IHRoaXMgc2V2ZXJhbCB0aW1lcyBpbiB0aGUgcGFzdC4NCj4gPiA+ID4g
-PiA+ID4gPiBXaGVuIGEgZGV2aWNlIGlzIGRpc2FibGVkIGZvciBydW50aW1lIFBNLCBhbmQgbW9y
-ZSBvciBsZXNzDQo+ID4gPiA+ID4gPiA+ID4gcGVybWFuZW50bHkgc3R1Y2sgaW4gdGhlIFJQTV9B
-Q1RJVkUgc3RhdGUsIGNhbGxzIHRvDQo+ID4gPiA+ID4gPiA+ID4gcG1fcnVudGltZV9yZXN1bWUo
-KSBvcg0KPiA+ID4gPiA+ID4gPiA+IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKSBzaG91bGRuJ3QgZmFp
-bC4NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEZvciBleGFtcGxlLCBzdXBwb3Nl
-IHNvbWUgZGV2aWNlcyBvZiBhIGNlcnRhaW4gdHlwZQ0KPiA+ID4gPiA+ID4gPiA+IHN1cHBvcnQg
-cnVudGltZSBwb3dlciBtYW5hZ2VtZW50IGJ1dCBvdGhlcnMgZG9uJ3QuICBXZQ0KPiA+ID4gPiA+
-ID4gPiA+IG5hdHVyYWxseSB3YW50IHRvIGNhbGwNCj4gPiA+ID4gPiA+ID4gPiBwbV9ydW50aW1l
-X2Rpc2FibGUoKSBmb3IgdGhlIG9uZXMgdGhhdCBkb24ndC4gIEJ1dCB3ZSBhbHNvDQo+ID4gPiA+
-ID4gPiA+ID4gd2FudCB0aGUgc2FtZSBkcml2ZXIgdG8gd29yayBmb3IgYWxsIHRoZSBkZXZpY2Vz
-LCB3aGljaA0KPiA+ID4gPiA+ID4gPiA+IG1lYW5zIHRoYXQNCj4gPiA+ID4gPiA+ID4gPiBwbV9y
-dW50aW1lX2dldF9zeW5jKCkgc2hvdWxkIHJldHVybiBzdWNjZXNzIC0tIG90aGVyd2lzZQ0KPiA+
-ID4gPiA+ID4gPiA+IHRoZSBkcml2ZXIgd2lsbCB0aGluayB0aGF0IHNvbWV0aGluZyBoYXMgZ29u
-ZSB3cm9uZy4NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IFJhZmFlbCwgd2hhdCBk
-byB5b3UgdGhpbms/DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IFRoYXQgY29uZGl0aW9u
-IGlzIHRoZXJlIHNwZWNpZmljYWxseSB0byB0YWtlIGNhcmUgb2YgdGhlDQo+ID4gPiA+ID4gPiA+
-IHN5c3RlbSBzdXNwZW5kIGNvZGUgcGF0aC4gIEl0IG1lYW5zIHRoYXQgaWYgcnVudGltZSBQTSBp
-cw0KPiA+ID4gPiA+ID4gPiBkaXNhYmxlZCwgYnV0IGl0IG9ubHkgaGFzIGJlZW4gZGlzYWJsZWQg
-YnkgdGhlIHN5c3RlbQ0KPiA+ID4gPiA+ID4gPiBzdXNwZW5kIGNvZGUgcGF0aCwgd2Ugc2hvdWxk
-IHRyZWF0IHRoZSBkZXZpY2UgYXMgImFjdGl2ZSIgKGllLg0KPiByZXR1cm4gMSkuICBUaGF0IHdv
-bid0IHdvcmsgYWZ0ZXIgdGhlIHByb3Bvc2VkIGNoYW5nZS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+
-ID4gPiBBaCwgeWVzLCBxdWl0ZSB0cnVlLiAgT2theSwgc3VwcG9zZSB3ZSByZXBsYWNlIHRoYXQg
-bGluZSB3aXRoIGp1c3Q6DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gKwllbHNlIGlmIChkZXYt
-PnBvd2VyLmRpc2FibGUgPiAwDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBJIGd1ZXNzIGRy
-aXZlcnMgdGhhdCB3YW50IHRvIHdvcmsgd2l0aCBkZXZpY2VzIHdoZXJlIHJ1bnRpbWUNCj4gPiA+
-ID4gPiA+ID4gUE0gbWF5IGJlIGRpc2FibGVkIGNhbiBqdXN0IGNoZWNrIHRoZSByZXR1cm4gdmFs
-dWUgb2YNCj4gcnBtX3Jlc3VtZSgpIGZvciAtRUFDQ0VTPw0KPiA+ID4gPiA+ID4NCj4gPiA+ID4g
-PiA+IFRoZXkgY291bGQsIGJ1dCBpdCdzIGV4dHJhIHdvcmsgYW5kIGl0J3MgZXh0cmVtZWx5IGVh
-c3kgdG8NCj4gPiA+ID4gPiA+IGZvcmdldCBhYm91dC4gIEknZCBwcmVmZXIgbm90IHRvIGRvIHRo
-aW5ncyB0aGF0IHdheS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEluIHRoYXQgY2FzZSB3ZSBuZWVk
-IHRvIGF1ZGl0IGFsbCBjb2RlIHRoYXQgY2hlY2tzIHRoZSByZXR1cm4NCj4gPiA+ID4gPiB2YWx1
-ZSBvZg0KPiA+ID4gPiA+IF9fcG1fcnVudGltZV9yZXN1bWUoKSB0byB2ZXJpZnkgdGhhdCBpdCBk
-b2Vzbid0IGRlcGVuZCBvbiB0aGUNCj4gPiA+ID4gPiBjdXJyZW50IGJlaGF2aW9yIGluIGFueSB3
-YXkuICBJdCBzaG91bGRuJ3QsIGJ1dCBzdGlsbC4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEFsc28g
-d2UgcHJvYmFibHkgc2hvdWxkIGRyb3AgdGhlIC1FQUNDRVMgcmV0dXJuIHZhbHVlIGZyb20NCj4g
-PiA+ID4gPiBycG1fcmVzdW1lKCkgaW4gdGhlIHNhbWUgcGF0Y2gsIGJlY2F1c2UgaXQgc3BlY2lm
-aWNhbGx5IG9ubHkNCj4gPiA+ID4gPiBjb3ZlcnMgdGhlIGRldi0+cG93ZXIuZGlzYWJsZSA+IDAg
-Y2FzZSAod2hpY2ggQlRXIGlzIGNvbnNpc3RlbnQNCj4gPiA+ID4gPiB3aXRoIHRoZSBzdXNwZW5k
-IHNpZGUgb2YgdGhpbmdzLCBzbyBJJ20gdG90YWxseSB1bnN1cmUgYWJvdXQgdGhhdCBiZWluZw0K
-PiB0aGUgcmlnaHQgdGhpbmcgdG8gZG8gdG8gYmUgaG9uZXN0KS4NCj4gPg0KPiA+IEl0J3Mgc3Rp
-bGwgdGhlIGNvcnJlY3QgYWN0aW9uIHdpdGggcnVudGltZSBQTSBpcyBkaXNhYmxlZCBhbmQgdGhl
-DQo+ID4gZGV2aWNlJ3MgcnVudGltZV9zdGF0dXMgaXNuJ3QgUlBNX0FDVElWRS4NCj4gDQo+IFdl
-bGwsIHdlIHVzZWQgdG8gaGF2ZSB0aGUgbm90aW9uIHRoYXQgcnVudGltZV9zdGF0dXMgaXMgbm90
-IG1lYW5pbmdmdWwgZm9yDQo+IGRldmljZXMgd2l0aCBkZXYtPnBvd2VyLmRpc2FibGVfZGVwdGgg
-Z3JlYXRlciB0aGFuIDAgKGV4Y2VwdCBmb3IgdGhlDQo+IHNwZWNpYWwgY2FzZSBpbiB0aGUgc3Vz
-cGVuZCBjb2RlIHBhdGggd2hlcmUgd2Uga25vdyB3aHkgaXQgaXMgZ3JlYXRlciB0aGFuDQo+IDAp
-LiAgSSB0aGluayBpdCB3YXMgdXNlZnVsLiA6LSkNCg0KU28gd2hhdCdzIHRoZSBleGFjdCBzdGF0
-ZSBvZiBkZXZpY2UgaWYgZGV2LT5wb3dlci5pc19zdXNwZW5kZWQgZmxhZyBpcyBzZXQgYW5kIHJ1
-bnRpbWVfc3RhdHVzIGlzIFJQTV9BQ1RJVkU/IElzIGl0IGEgc3RhdGUgbGlrZSAic3VzcGVuZGVk
-IGJ1dCBzdGlsbCBjYW4gYmUgYWNjZXNzZWQiPyANCg0KSSdtIGp1c3QgYWZyYWlkIHRoZSBleGlz
-dGluZyBjb2RlIHdvdWxkIGNhdXNlIGEgZGV2aWNlIGhhbmcgaWYgd2UgYWxsb3cgaXQgdG8gYmUg
-YWNjZXNzZWQgZXZlbiB0aG91Z2ggaXQncyBzdXNwZW5kZWQgKGF0IHRoaXMgcG9pbnQgUlBNX0FD
-VElWRSBjb3VsZCBiZSBtZWFuaW5nbGVzcykuIEkgZG9uJ3QgdW5kZXJzdGFuZCB0aGUgb3JpZ2lu
-YWwgbW90aXZhdGlvbiBvZiB0aGVzZSBjb2RlLiBJZiBpdCdzIGEgdmFsaWQgY2FzZSwgbW9zdCBs
-aWtlbHkgaXQgc2hvdWxkIGJlIGhhbmRsZWQgaW4gdGhlIHNwZWNpZmljIGRldmljZSBkcml2ZXIg
-aW5zdGVhZCBvZiB0aGUgUE0gY29yZS4NCg0KPiANCj4gPiA+ID4gUGVyaGFwcyBpdCdkIGJlIGJl
-dHRlciB0byByZXdvcmsgX19wbV9ydW50aW1lX3Jlc3VtZSgpIHRvIGNvbnZlcnQNCj4gPiA+ID4g
-dGhlIC1FQUNDRVMgcmV0dXJuIHZhbHVlIGZyb20gcnBtX3Jlc3VtZSgpIGludG8gMCBpZiBSUE1f
-R0VUX1BVVCBpcw0KPiBzZXQ/DQo+ID4gPg0KPiA+ID4gT3IgZG8gc29tZXRoaW5nIGxpa2UgdGhp
-cz8NCj4gPiA+DQo+ID4gPiAtLS0NCj4gPiA+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5j
-IHwgICAgMyArKy0NCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAxIGRl
-bGV0aW9uKC0pDQo+ID4gPg0KPiA+ID4gSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvYmFzZS9wb3dl
-ci9ydW50aW1lLmMNCj4gPiA+DQo+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT0NCj4gPT09PT09PT09DQo+ID4gPiAtLS0gbGludXgtcG0u
-b3JpZy9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jDQo+ID4gPiArKysgbGludXgtcG0vZHJp
-dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYw0KPiA+ID4gQEAgLTYwOCw3ICs2MDgsOCBAQCBzdGF0
-aWMgaW50IHJwbV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2DQo+ID4gPiAgIHJlcGVhdDoNCj4g
-PiA+ICAJaWYgKGRldi0+cG93ZXIucnVudGltZV9lcnJvcikNCj4gPiA+ICAJCXJldHZhbCA9IC1F
-SU5WQUw7DQo+ID4gPiAtCWVsc2UgaWYgKGRldi0+cG93ZXIuZGlzYWJsZV9kZXB0aCA9PSAxICYm
-IGRldi0NCj4gPnBvd2VyLmlzX3N1c3BlbmRlZA0KPiA+ID4gKwllbHNlIGlmICgoKGRldi0+cG93
-ZXIuZGlzYWJsZV9kZXB0aCA+IDAgJiYgKHJwbWZsYWdzICYNCj4gUlBNX0dFVF9QVVQpKQ0KPiA+
-ID4gKwkgICAgfHwgKGRldi0+cG93ZXIuZGlzYWJsZV9kZXB0aCA9PSAxICYmIGRldi0NCj4gPnBv
-d2VyLmlzX3N1c3BlbmRlZCkpDQo+ID4gPiAgCSAgICAmJiBkZXYtPnBvd2VyLnJ1bnRpbWVfc3Rh
-dHVzID09IFJQTV9BQ1RJVkUpDQo+ID4gPiAgCQlyZXR2YWwgPSAxOw0KPiA+ID4gIAllbHNlIGlm
-IChkZXYtPnBvd2VyLmRpc2FibGVfZGVwdGggPiAwKQ0KPiA+DQo+ID4gU28gcG1fcnVudGltZV9y
-ZXN1bWUoKSBhbmQgcG1fcmVxdWVzdF9yZXN1bWUoKSB3b3VsZCBzdGlsbCBmYWlsLCBidXQNCj4g
-PiBwbV9ydW50aW1lX2dldCgpIGFuZCBwbV9ydW50aW1lX2dldF9zeW5jKCkgd291bGQgd29yaz8g
-IEknbSBub3Qgc3VyZQ0KPiA+IGFib3V0IHRoZSByZWFzb24gZm9yIHRoaXMgZGlzdGluY3Rpb24u
-DQo+IA0KPiBUaGUgbWVhbmluZyBvZiBwbV9ydW50aW1lX2dldCgpL3BtX3J1bnRpbWVfZ2V0X3N5
-bmMoKSBpcyAicHJldmVudCB0aGUNCj4gZGV2aWNlIGZyb20gYmVpbmcgc3VzcGVuZGVkIGZyb20g
-bm93IG9uIGFuZCByZXN1bWUgaXQgaWYgbmVjZXNzYXJ5IiB3aGlsZQ0KPiAicnVudGltZSBQTSBk
-aXNhYmxlZCBhbmQgcnVudGltZV9zdGF0dXMgPT0gUlBNX0FDVElWRSIgbWF5IGJlDQo+IGludGVy
-cHJldGVkIGFzICJub3QgbmVjZXNzYXJ5IHRvIHJlc3VtZSIsIHNvIGl0IGlzIHJlYXNvbmFibGUg
-dG8gc3BlY2lhbCBjYXNlDQo+IHRoaXMgcGFydGljdWxhciBzaXR1YXRpb24gZm9yIHRoZXNlIHBh
-cnRpY3VsYXIgcm91dGluZXMgSU1ITy4NCg0KQXMgUmFmYWVsIG1lbnRpb25lZCBhYm92ZSB0aGF0
-IHJ1bnRpbWVfc2F0YXVzIGlzIG5vdCBtZWFuaW5nZnVsIGlmIHJ1bnRpbWUgUE0gaXMgZGlzYWJs
-ZWQsIHNvIHNob3VsZG4ndCB3ZSBhdm9pZCB1c2luZyB0aGUgcnVudGltZV9zdGF1cyBoZXJlIGFu
-ZCBpbnN0ZWFkIHVzZSBkZXYtPnBvd2VyLmlzX3N1c3BlbmRlZCBvbmx5IHRvIGRlY2lkZSB0aGUg
-cmV0dXJuIHZhbHVlPw0KDQpAQCAtNjA4LDExICs2MDgsMTMgQEAgc3RhdGljIGludCBycG1fcmVz
-dW1lKHN0cnVjdCBkZXZpY2UgKmRldiwgaW50IHJwbWZsYWdzKQ0KICByZXBlYXQ6DQogICAgICAg
-IGlmIChkZXYtPnBvd2VyLnJ1bnRpbWVfZXJyb3IpDQogICAgICAgICAgICAgICAgcmV0dmFsID0g
-LUVJTlZBTDsNCi0gICAgICAgZWxzZSBpZiAoZGV2LT5wb3dlci5kaXNhYmxlX2RlcHRoID09IDEg
-JiYgZGV2LT5wb3dlci5pc19zdXNwZW5kZWQNCi0gICAgICAgICAgICYmIGRldi0+cG93ZXIucnVu
-dGltZV9zdGF0dXMgPT0gUlBNX0FDVElWRSkNCi0gICAgICAgICAgICAgICByZXR2YWwgPSAxOw0K
-LSAgICAgICBlbHNlIGlmIChkZXYtPnBvd2VyLmRpc2FibGVfZGVwdGggPiAwKQ0KLSAgICAgICAg
-ICAgICAgIHJldHZhbCA9IC1FQUNDRVM7DQorICAgICAgIGVsc2UgaWYgKGRldi0+cG93ZXIuZGlz
-YWJsZV9kZXB0aCA+IDApIHsNCisgICAgICAgICAgICAgICBpZiAoIWRldi0+cG93ZXIuaXNfc3Vz
-cGVuZGVkKQ0KKyAgICAgICAgICAgICAgICAgICAgICAgcmV0dmFsID0gMTsNCisgICAgICAgICAg
-ICAgICBlbHNlDQorICAgICAgICAgICAgICAgICAgICAgICByZXR2YWwgPSAtRUFDQ0VTOw0KKyAg
-ICAgICB9DQorDQogICAgICAgIGlmIChyZXR2YWwpDQogICAgICAgICAgICAgICAgZ290byBvdXQ7
-DQoNCkhvd2V2ZXIsIHRoaXMgcmVxdWlyZXMgdXMgdG8gbWFrZSBzdXJlIGRldmljZSBpcyBpbiBm
-dWxsIGZ1bmN0aW9uYWwgc3RhdGUgaWYgaXQncyBub3Qgc3VzcGVuZGVkIGJlZm9yZSBkaXNhYmxp
-bmcgcnVudGltZSBQTSwganVzdCBsaWtlIHRoZSBjYXNlIHJ1bnRpbWUgUE0gaXMgbm90IGNvbmZp
-Z3VyZWQgYXQgYWxsLiBBbmQgYWxzbyByZXF1aXJlcyBkZXZpY2Ugc3VzcGVuZCByb3V0aW5lIHRv
-IGNoZWNrIGRldi0+cG93ZXIudXNhZ2VfY291bnQgYmVmb3JlIHN1c3BlbmRpbmcgZGV2aWNlLg0K
-DQpUaGFua3MsDQpBbGxlbiBZdQ0K
+On Thu, Jun 19, 2014 at 04:02:18AM +0100, Rob Herring wrote:
+> On Wed, Jun 11, 2014 at 11:18 AM, Lorenzo Pieralisi
+> <lorenzo.pieralisi@arm.com> wrote:
+> > This patch implements a generic CPU idle driver for ARM64 machines.
+> 
+> I fail to see anything arm64 specific here. The idle states binding is
+> for both arm32 and arm64, right? If not, please make it for both.
+> Otherwise, I'm okay with the binding for the most part. I need to take
+> another pass at it though.
+
+cpu_suspend prototypes differ and that has implications, in particular
+related to how to initialize the cpu_suspend back-end. I think that with some
+effort we might have a single common driver for arm32/64, I have to check if
+it is worth the additional ifdeffery that is likely to be needed.
+
+Certainly the DT bindings are generic for arm32/arm64 and we are trying
+to make code using them generic too, the best we can.
+
+I will post a v5 soon, please let me know if that's ok to go when time
+comes.
+
+Thank you,
+Lorenzo
+
+> 
+> Rob
+> 
+> > It relies on the DT idle states infrastructure to initialize idle
+> > states count and respective parameters. Current code assumes the driver
+> > is managing idle states on all possible CPUs but can be easily
+> > generalized to support heterogenous systems and build cpumasks at
+> > runtime using MIDRs or DT cpu nodes compatible properties.
+> >
+> > Suspend back-ends (eg PSCI) must register a suspend initializer with
+> > the CPU idle driver so that the suspend backend call can be detected,
+> > and the driver code can call the back-end infrastructure to complete the
+> > suspend backend initialization.
+> >
+> > Idle state index 0 is always initialized as a simple wfi state, ie always
+> > considered present and functional on all ARM64 platforms.
+> >
+> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > ---
+> >  drivers/cpuidle/Kconfig         |   5 ++
+> >  drivers/cpuidle/Kconfig.arm64   |  13 ++++
+> >  drivers/cpuidle/Makefile        |   4 +
+> >  drivers/cpuidle/cpuidle-arm64.c | 168 ++++++++++++++++++++++++++++++++++++++++
+> >  4 files changed, 190 insertions(+)
+> >  create mode 100644 drivers/cpuidle/Kconfig.arm64
+> >  create mode 100644 drivers/cpuidle/cpuidle-arm64.c
+> >
+> > diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+> > index 760ce20..360c086 100644
+> > --- a/drivers/cpuidle/Kconfig
+> > +++ b/drivers/cpuidle/Kconfig
+> > @@ -44,6 +44,11 @@ depends on ARM
+> >  source "drivers/cpuidle/Kconfig.arm"
+> >  endmenu
+> >
+> > +menu "ARM64 CPU Idle Drivers"
+> > +depends on ARM64
+> > +source "drivers/cpuidle/Kconfig.arm64"
+> > +endmenu
+> > +
+> >  menu "MIPS CPU Idle Drivers"
+> >  depends on MIPS
+> >  source "drivers/cpuidle/Kconfig.mips"
+> > diff --git a/drivers/cpuidle/Kconfig.arm64 b/drivers/cpuidle/Kconfig.arm64
+> > new file mode 100644
+> > index 0000000..b83612c
+> > --- /dev/null
+> > +++ b/drivers/cpuidle/Kconfig.arm64
+> > @@ -0,0 +1,13 @@
+> > +#
+> > +# ARM64 CPU Idle drivers
+> > +#
+> > +
+> > +config ARM64_CPUIDLE
+> > +       bool "Generic ARM64 CPU idle Driver"
+> > +       select OF_IDLE_STATES
+> > +       help
+> > +         Select this to enable generic cpuidle driver for ARM v8.
+> > +         It provides a generic idle driver whose idle states are configured
+> > +         at run-time through DT nodes. The CPUidle suspend backend is
+> > +         initialized by the device tree parsing code on matching the entry
+> > +         method to the respective CPU operations.
+> > diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> > index d5ebf4b..e496242 100644
+> > --- a/drivers/cpuidle/Makefile
+> > +++ b/drivers/cpuidle/Makefile
+> > @@ -23,6 +23,10 @@ obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        += cpuidle-exynos.o
+> >  obj-$(CONFIG_MIPS_CPS_CPUIDLE)         += cpuidle-cps.o
+> >
+> >  ###############################################################################
+> > +# ARM64 drivers
+> > +obj-$(CONFIG_ARM64_CPUIDLE)            += cpuidle-arm64.o
+> > +
+> > +###############################################################################
+> >  # POWERPC drivers
+> >  obj-$(CONFIG_PSERIES_CPUIDLE)          += cpuidle-pseries.o
+> >  obj-$(CONFIG_POWERNV_CPUIDLE)          += cpuidle-powernv.o
+> > diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
+> > new file mode 100644
+> > index 0000000..4c932f8
+> > --- /dev/null
+> > +++ b/drivers/cpuidle/cpuidle-arm64.c
+> > @@ -0,0 +1,168 @@
+> > +/*
+> > + * ARM64 generic CPU idle driver.
+> > + *
+> > + * Copyright (C) 2014 ARM Ltd.
+> > + * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + */
+> > +
+> > +#define pr_fmt(fmt) "CPUidle arm64: " fmt
+> > +
+> > +#include <linux/cpuidle.h>
+> > +#include <linux/cpumask.h>
+> > +#include <linux/cpu_pm.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +
+> > +#include <asm/psci.h>
+> > +#include <asm/suspend.h>
+> > +
+> > +#include "of_idle_states.h"
+> > +
+> > +typedef int (*suspend_init_fn)(struct cpuidle_driver *,
+> > +                              struct device_node *[]);
+> > +
+> > +struct cpu_suspend_ops {
+> > +       const char *id;
+> > +       suspend_init_fn init_fn;
+> > +};
+> > +
+> > +static const struct cpu_suspend_ops suspend_operations[] __initconst = {
+> > +       {"arm,psci", psci_dt_register_idle_states},
+> > +       {}
+> > +};
+> > +
+> > +static __init const struct cpu_suspend_ops *get_suspend_ops(const char *str)
+> > +{
+> > +       int i;
+> > +
+> > +       if (!str)
+> > +               return NULL;
+> > +
+> > +       for (i = 0; suspend_operations[i].id; i++)
+> > +               if (!strcmp(suspend_operations[i].id, str))
+> > +                       return &suspend_operations[i];
+> > +
+> > +       return NULL;
+> > +}
+> > +
+> > +/*
+> > + * arm_enter_idle_state - Programs CPU to enter the specified state
+> > + *
+> > + * dev: cpuidle device
+> > + * drv: cpuidle driver
+> > + * idx: state index
+> > + *
+> > + * Called from the CPUidle framework to program the device to the
+> > + * specified target state selected by the governor.
+> > + */
+> > +static int arm_enter_idle_state(struct cpuidle_device *dev,
+> > +                               struct cpuidle_driver *drv, int idx)
+> > +{
+> > +       int ret;
+> > +
+> > +       if (!idx) {
+> > +               cpu_do_idle();
+> > +               return idx;
+> > +       }
+> > +
+> > +       cpu_pm_enter();
+> > +       /*
+> > +        * Pass idle state index to cpu_suspend which in turn will call
+> > +        * the CPU ops suspend protocol with idle index as a parameter.
+> > +        *
+> > +        * Some states would not require context to be saved and flushed
+> > +        * to DRAM, so calling cpu_suspend would not be stricly necessary.
+> > +        * When power domains specifications for ARM CPUs are finalized then
+> > +        * this code can be optimized to prevent saving registers if not
+> > +        * needed.
+> > +        */
+> > +       ret = cpu_suspend(idx);
+> > +
+> > +       cpu_pm_exit();
+> > +
+> > +       return ret ? -1 : idx;
+> > +}
+> > +
+> > +struct cpuidle_driver arm64_idle_driver = {
+> > +       .name = "arm64_idle",
+> > +       .owner = THIS_MODULE,
+> > +};
+> > +
+> > +static struct device_node *state_nodes[CPUIDLE_STATE_MAX] __initdata;
+> > +
+> > +/*
+> > + * arm64_idle_init
+> > + *
+> > + * Registers the arm64 specific cpuidle driver with the cpuidle
+> > + * framework. It relies on core code to parse the idle states
+> > + * and initialize them using driver data structures accordingly.
+> > + */
+> > +static int __init arm64_idle_init(void)
+> > +{
+> > +       int i, ret;
+> > +       const char *entry_method;
+> > +       struct device_node *idle_states_node;
+> > +       const struct cpu_suspend_ops *suspend_init;
+> > +       struct cpuidle_driver *drv = &arm64_idle_driver;
+> > +
+> > +       idle_states_node = of_find_node_by_path("/cpus/idle-states");
+> > +       if (!idle_states_node)
+> > +               return -ENOENT;
+> > +
+> > +       if (of_property_read_string(idle_states_node, "entry-method",
+> > +                                   &entry_method)) {
+> > +               pr_warn(" * %s missing entry-method property\n",
+> > +                           idle_states_node->full_name);
+> > +               of_node_put(idle_states_node);
+> > +               ret = -EOPNOTSUPP;
+> > +               goto put_node;
+> > +       }
+> > +
+> > +       suspend_init = get_suspend_ops(entry_method);
+> > +       if (!suspend_init) {
+> > +               pr_warn("Missing suspend initializer\n");
+> > +               ret = -EOPNOTSUPP;
+> > +               goto put_node;
+> > +       }
+> > +
+> > +       /*
+> > +        * State at index 0 is standby wfi and considered standard
+> > +        * on all ARM platforms. If in some platforms simple wfi
+> > +        * can't be used as "state 0", DT bindings must be implemented
+> > +        * to work around this issue and allow installing a special
+> > +        * handler for idle state index 0.
+> > +        */
+> > +       drv->states[0].exit_latency = 1;
+> > +       drv->states[0].target_residency = 1;
+> > +       drv->states[0].flags = CPUIDLE_FLAG_TIME_VALID;
+> > +       strncpy(drv->states[0].name, "ARM WFI", CPUIDLE_NAME_LEN);
+> > +       strncpy(drv->states[0].desc, "ARM WFI", CPUIDLE_DESC_LEN);
+> > +
+> > +       drv->cpumask = (struct cpumask *) cpu_possible_mask;
+> > +       /*
+> > +        * Start at index 1, request idle state nodes to be filled
+> > +        */
+> > +       ret = of_init_idle_driver(drv, state_nodes, 1, true);
+> > +       if (ret)
+> > +               goto put_node;
+> > +
+> > +       if (suspend_init->init_fn(drv, state_nodes)) {
+> > +               ret = -EOPNOTSUPP;
+> > +               goto put_node;
+> > +       }
+> > +
+> > +       for (i = 0; i < drv->state_count; i++)
+> > +               drv->states[i].enter = arm_enter_idle_state;
+> > +
+> > +       ret = cpuidle_register(drv, NULL);
+> > +
+> > +put_node:
+> > +       of_node_put(idle_states_node);
+> > +       return ret;
+> > +}
+> > +device_initcall(arm64_idle_init);
+> > --
+> > 1.8.4
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
+
