@@ -1,62 +1,57 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
-Date: Thu, 19 Jun 2014 16:23:26 +0200
-Message-ID: <53A2F25E.80200@redhat.com>
-References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org> <1403183091-27876-2-git-send-email-ulf.hansson@linaro.org> <53A2EDCA.8080000@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled
+ and device suspended.
+Date: Thu, 19 Jun 2014 10:34:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1406191020140.1247-100000@iolanthe.rowland.org>
+References: <3528855.Z370J7O75B@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <53A2EDCA.8080000@redhat.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:59863 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757442AbaFSOeD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 10:34:03 -0400
+In-Reply-To: <3528855.Z370J7O75B@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 19 Jun 2014, Rafael J. Wysocki wrote:
 
-On 06/19/2014 04:03 PM, Hans de Goede wrote:
-> Hi,
+> Well, we used to have the notion that runtime_status is not meaningful for
+> devices with dev->power.disable_depth greater than 0 (except for the special
+> case in the suspend code path where we know why it is greater than 0).  I think
+> it was useful. :-)
+
+Did we really have that notion?  My memory is a little cloudy, but I 
+thought we decided that runtime_status would not be meaningful when 
+dev->power.runtime_error was set -- not when dev->power.disable_depth 
+was greater than 0.  Am I mixed up?
+
+In any case, I think it is reasonable to regard runtime_status as 
+meaningful when disable_depth > 0.  The PM core isn't allowed to invoke 
+the runtime callbacks at such times, that's all.  This makes perfect 
+sense for a device that doesn't support power management and hence must 
+always be at full power.  Or when a driver knows that runtime_status is 
+out of agreement with the device's actual power state and wants to 
+update runtime_status directly.
+
+
+> > So pm_runtime_resume() and pm_request_resume() would still fail, but 
+> > pm_runtime_get() and pm_runtime_get_sync() would work?  I'm not sure 
+> > about the reason for this distinction.
 > 
+> The meaning of pm_runtime_get()/pm_runtime_get_sync() is "prevent the
+> device from being suspended from now on and resume it if necessary" while
+> "runtime PM disabled and runtime_status == RPM_ACTIVE" may be interpreted
+> as "not necessary to resume", so it is reasonable to special case this
+> particular situation for these particular routines IMHO.
 
-<snip>
+By the same reasoning, the meaning of pm_runtime_resume() is "resume 
+the device now if necsesary".  Since "runtime PM disabled and 
+runtime_status == RPM_ACTIVE" means "not necessary to resume", isn't it 
+logical for pm_runtime_resume() also to succeed under that condition?
 
-> Also I'm not sold on how you're making this a devm only thing, and
-> are using devres_alloc to not only allocate memory for resource tracking,
-> but also the actual backing struct, that is not how devres_alloc is
-> intended to be used AFAIK.
-> 
-> A problem with having this one always devm managed is that it makes it
-> hard to use in library functions without side effects.
-> 
-> e.g. if you look at how your using this in mmc_of_parse in the next
-> patch, this gives mmc_of_parse the side-effect of having allocated
-> and bound the power-seq method, even if mmc_of_parse later
-> fails on e.g. gpio binding. If then for some reason the mmc host
-> probe method decides to not propagate the mmc_of_parse method
-> error (leading to freeing of all devm managed resources), then this is
-> undesirable.
-> 
-> Where as with a non devm version, it would be clear that on error
-> mmc_of_parse would need to explicitly release the pwrseq again.
-> 
-> I realize that pwrseq implementations likely will want to use
-> devm functions too, and I'm a great fan of devm. But this is something
-> to keep in mind. At a minimum the description of of_mmc_parse needs
-> to get updated with info about it having potential side-effects even
-> when it fails, and that failure should always be treated as a fatal
-> error and cause the host probe method to fail.
+Alan Stern
 
-Thinking more about this, it may be a good idea to give the pwrseq
-its own struct device, turning it into a virtual device, this way the
-pwrseq-method can use devm managed resources bound to this device,
-we can set the of_node of this device to the actual powerseq
-childnode and it gets its own sysfs dir in which we could do useful things
-such as have an attribute to query the current power state.
-
-This would also mean introducing a non devm version of devm_pwrseq_get
-+ an explicit release, which would be useful to avoid the side-effects
-mentioned above when used in library functions such as mmc_of_parse.
-
-Regards,
-
-Hans
