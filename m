@@ -1,102 +1,186 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [RFC 2/2] mmc: core: Add support for power sequences
-Date: Thu, 19 Jun 2014 15:04:51 +0200
-Message-ID: <1403183091-27876-3-git-send-email-ulf.hansson@linaro.org>
-References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-mmc-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Alexandre Courbot <gnurou@gmail.com>, Arend van Spriel <arend@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Chris Ball <chris@printf.net>, Chen-Yu Tsai <wens@csie.org>, Olof Johansson <olof@lixom.net>, Russell King <linux@arm.linux.org.uk>, Tomasz Figa <tomasz.figa@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
+Date: Thu, 19 Jun 2014 15:55:31 +0200
+Message-ID: <4216316.IaLNu46z52@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1406181121220.1467-100000@iolanthe.rowland.org> <3528855.Z370J7O75B@vostro.rjw.lan> <9E7892CE01168A46922BCCE04DB02F9828F863E9@HKMAIL01.nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58996 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752668AbaFSNhz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jun 2014 09:37:55 -0400
+In-Reply-To: <9E7892CE01168A46922BCCE04DB02F9828F863E9@HKMAIL01.nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Allen Yu <alleny@nvidia.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-The MMC subsystem uses a discoverable bus which sometimes means the
-power sequences to enable power to the card, is far too complex to be
-handled through the regular ->set_ios() callback.
+On Thursday, June 19, 2014 04:23:29 PM Allen Yu wrote:
+> On Thursday, June 19, 2014, Rafael J. Wysocki wrote: 
+> > On Wednesday, June 18, 2014 11:30:51 AM Alan Stern wrote:
+> > > On Tue, 17 Jun 2014, Rafael J. Wysocki wrote:
+> > >
+> > > > On Tuesday, June 17, 2014 10:37:03 PM Rafael J. Wysocki wrote:
+> > > > > On Tuesday, June 17, 2014 10:26:14 PM Rafael J. Wysocki wrote:
+> > > > > > On Tuesday, June 17, 2014 10:11:32 AM Alan Stern wrote:
+> > > > > > > On Mon, 16 Jun 2014, Rafael J. Wysocki wrote:
+> > > > > > >
+> > > > > > > > > For reasons having nothing to do with Allen's suggested
+> > > > > > > > > change, I wonder if we shouldn't replace this line with
+> > something like:
+> > > > > > > > >
+> > > > > > > > > -	else if (dev->power.disable_depth == 1 && dev-
+> > >power.is_suspended
+> > > > > > > > > +	else if (dev->power.disable > 0 &&
+> > > > > > > > > +!dev->power.is_suspended
+> > > > > > > > > 	    && dev->power.runtime_status == RPM_ACTIVE)
+> > > > > > > > > 		retval = 1;
+> > > > > > > > >
+> > > > > > > > > It seems that I've been bitten by this several times in the past.
+> > > > > > > > > When a device is disabled for runtime PM, and more or less
+> > > > > > > > > permanently stuck in the RPM_ACTIVE state, calls to
+> > > > > > > > > pm_runtime_resume() or
+> > > > > > > > > pm_runtime_get_sync() shouldn't fail.
+> > > > > > > > >
+> > > > > > > > > For example, suppose some devices of a certain type
+> > > > > > > > > support runtime power management but others don't.  We
+> > > > > > > > > naturally want to call
+> > > > > > > > > pm_runtime_disable() for the ones that don't.  But we also
+> > > > > > > > > want the same driver to work for all the devices, which
+> > > > > > > > > means that
+> > > > > > > > > pm_runtime_get_sync() should return success -- otherwise
+> > > > > > > > > the driver will think that something has gone wrong.
+> > > > > > > > >
+> > > > > > > > > Rafael, what do you think?
+> > > > > > > >
+> > > > > > > > That condition is there specifically to take care of the
+> > > > > > > > system suspend code path.  It means that if runtime PM is
+> > > > > > > > disabled, but it only has been disabled by the system
+> > > > > > > > suspend code path, we should treat the device as "active" (ie.
+> > return 1).  That won't work after the proposed change.
+> > > > > > >
+> > > > > > > Ah, yes, quite true.  Okay, suppose we replace that line with just:
+> > > > > > >
+> > > > > > > +	else if (dev->power.disable > 0
+> > > > > > >
+> > > > > > > > I guess drivers that want to work with devices where runtime
+> > > > > > > > PM may be disabled can just check the return value of
+> > rpm_resume() for -EACCES?
+> > > > > > >
+> > > > > > > They could, but it's extra work and it's extremely easy to
+> > > > > > > forget about.  I'd prefer not to do things that way.
+> > > > > >
+> > > > > > In that case we need to audit all code that checks the return
+> > > > > > value of
+> > > > > > __pm_runtime_resume() to verify that it doesn't depend on the
+> > > > > > current behavior in any way.  It shouldn't, but still.
+> > > > > >
+> > > > > > Also we probably should drop the -EACCES return value from
+> > > > > > rpm_resume() in the same patch, because it specifically only
+> > > > > > covers the dev->power.disable > 0 case (which BTW is consistent
+> > > > > > with the suspend side of things, so I'm totally unsure about that being
+> > the right thing to do to be honest).
+> > >
+> > > It's still the correct action with runtime PM is disabled and the
+> > > device's runtime_status isn't RPM_ACTIVE.
+> > 
+> > Well, we used to have the notion that runtime_status is not meaningful for
+> > devices with dev->power.disable_depth greater than 0 (except for the
+> > special case in the suspend code path where we know why it is greater than
+> > 0).  I think it was useful. :-)
+> 
+> So what's the exact state of device if dev->power.is_suspended flag is set and runtime_status is RPM_ACTIVE? Is it a state like "suspended but still can be accessed"? 
+> 
+> I'm just afraid the existing code would cause a device hang if we allow it to be accessed even though it's suspended (at this point RPM_ACTIVE could be meaningless). I don't understand the original motivation of these code. If it's a valid case, most likely it should be handled in the specific device driver instead of the PM core.
+> 
+> > 
+> > > > > Perhaps it'd be better to rework __pm_runtime_resume() to convert
+> > > > > the -EACCES return value from rpm_resume() into 0 if RPM_GET_PUT is
+> > set?
+> > > >
+> > > > Or do something like this?
+> > > >
+> > > > ---
+> > > >  drivers/base/power/runtime.c |    3 ++-
+> > > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > >
+> > > > Index: linux-pm/drivers/base/power/runtime.c
+> > > >
+> > ==========================================================
+> > =========
+> > > > --- linux-pm.orig/drivers/base/power/runtime.c
+> > > > +++ linux-pm/drivers/base/power/runtime.c
+> > > > @@ -608,7 +608,8 @@ static int rpm_resume(struct device *dev
+> > > >   repeat:
+> > > >  	if (dev->power.runtime_error)
+> > > >  		retval = -EINVAL;
+> > > > -	else if (dev->power.disable_depth == 1 && dev-
+> > >power.is_suspended
+> > > > +	else if (((dev->power.disable_depth > 0 && (rpmflags &
+> > RPM_GET_PUT))
+> > > > +	    || (dev->power.disable_depth == 1 && dev-
+> > >power.is_suspended))
+> > > >  	    && dev->power.runtime_status == RPM_ACTIVE)
+> > > >  		retval = 1;
+> > > >  	else if (dev->power.disable_depth > 0)
+> > >
+> > > So pm_runtime_resume() and pm_request_resume() would still fail, but
+> > > pm_runtime_get() and pm_runtime_get_sync() would work?  I'm not sure
+> > > about the reason for this distinction.
+> > 
+> > The meaning of pm_runtime_get()/pm_runtime_get_sync() is "prevent the
+> > device from being suspended from now on and resume it if necessary" while
+> > "runtime PM disabled and runtime_status == RPM_ACTIVE" may be
+> > interpreted as "not necessary to resume", so it is reasonable to special case
+> > this particular situation for these particular routines IMHO.
+> 
+> As Rafael mentioned above that runtime_sataus is not meaningful if runtime PM
+> is disabled, so shouldn't we avoid using the runtime_staus here and instead use
+> dev->power.is_suspended only to decide the return value?
 
-To adress these scenarios, we try to fetch a pwrseq method while
-parsing the common MMC DT bindings. If a such method is found we select
-the corresponding state for it from mmc_power_up|off().
+No, we shouldn't.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/mmc/core/core.c  |    7 +++++++
- drivers/mmc/core/host.c  |    5 +++++
- include/linux/mmc/host.h |    3 +++
- 3 files changed, 15 insertions(+)
+This is a special case. If dev->power.disable_depth == 1 and dev->power.is_suspended
+is set at the same time, we know for a fact that runtime PM was only disabled by the
+system suspend code path and it was enabled otherwise, so dev->power.runtime_status
+equal to RPM_ACTIVE is actually meaningful in that particular case.
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 7dc0c85..46558b5 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -29,6 +29,7 @@
- #include <linux/random.h>
- #include <linux/slab.h>
- #include <linux/of.h>
-+#include <linux/pwrseq.h>
- 
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
-@@ -1533,6 +1534,9 @@ void mmc_power_up(struct mmc_host *host, u32 ocr)
- 
- 	mmc_host_clk_hold(host);
- 
-+	if (!IS_ERR(host->pwrseq))
-+		pwrseq_select_state(host->pwrseq, PWRSEQ_POWER_ON);
-+
- 	host->ios.vdd = fls(ocr) - 1;
- 	if (mmc_host_is_spi(host))
- 		host->ios.chip_select = MMC_CS_HIGH;
-@@ -1591,6 +1595,9 @@ void mmc_power_off(struct mmc_host *host)
- 	host->ios.timing = MMC_TIMING_LEGACY;
- 	mmc_set_ios(host);
- 
-+	if (!IS_ERR(host->pwrseq))
-+		pwrseq_select_state(host->pwrseq, PWRSEQ_POWER_OFF);
-+
- 	/*
- 	 * Some configurations, such as the 802.11 SDIO card in the OLPC
- 	 * XO-1.5, require a short delay after poweroff before the card
-diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
-index 95cceae..fdf8596 100644
---- a/drivers/mmc/core/host.c
-+++ b/drivers/mmc/core/host.c
-@@ -22,6 +22,7 @@
- #include <linux/leds.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
-+#include <linux/pwrseq.h>
- 
- #include <linux/mmc/host.h>
- #include <linux/mmc/card.h>
-@@ -317,6 +318,10 @@ int mmc_of_parse(struct mmc_host *host)
- 	if (!host->parent || !host->parent->of_node)
- 		return 0;
- 
-+	host->pwrseq = devm_pwrseq_get_optional(host->parent);
-+	if (IS_ERR(host->pwrseq))
-+		return PTR_ERR(host->pwrseq);
-+
- 	np = host->parent->of_node;
- 
- 	/* "bus-width" is translated to MMC_CAP_*_BIT_DATA flags */
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 7960424..306b78c 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -195,9 +195,12 @@ struct mmc_supply {
- 	struct regulator *vqmmc;	/* Optional Vccq supply */
- };
- 
-+struct pwrseq;
-+
- struct mmc_host {
- 	struct device		*parent;
- 	struct device		class_dev;
-+	struct pwrseq		*pwrseq;
- 	int			index;
- 	const struct mmc_host_ops *ops;
- 	unsigned int		f_min;
--- 
-1.7.9.5
+> @@ -608,11 +608,13 @@ static int rpm_resume(struct device *dev, int rpmflags)
+>   repeat:
+>         if (dev->power.runtime_error)
+>                 retval = -EINVAL;
+> -       else if (dev->power.disable_depth == 1 && dev->power.is_suspended
+> -           && dev->power.runtime_status == RPM_ACTIVE)
+> -               retval = 1;
+> -       else if (dev->power.disable_depth > 0)
+> -               retval = -EACCES;
+> +       else if (dev->power.disable_depth > 0) {
+> +               if (!dev->power.is_suspended)
+> +                       retval = 1;
+> +               else
+> +                       retval = -EACCES;
+> +       }
+> +
+>         if (retval)
+>                 goto out;
+> 
+> However, this requires us to make sure device is in full functional state if
+> it's not suspended before disabling runtime PM, just like the case runtime PM
+> is not configured at all.
+
+If runtime PM is not configured at all, the device has to be in full functional
+state (from the PM perspective) outside of the system suspend-resume sequence.
+
+The only problematic case I can see is when runtime PM is disabled, runtime_status
+is RPM_ACTIVE, but the device is actually suspended for some reason.  I'd say
+that avoiding it is the caller's problem.
+
+> And also requires device suspend routine to check dev->power.usage_count before
+> suspending device.
+
+Why?  And which routine exactly are you talking about?
+
+Rafael
 
