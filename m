@@ -1,85 +1,59 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: unlock when failing cpufreq_update_policy()
-Date: Thu, 19 Jun 2014 01:57:54 +0200
-Message-ID: <3158268.Ad2sxChQ89@vostro.rjw.lan>
-References: <1403050362-20809-1-git-send-email-aplattner@nvidia.com> <1403116052-4659-1-git-send-email-aplattner@nvidia.com>
+Subject: Re: [PATCH] intel_pstate: Correct rounding in busy calculation
+Date: Thu, 19 Jun 2014 02:03:24 +0200
+Message-ID: <3442874.kCXUKoLFFZ@vostro.rjw.lan>
+References: <1403037370-3484-1-git-send-email-dsmythies@telus.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50000 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51309 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753095AbaFRXkS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 19:40:18 -0400
-In-Reply-To: <1403116052-4659-1-git-send-email-aplattner@nvidia.com>
+	with SMTP id S1756479AbaFRXpt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jun 2014 19:45:49 -0400
+In-Reply-To: <1403037370-3484-1-git-send-email-dsmythies@telus.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Plattner <aplattner@nvidia.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Doug Smythies <doug.smythies@gmail.com>
+Cc: linux-pm@vger.kernel.org, dsmythies@telus.net, dirk.brandewie@gmail.com
 
-On Wednesday, June 18, 2014 11:27:32 AM Aaron Plattner wrote:
-> Commit bd0fa9bb455d introduced a failure path to cpufreq_update_policy() if
-> cpufreq_driver->get(cpu) returns NULL.  However, it jumps to the 'no_policy'
-> label, which exits without unlocking any of the locks the function acquired
-> earlier.  This causes later calls into cpufreq to hang.
+On Tuesday, June 17, 2014 01:36:10 PM Doug Smythies wrote:
+> There was a mistake in the actual rounding portion this previous patch:
+> f0fe3cd7e12d8290c82284b5c8aee723cbd0371a intel_pstate: Correct rounding in busy calculation
+> such that the rounding was asymetric and incorrect.
 > 
-> Fix this by creating a new 'unlock' label and jumping to that instead.
+> Severity: Not very serious, but can increase target pstate by one extra value.
+> For real world work flows the issue should self correct (but I have no proof).
+> It is the equivalent of different PID gains for positive and negative numbers.
 > 
-> v2: Delete the no_policy label and just return early if policy is NULL.
+> Examples:
+> -3.000000 used to round to -4, rounds to -3 with this patch.
+> -3.503906 used to round to -5, rounds to -4 with this patch.
 > 
-> Fixes: bd0fa9bb455d ("cpufreq: Return error if ->get() failed in cpufreq_update_policy()")
-> Link: https://devtalk.nvidia.com/default/topic/751903/kernel-3-15-and-nv-drivers-337-340-failed-to-initialize-the-nvidia-kernel-module-gtx-550-ti-/
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Aaron Plattner <aplattner@nvidia.com>
+> Signed-off-by: Doug Smythies <dsmythies@telus.net>
 
 Applied, thanks!
 
 > ---
-> v1 of this was tested by the user affected by the problem, but I don't have his
-> email address so I can't add it as a Tested-by line.
+>  drivers/cpufreq/intel_pstate.c | 5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
 > 
->  drivers/cpufreq/cpufreq.c | 10 ++++------
->  1 file changed, 4 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index aed2b0cb83dc..62259d27f03e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2242,10 +2242,8 @@ int cpufreq_update_policy(unsigned int cpu)
->  	struct cpufreq_policy new_policy;
->  	int ret;
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 4e7f492..924bb2d 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -196,10 +196,7 @@ static signed int pid_calc(struct _pid *pid, int32_t busy)
+>  	pid->last_err = fp_error;
 >  
-> -	if (!policy) {
-> -		ret = -ENODEV;
-> -		goto no_policy;
-> -	}
-> +	if (!policy)
-> +		return -ENODEV;
->  
->  	down_write(&policy->rwsem);
->  
-> @@ -2264,7 +2262,7 @@ int cpufreq_update_policy(unsigned int cpu)
->  		new_policy.cur = cpufreq_driver->get(cpu);
->  		if (WARN_ON(!new_policy.cur)) {
->  			ret = -EIO;
-> -			goto no_policy;
-> +			goto unlock;
->  		}
->  
->  		if (!policy->cur) {
-> @@ -2279,10 +2277,10 @@ int cpufreq_update_policy(unsigned int cpu)
->  
->  	ret = cpufreq_set_policy(policy, &new_policy);
->  
-> +unlock:
->  	up_write(&policy->rwsem);
->  
->  	cpufreq_cpu_put(policy);
-> -no_policy:
->  	return ret;
+>  	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
+> -	if (result >= 0)
+> -		result = result + (1 << (FRAC_BITS-1));
+> -	else
+> -		result = result - (1 << (FRAC_BITS-1));
+> +	result = result + (1 << (FRAC_BITS-1));
+>  	return (signed int)fp_toint(result);
 >  }
->  EXPORT_SYMBOL(cpufreq_update_policy);
+>  
 > 
 
 -- 
