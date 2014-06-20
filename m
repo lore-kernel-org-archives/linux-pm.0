@@ -1,57 +1,131 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
-Date: Fri, 20 Jun 2014 17:42:19 +0200
-Message-ID: <4224745.HqdT4QrZdr@wuerfel>
-References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
- <1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above
+ a trip point
+Date: Fri, 20 Jun 2014 18:24:42 +0100
+Message-ID: <20140620172442.GA22701@e104805>
+References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
+ <1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Chris Ball <chris@printf.net>, Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Mark Brown <broonie@kernel.org>, Olof Johansson <olof@lixom.net>, Arend van Spriel <arend@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, Alexandre Courbot <gnurou@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 19 June 2014 15:04:50 Ulf Hansson wrote:
-> +Power sequence DT bindings
-> +
-> +Each power sequence method has a corresponding "power-method" property string.
-> +This property shall be set in a subnode for a device. That subnode should also
-> +describe resourses which are specific to that power method.
-> +
-> +Do note, power sequences as such isn't encoded through DT. Instead those are
-> +implemented by each power method.
-> +
-> +Required subnode properties:
-> +- power-method: should contain the string for the power method to bind.
-> +
-> +       Supported power methods: None.
-> +
-> +Example:
-> +
-> +Note, the "clock" power method in this example isn't actually supported, but
-> +used to visualize how a childnode could be described.
+Hi Punit,
 
-I'm not too thrilled about adding another top-level concept for these.
-This seems to duplicate some things that pm-domains do, but does them
-in a somewhata different way. Would it be possible to instead integrate
-it into the pm-domain code?
+On Wed, Jun 11, 2014 at 12:31:44PM +0100, Punit Agrawal wrote:
+> Create a new event to trace when the temperature is above a trip
+> point. Use the trace-point when handling non-critical and critical
+> trip pionts.
+> 
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+> ---
+> Hi Steven,
+> 
+> I am facing an issue with partial trace being emitted when using
+> __print_symbolic in this patch. 
+> 
+> When the trip_type is THERMAL_TRIP_ACTIVE (i.e., the first value in
+> the symbol map), the emitted trace contains the corresponding string
+> ("active"). But for other values of trip_type an empty string is
+> emitted in the trace.
+> 
+> I've looked at other uses of __print_symbolic in the kernel and don't
+> see any difference in usage. Do you know what could be causing this or
+> alternately have any pointers on how to debug this behaviour?
+> 
+> Thanks.
+> Punit
+> 
+>  drivers/thermal/fair_share.c   |    7 ++++++-
+>  drivers/thermal/step_wise.c    |    5 ++++-
+>  drivers/thermal/thermal_core.c |    2 ++
+>  include/trace/events/thermal.h |   30 ++++++++++++++++++++++++++++++
+>  4 files changed, 42 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+> index 944ba2f..2cddd68 100644
+> --- a/drivers/thermal/fair_share.c
+> +++ b/drivers/thermal/fair_share.c
+> @@ -23,6 +23,7 @@
+>   */
+>  
+>  #include <linux/thermal.h>
+> +#include <trace/events/thermal.h>
+>  
+>  #include "thermal_core.h"
+>  
+> @@ -34,14 +35,18 @@ static int get_trip_level(struct thermal_zone_device *tz)
+>  {
+>  	int count = 0;
+>  	unsigned long trip_temp;
+> +	enum thermal_trip_type trip_type;
+>  
+>  	if (tz->trips == 0 || !tz->ops->get_trip_temp)
+>  		return 0;
+>  
+>  	for (count = 0; count < tz->trips; count++) {
+>  		tz->ops->get_trip_temp(tz, count, &trip_temp);
+> -		if (tz->temperature < trip_temp)
+> +		if (tz->temperature < trip_temp) {
+> +			tz->ops->get_trip_type(tz, count, &trip_type);
+> +			trace_thermal_zone_trip(tz, count, trip_type);
 
-I also agree with Olof that having a standalone child device node is
-not the best representation. If you want to represent an SDIO device
-device that has some references to clocks, regulators, etc, then put
-that device into the tree and give it those properties.
-That would also let you worry about the sequencing in driver code rather
-than trying to come up with a completely generic model for it.
+This should be outside the if condition.  You want to report when trip
+points have been hit, like in the step_wise code below.
 
-	Arnd
+>  			break;
+> +		}
+>  	}
+>  	return count;
+>  }
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index f251521..3b54c2c 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -23,6 +23,7 @@
+>   */
+>  
+>  #include <linux/thermal.h>
+> +#include <trace/events/thermal.h>
+>  
+>  #include "thermal_core.h"
+>  
+> @@ -129,8 +130,10 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>  
+>  	trend = get_tz_trend(tz, trip);
+>  
+> -	if (tz->temperature >= trip_temp)
+> +	if (tz->temperature >= trip_temp) {
+>  		throttle = true;
+> +		trace_thermal_zone_trip(tz, trip, trip_type);
+> +	}
+>  
+>  	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%ld]:trend=%d,throttle=%d\n",
+>  				trip, trip_type, trip_temp, trend, throttle);
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index c74c78d..454884a 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -371,6 +371,8 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+>  	if (tz->temperature < trip_temp)
+>  		return;
+>  
+> +	trace_thermal_zone_trip(tz, trip, trip_type);
+> +
+>  	if (tz->ops->notify)
+>  		tz->ops->notify(tz, trip, trip_type);
+>  
+
+Cheers,
+Javi
