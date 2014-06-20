@@ -1,13 +1,13 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 2/3] intel_pstate: don't touch turbo bit if turbo disabled or unavailable.
-Date: Fri, 20 Jun 2014 07:27:59 -0700
-Message-ID: <1403274480-10593-3-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH 3/3] intel_pstate: Update documentation of {max,min}_perf_pct sysfs files
+Date: Fri, 20 Jun 2014 07:28:00 -0700
+Message-ID: <1403274480-10593-4-git-send-email-dirk.j.brandewie@intel.com>
 References: <1403274480-10593-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f51.google.com ([209.85.160.51]:46198 "EHLO
-	mail-pb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbaFTO2N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:28:13 -0400
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:49238 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752834AbaFTO2P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:28:15 -0400
 In-Reply-To: <1403274480-10593-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,102 +16,36 @@ Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, stable@vger.kernel.org, Dirk Br
 
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-If turbo is disabled in the BIOS bit 38 should be set in
-MSR_IA32_MISC_ENABLE register per section 14.3.2.1 of the SDM Vol 3
-document 325384-050US Feb 2014.  If this bit is set do *not* attempt
-to disable trubo via the MSR_IA32_PERF_CTL register.  On some systems
-trying to disable turbo via MSR_IA32_PERF_CTL will cause subsequent
-writes to MSR_IA32_PERF_CTL not take affect, in fact reading
-MSR_IA32_PERF_CTL will not show the IDA/Turbo DISENGAGE bit(32) as
-set. A write of bit 32 to zero returns to normal operation.
-
-Also deal with the case where the processor does not support
-turbo and the BIOS does not report the fact in MSR_IA32_MISC_ENABLE
-but does report the max and turbo P states as the same value.
+Update documentation to make the interpretation of the values clearer
 
 References: https://bugzilla.kernel.org/show_bug.cgi?id=64251
 
 Cc: Stable <stable@vger.kernel.org>  [3.13+]
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
+ Documentation/cpu-freq/intel-pstate.txt | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 74376d6..127ead8 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -128,6 +128,7 @@ static struct pstate_funcs pstate_funcs;
+diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
+index e742d21..a69ffe1 100644
+--- a/Documentation/cpu-freq/intel-pstate.txt
++++ b/Documentation/cpu-freq/intel-pstate.txt
+@@ -15,10 +15,13 @@ New sysfs files for controlling P state selection have been added to
+ /sys/devices/system/cpu/intel_pstate/
  
- struct perf_limits {
- 	int no_turbo;
-+	int turbo_disabled;
- 	int max_perf_pct;
- 	int min_perf_pct;
- 	int32_t max_perf;
-@@ -287,7 +288,10 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
- 	if (ret != 1)
- 		return -EINVAL;
- 	limits.no_turbo = clamp_t(int, input, 0 , 1);
--
-+	if (limits.turbo_disabled) {
-+		pr_warn("Turbo disabled by BIOS or unavailable on processor\n");
-+		limits.no_turbo = limits.turbo_disabled;
-+	}
- 	return count;
- }
+       max_perf_pct: limits the maximum P state that will be requested by
+-      the driver stated as a percentage of the available performance.
++      the driver stated as a percentage of the available performance. The
++      available (P states) performance may be reduced by the no_turbo
++      setting described below.
  
-@@ -381,7 +385,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
- 	u32 vid;
+       min_perf_pct: limits the minimum P state that will be  requested by
+-      the driver stated as a percentage of the available performance.
++      the driver stated as a percentage of the max (non-turbo)
++      performance level.
  
- 	val = pstate << 8;
--	if (limits.no_turbo)
-+	if (limits.no_turbo && !limits.turbo_disabled)
- 		val |= (u64)1 << 32;
- 
- 	vid_fp = cpudata->vid.min + mul_fp(
-@@ -448,7 +452,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
- 	u64 val;
- 
- 	val = pstate << 8;
--	if (limits.no_turbo)
-+	if (limits.no_turbo && !limits.turbo_disabled)
- 		val |= (u64)1 << 32;
- 
- 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
-@@ -741,7 +745,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 		limits.min_perf = int_tofp(1);
- 		limits.max_perf_pct = 100;
- 		limits.max_perf = int_tofp(1);
--		limits.no_turbo = 0;
-+		limits.no_turbo = limits.turbo_disabled;
- 		return 0;
- 	}
- 	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
-@@ -784,6 +788,7 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpudata *cpu;
- 	int rc;
-+	u64 misc_en;
- 
- 	rc = intel_pstate_init_cpu(policy->cpu);
- 	if (rc)
-@@ -791,8 +796,13 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu = all_cpu_data[policy->cpu];
- 
--	if (!limits.no_turbo &&
--		limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
-+	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
-+	if (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
-+		cpu->pstate.max_pstate == cpu->pstate.turbo_pstate) {
-+		limits.turbo_disabled = 1;
-+		limits.no_turbo = 1;
-+	}
-+	if (limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
- 	else
- 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
+       no_turbo: limits the driver to selecting P states below the turbo
+       frequency range.
 -- 
 1.9.0
 
