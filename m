@@ -1,94 +1,138 @@
-From: Anson Huang <b20788@freescale.com>
-Subject: =?UTF-8?q?=5BPATCH=5D=20Thermal=3A=20imx=3A=20correct=20critical=20trip=20temperature=20setting?=
-Date: Fri, 20 Jun 2014 15:03:06 +0800
-Message-ID: <1403247786-19899-1-git-send-email-b20788@freescale.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
+Date: Fri, 20 Jun 2014 09:27:18 +0200
+Message-ID: <53A3E256.8090307@redhat.com>
+References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>	<1403183091-27876-2-git-send-email-ulf.hansson@linaro.org> <CAOesGMj6xp_cXZRuqL5HOPX4AeDuCkj69E32xuPVgGk4xABLbQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2lp0209.outbound.protection.outlook.com ([207.46.163.209]:1811
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933600AbaFTHFD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 20 Jun 2014 03:05:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3569 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934032AbaFTH2a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 20 Jun 2014 03:28:30 -0400
+In-Reply-To: <CAOesGMj6xp_cXZRuqL5HOPX4AeDuCkj69E32xuPVgGk4xABLbQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com
-Cc: linux-pm@vger.kernel.org
+To: Olof Johansson <olof@lixom.net>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Alexandre Courbot <gnurou@gmail.com>, Arend van Spriel <arend@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Chris Ball <chris@printf.net>, Chen-Yu Tsai <wens@csie.org>, Russell King <linux@arm.linux.org.uk>, Tomasz Figa <tomasz.figa@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>
 
-On latest i.MX6 SOC with thermal calibration data of 0x5A100000,
-the critical trip temperature will be an invalid value and
-cause system auto shutdown as below log:
+Hi,
 
-thermal thermal_zone0: critical temperature reached(42 C),shutting down
+On 06/19/2014 07:18 PM, Olof Johansson wrote:
+> Hi,
+> 
+> 
+> 
+> On Thu, Jun 19, 2014 at 6:04 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> The pwrseq subsystem handles complex power sequences, typically useful
+>> for subsystems that makes use of discoverable buses, like for example
+>> MMC and I2C.
+>>
+>> The pwrseq subsystem is dependant on CONFIG_OF to be able to parse a DT
+>> childnode to find out what power sequence method to bind for a device.
+>>
+>> From the DT childnode, the pwrseq DT parser tries to locate a
+>> "power-method" property, which string is matched towards the list of
+>> supported pwrseq methods.
+>>
+>> Each pwrseq method implements it's own power sequence and interfaces
+>> the pwrseq core through a few callback functions.
+>>
+>> To instantiate a pwrseq method, clients shall use the devm_pwrseq_get()
+>> API. If needed, clients can explicity drop the references to a pwrseq
+>> method using devm_pwrseq_put() API.
+>>
+>> Besides instantiation, the pwrseq API provides clients opportunity to
+>> select a certain power state. In this intial version, PWRSEQ_POWER_ON
+>> and PWRSEQ_POWER_OFF are supported. Those are also mandatory for each
+>> pwrseq method to support.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  .../devicetree/bindings/pwrseq/pwrseq.txt          |   48 ++++++
+>>  drivers/Makefile                                   |    2 +-
+>>  drivers/pwrseq/Makefile                            |    2 +
+>>  drivers/pwrseq/core.c                              |  175 ++++++++++++++++++++
+>>  drivers/pwrseq/core.h                              |   37 +++++
+>>  drivers/pwrseq/method.c                            |   38 +++++
+>>  include/linux/pwrseq.h                             |   50 ++++++
+>>  7 files changed, 351 insertions(+), 1 deletion(-)
+>>  create mode 100644 Documentation/devicetree/bindings/pwrseq/pwrseq.txt
+>>  create mode 100644 drivers/pwrseq/Makefile
+>>  create mode 100644 drivers/pwrseq/core.c
+>>  create mode 100644 drivers/pwrseq/core.h
+>>  create mode 100644 drivers/pwrseq/method.c
+>>  create mode 100644 include/linux/pwrseq.h
+>>
+>> diff --git a/Documentation/devicetree/bindings/pwrseq/pwrseq.txt b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
+>> new file mode 100644
+>> index 0000000..80848ae
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
+>> @@ -0,0 +1,48 @@
+>> +Power sequence DT bindings
+>> +
+>> +Each power sequence method has a corresponding "power-method" property string.
+>> +This property shall be set in a subnode for a device. That subnode should also
+>> +describe resourses which are specific to that power method.
+>> +
+>> +Do note, power sequences as such isn't encoded through DT. Instead those are
+>> +implemented by each power method.
+>> +
+>> +Required subnode properties:
+>> +- power-method: should contain the string for the power method to bind.
+>> +
+>> +       Supported power methods: None.
+>> +
+>> +Example:
+>> +
+>> +Note, the "clock" power method in this example isn't actually supported, but
+>> +used to visualize how a childnode could be described.
+>> +
+>> +// WLAN SDIO channel
+>> +sdi1_per2@80118000 {
+>> +       compatible = "arm,pl18x", "arm,primecell";
+>> +       reg = <0x80118000 0x1000>;
+>> +       interrupts = <0 50 IRQ_TYPE_LEVEL_HIGH>;
+>> +
+>> +       dmas = <&dma 32 0 0x2>, /* Logical - DevToMem */
+>> +              <&dma 32 0 0x0>; /* Logical - MemToDev */
+>> +       dma-names = "rx", "tx";
+>> +
+>> +       clocks = <&prcc_kclk 2 4>, <&prcc_pclk 2 6>;
+>> +       clock-names = "sdi", "apb_pclk";
+>> +
+>> +       arm,primecell-periphid = <0x10480180>;
+>> +       max-frequency = <100000000>;
+>> +       bus-width = <4>;
+>> +       non-removable;
+>> +       pinctrl-names = "default", "sleep";
+>> +       pinctrl-0 = <&sdi1_default_mode>;
+>> +       pinctrl-1 = <&sdi1_sleep_mode>;
+>> +
+>> +       status = "okay";
+>> +
+>> +       pwrseq: pwrseq1 {
+>> +               power-method = "clock";
+>> +               clocks = <&someclk 1 2>, <&someclk 3 4>;
+>> +               clock-names = "pwrseq1", "pwrseq2";
+>> +       };
+> 
+> I am strongly against the subnode approach as a general framework. We
+> don't have a subnode for interrupts, nor for clocks or pinctrl. So why
+> should we have it for the power sequencing?
+> 
+> Sure, that fits the linux driver model better, but that's irrelevant
+> w.r.t. describing the hardware.
 
-So, with universal formula for thermal sensor, only room
-temperature point is calibrated, which means the calibration
-data read from fuse only has valid data of bit [31:20], others
-are all 0, the critical trip point temperature can NOT depend
-on the hot point calibration data, here we set it to 20 C higher
-than default passive temperature.
+Actually this is about describing the hardware, when you have e.g. an
+mmc device which needs pwrseq, there will be 2 sets of certain
+resources, ie clocks for the host controller and clocks going directly
+to the mmc device. I think putting those both in the same subnode is
+a BAD idea, so we really do need a subnode to group the pwrseq resources
+together.
 
-Signed-off-by: Anson Huang <b20788@freescale.com>
----
- drivers/thermal/imx_thermal.c |   18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+Regards,
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_therma=
-l.c
-index a99c631..2c516f2 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -306,7 +306,7 @@ static int imx_get_sensor_data(struct platform_devi=
-ce *pdev)
- {
- 	struct imx_thermal_data *data =3D platform_get_drvdata(pdev);
- 	struct regmap *map;
--	int t1, t2, n1, n2;
-+	int t1, n1;
- 	int ret;
- 	u32 val;
- 	u64 temp64;
-@@ -333,14 +333,10 @@ static int imx_get_sensor_data(struct platform_de=
-vice *pdev)
- 	/*
- 	 * Sensor data layout:
- 	 *   [31:20] - sensor value @ 25C
--	 *    [19:8] - sensor value of hot
--	 *     [7:0] - hot temperature value
- 	 * Use universal formula now and only need sensor value @ 25C
- 	 * slope =3D 0.4297157 - (0.0015976 * 25C fuse)
- 	 */
- 	n1 =3D val >> 20;
--	n2 =3D (val & 0xfff00) >> 8;
--	t2 =3D val & 0xff;
- 	t1 =3D 25; /* t1 always 25C */
-=20
- 	/*
-@@ -366,16 +362,16 @@ static int imx_get_sensor_data(struct platform_de=
-vice *pdev)
- 	data->c2 =3D n1 * data->c1 + 1000 * t1;
-=20
- 	/*
--	 * Set the default passive cooling trip point to 20 =C2=B0C below the
--	 * maximum die temperature. Can be changed from userspace.
-+	 * Set the default passive cooling trip point,
-+	 * can be changed from userspace.
- 	 */
--	data->temp_passive =3D 1000 * (t2 - 20);
-+	data->temp_passive =3D IMX_TEMP_PASSIVE;
-=20
- 	/*
--	 * The maximum die temperature is t2, let's give 5 =C2=B0C cushion
--	 * for noise and possible temperature rise between measurements.
-+	 * The maximum die temperature set to 20 C higher than
-+	 * IMX_TEMP_PASSIVE.
- 	 */
--	data->temp_critical =3D 1000 * (t2 - 5);
-+	data->temp_critical =3D 1000 * 20 + data->temp_passive;
-=20
- 	return 0;
- }
---=20
-1.7.9.5
-
+Hans
