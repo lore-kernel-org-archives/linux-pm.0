@@ -1,49 +1,57 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled
- and device suspended.
-Date: Fri, 20 Jun 2014 10:48:09 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1406201043420.1160-100000@iolanthe.rowland.org>
-References: <17793417.Syoi52bq6K@vostro.rjw.lan>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
+Date: Fri, 20 Jun 2014 17:42:19 +0200
+Message-ID: <4224745.HqdT4QrZdr@wuerfel>
+References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
+ <1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:46341 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751903AbaFTOsK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:48:10 -0400
-In-Reply-To: <17793417.Syoi52bq6K@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Chris Ball <chris@printf.net>, Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Mark Brown <broonie@kernel.org>, Olof Johansson <olof@lixom.net>, Arend van Spriel <arend@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Tomasz Figa <tomasz.figa@gmail.com>, Alexandre Courbot <gnurou@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@linaro.org>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Fri, 20 Jun 2014, Rafael J. Wysocki wrote:
+On Thursday 19 June 2014 15:04:50 Ulf Hansson wrote:
+> +Power sequence DT bindings
+> +
+> +Each power sequence method has a corresponding "power-method" property string.
+> +This property shall be set in a subnode for a device. That subnode should also
+> +describe resourses which are specific to that power method.
+> +
+> +Do note, power sequences as such isn't encoded through DT. Instead those are
+> +implemented by each power method.
+> +
+> +Required subnode properties:
+> +- power-method: should contain the string for the power method to bind.
+> +
+> +       Supported power methods: None.
+> +
+> +Example:
+> +
+> +Note, the "clock" power method in this example isn't actually supported, but
+> +used to visualize how a childnode could be described.
 
-> > For a general device, the fact that dev->power.is_suspended is set
-> > means the device _has_ been powered down.  Even though the
-> > runtime_status may not have changed, the PM core has to assume the
-> > device is not available for use.
-> 
-> This seems to go a bit too far.  What power.is_suspended actually means is
-> that __device_suspend() has run for the device successfully.  What the
-> implications of that are depends on the bus type (or subsystem in general)
-> and device driver.
-> 
-> > While your I2C devices may be useable even after the ->suspend callback
-> > returns, for most devices this isn't true.  So we shouldn't allow
-> > rpm_resume() to return imediately when is_suspended is set.
-> 
-> I can agree with that.
+I'm not too thrilled about adding another top-level concept for these.
+This seems to duplicate some things that pm-domains do, but does them
+in a somewhata different way. Would it be possible to instead integrate
+it into the pm-domain code?
 
-We really do need to decide more precisely how runtime PM and system PM 
-will interact.  Should ->runtime_resume callbacks be allowed after 
-->suspend has returned?
+I also agree with Olof that having a standalone child device node is
+not the best representation. If you want to represent an SDIO device
+device that has some references to clocks, regulators, etc, then put
+that device into the tree and give it those properties.
+That would also let you worry about the sequencing in driver code rather
+than trying to come up with a completely generic model for it.
 
-Kevin has stated that some devices do need this ability.  But most
-don't.  The PM core needs to handle these conflicting requirements
-somehow.
-
-Note: this is a separate issue from the meaning of disabled_depth > 0.
-
-Alan Stern
-
+	Arnd
