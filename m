@@ -1,13 +1,13 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 1/3] intel_pstate: Fix setting VID
-Date: Fri, 20 Jun 2014 07:27:58 -0700
-Message-ID: <1403274480-10593-2-git-send-email-dirk.j.brandewie@intel.com>
+Subject: [PATCH 2/3] intel_pstate: don't touch turbo bit if turbo disabled or unavailable.
+Date: Fri, 20 Jun 2014 07:27:59 -0700
+Message-ID: <1403274480-10593-3-git-send-email-dirk.j.brandewie@intel.com>
 References: <1403274480-10593-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f42.google.com ([209.85.160.42]:38213 "EHLO
-	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbaFTO2M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:28:12 -0400
+Received: from mail-pb0-f51.google.com ([209.85.160.51]:46198 "EHLO
+	mail-pb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752834AbaFTO2N (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:28:13 -0400
 In-Reply-To: <1403274480-10593-1-git-send-email-dirk.j.brandewie@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,72 +16,102 @@ Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, stable@vger.kernel.org, Dirk Br
 
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Commit 21855ff5 intel_pstate: Set turbo VID for BayTrail introduced
-setting the turbo VID which is required to prevent a machine check on
-some Baytrail SKUs under heavy graphics based workloads.  The
-docmumentation update that brought the requirement to light also
-changed the bit mask used for enumerating P state and VID values from
-0x7f to 0x3f.
+If turbo is disabled in the BIOS bit 38 should be set in
+MSR_IA32_MISC_ENABLE register per section 14.3.2.1 of the SDM Vol 3
+document 325384-050US Feb 2014.  If this bit is set do *not* attempt
+to disable trubo via the MSR_IA32_PERF_CTL register.  On some systems
+trying to disable turbo via MSR_IA32_PERF_CTL will cause subsequent
+writes to MSR_IA32_PERF_CTL not take affect, in fact reading
+MSR_IA32_PERF_CTL will not show the IDA/Turbo DISENGAGE bit(32) as
+set. A write of bit 32 to zero returns to normal operation.
 
-This change returns the mask value to 0x7f.
+Also deal with the case where the processor does not support
+turbo and the BIOS does not report the fact in MSR_IA32_MISC_ENABLE
+but does report the max and turbo P states as the same value.
 
-Tested with the Intel NUC DN2820FYK,
-BIOS version FYBYT10H.86A.0034.2014.0513.1413 with v3.16-rc1 and
-v3.14.8 kernel versions.
+References: https://bugzilla.kernel.org/show_bug.cgi?id=64251
 
-Reported-by: Rune Reterson <rune@megahurts.dk>
-Reported-by: Eric Eickmeyer <erich@ericheickmeyer.com>
-Tested-by: Rune Reterson <rune@megahurts.dk>
-Tested-by: Eric Eickmeyer <erich@ericheickmeyer.com>
-
-References: https://bugzilla.kernel.org/show_bug.cgi?id=77951
-
-Cc: Cc: Stable <stable@vger.kernel.org>  [3.13+]
+Cc: Stable <stable@vger.kernel.org>  [3.13+]
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 924bb2d..74376d6 100644
+index 74376d6..127ead8 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -357,21 +357,21 @@ static int byt_get_min_pstate(void)
- {
- 	u64 value;
- 	rdmsrl(BYT_RATIOS, value);
--	return (value >> 8) & 0x3F;
-+	return (value >> 8) & 0x7F;
+@@ -128,6 +128,7 @@ static struct pstate_funcs pstate_funcs;
+ 
+ struct perf_limits {
+ 	int no_turbo;
++	int turbo_disabled;
+ 	int max_perf_pct;
+ 	int min_perf_pct;
+ 	int32_t max_perf;
+@@ -287,7 +288,10 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 	limits.no_turbo = clamp_t(int, input, 0 , 1);
+-
++	if (limits.turbo_disabled) {
++		pr_warn("Turbo disabled by BIOS or unavailable on processor\n");
++		limits.no_turbo = limits.turbo_disabled;
++	}
+ 	return count;
  }
  
- static int byt_get_max_pstate(void)
+@@ -381,7 +385,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+ 	u32 vid;
+ 
+ 	val = pstate << 8;
+-	if (limits.no_turbo)
++	if (limits.no_turbo && !limits.turbo_disabled)
+ 		val |= (u64)1 << 32;
+ 
+ 	vid_fp = cpudata->vid.min + mul_fp(
+@@ -448,7 +452,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
+ 	u64 val;
+ 
+ 	val = pstate << 8;
+-	if (limits.no_turbo)
++	if (limits.no_turbo && !limits.turbo_disabled)
+ 		val |= (u64)1 << 32;
+ 
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+@@ -741,7 +745,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 		limits.min_perf = int_tofp(1);
+ 		limits.max_perf_pct = 100;
+ 		limits.max_perf = int_tofp(1);
+-		limits.no_turbo = 0;
++		limits.no_turbo = limits.turbo_disabled;
+ 		return 0;
+ 	}
+ 	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+@@ -784,6 +788,7 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
  {
- 	u64 value;
- 	rdmsrl(BYT_RATIOS, value);
--	return (value >> 16) & 0x3F;
-+	return (value >> 16) & 0x7F;
- }
+ 	struct cpudata *cpu;
+ 	int rc;
++	u64 misc_en;
  
- static int byt_get_turbo_pstate(void)
- {
- 	u64 value;
- 	rdmsrl(BYT_TURBO_RATIOS, value);
--	return value & 0x3F;
-+	return value & 0x7F;
- }
+ 	rc = intel_pstate_init_cpu(policy->cpu);
+ 	if (rc)
+@@ -791,8 +796,13 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
  
- static void byt_set_pstate(struct cpudata *cpudata, int pstate)
-@@ -405,8 +405,8 @@ static void byt_get_vid(struct cpudata *cpudata)
+ 	cpu = all_cpu_data[policy->cpu];
  
- 
- 	rdmsrl(BYT_VIDS, value);
--	cpudata->vid.min = int_tofp((value >> 8) & 0x3f);
--	cpudata->vid.max = int_tofp((value >> 16) & 0x3f);
-+	cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
-+	cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
- 	cpudata->vid.ratio = div_fp(
- 		cpudata->vid.max - cpudata->vid.min,
- 		int_tofp(cpudata->pstate.max_pstate -
+-	if (!limits.no_turbo &&
+-		limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
++	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
++	if (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
++		cpu->pstate.max_pstate == cpu->pstate.turbo_pstate) {
++		limits.turbo_disabled = 1;
++		limits.no_turbo = 1;
++	}
++	if (limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
+ 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+ 	else
+ 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
 -- 
 1.9.0
 
