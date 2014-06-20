@@ -1,33 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Announce] ACPI+PM maintenance in vacation mode through July 6
-Date: Fri, 20 Jun 2014 16:20:54 +0200
-Message-ID: <2257920.o9Bjf1BQrF@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: dirk.brandewie@gmail.com
+Subject: [PATCH 0/3] intel_pstate bug fixes
+Date: Fri, 20 Jun 2014 07:27:57 -0700
+Message-ID: <1403274480-10593-1-git-send-email-dirk.j.brandewie@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62937 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965829AbaFTODS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:03:18 -0400
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34129 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752069AbaFTO2K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:28:10 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, stable@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Hi Everyone,
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-I'll be on vacation for the next several days and I'll be much less responsinve
-than I usually am, most likely.  I'll be reading email sent to rjw@rjwysocki.net
-and rafael@kernel.org, but please do not expect responses before July 7 (I may
-respond earlier, but I also may not).  In particular, please do not take the
-lack of response from me as a sign of the lack of objections to patches etc.
+Bug fixes for intel_pstate based on v3.16-rc1.
 
-Also, if you send me patches before July 7, I may not be able to handle them
-in a timely way.  I'm going to queue up fixes for the next ACPI+PM pull request,
-but with the rule of thumb that if something is not suitable for an -rc5, it very
-well can wait for the 3.17 merge window.
+Patch 1 fixes a regression reported at https://bugzilla.kernel.org/show_bug.cgi?id=77951
 
-Kind regards,
-Rafael
+Patch 2-3 two issues reported in https://bugzilla.kernel.org/show_bug.cgi?id=64251
+
+Dirk Brandewie (3):
+  intel_pstate: Fix setting VID
+  intel_pstate: don't touch turbo bit if turbo disabled or unavailable.
+  intel_pstate: Update documentation of {max,min}_perf_pct sysfs files
+
+ Documentation/cpu-freq/intel-pstate.txt |  7 +++++--
+ drivers/cpufreq/intel_pstate.c          | 32 +++++++++++++++++++++-----------
+ 2 files changed, 26 insertions(+), 13 deletions(-)
+
+-- 
+1.9.0
 
