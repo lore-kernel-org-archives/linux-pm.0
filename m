@@ -1,51 +1,131 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 3/3] intel_pstate: Update documentation of {max,min}_perf_pct sysfs files
-Date: Fri, 20 Jun 2014 07:28:00 -0700
-Message-ID: <1403274480-10593-4-git-send-email-dirk.j.brandewie@intel.com>
-References: <1403274480-10593-1-git-send-email-dirk.j.brandewie@intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled
+ and device suspended.
+Date: Fri, 20 Jun 2014 10:43:11 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1406201000470.1160-100000@iolanthe.rowland.org>
+References: <2531875.1yYGe4dtjp@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:49238 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbaFTO2P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:28:15 -0400
-In-Reply-To: <1403274480-10593-1-git-send-email-dirk.j.brandewie@intel.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:46329 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751649AbaFTOnN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 10:43:13 -0400
+In-Reply-To: <2531875.1yYGe4dtjp@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, dirk.brandewie@gmail.com, stable@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Fri, 20 Jun 2014, Rafael J. Wysocki wrote:
 
-Update documentation to make the interpretation of the values clearer
+> On Thursday, June 19, 2014 10:34:01 AM Alan Stern wrote:
+> > On Thu, 19 Jun 2014, Rafael J. Wysocki wrote:
+> > 
+> > > Well, we used to have the notion that runtime_status is not meaningful for
+> > > devices with dev->power.disable_depth greater than 0 (except for the special
+> > > case in the suspend code path where we know why it is greater than 0).  I think
+> > > it was useful. :-)
+> > 
+> > Did we really have that notion?  My memory is a little cloudy, but I 
+> > thought we decided that runtime_status would not be meaningful when 
+> > dev->power.runtime_error was set -- not when dev->power.disable_depth 
+> > was greater than 0.  Am I mixed up?
+> 
+> Well, we clearly did, because we added things like
+> 
+> pm_runtime_set_active()
+> pm_runtime_set_suspended()
+> 
+> which allow the status to be changed without doing anything to the device
+> while power.disable_depth is greater than 0.
 
-References: https://bugzilla.kernel.org/show_bug.cgi?id=64251
+Yes.  I'm not sure that was thought out as carefully as it could have
+been.
 
-Cc: Stable <stable@vger.kernel.org>  [3.13+]
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- Documentation/cpu-freq/intel-pstate.txt | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Even with that restriction, it's not possible to guarantee that drivers
+won't make mistakes.  For example, suppose runtime_status is RPM_ACTIVE
+but the device really is powered down.  Before pm_runtime_disable() is
+called, pm_runtime_resume() will succeed.  The driver will think it can
+use the device, even though it can't.
 
-diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
-index e742d21..a69ffe1 100644
---- a/Documentation/cpu-freq/intel-pstate.txt
-+++ b/Documentation/cpu-freq/intel-pstate.txt
-@@ -15,10 +15,13 @@ New sysfs files for controlling P state selection have been added to
- /sys/devices/system/cpu/intel_pstate/
- 
-       max_perf_pct: limits the maximum P state that will be requested by
--      the driver stated as a percentage of the available performance.
-+      the driver stated as a percentage of the available performance. The
-+      available (P states) performance may be reduced by the no_turbo
-+      setting described below.
- 
-       min_perf_pct: limits the minimum P state that will be  requested by
--      the driver stated as a percentage of the available performance.
-+      the driver stated as a percentage of the max (non-turbo)
-+      performance level.
- 
-       no_turbo: limits the driver to selecting P states below the turbo
-       frequency range.
--- 
-1.9.0
+This demonstrates that changing the runtime status can't be done
+properly unless the subsystem and driver take some of the
+responsibility.  Since that is true, perhaps we ought to allow drivers
+to call pm_runtime_set_active/suspended() whenever they want, and rely
+on them not to mess things up.
+
+As far as I know, there are only two major use cases for 
+_set_active/_set_suspended: when the device is being initialized during 
+probe, and during system resume.  During probe it's pretty safe to 
+assume there won't be any runtime PM calls, and much the same is true 
+during system resume (especially during the resume_irq and resume_early 
+phases).  Therefore relying on drivers shouldn't make their jobs any 
+harder.
+
+> > In any case, I think it is reasonable to regard runtime_status as 
+> > meaningful when disable_depth > 0.
+> 
+> So we need to remove the above helpers and modify all code using them.
+
+We don't have to remove the helpers.  And practically none of the code 
+using them would need to be modified.  A certain amount of auditing 
+would be a good idea, though.
+
+> > The PM core isn't allowed to invoke the runtime callbacks at such times,
+> > that's all.  This makes perfect sense for a device that doesn't support
+> > power management and hence must always be at full power.  Or when a driver
+> > knows that runtime_status is out of agreement with the device's actual
+> > power state and wants to update runtime_status directly.
+> 
+> That's what it is supposed to use the above helpers for, isn't it?
+> 
+> Devices that don't support power management, but that we want to use
+> drivers supporting power management with are clearly a special case, so
+
+Are they?  I'm not so sure.  But never mind...
+
+> perhaps we should treat them as such instead of trying to modity the core
+> to silently cover this case too automatically?
+
+How would you treat them specially?  Add a "runtime_pm_not_supported" 
+flag?
+
+> > > > So pm_runtime_resume() and pm_request_resume() would still fail, but 
+> > > > pm_runtime_get() and pm_runtime_get_sync() would work?  I'm not sure 
+> > > > about the reason for this distinction.
+> > > 
+> > > The meaning of pm_runtime_get()/pm_runtime_get_sync() is "prevent the
+> > > device from being suspended from now on and resume it if necessary" while
+> > > "runtime PM disabled and runtime_status == RPM_ACTIVE" may be interpreted
+> > > as "not necessary to resume", so it is reasonable to special case this
+> > > particular situation for these particular routines IMHO.
+> > 
+> > By the same reasoning, the meaning of pm_runtime_resume() is "resume 
+> > the device now if necsesary".  Since "runtime PM disabled and 
+> > runtime_status == RPM_ACTIVE" means "not necessary to resume", isn't it 
+> > logical for pm_runtime_resume() also to succeed under that condition?
+> 
+> My point really is that pm_runtime_get()/pm_runtime_get_sync() actually carry
+> out two operations, (1) incrementing the usage counter and (2) resuming the
+> device if need be.  It is not particularly clear if/when the result of (2)
+> should determine the return value of (1) and (2) together, so there is some
+> freedom in that area which we can use to cover special cases.  That's all.
+
+Oh.  Well, currently those routines are documented as returning the 
+value from their internal pm_request_resume()/pm_runtime_resume() call.
+
+> I'm perfectly fine with leaving the code as is, though.  You wanted to change it. :-)
+
+I'd be equally happy with a "runtime_pm_not_supported" flag, or 
+something equivalent.  Implementing it wouldn't be hard: Setting the 
+flag could call pm_runtime_forbid() and make the power/control sysfs 
+attribute return -EPERM for any attempted write.  Perhaps also make 
+power/runtime_status show "unsupported" rather than "on".
+
+(Hmmm, now that I look at rtpm_status_show(), I see that it already 
+shows "unsupported" whenever disable_depth > 0.  Another indication of 
+how confused the situation is?)
+
+Alan Stern
 
