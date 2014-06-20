@@ -1,131 +1,80 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above
- a trip point
-Date: Fri, 20 Jun 2014 18:24:42 +0100
-Message-ID: <20140620172442.GA22701@e104805>
-References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
- <1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
-Mime-Version: 1.0
+From: Christoph Lameter <cl@linux.com>
+Subject: [PATCH 06/31] drivers/cpuidle: Replace __get_cpu_var uses for address calculation
+Date: Fri, 20 Jun 2014 14:31:21 -0500
+Message-ID: <20140620193125.567452655@linux.com>
+References: <20140620193115.547427118@linux.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:33485 "EHLO
+	qmta04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965537AbaFTTbm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 15:31:42 -0400
+Content-Disposition: inline; filename=this_drivers_cpuidle
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: akpm@linuxfoundation.org, rostedt@goodmis.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-Hi Punit,
+All of these are for address calculation. Replace with
+this_cpu_ptr().
 
-On Wed, Jun 11, 2014 at 12:31:44PM +0100, Punit Agrawal wrote:
-> Create a new event to trace when the temperature is above a trip
-> point. Use the trace-point when handling non-critical and critical
-> trip pionts.
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> ---
-> Hi Steven,
-> 
-> I am facing an issue with partial trace being emitted when using
-> __print_symbolic in this patch. 
-> 
-> When the trip_type is THERMAL_TRIP_ACTIVE (i.e., the first value in
-> the symbol map), the emitted trace contains the corresponding string
-> ("active"). But for other values of trip_type an empty string is
-> emitted in the trace.
-> 
-> I've looked at other uses of __print_symbolic in the kernel and don't
-> see any difference in usage. Do you know what could be causing this or
-> alternately have any pointers on how to debug this behaviour?
-> 
-> Thanks.
-> Punit
-> 
->  drivers/thermal/fair_share.c   |    7 ++++++-
->  drivers/thermal/step_wise.c    |    5 ++++-
->  drivers/thermal/thermal_core.c |    2 ++
->  include/trace/events/thermal.h |   30 ++++++++++++++++++++++++++++++
->  4 files changed, 42 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-> index 944ba2f..2cddd68 100644
-> --- a/drivers/thermal/fair_share.c
-> +++ b/drivers/thermal/fair_share.c
-> @@ -23,6 +23,7 @@
->   */
->  
->  #include <linux/thermal.h>
-> +#include <trace/events/thermal.h>
->  
->  #include "thermal_core.h"
->  
-> @@ -34,14 +35,18 @@ static int get_trip_level(struct thermal_zone_device *tz)
->  {
->  	int count = 0;
->  	unsigned long trip_temp;
-> +	enum thermal_trip_type trip_type;
->  
->  	if (tz->trips == 0 || !tz->ops->get_trip_temp)
->  		return 0;
->  
->  	for (count = 0; count < tz->trips; count++) {
->  		tz->ops->get_trip_temp(tz, count, &trip_temp);
-> -		if (tz->temperature < trip_temp)
-> +		if (tz->temperature < trip_temp) {
-> +			tz->ops->get_trip_type(tz, count, &trip_type);
-> +			trace_thermal_zone_trip(tz, count, trip_type);
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+[cpufreq changes]
+Signed-off-by: Christoph Lameter <cl@linux.com>
 
-This should be outside the if condition.  You want to report when trip
-points have been hit, like in the step_wise code below.
+Index: linux/drivers/cpuidle/governors/ladder.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/ladder.c	2014-05-21 22:47:23.951916206 -0500
++++ linux/drivers/cpuidle/governors/ladder.c	2014-05-21 22:47:23.943916368 -0500
+@@ -66,7 +66,7 @@
+ static int ladder_select_state(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	struct ladder_device_state *last_state;
+ 	int last_residency, last_idx = ldev->last_state_idx;
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+@@ -170,7 +170,7 @@
+  */
+ static void ladder_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
++	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	if (index > 0)
+ 		ldev->last_state_idx = index;
+ }
+Index: linux/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux.orig/drivers/cpuidle/governors/menu.c	2014-05-21 22:47:23.951916206 -0500
++++ linux/drivers/cpuidle/governors/menu.c	2014-05-21 22:47:23.943916368 -0500
+@@ -285,7 +285,7 @@
+  */
+ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
+ 	unsigned int interactivity_req;
+@@ -370,7 +370,7 @@
+  */
+ static void menu_reflect(struct cpuidle_device *dev, int index)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	data->last_state_idx = index;
+ 	if (index >= 0)
+ 		data->needs_update = 1;
+@@ -383,7 +383,7 @@
+  */
+ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	struct menu_device *data = &__get_cpu_var(menu_devices);
++	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int last_idx = data->last_state_idx;
+ 	struct cpuidle_state *target = &drv->states[last_idx];
+ 	unsigned int measured_us;
 
->  			break;
-> +		}
->  	}
->  	return count;
->  }
-> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> index f251521..3b54c2c 100644
-> --- a/drivers/thermal/step_wise.c
-> +++ b/drivers/thermal/step_wise.c
-> @@ -23,6 +23,7 @@
->   */
->  
->  #include <linux/thermal.h>
-> +#include <trace/events/thermal.h>
->  
->  #include "thermal_core.h"
->  
-> @@ -129,8 +130,10 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->  
->  	trend = get_tz_trend(tz, trip);
->  
-> -	if (tz->temperature >= trip_temp)
-> +	if (tz->temperature >= trip_temp) {
->  		throttle = true;
-> +		trace_thermal_zone_trip(tz, trip, trip_type);
-> +	}
->  
->  	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%ld]:trend=%d,throttle=%d\n",
->  				trip, trip_type, trip_temp, trend, throttle);
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index c74c78d..454884a 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -371,6 +371,8 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
->  	if (tz->temperature < trip_temp)
->  		return;
->  
-> +	trace_thermal_zone_trip(tz, trip, trip_type);
-> +
->  	if (tz->ops->notify)
->  		tz->ops->notify(tz, trip, trip_type);
->  
-
-Cheers,
-Javi
