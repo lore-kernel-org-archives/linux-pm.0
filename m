@@ -1,68 +1,30 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
-Date: Fri, 20 Jun 2014 14:34:14 -0700
-Message-ID: <7h4mzftgdl.fsf@paris.lan>
-References: <Pine.LNX.4.44L0.1406201043420.1160-100000@iolanthe.rowland.org>
+From: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: [PATCH V2] cpufreq: imx6: remove pu regulator dependency for
+ SOCs with no PU regulator
+Date: Sat, 21 Jun 2014 20:28:40 +0800
+Message-ID: <20140621122839.GF18165@dragon>
+References: <1403250138-25030-1-git-send-email-b20788@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:41882 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753880AbaFTVeQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jun 2014 17:34:16 -0400
-Received: by mail-pa0-f52.google.com with SMTP id eu11so3520125pac.25
-        for <linux-pm@vger.kernel.org>; Fri, 20 Jun 2014 14:34:16 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.44L0.1406201043420.1160-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Fri, 20 Jun 2014 10:48:09 -0400 (EDT)")
+Received: from mail-bn1blp0185.outbound.protection.outlook.com ([207.46.163.185]:4182
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751452AbaFUMnu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 21 Jun 2014 08:43:50 -0400
+Content-Disposition: inline
+In-Reply-To: <1403250138-25030-1-git-send-email-b20788@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Anson Huang <b20788@freescale.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Fri, Jun 20, 2014 at 03:42:18PM +0800, Anson Huang wrote:
+> PU regulator is not a necessary regulator for cpufreq, not all
+> i.MX6 SoCs have PU regulator, only if SOC has PU regulator, then its
+> voltage must be equal to SOC regulator, so remove the dependency
+> to support i.MX6SX which has no PU regulator.
+> 
+> Signed-off-by: Anson Huang <b20788@freescale.com>
 
-> On Fri, 20 Jun 2014, Rafael J. Wysocki wrote:
->
->> > For a general device, the fact that dev->power.is_suspended is set
->> > means the device _has_ been powered down.  Even though the
->> > runtime_status may not have changed, the PM core has to assume the
->> > device is not available for use.
->> 
->> This seems to go a bit too far.  What power.is_suspended actually means is
->> that __device_suspend() has run for the device successfully.  What the
->> implications of that are depends on the bus type (or subsystem in general)
->> and device driver.
->> 
->> > While your I2C devices may be useable even after the ->suspend callback
->> > returns, for most devices this isn't true.  So we shouldn't allow
->> > rpm_resume() to return imediately when is_suspended is set.
->> 
->> I can agree with that.
->
-> We really do need to decide more precisely how runtime PM and system PM 
-> will interact.  
-
-Yes!
-
-> Should ->runtime_resume callbacks be allowed after ->suspend has
-> returned?
-
-Abolutely.
-
-> Kevin has stated that some devices do need this ability.  But most
-> don't.  
-
-Does it matter if most don't?  As long a some do, we need to support
-this.  It may not be "most" devices, but on the (mostly embedded) SoCs I
-work on, the devices that do need this tend to be rather crucial core
-devices that are used during the PM of other devices (e.g. I2C, SPI,
-GPIOs, etc. etc.)
-
-> The PM core needs to handle these conflicting requirements
-> somehow.
-
-I agree.  We've gone back and forth a few times on the various
-interactions between system PM and runtime PM over the years but it
-seems there are still things to clarify.
-
-Kevin
+Acked-by: Shawn Guo <shawn.guo@freescale.com>
