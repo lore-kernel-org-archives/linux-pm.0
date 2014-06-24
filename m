@@ -1,44 +1,45 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH] thermal: Bind cooling devices with the correct arguments
-Date: Tue, 24 Jun 2014 11:43:35 +0100
-Message-ID: <9hhegyevb8o.fsf@arm.com>
-References: <1401789598-14967-1-git-send-email-punit.agrawal@arm.com>
-	<9hh61jzsuq1.fsf@arm.com> <53A2100C.6080701@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
+Date: Wed, 25 Jun 2014 01:38:43 +0200
+Message-ID: <3098868.U0NfB8kYvJ@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1406221239060.17183-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:50655 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752217AbaFXKno (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jun 2014 06:43:44 -0400
-In-Reply-To: <53A2100C.6080701@codeaurora.org> (Stephen Boyd's message of
-	"Wed, 18 Jun 2014 15:17:48 -0700")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1406221239060.17183-100000@netrider.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-Stephen Boyd <sboyd@codeaurora.org> writes:
+On Sunday, June 22, 2014 12:45:42 PM Alan Stern wrote:
+> On Sun, 22 Jun 2014, Rafael J. Wysocki wrote:
+> 
+> > > How would you treat them specially?  Add a "runtime_pm_not_supported" 
+> > > flag?
+> > 
+> > I thought about a "runtime PM has been enabled at least once" flag rather
+> > that would be set by pm_runtime_enable() every time it is called and never
+> > cleared.  That would allow the core to distinguish between "runtime PM
+> > disabled temporarily" and "runtime PM not used" which turn out to be
+> > sufficiently different cases.
+> 
+> Interesting idea, but it can't tell the difference between "runtime PM
+> not supported" and "runtime PM not enabled yet".  I think a simple "not
+> supported" flag will be more straightforward.
 
-> On 06/17/14 03:20, Punit Agrawal wrote:
->> Ping?
->>
->> Punit Agrawal <punit.agrawal@arm.com> writes:
->>
->>> When binding cooling devices to thermal zones created from the device
->>> tree the minimum and maximum cooling states are in the wrong order
->>> leading to failure to bind.
->>>
->>> Fix the order of cooling states in the call to
->>> thermal_zone_bind_cooling_device to fix this.
->>>
->>> Cc:Zhang Rui <rui.zhang@intel.com>
->>> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
->
-> Ah I ran into the same problem while testing out some thermal DT stuff.
->
-> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+The question is who will set the "unsupported" flag (think devices without
+drivers etc.).  Or perhaps the idea is that it will be set to start with?
 
-Thanks Stephen!
+> > Yes.  The core definitely needs to be able to distinguish between the
+> > "runtime PM disabled temporarily" and "runtime PM not supported/not used"
+> > situations.
+> 
+> Let me work out a patch, and we'll see what you think.  For the time
+> being we can stick with our "runtime PM must be disabled (or in error)  
+> when the status is changed" approach.
 
-Rui, can you pick this patch?
+OK
+
+Rafael
