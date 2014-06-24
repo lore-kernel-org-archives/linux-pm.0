@@ -1,41 +1,60 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
-Date: Mon, 23 Jun 2014 11:57:37 -0700
-Message-ID: <7hk387pi72.fsf@paris.lan>
-References: <Pine.LNX.4.44L0.1406210913470.26962-100000@netrider.rowland.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [RESEND PATCH 0/6] thermal: sti: Add new Thermal driver
+Date: Tue, 24 Jun 2014 10:23:09 +0100
+Message-ID: <20140624092309.GD13803@lee--X1>
+References: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1406210913470.26962-100000@netrider.rowland.org>
-	(Alan Stern's message of "Sat, 21 Jun 2014 09:34:28 -0400 (EDT)")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Allen Yu <alleny@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f169.google.com ([209.85.223.169]:58916 "EHLO
+	mail-ie0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbaFXJXQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jun 2014 05:23:16 -0400
+Received: by mail-ie0-f169.google.com with SMTP id at1so10180iec.14
+        for <linux-pm@vger.kernel.org>; Tue, 24 Jun 2014 02:23:15 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1401980819-19962-1-git-send-email-lee.jones@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kernel@stlinux.com, ajitpal.singh@st.com, edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, maxime.coquelin@st.com, patrice.chotard@st.com
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+> I'm re-sending this set, as one of the maintainers' email addresses
+> is incorrect in the MAINTAINERS file.
+>=20
+> This patchset adds full support for 2 types of Thermal Controllers
+> produced by STMicroelectronics.  One is a more traditional memory
+> mapped variant, the other is controlled solely by system configuratio=
+n
+> registers.
 
-[...]
+Any thing from the Thermal guys? Has this set fallen through the gaps?
 
-> What we really need to figure out is how to tell the PM core which
-> devices may safely have their runtime callbacks invoked during system
-> suspend.  For those devices, the core can avoid calling
-> pm_runtime_disable() during the suspend_late phase.  That would address
-> your requirements, right?
+>  Documentation/devicetree/bindings/thermal/st-thermal.txt |  42 +++++=
++++++++++++
+>  arch/arm/boot/dts/stih416.dtsi                           |  18 +++++=
+++
+>  arch/arm/configs/multi_v7_defconfig                      |   2 +
+>  drivers/thermal/Kconfig                                  |   5 ++
+>  drivers/thermal/Makefile                                 |   1 +
+>  drivers/thermal/st/Kconfig                               |  12 +++++
+>  drivers/thermal/st/Makefile                              |   3 ++
+>  drivers/thermal/st/st_thermal.c                          | 313 +++++=
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+++++++++++
+> ++++++++++++++++++++++++++++
+>  drivers/thermal/st/st_thermal.h                          | 104 +++++=
++++++++++++++++++++++++++++++++++
+>  drivers/thermal/st/st_thermal_memmap.c                   | 209 +++++=
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/thermal/st/st_thermal_syscfg.c                   | 179 +++++=
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  11 files changed, 888 insertions(+)
+>=20
 
-Yes, and something I've attempted a few times over the years, most
-recently during the introduction of the pm_runtime_force* functions[1],
-which I thought was again an attempt to work around this issue.
-
-I don't think Rafael has ever been too thrilled with that idea
-(including the last time[2]), but I think we're to a point now that we
-have to manage this somehow.
-
-My attempt to let the bus/subsystem/pm_domain set a flag might be
-too simplistic, but I do agree we do need som way to tell the PM core
-that runtime PM callbacks are (still) safe.
-
-Kevin
-
-[1] http://marc.info/?l=linux-pm&m=139343222014989&w=2
-[2] http://marc.info/?l=linux-pm&m=139346327619875&w=2
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
