@@ -1,148 +1,159 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 1/9 v4] sched: Remove update_rq_runnable_avg
-Date: Wed, 25 Jun 2014 08:36:00 +0800
-Message-ID: <1403656568-32445-2-git-send-email-yuyang.du@intel.com>
-References: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch V3 13/16] x86, irq, ACPI: Implement interface to support ACPI based IOAPIC hot-removal
+Date: Wed, 25 Jun 2014 16:40:44 +0800
+Message-ID: <1403685648-10103-14-git-send-email-jiang.liu@linux.intel.com>
+References: <1403685648-10103-1-git-send-email-jiang.liu@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+In-Reply-To: <1403685648-10103-1-git-send-email-jiang.liu@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, Yuyang Du <yuyang.du@intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiang Liu <jiang.liu@linux.intel.com>, Grant Likely <grant.likely@linaro.org>, Prarit Bhargava <prarit@redhat.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The current rq->avg is not made use of anywhere, and the code is in fair
-scheduler's critical path, so remove it.
+Implement acpi_unregister_ioapic() to support ACPI based IOAPIC hot-removal.
+An IOAPIC could only be removed when all its pins are unused.
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- kernel/sched/debug.c |    8 --------
- kernel/sched/fair.c  |   24 ++++--------------------
- kernel/sched/sched.h |    2 --
- 3 files changed, 4 insertions(+), 30 deletions(-)
+ arch/x86/include/asm/io_apic.h |    1 +
+ arch/x86/kernel/acpi/boot.c    |   13 +++++++---
+ arch/x86/kernel/apic/io_apic.c |   55 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 65 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
-index 695f977..4b864c7 100644
---- a/kernel/sched/debug.c
-+++ b/kernel/sched/debug.c
-@@ -68,14 +68,6 @@ static void print_cfs_group_stats(struct seq_file *m, int cpu, struct task_group
- #define PN(F) \
- 	SEQ_printf(m, "  .%-30s: %lld.%06ld\n", #F, SPLIT_NS((long long)F))
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index 94d05bd6586f..ce63cf34c93c 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -190,6 +190,7 @@ extern int mp_map_gsi_to_irq(u32 gsi, unsigned int flags);
+ extern void mp_unmap_irq(int irq);
+ extern int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+ 			      struct ioapic_domain_cfg *cfg);
++extern int mp_unregister_ioapic(u32 gsi_base);
+ extern int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
+ 			    irq_hw_number_t hwirq);
+ extern void mp_irqdomain_unmap(struct irq_domain *domain, unsigned int virq);
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index c5a0abd0be82..28d50c70cac9 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -798,15 +798,20 @@ int acpi_register_ioapic(acpi_handle handle, u64 phys_addr, u32 gsi_base)
  
--	if (!se) {
--		struct sched_avg *avg = &cpu_rq(cpu)->avg;
--		P(avg->runnable_avg_sum);
--		P(avg->runnable_avg_period);
--		return;
--	}
--
--
- 	PN(se->exec_start);
- 	PN(se->vruntime);
- 	PN(se->sum_exec_runtime);
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index fea7d33..1a2d04f 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2430,18 +2430,12 @@ static inline void __update_group_entity_contrib(struct sched_entity *se)
- 	}
+ 	return ret;
  }
+-
+ EXPORT_SYMBOL(acpi_register_ioapic);
  
--static inline void update_rq_runnable_avg(struct rq *rq, int runnable)
--{
--	__update_entity_runnable_avg(rq_clock_task(rq), &rq->avg, runnable);
--	__update_tg_runnable_avg(&rq->avg, &rq->cfs);
+ int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
+ {
+-	/* TBD */
+-	return -EINVAL;
 -}
- #else /* CONFIG_FAIR_GROUP_SCHED */
- static inline void __update_cfs_rq_tg_load_contrib(struct cfs_rq *cfs_rq,
- 						 int force_update) {}
- static inline void __update_tg_runnable_avg(struct sched_avg *sa,
- 						  struct cfs_rq *cfs_rq) {}
- static inline void __update_group_entity_contrib(struct sched_entity *se) {}
--static inline void update_rq_runnable_avg(struct rq *rq, int runnable) {}
- #endif /* CONFIG_FAIR_GROUP_SCHED */
- 
- static inline void __update_task_entity_contrib(struct sched_entity *se)
-@@ -2614,7 +2608,6 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
-  */
- void idle_enter_fair(struct rq *this_rq)
- {
--	update_rq_runnable_avg(this_rq, 1);
- }
- 
- /*
-@@ -2624,7 +2617,6 @@ void idle_enter_fair(struct rq *this_rq)
-  */
- void idle_exit_fair(struct rq *this_rq)
- {
--	update_rq_runnable_avg(this_rq, 0);
- }
- 
- static int idle_balance(struct rq *this_rq);
-@@ -2633,7 +2625,6 @@ static int idle_balance(struct rq *this_rq);
- 
- static inline void update_entity_load_avg(struct sched_entity *se,
- 					  int update_cfs_rq) {}
--static inline void update_rq_runnable_avg(struct rq *rq, int runnable) {}
- static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
- 					   struct sched_entity *se,
- 					   int wakeup) {}
-@@ -3936,10 +3927,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		update_entity_load_avg(se, 1);
- 	}
- 
--	if (!se) {
--		update_rq_runnable_avg(rq, rq->nr_running);
-+	if (!se)
- 		add_nr_running(rq, 1);
--	}
++	int ret = -ENOSYS;
 +
- 	hrtick_update(rq);
++#ifdef CONFIG_ACPI_HOTPLUG_IOAPIC
++	down_write(&acpi_ioapic_rwsem);
++	ret  = mp_unregister_ioapic(gsi_base);
++	up_write(&acpi_ioapic_rwsem);
++#endif
+ 
++	return ret;
++}
+ EXPORT_SYMBOL(acpi_unregister_ioapic);
+ 
+ static int __init acpi_parse_sbf(struct acpi_table_header *table)
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 1b6a64ed2472..5711689e4307 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -112,6 +112,7 @@ static struct ioapic {
+ 	struct ioapic_domain_cfg irqdomain_cfg;
+ 	struct irq_domain *irqdomain;
+ 	struct mp_pin_info *pin_info;
++	struct resource *iomem_res;
+ } ioapics[MAX_IO_APICS];
+ 
+ #define mpc_ioapic_ver(ioapic_idx)	ioapics[ioapic_idx].mp_config.apicver
+@@ -250,6 +251,12 @@ static void alloc_ioapic_saved_registers(int idx)
+ 		pr_err("IOAPIC %d: suspend/resume impossible!\n", idx);
  }
  
-@@ -3997,10 +3987,9 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		update_entity_load_avg(se, 1);
- 	}
- 
--	if (!se) {
-+	if (!se)
- 		sub_nr_running(rq, 1);
--		update_rq_runnable_avg(rq, 1);
--	}
++static void free_ioapic_saved_registers(int idx)
++{
++	kfree(ioapics[idx].saved_registers);
++	ioapics[idx].saved_registers = NULL;
++}
 +
- 	hrtick_update(rq);
+ int __init arch_early_irq_init(void)
+ {
+ 	struct irq_cfg *cfg;
+@@ -2967,6 +2974,16 @@ static int mp_irqdomain_create(int ioapic)
+ 	return 0;
  }
  
-@@ -5437,9 +5426,6 @@ static void __update_blocked_averages_cpu(struct task_group *tg, int cpu)
- 		 */
- 		if (!se->avg.runnable_avg_sum && !cfs_rq->nr_running)
- 			list_del_leaf_cfs_rq(cfs_rq);
--	} else {
--		struct rq *rq = rq_of(cfs_rq);
--		update_rq_runnable_avg(rq, rq->nr_running);
++static void ioapic_destroy_irqdomain(int idx)
++{
++	if (ioapics[idx].irqdomain) {
++		irq_domain_remove(ioapics[idx].irqdomain);
++		ioapics[idx].irqdomain = NULL;
++	}
++	kfree(ioapics[idx].pin_info);
++	ioapics[idx].pin_info = NULL;
++}
++
+ void __init setup_IO_APIC(void)
+ {
+ 	int ioapic;
+@@ -3728,6 +3745,7 @@ static struct resource * __init ioapic_setup_resources(void)
+ 		snprintf(mem, IOAPIC_RESOURCE_NAME_SIZE, "IOAPIC %u", i);
+ 		mem += IOAPIC_RESOURCE_NAME_SIZE;
+ 		num++;
++		ioapics[i].iomem_res = res;
  	}
+ 
+ 	ioapic_resources = res;
+@@ -3950,6 +3968,43 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+ 	return 0;
  }
  
-@@ -7352,8 +7338,6 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
- 
- 	if (numabalancing_enabled)
- 		task_tick_numa(rq, curr);
--
--	update_rq_runnable_avg(rq, 1);
- }
- 
- /*
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 31cc02e..a147571 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -542,8 +542,6 @@ struct rq {
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 	/* list of leaf cfs_rq on this cpu: */
- 	struct list_head leaf_cfs_rq_list;
--
--	struct sched_avg avg;
- #endif /* CONFIG_FAIR_GROUP_SCHED */
- 
- 	/*
++int mp_unregister_ioapic(u32 gsi_base)
++{
++	int ioapic, pin;
++	int found = 0;
++	struct mp_pin_info *pin_info;
++
++	for_each_ioapic(ioapic)
++		if (ioapics[ioapic].gsi_config.gsi_base == gsi_base) {
++			found = 1;
++			break;
++		}
++	if (!found) {
++		pr_warn("can't find IOAPIC for GSI %d\n", gsi_base);
++		return -ENODEV;
++	}
++
++	for_each_pin(ioapic, pin) {
++		pin_info = mp_pin_info(ioapic, pin);
++		if (pin_info->count) {
++			pr_warn("pin%d on IOAPIC%d is still in use.\n",
++				pin, ioapic);
++			return -EBUSY;
++		}
++	}
++
++	/* Mark entry not present */
++	ioapics[ioapic].nr_registers  = 0;
++	ioapic_destroy_irqdomain(ioapic);
++	free_ioapic_saved_registers(ioapic);
++	if (ioapics[ioapic].iomem_res)
++		release_resource(ioapics[ioapic].iomem_res);
++	clear_fixmap(FIX_IO_APIC_BASE_0 + ioapic);
++	memset(&ioapics[ioapic], 0, sizeof(ioapics[ioapic]));
++
++	return 0;
++}
++
+ int mp_irqdomain_map(struct irq_domain *domain, unsigned int virq,
+ 		     irq_hw_number_t hwirq)
+ {
 -- 
-1.7.9.5
+1.7.10.4
