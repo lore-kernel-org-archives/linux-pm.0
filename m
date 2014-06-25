@@ -1,7 +1,7 @@
 From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 2/9 v4] sched: Precise accumulated time and acount runnable number in update_entity_runnable_avg
-Date: Wed, 25 Jun 2014 08:36:01 +0800
-Message-ID: <1403656568-32445-3-git-send-email-yuyang.du@intel.com>
+Subject: [RFC PATCH 1/9 v4] sched: Remove update_rq_runnable_avg
+Date: Wed, 25 Jun 2014 08:36:00 +0800
+Message-ID: <1403656568-32445-2-git-send-email-yuyang.du@intel.com>
 References: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
@@ -10,84 +10,139 @@ To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-ke
 Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, Yuyang Du <yuyang.du@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The current amount of time already accumulated against next period is
-determined by:
-
-	delta_w = sa->runnable_avg_period % 1024
-
-Considering the runnable_avg_period is the sum of an infinite series, this
-method looks gross, even the error would be no more than 1024 (~1ms).
-But precisely accounting this is not hard, just use a variable period_contrib
-to record it.
-
-The current runnable argument is either 1 or 0, indicating whether this entity
-is runnable or not. In order to account the number of runnables as well, change
-how runnable_avg_sum is accumulated.
+The current rq->avg is not made use of anywhere, and the code is in fair
+scheduler's critical path, so remove it.
 
 Signed-off-by: Yuyang Du <yuyang.du@intel.com>
 ---
- include/linux/sched.h |    1 +
- kernel/sched/fair.c   |   12 ++++++++----
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ kernel/sched/debug.c |    8 --------
+ kernel/sched/fair.c  |   24 ++++--------------------
+ kernel/sched/sched.h |    2 --
+ 3 files changed, 4 insertions(+), 30 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 306f4f0..1b1997d 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1074,6 +1074,7 @@ struct sched_avg {
- 	 * choices of y < 1-2^(-32)*1024.
- 	 */
- 	u32 runnable_avg_sum, runnable_avg_period;
-+	u32 period_contrib;
- 	u64 last_runnable_update;
- 	s64 decay_count;
- 	unsigned long load_avg_contrib;
+diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
+index 695f977..4b864c7 100644
+--- a/kernel/sched/debug.c
++++ b/kernel/sched/debug.c
+@@ -68,14 +68,6 @@ static void print_cfs_group_stats(struct seq_file *m, int cpu, struct task_group
+ #define PN(F) \
+ 	SEQ_printf(m, "  .%-30s: %lld.%06ld\n", #F, SPLIT_NS((long long)F))
+ 
+-	if (!se) {
+-		struct sched_avg *avg = &cpu_rq(cpu)->avg;
+-		P(avg->runnable_avg_sum);
+-		P(avg->runnable_avg_period);
+-		return;
+-	}
+-
+-
+ 	PN(se->exec_start);
+ 	PN(se->vruntime);
+ 	PN(se->sum_exec_runtime);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 1a2d04f..e914e32 100644
+index fea7d33..1a2d04f 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -2294,10 +2294,12 @@ static __always_inline int __update_entity_runnable_avg(u64 now,
- 	sa->last_runnable_update = now;
- 
- 	/* delta_w is the amount already accumulated against our next period */
--	delta_w = sa->runnable_avg_period % 1024;
-+	delta_w = sa->period_contrib;
- 	if (delta + delta_w >= 1024) {
- 		/* period roll-over */
- 		decayed = 1;
-+		/* how much left for next period will start over, we don't know yet */
-+		sa->period_contrib = 0;
- 
- 		/*
- 		 * Now that we know we're crossing a period boundary, figure
-@@ -2306,7 +2308,7 @@ static __always_inline int __update_entity_runnable_avg(u64 now,
- 		 */
- 		delta_w = 1024 - delta_w;
- 		if (runnable)
--			sa->runnable_avg_sum += delta_w;
-+			sa->runnable_avg_sum += runnable * delta_w;
- 		sa->runnable_avg_period += delta_w;
- 
- 		delta -= delta_w;
-@@ -2323,15 +2325,17 @@ static __always_inline int __update_entity_runnable_avg(u64 now,
- 		/* Efficiently calculate \sum (1..n_period) 1024*y^i */
- 		runnable_contrib = __compute_runnable_contrib(periods);
- 		if (runnable)
--			sa->runnable_avg_sum += runnable_contrib;
-+			sa->runnable_avg_sum += runnable * runnable_contrib;
- 		sa->runnable_avg_period += runnable_contrib;
+@@ -2430,18 +2430,12 @@ static inline void __update_group_entity_contrib(struct sched_entity *se)
  	}
- 
- 	/* Remainder of delta accrued against u_0` */
- 	if (runnable)
--		sa->runnable_avg_sum += delta;
-+		sa->runnable_avg_sum += runnable * delta;
- 	sa->runnable_avg_period += delta;
- 
-+	sa->period_contrib += delta;
-+
- 	return decayed;
  }
  
+-static inline void update_rq_runnable_avg(struct rq *rq, int runnable)
+-{
+-	__update_entity_runnable_avg(rq_clock_task(rq), &rq->avg, runnable);
+-	__update_tg_runnable_avg(&rq->avg, &rq->cfs);
+-}
+ #else /* CONFIG_FAIR_GROUP_SCHED */
+ static inline void __update_cfs_rq_tg_load_contrib(struct cfs_rq *cfs_rq,
+ 						 int force_update) {}
+ static inline void __update_tg_runnable_avg(struct sched_avg *sa,
+ 						  struct cfs_rq *cfs_rq) {}
+ static inline void __update_group_entity_contrib(struct sched_entity *se) {}
+-static inline void update_rq_runnable_avg(struct rq *rq, int runnable) {}
+ #endif /* CONFIG_FAIR_GROUP_SCHED */
+ 
+ static inline void __update_task_entity_contrib(struct sched_entity *se)
+@@ -2614,7 +2608,6 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
+  */
+ void idle_enter_fair(struct rq *this_rq)
+ {
+-	update_rq_runnable_avg(this_rq, 1);
+ }
+ 
+ /*
+@@ -2624,7 +2617,6 @@ void idle_enter_fair(struct rq *this_rq)
+  */
+ void idle_exit_fair(struct rq *this_rq)
+ {
+-	update_rq_runnable_avg(this_rq, 0);
+ }
+ 
+ static int idle_balance(struct rq *this_rq);
+@@ -2633,7 +2625,6 @@ static int idle_balance(struct rq *this_rq);
+ 
+ static inline void update_entity_load_avg(struct sched_entity *se,
+ 					  int update_cfs_rq) {}
+-static inline void update_rq_runnable_avg(struct rq *rq, int runnable) {}
+ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
+ 					   struct sched_entity *se,
+ 					   int wakeup) {}
+@@ -3936,10 +3927,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 		update_entity_load_avg(se, 1);
+ 	}
+ 
+-	if (!se) {
+-		update_rq_runnable_avg(rq, rq->nr_running);
++	if (!se)
+ 		add_nr_running(rq, 1);
+-	}
++
+ 	hrtick_update(rq);
+ }
+ 
+@@ -3997,10 +3987,9 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 		update_entity_load_avg(se, 1);
+ 	}
+ 
+-	if (!se) {
++	if (!se)
+ 		sub_nr_running(rq, 1);
+-		update_rq_runnable_avg(rq, 1);
+-	}
++
+ 	hrtick_update(rq);
+ }
+ 
+@@ -5437,9 +5426,6 @@ static void __update_blocked_averages_cpu(struct task_group *tg, int cpu)
+ 		 */
+ 		if (!se->avg.runnable_avg_sum && !cfs_rq->nr_running)
+ 			list_del_leaf_cfs_rq(cfs_rq);
+-	} else {
+-		struct rq *rq = rq_of(cfs_rq);
+-		update_rq_runnable_avg(rq, rq->nr_running);
+ 	}
+ }
+ 
+@@ -7352,8 +7338,6 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
+ 
+ 	if (numabalancing_enabled)
+ 		task_tick_numa(rq, curr);
+-
+-	update_rq_runnable_avg(rq, 1);
+ }
+ 
+ /*
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 31cc02e..a147571 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -542,8 +542,6 @@ struct rq {
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	/* list of leaf cfs_rq on this cpu: */
+ 	struct list_head leaf_cfs_rq_list;
+-
+-	struct sched_avg avg;
+ #endif /* CONFIG_FAIR_GROUP_SCHED */
+ 
+ 	/*
 -- 
 1.7.9.5
