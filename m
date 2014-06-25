@@ -1,387 +1,247 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v5 3/8] drivers: cpuidle: implement DT based idle states infrastructure
-Date: Wed, 25 Jun 2014 15:10:16 +0100
-Message-ID: <1403705421-17597-4-git-send-email-lorenzo.pieralisi@arm.com>
+Subject: [PATCH v5 6/8] drivers: cpuidle: initialize big.LITTLE driver through DT
+Date: Wed, 25 Jun 2014 15:10:19 +0100
+Message-ID: <1403705421-17597-7-git-send-email-lorenzo.pieralisi@arm.com>
 References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:48391 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:48644 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757251AbaFYOKb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 10:10:31 -0400
+	with ESMTP id S1757357AbaFYOKe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 10:10:34 -0400
 In-Reply-To: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Chander Kashyap <chander.kashyap@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>
 
-On most common ARM systems, the low-power states a CPU can be put into are
-not discoverable in HW and require device tree bindings to describe
-power down suspend operations and idle states parameters.
+With the introduction of DT based idle states, CPUidle drivers for ARM
+can now initialize idle states data through properties in the device tree.
 
-In order to enable DT based idle states and configure idle drivers, this
-patch implements the bulk infrastructure required to parse the device tree
-idle states bindings and initialize the corresponding CPUidle driver states
-data.
+This patch adds code to the big.LITTLE CPUidle driver to dynamically
+initialize idle states data through the updated device tree source file.
 
-Code that initializes idle states checks the CPU idle driver cpumask so
-that multiple CPU idle drivers can be initialized through it in the
-kernel. The CPU idle driver cpumask defines which idle states should be
-considered valid for the driver, ie idle states that are valid on a set
-of cpus the idle driver manages.
-
+Cc: Chander Kashyap <chander.kashyap@linaro.org>
 Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- drivers/cpuidle/Kconfig          |   8 ++
- drivers/cpuidle/Makefile         |   1 +
- drivers/cpuidle/dt_idle_states.c | 283 +++++++++++++++++++++++++++++++++++=
-++++
- drivers/cpuidle/dt_idle_states.h |   8 ++
- 4 files changed, 300 insertions(+)
- create mode 100644 drivers/cpuidle/dt_idle_states.c
- create mode 100644 drivers/cpuidle/dt_idle_states.h
+ Documentation/devicetree/bindings/arm/vexpress.txt | 25 +++++++++++++
+ arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         | 25 +++++++++++++
+ drivers/cpuidle/Kconfig.arm                        |  1 +
+ drivers/cpuidle/cpuidle-big_little.c               | 43 +++++++++++-------=
+----
+ 4 files changed, 73 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 1b96fb9..414e7a96 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -30,6 +30,14 @@ config CPU_IDLE_GOV_MENU
- =09bool "Menu governor (for tickless system)"
- =09default y
+diff --git a/Documentation/devicetree/bindings/arm/vexpress.txt b/Documenta=
+tion/devicetree/bindings/arm/vexpress.txt
+index 39844cd..7f52ac8 100644
+--- a/Documentation/devicetree/bindings/arm/vexpress.txt
++++ b/Documentation/devicetree/bindings/arm/vexpress.txt
+@@ -67,6 +67,28 @@ with device_type =3D "cpu" property for every available =
+core, eg.:
+ =09=09};
+ =09};
 =20
-+config DT_IDLE_STATES
-+        bool "Idle states DT support"
-+=09depends on ARM || ARM64
-+=09help
-+=09 Allows the CPU idle framework to initialize CPU idle drivers
-+=09 state data by using DT provided nodes compliant with idle states
-+=09 device tree bindings.
++idle-states node
++----------------
 +
- menu "ARM CPU Idle Drivers"
- depends on ARM
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index d8bb1ff..b27a062 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -4,6 +4,7 @@
++On Versatile Express platforms with power management capabilities, the dev=
+ice
++tree source file must contain the idle-states node[1]. As defined in [1] t=
+he
++idle-states node must contain an entry-method property that for Versatile
++Express platforms can be one of:
++
++=09- "arm,vexpress-v2p-ca15_a7"
++
++Versatile Express idle-states nodes example:
++
++=09idle-states {
++=09=09entry-method =3D "arm,vexpress-v2p-ca15_a7";
++
++=09=09cluster-sleep-0 {
++=09=09=09compatible =3D "arm,idle-state";
++=09=09=09entry-latency-us =3D <1000>;
++=09=09=09exit-latency-us =3D <700>;
++=09=09=09min-residency-us =3D <3500>;
++=09=09};
++=09};
 =20
- obj-y +=3D cpuidle.o driver.o governor.o sysfs.o governors/
- obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D coupled.o
-+obj-$(CONFIG_DT_IDLE_STATES)=09=09  +=3D dt_idle_states.o
+ Configuration infrastructure
+ ----------------------------
+@@ -227,3 +249,6 @@ Example of a VE tile description (simplified)
+ =09};
+ };
 =20
- ##########################################################################=
-########
- # ARM SoC drivers
-diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_sta=
-tes.c
-new file mode 100644
-index 0000000..5c16001c
---- /dev/null
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -0,0 +1,283 @@
-+/*
-+ * DT idle states parsing code.
-+ *
-+ * Copyright (C) 2014 ARM Ltd.
-+ * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
 +
-+#define pr_fmt(fmt) "DT idle-states: " fmt
++[1] ARM Linux Kernel documentation - Idle states bindings
++    Documentation/devicetree/bindings/arm/idle-states.txt
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts=
+/vexpress-v2p-ca15_a7.dts
+index a25c262..ad28242 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+@@ -33,11 +33,32 @@
+ =09=09#address-cells =3D <1>;
+ =09=09#size-cells =3D <0>;
+=20
++=09=09idle-states {
++=09=09=09entry-method =3D "arm,vexpress-v2p-ca15_a7";
 +
-+#include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/list_sort.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/slab.h>
++=09=09=09CLUSTER_SLEEP_BIG: cluster-sleep-big {
++=09=09=09=09compatible =3D "arm,idle-state";
++=09=09=09=09power-rank =3D <0>;
++=09=09=09=09entry-latency-us =3D <1000>;
++=09=09=09=09exit-latency-us =3D <700>;
++=09=09=09=09min-residency-us =3D <3500>;
++=09=09=09};
 +
++=09=09=09CLUSTER_SLEEP_LITTLE: cluster-sleep-little {
++=09=09=09=09compatible =3D "arm,idle-state";
++=09=09=09=09power-rank =3D <0>;
++=09=09=09=09entry-latency-us =3D <1000>;
++=09=09=09=09exit-latency-us =3D <500>;
++=09=09=09=09min-residency-us =3D <3000>;
++=09=09=09};
++=09=09};
++
+ =09=09cpu0: cpu@0 {
+ =09=09=09device_type =3D "cpu";
+ =09=09=09compatible =3D "arm,cortex-a15";
+ =09=09=09reg =3D <0>;
+ =09=09=09cci-control-port =3D <&cci_control1>;
++=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_BIG>;
+ =09=09};
+=20
+ =09=09cpu1: cpu@1 {
+@@ -45,6 +66,7 @@
+ =09=09=09compatible =3D "arm,cortex-a15";
+ =09=09=09reg =3D <1>;
+ =09=09=09cci-control-port =3D <&cci_control1>;
++=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_BIG>;
+ =09=09};
+=20
+ =09=09cpu2: cpu@2 {
+@@ -52,6 +74,7 @@
+ =09=09=09compatible =3D "arm,cortex-a7";
+ =09=09=09reg =3D <0x100>;
+ =09=09=09cci-control-port =3D <&cci_control2>;
++=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
+ =09=09};
+=20
+ =09=09cpu3: cpu@3 {
+@@ -59,6 +82,7 @@
+ =09=09=09compatible =3D "arm,cortex-a7";
+ =09=09=09reg =3D <0x101>;
+ =09=09=09cci-control-port =3D <&cci_control2>;
++=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
+ =09=09};
+=20
+ =09=09cpu4: cpu@4 {
+@@ -66,6 +90,7 @@
+ =09=09=09compatible =3D "arm,cortex-a7";
+ =09=09=09reg =3D <0x102>;
+ =09=09=09cci-control-port =3D <&cci_control2>;
++=09=09=09cpu-idle-states =3D <&CLUSTER_SLEEP_LITTLE>;
+ =09=09};
+ =09};
+=20
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index b6d69e8..a9b089c 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -12,6 +12,7 @@ config ARM_BIG_LITTLE_CPUIDLE
+ =09depends on ARCH_VEXPRESS_TC2_PM
+ =09select ARM_CPU_SUSPEND
+ =09select CPU_IDLE_MULTIPLE_DRIVERS
++=09select DT_IDLE_STATES
+ =09help
+ =09  Select this option to enable CPU idle driver for big.LITTLE based
+ =09  ARM systems. Driver manages CPUs coordination through MCPM and
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle=
+-big_little.c
+index b45fc62..6712441 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -24,6 +24,8 @@
+ #include <asm/smp_plat.h>
+ #include <asm/suspend.h>
+=20
 +#include "dt_idle_states.h"
 +
-+struct state_elem {
-+=09struct list_head list;
-+=09struct device_node *node;
-+=09u32 val;
-+};
+ static int bl_enter_powerdown(struct cpuidle_device *dev,
+ =09=09=09      struct cpuidle_driver *drv, int idx);
+=20
+@@ -61,32 +63,12 @@ static struct cpuidle_driver bl_idle_little_driver =3D =
+{
+ =09.name =3D "little_idle",
+ =09.owner =3D THIS_MODULE,
+ =09.states[0] =3D ARM_CPUIDLE_WFI_STATE,
+-=09.states[1] =3D {
+-=09=09.enter=09=09=09=3D bl_enter_powerdown,
+-=09=09.exit_latency=09=09=3D 700,
+-=09=09.target_residency=09=3D 2500,
+-=09=09.flags=09=09=09=3D CPUIDLE_FLAG_TIME_VALID |
+-=09=09=09=09=09  CPUIDLE_FLAG_TIMER_STOP,
+-=09=09.name=09=09=09=3D "C1",
+-=09=09.desc=09=09=09=3D "ARM little-cluster power down",
+-=09},
+-=09.state_count =3D 2,
+ };
+=20
+ static struct cpuidle_driver bl_idle_big_driver =3D {
+ =09.name =3D "big_idle",
+ =09.owner =3D THIS_MODULE,
+ =09.states[0] =3D ARM_CPUIDLE_WFI_STATE,
+-=09.states[1] =3D {
+-=09=09.enter=09=09=09=3D bl_enter_powerdown,
+-=09=09.exit_latency=09=09=3D 500,
+-=09=09.target_residency=09=3D 2000,
+-=09=09.flags=09=09=09=3D CPUIDLE_FLAG_TIME_VALID |
+-=09=09=09=09=09  CPUIDLE_FLAG_TIMER_STOP,
+-=09=09.name=09=09=09=3D "C1",
+-=09=09.desc=09=09=09=3D "ARM big-cluster power down",
+-=09},
+-=09.state_count =3D 2,
+ };
+=20
+ /*
+@@ -165,7 +147,8 @@ static int __init bl_idle_driver_init(struct cpuidle_dr=
+iver *drv, int cpu_id)
+=20
+ static int __init bl_idle_init(void)
+ {
+-=09int ret;
++=09int ret, i;
++=09struct cpuidle_driver *drv;
+=20
+ =09/*
+ =09 * Initialize the driver just for a compliant set of machines
+@@ -187,6 +170,24 @@ static int __init bl_idle_init(void)
+ =09if (ret)
+ =09=09goto out_uninit_little;
+=20
++=09 /* Start at index 1, index 0 standard WFI */
++=09ret =3D dt_init_idle_driver(&bl_idle_big_driver, NULL, 1, false);
++=09if (ret)
++=09=09goto out_uninit_big;
 +
-+static struct list_head head __initdata =3D LIST_HEAD_INIT(head);
++=09 /* Start at index 1, index 0 standard WFI */
++=09ret =3D dt_init_idle_driver(&bl_idle_little_driver, NULL, 1, false);
++=09if (ret)
++=09=09goto out_uninit_big;
 +
-+static bool __init state_cpu_valid(struct device_node *state_node,
-+=09=09=09=09   struct device_node *cpu_node)
-+{
-+=09int i =3D 0;
-+=09struct device_node *cpu_state;
++=09drv =3D &bl_idle_big_driver;
++=09for (i =3D 1; i < drv->state_count; i++)
++=09=09drv->states[i].enter =3D bl_enter_powerdown;
 +
-+=09while ((cpu_state =3D of_parse_phandle(cpu_node,
-+=09=09=09=09=09     "cpu-idle-states", i++))) {
-+=09=09if (cpu_state && state_node =3D=3D cpu_state) {
-+=09=09=09of_node_put(cpu_state);
-+=09=09=09return true;
-+=09=09}
-+=09=09of_node_put(cpu_state);
-+=09}
-+=09return false;
-+}
++=09drv =3D &bl_idle_little_driver;
++=09for (i =3D 1; i < drv->state_count; i++)
++=09=09drv->states[i].enter =3D bl_enter_powerdown;
 +
-+static bool __init state_cpus_valid(const cpumask_t *cpus,
-+=09=09=09=09    struct device_node *state_node)
-+{
-+=09int cpu;
-+=09struct device_node *cpu_node;
-+
-+=09/*
-+=09 * Check if state is valid on driver cpumask cpus
-+=09 */
-+=09for_each_cpu(cpu, cpus) {
-+=09=09cpu_node =3D of_get_cpu_node(cpu, NULL);
-+
-+=09=09if (!cpu_node) {
-+=09=09=09pr_err("Missing device node for CPU %d\n", cpu);
-+=09=09=09return false;
-+=09=09}
-+
-+=09=09if (!state_cpu_valid(state_node, cpu_node))
-+=09=09=09return false;
-+=09}
-+
-+=09return true;
-+}
-+
-+static int __init state_cmp(void *priv, struct list_head *a,
-+=09=09=09    struct list_head *b)
-+{
-+=09struct state_elem *ela, *elb;
-+
-+=09ela =3D container_of(a, struct state_elem, list);
-+=09elb =3D container_of(b, struct state_elem, list);
-+
-+=09return ela->val - elb->val;
-+}
-+
-+static int __init add_state_node(cpumask_t *cpumask,
-+=09=09=09=09 struct device_node *state_node)
-+{
-+=09struct state_elem *el;
-+=09u32 val;
-+
-+=09pr_debug(" * %s...\n", state_node->full_name);
-+
-+=09if (!state_cpus_valid(cpumask, state_node))
-+=09=09return -EINVAL;
-+=09/*
-+=09 * Parse just the property required to sort the states.
-+=09 */
-+=09if (of_property_read_u32(state_node, "power-rank",
-+=09=09=09=09 &val)) {
-+=09=09pr_debug(" * %s missing power-rank property\n",
-+=09=09=09     state_node->full_name);
-+=09=09return -EINVAL;
-+=09}
-+
-+=09el =3D kmalloc(sizeof(*el), GFP_KERNEL);
-+=09if (!el) {
-+=09=09pr_err("%s failed to allocate memory\n", __func__);
-+=09=09return -ENOMEM;
-+=09}
-+
-+=09el->node =3D state_node;
-+=09el->val =3D val;
-+=09list_add_tail(&el->list, &head);
-+
-+=09return 0;
-+}
-+
-+static void __init init_state_node(struct cpuidle_driver *drv,
-+=09=09=09=09   struct device_node *state_node,
-+=09=09=09=09   int *cnt)
-+{
-+=09struct cpuidle_state *idle_state;
-+
-+=09pr_debug(" * %s...\n", state_node->full_name);
-+
-+=09idle_state =3D &drv->states[*cnt];
-+
-+=09if (of_property_read_u32(state_node, "wakeup-latency-us",
-+=09=09=09=09 &idle_state->exit_latency)) {
-+=09=09u32 entry_latency, exit_latency;
-+
-+=09=09if (of_property_read_u32(state_node, "entry-latency-us",
-+=09=09=09=09=09 &entry_latency)) {
-+=09=09=09pr_debug(" * %s missing entry-latency-us property\n",
-+=09=09=09=09 state_node->full_name);
-+=09=09=09return;
-+=09=09}
-+
-+=09=09if (of_property_read_u32(state_node, "exit-latency-us",
-+=09=09=09=09=09 &exit_latency)) {
-+=09=09=09pr_debug(" * %s missing exit-latency-us property\n",
-+=09=09=09=09 state_node->full_name);
-+=09=09=09return;
-+=09=09}
-+=09=09/*
-+=09=09 * If wakeup-latency-us is missing, default to entry+exit
-+=09=09 * latencies as defined in idle states bindings
-+=09=09 */
-+=09=09idle_state->exit_latency =3D entry_latency + exit_latency;
-+=09}
-+
-+=09if (of_property_read_u32(state_node, "min-residency-us",
-+=09=09=09=09 &idle_state->target_residency)) {
-+=09=09pr_debug(" * %s missing min-residency-us property\n",
-+=09=09=09     state_node->full_name);
-+=09=09return;
-+=09}
-+
-+=09idle_state->flags =3D CPUIDLE_FLAG_TIME_VALID;
-+=09if (!of_property_read_bool(state_node, "timer-state-retained"))
-+=09=09idle_state->flags |=3D CPUIDLE_FLAG_TIMER_STOP;
-+
-+=09strncpy(idle_state->name, state_node->name, CPUIDLE_NAME_LEN);
-+=09strncpy(idle_state->desc, state_node->name, CPUIDLE_NAME_LEN);
-+
-+=09(*cnt)++;
-+}
-+
-+static int __init init_idle_states(struct cpuidle_driver *drv,
-+=09=09=09=09   struct device_node *state_nodes[],
-+=09=09=09=09   unsigned int start_idx, bool init_nodes)
-+{
-+=09struct state_elem *el;
-+=09struct list_head *curr, *tmp;
-+=09unsigned int cnt =3D start_idx;
-+
-+=09list_for_each_entry(el, &head, list) {
-+=09=09/*
-+=09=09 * Check if the init function has to fill the
-+=09=09 * state_nodes array on behalf of the CPUidle driver.
-+=09=09 */
-+=09=09if (init_nodes)
-+=09=09=09state_nodes[cnt] =3D el->node;
-+=09=09/*
-+=09=09 * cnt is updated on return if a state was added.
-+=09=09 */
-+=09=09init_state_node(drv, el->node, &cnt);
-+
-+=09=09if (cnt =3D=3D CPUIDLE_STATE_MAX) {
-+=09=09=09pr_warn("State index reached static CPU idle state limit\n");
-+=09=09=09break;
-+=09=09}
-+=09}
-+
-+=09drv->state_count =3D cnt;
-+
-+=09list_for_each_safe(curr, tmp, &head) {
-+=09=09list_del(curr);
-+=09=09kfree(container_of(curr, struct state_elem, list));
-+=09}
-+
-+=09/*
-+=09 * If no idle states are detected, return an error and let the idle
-+=09 * driver initialization fail accordingly.
-+=09 */
-+=09return (cnt > start_idx) ? 0 : -ENODATA;
-+}
-+
-+static void __init add_idle_states(struct cpuidle_driver *drv,
-+=09=09=09=09   struct device_node *idle_states)
-+{
-+=09struct device_node *state_node;
-+
-+=09for_each_child_of_node(idle_states, state_node) {
-+=09=09if ((!of_device_is_compatible(state_node, "arm,idle-state"))) {
-+=09=09=09pr_warn(" * %s: children of /cpus/idle-states must be \"arm,idle-=
-state\" compatible\n",
-+=09=09=09=09     state_node->full_name);
-+=09=09=09continue;
-+=09=09}
-+=09=09/*
-+=09=09 * If memory allocation fails, better bail out.
-+=09=09 * Initialized nodes are freed at initialization
-+=09=09 * completion in of_init_idle_driver().
-+=09=09 */
-+=09=09if ((add_state_node(drv->cpumask, state_node) =3D=3D -ENOMEM))
-+=09=09=09break;
-+=09}
-+=09/*
-+=09 * Sort the states list before initializing the CPUidle driver
-+=09 * states array.
-+=09 */
-+=09list_sort(NULL, &head, state_cmp);
-+}
-+
-+/**
-+ * dt_init_idle_driver() - Parse the DT idle states and initialize the
-+ *=09=09=09   idle driver states array
-+ *
-+ * @drv:=09  Pointer to CPU idle driver to be initialized
-+ * @state_nodes:  Array of struct device_nodes to be initialized if
-+ *=09=09  init_nodes =3D=3D true. Must be sized CPUIDLE_STATE_MAX
-+ * @start_idx:    First idle state index to be initialized
-+ * @init_nodes:   Boolean to request device nodes initialization
-+ *
-+ * On success the states array in the cpuidle driver contains
-+ * initialized entries in the states array, starting from index start_idx.
-+ * If init_nodes =3D=3D true, on success the state_nodes array is initiali=
-zed
-+ * with idle state DT node pointers, starting from index start_idx,
-+ * in a 1:1 relation with the idle driver states array.
-+ *
-+ * Return:
-+ *=090 on success
-+ *=09<0 on failure
-+ */
-+int __init dt_init_idle_driver(struct cpuidle_driver *drv,
-+=09=09=09       struct device_node *state_nodes[],
-+=09=09=09       unsigned int start_idx, bool init_nodes)
-+{
-+=09struct device_node *idle_states_node;
-+=09int ret;
-+
-+=09if (start_idx >=3D CPUIDLE_STATE_MAX) {
-+=09=09pr_warn("State index exceeds static CPU idle driver states array siz=
-e\n");
-+=09=09return -EINVAL;
-+=09}
-+
-+=09if (WARN(init_nodes && !state_nodes,
-+=09=09"Requested nodes stashing in an invalid nodes container\n"))
-+=09=09return -EINVAL;
-+
-+=09idle_states_node =3D of_find_node_by_path("/cpus/idle-states");
-+=09if (!idle_states_node)
-+=09=09return -ENOENT;
-+
-+=09add_idle_states(drv, idle_states_node);
-+
-+=09ret =3D init_idle_states(drv, state_nodes, start_idx, init_nodes);
-+
-+=09of_node_put(idle_states_node);
-+
-+=09return ret;
-+}
-diff --git a/drivers/cpuidle/dt_idle_states.h b/drivers/cpuidle/dt_idle_sta=
-tes.h
-new file mode 100644
-index 0000000..e74f1e8
---- /dev/null
-+++ b/drivers/cpuidle/dt_idle_states.h
-@@ -0,0 +1,8 @@
-+#ifndef __DT_IDLE_STATES
-+#define __DT_IDLE_STATES
-+
-+int __init dt_init_idle_driver(struct cpuidle_driver *drv,
-+=09=09=09       struct device_node *state_nodes[],
-+=09=09=09       unsigned int start_idx,
-+=09=09=09       bool init_nodes);
-+#endif
+ =09ret =3D cpuidle_register(&bl_idle_little_driver, NULL);
+ =09if (ret)
+ =09=09goto out_uninit_big;
 --=20
 1.9.1
 
