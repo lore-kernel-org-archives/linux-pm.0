@@ -1,146 +1,74 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above
- a trip point
-Date: Wed, 25 Jun 2014 14:26:28 +0100
-Message-ID: <20140625132628.GB2723@e104805>
-References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
- <1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
- <20140620172442.GA22701@e104805>
- <9hhionqvbbx.fsf@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH v5 2/8] Documentation: devicetree: psci: define CPU suspend parameter
+Date: Wed, 25 Jun 2014 15:10:15 +0100
+Message-ID: <1403705421-17597-3-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:43002 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:48515 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756811AbaFYN0b convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 09:26:31 -0400
-In-Reply-To: <9hhionqvbbx.fsf@arm.com>
-Content-Disposition: inline
+	with ESMTP id S1757352AbaFYOKc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 10:10:32 -0400
+In-Reply-To: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Charles Garcia Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Paul Walmsley <paul@pwsan.com>, Chander Kashyap <chander.kashyap@linaro.org>
 
-On Tue, Jun 24, 2014 at 11:41:38AM +0100, Punit Agrawal wrote:
-> "Javi Merino" <javi.merino@arm.com> writes:
-> 
-> > Hi Punit,
-> >
-> > On Wed, Jun 11, 2014 at 12:31:44PM +0100, Punit Agrawal wrote:
-> >> Create a new event to trace when the temperature is above a trip
-> >> point. Use the trace-point when handling non-critical and critical
-> >> trip pionts.
-> >> 
-> >> Cc: Zhang Rui <rui.zhang@intel.com>
-> >> Cc: Eduardo Valentin <edubezval@gmail.com>
-> >> Cc: Steven Rostedt <rostedt@goodmis.org>
-> >> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> >> Cc: Ingo Molnar <mingo@redhat.com>
-> >> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> >> ---
-> >> Hi Steven,
-> >> 
-> >> I am facing an issue with partial trace being emitted when using
-> >> __print_symbolic in this patch. 
-> >> 
-> >> When the trip_type is THERMAL_TRIP_ACTIVE (i.e., the first value in
-> >> the symbol map), the emitted trace contains the corresponding string
-> >> ("active"). But for other values of trip_type an empty string is
-> >> emitted in the trace.
-> >> 
-> >> I've looked at other uses of __print_symbolic in the kernel and don't
-> >> see any difference in usage. Do you know what could be causing this or
-> >> alternately have any pointers on how to debug this behaviour?
-> >> 
-> >> Thanks.
-> >> Punit
-> >> 
-> >>  drivers/thermal/fair_share.c   |    7 ++++++-
-> >>  drivers/thermal/step_wise.c    |    5 ++++-
-> >>  drivers/thermal/thermal_core.c |    2 ++
-> >>  include/trace/events/thermal.h |   30 ++++++++++++++++++++++++++++++
-> >>  4 files changed, 42 insertions(+), 2 deletions(-)
-> >> 
-> >> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-> >> index 944ba2f..2cddd68 100644
-> >> --- a/drivers/thermal/fair_share.c
-> >> +++ b/drivers/thermal/fair_share.c
-> >> @@ -23,6 +23,7 @@
-> >>   */
-> >>  
-> >>  #include <linux/thermal.h>
-> >> +#include <trace/events/thermal.h>
-> >>  
-> >>  #include "thermal_core.h"
-> >>  
-> >> @@ -34,14 +35,18 @@ static int get_trip_level(struct thermal_zone_device *tz)
-> >>  {
-> >>  	int count = 0;
-> >>  	unsigned long trip_temp;
-> >> +	enum thermal_trip_type trip_type;
-> >>  
-> >>  	if (tz->trips == 0 || !tz->ops->get_trip_temp)
-> >>  		return 0;
-> >>  
-> >>  	for (count = 0; count < tz->trips; count++) {
-> >>  		tz->ops->get_trip_temp(tz, count, &trip_temp);
-> >> -		if (tz->temperature < trip_temp)
-> >> +		if (tz->temperature < trip_temp) {
-> >> +			tz->ops->get_trip_type(tz, count, &trip_type);
-> >> +			trace_thermal_zone_trip(tz, count, trip_type);
-> >
-> > This should be outside the if condition.  You want to report when trip
-> > points have been hit, like in the step_wise code below.
-> >
-> 
-> It turned out to be a bit more subtle than moving the trace outside the
-> if.
+OS layers built on top of PSCI to enter low-power states require the
+power_state parameter to be passed to the PSCI CPU suspend method.
 
-True, it was more difficult than what I said.  
+This parameter is specific to a power state and platform specific,
+therefore must be provided by firmware to the OS in order to enable
+proper call sequence.
 
->     I have the below fixup with an added comment. Let me know if that
-> doesn't solve the problem.
+This patch adds a property in the PSCI bindings that describes how
+the CPU suspend power_state parameter should be defined in DT in
+all device nodes that rely on PSCI CPU suspend method usage.
 
-I don't have a reproducer, I just spotted it while reading the code.
-The below fix seems to be the right thing.
+Reviewed-by: Sebastian Capella <sebcape@gmail.com>
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+---
+ Documentation/devicetree/bindings/arm/psci.txt | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-> -- >8 --
-> Subject: [PATCH] fixup! thermal: trace: Trace when temperature is above a
->  trip point
-> 
-> ---
->  drivers/thermal/fair_share.c |   15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-> index 2cddd68..6e0a3fb 100644
-> --- a/drivers/thermal/fair_share.c
-> +++ b/drivers/thermal/fair_share.c
-> @@ -42,12 +42,19 @@ static int get_trip_level(struct thermal_zone_device *tz)
->  
->  	for (count = 0; count < tz->trips; count++) {
->  		tz->ops->get_trip_temp(tz, count, &trip_temp);
-> -		if (tz->temperature < trip_temp) {
-> -			tz->ops->get_trip_type(tz, count, &trip_type);
-> -			trace_thermal_zone_trip(tz, count, trip_type);
-> +		if (tz->temperature < trip_temp)
->  			break;
-> -		}
->  	}
-> +
-> +	/*
-> +	 * count > 0 only if temperature is greater than first trip
-> +	 * point, in which case, trip_point = count - 1
-> +	 */
-> +	if (count > 0) {
-> +		tz->ops->get_trip_type(tz, count - 1, &trip_type);
-> +		trace_thermal_zone_trip(tz, count - 1, trip_type);
-> +	}
-> +
->  	return count;
->  }
->  
-> -- 
-> 1.7.10.4
+diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation=
+/devicetree/bindings/arm/psci.txt
+index b4a58f3..fae3eed 100644
+--- a/Documentation/devicetree/bindings/arm/psci.txt
++++ b/Documentation/devicetree/bindings/arm/psci.txt
+@@ -50,6 +50,14 @@ Main node optional properties:
+=20
+  - migrate       : Function ID for MIGRATE operation
+=20
++Device tree nodes that require usage of PSCI CPU_SUSPEND function (ie idle
++states bindings[1]) must specify the following properties:
++
++- entry-method-param
++=09=09Usage: Required for idle states bindings [1].
++=09=09Value type: <u32>
++=09=09Definition: power_state parameter to pass to the PSCI
++=09=09=09    suspend call.
+=20
+ Example:
+=20
+@@ -64,7 +72,6 @@ Case 1: PSCI v0.1 only.
+ =09=09migrate=09=09=3D <0x95c10003>;
+ =09};
+=20
+-
+ Case 2: PSCI v0.2 only
+=20
+ =09psci {
+@@ -88,3 +95,6 @@ Case 3: PSCI v0.2 and PSCI v0.1.
+=20
+ =09=09...
+ =09};
++
++[1] Kernel documentation - ARM idle states bindings
++    Documentation/devicetree/bindings/arm/idle-states.txt
+--=20
+1.9.1
+
 
