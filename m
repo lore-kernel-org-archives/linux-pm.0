@@ -1,82 +1,74 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch V3 11/16] x86, irq, ACPI: Introduce a rwsem to protect IOAPIC operations from hotplug
-Date: Wed, 25 Jun 2014 16:40:42 +0800
-Message-ID: <1403685648-10103-12-git-send-email-jiang.liu@linux.intel.com>
-References: <1403685648-10103-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403685648-10103-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: [RFC PATCH 7/9 v4] Implement Workload Consolidation in idle_balance
+Date: Wed, 25 Jun 2014 08:36:06 +0800
+Message-ID: <1403656568-32445-8-git-send-email-yuyang.du@intel.com>
+References: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:15864 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755921AbaFYIka (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Jun 2014 04:40:30 -0400
+In-Reply-To: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, Yuyang Du <yuyang.du@intel.com>
 
-We are going to support ACPI based IOAPIC hotplug, so introduce a rwsem
-to protect IOAPIC data structures from IOAPIC hotplug. We choose to
-serialize in ACPI instead of in the IOAPIC core because:
-1) currently we are only plan to support ACPI based IOAPIC hotplug
-2) it's much more clean and easy
-3) It does't affect IOAPIC discovered by devicetree, SFI and mppparse.
+1) Skip pulling task to the idle non-consolidated CPUs.
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+2) In addition, for consolidated Idle CPU, we aggressively pull tasks from
+   non-consolidated CPUs.
+
+Signed-off-by: Yuyang Du <yuyang.du@intel.com>
 ---
- arch/x86/kernel/acpi/boot.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ kernel/sched/fair.c |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 8c28023924bf..120b573f1e96 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -76,6 +76,8 @@ int acpi_fix_pin2_polarity __initdata;
- static u64 acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
- #endif
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 008cbc9..bf65fde 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2608,6 +2608,9 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
+ static inline void update_cpu_concurrency(struct rq *rq);
+ static struct sched_group *wc_find_group(struct sched_domain *sd,
+ 	struct task_struct *p, int this_cpu);
++static void wc_unload(struct cpumask *nonshielded, struct sched_domain *sd);
++static void wc_nonshielded_mask(int cpu, struct sched_domain *sd,
++	struct cpumask *mask);
+ static int cpu_cc_capable(int cpu);
  
-+static DECLARE_RWSEM(acpi_ioapic_rwsem);
+ /*
+@@ -6808,6 +6811,22 @@ static int idle_balance(struct rq *this_rq)
+ 
+ 	update_blocked_averages(this_cpu);
+ 	rcu_read_lock();
 +
- #ifndef __HAVE_ARCH_CMPXCHG
- #warning ACPI uses CMPXCHG, i486 and later hardware
- #endif
-@@ -608,8 +610,11 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
++	sd = per_cpu(sd_wc, this_cpu);
++	if (sd) {
++		struct cpumask *nonshielded_cpus = __get_cpu_var(load_balance_mask);
++
++		cpumask_copy(nonshielded_cpus, cpu_active_mask);
++
++		/*
++		 * if we encounter shielded cpus here, don't do balance on them
++		 */
++		wc_nonshielded_mask(this_cpu, sd, nonshielded_cpus);
++		if (!cpumask_test_cpu(this_cpu, nonshielded_cpus))
++			goto unlock;
++		wc_unload(nonshielded_cpus, sd);
++	}
++
+ 	for_each_domain(this_cpu, sd) {
+ 		int continue_balancing = 1;
+ 		u64 t0, domain_cost;
+@@ -6843,6 +6862,7 @@ static int idle_balance(struct rq *this_rq)
+ 		if (pulled_task || this_rq->nr_running > 0)
+ 			break;
+ 	}
++unlock:
+ 	rcu_read_unlock();
  
- int acpi_gsi_to_irq(u32 gsi, unsigned int *irqp)
- {
--	int irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-+	int irq;
- 
-+	down_read(&acpi_ioapic_rwsem);
-+	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC | IOAPIC_MAP_CHECK);
-+	up_read(&acpi_ioapic_rwsem);
- 	if (irq >= 0) {
- 		*irqp = irq;
- 		return 0;
-@@ -650,7 +655,9 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- 	int irq = gsi;
- 
- #ifdef CONFIG_X86_IO_APIC
-+	down_read(&acpi_ioapic_rwsem);
- 	irq = mp_register_gsi(dev, gsi, trigger, polarity);
-+	up_read(&acpi_ioapic_rwsem);
- #endif
- 
- 	return irq;
-@@ -659,7 +666,9 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- static void acpi_unregister_gsi_ioapic(u32 gsi)
- {
- #ifdef CONFIG_X86_IO_APIC
-+	down_read(&acpi_ioapic_rwsem);
- 	mp_unregister_gsi(gsi);
-+	up_read(&acpi_ioapic_rwsem);
- #endif
- }
- 
-@@ -1185,7 +1194,9 @@ static void __init acpi_process_madt(void)
- 			/*
- 			 * Parse MADT IO-APIC entries
- 			 */
-+			down_write(&acpi_ioapic_rwsem);
- 			error = acpi_parse_madt_ioapic_entries();
-+			up_write(&acpi_ioapic_rwsem);
- 			if (!error) {
- 				acpi_set_irq_model_ioapic();
- 
+ 	raw_spin_lock(&this_rq->lock);
 -- 
-1.7.10.4
+1.7.9.5
+
