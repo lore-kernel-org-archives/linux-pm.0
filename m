@@ -1,45 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] PM / Runtime: let rpm_resume fail if rpm disabled and device suspended.
-Date: Wed, 25 Jun 2014 01:38:43 +0200
-Message-ID: <3098868.U0NfB8kYvJ@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1406221239060.17183-100000@netrider.rowland.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
+Date: Wed, 25 Jun 2014 09:36:40 +0200
+Message-ID: <1403681800.19087.8.camel@AMDC1943>
+References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
+ <1402476643.32147.6.camel@AMDC1943> <539B7E74.7000605@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1406221239060.17183-100000@netrider.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <539B7E74.7000605@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: kgene.kim@samsung.com, t.figa@samsung.com, ccross@google.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, June 22, 2014 12:45:42 PM Alan Stern wrote:
-> On Sun, 22 Jun 2014, Rafael J. Wysocki wrote:
+On sob, 2014-06-14 at 00:43 +0200, Daniel Lezcano wrote:
+> On 06/11/2014 10:50 AM, Krzysztof Kozlowski wrote:
+(...)
+> >
+> > Hi,
+> >
+> > Shouldn't the exynos_idle_barrier be initialized here?
 > 
-> > > How would you treat them specially?  Add a "runtime_pm_not_supported" 
-> > > flag?
-> > 
-> > I thought about a "runtime PM has been enabled at least once" flag rather
-> > that would be set by pm_runtime_enable() every time it is called and never
-> > cleared.  That would allow the core to distinguish between "runtime PM
-> > disabled temporarily" and "runtime PM not used" which turn out to be
-> > sufficiently different cases.
+> As it is a static data it will be initialized to zero.
 > 
-> Interesting idea, but it can't tell the difference between "runtime PM
-> not supported" and "runtime PM not enabled yet".  I think a simple "not
-> supported" flag will be more straightforward.
-
-The question is who will set the "unsupported" flag (think devices without
-drivers etc.).  Or perhaps the idea is that it will be set to start with?
-
-> > Yes.  The core definitely needs to be able to distinguish between the
-> > "runtime PM disabled temporarily" and "runtime PM not supported/not used"
-> > situations.
+> > I know you sent the patch almost 2 months ago but I stomped on this
+> > while testing it on Exynos3250.
 > 
-> Let me work out a patch, and we'll see what you think.  For the time
-> being we can stick with our "runtime PM must be disabled (or in error)  
-> when the status is changed" approach.
+> No problem. And what results on exynos3250 ?
 
-OK
+I had to change some of the ways for synchronization two cores (boot
+vector behaves differently) so actually the driver is different except
+the general idea. As for the results (on dual-core Exynos3250) - the
+mode (AFTR+CPU1 off) consumes about 5% less energy than idle-WFI state.
 
-Rafael
+I expect there will be much more savings in deeper mode (called here
+W-AFTR).
+
+Best regards,
+Krzysztof
