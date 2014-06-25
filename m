@@ -1,182 +1,252 @@
 From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT idle states bindings
-Date: Wed, 25 Jun 2014 15:58:49 +0100
-Message-ID: <20140625145849.GC15240@leverpostej>
+Subject: Re: [PATCH v5 6/8] drivers: cpuidle: initialize big.LITTLE driver
+ through DT
+Date: Wed, 25 Jun 2014 16:06:23 +0100
+Message-ID: <20140625150623.GD15240@leverpostej>
 References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1403705421-17597-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <1403705421-17597-7-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:40860 "EHLO
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:40957 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756454AbaFYO6z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 10:58:55 -0400
+	by vger.kernel.org with ESMTP id S1756559AbaFYPG2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 11:06:28 -0400
 Content-Disposition: inline
-In-Reply-To: <1403705421-17597-2-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Language: en-US
+In-Reply-To: <1403705421-17597-7-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Chander Kashyap <chander.kashyap@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>Tomasz Figa <t>
 
-Hi Lorenzo,
-
-On Wed, Jun 25, 2014 at 03:10:14PM +0100, Lorenzo Pieralisi wrote:
-> ARM based platforms implement a variety of power management schemes that
-> allow processors to enter idle states at run-time.
-> The parameters defining these idle states vary on a per-platform basis forcing
-> the OS to hardcode the state parameters in platform specific static tables
-> whose size grows as the number of platforms supported in the kernel increases
-> and hampers device drivers standardization.
->
-> Therefore, this patch aims at standardizing idle state device tree bindings for
-> ARM platforms. Bindings define idle state parameters inclusive of entry methods
-> and state latencies, to allow operating systems to retrieve the configuration
-> entries from the device tree and initialize the related power management
-> drivers, paving the way for common code in the kernel to deal with idle
-> states and removing the need for static data in current and previous kernel
-> versions.
->
-> Reviewed-by: Sebastian Capella <sebcape@gmail.com>
+On Wed, Jun 25, 2014 at 03:10:19PM +0100, Lorenzo Pieralisi wrote:
+> With the introduction of DT based idle states, CPUidle drivers for ARM
+> can now initialize idle states data through properties in the device tree.
+> 
+> This patch adds code to the big.LITTLE CPUidle driver to dynamically
+> initialize idle states data through the updated device tree source file.
+> 
+> Cc: Chander Kashyap <chander.kashyap@linaro.org>
 > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 > ---
->  Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
->  .../devicetree/bindings/arm/idle-states.txt        | 733 +++++++++++++++++++++
->  2 files changed, 741 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
+>  Documentation/devicetree/bindings/arm/vexpress.txt | 25 +++++++++++++
+>  arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         | 25 +++++++++++++
+>  drivers/cpuidle/Kconfig.arm                        |  1 +
+>  drivers/cpuidle/cpuidle-big_little.c               | 43 +++++++++++-----------
+>  4 files changed, 73 insertions(+), 21 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/vexpress.txt b/Documentation/devicetree/bindings/arm/vexpress.txt
+> index 39844cd..7f52ac8 100644
+> --- a/Documentation/devicetree/bindings/arm/vexpress.txt
+> +++ b/Documentation/devicetree/bindings/arm/vexpress.txt
+> @@ -67,6 +67,28 @@ with device_type = "cpu" property for every available core, eg.:
+>  		};
+>  	};
+>  
+> +idle-states node
+> +----------------
+> +
+> +On Versatile Express platforms with power management capabilities, the device
+> +tree source file must contain the idle-states node[1]. As defined in [1] the
+> +idle-states node must contain an entry-method property that for Versatile
+> +Express platforms can be one of:
+> +
+> +	- "arm,vexpress-v2p-ca15_a7"
 
-[...]
+... and what does this mean? It's the name we've assigned the platform
+in the Linux DT bindings, but this binding document tells me nothing
+about how this method works.
 
-> +===========================================
-> +3 - idle-states node
-> +===========================================
-> +
-> +ARM processor idle states are defined within the idle-states node, which is
-> +a direct child of the cpus node [1] and provides a container where the
-> +processor idle states, defined as device tree nodes, are listed.
-> +
-> +- idle-states node
-> +
-> +       Usage: Optional - On ARM systems, it is a container of processor idle
-> +                         states nodes. If the system does not provide CPU
-> +                         power management capabilities or the processor just
-> +                         supports idle_standby an idle-states node is not
-> +                         required.
-> +
-> +       Description: idle-states node is a container node, where its
-> +                    subnodes describe the CPU idle states.
-> +
-> +       Node name must be "idle-states".
-> +
-> +       The idle-states node's parent node must be the cpus node.
-> +
-> +       The idle-states node's child nodes can be:
-> +
-> +       - one or more state nodes
-> +
-> +       Any other configuration is considered invalid.
-> +
-> +       An idle-states node defines the following properties:
-> +
-> +       - entry-method
-> +               Usage: Required
-> +               Value type: <stringlist>
-> +               Definition: Describes the method by which a CPU enters the
-> +                           idle states. This property is required and must be
-> +                           one of:
-> +
-> +                           - "arm,psci"
-> +                             ARM PSCI firmware interface [2].
-> +
-> +                           - "[vendor],[method]"
-> +                             An implementation dependent string with
-> +                             format "vendor,method", where vendor is a string
-> +                             denoting the name of the manufacturer and
-> +                             method is a string specifying the mechanism
-> +                             used to enter the idle state.
-> +
-> +The nodes describing the idle states (state) can only be defined within the
-> +idle-states node, any other configuration is considered invalid and therefore
-> +must be ignored.
-> +
-> +===========================================
-> +4 - state node
-> +===========================================
-> +
-> +A state node represents an idle state description and must be defined as
-> +follows:
-> +
-> +- state node
-> +
-> +       Description: must be child of the idle-states node
-> +
-> +       The state node name shall follow standard device tree naming
-> +       rules ([5], 2.2.1 "Node names"), in particular state nodes which
-> +       are siblings within a single common parent must be given a unique name.
-> +
-> +       The idle state entered by executing the wfi instruction (idle_standby
-> +       SBSA,[3][4]) is considered standard on all ARM platforms and therefore
-> +       must not be listed.
-> +
-> +       With the definitions provided above, the following list represents
-> +       the valid properties for a state node:
-> +
-> +       - compatible
-> +               Usage: Required
-> +               Value type: <stringlist>
-> +               Definition: Must be "arm,idle-state".
-> +
-> +       - logic-state-retained
-> +               Usage: See definition
-> +               Value type: <none>
-> +               Definition: if present logic is retained on state entry,
-> +                           otherwise it is lost.
+This feels like leaking Linux internals rather than a reusable
+interface.
 
-What logic state is retained? All system registers?
-
-> +       - cache-state-retained
-> +               Usage: See definition
-> +               Value type: <none>
-> +               Definition: if present cache memory is retained on state entry,
-> +                           otherwise it is lost.
-
-Likewise, how much of the cache hierarchy is affected? Any of it? All of
-it?
-
-> +       - timer-state-retained
-> +               Usage: See definition
-> +               Value type: <none>
-> +               Definition: if present the timer control logic is retained on
-> +                            state entry, otherwise it is lost.
-
-The architected generic timers? Any CPU-local timers? Or any timers
-whatsoever?
-
-> +       - power-rank
-> +               Usage: Required
-> +               Value type: <u32>
-> +               Definition: It represents the idle state power-rank.
-> +                           An increasing value implies less power
-> +                           consumption. It must be given a sequential
-> +                           value = {0, 1, ....}, starting from 0.
-> +                           Phandles in the cpu nodes [1] cpu-idle-states
-> +                           array property are not allowed to point at idle
-> +                           state nodes having the same power-rank value.
-
-Why can't this be implicit in the order of the cpu-idle-states list?
-That way it's impossible to violate the ordering requirement.
-
-> +       - entry-method-param
-> +               Usage: See definition.
-> +               Value type: <u32>
-> +               Definition: Depends on the idle-states node entry-method
-> +                           property value. Refer to the entry-method bindings
-> +                           for this property value definition.
-
-Should this not be left up to the particular mechanism to describe?
-e.g. for PSCI we could have a arm,psci-suspend-param property.
-
-Are we sure a single u32 value is going to be sufficient?
-
-Thanks,
 Mark.
+
+> +
+> +Versatile Express idle-states nodes example:
+> +
+> +	idle-states {
+> +		entry-method = "arm,vexpress-v2p-ca15_a7";
+> +
+> +		cluster-sleep-0 {
+> +			compatible = "arm,idle-state";
+> +			entry-latency-us = <1000>;
+> +			exit-latency-us = <700>;
+> +			min-residency-us = <3500>;
+> +		};
+> +	};
+>  
+>  Configuration infrastructure
+>  ----------------------------
+> @@ -227,3 +249,6 @@ Example of a VE tile description (simplified)
+>  	};
+>  };
+>  
+> +
+> +[1] ARM Linux Kernel documentation - Idle states bindings
+> +    Documentation/devicetree/bindings/arm/idle-states.txt
+> diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+> index a25c262..ad28242 100644
+> --- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+> +++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+> @@ -33,11 +33,32 @@
+>  		#address-cells = <1>;
+>  		#size-cells = <0>;
+>  
+> +		idle-states {
+> +			entry-method = "arm,vexpress-v2p-ca15_a7";
+> +
+> +			CLUSTER_SLEEP_BIG: cluster-sleep-big {
+> +				compatible = "arm,idle-state";
+> +				power-rank = <0>;
+> +				entry-latency-us = <1000>;
+> +				exit-latency-us = <700>;
+> +				min-residency-us = <3500>;
+> +			};
+> +
+> +			CLUSTER_SLEEP_LITTLE: cluster-sleep-little {
+> +				compatible = "arm,idle-state";
+> +				power-rank = <0>;
+> +				entry-latency-us = <1000>;
+> +				exit-latency-us = <500>;
+> +				min-residency-us = <3000>;
+> +			};
+> +		};
+> +
+>  		cpu0: cpu@0 {
+>  			device_type = "cpu";
+>  			compatible = "arm,cortex-a15";
+>  			reg = <0>;
+>  			cci-control-port = <&cci_control1>;
+> +			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
+>  		};
+>  
+>  		cpu1: cpu@1 {
+> @@ -45,6 +66,7 @@
+>  			compatible = "arm,cortex-a15";
+>  			reg = <1>;
+>  			cci-control-port = <&cci_control1>;
+> +			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
+>  		};
+>  
+>  		cpu2: cpu@2 {
+> @@ -52,6 +74,7 @@
+>  			compatible = "arm,cortex-a7";
+>  			reg = <0x100>;
+>  			cci-control-port = <&cci_control2>;
+> +			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
+>  		};
+>  
+>  		cpu3: cpu@3 {
+> @@ -59,6 +82,7 @@
+>  			compatible = "arm,cortex-a7";
+>  			reg = <0x101>;
+>  			cci-control-port = <&cci_control2>;
+> +			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
+>  		};
+>  
+>  		cpu4: cpu@4 {
+> @@ -66,6 +90,7 @@
+>  			compatible = "arm,cortex-a7";
+>  			reg = <0x102>;
+>  			cci-control-port = <&cci_control2>;
+> +			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
+>  		};
+>  	};
+>  
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> index b6d69e8..a9b089c 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -12,6 +12,7 @@ config ARM_BIG_LITTLE_CPUIDLE
+>  	depends on ARCH_VEXPRESS_TC2_PM
+>  	select ARM_CPU_SUSPEND
+>  	select CPU_IDLE_MULTIPLE_DRIVERS
+> +	select DT_IDLE_STATES
+>  	help
+>  	  Select this option to enable CPU idle driver for big.LITTLE based
+>  	  ARM systems. Driver manages CPUs coordination through MCPM and
+> diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+> index b45fc62..6712441 100644
+> --- a/drivers/cpuidle/cpuidle-big_little.c
+> +++ b/drivers/cpuidle/cpuidle-big_little.c
+> @@ -24,6 +24,8 @@
+>  #include <asm/smp_plat.h>
+>  #include <asm/suspend.h>
+>  
+> +#include "dt_idle_states.h"
+> +
+>  static int bl_enter_powerdown(struct cpuidle_device *dev,
+>  			      struct cpuidle_driver *drv, int idx);
+>  
+> @@ -61,32 +63,12 @@ static struct cpuidle_driver bl_idle_little_driver = {
+>  	.name = "little_idle",
+>  	.owner = THIS_MODULE,
+>  	.states[0] = ARM_CPUIDLE_WFI_STATE,
+> -	.states[1] = {
+> -		.enter			= bl_enter_powerdown,
+> -		.exit_latency		= 700,
+> -		.target_residency	= 2500,
+> -		.flags			= CPUIDLE_FLAG_TIME_VALID |
+> -					  CPUIDLE_FLAG_TIMER_STOP,
+> -		.name			= "C1",
+> -		.desc			= "ARM little-cluster power down",
+> -	},
+> -	.state_count = 2,
+>  };
+>  
+>  static struct cpuidle_driver bl_idle_big_driver = {
+>  	.name = "big_idle",
+>  	.owner = THIS_MODULE,
+>  	.states[0] = ARM_CPUIDLE_WFI_STATE,
+> -	.states[1] = {
+> -		.enter			= bl_enter_powerdown,
+> -		.exit_latency		= 500,
+> -		.target_residency	= 2000,
+> -		.flags			= CPUIDLE_FLAG_TIME_VALID |
+> -					  CPUIDLE_FLAG_TIMER_STOP,
+> -		.name			= "C1",
+> -		.desc			= "ARM big-cluster power down",
+> -	},
+> -	.state_count = 2,
+>  };
+>  
+>  /*
+> @@ -165,7 +147,8 @@ static int __init bl_idle_driver_init(struct cpuidle_driver *drv, int cpu_id)
+>  
+>  static int __init bl_idle_init(void)
+>  {
+> -	int ret;
+> +	int ret, i;
+> +	struct cpuidle_driver *drv;
+>  
+>  	/*
+>  	 * Initialize the driver just for a compliant set of machines
+> @@ -187,6 +170,24 @@ static int __init bl_idle_init(void)
+>  	if (ret)
+>  		goto out_uninit_little;
+>  
+> +	 /* Start at index 1, index 0 standard WFI */
+> +	ret = dt_init_idle_driver(&bl_idle_big_driver, NULL, 1, false);
+> +	if (ret)
+> +		goto out_uninit_big;
+> +
+> +	 /* Start at index 1, index 0 standard WFI */
+> +	ret = dt_init_idle_driver(&bl_idle_little_driver, NULL, 1, false);
+> +	if (ret)
+> +		goto out_uninit_big;
+> +
+> +	drv = &bl_idle_big_driver;
+> +	for (i = 1; i < drv->state_count; i++)
+> +		drv->states[i].enter = bl_enter_powerdown;
+> +
+> +	drv = &bl_idle_little_driver;
+> +	for (i = 1; i < drv->state_count; i++)
+> +		drv->states[i].enter = bl_enter_powerdown;
+> +
+>  	ret = cpuidle_register(&bl_idle_little_driver, NULL);
+>  	if (ret)
+>  		goto out_uninit_big;
+> -- 
+> 1.9.1
+> 
