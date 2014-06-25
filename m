@@ -1,116 +1,53 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 8/9 v4] Implement Workload Consolidation in nohz_idle_balance
-Date: Wed, 25 Jun 2014 08:36:07 +0800
-Message-ID: <1403656568-32445-9-git-send-email-yuyang.du@intel.com>
-References: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/2] cpufreq: cpu0: Extend support beyond CPU0
+Date: Wed, 25 Jun 2014 14:12:27 +0530
+Message-ID: <cover.1403684824.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, Yuyang Du <yuyang.du@intel.com>
+To: rjw@rjwysocki.net, sboyd@codeaurora.org, shawn.guo@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-In periodic nohz idle balance, we skip kicking idle but non-consolidated CPUs.
+Stephen Boyd sent few patches today around a new cpufreq driver for Qualcomm's
+Krait SoC: https://lkml.org/lkml/2014/6/24/918.
 
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
----
- kernel/sched/fair.c |   55 +++++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 45 insertions(+), 10 deletions(-)
+Krait couldn't use existing cpufreq-cpu0 driver as it doesn't have support for
+SoC's with multiple clusters or SoC's which don't share clock line for all CPUs.
+And I thought about trying updating cpu0 driver to see if we can get rid of this
+limitation easily and use it for Krait as well.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index bf65fde..549f6e0 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6983,10 +6983,45 @@ static struct {
- 
- static inline int find_new_ilb(void)
- {
--	int ilb = cpumask_first(nohz.idle_cpus_mask);
-+	int ilb;
- 
--	if (ilb < nr_cpu_ids && idle_cpu(ilb))
--		return ilb;
-+	/*
-+	 * Optimize for the case when we have no idle CPUs or only one
-+	 * idle CPU. Don't walk the sched_domain hierarchy in such cases
-+	 */
-+	if (cpumask_weight(nohz.idle_cpus_mask) < 2)
-+		return nr_cpu_ids;
-+
-+	ilb = cpumask_first(nohz.idle_cpus_mask);
-+
-+	if (ilb < nr_cpu_ids && idle_cpu(ilb)) {
-+		struct sched_domain *sd;
-+		int this_cpu = smp_processor_id();
-+
-+		sd = per_cpu(sd_wc, this_cpu);
-+		if (sd) {
-+			struct cpumask *nonshielded_cpus = __get_cpu_var(load_balance_mask);
-+
-+			cpumask_copy(nonshielded_cpus, nohz.idle_cpus_mask);
-+
-+			rcu_read_lock();
-+			wc_nonshielded_mask(this_cpu, sd, nonshielded_cpus);
-+			rcu_read_unlock();
-+
-+			if (cpumask_weight(nonshielded_cpus) < 2)
-+				return nr_cpu_ids;
-+
-+			/*
-+			 * get idle load balancer again
-+			 */
-+			ilb = cpumask_first(nonshielded_cpus);
-+
-+		    if (ilb < nr_cpu_ids && idle_cpu(ilb))
-+				return ilb;
-+		}
-+		else
-+			return ilb;
-+	}
- 
- 	return nr_cpu_ids;
- }
-@@ -7217,7 +7252,7 @@ out:
-  * In CONFIG_NO_HZ_COMMON case, the idle balance kickee will do the
-  * rebalancing for all the cpus for whom scheduler ticks are stopped.
-  */
--static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
-+static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle, struct cpumask *mask)
- {
- 	int this_cpu = this_rq->cpu;
- 	struct rq *rq;
-@@ -7227,7 +7262,7 @@ static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
- 	    !test_bit(NOHZ_BALANCE_KICK, nohz_flags(this_cpu)))
- 		goto end;
- 
--	for_each_cpu(balance_cpu, nohz.idle_cpus_mask) {
-+	for_each_cpu(balance_cpu, mask) {
- 		if (balance_cpu == this_cpu || !idle_cpu(balance_cpu))
- 			continue;
- 
-@@ -7280,10 +7315,10 @@ static inline int nohz_kick_needed(struct rq *rq)
- 	if (unlikely(rq->idle_balance))
- 		return 0;
- 
--       /*
--	* We may be recently in ticked or tickless idle mode. At the first
--	* busy tick after returning from idle, we will update the busy stats.
--	*/
-+	/*
-+	 * We may be recently in ticked or tickless idle mode. At the first
-+	 * busy tick after returning from idle, we will update the busy stats.
-+	 */
- 	set_cpu_sd_state_busy();
- 	nohz_balance_exit_idle(cpu);
- 
-@@ -7326,7 +7361,7 @@ need_kick:
- 	return 1;
- }
- #else
--static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle) { }
-+static void nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle, struct cpumask *mask) { }
- #endif
- 
- /*
+It took me longer than I thought, around 4 hours to get this working on my dual
+A15 exynos board.
+
+First patch adds some space for driver specific data in 'struct cpufreq_policy'
+and second one updates cpufreq-cpu0..
+
+@Stephen: Can you please test this on Krait and see if it works?
+
+Pushed here:
+Rebased over rc2:
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait
+
+For guys looking to test on exynos, rebased over linux-next + some patches from
+Thomas Abraham to use cpufreq-cpu0 for exynos:
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-exynos
+
+
+In case this is acceptable and bug free, next step would be to get cpufreq-cpu0
+renamed a bit as its not about CPU0 anymore. Any suggestions on that would be
+great :), cpufreq_generic.c ?
+
+Thanks.
+
+Viresh Kumar (2):
+  cpufreq: Add support for per-policy driver data
+  cpufreq: cpu0: Extend support beyond CPU0
+
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   8 +-
+ drivers/cpufreq/Kconfig                            |   5 +-
+ drivers/cpufreq/cpufreq-cpu0.c                     | 280 +++++++++++++--------
+ include/linux/cpufreq.h                            |   3 +
+ 4 files changed, 193 insertions(+), 103 deletions(-)
+
 -- 
-1.7.9.5
+2.0.0.rc2
