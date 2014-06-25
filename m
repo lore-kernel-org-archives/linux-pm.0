@@ -1,41 +1,93 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] Exynos4: cpuidle: support dual CPUs with AFTR state
-Date: Wed, 25 Jun 2014 09:36:40 +0200
-Message-ID: <1403681800.19087.8.camel@AMDC1943>
-References: <1396604925-18383-1-git-send-email-daniel.lezcano@linaro.org>
- <1402476643.32147.6.camel@AMDC1943> <539B7E74.7000605@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <539B7E74.7000605@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: kgene.kim@samsung.com, t.figa@samsung.com, ccross@google.com, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: [RFC PATCH 2/9 v4] sched: Precise accumulated time and acount runnable number in update_entity_runnable_avg
+Date: Wed, 25 Jun 2014 08:36:01 +0800
+Message-ID: <1403656568-32445-3-git-send-email-yuyang.du@intel.com>
+References: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, Yuyang Du <yuyang.du@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On sob, 2014-06-14 at 00:43 +0200, Daniel Lezcano wrote:
-> On 06/11/2014 10:50 AM, Krzysztof Kozlowski wrote:
-(...)
-> >
-> > Hi,
-> >
-> > Shouldn't the exynos_idle_barrier be initialized here?
-> 
-> As it is a static data it will be initialized to zero.
-> 
-> > I know you sent the patch almost 2 months ago but I stomped on this
-> > while testing it on Exynos3250.
-> 
-> No problem. And what results on exynos3250 ?
+The current amount of time already accumulated against next period is
+determined by:
 
-I had to change some of the ways for synchronization two cores (boot
-vector behaves differently) so actually the driver is different except
-the general idea. As for the results (on dual-core Exynos3250) - the
-mode (AFTR+CPU1 off) consumes about 5% less energy than idle-WFI state.
+	delta_w = sa->runnable_avg_period % 1024
 
-I expect there will be much more savings in deeper mode (called here
-W-AFTR).
+Considering the runnable_avg_period is the sum of an infinite series, this
+method looks gross, even the error would be no more than 1024 (~1ms).
+But precisely accounting this is not hard, just use a variable period_contrib
+to record it.
 
-Best regards,
-Krzysztof
+The current runnable argument is either 1 or 0, indicating whether this entity
+is runnable or not. In order to account the number of runnables as well, change
+how runnable_avg_sum is accumulated.
+
+Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+---
+ include/linux/sched.h |    1 +
+ kernel/sched/fair.c   |   12 ++++++++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 306f4f0..1b1997d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1074,6 +1074,7 @@ struct sched_avg {
+ 	 * choices of y < 1-2^(-32)*1024.
+ 	 */
+ 	u32 runnable_avg_sum, runnable_avg_period;
++	u32 period_contrib;
+ 	u64 last_runnable_update;
+ 	s64 decay_count;
+ 	unsigned long load_avg_contrib;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 1a2d04f..e914e32 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2294,10 +2294,12 @@ static __always_inline int __update_entity_runnable_avg(u64 now,
+ 	sa->last_runnable_update = now;
+ 
+ 	/* delta_w is the amount already accumulated against our next period */
+-	delta_w = sa->runnable_avg_period % 1024;
++	delta_w = sa->period_contrib;
+ 	if (delta + delta_w >= 1024) {
+ 		/* period roll-over */
+ 		decayed = 1;
++		/* how much left for next period will start over, we don't know yet */
++		sa->period_contrib = 0;
+ 
+ 		/*
+ 		 * Now that we know we're crossing a period boundary, figure
+@@ -2306,7 +2308,7 @@ static __always_inline int __update_entity_runnable_avg(u64 now,
+ 		 */
+ 		delta_w = 1024 - delta_w;
+ 		if (runnable)
+-			sa->runnable_avg_sum += delta_w;
++			sa->runnable_avg_sum += runnable * delta_w;
+ 		sa->runnable_avg_period += delta_w;
+ 
+ 		delta -= delta_w;
+@@ -2323,15 +2325,17 @@ static __always_inline int __update_entity_runnable_avg(u64 now,
+ 		/* Efficiently calculate \sum (1..n_period) 1024*y^i */
+ 		runnable_contrib = __compute_runnable_contrib(periods);
+ 		if (runnable)
+-			sa->runnable_avg_sum += runnable_contrib;
++			sa->runnable_avg_sum += runnable * runnable_contrib;
+ 		sa->runnable_avg_period += runnable_contrib;
+ 	}
+ 
+ 	/* Remainder of delta accrued against u_0` */
+ 	if (runnable)
+-		sa->runnable_avg_sum += delta;
++		sa->runnable_avg_sum += runnable * delta;
+ 	sa->runnable_avg_period += delta;
+ 
++	sa->period_contrib += delta;
++
+ 	return decayed;
+ }
+ 
+-- 
+1.7.9.5
