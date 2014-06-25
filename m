@@ -1,113 +1,146 @@
 From: "Javi Merino" <javi.merino@arm.com>
-Subject: [PATCH RESEND] thermal: document struct thermal_zone_device and thermal_governor
-Date: Wed, 25 Jun 2014 11:00:12 +0100
-Message-ID: <1403690412-10996-1-git-send-email-javi.merino@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [RFC PATCH 3/3] thermal: trace: Trace when temperature is above
+ a trip point
+Date: Wed, 25 Jun 2014 14:26:28 +0100
+Message-ID: <20140625132628.GB2723@e104805>
+References: <1402486305-4017-1-git-send-email-punit.agrawal@arm.com>
+ <1402486305-4017-4-git-send-email-punit.agrawal@arm.com>
+ <20140620172442.GA22701@e104805>
+ <9hhionqvbbx.fsf@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:43002 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756811AbaFYN0b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 09:26:31 -0400
+In-Reply-To: <9hhionqvbbx.fsf@arm.com>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Document struct thermal_zone_device and struct thermal_governor fields
-and their use by the thermal framework code.
+On Tue, Jun 24, 2014 at 11:41:38AM +0100, Punit Agrawal wrote:
+> "Javi Merino" <javi.merino@arm.com> writes:
+> 
+> > Hi Punit,
+> >
+> > On Wed, Jun 11, 2014 at 12:31:44PM +0100, Punit Agrawal wrote:
+> >> Create a new event to trace when the temperature is above a trip
+> >> point. Use the trace-point when handling non-critical and critical
+> >> trip pionts.
+> >> 
+> >> Cc: Zhang Rui <rui.zhang@intel.com>
+> >> Cc: Eduardo Valentin <edubezval@gmail.com>
+> >> Cc: Steven Rostedt <rostedt@goodmis.org>
+> >> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> >> Cc: Ingo Molnar <mingo@redhat.com>
+> >> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+> >> ---
+> >> Hi Steven,
+> >> 
+> >> I am facing an issue with partial trace being emitted when using
+> >> __print_symbolic in this patch. 
+> >> 
+> >> When the trip_type is THERMAL_TRIP_ACTIVE (i.e., the first value in
+> >> the symbol map), the emitted trace contains the corresponding string
+> >> ("active"). But for other values of trip_type an empty string is
+> >> emitted in the trace.
+> >> 
+> >> I've looked at other uses of __print_symbolic in the kernel and don't
+> >> see any difference in usage. Do you know what could be causing this or
+> >> alternately have any pointers on how to debug this behaviour?
+> >> 
+> >> Thanks.
+> >> Punit
+> >> 
+> >>  drivers/thermal/fair_share.c   |    7 ++++++-
+> >>  drivers/thermal/step_wise.c    |    5 ++++-
+> >>  drivers/thermal/thermal_core.c |    2 ++
+> >>  include/trace/events/thermal.h |   30 ++++++++++++++++++++++++++++++
+> >>  4 files changed, 42 insertions(+), 2 deletions(-)
+> >> 
+> >> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+> >> index 944ba2f..2cddd68 100644
+> >> --- a/drivers/thermal/fair_share.c
+> >> +++ b/drivers/thermal/fair_share.c
+> >> @@ -23,6 +23,7 @@
+> >>   */
+> >>  
+> >>  #include <linux/thermal.h>
+> >> +#include <trace/events/thermal.h>
+> >>  
+> >>  #include "thermal_core.h"
+> >>  
+> >> @@ -34,14 +35,18 @@ static int get_trip_level(struct thermal_zone_device *tz)
+> >>  {
+> >>  	int count = 0;
+> >>  	unsigned long trip_temp;
+> >> +	enum thermal_trip_type trip_type;
+> >>  
+> >>  	if (tz->trips == 0 || !tz->ops->get_trip_temp)
+> >>  		return 0;
+> >>  
+> >>  	for (count = 0; count < tz->trips; count++) {
+> >>  		tz->ops->get_trip_temp(tz, count, &trip_temp);
+> >> -		if (tz->temperature < trip_temp)
+> >> +		if (tz->temperature < trip_temp) {
+> >> +			tz->ops->get_trip_type(tz, count, &trip_type);
+> >> +			trace_thermal_zone_trip(tz, count, trip_type);
+> >
+> > This should be outside the if condition.  You want to report when trip
+> > points have been hit, like in the step_wise code below.
+> >
+> 
+> It turned out to be a bit more subtle than moving the trace outside the
+> if.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
+True, it was more difficult than what I said.  
 
----
+>     I have the below fixup with an added comment. Let me know if that
+> doesn't solve the problem.
 
-Hi linux-pm,
+I don't have a reproducer, I just spotted it while reading the code.
+The below fix seems to be the right thing.
 
-I have some patches that add new fields to these structures but I
-don't have a good place to describe those fields as these structs are
-mostly undocumented so I thought I'd document them.
+> -- >8 --
+> Subject: [PATCH] fixup! thermal: trace: Trace when temperature is above a
+>  trip point
+> 
+> ---
+>  drivers/thermal/fair_share.c |   15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+> index 2cddd68..6e0a3fb 100644
+> --- a/drivers/thermal/fair_share.c
+> +++ b/drivers/thermal/fair_share.c
+> @@ -42,12 +42,19 @@ static int get_trip_level(struct thermal_zone_device *tz)
+>  
+>  	for (count = 0; count < tz->trips; count++) {
+>  		tz->ops->get_trip_temp(tz, count, &trip_temp);
+> -		if (tz->temperature < trip_temp) {
+> -			tz->ops->get_trip_type(tz, count, &trip_type);
+> -			trace_thermal_zone_trip(tz, count, trip_type);
+> +		if (tz->temperature < trip_temp)
+>  			break;
+> -		}
+>  	}
+> +
+> +	/*
+> +	 * count > 0 only if temperature is greater than first trip
+> +	 * point, in which case, trip_point = count - 1
+> +	 */
+> +	if (count > 0) {
+> +		tz->ops->get_trip_type(tz, count - 1, &trip_type);
+> +		trace_thermal_zone_trip(tz, count - 1, trip_type);
+> +	}
+> +
+>  	return count;
+>  }
+>  
+> -- 
+> 1.7.10.4
 
-Changes since v1:
-  * Clarified that some parameters are currently only used by the
-    step-wise governor.
-  * Clarified that forced_passive operates on ACPI processor cooling
-    devices.
-
- include/linux/thermal.h | 46 ++++++++++++++++++++++++++++++++++++++++++++-=
--
- 1 file changed, 44 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index f7e11c7ea7d9..0305cde21a74 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -158,6 +158,42 @@ struct thermal_attr {
- =09char name[THERMAL_NAME_LENGTH];
- };
-=20
-+/**
-+ * struct thermal_zone_device - structure for a thermal zone
-+ * @id:=09=09unique id number for each thermal zone
-+ * @type:=09the thermal zone device type
-+ * @device:=09&struct device for this thermal zone
-+ * @trip_temp_attrs:=09attributes for trip points for sysfs: trip temperat=
-ure
-+ * @trip_type_attrs:=09attributes for trip points for sysfs: trip type
-+ * @trip_hyst_attrs:=09attributes for trip points for sysfs: trip hysteres=
-is
-+ * @devdata:=09private pointer for device private data
-+ * @trips:=09number of trip points the thermal zone supports
-+ * @passive_delay:=09number of milliseconds to wait between polls when
-+ *=09=09=09performing passive cooling.  Currenty only used by the
-+ *=09=09=09step-wise governor
-+ * @polling_delay:=09number of milliseconds to wait between polls when
-+ *=09=09=09checking whether trip points have been crossed (0 for
-+ *=09=09=09interrupt driven systems)
-+ * @temperature:=09current temperature.  This is only for core code,
-+ *=09=09=09drivers should use thermal_zone_get_temp() to get the
-+ *=09=09=09current temperature
-+ * @last_temperature:=09previous temperature read
-+ * @emul_temperature:=09emulated temperature when using CONFIG_THERMAL_EMU=
-LATION
-+ * @passive:=09=091 if you've crossed a passive trip point, 0 otherwise.
-+ *=09=09=09Currenty only used by the step-wise governor.
-+ * @forced_passive:=09If > 0, temperature at which to switch on all ACPI
-+ *=09=09=09processor cooling devices.  Currently only used by the
-+ *=09=09=09step-wise governor.
-+ * @ops:=09operations this &thermal_zone_device supports
-+ * @tzp:=09thermal zone parameters
-+ * @governor:=09pointer to the governor for this thermal zone
-+ * @thermal_instances:=09list of &struct thermal_instance of this thermal =
-zone
-+ * @idr:=09&struct idr to generate unique id for this zone's cooling
-+ *=09=09devices
-+ * @lock:=09lock to protect thermal_instances list
-+ * @node:=09node in thermal_tz_list (in thermal_core.c)
-+ * @poll_queue:=09delayed work for polling
-+ */
- struct thermal_zone_device {
- =09int id;
- =09char type[THERMAL_NAME_LENGTH];
-@@ -179,12 +215,18 @@ struct thermal_zone_device {
- =09struct thermal_governor *governor;
- =09struct list_head thermal_instances;
- =09struct idr idr;
--=09struct mutex lock; /* protect thermal_instances list */
-+=09struct mutex lock;
- =09struct list_head node;
- =09struct delayed_work poll_queue;
- };
-=20
--/* Structure that holds thermal governor information */
-+/**
-+ * struct thermal_governor - structure that holds thermal governor informa=
-tion
-+ * @name:=09name of the governor
-+ * @throttle:=09callback called for every trip point even if temperature i=
-s
-+ *=09=09below the trip point temperature
-+ * @governor_list:=09node in thermal_governor_list (in thermal_core.c)
-+ */
- struct thermal_governor {
- =09char name[THERMAL_NAME_LENGTH];
- =09int (*throttle)(struct thermal_zone_device *tz, int trip);
---=20
-1.9.1
