@@ -1,146 +1,101 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH v5 0/8] ARM generic idle states
-Date: Wed, 25 Jun 2014 15:10:13 +0100
-Message-ID: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Charles Garcia Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>, Nicolas Pitre <nico-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Antti Miettinen <ananaza-X3B1VOXEql0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Capella <sebcape-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tomasz Figa <t.figa-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Chander Kashyap <chander.kashyap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v5 8/8] arm64: boot: dts: update rtsm aemv8 dts with PSCI
+ and idle states
+Date: Wed, 25 Jun 2014 15:27:14 +0100
+Message-ID: <20140625142714.GB15240@leverpostej>
+References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1403705421-17597-9-git-send-email-lorenzo.pieralisi@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:40454 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756873AbaFYO1T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jun 2014 10:27:19 -0400
+Content-Disposition: inline
+In-Reply-To: <1403705421-17597-9-git-send-email-lorenzo.pieralisi@arm.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel>
 
-This patch is v5 of a previous posting:
+Hi Lorenzo,
 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2014-June/263060.html
+On Wed, Jun 25, 2014 at 03:10:21PM +0100, Lorenzo Pieralisi wrote:
+> This patch updates the RTSM dts file with PSCI bindings and nodes
+> describing the AEMv8 model idle states parameters.
+> 
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> ---
+>  arch/arm64/boot/dts/rtsm_ve-aemv8a.dts | 44 +++++++++++++++++++++++++++-------
+>  1 file changed, 36 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/arm64/boot/dts/rtsm_ve-aemv8a.dts b/arch/arm64/boot/dts/rtsm_ve-aemv8a.dts
+> index d79de9c..4051ffb 100644
+> --- a/arch/arm64/boot/dts/rtsm_ve-aemv8a.dts
+> +++ b/arch/arm64/boot/dts/rtsm_ve-aemv8a.dts
+> @@ -27,37 +27,65 @@
+>  		serial3 = &v2m_serial3;
+>  	};
+>  
+> +	psci {
+> +		compatible = "arm,psci-0.2";
 
-Changes in v5:
+Where can I find a PSCI 0.2 implementation for the RTSM VE model? I
+couldn't find a link in the cover.
 
-- Added power-rank property to implement state sorting, following a number
-  of on/off list review comments
-- Added timer retained bool property
-- Ported TC2 big.LITTLE and Exynos drivers to DT initialization
-- Renamed s/OF/dt/ throughout the patch
-- Incorporated review comments and list discussions in the idle states
-  bindings documents
-- Rebased against 3.16-rc2
+The upstream bootwrapper is not PSCI 0.2 compliant and it does not
+implement CPU_SUSPEND.
 
-Changes in v4:
+> +		method = "smc";
+> +		cpu_suspend = <0xc4000001>;
+> +		cpu_off = <0x84000002>;
+> +		cpu_on = <0xc4000003>;
 
-- States sorting using exit-latency
-- Added cosmetic review comments
-- Dropped RFC
-- Rebased against 3.15
+Without "arm,psci" in the compatible list, these three properties are
+meaningless.
 
-Changes in v3:
+> +	};
+> +
+>  	cpus {
+>  		#address-cells = <2>;
+>  		#size-cells = <0>;
+>  
+> +		idle-states {
+> +			entry-method = "arm,psci";
+> +
+> +			CPU_SLEEP_0: cpu-sleep-0 {
+> +				compatible = "arm,idle-state";
+> +				entry-method-param = <0x0010000>;
+> +				entry-latency-us = <40>;
+> +				exit-latency-us = <100>;
+> +				min-residency-us = <150>;
+> +			};
+> +
+> +			CLUSTER_SLEEP_0: cluster-sleep-0 {
+> +				compatible = "arm,idle-state";
+> +				entry-method-param = <0x1010000>;
+> +				entry-latency-us = <500>;
+> +				exit-latency-us = <1000>;
+> +				min-residency-us = <2500>;
+> +			};
+> +		};
+> +
 
-- Streamlined the idle states bindings and added them to the series
-  http://www.spinics.net/lists/arm-kernel/msg316299.html
-- Sorting states through min-residency+exit-latency
-- Added debug strings formatting
-- Reworded min-residency-us idle state property
-- Removed power-domain properties from idle states waiting for code
-  examples requiring them to be defined
+If this is going to live in the /cpus node, could it please be placed
+after the cpu nodes?
 
-Changes in v2:
+>  		cpu@0 {
+>  			device_type = "cpu";
+>  			compatible = "arm,armv8";
+>  			reg = <0x0 0x0>;
+> -			enable-method = "spin-table";
+> -			cpu-release-addr = <0x0 0x8000fff8>;
+> +			enable-method = "psci";
 
-- Moved OF parsing code to drivers/cpuidle
-- Improved states detection and sorting through linked list
-- Split code in generic and ARM64 specific bits
-- Moved idle enter function into ARM64 idle driver
-- Refactored PSCI idle states register function
-- Renamed suspend operations and moved detection to ARM64 idle driver
-- Changed the way CPUIDLE_FLAG_TIMER_STOP is handled
-- Simplified idle state nodes parsing since according to the latest
-  bindings idle state nodes are a flat list, not hierarchical anymore
-- Used min-residency-us to sort the states, to be further discussed
+Changing the enable-method will break boot on a model when using a
+bootwrapper without PSCI support. Really we should leave it up to the
+bootwrapper to inject the enable method...
 
-Idle states on most ARM platforms can be characterized by a set of
-parameters that are platform agnostic and describe the HW idle states
-features. So far, CPU idle drivers for ARM platforms required the definitio=
-n
-of parameters through static tables, duplicating control data for different
-platforms. Moreover, the lack of standardization on firmware interfaces
-hampered any standardization effort, resulting in CPU idle drivers for ARM
-platforms containing duplicated code and platform specific power down routi=
-nes.
-
-The introduction of the PSCI firmware interface, and more in general, well
-defined suspend back-ends, allows the definition of generic idle states and
-the respective kernel infrastructure to support them.
-
-Building on top of DT idle states bindings, that standardize idle states
-parameters and corresponding suspend back-ends, this patchset provides code
-that parses DT idle states nodes and builds at run-time the control data
-infrastructure required by the ARM CPU idle drivers.
-
-Idle states define an entry method (eg PSCI), that requires the respective
-ARM64 kernel back-end to be invoked to initialize idle states parameters, s=
-o
-that when the idle driver executes the back-end specific entry method a tab=
-le
-look-up can be carried out to retrieve the corresponding idle state paramet=
-er.
-
-On legacy ARM platforms, the OF idle states are just used to initialize
-states data.
-
-The idle states bindings can be extended with new back-ends; the ARM64 CPUi=
-dle
-driver must be updated accordingly so that the corresponding back
-end initializer can be invoked at boot time for parameters initialization.
-
-Patchset has been tested on AEM v8 models, on top of bootwrapper PSCI CPU
-SUSPEND implementation which provides simulated core power gating.
-
-[1] http://www.spinics.net/lists/arm-kernel/msg316299.html
-
-Lorenzo Pieralisi (8):
-  Documentation: arm: define DT idle states bindings
-  Documentation: devicetree: psci: define CPU suspend parameter
-  drivers: cpuidle: implement DT based idle states infrastructure
-  arm64: add PSCI CPU_SUSPEND based cpu_suspend support
-  drivers: cpuidle: CPU idle ARM64 driver
-  drivers: cpuidle: initialize big.LITTLE driver through DT
-  drivers: cpuidle: initialize Exynos driver through DT
-  arm64: boot: dts: update rtsm aemv8 dts with PSCI and idle states
-
- Documentation/devicetree/bindings/arm/cpus.txt     |   8 +
- .../devicetree/bindings/arm/exynos/idle-states.txt |  27 +
- .../devicetree/bindings/arm/idle-states.txt        | 733 +++++++++++++++++=
-++++
- Documentation/devicetree/bindings/arm/psci.txt     |  12 +-
- Documentation/devicetree/bindings/arm/vexpress.txt |  25 +
- arch/arm/boot/dts/exynos3250.dtsi                  |  16 +
- arch/arm/boot/dts/exynos5250.dtsi                  |  15 +
- arch/arm/boot/dts/exynos5410.dtsi                  |  17 +
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         |  25 +
- arch/arm64/boot/dts/rtsm_ve-aemv8a.dts             |  44 +-
- arch/arm64/include/asm/psci.h                      |   4 +
- arch/arm64/kernel/psci.c                           | 103 +++
- drivers/cpuidle/Kconfig                            |  13 +
- drivers/cpuidle/Kconfig.arm                        |   2 +
- drivers/cpuidle/Kconfig.arm64                      |  13 +
- drivers/cpuidle/Makefile                           |   5 +
- drivers/cpuidle/cpuidle-arm64.c                    | 165 +++++
- drivers/cpuidle/cpuidle-big_little.c               |  43 +-
- drivers/cpuidle/cpuidle-exynos.c                   |  29 +-
- drivers/cpuidle/dt_idle_states.c                   | 283 ++++++++
- drivers/cpuidle/dt_idle_states.h                   |   8 +
- 21 files changed, 1548 insertions(+), 42 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/arm/exynos/idle-state=
-s.txt
- create mode 100644 Documentation/devicetree/bindings/arm/idle-states.txt
- create mode 100644 drivers/cpuidle/Kconfig.arm64
- create mode 100644 drivers/cpuidle/cpuidle-arm64.c
- create mode 100644 drivers/cpuidle/dt_idle_states.c
- create mode 100644 drivers/cpuidle/dt_idle_states.h
-
---=20
-1.9.1
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Mark.
