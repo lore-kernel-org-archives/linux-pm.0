@@ -1,168 +1,113 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: =?UTF-8?q?=5BRFC=20PATCH=200/9=20v4=5D=20A=20new=20CPU=20load=20metric=20for=20power-efficient=20scheduler=3A=20CPU=20ConCurrency?=
-Date: Wed, 25 Jun 2014 08:35:59 +0800
-Message-ID: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: [PATCH RESEND] thermal: document struct thermal_zone_device and thermal_governor
+Date: Wed, 25 Jun 2014 11:00:12 +0100
+Message-ID: <1403690412-10996-1-git-send-email-javi.merino@arm.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, Yuyang Du <yuyang.du@intel.com>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The current scheduler=E2=80=99s load balancing is completely work-conse=
-rving. In some
-workload, generally low CPU utilization but immersed with CPU bursts of
-transient tasks, migrating task to engage all available CPUs for
-work-conserving can lead to significant overhead: cache locality loss,
-idle/active HW state transitional latency and power, shallower idle sta=
-te,
-etc, which are both power and performance inefficient especially for to=
-day=E2=80=99s
-low power processors in mobile.=20
+Document struct thermal_zone_device and struct thermal_governor fields
+and their use by the thermal framework code.
 
-This RFC introduces a sense of idleness-conserving into work-conserving=
- (by
-all means, we really don=E2=80=99t want to be overwhelming in only one =
-way). But to
-what extent the idleness-conserving should be, bearing in mind that we =
-don=E2=80=99t
-want to sacrifice performance? We first need a load/idleness indicator =
-to that
-end.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
 
-Thanks to CFS=E2=80=99s =E2=80=9Cmodel an ideal, precise multi-tasking =
-CPU=E2=80=9D, tasks can be seen
-as concurrently running (the tasks in the runqueue). So it is natural t=
-o use
-task concurrency as load indicator. Having said that, we do two things:
+---
 
-1) Divide continuous time into periods of time, and average task concur=
-rency
-in period, for tolerating the transient bursts:
-a =3D sum(concurrency * time) / period
-2) Exponentially decay past periods, and synthesize them all, for hyste=
-resis
-to load drops or resilience to load rises (let f be decaying factor, an=
-d a_x
-the xth period average since period 0):
-s =3D a_n + f^1 * a_n-1 + f^2 * a_n-2 +, ..., + f^(n-1) * a_1 + f^n * a=
-_0
+Hi linux-pm,
 
-We name this load indicator as CPU ConCurrency (CC): task concurrency
-determines how many CPUs are needed to be running concurrently.
+I have some patches that add new fields to these structures but I
+don't have a good place to describe those fields as these structs are
+mostly undocumented so I thought I'd document them.
 
-Another two ways of how to interpret CC:
+Changes since v1:
+  * Clarified that some parameters are currently only used by the
+    step-wise governor.
+  * Clarified that forced_passive operates on ACPI processor cooling
+    devices.
 
-1) the current work-conserving load balance also uses CC, but instantan=
-eous
-CC.
+ include/linux/thermal.h | 46 ++++++++++++++++++++++++++++++++++++++++++++-=
+-
+ 1 file changed, 44 insertions(+), 2 deletions(-)
 
-2) CC vs. CPU utilization. CC is runqueue-length-weighted CPU utilizati=
-on. If
-we change: "a =3D sum(concurrency * time) / period" to "a' =3D sum(1 * =
-time) /
-period". Then a' is just about the CPU utilization. And the way we weig=
-ht
-runqueue-length is the simplest one (excluding the exponential decays, =
-and you
-may have other ways).
-
-To track CC, we intercept the scheduler in 1) enqueue, 2) dequeue, 3)
-scheduler tick, and 4) enter/exit idle.
-
-After CC, in the consolidation part, we do 1) attach the CPU topology t=
-o be
-adaptive beyond our experimental platforms, and 2) intercept the curren=
-t load
-balance for load and load balancing containment.
-
-Currently, CC is per CPU. To consolidate, the formula is based on a heu=
-ristic.
-Suppose we have 2 CPUs, their task concurrency over time is ('-' means =
-no
-task, 'x' having tasks):
-
-1)
-CPU0: ---xxxx---------- (CC[0])
-CPU1: ---------xxxx---- (CC[1])
-
-2)
-CPU0: ---xxxx---------- (CC[0])
-CPU1: ---xxxx---------- (CC[1])
-
-If we consolidate CPU0 and CPU1, the consolidated CC will be: CC' =3D C=
-C[0] +
-CC[1] for case 1 and CC'' =3D (CC[0] + CC[1]) * 2 for case 2. For the c=
-ases in
-between case 1 and 2 in terms of how xxx overlaps, the CC should be bet=
-ween
-CC' and CC''. So, we uniformly use this condition for consolidation (su=
-ppose
-we consolidate m CPUs to n CPUs, m > n):
-
-(CC[0] + CC[1] + ... + CC[m-2] + CC[m-1]) * (n + log(m-n)) >=3D<? (1 * =
-n) * n *
-consolidating_coefficient
-
-The consolidating_coefficient could be like 100% or more or less.
-
-By CC, we implemented a Workload Consolidation (WC) patch on two Intel =
-mobile
-platforms (a quad-core composed of two dual-core modules): contain load=
- and
-load balancing in the first dual-core when aggregated CC low, and if no=
-t in
-the full quad-core. Results show that we got power savings and no subst=
-antial
-performance regression (even gains for some). The workloads we used to
-evaluate the Workload Consolidation include 1) 50+ perf/ux benchmarks (=
-almost
-all of the magazine ones), and 2) ~10 power workloads, of course, they =
-are the
-easiest ones, such as browsing, audio, video, recording, imaging, etc.
-
-v4:
-- Reuse per task load average to calculate CC
-- Enable SD_WORKLOAD_CONSOLIDATION in sched_domain initialization
-- Reuse active_load_balance_cpu_stop
-
-v3:
-- Removed rq->avg first, and base our patch on it
-- Removed all CONFIG_CPU_CONCURRENCY and CONFIG_WORKLOAD_CONSOLIDATION
-- CPU CC will be updated mandatory
-- CPU WC can be enabled/disabled by flags per domain level on the fly=20
-- CPU CC and WC is completely fair scheduler thing, don't touch RT anym=
-ore
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index f7e11c7ea7d9..0305cde21a74 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -158,6 +158,42 @@ struct thermal_attr {
+ =09char name[THERMAL_NAME_LENGTH];
+ };
 =20
-v2:
-- Data type defined in formation
-
-Patchset against linux-next v3.16-rc2.
-
-Yuyang Du (9):
-  sched: Remove update_rq_runnable_avg
-  sched: Precise accumulated time and acount runnable number in
-    update_entity_runnable_avg
-  How CPU ConCurrency (CC) accrues with runqueue change and time
-  Define SD_WORKLOAD_CONSOLIDATION and attach to sched_domain
-  Workload Consolidation: Consolidating workload to a subset of CPUs if
-    possible
-  Implement Workload Consolidation in wakeup/fork/exec
-  Implement Workload Consolidation in idle_balance
-  Implement Workload Consolidation in nohz_idle_balance
-  Implement Workload Consolidation in periodic load balance
-
- include/linux/sched.h        |    9 +-
- include/linux/sched/sysctl.h |    4 +
- kernel/sched/core.c          |   46 +++-
- kernel/sched/debug.c         |    8 -
- kernel/sched/fair.c          |  576 ++++++++++++++++++++++++++++++++++=
-+++++---
- kernel/sched/sched.h         |   17 +-
- kernel/sysctl.c              |    9 +
- 7 files changed, 612 insertions(+), 57 deletions(-)
-
++/**
++ * struct thermal_zone_device - structure for a thermal zone
++ * @id:=09=09unique id number for each thermal zone
++ * @type:=09the thermal zone device type
++ * @device:=09&struct device for this thermal zone
++ * @trip_temp_attrs:=09attributes for trip points for sysfs: trip temperat=
+ure
++ * @trip_type_attrs:=09attributes for trip points for sysfs: trip type
++ * @trip_hyst_attrs:=09attributes for trip points for sysfs: trip hysteres=
+is
++ * @devdata:=09private pointer for device private data
++ * @trips:=09number of trip points the thermal zone supports
++ * @passive_delay:=09number of milliseconds to wait between polls when
++ *=09=09=09performing passive cooling.  Currenty only used by the
++ *=09=09=09step-wise governor
++ * @polling_delay:=09number of milliseconds to wait between polls when
++ *=09=09=09checking whether trip points have been crossed (0 for
++ *=09=09=09interrupt driven systems)
++ * @temperature:=09current temperature.  This is only for core code,
++ *=09=09=09drivers should use thermal_zone_get_temp() to get the
++ *=09=09=09current temperature
++ * @last_temperature:=09previous temperature read
++ * @emul_temperature:=09emulated temperature when using CONFIG_THERMAL_EMU=
+LATION
++ * @passive:=09=091 if you've crossed a passive trip point, 0 otherwise.
++ *=09=09=09Currenty only used by the step-wise governor.
++ * @forced_passive:=09If > 0, temperature at which to switch on all ACPI
++ *=09=09=09processor cooling devices.  Currently only used by the
++ *=09=09=09step-wise governor.
++ * @ops:=09operations this &thermal_zone_device supports
++ * @tzp:=09thermal zone parameters
++ * @governor:=09pointer to the governor for this thermal zone
++ * @thermal_instances:=09list of &struct thermal_instance of this thermal =
+zone
++ * @idr:=09&struct idr to generate unique id for this zone's cooling
++ *=09=09devices
++ * @lock:=09lock to protect thermal_instances list
++ * @node:=09node in thermal_tz_list (in thermal_core.c)
++ * @poll_queue:=09delayed work for polling
++ */
+ struct thermal_zone_device {
+ =09int id;
+ =09char type[THERMAL_NAME_LENGTH];
+@@ -179,12 +215,18 @@ struct thermal_zone_device {
+ =09struct thermal_governor *governor;
+ =09struct list_head thermal_instances;
+ =09struct idr idr;
+-=09struct mutex lock; /* protect thermal_instances list */
++=09struct mutex lock;
+ =09struct list_head node;
+ =09struct delayed_work poll_queue;
+ };
+=20
+-/* Structure that holds thermal governor information */
++/**
++ * struct thermal_governor - structure that holds thermal governor informa=
+tion
++ * @name:=09name of the governor
++ * @throttle:=09callback called for every trip point even if temperature i=
+s
++ *=09=09below the trip point temperature
++ * @governor_list:=09node in thermal_governor_list (in thermal_core.c)
++ */
+ struct thermal_governor {
+ =09char name[THERMAL_NAME_LENGTH];
+ =09int (*throttle)(struct thermal_zone_device *tz, int trip);
 --=20
-1.7.9.5
+1.9.1
