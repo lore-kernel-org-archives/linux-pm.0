@@ -1,160 +1,117 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: [RFC PATCH 6/9 v4] Implement Workload Consolidation in wakeup/fork/exec
-Date: Wed, 25 Jun 2014 08:36:05 +0800
-Message-ID: <1403656568-32445-7-git-send-email-yuyang.du@intel.com>
-References: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch V3 12/16] x86, irq, ACPI: Implement interface to support ACPI based IOAPIC hot-addition
+Date: Wed, 25 Jun 2014 16:40:43 +0800
+Message-ID: <1403685648-10103-13-git-send-email-jiang.liu@linux.intel.com>
+References: <1403685648-10103-1-git-send-email-jiang.liu@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403656568-32445-1-git-send-email-yuyang.du@intel.com>
+In-Reply-To: <1403685648-10103-1-git-send-email-jiang.liu@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mingo@redhat.com, peterz@infradead.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: arjan.van.de.ven@intel.com, len.brown@intel.com, alan.cox@intel.com, mark.gross@intel.com, morten.rasmussen@arm.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com, rajeev.d.muralidhar@intel.com, vishwesh.m.rudramuni@intel.com, nicole.chalhoub@intel.com, ajaya.durg@intel.com, harinarayanan.seshadri@intel.com, jacob.jun.pan@linux.intel.com, Yuyang Du <yuyang.du@intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Jiang Liu <jiang.liu@linux.intel.com>, Grant Likely <grant.likely@linaro.org>, Prarit Bhargava <prarit@redhat.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In WAKE_AFFINE, if the target (in wakee and waker order) is not idle, but the
-the target is capable of handling the wakee task according to CC, we also
-select it.
+Implement acpi_register_ioapic() and enhance mp_register_ioapic()
+to support ACPI based IOAPIC hot-addition.
 
-When to find the idlest sched_group, we first try to find the consolidated group.
-
-Signed-off-by: Yuyang Du <yuyang.du@intel.com>
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- include/linux/sched/sysctl.h |    4 ++++
- kernel/sched/fair.c          |   52 +++++++++++++++++++++++++++++++++++++++---
- kernel/sysctl.c              |    9 ++++++++
- 3 files changed, 62 insertions(+), 3 deletions(-)
+ arch/x86/kernel/acpi/boot.c    |   31 +++++++++++++++++++++++++++++--
+ arch/x86/kernel/apic/io_apic.c |   27 ++++++++++++++++++++++++---
+ 2 files changed, 53 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
-index 596a0e0..78acbd7 100644
---- a/include/linux/sched/sysctl.h
-+++ b/include/linux/sched/sysctl.h
-@@ -40,6 +40,10 @@ extern unsigned int sysctl_sched_min_granularity;
- extern unsigned int sysctl_sched_wakeup_granularity;
- extern unsigned int sysctl_sched_child_runs_first;
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 120b573f1e96..c5a0abd0be82 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -768,8 +768,35 @@ EXPORT_SYMBOL(acpi_unmap_lsapic);
  
-+#ifdef CONFIG_SMP
-+extern unsigned int sysctl_sched_cc_wakeup_threshold;
+ int acpi_register_ioapic(acpi_handle handle, u64 phys_addr, u32 gsi_base)
+ {
+-	/* TBD */
+-	return -EINVAL;
++	int ret = -ENOSYS;
++#ifdef CONFIG_ACPI_HOTPLUG_IOAPIC
++	int ioapic_id;
++	u64 addr;
++	struct ioapic_domain_cfg cfg = {
++		.type = IOAPIC_DOMAIN_DYNAMIC,
++		.ops = &acpi_irqdomain_ops,
++	};
++
++	ioapic_id = acpi_get_ioapic_id(handle, gsi_base, &addr);
++	if (ioapic_id < 0) {
++		unsigned long long uid;
++		acpi_status status;
++
++		status = acpi_evaluate_integer(handle, METHOD_NAME__UID,
++					       NULL, &uid);
++		if (ACPI_FAILURE(status)) {
++			acpi_handle_warn(handle, "failed to get IOAPIC ID.\n");
++			return -EINVAL;
++		}
++		ioapic_id = (int)uid;
++	}
++
++	down_write(&acpi_ioapic_rwsem);
++	ret  = mp_register_ioapic(ioapic_id, phys_addr, gsi_base, &cfg);
++	up_write(&acpi_ioapic_rwsem);
 +#endif
 +
- enum sched_tunable_scaling {
- 	SCHED_TUNABLESCALING_NONE,
- 	SCHED_TUNABLESCALING_LOG,
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 7f80058..008cbc9 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2606,6 +2606,9 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
++	return ret;
  }
  
- static inline void update_cpu_concurrency(struct rq *rq);
-+static struct sched_group *wc_find_group(struct sched_domain *sd,
-+	struct task_struct *p, int this_cpu);
-+static int cpu_cc_capable(int cpu);
+ EXPORT_SYMBOL(acpi_register_ioapic);
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 18b5ce0c2bc9..1b6a64ed2472 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3846,7 +3846,13 @@ static int bad_ioapic_register(int idx)
  
- /*
-  * Update the rq's load with the elapsed running time before entering
-@@ -4421,7 +4424,19 @@ static int select_idle_sibling(struct task_struct *p, int target)
- 	struct sched_group *sg;
- 	int i = task_cpu(p);
- 
--	if (idle_cpu(target))
-+	/*
-+	 * We prefer wakee to waker CPU. For each of them, if it is idle, then
-+	 * select it, but if not, we lower down the bar to use a threshold of CC
-+	 * to determine whether it is capable of handling the wakee task
-+	 */
-+	if (sysctl_sched_cc_wakeup_threshold) {
-+		if (idle_cpu(i) || cpu_cc_capable(i))
-+			return i;
+ static int find_free_ioapic_entry(void)
+ {
+-	return nr_ioapics;
++	int idx;
 +
-+		if (i != target && (idle_cpu(target) || cpu_cc_capable(target)))
-+			return target;
-+	}
-+	else if (idle_cpu(target))
- 		return target;
++	for (idx = 0; idx < MAX_IO_APICS; idx++)
++		if (ioapics[idx].nr_registers == 0)
++			return idx;
++
++	return MAX_IO_APICS;
+ }
  
- 	/*
-@@ -4515,7 +4530,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+@@ -3862,8 +3868,15 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
  	}
- 
- 	while (sd) {
--		struct sched_group *group;
-+		struct sched_group *group = NULL;
- 		int weight;
- 
- 		if (!(sd->flags & sd_flag)) {
-@@ -4523,7 +4538,12 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
- 			continue;
+ 	for_each_ioapic(ioapic)
+ 		if (ioapics[ioapic].mp_config.apicaddr == address) {
+-			pr_warn("address 0x%x conflicts with IOAPIC%d\n",
+-				address, ioapic);
++			/*
++			 * IOAPIC unit may also be visible in PCI scope.
++			 * When ioapic PCI driver's probe() is called,
++			 * the IOAPIC unit may have already been initialized
++			 * at boot time.
++			 */
++			if (!ioapic_initialized)
++				pr_warn("address 0x%x conflicts with IOAPIC%d\n",
++					address, ioapic);
+ 			return -EEXIST;
  		}
  
--		group = find_idlest_group(sd, p, cpu, sd_flag);
-+		if (sd->flags & SD_WORKLOAD_CONSOLIDATION)
-+			group = wc_find_group(sd, p, cpu);
-+
-+		if (!group)
-+			group = find_idlest_group(sd, p, cpu, sd_flag);
-+
- 		if (!group) {
- 			sd = sd->child;
- 			continue;
-@@ -7834,6 +7854,12 @@ __init void init_sched_fair_class(void)
-  */
+@@ -3913,6 +3926,14 @@ int mp_register_ioapic(int id, u32 address, u32 gsi_base,
+ 	ioapics[idx].irqdomain = NULL;
+ 	ioapics[idx].irqdomain_cfg = *cfg;
  
- /*
-+ * concurrency lower than this threshold percentage of cc 1
-+ * is capable of running wakee task, otherwise make it 0
-+ */
-+unsigned int sysctl_sched_cc_wakeup_threshold = 60UL;
++	if (ioapic_initialized) {
++		if (mp_irqdomain_create(idx)) {
++			clear_fixmap(FIX_IO_APIC_BASE_0 + idx);
++			return -ENOMEM;
++		}
++		alloc_ioapic_saved_registers(idx);
++	}
 +
-+/*
-  * we update cpu concurrency at:
-  * 1) enqueue task, which increases concurrency
-  * 2) dequeue task, which decreases concurrency
-@@ -7860,6 +7886,26 @@ static inline unsigned long get_cpu_concurrency(int cpu)
- 	return cpu_rq(cpu)->avg.load_avg_contrib;
- }
- 
-+/*
-+ * whether cpu is capable of having more concurrency
-+ */
-+static int cpu_cc_capable(int cpu)
-+{
-+	u64 cpu_cc = get_cpu_concurrency(cpu);
-+	u64 threshold = cc_weight(1);
-+
-+	cpu_cc *= 100;
-+	cpu_cc *= capacity_of(cpu);
-+
-+	threshold *= sysctl_sched_cc_wakeup_threshold;
-+	threshold <<= SCHED_CAPACITY_SHIFT;
-+
-+	if (cpu_cc <= threshold)
-+		return 1;
-+
-+	return 0;
-+}
-+
- static inline u64 sched_group_cc(struct sched_group *sg)
- {
- 	u64 sg_cc = 0;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 7de6555..987557b 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1102,6 +1102,15 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= proc_dointvec,
- 	},
- #endif
-+#ifdef CONFIG_SMP
-+	{
-+		.procname	= "sched_cc_wakeup_threshold",
-+		.data		= &sysctl_sched_cc_wakeup_threshold,
-+		.maxlen		= sizeof(sysctl_sched_cc_wakeup_threshold),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dointvec,
-+	},
-+#endif
- 	{ }
- };
- 
+ 	if (gsi_cfg->gsi_end >= gsi_top)
+ 		gsi_top = gsi_cfg->gsi_end + 1;
+ 	if (nr_ioapics <= idx)
 -- 
-1.7.9.5
+1.7.10.4
