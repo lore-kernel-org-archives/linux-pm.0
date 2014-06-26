@@ -1,34 +1,44 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
-Date: Thu, 26 Jun 2014 13:04:35 +0530
-Message-ID: <CAKohpokK+2hJ=pbLsjaqE_R3yBKcP-BwmH6RYdNRv69O-4ah8Q@mail.gmail.com>
-References: <cover.1403684824.git.viresh.kumar@linaro.org>
-	<e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
-	<53AB1CC1.4010907@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f43.google.com ([209.85.192.43]:50760 "EHLO
-	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754668AbaFZHeg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jun 2014 03:34:36 -0400
-Received: by mail-qg0-f43.google.com with SMTP id z60so2741108qgd.30
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2014 00:34:36 -0700 (PDT)
-In-Reply-To: <53AB1CC1.4010907@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH] cpufreq: report driver's successful {un}registration
+Date: Thu, 26 Jun 2014 14:21:30 +0530
+Message-ID: <9e68cba2bf41923630ea93de7c3d17637f175895.1403772686.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Mike Turquette <mturquette@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, Mark Rutland <Mark.Rutland@arm.com>
 
-On 26 June 2014 00:32, Stephen Boyd <sboyd@codeaurora.org> wrote:
+We do report driver's successful {un}registration from cpufreq core, but is done
+with pr_debug() and so this doesn't appear in boot logs.
 
->> +     cpu_reg = regulator_get_optional(cpu_dev, "cpu0");
+Convert this to pr_info() to make it visible in logs.
 
-> I don't think this driver should be using regulator_get_optional() (Mark
-> B. please correct me if I'm wrong). I doubt a supply is actually
-> optional for CPUs, just some DTs aren't specifying them. In those cases,
-> the regulator core will insert a dummy supply and the code will work
-> without having to check for probe defer and error pointers.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-This is what Mark did earlier, don't know if he would like to revert it:
-7d74897 (cpufreq: cpufreq-cpu0: Use devm_regulator_get_optional()).
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 62259d2..63d8f8f 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2468,7 +2468,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+ 	}
+ 
+ 	register_hotcpu_notifier(&cpufreq_cpu_notifier);
+-	pr_debug("driver %s up and running\n", driver_data->name);
++	pr_info("driver %s up and running\n", driver_data->name);
+ 
+ 	return 0;
+ err_if_unreg:
+@@ -2499,7 +2499,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+ 	if (!cpufreq_driver || (driver != cpufreq_driver))
+ 		return -EINVAL;
+ 
+-	pr_debug("unregistering driver %s\n", driver->name);
++	pr_info("unregistering driver %s\n", driver->name);
+ 
+ 	subsys_interface_unregister(&cpufreq_interface);
+ 	if (cpufreq_boost_supported())
+-- 
+2.0.0.rc2
