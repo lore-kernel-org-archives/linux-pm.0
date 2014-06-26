@@ -1,128 +1,113 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v5 4/8] arm64: add PSCI CPU_SUSPEND based cpu_suspend
- support
-Date: Thu, 26 Jun 2014 12:23:35 +0100
-Message-ID: <20140626112335.GC25130@e102568-lin.cambridge.arm.com>
-References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1403705421-17597-5-git-send-email-lorenzo.pieralisi@arm.com>
- <20140625160911.GG15240@leverpostej>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+From: Thomas Abraham <thomas.ab@samsung.com>
+Subject: [PATCH] cpufreq: arm_big_little: set lowest frequcency for cluster when no cpus in it
+Date: Thu, 26 Jun 2014 20:38:33 +0530
+Message-ID: <1403795313-6903-1-git-send-email-thomas.ab@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:49784 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755679AbaFZLXm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jun 2014 07:23:42 -0400
-In-Reply-To: <20140625160911.GG15240@leverpostej>
-Content-Disposition: inline
+Received: from mail-pb0-f54.google.com ([209.85.160.54]:40648 "EHLO
+	mail-pb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752751AbaFZPIt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jun 2014 11:08:49 -0400
+Received: by mail-pb0-f54.google.com with SMTP id un15so3261429pbc.41
+        for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2014 08:08:49 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel>
+To: linux-pm@vger.kernel.org
+Cc: viresh.kumar@linaro.org, sudeep.karkadanagesha@arm.com, thomas.ab@samsung.com
 
-On Wed, Jun 25, 2014 at 05:09:11PM +0100, Mark Rutland wrote:
-> On Wed, Jun 25, 2014 at 03:10:17PM +0100, Lorenzo Pieralisi wrote:
-> > This patch implements the cpu_suspend cpu operations method through
-> > the PSCI CPU_SUSPEND API. The PSCI implementation translates the idle state
-> > index passed by the cpu_suspend core call into a valid PSCI state according to
-> > the PSCI states initialized at boot by the PSCI suspend backend.
-> > 
-> > Entry point is set to cpu_resume physical address, that represents the
-> > default kernel execution address following a CPU reset.
-> > 
-> > Idle state indices missing a DT node description are initialized to power
-> > state standby WFI so that if called by the idle driver they provide the
-> > default behaviour.
-> > 
-> > Reviewed-by: Sebastian Capella <sebcape@gmail.com>
-> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > ---
-> >  arch/arm64/include/asm/psci.h |   4 ++
-> >  arch/arm64/kernel/psci.c      | 103 ++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 107 insertions(+)
-> 
-> [...]
-> 
-> > +static void psci_power_state_unpack(u32 power_state,
-> > +				    struct psci_power_state *state)
-> > +{
-> > +	state->id = (power_state & PSCI_0_2_POWER_STATE_ID_MASK) >>
-> > +			PSCI_0_2_POWER_STATE_ID_SHIFT;
-> > +	state->type = (power_state & PSCI_0_2_POWER_STATE_TYPE_MASK) >>
-> > +			PSCI_0_2_POWER_STATE_TYPE_SHIFT;
-> > +	state->affinity_level =
-> > +			(power_state & PSCI_0_2_POWER_STATE_AFFL_MASK) >>
-> > +			PSCI_0_2_POWER_STATE_AFFL_SHIFT;
-> > +}
-> 
-> Is this valid for PSCI versions prior to 0.2?
+From: Thomas Abraham <thomas.ab@samsung.com>
 
-Yes, it should, as for the packing function.
+If there are no active cpus in a cluster, the clock frequency of the cluster
+can be lowered to the lowest possible frequency for that cluster. This can
+help reduce the output clock speed of the PLL clocking the cluster and
+save power.
 
-> >  /*
-> >   * The following two functions are invoked via the invoke_psci_fn pointer
-> >   * and will not be inlined, allowing us to piggyback on the AAPCS.
-> > @@ -199,6 +216,77 @@ static int psci_migrate_info_type(void)
-> >  	return err;
-> >  }
-> >  
-> > +int __init psci_dt_register_idle_states(struct cpuidle_driver *drv,
-> > +					struct device_node *state_nodes[])
-> > +{
-> > +	int cpu, i;
-> 
-> Perhaps unsigned int? You print i with %u below.
+The get_table_min() function is also moved with this change to avoid forward
+declaration. The function get_table_max() is also moved along with
+get_table_min() so that these two functions are adjacent the code.
 
-Yes.
+Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+---
+ drivers/cpufreq/arm_big_little.c |   51 +++++++++++++++++++++-----------------
+ 1 file changed, 28 insertions(+), 23 deletions(-)
 
-> > +	for (i = 0; i < drv->state_count; i++) {
-> > +		u32 psci_power_state;
-> > +
-> > +		if (!state_nodes[i]) {
-> > +			/*
-> > +			 * An index with a missing node pointer falls back to
-> > +			 * simple STANDBYWFI
-> > +			 */
-> > +			psci_states[i].type = PSCI_POWER_STATE_TYPE_STANDBY;
-> > +			continue;
-> > +		}
-> 
-> Does this make sense? Are there any limitations on which state nodes
-> could be missing?
-
-I think the check is overkill, you are right.
-
-> > +
-> > +		if (of_property_read_u32(state_nodes[i], "entry-method-param",
-> > +					 &psci_power_state)) {
-> > +			pr_warn(" * %s missing entry-method-param property\n",
-> > +				state_nodes[i]->full_name);
-> > +			/*
-> > +			 * If entry-method-param property is missing, fall
-> > +			 * back to STANDBYWFI state
-> > +			 */
-> > +			psci_states[i].type = PSCI_POWER_STATE_TYPE_STANDBY;
-> > +			continue;
-> 
-> Surely we want to throw away these states instead?
-> 
-> Otherwise we can get into a mess like:
-> 
-> psci_states[0] => low power state
-> psci_states[1] => lower power state
-> psci_states[2] => WFI / not low power
-> psci_states[3] => lowest power state
-> 
-> Where power usage and latency would jump around rather than follow
-> monotonic patterns.
-
-I do not think that's a problem by itself, but honestly I think you have
-a point. It is better to barf, throw away the states and avoid initializing
-CPUidle to force a firmware update than keep going with a state that is
-actually not doing what it probably was designed for, I just tried to be too
-accommodating on this.
-
-Thanks,
-Lorenzo
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 1f4d4e3..4b1431f 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -75,6 +75,28 @@ static inline int cpu_to_cluster(int cpu)
+ 		MAX_CLUSTERS : raw_cpu_to_cluster(cpu);
+ }
+ 
++/* get the minimum frequency in the cpufreq_frequency_table */
++static inline u32 get_table_min(struct cpufreq_frequency_table *table)
++{
++	struct cpufreq_frequency_table *pos;
++	uint32_t min_freq = ~0;
++	cpufreq_for_each_entry(pos, table)
++		if (pos->frequency < min_freq)
++			min_freq = pos->frequency;
++	return min_freq;
++}
++
++/* get the maximum frequency in the cpufreq_frequency_table */
++static inline u32 get_table_max(struct cpufreq_frequency_table *table)
++{
++	struct cpufreq_frequency_table *pos;
++	uint32_t max_freq = 0;
++	cpufreq_for_each_entry(pos, table)
++		if (pos->frequency > max_freq)
++			max_freq = pos->frequency;
++	return max_freq;
++}
++
+ static unsigned int find_cluster_maxfreq(int cluster)
+ {
+ 	int j;
+@@ -170,9 +192,14 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 
+ 		mutex_lock(&cluster_lock[old_cluster]);
+ 
+-		/* Set freq of old cluster if there are cpus left on it */
++		/*
++		 * Set freq of old cluster. If there are no cpus left on it,
++		 * set the lowest possible frequency for that cluster.
++		 */
+ 		new_rate = find_cluster_maxfreq(old_cluster);
+ 		new_rate = ACTUAL_FREQ(old_cluster, new_rate);
++		if (!new_rate)
++			new_rate = get_table_min(freq_table[old_cluster]);
+ 
+ 		if (new_rate) {
+ 			pr_debug("%s: Updating rate of old cluster: %d, to freq: %d\n",
+@@ -223,28 +250,6 @@ static inline u32 get_table_count(struct cpufreq_frequency_table *table)
+ 	return count;
+ }
+ 
+-/* get the minimum frequency in the cpufreq_frequency_table */
+-static inline u32 get_table_min(struct cpufreq_frequency_table *table)
+-{
+-	struct cpufreq_frequency_table *pos;
+-	uint32_t min_freq = ~0;
+-	cpufreq_for_each_entry(pos, table)
+-		if (pos->frequency < min_freq)
+-			min_freq = pos->frequency;
+-	return min_freq;
+-}
+-
+-/* get the maximum frequency in the cpufreq_frequency_table */
+-static inline u32 get_table_max(struct cpufreq_frequency_table *table)
+-{
+-	struct cpufreq_frequency_table *pos;
+-	uint32_t max_freq = 0;
+-	cpufreq_for_each_entry(pos, table)
+-		if (pos->frequency > max_freq)
+-			max_freq = pos->frequency;
+-	return max_freq;
+-}
+-
+ static int merge_cluster_tables(void)
+ {
+ 	int i, j, k = 0, count = 1;
+-- 
+1.7.9.5
 
