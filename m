@@ -1,44 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: report driver's successful {un}registration
-Date: Thu, 26 Jun 2014 14:21:30 +0530
-Message-ID: <9e68cba2bf41923630ea93de7c3d17637f175895.1403772686.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [PATCH] MAINTAINERS: Update Eduardo Valentin's email address
+Date: Thu, 26 Jun 2014 10:00:09 +0100
+Message-ID: <20140626090009.GB2825@e104805>
+References: <1401444208-6887-1-git-send-email-lee.jones@linaro.org>
+ <20140602172800.GA5902@developer>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:56046 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753929AbaFZJAN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jun 2014 05:00:13 -0400
+In-Reply-To: <20140602172800.GA5902@developer>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-We do report driver's successful {un}registration from cpufreq core, but is done
-with pr_debug() and so this doesn't appear in boot logs.
+On Mon, Jun 02, 2014 at 06:28:00PM +0100, Eduardo Valentin wrote:
+> Hello Lee Jones,
+> 
+> On Fri, May 30, 2014 at 11:03:28AM +0100, Lee Jones wrote:
+> > Eduardo TI address is bouncing, but it looks like he's still
+> > contributing via his Gmail address.
+> > 
+> 
+> Thanks for being proactive! I actually sent the very same patch a while
+> ago:
+> 
+> 
+> https://lkml.org/lkml/2014/4/2/644
+> 
+> 
+> Maybe it's fallen into the cracks.
+> 
+> Rui, any idea what is the status of that patch?
 
-Convert this to pr_info() to make it visible in logs.
+I've been bitten by this *again*.  This patch should've been in
+3.15-rc1, it's 3.16-rc2 and Eduardo's email is still outdated in the
+MAINTAINERS file.  The thermal tree seems to be pretty stale lately
+and patches are rotting in the list, but this update should really get
+into the kernel ASAP.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Eduardo, can you send this to trivial@kernel.org ?
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 62259d2..63d8f8f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2468,7 +2468,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	}
- 
- 	register_hotcpu_notifier(&cpufreq_cpu_notifier);
--	pr_debug("driver %s up and running\n", driver_data->name);
-+	pr_info("driver %s up and running\n", driver_data->name);
- 
- 	return 0;
- err_if_unreg:
-@@ -2499,7 +2499,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- 	if (!cpufreq_driver || (driver != cpufreq_driver))
- 		return -EINVAL;
- 
--	pr_debug("unregistering driver %s\n", driver->name);
-+	pr_info("unregistering driver %s\n", driver->name);
- 
- 	subsys_interface_unregister(&cpufreq_interface);
- 	if (cpufreq_boost_supported())
--- 
-2.0.0.rc2
