@@ -1,58 +1,60 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT idle states
- bindings
-Date: Thu, 26 Jun 2014 15:30:22 -0400 (EDT)
-Message-ID: <alpine.LFD.2.11.1406261527520.16842@knanqh.ubzr>
-References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com> <1403705421-17597-2-git-send-email-lorenzo.pieralisi@arm.com> <alpine.LFD.2.11.1406251154500.16842@knanqh.ubzr> <20140626101707.GB25130@e102568-lin.cambridge.arm.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
+Date: Thu, 26 Jun 2014 23:08:23 +0100
+Message-ID: <20140626220823.GA23300@sirena.org.uk>
+References: <cover.1403684824.git.viresh.kumar@linaro.org>
+ <e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
+ <53AB1CC1.4010907@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f176.google.com ([209.85.216.176]:37191 "EHLO
-	mail-qc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750844AbaFZTaZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jun 2014 15:30:25 -0400
-Received: by mail-qc0-f176.google.com with SMTP id w7so3541637qcr.21
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2014 12:30:24 -0700 (PDT)
-In-Reply-To: <20140626101707.GB25130@e102568-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SBYWXwvsCkEY5LOm"
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <53AB1CC1.4010907@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, shawn.guo@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Mark Rutland <Mark.Rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@ke>
 
-On Thu, 26 Jun 2014, Lorenzo Pieralisi wrote:
 
-> On Wed, Jun 25, 2014 at 04:56:02PM +0100, Nicolas Pitre wrote:
-> > On Wed, 25 Jun 2014, Lorenzo Pieralisi wrote:
-> > 
-> > > ARM based platforms implement a variety of power management schemes that
-> > > allow processors to enter idle states at run-time.
-> > > The parameters defining these idle states vary on a per-platform basis forcing
-> > > the OS to hardcode the state parameters in platform specific static tables
-> > > whose size grows as the number of platforms supported in the kernel increases
-> > > and hampers device drivers standardization.
-> > >
-> > > Therefore, this patch aims at standardizing idle state device tree bindings for
-> > > ARM platforms. Bindings define idle state parameters inclusive of entry methods
-> > > and state latencies, to allow operating systems to retrieve the configuration
-> > > entries from the device tree and initialize the related power management
-> > > drivers, paving the way for common code in the kernel to deal with idle
-> > > states and removing the need for static data in current and previous kernel
-> > > versions.
-> > >
-> > > Reviewed-by: Sebastian Capella <sebcape@gmail.com>
-> > > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> > 
-> > Excellent.
-> > 
-> > Reviewed-by: Nicolas Pitre <nico@linaro.org>
-> 
-> Thanks Nico, there are still a couple of niggles to sort out (ie local
-> timer state), but the bulk of the document should be complete I hope.
-> 
-> I will postpone adding your (and Seb's) Reviewed-by until we have a
-> final agreement if it is ok with you.
+--SBYWXwvsCkEY5LOm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-As you wish.  The parts I care about are now well covered.  I don't 
-think I know enough about timers to comment further.
+On Wed, Jun 25, 2014 at 12:02:25PM -0700, Stephen Boyd wrote:
 
-Nicolas
+> I don't think this driver should be using regulator_get_optional() (Mark
+> B. please correct me if I'm wrong). I doubt a supply is actually
+> optional for CPUs, just some DTs aren't specifying them. In those cases,
+> the regulator core will insert a dummy supply and the code will work
+> without having to check for probe defer and error pointers.
+
+Since the cpufreq driver is actively working with the regulator,
+changing voltages and so on it's mostly OK, it's kind of on the border
+of something that should do this but there doesn't seem to be a
+reasonable way for it to handle not being able to read the voltage
+cleanly.
+
+--SBYWXwvsCkEY5LOm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBAgAGBQJTrJnUAAoJELSic+t+oim92ToP/1adATu1Vz3pLnwXdvk2tjW+
+elwWYdTUVwGzSM6shgqo8CxkbLyiqCNJgdHUUCXPEDvZDTyBDq9zmMVTyGKNY1o6
+dbWma1DbTk98kB0DbfQsePSv0N8JyW/D7TSMZfFD+40wS7ZQ8Ue971gjiyY3xewJ
+ascenpiRLyrbzgEZoBBbCJ9wXVlI5ZGqiR7y8Aj983iAFDOtj4OBBBTF+O5YC3it
+L+0yNCVcJY6H0vyaJ2YuFqmZh0ojDJmryIZ7yC6nd4VE0nYk9b74vjj+NX92xE9V
+P9CtufSXWXneD6yuYei2PE1HmfWnB9ZC973EgXdnI2ikq9ow9BuBjz2IF/qD2m93
+QfcI2DDjN1fL6KoYW0rY3LFkfW9X7078wn6ZmaDCL361NFx1g8d8ZZMhtMNxte/A
+LVLgzdgvB5u9Kxz1BwXgEzTLfSqLg6W2yEJOAyK6DNyrcNtOrqRTmigAeneIPbMu
+8u94gSNcLqhDuw0Fr3ye88XoK/u9KYP5W6/UqBCieR6rEOXac8exVcnPBkOK2Xe3
+tZpA8hRnHG88zOGGyAw2pF1pFzqQ19oEZ4qrlcYG8vOYIzZS0VmM86qVucbgH8I0
+s7GBPV2ckfZgQ46k2uZ0AYFYXCFwG2mitYILzq/MqVFwsck6uMYDbB/suyIIF6H1
+SyQlUF8RgDxlONuUtMM+
+=MWWT
+-----END PGP SIGNATURE-----
+
+--SBYWXwvsCkEY5LOm--
