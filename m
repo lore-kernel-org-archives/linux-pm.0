@@ -1,84 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: arm_big_little: set lowest frequcency for
- cluster when no cpus in it
-Date: Fri, 27 Jun 2014 12:18:24 +0530
-Message-ID: <CAKohponCoTuoYaLFWzOhZm2XVYjkS2VUsePuso8othxAVsgsyw@mail.gmail.com>
-References: <1403795313-6903-1-git-send-email-thomas.ab@samsung.com>
-	<CAKohpomv=0y30q09fuuRDOGQ_XtuKnerC830vFExNok9mAcyfw@mail.gmail.com>
-	<53AC42CE.2050304@arm.com>
-	<CAJuA9agJb4xx--ujc3=efeFNFLiw4o87nOig8u-X+kY0wj99dA@mail.gmail.com>
-	<53AC6D31.7010709@arm.com>
-	<CAJuA9ajOAhZAzwJEsP9bU83n=n30pgawy-otGU4t=d3ADVKOwg@mail.gmail.com>
+From: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH 0/6] of-thermal hardware trip points + Tegra124 SOCTHERM driver
+Date: Fri, 27 Jun 2014 11:11:33 +0300
+Message-ID: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:37554 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbaF0GsZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 02:48:25 -0400
-Received: by mail-ob0-f173.google.com with SMTP id va2so5189708obc.18
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jun 2014 23:48:24 -0700 (PDT)
-In-Reply-To: <CAJuA9ajOAhZAzwJEsP9bU83n=n30pgawy-otGU4t=d3ADVKOwg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 27 June 2014 11:41, Thomas Abraham <ta.omasab@gmail.com> wrote:
-> On Fri, Jun 27, 2014 at 12:27 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+Hi everyone,
 
->> Alternatively in a multi-cluster platform if I hotplug out all the cpus in
->> one
->> cluster, do you mean we still have to explicitly set the frequency to lowest
->> before the last cpu goes down.
->
-> Yes, but it would "after" the last cpu goes down. As mentioned in my
+this series adds support for hardware-tracked thermal trip points
+for the device tree thermal framework and introduces a new Tegra124 thermal
+driver that uses them.
 
-How will you change freq *after* last cpu goes down? This code
-always initiate freq-switch from last-cpu.
+Hardware-tracked trip points are trip points that do not need to be polled;
+the hardware gives an interrupt when the trip point is reached. The device
+tree thermal framework has not previously given the sensor driver any
+information about set trip points, so using these has been impossible.
+This series adds a new callback from of-thermal to the driver to allow telling
+the driver about trip points. The driver only needs to track two trip points,
+the framework ensures that the current temperature lies between those two.
+Behavior for drivers that do not include this callback is unchanged.
 
-Also, we must keep in mind that switching to lowest freq would make
-it take more time to execute the cluster shutdown code..
+The Tegra124 SOCTHERM thermal driver that is included exposes four thermal zones
+(the thermctl thermal zones) with hardware-tracked trip point support. While the
+hardware supports four tracked trip points, only one is used.
 
-> previous reply, there is an opportunity to save power by doing this.
->
->> This needs to be handled implicitly IMO, but
->> they may be some restrictions on some platforms which I am not aware of.
->
-> This change is useful on Exynos based platforms and not intrusive
-> either. So if we can get this on linux-next and gets test coverage on
-> other platforms until maybe -rc7, we can be reasonably sure that other
-> platforms are not affected by this. I see no reason in holding this
-> back just based on assumptions about other platforms.
+Mikko Perttunen (6):
+  thermal: of: Add support for hardware-tracked trip points
+  of: Add bindings for nvidia,tegra124-soctherm
+  ARM: tegra: Add thermal trip points for Jetson TK1
+  ARM: tegra: Add soctherm and thermal zones to Tegra124 device tree
+  clk: tegra: Add soctherm and tsensor clocks to Tegra124 init table
+  thermal: Add Tegra SOCTHERM thermal management driver
 
-I don't think getting this to linux-next would make a difference. There
-aren't many big LITTLE platforms, even lesser would be using linux-next
-and very very few would be using IKS :)
+ .../devicetree/bindings/thermal/tegra-soctherm.txt |  32 ++
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  32 ++
+ arch/arm/boot/dts/tegra124.dtsi                    |  48 ++
+ drivers/clk/tegra/clk-tegra124.c                   |   2 +
+ drivers/thermal/Kconfig                            |   7 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/of-thermal.c                       |  97 +++-
+ drivers/thermal/tegra_soctherm.c                   | 553 +++++++++++++++++++++
+ include/dt-bindings/thermal/tegra124-soctherm.h    |  15 +
+ include/linux/thermal.h                            |   3 +-
+ 10 files changed, 785 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+ create mode 100644 drivers/thermal/tegra_soctherm.c
+ create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
 
-So, we have to decide whatever we want here only.
-
-@Nicolas: Please comment here, we need your suggestions :)
-
-As I told you before, I wrote something similar long back and had the
-same mindset as you have now. Yes, it *might* be useful but we
-wanna be sure about it. That's why all these discussions. So, just
-hold on :)
-
-I am not asking you to reveal internals of Exynos octa, but what exactly
-is using this clock when the cluster goes down? L2 caches might stay on
-for a while if they have something useful, don't know exactly how the
-CPU clock would be affecting that..
-
-This is what my understanding is and it holds true for the cpuidle case
-sudeep mentioned:
-- If cluster is going to shutdown soon, there is no point changing clk rate.
-- If cluster isn't going down for a complete shutdown, yes we can save
-some power by playing with clk rate. And the L2 cache example above
-fits here.
-
-@Daniel: Are there some idle states for clusters where we aren't switching
-it off completely, but all CPUs are idle? And will switching to lowest freq
-sensible there ?
-
---
-viresh
+-- 
+1.8.1.5
