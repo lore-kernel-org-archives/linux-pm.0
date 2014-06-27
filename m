@@ -1,93 +1,102 @@
-From: Thomas Abraham <ta.omasab@gmail.com>
-Subject: Re: [PATCH] cpufreq: arm_big_little: set lowest frequcency for
- cluster when no cpus in it
-Date: Fri, 27 Jun 2014 16:23:41 +0530
-Message-ID: <CAJuA9agOAjHTsbnDM87=OFZNODr-DCW8zqmUcU98dbWL=j3bfA@mail.gmail.com>
-References: <1403795313-6903-1-git-send-email-thomas.ab@samsung.com>
-	<CAKohpomv=0y30q09fuuRDOGQ_XtuKnerC830vFExNok9mAcyfw@mail.gmail.com>
-	<53AC42CE.2050304@arm.com>
-	<CAJuA9agJb4xx--ujc3=efeFNFLiw4o87nOig8u-X+kY0wj99dA@mail.gmail.com>
-	<53AC6D31.7010709@arm.com>
-	<CAJuA9ajOAhZAzwJEsP9bU83n=n30pgawy-otGU4t=d3ADVKOwg@mail.gmail.com>
-	<CAKohponCoTuoYaLFWzOhZm2XVYjkS2VUsePuso8othxAVsgsyw@mail.gmail.com>
-	<CAJuA9agaMZJQ-qhBZ9oNxdyQh+4EC6VhYOSz5w9rR=5-C72B3Q@mail.gmail.com>
-	<CAKohpokL-ADipdxYa9Z3KWosDQtvGmQjugCzso+N+QEsGZVOmQ@mail.gmail.com>
-	<CAJuA9aiG6=BsqQR7sYS09GYfWLBwzk7zAsjqr29-DET144uLKg@mail.gmail.com>
-	<CAKohpokznx0AWPUBKXPZ65qJsMCQLxc1v3cAmC+r-t1=3mQAdQ@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT idle states bindings
+Date: Fri, 27 Jun 2014 11:53:45 +0100
+Message-ID: <20140627105345.GA3626@e102568-lin.cambridge.arm.com>
+References: <1403705421-17597-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1403705421-17597-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <20140625145849.GC15240@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f44.google.com ([209.85.215.44]:38517 "EHLO
-	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752872AbaF0Kxm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 06:53:42 -0400
-Received: by mail-la0-f44.google.com with SMTP id ty20so2821457lab.17
-        for <linux-pm@vger.kernel.org>; Fri, 27 Jun 2014 03:53:41 -0700 (PDT)
-In-Reply-To: <CAKohpokznx0AWPUBKXPZ65qJsMCQLxc1v3cAmC+r-t1=3mQAdQ@mail.gmail.com>
+Received: from service87.mimecast.com ([91.220.42.44]:33314 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbaF0Kxx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 06:53:53 -0400
+In-Reply-To: <20140625145849.GC15240@leverpostej>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, Nicolas Pitre <nico@linaro.org>, Rob Herring <robh+dt@kernel.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Antti Miettinen <ananaza@iki.fi>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@linaro.org>, Sebastian Capella <sebcape@gmail.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel>
 
-On Fri, Jun 27, 2014 at 3:46 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 27 June 2014 15:37, Thomas Abraham <ta.omasab@gmail.com> wrote:
->> I was trying to emphasis on the point that we are reducing the
->> frequency of the outbound cluster. The inbound CPU (pair of the last
->> man CPU in the outbound cluster) would be executing useful code while
->> the outbound last man CPU is executing the cluster down sequence. Does
->> it hurt if the cluster down sequence is executed a bit slower (and if
->> yes, then why not set the max speed of the cluster for cluster down).
->
-> Okay, I wasn't worried about performance but power here.
->
-> What I meant was that, because it *might* take more time to
-> shutdown the cluster it will be on for longer. And so might end up
-> consuming more power with this.
+On Wed, Jun 25, 2014 at 03:58:49PM +0100, Mark Rutland wrote:
 
-Ok. It is a comparison with the amount of power saved during the
-duration in which cluster remains inactive and clocked at a lower
-speed.
+[...]
 
->
->> I haven't checked in detail but won't the cluster down be completed
->> most of the times before return from bL_switch_request()?
->
-> No idea :)
->
->> Depending on the frequency of the outbound cluster, the savings was
->> about 5~10mA. It is close to 25mA in case the PLL driving the CPU is
->> also turned off.
->
-> Shouldn't we talk about Energy here instead of current?
+> > +===========================================
+> > +4 - state node
+> > +===========================================
+> > +
+> > +A state node represents an idle state description and must be defined as
+> > +follows:
+> > +
+> > +- state node
+> > +
+> > +       Description: must be child of the idle-states node
+> > +
+> > +       The state node name shall follow standard device tree naming
+> > +       rules ([5], 2.2.1 "Node names"), in particular state nodes which
+> > +       are siblings within a single common parent must be given a unique name.
+> > +
+> > +       The idle state entered by executing the wfi instruction (idle_standby
+> > +       SBSA,[3][4]) is considered standard on all ARM platforms and therefore
+> > +       must not be listed.
+> > +
+> > +       With the definitions provided above, the following list represents
+> > +       the valid properties for a state node:
+> > +
+> > +       - compatible
+> > +               Usage: Required
+> > +               Value type: <stringlist>
+> > +               Definition: Must be "arm,idle-state".
+> > +
+> > +       - logic-state-retained
+> > +               Usage: See definition
+> > +               Value type: <none>
+> > +               Definition: if present logic is retained on state entry,
+> > +                           otherwise it is lost.
+> 
+> What logic state is retained? All system registers?
+> 
+> > +       - cache-state-retained
+> > +               Usage: See definition
+> > +               Value type: <none>
+> > +               Definition: if present cache memory is retained on state entry,
+> > +                           otherwise it is lost.
+> 
+> Likewise, how much of the cache hierarchy is affected? Any of it? All of
+> it?
+> 
+> > +       - timer-state-retained
+> > +               Usage: See definition
+> > +               Value type: <none>
+> > +               Definition: if present the timer control logic is retained on
+> > +                            state entry, otherwise it is lost.
+> 
+> The architected generic timers? Any CPU-local timers? Or any timers
+> whatsoever?
 
-Sorry, it is mW units.
+Ok, as I mentioned this timer property is a blocking point for the
+entire set. I gave it more thought, and it is a very hard nut to crack,
+even if we resort to power domains (tick devices do not even contain
+struct device or device node pointers, even if I added a list of
+phandles to timers that are lost on idle state entry I would not be able
+to figure out if the tick device is lost on idle state entry).
 
->
->>>> There are few blocks running of the CPU clock (internal buses,
->>>> Coresight, JTAG, AXI interface clock).
->>>
->>> Don't they go down with the cluster? Or we aren't performing a full
->>> cluster down?
->>
->> We are doing a full cluster down. I am not sure which of these
->> continue to consume power in case of full cluster down.
->
-> None should.
->
->>>> Also, it has been observed that
->>>> a lower ARM clock reduces the power consumed on the voltage rail for
->>>> the peripherals block.
->>>
->>> Peripherals internal to cluster? Like arch-timer?
->>
->> No, the voltage rail on which the SoC peripherals such as
->> connectivity, media, storage IP's are connected.
->
-> What do they have to do with cluster frequency ?
+I am reasoning in kernel terms, I know it is bad but I can't help it
+in this case.
 
-I am not sure but maybe maintaining sync between two buses with a
-large clock frequency difference between them. Just a guess, but there
-does seem to be a relation with the cluster frequency.
+Would a boolean property like the following one be deemed acceptable, eg:
+
+- local-timer-stop
+
+I want to be 100% honest here, this might turn out a Linux specific
+thing, or might be not, but I still think it is representative of how HW
+works.
+
+Comments welcome and would be very appreciated on this specific detail.
 
 Thanks,
-Thomas.
+Lorenzo
+
