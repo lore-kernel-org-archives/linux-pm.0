@@ -1,63 +1,96 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH 09/16] ARM: mvebu: Make the snoop disable optional in mvebu_v7_pmsu_idle_prepare
-Date: Fri, 27 Jun 2014 15:22:50 +0200
-Message-ID: <1403875377-940-10-git-send-email-gregory.clement@free-electrons.com>
+Subject: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization more generic
+Date: Fri, 27 Jun 2014 15:22:48 +0200
+Message-ID: <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com>
 References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:42107 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:42073 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753157AbaF0NX7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 09:23:59 -0400
+	with ESMTP id S1753276AbaF0NX5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 09:23:57 -0400
 In-Reply-To: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-On some mvebu v7 SoC (the ones which don't use PJ4B core) there is no
-such feature. So add a parameter in mvebu_v7_pmsu_idle_prepare function
-to make its use optional.
+In order to support more mvebu SoCs, this patch use an initialization
+specific function associated to each SoCs which support CPU Idle.
+
+Then each SoC will have his own set of check and of data
+configuration.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm/mach-mvebu/pmsu.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ arch/arm/mach-mvebu/pmsu.c | 39 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 31 insertions(+), 8 deletions(-)
 
 diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 8bf737fb3aac..a2869c5daeb0 100644
+index 087157c20b8a..454f0f9ede6b 100644
 --- a/arch/arm/mach-mvebu/pmsu.c
 +++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -180,7 +180,7 @@ static void mvebu_v7_pmsu_enable_l2_powerdown_onidle(void)
- }
+@@ -293,23 +293,47 @@ static struct notifier_block mvebu_v7_cpu_pm_notifier = {
+ 	.notifier_call = mvebu_v7_cpu_pm_notify,
+ };
  
- /* No locking is needed because we only access per-CPU registers */
--static void mvebu_v7_pmsu_idle_prepare(bool deepidle)
-+static void mvebu_v7_pmsu_idle_prepare(bool deepidle, bool snoopdis)
++static bool (*mvebu_v7_cpu_idle_init)(void);
++
++static __init bool armada_xp_cpuidle_init(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
++	if (!np)
++		return false;
++	of_node_put(np);
++
++	mvebu_v7_cpuidle_device.dev.platform_data = armada_xp_370_cpu_suspend;
++	return true;
++}
++
++static struct of_device_id of_cpuidle_table[] __initdata = {
++	{ .compatible = "marvell,armadaxp",
++	  .data = (void *)armada_xp_cpuidle_init,
++	},
++	{ /* end of list */ },
++};
++
+ static int __init mvebu_v7_cpu_pm_init(void)
  {
- 	unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
- 	u32 reg;
-@@ -211,15 +211,17 @@ static void mvebu_v7_pmsu_idle_prepare(bool deepidle)
- 	reg |= PMSU_CONTROL_AND_CONFIG_PWDDN_REQ;
- 	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
+ 	struct device_node *np;
++	const struct of_device_id *match;
++
++	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
++					&match);
++
  
--	/* Disable snoop disable by HW - SW is taking care of it */
--	reg = readl(pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
--	reg |= PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP;
--	writel(reg, pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
-+	if (snoopdis) {
-+		/* Disable snoop disable by HW - SW is taking care of it */
-+		reg = readl(pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
-+		reg |= PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP;
-+		writel(reg, pmsu_mp_base + PMSU_CPU_POWER_DOWN_CONTROL(hw_cpu));
-+	}
- }
+ 	/*
+ 	 * Check that all the requirements are available to enable
+-	 * cpuidle. So far, it is only supported on Armada XP, cpuidle
+-	 * needs the coherency fabric and the PMSU enabled
++	 * cpuidle. Each SoCs comes with its own requirements and
++	 * configuration
+ 	 */
  
- static noinline int do_armada_xp_370_cpu_suspend(unsigned long deepidle)
- {
--	mvebu_v7_pmsu_idle_prepare(deepidle);
-+	mvebu_v7_pmsu_idle_prepare(deepidle, true);
+-	if (!of_machine_is_compatible("marvell,armadaxp"))
+-		return 0;
++	mvebu_v7_cpu_idle_init = (bool (*)(void))match->data;
  
- 	v7_exit_coherency_flush(all);
+-	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
+-	if (!np)
++	if (!mvebu_v7_cpu_idle_init())
+ 		return 0;
+-	of_node_put(np);
+ 
+ 	np = of_find_matching_node(NULL, of_pmsu_table);
+ 	if (!np)
+@@ -329,7 +353,6 @@ static int __init mvebu_v7_cpu_pm_init(void)
+ 				PMSU_BOOT_ADDR_REDIRECT_OFFSET(0));
+ 
+ 	mvebu_v7_pmsu_enable_l2_powerdown_onidle();
+-	mvebu_v7_cpuidle_device.dev.platform_data = armada_xp_370_cpu_suspend;
+ 	platform_device_register(&mvebu_v7_cpuidle_device);
+ 	cpu_pm_register_notifier(&mvebu_v7_cpu_pm_notifier);
  
 -- 
 1.8.1.2
