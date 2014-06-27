@@ -1,78 +1,42 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC] Add "rpm_not_supported" flag
-Date: Fri, 27 Jun 2014 12:22:38 -0700
-Message-ID: <20140627192238.GA7646@kroah.com>
-References: <3098868.U0NfB8kYvJ@vostro.rjw.lan>
- <Pine.LNX.4.44L0.1406271417120.875-100000@iolanthe.rowland.org>
+Date: Fri, 27 Jun 2014 16:11:35 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1406271606000.875-100000@iolanthe.rowland.org>
+References: <20140627192238.GA7646@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:43862 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbaF0TS2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 15:18:28 -0400
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1406271417120.875-100000@iolanthe.rowland.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:37459 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750714AbaF0ULg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 16:11:36 -0400
+In-Reply-To: <20140627192238.GA7646@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Fri, Jun 27, 2014 at 02:27:28PM -0400, Alan Stern wrote:
-> On Wed, 25 Jun 2014, Rafael J. Wysocki wrote:
-> 
-> > On Sunday, June 22, 2014 12:45:42 PM Alan Stern wrote:
-> > > On Sun, 22 Jun 2014, Rafael J. Wysocki wrote:
-> > > 
-> > > > > How would you treat them specially?  Add a "runtime_pm_not_supported" 
-> > > > > flag?
-> > > > 
-> > > > I thought about a "runtime PM has been enabled at least once" flag rather
-> > > > that would be set by pm_runtime_enable() every time it is called and never
-> > > > cleared.  That would allow the core to distinguish between "runtime PM
-> > > > disabled temporarily" and "runtime PM not used" which turn out to be
-> > > > sufficiently different cases.
-> > > 
-> > > Interesting idea, but it can't tell the difference between "runtime PM
-> > > not supported" and "runtime PM not enabled yet".  I think a simple "not
-> > > supported" flag will be more straightforward.
+On Fri, 27 Jun 2014, Greg Kroah-Hartman wrote:
+
+> > One side point: The patch changes the string displayed for the 
+> > power/runtime_status attribute file when disable_depth > 0.  Instead of 
+> > "unsupported", it will now say "disabled".  The attribute will contain 
+> > "not supported" when the new flag is set.
 > > 
-> > The question is who will set the "unsupported" flag (think devices without
-> > drivers etc.).  Or perhaps the idea is that it will be set to start with?
+> > Is this acceptable?
 > 
-> Drivers or subsystems will set the flag.  It should not be set for
-> devices without drivers or subsystems, because the flag means that the
-> hardware doesn't support runtime power management, and the kernel
-> wouldn't know this if there was no driver or subsystem.
-> 
-> The flag will not be set to start with.  The idea is that you set it 
-> when you know for certain that the device cannot be power-managed, but 
-> you still want the Runtime PM API to work with the device.  In 
-> particular, calls to pm_runtime_resume() will succeed.
-> 
-> > > > Yes.  The core definitely needs to be able to distinguish between the
-> > > > "runtime PM disabled temporarily" and "runtime PM not supported/not used"
-> > > > situations.
-> > > 
-> > > Let me work out a patch, and we'll see what you think.  For the time
-> > > being we can stick with our "runtime PM must be disabled (or in error)  
-> > > when the status is changed" approach.
-> > 
-> > OK
-> 
-> The patch is below.  I haven't tested it with anything meaningful, but 
-> it seems straightforward enough.
-> 
-> One side point: The patch changes the string displayed for the 
-> power/runtime_status attribute file when disable_depth > 0.  Instead of 
-> "unsupported", it will now say "disabled".  The attribute will contain 
-> "not supported" when the new flag is set.
-> 
-> Is this acceptable?
+> Why change the "unsupported" string?  Can't we just leave that one
+> alone?  I'd prefer to not break userspace tools...
 
-Why change the "unsupported" string?  Can't we just leave that one
-alone?  I'd prefer to not break userspace tools...
+I changed it because it's wrong.  disable_depth > 0 means that runtime 
+PM has temporarily been disabled, or was never enabled in the first 
+place.  It doesn't mean that runtime PM is unsupported.
 
-thanks,
+In fact, the word "unsupported" is ambiguous.  Does it mean unsupported 
+by the hardware or unsupported by the kernel?  The hardware can't 
+change, but the kernel can be altered by loading a module.
 
-greg k-h
+If that change is too intrusive, I can remove it from the patch.
+
+Alan Stern
+
