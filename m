@@ -1,38 +1,95 @@
-From: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH 5/6] clk: tegra: Add soctherm and tsensor clocks to Tegra124 init table
-Date: Fri, 27 Jun 2014 11:11:38 +0300
-Message-ID: <1403856699-2140-6-git-send-email-mperttunen@nvidia.com>
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: [PATCH 2/6] of: Add bindings for nvidia,tegra124-soctherm
+Date: Fri, 27 Jun 2014 11:11:35 +0300
+Message-ID: <1403856699-2140-3-git-send-email-mperttunen@nvidia.com>
 References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1403856699-2140-1-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rui.zhang@intel.com, edubezval@gmail.com, swarren@wwwdotorg.org, thierry.reding@gmail.com, pdeschrijver@nvidia.com, mlongnecker@nvidia.com
+Cc: linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds the two clocks, soctherm and tsensor, to the T124 initialization table.
-They are required for soctherm-based thermal sensing.
+This adds binding documentation and headers for the Tegra124
+SOCTHERM device tree node.
 
-Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
 ---
-Peter, one more zero for TSENSOR, please :)
- drivers/clk/tegra/clk-tegra124.c | 2 ++
- 1 file changed, 2 insertions(+)
+ .../devicetree/bindings/thermal/tegra-soctherm.txt | 32 ++++++++++++++++++++++
+ include/dt-bindings/thermal/tegra124-soctherm.h    | 15 ++++++++++
+ 2 files changed, 47 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+ create mode 100644 include/dt-bindings/thermal/tegra124-soctherm.h
 
-diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
-index 80efe51..abeec63 100644
---- a/drivers/clk/tegra/clk-tegra124.c
-+++ b/drivers/clk/tegra/clk-tegra124.c
-@@ -1369,6 +1369,8 @@ static struct tegra_clk_init_table init_table[] __initdata = {
- 	{TEGRA124_CLK_XUSB_HS_SRC, TEGRA124_CLK_PLL_U_60M, 60000000, 0},
- 	{TEGRA124_CLK_XUSB_FALCON_SRC, TEGRA124_CLK_PLL_RE_OUT, 224000000, 0},
- 	{TEGRA124_CLK_XUSB_HOST_SRC, TEGRA124_CLK_PLL_RE_OUT, 112000000, 0},
-+	{TEGRA124_CLK_SOC_THERM, TEGRA124_CLK_PLL_P, 51000000, 0},
-+	{TEGRA124_CLK_TSENSOR, TEGRA124_CLK_CLK_M, 400000, 0},
- 	/* This MUST be the last entry. */
- 	{TEGRA124_CLK_CLK_MAX, TEGRA124_CLK_CLK_MAX, 0, 0},
- };
+diff --git a/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+new file mode 100644
+index 0000000..dc5588e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/tegra-soctherm.txt
+@@ -0,0 +1,32 @@
++Tegra124 SOCTHERM thermal management system
++
++Required properties :
++- compatible : "nvidia,tegra124-soctherm".
++- reg : Should contain 1 entry:
++  - SOCTHERM register set
++- interrupts : Defines the interrupt used by SOCTHERM
++- clocks : Must contain an entry for each entry in clock-names.
++  See ../clocks/clock-bindings.txt for details.
++- clock-names : Must include the following entries:
++  - tsensor
++  - soctherm
++- resets : Must contain an entry for each entry in reset-names.
++  See ../reset/reset.txt for details.
++- reset-names : Must include the following entries:
++  - soctherm
++- #thermal-sensor-cells : For thermctl sensors. Should be 1.
++
++Example :
++
++	soctherm@0,700e2000 {
++		compatible = "nvidia,tegra124-soctherm";
++		reg = <0x0 0x700e2000 0x0 0x1000>;
++		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
++			<&tegra_car TEGRA124_CLK_SOC_THERM>;
++		clock-names = "tsensor", "soctherm";
++		resets = <&tegra_car 78>;
++		reset-names = "soctherm";
++
++		#thermal-sensor-cells = <1>;
++	};
+diff --git a/include/dt-bindings/thermal/tegra124-soctherm.h b/include/dt-bindings/thermal/tegra124-soctherm.h
+new file mode 100644
+index 0000000..cbef15d
+--- /dev/null
++++ b/include/dt-bindings/thermal/tegra124-soctherm.h
+@@ -0,0 +1,15 @@
++/*
++ * This header provides constants for binding nvidia,tegra124-soctherm.
++ */
++
++#ifndef _DT_BINDINGS_THERMAL_TEGRA124_SOCTHERM_H
++#define _DT_BINDINGS_THERMAL_TEGRA124_SOCTHERM_H
++
++#define TEGRA124_SOCTHERM_SENSOR_CPU 0
++#define TEGRA124_SOCTHERM_SENSOR_MEM 1
++#define TEGRA124_SOCTHERM_SENSOR_GPU 2
++#define TEGRA124_SOCTHERM_SENSOR_PLLX 3
++
++#endif
++
++
 -- 
 1.8.1.5
