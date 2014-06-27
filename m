@@ -1,60 +1,96 @@
-From: Mark Brown <broonie@kernel.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
 Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
-Date: Thu, 26 Jun 2014 23:08:23 +0100
-Message-ID: <20140626220823.GA23300@sirena.org.uk>
-References: <cover.1403684824.git.viresh.kumar@linaro.org>
- <e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
- <53AB1CC1.4010907@codeaurora.org>
+Date: Thu, 26 Jun 2014 17:06:00 -0700
+Message-ID: <53ACB568.4000903@codeaurora.org>
+References: <cover.1403684824.git.viresh.kumar@linaro.org> <e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org> <53AB1CC1.4010907@codeaurora.org> <CAKohpo=Q7eWNwcK6KF9_U-zD0g=96QHW9hiQupLpV5GqoWE+mA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SBYWXwvsCkEY5LOm"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <53AB1CC1.4010907@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, shawn.guo@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Mark Rutland <Mark.Rutland@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.11.231]:44732 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbaF0AGD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jun 2014 20:06:03 -0400
+In-Reply-To: <CAKohpo=Q7eWNwcK6KF9_U-zD0g=96QHW9hiQupLpV5GqoWE+mA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Mike Turquette <mturquette@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>
 
+On 06/26/14 03:52, Viresh Kumar wrote:
+> On 26 June 2014 00:32, Stephen Boyd <sboyd@codeaurora.org> wrote:
+>> I don't think this driver should be using regulator_get_optional() (Mark
+>> B. please correct me if I'm wrong). I doubt a supply is actually
+>> optional for CPUs, just some DTs aren't specifying them. In those cases,
+>> the regulator core will insert a dummy supply and the code will work
+>> without having to check for probe defer and error pointers.
+> Hi Stephen,
+>
+> Thanks for your comments.
+>
+> Leaving the above one, I have tried to fix all you mentioned. And it surely
+> looks much better now.
+>
+> I would like to wait for a day or two before sending V2, as people might
+> be reviewing it and the above issue is still wide open..
+>
+> But in case you wanna test it (completely changed I must say, but
+> for good), its here:
+>
+> git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait-v2
 
---SBYWXwvsCkEY5LOm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I gave it a spin. It looks mostly good except for the infinite loop:
 
-On Wed, Jun 25, 2014 at 12:02:25PM -0700, Stephen Boyd wrote:
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index b7ee67c4d1c0..6744321ae33d 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -138,8 +138,10 @@ try_again:
+                }
+ 
+                /* Try with "cpu-supply" */
+-               if (reg == reg_cpu0)
++               if (reg == reg_cpu0) {
++                       reg = reg_cpu;
+                        goto try_again;
++               }
+ 
+                dev_warn(cpu_dev, "failed to get cpu%d regulator: %ld\n",
+                         cpu, PTR_ERR(cpu_reg));
 
-> I don't think this driver should be using regulator_get_optional() (Mark
-> B. please correct me if I'm wrong). I doubt a supply is actually
-> optional for CPUs, just some DTs aren't specifying them. In those cases,
-> the regulator core will insert a dummy supply and the code will work
-> without having to check for probe defer and error pointers.
+and I think we just want reg_cpu to be "cpu", not "cpu-supply" because I
+think the regulator core adds in the "-supply" part already.
 
-Since the cpufreq driver is actively working with the regulator,
-changing voltages and so on it's mostly OK, it's kind of on the border
-of something that should do this but there doesn't seem to be a
-reasonable way for it to handle not being able to read the voltage
-cleanly.
+After fixing that I can get cpufreq going. I'm currently working on
+populating the OPPs at runtime without relying on DT. So eventually I'll
+need this patch:
 
---SBYWXwvsCkEY5LOm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index b7ee67c4d1c0..6744321ae33d 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -239,11 +241,6 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+        }
+ 
+        ret = of_init_opp_table(cpu_dev);
+-       if (ret) {
+-               dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
+-               goto out_put_node;
+-       }
+-
+        ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+        if (ret) {
+                dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+which I hope is ok.
 
-iQIcBAEBAgAGBQJTrJnUAAoJELSic+t+oim92ToP/1adATu1Vz3pLnwXdvk2tjW+
-elwWYdTUVwGzSM6shgqo8CxkbLyiqCNJgdHUUCXPEDvZDTyBDq9zmMVTyGKNY1o6
-dbWma1DbTk98kB0DbfQsePSv0N8JyW/D7TSMZfFD+40wS7ZQ8Ue971gjiyY3xewJ
-ascenpiRLyrbzgEZoBBbCJ9wXVlI5ZGqiR7y8Aj983iAFDOtj4OBBBTF+O5YC3it
-L+0yNCVcJY6H0vyaJ2YuFqmZh0ojDJmryIZ7yC6nd4VE0nYk9b74vjj+NX92xE9V
-P9CtufSXWXneD6yuYei2PE1HmfWnB9ZC973EgXdnI2ikq9ow9BuBjz2IF/qD2m93
-QfcI2DDjN1fL6KoYW0rY3LFkfW9X7078wn6ZmaDCL361NFx1g8d8ZZMhtMNxte/A
-LVLgzdgvB5u9Kxz1BwXgEzTLfSqLg6W2yEJOAyK6DNyrcNtOrqRTmigAeneIPbMu
-8u94gSNcLqhDuw0Fr3ye88XoK/u9KYP5W6/UqBCieR6rEOXac8exVcnPBkOK2Xe3
-tZpA8hRnHG88zOGGyAw2pF1pFzqQ19oEZ4qrlcYG8vOYIzZS0VmM86qVucbgH8I0
-s7GBPV2ckfZgQ46k2uZ0AYFYXCFwG2mitYILzq/MqVFwsck6uMYDbB/suyIIF6H1
-SyQlUF8RgDxlONuUtMM+
-=MWWT
------END PGP SIGNATURE-----
+Finally, checking for equivalent pointers from clk_get() will work now,
+but it isn't future-proof if/when the clock framework starts returning
+dynamically allocated clock pointers for each clk_get() invocation.
+Maybe we need a function in the common clock framework that tells us if
+the clocks are the same either via DT or by taking two clock pointers?
 
---SBYWXwvsCkEY5LOm--
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
+
