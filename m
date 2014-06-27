@@ -1,93 +1,110 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH 03/16] ARM: mvebu: Add function to export the physical
- address of the boot register
-Date: Fri, 27 Jun 2014 16:14:15 +0200
-Message-ID: <53AD7C37.7090204@free-electrons.com>
-References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com> <1403875377-940-4-git-send-email-gregory.clement@free-electrons.com>
+Subject: Re: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization more
+ generic
+Date: Fri, 27 Jun 2014 16:15:44 +0200
+Message-ID: <53AD7C90.6080600@free-electrons.com>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com> <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:42700 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:42735 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753797AbaF0OOa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 10:14:30 -0400
-In-Reply-To: <1403875377-940-4-git-send-email-gregory.clement@free-electrons.com>
+	with ESMTP id S1753173AbaF0OQO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 10:16:14 -0400
+In-Reply-To: <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
 On 27/06/2014 15:22, Gregory CLEMENT wrote:
-> In order to boot the secondary CPUs on Armada 375 Z1, we need to read
-> the boot address of these CPUs through a register part of the System
-> Controller. This done very early where MMU is not enable yet, so we
-> need to get the physical address of this register to use it.
+> In order to support more mvebu SoCs, this patch use an initialization
+> specific function associated to each SoCs which support CPU Idle.
 > 
-> In the previous version of this workaround the physical address were
-> hardcoded whereas depending of the Mbus configuration this address may
-> change.
+> Then each SoC will have his own set of check and of data
+> configuration.
 > 
-> This commit will allow to use the generic boot workaround function
-> with the correct address.
-
-I forgot my signed-off here
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 > ---
->  arch/arm/mach-mvebu/common.h            |  1 +
->  arch/arm/mach-mvebu/system-controller.c | 11 +++++++++++
->  2 files changed, 12 insertions(+)
+>  arch/arm/mach-mvebu/pmsu.c | 39 +++++++++++++++++++++++++++++++--------
+>  1 file changed, 31 insertions(+), 8 deletions(-)
 > 
-> diff --git a/arch/arm/mach-mvebu/common.h b/arch/arm/mach-mvebu/common.h
-> index b67fb7a10d8b..6ad62cf8352c 100644
-> --- a/arch/arm/mach-mvebu/common.h
-> +++ b/arch/arm/mach-mvebu/common.h
-> @@ -20,6 +20,7 @@
->  void mvebu_restart(enum reboot_mode mode, const char *cmd);
->  int mvebu_cpu_reset_deassert(int cpu);
->  void mvebu_pmsu_set_cpu_boot_addr(int hw_cpu, void *boot_addr);
-> +u32 mvebu_system_controller_get_phys_addr(void);
->  void mvebu_system_controller_set_cpu_boot_addr(void *boot_addr);
+> diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+> index 087157c20b8a..454f0f9ede6b 100644
+> --- a/arch/arm/mach-mvebu/pmsu.c
+> +++ b/arch/arm/mach-mvebu/pmsu.c
+> @@ -293,23 +293,47 @@ static struct notifier_block mvebu_v7_cpu_pm_notifier = {
+>  	.notifier_call = mvebu_v7_cpu_pm_notify,
+>  };
 >  
->  void armada_xp_cpu_die(unsigned int cpu);
-> diff --git a/arch/arm/mach-mvebu/system-controller.c b/arch/arm/mach-mvebu/system-controller.c
-> index 0c5524ac75b7..ae6ab543aa36 100644
-> --- a/arch/arm/mach-mvebu/system-controller.c
-> +++ b/arch/arm/mach-mvebu/system-controller.c
-> @@ -30,6 +30,7 @@
->  #include "common.h"
->  
->  static void __iomem *system_controller_base;
-> +static u32 system_controller_phys_base;
->  
->  struct mvebu_system_controller {
->  	u32 rstoutn_mask_offset;
-> @@ -109,6 +110,13 @@ void mvebu_system_controller_set_cpu_boot_addr(void *boot_addr)
->  	writel(virt_to_phys(boot_addr), system_controller_base +
->  	       mvebu_sc->resume_boot_addr);
->  }
+> +static bool (*mvebu_v7_cpu_idle_init)(void);
 > +
-> +u32 mvebu_system_controller_get_phys_addr(void)
+> +static __init bool armada_xp_cpuidle_init(void)
 > +{
-> +	BUG_ON(system_controller_phys_base == NULL);
-> +	BUG_ON(mvebu_sc->resume_boot_addr == 0);
-> +	return system_controller_phys_base + mvebu_sc->resume_boot_addr;
+> +	struct device_node *np;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
+> +	if (!np)
+> +		return false;
+> +	of_node_put(np);
+> +
+> +	mvebu_v7_cpuidle_device.dev.platform_data = armada_xp_370_cpu_suspend;
+> +	return true;
 > +}
->  #endif
+> +
+> +static struct of_device_id of_cpuidle_table[] __initdata = {
+> +	{ .compatible = "marvell,armadaxp",
+> +	  .data = (void *)armada_xp_cpuidle_init,
+> +	},
+> +	{ /* end of list */ },
+> +};
+> +
+>  static int __init mvebu_v7_cpu_pm_init(void)
+>  {
+>  	struct device_node *np;
+> +	const struct of_device_id *match;
+> +
+> +	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
+> +					&match);
+> +
+
+The following part was missing (without this the kernel hang on Armada 375)
+
++       if (!np)
++               return 0;
+
+
+
 >  
->  static int __init mvebu_system_controller_init(void)
-> @@ -119,7 +127,10 @@ static int __init mvebu_system_controller_init(void)
->  	np = of_find_matching_node_and_match(NULL, of_system_controller_table,
->  					     &match);
->  	if (np) {
-> +		struct resource res;
->  		system_controller_base = of_iomap(np, 0);
-> +		of_address_to_resource(np, 0, &res);
-> +		system_controller_phys_base = res.start;
->  		mvebu_sc = (struct mvebu_system_controller *)match->data;
->  		of_node_put(np);
->  	}
+>  	/*
+>  	 * Check that all the requirements are available to enable
+> -	 * cpuidle. So far, it is only supported on Armada XP, cpuidle
+> -	 * needs the coherency fabric and the PMSU enabled
+> +	 * cpuidle. Each SoCs comes with its own requirements and
+> +	 * configuration
+>  	 */
+>  
+> -	if (!of_machine_is_compatible("marvell,armadaxp"))
+> -		return 0;
+> +	mvebu_v7_cpu_idle_init = (bool (*)(void))match->data;
+>  
+> -	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
+> -	if (!np)
+> +	if (!mvebu_v7_cpu_idle_init())
+>  		return 0;
+> -	of_node_put(np);
+>  
+>  	np = of_find_matching_node(NULL, of_pmsu_table);
+>  	if (!np)
+> @@ -329,7 +353,6 @@ static int __init mvebu_v7_cpu_pm_init(void)
+>  				PMSU_BOOT_ADDR_REDIRECT_OFFSET(0));
+>  
+>  	mvebu_v7_pmsu_enable_l2_powerdown_onidle();
+> -	mvebu_v7_cpuidle_device.dev.platform_data = armada_xp_370_cpu_suspend;
+>  	platform_device_register(&mvebu_v7_cpuidle_device);
+>  	cpu_pm_register_notifier(&mvebu_v7_cpu_pm_notifier);
+>  
 > 
 
 
