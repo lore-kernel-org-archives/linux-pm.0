@@ -1,87 +1,53 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization
- more generic
-Date: Sat, 28 Jun 2014 10:56:25 -0400
-Message-ID: <20140628145625.GL23978@titan.lakedaemon.net>
-References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
- <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com>
- <53AD7C90.6080600@free-electrons.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Add "rpm_not_supported" flag
+Date: Sat, 28 Jun 2014 11:32:21 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1406281131360.983-100000@netrider.rowland.org>
+References: <20140627205039.GA5552@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:56262 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbaF1O4j (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Jun 2014 10:56:39 -0400
-Content-Disposition: inline
-In-Reply-To: <53AD7C90.6080600@free-electrons.com>
+Received: from netrider.rowland.org ([192.131.102.5]:53760 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751440AbaF1PcW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Jun 2014 11:32:22 -0400
+In-Reply-To: <20140627205039.GA5552@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-Gregory,
+On Fri, 27 Jun 2014, Greg Kroah-Hartman wrote:
 
-On Fri, Jun 27, 2014 at 04:15:44PM +0200, Gregory CLEMENT wrote:
-> On 27/06/2014 15:22, Gregory CLEMENT wrote:
-> > In order to support more mvebu SoCs, this patch use an initialization
-> > specific function associated to each SoCs which support CPU Idle.
+> On Fri, Jun 27, 2014 at 04:11:35PM -0400, Alan Stern wrote:
+> > On Fri, 27 Jun 2014, Greg Kroah-Hartman wrote:
 > > 
-> > Then each SoC will have his own set of check and of data
-> > configuration.
+> > > > One side point: The patch changes the string displayed for the 
+> > > > power/runtime_status attribute file when disable_depth > 0.  Instead of 
+> > > > "unsupported", it will now say "disabled".  The attribute will contain 
+> > > > "not supported" when the new flag is set.
+> > > > 
+> > > > Is this acceptable?
+> > > 
+> > > Why change the "unsupported" string?  Can't we just leave that one
+> > > alone?  I'd prefer to not break userspace tools...
 > > 
-> > Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> > ---
-> >  arch/arm/mach-mvebu/pmsu.c | 39 +++++++++++++++++++++++++++++++--------
-> >  1 file changed, 31 insertions(+), 8 deletions(-)
+> > I changed it because it's wrong.  disable_depth > 0 means that runtime 
+> > PM has temporarily been disabled, or was never enabled in the first 
+> > place.  It doesn't mean that runtime PM is unsupported.
 > > 
-> > diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-> > index 087157c20b8a..454f0f9ede6b 100644
-> > --- a/arch/arm/mach-mvebu/pmsu.c
-> > +++ b/arch/arm/mach-mvebu/pmsu.c
-> > @@ -293,23 +293,47 @@ static struct notifier_block mvebu_v7_cpu_pm_notifier = {
-> >  	.notifier_call = mvebu_v7_cpu_pm_notify,
-> >  };
-> >  
-> > +static bool (*mvebu_v7_cpu_idle_init)(void);
-> > +
-> > +static __init bool armada_xp_cpuidle_init(void)
-> > +{
-> > +	struct device_node *np;
-> > +
-> > +	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
-> > +	if (!np)
-> > +		return false;
-> > +	of_node_put(np);
-> > +
-> > +	mvebu_v7_cpuidle_device.dev.platform_data = armada_xp_370_cpu_suspend;
-> > +	return true;
-> > +}
-> > +
-> > +static struct of_device_id of_cpuidle_table[] __initdata = {
-> > +	{ .compatible = "marvell,armadaxp",
-> > +	  .data = (void *)armada_xp_cpuidle_init,
-> > +	},
-> > +	{ /* end of list */ },
-> > +};
-> > +
-> >  static int __init mvebu_v7_cpu_pm_init(void)
-> >  {
-> >  	struct device_node *np;
-> > +	const struct of_device_id *match;
-> > +
-> > +	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
-> > +					&match);
-> > +
+> > In fact, the word "unsupported" is ambiguous.  Does it mean unsupported 
+> > by the hardware or unsupported by the kernel?  The hardware can't 
+> > change, but the kernel can be altered by loading a module.
+> > 
+> > If that change is too intrusive, I can remove it from the patch.
 > 
-> The following part was missing (without this the kernel hang on Armada 375)
-> 
-> +       if (!np)
-> +               return 0;
+> Do you know of any tools that actually look at these files?
 
-If there's no other changes, I can fix this up when I apply it.  As well
-as the S-o-b.
+I don't.  Of course, that doesn't mean much.
 
-thx,
+> If there isn't any, then we can try to change it and see who screams :)
 
-Jason.
+It'll be a learning experience...
+
+Alan Stern
+
