@@ -1,96 +1,204 @@
-From: Brian W Hart <hartb@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq: make table sentinal macros unsigned to match use
-Date: Fri, 27 Jun 2014 16:09:39 -0500
-Message-ID: <20140627210939.GB24604@oc3347516403.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e32.co.us.ibm.com ([32.97.110.150]:56126 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbaF0VJq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 17:09:46 -0400
-Received: from /spool/local
-	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <hartb@linux.vnet.ibm.com>;
-	Fri, 27 Jun 2014 15:09:45 -0600
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+From: Derek Basehore <dbasehore@chromium.org>
+Subject: [PATCH v1 1/2] genirq: Fix error path for resuming irqs
+Date: Fri, 27 Jun 2014 17:04:24 -0700
+Message-ID: <1403913865-31614-1-git-send-email-dbasehore@chromium.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, Ian Campbell <ian.campbell@citrix.com>, xen-devel@lists.xenproject.org, Derek Basehore <dbasehore@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 
-Commit 5eeaf1f18973 (cpufreq: Fix build error on some platforms that
-use cpufreq_for_each_*) moved function cpufreq_next_valid() to a public
-header.  Warnings are now generated when objects including that header
-are built with -Wsign-compare (as an out-of-tree module might be):
+In the case of a late abort to suspend/hibernate, irqs marked with
+IRQF_EARLY_RESUME will not be enabled. This is due to syscore_resume not getting
+called on these paths.
 
-=2E../include/linux/cpufreq.h: In function =E2=80=98cpufreq_next_valid=E2=
-=80=99:
-=2E../include/linux/cpufreq.h:519:27: warning: comparison between signe=
-d
-and unsigned integer expressions [-Wsign-compare]
-  while ((*pos)->frequency !=3D CPUFREQ_TABLE_END)
-                           ^
-=2E../include/linux/cpufreq.h:520:25: warning: comparison between signe=
-d
-and unsigned integer expressions [-Wsign-compare]
-   if ((*pos)->frequency !=3D CPUFREQ_ENTRY_INVALID)
-                         ^
+This can happen with a pm test for platform, a late wakeup irq, and other
+instances. This change removes the function from syscore and calls it explicitly
+in suspend, hibernate, etc.
 
-Constants CPUFREQ_ENTRY_INVALID and CPUFREQ_TABLE_END are signed, but
-are used with unsigned member 'frequency' of cpufreq_frequency_table.
-Update the macro definitions to be explicitly unsigned to match their
-use.
+This regression was introduced in 9bab0b7f "genirq: Add IRQF_RESUME_EARLY"
 
-This also corrects potentially wrong behavior of clk_rate_table_iter()
-if unsigned long is wider than usigned int.
-
-Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
+Signed-off-by: Derek Basehore <dbasehore@chromium.org>
 ---
-These macros are fairly broadly used in the kernel so I was bit leery
-of changing them, but after inspection I think it's fine.  I found 102
-uses of the macros, of which:
+ drivers/base/power/main.c |  5 ++++-
+ drivers/xen/manage.c      |  5 ++++-
+ include/linux/interrupt.h |  1 +
+ include/linux/pm.h        |  2 +-
+ kernel/irq/pm.c           | 17 +++--------------
+ kernel/kexec.c            |  2 +-
+ kernel/power/hibernate.c  |  6 +++---
+ kernel/power/suspend.c    |  2 +-
+ 8 files changed, 18 insertions(+), 22 deletions(-)
 
-99 are uses with cpufreq_frequency_table.frequency (95) or with local
-   variables of the same type as frequency (4).  These should be just
-   fine with this change--we're just making explicit a conversion that
-   was previously implicit.
-
- 2 are uses with a local variable of different type (unsigned long) tha=
-n
-   'frequency' (in drivers/sh/clk/core.c).  One of these uses is safe;
-   the other (in clk_rate_table_iter()) is broken if unsigned long
-   is wider than unsigned int.  As a side-effect, this patch corrects
-   the potential misbehavior there.
-
- 1 is a use in macro cpufreq_for_each_entry() with what _should_ be the
-   frequency member of a cpufreq_frequency_table, provided the caller i=
-t
-   well-behaved.  There are 18 callers of this macro; all are well-beha=
-ved.
-   So these should also be safe.
-
- include/linux/cpufreq.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index ec4112d..8f8ae95 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -482,8 +482,8 @@ extern struct cpufreq_governor cpufreq_gov_conserva=
-tive;
-  *********************************************************************=
-/
-=20
- /* Special Values of .frequency field */
--#define CPUFREQ_ENTRY_INVALID	~0
--#define CPUFREQ_TABLE_END	~1
-+#define CPUFREQ_ENTRY_INVALID	~0u
-+#define CPUFREQ_TABLE_END	~1u
- /* Special Values of .flags field */
- #define CPUFREQ_BOOST_FREQ	(1 << 0)
-=20
---=20
-1.7.1
-
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index bf41296..a087473 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -712,8 +712,10 @@ static void dpm_resume_early(pm_message_t state)
+  * dpm_resume_start - Execute "noirq" and "early" device callbacks.
+  * @state: PM transition of the system being carried out.
+  */
+-void dpm_resume_start(pm_message_t state)
++void dpm_resume_start(pm_message_t state, bool enable_early_irqs)
+ {
++	if (enable_early_irqs)
++		early_resume_device_irqs();
+ 	dpm_resume_noirq(state);
+ 	dpm_resume_early(state);
+ }
+@@ -1132,6 +1134,7 @@ static int dpm_suspend_noirq(pm_message_t state)
+ 	if (error) {
+ 		suspend_stats.failed_suspend_noirq++;
+ 		dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
++		early_resume_device_irqs();
+ 		dpm_resume_noirq(resume_event(state));
+ 	} else {
+ 		dpm_show_time(starttime, state, "noirq");
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index c3667b2..d387cdf 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -68,6 +68,7 @@ static int xen_suspend(void *data)
+ 	err = syscore_suspend();
+ 	if (err) {
+ 		pr_err("%s: system core suspend failed: %d\n", __func__, err);
++		early_resume_device_irqs();
+ 		return err;
+ 	}
+ 
+@@ -92,6 +93,8 @@ static int xen_suspend(void *data)
+ 		xen_timer_resume();
+ 	}
+ 
++	early_resume_device_irqs();
++
+ 	syscore_resume();
+ 
+ 	return 0;
+@@ -137,7 +140,7 @@ static void do_suspend(void)
+ 
+ 	raw_notifier_call_chain(&xen_resume_notifier, 0, NULL);
+ 
+-	dpm_resume_start(si.cancelled ? PMSG_THAW : PMSG_RESTORE);
++	dpm_resume_start(si.cancelled ? PMSG_THAW : PMSG_RESTORE, false);
+ 
+ 	if (err) {
+ 		pr_err("failed to start xen_suspend: %d\n", err);
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 698ad05..7f390e3 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -193,6 +193,7 @@ extern void irq_wake_thread(unsigned int irq, void *dev_id);
+ /* The following three functions are for the core kernel use only. */
+ extern void suspend_device_irqs(void);
+ extern void resume_device_irqs(void);
++extern void early_resume_device_irqs(void);
+ #ifdef CONFIG_PM_SLEEP
+ extern int check_wakeup_irqs(void);
+ #else
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 72c0fe0..ae5b26a 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -677,7 +677,7 @@ struct dev_pm_domain {
+ 
+ #ifdef CONFIG_PM_SLEEP
+ extern void device_pm_lock(void);
+-extern void dpm_resume_start(pm_message_t state);
++extern void dpm_resume_start(pm_message_t state, bool enable_early_irqs);
+ extern void dpm_resume_end(pm_message_t state);
+ extern void dpm_resume(pm_message_t state);
+ extern void dpm_complete(pm_message_t state);
+diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+index abcd6ca..b07dc9c 100644
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -60,26 +60,15 @@ static void resume_irqs(bool want_early)
+ }
+ 
+ /**
+- * irq_pm_syscore_ops - enable interrupt lines early
++ * early_resume_device_irqs - enable interrupt lines early
+  *
+  * Enable all interrupt lines with %IRQF_EARLY_RESUME set.
+  */
+-static void irq_pm_syscore_resume(void)
++void early_resume_device_irqs(void)
+ {
+ 	resume_irqs(true);
+ }
+-
+-static struct syscore_ops irq_pm_syscore_ops = {
+-	.resume		= irq_pm_syscore_resume,
+-};
+-
+-static int __init irq_pm_init_ops(void)
+-{
+-	register_syscore_ops(&irq_pm_syscore_ops);
+-	return 0;
+-}
+-
+-device_initcall(irq_pm_init_ops);
++EXPORT_SYMBOL_GPL(early_resume_device_irqs);
+ 
+ /**
+  * resume_device_irqs - enable interrupt lines disabled by suspend_device_irqs()
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index 369f41a..272853b 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1700,7 +1700,7 @@ int kernel_kexec(void)
+ 		local_irq_enable();
+  Enable_cpus:
+ 		enable_nonboot_cpus();
+-		dpm_resume_start(PMSG_RESTORE);
++		dpm_resume_start(PMSG_RESTORE, true);
+  Resume_devices:
+ 		dpm_resume_end(PMSG_RESTORE);
+  Resume_console:
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index fcc2611..1d6dd56 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -325,7 +325,7 @@ static int create_image(int platform_mode)
+ 	platform_finish(platform_mode);
+ 
+ 	dpm_resume_start(in_suspend ?
+-		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE, true);
+ 
+ 	return error;
+ }
+@@ -482,7 +482,7 @@ static int resume_target_kernel(bool platform_mode)
+  Cleanup:
+ 	platform_restore_cleanup(platform_mode);
+ 
+-	dpm_resume_start(PMSG_RECOVER);
++	dpm_resume_start(PMSG_RECOVER, true);
+ 
+ 	return error;
+ }
+@@ -574,7 +574,7 @@ int hibernation_platform_enter(void)
+  Platform_finish:
+ 	hibernation_ops->finish();
+ 
+-	dpm_resume_start(PMSG_RESTORE);
++	dpm_resume_start(PMSG_RESTORE, true);
+ 
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 4dd8822..3597c72 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -281,7 +281,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 	if (need_suspend_ops(state) && suspend_ops->wake)
+ 		suspend_ops->wake();
+ 
+-	dpm_resume_start(PMSG_RESUME);
++	dpm_resume_start(PMSG_RESUME, true);
+ 
+  Platform_finish:
+ 	if (need_suspend_ops(state) && suspend_ops->finish)
+-- 
+2.0.0.526.g5318336
