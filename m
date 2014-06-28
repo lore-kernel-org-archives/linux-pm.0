@@ -1,43 +1,101 @@
-From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH v1 2/2] Revert "irq: Enable all irqs unconditionally in irq_resume"
-Date: Fri, 27 Jun 2014 17:04:25 -0700
-Message-ID: <1403913865-31614-2-git-send-email-dbasehore@chromium.org>
-References: <1403913865-31614-1-git-send-email-dbasehore@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403913865-31614-1-git-send-email-dbasehore@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, Ian Campbell <ian.campbell@citrix.com>, xen-devel@lists.xenproject.org, Derek Basehore <dbasehore@chromium.org>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] cpufreq: make table sentinal macros unsigned to match use
+Date: Sat, 28 Jun 2014 09:18:50 +0900
+Message-ID: <20140628001850.GF27128@verge.net.au>
+References: <20140627210939.GB24604@oc3347516403.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140627210939.GB24604@oc3347516403.ibm.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Brian W Hart <hartb@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Magnus Damm <magnus.damm@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This reverts the fix to IRQF_EARLY_RESUME irqs staying disabled after a suspend
-failure. It incorrectly stated that Xen is the only platform that uses this
-feature. Some rtc drivers such as rtc-as3722.c use the feature and can have its
-irq permanently enabled with the change. The driver does disable/enable the irq
-for the rtc alarm, so it needs a different fix which is in "genirq: Fix error
-path for resuming irqs"
+On Fri, Jun 27, 2014 at 04:09:39PM -0500, Brian W Hart wrote:
+> Commit 5eeaf1f18973 (cpufreq: Fix build error on some platforms that
+> use cpufreq_for_each_*) moved function cpufreq_next_valid() to a publ=
+ic
+> header.  Warnings are now generated when objects including that heade=
+r
+> are built with -Wsign-compare (as an out-of-tree module might be):
+>=20
+> .../include/linux/cpufreq.h: In function =E2=80=98cpufreq_next_valid=E2=
+=80=99:
+> .../include/linux/cpufreq.h:519:27: warning: comparison between signe=
+d
+> and unsigned integer expressions [-Wsign-compare]
+>   while ((*pos)->frequency !=3D CPUFREQ_TABLE_END)
+>                            ^
+> .../include/linux/cpufreq.h:520:25: warning: comparison between signe=
+d
+> and unsigned integer expressions [-Wsign-compare]
+>    if ((*pos)->frequency !=3D CPUFREQ_ENTRY_INVALID)
+>                          ^
+>=20
+> Constants CPUFREQ_ENTRY_INVALID and CPUFREQ_TABLE_END are signed, but
+> are used with unsigned member 'frequency' of cpufreq_frequency_table.
+> Update the macro definitions to be explicitly unsigned to match their
+> use.
+>=20
+> This also corrects potentially wrong behavior of clk_rate_table_iter(=
+)
+> if unsigned long is wider than usigned int.
+>=20
+> Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
 
-We should also keep correct enable/disable parity for irqs.
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
 
-This reverts commit ac01810c9d2814238f08a227062e66a35a0e1ea2.
-
-Signed-off-by: Derek Basehore <dbasehore@chromium.org>
----
- kernel/irq/pm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index b07dc9c..a5eaf1f 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -50,7 +50,7 @@ static void resume_irqs(bool want_early)
- 		bool is_early = desc->action &&
- 			desc->action->flags & IRQF_EARLY_RESUME;
- 
--		if (!is_early && want_early)
-+		if (is_early != want_early)
- 			continue;
- 
- 		raw_spin_lock_irqsave(&desc->lock, flags);
--- 
-2.0.0.526.g5318336
+> ---
+> These macros are fairly broadly used in the kernel so I was bit leery
+> of changing them, but after inspection I think it's fine.  I found 10=
+2
+> uses of the macros, of which:
+>=20
+> 99 are uses with cpufreq_frequency_table.frequency (95) or with local
+>    variables of the same type as frequency (4).  These should be just
+>    fine with this change--we're just making explicit a conversion tha=
+t
+>    was previously implicit.
+>=20
+>  2 are uses with a local variable of different type (unsigned long) t=
+han
+>    'frequency' (in drivers/sh/clk/core.c).  One of these uses is safe=
+;
+>    the other (in clk_rate_table_iter()) is broken if unsigned long
+>    is wider than unsigned int.  As a side-effect, this patch corrects
+>    the potential misbehavior there.
+>=20
+>  1 is a use in macro cpufreq_for_each_entry() with what _should_ be t=
+he
+>    frequency member of a cpufreq_frequency_table, provided the caller=
+ it
+>    well-behaved.  There are 18 callers of this macro; all are well-be=
+haved.
+>    So these should also be safe.
+>=20
+>  include/linux/cpufreq.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index ec4112d..8f8ae95 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -482,8 +482,8 @@ extern struct cpufreq_governor cpufreq_gov_conser=
+vative;
+>   *******************************************************************=
+**/
+> =20
+>  /* Special Values of .frequency field */
+> -#define CPUFREQ_ENTRY_INVALID	~0
+> -#define CPUFREQ_TABLE_END	~1
+> +#define CPUFREQ_ENTRY_INVALID	~0u
+> +#define CPUFREQ_TABLE_END	~1u
+>  /* Special Values of .flags field */
+>  #define CPUFREQ_BOOST_FREQ	(1 << 0)
+> =20
+> --=20
+> 1.7.1
+>=20
