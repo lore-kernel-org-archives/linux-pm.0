@@ -1,65 +1,87 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
-Date: Sat, 28 Jun 2014 22:52:54 +0800
-Message-ID: <20140628145253.GB7869@dragon>
-References: <cover.1403684824.git.viresh.kumar@linaro.org>
- <e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization
+ more generic
+Date: Sat, 28 Jun 2014 10:56:25 -0400
+Message-ID: <20140628145625.GL23978@titan.lakedaemon.net>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
+ <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com>
+ <53AD7C90.6080600@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:56262 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbaF1O4j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 Jun 2014 10:56:39 -0400
 Content-Disposition: inline
-In-Reply-To: <e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: nm@ti.com, linaro-kernel@lists.linaro.org, mturquette@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, t.figa@samsung.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, thomas.ab@samsung.com, linux-arm-msm@vger.kernel.org, arvind.chauhan@arm.com, spk.linux@gmail.com, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <53AD7C90.6080600@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-On Wed, Jun 25, 2014 at 02:12:29PM +0530, Viresh Kumar wrote:
-> cpufreq-cpu0 driver supports only platforms which have single clock line shared
-> among all CPUs.
-> 
-> We already have platforms where this limitation doesn't hold true.For example on
-> Qualcomm's KRAIT all CPUs have separate clock line and so have separate
-> policies.
-> 
-> Instead of adding another driver for this (Stephen just tried that:
-> https://lkml.org/lkml/2014/6/24/918), we must reuse cpufreq-cpu0 driver.
-> 
-> cpufreq-cpu0 must be updated to break the assumption on which it is based (all
-> cores sharing clock line) and this patch tries to do exactly that.
-> 
-> As we don't have standard DT bindings to mention CPUs sharing clock-line, i.e.
-> affected_cpus, this patch also have few limitations. Though easy to fix once we
-> have proper bindings.
-> 
-> Limitation: We only supports two types of platforms:
-> - All CPUs sharing same clock line, existing user platforms
-> - All CPUs have separate clock lines, KRAIT
-> 
-> And so platforms which have multiple clusters with multiple CPUs per cluster
-> aren't supported yet. We need proper bindings for that first.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   8 +-
->  drivers/cpufreq/Kconfig                            |   5 +-
->  drivers/cpufreq/cpufreq-cpu0.c                     | 280 +++++++++++++--------
->  3 files changed, 190 insertions(+), 103 deletions(-)
+Gregory,
 
-Hi Viresh,
+On Fri, Jun 27, 2014 at 04:15:44PM +0200, Gregory CLEMENT wrote:
+> On 27/06/2014 15:22, Gregory CLEMENT wrote:
+> > In order to support more mvebu SoCs, this patch use an initialization
+> > specific function associated to each SoCs which support CPU Idle.
+> > 
+> > Then each SoC will have his own set of check and of data
+> > configuration.
+> > 
+> > Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> > ---
+> >  arch/arm/mach-mvebu/pmsu.c | 39 +++++++++++++++++++++++++++++++--------
+> >  1 file changed, 31 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+> > index 087157c20b8a..454f0f9ede6b 100644
+> > --- a/arch/arm/mach-mvebu/pmsu.c
+> > +++ b/arch/arm/mach-mvebu/pmsu.c
+> > @@ -293,23 +293,47 @@ static struct notifier_block mvebu_v7_cpu_pm_notifier = {
+> >  	.notifier_call = mvebu_v7_cpu_pm_notify,
+> >  };
+> >  
+> > +static bool (*mvebu_v7_cpu_idle_init)(void);
+> > +
+> > +static __init bool armada_xp_cpuidle_init(void)
+> > +{
+> > +	struct device_node *np;
+> > +
+> > +	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
+> > +	if (!np)
+> > +		return false;
+> > +	of_node_put(np);
+> > +
+> > +	mvebu_v7_cpuidle_device.dev.platform_data = armada_xp_370_cpu_suspend;
+> > +	return true;
+> > +}
+> > +
+> > +static struct of_device_id of_cpuidle_table[] __initdata = {
+> > +	{ .compatible = "marvell,armadaxp",
+> > +	  .data = (void *)armada_xp_cpuidle_init,
+> > +	},
+> > +	{ /* end of list */ },
+> > +};
+> > +
+> >  static int __init mvebu_v7_cpu_pm_init(void)
+> >  {
+> >  	struct device_node *np;
+> > +	const struct of_device_id *match;
+> > +
+> > +	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
+> > +					&match);
+> > +
+> 
+> The following part was missing (without this the kernel hang on Armada 375)
+> 
+> +       if (!np)
+> +               return 0;
 
-Thanks for all the effort on maintaining and improving cpufreq-cpu0
-driver.  Your patch rewrote the most part of the driver, so I'd like to
-hand over the driver to you.  Please add yourself as the primary person
-for MODULE_AUTHOR.
+If there's no other changes, I can fix this up when I apply it.  As well
+as the S-o-b.
 
-Shawn
+thx,
+
+Jason.
