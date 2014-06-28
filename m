@@ -1,101 +1,75 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] cpufreq: make table sentinal macros unsigned to match use
-Date: Sat, 28 Jun 2014 09:18:50 +0900
-Message-ID: <20140628001850.GF27128@verge.net.au>
-References: <20140627210939.GB24604@oc3347516403.ibm.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH] cpufreq: arm_big_little: set lowest frequcency for
+ cluster when no cpus in it
+Date: Fri, 27 Jun 2014 22:12:00 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1406272202220.16842@knanqh.ubzr>
+References: <1403795313-6903-1-git-send-email-thomas.ab@samsung.com> <CAKohpomv=0y30q09fuuRDOGQ_XtuKnerC830vFExNok9mAcyfw@mail.gmail.com> <53AC42CE.2050304@arm.com> <CAJuA9agJb4xx--ujc3=efeFNFLiw4o87nOig8u-X+kY0wj99dA@mail.gmail.com> <53AC6D31.7010709@arm.com>
+ <CAJuA9ajOAhZAzwJEsP9bU83n=n30pgawy-otGU4t=d3ADVKOwg@mail.gmail.com> <CAKohponCoTuoYaLFWzOhZm2XVYjkS2VUsePuso8othxAVsgsyw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140627210939.GB24604@oc3347516403.ibm.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Brian W Hart <hartb@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Magnus Damm <magnus.damm@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f41.google.com ([209.85.192.41]:50740 "EHLO
+	mail-qg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196AbaF1CMD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jun 2014 22:12:03 -0400
+Received: by mail-qg0-f41.google.com with SMTP id i50so189578qgf.28
+        for <linux-pm@vger.kernel.org>; Fri, 27 Jun 2014 19:12:02 -0700 (PDT)
+In-Reply-To: <CAKohponCoTuoYaLFWzOhZm2XVYjkS2VUsePuso8othxAVsgsyw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Abraham <ta.omasab@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Fri, Jun 27, 2014 at 04:09:39PM -0500, Brian W Hart wrote:
-> Commit 5eeaf1f18973 (cpufreq: Fix build error on some platforms that
-> use cpufreq_for_each_*) moved function cpufreq_next_valid() to a publ=
-ic
-> header.  Warnings are now generated when objects including that heade=
-r
-> are built with -Wsign-compare (as an out-of-tree module might be):
->=20
-> .../include/linux/cpufreq.h: In function =E2=80=98cpufreq_next_valid=E2=
-=80=99:
-> .../include/linux/cpufreq.h:519:27: warning: comparison between signe=
-d
-> and unsigned integer expressions [-Wsign-compare]
->   while ((*pos)->frequency !=3D CPUFREQ_TABLE_END)
->                            ^
-> .../include/linux/cpufreq.h:520:25: warning: comparison between signe=
-d
-> and unsigned integer expressions [-Wsign-compare]
->    if ((*pos)->frequency !=3D CPUFREQ_ENTRY_INVALID)
->                          ^
->=20
-> Constants CPUFREQ_ENTRY_INVALID and CPUFREQ_TABLE_END are signed, but
-> are used with unsigned member 'frequency' of cpufreq_frequency_table.
-> Update the macro definitions to be explicitly unsigned to match their
-> use.
->=20
-> This also corrects potentially wrong behavior of clk_rate_table_iter(=
-)
-> if unsigned long is wider than usigned int.
->=20
-> Signed-off-by: Brian W Hart <hartb@linux.vnet.ibm.com>
+On Fri, 27 Jun 2014, Viresh Kumar wrote:
 
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+> On 27 June 2014 11:41, Thomas Abraham <ta.omasab@gmail.com> wrote:
+> > On Fri, Jun 27, 2014 at 12:27 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> 
+> >> Alternatively in a multi-cluster platform if I hotplug out all the cpus in
+> >> one
+> >> cluster, do you mean we still have to explicitly set the frequency to lowest
+> >> before the last cpu goes down.
+> >
+> > Yes, but it would "after" the last cpu goes down. As mentioned in my
+> 
+> How will you change freq *after* last cpu goes down? This code
+> always initiate freq-switch from last-cpu.
+> 
+> Also, we must keep in mind that switching to lowest freq would make
+> it take more time to execute the cluster shutdown code..
+> 
+> > previous reply, there is an opportunity to save power by doing this.
+> >
+> >> This needs to be handled implicitly IMO, but
+> >> they may be some restrictions on some platforms which I am not aware of.
+> >
+> > This change is useful on Exynos based platforms and not intrusive
+> > either. So if we can get this on linux-next and gets test coverage on
+> > other platforms until maybe -rc7, we can be reasonably sure that other
+> > platforms are not affected by this. I see no reason in holding this
+> > back just based on assumptions about other platforms.
+> 
+> I don't think getting this to linux-next would make a difference. There
+> aren't many big LITTLE platforms, even lesser would be using linux-next
+> and very very few would be using IKS :)
+> 
+> So, we have to decide whatever we want here only.
+> 
+> @Nicolas: Please comment here, we need your suggestions :)
 
-> ---
-> These macros are fairly broadly used in the kernel so I was bit leery
-> of changing them, but after inspection I think it's fine.  I found 10=
-2
-> uses of the macros, of which:
->=20
-> 99 are uses with cpufreq_frequency_table.frequency (95) or with local
->    variables of the same type as frequency (4).  These should be just
->    fine with this change--we're just making explicit a conversion tha=
-t
->    was previously implicit.
->=20
->  2 are uses with a local variable of different type (unsigned long) t=
-han
->    'frequency' (in drivers/sh/clk/core.c).  One of these uses is safe=
-;
->    the other (in clk_rate_table_iter()) is broken if unsigned long
->    is wider than unsigned int.  As a side-effect, this patch corrects
->    the potential misbehavior there.
->=20
->  1 is a use in macro cpufreq_for_each_entry() with what _should_ be t=
-he
->    frequency member of a cpufreq_frequency_table, provided the caller=
- it
->    well-behaved.  There are 18 callers of this macro; all are well-be=
-haved.
->    So these should also be safe.
->=20
->  include/linux/cpufreq.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index ec4112d..8f8ae95 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -482,8 +482,8 @@ extern struct cpufreq_governor cpufreq_gov_conser=
-vative;
->   *******************************************************************=
-**/
-> =20
->  /* Special Values of .frequency field */
-> -#define CPUFREQ_ENTRY_INVALID	~0
-> -#define CPUFREQ_TABLE_END	~1
-> +#define CPUFREQ_ENTRY_INVALID	~0u
-> +#define CPUFREQ_TABLE_END	~1u
->  /* Special Values of .flags field */
->  #define CPUFREQ_BOOST_FREQ	(1 << 0)
-> =20
-> --=20
-> 1.7.1
->=20
+OK...
+
+If reducing the frequency of the cluster going down saves power, then it 
+should be done _all_ the time i.e. when using CPU hotplug, when cpuidle 
+sends all CPUs to sleep, etc.  So this has nothing to do with the 
+switcher even if the switcher would also benefit from this.
+
+In other words, this should be performed by the MCPM backend as part of 
+the last man operations. This way it is generic and completely 
+transparent to the rest of the system.
+
+To restore the CPU frequency that was effective before going down, you 
+may use the MCPM powered_up method.
+
+
+Nicolas
