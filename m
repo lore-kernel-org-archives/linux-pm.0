@@ -1,66 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
-Date: Mon, 30 Jun 2014 10:20:29 +0530
-Message-ID: <CAKohpomX0Wk_aL117ZqXsC-jruHi8wOj=A4YqtNDcStJZ8iJOw@mail.gmail.com>
-References: <cover.1403684824.git.viresh.kumar@linaro.org>
-	<e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
-	<20140628145253.GB7869@dragon>
+Subject: Re: [PATCH] cpufreq: arm_big_little: set lowest frequcency for
+ cluster when no cpus in it
+Date: Mon, 30 Jun 2014 10:22:29 +0530
+Message-ID: <CAKohpomLQcfp5OD1QB5m6JTSJPT_JF+mb=mEtGbG4RQb6gsovA@mail.gmail.com>
+References: <1403795313-6903-1-git-send-email-thomas.ab@samsung.com>
+	<CAKohpomv=0y30q09fuuRDOGQ_XtuKnerC830vFExNok9mAcyfw@mail.gmail.com>
+	<53AC42CE.2050304@arm.com>
+	<CAJuA9agJb4xx--ujc3=efeFNFLiw4o87nOig8u-X+kY0wj99dA@mail.gmail.com>
+	<53AC6D31.7010709@arm.com>
+	<CAJuA9ajOAhZAzwJEsP9bU83n=n30pgawy-otGU4t=d3ADVKOwg@mail.gmail.com>
+	<CAKohponCoTuoYaLFWzOhZm2XVYjkS2VUsePuso8othxAVsgsyw@mail.gmail.com>
+	<alpine.LFD.2.11.1406272202220.16842@knanqh.ubzr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140628145253.GB7869@dragon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Mike Turquette <mturquette@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f49.google.com ([209.85.219.49]:34395 "EHLO
+	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829AbaF3Ew3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 00:52:29 -0400
+Received: by mail-oa0-f49.google.com with SMTP id i7so8067006oag.8
+        for <linux-pm@vger.kernel.org>; Sun, 29 Jun 2014 21:52:29 -0700 (PDT)
+In-Reply-To: <alpine.LFD.2.11.1406272202220.16842@knanqh.ubzr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Thomas Abraham <ta.omasab@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 28 June 2014 20:22, Shawn Guo <shawn.guo@linaro.org> wrote:
-> Thanks for all the effort on maintaining and improving cpufreq-cpu0
-> driver.
+On 28 June 2014 07:42, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+> If reducing the frequency of the cluster going down saves power, then it
+> should be done _all_ the time i.e. when using CPU hotplug, when cpuidle
+> sends all CPUs to sleep, etc.  So this has nothing to do with the
+> switcher even if the switcher would also benefit from this.
+>
+> In other words, this should be performed by the MCPM backend as part of
+> the last man operations. This way it is generic and completely
+> transparent to the rest of the system.
+>
+> To restore the CPU frequency that was effective before going down, you
+> may use the MCPM powered_up method.
 
-You're welcome..
+Oh yes, this is exactly what we want then..
 
-> Your patch rewrote the most part of the driver, so I'd like to
-> hand over the driver to you.  Please add yourself as the primary person
-> for MODULE_AUTHOR.
-
-I don't think a complete handover would be right, and so still keeping
-you as author :)
-
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Mon Jun 30 10:15:22 2014 +0530
-
-    cpufreq: cpu0: Add Module Author
-
-    Two people are maintaining it now, Viresh and Shawn. Add Viresh's details in
-    MODULE_AUTHOR() and copyright section.
-
-    Suggested-by: Shawn Guo <shawn.guo@linaro.org>
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-generic.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq-generic.c
-b/drivers/cpufreq/cpufreq-generic.c
-index 4da3f2f..5656dd1 100644
---- a/drivers/cpufreq/cpufreq-generic.c
-+++ b/drivers/cpufreq/cpufreq-generic.c
-@@ -1,6 +1,9 @@
- /*
-  * Copyright (C) 2012 Freescale Semiconductor, Inc.
-  *
-+ * Copyright (C) 2014 Linaro.
-+ * Viresh Kumar <viresh.kumar@linaro.org>
-+ *
-  * The OPP code in function set_target() is reused from
-  * drivers/cpufreq/omap-cpufreq.c
-  *
-@@ -402,6 +405,7 @@ static struct platform_driver generic_cpufreq_platdrv = {
- };
- module_platform_driver(generic_cpufreq_platdrv);
-
-+MODULE_AUTHOR("Viresh Kumar <viresh.kumar@linaro.org>");
- MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
- MODULE_DESCRIPTION("Generic cpufreq driver");
- MODULE_LICENSE("GPL");
+But do we want this forced for every platform? Or can we have some flag
+set by multi-cluster platforms, so that it stays optional ?
