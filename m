@@ -1,37 +1,46 @@
 From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH 3/4] net: macb: Use clk_find_nearest_rate() API
-Date: Mon, 30 Jun 2014 09:56:35 -0700
-Message-ID: <1404147396-8041-4-git-send-email-soren.brinkmann@xilinx.com>
+Subject: [PATCH 2/4] cpufreq: cpu0: Use clk_find_nearest_rate()
+Date: Mon, 30 Jun 2014 09:56:34 -0700
+Message-ID: <1404147396-8041-3-git-send-email-soren.brinkmann@xilinx.com>
 References: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
-Return-path: <netdev-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:50903 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756459AbaF3Q45 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 12:56:57 -0400
 In-Reply-To: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
-Sender: netdev-owner@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Soren Brinkmann <soren.brinkmann@xilinx.com>, netdev@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
 
-The Ethernet clock has to match the specified frequencies as accurately
-as possible. clk_round_rate() does not specify how rounding is
-implemented. Hence use clk_find_nearest_rate().
+Round clock frequencies to the nearest possible frequency. Since the
+OPPs as specified in DT and the CCF use different a resolution for clock
+frequencies, the clk_round_rate() API may return unexpected results, due
+to not mandating how rounding has to happen. The clk_find_nearest_rate()
+API mitigates such issues and finds the appropriate frequency for
+an OPP.
 
 Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
 ---
 
- drivers/net/ethernet/cadence/macb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/cadence/macb.c b/drivers/net/ethernet/cadence/macb.c
-index e9daa072ebb4..7b7f5eb1b341 100644
---- a/drivers/net/ethernet/cadence/macb.c
-+++ b/drivers/net/ethernet/cadence/macb.c
-@@ -223,7 +223,7 @@ static void macb_set_tx_clk(struct clk *clk, int speed, struct net_device *dev)
- 		return;
- 	}
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index ee1ae303a07c..1650581f85b6 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -42,7 +42,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	long freq_Hz, freq_exact;
+ 	int ret;
  
--	rate_rounded = clk_round_rate(clk, rate);
-+	rate_rounded = clk_find_nearest_rate(clk, rate);
- 	if (rate_rounded < 0)
- 		return;
+-	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
++	freq_Hz = clk_find_nearest_rate(cpu_clk,
++			freq_table[index].frequency * 1000);
+ 	if (freq_Hz <= 0)
+ 		freq_Hz = freq_table[index].frequency * 1000;
  
 -- 
 2.0.1.1.gfbfc394
+
