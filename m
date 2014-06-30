@@ -1,61 +1,73 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC] Add "rpm_not_supported" flag
-Date: Mon, 30 Jun 2014 15:52:40 +0200
-Message-ID: <2020781.AOFsAxmkyt@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1406281131360.983-100000@netrider.rowland.org>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH 12/16] cpuidle: mvebu: Rename the driver from
+ armada-370-xp to mvebu-v7
+Date: Mon, 30 Jun 2014 15:28:06 +0200
+Message-ID: <20140630152806.12d018cf@free-electrons.com>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
+	<1403875377-940-13-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55086 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752209AbaF3Ner (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 09:34:47 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1406281131360.983-100000@netrider.rowland.org>
+Received: from top.free-electrons.com ([176.31.233.9]:54836 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752438AbaF3NiC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 09:38:02 -0400
+In-Reply-To: <1403875377-940-13-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-On Saturday, June 28, 2014 11:32:21 AM Alan Stern wrote:
-> On Fri, 27 Jun 2014, Greg Kroah-Hartman wrote:
-> 
-> > On Fri, Jun 27, 2014 at 04:11:35PM -0400, Alan Stern wrote:
-> > > On Fri, 27 Jun 2014, Greg Kroah-Hartman wrote:
-> > > 
-> > > > > One side point: The patch changes the string displayed for the 
-> > > > > power/runtime_status attribute file when disable_depth > 0.  Instead of 
-> > > > > "unsupported", it will now say "disabled".  The attribute will contain 
-> > > > > "not supported" when the new flag is set.
-> > > > > 
-> > > > > Is this acceptable?
-> > > > 
-> > > > Why change the "unsupported" string?  Can't we just leave that one
-> > > > alone?  I'd prefer to not break userspace tools...
-> > > 
-> > > I changed it because it's wrong.  disable_depth > 0 means that runtime 
-> > > PM has temporarily been disabled, or was never enabled in the first 
-> > > place.  It doesn't mean that runtime PM is unsupported.
-> > > 
-> > > In fact, the word "unsupported" is ambiguous.  Does it mean unsupported 
-> > > by the hardware or unsupported by the kernel?  The hardware can't 
-> > > change, but the kernel can be altered by loading a module.
-> > > 
-> > > If that change is too intrusive, I can remove it from the patch.
-> > 
-> > Do you know of any tools that actually look at these files?
-> 
-> I don't.  Of course, that doesn't mean much.
+Gregory,
 
-The only tool I'm aware of that may be looking at them is powertop, so
-if the change doesn't affect powertop adversely, it should be generally
-safe.
+On Fri, 27 Jun 2014 15:22:53 +0200, Gregory CLEMENT wrote:
+> Actually this driver will be able to manage the cpuidle for more SoCs
+> that Armada 370 ad XP. It will support Armada 38x and potentially
+> Armada 375. This patch change the names accordingly to this behavior.
 
-> > If there isn't any, then we can try to change it and see who screams :)
-> 
-> It'll be a learning experience...
+I think the last sentence should rather be something like: "This patch
+renames the driver as well as the functions and variables used in the
+driver".
 
-Yes, it will. :-)
+I would also specifically mention the renaming of the driver that
+requires changing the pmsu.c file. It is worth mentioning that this
+rename, touching both drivers/cpuidle and arch/arm/mach-mvebu, may
+require some special handling in terms of patch merging (the patch
+mainly touches drivers/cpuidle so it should theoretically go through
+the cpuidle maintainer, but since the pmsu.c file is touched a lot by
+other patches, there will probably be lots of conflicts if this patch
+goes through the cpuidle tree). Surely something to mention as a
+comment in the patch, maybe to get the Acked-by of the cpuidle people
+and merge things through the mvebu and arm-soc trees.
 
-Rafael
+> -config ARM_ARMADA_370_XP_CPUIDLE
+> -	bool "CPU Idle Driver for Armada 370/XP family processors"
+> +config ARM_MVEBU_V7_CPUIDLE
+> +	bool "CPU Idle Driver for mvebu v7 family processors"
 
+Actually, what worries me a bit of that Dove is a ARMv7 processor of
+the mvebu family, but which is not using this cpuidle driver. Do you
+expect Dove to be able to use this driver in the future?
+
+>  	depends on ARCH_MVEBU
+>  	help
+> -	  Select this to enable cpuidle on Armada 370/XP processors.
+> +	  Select this to enable cpuidle on Armada 370, 385 and XP processors.
+
+385 -> 38x, because 380 and 385 are both capable of using this driver.
+
+> diff --git a/drivers/cpuidle/cpuidle-armada-370-xp.c b/drivers/cpuidle/cpuidle-armada-370-xp.c
+> deleted file mode 100644
+> index a5fba0287bfb..000000000000
+> --- a/drivers/cpuidle/cpuidle-armada-370-xp.c
+> +++ /dev/null
+
+You haven't enabled rename detection in git? Or git isn't detecting the
+rename because of the number of changes in the file?
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
