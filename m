@@ -1,34 +1,47 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [alsa-devel] [PATCH 00/13] Remove mach-kirkwood and mach-dove
-Date: Mon, 30 Jun 2014 11:00:49 +0100
-Message-ID: <20140630100048.GU32514@n2100.arm.linux.org.uk>
-References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <20140630091643.2df3b0fb@armhf> <20140630084918.GS32514@n2100.arm.linux.org.uk> <20140630114701.1368d49e@armhf>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization more
+ generic
+Date: Mon, 30 Jun 2014 12:30:50 +0200
+Message-ID: <53B13C5A.80603@free-electrons.com>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com> <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com> <53AD7C90.6080600@free-electrons.com> <20140628145625.GL23978@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140630114701.1368d49e@armhf>
-Sender: linux-ide-owner@vger.kernel.org
-To: Jean-Francois Moine <moinejf@free.fr>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-ide@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, alsa-devel@alsa-project.org, Bryan Wu <cooloney@gmail.com>, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Tejun Heo <tj@kernel.org>, Wim Van Sebroeck <wim@iguana.be>, Mark Brown <broonie@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, linux-pci@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-leds@vger.kernel.org, linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:53193 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753740AbaF3Kft (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 06:35:49 -0400
+In-Reply-To: <20140628145625.GL23978@titan.lakedaemon.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jason Cooper <jason@lakedaemon.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-On Mon, Jun 30, 2014 at 11:47:01AM +0200, Jean-Francois Moine wrote:
-> Have you declared the LCD clock in dove.dtsi?
+Hi Jason,
+
+
+>>> +	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
+>>> +					&match);
+>>> +
+>>
+>> The following part was missing (without this the kernel hang on Armada 375)
+>>
+>> +       if (!np)
+>> +               return 0;
 > 
->  	lcdclk: fixed-clock {
-> 		compatible = "fixed-clock";
->  		#clock-cells = <0>;
->  		clock-frequency = <400000000>;
->  	};
+> If there's no other changes, I can fix this up when I apply it.  As well
+> as the S-o-b.
 
-And what difference would that make - this would not be used.
 
-The clock used for the LCD controller somes from the Si5351.  The internal
-clocks are not used as they are unsuitable for generating the resolutions
-we require.  The other clocks used by the LCD controller (AXI clock and
-PLL clock) are both fundamental clocks in the SoC, neither are 400MHz.
+Thanks. Let's hope it will be the case, and there will no need to a
+new version of this series. :)
+
+Gregory
+
 
 -- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
