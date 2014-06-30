@@ -1,45 +1,36 @@
-From: Guru Prasad <gurupras@buffalo.edu>
-Subject: Disallow process from being scheduled for specific duration
-Date: Mon, 30 Jun 2014 11:44:47 +0530
-Message-ID: <CAMefCkAqpSb9x-uncxwr=7r0B-ms+w9M6X3DgV2rfe2in3NBYA@mail.gmail.com>
+From: Jean-Francois Moine <moinejf@free.fr>
+Subject: Re: [alsa-devel] [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Mon, 30 Jun 2014 09:16:43 +0200
+Message-ID: <20140630091643.2df3b0fb@armhf>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch>
+	<20140629213510.GR32514@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f50.google.com ([209.85.219.50]:54806 "EHLO
-	mail-oa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150AbaF3GOr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 02:14:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20140629213510.GR32514@n2100.arm.linux.org.uk>
+Sender: linux-ide-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-ide@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, alsa-devel@alsa-project.org, Bryan Wu <cooloney@gmail.com>, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Tejun Heo <tj@kernel.org>, Wim Van Sebroeck <wim@iguana.be>, Mark Brown <broonie@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, linux-pci@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-leds@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-newbie@vger.kernel.org
 
-Hi all,
+On Sun, 29 Jun 2014 22:35:11 +0100
+Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-First, I would like to establish that I'm fairly new to the scheduler
-portion of kernel code.
+> There is actually a cubox regression which has yet to be tracked down=
+=2E
+> Running with my kernel (which is not-DT based) runs perfectly.  With
+> DT, HDMI output can be unstable.
 
-I'm trying to implement a crude form of the rate limiting approaches
-described in:
-Currentcy - http://cseweb.ucsd.edu/~vahdat/papers/usenix03.pdf
-Pixie - http://www.eecs.harvard.edu/~mdw/papers/pixie-sensys08.pdf
+Russell,
 
-My current design is as follows ('task' refers to the current process'
-task_struct):
-    - I have augmented a hardware simulator(Gem5) with registers that
-keep track of energy usage.
-    - Upon every call to __schedule(), subtract the register value
-from 'task->available_energy'
-        - If 'task->available_energy' is negative:
-            - Compute 'replenish_time' as time taken to replenish energy
-            - Call schedule_timeout(msecs_to_jiffies(replenish_time))
-        -  Reset energy registers
+What is this HDMI problem with DT?
 
-I'm primarily looking to disallow scheduling of the current task for
-the period defined as 'replenish_time'.
+I am running a DT based kernel on my Cubox for more than 1 year and the
+only problem I have is a random black screen at startup time, and this
+black screen problem also exists with the old non-DT kernels from
+SolidRun.
 
-I can see how it might be wrong to call schedule_timeout() from within
-__schedule().
-If so, what would be the right way of designing such a mechanism?
-
-
-Regards
+--=20
+Ken ar c'henta=C3=B1	|	      ** Breizh ha Linux atav! **
+Jef		|		http://moinejf.free.fr/
