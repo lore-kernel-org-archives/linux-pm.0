@@ -1,80 +1,98 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization more
- generic
-Date: Mon, 30 Jun 2014 16:07:27 +0200
-Message-ID: <20140630160727.628e79c3@free-electrons.com>
-References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
-	<1403875377-940-8-git-send-email-gregory.clement@free-electrons.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Mon, 30 Jun 2014 15:25:16 +0100
+Message-ID: <20140630142516.GA32514@n2100.arm.linux.org.uk>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <53B154FE.80804@gmail.com> <20140630124320.GZ32514@n2100.arm.linux.org.uk> <53B164B2.7090902@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:55294 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751001AbaF3OQV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 10:16:21 -0400
-In-Reply-To: <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <53B164B2.7090902@gmail.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-Gregory,
+On Mon, Jun 30, 2014 at 03:22:58PM +0200, Sebastian Hesselbarth wrote:
+> Of course we thought about it. But as you are dealing with different
+> SoCs at a time, we also have to care about some more SoCs than just
+> Dove. And, of course, we also run out of spare time to prepare proper
+> patches over and over again. I really /know/ that if you send patches,
+> they are well thought and well tested, so I basically postpone work
+> on that if I know you are working on it.
+>
+> My current idea of PMU register space is to have a DT provided regmap
+> but again, there are patches floating around but currently that regmap
+> helpers are still WIP. FWIW, if you look at dove pinctrl, we did a
+> last-minute patch for the PMU regs - just because you mentioned a
+> concern, so we really care about your opinion. The fact that it is not
+> solved is pure lack of time.
 
-On Fri, 27 Jun 2014 15:22:48 +0200, Gregory CLEMENT wrote:
+Nothing has changed on the PMU patches since I posted them, because
+they're based on 3.15 and there's been no changes there.
 
-> +static bool (*mvebu_v7_cpu_idle_init)(void);
-> +
-> +static __init bool armada_xp_cpuidle_init(void)
-> +{
-> +	struct device_node *np;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric");
-> +	if (!np)
-> +		return false;
-> +	of_node_put(np);
-> +
-> +	mvebu_v7_cpuidle_device.dev.platform_data = armada_xp_370_cpu_suspend;
-> +	return true;
-> +}
-> +
-> +static struct of_device_id of_cpuidle_table[] __initdata = {
-> +	{ .compatible = "marvell,armadaxp",
-> +	  .data = (void *)armada_xp_cpuidle_init,
-> +	},
-> +	{ /* end of list */ },
-> +};
-> +
->  static int __init mvebu_v7_cpu_pm_init(void)
->  {
->  	struct device_node *np;
-> +	const struct of_device_id *match;
-> +
-> +	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
-> +					&match);
+> Exactly that increasing amount of (valuable) patches makes it more
+> and more difficult for you and us to reproduce any issues. All I am
+> asking for is: if you don't push that branch for good reason, try to
+> split off at least some patches. Hunting issues like the HDMI thing
+> with 250 patches off, really isn't going to work well.
 
-I'm not sure I like using of_find_matching_node_and_match() on the
-entire tree to find the root node compatible string. Wouldn't it be
-simpler and shorter to just do:
+Right, so what I have against mainline right now in my tree is:
 
-	if (of_machine_is_compatible("marvell,armadaxp"))
-		ret = armadaxp_cpuidle_init();
-	else if (of_machine_is_compatible("marvell,armada370"))
-		ret = armada370_cpuidle_init();
-	else if (of_machine_is_compaitble("marvell,armada380"))
-		ret = armada38x_cpuidle_init();
+* two SPI patches, which have been taken by Mark
+* one long term core ARM patch adding optimised memset/memcpy IO operations
+* the PMU stuff
+* BMM (already published in git form)
+* Vmeta (already published in git form)
+* ASoC cleanup patches, which Mark took last week.
 
-	if (ret)
-		return ret;
+What isn't visible is the stuff which converts Armada DRM to component
+support, along with the TDA998x driver (and it sounds like the TI LCDC
+people may end up blocking that effort).  This is necessary to convert
+it to DT support.  However, this depends on the component helper, and
+that's where there's a blocking problem.
 
-Also, using a boolean to return a success/error status is not the
-kernel way of doing things, you should use an int instead and use
-proper error codes or return 0 on success.
+I sent out a bunch of patches last week, with a request for help from
+the Exynos people.  So far, that has only attracted one relatively minor
+comment from the iMX people.  I can't move forwards with the Armada
+DRM until this is sorted.  Neither can I move forward with the TDA998x
+driver.
 
-Thanks,
+As for the ASoC stuff which you avoided commenting on, let me repeat
+that _that_ stuff is now totally dead and can /never/ be merged into
+mainline without breaking the existing ASoC kirkwood support.  In
+that case, it's not like I wasn't sending the patches out, because
+I had been... so everyone was aware of what was going on there,
+but I guess converting stuff to DT in ways that totally fuck over
+other patches is what now happens in the kernel.
 
-Thomas
+What I think you're missing is that for those of us who want to have
+a platform fully supported, the choice has been non-DT until relatively
+recently.  We're now at the point where the DT support on Dove has
+matured to the point where it's relatively easy to end up with a fully
+functional (but not necessarily bug free) setup with DT.  It's at the
+sweet spot where you can switch between DT and non-DT and preserve
+that functionality... but as soon as we get there we want to rip out
+the old stuff.
+
+Let me put that another way: it's at the point where those of us who
+have been using non-DT support can start moving the remaining drivers
+over to a DT environment without any functional loss.
+
+What I'm trying to get you to understand is that leaving the old stuff
+behind for a little while longer is beneficial - while those who have
+been running crippled DT based setups for the last year don't care
+about having full support, there are those who do.
+
+Of course, there's another solution to this.  I stay with my present
+3.15 kernel for ever.  That basically bars me from sending any further
+patches.  It also means that I stop maintaining TDA998x and Armada DRM,
+and you will have to take those over, which means you get the additional
+workload from those.  Is that what you really want?
+
+The Cubox is the /only/ ARM platform I have which is a capable media
+player, and I'm trying not to have it screwed by this kind of crap.
+
 -- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
