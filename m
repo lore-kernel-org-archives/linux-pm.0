@@ -1,38 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: arm_big_little: set lowest frequcency for
- cluster when no cpus in it
-Date: Mon, 30 Jun 2014 14:03:22 +0530
-Message-ID: <CAKohpom_2A0a7nm97WJ0ReocikqViyu4HJ9BdPJi4vEB4mkP-A@mail.gmail.com>
-References: <1403795313-6903-1-git-send-email-thomas.ab@samsung.com>
-	<CAKohpomv=0y30q09fuuRDOGQ_XtuKnerC830vFExNok9mAcyfw@mail.gmail.com>
-	<53AC42CE.2050304@arm.com>
-	<CAJuA9agJb4xx--ujc3=efeFNFLiw4o87nOig8u-X+kY0wj99dA@mail.gmail.com>
-	<53AC6D31.7010709@arm.com>
-	<CAJuA9ajOAhZAzwJEsP9bU83n=n30pgawy-otGU4t=d3ADVKOwg@mail.gmail.com>
-	<CAKohponCoTuoYaLFWzOhZm2XVYjkS2VUsePuso8othxAVsgsyw@mail.gmail.com>
-	<alpine.LFD.2.11.1406272202220.16842@knanqh.ubzr>
-	<CAKohpomLQcfp5OD1QB5m6JTSJPT_JF+mb=mEtGbG4RQb6gsovA@mail.gmail.com>
-	<CAJuA9agDU1-wLHW4yH+2u2EB51SCCbyN+SSshZ271SBK-D=iBA@mail.gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [alsa-devel] [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Mon, 30 Jun 2014 09:49:18 +0100
+Message-ID: <20140630084918.GS32514@n2100.arm.linux.org.uk>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <20140630091643.2df3b0fb@armhf>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:42613 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754196AbaF3IdX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 04:33:23 -0400
-Received: by mail-ob0-f174.google.com with SMTP id va2so8467525obc.33
-        for <linux-pm@vger.kernel.org>; Mon, 30 Jun 2014 01:33:22 -0700 (PDT)
-In-Reply-To: <CAJuA9agDU1-wLHW4yH+2u2EB51SCCbyN+SSshZ271SBK-D=iBA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140630091643.2df3b0fb@armhf>
+Sender: linux-ide-owner@vger.kernel.org
+To: Jean-Francois Moine <moinejf@free.fr>
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-ide@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, alsa-devel@alsa-project.org, Bryan Wu <cooloney@gmail.com>, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Tejun Heo <tj@kernel.org>, Wim Van Sebroeck <wim@iguana.be>, Mark Brown <broonie@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, linux-pci@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-leds@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <ta.omasab@gmail.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 30 June 2014 14:02, Thomas Abraham <ta.omasab@gmail.com> wrote:
-> Thanks Nicolas and Viresh for your feedback. Probably, this can be
-> handled in platform specific mcpm backend driver.
+On Mon, Jun 30, 2014 at 09:16:43AM +0200, Jean-Francois Moine wrote:
+> On Sun, 29 Jun 2014 22:35:11 +0100
+> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> 
+> > There is actually a cubox regression which has yet to be tracked down.
+> > Running with my kernel (which is not-DT based) runs perfectly.  With
+> > DT, HDMI output can be unstable.
+> 
+> Russell,
+> 
+> What is this HDMI problem with DT?
+> 
+> I am running a DT based kernel on my Cubox for more than 1 year and the
+> only problem I have is a random black screen at startup time, and this
+> black screen problem also exists with the old non-DT kernels from
+> SolidRun.
 
-This can be a generic requirement and so doing it inside MCPM core
-would be better IMO.
+The problem is that the picture appears for about a second, then goes black
+for maybe a couple of seconds, then reappears for about a second and this
+cycle repeats.  Rebooting into the DT kernel doesn't fix it.  Rebooting
+back into the non-DT kernel does fix it.  Then if you boot back into the DT
+kernel it's back again.  Boot back into the non-DT kernel and it's again
+fixed.
 
-But the control should be there with backend driver.
+I have compared register settings for the Si5351, LCD controllers and the
+TDA998x between the non-DT and DT versions, and can find no differences
+there.  Yet, DT kernels are the only kernels which exhibit this behaviour.
+Non-DT kernels (which I've run continuously including many reboots) for
+the last two years have *never* shown this problem.
+
+I have also verified that the HDMI clock is correct.  The problem occurs
+at both 1080p and 720p resolutions (which are the two that are used during
+boot - I have the kernel using 720p, and Xorg uses 1080p.)
+
+I should also point out that in both cases, it is the _same_ kernel binary
+(3.15) that I'm running - the DT test case just has the DT blob attached
+whereas the non-DT case boots without (and therefore falls back to the
+old platform stuff.)
+
+-- 
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
