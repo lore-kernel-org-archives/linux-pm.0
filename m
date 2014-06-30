@@ -1,151 +1,218 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH 2/2] cpufreq: ondemand: Eliminate the deadband effect
-Date: Mon, 30 Jun 2014 19:59:34 +0300
-Message-ID: <1404147574-17422-3-git-send-email-stratosk@semaphore.gr>
-References: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1404147574-17422-1-git-send-email-stratosk@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Mon, 30 Jun 2014 19:31:30 +0200
+Message-ID: <53B19EF2.7020801@gmail.com>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <53B154FE.80804@gmail.com> <20140630124320.GZ32514@n2100.arm.linux.org.uk> <53B164B2.7090902@gmail.com> <20140630142516.GA32514@n2100.arm.linux.org.uk> <53B183D5.8020708@gmail.com> <20140630165615.GE32514@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20140630165615.GE32514@n2100.arm.linux.org.uk>
+Sender: linux-pci-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently, ondemand calculates the target frequency proportional to load
-using the formula:
-	Target frequency = C * load
-	where C = policy->cpuinfo.max_freq / 100
+On 06/30/2014 06:56 PM, Russell King - ARM Linux wrote:
+> On Mon, Jun 30, 2014 at 05:35:49PM +0200, Sebastian Hesselbarth wrote:
+>> On 06/30/2014 04:25 PM, Russell King - ARM Linux wrote:
+>>> Nothing has changed on the PMU patches since I posted them, because
+>>> they're based on 3.15 and there's been no changes there.
+>>
+>> I offered to deal with mainlining them end of April, you never replied.
+>> I know that if you dislike something you answer, but it is hard to tell
+>> if silence means agreement.
+>>
+>> I am not going to waste any time preparing patches just to get a NAK.
+> 
+> That's because I am quite prepared to work on them _if_ there is a way
+> forward.  You've already said that changing things like hwmon and rtc
+> is a work in progress to convert them to regmap.  That's great, but
+> in order to progress these myself, I need *visibility* of that work,
+> and there is zero visibility of that.
 
-Though, in many cases, the minimum available frequency is pretty high and
-the above calculation introduces a dead band from load 0 to
-100 * policy->cpuinfo.min_freq / policy->cpuinfo.max_freq where the target
-frequency is always calculated to less than policy->cpuinfo.min_freq and
-the minimum frequency is selected.
+So, we are on the same boat. For the HDMI issue, I also need visibility
+to add any more ideas how to deal with it. Just provide me the binaries,
+I see if I can at least reproduce the issue.
 
-For example: on Intel i7-3770 @ 3.4GHz the policy->cpuinfo.min_freq = 1600000
-and the policy->cpuinfo.max_freq = 3400000 (without turbo). Thus, the CPU
-starts to scale up at a load above 47.
-On quad core 1500MHz Krait the policy->cpuinfo.min_freq = 384000
-and the policy->cpuinfo.max_freq = 1512000. Thus, the CPU starts to scale
-at load above 25.
+>>> As for the ASoC stuff which you avoided commenting on, let me repeat
+>>> that _that_ stuff is now totally dead and can /never/ be merged into
+>>> mainline without breaking the existing ASoC kirkwood support.  In
+>>> that case, it's not like I wasn't sending the patches out, because
+>>> I had been... so everyone was aware of what was going on there,
+>>> but I guess converting stuff to DT in ways that totally fuck over
+>>> other patches is what now happens in the kernel.
+>>
+>> If you are talking about "Kirkwood ASoC updates", you got a Tested-by
+>> from Andrew even before I read your patches. And besides, just because
+>> I am interested in Dove does not mean I just swallowed the whole Linux
+>> API knowledge. I simply avoided commenting on it, because there is
+>> /nothing/ I can add to it.
+> 
+> No I am not - and those are the patches which I referred to as having
+> been already taken by Mark into his tree.  The patch I'm referring to
+> which can never be merged now is the one which I replied to Jean
+> Francois just now - and if you read through it, you'll understand
+> why - that's because it /totally/ breaks the simple DT bindings that
+> are now established - independently - for Kirkwood stuff.
 
-Change the calculation of target frequency to eliminate the above effect using
-the formula:
+And I stopped discussing the pros and cons of the simple DT binding
+as soon as I realized that my comments had no impact on the way it
+will be implemented. I am not responsible for the binding.
 
-	Target frequency = A + B * load
-	where A = policy->cpuinfo.min_freq and
-	      B = (policy->cpuinfo.max_freq - policy->cpuinfo->min_freq) / 100
+>>> What I think you're missing is that for those of us who want to have
+>>> a platform fully supported, the choice has been non-DT until relatively
+>>> recently.  We're now at the point where the DT support on Dove has
+>>> matured to the point where it's relatively easy to end up with a fully
+>>> functional (but not necessarily bug free) setup with DT.  It's at the
+>>> sweet spot where you can switch between DT and non-DT and preserve
+>>> that functionality... but as soon as we get there we want to rip out
+>>> the old stuff.
+>>
+>> Oh, ok.. you think it is "me" and "us"? It is you who actually want to
+>> use Dove and me just wanting a DT representation for it?
+>>
+>> It is not my fault that your patches are blocked by others. I can offer
+>> help to track down the issue, but I am not going to be your scapegoat.
+> 
+> Right, and removing the non-DT support and screwing people like me
+> who have out of tree patches is good for MVEBU development because...
+> (complete the sentence with a damned good reason.)
 
-This will map load values 0 to 100 linearly to cpuinfo.min_freq to
-cpuinfo.max_freq.
+...ranting at people not jumping into review and testing is.
 
-Also, use the CPUFREQ_RELATION_C in __cpufreq_driver_target to select the
-closest frequency in frequency_table. This is necessary to avoid selection
-of minimum frequency only when load equals to 0. It will also help for selection
-of frequencies using a more 'fair' criterion.
+>>> What I'm trying to get you to understand is that leaving the old stuff
+>>> behind for a little while longer is beneficial - while those who have
+>>> been running crippled DT based setups for the last year don't care
+>>> about having full support, there are those who do.
+>>
+>> Ok, let's have mach-dove for a little longer, fine with me.
+> 
+> Great, that's all I ask.  I'm trying as fast as I can to push stuff
+> out - I'm not being anywhere close to idle about it - but it takes time
+> to deal with the updates from each merge window and such like, work out
+> what has been accepted, which patches need to be revised, and do all the
+> testing that's necessary before trying to get some more out.  Oh, and
+> port some more of the patches over to be mainline-based.
 
-Tables below show the difference in selected frequency for specific values
-of load without and with this patch. On Intel i7-3770 @ 3.40GHz:
-	Without			With
-Load	Target	Selected	Target	Selected
-0	0	1600000		1600000	1600000
-5	170050	1600000		1690050	1700000
-10	340100	1600000		1780100	1700000
-15	510150	1600000		1870150	1900000
-20	680200	1600000		1960200	2000000
-25	850250	1600000		2050250	2100000
-30	1020300	1600000		2140300	2100000
-35	1190350	1600000		2230350	2200000
-40	1360400	1600000		2320400	2400000
-45	1530450	1600000		2410450	2400000
-50	1700500	1900000		2500500	2500000
-55	1870550	1900000		2590550	2600000
-60	2040600	2100000		2680600	2600000
-65	2210650	2400000		2770650	2800000
-70	2380700	2400000		2860700	2800000
-75	2550750	2600000		2950750	3000000
-80	2720800	2800000		3040800	3000000
-85	2890850	2900000		3130850	3100000
-90	3060900	3100000		3220900	3300000
-95	3230950	3300000		3310950	3300000
-100	3401000	3401000		3401000	3401000
+> I would've preferred to be clear of the ASoC stuff 12 months ago, and
+> we all know why that was a big problem.
 
-On ARM quad core 1500MHz Krait:
-	Without			With
-Load	Target	Selected	Target	Selected
-0	0	384000		384000	384000
-5	75600	384000		440400	486000
-10	151200	384000		496800	486000
-15	226800	384000		553200	594000
-20	302400	384000		609600	594000
-25	378000	384000		666000	702000
-30	453600	486000		722400	702000
-35	529200	594000		778800	810000
-40	604800	702000		835200	810000
-45	680400	702000		891600	918000
-50	756000	810000		948000	918000
-55	831600	918000		1004400	1026000
-60	907200	918000		1060800	1026000
-65	982800	1026000		1117200	1134000
-70	1058400	1134000		1173600	1134000
-75	1134000	1134000		1230000	1242000
-80	1209600	1242000		1286400	1242000
-85	1285200	1350000		1342800	1350000
-90	1360800	1458000		1399200	1350000
-95	1436400	1458000		1455600	1458000
-100	1512000	1512000		1512000	1512000
+>> What I really want is to stop that blackmailing with giving up on
+>> sending patches. It will be a huge loss if you do and many have said
+>> that in the past.
+> 
+> It's not blackmail.  It's reality.  If the kernel becomes too much
+> hassle to deal with, then volunteers will walk away from it - that's
+> almost a fact of life.
 
-Tested on Intel i7-3770 CPU @ 3.40GHz and on ARM quad core 1500MHz Krait
-(Android smartphone).
-Benchmarks on Intel i7 shows a performance improvement on low and medium
-work loads with lower power consumption. Specifics:
+Right. And since I am one of those volunteers, I can tell you that
+some specific attitude in dealing with people is definitely reducing
+the willingness to stick with it.
 
-Phoronix Linux Kernel Compilation 3.1:
-Time: -0.40%, energy: -0.07%
-Phoronix Apache:
-Time: -4.98%, energy: -2.35%
-Phoronix FFMPEG:
-Time: -6.29%, energy: -4.02%
+I constantly offered to spend my spare time for hunting the issue
+but only received ranting.
 
-Also, running mp3 decoding (very low load) shows no differences with and
-without this patch.
+> Even with DT support, I'm nowhere near being "DT clean" on the Cubox -
+> I need this as a minimum to do "special" stuff there:
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/cpufreq_ondemand.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+Sure, nobody said that DT is feature complete. But you'd have to do
+the same on mainline non-DT dove as there has never been support for
+the cubox.
 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 18d4091..ad3f38f 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -170,21 +170,24 @@ static void od_check_cpu(int cpu, unsigned int load)
- 		dbs_freq_increase(policy, policy->max);
- 	} else {
- 		/* Calculate the next frequency proportional to load */
--		unsigned int freq_next;
--		freq_next = load * policy->cpuinfo.max_freq / 100;
-+		unsigned int freq_next, min_f, max_f;
-+
-+		min_f = policy->cpuinfo.min_freq;
-+		max_f = policy->cpuinfo.max_freq;
-+		freq_next = min_f + load * (max_f - min_f) / 100;
- 
- 		/* No longer fully busy, reset rate_mult */
- 		dbs_info->rate_mult = 1;
- 
- 		if (!od_tuners->powersave_bias) {
- 			__cpufreq_driver_target(policy, freq_next,
--					CPUFREQ_RELATION_L);
-+					CPUFREQ_RELATION_C);
- 			return;
- 		}
- 
- 		freq_next = od_ops.powersave_bias_target(policy, freq_next,
- 					CPUFREQ_RELATION_L);
--		__cpufreq_driver_target(policy, freq_next, CPUFREQ_RELATION_L);
-+		__cpufreq_driver_target(policy, freq_next, CPUFREQ_RELATION_C);
- 	}
- }
- 
--- 
-1.9.3
+If it helps us tracking down the HDMI issue, we can have below setup
+for DT dove and get rid of it incrementally.
+
+I am sure, Andrew can drop removing mach-dove removal from the patches
+and we can continue improving Dove mainline.
+
+Sebastian
+
+> #include <linux/of_platform.h>
+> #include <asm/hardware/cache-tauros2.h>
+> #include "clock.h"
+> 
+> static struct resource armada_drm_resources[] = {
+>         DEFINE_RES_MEM(0, 0),
+> };
+> 
+> static const char *armada_drm_devices[4];
+> 
+> static const struct platform_device_info armada_drm_dev_info __initconst = {
+>         .name = "armada-drm",
+>         .id = -1,
+>         .res = armada_drm_resources,
+>         .num_res = ARRAY_SIZE(armada_drm_resources),
+>         .data = armada_drm_devices,
+>         .size_data = sizeof(armada_drm_devices),
+> };
+> 
+> static struct platform_device cubox_spdif = {
+>         .name   = "kirkwood-spdif-audio",
+>         .id     = 1,
+> };
+> 
+> static const struct platform_device_info cubox_spdif_dit __initconst = {
+>         .name = "spdif-dit",
+>         .id = -1,
+> };
+> 
+> static void __init cubox_reserve(void)
+> {
+>         phys_addr_t phys;
+> 
+>         dove_reserve();
+> 
+>         /* Steal 32MB for the drm framebuffers */
+>         phys = arm_memblock_steal(SZ_32M, SZ_2M);
+>         armada_drm_resources[0].start = phys;
+>         armada_drm_resources[0].end = phys + SZ_32M - 1;
+> }
+> 
+> static void __init cubox_dt_init(void)
+> {
+>         struct device_node *node;
+>         struct platform_device *pdev;
+>         int i;
+> 
+>         pr_info("Dove 88AP510 SoC\n");
+> 
+> #ifdef CONFIG_CACHE_TAUROS2
+>         tauros2_init(0);
+> #endif
+>         dove_init_pmu();
+> 
+>         BUG_ON(mvebu_mbus_dt_init());
+>         of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+> 
+>         dove_devclks_init();
+>         dove_gpu_init();
+>         dove_bmm_init();
+> 
+>         for (i = 0, node = NULL; (node = of_find_compatible_node(node, NULL, "marvell,dove-lcd")) != NULL; ) {
+>                 if (!of_device_is_available(node))
+>                         continue;
+>                 pdev = of_find_device_by_node(node);
+>                 if (pdev)
+>                         armada_drm_devices[i++] = dev_name(&pdev->dev);
+>         }
+>         armada_drm_devices[i++] = NULL;
+>         platform_device_register_full(&armada_drm_dev_info);
+> 
+>         platform_device_register_full(&cubox_spdif_dit);
+>         platform_device_register(&cubox_spdif);
+> }
+> 
+> static const char * const cubox_dt_compat[] = {
+>         "solidrun,cubox",
+>         NULL
+> };
+> 
+> DT_MACHINE_START(DOVE_DT, "Marvell Dove (Cubox)")
+>         .dt_compat      = cubox_dt_compat,
+>         .reserve        = cubox_reserve,
+>         .map_io         = dove_map_io,
+>         .init_machine   = cubox_dt_init,
+>         .restart        = dove_restart,
+> };
+> 
+> 
