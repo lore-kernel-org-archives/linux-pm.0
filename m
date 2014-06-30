@@ -1,44 +1,66 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] Thermal: imx: correct critical trip temperature setting
-Date: Mon, 30 Jun 2014 10:21:24 +0800
-Message-ID: <20140630022122.GA3338@shlinux2>
-References: <1403247786-19899-1-git-send-email-b20788@freescale.com>
- <1404095067.2289.6.camel@rzhang1-toshiba>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
+Date: Mon, 30 Jun 2014 10:20:29 +0530
+Message-ID: <CAKohpomX0Wk_aL117ZqXsC-jruHi8wOj=A4YqtNDcStJZ8iJOw@mail.gmail.com>
+References: <cover.1403684824.git.viresh.kumar@linaro.org>
+	<e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
+	<20140628145253.GB7869@dragon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1lp0142.outbound.protection.outlook.com ([207.46.163.142]:22161
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753412AbaF3DVN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 29 Jun 2014 23:21:13 -0400
-Content-Disposition: inline
-In-Reply-To: <1404095067.2289.6.camel@rzhang1-toshiba>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140628145253.GB7869@dragon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, Mike Turquette <mturquette@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Anson Huang <b20788@freescale.com>, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
 
-On Mon, Jun 30, 2014 at 10:24:27AM +0800, Zhang Rui wrote:
-> On Fri, 2014-06-20 at 15:03 +0800, Anson Huang wrote:
-> > On latest i.MX6 SOC with thermal calibration data of 0x5A100000,
-> > the critical trip temperature will be an invalid value and
-> > cause system auto shutdown as below log:
-> > 
-> > thermal thermal_zone0: critical temperature reached(42 C),shutting down
-> > 
-> > So, with universal formula for thermal sensor, only room
-> > temperature point is calibrated, which means the calibration
-> > data read from fuse only has valid data of bit [31:20], others
-> > are all 0, the critical trip point temperature can NOT depend
-> > on the hot point calibration data, here we set it to 20 C higher
-> > than default passive temperature.
-> > 
-> > Signed-off-by: Anson Huang <b20788@freescale.com>
-> 
-> Shawn,
-> what do you think of this patch?
+On 28 June 2014 20:22, Shawn Guo <shawn.guo@linaro.org> wrote:
+> Thanks for all the effort on maintaining and improving cpufreq-cpu0
+> driver.
 
-I'm fine the with patch.
+You're welcome..
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+> Your patch rewrote the most part of the driver, so I'd like to
+> hand over the driver to you.  Please add yourself as the primary person
+> for MODULE_AUTHOR.
+
+I don't think a complete handover would be right, and so still keeping
+you as author :)
+
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Mon Jun 30 10:15:22 2014 +0530
+
+    cpufreq: cpu0: Add Module Author
+
+    Two people are maintaining it now, Viresh and Shawn. Add Viresh's details in
+    MODULE_AUTHOR() and copyright section.
+
+    Suggested-by: Shawn Guo <shawn.guo@linaro.org>
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-generic.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq-generic.c
+b/drivers/cpufreq/cpufreq-generic.c
+index 4da3f2f..5656dd1 100644
+--- a/drivers/cpufreq/cpufreq-generic.c
++++ b/drivers/cpufreq/cpufreq-generic.c
+@@ -1,6 +1,9 @@
+ /*
+  * Copyright (C) 2012 Freescale Semiconductor, Inc.
+  *
++ * Copyright (C) 2014 Linaro.
++ * Viresh Kumar <viresh.kumar@linaro.org>
++ *
+  * The OPP code in function set_target() is reused from
+  * drivers/cpufreq/omap-cpufreq.c
+  *
+@@ -402,6 +405,7 @@ static struct platform_driver generic_cpufreq_platdrv = {
+ };
+ module_platform_driver(generic_cpufreq_platdrv);
+
++MODULE_AUTHOR("Viresh Kumar <viresh.kumar@linaro.org>");
+ MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
+ MODULE_DESCRIPTION("Generic cpufreq driver");
+ MODULE_LICENSE("GPL");
