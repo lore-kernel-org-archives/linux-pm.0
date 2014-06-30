@@ -1,46 +1,58 @@
-From: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Subject: [PATCH 2/4] cpufreq: cpu0: Use clk_find_nearest_rate()
-Date: Mon, 30 Jun 2014 09:56:34 -0700
-Message-ID: <1404147396-8041-3-git-send-email-soren.brinkmann@xilinx.com>
-References: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:50903 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756459AbaF3Q45 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 12:56:57 -0400
-In-Reply-To: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH 0/4] Introduce clk_find_nearest_rate()
+Date: Mon, 30 Jun 2014 09:56:32 -0700
+Message-ID: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Soren Brinkmann <soren.brinkmann@xilinx.com>
 
-Round clock frequencies to the nearest possible frequency. Since the
-OPPs as specified in DT and the CCF use different a resolution for clock
-frequencies, the clk_round_rate() API may return unexpected results, due
-to not mandating how rounding has to happen. The clk_find_nearest_rate()
-API mitigates such issues and finds the appropriate frequency for
-an OPP.
+On Zynq I encountered issues due to rounding here and there. Often the
+issue would have been resolved by rounding towards the requested
+frequency. Unfortunately, the CCF does not specify  the behavior of
+clk_round_rate() in terms of rounding, making this proposed API
+call useful for certain use-cases.
 
-Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
----
+An RFC of this series has been discussed here:
+https://lkml.org/lkml/2014/5/14/694
 
- drivers/cpufreq/cpufreq-cpu0.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Mike: IIRC, you wanted to fix the return type of __clk_round_rate(). Do
+you have any patches for that already? I couldn't find anything in
+clk-next.
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index ee1ae303a07c..1650581f85b6 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -42,7 +42,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	long freq_Hz, freq_exact;
- 	int ret;
- 
--	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
-+	freq_Hz = clk_find_nearest_rate(cpu_clk,
-+			freq_table[index].frequency * 1000);
- 	if (freq_Hz <= 0)
- 		freq_Hz = freq_table[index].frequency * 1000;
- 
--- 
+Patch 1 adds the new API call.
+2 and 3 apply the new API.
+And 4 is a minor fixup of the Zynq DT. The frequencies in the Zynq OPPs
+had been specified taking this rounding issues into account, which
+is no longer required with this patchset.
+
+	Thanks,
+	S=C3=B6ren
+
+
+Soren Brinkmann (4):
+  clk: Introduce 'clk_find_nearest_rate()'
+  cpufreq: cpu0: Use clk_find_nearest_rate()
+  net: macb: Use clk_find_nearest_rate() API
+  ARM: zynq: dt: Use properly rounded frequencies in OPPs
+
+ arch/arm/boot/dts/zynq-7000.dtsi    |  4 +--
+ drivers/clk/clk.c                   | 57 +++++++++++++++++++++++++++++=
+++++++++
+ drivers/cpufreq/cpufreq-cpu0.c      |  3 +-
+ drivers/net/ethernet/cadence/macb.c |  2 +-
+ include/linux/clk.h                 |  9 ++++++
+ 5 files changed, 71 insertions(+), 4 deletions(-)
+
+--=20
 2.0.1.1.gfbfc394
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
