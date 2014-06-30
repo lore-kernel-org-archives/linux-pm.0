@@ -1,57 +1,68 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+From: Jean-Francois Moine <moinejf@free.fr>
 Subject: Re: [alsa-devel] [PATCH 00/13] Remove mach-kirkwood and mach-dove
-Date: Mon, 30 Jun 2014 09:49:18 +0100
-Message-ID: <20140630084918.GS32514@n2100.arm.linux.org.uk>
-References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <20140630091643.2df3b0fb@armhf>
+Date: Mon, 30 Jun 2014 11:47:01 +0200
+Message-ID: <20140630114701.1368d49e@armhf>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch>
+	<20140629213510.GR32514@n2100.arm.linux.org.uk>
+	<20140630091643.2df3b0fb@armhf>
+	<20140630084918.GS32514@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140630091643.2df3b0fb@armhf>
-Sender: linux-ide-owner@vger.kernel.org
-To: Jean-Francois Moine <moinejf@free.fr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <20140630084918.GS32514@n2100.arm.linux.org.uk>
+Sender: linux-leds-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Cc: Andrew Lunn <andrew@lunn.ch>, linux-ide@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, alsa-devel@alsa-project.org, Bryan Wu <cooloney@gmail.com>, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Tejun Heo <tj@kernel.org>, Wim Van Sebroeck <wim@iguana.be>, Mark Brown <broonie@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, linux-pci@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-leds@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 30, 2014 at 09:16:43AM +0200, Jean-Francois Moine wrote:
-> On Sun, 29 Jun 2014 22:35:11 +0100
-> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> 
-> > There is actually a cubox regression which has yet to be tracked down.
-> > Running with my kernel (which is not-DT based) runs perfectly.  With
-> > DT, HDMI output can be unstable.
-> 
-> Russell,
-> 
-> What is this HDMI problem with DT?
-> 
-> I am running a DT based kernel on my Cubox for more than 1 year and the
-> only problem I have is a random black screen at startup time, and this
-> black screen problem also exists with the old non-DT kernels from
-> SolidRun.
+On Mon, 30 Jun 2014 09:49:18 +0100
+Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-The problem is that the picture appears for about a second, then goes black
-for maybe a couple of seconds, then reappears for about a second and this
-cycle repeats.  Rebooting into the DT kernel doesn't fix it.  Rebooting
-back into the non-DT kernel does fix it.  Then if you boot back into the DT
-kernel it's back again.  Boot back into the non-DT kernel and it's again
-fixed.
+> The problem is that the picture appears for about a second, then goes=
+ black
+> for maybe a couple of seconds, then reappears for about a second and =
+this
+> cycle repeats.  Rebooting into the DT kernel doesn't fix it.  Rebooti=
+ng
+> back into the non-DT kernel does fix it.  Then if you boot back into =
+the DT
+> kernel it's back again.  Boot back into the non-DT kernel and it's ag=
+ain
+> fixed.
+>=20
+> I have compared register settings for the Si5351, LCD controllers and=
+ the
+> TDA998x between the non-DT and DT versions, and can find no differenc=
+es
+> there.  Yet, DT kernels are the only kernels which exhibit this behav=
+iour.
+> Non-DT kernels (which I've run continuously including many reboots) f=
+or
+> the last two years have *never* shown this problem.
+>=20
+> I have also verified that the HDMI clock is correct.  The problem occ=
+urs
+> at both 1080p and 720p resolutions (which are the two that are used d=
+uring
+> boot - I have the kernel using 720p, and Xorg uses 1080p.)
+>=20
+> I should also point out that in both cases, it is the _same_ kernel b=
+inary
+> (3.15) that I'm running - the DT test case just has the DT blob attac=
+hed
+> whereas the non-DT case boots without (and therefore falls back to th=
+e
+> old platform stuff.)
 
-I have compared register settings for the Si5351, LCD controllers and the
-TDA998x between the non-DT and DT versions, and can find no differences
-there.  Yet, DT kernels are the only kernels which exhibit this behaviour.
-Non-DT kernels (which I've run continuously including many reboots) for
-the last two years have *never* shown this problem.
+Have you declared the LCD clock in dove.dtsi?
 
-I have also verified that the HDMI clock is correct.  The problem occurs
-at both 1080p and 720p resolutions (which are the two that are used during
-boot - I have the kernel using 720p, and Xorg uses 1080p.)
+ 	lcdclk: fixed-clock {
+		compatible =3D "fixed-clock";
+ 		#clock-cells =3D <0>;
+ 		clock-frequency =3D <400000000>;
+ 	};
 
-I should also point out that in both cases, it is the _same_ kernel binary
-(3.15) that I'm running - the DT test case just has the DT blob attached
-whereas the non-DT case boots without (and therefore falls back to the
-old platform stuff.)
-
--- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+--=20
+Ken ar c'henta=C3=B1	|	      ** Breizh ha Linux atav! **
+Jef		|		http://moinejf.free.fr/
