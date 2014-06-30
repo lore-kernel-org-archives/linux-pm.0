@@ -1,65 +1,111 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
-Date: Mon, 30 Jun 2014 13:43:20 +0100
-Message-ID: <20140630124320.GZ32514@n2100.arm.linux.org.uk>
-References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <53B154FE.80804@gmail.com>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH 03/16] ARM: mvebu: Add function to export the physical
+ address of the boot register
+Date: Mon, 30 Jun 2014 14:46:20 +0200
+Message-ID: <20140630144620.0030cf94@free-electrons.com>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
+	<1403875377-940-4-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:47212 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753391AbaF3Mns (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 08:43:48 -0400
-Content-Disposition: inline
-In-Reply-To: <53B154FE.80804@gmail.com>
+Received: from top.free-electrons.com ([176.31.233.9]:54190 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755382AbaF3MqY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 08:46:24 -0400
+In-Reply-To: <1403875377-940-4-git-send-email-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-On Mon, Jun 30, 2014 at 02:15:58PM +0200, Sebastian Hesselbarth wrote:
-> Can you give a /rough/ schedule for your plans to sort out your private
-> branches? If we can all investigate the issue with the same code basis,
-> I am sure we can make DT dove behave the same way non-DT dove seems to
-> be.
+Gregory,
 
-As you will be aware, that is an unreasonable question.  I have no
-idea what so ever how long it will take to sort out my private
-branches, because it doesn't depend all that much on me.
+I'm not sure that the best approach to solve this problem. Instead,
+maybe the system-controller.c code should set up the boot address
+workaround on Armada 375. Since the workaround on 375 is really related
+to setting the boot address which is done by the system controller,
+maybe the initialization of the workaround belongs in
+system-controller.c ?
 
-For example, I've had fully working audio on the Cubox for 18+ months,
-but there's a big problem getting it into mainline.  First it was the
-lack of co-operation from the ASoC maintainers.  Then it was the ASoC
-maintainers accepting Jean-Francois patches (which really torpedoed
-my efforts.)  And the final problem which makes it totally impossible
-is that pushing the DPCM stuff will completely break the DT based
-kirkwood ASoC stuff which got pushed in.
+On Fri, 27 Jun 2014 15:22:44 +0200, Gregory CLEMENT wrote:
+> In order to boot the secondary CPUs on Armada 375 Z1, we need to read
+> the boot address of these CPUs through a register part of the System
+> Controller. This done very early where MMU is not enable yet, so we
+> need to get the physical address of this register to use it.
 
-I suspect that the PMU work I did has also been torpedoed because of
-no one in the mvebu circles has really thought about how to deal
-properly with the overlapping registers for the PMU, hwmon and RTC.
+I don't think that really explains what's going on here, maybe:
 
-Right now, I have 250 patches in my Cubox tree against a base of
-3.15 plus the original set of changes.  And no, I'm *not* going
-to be stupid enough to publish the tree because of the non-GPL
-license header(s) on various files in the Vivante code base.
+"As part of a workaround for a BootROM issue on Armada 375 Z1, a piece
+of assembly code loaded into the Cryptographic Engine SRAM needs to
+read the System Controller Resume Address register before the MMU is
+enabled. We therefore need a way of getting the physical address for
+the System Controller Resume Address register."
 
-I'm actually on the point of just giving up with mainlike on the Cubox
-because of this kind of crap, and the extreme difficulty to get any
-kind of progress on this stuff - and I'm seeing a growing number of
-patches on the Cubox-i side of things, the mainline churn on mach-dove
-is becoming a /big/ problem.
+> In the previous version of this workaround the physical address were
 
-So... if you want to remove mach-dove, then I'll just add to my
-cubox tree an entire revert of it.  Especially as DT does not work
-properly here and non-DT does.
+were -> was.
 
-And I really don't buy your "it's down to the timing" explanation -
-because (a) switching from 720p to 1080p reprograms the clock chain
-right from the Si5351, which is no different to what happens on
-initial bring up, and (b) I've measured the HDMI clock which is
-derived from this chain and it is correct and unmodulated.
+> hardcoded whereas depending of the Mbus configuration this address may
+> change.
+> 
+> This commit will allow to use the generic boot workaround function
+> with the correct address.
 
+
+
+> ---
+>  arch/arm/mach-mvebu/common.h            |  1 +
+>  arch/arm/mach-mvebu/system-controller.c | 11 +++++++++++
+>  2 files changed, 12 insertions(+)
+> 
+> diff --git a/arch/arm/mach-mvebu/common.h b/arch/arm/mach-mvebu/common.h
+> index b67fb7a10d8b..6ad62cf8352c 100644
+> --- a/arch/arm/mach-mvebu/common.h
+> +++ b/arch/arm/mach-mvebu/common.h
+> @@ -20,6 +20,7 @@
+>  void mvebu_restart(enum reboot_mode mode, const char *cmd);
+>  int mvebu_cpu_reset_deassert(int cpu);
+>  void mvebu_pmsu_set_cpu_boot_addr(int hw_cpu, void *boot_addr);
+> +u32 mvebu_system_controller_get_phys_addr(void);
+>  void mvebu_system_controller_set_cpu_boot_addr(void *boot_addr);
+>  
+>  void armada_xp_cpu_die(unsigned int cpu);
+> diff --git a/arch/arm/mach-mvebu/system-controller.c b/arch/arm/mach-mvebu/system-controller.c
+> index 0c5524ac75b7..ae6ab543aa36 100644
+> --- a/arch/arm/mach-mvebu/system-controller.c
+> +++ b/arch/arm/mach-mvebu/system-controller.c
+> @@ -30,6 +30,7 @@
+>  #include "common.h"
+>  
+>  static void __iomem *system_controller_base;
+> +static u32 system_controller_phys_base;
+>  
+>  struct mvebu_system_controller {
+>  	u32 rstoutn_mask_offset;
+> @@ -109,6 +110,13 @@ void mvebu_system_controller_set_cpu_boot_addr(void *boot_addr)
+>  	writel(virt_to_phys(boot_addr), system_controller_base +
+>  	       mvebu_sc->resume_boot_addr);
+>  }
+> +
+> +u32 mvebu_system_controller_get_phys_addr(void)
+
+phys_addr_t should be the return type.
+
+> +{
+> +	BUG_ON(system_controller_phys_base == NULL);
+> +	BUG_ON(mvebu_sc->resume_boot_addr == 0);
+> +	return system_controller_phys_base + mvebu_sc->resume_boot_addr;
+
+So the function name suggests you're returning the base physical address
+of the System Controller registers, while you're in fact returning the
+physical address of one particular register (the Resume Address one). I
+believe the function is misnamed.
+
+Thanks,
+
+Thomas
 -- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
