@@ -1,41 +1,44 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH TRIVIAL] thermal: cpu_cooling: fix typo highjack ->
- hijack
-Date: Mon, 30 Jun 2014 10:50:33 +0800
-Message-ID: <1404096633.2289.7.camel@rzhang1-toshiba>
-References: <1403716277-1351-1-git-send-email-javi.merino@arm.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH] Thermal: imx: correct critical trip temperature setting
+Date: Mon, 30 Jun 2014 10:21:24 +0800
+Message-ID: <20140630022122.GA3338@shlinux2>
+References: <1403247786-19899-1-git-send-email-b20788@freescale.com>
+ <1404095067.2289.6.camel@rzhang1-toshiba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403716277-1351-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1lp0142.outbound.protection.outlook.com ([207.46.163.142]:22161
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753412AbaF3DVN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 29 Jun 2014 23:21:13 -0400
+Content-Disposition: inline
+In-Reply-To: <1404095067.2289.6.camel@rzhang1-toshiba>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Anson Huang <b20788@freescale.com>, eduardo.valentin@ti.com, linux-pm@vger.kernel.org
 
-On Wed, 2014-06-25 at 18:11 +0100, Javi Merino wrote:
-> Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-
-applied, thanks!
-
--rui
-> ---
->  drivers/thermal/cpu_cooling.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Jun 30, 2014 at 10:24:27AM +0800, Zhang Rui wrote:
+> On Fri, 2014-06-20 at 15:03 +0800, Anson Huang wrote:
+> > On latest i.MX6 SOC with thermal calibration data of 0x5A100000,
+> > the critical trip temperature will be an invalid value and
+> > cause system auto shutdown as below log:
+> > 
+> > thermal thermal_zone0: critical temperature reached(42 C),shutting down
+> > 
+> > So, with universal formula for thermal sensor, only room
+> > temperature point is calibrated, which means the calibration
+> > data read from fuse only has valid data of bit [31:20], others
+> > are all 0, the critical trip point temperature can NOT depend
+> > on the hot point calibration data, here we set it to 20 C higher
+> > than default passive temperature.
+> > 
+> > Signed-off-by: Anson Huang <b20788@freescale.com>
 > 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 84a75f89bf74..1ab0018271c5 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -305,7 +305,7 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
->   * @event: value showing cpufreq event for which this function invoked.
->   * @data: callback-specific data
->   *
-> - * Callback to highjack the notification on cpufreq policy transition.
-> + * Callback to hijack the notification on cpufreq policy transition.
->   * Every time there is a change in policy, we will intercept and
->   * update the cpufreq policy with thermal constraints.
->   *
+> Shawn,
+> what do you think of this patch?
+
+I'm fine the with patch.
+
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
