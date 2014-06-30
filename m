@@ -1,192 +1,107 @@
-From: Boris BREZILLON <boris.brezillon@free-electrons.com>
-Subject: Re: [PATCH 1/4] clk: Introduce 'clk_find_nearest_rate()'
-Date: Mon, 30 Jun 2014 21:27:07 +0200
-Message-ID: <20140630212707.1eb44db6@bbrezillon>
-References: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
- <1404147396-8041-2-git-send-email-soren.brinkmann@xilinx.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Mon, 30 Jun 2014 20:35:40 +0100
+Message-ID: <20140630193540.GG32514@n2100.arm.linux.org.uk>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <53B154FE.80804@gmail.com> <20140630124320.GZ32514@n2100.arm.linux.org.uk> <53B164B2.7090902@gmail.com> <20140630142516.GA32514@n2100.arm.linux.org.uk> <53B183D5.8020708@gmail.com> <20140630165615.GE32514@n2100.arm.linux.org.uk> <53B19EF2.7020801@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:58047 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752197AbaF3T1R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 15:27:17 -0400
-In-Reply-To: <1404147396-8041-2-git-send-email-soren.brinkmann@xilinx.com>
+Received: from gw-1.arm.linux.org.uk ([78.32.30.217]:47893 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751888AbaF3TgB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 15:36:01 -0400
+Content-Disposition: inline
+In-Reply-To: <53B19EF2.7020801@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Soren Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Uwe =?UTF-8?B?S2xl?= =?UTF-8?B?aW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>, linux-arm-kernel@lists.infradead.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 
-Hello Soren,
-
-On Mon, 30 Jun 2014 09:56:33 -0700
-Soren Brinkmann <soren.brinkmann@xilinx.com> wrote:
-
-> Introduce a new API function to find the rate a clock can provide
-> which is closest to a given rate.
+On Mon, Jun 30, 2014 at 07:31:30PM +0200, Sebastian Hesselbarth wrote:
+> On 06/30/2014 06:56 PM, Russell King - ARM Linux wrote:
+> > On Mon, Jun 30, 2014 at 05:35:49PM +0200, Sebastian Hesselbarth wrote:
+> >> On 06/30/2014 04:25 PM, Russell King - ARM Linux wrote:
+> >>> Nothing has changed on the PMU patches since I posted them, because
+> >>> they're based on 3.15 and there's been no changes there.
+> >>
+> >> I offered to deal with mainlining them end of April, you never replied.
+> >> I know that if you dislike something you answer, but it is hard to tell
+> >> if silence means agreement.
+> >>
+> >> I am not going to waste any time preparing patches just to get a NAK.
+> > 
+> > That's because I am quite prepared to work on them _if_ there is a way
+> > forward.  You've already said that changing things like hwmon and rtc
+> > is a work in progress to convert them to regmap.  That's great, but
+> > in order to progress these myself, I need *visibility* of that work,
+> > and there is zero visibility of that.
 > 
-> clk_round_rate() leaves it to the clock driver how rounding is done.
-> Commonly implementations round down due to use-cases that have a
-> certain frequency maximum that must not be exceeded.
+> So, we are on the same boat. For the HDMI issue, I also need visibility
+> to add any more ideas how to deal with it. Just provide me the binaries,
+> I see if I can at least reproduce the issue.
 
-I had the same concern (how could a driver decide whether it should
-round up, down or to the closest value), but had a slightly different
-approach in mind.
+What I can do is provide a branch of all the current stuff which is
+relatively clean for mainline:
 
-AFAIU, you're assuming the clock is always a power of two (which is
-true most of the time, but some clock implementation might differ,
-i.e. a PLL accept any kind of multiplier not necessarily a power of 2).
+http://ftp.arm.linux.org.uk/cgit/linux-cubox.git/log/?h=cubox-ml-3.15
 
-How about improving the clk_ops interface instead by adding a new method
+there's lots missing from it, and it probably doesn't even build
+properly, but that's one of the side effects of trying to keep
+everything working and juggling between mainline and something that
+works.
 
-	long (*round_rate_with_constraint)(struct clk_hw *hw,
-					   unsigned long requested_rate,
-					   unsigned long *parent_rate,
-					   enum clk_round_type type);
-
-with
-
-enum clk_round_type {
-	CLK_ROUND_DOWN,
-	CLK_ROUND_UP,
-	CLK_ROUND_CLOSEST,
-};
-
-or just adding these 3 methods:
-
-	long (*round_rate_up)(struct clk_hw *hw,
-			      unsigned long requested_rate,
-			      unsigned long *parent_rate);
-
-	long (*round_rate_down)(struct clk_hw *hw,
-				unsigned long requested_rate,
-				unsigned long *parent_rate);
-
-	long (*round_rate_closest)(struct clk_hw *hw,
-				   unsigned long requested_rate,
-				   unsigned long *parent_rate);
-
-and let the round_rate method implement the default behaviour.
-
-This way you could add 3 functions to the API:
-
-clk_round_closest (or clk_find_nearest_rate as you called it),
-clk_round_up and clk_round_down, and let the clk driver implementation
-return the appropriate rate.
-
-These are just some thoughts...
-
-Best Regards,
-
-Boris
-
+> Right. And since I am one of those volunteers, I can tell you that
+> some specific attitude in dealing with people is definitely reducing
+> the willingness to stick with it.
 > 
-> The new API call enables use-cases where accuracy is preferred. E.g.
-> Ethernet clocks.
-> 
-> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
-> ---
-> 
->  drivers/clk/clk.c   | 57
-> +++++++++++++++++++++++++++++++++++++++++++++++++++++
-> include/linux/clk.h |  9 +++++++++ 2 files changed, 66 insertions(+)
-> 
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> index 8b73edef151d..fce1165cd879 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -1030,6 +1030,63 @@ long clk_round_rate(struct clk *clk, unsigned
-> long rate) EXPORT_SYMBOL_GPL(clk_round_rate);
->  
->  /**
-> + * clk_find_nearest_rate - round the given rate for a clk
-> + * @clk: the clk for which we are rounding a rate
-> + * @rate: the rate which is to be rounded
-> + *
-> + * Takes in a rate as input and finds the closest rate that the clk
-> + * can actually use which is then returned.
-> + * Note: This function relies on the clock's clk_round_rate()
-> implementation.
-> + * For cases clk_round_rate() rounds up, not the closest but the
-> rounded up
-> + * rate is found.
-> + */
-> +long clk_find_nearest_rate(struct clk *clk, unsigned long rate)
-> +{
-> +	long ret, lower, upper;
-> +	unsigned long tmp;
-> +
-> +	clk_prepare_lock();
-> +
-> +	lower = __clk_round_rate(clk, rate);
-> +	if (lower >= rate || lower < 0) {
-> +		ret = lower;
-> +		goto unlock;
-> +	}
-> +
-> +	tmp = rate + (rate - lower) - 1;
-> +	if (tmp > LONG_MAX)
-> +		upper = LONG_MAX;
-> +	else
-> +		upper = tmp;
-> +
-> +	upper = __clk_round_rate(clk, upper);
-> +	if (upper <= lower || upper < 0) {
-> +		ret = lower;
-> +		goto unlock;
-> +	}
-> +
-> +	lower = rate + 1;
-> +	while (lower < upper) {
-> +		long rounded, mid;
-> +
-> +		mid = lower + ((upper - lower) >> 1);
-> +		rounded = __clk_round_rate(clk, mid);
-> +		if (rounded < lower)
-> +			lower = mid + 1;
-> +		else
-> +			upper = rounded;
-> +	}
-> +
-> +	ret = upper;
-> +
-> +unlock:
-> +	clk_prepare_unlock();
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(clk_find_nearest_rate);
-> +
-> +/**
->   * __clk_notify - call clk notifier chain
->   * @clk: struct clk * that is changing rate
->   * @msg: clk notifier type (see include/linux/clk.h)
-> diff --git a/include/linux/clk.h b/include/linux/clk.h
-> index fb5e097d8f72..f8b53c515483 100644
-> --- a/include/linux/clk.h
-> +++ b/include/linux/clk.h
-> @@ -264,6 +264,15 @@ void devm_clk_put(struct device *dev, struct clk
-> *clk); long clk_round_rate(struct clk *clk, unsigned long rate);
->  
->  /**
-> + * clk_find_nearest_rate - Find nearest rate to the exact rate a
-> clock can provide
-> + * @clk: the clk for which we are rounding a rate
-> + * @rate: the rate which is to be rounded
-> + *
-> + * Returns the rate closest to @rate the clock can provide.
-> + */
-> +long clk_find_nearest_rate(struct clk *clk, unsigned long rate);
-> +
-> +/**
->   * clk_set_rate - set the clock rate for a clock source
->   * @clk: clock source
->   * @rate: desired clock rate in Hz
+> I constantly offered to spend my spare time for hunting the issue
+> but only received ranting.
 
+All that I'm /complaining/ about is the very quick removal of the
+non-DT support.
 
+> Sure, nobody said that DT is feature complete. But you'd have to do
+> the same on mainline non-DT dove as there has never been support for
+> the cubox.
+
+Indeed, but successively merging mainline into Rabeeh's tree is rather
+trivial for the most part (apart from a few nasty conflicts, such as the
+completely different si5531 driver).  Where that happens, I take
+mainline's version, and if necessary augment it to make non-DT work
+again.
+
+That has pros and cons - the pro is that I get to keep a feature complete
+kernel on the hardware.  The con is that I still need to use bits of
+mach-dove to make everything work, even with DT.
+
+> If it helps us tracking down the HDMI issue, we can have below setup
+> for DT dove and get rid of it incrementally.
+
+Right, and you'll also need stuff such as the component updates I've
+been trying to push recently, updates to Armada DRM so that it can be
+used in a DT environment (included in the above git tree), and probably
+a few other things.
+
+The timeline for DRM stuff looks something like this:
+
+- get the component updates reviewed and acceptable
+- get those merged by Greg
+- chase up what's happening with the DRM bug fix
+- get the DRM of_graph helper reviewed and merged
+- get the Armada DRM component helper conversion reviewed and merged
+  (which depends on sorting out how to deal with the component helper
+   dependency and need for those changes to be with these changes.)
+- same for the tda998x driver, which will also need the DRM of_graph
+  helpers.
+
+I /suspect/ what's going to happen there is that the component updates
+will make the 3.17 merge window, and maybe the initial DRM stuff.
+The remainder will be for the 3.18 merge window when everyone has
+the dependencies in their trees to cope with those changes.
+
+So that's probably something like 4 to 6 months just for that (assuming
+a kernel cycle is three months.)
 
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
