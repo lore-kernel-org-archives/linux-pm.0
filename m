@@ -1,47 +1,58 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization more
- generic
-Date: Mon, 30 Jun 2014 12:30:50 +0200
-Message-ID: <53B13C5A.80603@free-electrons.com>
-References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com> <1403875377-940-8-git-send-email-gregory.clement@free-electrons.com> <53AD7C90.6080600@free-electrons.com> <20140628145625.GL23978@titan.lakedaemon.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Mon, 30 Jun 2014 14:15:58 +0200
+Message-ID: <53B154FE.80804@gmail.com>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:53193 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753740AbaF3Kft (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 06:35:49 -0400
-In-Reply-To: <20140628145625.GL23978@titan.lakedaemon.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <20140629213510.GR32514@n2100.arm.linux.org.uk>
+Sender: linux-leds-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-Hi Jason,
-
-
->>> +	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
->>> +					&match);
->>> +
+On 06/29/2014 11:35 PM, Russell King - ARM Linux wrote:
+> On Sun, Jun 29, 2014 at 10:59:47PM +0200, Andrew Lunn wrote:
+>> This patchset removes arch/arm/mach-kirkwood and arch/arm/mach-dove.
+>> These SoCs are now supported in arch/arm/mach-mvebu using device tree.
 >>
->> The following part was missing (without this the kernel hang on Armada 375)
+>> Change the dependencies for a number of drivers, either to use
+>> ARCH_MVEBU where the drivers are generic, or MACH_KIRKWOOD and
+>> MACH_DOVE where the drivers are specific to a SoC.
 >>
->> +       if (!np)
->> +               return 0;
-> 
-> If there's no other changes, I can fix this up when I apply it.  As well
-> as the S-o-b.
+>>
+>> Andrew Lunn (13):
+>>    ARM: Kirkwood: Remove mach-kirkwood
+>>    ARM: Dove: Remove mach-dove
+>
+> There is actually a cubox regression which has yet to be tracked down.
+> Running with my kernel (which is not-DT based) runs perfectly.  With
+> DT, HDMI output can be unstable.
+>
+> One of the problems is that it's /very/ difficult to reproduce, but it
+> is reproducable.  I've seen it on two days over many reboots, and I've
+> proved it by switching back and forth.  DT sometimes suffers from the
+> problem, whereas non-DT /never/ does.
+>
+> Sebastian is aware of this, and as yet we haven't found a solution,
+> nor have we found a way to reliably reproduce it.
 
+I am aware of the issue but have not been able to reproduce it. Also,
+we have no /official/ non-DT CuBox support in mainline Linux at all.
+I understand that removing non-DT mach-dove currently is not your
+most preferred patch but from a mainline POV, mach-dove isn't actively
+used. The three officially supported boards have been converted to DT
+months ago and haven't received any TLC since then, so I doubt they are
+used by anyone.
 
-Thanks. Let's hope it will be the case, and there will no need to a
-new version of this series. :)
+My current impression of the issue is that it is more related with
+driver load order/missing delays for clocks/ignoring IP behavior on
+clock rate change or something like it.
 
-Gregory
+Can you give a /rough/ schedule for your plans to sort out your private
+branches? If we can all investigate the issue with the same code basis,
+I am sure we can make DT dove behave the same way non-DT dove seems to
+be.
 
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Sebastian
