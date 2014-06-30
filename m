@@ -1,45 +1,94 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
-Date: Mon, 30 Jun 2014 20:16:40 +0200
-Message-ID: <20140630181640.GL18520@lunn.ch>
-References: <1404075603-31838-1-git-send-email-andrew@lunn.ch>
- <20140629213510.GR32514@n2100.arm.linux.org.uk>
- <53B154FE.80804@gmail.com>
- <20140630124320.GZ32514@n2100.arm.linux.org.uk>
- <53B164B2.7090902@gmail.com>
- <20140630142516.GA32514@n2100.arm.linux.org.uk>
- <53B183D5.8020708@gmail.com>
- <20140630165615.GE32514@n2100.arm.linux.org.uk>
- <20140630174351.GI18520@lunn.ch>
- <20140630180853.GF32514@n2100.arm.linux.org.uk>
+From: Rob Herring <rob.herring@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
+Date: Mon, 30 Jun 2014 13:33:59 -0500
+Message-ID: <CABGGiswMuofH5WRh4jgwh1=CV+fEXM_Ec3+WNwThbuMLVxsdcg@mail.gmail.com>
+References: <cover.1403684824.git.viresh.kumar@linaro.org> <e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
+ <53AB1CC1.4010907@codeaurora.org> <CAKohpo=Q7eWNwcK6KF9_U-zD0g=96QHW9hiQupLpV5GqoWE+mA@mail.gmail.com>
+ <53ACB568.4000903@codeaurora.org> <20140627015354.32686.83046@quantum>
+ <CAKohponvN3rAvJrfi4TojFcq5gq7r2oNE4Q0_NtwBHmEZ8waBA@mail.gmail.com> <CAKohpo=dgSW551yzqjAV2_opw_4naqFEWpwUz9ktkGgR5vCBZA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140630180853.GF32514@n2100.arm.linux.org.uk>
-Sender: linux-ide-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=dgSW551yzqjAV2_opw_4naqFEWpwUz9ktkGgR5vCBZA@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mike Turquette <mturquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-> So, what do we do now with support for compressed audio streams via
-> SPDIF on kirkwood hardware?  As far as I can see, it's no longer
-> possible and mainline kernels will never support this.  Please tell
-> me I'm wrong...
+On Mon, Jun 30, 2014 at 2:57 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 27 June 2014 07:45, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 27 June 2014 07:23, Mike Turquette <mturquette@linaro.org> wrote:
+>>>> but it isn't future-proof if/when the clock framework starts returning
+>>>> dynamically allocated clock pointers for each clk_get() invocation.
+>>>> Maybe we need a function in the common clock framework that tells us if
+>>>> the clocks are the same either via DT or by taking two clock pointers?
+>>>
+>>> I looked through the patch briefly and did not see why we would need to
+>>> do this. Any hint?
+>>
+>> We want to know which CPUs are sharing clock line, so that we can
+>> fill affected-cpus field of cpufreq core.
+>
+> What about comparing "clocks" property in cpu DT nodes?
 
-Well, it would of been nice if you had made a comment to either v1 or
-v2 of my patchset saying this is going to cause problems for some
-devices.
+What if a different clock is selected for some reason. I think a clock
+api function would be better.
 
-So i will go look at your patch to add frontend and backend and see
-what it means for the current DT binding. The nice thing about
-kirkwood (and Dove) is, there is no uboot with DT support. Hence
-nobody is flashing there DT blob. They are always using appended DT.
-So i'm not against changing the binding. And it has only been in the
-kernel for one cycle, so i doubt there are too many users at the
-moment.
+That being said, I don't really have any issue with such a function.
+Some comments on the implementation.
 
-	Andrew
+>
+> @Rob/Grant: I tried looking for an existing routine to do that, but couldn't
+> find it. And so wrote one.
+>
+> I am not good at DT stuff and so I do hope there would be few correction
+> required here. Let me know if this can be added to drivers/of/base.c :
+>
+> +/**
+> + * of_property_match - Match property in two nodes
+> + * @np1, np2: Nodes to match
+> + * @list_name: property to match
+> + *
+> + * Returns 1 on match, 0 on no match, and error for missing property.
+> + */
+> +static int of_property_match(const struct device_node *np1,
+> +                             const struct device_node *np2,
+> +                             const char *list_name)
+> +{
+> +       const __be32 *list1, *list2, *list1_end;
 
+s/list/prop/
 
+Everywhere.
 
+> +       int size1, size2;
+> +       phandle phandle1, phandle2;
+> +
+> +       /* Retrieve the list property */
+> +       list1 = of_get_property(np1, list_name, &size1);
+> +       if (!list1)
+> +               return -ENOENT;
+> +
+> +       list2 = of_get_property(np2, list_name, &size2);
+> +       if (!list2)
+> +               return -ENOENT;
+> +
+> +       if (size1 != size2)
+> +               return 0;
+> +
+> +       list1_end = list1 + size1 / sizeof(*list1);
+> +
+> +       /* Loop over the phandles */
+> +       while (list1 < list1_end) {
+> +               phandle1 = be32_to_cpup(list1++);
+> +               phandle2 = be32_to_cpup(list2++);
+> +
+> +               if (phandle1 != phandle2)
+> +                       return 0;
+> +       }
+
+You can just do a memcmp here.
+
+This is wrong anyway because you don't know #clock-cells size.
+
+Rob
