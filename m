@@ -1,94 +1,192 @@
-From: Rob Herring <rob.herring@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
-Date: Mon, 30 Jun 2014 13:33:59 -0500
-Message-ID: <CABGGiswMuofH5WRh4jgwh1=CV+fEXM_Ec3+WNwThbuMLVxsdcg@mail.gmail.com>
-References: <cover.1403684824.git.viresh.kumar@linaro.org> <e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
- <53AB1CC1.4010907@codeaurora.org> <CAKohpo=Q7eWNwcK6KF9_U-zD0g=96QHW9hiQupLpV5GqoWE+mA@mail.gmail.com>
- <53ACB568.4000903@codeaurora.org> <20140627015354.32686.83046@quantum>
- <CAKohponvN3rAvJrfi4TojFcq5gq7r2oNE4Q0_NtwBHmEZ8waBA@mail.gmail.com> <CAKohpo=dgSW551yzqjAV2_opw_4naqFEWpwUz9ktkGgR5vCBZA@mail.gmail.com>
+From: Boris BREZILLON <boris.brezillon@free-electrons.com>
+Subject: Re: [PATCH 1/4] clk: Introduce 'clk_find_nearest_rate()'
+Date: Mon, 30 Jun 2014 21:27:07 +0200
+Message-ID: <20140630212707.1eb44db6@bbrezillon>
+References: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1404147396-8041-2-git-send-email-soren.brinkmann@xilinx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=dgSW551yzqjAV2_opw_4naqFEWpwUz9ktkGgR5vCBZA@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:58047 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752197AbaF3T1R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 15:27:17 -0400
+In-Reply-To: <1404147396-8041-2-git-send-email-soren.brinkmann@xilinx.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Soren Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Uwe =?UTF-8?B?S2xl?= =?UTF-8?B?aW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>, linux-arm-kernel@lists.infradead.org
 
-On Mon, Jun 30, 2014 at 2:57 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 27 June 2014 07:45, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 27 June 2014 07:23, Mike Turquette <mturquette@linaro.org> wrote:
->>>> but it isn't future-proof if/when the clock framework starts returning
->>>> dynamically allocated clock pointers for each clk_get() invocation.
->>>> Maybe we need a function in the common clock framework that tells us if
->>>> the clocks are the same either via DT or by taking two clock pointers?
->>>
->>> I looked through the patch briefly and did not see why we would need to
->>> do this. Any hint?
->>
->> We want to know which CPUs are sharing clock line, so that we can
->> fill affected-cpus field of cpufreq core.
->
-> What about comparing "clocks" property in cpu DT nodes?
+Hello Soren,
 
-What if a different clock is selected for some reason. I think a clock
-api function would be better.
+On Mon, 30 Jun 2014 09:56:33 -0700
+Soren Brinkmann <soren.brinkmann@xilinx.com> wrote:
 
-That being said, I don't really have any issue with such a function.
-Some comments on the implementation.
+> Introduce a new API function to find the rate a clock can provide
+> which is closest to a given rate.
+> 
+> clk_round_rate() leaves it to the clock driver how rounding is done.
+> Commonly implementations round down due to use-cases that have a
+> certain frequency maximum that must not be exceeded.
 
->
-> @Rob/Grant: I tried looking for an existing routine to do that, but couldn't
-> find it. And so wrote one.
->
-> I am not good at DT stuff and so I do hope there would be few correction
-> required here. Let me know if this can be added to drivers/of/base.c :
->
-> +/**
-> + * of_property_match - Match property in two nodes
-> + * @np1, np2: Nodes to match
-> + * @list_name: property to match
+I had the same concern (how could a driver decide whether it should
+round up, down or to the closest value), but had a slightly different
+approach in mind.
+
+AFAIU, you're assuming the clock is always a power of two (which is
+true most of the time, but some clock implementation might differ,
+i.e. a PLL accept any kind of multiplier not necessarily a power of 2).
+
+How about improving the clk_ops interface instead by adding a new method
+
+	long (*round_rate_with_constraint)(struct clk_hw *hw,
+					   unsigned long requested_rate,
+					   unsigned long *parent_rate,
+					   enum clk_round_type type);
+
+with
+
+enum clk_round_type {
+	CLK_ROUND_DOWN,
+	CLK_ROUND_UP,
+	CLK_ROUND_CLOSEST,
+};
+
+or just adding these 3 methods:
+
+	long (*round_rate_up)(struct clk_hw *hw,
+			      unsigned long requested_rate,
+			      unsigned long *parent_rate);
+
+	long (*round_rate_down)(struct clk_hw *hw,
+				unsigned long requested_rate,
+				unsigned long *parent_rate);
+
+	long (*round_rate_closest)(struct clk_hw *hw,
+				   unsigned long requested_rate,
+				   unsigned long *parent_rate);
+
+and let the round_rate method implement the default behaviour.
+
+This way you could add 3 functions to the API:
+
+clk_round_closest (or clk_find_nearest_rate as you called it),
+clk_round_up and clk_round_down, and let the clk driver implementation
+return the appropriate rate.
+
+These are just some thoughts...
+
+Best Regards,
+
+Boris
+
+> 
+> The new API call enables use-cases where accuracy is preferred. E.g.
+> Ethernet clocks.
+> 
+> Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+> ---
+> 
+>  drivers/clk/clk.c   | 57
+> +++++++++++++++++++++++++++++++++++++++++++++++++++++
+> include/linux/clk.h |  9 +++++++++ 2 files changed, 66 insertions(+)
+> 
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 8b73edef151d..fce1165cd879 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -1030,6 +1030,63 @@ long clk_round_rate(struct clk *clk, unsigned
+> long rate) EXPORT_SYMBOL_GPL(clk_round_rate);
+>  
+>  /**
+> + * clk_find_nearest_rate - round the given rate for a clk
+> + * @clk: the clk for which we are rounding a rate
+> + * @rate: the rate which is to be rounded
 > + *
-> + * Returns 1 on match, 0 on no match, and error for missing property.
+> + * Takes in a rate as input and finds the closest rate that the clk
+> + * can actually use which is then returned.
+> + * Note: This function relies on the clock's clk_round_rate()
+> implementation.
+> + * For cases clk_round_rate() rounds up, not the closest but the
+> rounded up
+> + * rate is found.
 > + */
-> +static int of_property_match(const struct device_node *np1,
-> +                             const struct device_node *np2,
-> +                             const char *list_name)
+> +long clk_find_nearest_rate(struct clk *clk, unsigned long rate)
 > +{
-> +       const __be32 *list1, *list2, *list1_end;
-
-s/list/prop/
-
-Everywhere.
-
-> +       int size1, size2;
-> +       phandle phandle1, phandle2;
+> +	long ret, lower, upper;
+> +	unsigned long tmp;
 > +
-> +       /* Retrieve the list property */
-> +       list1 = of_get_property(np1, list_name, &size1);
-> +       if (!list1)
-> +               return -ENOENT;
+> +	clk_prepare_lock();
 > +
-> +       list2 = of_get_property(np2, list_name, &size2);
-> +       if (!list2)
-> +               return -ENOENT;
+> +	lower = __clk_round_rate(clk, rate);
+> +	if (lower >= rate || lower < 0) {
+> +		ret = lower;
+> +		goto unlock;
+> +	}
 > +
-> +       if (size1 != size2)
-> +               return 0;
+> +	tmp = rate + (rate - lower) - 1;
+> +	if (tmp > LONG_MAX)
+> +		upper = LONG_MAX;
+> +	else
+> +		upper = tmp;
 > +
-> +       list1_end = list1 + size1 / sizeof(*list1);
+> +	upper = __clk_round_rate(clk, upper);
+> +	if (upper <= lower || upper < 0) {
+> +		ret = lower;
+> +		goto unlock;
+> +	}
 > +
-> +       /* Loop over the phandles */
-> +       while (list1 < list1_end) {
-> +               phandle1 = be32_to_cpup(list1++);
-> +               phandle2 = be32_to_cpup(list2++);
+> +	lower = rate + 1;
+> +	while (lower < upper) {
+> +		long rounded, mid;
 > +
-> +               if (phandle1 != phandle2)
-> +                       return 0;
-> +       }
+> +		mid = lower + ((upper - lower) >> 1);
+> +		rounded = __clk_round_rate(clk, mid);
+> +		if (rounded < lower)
+> +			lower = mid + 1;
+> +		else
+> +			upper = rounded;
+> +	}
+> +
+> +	ret = upper;
+> +
+> +unlock:
+> +	clk_prepare_unlock();
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(clk_find_nearest_rate);
+> +
+> +/**
+>   * __clk_notify - call clk notifier chain
+>   * @clk: struct clk * that is changing rate
+>   * @msg: clk notifier type (see include/linux/clk.h)
+> diff --git a/include/linux/clk.h b/include/linux/clk.h
+> index fb5e097d8f72..f8b53c515483 100644
+> --- a/include/linux/clk.h
+> +++ b/include/linux/clk.h
+> @@ -264,6 +264,15 @@ void devm_clk_put(struct device *dev, struct clk
+> *clk); long clk_round_rate(struct clk *clk, unsigned long rate);
+>  
+>  /**
+> + * clk_find_nearest_rate - Find nearest rate to the exact rate a
+> clock can provide
+> + * @clk: the clk for which we are rounding a rate
+> + * @rate: the rate which is to be rounded
+> + *
+> + * Returns the rate closest to @rate the clock can provide.
+> + */
+> +long clk_find_nearest_rate(struct clk *clk, unsigned long rate);
+> +
+> +/**
+>   * clk_set_rate - set the clock rate for a clock source
+>   * @clk: clock source
+>   * @rate: desired clock rate in Hz
 
-You can just do a memcmp here.
 
-This is wrong anyway because you don't know #clock-cells size.
 
-Rob
+-- 
+Boris Brezillon, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
