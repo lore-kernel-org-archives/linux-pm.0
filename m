@@ -1,188 +1,182 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 14/14] cpufreq: generic: set platform_{driver|device} '.name' to 'cpufreq-generic'
-Date: Tue,  1 Jul 2014 22:02:43 +0530
-Message-ID: <36c77764336c7986dc4fb7534852166028154019.1404231535.git.viresh.kumar@linaro.org>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1404231535.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1404231535.git.viresh.kumar@linaro.org>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, shawn.guo@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@freescale.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>, Michal Simek <michal.simek@xilinx.com>, Kukjin Kim <kgene.kim@samsung.com>, Rob Herring <rob.herring@linaro.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
+Date: Tue, 1 Jul 2014 18:42:51 +0200
+Message-ID: <CAPDyKFqi2NH1r=Q13iOu2ruuvaj1xJeoERiy2WJBVbQ2b1tc_A@mail.gmail.com>
+References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
+	<1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
+	<CAOesGMj6xp_cXZRuqL5HOPX4AeDuCkj69E32xuPVgGk4xABLbQ@mail.gmail.com>
+	<53A3E256.8090307@redhat.com>
+	<CAOesGMgRw_=ppC3zhDtuYBUsrnd9wwsu26az=4kMXJDBmNgmjw@mail.gmail.com>
+	<53A3ED65.80605@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <53A3ED65.80605-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arend van Spriel <arend-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Chris Ball <chris-OsFVWbfNK3isTnJN9+BGXg@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-We have already renamed cpufreq-cpu0 to cpufreq-generic at most of the places,
-the only one left is in the '.name' field of platform driver and devices.
+On 20 June 2014 10:14, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> wrote:
+> Hi,
+>
+> On 06/20/2014 10:02 AM, Olof Johansson wrote:
+>> On Fri, Jun 20, 2014 at 12:27 AM, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> wrote:
+>>> Hi,
+>>>
+>>> On 06/19/2014 07:18 PM, Olof Johansson wrote:
+>>>> Hi,
+>>>>
+>>>>
+>>>>
+>>>> On Thu, Jun 19, 2014 at 6:04 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>>>>> The pwrseq subsystem handles complex power sequences, typically useful
+>>>>> for subsystems that makes use of discoverable buses, like for example
+>>>>> MMC and I2C.
+>>>>>
+>>>>> The pwrseq subsystem is dependant on CONFIG_OF to be able to parse a DT
+>>>>> childnode to find out what power sequence method to bind for a device.
+>>>>>
+>>>>> From the DT childnode, the pwrseq DT parser tries to locate a
+>>>>> "power-method" property, which string is matched towards the list of
+>>>>> supported pwrseq methods.
+>>>>>
+>>>>> Each pwrseq method implements it's own power sequence and interfaces
+>>>>> the pwrseq core through a few callback functions.
+>>>>>
+>>>>> To instantiate a pwrseq method, clients shall use the devm_pwrseq_get()
+>>>>> API. If needed, clients can explicity drop the references to a pwrseq
+>>>>> method using devm_pwrseq_put() API.
+>>>>>
+>>>>> Besides instantiation, the pwrseq API provides clients opportunity to
+>>>>> select a certain power state. In this intial version, PWRSEQ_POWER_ON
+>>>>> and PWRSEQ_POWER_OFF are supported. Those are also mandatory for each
+>>>>> pwrseq method to support.
+>>>>>
+>>>>> Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>>>> ---
+>>>>>  .../devicetree/bindings/pwrseq/pwrseq.txt          |   48 ++++++
+>>>>>  drivers/Makefile                                   |    2 +-
+>>>>>  drivers/pwrseq/Makefile                            |    2 +
+>>>>>  drivers/pwrseq/core.c                              |  175 ++++++++++++++++++++
+>>>>>  drivers/pwrseq/core.h                              |   37 +++++
+>>>>>  drivers/pwrseq/method.c                            |   38 +++++
+>>>>>  include/linux/pwrseq.h                             |   50 ++++++
+>>>>>  7 files changed, 351 insertions(+), 1 deletion(-)
+>>>>>  create mode 100644 Documentation/devicetree/bindings/pwrseq/pwrseq.txt
+>>>>>  create mode 100644 drivers/pwrseq/Makefile
+>>>>>  create mode 100644 drivers/pwrseq/core.c
+>>>>>  create mode 100644 drivers/pwrseq/core.h
+>>>>>  create mode 100644 drivers/pwrseq/method.c
+>>>>>  create mode 100644 include/linux/pwrseq.h
+>>>>>
+>>>>> diff --git a/Documentation/devicetree/bindings/pwrseq/pwrseq.txt b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
+>>>>> new file mode 100644
+>>>>> index 0000000..80848ae
+>>>>> --- /dev/null
+>>>>> +++ b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
+>>>>> @@ -0,0 +1,48 @@
+>>>>> +Power sequence DT bindings
+>>>>> +
+>>>>> +Each power sequence method has a corresponding "power-method" property string.
+>>>>> +This property shall be set in a subnode for a device. That subnode should also
+>>>>> +describe resourses which are specific to that power method.
+>>>>> +
+>>>>> +Do note, power sequences as such isn't encoded through DT. Instead those are
+>>>>> +implemented by each power method.
+>>>>> +
+>>>>> +Required subnode properties:
+>>>>> +- power-method: should contain the string for the power method to bind.
+>>>>> +
+>>>>> +       Supported power methods: None.
+>>>>> +
+>>>>> +Example:
+>>>>> +
+>>>>> +Note, the "clock" power method in this example isn't actually supported, but
+>>>>> +used to visualize how a childnode could be described.
+>>>>> +
+>>>>> +// WLAN SDIO channel
+>>>>> +sdi1_per2@80118000 {
+>>>>> +       compatible = "arm,pl18x", "arm,primecell";
+>>>>> +       reg = <0x80118000 0x1000>;
+>>>>> +       interrupts = <0 50 IRQ_TYPE_LEVEL_HIGH>;
+>>>>> +
+>>>>> +       dmas = <&dma 32 0 0x2>, /* Logical - DevToMem */
+>>>>> +              <&dma 32 0 0x0>; /* Logical - MemToDev */
+>>>>> +       dma-names = "rx", "tx";
+>>>>> +
+>>>>> +       clocks = <&prcc_kclk 2 4>, <&prcc_pclk 2 6>;
+>>>>> +       clock-names = "sdi", "apb_pclk";
+>>>>> +
+>>>>> +       arm,primecell-periphid = <0x10480180>;
+>>>>> +       max-frequency = <100000000>;
+>>>>> +       bus-width = <4>;
+>>>>> +       non-removable;
+>>>>> +       pinctrl-names = "default", "sleep";
+>>>>> +       pinctrl-0 = <&sdi1_default_mode>;
+>>>>> +       pinctrl-1 = <&sdi1_sleep_mode>;
+>>>>> +
+>>>>> +       status = "okay";
+>>>>> +
+>>>>> +       pwrseq: pwrseq1 {
+>>>>> +               power-method = "clock";
+>>>>> +               clocks = <&someclk 1 2>, <&someclk 3 4>;
+>>>>> +               clock-names = "pwrseq1", "pwrseq2";
+>>>>> +       };
+>>>>
+>>>> I am strongly against the subnode approach as a general framework. We
+>>>> don't have a subnode for interrupts, nor for clocks or pinctrl. So why
+>>>> should we have it for the power sequencing?
+>>>>
+>>>> Sure, that fits the linux driver model better, but that's irrelevant
+>>>> w.r.t. describing the hardware.
+>>>
+>>> Actually this is about describing the hardware, when you have e.g. an
+>>> mmc device which needs pwrseq, there will be 2 sets of certain
+>>> resources, ie clocks for the host controller and clocks going directly
+>>> to the mmc device. I think putting those both in the same subnode is
+>>> a BAD idea, so we really do need a subnode to group the pwrseq resources
+>>> together.
+>>
+>> I disagree.
+>>
+>> The clock is the input to the module, and it is what needs to be
+>> enabled for the module to work. It's not the input to some
+>> power-sequence component on the module, or next to the module on the
+>> bus.
+>
+> Right, it is an input to the sdio-module, not to the mmc-host, so its an
+> input to a different piece of hardware (at different ends of the mmc bus),
+> but since the mmc-bus normally is fully discoverable we've no node for the
+> other end of the bus.
+>
+> So from the mmc-host pov, which is the one which needs to bind the pwrseq
+> driver, as that needs to be done before it can probe its bus, this is
+> a different piece of hardware, hence a subnode to the host makes perfect
+> sense.  This is in no way part of the host, so certainly it does not belong
+> inside the hosts subnode.
 
-Lets do it now for all users.
+I fully agree with you Hans here.
 
-Updates cpufreq-cpu0 from comments as well.
+If we were to put this information in the host's DT node, that would
+be a wrong description of the hardware. Currently, I can't think of
+anything better than a subnode, but I am open to suggestions.
 
-Cc: Shawn Guo <shawn.guo@freescale.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Simon Horman <horms@verge.net.au>
-Cc: Michal Simek <michal.simek@xilinx.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Rob Herring <rob.herring@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-@Santosh: Probably you can drop omap's cpufreq driver now?
+Kind regards
+Uffe
 
- arch/arm/mach-imx/imx27-dt.c                     | 2 +-
- arch/arm/mach-imx/imx51-dt.c                     | 2 +-
- arch/arm/mach-omap2/pm.c                         | 2 +-
- arch/arm/mach-shmobile/board-ape6evm-reference.c | 2 +-
- arch/arm/mach-shmobile/setup-sh73a0.c            | 4 ++--
- arch/arm/mach-zynq/common.c                      | 2 +-
- drivers/cpufreq/cpufreq-generic.c                | 2 +-
- drivers/cpufreq/exynos4x12-cpufreq.c             | 2 +-
- drivers/cpufreq/highbank-cpufreq.c               | 6 +++---
- 9 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/arch/arm/mach-imx/imx27-dt.c b/arch/arm/mach-imx/imx27-dt.c
-index 17bd405..02376e1 100644
---- a/arch/arm/mach-imx/imx27-dt.c
-+++ b/arch/arm/mach-imx/imx27-dt.c
-@@ -20,7 +20,7 @@
- 
- static void __init imx27_dt_init(void)
- {
--	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-+	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
- 
- 	mxc_arch_reset_init_dt();
- 
-diff --git a/arch/arm/mach-imx/imx51-dt.c b/arch/arm/mach-imx/imx51-dt.c
-index b8cd968..66d415a 100644
---- a/arch/arm/mach-imx/imx51-dt.c
-+++ b/arch/arm/mach-imx/imx51-dt.c
-@@ -21,7 +21,7 @@
- 
- static void __init imx51_dt_init(void)
- {
--	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-+	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
- 
- 	mxc_arch_reset_init_dt();
- 
-diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
-index 828aee9..7ec2fbb 100644
---- a/arch/arm/mach-omap2/pm.c
-+++ b/arch/arm/mach-omap2/pm.c
-@@ -282,7 +282,7 @@ static inline void omap_init_cpufreq(void)
- 	if (!of_have_populated_dt())
- 		devinfo.name = "omap-cpufreq";
- 	else
--		devinfo.name = "cpufreq-cpu0";
-+		devinfo.name = "cpufreq-generic";
- 	platform_device_register_full(&devinfo);
- }
- 
-diff --git a/arch/arm/mach-shmobile/board-ape6evm-reference.c b/arch/arm/mach-shmobile/board-ape6evm-reference.c
-index 3276afc..94eb59d 100644
---- a/arch/arm/mach-shmobile/board-ape6evm-reference.c
-+++ b/arch/arm/mach-shmobile/board-ape6evm-reference.c
-@@ -48,7 +48,7 @@ static void __init ape6evm_add_standard_devices(void)
- 
- 	r8a73a4_add_dt_devices();
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
--	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
-+	platform_device_register_simple("cpufreq-generic", -1, NULL, 0);
- }
- 
- static const char *ape6evm_boards_compat_dt[] __initdata = {
-diff --git a/arch/arm/mach-shmobile/setup-sh73a0.c b/arch/arm/mach-shmobile/setup-sh73a0.c
-index ad00724..360eace 100644
---- a/arch/arm/mach-shmobile/setup-sh73a0.c
-+++ b/arch/arm/mach-shmobile/setup-sh73a0.c
-@@ -774,7 +774,7 @@ void __init sh73a0_add_early_devices(void)
- 
- void __init sh73a0_add_standard_devices_dt(void)
- {
--	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", .id = -1, };
-+	struct platform_device_info devinfo = { .name = "cpufreq-generic", .id = -1, };
- 
- 	/* clocks are setup late during boot in the case of DT */
- 	sh73a0_clock_init();
-@@ -783,7 +783,7 @@ void __init sh73a0_add_standard_devices_dt(void)
- 			     ARRAY_SIZE(sh73a0_devices_dt));
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
- 
--	/* Instantiate cpufreq-cpu0 */
-+	/* Instantiate cpufreq-generic */
- 	platform_device_register_full(&devinfo);
- }
- 
-diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.c
-index 31a6fa4..79f3c61 100644
---- a/arch/arm/mach-zynq/common.c
-+++ b/arch/arm/mach-zynq/common.c
-@@ -104,7 +104,7 @@ static int __init zynq_get_revision(void)
-  */
- static void __init zynq_init_machine(void)
- {
--	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-+	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
- 	struct soc_device_attribute *soc_dev_attr;
- 	struct soc_device *soc_dev;
- 	struct device *parent = NULL;
-diff --git a/drivers/cpufreq/cpufreq-generic.c b/drivers/cpufreq/cpufreq-generic.c
-index ac8fd9f..d47b4a3 100644
---- a/drivers/cpufreq/cpufreq-generic.c
-+++ b/drivers/cpufreq/cpufreq-generic.c
-@@ -380,7 +380,7 @@ static int generic_cpufreq_remove(struct platform_device *pdev)
- 
- static struct platform_driver generic_cpufreq_platdrv = {
- 	.driver = {
--		.name	= "cpufreq-cpu0",
-+		.name	= "cpufreq-generic",
- 		.owner	= THIS_MODULE,
- 	},
- 	.probe		= generic_cpufreq_probe,
-diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c b/drivers/cpufreq/exynos4x12-cpufreq.c
-index 351a207..7bbe5ef 100644
---- a/drivers/cpufreq/exynos4x12-cpufreq.c
-+++ b/drivers/cpufreq/exynos4x12-cpufreq.c
-@@ -174,7 +174,7 @@ int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
- 	 * dependencies on platform headers. It is necessary to enable
- 	 * Exynos multi-platform support and will be removed together with
- 	 * this whole driver as soon as Exynos gets migrated to use
--	 * cpufreq-cpu0 driver.
-+	 * cpufreq-generic driver.
- 	 */
- 	np = of_find_compatible_node(NULL, NULL, "samsung,exynos4412-clock");
- 	if (!np) {
-diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
-index bf8902a..dc7a9ab 100644
---- a/drivers/cpufreq/highbank-cpufreq.c
-+++ b/drivers/cpufreq/highbank-cpufreq.c
-@@ -6,7 +6,7 @@
-  * published by the Free Software Foundation.
-  *
-  * This driver provides the clk notifier callbacks that are used when
-- * the cpufreq-cpu0 driver changes to frequency to alert the highbank
-+ * the cpufreq-generic driver changes to frequency to alert the highbank
-  * EnergyCore Management Engine (ECME) about the need to change
-  * voltage. The ECME interfaces with the actual voltage regulators.
-  */
-@@ -60,7 +60,7 @@ static struct notifier_block hb_cpufreq_clk_nb = {
- 
- static int hb_cpufreq_driver_init(void)
- {
--	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-+	struct platform_device_info devinfo = { .name = "cpufreq-generic", };
- 	struct device *cpu_dev;
- 	struct clk *cpu_clk;
- 	struct device_node *np;
-@@ -95,7 +95,7 @@ static int hb_cpufreq_driver_init(void)
- 		goto out_put_node;
- 	}
- 
--	/* Instantiate cpufreq-cpu0 */
-+	/* Instantiate cpufreq-generic */
- 	platform_device_register_full(&devinfo);
- 
- out_put_node:
--- 
-2.0.0.rc2
+>
+>> It probably makes sense to not use the standard names for the new
+>> resources.
+>
+> I disagree, being able to use standard names is very useful, and actually
+> is a must if we don't want to have to have special versions of devm_get_clk,
+> and all other devm_get_xxx esp. for pwrseq stuff.
+>
+> Regards,
+>
+> Hans
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
