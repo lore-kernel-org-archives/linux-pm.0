@@ -1,38 +1,101 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 07/14] cpufreq: cpu0: OPPs can be populated at runtime
-Date: Tue, 01 Jul 2014 11:02:43 -0700
-Message-ID: <53B2F7C3.5060107@codeaurora.org>
-References: <cover.1404231535.git.viresh.kumar@linaro.org> <1ba7771e910084cd0820c19ca5994fe1b3d6451d.1404231535.git.viresh.kumar@linaro.org>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 1/6] thermal: of: Add support for hardware-tracked trip
+ points
+Date: Tue, 01 Jul 2014 12:15:56 -0600
+Message-ID: <53B2FADC.8060708@wwwdotorg.org>
+References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-2-git-send-email-mperttunen@nvidia.com> <53B1D1C8.5010907@wwwdotorg.org> <53B262EA.9030806@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1ba7771e910084cd0820c19ca5994fe1b3d6451d.1404231535.git.viresh.kumar@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, shawn.guo@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:36838 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbaGASQA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 14:16:00 -0400
+In-Reply-To: <53B262EA.9030806@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mperttunen@nvidia.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Matthew Longnecker <MLongnecker@nvidia.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 07/01/14 09:32, Viresh Kumar wrote:
-> OPPs can be populated statically, via DT, or added at run time with
-> dev_pm_opp_add().
->
-> While this driver handles the first case correctly, it would fail to populate
-> OPPs added at runtime. Because call to of_init_opp_table() would fail as there
-> are no OPPs in DT and probe will return early.
->
-> To fix this, remove error checking and call dev_pm_opp_init_cpufreq_table()
-> unconditionally.
->
-> Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq-cpu0.c | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
+On 07/01/2014 01:27 AM, Mikko Perttunen wrote:
+> Inline.
+> 
+> On 01/07/14 00:08, Stephen Warren wrote:
+>> On 06/27/2014 02:11 AM, Mikko Perttunen wrote:
+>>> This adds support for hardware-tracked trip points to the device tree
+>>> thermal sensor framework.
+>>>
+>>> The framework supports an arbitrary number of trip points. Whenever
+>>> the current temperature is updated, the trip points immediately
+>>> below and above the current temperature are found. A sensor driver
+>>> callback `set_trips' is then called with the temperatures.
+>>> If there is no trip point above or below the current temperature,
+>>> the passed trip temperature will be LONG_MAX or LONG_MIN respectively.
+>>> In this callback, the driver should program the hardware such that
+>>> it is notified when either of these trip points are triggered.
+>>> When a trip point is triggered, the driver should call
+>>> `thermal_zone_device_update' for the respective thermal zone. This
+>>> will cause the trip points to be updated again.
+>>>
+>>> If the `set_trips' callback is not implemented (is NULL), the framework
+>>> behaves as before.
+>>
+>> Is there no "core thermal" code? I would have expected this new feature
+>> to be implemented in "core" code rather than of/dt "support" code.
+>> Perhaps there would also be some additions to the of/dt code, but I'd
+>> still expect the bulk of the feature to be complete independant of
+>> of/dt. Systems still using board files or ACPI or ... would surely
+>> benefit from this too?
+> 
+> The thermal core only supports a fixed number of trip points for each
+> driver and the core informs the driver of any changes to those, so
+> drivers using the core framework can already have hardware trip points,
+> but just a fixed number of them.
+> 
+> The way of-thermal works, is it reads all the trip points from the
+> device tree, registers a new thermal_zone_device with that number of
+> trip points and then handles the trip points completely independently.
+> Of course, if we're just polling, this is fine, since the thermal core
+> also knows about those trip points and will trigger cooling when polling
+> the each zone. However, the driver doesn't, so it cannot setup any
+> interrupts to call thermal_zone_device_update.
 
-Please update the binding as well to indicate that this property is now
-optional.
+Is there any possibility of cleaning that up? It's obviously horribly
+inconsistent if core driver functionality works completely differently
+simply because the list of trip-points comes from DT rather than a
+static table in the driver. of_thermal should be limited to DT parsing
+and related device instantiation/lookup, not introducing a completely
+different functionality model.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+>>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+
+>>> +    for (i = 0; i < data->ntrips; ++i) {
+>>> +        struct __thermal_trip *trip = data->trips + i;
+>>> +        long trip_low = trip->temperature - trip->hysteresis;
+>>> +
+>>> +        if (trip_low < temp && trip_low > low)
+>>> +            low = trip_low;
+>>> +
+>>> +        if (trip->temperature > temp && trip->temperature < high)
+>>> +            high = trip->temperature;
+>>> +    }
+>>
+>> That seems to always apply hysteresis to the low end of a trip object.
+>> Don't you need to apply the hysteresis to either the low or high end of
+>> the range, depending on whether the temperature is currently below/above
+>> the range, and hence which direction the edge will be crossed?
+> 
+> I believe applying only to the low end is correct. Say that we have a
+> trip point at 40C and hysteresis of 2C. When we exceed 40C cooling will
+> start immediately, but it will only be stopped when we cool down to 38C.
+> At that point there is again a 2C gap between the current temperature
+> and the trip point. It would seem that this is the interpretation used
+> by our downstream kernel and also some people on the Internet (however
+> trustworthy they may be..)
+> 
+> If you don't feel this is right, please elaborate.
+
+Ah, the point I was missing is that each trip point is a single
+temperature, not a temperature range. As such, the code in your patch is
+correct.
