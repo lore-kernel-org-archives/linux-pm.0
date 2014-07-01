@@ -1,101 +1,128 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 01/14] of: Create of_property_match()
-Date: Tue,  1 Jul 2014 22:02:30 +0530
-Message-ID: <9a6bdfa64092dd8ee483570880225e08fcbad810.1404231535.git.viresh.kumar@linaro.org>
+Subject: [PATCH 02/14] clk: Create of_clk_shared_by_cpus()
+Date: Tue,  1 Jul 2014 22:02:31 +0530
+Message-ID: <5f7164d789e87c62d722b575980c92dfd0504334.1404231535.git.viresh.kumar@linaro.org>
 References: <cover.1404231535.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <cover.1404231535.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1404231535.git.viresh.kumar@linaro.org>
 References: <cover.1404231535.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: rjw@rjwysocki.net, shawn.guo@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@linaro.org>, devicetree@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Create a new routine of_property_match() that will match a property between two
-nodes. If they are exactly same, it returns 1 else 0. If the property isn't
-available in any of the nodes or the API isn't implemented, proper error codes
-would be returned.
+Create a new routine of_clk_shared_by_cpus() that finds if clock lines are
+shared between two CPUs. This is verified by comparing "clocks" property from
+CPU's DT node.
 
-The first user of this routine would be cpufreq-cpu0 driver, which requires to
-match "clock" property between CPU nodes to identify which CPUs share clock
-line. And hence this routine.
+Returns 1 if clock line is shared between them, 0 if clock isn't shared and
+return appropriate errors in case nodes/properties are missing.
 
-Cc: Rob Herring <rob.herring@linaro.org>
-Cc: devicetree@vger.kernel.org
+Cc: Mike Turquette <mturquette@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/of/base.c  | 29 +++++++++++++++++++++++++++++
- include/linux/of.h | 10 ++++++++++
- 2 files changed, 39 insertions(+)
+ drivers/clk/clk.c   | 56 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/clk.h |  6 ++++++
+ 2 files changed, 62 insertions(+)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index b986480..a036c91 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -1490,6 +1490,35 @@ int of_property_count_strings(struct device_node *np, const char *propname)
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 8b73ede..497735c 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include <linux/clk-private.h>
++#include <linux/cpu.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/spinlock.h>
+@@ -2528,6 +2529,61 @@ const char *of_clk_get_parent_name(struct device_node *np, int index)
  }
- EXPORT_SYMBOL_GPL(of_property_count_strings);
+ EXPORT_SYMBOL_GPL(of_clk_get_parent_name);
  
 +/**
-+ * of_property_match - Match 'prop' property between two nodes
-+ * @np1, np2: Nodes to match for property
-+ * @prop_name: property to match
++ * of_clk_shared_by_cpus - Finds if clock line is shared between CPUs
++ * @cpu1, cpu2: CPU numbers
 + *
-+ * Returns 1 on match, 0 on no match, and error for missing property.
++ * Finds if clock lines are shared by two CPUs. This is verified by comparing
++ * "clocks" property from CPU's DT node.
++ *
++ * Returns 1 if clock line is shared between them, 0 if clock isn't shared.
++ * Return appropriate errors in case some requirements aren't met.
 + */
-+int of_property_match(const struct device_node *np1,
-+		      const struct device_node *np2, const char *prop_name)
++int of_clk_shared_by_cpus(int cpu1, int cpu2)
 +{
-+	const __be32 *prop1, *prop2;
-+	int size1, size2;
++	struct device *cpu1_dev, *cpu2_dev;
++	struct device_node *np1, *np2;
++	int ret;
 +
-+	/* Retrieve property from both nodes */
-+	prop1 = of_get_property(np1, prop_name, &size1);
-+	if (!prop1)
-+		return -ENOENT;
++	cpu1_dev = get_cpu_device(cpu1);
++	if (!cpu1_dev) {
++		pr_err("%s: failed to get cpu_dev for cpu%d\n", __func__, cpu1);
++		return -ENODEV;
++	}
 +
-+	prop2 = of_get_property(np2, prop_name, &size2);
-+	if (!prop2)
-+		return -ENOENT;
++	cpu2_dev = get_cpu_device(cpu2);
++	if (!cpu2_dev) {
++		pr_err("%s: failed to get cpu_dev for cpu%d\n", __func__, cpu2);
++		return -ENODEV;
++	}
 +
-+	if (size1 != size2)
-+		return 0;
++	np1 = of_node_get(cpu1_dev->of_node);
++	if (!np1) {
++		pr_err("%s: failed to find of_node for cpu%d\n", __func__,
++		       cpu1);
++		return -ENODEV;
++	}
 +
-+	return !memcmp(prop1, prop2, size1);
++	np2 = of_node_get(cpu2_dev->of_node);
++	if (!np2) {
++		pr_err("%s: failed to find of_node for cpu%d\n", __func__,
++		       cpu2);
++		ret = -ENODEV;
++		goto put_np1;
++	}
++
++	/* Match "clocks" property */
++	ret = of_property_match(np1, np2, "clocks");
++
++	of_node_put(np2);
++
++put_np1:
++	of_node_put(np1);
++
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(of_property_match);
++EXPORT_SYMBOL_GPL(of_clk_shared_by_cpus);
 +
- void of_print_phandle_args(const char *msg, const struct of_phandle_args *args)
+ struct clock_provider {
+ 	of_clk_init_cb_t clk_init_cb;
+ 	struct device_node *np;
+diff --git a/include/linux/clk.h b/include/linux/clk.h
+index fb5e097..58e281a 100644
+--- a/include/linux/clk.h
++++ b/include/linux/clk.h
+@@ -399,6 +399,7 @@ struct of_phandle_args;
+ struct clk *of_clk_get(struct device_node *np, int index);
+ struct clk *of_clk_get_by_name(struct device_node *np, const char *name);
+ struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec);
++int of_clk_shared_by_cpus(int cpu1, int cpu2);
+ #else
+ static inline struct clk *of_clk_get(struct device_node *np, int index)
  {
- 	int i;
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 196b34c..4e9cf5a 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -275,6 +275,9 @@ extern int of_property_match_string(struct device_node *np,
- 				    const char *string);
- extern int of_property_count_strings(struct device_node *np,
- 				     const char *propname);
-+extern int of_property_match(const struct device_node *np1,
-+			     const struct device_node *np2,
-+			     const char *prop_name);
- extern int of_device_is_compatible(const struct device_node *device,
- 				   const char *);
- extern int of_device_is_available(const struct device_node *device);
-@@ -498,6 +501,13 @@ static inline int of_property_count_strings(struct device_node *np,
- 	return -ENOSYS;
+@@ -409,6 +410,11 @@ static inline struct clk *of_clk_get_by_name(struct device_node *np,
+ {
+ 	return ERR_PTR(-ENOENT);
  }
- 
-+static inline int of_property_match(const struct device_node *np1,
-+				    const struct device_node *np2,
-+				    const char *prop_name)
++
++static inline int of_clk_shared_by_cpus(int cpu1, int cpu2)
 +{
 +	return -ENOSYS;
 +}
-+
- static inline const void *of_get_property(const struct device_node *node,
- 				const char *name,
- 				int *lenp)
+ #endif
+ 
+ #endif
 -- 
 2.0.0.rc2
