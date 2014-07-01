@@ -1,100 +1,86 @@
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH v2] thermal: allow building dove_thermal with mvebu
-Date: Tue, 01 Jul 2014 10:50:56 +0200
-Message-ID: <53B27670.4000702@gmail.com>
-References: <1401452899-13952-1-git-send-email-riku.voipio@linaro.org> <1401537027-32291-1-git-send-email-riku.voipio@linaro.org> <5389D110.8020606@gmail.com> <CAAqcGHkcnm_JjyzWewEcdGuGyyBwtDT_6EWxFzKSqS7NEUaerA@mail.gmail.com> <1404180277.8366.14.camel@rzhang1-toshiba>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f182.google.com ([74.125.82.182]:44868 "EHLO
-	mail-we0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757524AbaGAIvC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 04:51:02 -0400
-Received: by mail-we0-f182.google.com with SMTP id q59so9378576wes.27
-        for <linux-pm@vger.kernel.org>; Tue, 01 Jul 2014 01:51:00 -0700 (PDT)
-In-Reply-To: <1404180277.8366.14.camel@rzhang1-toshiba>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
+Date: Tue, 1 Jul 2014 16:44:04 +0530
+Message-ID: <CAKohpokaVPn7yNPNAGrE6juGaOYuxZvVsbmkOZmyi9rDub6t7g@mail.gmail.com>
+References: <cover.1403684824.git.viresh.kumar@linaro.org>
+	<e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
+	<53AB1CC1.4010907@codeaurora.org>
+	<CAKohpo=Q7eWNwcK6KF9_U-zD0g=96QHW9hiQupLpV5GqoWE+mA@mail.gmail.com>
+	<53ACB568.4000903@codeaurora.org>
+	<20140627015354.32686.83046@quantum>
+	<CAKohponvN3rAvJrfi4TojFcq5gq7r2oNE4Q0_NtwBHmEZ8waBA@mail.gmail.com>
+	<CAKohpo=dgSW551yzqjAV2_opw_4naqFEWpwUz9ktkGgR5vCBZA@mail.gmail.com>
+	<CABGGiswMuofH5WRh4jgwh1=CV+fEXM_Ec3+WNwThbuMLVxsdcg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CABGGiswMuofH5WRh4jgwh1=CV+fEXM_Ec3+WNwThbuMLVxsdcg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <rob.herring@linaro.org>
+Cc: Mike Turquette <mturquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Riku Voipio <riku.voipio@linaro.org>, andrew@lunn.ch
-Cc: linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 
-On 07/01/2014 04:04 AM, Zhang Rui wrote:
-> On Mon, 2014-06-02 at 09:14 +0300, Riku Voipio wrote:
->>
->> On 31 May 2014 15:54, Sebastian Hesselbarth
->> <sebastian.hesselbarth@gmail.com> wrote:
->>> Riku,
->>
->>> looking through my mails, the corresponding patch should have
->>> already been applied [1].
->>
->>> If not, you get my
->>
->>> Acked-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
->>
->> I don't see that patch applied in 3.15-rc8 or linux-next:
->>
->> https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/tree/drivers/thermal/Kconfig#n152
->>
->> I'd like to be sure it gets in 3.16.
->>
-> Sorry, I missed Sebastian' patch...
-> Now I've seen three versions of patches that do the similar thing.
-> This one, the one from Sebastian and the one in
-> https://patchwork.kernel.org/patch/4445141/ from Andrew.
+On 1 July 2014 00:03, Rob Herring <rob.herring@linaro.org> wrote:
+>> What about comparing "clocks" property in cpu DT nodes?
 >
-> Can anybody tell me the relationship between ARCH_DOVE and MARC_DOVE,
-> and which one should be the proper fix please?
+> What if a different clock is selected for some reason.
 
-Rui,
+I don't know why that will happen for CPUs sharing clock line.
 
-ARCH_DOVE represents legacy, non-DT arch/arm/mach-dove while
-MACH_DOVE is DT-only Dove in arch/arm/mach-mvebu.
+> I think a clock api function would be better.
 
-The idea was to have both, legacy and DT-only Dove, for some
-cycles to allow us to finalize the DT transition.
+@Mike: What do you think? I think we can get a clock API for
+this.
 
-Due to a justified request of Russell, we will keep legacy
-mach-dove for a while longer.
+> That being said, I don't really have any issue with such a function.
+> Some comments on the implementation.
 
-The correct patch is the one below, adding both MACH_DOVE and ARCH_DOVE
-to DOVE_THERMAL.
-
-Sebastian
-
-> Eduardo,
-> I would queue the proper patch for next rc, what's your opinion?
+>> +static int of_property_match(const struct device_node *np1,
+>> +                             const struct device_node *np2,
+>> +                             const char *list_name)
+>> +{
+>> +       const __be32 *list1, *list2, *list1_end;
 >
->>> [1] https://lkml.kernel.org/r/1395295065.3571.10.camel@rzhang1-mobl4
->>>
->>>> v2: non-ascii char creeped in somehow
->>>>
->>>> Signed-off-by: Riku Voipio <riku.voipio@linaro.org>
->>>> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
->>>> Cc: Zhang Rui <rui.zhang@intel.com>
->>>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>>> Cc: linux-pm@vger.kernel.org
->>>> Cc: linux-arm-kernel@lists.infradead.org
->>>> ---
->>>>   drivers/thermal/Kconfig | 2 +-
->>>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->>>> index 2d51912..5783c72 100644
->>>> --- a/drivers/thermal/Kconfig
->>>> +++ b/drivers/thermal/Kconfig
->>>> @@ -151,7 +151,7 @@ config KIRKWOOD_THERMAL
->>>>
->>>>   config DOVE_THERMAL
->>>>        tristate "Temperature sensor on Marvell Dove SoCs"
->>>> -     depends on ARCH_DOVE
->>>> +     depends on ARCH_DOVE || MACH_DOVE
->>>>        depends on OF
->>>>        help
->>>>          Support for the Dove thermal sensor driver in the Linux
->> thermal
->>>>
->>>
+> s/list/prop/
 >
->
+> Everywhere.
 
+Ok.
+
+>> +       int size1, size2;
+>> +       phandle phandle1, phandle2;
+>> +
+>> +       /* Retrieve the list property */
+>> +       list1 = of_get_property(np1, list_name, &size1);
+>> +       if (!list1)
+>> +               return -ENOENT;
+>> +
+>> +       list2 = of_get_property(np2, list_name, &size2);
+>> +       if (!list2)
+>> +               return -ENOENT;
+>> +
+>> +       if (size1 != size2)
+>> +               return 0;
+>> +
+>> +       list1_end = list1 + size1 / sizeof(*list1);
+>> +
+>> +       /* Loop over the phandles */
+>> +       while (list1 < list1_end) {
+>> +               phandle1 = be32_to_cpup(list1++);
+>> +               phandle2 = be32_to_cpup(list2++);
+>> +
+>> +               if (phandle1 != phandle2)
+>> +                       return 0;
+>> +       }
+>
+> You can just do a memcmp here.
+
+Yeah, that would be much better.
+
+> This is wrong anyway because you don't know #clock-cells size.
+
+I was actually comparing all the clock-cells, whatever there number
+is to make sure "clocks" properties are exactly same. Anyway
+memcmp will still guarantee that.
+
+Thanks for your review.
