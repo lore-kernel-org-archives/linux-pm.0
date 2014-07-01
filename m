@@ -1,42 +1,38 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 02/14] clk: Create of_clk_shared_by_cpus()
-Date: Tue, 01 Jul 2014 11:00:33 -0700
-Message-ID: <53B2F741.2000501@codeaurora.org>
-References: <cover.1404231535.git.viresh.kumar@linaro.org> <5f7164d789e87c62d722b575980c92dfd0504334.1404231535.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 07/14] cpufreq: cpu0: OPPs can be populated at runtime
+Date: Tue, 01 Jul 2014 11:02:43 -0700
+Message-ID: <53B2F7C3.5060107@codeaurora.org>
+References: <cover.1404231535.git.viresh.kumar@linaro.org> <1ba7771e910084cd0820c19ca5994fe1b3d6451d.1404231535.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:55646 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755099AbaGASAf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 14:00:35 -0400
-In-Reply-To: <5f7164d789e87c62d722b575980c92dfd0504334.1404231535.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1ba7771e910084cd0820c19ca5994fe1b3d6451d.1404231535.git.viresh.kumar@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, shawn.guo@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Mike Turquette <mturquette@linaro.org>
+Cc: rjw@rjwysocki.net, shawn.guo@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com
+List-Id: linux-pm@vger.kernel.org
 
 On 07/01/14 09:32, Viresh Kumar wrote:
-> Create a new routine of_clk_shared_by_cpus() that finds if clock lines are
-> shared between two CPUs. This is verified by comparing "clocks" property from
-> CPU's DT node.
+> OPPs can be populated statically, via DT, or added at run time with
+> dev_pm_opp_add().
 >
-> Returns 1 if clock line is shared between them, 0 if clock isn't shared and
-> return appropriate errors in case nodes/properties are missing.
+> While this driver handles the first case correctly, it would fail to populate
+> OPPs added at runtime. Because call to of_init_opp_table() would fail as there
+> are no OPPs in DT and probe will return early.
 >
-> Cc: Mike Turquette <mturquette@linaro.org>
+> To fix this, remove error checking and call dev_pm_opp_init_cpufreq_table()
+> unconditionally.
+>
+> Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/clk/clk.c   | 56 +++++++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/clk.h |  6 ++++++
+>  drivers/cpufreq/cpufreq-cpu0.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
 
-This doesn't make much sense to me. This function doesn't deal with
-struct clk pointers or any of the internals of the common clock
-framework so why put it in clk.c? It looks more like an internal
-function that the cpufreq-generic driver should have.
+Please update the binding as well to indicate that this property is now
+optional.
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 hosted by The Linux Foundation
-
