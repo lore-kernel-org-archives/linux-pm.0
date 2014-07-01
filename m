@@ -1,47 +1,64 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: ti-bandgap.c:  Cleaning up
- wrong address is checked
-Date: Tue, 01 Jul 2014 09:54:24 +0800
-Message-ID: <1404179664.8366.8.camel@rzhang1-toshiba>
-References: <1401744330-25966-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+Subject: Re: [PATCH] tools/thermal: tmon: fix compilation errors when
+ building statically
+Date: Tue, 01 Jul 2014 09:56:03 +0800
+Message-ID: <1404179763.8366.9.camel@rzhang1-toshiba>
+References: <1401728897-25188-1-git-send-email-javi.merino@arm.com>
+	 <20140602045457.6b519e43@jacob-desktop> <20140610151649.GB2798@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:16657 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751760AbaGABy2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Jun 2014 21:54:28 -0400
-In-Reply-To: <1401744330-25966-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20140610151649.GB2798@e104805>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On Mon, 2014-06-02 at 23:25 +0200, Rickard Strandqvist wrote:
-> Wrong address is checked after memory allocation.
+On Tue, 2014-06-10 at 16:16 +0100, Javi Merino wrote:
+> Hi Rui,
 > 
-> Signed-off-by: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>
+> On Mon, Jun 02, 2014 at 12:54:57PM +0100, Jacob Pan wrote:
+> > On Mon,  2 Jun 2014 18:08:17 +0100
+> > "Javi Merino" <javi.merino@arm.com> wrote:
+> > 
+> > > tmon fails to build statically with the following error:
+> > > 
+> > > $ make LDFLAGS=-static
+> > > gcc -O1 -Wall -Wshadow -W -Wformat -Wimplicit-function-declaration
+> > > -Wimplicit-int -fstack-protector -D VERSION=\"1.0\" -static tmon.o
+> > > tui.o sysfs.o pid.o   -o tmon -lm -lpanel -lncursesw  -lpthread
+> > > tmon.o: In function `tmon_sig_handler': tmon.c:(.text+0x21):
+> > > undefined reference to `stdscr' tmon.o: In function `tmon_cleanup':
+> > > tmon.c:(.text+0xb9): undefined reference to `stdscr'
+> > > tmon.c:(.text+0x11e): undefined reference to `stdscr'
+> > > tmon.c:(.text+0x123): undefined reference to `keypad'
+> > > tmon.c:(.text+0x12d): undefined reference to `nocbreak' tmon.o: In
+> > > function `main': tmon.c:(.text+0x785): undefined reference to `stdscr'
+> > > tmon.c:(.text+0x78a): undefined reference to `nodelay'
+> > > tui.o: In function `setup_windows':
+> > > tui.c:(.text+0x131): undefined reference to `stdscr'
+> > > tui.c:(.text+0x176): undefined reference to `stdscr'
+> > > tui.c:(.text+0x19f): undefined reference to `stdscr'
+> > > tui.c:(.text+0x1cc): undefined reference to `stdscr'
+> > > tui.c:(.text+0x1ff): undefined reference to `stdscr'
+> > > tui.o:tui.c:(.text+0x229): more undefined references to `stdscr'
+> > > follow tui.o: In function `show_cooling_device':
+> > > [...]
+> > > 
+> > > stdscr() and friends are in libtinfo (part of ncurses) so add it to
+> > > the libraries that are linked in when compiling tmon to fix it.
+> > > 
+> > Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> 
+> Thanks!
+> 
+> Rui, can you pick this up?
 
-applied, thanks.
+Done, thanks!
 
 -rui
-> ---
->  drivers/thermal/ti-soc-thermal/ti-bandgap.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> index 3ab12ee..43c0f83 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> @@ -1155,7 +1155,7 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
->  	/* register shadow for context save and restore */
->  	bgp->regval = devm_kzalloc(&pdev->dev, sizeof(*bgp->regval) *
->  				   bgp->conf->sensor_count, GFP_KERNEL);
-> -	if (!bgp) {
-> +	if (!bgp->regval) {
->  		dev_err(&pdev->dev, "Unable to allocate mem for driver ref\n");
->  		return ERR_PTR(-ENOMEM);
->  	}
-
-
+> Cheers,
+> Javi
+> 
