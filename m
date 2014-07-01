@@ -1,53 +1,62 @@
-From: Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: PATCH 0/2 tmon: fix a few minor security issues
-Date: Tue, 1 Jul 2014 11:02:59 -0400
-Message-ID: <20140701150259.GI7322@hmsreliant.think-freely.org>
-References: <1403035509-31815-1-git-send-email-nhorman@tuxdriver.com>
- <20140701114249.GF7322@hmsreliant.think-freely.org>
- <1404222565.8366.32.camel@rzhang1-toshiba>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH 03/16] ARM: mvebu: Add function to export the physical
+ address of the boot register
+Date: Tue, 1 Jul 2014 12:02:54 -0300
+Message-ID: <20140701150254.GA1986@arch.cereza>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
+ <1403875377-940-4-git-send-email-gregory.clement@free-electrons.com>
+ <20140701134651.7d34de62@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:37672 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbaGAPDH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 11:03:07 -0400
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1404222565.8366.32.camel@rzhang1-toshiba>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20140701134651.7d34de62@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Jul 01, 2014 at 09:49:25PM +0800, Zhang Rui wrote:
-> On Tue, 2014-07-01 at 07:42 -0400, Neil Horman wrote:
-> > On Tue, Jun 17, 2014 at 04:05:07PM -0400, Neil Horman wrote:
-> > > Just a few little fixups for tmon, to prevent abuse of its logging facility
-> > > 
-> > > Best
-> > > Neil
-> > > 
-> > Ping, Zhang, Jacob acked these, but I've not seen them go into your tree yet.
-> > Do you have an issue with them?
-> > 
-> Oh, next time when you send thermal related patches, please send them to
-> linux-pm@vger.kernel.org mailing list so that I can review the patches
-> in https://patchwork.kernel.org/project/linux-pm/list/
-> 
-> Both patches applied. Thanks!
-> 
-Will do, thanks!
-Nei
+On 01 Jul 01:46 PM, Thomas Petazzoni wrote:
+> Dear Gregory CLEMENT,
+> =
 
-> -rui
-> > Neil
-> > 
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > > 
-> 
-> 
-> 
+> On Fri, 27 Jun 2014 15:22:44 +0200, Gregory CLEMENT wrote:
+> =
+
+> >  static void __iomem *system_controller_base;
+> > +static u32 system_controller_phys_base;
+> >  =
+
+> >  struct mvebu_system_controller {
+> >  	u32 rstoutn_mask_offset;
+> > @@ -109,6 +110,13 @@ void mvebu_system_controller_set_cpu_boot_addr(voi=
+d *boot_addr)
+> >  	writel(virt_to_phys(boot_addr), system_controller_base +
+> >  	       mvebu_sc->resume_boot_addr);
+> >  }
+> > +
+> > +u32 mvebu_system_controller_get_phys_addr(void)
+> > +{
+> > +	BUG_ON(system_controller_phys_base =3D=3D NULL);
+> =
+
+> This rightfully generates a fairly strong warning at compile time:
+> you're comparing an u32 to NULL. It should be =3D=3D 0 here.
+> =
+
+
+Or a more readable BUG_ON(!system_controller_phys_base);
+-- =
+
+Ezequiel Garc=EDa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
