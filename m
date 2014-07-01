@@ -1,63 +1,53 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 00/16] CPU Idle for Armada 370 and Armada 38x
-Date: Tue, 1 Jul 2014 16:38:11 +0200
-Message-ID: <20140701163811.7d731695@free-electrons.com>
-References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
-	<20140630174520.194d4781@free-electrons.com>
-	<53B1878B.9060701@free-electrons.com>
+From: Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: PATCH 0/2 tmon: fix a few minor security issues
+Date: Tue, 1 Jul 2014 11:02:59 -0400
+Message-ID: <20140701150259.GI7322@hmsreliant.think-freely.org>
+References: <1403035509-31815-1-git-send-email-nhorman@tuxdriver.com>
+ <20140701114249.GF7322@hmsreliant.think-freely.org>
+ <1404222565.8366.32.camel@rzhang1-toshiba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:36276 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753109AbaGAPCk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 11:02:40 -0400
-In-Reply-To: <53B1878B.9060701@free-electrons.com>
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37672 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbaGAPDH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 11:03:07 -0400
+Content-Disposition: inline
+In-Reply-To: <1404222565.8366.32.camel@rzhang1-toshiba>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-Dear Gregory CLEMENT,
-
-On Mon, 30 Jun 2014 17:51:39 +0200, Gregory CLEMENT wrote:
-
-> > I'd like to do some testing of this patch series, especially in big
-> > endian situations. Do you have a Git repository where this version was
-> > pushed?
+On Tue, Jul 01, 2014 at 09:49:25PM +0800, Zhang Rui wrote:
+> On Tue, 2014-07-01 at 07:42 -0400, Neil Horman wrote:
+> > On Tue, Jun 17, 2014 at 04:05:07PM -0400, Neil Horman wrote:
+> > > Just a few little fixups for tmon, to prevent abuse of its logging facility
+> > > 
+> > > Best
+> > > Neil
+> > > 
+> > Ping, Zhang, Jacob acked these, but I've not seen them go into your tree yet.
+> > Do you have an issue with them?
+> > 
+> Oh, next time when you send thermal related patches, please send them to
+> linux-pm@vger.kernel.org mailing list so that I can review the patches
+> in https://patchwork.kernel.org/project/linux-pm/list/
 > 
-> Yes sure, the branch CPU-Idle-mvebu-next-3.16-rc2-V1 on
-> https://github.com/MISL-EBU-System-SW/mainline-public.git
+> Both patches applied. Thanks!
+> 
+Will do, thanks!
+Nei
 
-Ok, I've tested the following cases:
-
- * Armada XP LE and BE: it shouldn't be affected by your patch series,
-   and indeed, it works fine.
-
- * Armada 370 LE worked fine.
-
- * Armada 370 BE didn't work, I had to fix the code in
-   pmsu.c/pmsu_ll.S. I already replied to the appropriate patch to
-   indicate what was wrong.
-
- * Armada 375 LE worked fine. Armada 375 BE was also affected by the
-   same issue as Armada 370 BE because they use the same work-around
-   for the boot issue (Armada 375 Z1 of course, since Armada 375 A0 is
-   not affected). With the fix added for big-endian, Armada 375 BE
-   works again (i.e its SMP initialization works).
-
- * Armada 38x LE and BE worked fine (there was a completely unrelated
-   issue in the SMP initialization of 38x in BE, I'll sent a patch
-   shortly for this).
-
-So all in all, in terms of testing, despite the minor fix for the BE
-configuration, it looks good to me.
-
-Thanks!
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+> -rui
+> > Neil
+> > 
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > > 
+> 
+> 
+> 
