@@ -1,7 +1,7 @@
 From: Chander Kashyap <k.chander@samsung.com>
-Subject: [PATCH 1/2] ARM: Exynos: remove arm diagnostic and power register save/restore code
-Date: Tue,  1 Jul 2014 20:02:37 +0530
-Message-ID: <1404225158-8453-2-git-send-email-k.chander@samsung.com>
+Subject: [PATCH 2/2] cpuidle: Exynos: fix cpuidle for all states
+Date: Tue,  1 Jul 2014 20:02:38 +0530
+Message-ID: <1404225158-8453-3-git-send-email-k.chander@samsung.com>
 References: <1404225158-8453-1-git-send-email-k.chander@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1404225158-8453-1-git-send-email-k.chander@samsung.com>
@@ -10,106 +10,130 @@ To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 Cc: daniel.lezcano@linaro.org, kgene.kim@samsung.com, linux-pm@vger.kernel.org, Chander Kashyap <k.chander@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-As save/restore of arm "diagnostic" and "power" registers is handled by
-generic code, so remove the same.
+Pre/post platform specific cpuidle operations are handled by pm_notifier.
+But these operations are not same for all cpuidle states. Handle this by
+moving cpuidle specific code from pm_notifier to cpuidle specific function.
 
 Signed-off-by: Chander Kashyap <k.chander@samsung.com>
 ---
- arch/arm/mach-exynos/pm.c |   54 ++-------------------------------------------
- 1 file changed, 2 insertions(+), 52 deletions(-)
+ arch/arm/mach-exynos/common.h    |    2 +-
+ arch/arm/mach-exynos/pm.c        |   45 ++++++++++----------------------------
+ drivers/cpuidle/cpuidle-exynos.c |    7 ++++--
+ 3 files changed, 17 insertions(+), 37 deletions(-)
 
+diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
+index 1ee9176..7769f58 100644
+--- a/arch/arm/mach-exynos/common.h
++++ b/arch/arm/mach-exynos/common.h
+@@ -166,7 +166,7 @@ extern int  exynos_cpu_power_state(int cpu);
+ extern void exynos_cluster_power_down(int cluster);
+ extern void exynos_cluster_power_up(int cluster);
+ extern int  exynos_cluster_power_state(int cluster);
+-extern void exynos_enter_aftr(void);
++extern void exynos_enter_aftr(int entering_idle);
+ 
+ extern void s5p_init_cpu(void __iomem *cpuid_addr);
+ extern unsigned int samsung_rev(void);
 diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-index 202ca73..a092cc3 100644
+index a092cc3..328644f 100644
 --- a/arch/arm/mach-exynos/pm.c
 +++ b/arch/arm/mach-exynos/pm.c
-@@ -196,45 +196,6 @@ void exynos_enter_aftr(void)
- 	exynos_sys_powerdown_conf(SYS_AFTR);
+@@ -188,14 +188,6 @@ static void exynos_cpu_set_boot_vector(long flags)
+ 	__raw_writel(flags, EXYNOS_BOOT_VECTOR_FLAG);
  }
  
--/* For Cortex-A9 Diagnostic and Power control register */
--static unsigned int save_arm_register[2];
--
--static void exynos_cpu_save_register(void)
+-void exynos_enter_aftr(void)
 -{
--	unsigned long tmp;
--
--	/* Save Power control register */
--	asm ("mrc p15, 0, %0, c15, c0, 0"
--	     : "=r" (tmp) : : "cc");
--
--	save_arm_register[0] = tmp;
--
--	/* Save Diagnostic register */
--	asm ("mrc p15, 0, %0, c15, c0, 1"
--	     : "=r" (tmp) : : "cc");
--
--	save_arm_register[1] = tmp;
--}
--
--static void exynos_cpu_restore_register(void)
--{
--	unsigned long tmp;
--
--	/* Restore Power control register */
--	tmp = save_arm_register[0];
--
--	asm volatile ("mcr p15, 0, %0, c15, c0, 0"
--		      : : "r" (tmp)
--		      : "cc");
--
--	/* Restore Diagnostic register */
--	tmp = save_arm_register[1];
--
--	asm volatile ("mcr p15, 0, %0, c15, c0, 1"
--		      : : "r" (tmp)
--		      : "cc");
+-	exynos_set_wakeupmask(0x0000ff3e);
+-	exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
+-	/* Set value of power down register for aftr mode */
+-	exynos_sys_powerdown_conf(SYS_AFTR);
 -}
 -
  static int exynos_cpu_suspend(unsigned long arg)
  {
  #ifdef CONFIG_CACHE_L2X0
-@@ -300,9 +261,6 @@ static int exynos_pm_suspend(void)
- 	tmp = (S5P_USE_STANDBY_WFI0 | S5P_USE_STANDBY_WFE0);
- 	__raw_writel(tmp, S5P_CENTRAL_SEQ_OPTION);
+@@ -386,40 +378,25 @@ static const struct platform_suspend_ops exynos_suspend_ops = {
+ 	.valid		= suspend_valid_only_mem,
+ };
  
--	if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
--		exynos_cpu_save_register();
+-static int exynos_cpu_pm_notifier(struct notifier_block *self,
+-				  unsigned long cmd, void *v)
++void exynos_enter_aftr(int entering_idle)
+ {
+-	int cpu = smp_processor_id();
 -
- 	return 0;
+-	switch (cmd) {
+-	case CPU_PM_ENTER:
+-		if (cpu == 0)
+-			exynos_pm_central_suspend();
+-		break;
+-
+-	case CPU_PM_EXIT:
+-		if (cpu == 0) {
+-			if (read_cpuid_part_number() ==
+-					ARM_CPU_PART_CORTEX_A9)
+-				scu_enable(S5P_VA_SCU);
+-			exynos_pm_central_resume();
+-		}
+-		break;
++	if (entering_idle) {
++		exynos_set_wakeupmask(0x0000ff3e);
++		exynos_cpu_set_boot_vector(S5P_CHECK_AFTR);
++		/* Set value of power down register for aftr mode */
++		exynos_sys_powerdown_conf(SYS_AFTR);
++		exynos_pm_central_suspend();
++	} else {
++		if (scu_a9_has_base())
++			scu_enable(S5P_VA_SCU);
++		exynos_pm_central_resume();
+ 	}
+-
+-	return NOTIFY_OK;
  }
  
-@@ -334,9 +292,6 @@ static void exynos_pm_resume(void)
- 	if (exynos_pm_central_resume())
- 		goto early_wakeup;
- 
--	if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
--		exynos_cpu_restore_register();
+-static struct notifier_block exynos_cpu_pm_notifier_block = {
+-	.notifier_call = exynos_cpu_pm_notifier,
+-};
 -
- 	/* For release retention */
+ void __init exynos_pm_init(void)
+ {
+ 	u32 tmp;
  
- 	__raw_writel((1 << 28), S5P_PAD_RET_MAUDIO_OPTION);
-@@ -438,20 +393,15 @@ static int exynos_cpu_pm_notifier(struct notifier_block *self,
+-	cpu_pm_register_notifier(&exynos_cpu_pm_notifier_block);
+-
+ 	/* Platform-specific GIC callback */
+ 	gic_arch_extn.irq_set_wake = exynos_irq_set_wake;
  
- 	switch (cmd) {
- 	case CPU_PM_ENTER:
--		if (cpu == 0) {
-+		if (cpu == 0)
- 			exynos_pm_central_suspend();
--			if (read_cpuid_part_number() == ARM_CPU_PART_CORTEX_A9)
--				exynos_cpu_save_register();
--		}
- 		break;
+diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+index 7c01512..1196ca7 100644
+--- a/drivers/cpuidle/cpuidle-exynos.c
++++ b/drivers/cpuidle/cpuidle-exynos.c
+@@ -18,11 +18,10 @@
+ #include <asm/suspend.h>
+ #include <asm/cpuidle.h>
  
- 	case CPU_PM_EXIT:
- 		if (cpu == 0) {
- 			if (read_cpuid_part_number() ==
--					ARM_CPU_PART_CORTEX_A9) {
-+					ARM_CPU_PART_CORTEX_A9)
- 				scu_enable(S5P_VA_SCU);
--				exynos_cpu_restore_register();
--			}
- 			exynos_pm_central_resume();
- 		}
- 		break;
+-static void (*exynos_enter_aftr)(void);
++static void (*exynos_enter_aftr)(int);
+ 
+ static int idle_finisher(unsigned long flags)
+ {
+-	exynos_enter_aftr();
+ 	cpu_do_idle();
+ 
+ 	return 1;
+@@ -32,8 +31,12 @@ static int exynos_enter_core0_aftr(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv,
+ 				int index)
+ {
++	int entering_idle = true;
+ 	cpu_pm_enter();
++	exynos_enter_aftr(entering_idle);
+ 	cpu_suspend(0, idle_finisher);
++	entering_idle = false;
++	exynos_enter_aftr(entering_idle);
+ 	cpu_pm_exit();
+ 
+ 	return index;
 -- 
 1.7.9.5
