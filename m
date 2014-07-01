@@ -1,76 +1,48 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 0/9] thermal: exynos: various cleanups
-Date: Tue, 01 Jul 2014 10:09:13 +0800
-Message-ID: <1404180553.8366.16.camel@rzhang1-toshiba>
-References: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH] cpufreq: arm_big_little: set lowest frequcency for
+ cluster when no cpus in it
+Date: Mon, 30 Jun 2014 22:14:25 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1406302205170.16842@knanqh.ubzr>
+References: <1403795313-6903-1-git-send-email-thomas.ab@samsung.com> <CAKohpomv=0y30q09fuuRDOGQ_XtuKnerC830vFExNok9mAcyfw@mail.gmail.com> <53AC42CE.2050304@arm.com> <CAJuA9agJb4xx--ujc3=efeFNFLiw4o87nOig8u-X+kY0wj99dA@mail.gmail.com> <53AC6D31.7010709@arm.com>
+ <CAJuA9ajOAhZAzwJEsP9bU83n=n30pgawy-otGU4t=d3ADVKOwg@mail.gmail.com> <CAKohponCoTuoYaLFWzOhZm2XVYjkS2VUsePuso8othxAVsgsyw@mail.gmail.com> <alpine.LFD.2.11.1406272202220.16842@knanqh.ubzr>
+ <CAKohpomLQcfp5OD1QB5m6JTSJPT_JF+mb=mEtGbG4RQb6gsovA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:54817 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752489AbaGACJS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Jun 2014 22:09:18 -0400
-In-Reply-To: <1403026045-16024-1-git-send-email-b.zolnierkie@samsung.com>
+Received: from mail-qa0-f49.google.com ([209.85.216.49]:61051 "EHLO
+	mail-qa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbaGACO2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 22:14:28 -0400
+Received: by mail-qa0-f49.google.com with SMTP id w8so7038028qac.36
+        for <linux-pm@vger.kernel.org>; Mon, 30 Jun 2014 19:14:27 -0700 (PDT)
+In-Reply-To: <CAKohpomLQcfp5OD1QB5m6JTSJPT_JF+mb=mEtGbG4RQb6gsovA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@gmail.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Abraham <ta.omasab@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Eduardo,
+On Mon, 30 Jun 2014, Viresh Kumar wrote:
 
-what do you think of this patch set?
+> On 28 June 2014 07:42, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+> > If reducing the frequency of the cluster going down saves power, then it
+> > should be done _all_ the time i.e. when using CPU hotplug, when cpuidle
+> > sends all CPUs to sleep, etc.  So this has nothing to do with the
+> > switcher even if the switcher would also benefit from this.
+> >
+> > In other words, this should be performed by the MCPM backend as part of
+> > the last man operations. This way it is generic and completely
+> > transparent to the rest of the system.
+> >
+> > To restore the CPU frequency that was effective before going down, you
+> > may use the MCPM powered_up method.
+> 
+> Oh yes, this is exactly what we want then..
+> 
+> But do we want this forced for every platform? Or can we have some flag
+> set by multi-cluster platforms, so that it stays optional ?
 
-thanks,
-rui
-
-On Tue, 2014-06-17 at 19:27 +0200, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> This patch series contains various cleanups for EXYNOS thermal
-> driver.  Overall it decreases driver's LOC by 12%.  It is based
-> on next-20140617 kernel.  It should not cause any functionality
-> changes.
-> 
-> Changes since v1:
-> - synced patches against next-20140617
-> - merged patch "thermal: exynos: remove unused defines" into
->   "thermal: exynos: remove unused struct exynos_tmu_registers
->   entries" one (per request from Eduardo)
-> - improved patch descriptions for patches #1-5
-> - fixed documentation for pdata->gain and pdata->reference_voltage
-> - added Reviewed-by from Amit to patches #6, #7 and #10
-> - added missing Acked-by from Kyungmin Park
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (9):
->   thermal: exynos: remove unused struct exynos_tmu_registers entries
->   thermal: exynos: remove dead code for HW_MODE calibration
->   thermal: exynos: remove dead code for TYPE_TWO_POINT_TRIMMING
->     calibration
->   thermal: exynos: remove redundant pdata checks from
->     exynos_tmu_initialize()
->   thermal: exynos: remove redundant threshold_code checks from
->     exynos_tmu_initialize()
->   thermal: exynos: simplify temp_to_code() and code_to_temp()
->   thermal: exynos: cache non_hw_trigger_levels in pdata
->   thermal: exynos: remove redundant pdata checks from
->     exynos_tmu_control()
->   thermal: exynos: remove identical values from exynos*_tmu_registers
->     structures
-> 
->  drivers/thermal/samsung/exynos_thermal_common.h |   1 -
->  drivers/thermal/samsung/exynos_tmu.c            | 181 ++++--------------------
->  drivers/thermal/samsung/exynos_tmu.h            |  90 +-----------
->  drivers/thermal/samsung/exynos_tmu_data.c       |  64 +--------
->  drivers/thermal/samsung/exynos_tmu_data.h       |  33 +----
->  5 files changed, 41 insertions(+), 328 deletions(-)
-> 
+No flags.  That's a "power saving measure" specific to that platform 
+being invoked from a platform specific backend.
 
 
+Nicolas
