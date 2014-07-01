@@ -1,163 +1,142 @@
-From: Boris BREZILLON <boris.brezillon@free-electrons.com>
-Subject: Re: [PATCH 1/4] clk: Introduce 'clk_find_nearest_rate()'
-Date: Tue, 1 Jul 2014 09:18:04 +0200
-Message-ID: <20140701091804.78bd529f@bbrezillon>
-References: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
-	<1404147396-8041-2-git-send-email-soren.brinkmann@xilinx.com>
-	<20140630212707.1eb44db6@bbrezillon>
-	<475a8ee0-11aa-4fad-94dc-9e5360f298d2@BL2FFO11FD028.protection.gbl>
-	<20140701083214.5b31295e@bbrezillon>
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: Re: [PATCH 1/6] thermal: of: Add support for hardware-tracked trip
+ points
+Date: Tue, 1 Jul 2014 10:27:38 +0300
+Message-ID: <53B262EA.9030806@nvidia.com>
+References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-2-git-send-email-mperttunen@nvidia.com> <53B1D1C8.5010907@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:60771 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753150AbaGAHSJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 03:18:09 -0400
-In-Reply-To: <20140701083214.5b31295e@bbrezillon>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:5986 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbaGAH1m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 03:27:42 -0400
+In-Reply-To: <53B1D1C8.5010907@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Boris BREZILLON <boris.brezillon@free-electrons.com>
-Cc: =?UTF-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>, Mike Turquette <mturquette@linaro.org>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
+To: Stephen Warren <swarren@wwwdotorg.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Matthew Longnecker <MLongnecker@nvidia.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, 1 Jul 2014 08:32:14 +0200
-Boris BREZILLON <boris.brezillon@free-electrons.com> wrote:
+Inline.
 
-> Hi S=C3=B6ren,
->=20
-> On Mon, 30 Jun 2014 17:12:23 -0700
-> S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.com> wrote:
->=20
-> > Hi Boris,
-> >=20
-> > On Mon, 2014-06-30 at 09:27PM +0200, Boris BREZILLON wrote:
-> > > Hello Soren,
-> > >=20
-> > > On Mon, 30 Jun 2014 09:56:33 -0700
-> > > Soren Brinkmann <soren.brinkmann@xilinx.com> wrote:
-> > >=20
-> > > > Introduce a new API function to find the rate a clock can
-> > > > provide which is closest to a given rate.
-> > > >=20
-> > > > clk_round_rate() leaves it to the clock driver how rounding is
-> > > > done. Commonly implementations round down due to use-cases that
-> > > > have a certain frequency maximum that must not be exceeded.
-> > >=20
-> > > I had the same concern (how could a driver decide whether it
-> > > should round up, down or to the closest value), but had a slightl=
-y
-> > > different approach in mind.
-> > >=20
-> > > AFAIU, you're assuming the clock is always a power of two (which
-> > > is true most of the time, but some clock implementation might
-> > > differ, i.e. a PLL accept any kind of multiplier not necessarily
-> > > a power of 2).
-> >=20
-> > No, the idea is to always work. There should not be any such
-> > limitation. Where do you see that?
->=20
-> My bad, I should have read the code more carefully.
-> BTW, it could help readers if you add some comments to explain how yo=
-u
-> are finding the nearest rate.
->=20
-> My main concern with this approach is that you can spend some time
-> iterating to find the nearest rate where a clk driver would find it
-> quite quickly (because it knows exactly how the clk works and what ar=
-e
-> the possible clk muxing and clk modifiers options).
->=20
-> >=20
-> > >=20
-> > > How about improving the clk_ops interface instead by adding a new
-> > > method
-> > >=20
-> > > 	long (*round_rate_with_constraint)(struct clk_hw *hw,
-> > > 					   unsigned long
-> > > requested_rate, unsigned long *parent_rate,
-> > > 					   enum clk_round_type
-> > > type);
-> > >=20
-> > > with
-> > >=20
-> > > enum clk_round_type {
-> > > 	CLK_ROUND_DOWN,
-> > > 	CLK_ROUND_UP,
-> > > 	CLK_ROUND_CLOSEST,
-> > > };
-> >=20
-> > I thought about that, but the find_nearest() did already exist more
-> > or less and in the end it is not much of a difference, IMHO. If it
-> > turns out that the others are needed as well and somebody
-> > implements it, they could be added as another convenience function
-> > like I did, and/or it could be wrapped in the function you propose
-> > here.
-> >
-> > >=20
-> > > or just adding these 3 methods:
-> > >=20
-> > > 	long (*round_rate_up)(struct clk_hw *hw,
-> > > 			      unsigned long requested_rate,
-> > > 			      unsigned long *parent_rate);
-> > >=20
-> > > 	long (*round_rate_down)(struct clk_hw *hw,
-> > > 				unsigned long requested_rate,
-> > > 				unsigned long *parent_rate);
-> > >=20
-> > > 	long (*round_rate_closest)(struct clk_hw *hw,
-> > > 				   unsigned long requested_rate,
-> > > 				   unsigned long *parent_rate);
-> >=20
-> > That would be quite a change for clock drivers. So far, there are
-> > not many restrictions on round_rate. I think there has already been
-> > a discussion in this direction that went nowhere.
-> > https://lkml.org/lkml/2010/7/14/260
-> >=20
->=20
-> Not if we keep these (or this, depending on the solution you chose)
-> functions optional, and return -ENOTSUP, if they're not implemented.
+On 01/07/14 00:08, Stephen Warren wrote:
+> On 06/27/2014 02:11 AM, Mikko Perttunen wrote:
+>> This adds support for hardware-tracked trip points to the device tree
+>> thermal sensor framework.
+>>
+>> The framework supports an arbitrary number of trip points. Whenever
+>> the current temperature is updated, the trip points immediately
+>> below and above the current temperature are found. A sensor driver
+>> callback `set_trips' is then called with the temperatures.
+>> If there is no trip point above or below the current temperature,
+>> the passed trip temperature will be LONG_MAX or LONG_MIN respectively.
+>> In this callback, the driver should program the hardware such that
+>> it is notified when either of these trip points are triggered.
+>> When a trip point is triggered, the driver should call
+>> `thermal_zone_device_update' for the respective thermal zone. This
+>> will cause the trip points to be updated again.
+>>
+>> If the `set_trips' callback is not implemented (is NULL), the framework
+>> behaves as before.
+>
+> Is there no "core thermal" code? I would have expected this new feature
+> to be implemented in "core" code rather than of/dt "support" code.
+> Perhaps there would also be some additions to the of/dt code, but I'd
+> still expect the bulk of the feature to be complete independant of
+> of/dt. Systems still using board files or ACPI or ... would surely
+> benefit from this too?
 
-Or even better: fall back to your implementation.
+The thermal core only supports a fixed number of trip points for each 
+driver and the core informs the driver of any changes to those, so 
+drivers using the core framework can already have hardware trip points, 
+but just a fixed number of them.
 
->=20
-> > >=20
-> > > and let the round_rate method implement the default behaviour.
-> >=20
-> > There is no real default. Rounding is not specified for the current
-> > API.
->=20
-> What I meant by default behavior is the behavior already implemented
-> by the clock driver (either round up, down or closest).
-> This way you do not introduce regressions with existing users, and ca=
-n
-> use new methods in new use cases.
->=20
-> >=20
-> > >=20
-> > > This way you could add 3 functions to the API:
-> > >=20
-> > > clk_round_closest (or clk_find_nearest_rate as you called it),
-> > > clk_round_up and clk_round_down, and let the clk driver
-> > > implementation return the appropriate rate.
-> >=20
-> > I'd say the current patch set does kind of align with that, doesn't
-> > it? We can add the find_nearest_rate() (there was a discussion on
-> > the name, ane we decided against round_closest in favor of the
-> > current proposal) now and the other functions could be added later
-> > if people find them to be useful. And if they all get added we can
-> > think about consolidating them if it made sense.
->=20
-> Yes sure.
->=20
-> Best Regards,
->=20
-> Boris
->=20
+The way of-thermal works, is it reads all the trip points from the 
+device tree, registers a new thermal_zone_device with that number of 
+trip points and then handles the trip points completely independently. 
+Of course, if we're just polling, this is fine, since the thermal core
+also knows about those trip points and will trigger cooling when polling 
+the each zone. However, the driver doesn't, so it cannot setup any 
+interrupts to call thermal_zone_device_update.
 
+>
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+>
+>> +static int of_thermal_set_trips(struct thermal_zone_device *tz, long temp)
+>
+> s/tz/tzd/ or s/tz/tzdev/ ? Since "tz" says "thermal zone" to me, but
+> it's actually a "thermal zone device".
 
+I followed the existing convention; "tz" is the name used most often by 
+both the core and the of-thermal framework.
 
---=20
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+>
+>> +	struct __thermal_zone *data = tz->devdata;
+>
+> s/data/tz/ ? "data" is a rather generic term, and "tz" seems like a good
+> abbreviation for a __thermal_zone.
+
+Same, though here both "data" and "tz" seem to be used..
+
+>
+>> +	for (i = 0; i < data->ntrips; ++i) {
+>> +		struct __thermal_trip *trip = data->trips + i;
+>> +		long trip_low = trip->temperature - trip->hysteresis;
+>> +
+>> +		if (trip_low < temp && trip_low > low)
+>> +			low = trip_low;
+>> +
+>> +		if (trip->temperature > temp && trip->temperature < high)
+>> +			high = trip->temperature;
+>> +	}
+>
+> That seems to always apply hysteresis to the low end of a trip object.
+> Don't you need to apply the hysteresis to either the low or high end of
+> the range, depending on whether the temperature is currently below/above
+> the range, and hence which direction the edge will be crossed?
+
+I believe applying only to the low end is correct. Say that we have a 
+trip point at 40C and hysteresis of 2C. When we exceed 40C cooling will 
+start immediately, but it will only be stopped when we cool down to 38C. 
+At that point there is again a 2C gap between the current temperature 
+and the trip point. It would seem that this is the interpretation used 
+by our downstream kernel and also some people on the Internet (however 
+trustworthy they may be..)
+
+If you don't feel this is right, please elaborate.
+
+>
+> Similar comments elsewhere. Perhaps the patch is consistent with some
+> existing confusing naming style though?
+>
+>> +static int of_thermal_update_trips(struct thermal_zone_device *tz)
+>> +{
+>> +	long temp;
+>> +	int err;
+>> +
+>> +	err = of_thermal_get_temp(tz, &temp);
+>> +	if (err)
+>> +		return err;
+>> +
+>> +	err = of_thermal_set_trips(tz, temp);
+>
+> Doesn't this patch modify of_thermal_get_temp() to call
+> of_thermal_set_trips() itself?
+
+You're right. I suppose this function is unneeded.
+
+>
+>> @@ -384,7 +467,8 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+>>   struct thermal_zone_device *
+>>   thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
+>>   				void *data, int (*get_temp)(void *, long *),
+>> -				int (*get_trend)(void *, long *))
+>> +				int (*get_trend)(void *, long *),
+>> +				int (*set_trips)(void *, long, long))
+>
+> Passing in a struct containing fields for all the ops seem better than
+> forever extending this function with more and more function pointers.
+>
+
+Very true.
