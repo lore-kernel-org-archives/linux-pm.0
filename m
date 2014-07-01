@@ -1,67 +1,96 @@
 From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: Re: [PATCH 4/6] ARM: tegra: Add soctherm and thermal zones to Tegra124
- device tree
-Date: Tue, 1 Jul 2014 10:49:47 +0300
-Message-ID: <53B2681B.8020805@nvidia.com>
-References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-5-git-send-email-mperttunen@nvidia.com> <53B1CD20.3010008@wwwdotorg.org>
+Subject: Re: [PATCH 6/6] thermal: Add Tegra SOCTHERM thermal management driver
+Date: Tue, 1 Jul 2014 11:06:10 +0300
+Message-ID: <53B26BF2.7090009@nvidia.com>
+References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-7-git-send-email-mperttunen@nvidia.com> <53B1D538.6000704@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:17316 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbaGAHtv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 03:49:51 -0400
-In-Reply-To: <53B1CD20.3010008@wwwdotorg.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53B1D538.6000704@wwwdotorg.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Stephen Warren <swarren@wwwdotorg.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Matthew Longnecker <MLongnecker@nvidia.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
 Inline.
 
-On 30/06/14 23:48, Stephen Warren wrote:
+On 01/07/14 00:23, Stephen Warren wrote:
 > On 06/27/2014 02:11 AM, Mikko Perttunen wrote:
->> This adds the soctherm thermal sensing and management unit to the
->> Tegra124 device tree along with the four thermal zones it exports.
+>> This adds support for the Tegra SOCTHERM thermal sensing and management
+>> system found in the Tegra124 system-on-chip. This initial driver supports
+>> the four thermal zones with hardware-tracked trip points.
 >
->> diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+>> diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra_soctherm.c
 >
->> +	thermal-zones {
->> +		cpu {
->> +			polling-delay-passive = <0>;
->> +			polling-delay = <0>;
+>> +static struct tegra_tsensor t124_tsensors[] = {
+>> +	{
+>> +		.base = 0xc0,
+>> +		.name = "cpu0",
+>> +		.config = &t124_tsensor_config,
+>> +		.calib_fuse_offset = 0x098,
+>> +		.fuse_corr_alpha = 1135400,
+>> +		.fuse_corr_beta = -6266900,
+>> +	},
 >
-> I think we should still define a polling delay so that if there's SW
-> that doesn't support HW trip points/interrupts, it still knows how often
-> it should reasonably check the sensor.
->
-> Perhaps a delay of 0 is used to determine whether to use HW trip points
-> vs polling (I haven't read patch 1 yet)? If so, I'd prefer not to do
-> that. Rather, the driver should advertize its ability to provide HW trip
-> points, and it would be up to the core to then make use of them. The DT
-> should just describe the HW, not assume it can influence SW's choice of
-> whether to use HW trip points.
+> I wonder why some of those fields are named "fuse_xxx" when the values
+> are hard-coded in these tables rather than read from fuses? These values
+> don't seem to be used to adjust values read from fuses.
 
-Yes, a delay of 0 disables polling in the thermal core. (The hw trip 
-code doesn't do anything with it) One way to fix this would be to export 
-a rate changing function in the thermal core and have of-thermal set the 
-polling rate to 0 or the value from device tree depending on if hw trip 
-point programming succeeded or not. This would also be good for error 
-handling, since if hw trip poing programming failed for whatever reason, 
-we could still fall back to polling.
+They are used to when calculating the thermal calibration in 
+calculate_tsensor_calibration, which is based on the value read from the 
+fuse. Downstream calls them fuse correction values, so I kept that. (I 
+guess the meaning of corr might not be obvious..) On downstream there is 
+another set of these correction values used depending on the fuse 
+revision, but I believe the older revision is only found internally.
 
 >
->> +	soctherm: soctherm@0,700e2000 {
-> ...
->> +		reset-names = "soctherm";
->> +
->> +		#thermal-sensor-cells = <1>;
+>> +static int tegra_thermctl_get_temp(void *data, long *out_temp)
 >
-> I don't see any real need for that blank line. If there was, there would
-> probably be more blank lines in the big list of properties above.
+>> +	switch (zone->sensor) {
+>> +	case 0:
+>> +		val = readl(zone->tegra->regs + SENSOR_TEMP1)
+>> +			>> SENSOR_TEMP1_CPU_TEMP_SHIFT;
+>
+> Can't the register offset and shift be stored in *zone, so that this
+> whole switch can be replaced with something generic:
+>
+> val = readl(zone->tegra->regs + zone->reg_offset) >> zone->value_shift;
+
+Yes, certainly doable.
+
+>
+>> +static int tegra_soctherm_probe(struct platform_device *pdev)
+>
+>> +	irq = platform_get_irq(pdev, 0);
+>> +	if (irq <= 0) {
+>> +		dev_err(&pdev->dev, "can't get interrupt\n");
+>> +		return -EINVAL;
+>> +	}
+>
+> irq is assigned once here ... (see later)
+>
+>> +	for (i = 0; i < 4; ++i) {
+>
+> Why "4"? Should the loop count be the ARRAY_SIZE(some array)? At the
+> very least, a named constant that describes the value would be useful...
+
+The thermctl sensors have been unchanged for a few chip generations, so 
+I was thinking that just hardcoding this wouldn't be so bad. But I guess
+an array would look nicer here. Will fix.
+
+>
+>> +		err = devm_request_threaded_irq(&pdev->dev, irq, soctherm_isr,
+>> +						soctherm_isr_thread,
+>> +						IRQF_SHARED, "tegra_soctherm",
+>> +						zone);
+>
+> Why request the same IRQ 4 times here. Rather, shouldn't the IRQ be
+> requested once, and the ISR simply loop over the status register (or
+> whatever there are 4 of)?
 >
 
-The reasoning was that #thermal-sensor-cells as a cells-property is a 
-bit different from the rest, so separate them. But I can remove the 
-blank line just as well.
+I had that variant as well, but since we need to pass the list of 
+tripped sensors to soctherm_isr_thread somehow, I guess some kind of 
+locking or atomic is needed. This version doesn't need that, so I went 
+with it.
