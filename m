@@ -1,186 +1,177 @@
-From: Arend van Spriel <arend@broadcom.com>
-Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
-Date: Tue, 1 Jul 2014 18:56:51 +0200
-Message-ID: <53B2E853.5080400@broadcom.com>
-References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>	<1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>	<CAOesGMj6xp_cXZRuqL5HOPX4AeDuCkj69E32xuPVgGk4xABLbQ@mail.gmail.com>	<53A3E256.8090307@redhat.com>	<CAOesGMgRw_=ppC3zhDtuYBUsrnd9wwsu26az=4kMXJDBmNgmjw@mail.gmail.com>	<53A3ED65.80605@redhat.com> <CAPDyKFqi2NH1r=Q13iOu2ruuvaj1xJeoERiy2WJBVbQ2b1tc_A@mail.gmail.com>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [PATCH 1/4] clk: Introduce 'clk_find_nearest_rate()'
+Date: Tue, 1 Jul 2014 10:52:09 -0700
+Message-ID: <1cc8398e-bbbb-47f9-9f02-30f4d1237ab4@BY2FFO11FD003.protection.gbl>
+References: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1404147396-8041-2-git-send-email-soren.brinkmann@xilinx.com>
+ <20140701082302.GL14781@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqi2NH1r=Q13iOu2ruuvaj1xJeoERiy2WJBVbQ2b1tc_A@mail.gmail.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Hans de Goede <hdegoede@redhat.com>, Olof Johansson <olof@lixom.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Alexandre Courbot <gnurou@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Chris Ball <chris@printf.net>, Chen-Yu Tsai <wens@csie.org>, Russell King <linux@arm.linux.org.uk>, Tomasz Figa <tomasz.figa@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140701082302.GL14781@pengutronix.de>
+Sender: cpufreq-owner@vger.kernel.org
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01-07-14 18:42, Ulf Hansson wrote:
-> On 20 June 2014 10:14, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->> On 06/20/2014 10:02 AM, Olof Johansson wrote:
->>> On Fri, Jun 20, 2014 at 12:27 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>> Hi,
->>>>
->>>> On 06/19/2014 07:18 PM, Olof Johansson wrote:
->>>>> Hi,
->>>>>
->>>>>
->>>>>
->>>>> On Thu, Jun 19, 2014 at 6:04 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>>>> The pwrseq subsystem handles complex power sequences, typically useful
->>>>>> for subsystems that makes use of discoverable buses, like for example
->>>>>> MMC and I2C.
->>>>>>
->>>>>> The pwrseq subsystem is dependant on CONFIG_OF to be able to parse a DT
->>>>>> childnode to find out what power sequence method to bind for a device.
->>>>>>
->>>>>> From the DT childnode, the pwrseq DT parser tries to locate a
->>>>>> "power-method" property, which string is matched towards the list of
->>>>>> supported pwrseq methods.
->>>>>>
->>>>>> Each pwrseq method implements it's own power sequence and interfaces
->>>>>> the pwrseq core through a few callback functions.
->>>>>>
->>>>>> To instantiate a pwrseq method, clients shall use the devm_pwrseq_get()
->>>>>> API. If needed, clients can explicity drop the references to a pwrseq
->>>>>> method using devm_pwrseq_put() API.
->>>>>>
->>>>>> Besides instantiation, the pwrseq API provides clients opportunity to
->>>>>> select a certain power state. In this intial version, PWRSEQ_POWER_ON
->>>>>> and PWRSEQ_POWER_OFF are supported. Those are also mandatory for each
->>>>>> pwrseq method to support.
->>>>>>
->>>>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>>>> ---
->>>>>>  .../devicetree/bindings/pwrseq/pwrseq.txt          |   48 ++++++
->>>>>>  drivers/Makefile                                   |    2 +-
->>>>>>  drivers/pwrseq/Makefile                            |    2 +
->>>>>>  drivers/pwrseq/core.c                              |  175 ++++++++++++++++++++
->>>>>>  drivers/pwrseq/core.h                              |   37 +++++
->>>>>>  drivers/pwrseq/method.c                            |   38 +++++
->>>>>>  include/linux/pwrseq.h                             |   50 ++++++
->>>>>>  7 files changed, 351 insertions(+), 1 deletion(-)
->>>>>>  create mode 100644 Documentation/devicetree/bindings/pwrseq/pwrseq.txt
->>>>>>  create mode 100644 drivers/pwrseq/Makefile
->>>>>>  create mode 100644 drivers/pwrseq/core.c
->>>>>>  create mode 100644 drivers/pwrseq/core.h
->>>>>>  create mode 100644 drivers/pwrseq/method.c
->>>>>>  create mode 100644 include/linux/pwrseq.h
->>>>>>
->>>>>> diff --git a/Documentation/devicetree/bindings/pwrseq/pwrseq.txt b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
->>>>>> new file mode 100644
->>>>>> index 0000000..80848ae
->>>>>> --- /dev/null
->>>>>> +++ b/Documentation/devicetree/bindings/pwrseq/pwrseq.txt
->>>>>> @@ -0,0 +1,48 @@
->>>>>> +Power sequence DT bindings
->>>>>> +
->>>>>> +Each power sequence method has a corresponding "power-method" property string.
->>>>>> +This property shall be set in a subnode for a device. That subnode should also
->>>>>> +describe resourses which are specific to that power method.
->>>>>> +
->>>>>> +Do note, power sequences as such isn't encoded through DT. Instead those are
->>>>>> +implemented by each power method.
->>>>>> +
->>>>>> +Required subnode properties:
->>>>>> +- power-method: should contain the string for the power method to bind.
->>>>>> +
->>>>>> +       Supported power methods: None.
->>>>>> +
->>>>>> +Example:
->>>>>> +
->>>>>> +Note, the "clock" power method in this example isn't actually supported, but
->>>>>> +used to visualize how a childnode could be described.
->>>>>> +
->>>>>> +// WLAN SDIO channel
->>>>>> +sdi1_per2@80118000 {
->>>>>> +       compatible = "arm,pl18x", "arm,primecell";
->>>>>> +       reg = <0x80118000 0x1000>;
->>>>>> +       interrupts = <0 50 IRQ_TYPE_LEVEL_HIGH>;
->>>>>> +
->>>>>> +       dmas = <&dma 32 0 0x2>, /* Logical - DevToMem */
->>>>>> +              <&dma 32 0 0x0>; /* Logical - MemToDev */
->>>>>> +       dma-names = "rx", "tx";
->>>>>> +
->>>>>> +       clocks = <&prcc_kclk 2 4>, <&prcc_pclk 2 6>;
->>>>>> +       clock-names = "sdi", "apb_pclk";
->>>>>> +
->>>>>> +       arm,primecell-periphid = <0x10480180>;
->>>>>> +       max-frequency = <100000000>;
->>>>>> +       bus-width = <4>;
->>>>>> +       non-removable;
->>>>>> +       pinctrl-names = "default", "sleep";
->>>>>> +       pinctrl-0 = <&sdi1_default_mode>;
->>>>>> +       pinctrl-1 = <&sdi1_sleep_mode>;
->>>>>> +
->>>>>> +       status = "okay";
->>>>>> +
->>>>>> +       pwrseq: pwrseq1 {
->>>>>> +               power-method = "clock";
->>>>>> +               clocks = <&someclk 1 2>, <&someclk 3 4>;
->>>>>> +               clock-names = "pwrseq1", "pwrseq2";
->>>>>> +       };
->>>>>
->>>>> I am strongly against the subnode approach as a general framework. We
->>>>> don't have a subnode for interrupts, nor for clocks or pinctrl. So why
->>>>> should we have it for the power sequencing?
->>>>>
->>>>> Sure, that fits the linux driver model better, but that's irrelevant
->>>>> w.r.t. describing the hardware.
->>>>
->>>> Actually this is about describing the hardware, when you have e.g. an
->>>> mmc device which needs pwrseq, there will be 2 sets of certain
->>>> resources, ie clocks for the host controller and clocks going directly
->>>> to the mmc device. I think putting those both in the same subnode is
->>>> a BAD idea, so we really do need a subnode to group the pwrseq resources
->>>> together.
->>>
->>> I disagree.
->>>
->>> The clock is the input to the module, and it is what needs to be
->>> enabled for the module to work. It's not the input to some
->>> power-sequence component on the module, or next to the module on the
->>> bus.
->>
->> Right, it is an input to the sdio-module, not to the mmc-host, so its an
->> input to a different piece of hardware (at different ends of the mmc bus),
->> but since the mmc-bus normally is fully discoverable we've no node for the
->> other end of the bus.
->>
->> So from the mmc-host pov, which is the one which needs to bind the pwrseq
->> driver, as that needs to be done before it can probe its bus, this is
->> a different piece of hardware, hence a subnode to the host makes perfect
->> sense.  This is in no way part of the host, so certainly it does not belong
->> inside the hosts subnode.
-> 
-> I fully agree with you Hans here.
-> 
-> If we were to put this information in the host's DT node, that would
-> be a wrong description of the hardware. Currently, I can't think of
-> anything better than a subnode, but I am open to suggestions.
+Hi Uwe,
 
-It could also be a property in the mmc-host that references a gpio
-and/or clock for the simple sequences. For the complex sequence it could
-similarly reference to a power-seq node somewhere else in the DT. There
-may not be a functional difference. It just indicates that the power
-sequence is not part of the mmc host, but an optional resource needed
-for bus operation, ie. make sdio device discoverable.
+On Tue, 2014-07-01 at 10:23AM +0200, Uwe Kleine-K=C3=B6nig wrote:
+> On Mon, Jun 30, 2014 at 09:56:33AM -0700, Soren Brinkmann wrote:
+> > Introduce a new API function to find the rate a clock can provide w=
+hich
+> > is closest to a given rate.
+> >=20
+> > clk_round_rate() leaves it to the clock driver how rounding is done=
+=2E
+> > Commonly implementations round down due to use-cases that have a ce=
+rtain
+> > frequency maximum that must not be exceeded.
+> >=20
+> > The new API call enables use-cases where accuracy is preferred. E.g=
+=2E
+> > Ethernet clocks.
+> >=20
+> > Signed-off-by: Soren Brinkmann <soren.brinkmann@xilinx.com>
+> > ---
+> >=20
+> >  drivers/clk/clk.c   | 57 +++++++++++++++++++++++++++++++++++++++++=
+++++++++++++
+> >  include/linux/clk.h |  9 +++++++++
+> >  2 files changed, 66 insertions(+)
+> >=20
+> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> > index 8b73edef151d..fce1165cd879 100644
+> > --- a/drivers/clk/clk.c
+> > +++ b/drivers/clk/clk.c
+> > @@ -1030,6 +1030,63 @@ long clk_round_rate(struct clk *clk, unsigne=
+d long rate)
+> >  EXPORT_SYMBOL_GPL(clk_round_rate);
+> > =20
+> >  /**
+> > + * clk_find_nearest_rate - round the given rate for a clk
+> > + * @clk: the clk for which we are rounding a rate
+> > + * @rate: the rate which is to be rounded
+> > + *
+> > + * Takes in a rate as input and finds the closest rate that the cl=
+k
+> > + * can actually use which is then returned.
+> > + * Note: This function relies on the clock's clk_round_rate() impl=
+ementation.
+> > + * For cases clk_round_rate() rounds up, not the closest but the r=
+ounded up
+> > + * rate is found.
+> > + */
+> > +long clk_find_nearest_rate(struct clk *clk, unsigned long rate)
+> > +{
+> > +	long ret, lower, upper;
+> > +	unsigned long tmp;
+> > +
+> > +	clk_prepare_lock();
+> > +
+> > +	lower =3D __clk_round_rate(clk, rate);
+> > +	if (lower >=3D rate || lower < 0) {
+> > +		ret =3D lower;
+> > +		goto unlock;
+> > +	}
+> > +
+> > +	tmp =3D rate + (rate - lower) - 1;
+> > +	if (tmp > LONG_MAX)
+> > +		upper =3D LONG_MAX;
+> > +	else
+> > +		upper =3D tmp;
+> Consider rate =3D 0xf0000000, lower =3D 0x7fffffff (=3D LONG_MAX). Th=
+en tmp =3D
+> (unsigned long)0x160000000 =3D 0x60000000. In this case you pick uppe=
+r =3D
+> 0x60000000 while you should use upper =3D LONG_MAX.
+Strictly speaking yes, but isn't 0xf000000 already an invalid argument?
+I kept it as unsigned long to match the round_rate prototype, but as we
+discussed before, rates should probably all be long only since the
+return type of these functions is signed. Unless I miss something,
+requesting a rate > LONG_MAX while we can return a long only should not
+be possible. Hence, I was assuming to work with rates in the range up t=
+o
+LONG_MAX only for now.
+But adding a something like 'if (rate > LONG_MAX) return -EINVAL;' woul=
+d
+probably be a good idea in this case.
 
-Regards,
-Arend
+>=20
+> I think you need
+>=20
+> -	if (tmp > LONG_MAX)
+> +	if (tmp > LONG_MAX || tmp < rate)
+I was looking for how to correctly check for arithmetic overflows (sinc=
+e
+you pointed out the flaws with my solution using casts), and this check
+relies on undefined behavior as well, IIUC.
 
-> Kind regards
-> Uffe
-> 
->>
->>> It probably makes sense to not use the standard names for the new
->>> resources.
->>
->> I disagree, being able to use standard names is very useful, and actually
->> is a must if we don't want to have to have special versions of devm_get_clk,
->> and all other devm_get_xxx esp. for pwrseq stuff.
->>
->> Regards,
->>
->> Hans
+>=20
+> (and a comment)
+>=20
+> > +
+> > +	upper =3D __clk_round_rate(clk, upper);
+> > +	if (upper <=3D lower || upper < 0) {
+> Is it an idea to do something like:
+>=20
+> 		if (IS_ENABLED(CONFIG_CLK_SANITY_CHECKS))
+> 			WARN_ON(upper < lower && upper >=3D 0);
+>=20
+> here?
+Probably a good idea. I assumed that we can - more or less - safely
+count on that behavior once we are through those checks above.
+
+>=20
+> > +		ret =3D lower;
+> > +		goto unlock;
+> > +	}
+> > +
+> > +	lower =3D rate + 1;
+> > +	while (lower < upper) {
+> > +		long rounded, mid;
+> > +
+> > +		mid =3D lower + ((upper - lower) >> 1);
+> > +		rounded =3D __clk_round_rate(clk, mid);
+> > +		if (rounded < lower)
+> > +			lower =3D mid + 1;
+> > +		else
+> > +			upper =3D rounded;
+> > +	}
+> This is broken if you don't assume that __clk_round_rate rounds down.
+> Consider an implementation that already does round_nearest and clk ca=
+n
+> assume the values 0x60000 and 0x85000 (and nothing in between), and r=
+ate
+> =3D 0x70000. This results in
+>=20
+> 	lower =3D 0x60000;
+> 	tmp =3D 0x7ffff;
+> 	upper =3D __clk_round_rate(clk, 0x7ffff) =3D 0x85000
+>=20
+> before the loop and the loop then doesn't even terminate.
+Good catch. With rounding being unspecified, there are a lot of
+corner cases.
+I think this change would fix that corner case, but I'm not sure it
+covers all:
+=20
+        tmp =3D rate + (rate - lower) - 1;
+        if (tmp > LONG_MAX)
+-               upper =3D LONG_MAX;
+-       else
+-               upper =3D tmp;
++               tmp =3D LONG_MAX;
+=20
+-       upper =3D __clk_round_rate(clk, upper);
+-       if (upper <=3D lower || upper < 0) {
++       upper =3D __clk_round_rate(clk, tmp);
++       if (upper <=3D lower || upper < 0 || upper > tmp) {
+                ret =3D lower;
+                goto unlock;
+        }
+
+	Thanks,
+	S=C3=B6ren
 
