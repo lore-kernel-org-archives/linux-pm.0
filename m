@@ -1,47 +1,37 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: PATCH 0/2 tmon: fix a few minor security issues
-Date: Tue, 01 Jul 2014 21:49:25 +0800
-Message-ID: <1404222565.8366.32.camel@rzhang1-toshiba>
-References: <1403035509-31815-1-git-send-email-nhorman@tuxdriver.com>
-	 <20140701114249.GF7322@hmsreliant.think-freely.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: [PATCH 0/2] cpuidle fixes and cleanup
+Date: Tue,  1 Jul 2014 20:02:36 +0530
+Message-ID: <1404225158-8453-1-git-send-email-k.chander@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:29664 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752862AbaGANtz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Jul 2014 09:49:55 -0400
-In-Reply-To: <20140701114249.GF7322@hmsreliant.think-freely.org>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:50124 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755031AbaGAOc5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 10:32:57 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Cc: daniel.lezcano@linaro.org, kgene.kim@samsung.com, linux-pm@vger.kernel.org, Chander Kashyap <k.chander@samsung.com>
 
-On Tue, 2014-07-01 at 07:42 -0400, Neil Horman wrote:
-> On Tue, Jun 17, 2014 at 04:05:07PM -0400, Neil Horman wrote:
-> > Just a few little fixups for tmon, to prevent abuse of its logging facility
-> > 
-> > Best
-> > Neil
-> > 
-> Ping, Zhang, Jacob acked these, but I've not seen them go into your tree yet.
-> Do you have an issue with them?
-> 
-Oh, next time when you send thermal related patches, please send them to
-linux-pm@vger.kernel.org mailing list so that I can review the patches
-in https://patchwork.kernel.org/project/linux-pm/list/
+This patch series fixes the cpuidle for different states. Also removes arm
+diagnostic and power register save/restore code as it is made generic.
 
-Both patches applied. Thanks!
+Based on:
+ARM: save/restore diagnostic register on Cortex-A9 suspend/resume
+ http://www.spinics.net/lists/arm-kernel/msg340506.html
 
--rui
-> Neil
-> 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
+ARM: save/restore power control register on Cortex-A9 suspend/resume
+ http://www.spinics.net/lists/arm-kernel/msg343320.html
 
+Chander Kashyap (2):
+  ARM: Exynos: remove arm diagnostic and power register save/restore
+    code
+  cpuidle: Exynos: fix cpuidle for all states
+
+ arch/arm/mach-exynos/common.h    |    2 +-
+ arch/arm/mach-exynos/pm.c        |   95 +++++---------------------------------
+ drivers/cpuidle/cpuidle-exynos.c |    7 ++-
+ 3 files changed, 17 insertions(+), 87 deletions(-)
+
+-- 
+1.7.9.5
 
