@@ -1,62 +1,93 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH 03/16] ARM: mvebu: Add function to export the physical
- address of the boot register
-Date: Tue, 1 Jul 2014 12:02:54 -0300
-Message-ID: <20140701150254.GA1986@arch.cereza>
-References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
- <1403875377-940-4-git-send-email-gregory.clement@free-electrons.com>
- <20140701134651.7d34de62@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20140701134651.7d34de62@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
+Date: Tue,  1 Jul 2014 22:02:29 +0530
+Message-ID: <cover.1404231535.git.viresh.kumar@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: rjw@rjwysocki.net, shawn.guo@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
 List-Id: linux-pm@vger.kernel.org
 
-On 01 Jul 01:46 PM, Thomas Petazzoni wrote:
-> Dear Gregory CLEMENT,
-> =
+V1: https://lkml.org/lkml/2014/6/25/152
 
-> On Fri, 27 Jun 2014 15:22:44 +0200, Gregory CLEMENT wrote:
-> =
+Stephen Boyd sent few patches some time back around a new cpufreq driver for
+Qualcomm's Krait SoC: https://lkml.org/lkml/2014/6/24/918.
 
-> >  static void __iomem *system_controller_base;
-> > +static u32 system_controller_phys_base;
-> >  =
+Krait couldn't use existing cpufreq-cpu0 driver as it doesn't have support for
+SoC's with multiple clusters or SoC's which don't share clock line across all
+CPUs.
 
-> >  struct mvebu_system_controller {
-> >  	u32 rstoutn_mask_offset;
-> > @@ -109,6 +110,13 @@ void mvebu_system_controller_set_cpu_boot_addr(voi=
-d *boot_addr)
-> >  	writel(virt_to_phys(boot_addr), system_controller_base +
-> >  	       mvebu_sc->resume_boot_addr);
-> >  }
-> > +
-> > +u32 mvebu_system_controller_get_phys_addr(void)
-> > +{
-> > +	BUG_ON(system_controller_phys_base =3D=3D NULL);
-> =
+This patchset is all about extending support beyond CPU0. It can be used for
+platforms like Krait or ARM big LITTLE architecture now.
 
-> This rightfully generates a fairly strong warning at compile time:
-> you're comparing an u32 to NULL. It should be =3D=3D 0 here.
-> =
+First two patches add helper routine for of and clk layer, which would be used
+by later patches.
 
+Third one adds space for driver specific data in 'struct cpufreq_policy' and
+later ones migrate cpufreq-cpu0 to cpufreq-generic, i.e. can be used for SoCs
+which don't share clock lines across all CPUs.
 
-Or a more readable BUG_ON(!system_controller_phys_base);
--- =
+@Stephen: I haven't added your Tested-by as there were few modifications since
+the time you tested it last.
 
-Ezequiel Garc=EDa, Free Electrons
-Embedded Linux, Kernel and Android Engineering
-http://free-electrons.com
+Pushed here:
+Rebased over v3.16-rc3:
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait-v2
+
+For guys looking to test on exynos, rebased over linux-next + some patches from
+Thomas Abraham to use cpufreq-cpu0 for exynos:
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-exynos-v2
+
+Cc: devicetree@vger.kernel.org
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Michal Simek <michal.simek@xilinx.com>
+Cc: Mike Turquette <mturquette@linaro.org>
+Cc: Rob Herring <rob.herring@linaro.org>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Simon Horman <horms@verge.net.au>
+
+Viresh Kumar (14):
+  of: Create of_property_match()
+  clk: Create of_clk_shared_by_cpus()
+  cpufreq: Add support for per-policy driver data
+  cpufreq: cpu0: Add Module Author
+  cpufreq: cpu0: don't validate clock on clk_put()
+  cpufreq: cpu0: defer probe if clock isn't registered yet
+  cpufreq: cpu0: OPPs can be populated at runtime
+  cpufreq: cpu0: use dev_{err|warn|dbg} instead of pr_{err|warn|debug}
+  cpufreq: cpu0: Move per-cluster initialization code to ->init()
+  cpufreq: cpu0: try regulators with name "cpu-supply"
+  cpufreq: cpu0: Make allocate_resources() work for any CPU
+  cpufreq: cpu0: Extend support beyond CPU0
+  cpufreq: cpu0: rename driver and internals to 'cpufreq_generic'
+  cpufreq: generic: set platform_{driver|device} '.name' to
+    'cpufreq-generic'
+
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |  62 ----
+ .../bindings/cpufreq/cpufreq-generic.txt           | 126 +++++++
+ arch/arm/mach-imx/imx27-dt.c                       |   2 +-
+ arch/arm/mach-imx/imx51-dt.c                       |   2 +-
+ arch/arm/mach-omap2/pm.c                           |   2 +-
+ arch/arm/mach-shmobile/board-ape6evm-reference.c   |   2 +-
+ arch/arm/mach-shmobile/setup-sh73a0.c              |   4 +-
+ arch/arm/mach-zynq/common.c                        |   2 +-
+ drivers/clk/clk.c                                  |  56 +++
+ drivers/cpufreq/Kconfig                            |  10 +-
+ drivers/cpufreq/Kconfig.arm                        |   2 +-
+ drivers/cpufreq/Makefile                           |   2 +-
+ drivers/cpufreq/cpufreq-cpu0.c                     | 251 -------------
+ drivers/cpufreq/cpufreq-generic.c                  | 394 +++++++++++++++++++++
+ drivers/cpufreq/exynos4x12-cpufreq.c               |   2 +-
+ drivers/cpufreq/highbank-cpufreq.c                 |   6 +-
+ drivers/of/base.c                                  |  29 ++
+ include/linux/clk.h                                |   6 +
+ include/linux/cpufreq.h                            |   3 +
+ include/linux/of.h                                 |  10 +
+ 20 files changed, 642 insertions(+), 331 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-generic.txt
+ delete mode 100644 drivers/cpufreq/cpufreq-cpu0.c
+ create mode 100644 drivers/cpufreq/cpufreq-generic.c
+
+-- 
+2.0.0.rc2
