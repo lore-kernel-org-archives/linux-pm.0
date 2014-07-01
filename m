@@ -1,93 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Tue,  1 Jul 2014 22:02:29 +0530
-Message-ID: <cover.1404231535.git.viresh.kumar@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: rjw@rjwysocki.net, shawn.guo@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC 1/2] pwrseq: Add subsystem to handle complex power sequences
+Date: Tue, 1 Jul 2014 18:33:29 +0200
+Message-ID: <CAPDyKFrgY9SER8t6O6saZDAi_BCOoqJy-mkEKxO0R8Qfy=052w@mail.gmail.com>
+References: <1403183091-27876-1-git-send-email-ulf.hansson@linaro.org>
+	<1403183091-27876-2-git-send-email-ulf.hansson@linaro.org>
+	<53A2EDCA.8080000@redhat.com>
+	<53A2F25E.80200@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <53A2F25E.80200@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-V1: https://lkml.org/lkml/2014/6/25/152
+On 19 June 2014 16:23, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+> On 06/19/2014 04:03 PM, Hans de Goede wrote:
+>> Hi,
+>>
+>
+> <snip>
+>
+>> Also I'm not sold on how you're making this a devm only thing, and
+>> are using devres_alloc to not only allocate memory for resource tracking,
+>> but also the actual backing struct, that is not how devres_alloc is
+>> intended to be used AFAIK.
+>>
+>> A problem with having this one always devm managed is that it makes it
+>> hard to use in library functions without side effects.
+>>
+>> e.g. if you look at how your using this in mmc_of_parse in the next
+>> patch, this gives mmc_of_parse the side-effect of having allocated
+>> and bound the power-seq method, even if mmc_of_parse later
+>> fails on e.g. gpio binding. If then for some reason the mmc host
+>> probe method decides to not propagate the mmc_of_parse method
+>> error (leading to freeing of all devm managed resources), then this is
+>> undesirable.
+>>
+>> Where as with a non devm version, it would be clear that on error
+>> mmc_of_parse would need to explicitly release the pwrseq again.
+>>
+>> I realize that pwrseq implementations likely will want to use
+>> devm functions too, and I'm a great fan of devm. But this is something
+>> to keep in mind. At a minimum the description of of_mmc_parse needs
+>> to get updated with info about it having potential side-effects even
+>> when it fails, and that failure should always be treated as a fatal
+>> error and cause the host probe method to fail.
+>
+> Thinking more about this, it may be a good idea to give the pwrseq
+> its own struct device, turning it into a virtual device, this way the
+> pwrseq-method can use devm managed resources bound to this device,
+> we can set the of_node of this device to the actual powerseq
+> childnode and it gets its own sysfs dir in which we could do useful things
+> such as have an attribute to query the current power state.
+>
+> This would also mean introducing a non devm version of devm_pwrseq_get
+> + an explicit release, which would be useful to avoid the side-effects
+> mentioned above when used in library functions such as mmc_of_parse.
 
-Stephen Boyd sent few patches some time back around a new cpufreq driver for
-Qualcomm's Krait SoC: https://lkml.org/lkml/2014/6/24/918.
+Hans, thanks for your comments. I will try to include all your ideas in a v2.
 
-Krait couldn't use existing cpufreq-cpu0 driver as it doesn't have support for
-SoC's with multiple clusters or SoC's which don't share clock line across all
-CPUs.
-
-This patchset is all about extending support beyond CPU0. It can be used for
-platforms like Krait or ARM big LITTLE architecture now.
-
-First two patches add helper routine for of and clk layer, which would be used
-by later patches.
-
-Third one adds space for driver specific data in 'struct cpufreq_policy' and
-later ones migrate cpufreq-cpu0 to cpufreq-generic, i.e. can be used for SoCs
-which don't share clock lines across all CPUs.
-
-@Stephen: I haven't added your Tested-by as there were few modifications since
-the time you tested it last.
-
-Pushed here:
-Rebased over v3.16-rc3:
-git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait-v2
-
-For guys looking to test on exynos, rebased over linux-next + some patches from
-Thomas Abraham to use cpufreq-cpu0 for exynos:
-git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-exynos-v2
-
-Cc: devicetree@vger.kernel.org
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Michal Simek <michal.simek@xilinx.com>
-Cc: Mike Turquette <mturquette@linaro.org>
-Cc: Rob Herring <rob.herring@linaro.org>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Simon Horman <horms@verge.net.au>
-
-Viresh Kumar (14):
-  of: Create of_property_match()
-  clk: Create of_clk_shared_by_cpus()
-  cpufreq: Add support for per-policy driver data
-  cpufreq: cpu0: Add Module Author
-  cpufreq: cpu0: don't validate clock on clk_put()
-  cpufreq: cpu0: defer probe if clock isn't registered yet
-  cpufreq: cpu0: OPPs can be populated at runtime
-  cpufreq: cpu0: use dev_{err|warn|dbg} instead of pr_{err|warn|debug}
-  cpufreq: cpu0: Move per-cluster initialization code to ->init()
-  cpufreq: cpu0: try regulators with name "cpu-supply"
-  cpufreq: cpu0: Make allocate_resources() work for any CPU
-  cpufreq: cpu0: Extend support beyond CPU0
-  cpufreq: cpu0: rename driver and internals to 'cpufreq_generic'
-  cpufreq: generic: set platform_{driver|device} '.name' to
-    'cpufreq-generic'
-
- .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |  62 ----
- .../bindings/cpufreq/cpufreq-generic.txt           | 126 +++++++
- arch/arm/mach-imx/imx27-dt.c                       |   2 +-
- arch/arm/mach-imx/imx51-dt.c                       |   2 +-
- arch/arm/mach-omap2/pm.c                           |   2 +-
- arch/arm/mach-shmobile/board-ape6evm-reference.c   |   2 +-
- arch/arm/mach-shmobile/setup-sh73a0.c              |   4 +-
- arch/arm/mach-zynq/common.c                        |   2 +-
- drivers/clk/clk.c                                  |  56 +++
- drivers/cpufreq/Kconfig                            |  10 +-
- drivers/cpufreq/Kconfig.arm                        |   2 +-
- drivers/cpufreq/Makefile                           |   2 +-
- drivers/cpufreq/cpufreq-cpu0.c                     | 251 -------------
- drivers/cpufreq/cpufreq-generic.c                  | 394 +++++++++++++++++++++
- drivers/cpufreq/exynos4x12-cpufreq.c               |   2 +-
- drivers/cpufreq/highbank-cpufreq.c                 |   6 +-
- drivers/of/base.c                                  |  29 ++
- include/linux/clk.h                                |   6 +
- include/linux/cpufreq.h                            |   3 +
- include/linux/of.h                                 |  10 +
- 20 files changed, 642 insertions(+), 331 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-generic.txt
- delete mode 100644 drivers/cpufreq/cpufreq-cpu0.c
- create mode 100644 drivers/cpufreq/cpufreq-generic.c
-
--- 
-2.0.0.rc2
+Kind regards
+Uffe
