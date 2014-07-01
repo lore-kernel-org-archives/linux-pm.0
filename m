@@ -1,79 +1,116 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
-Date: Mon, 30 Jun 2014 19:21:45 -0300
-Message-ID: <20140630222145.GA8789@arch.cereza>
-References: <1404075603-31838-1-git-send-email-andrew@lunn.ch>
- <20140629213510.GR32514@n2100.arm.linux.org.uk>
- <53B154FE.80804@gmail.com>
- <20140630124320.GZ32514@n2100.arm.linux.org.uk>
- <53B164B2.7090902@gmail.com>
- <20140630142516.GA32514@n2100.arm.linux.org.uk>
+From: =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>
+Subject: Re: [PATCH 1/4] clk: Introduce 'clk_find_nearest_rate()'
+Date: Mon, 30 Jun 2014 17:12:23 -0700
+Message-ID: <475a8ee0-11aa-4fad-94dc-9e5360f298d2@BL2FFO11FD028.protection.gbl>
+References: <1404147396-8041-1-git-send-email-soren.brinkmann@xilinx.com>
+ <1404147396-8041-2-git-send-email-soren.brinkmann@xilinx.com>
+ <20140630212707.1eb44db6@bbrezillon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:59174 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751671AbaF3WWq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jun 2014 18:22:46 -0400
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20140630142516.GA32514@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20140630212707.1eb44db6@bbrezillon>
+Sender: cpufreq-owner@vger.kernel.org
+To: Boris BREZILLON <boris.brezillon@free-electrons.com>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Michal Simek <michal.simek@xilinx.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 
-On 30 Jun 03:25 PM, Russell King - ARM Linux wrote:
-[..]
->=20
-> Right, so what I have against mainline right now in my tree is:
->=20
-> * two SPI patches, which have been taken by Mark
-> * one long term core ARM patch adding optimised memset/memcpy IO oper=
-ations
-> * the PMU stuff
-> * BMM (already published in git form)
-> * Vmeta (already published in git form)
-> * ASoC cleanup patches, which Mark took last week.
->=20
-> What isn't visible is the stuff which converts Armada DRM to componen=
-t
-> support, along with the TDA998x driver (and it sounds like the TI LCD=
-C
-> people may end up blocking that effort).  This is necessary to conver=
-t
-> it to DT support.  However, this depends on the component helper, and
-> that's where there's a blocking problem.
->=20
-> I sent out a bunch of patches last week, with a request for help from
-> the Exynos people.  So far, that has only attracted one relatively mi=
-nor
-> comment from the iMX people.  I can't move forwards with the Armada
-> DRM until this is sorted.  Neither can I move forward with the TDA998=
-x
-> driver.
->=20
+Hi Boris,
 
-I'm not sure I understand why tilcdc people are an obstacle for the
-component stuff, other than the lack of responsiveness. In any case, if
-you have some tilcdc or tda998x patches and you need help with the main=
-line
-process, feel free to ask.
+On Mon, 2014-06-30 at 09:27PM +0200, Boris BREZILLON wrote:
+> Hello Soren,
+>=20
+> On Mon, 30 Jun 2014 09:56:33 -0700
+> Soren Brinkmann <soren.brinkmann@xilinx.com> wrote:
+>=20
+> > Introduce a new API function to find the rate a clock can provide
+> > which is closest to a given rate.
+> >=20
+> > clk_round_rate() leaves it to the clock driver how rounding is done=
+=2E
+> > Commonly implementations round down due to use-cases that have a
+> > certain frequency maximum that must not be exceeded.
+>=20
+> I had the same concern (how could a driver decide whether it should
+> round up, down or to the closest value), but had a slightly different
+> approach in mind.
+>=20
+> AFAIU, you're assuming the clock is always a power of two (which is
+> true most of the time, but some clock implementation might differ,
+> i.e. a PLL accept any kind of multiplier not necessarily a power of 2=
+).
 
-I've been doing some tilcdc work lately, and I'd be happy to help you w=
-ith
-that.
+No, the idea is to always work. There should not be any such limitation=
+=2E
+Where do you see that?
 
-Do you plan to change the devicetree binding? While the current one wor=
-ks fine,
-it has several deficiencies, and it would be great to sort them out bef=
-ore
-the whole platform becomes obsolete.
+>=20
+> How about improving the clk_ops interface instead by adding a new met=
+hod
+>=20
+> 	long (*round_rate_with_constraint)(struct clk_hw *hw,
+> 					   unsigned long requested_rate,
+> 					   unsigned long *parent_rate,
+> 					   enum clk_round_type type);
+>=20
+> with
+>=20
+> enum clk_round_type {
+> 	CLK_ROUND_DOWN,
+> 	CLK_ROUND_UP,
+> 	CLK_ROUND_CLOSEST,
+> };
 
-Really, if you need help and if you think I can handle it, just drop me=
- a line
-and I'll see what I can do.
---=20
-Ezequiel Garc=EDa, Free Electrons
-Embedded Linux, Kernel and Android Engineering
-http://free-electrons.com
+I thought about that, but the find_nearest() did already exist more or
+less and in the end it is not much of a difference, IMHO. If it turns o=
+ut that
+the others are needed as well and somebody implements it, they could be
+added as another convenience function like I did, and/or it could be
+wrapped in the function you propose here.
+
+>=20
+> or just adding these 3 methods:
+>=20
+> 	long (*round_rate_up)(struct clk_hw *hw,
+> 			      unsigned long requested_rate,
+> 			      unsigned long *parent_rate);
+>=20
+> 	long (*round_rate_down)(struct clk_hw *hw,
+> 				unsigned long requested_rate,
+> 				unsigned long *parent_rate);
+>=20
+> 	long (*round_rate_closest)(struct clk_hw *hw,
+> 				   unsigned long requested_rate,
+> 				   unsigned long *parent_rate);
+
+That would be quite a change for clock drivers. So far, there are not m=
+any
+restrictions on round_rate. I think there has already been a discussion
+in this direction that went nowhere. https://lkml.org/lkml/2010/7/14/26=
+0
+
+>=20
+> and let the round_rate method implement the default behaviour.
+
+There is no real default. Rounding is not specified for the current API=
+=2E
+
+>=20
+> This way you could add 3 functions to the API:
+>=20
+> clk_round_closest (or clk_find_nearest_rate as you called it),
+> clk_round_up and clk_round_down, and let the clk driver implementatio=
+n
+> return the appropriate rate.
+
+I'd say the current patch set does kind of align with that, doesn't it?
+We can add the find_nearest_rate() (there was a discussion on the name,
+ane we decided against round_closest in favor of the current proposal)
+now and the other functions could be added later if people find them to
+be useful. And if they all get added we can think about consolidating
+them if it made sense.
+
+	Thanks,
+	S=C3=B6ren
+
