@@ -1,50 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC] Add "rpm_not_supported" flag
-Date: Wed, 02 Jul 2014 01:18:11 +0200
-Message-ID: <3135210.ApPvOPL31q@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1406301041170.1550-100000@iolanthe.rowland.org>
+From: Tuomas Tynkkynen <tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org>
+Subject: Re: [PATCH 6/6] thermal: Add Tegra SOCTHERM thermal management driver
+Date: Wed, 02 Jul 2014 02:47:58 +0300
+Message-ID: <53B348AE.20605@iki.fi>
+References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-7-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56670 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757891AbaGAXAQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Jul 2014 19:00:16 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1406301041170.1550-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1403856699-2140-7-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Monday, June 30, 2014 10:42:19 AM Alan Stern wrote:
-> On Mon, 30 Jun 2014, Rafael J. Wysocki wrote:
-> 
-> > > > Do you know of any tools that actually look at these files?
-> > > 
-> > > I don't.  Of course, that doesn't mean much.
-> > 
-> > The only tool I'm aware of that may be looking at them is powertop, so
-> > if the change doesn't affect powertop adversely, it should be generally
-> > safe.
-> > 
-> > > > If there isn't any, then we can try to change it and see who screams :)
-> > > 
-> > > It'll be a learning experience...
-> > 
-> > Yes, it will. :-)
-> 
-> Then you have no other objections to the patch?
+On 27/06/14 11:11, Mikko Perttunen wrote:
+> +	/* Sign extend from 6 bits to 32 bits */
+> +	shifted_cp = (s32)((val & 0x1f) | ((val & 0x20) ? 0xffffffe0 : 0x0));
+> +	val = ((val & (0x1f << 21)) >> 21);
+> +	/* Sign extend from 5 bits to 32 bits */
+> +	shifted_ft = (s32)((val & 0xf) | ((val & 0x10) ? 0xfffffff0 : 0x0));
 
-My concern still is that it will be confusing, because people won't read the
-documentation carefully enough and will confuse "runtime PM never used" with
-"hardware can't do PM".  I'm not sure how to make that more clear, though.
-
-Also we have the no_callbacks flag and I wonder if/how it is related to the
-new one.  Do we still need both?
-
-In addition to that, I think that "hardware can't do PM" should apply to the
-handling of system suspend resume too.
-
-Rafael
-
+There's sign_extend32 in bitops.h
