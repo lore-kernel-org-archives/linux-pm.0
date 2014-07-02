@@ -1,69 +1,60 @@
-From: "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: Bind cooling devices with the correct arguments
-Date: Wed, 2 Jul 2014 07:54:14 -0400
-Message-ID: <CAC-25o8UV36ZXdBVtHvrahi58m-MB42v9d7oFkKxHOwAxA5L8w@mail.gmail.com>
-References: <1401789598-14967-1-git-send-email-punit.agrawal@arm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Add "rpm_not_supported" flag
+Date: Wed, 2 Jul 2014 10:27:06 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1407021002380.874-100000@iolanthe.rowland.org>
+References: <3135210.ApPvOPL31q@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f179.google.com ([209.85.128.179]:52059 "EHLO
-	mail-ve0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbaGBLyP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Jul 2014 07:54:15 -0400
-In-Reply-To: <1401789598-14967-1-git-send-email-punit.agrawal@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3135210.ApPvOPL31q@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-Punit,
+On Wed, 2 Jul 2014, Rafael J. Wysocki wrote:
 
-On Tue, Jun 3, 2014 at 5:59 AM, Punit Agrawal <punit.agrawal@arm.com> wrote:
-> When binding cooling devices to thermal zones created from the device
-> tree the minimum and maximum cooling states are in the wrong order
-> leading to failure to bind.
->
-> Fix the order of cooling states in the call to
-> thermal_zone_bind_cooling_device to fix this.
->
-> Cc:Zhang Rui <rui.zhang@intel.com>
+> > Then you have no other objections to the patch?
+> 
+> My concern still is that it will be confusing, because people won't read the
+> documentation carefully enough and will confuse "runtime PM never used" with
+> "hardware can't do PM".  I'm not sure how to make that more clear, though.
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+I could emphasize that distinction a little more strongly in the 
+documentation.
 
-Rui, to avoid further delays, can you please pick this one directly?
+> Also we have the no_callbacks flag and I wonder if/how it is related to the
+> new one.  Do we still need both?
 
-> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> ---
-> Hi Eduardo,
->
-> I am hoping this can be picked up for 3.16 as a bug fix.
->
-> Thanks,
-> Punit
->
->  drivers/thermal/of-thermal.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 04b1be7..97d312f 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -156,8 +156,8 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
->
->                         ret = thermal_zone_bind_cooling_device(thermal,
->                                                 tbp->trip_id, cdev,
-> -                                               tbp->min,
-> -                                               tbp->max);
-> +                                               tbp->max,
-> +                                               tbp->min);
->                         if (ret)
->                                 return ret;
->                 }
-> --
-> 1.7.10.4
->
+They mean different things.  The no_callbacks flag is used when we want 
+the PM core to think the device can be in RPM_SUSPENDED at times (it is 
+"logically suspended").  rpm_not_supported is used when we want the PM 
+core to think the device must always be in RPM_ACTIVE.
 
+> In addition to that, I think that "hardware can't do PM" should apply to the
+> handling of system suspend resume too.
 
+Maybe.  For the use case Dan Williams and I are working on, it doesn't 
+matter; for other cases it might matter.  That's why I named the flag 
+"rpm_not_supported" -- it applies specifically to runtime PM, not 
+system PM.
 
--- 
-Eduardo Bezerra Valentin
+Here's a brief summary of the story behind this patch...
+
+At one point, I suggested to Dan that instead of doing something
+special for these devices, we could simply have the runtime_suspend()
+routine always return -EBUSY.  He didn't like that idea because then
+the user would see the device was never powering down but would have no
+idea why.  The rpm_not_supported flag provides this information to the
+user by causing the power/runtime_status attribute to say "not
+supported".  (Although to be entirely fair, we could just put a message
+in the kernel log during probe if the hardware doesn't support runtime
+suspend.)
+
+Instead, Dan introduced a messy PM QoS mechanism in commit
+e3d105055525.  I didn't like that approach, but Greg merged it before I
+objected.
+
+Do you have any suggestions?
+
+Alan Stern
