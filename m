@@ -1,45 +1,47 @@
-From: Chander Kashyap <k.chander@samsung.com>
-Subject: Re: [PATCH 0/2] cpuidle fixes and cleanup
-Date: Wed, 2 Jul 2014 08:41:56 +0530
-Message-ID: <CADWw7OgCgg8aE4W6LwmU3axDdmt-5uH=a+0fSSErfqDci3nNUA@mail.gmail.com>
-References: <1404225158-8453-1-git-send-email-k.chander@samsung.com>
-	<20140701145244.GX32514@n2100.arm.linux.org.uk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
+Date: Wed, 2 Jul 2014 09:02:13 +0530
+Message-ID: <CAKohponkzkpDQb3J2061bxpjtyPskJK1o0OB0hT2R7=RvuKLXw@mail.gmail.com>
+References: <cover.1403684824.git.viresh.kumar@linaro.org>
+	<e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
+	<53AB1CC1.4010907@codeaurora.org>
+	<CAKohpo=Q7eWNwcK6KF9_U-zD0g=96QHW9hiQupLpV5GqoWE+mA@mail.gmail.com>
+	<53ACB568.4000903@codeaurora.org>
+	<20140627015354.32686.83046@quantum>
+	<CAKohponvN3rAvJrfi4TojFcq5gq7r2oNE4Q0_NtwBHmEZ8waBA@mail.gmail.com>
+	<CAKohpo=dgSW551yzqjAV2_opw_4naqFEWpwUz9ktkGgR5vCBZA@mail.gmail.com>
+	<CABGGiswMuofH5WRh4jgwh1=CV+fEXM_Ec3+WNwThbuMLVxsdcg@mail.gmail.com>
+	<CAKohpokaVPn7yNPNAGrE6juGaOYuxZvVsbmkOZmyi9rDub6t7g@mail.gmail.com>
+	<20140701220038.32686.81633@quantum>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20140701145244.GX32514@n2100.arm.linux.org.uk>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Chander Kashyap <k.chander@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20140701220038.32686.81633@quantum>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>
+Cc: Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 1, 2014 at 8:22 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Tue, Jul 01, 2014 at 08:02:36PM +0530, Chander Kashyap wrote:
->> This patch series fixes the cpuidle for different states. Also removes arm
->> diagnostic and power register save/restore code as it is made generic.
->>
->> Based on:
->> ARM: save/restore diagnostic register on Cortex-A9 suspend/resume
->>  http://www.spinics.net/lists/arm-kernel/msg340506.html
->
-> As there is an outstanding issue with this patch, we can't proceed with
-> this set of changes until we know what's going on there.
+On 2 July 2014 03:30, Mike Turquette <mturquette@linaro.org> wrote:
+> I can't help but think this is a pretty ugly solution. Why not specify
 
-Sure, I will wait for the conclusion.
+Thanks :)
 
->
-> Also, bear in mind that I have changes which conflict with this in my
-> tree (which I've just updated.)
+> the nature of the cpu clock(s) in DT directly? There was a thread
+> already that discussed adding such a property to the CPU DT binding but
+> it seems to have gone cold[1]. Furthermore my mailer sucks and I see now
+> that my response to that thread never hit the list due to mangled
+> headers. Here is a copy/paste of my response to the aforementioned
+> thread:
 
-I will resend after your changes are posted.
+Atleast I received it.
 
-Thanks
->
-> --
-> FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-> improving, and getting towards what was expected from it.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Yes, I do agree that we need to get this from the DT in more elegant
+way but it is going to take some time in doing that, and probably some
+people are working on it as that might be used in scheduler-cpufreq
+coordination as well..
+
+For now we can go ahead and make it workable, even if it isn't that
+elegant and update it later on.
+
+Thanks for your inputs.
