@@ -1,47 +1,72 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: cpu0: Extend support beyond CPU0
-Date: Wed, 2 Jul 2014 09:02:13 +0530
-Message-ID: <CAKohponkzkpDQb3J2061bxpjtyPskJK1o0OB0hT2R7=RvuKLXw@mail.gmail.com>
-References: <cover.1403684824.git.viresh.kumar@linaro.org>
-	<e9c0eef07745e561b9d12dcb50c3e2f7eb3e8880.1403684824.git.viresh.kumar@linaro.org>
-	<53AB1CC1.4010907@codeaurora.org>
-	<CAKohpo=Q7eWNwcK6KF9_U-zD0g=96QHW9hiQupLpV5GqoWE+mA@mail.gmail.com>
-	<53ACB568.4000903@codeaurora.org>
-	<20140627015354.32686.83046@quantum>
-	<CAKohponvN3rAvJrfi4TojFcq5gq7r2oNE4Q0_NtwBHmEZ8waBA@mail.gmail.com>
-	<CAKohpo=dgSW551yzqjAV2_opw_4naqFEWpwUz9ktkGgR5vCBZA@mail.gmail.com>
-	<CABGGiswMuofH5WRh4jgwh1=CV+fEXM_Ec3+WNwThbuMLVxsdcg@mail.gmail.com>
-	<CAKohpokaVPn7yNPNAGrE6juGaOYuxZvVsbmkOZmyi9rDub6t7g@mail.gmail.com>
-	<20140701220038.32686.81633@quantum>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH V2 Resend 07/14] cpufreq: cpu0: OPPs can be populated at runtime
+Date: Wed,  2 Jul 2014 09:33:23 +0530
+Message-ID: <e0680f66383f71400f0caa7032620b82c7b3af83.1404273178.git.viresh.kumar@linaro.org>
+References: <cover.1404231535.git.viresh.kumar@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20140701220038.32686.81633@quantum>
+In-Reply-To: <1ba7771e910084cd0820c19ca5994fe1b3d6451d.1404231535.git.viresh.kumar@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Rob Herring <rob.herring@linaro.org>, Grant Likely <grant.likely@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>
+To: rjw@rjwysocki.net, shawn.guo@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2 July 2014 03:30, Mike Turquette <mturquette@linaro.org> wrote:
-> I can't help but think this is a pretty ugly solution. Why not specify
+OPPs can be populated statically, via DT, or added at run time with
+dev_pm_opp_add().
 
-Thanks :)
+While this driver handles the first case correctly, it would fail to populate
+OPPs added at runtime. Because call to of_init_opp_table() would fail as there
+are no OPPs in DT and probe will return early.
 
-> the nature of the cpu clock(s) in DT directly? There was a thread
-> already that discussed adding such a property to the CPU DT binding but
-> it seems to have gone cold[1]. Furthermore my mailer sucks and I see now
-> that my response to that thread never hit the list due to mangled
-> headers. Here is a copy/paste of my response to the aforementioned
-> thread:
+To fix this, remove error checking and call dev_pm_opp_init_cpufreq_table()
+unconditionally.
 
-Atleast I received it.
+Update bindings as well.
 
-Yes, I do agree that we need to get this from the DT in more elegant
-way but it is going to take some time in doing that, and probably some
-people are working on it as that might be used in scheduler-cpufreq
-coordination as well..
+Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2 Resend: Update bindings as well
 
-For now we can go ahead and make it workable, even if it isn't that
-elegant and update it later on.
+ Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 6 ++++--
+ drivers/cpufreq/cpufreq-cpu0.c                             | 7 ++-----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-Thanks for your inputs.
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+index f055515..366690c 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+@@ -8,10 +8,12 @@ Both required and optional properties listed below must be defined
+ under node /cpus/cpu@0.
+ 
+ Required properties:
+-- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
+-  for details
++- None
+ 
+ Optional properties:
++- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt for
++  details. OPPs *must* be supplied either via DT, i.e. this property, or
++  populated at runtime.
+ - clock-latency: Specify the possible maximum transition latency for clock,
+   in unit of nanoseconds.
+ - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index b5b8e1c..f47f703 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -164,11 +164,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_put_reg;
+ 	}
+ 
+-	ret = of_init_opp_table(cpu_dev);
+-	if (ret) {
+-		pr_err("failed to init OPP table: %d\n", ret);
+-		goto out_put_clk;
+-	}
++	/* OPPs might be populated at runtime, don't check for error here */
++	of_init_opp_table(cpu_dev);
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+-- 
+2.0.0.rc2
