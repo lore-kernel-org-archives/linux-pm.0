@@ -1,44 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/14] cpufreq: cpu0: OPPs can be populated at runtime
-Date: Wed, 2 Jul 2014 07:33:01 +0530
-Message-ID: <CAKohpomff9PGBzkZKXxctVSgNyPzWR_8fUn9xnKb-sC8jR=uvA@mail.gmail.com>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<1ba7771e910084cd0820c19ca5994fe1b3d6451d.1404231535.git.viresh.kumar@linaro.org>
-	<53B2F7C3.5060107@codeaurora.org>
+From: Chander Kashyap <k.chander@samsung.com>
+Subject: Re: [PATCH 0/2] cpuidle fixes and cleanup
+Date: Wed, 2 Jul 2014 08:41:56 +0530
+Message-ID: <CADWw7OgCgg8aE4W6LwmU3axDdmt-5uH=a+0fSSErfqDci3nNUA@mail.gmail.com>
+References: <1404225158-8453-1-git-send-email-k.chander@samsung.com>
+	<20140701145244.GX32514@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <53B2F7C3.5060107@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20140701145244.GX32514@n2100.arm.linux.org.uk>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Chander Kashyap <k.chander@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 1 July 2014 23:32, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> Please update the binding as well to indicate that this property is now
-> optional.
+On Tue, Jul 1, 2014 at 8:22 PM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Tue, Jul 01, 2014 at 08:02:36PM +0530, Chander Kashyap wrote:
+>> This patch series fixes the cpuidle for different states. Also removes arm
+>> diagnostic and power register save/restore code as it is made generic.
+>>
+>> Based on:
+>> ARM: save/restore diagnostic register on Cortex-A9 suspend/resume
+>>  http://www.spinics.net/lists/arm-kernel/msg340506.html
+>
+> As there is an outstanding issue with this patch, we can't proceed with
+> this set of changes until we know what's going on there.
 
-Does this look fine..
+Sure, I will wait for the conclusion.
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-index f055515..366690c 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-@@ -8,10 +8,12 @@ Both required and optional properties listed below
-must be defined
- under node /cpus/cpu@0.
+>
+> Also, bear in mind that I have changes which conflict with this in my
+> tree (which I've just updated.)
 
- Required properties:
--- operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
--  for details
-+- None
+I will resend after your changes are posted.
 
- Optional properties:
-+- operating-points: Refer to
-Documentation/devicetree/bindings/power/opp.txt for
-+  details. OPPs *must* be supplied either via DT, i.e. this property, or
-+  populated at runtime.
- - clock-latency: Specify the possible maximum transition latency for clock,
-   in unit of nanoseconds.
- - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+Thanks
+>
+> --
+> FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+> improving, and getting towards what was expected from it.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
