@@ -1,80 +1,88 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 06/14] cpufreq: cpu0: defer probe if clock isn't
- registered yet
-Date: Thu, 3 Jul 2014 07:49:29 +0530
-Message-ID: <CAKohpok0wt46-odR1+KiLLi9=iv+jvAozny9906UND6AgwBgJA@mail.gmail.com>
+Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
+Date: Thu, 3 Jul 2014 08:14:04 +0530
+Message-ID: <CAKohponRv6+rzJnO4cYFhXn6On1+4-KoxFSA2iU_nz130gvsug@mail.gmail.com>
 References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<eb6df0f1f2c82db0d516b9b63820cfe0c0c97d5c.1404231535.git.viresh.kumar@linaro.org>
-	<20140702055330.GA3454@dragon>
-	<CAKohpomzPHRghqHD7-tDbj0gXzc=ANEb3qLv2kRKOZUyqatBew@mail.gmail.com>
-	<CAKohpomk-pyv6Risyq_b8h3DJNGxBoUWu1Y9cApvoz3CwOtL=w@mail.gmail.com>
-	<53B4A607.7030001@codeaurora.org>
+	<CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com>
+	<53B4B0B3.9080000@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <53B4A607.7030001@codeaurora.org>
+In-Reply-To: <53B4B0B3.9080000@codeaurora.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
+To: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
 List-Id: linux-pm@vger.kernel.org
 
-On 3 July 2014 06:08, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> Please make this a dev_dbg() or just remove it entirely. Sending a
-> message to the log on probe defer just duplicates what the driver core
-> is already doing.
+On 3 July 2014 06:54, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> I gave it a spin. It works so you can have my
+>
+> Tested-by: Stephen Boyd <sboyd@codeaurora.org>
 
-Updated as:
+Thanks, all suggested improvements are made and pushed again with
+your Tested-by..
 
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Thu Jun 26 10:40:21 2014 +0530
+> I'm still concerned about the patch where we figure out if the clocks
+> are shared. I worry about a configuration where there are different
+> clocks for on/off (i.e. gates) that are per-cpu but they all source from
+> the same divider or something that is per-cluster. In DT this may be
+> described as different clock provider outputs for the gates and in the
+> cpu node we would have different clock specifiers but in reality all the
+> CPUs in that cluster are affected by the same frequency scaling.
 
-    cpufreq: cpu0: print relevant error when we defer probe
+Yeah, this is probably what matches with Rob's doubt. These can
+actually be different. Good point.
 
-    Currently, we defer probe if regulator_get() returned -EPROBE_DEFER, i.e.
-    regulator isn't registered yet. We do a dev_err() in this case. Sending a
-    message to the log on probe defer just duplicates what the driver core is
-    already doing. Convert it to dev_dbg() instead.
+> In this case we'll need to get help from the clock framework to
+> determine that those gates clocks don't have any .set_rate() callback so
+> they can't actually change rate independently, and then walk up the tree
+> to their parents to see if they have a common ancestor that does change
+> rates. That's where it becomes useful to have a clock framework API for
+> this, like clk_shares_rate(struct clk *clk, struct clk *peer) or
+> something that can hide all this from cpufreq. Here's what I think it
+> would look like (totally untested/uncompiled):
+>
+> static struct clk *find_rate_changer(struct clk *clk)
+> {
+>
+>         if (!clk)
+>                 return NULL;
+>
+>         do {
+>                 /* Rate could change by changing parents */
+>                 if (clk->num_parents > 1)
+>                         return clk;
+>
+>                 /* Rate could change by calling clk_set_rate() */
+>                 if (clk->ops->set_rate)
+>                         return clk;
+>
+>                 /*
+>                  * This is odd, clk_set_rate() doesn't propagate
+>                  * and this clock can't change rate or parents
+>                  * so we must be at the root and the clock we
+>                  * started at can't change rates. Just return the
+>                  * root so that we can see if the other clock shares
+>                  * the same root although CPUfreq should never care.
+>                  */
+>                 if (!(clk->flags & CLK_SET_RATE_PARENT))
+>                         return clk;
+>         } while ((clk = clk->parent))
+>
+>         return NULL;
+> }
+>
+> bool clk_shares_rate(struct clk *clk, struct clk *peer)
+> {
+>         struct clk *p1, *p2;
+>
+>         p1 = find_rate_changer(clk);
+>         p2 = find_rate_changer(peer)
+>
+>         return p1 == p2;
+> }
 
-    We should defer in case of clk_get() as well.
+I find it much better then doing what I did initially, simply matching clk_get()
+outputs. Lets see what Mike has to say..
 
-    Current code already does it, but it wasn't intentional probably.
-Its just that
-    we are returning the right error with wrong print message.
-
-    Fix print message to convey right error.
-
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-cpu0.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 4273a5f..8a1166c 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -140,7 +140,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-                 * not yet registered, we should try defering probe.
-                 */
-                if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
--                       dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
-+                       dev_dbg(cpu_dev, "cpu0 regulator not ready, retry\n");
-                        ret = -EPROBE_DEFER;
-                        goto out_put_node;
-                }
-@@ -151,7 +151,16 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-        cpu_clk = clk_get(cpu_dev, NULL);
-        if (IS_ERR(cpu_clk)) {
-                ret = PTR_ERR(cpu_clk);
--               pr_err("failed to get cpu0 clock: %d\n", ret);
-+
-+               /*
-+                * If cpu's clk node is present, but clock is not yet
-+                * registered, we should try defering probe.
-+                */
-+               if (ret == -EPROBE_DEFER)
-+                       dev_dbg(cpu_dev, "cpu0 clock not ready, retry\n");
-+               else
-+                       dev_err(cpu_dev, "failed to get cpu0 clock: %d\n", ret);
-+
-                goto out_put_reg;
-        }
+@Mike: Is this less ugly ? :)
