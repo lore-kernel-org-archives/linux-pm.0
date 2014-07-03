@@ -1,113 +1,104 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv2 PATCH 15/23] sched, cpufreq: Introduce current cpu compute capacity into scheduler
-Date: Thu,  3 Jul 2014 17:26:02 +0100
-Message-ID: <1404404770-323-16-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv2 PATCH 14/23] sched: Introduce SD_SHARE_CAP_STATES sched_domain flag
+Date: Thu,  3 Jul 2014 17:26:01 +0100
+Message-ID: <1404404770-323-15-git-send-email-morten.rasmussen@arm.com>
 References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:45695 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759340AbaGCQ0U (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 12:26:20 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, Dietmar.Eggemann@arm.com, pjt@google.com
+List-Id: linux-pm@vger.kernel.org
 
-The scheduler is currently unaware of frequency changes and the current
-compute capacity offered by the cpus. This patch is not the solution.
-It is a hack to give us something to experiment with for now.
+cpufreq is currently keeping it a secret which cpus are sharing
+clock source. The scheduler needs to know about clock domains as well
+to become more energy aware. The SD_SHARE_CAP_STATES domain flag
+indicates whether cpus belonging to the sched_domain share capacity
+states (P-states).
 
-A proper solution could be based on the frequency invariant load
-tracking proposed in the past: https://lkml.org/lkml/2013/4/16/289
-The best way to get current compute capacity is likely to be
-architecture specific. A potential solution is therefore to let the
-architecture implement get_curr_capacity() instead.
-
-This patch should _not_ be considered safe.
+There is no connection with cpufreq (yet). The flag must be set by
+the arch specific topology code.
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- drivers/cpufreq/cpufreq.c |    2 ++
- include/linux/sched.h     |    2 ++
- kernel/sched/fair.c       |   11 +++++++++++
- kernel/sched/sched.h      |    2 ++
- 4 files changed, 17 insertions(+)
+ arch/arm/kernel/topology.c |    3 ++-
+ include/linux/sched.h      |    1 +
+ kernel/sched/core.c        |   10 +++++++---
+ 3 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index abda660..a2b788d 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -28,6 +28,7 @@
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <linux/tick.h>
-+#include <linux/sched.h>
- #include <trace/events/power.h>
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index 70915b1..0f9b27a 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -393,7 +393,8 @@ static inline const struct sched_group_energy *cpu_sys_=
+energy(int cpu)
 =20
- /**
-@@ -315,6 +316,7 @@ static void __cpufreq_notify_transition(struct cpufreq_=
-policy *policy,
- =09=09pr_debug("FREQ: %lu - CPU: %lu\n",
- =09=09=09 (unsigned long)freqs->new, (unsigned long)freqs->cpu);
- =09=09trace_cpu_frequency(freqs->new, freqs->cpu);
-+=09=09set_curr_capacity(freqs->cpu, (freqs->new*1024)/policy->max);
- =09=09srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
- =09=09=09=09CPUFREQ_POSTCHANGE, freqs);
- =09=09if (likely(policy) && likely(policy->cpu =3D=3D freqs->cpu))
+ static inline const int cpu_corepower_flags(void)
+ {
+-=09return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
++=09return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
++=09=09SD_SHARE_CAP_STATES;
+ }
+=20
+ static struct sched_domain_topology_level arm_topology[] =3D {
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index e5d8d57..faebd87 100644
+index b5eeae0..e5d8d57 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -3025,4 +3025,6 @@ static inline unsigned long rlimit_max(unsigned int l=
-imit)
- =09return task_rlimit_max(current, limit);
- }
+@@ -877,6 +877,7 @@ enum cpu_idle_type {
+ #define SD_PREFER_SIBLING=090x1000=09/* Prefer to place tasks in a sibling=
+ domain */
+ #define SD_OVERLAP=09=090x2000=09/* sched_domains of this level overlap */
+ #define SD_NUMA=09=09=090x4000=09/* cross-node balancing */
++#define SD_SHARE_CAP_STATES=090x8000  /* Domain members share capacity sta=
+te */
 =20
-+void set_curr_capacity(int cpu, long capacity);
-+
- #endif
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 37e9ea1..9720f04 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -7564,9 +7564,20 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
- =09atomic64_set(&cfs_rq->decay_counter, 1);
- =09atomic_long_set(&cfs_rq->removed_load, 0);
- =09atomic_long_set(&cfs_rq->uw_removed_load, 0);
-+=09atomic_long_set(&cfs_rq->curr_capacity, 1024);
- #endif
- }
+ #ifdef CONFIG_SCHED_SMT
+ static inline const int cpu_smt_flags(void)
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index d814064..ce43396 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -5417,7 +5417,8 @@ static int sd_degenerate(struct sched_domain *sd)
+ =09=09=09 SD_BALANCE_EXEC |
+ =09=09=09 SD_SHARE_CPUCAPACITY |
+ =09=09=09 SD_SHARE_PKG_RESOURCES |
+-=09=09=09 SD_SHARE_POWERDOMAIN)) {
++=09=09=09 SD_SHARE_POWERDOMAIN |
++=09=09=09 SD_SHARE_CAP_STATES)) {
+ =09=09if (sd->groups !=3D sd->groups->next)
+ =09=09=09return 0;
+ =09}
+@@ -5449,7 +5450,8 @@ sd_parent_degenerate(struct sched_domain *sd, struct =
+sched_domain *parent)
+ =09=09=09=09SD_SHARE_CPUCAPACITY |
+ =09=09=09=09SD_SHARE_PKG_RESOURCES |
+ =09=09=09=09SD_PREFER_SIBLING |
+-=09=09=09=09SD_SHARE_POWERDOMAIN);
++=09=09=09=09SD_SHARE_POWERDOMAIN |
++=09=09=09=09SD_SHARE_CAP_STATES);
+ =09=09if (nr_node_ids =3D=3D 1)
+ =09=09=09pflags &=3D ~SD_SERIALIZE;
+ =09}
+@@ -6109,6 +6111,7 @@ static int sched_domains_curr_level;
+  * SD_SHARE_PKG_RESOURCES - describes shared caches
+  * SD_NUMA                - describes NUMA topologies
+  * SD_SHARE_POWERDOMAIN   - describes shared power domain
++ * SD_SHARE_CAP_STATES    - describes shared capacity states
+  *
+  * Odd one out:
+  * SD_ASYM_PACKING        - describes SMT quirks
+@@ -6118,7 +6121,8 @@ static int sched_domains_curr_level;
+ =09 SD_SHARE_PKG_RESOURCES |=09\
+ =09 SD_NUMA |=09=09=09\
+ =09 SD_ASYM_PACKING |=09=09\
+-=09 SD_SHARE_POWERDOMAIN)
++=09 SD_SHARE_POWERDOMAIN |=09=09\
++=09 SD_SHARE_CAP_STATES)
 =20
-+void set_curr_capacity(int cpu, long capacity)
-+{
-+=09atomic_long_set(&cpu_rq(cpu)->cfs.curr_capacity, capacity);
-+}
-+
-+static inline unsigned long get_curr_capacity(int cpu)
-+{
-+=09return atomic_long_read(&cpu_rq(cpu)->cfs.curr_capacity);
-+}
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- static void task_move_group_fair(struct task_struct *p, int on_rq)
- {
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 455d152..a6d5239 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -342,6 +342,8 @@ struct cfs_rq {
- =09u64 last_decay;
- =09atomic_long_t removed_load, uw_removed_load;
-=20
-+=09atomic_long_t curr_capacity;
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- =09/* Required to track per-cpu representation of a task_group */
- =09u32 tg_runnable_contrib;
+ static struct sched_domain *
+ sd_init(struct sched_domain_topology_level *tl, int cpu)
 --=20
 1.7.9.5
-
-
