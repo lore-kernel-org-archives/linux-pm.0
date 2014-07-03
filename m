@@ -1,70 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC] Add "rpm_not_supported" flag
-Date: Thu, 03 Jul 2014 23:16:31 +0200
-Message-ID: <1703139.e6mBtKGhYW@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1407021002380.874-100000@iolanthe.rowland.org>
+Date: Thu, 3 Jul 2014 17:17:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1407031715560.873-100000@iolanthe.rowland.org>
+References: <1703139.e6mBtKGhYW@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50838 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751357AbaGCU6e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 16:58:34 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1407021002380.874-100000@iolanthe.rowland.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:36259 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753565AbaGCVRP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 17:17:15 -0400
+In-Reply-To: <1703139.e6mBtKGhYW@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Allen Yu <alleny@nvidia.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Wednesday, July 02, 2014 10:27:06 AM Alan Stern wrote:
-> On Wed, 2 Jul 2014, Rafael J. Wysocki wrote:
-> 
-> > > Then you have no other objections to the patch?
-> > 
-> > My concern still is that it will be confusing, because people won't read the
-> > documentation carefully enough and will confuse "runtime PM never used" with
-> > "hardware can't do PM".  I'm not sure how to make that more clear, though.
-> 
-> I could emphasize that distinction a little more strongly in the 
-> documentation.
-> 
-> > Also we have the no_callbacks flag and I wonder if/how it is related to the
-> > new one.  Do we still need both?
-> 
-> They mean different things.  The no_callbacks flag is used when we want 
-> the PM core to think the device can be in RPM_SUSPENDED at times (it is 
-> "logically suspended").  rpm_not_supported is used when we want the PM 
-> core to think the device must always be in RPM_ACTIVE.
-> 
-> > In addition to that, I think that "hardware can't do PM" should apply to the
-> > handling of system suspend resume too.
-> 
-> Maybe.  For the use case Dan Williams and I are working on, it doesn't 
-> matter; for other cases it might matter.  That's why I named the flag 
-> "rpm_not_supported" -- it applies specifically to runtime PM, not 
-> system PM.
-> 
-> Here's a brief summary of the story behind this patch...
-> 
-> At one point, I suggested to Dan that instead of doing something
-> special for these devices, we could simply have the runtime_suspend()
-> routine always return -EBUSY.  He didn't like that idea because then
-> the user would see the device was never powering down but would have no
-> idea why.  The rpm_not_supported flag provides this information to the
-> user by causing the power/runtime_status attribute to say "not
-> supported".  (Although to be entirely fair, we could just put a message
-> in the kernel log during probe if the hardware doesn't support runtime
-> suspend.)
-> 
-> Instead, Dan introduced a messy PM QoS mechanism in commit
-> e3d105055525.  I didn't like that approach, but Greg merged it before I
-> objected.
-> 
-> Do you have any suggestions?
+On Thu, 3 Jul 2014, Rafael J. Wysocki wrote:
 
-I need some more time to think about that.  I'm on vacation till Monday,
-I should be able to get to this by then.  I hope that's not a problem.
+> > Do you have any suggestions?
+> 
+> I need some more time to think about that.  I'm on vacation till Monday,
+> I should be able to get to this by then.  I hope that's not a problem.
 
-Rafael
+Tomorrow is a national holiday in the US, so I'm taking some time off
+too.  Don't hurry.
+
+Alan Stern
 
