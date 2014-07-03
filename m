@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv2 PATCH 14/23] sched: Introduce SD_SHARE_CAP_STATES sched_domain flag
-Date: Thu,  3 Jul 2014 17:26:01 +0100
-Message-ID: <1404404770-323-15-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv2 PATCH 08/23] sched: Aggregate unweighted load contributed by task entities on parenting cfs_rq
+Date: Thu,  3 Jul 2014 17:25:55 +0100
+Message-ID: <1404404770-323-9-git-send-email-morten.rasmussen@arm.com>
 References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
@@ -12,93 +12,182 @@ To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org
 Cc: rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, Dietmar.Eggemann@arm.com, pjt@google.com
 List-Id: linux-pm@vger.kernel.org
 
-cpufreq is currently keeping it a secret which cpus are sharing
-clock source. The scheduler needs to know about clock domains as well
-to become more energy aware. The SD_SHARE_CAP_STATES domain flag
-indicates whether cpus belonging to the sched_domain share capacity
-states (P-states).
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-There is no connection with cpufreq (yet). The flag must be set by
-the arch specific topology code.
+Energy aware scheduling relies on cpu utilization and to be able to
+maintain it, we need a per run queue signal of the sum of the
+unweighted, i.e. not scaled with task priority, load contribution of
+runnable task entries.
 
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+The unweighted runnable load on a run queue is maintained alongside the
+existing (weighted) runnable load.
+
+This patch is the unweighted counterpart of "sched: Aggregate load
+contributed by task entities on parenting cfs_rq" (commit id
+2dac754e10a5).
+
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- arch/arm/kernel/topology.c |    3 ++-
- include/linux/sched.h      |    1 +
- kernel/sched/core.c        |   10 +++++++---
- 3 files changed, 10 insertions(+), 4 deletions(-)
+ include/linux/sched.h |    1 +
+ kernel/sched/debug.c  |    4 ++++
+ kernel/sched/fair.c   |   26 ++++++++++++++++++++++----
+ kernel/sched/sched.h  |    1 +
+ 4 files changed, 28 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 70915b1..0f9b27a 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -393,7 +393,8 @@ static inline const struct sched_group_energy *cpu_sys_=
-energy(int cpu)
-=20
- static inline const int cpu_corepower_flags(void)
- {
--=09return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
-+=09return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
-+=09=09SD_SHARE_CAP_STATES;
- }
-=20
- static struct sched_domain_topology_level arm_topology[] =3D {
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b5eeae0..e5d8d57 100644
+index 1507390..b5eeae0 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -877,6 +877,7 @@ enum cpu_idle_type {
- #define SD_PREFER_SIBLING=090x1000=09/* Prefer to place tasks in a sibling=
- domain */
- #define SD_OVERLAP=09=090x2000=09/* sched_domains of this level overlap */
- #define SD_NUMA=09=09=090x4000=09/* cross-node balancing */
-+#define SD_SHARE_CAP_STATES=090x8000  /* Domain members share capacity sta=
-te */
+@@ -1105,6 +1105,7 @@ struct sched_avg {
+ =09u64 last_runnable_update;
+ =09s64 decay_count;
+ =09unsigned long load_avg_contrib;
++=09unsigned long uw_load_avg_contrib;
+ };
 =20
- #ifdef CONFIG_SCHED_SMT
- static inline const int cpu_smt_flags(void)
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index d814064..ce43396 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -5417,7 +5417,8 @@ static int sd_degenerate(struct sched_domain *sd)
- =09=09=09 SD_BALANCE_EXEC |
- =09=09=09 SD_SHARE_CPUCAPACITY |
- =09=09=09 SD_SHARE_PKG_RESOURCES |
--=09=09=09 SD_SHARE_POWERDOMAIN)) {
-+=09=09=09 SD_SHARE_POWERDOMAIN |
-+=09=09=09 SD_SHARE_CAP_STATES)) {
- =09=09if (sd->groups !=3D sd->groups->next)
- =09=09=09return 0;
- =09}
-@@ -5449,7 +5450,8 @@ sd_parent_degenerate(struct sched_domain *sd, struct =
-sched_domain *parent)
- =09=09=09=09SD_SHARE_CPUCAPACITY |
- =09=09=09=09SD_SHARE_PKG_RESOURCES |
- =09=09=09=09SD_PREFER_SIBLING |
--=09=09=09=09SD_SHARE_POWERDOMAIN);
-+=09=09=09=09SD_SHARE_POWERDOMAIN |
-+=09=09=09=09SD_SHARE_CAP_STATES);
- =09=09if (nr_node_ids =3D=3D 1)
- =09=09=09pflags &=3D ~SD_SERIALIZE;
- =09}
-@@ -6109,6 +6111,7 @@ static int sched_domains_curr_level;
-  * SD_SHARE_PKG_RESOURCES - describes shared caches
-  * SD_NUMA                - describes NUMA topologies
-  * SD_SHARE_POWERDOMAIN   - describes shared power domain
-+ * SD_SHARE_CAP_STATES    - describes shared capacity states
-  *
-  * Odd one out:
-  * SD_ASYM_PACKING        - describes SMT quirks
-@@ -6118,7 +6121,8 @@ static int sched_domains_curr_level;
- =09 SD_SHARE_PKG_RESOURCES |=09\
- =09 SD_NUMA |=09=09=09\
- =09 SD_ASYM_PACKING |=09=09\
--=09 SD_SHARE_POWERDOMAIN)
-+=09 SD_SHARE_POWERDOMAIN |=09=09\
-+=09 SD_SHARE_CAP_STATES)
+ #ifdef CONFIG_SCHEDSTATS
+diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
+index 695f977..78d4151 100644
+--- a/kernel/sched/debug.c
++++ b/kernel/sched/debug.c
+@@ -96,6 +96,7 @@ static void print_cfs_group_stats(struct seq_file *m, int=
+ cpu, struct task_group
+ =09P(se->avg.runnable_avg_sum);
+ =09P(se->avg.runnable_avg_period);
+ =09P(se->avg.load_avg_contrib);
++=09P(se->avg.uw_load_avg_contrib);
+ =09P(se->avg.decay_count);
+ #endif
+ #undef PN
+@@ -215,6 +216,8 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct c=
+fs_rq *cfs_rq)
+ #ifdef CONFIG_SMP
+ =09SEQ_printf(m, "  .%-30s: %ld\n", "runnable_load_avg",
+ =09=09=09cfs_rq->runnable_load_avg);
++=09SEQ_printf(m, "  .%-30s: %ld\n", "uw_runnable_load_avg",
++=09=09=09cfs_rq->uw_runnable_load_avg);
+ =09SEQ_printf(m, "  .%-30s: %ld\n", "blocked_load_avg",
+ =09=09=09cfs_rq->blocked_load_avg);
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+@@ -635,6 +638,7 @@ void proc_sched_show_task(struct task_struct *p, struct=
+ seq_file *m)
+ =09P(se.avg.runnable_avg_sum);
+ =09P(se.avg.runnable_avg_period);
+ =09P(se.avg.load_avg_contrib);
++=09P(se.avg.uw_load_avg_contrib);
+ =09P(se.avg.decay_count);
+ #endif
+ =09P(policy);
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 981406e..1ee47b3 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2345,6 +2345,8 @@ static inline u64 __synchronize_entity_decay(struct s=
+ched_entity *se)
+ =09=09return 0;
 =20
- static struct sched_domain *
- sd_init(struct sched_domain_topology_level *tl, int cpu)
+ =09se->avg.load_avg_contrib =3D decay_load(se->avg.load_avg_contrib, decay=
+s);
++=09se->avg.uw_load_avg_contrib =3D decay_load(se->avg.uw_load_avg_contrib,
++=09=09=09=09=09=09 decays);
+ =09se->avg.decay_count =3D 0;
+=20
+ =09return decays;
+@@ -2451,12 +2453,18 @@ static inline void __update_task_entity_contrib(str=
+uct sched_entity *se)
+ =09contrib =3D se->avg.runnable_avg_sum * scale_load_down(se->load.weight)=
+;
+ =09contrib /=3D (se->avg.runnable_avg_period + 1);
+ =09se->avg.load_avg_contrib =3D scale_load(contrib);
++
++=09contrib =3D se->avg.runnable_avg_sum * scale_load_down(NICE_0_LOAD);
++=09contrib /=3D (se->avg.runnable_avg_period + 1);
++=09se->avg.uw_load_avg_contrib =3D scale_load(contrib);
+ }
+=20
+ /* Compute the current contribution to load_avg by se, return any delta */
+-static long __update_entity_load_avg_contrib(struct sched_entity *se)
++static long __update_entity_load_avg_contrib(struct sched_entity *se,
++=09=09=09=09=09     long *uw_contrib_delta)
+ {
+ =09long old_contrib =3D se->avg.load_avg_contrib;
++=09long uw_old_contrib =3D se->avg.uw_load_avg_contrib;
+=20
+ =09if (entity_is_task(se)) {
+ =09=09__update_task_entity_contrib(se);
+@@ -2465,6 +2473,10 @@ static long __update_entity_load_avg_contrib(struct =
+sched_entity *se)
+ =09=09__update_group_entity_contrib(se);
+ =09}
+=20
++=09if (uw_contrib_delta)
++=09=09*uw_contrib_delta =3D se->avg.uw_load_avg_contrib -
++=09=09=09=09=09uw_old_contrib;
++
+ =09return se->avg.load_avg_contrib - old_contrib;
+ }
+=20
+@@ -2484,7 +2496,7 @@ static inline void update_entity_load_avg(struct sche=
+d_entity *se,
+ =09=09=09=09=09  int update_cfs_rq)
+ {
+ =09struct cfs_rq *cfs_rq =3D cfs_rq_of(se);
+-=09long contrib_delta;
++=09long contrib_delta, uw_contrib_delta;
+ =09u64 now;
+=20
+ =09/*
+@@ -2499,13 +2511,15 @@ static inline void update_entity_load_avg(struct sc=
+hed_entity *se,
+ =09if (!__update_entity_runnable_avg(now, &se->avg, se->on_rq))
+ =09=09return;
+=20
+-=09contrib_delta =3D __update_entity_load_avg_contrib(se);
++=09contrib_delta =3D __update_entity_load_avg_contrib(se, &uw_contrib_delt=
+a);
+=20
+ =09if (!update_cfs_rq)
+ =09=09return;
+=20
+-=09if (se->on_rq)
++=09if (se->on_rq) {
+ =09=09cfs_rq->runnable_load_avg +=3D contrib_delta;
++=09=09cfs_rq->uw_runnable_load_avg +=3D uw_contrib_delta;
++=09}
+ =09else
+ =09=09subtract_blocked_load_contrib(cfs_rq, -contrib_delta);
+ }
+@@ -2582,6 +2596,8 @@ static inline void enqueue_entity_load_avg(struct cfs=
+_rq *cfs_rq,
+ =09}
+=20
+ =09cfs_rq->runnable_load_avg +=3D se->avg.load_avg_contrib;
++=09cfs_rq->uw_runnable_load_avg +=3D se->avg.uw_load_avg_contrib;
++
+ =09/* we force update consideration on load-balancer moves */
+ =09update_cfs_rq_blocked_load(cfs_rq, !wakeup);
+ }
+@@ -2600,6 +2616,8 @@ static inline void dequeue_entity_load_avg(struct cfs=
+_rq *cfs_rq,
+ =09update_cfs_rq_blocked_load(cfs_rq, !sleep);
+=20
+ =09cfs_rq->runnable_load_avg -=3D se->avg.load_avg_contrib;
++=09cfs_rq->uw_runnable_load_avg -=3D se->avg.uw_load_avg_contrib;
++
+ =09if (sleep) {
+ =09=09cfs_rq->blocked_load_avg +=3D se->avg.load_avg_contrib;
+ =09=09se->avg.decay_count =3D atomic64_read(&cfs_rq->decay_counter);
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index c971359..46cb8bd 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -337,6 +337,7 @@ struct cfs_rq {
+ =09 * the FAIR_GROUP_SCHED case).
+ =09 */
+ =09unsigned long runnable_load_avg, blocked_load_avg;
++=09unsigned long uw_runnable_load_avg;
+ =09atomic64_t decay_counter;
+ =09u64 last_decay;
+ =09atomic_long_t removed_load;
 --=20
 1.7.9.5
