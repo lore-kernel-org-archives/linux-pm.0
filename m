@@ -1,260 +1,148 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv2 PATCH 13/23] sched: Introduce weighted/unweighted switch in load related functions
-Date: Thu,  3 Jul 2014 17:26:00 +0100
-Message-ID: <1404404770-323-14-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv2 PATCH 11/23] sched: Introduce an unweighted cpu_load array
+Date: Thu,  3 Jul 2014 17:25:58 +0100
+Message-ID: <1404404770-323-12-git-send-email-morten.rasmussen@arm.com>
 References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:45532 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759285AbaGCQ0S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 12:26:18 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, Dietmar.Eggemann@arm.com, pjt@google.com
+List-Id: linux-pm@vger.kernel.org
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Add weighted/unweighted switch as an additional argument to cpu_load(),
-source_load(), target_load() and task_h_load() to enable the user to
-either ask for weighted or unweighted load signal. Use 0 (weighted) for
-all existing occurrences of these functions.
+Maintain an unweighted (uw) cpu_load array as the uw counterpart
+of rq.cpu_load[].
 
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c |   65 +++++++++++++++++++++++++++--------------------=
-----
- 1 file changed, 35 insertions(+), 30 deletions(-)
+ kernel/sched/core.c  |    4 +++-
+ kernel/sched/proc.c  |   22 ++++++++++++++++++----
+ kernel/sched/sched.h |    1 +
+ 3 files changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 784fdab..37e9ea1 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -665,7 +665,7 @@ static u64 sched_vslice(struct cfs_rq *cfs_rq, struct s=
-ched_entity *se)
- }
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 2d7544a..d814064 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -7114,8 +7114,10 @@ void __init sched_init(void)
+ =09=09init_tg_rt_entry(&root_task_group, &rq->rt, NULL, i, NULL);
+ #endif
 =20
- #ifdef CONFIG_SMP
--static unsigned long task_h_load(struct task_struct *p);
-+static unsigned long task_h_load(struct task_struct *p, int uw);
+-=09=09for (j =3D 0; j < CPU_LOAD_IDX_MAX; j++)
++=09=09for (j =3D 0; j < CPU_LOAD_IDX_MAX; j++) {
+ =09=09=09rq->cpu_load[j] =3D 0;
++=09=09=09rq->uw_cpu_load[j] =3D 0;
++=09=09}
 =20
- static inline void __update_task_entity_contrib(struct sched_entity *se);
+ =09=09rq->last_load_update_tick =3D jiffies;
 =20
-@@ -1014,9 +1014,9 @@ bool should_numa_migrate_memory(struct task_struct *p=
-, struct page * page,
- =09return group_faults(p, dst_nid) < (group_faults(p, src_nid) * 3 / 4);
- }
+diff --git a/kernel/sched/proc.c b/kernel/sched/proc.c
+index 16f5a30..2260092 100644
+--- a/kernel/sched/proc.c
++++ b/kernel/sched/proc.c
+@@ -471,6 +471,7 @@ decay_load_missed(unsigned long load, unsigned long mis=
+sed_updates, int idx)
+  * every tick. We fix it up based on jiffies.
+  */
+ static void __update_cpu_load(struct rq *this_rq, unsigned long this_load,
++=09=09=09      unsigned long uw_this_load,
+ =09=09=09      unsigned long pending_updates)
+ {
+ =09int i, scale;
+@@ -479,14 +480,20 @@ static void __update_cpu_load(struct rq *this_rq, uns=
+igned long this_load,
 =20
--static unsigned long cpu_load(const int cpu);
--static unsigned long source_load(int cpu, int type);
--static unsigned long target_load(int cpu, int type);
-+static unsigned long cpu_load(const int cpu, int uw);
-+static unsigned long source_load(int cpu, int type, int uw);
-+static unsigned long target_load(int cpu, int type, int uw);
- static unsigned long capacity_of(int cpu);
- static long effective_load(struct task_group *tg, int cpu, long wl, long w=
-g);
+ =09/* Update our load: */
+ =09this_rq->cpu_load[0] =3D this_load; /* Fasttrack for idx 0 */
++=09this_rq->uw_cpu_load[0] =3D uw_this_load; /* Fasttrack for idx 0 */
+ =09for (i =3D 1, scale =3D 2; i < CPU_LOAD_IDX_MAX; i++, scale +=3D scale)=
+ {
+-=09=09unsigned long old_load, new_load;
++=09=09unsigned long old_load, new_load, uw_old_load, uw_new_load;
 =20
-@@ -1045,7 +1045,7 @@ static void update_numa_stats(struct numa_stats *ns, =
-int nid)
- =09=09struct rq *rq =3D cpu_rq(cpu);
+ =09=09/* scale is effectively 1 << i now, and >> i divides by scale */
 =20
- =09=09ns->nr_running +=3D rq->nr_running;
--=09=09ns->load +=3D cpu_load(cpu);
-+=09=09ns->load +=3D cpu_load(cpu, 0);
- =09=09ns->compute_capacity +=3D capacity_of(cpu);
+ =09=09old_load =3D this_rq->cpu_load[i];
+ =09=09old_load =3D decay_load_missed(old_load, pending_updates - 1, i);
+ =09=09new_load =3D this_load;
++
++=09=09uw_old_load =3D this_rq->uw_cpu_load[i];
++=09=09uw_old_load =3D decay_load_missed(uw_old_load,
++=09=09=09=09pending_updates - 1, i);
++=09=09uw_new_load =3D uw_this_load;
+ =09=09/*
+ =09=09 * Round up the averaging division if load is increasing. This
+ =09=09 * prevents us from getting stuck on 9 if the load is 10, for
+@@ -494,8 +501,12 @@ static void __update_cpu_load(struct rq *this_rq, unsi=
+gned long this_load,
+ =09=09 */
+ =09=09if (new_load > old_load)
+ =09=09=09new_load +=3D scale - 1;
++=09=09if (uw_new_load > uw_old_load)
++=09=09=09uw_new_load +=3D scale - 1;
 =20
- =09=09cpus++;
-@@ -1215,12 +1215,12 @@ balance:
- =09orig_src_load =3D env->src_stats.load;
-=20
- =09/* XXX missing capacity terms */
--=09load =3D task_h_load(env->p);
-+=09load =3D task_h_load(env->p, 0);
- =09dst_load =3D orig_dst_load + load;
- =09src_load =3D orig_src_load - load;
-=20
- =09if (cur) {
--=09=09load =3D task_h_load(cur);
-+=09=09load =3D task_h_load(cur, 0);
- =09=09dst_load -=3D load;
- =09=09src_load +=3D load;
+ =09=09this_rq->cpu_load[i] =3D (old_load * (scale - 1) + new_load) >> i;
++=09=09this_rq->uw_cpu_load[i] =3D (uw_old_load * (scale - 1) +
++=09=09=09=09=09=09uw_new_load) >> i;
  =09}
-@@ -4036,9 +4036,10 @@ static void dequeue_task_fair(struct rq *rq, struct =
-task_struct *p, int flags)
 =20
- #ifdef CONFIG_SMP
- /* Used instead of source_load when we know the type =3D=3D 0 */
--static unsigned long cpu_load(const int cpu)
-+static unsigned long cpu_load(const int cpu, int uw)
+ =09sched_avg_update(this_rq);
+@@ -535,6 +546,7 @@ void update_idle_cpu_load(struct rq *this_rq)
  {
--=09return cpu_rq(cpu)->cfs.runnable_load_avg;
-+=09return uw ? cpu_rq(cpu)->cfs.uw_runnable_load_avg :
-+=09=09=09cpu_rq(cpu)->cfs.runnable_load_avg;
- }
-=20
- /*
-@@ -4048,30 +4049,32 @@ static unsigned long cpu_load(const int cpu)
-  * We want to under-estimate the load of migration sources, to
-  * balance conservatively.
-  */
--static unsigned long source_load(int cpu, int type)
-+static unsigned long source_load(int cpu, int type, int uw)
- {
- =09struct rq *rq =3D cpu_rq(cpu);
--=09unsigned long total =3D cpu_load(cpu);
-+=09unsigned long total =3D cpu_load(cpu, uw);
-=20
- =09if (type =3D=3D 0 || !sched_feat(LB_BIAS))
- =09=09return total;
-=20
--=09return min(rq->cpu_load[type-1], total);
-+=09return uw ? min(rq->uw_cpu_load[type-1], total) :
-+=09=09=09min(rq->cpu_load[type-1], total);
- }
-=20
- /*
-  * Return a high guess at the load of a migration-target cpu weighted
-  * according to the scheduling class and "nice" value.
-  */
--static unsigned long target_load(int cpu, int type)
-+static unsigned long target_load(int cpu, int type, int uw)
- {
- =09struct rq *rq =3D cpu_rq(cpu);
--=09unsigned long total =3D cpu_load(cpu);
-+=09unsigned long total =3D cpu_load(cpu, uw);
-=20
- =09if (type =3D=3D 0 || !sched_feat(LB_BIAS))
- =09=09return total;
-=20
--=09return max(rq->cpu_load[type-1], total);
-+=09return uw ? max(rq->uw_cpu_load[type-1], total) :
-+=09=09=09max(rq->cpu_load[type-1], total);
- }
-=20
- static unsigned long capacity_of(int cpu)
-@@ -4292,8 +4295,8 @@ static int wake_affine(struct sched_domain *sd, struc=
-t task_struct *p, int sync)
- =09idx=09  =3D sd->wake_idx;
- =09this_cpu  =3D smp_processor_id();
- =09prev_cpu  =3D task_cpu(p);
--=09load=09  =3D source_load(prev_cpu, idx);
--=09this_load =3D target_load(this_cpu, idx);
-+=09load=09  =3D source_load(prev_cpu, idx, 0);
-+=09this_load =3D target_load(this_cpu, idx, 0);
+ =09unsigned long curr_jiffies =3D ACCESS_ONCE(jiffies);
+ =09unsigned long load =3D get_rq_runnable_load(this_rq);
++=09unsigned long uw_load =3D this_rq->cfs.uw_runnable_load_avg;
+ =09unsigned long pending_updates;
 =20
  =09/*
- =09 * If sync wakeup then subtract the (maximum possible)
-@@ -4349,7 +4352,7 @@ static int wake_affine(struct sched_domain *sd, struc=
-t task_struct *p, int sync)
+@@ -546,7 +558,7 @@ void update_idle_cpu_load(struct rq *this_rq)
+ =09pending_updates =3D curr_jiffies - this_rq->last_load_update_tick;
+ =09this_rq->last_load_update_tick =3D curr_jiffies;
 =20
- =09if (balanced ||
- =09    (this_load <=3D load &&
--=09     this_load + target_load(prev_cpu, idx) <=3D tl_per_task)) {
-+=09     this_load + target_load(prev_cpu, idx, 0) <=3D tl_per_task)) {
- =09=09/*
- =09=09 * This domain has SD_WAKE_AFFINE and
- =09=09 * p is cache cold in this domain, and
-@@ -4398,9 +4401,9 @@ find_idlest_group(struct sched_domain *sd, struct tas=
-k_struct *p,
- =09=09for_each_cpu(i, sched_group_cpus(group)) {
- =09=09=09/* Bias balancing toward cpus of our domain */
- =09=09=09if (local_group)
--=09=09=09=09load =3D source_load(i, load_idx);
-+=09=09=09=09load =3D source_load(i, load_idx, 0);
- =09=09=09else
--=09=09=09=09load =3D target_load(i, load_idx);
-+=09=09=09=09load =3D target_load(i, load_idx, 0);
+-=09__update_cpu_load(this_rq, load, pending_updates);
++=09__update_cpu_load(this_rq, load, uw_load, pending_updates);
+ }
 =20
- =09=09=09avg_load +=3D load;
- =09=09}
-@@ -4433,7 +4436,7 @@ find_idlest_cpu(struct sched_group *group, struct tas=
-k_struct *p, int this_cpu)
-=20
- =09/* Traverse only the allowed CPUs */
- =09for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
--=09=09load =3D cpu_load(i);
-+=09=09load =3D cpu_load(i, 0);
-=20
- =09=09if (load < min_load || (load =3D=3D min_load && i =3D=3D this_cpu)) =
-{
- =09=09=09min_load =3D load;
-@@ -5402,7 +5405,7 @@ static int move_tasks(struct lb_env *env)
- =09=09if (!can_migrate_task(p, env))
- =09=09=09goto next;
-=20
--=09=09load =3D task_h_load(p);
-+=09=09load =3D task_h_load(p, 0);
-=20
- =09=09if (sched_feat(LB_MIN) && load < 16 && !env->sd->nr_balance_failed)
- =09=09=09goto next;
-@@ -5542,12 +5545,14 @@ static void update_cfs_rq_h_load(struct cfs_rq *cfs=
-_rq)
+ /*
+@@ -569,7 +581,7 @@ void update_cpu_load_nohz(void)
+ =09=09 * We were idle, this means load 0, the current load might be
+ =09=09 * !0 due to remote wakeups and the sort.
+ =09=09 */
+-=09=09__update_cpu_load(this_rq, 0, pending_updates);
++=09=09__update_cpu_load(this_rq, 0, 0, pending_updates);
  =09}
+ =09raw_spin_unlock(&this_rq->lock);
  }
-=20
--static unsigned long task_h_load(struct task_struct *p)
-+static unsigned long task_h_load(struct task_struct *p, int uw)
+@@ -581,11 +593,13 @@ void update_cpu_load_nohz(void)
+ void update_cpu_load_active(struct rq *this_rq)
  {
- =09struct cfs_rq *cfs_rq =3D task_cfs_rq(p);
-+=09unsigned long task_load =3D uw ? p->se.avg.uw_load_avg_contrib
-+=09=09=09=09     : p->se.avg.load_avg_contrib;
+ =09unsigned long load =3D get_rq_runnable_load(this_rq);
++=09unsigned long uw_load =3D this_rq->cfs.uw_runnable_load_avg;
++
+ =09/*
+ =09 * See the mess around update_idle_cpu_load() / update_cpu_load_nohz().
+ =09 */
+ =09this_rq->last_load_update_tick =3D jiffies;
+-=09__update_cpu_load(this_rq, load, 1);
++=09__update_cpu_load(this_rq, load, uw_load, 1);
 =20
- =09update_cfs_rq_h_load(cfs_rq);
--=09return div64_ul(p->se.avg.load_avg_contrib * cfs_rq->h_load,
-+=09return div64_ul(task_load * cfs_rq->h_load,
- =09=09=09cfs_rq->runnable_load_avg + 1);
+ =09calc_load_account_active(this_rq);
  }
- #else
-@@ -5555,9 +5560,9 @@ static inline void update_blocked_averages(int cpu)
- {
- }
-=20
--static unsigned long task_h_load(struct task_struct *p)
-+static unsigned long task_h_load(struct task_struct *p, int uw)
- {
--=09return p->se.avg.load_avg_contrib;
-+=09return uw ? p->se.avg.uw_load_avg_contrib : p->se.avg.load_avg_contrib;
- }
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index d7d2ee2..455d152 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -521,6 +521,7 @@ struct rq {
  #endif
-=20
-@@ -5916,9 +5921,9 @@ static inline void update_sg_lb_stats(struct lb_env *=
-env,
-=20
- =09=09/* Bias balancing toward cpus of our domain */
- =09=09if (local_group)
--=09=09=09load =3D target_load(i, load_idx);
-+=09=09=09load =3D target_load(i, load_idx, 0);
- =09=09else
--=09=09=09load =3D source_load(i, load_idx);
-+=09=09=09load =3D source_load(i, load_idx, 0);
-=20
- =09=09sgs->group_load +=3D load;
- =09=09sgs->sum_nr_running +=3D rq->nr_running;
-@@ -5926,7 +5931,7 @@ static inline void update_sg_lb_stats(struct lb_env *=
-env,
- =09=09sgs->nr_numa_running +=3D rq->nr_numa_running;
- =09=09sgs->nr_preferred_running +=3D rq->nr_preferred_running;
- #endif
--=09=09sgs->sum_weighted_load +=3D cpu_load(i);
-+=09=09sgs->sum_weighted_load +=3D cpu_load(i, 0);
- =09=09if (idle_cpu(i))
- =09=09=09sgs->idle_cpus++;
- =09}
-@@ -6421,7 +6426,7 @@ static struct rq *find_busiest_queue(struct lb_env *e=
-nv,
- =09=09if (!capacity_factor)
- =09=09=09capacity_factor =3D fix_small_capacity(env->sd, group);
-=20
--=09=09load =3D cpu_load(i);
-+=09=09load =3D cpu_load(i, 0);
-=20
- =09=09/*
- =09=09 * When comparing with imbalance, use cpu_load()
+ =09#define CPU_LOAD_IDX_MAX 5
+ =09unsigned long cpu_load[CPU_LOAD_IDX_MAX];
++=09unsigned long uw_cpu_load[CPU_LOAD_IDX_MAX];
+ =09unsigned long last_load_update_tick;
+ #ifdef CONFIG_NO_HZ_COMMON
+ =09u64 nohz_stamp;
 --=20
 1.7.9.5
-
-
