@@ -1,118 +1,180 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv2 PATCH 20/23] sched: Take task wakeups into account in energy estimates
-Date: Thu,  3 Jul 2014 17:26:07 +0100
-Message-ID: <1404404770-323-21-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv2 PATCH 06/23] arm: topology: Define TC2 energy and provide it to the scheduler
+Date: Thu,  3 Jul 2014 17:25:53 +0100
+Message-ID: <1404404770-323-7-git-send-email-morten.rasmussen@arm.com>
 References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:53542 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758067AbaGCQ2d (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 12:28:33 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, Dietmar.Eggemann@arm.com, pjt@google.com
+List-Id: linux-pm@vger.kernel.org
 
-The energy cost of waking a cpu and sending it back to sleep can be
-quite significant for short running frequently waking tasks if placed on
-an idle cpu in a deep sleep state. By factoring task wakeups in such
-tasks can be placed on cpus where the wakeup energy cost is lower. For
-example, partly utilized cpus in a shallower idle state, or cpus in a
-cluster/die that is already awake.
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Current cpu utilization of the target cpu is factored in to guess how
-many task wakeups translate into cpu wakeups (idle exits). It is a
-very naive approach, but it is virtually impossible to get an accurate
-estimate.
+This patch is only here to be able to test provisioning of energy related
+data from an arch topology shim layer to the scheduler. Since there is no
+code today which deals with extracting energy related data from the dtb or
+acpi, and process it in the topology shim layer, the content of the
+sched_group_energy structures as well as the idle_state and capacity_state
+arrays are hard-coded here.
 
-wake_energy(task) =3D unused_util(cpu) * wakeups(task) * wakeup_energy(cpu)
+This patch defines the sched_group_energy structure as well as the
+idle_state and capacity_state array for the cluster (relates to sched
+groups (sg's) in DIE sched domain (sd) level) and for the core (relates
+to sg's in MC sd level) for a Cortex A7 as well as for a Cortex A15.
+It further provides related implementations of the sched_domain_energy_f
+functions (cpu_cluster_energy() and cpu_core_energy()).
 
-There is no per cpu wakeup tracking, so we can't estimate the energy
-savings when removing tasks from a cpu. It is also nearly impossible to
-figure out which task is the cause of cpu wakeups if multiple tasks are
-scheduled on the same cpu.
+To be able to propagate this information from the topology shim layer to
+the scheduler, the elements of the arm_topology[] table have been
+provisioned with the appropriate sched_domain_energy_f functions.
 
-wakeup_energy for each idle-state is obtained from the idle_states array.
-A prediction of the most likely idle-state is needed. cpuidle is best
-placed to provide that. It is not implemented yet.
-
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c |   21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
+ arch/arm/kernel/topology.c |  116 ++++++++++++++++++++++++++++++++++++++++=
+++--
+ 1 file changed, 113 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 6da8e2b..aebf3e2 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4367,11 +4367,13 @@ static inline unsigned long get_curr_capacity(int c=
-pu);
-  *=09=09=09=09+ (1-curr_util(sg)) * idle_power(sg)
-  *=09energy_after =3D new_util(sg) * busy_power(sg)
-  *=09=09=09=09+ (1-new_util(sg)) * idle_power(sg)
-+ *=09=09=09=09+ (1-new_util(sg)) * task_wakeups
-+ *=09=09=09=09=09=09=09* wakeup_energy(sg)
-  *=09energy_diff +=3D energy_before - energy_after
-  * }
-  *
-  */
--static int energy_diff_util(int cpu, int util)
-+static int energy_diff_util(int cpu, int util, int wakeups)
- {
- =09struct sched_domain *sd;
- =09int i;
-@@ -4476,7 +4478,8 @@ static int energy_diff_util(int cpu, int util)
- =09=09 * The utilization change has no impact at this level (or any
- =09=09 * parent level).
- =09=09 */
--=09=09if (aff_util_bef =3D=3D aff_util_aft && curr_cap_idx =3D=3D new_cap_=
-idx)
-+=09=09if (aff_util_bef =3D=3D aff_util_aft && curr_cap_idx =3D=3D new_cap_=
-idx
-+=09=09=09=09&& unused_util_aft < 100)
- =09=09=09goto unlock;
-=20
- =09=09/* Energy before */
-@@ -4486,6 +4489,14 @@ static int energy_diff_util(int cpu, int util)
- =09=09/* Energy after */
- =09=09nrg_diff +=3D (aff_util_aft*new_state->power)/new_state->cap;
- =09=09nrg_diff +=3D (unused_util_aft * is->power)/new_state->cap;
-+
-+=09=09/*
-+=09=09 * Estimate how many of the wakeups that happens while cpu is
-+=09=09 * idle assuming they are uniformly distributed. Ignoring
-+=09=09 * wakeups caused by other tasks.
-+=09=09 */
-+=09=09nrg_diff +=3D (wakeups * is->wu_energy >> 10)
-+=09=09=09=09* unused_util_aft/new_state->cap;
- =09}
-=20
- =09/*
-@@ -4516,6 +4527,8 @@ static int energy_diff_util(int cpu, int util)
- =09=09/* Energy after */
- =09=09nrg_diff +=3D (aff_util_aft*new_state->power)/new_state->cap;
- =09=09nrg_diff +=3D (unused_util_aft * is->power)/new_state->cap;
-+=09=09nrg_diff +=3D (wakeups * is->wu_energy >> 10)
-+=09=09=09=09* unused_util_aft/new_state->cap;
- =09}
-=20
- unlock:
-@@ -4532,8 +4545,8 @@ static int energy_diff_task(int cpu, struct task_stru=
-ct *p)
- =09if (!cpumask_test_cpu(cpu, tsk_cpus_allowed(p)))
- =09=09return INT_MAX;
-=20
--=09return energy_diff_util(cpu, p->se.avg.uw_load_avg_contrib);
--
-+=09return energy_diff_util(cpu, p->se.avg.uw_load_avg_contrib,
-+=09=09=09p->se.avg.wakeup_avg_sum);
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index d42a7db..a7d5a6e 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -275,6 +275,117 @@ void store_cpu_topology(unsigned int cpuid)
+ =09=09cpu_topology[cpuid].socket_id, mpidr);
  }
 =20
- static int wake_wide(struct task_struct *p)
++/*
++ * ARM TC2 specific energy cost model data. There are no unit requirements=
+ for
++ * the data. Data can be normalized to any reference point, but the
++ * normalization must be consistent. That is, one bogo-joule/watt must be =
+the
++ * same quantity for all data, but we don't care what it is.
++ */
++static struct idle_state idle_states_cluster_a7[] =3D {
++=09 { .power =3D 10, .wu_energy =3D 6 /* << 10 */, },
++=09};
++
++static struct idle_state idle_states_cluster_a15[] =3D {
++=09 { .power =3D 25, .wu_energy =3D 210 /* << 10 */, },
++=09};
++
++static struct capacity_state cap_states_cluster_a7[] =3D {
++=09/* Cluster only power */
++=09 { .cap =3D  358, .power =3D 2967, }, /*  350 MHz */
++=09 { .cap =3D  410, .power =3D 2792, }, /*  400 MHz */
++=09 { .cap =3D  512, .power =3D 2810, }, /*  500 MHz */
++=09 { .cap =3D  614, .power =3D 2815, }, /*  600 MHz */
++=09 { .cap =3D  717, .power =3D 2919, }, /*  700 MHz */
++=09 { .cap =3D  819, .power =3D 2847, }, /*  800 MHz */
++=09 { .cap =3D  922, .power =3D 3917, }, /*  900 MHz */
++=09 { .cap =3D 1024, .power =3D 4905, }, /* 1000 MHz */
++=09};
++
++static struct capacity_state cap_states_cluster_a15[] =3D {
++=09/* Cluster only power */
++=09 { .cap =3D  840, .power =3D  7920, }, /*  500 MHz */
++=09 { .cap =3D 1008, .power =3D  8165, }, /*  600 MHz */
++=09 { .cap =3D 1176, .power =3D  8172, }, /*  700 MHz */
++=09 { .cap =3D 1343, .power =3D  8195, }, /*  800 MHz */
++=09 { .cap =3D 1511, .power =3D  8265, }, /*  900 MHz */
++=09 { .cap =3D 1679, .power =3D  8446, }, /* 1000 MHz */
++=09 { .cap =3D 1847, .power =3D 11426, }, /* 1100 MHz */
++=09 { .cap =3D 2015, .power =3D 15200, }, /* 1200 MHz */
++=09};
++
++static struct sched_group_energy energy_cluster_a7 =3D {
++=09  .nr_idle_states =3D ARRAY_SIZE(idle_states_cluster_a7),
++=09  .idle_states    =3D idle_states_cluster_a7,
++=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_cluster_a7),
++=09  .cap_states     =3D cap_states_cluster_a7,
++};
++
++static struct sched_group_energy energy_cluster_a15 =3D {
++=09  .nr_idle_states =3D ARRAY_SIZE(idle_states_cluster_a15),
++=09  .idle_states    =3D idle_states_cluster_a15,
++=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_cluster_a15),
++=09  .cap_states     =3D cap_states_cluster_a15,
++};
++
++static struct idle_state idle_states_core_a7[] =3D {
++=09 { .power =3D 0 /* No power gating */, .wu_energy =3D 0 /* << 10 */, },
++=09};
++
++static struct idle_state idle_states_core_a15[] =3D {
++=09 { .power =3D 0 /* No power gating */, .wu_energy =3D 5 /* << 10 */, },
++=09};
++
++static struct capacity_state cap_states_core_a7[] =3D {
++=09/* Power per cpu */
++=09 { .cap =3D  358, .power =3D  187, }, /*  350 MHz */
++=09 { .cap =3D  410, .power =3D  275, }, /*  400 MHz */
++=09 { .cap =3D  512, .power =3D  334, }, /*  500 MHz */
++=09 { .cap =3D  614, .power =3D  407, }, /*  600 MHz */
++=09 { .cap =3D  717, .power =3D  447, }, /*  700 MHz */
++=09 { .cap =3D  819, .power =3D  549, }, /*  800 MHz */
++=09 { .cap =3D  922, .power =3D  761, }, /*  900 MHz */
++=09 { .cap =3D 1024, .power =3D 1024, }, /* 1000 MHz */
++=09};
++
++static struct capacity_state cap_states_core_a15[] =3D {
++=09/* Power per cpu */
++=09 { .cap =3D  840, .power =3D 2021, }, /*  500 MHz */
++=09 { .cap =3D 1008, .power =3D 2312, }, /*  600 MHz */
++=09 { .cap =3D 1176, .power =3D 2756, }, /*  700 MHz */
++=09 { .cap =3D 1343, .power =3D 3125, }, /*  800 MHz */
++=09 { .cap =3D 1511, .power =3D 3524, }, /*  900 MHz */
++=09 { .cap =3D 1679, .power =3D 3846, }, /* 1000 MHz */
++=09 { .cap =3D 1847, .power =3D 5177, }, /* 1100 MHz */
++=09 { .cap =3D 2015, .power =3D 6997, }, /* 1200 MHz */
++=09};
++
++static struct sched_group_energy energy_core_a7 =3D {
++=09  .nr_idle_states =3D ARRAY_SIZE(idle_states_core_a7),
++=09  .idle_states    =3D idle_states_core_a7,
++=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_core_a7),
++=09  .cap_states     =3D cap_states_core_a7,
++};
++
++static struct sched_group_energy energy_core_a15 =3D {
++=09  .nr_idle_states =3D ARRAY_SIZE(idle_states_core_a15),
++=09  .idle_states    =3D idle_states_core_a15,
++=09  .nr_cap_states  =3D ARRAY_SIZE(cap_states_core_a15),
++=09  .cap_states     =3D cap_states_core_a15,
++};
++
++/* sd energy functions */
++static inline const struct sched_group_energy *cpu_cluster_energy(int cpu)
++{
++=09return cpu_topology[cpu].socket_id ? &energy_cluster_a7 :
++=09=09=09&energy_cluster_a15;
++}
++
++static inline const struct sched_group_energy *cpu_core_energy(int cpu)
++{
++=09return cpu_topology[cpu].socket_id ? &energy_core_a7 :
++=09=09=09&energy_core_a15;
++}
++
+ static inline const int cpu_corepower_flags(void)
+ {
+ =09return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
+@@ -282,10 +393,9 @@ static inline const int cpu_corepower_flags(void)
+=20
+ static struct sched_domain_topology_level arm_topology[] =3D {
+ #ifdef CONFIG_SCHED_MC
+-=09{ cpu_corepower_mask, cpu_corepower_flags, SD_INIT_NAME(GMC) },
+-=09{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
++=09{ cpu_coregroup_mask, cpu_corepower_flags, cpu_core_energy, SD_INIT_NAM=
+E(MC) },
+ #endif
+-=09{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
++=09{ cpu_cpu_mask, 0, cpu_cluster_energy, SD_INIT_NAME(DIE) },
+ =09{ NULL, },
+ };
+=20
 --=20
 1.7.9.5
-
-
