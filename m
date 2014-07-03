@@ -1,14 +1,14 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv2 PATCH 16/23] sched, cpufreq: Current compute capacity hack for ARM TC2
-Date: Thu,  3 Jul 2014 17:26:03 +0100
-Message-ID: <1404404770-323-17-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv2 PATCH 17/23] sched: Likely idle state statistics placeholder
+Date: Thu,  3 Jul 2014 17:26:04 +0100
+Message-ID: <1404404770-323-18-git-send-email-morten.rasmussen@arm.com>
 References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:47356 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:47352 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758183AbaGCQ0y (ORCPT
+	with ESMTP id S1758267AbaGCQ0y (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 12:26:54 -0400
 In-Reply-To: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -16,35 +16,46 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, mingo@kernel.org
 Cc: rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, Dietmar.Eggemann@arm.com, pjt@google.com
 
-Hack to report different cpu capacities for big and little cpus.
-This is for experimentation on ARM TC2 _only_. A proper solution
-has to address this problem.
+The scheduler is currently completely unaware of idle-states. To make
+informed decisions using the sched_group_energy idle_states list it
+is necessary to know which idle-state a cpu (or group of cpus) is most
+likely to be in when it is idle.
+
+For example when migrating a task that wakes up periodically, the wakeup
+energy expense depends on the idle-state the destination cpu is most
+likely to be in when idle.
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- drivers/cpufreq/cpufreq.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ kernel/sched/fair.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a2b788d..efec777 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -316,7 +316,13 @@ static void __cpufreq_notify_transition(struct cpufreq=
-_policy *policy,
- =09=09pr_debug("FREQ: %lu - CPU: %lu\n",
- =09=09=09 (unsigned long)freqs->new, (unsigned long)freqs->cpu);
- =09=09trace_cpu_frequency(freqs->new, freqs->cpu);
--=09=09set_curr_capacity(freqs->cpu, (freqs->new*1024)/policy->max);
-+=09=09/* Massive TC2 hack */
-+=09=09if (freqs->cpu =3D=3D 0 || freqs->cpu =3D=3D 1)
-+=09=09=09/* A15 cpus (max_capacity =3D 2015) */
-+=09=09=09set_curr_capacity(freqs->cpu, (freqs->new*2015)/1200000);
-+=09=09else
-+=09=09=09/* A7 cpus (nax_capacity =3D 1024) */
-+=09=09=09set_curr_capacity(freqs->cpu, (freqs->new*1024)/1000000);
- =09=09srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
- =09=09=09=09CPUFREQ_POSTCHANGE, freqs);
- =09=09if (likely(policy) && likely(policy->cpu =3D=3D freqs->cpu))
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 9720f04..353e2d0 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -4254,6 +4254,19 @@ static inline bool energy_aware(void)
+ =09return sched_feat(ENERGY_AWARE);
+ }
+=20
++/*
++ * Returns the index of the most likely idle-state that the sched_group is=
+ in
++ * when idle. The index can be used to identify the idle-state in the
++ * sched_group_energy idle_states list.
++ *
++ * This is currently just a placeholder. The information needs to come fro=
+m
++ * cpuidle.
++ */
++static inline int likely_idle_state_idx(struct sched_group *sg)
++{
++=09return 0;
++}
++
+ static int wake_wide(struct task_struct *p)
+ {
+ =09int factor =3D this_cpu_read(sd_llc_size);
 --=20
 1.7.9.5
 
