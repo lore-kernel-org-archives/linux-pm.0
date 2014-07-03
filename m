@@ -1,126 +1,49 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Wed, 02 Jul 2014 18:24:03 -0700
-Message-ID: <53B4B0B3.9080000@codeaurora.org>
-References: <cover.1404231535.git.viresh.kumar@linaro.org> <CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 09/14] cpufreq: cpu0: Move per-cluster initialization code
+ to ->init()
+Date: Thu, 3 Jul 2014 07:41:34 +0530
+Message-ID: <CAKohpomqE5dw2OJMjQmWswHmKXsKmyw0LtjtQopd0ttOA6=hhQ@mail.gmail.com>
+References: <cover.1404231535.git.viresh.kumar@linaro.org>
+	<b26946cc4573904cd1ef0212ad053a983b547c23.1404231535.git.viresh.kumar@linaro.org>
+	<53B4A718.3050702@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:48154 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbaGCBYF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Jul 2014 21:24:05 -0400
-In-Reply-To: <CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:64571 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751525AbaGCCLf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Jul 2014 22:11:35 -0400
+Received: by mail-ob0-f170.google.com with SMTP id uz6so13342578obc.1
+        for <linux-pm@vger.kernel.org>; Wed, 02 Jul 2014 19:11:34 -0700 (PDT)
+In-Reply-To: <53B4A718.3050702@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Mike Turquette <mturquette@linaro.org>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
 
-On 07/01/14 21:12, Viresh Kumar wrote:
-> On 1 July 2014 22:02, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> V1: https://lkml.org/lkml/2014/6/25/152
->>
->> Stephen Boyd sent few patches some time back around a new cpufreq driver for
->> Qualcomm's Krait SoC: https://lkml.org/lkml/2014/6/24/918.
->>
->> Krait couldn't use existing cpufreq-cpu0 driver as it doesn't have support for
->> SoC's with multiple clusters or SoC's which don't share clock line across all
->> CPUs.
->>
->> This patchset is all about extending support beyond CPU0. It can be used for
->> platforms like Krait or ARM big LITTLE architecture now.
->>
->> First two patches add helper routine for of and clk layer, which would be used
->> by later patches.
->>
->> Third one adds space for driver specific data in 'struct cpufreq_policy' and
->> later ones migrate cpufreq-cpu0 to cpufreq-generic, i.e. can be used for SoCs
->> which don't share clock lines across all CPUs.
->>
->> @Stephen: I haven't added your Tested-by as there were few modifications since
->> the time you tested it last.
->>
->> Pushed here:
->> Rebased over v3.16-rc3:
->> git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait-v2
-> Hi Stephen,
+On 3 July 2014 06:13, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> drivers/cpufreq/cpufreq-generic.c:313:13: warning: 'cdev' may be used
+> uninitialized in this function [-Wmaybe-uninitialized]
 >
-> As suggested by you I have updated patch
->
-> 7/14: cpufreq: cpu0: OPPs can be populated at runtime
-> 12/14: cpufreq: cpu0: Extend support beyond CPU0
->
-> and dropped
-> 2/14: clk: Create of_clk_shared_by_cpus()
->
-> Please see if they look fine and work for you.
->
-> git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait-v3
+> So I guess we should initialize it to NULL?
 
-I gave it a spin. It works so you can have my
+I somehow didn't got this, I checked again. I have fixed it this way:
 
-Tested-by: Stephen Boyd <sboyd@codeaurora.org>
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index e6dc8ea..05a18bd 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -240,10 +240,11 @@ static int cpu0_cpufreq_init(struct
+cpufreq_policy *policy)
+                        dev_err(cpu_dev,
+                                "running cpufreq without cooling device: %ld\n",
+                                PTR_ERR(cdev));
++               else
++                       priv->cdev = cdev;
+        }
+        of_node_put(np);
 
-I'm still concerned about the patch where we figure out if the clocks
-are shared. I worry about a configuration where there are different
-clocks for on/off (i.e. gates) that are per-cpu but they all source from
-the same divider or something that is per-cluster. In DT this may be
-described as different clock provider outputs for the gates and in the
-cpu node we would have different clock specifiers but in reality all the
-CPUs in that cluster are affected by the same frequency scaling.
-
-In this case we'll need to get help from the clock framework to
-determine that those gates clocks don't have any .set_rate() callback so
-they can't actually change rate independently, and then walk up the tree
-to their parents to see if they have a common ancestor that does change
-rates. That's where it becomes useful to have a clock framework API for
-this, like clk_shares_rate(struct clk *clk, struct clk *peer) or
-something that can hide all this from cpufreq. Here's what I think it
-would look like (totally untested/uncompiled):
-
-static struct clk *find_rate_changer(struct clk *clk)
-{	
-
-	if (!clk)
-		return NULL; 
-
-	do {
-		/* Rate could change by changing parents */
-		if (clk->num_parents > 1)
-			return clk;
-
-		/* Rate could change by calling clk_set_rate() */
-		if (clk->ops->set_rate)
-			return clk;
-
-		/* 
-		 * This is odd, clk_set_rate() doesn't propagate 
-		 * and this clock can't change rate or parents
-		 * so we must be at the root and the clock we
-		 * started at can't change rates. Just return the
-		 * root so that we can see if the other clock shares
-		 * the same root although CPUfreq should never care.
-		 */
-		if (!(clk->flags & CLK_SET_RATE_PARENT))
-			return clk;
-	} while ((clk = clk->parent))
-
-	return NULL;
-}
-
-bool clk_shares_rate(struct clk *clk, struct clk *peer)
-{
-	struct clk *p1, *p2;
-
-	p1 = find_rate_changer(clk);
-	p2 = find_rate_changer(peer)
-
-	return p1 == p2;
-}
-
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
-
+-       priv->cdev = cdev;
+        priv->cpu_dev = cpu_dev;
+        priv->cpu_reg = cpu_reg;
+        policy->driver_data = priv;
