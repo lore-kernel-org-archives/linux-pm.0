@@ -1,49 +1,80 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 09/14] cpufreq: cpu0: Move per-cluster initialization code
- to ->init()
-Date: Thu, 3 Jul 2014 07:41:34 +0530
-Message-ID: <CAKohpomqE5dw2OJMjQmWswHmKXsKmyw0LtjtQopd0ttOA6=hhQ@mail.gmail.com>
+Subject: Re: [PATCH 06/14] cpufreq: cpu0: defer probe if clock isn't
+ registered yet
+Date: Thu, 3 Jul 2014 07:49:29 +0530
+Message-ID: <CAKohpok0wt46-odR1+KiLLi9=iv+jvAozny9906UND6AgwBgJA@mail.gmail.com>
 References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<b26946cc4573904cd1ef0212ad053a983b547c23.1404231535.git.viresh.kumar@linaro.org>
-	<53B4A718.3050702@codeaurora.org>
+	<eb6df0f1f2c82db0d516b9b63820cfe0c0c97d5c.1404231535.git.viresh.kumar@linaro.org>
+	<20140702055330.GA3454@dragon>
+	<CAKohpomzPHRghqHD7-tDbj0gXzc=ANEb3qLv2kRKOZUyqatBew@mail.gmail.com>
+	<CAKohpomk-pyv6Risyq_b8h3DJNGxBoUWu1Y9cApvoz3CwOtL=w@mail.gmail.com>
+	<53B4A607.7030001@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:64571 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbaGCCLf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Jul 2014 22:11:35 -0400
-Received: by mail-ob0-f170.google.com with SMTP id uz6so13342578obc.1
-        for <linux-pm@vger.kernel.org>; Wed, 02 Jul 2014 19:11:34 -0700 (PDT)
-In-Reply-To: <53B4A718.3050702@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <53B4A607.7030001@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 3 July 2014 06:13, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> drivers/cpufreq/cpufreq-generic.c:313:13: warning: 'cdev' may be used
-> uninitialized in this function [-Wmaybe-uninitialized]
->
-> So I guess we should initialize it to NULL?
+On 3 July 2014 06:08, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> Please make this a dev_dbg() or just remove it entirely. Sending a
+> message to the log on probe defer just duplicates what the driver core
+> is already doing.
 
-I somehow didn't got this, I checked again. I have fixed it this way:
+Updated as:
+
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Thu Jun 26 10:40:21 2014 +0530
+
+    cpufreq: cpu0: print relevant error when we defer probe
+
+    Currently, we defer probe if regulator_get() returned -EPROBE_DEFER, i.e.
+    regulator isn't registered yet. We do a dev_err() in this case. Sending a
+    message to the log on probe defer just duplicates what the driver core is
+    already doing. Convert it to dev_dbg() instead.
+
+    We should defer in case of clk_get() as well.
+
+    Current code already does it, but it wasn't intentional probably.
+Its just that
+    we are returning the right error with wrong print message.
+
+    Fix print message to convey right error.
+
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-cpu0.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index e6dc8ea..05a18bd 100644
+index 4273a5f..8a1166c 100644
 --- a/drivers/cpufreq/cpufreq-cpu0.c
 +++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -240,10 +240,11 @@ static int cpu0_cpufreq_init(struct
-cpufreq_policy *policy)
-                        dev_err(cpu_dev,
-                                "running cpufreq without cooling device: %ld\n",
-                                PTR_ERR(cdev));
+@@ -140,7 +140,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+                 * not yet registered, we should try defering probe.
+                 */
+                if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
+-                       dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
++                       dev_dbg(cpu_dev, "cpu0 regulator not ready, retry\n");
+                        ret = -EPROBE_DEFER;
+                        goto out_put_node;
+                }
+@@ -151,7 +151,16 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+        cpu_clk = clk_get(cpu_dev, NULL);
+        if (IS_ERR(cpu_clk)) {
+                ret = PTR_ERR(cpu_clk);
+-               pr_err("failed to get cpu0 clock: %d\n", ret);
++
++               /*
++                * If cpu's clk node is present, but clock is not yet
++                * registered, we should try defering probe.
++                */
++               if (ret == -EPROBE_DEFER)
++                       dev_dbg(cpu_dev, "cpu0 clock not ready, retry\n");
 +               else
-+                       priv->cdev = cdev;
++                       dev_err(cpu_dev, "failed to get cpu0 clock: %d\n", ret);
++
+                goto out_put_reg;
         }
-        of_node_put(np);
-
--       priv->cdev = cdev;
-        priv->cpu_dev = cpu_dev;
-        priv->cpu_reg = cpu_reg;
-        policy->driver_data = priv;
