@@ -1,60 +1,61 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH 07/16] ARM: mvebu: Make the CPU idle initialization more
- generic
-Date: Thu, 03 Jul 2014 10:54:16 +0200
-Message-ID: <53B51A38.6050406@free-electrons.com>
-References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>	<1403875377-940-8-git-send-email-gregory.clement@free-electrons.com> <20140630160727.628e79c3@free-electrons.com>
+Subject: Re: [PATCH 08/16] ARM: mvebu: Use a local variable to store the resume
+ address
+Date: Thu, 03 Jul 2014 11:24:23 +0200
+Message-ID: <53B52147.9070601@free-electrons.com>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>	<1403875377-940-9-git-send-email-gregory.clement@free-electrons.com>
+ <20140630170952.6d92f96d@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:48852 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757278AbaGCIyU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 04:54:20 -0400
-In-Reply-To: <20140630160727.628e79c3@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20140630170952.6d92f96d@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Cc: Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
 Hi Thomas,
 
-	struct device_node *np;
->> +	const struct of_device_id *match;
+On 30/06/2014 17:09, Thomas Petazzoni wrote:
+> Dear Gregory CLEMENT,
+> 
+> On Fri, 27 Jun 2014 15:22:49 +0200, Gregory CLEMENT wrote:
+> 
+>> +static void *mvebu_cpu_resume;
 >> +
->> +	np = of_find_matching_node_and_match(NULL, of_cpuidle_table,
->> +					&match);
+>>  static struct platform_device mvebu_v7_cpuidle_device = {
+>>  	.name = "cpuidle-armada-370-xp",
+>>  };
+>> @@ -281,7 +283,7 @@ static int mvebu_v7_cpu_pm_notify(struct notifier_block *self,
+>>  {
+>>  	if (action == CPU_PM_ENTER) {
+>>  		unsigned int hw_cpu = cpu_logical_map(smp_processor_id());
+>> -		mvebu_pmsu_set_cpu_boot_addr(hw_cpu, armada_370_xp_cpu_resume);
+>> +		mvebu_pmsu_set_cpu_boot_addr(hw_cpu, mvebu_cpu_resume);
 > 
-> I'm not sure I like using of_find_matching_node_and_match() on the
-> entire tree to find the root node compatible string. Wouldn't it be
-> simpler and shorter to just do:
-> 
-> 	if (of_machine_is_compatible("marvell,armadaxp"))
-> 		ret = armadaxp_cpuidle_init();
-> 	else if (of_machine_is_compatible("marvell,armada370"))
-> 		ret = armada370_cpuidle_init();
-> 	else if (of_machine_is_compaitble("marvell,armada380"))
-> 		ret = armada38x_cpuidle_init();
-> 
-> 	if (ret)
-> 		return ret;
+> Instead of doing this in the CPU_PM_ENTER notifier, do we have a reason
+> to not do it in the do_armada_370_xp_cpu_suspend() function, and then
+> do_armada_38x_suspend() function respectively? Those functions are
+> already SoC-specific, so surely, they already know whether the resume
+> path should go through armada_370_xp_cpu_resume() or
+> armada_38x_cpu_resume(), no?
 
-Indeed, as I don't use any resource from the device tree here, using
-of_find_matching_node_and_match is overkill. And your alternative
-will be enough.
-
-> 
-> Also, using a boolean to return a success/error status is not the
-> kernel way of doing things, you should use an int instead and use
-> proper error codes or return 0 on success.
-
-OK
-
+Now that all this code is also part of pmsu and no more in the cpu dile driver.
+It should be possible. Let me see what it implies about the path code.
 
 Thanks,
 
 Gregory
+
 
 -- 
 Gregory Clement, Free Electrons
