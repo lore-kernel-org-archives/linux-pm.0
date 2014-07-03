@@ -1,47 +1,48 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 06/14] cpufreq: cpu0: defer probe if clock isn't registered
- yet
-Date: Wed, 02 Jul 2014 17:38:31 -0700
-Message-ID: <53B4A607.7030001@codeaurora.org>
-References: <cover.1404231535.git.viresh.kumar@linaro.org> <eb6df0f1f2c82db0d516b9b63820cfe0c0c97d5c.1404231535.git.viresh.kumar@linaro.org> <20140702055330.GA3454@dragon> <CAKohpomzPHRghqHD7-tDbj0gXzc=ANEb3qLv2kRKOZUyqatBew@mail.gmail.com> <CAKohpomk-pyv6Risyq_b8h3DJNGxBoUWu1Y9cApvoz3CwOtL=w@mail.gmail.com>
+Subject: Re: [PATCH 09/14] cpufreq: cpu0: Move per-cluster initialization
+ code to ->init()
+Date: Wed, 02 Jul 2014 17:43:04 -0700
+Message-ID: <53B4A718.3050702@codeaurora.org>
+References: <cover.1404231535.git.viresh.kumar@linaro.org> <b26946cc4573904cd1ef0212ad053a983b547c23.1404231535.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.11.231]:45866 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbaGCAid (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Jul 2014 20:38:33 -0400
-In-Reply-To: <CAKohpomk-pyv6Risyq_b8h3DJNGxBoUWu1Y9cApvoz3CwOtL=w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <b26946cc4573904cd1ef0212ad053a983b547c23.1404231535.git.viresh.kumar@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>
+Cc: rjw@rjwysocki.net, shawn.guo@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, linux-arm-msm@vger.kernel.org, spk.linux@gmail.com, thomas.ab@samsung.com, nm@ti.com, t.figa@samsung.com
+List-Id: linux-pm@vger.kernel.org
 
-On 07/02/14 04:32, Viresh Kumar wrote:
->
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index 4273a5f..0c16b2f 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -151,7 +151,16 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->         cpu_clk = clk_get(cpu_dev, NULL);
->         if (IS_ERR(cpu_clk)) {
->                 ret = PTR_ERR(cpu_clk);
-> -               pr_err("failed to get cpu0 clock: %d\n", ret);
+On 07/01/14 09:32, Viresh Kumar wrote:
+> +static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+> +{
+> +	struct cpufreq_frequency_table *freq_table;
+> +	struct thermal_cooling_device *cdev;
+
+This..
+
+> +	struct device_node *np;
+> +	struct private_data *priv;
+> +	
+[...]
+> ing them.
+> @@ -223,28 +242,92 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>  				"running cpufreq without cooling device: %ld\n",
+>  				PTR_ERR(cdev));
+>  	}
+> -
+>  	of_node_put(np);
 > +
-> +               /*
-> +                * If cpu's clk node is present, but clock is not yet
-> +                * registered, we should try defering probe.
-> +                */
-> +               if (ret == -EPROBE_DEFER)
-> +                       dev_err(cpu_dev, "cpu0 clock not ready, retry\n");
+> +	priv->cdev = cdev;
 
-Please make this a dev_dbg() or just remove it entirely. Sending a
-message to the log on probe defer just duplicates what the driver core
-is already doing.
+Causes a build warning:
+
+drivers/cpufreq/cpufreq-generic.c:313:13: warning: 'cdev' may be used
+uninitialized in this function [-Wmaybe-uninitialized]
+
+So I guess we should initialize it to NULL?
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 hosted by The Linux Foundation
-
