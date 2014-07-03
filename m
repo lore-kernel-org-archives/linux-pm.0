@@ -1,57 +1,111 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: RFC: Leave sysfs nodes alone during hotplug
-Date: Thu, 03 Jul 2014 14:59:11 -0700
-Message-ID: <53B5D22F.2070308@codeaurora.org>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
+Date: Thu, 03 Jul 2014 15:16:09 -0700
+Message-ID: <20140703221609.11380.6884@quantum>
+References: <cover.1404231535.git.viresh.kumar@linaro.org>
+ <CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com>
+ <53B4B0B3.9080000@codeaurora.org>
+ <CAKohponRv6+rzJnO4cYFhXn6On1+4-KoxFSA2iU_nz130gvsug@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:45732 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759736AbaGCWQX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 18:16:23 -0400
+Received: by mail-pa0-f43.google.com with SMTP id lf10so897526pab.30
+        for <linux-pm@vger.kernel.org>; Thu, 03 Jul 2014 15:16:23 -0700 (PDT)
+In-Reply-To: <CAKohponRv6+rzJnO4cYFhXn6On1+4-KoxFSA2iU_nz130gvsug@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
 
-The adding and removing of sysfs nodes in cpufreq causes a ton of pain. 
-There's always some stability or deadlock issue every few weeks on our 
-internal tree. We sync up our internal tree fairly often with the 
-upstream cpufreq code. And more of these issues are popping up as we 
-start exercising the cpufreq framework for b.L systems or HMP systems.
+Quoting Viresh Kumar (2014-07-02 19:44:04)
+> On 3 July 2014 06:54, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> > I gave it a spin. It works so you can have my
+> >
+> > Tested-by: Stephen Boyd <sboyd@codeaurora.org>
+> 
+> Thanks, all suggested improvements are made and pushed again with
+> your Tested-by..
+> 
+> > I'm still concerned about the patch where we figure out if the clocks
+> > are shared. I worry about a configuration where there are different
+> > clocks for on/off (i.e. gates) that are per-cpu but they all source from
+> > the same divider or something that is per-cluster. In DT this may be
+> > described as different clock provider outputs for the gates and in the
+> > cpu node we would have different clock specifiers but in reality all the
+> > CPUs in that cluster are affected by the same frequency scaling.
+> 
+> Yeah, this is probably what matches with Rob's doubt. These can
+> actually be different. Good point.
+> 
+> > In this case we'll need to get help from the clock framework to
+> > determine that those gates clocks don't have any .set_rate() callback so
+> > they can't actually change rate independently, and then walk up the tree
+> > to their parents to see if they have a common ancestor that does change
+> > rates. That's where it becomes useful to have a clock framework API for
+> > this, like clk_shares_rate(struct clk *clk, struct clk *peer) or
+> > something that can hide all this from cpufreq. Here's what I think it
+> > would look like (totally untested/uncompiled):
+> >
+> > static struct clk *find_rate_changer(struct clk *clk)
+> > {
+> >
+> >         if (!clk)
+> >                 return NULL;
+> >
+> >         do {
+> >                 /* Rate could change by changing parents */
+> >                 if (clk->num_parents > 1)
+> >                         return clk;
+> >
+> >                 /* Rate could change by calling clk_set_rate() */
+> >                 if (clk->ops->set_rate)
+> >                         return clk;
+> >
+> >                 /*
+> >                  * This is odd, clk_set_rate() doesn't propagate
+> >                  * and this clock can't change rate or parents
+> >                  * so we must be at the root and the clock we
+> >                  * started at can't change rates. Just return the
+> >                  * root so that we can see if the other clock shares
+> >                  * the same root although CPUfreq should never care.
+> >                  */
+> >                 if (!(clk->flags & CLK_SET_RATE_PARENT))
+> >                         return clk;
+> >         } while ((clk = clk->parent))
+> >
+> >         return NULL;
+> > }
+> >
+> > bool clk_shares_rate(struct clk *clk, struct clk *peer)
+> > {
+> >         struct clk *p1, *p2;
+> >
+> >         p1 = find_rate_changer(clk);
+> >         p2 = find_rate_changer(peer)
+> >
+> >         return p1 == p2;
+> > }
+> 
+> I find it much better then doing what I did initially, simply matching clk_get()
+> outputs. Lets see what Mike has to say..
 
-It looks like we adding a lot of unnecessary complexity by adding and 
-removing these sysfs nodes. The other per CPU sysfs nodes like:
-/sys/devices/system/cpu/cpu1/power or cpuidle are left alone during 
-hotplug. So, why are we not doing the same for cpufreq too?
+Sorry for being dense, but I still do not get why trying to dynamically
+discover a shared rate-changeable clock is a better approach than simply
+describing the hardware in DT?
 
-Any objections to leaving them alone during hotplug? If those files are 
-read/written to when the entire cluster is hotplugged off, we could just 
-return an error. I'm not saying it would be impossible to fix all these 
-deadlock and race issues in the current code -- but it seems like a lot 
-of pointless effort to remove/add sysfs nodes.
+Is adding a property to the CPU binding that describes how the CPUs in a
+cluster expect to use a clock somehow a non-starter? It is certainly a
+win for readability when staring at DT and trying to understand how DVFS
+on that CPU is meant to work (as opposed to hiding that knowledge behind
+a tree walk).
 
-Examples of issues caused by this:
-1. Race when changing governor really quickly from userspace. The 
-governors end up getting 2 STOP or 2 START events. This was introduced 
-by [1] when it tried to fix another deadlock issue.
+Regards,
+Mike
 
-2. Incorrect policy/sysfs handling during suspend/resume. Suspend takes 
-out CPU in the order n, n+1, n+2, etc and resume adds them back in the 
-same order. Both sysfs and policy ownership transfer aren't handled 
-correctly in this case. This obviously applies even outside 
-suspend/resume if the same sequence is repeated using just hotplug.
-
-I'd be willing to take a shot at this if there isn't any objection to 
-this. It's a lot of work/refactor -- so I don't want to spend a lot of 
-time on it if there's a strong case for removing these sysfs nodes.
-
-Thoughts?
-
--Saravana
-P.S: I always find myself sending emails to the lists close to one 
-holiday or another. Sigh.
-
-[1] - 
-https://kernel.googlesource.com/pub/scm/linux/kernel/git/rafael/linux-pm/+/955ef4833574636819cd269cfbae12f79cbde63a%5E!/
-
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-hosted by The Linux Foundation
+> 
+> @Mike: Is this less ugly ? :)
