@@ -1,88 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Thu, 3 Jul 2014 08:14:04 +0530
-Message-ID: <CAKohponRv6+rzJnO4cYFhXn6On1+4-KoxFSA2iU_nz130gvsug@mail.gmail.com>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com>
-	<53B4B0B3.9080000@codeaurora.org>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH 02/16] ARM: mvebu: Add a common function for the boot
+ address work around
+Date: Thu, 3 Jul 2014 09:16:18 +0200
+Message-ID: <20140703091618.1e5408f0@free-electrons.com>
+References: <1403875377-940-1-git-send-email-gregory.clement@free-electrons.com>
+	<1403875377-940-3-git-send-email-gregory.clement@free-electrons.com>
+	<20140630144054.2f71514b@free-electrons.com>
+	<53B48E8E.1080808@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <53B4B0B3.9080000@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, linux-arm-msm@vger.kernel.org, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:48185 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755376AbaGCHQc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jul 2014 03:16:32 -0400
+In-Reply-To: <53B48E8E.1080808@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-On 3 July 2014 06:54, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> I gave it a spin. It works so you can have my
->
-> Tested-by: Stephen Boyd <sboyd@codeaurora.org>
+Gregory,
 
-Thanks, all suggested improvements are made and pushed again with
-your Tested-by..
+On Thu, 03 Jul 2014 00:58:22 +0200, Gregory CLEMENT wrote:
 
-> I'm still concerned about the patch where we figure out if the clocks
-> are shared. I worry about a configuration where there are different
-> clocks for on/off (i.e. gates) that are per-cpu but they all source from
-> the same divider or something that is per-cluster. In DT this may be
-> described as different clock provider outputs for the gates and in the
-> cpu node we would have different clock specifiers but in reality all the
-> CPUs in that cluster are affected by the same frequency scaling.
+> >> +#define CRYPT0_ENG_ATTR	0x1
+> > 
+> > For consistency, I'd prefer to see this being passed as argument to
+> > mvebu_boot_addr_wa().
+> 
+> The attribute is the same, so why bother with it? If later we have a SoC
+> where this attribute can be different then I agree to add this argument.
 
-Yeah, this is probably what matches with Rob's doubt. These can
-actually be different. Good point.
+Simply for consistency. MBus windows are defined by their target and
+attribute values, so it makes sense to always pass both these values,
+even if for the existing cases the attribute is for now always 0x1.
 
-> In this case we'll need to get help from the clock framework to
-> determine that those gates clocks don't have any .set_rate() callback so
-> they can't actually change rate independently, and then walk up the tree
-> to their parents to see if they have a common ancestor that does change
-> rates. That's where it becomes useful to have a clock framework API for
-> this, like clk_shares_rate(struct clk *clk, struct clk *peer) or
-> something that can hide all this from cpufreq. Here's what I think it
-> would look like (totally untested/uncompiled):
->
-> static struct clk *find_rate_changer(struct clk *clk)
-> {
->
->         if (!clk)
->                 return NULL;
->
->         do {
->                 /* Rate could change by changing parents */
->                 if (clk->num_parents > 1)
->                         return clk;
->
->                 /* Rate could change by calling clk_set_rate() */
->                 if (clk->ops->set_rate)
->                         return clk;
->
->                 /*
->                  * This is odd, clk_set_rate() doesn't propagate
->                  * and this clock can't change rate or parents
->                  * so we must be at the root and the clock we
->                  * started at can't change rates. Just return the
->                  * root so that we can see if the other clock shares
->                  * the same root although CPUfreq should never care.
->                  */
->                 if (!(clk->flags & CLK_SET_RATE_PARENT))
->                         return clk;
->         } while ((clk = clk->parent))
->
->         return NULL;
-> }
->
-> bool clk_shares_rate(struct clk *clk, struct clk *peer)
-> {
->         struct clk *p1, *p2;
->
->         p1 = find_rate_changer(clk);
->         p2 = find_rate_changer(peer)
->
->         return p1 == p2;
-> }
+Thanks,
 
-I find it much better then doing what I did initially, simply matching clk_get()
-outputs. Lets see what Mike has to say..
-
-@Mike: Is this less ugly ? :)
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
