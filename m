@@ -1,43 +1,82 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: [RFCv2 PATCH 08/23] sched: Aggregate unweighted load contributed
- by task entities on parenting cfs_rq
-Date: Fri, 4 Jul 2014 07:50:45 +0800
-Message-ID: <20140703235045.GB4881@intel.com>
-References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
- <1404404770-323-9-git-send-email-morten.rasmussen@arm.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH 6/6] thermal: Add Tegra SOCTHERM thermal management driver
+Date: Fri, 4 Jul 2014 16:43:01 +0800
+Message-ID: <53B66915.4040309@nvidia.com>
+References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-7-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1404404770-323-9-git-send-email-morten.rasmussen@arm.com>
+In-Reply-To: <1403856699-2140-7-git-send-email-mperttunen@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, "Dietmar.Eggemann@arm.com" <Dietmar.Eggemann@arm.com>, "pjt@google.com" <pjt@google.com>
+To: Mikko Perttunen <mperttunen@nvidia.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Matthew Longnecker <MLongnecker@nvidia.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 04, 2014 at 12:25:55AM +0800, Morten Rasmussen wrote:
-> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> 
-> Energy aware scheduling relies on cpu utilization and to be able to
-> maintain it, we need a per run queue signal of the sum of the
-> unweighted, i.e. not scaled with task priority, load contribution of
-> runnable task entries.
-> 
-> The unweighted runnable load on a run queue is maintained alongside the
-> existing (weighted) runnable load.
-> 
-> This patch is the unweighted counterpart of "sched: Aggregate load
-> contributed by task entities on parenting cfs_rq" (commit id
-> 2dac754e10a5).
-> 
-Hi Dietmar and Morten,
+On 06/27/2014 04:11 PM, Mikko Perttunen wrote:
+> This adds support for the Tegra SOCTHERM thermal sensing and management
+> system found in the Tegra124 system-on-chip. This initial driver supports
+> the four thermal zones with hardware-tracked trip points.
 
-You may or may not have noticed my patch the other day:
+> diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra_soctherm.c
 
-sched: Rewrite per entity runnable load average tracking
+> +static int calculate_shared_calibration(struct tsensor_shared_calibration *r)
+> +{
+> +       u32 val;
+> +       u32 shifted_cp, shifted_ft;
+> +       int err;
+> +
+> +       err = tegra_fuse_readl(FUSE_TSENSOR8_CALIB, &val);
+> +       if (err)
+> +               return err;
+> +       r->base_cp = val & 0x3ff;
+> +       r->base_ft = (val & (0x7ff << 10)) >> 10;
+> +
+> +       err = tegra_fuse_readl(FUSE_SPARE_REALIGNMENT_REG_0, &val);
+> +       if (err)
+> +               return err;
+> +       /* Sign extend from 6 bits to 32 bits */
+> +       shifted_cp = (s32)((val & 0x1f) | ((val & 0x20) ? 0xffffffe0 : 0x0));
+> +       val = ((val & (0x1f << 21)) >> 21);
+> +       /* Sign extend from 5 bits to 32 bits */
+> +       shifted_ft = (s32)((val & 0xf) | ((val & 0x10) ? 0xfffffff0 : 0x0));
+> +
+> +       r->actual_temp_cp = 2 * 25 + shifted_cp;
+Do we need to define the "25" as constant, just like below line.
 
-With this new load average tracking, unweighted load average will be very much
-simplifed to do.
+> +       r->actual_temp_ft = 2 * NOMINAL_CALIB_FT_T124 + shifted_ft;
+> +
+> +       return 0;
+> +}
 
-Thanks,
-Yuyang
+> +
+> +static irqreturn_t soctherm_isr(int irq, void *dev_id)
+> +{
+> +       struct tegra_thermctl_zone *zone = dev_id;
+> +       u32 val;
+> +       u32 intr_mask = 0x03 << t124_thermctl_shifts[zone->sensor];
+> +
+> +       val = readl(zone->tegra->regs + THERMCTL_INTR_STATUS);
+> +
+> +       if ((val & intr_mask) == 0)
+> +               return IRQ_NONE;
+> +
+> +       writel(val & intr_mask, zone->tegra->regs + THERMCTL_INTR_STATUS);
+I think we need to disable the interrupt here, and enable it again after
+updating the high/low limited values. If not, there will trigger mass of
+interrupts.
+
+> +
+> +static struct platform_driver tegra_soctherm_driver = {
+> +       .probe = tegra_soctherm_probe,
+> +       .remove = tegra_soctherm_remove,
+> +       .driver = {
+> +               .name = "tegra_soctherm",
+> +               .owner = THIS_MODULE,
+> +               .of_match_table = tegra_soctherm_of_match,
+> +       },
+> +};
+Will you consider to add suspend/resume support?
+
+Thanks.
+Wei.
