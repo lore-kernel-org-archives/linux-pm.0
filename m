@@ -1,77 +1,82 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv2 PATCH 00/23] sched: Energy cost model for energy-aware
- scheduling
-Date: Fri, 4 Jul 2014 12:06:13 +0100
-Message-ID: <20140704110612.GA6120@e103034-lin>
-References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
- <20140703231950.GA4881@intel.com>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH 2/8] cpufreq: add driver for Armada XP
+Date: Fri, 4 Jul 2014 13:12:47 +0200
+Message-ID: <20140704131247.2c8ecde2@free-electrons.com>
+References: <1404467103-29644-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<1404467103-29644-3-git-send-email-thomas.petazzoni@free-electrons.com>
+	<CAKohponuvPd1kWDdB66kxd8TxxYqQ219jCq2D2RGhMHAuZTSWA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20140703231950.GA4881@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yuyang Du <yuyang.du@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "pjt@google.com" <pjt@google.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:57759 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752859AbaGDLMv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jul 2014 07:12:51 -0400
+In-Reply-To: <CAKohponuvPd1kWDdB66kxd8TxxYqQ219jCq2D2RGhMHAuZTSWA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-Hi Yuyang,
+Dear Viresh Kumar,
 
-On Fri, Jul 04, 2014 at 12:19:50AM +0100, Yuyang Du wrote:
-> Hi Morten,
+Thanks for your feedback!
+
+On Fri, 4 Jul 2014 15:25:35 +0530, Viresh Kumar wrote:
+> On 4 July 2014 15:14, Thomas Petazzoni
+> <thomas.petazzoni@free-electrons.com> wrote:
+> > This commit adds a simple cpufreq driver for the Armada XP SoC, which
+> > has one separately controllable clock for each CPU. For this reason,
+> > the existing cpufreq-cpu0 generic driver cannot be used because it
+> > currently assumes that there is only one clock controlling the
+> > frequency of all CPUs.
+> >
+> > There are on-going discussions on extending the cpufreq-cpu0 to cover
+> > the case of having one clock for each CPU, but there are still some
+> > unresolved issues to get this extended cpufreq-cpu0 driver merged.
 > 
-> On Fri, Jul 04, 2014 at 12:25:47AM +0800, Morten Rasmussen wrote:
-> > * Note that these energy savings are _not_ representative of what can be
-> > achieved on a true SMP platform where all cpus are equally 
-> > energy-efficient. There should be benefit for SMP platforms as well, 
-> > however, it will be smaller.
-> > 
-> > The energy model led to consolidation of the short tasks on the A7
-> > cluster (more energy-efficient), while sysbench made use of all cpus as
-> > the A7s didn't have sufficient compute capacity to handle the five
-> > tasks.
+> Exactly, and those changes would get merged in one form or the other.
+> Surely in 3.17 atleast, if not 3.16 as we are already reaching rc4..
 > 
-> Looks like this patchset is mainly for big.LITTLE?
+> So, it would be great if you can test on top of those changes to see if
+> something isn't solved for your platform yet?
+> 
+> git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/cpu0-krait-v3
 
-No, not at all. The only big.LITTLE in there is the test platform but
-that has been configured to be as close as possible to an SMP platform.
-That is, no performance difference between cpus. I would have preferred
-a true SMP platform for testing, but this is the only dual-cluster
-platform that I have access to with proper mainline kernel support.
+One other problem with cpufreq-cpu0 is that it assumes the Device Tree
+can contain a static OPP table, with the frequency/voltage points.
+Unfortunately, in the case of the Armada XP platform, this is not
+possible, because we cannot hardcode into the Device Tree the possible
+CPU frequencies.
 
-The patch set essentially puts tasks where it is most energy-efficient
-guided by the platform energy model. That should benefit any platform,
-SMP and big.LITTLE. That is at least the goal.
+The nominal CPU frequency is selected by Sample on Reset pins (i.e pins
+of the CPUs that are sampled during the reset sequence) and can
+therefore change from one board to the other, and they can also be
+changed via special U-Boot commands. And the frequencies supported by
+cpufreq are the nominal frequency of the CPU as determined by the
+sample at reset pins, and half of this frequency.
 
-On an SMP platform with two clusters/packages (whatever you call a group
-of cpus sharing the same power domain) you get task consolidation on a
-single cluster if the energy model says that it is beneficial. Very much
-like your previous proposals. It is also what I'm trying to show with
-the numbers I have included.
+That's why the proposed armadaxp-cpufreq driver does not hardcode the
+possible frequencies, but instead creates the frequency table by using
+the current CPU frequency (nominal frequency) and half of it.
 
-That said, we are of course keeping in mind what would be required to
-make this work for big.LITTLE. However, there is nothing big.LITTLE
-specific in the patch set. Just the possibility of having different
-energy models for different cpus in the system. We will have to add some
-tweaks eventually to get the best out of big.LITTLE later. Somewhat
-similar to what exists today for better SMT support and other
-architecture specialities.
+This doesn't work very well with the idea of having the OPP table
+statically encoded in to the Device Tree. Options are:
 
-> And can the patchset actually replace Global Task Scheduling?
+ - Improve the cpufreq-cpu0 driver so that the OPP table can be passed
+   through platform_data, and therefore built dynamically by the
+   platform code and passed when registering the cpufreq
+   platform_device.
 
-Global Task Scheduling is (ARM) marketing speak for letting the
-scheduler know about all cpus in a big.LITTLE system. It is not an
-actual implementation. There is an out-of-tree implementation of GTS
-available which is very big.LITTLE specific.
+ - Dynamically build/update the OPP table in the Device Tree.
 
-The energy model driven scheduling proposed here is not big.LITTLE
-specific, but aims at introducing generic energy-awareness in the
-scheduler. Once energy-awareness is in place, most of the support needed
-for big.LITTLE will be there too. It is generic energy-aware code that
-is capable of making informed decisions based on the platform model,
-big.LITTLE or SMP.
+Which option do you think is appropriate here?
 
-The short answer is: Not in its current state, but if we get the
-energy-awareness right it should be able to.
+Thanks,
 
-Morten
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
