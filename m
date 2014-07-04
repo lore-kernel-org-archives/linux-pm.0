@@ -1,38 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/8] cpufreq: add driver for Armada XP
-Date: Fri, 4 Jul 2014 21:42:54 +0530
-Message-ID: <CAKohpon-ncOGR7KCJeUJEru7bZfoNbKTqUpkZUkMxPwH2WWFJg@mail.gmail.com>
-References: <1404467103-29644-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1404467103-29644-3-git-send-email-thomas.petazzoni@free-electrons.com>
-	<CAKohponuvPd1kWDdB66kxd8TxxYqQ219jCq2D2RGhMHAuZTSWA@mail.gmail.com>
-	<20140704131247.2c8ecde2@free-electrons.com>
-	<1404481934.4634.2.camel@weser.hi.pengutronix.de>
-	<20140704141541.GE7773@lunn.ch>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [RFCv2 PATCH 00/23] sched: Energy cost model for energy-aware
+ scheduling
+Date: Fri, 4 Jul 2014 17:55:52 +0100
+Message-ID: <20140704165552.GB30016@arm.com>
+References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:60285 "EHLO
-	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbaGDQMy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jul 2014 12:12:54 -0400
-Received: by mail-oa0-f49.google.com with SMTP id i7so1958428oag.8
-        for <linux-pm@vger.kernel.org>; Fri, 04 Jul 2014 09:12:54 -0700 (PDT)
-In-Reply-To: <20140704141541.GE7773@lunn.ch>
+Received: from fw-tnat.austin.arm.com ([217.140.110.23]:59697 "EHLO
+	collaborate-mta1.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755262AbaGDQ4F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jul 2014 12:56:05 -0400
+Content-Disposition: inline
+In-Reply-To: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, mingo@kernel.org, rjw@rjwysocki.net, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, preeti@linux.vnet.ibm.com, Dietmar.Eggemann@arm.com, pjt@google.com
 
-On 4 July 2014 19:45, Andrew Lunn <andrew@lunn.ch> wrote:
-> We are talking about legacy devices here, which have been in the field
-> for years. There is very little chance of a boot loader
-> upgrade. Appended DT is the norm for these devices, and modifying the
-> DT would have to happen in kernel.
+Hi Morten,
 
-FWIW, I should mention that we don't need to fix DT's at all in your case.
-Just add OPPs at runtime using dev_pm_opp_add() API from within
-kernel, maybe from your arch/arm/mach-* folder and cpufreq-cpu0
-would be able to parse them.
+On Thu, Jul 03, 2014 at 05:25:47PM +0100, Morten Rasmussen wrote:
+> This is an RFC and there are some loose ends that have not been
+> addressed here or in the code yet. The model and its infrastructure is
+> in place in the scheduler and it is being used for load-balancing
+> decisions. It is used for the select_task_rq_fair() path for
+> fork/exec/wake balancing and to guide the selection of the source cpu
+> for periodic or idle balance.
 
---
-viresh
+IMHO, the series is on the right direction for addressing the energy
+aware scheduling (very complex) problem. But I have some high level
+comments below.
+
+> However, the main ideas and the primary focus of this RFC: The energy
+> model and energy_diff_{load, task, cpu}() are there.
+> 
+> Due to limitation 1, the ARM TC2 platform (2xA15+3xA7) was setup to
+> disable frequency scaling and set frequencies to eliminate the
+> big.LITTLE performance difference. That basically turns TC2 into an SMP
+> platform where a subset of the cpus are less energy-efficient.
+> 
+> Tests using a synthetic workload with seven short running periodic
+> tasks of different size and period, and the sysbench cpu benchmark with
+> five threads gave the following results:
+> 
+> cpu energy*	short tasks	sysbench
+> Mainline	100		100
+> EA		 49		 99
+> 
+> * Note that these energy savings are _not_ representative of what can be
+> achieved on a true SMP platform where all cpus are equally 
+> energy-efficient. There should be benefit for SMP platforms as well, 
+> however, it will be smaller.
+
+My impression (and I may be wrong) is that you get bigger energy saving
+on a big.LITTLE vs SMP system exactly because of the asymmetry in power
+consumption. The algorithm proposed here ends up packing small tasks on
+the little CPUs as they are more energy efficient (which is the correct
+thing to do but I wonder what results you would get with 3xA7 vs
+2xA7+1xA15).
+
+For a symmetric system where all CPUs have the same energy model you
+could end up with several small threads balanced equally across the
+system. The only way the scheduler could avoid a CPU is if it somehow
+manages to get into a deeper idle state (and energy_diff_task() would
+show some asymmetry). But this wouldn't happen without the scheduler
+first deciding to leave that CPU idle for longer.
+
+Could this be addressed by making the scheduler more "proactive" and,
+rather than just looking at the current energy diff, guesstimate what it
+would be if not placing a task at all on the CPU? If for example there
+is no other task running on that CPU, could energy_diff_task() take into
+account the next deeper C-state rather than just the current one? This
+way we may be able to achieve more packing even on fully symmetric
+systems and allow CPUs to go into deeper sleep states.
+
+Thanks.
+
+-- 
+Catalin
