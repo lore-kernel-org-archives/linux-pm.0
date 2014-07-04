@@ -1,82 +1,94 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH 6/6] thermal: Add Tegra SOCTHERM thermal management driver
-Date: Fri, 4 Jul 2014 16:43:01 +0800
-Message-ID: <53B66915.4040309@nvidia.com>
-References: <1403856699-2140-1-git-send-email-mperttunen@nvidia.com> <1403856699-2140-7-git-send-email-mperttunen@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1403856699-2140-7-git-send-email-mperttunen@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mikko Perttunen <mperttunen@nvidia.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Matthew Longnecker <MLongnecker@nvidia.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: [PATCH 0/8] cpufreq support for Marvell Armada XP
+Date: Fri,  4 Jul 2014 11:44:55 +0200
+Message-ID: <1404467103-29644-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:56845 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753979AbaGDJpT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jul 2014 05:45:19 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-On 06/27/2014 04:11 PM, Mikko Perttunen wrote:
-> This adds support for the Tegra SOCTHERM thermal sensing and management
-> system found in the Tegra124 system-on-chip. This initial driver supports
-> the four thermal zones with hardware-tracked trip points.
+Mike, Viresh, Rafael, Jason, Gregory, Andrew, Sebastian,
 
-> diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra_soctherm.c
+This series of commits adds cpufreq support for the Marvell Armada XP
+processor. Adding this support involves touching several different
+areas:
 
-> +static int calculate_shared_calibration(struct tsensor_shared_calibration *r)
-> +{
-> +       u32 val;
-> +       u32 shifted_cp, shifted_ft;
-> +       int err;
-> +
-> +       err = tegra_fuse_readl(FUSE_TSENSOR8_CALIB, &val);
-> +       if (err)
-> +               return err;
-> +       r->base_cp = val & 0x3ff;
-> +       r->base_ft = (val & (0x7ff << 10)) >> 10;
-> +
-> +       err = tegra_fuse_readl(FUSE_SPARE_REALIGNMENT_REG_0, &val);
-> +       if (err)
-> +               return err;
-> +       /* Sign extend from 6 bits to 32 bits */
-> +       shifted_cp = (s32)((val & 0x1f) | ((val & 0x20) ? 0xffffffe0 : 0x0));
-> +       val = ((val & (0x1f << 21)) >> 21);
-> +       /* Sign extend from 5 bits to 32 bits */
-> +       shifted_ft = (s32)((val & 0xf) | ((val & 0x10) ? 0xfffffff0 : 0x0));
-> +
-> +       r->actual_temp_cp = 2 * 25 + shifted_cp;
-Do we need to define the "25" as constant, just like below line.
+ - The core clock framework, to add a new clk_set_rate() notifier. See
+   below for the explanation. This should go through Mike Turquette's
+   tree. This is PATCH 01/08.
 
-> +       r->actual_temp_ft = 2 * NOMINAL_CALIB_FT_T124 + shifted_ft;
-> +
-> +       return 0;
-> +}
+ - Addition of an Armada XP cpufreq driver. This should go through the
+   cpufreq maintainers, Viresh Kumar and Rafael J. Wysocki. This is
+   PATCH 02/08.
 
-> +
-> +static irqreturn_t soctherm_isr(int irq, void *dev_id)
-> +{
-> +       struct tegra_thermctl_zone *zone = dev_id;
-> +       u32 val;
-> +       u32 intr_mask = 0x03 << t124_thermctl_shifts[zone->sensor];
-> +
-> +       val = readl(zone->tegra->regs + THERMCTL_INTR_STATUS);
-> +
-> +       if ((val & intr_mask) == 0)
-> +               return IRQ_NONE;
-> +
-> +       writel(val & intr_mask, zone->tegra->regs + THERMCTL_INTR_STATUS);
-I think we need to disable the interrupt here, and enable it again after
-updating the high/low limited values. If not, there will trigger mass of
-interrupts.
+ - Improvements to the existing Armada XP cpu-clock driver. This
+   should also go through Mike Turquette's tree, probably thanks to a
+   pull request to be sent by the mvebu platform maintainers. This is
+   PATCH 03/08.
 
-> +
-> +static struct platform_driver tegra_soctherm_driver = {
-> +       .probe = tegra_soctherm_probe,
-> +       .remove = tegra_soctherm_remove,
-> +       .driver = {
-> +               .name = "tegra_soctherm",
-> +               .owner = THIS_MODULE,
-> +               .of_match_table = tegra_soctherm_of_match,
-> +       },
-> +};
-Will you consider to add suspend/resume support?
+ - Extension of the Marvell EBU PMSU code in arch/arm/mach-mvebu/ to
+   implement a clock notifier needed for the dynamic frequency change
+   procedure. This patch should go through the mvebu maintainers
+   tree. This is PATCH 05/08. Note that this patch has a build
+   dependency on PATCH 01/08, while all other patches don't have any
+   other build dependency.
 
-Thanks.
-Wei.
+ - Misc other small changes (defconfigs, Device Tree, SMP
+   initialization code) that are specific to the mvebu platform, also
+   to be handled by the mvebu maintainers. Those are patches 4, 6, 7
+   and 8.
+
+The only tricky part in this series is the addition of the
+APPLY_RATE_CHANGE clock notifier. All the details about why a new
+clock notifier is needed are exposed in the commit log of the first
+patch, "clk: add an APPLY_RATE_CHANGE notifier event during
+clk_set_rate()". Please read carefully this commit log to understand
+the reasons for this proposed clock notifier.
+
+Basically, the issue is that the procedure to change the CPU clock
+frequency involves touching registers managed by the CPU clock driver,
+but also registers from the PMSU which is used for a wide range of
+power management activities, and is therefore handled by platform
+specific code in mach-mvebu.
+
+Jason, this patch series is based on 3.16-rc3, but it applies fine
+even with mvebu/fixes and mvebu/soc merged (which contain some PMSU
+changes), so I haven't based the patch series on those branches.
+
+Thanks,
+
+Thomas
+
+Thomas Petazzoni (8):
+  clk: add an APPLY_RATE_CHANGE notifier event during clk_set_rate()
+  cpufreq: add driver for Armada XP
+  clk: mvebu: extend clk-cpu for dynamic frequency scaling
+  ARM: mvebu: ensure CPU clocks are enabled
+  ARM: mvebu: extend PMSU code to support dynamic frequency scaling
+  ARM: mvebu: update Armada XP DT for dynamic frequency scaling
+  ARM: mvebu: allow enabling of cpufreq on Armada XP
+  ARM: mvebu: update mvebu_v7_defconfig with cpufreq support
+
+ .../devicetree/bindings/clock/mvebu-cpu-clock.txt  |   5 +-
+ arch/arm/boot/dts/armada-xp.dtsi                   |   2 +-
+ arch/arm/configs/mvebu_v7_defconfig                |   1 +
+ arch/arm/mach-mvebu/Kconfig                        |   1 +
+ arch/arm/mach-mvebu/platsmp.c                      |   1 +
+ arch/arm/mach-mvebu/pmsu.c                         | 168 +++++++++++++++++++++
+ drivers/clk/clk.c                                  |   3 +
+ drivers/clk/mvebu/clk-cpu.c                        |  79 +++++++++-
+ drivers/cpufreq/Kconfig.arm                        |   6 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/armadaxp-cpufreq.c                 | 112 ++++++++++++++
+ include/linux/clk.h                                |   4 +
+ 12 files changed, 375 insertions(+), 8 deletions(-)
+ create mode 100644 drivers/cpufreq/armadaxp-cpufreq.c
+
+-- 
+2.0.0
+
