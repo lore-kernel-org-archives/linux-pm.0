@@ -1,93 +1,38 @@
-From: Anca Emanuel <anca.emanuel@gmail.com>
-Subject: Re: [RFCv2 PATCH 00/23] sched: Energy cost model for energy-aware scheduling
-Date: Fri, 4 Jul 2014 19:03:51 +0300
-Message-ID: <CAJL_dMtiAozRT5hGuQcAZ5xZwLwqdbpmVg80nMV=Shzs-Ys4dQ@mail.gmail.com>
-References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
-	<20140703231950.GA4881@intel.com>
-	<20140704110612.GA6120@e103034-lin>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/8] cpufreq: add driver for Armada XP
+Date: Fri, 4 Jul 2014 21:42:54 +0530
+Message-ID: <CAKohpon-ncOGR7KCJeUJEru7bZfoNbKTqUpkZUkMxPwH2WWFJg@mail.gmail.com>
+References: <1404467103-29644-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<1404467103-29644-3-git-send-email-thomas.petazzoni@free-electrons.com>
+	<CAKohponuvPd1kWDdB66kxd8TxxYqQ219jCq2D2RGhMHAuZTSWA@mail.gmail.com>
+	<20140704131247.2c8ecde2@free-electrons.com>
+	<1404481934.4634.2.camel@weser.hi.pengutronix.de>
+	<20140704141541.GE7773@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140704110612.GA6120@e103034-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Yuyang Du <yuyang.du@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "pjt@google.com" <pjt@google.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f49.google.com ([209.85.219.49]:60285 "EHLO
+	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbaGDQMy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jul 2014 12:12:54 -0400
+Received: by mail-oa0-f49.google.com with SMTP id i7so1958428oag.8
+        for <linux-pm@vger.kernel.org>; Fri, 04 Jul 2014 09:12:54 -0700 (PDT)
+In-Reply-To: <20140704141541.GE7773@lunn.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-This sounds like an an math problem ( for Donald Knuth :) )
-You need to think out of the box, present the problem right is just
-the fist step and an big one.
-Then you need to come with an formal algorithm to solve it, then proof it.
-Next step is to code that algorithm and verify that is working in real world.
+On 4 July 2014 19:45, Andrew Lunn <andrew@lunn.ch> wrote:
+> We are talking about legacy devices here, which have been in the field
+> for years. There is very little chance of a boot loader
+> upgrade. Appended DT is the norm for these devices, and modifying the
+> DT would have to happen in kernel.
 
-If you not present the problem right ( missed bigLittle,
-over/down-clocking ) you will not get the wright algorithm.
-For new algorithms very few people does it right for the first time.
+FWIW, I should mention that we don't need to fix DT's at all in your case.
+Just add OPPs at runtime using dev_pm_opp_add() API from within
+kernel, maybe from your arch/arm/mach-* folder and cpufreq-cpu0
+would be able to parse them.
 
-On Fri, Jul 4, 2014 at 2:06 PM, Morten Rasmussen
-<morten.rasmussen@arm.com> wrote:
-> Hi Yuyang,
->
-> On Fri, Jul 04, 2014 at 12:19:50AM +0100, Yuyang Du wrote:
->> Hi Morten,
->>
->> On Fri, Jul 04, 2014 at 12:25:47AM +0800, Morten Rasmussen wrote:
->> > * Note that these energy savings are _not_ representative of what can be
->> > achieved on a true SMP platform where all cpus are equally
->> > energy-efficient. There should be benefit for SMP platforms as well,
->> > however, it will be smaller.
->> >
->> > The energy model led to consolidation of the short tasks on the A7
->> > cluster (more energy-efficient), while sysbench made use of all cpus as
->> > the A7s didn't have sufficient compute capacity to handle the five
->> > tasks.
->>
->> Looks like this patchset is mainly for big.LITTLE?
->
-> No, not at all. The only big.LITTLE in there is the test platform but
-> that has been configured to be as close as possible to an SMP platform.
-> That is, no performance difference between cpus. I would have preferred
-> a true SMP platform for testing, but this is the only dual-cluster
-> platform that I have access to with proper mainline kernel support.
->
-> The patch set essentially puts tasks where it is most energy-efficient
-> guided by the platform energy model. That should benefit any platform,
-> SMP and big.LITTLE. That is at least the goal.
->
-> On an SMP platform with two clusters/packages (whatever you call a group
-> of cpus sharing the same power domain) you get task consolidation on a
-> single cluster if the energy model says that it is beneficial. Very much
-> like your previous proposals. It is also what I'm trying to show with
-> the numbers I have included.
->
-> That said, we are of course keeping in mind what would be required to
-> make this work for big.LITTLE. However, there is nothing big.LITTLE
-> specific in the patch set. Just the possibility of having different
-> energy models for different cpus in the system. We will have to add some
-> tweaks eventually to get the best out of big.LITTLE later. Somewhat
-> similar to what exists today for better SMT support and other
-> architecture specialities.
->
->> And can the patchset actually replace Global Task Scheduling?
->
-> Global Task Scheduling is (ARM) marketing speak for letting the
-> scheduler know about all cpus in a big.LITTLE system. It is not an
-> actual implementation. There is an out-of-tree implementation of GTS
-> available which is very big.LITTLE specific.
->
-> The energy model driven scheduling proposed here is not big.LITTLE
-> specific, but aims at introducing generic energy-awareness in the
-> scheduler. Once energy-awareness is in place, most of the support needed
-> for big.LITTLE will be there too. It is generic energy-aware code that
-> is capable of making informed decisions based on the platform model,
-> big.LITTLE or SMP.
->
-> The short answer is: Not in its current state, but if we get the
-> energy-awareness right it should be able to.
->
-> Morten
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--
+viresh
