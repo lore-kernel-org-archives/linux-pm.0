@@ -1,47 +1,92 @@
-From: Vincent Minet <vincent@vincent-minet.net>
-Subject: [PATCH] intel_pstate: Set cpu number before accessing MSRs
-Date: Sat,  5 Jul 2014 01:51:33 +0200
-Message-ID: <1404517893-30272-1-git-send-email-vincent@vincent-minet.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle/idle: move idle traces to cpuidle_enter_state
+Date: Sat, 05 Jul 2014 17:45:24 +0200
+Message-ID: <53B81D94.6000404@linaro.org>
+References: <1404293458-9799-1-git-send-email-sandeep.tripathy@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.didaction.com ([87.98.175.59]:60841 "EHLO
-	mail.didaction.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755939AbaGEAEI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jul 2014 20:04:08 -0400
+Received: from mail-we0-f177.google.com ([74.125.82.177]:41203 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbaGEPp1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Jul 2014 11:45:27 -0400
+Received: by mail-we0-f177.google.com with SMTP id u56so2626521wes.8
+        for <linux-pm@vger.kernel.org>; Sat, 05 Jul 2014 08:45:26 -0700 (PDT)
+In-Reply-To: <1404293458-9799-1-git-send-email-sandeep.tripathy@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Sandeep Tripathy <sandeep.tripathy@linaro.org>, rjw@rjwysocki.net
+Cc: rostedt@goodmis.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-Ensure that cpu->cpu is set before writing MSR_IA32_PERF_CTL during CPU
-initialization. Otherwise only cpu0 has its P-state set and all other
-cores are left with their values unchanged.
+On 07/02/2014 11:30 AM, Sandeep Tripathy wrote:
+>   idle_exit event is the first event after a core exits
+> idle state. So this should be traced before local irq
+> is ebabled. Likewise idle_entry is the last event before
+> a core enters idle state. This will ease visualising the
+> cpu idle state from kernel traces.
+>
+> Signed-off-by: Sandeep Tripathy <sandeep.tripathy@linaro.org>
 
-In most cases, this is not too serious because the P-states will be set
-correctly when the timer function is run.
-But when the default governor is set to performance, the per-cpu
-current_pstate stays the same forever and no attempts are made to write
-the MSRs again.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Signed-off-by: Vincent Minet <vincent@vincent-minet.net>
----
- drivers/cpufreq/intel_pstate.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+> ---
+>   drivers/cpuidle/cpuidle.c | 3 +++
+>   kernel/sched/idle.c       | 4 ----
+>   2 files changed, 3 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 8236746..97680d0 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -99,12 +99,15 @@ int cpuidle_enter_state(struct cpuidle_device *de=
+v, struct cpuidle_driver *drv,
+>   	ktime_t time_start, time_end;
+>   	s64 diff;
+>
+> +	trace_cpu_idle_rcuidle(index, dev->cpu);
+>   	time_start =3D ktime_get();
+>
+>   	entered_state =3D target_state->enter(dev, drv, index);
+>
+>   	time_end =3D ktime_get();
+>
+> +	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> +
+>   	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
+>   		local_irq_enable();
+>
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index 8f4390a..07c446a 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -141,7 +141,6 @@ static int cpuidle_idle_call(void)
+>   					&dev->cpu);
+>
+>   			if (!ret) {
+> -				trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>
+>   				/*
+>   				 * Enter the idle state previously
+> @@ -154,9 +153,6 @@ static int cpuidle_idle_call(void)
+>   				entered_state =3D cpuidle_enter(drv, dev,
+>   							      next_state);
+>
+> -				trace_cpu_idle_rcuidle(PWR_EVENT_EXIT,
+> -						       dev->cpu);
+> -
+>   				if (broadcast)
+>   					clockevents_notify(
+>   						CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+>
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 924bb2d..eff0f9a 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -696,9 +696,8 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
- 
- 	cpu = all_cpu_data[cpunum];
- 
--	intel_pstate_get_cpu_pstates(cpu);
--
- 	cpu->cpu = cpunum;
-+	intel_pstate_get_cpu_pstates(cpu);
- 
- 	init_timer_deferrable(&cpu->timer);
- 	cpu->timer.function = intel_pstate_timer_func;
--- 
-2.0.0
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
