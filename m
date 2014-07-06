@@ -1,92 +1,40 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle/idle: move idle traces to cpuidle_enter_state
-Date: Sat, 05 Jul 2014 17:45:24 +0200
-Message-ID: <53B81D94.6000404@linaro.org>
-References: <1404293458-9799-1-git-send-email-sandeep.tripathy@linaro.org>
+From: Alexander Holler <holler@ahsoftware.de>
+Subject: Re: [rtc-linux] Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Sun, 06 Jul 2014 11:49:38 +0200
+Message-ID: <53B91BB2.3090005@ahsoftware.de>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch> <20140629213510.GR32514@n2100.arm.linux.org.uk> <53B154FE.80804@gmail.com> <20140630124320.GZ32514@n2100.arm.linux.org.uk> <53B164B2.7090902@gmail.com> <20140630142516.GA32514@n2100.arm.linux.org.uk> <53B183D5.8020708@gmail.com> <20140630165615.GE32514@n2100.arm.linux.org.uk> <20140630174351.GI18520@lunn.ch> <20140630180853.GF32514@n2100.arm.linux.org.uk> <20140630181640.GL18520@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f177.google.com ([74.125.82.177]:41203 "EHLO
-	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbaGEPp1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Jul 2014 11:45:27 -0400
-Received: by mail-we0-f177.google.com with SMTP id u56so2626521wes.8
-        for <linux-pm@vger.kernel.org>; Sat, 05 Jul 2014 08:45:26 -0700 (PDT)
-In-Reply-To: <1404293458-9799-1-git-send-email-sandeep.tripathy@linaro.org>
+Received: from h1446028.stratoserver.net ([85.214.92.142]:43572 "EHLO
+	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbaGFJuh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 6 Jul 2014 05:50:37 -0400
+In-Reply-To: <20140630181640.GL18520@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sandeep Tripathy <sandeep.tripathy@linaro.org>, rjw@rjwysocki.net
-Cc: rostedt@goodmis.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+To: rtc-linux@googlegroups.com, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 
-On 07/02/2014 11:30 AM, Sandeep Tripathy wrote:
->   idle_exit event is the first event after a core exits
-> idle state. So this should be traced before local irq
-> is ebabled. Likewise idle_entry is the last event before
-> a core enters idle state. This will ease visualising the
-> cpu idle state from kernel traces.
->
-> Signed-off-by: Sandeep Tripathy <sandeep.tripathy@linaro.org>
+Am 30.06.2014 20:16, schrieb Andrew Lunn:
+>> So, what do we do now with support for compressed audio streams via
+>> SPDIF on kirkwood hardware?  As far as I can see, it's no longer
+>> possible and mainline kernels will never support this.  Please tell
+>> me I'm wrong...
+> 
+> Well, it would of been nice if you had made a comment to either v1 or
+> v2 of my patchset saying this is going to cause problems for some
+> devices.
+> 
+> So i will go look at your patch to add frontend and backend and see
+> what it means for the current DT binding. The nice thing about
+> kirkwood (and Dove) is, there is no uboot with DT support. Hence
+> nobody is flashing there DT blob. They are always using appended DT.
+> So i'm not against changing the binding. And it has only been in the
+> kernel for one cycle, so i doubt there are too many users at the
+> moment.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-> ---
->   drivers/cpuidle/cpuidle.c | 3 +++
->   kernel/sched/idle.c       | 4 ----
->   2 files changed, 3 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 8236746..97680d0 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -99,12 +99,15 @@ int cpuidle_enter_state(struct cpuidle_device *de=
-v, struct cpuidle_driver *drv,
->   	ktime_t time_start, time_end;
->   	s64 diff;
->
-> +	trace_cpu_idle_rcuidle(index, dev->cpu);
->   	time_start =3D ktime_get();
->
->   	entered_state =3D target_state->enter(dev, drv, index);
->
->   	time_end =3D ktime_get();
->
-> +	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-> +
->   	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
->   		local_irq_enable();
->
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index 8f4390a..07c446a 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -141,7 +141,6 @@ static int cpuidle_idle_call(void)
->   					&dev->cpu);
->
->   			if (!ret) {
-> -				trace_cpu_idle_rcuidle(next_state, dev->cpu);
->
->   				/*
->   				 * Enter the idle state previously
-> @@ -154,9 +153,6 @@ static int cpuidle_idle_call(void)
->   				entered_state =3D cpuidle_enter(drv, dev,
->   							      next_state);
->
-> -				trace_cpu_idle_rcuidle(PWR_EVENT_EXIT,
-> -						       dev->cpu);
-> -
->   				if (broadcast)
->   					clockevents_notify(
->   						CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+And most people just don't care if some DT-binding changes as they can
+change the provided DT themself. At least on every sane device.
 
