@@ -1,108 +1,66 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
 Subject: Re: [RFCv2 PATCH 00/23] sched: Energy cost model for energy-aware
  scheduling
-Date: Mon, 7 Jul 2014 15:00:18 +0100
-Message-ID: <20140707135915.GA4485@e103687>
+Date: Mon, 7 Jul 2014 15:16:27 +0100
+Message-ID: <20140707141627.GB4485@e103687>
 References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
- <20140704165552.GB30016@arm.com>
+ <20140703231950.GA4881@intel.com>
+ <20140704110612.GA6120@e103034-lin>
+ <20140706190523.GA12113@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:47980 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:58675 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089AbaGGOA1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 10:00:27 -0400
-In-Reply-To: <20140704165552.GB30016@arm.com>
+	with ESMTP id S1752563AbaGGOQd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 10:16:33 -0400
+In-Reply-To: <20140706190523.GA12113@intel.com>
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
+To: Yuyang Du <yuyang.du@intel.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "pjt@google.com" <pjt@google.com>
 
-Hi Catalin,
-
-On Fri, Jul 04, 2014 at 05:55:52PM +0100, Catalin Marinas wrote:
+On Sun, Jul 06, 2014 at 08:05:23PM +0100, Yuyang Du wrote:
 > Hi Morten,
 > 
-> On Thu, Jul 03, 2014 at 05:25:47PM +0100, Morten Rasmussen wrote:
-> > This is an RFC and there are some loose ends that have not been
-> > addressed here or in the code yet. The model and its infrastructure is
-> > in place in the scheduler and it is being used for load-balancing
-> > decisions. It is used for the select_task_rq_fair() path for
-> > fork/exec/wake balancing and to guide the selection of the source cpu
-> > for periodic or idle balance.
+> Thanks, got it. Then another question,
 > 
-> IMHO, the series is on the right direction for addressing the energy
-> aware scheduling (very complex) problem. But I have some high level
-> comments below.
+> On Fri, Jul 04, 2014 at 12:06:13PM +0100, Morten Rasmussen wrote:
+> > The patch set essentially puts tasks where it is most energy-efficient
+> > guided by the platform energy model. That should benefit any platform,
+> > SMP and big.LITTLE. That is at least the goal.
+> > 
 > 
-> > However, the main ideas and the primary focus of this RFC: The energy
-> > model and energy_diff_{load, task, cpu}() are there.
-> > 
-> > Due to limitation 1, the ARM TC2 platform (2xA15+3xA7) was setup to
-> > disable frequency scaling and set frequencies to eliminate the
-> > big.LITTLE performance difference. That basically turns TC2 into an SMP
-> > platform where a subset of the cpus are less energy-efficient.
-> > 
-> > Tests using a synthetic workload with seven short running periodic
-> > tasks of different size and period, and the sysbench cpu benchmark with
-> > five threads gave the following results:
-> > 
-> > cpu energy*	short tasks	sysbench
-> > Mainline	100		100
-> > EA		 49		 99
-> > 
-> > * Note that these energy savings are _not_ representative of what can be
-> > achieved on a true SMP platform where all cpus are equally 
-> > energy-efficient. There should be benefit for SMP platforms as well, 
-> > however, it will be smaller.
+> I understand energy_diff_* functions are based on the energy model (though I
+> have not dived into the detail of how you change load balancing based on
+> energy_diff_*).
 > 
-> My impression (and I may be wrong) is that you get bigger energy saving
-> on a big.LITTLE vs SMP system exactly because of the asymmetry in power
-> consumption.
+> Speaking of the engergy model, I am not sure why elaborate "imprecise" energy
+> numbers do a better job than only a general statement: higher freq, more cap,
+> and more power.
 
-That is correct. As said in the note above, the benefit will be smaller
-on SMP systems.
+The idea is that the energy model allows the scheduler to estimate the
+energy efficiency of the cpus under any load scenario. That way, the
+scheduler can estimate the energy implications of every choice it makes.
+Whether it is cheaper (in terms of energy) to increase frequency on the
+currently awake cpu instead of waking up more. Which cpu is the cheapest
+to wake up if another one is needed. And so on.
 
-> The algorithm proposed here ends up packing small tasks on
-> the little CPUs as they are more energy efficient (which is the correct
-> thing to do but I wonder what results you would get with 3xA7 vs
-> 2xA7+1xA15).
-> 
-> For a symmetric system where all CPUs have the same energy model you
-> could end up with several small threads balanced equally across the
-> system. The only way the scheduler could avoid a CPU is if it somehow
-> manages to get into a deeper idle state (and energy_diff_task() would
-> show some asymmetry). But this wouldn't happen without the scheduler
-> first deciding to leave that CPU idle for longer.
+> Even for big.LITTLE systems, big and little CPUs also follow that statement
+> respectively. Then it is just a matter of where to place tasks between them.
+> Under such, the energy model might be useful, but still probably cpu_power_orig
+> (from Vincent) might be enough.
 
-It is a scenario that could happen with the current use of
-energy_diff_task() in the wakeup balancing path. Any 'imbalance' might
-make some cpus cheaper and hence attract the other tasks, but it is not
-guaranteed to happen.
+cpu_power doesn't tell you anything about energy-efficiency. There is no
+link with frequency scaling. No representation of power domains. I don't
+see how you can make energy aware decisions without having just a vague
+idea about the impact of decisions. You need to consider energy
+efficiency to get the most out of big.LITTLE. I believe the same is true
+to some extend for SMP systems with aggressive cpu power management.
 
-> Could this be addressed by making the scheduler more "proactive" and,
-> rather than just looking at the current energy diff, guesstimate what it
-> would be if not placing a task at all on the CPU? If for example there
-> is no other task running on that CPU, could energy_diff_task() take into
-> account the next deeper C-state rather than just the current one? This
-> way we may be able to achieve more packing even on fully symmetric
-> systems and allow CPUs to go into deeper sleep states.
-
-I think it would be possible to bias the choice of cpu either by
-considering potential energy savings by letting some cpus get into a
-deeper C-state, or applying a static bias towards some cpus (lower cpuid
-for example). Since it is in the wakeup path it must not be too complex
-to figure out though.
-
-I haven't seen the problem in reality yet. When I tried the short tasks
-test with all cpus using the same energy model I got tasks consolidated
-on either of the clusters. The consolidation cluster sometimes changed
-during the test.
-
-There is a lot of tuning to be done, that is for sure. We will have to
-make similar decisions for the periodic/idle balance path as well.
+Could you elaborate on what you mean by 'a general statement'?
 
 Thanks,
 Morten
