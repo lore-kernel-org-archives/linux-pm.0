@@ -1,86 +1,233 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: RFC: Leave sysfs nodes alone during hotplug
-Date: Mon, 7 Jul 2014 16:31:34 +0530
-Message-ID: <CAKohpomuPshe4HpvWSzmZ3vvAjV-zHucfHBVbhB6dUBrrYH8pw@mail.gmail.com>
-References: <53B5D22F.2070308@codeaurora.org>
+From: NeilBrown <neilb@suse.de>
+Subject: Re: [patch[ epoll_ctl.2, epoll.7: document EPOLLWAKEUP
+Date: Mon, 7 Jul 2014 21:01:57 +1000
+Message-ID: <20140707210157.1aa38ed0@notabene.brown>
+References: <20140706190351.423e9a93@notabene.brown>
+	<53BA4244.30502@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/ryAieyiS4Xod5WCxzxhl62b"; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:38353 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752526AbaGGLBe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 07:01:34 -0400
-Received: by mail-ob0-f171.google.com with SMTP id nu7so4426051obb.2
-        for <linux-pm@vger.kernel.org>; Mon, 07 Jul 2014 04:01:34 -0700 (PDT)
-In-Reply-To: <53B5D22F.2070308@codeaurora.org>
+Received: from cantor2.suse.de ([195.135.220.15]:57321 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752526AbaGGLCF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 7 Jul 2014 07:02:05 -0400
+In-Reply-To: <53BA4244.30502@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, "Srivatsa S. Bhat" <srivatsa@mit.edu>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: "Michael Kerrisk (man-pages)" <mtk.manpages@gmail.com>
+Cc: linux-man@vger.kernel.org, Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lkml <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-Cc'ing Srivatsa and fixing Rafael's id.
+--Sig_/ryAieyiS4Xod5WCxzxhl62b
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On 4 July 2014 03:29, Saravana Kannan <skannan@codeaurora.org> wrote:
-> The adding and removing of sysfs nodes in cpufreq causes a ton of pain.
-> There's always some stability or deadlock issue every few weeks on our
-> internal tree. We sync up our internal tree fairly often with the upstream
-> cpufreq code. And more of these issues are popping up as we start exercising
-> the cpufreq framework for b.L systems or HMP systems.
->
-> It looks like we adding a lot of unnecessary complexity by adding and
-> removing these sysfs nodes. The other per CPU sysfs nodes like:
-> /sys/devices/system/cpu/cpu1/power or cpuidle are left alone during hotplug.
-> So, why are we not doing the same for cpufreq too?
 
-This is how it had been since ever, don't know which method is correct.
-Though these are the requirements I have from them:
-- On hotplug files values should get reset ..
-- On suspend/resume values must be retained.
+(adding lkml and linux-pm and I probably should have done from the start).
 
-> Any objections to leaving them alone during hotplug? If those files are
-> read/written to when the entire cluster is hotplugged off, we could just
-> return an error. I'm not saying it would be impossible to fix all these
-> deadlock and race issues in the current code -- but it seems like a lot of
-> pointless effort to remove/add sysfs nodes.
+On Mon, 07 Jul 2014 08:46:28 +0200 "Michael Kerrisk (man-pages)"
+<mtk.manpages@gmail.com> wrote:
 
-Lets understand the problem first and then can take the right decision.
+> Hi Neil,
+>=20
+> On 07/06/2014 11:03 AM, NeilBrown wrote:
+> >=20
+> >=20
+> > Signed-off-by: NeilBrown <neilb@suse.de>
+> > --
+> >=20
+> > I noticed that this was missing so had a go at writing something.
+>=20
+> Thanks. I applied this, and also added the additional piece shown=20
+> at the end of this mail.
+>=20
+> > Is there / Should there be a section 7 man page describing suspend and
+> > autosuspend and wakelocks etc??
+>=20
+> Sounds like it might be useful, but I don't know for sure. On the=20
+> assumption that it might be possible to convince you to write one,
+> could you briefly list what you think should be covered in the page?
 
-> Examples of issues caused by this:
-> 1. Race when changing governor really quickly from userspace. The governors
-> end up getting 2 STOP or 2 START events. This was introduced by [1] when it
-> tried to fix another deadlock issue.
+I was particularly thinking of "/sys/power/autosleep" because my change to
+epoll.7 mentioned autosleep, but there was no man page to reference.
+The interaction of /sys/power/wakeup_count" with suspend/resume is also wor=
+th
+documenting as is the use of wake_locks via /sys/power/wake_{,un}lock (which
+could also usefully be referenced by epoll(7)).
 
-I was talking about [1] offline with Srivatsa, and one of us might look in
-detail why [1] was actually required.
+Given the number of filenames here, maybe this belongs in section 5 rather
+than section 7.  Similar to proc(5) we could have power(5) which
+documents /sys/power ???
+(OK, I can see this might be opening a can of worms - we'll be having
+class(5) and bus(5) and devices(5) next... but maybe this is a good thing.
+And seeing these are all part of the kernel API, maybe they should be in
+section 2 with the systemcalls.  Or do with need a new section of API virtu=
+al
+files ....)
 
-But I don't know how exactly can we get 2 STOP/START in latest mainline
-code. As we have enough protection against that now.
+So I guess "ls /sys/power" is a brief list of what should be included in the
+page :-)
 
-So, we would really like to see some reports against mainline for this.
+And thanks for your improvements to my submission!
 
-> 2. Incorrect policy/sysfs handling during suspend/resume. Suspend takes out
-> CPU in the order n, n+1, n+2, etc and resume adds them back in the same
-> order. Both sysfs and policy ownership transfer aren't handled correctly in
-> this case.
+NeilBrown
 
-I know few of these, but can you please tell what you have in mind?
 
-> This obviously applies even outside suspend/resume if the same
-> sequence is repeated using just hotplug.
+>=20
+> > Comments (of course) welcome.
+> >=20
+> > NeilBrown
+> >=20
+> >=20
+> > diff --git a/man2/epoll_ctl.2 b/man2/epoll_ctl.2
+> > index 1fbe74eeea4e..6388f19195f1 100644
+> > --- a/man2/epoll_ctl.2
+> > +++ b/man2/epoll_ctl.2
+> > @@ -154,6 +154,26 @@ The user must call
+> >  with
+> >  .B EPOLL_CTL_MOD
+> >  to rearm the file descriptor with a new event mask.
+> > +.TP
+> > +.BR EPOLLWAKEUP " (since Linux 3.5)"
+> > +If
+> > +.B EPOLLONESHOT
+> > +and
+> > +.B EPOLLET
+> > +are clear and the process has the
+> > +.B CAP_BLOCK_SUSPEND
+> > +.BR capability (7),
+> > +ensure that the system does not enter "suspend" or
+> > +"hibernate" while this event is pending or being processed.
+> > +The event is considered as being "processed" from when it returned by
+> > +a call to
+> > +.BR epoll_wait (2)
+> > +until the next call to
+> > +.BR epoll_wait (2)
+> > +on the same
+> > +.BR epoll (7)
+> > +file descriptor.
+> > +.\" commit 4d7e30d98939a0340022ccd49325a3d70f7e0238
+> >  .SH RETURN VALUE
+> >  When successful,
+> >  .BR epoll_ctl ()
+> > diff --git a/man7/epoll.7 b/man7/epoll.7
+> > index a372d9727978..31b1a8c8c9ba 100644
+> > --- a/man7/epoll.7
+> > +++ b/man7/epoll.7
+> > @@ -173,6 +173,35 @@ it is the caller's responsibility to rearm the file
+> > descriptor using .BR epoll_ctl (2)
+> >  with
+> >  .BR EPOLL_CTL_MOD .
+> > +.SS Interaction with autosleep
+> > +If the system is in
+> > +.B autosleep
+> > +mode via
+> > +.I /sys/power/autosleep
+> > +and an event happens which wakes the device from sleep, the device
+> > +driver will only keep the device awake until that event is queued.  To
+> > +keep the device awake until the event has been processed it is
+> > +necessary to use
+> > +.B epoll
+> > +and the
+> > +.B EPOLLWAKEUP
+> > +flag.
+> > +
+> > +When this flag is set in the
+> > +.B events
+> > +field for a
+> > +.I struct epoll_event
+> > +then system will be kept awake from the moment the event is queued,
+> > +through the
+> > +.IR epoll_wait (2)
+> > +call which returns the event until the subsequent
+> > +.IR epoll_wait (2)
+> > +call.  If the event should keep the system awake beyond that time,
+> > +the a separate
+> > +.I wake_lock
+> > +should be taken before the second
+> > +.IR epoll_wait (2)
+> > +call.
+> >  .SS /proc interfaces
+> >  The following interfaces can be used to limit the amount of
+> >  kernel memory consumed by epoll:
+>=20
+> All of the above looks good. I also added the piece sad little=20
+> detail shown below.
+>=20
+> Cheers,
+>=20
+> Michael
+>=20
+> --- a/man2/epoll_ctl.2
+> +++ b/man2/epoll_ctl.2
+> @@ -174,6 +174,7 @@ until the next call to
+>  on the same
+>  .BR epoll (7)
+>  file descriptor.
+> +See also BUGS.
+>  .SH RETURN VALUE
+>  When successful,
+>  .BR epoll_ctl ()
+> @@ -270,6 +271,33 @@ when using
+>  Applications that need to be portable to kernels before 2.6.9
+>  should specify a non-null pointer in
+>  .IR event .
+> +
+> +If
+> +.B EPOLLWAKEUP
+> +is specified in
+> +.IR flags ,
+> +but the caller does not have the
+> +.BR CAP_BLOCK_SUSPEND
+> +capability, then the
+> +.B EPOLLWAKEUP
+> +flag is
+> +.IR "silently ignored" .
+> +This unfortunate behavior is necessary because no validity
+> +checks were performed on the
+> +.IR flags
+> +argument in the original implementation, and the addition of the
+> +.B EPOLLWAKEUP
+> +with a check that caused the call to fail if the caller did not have the
+> +.B CAP_BLOCK_SUSPEND
+> +capability caused a breakage in at least one existing user-space
+> +application that happened to randomly (and uselessly) specify this bit.
+> +.\" commit a8159414d7e3af7233e7a5a82d1c5d85379bd75c (behavior change)
+> +.\" https://lwn.net/Articles/520198/
+> +A robust application should therefore double check that it has the
+> +.B CAP_BLOCK_SUSPEND
+> +capability if attempting to use the
+> +.B EPOLLWAKEUP
+> +flag.
+>  .SH SEE ALSO
+>  .BR epoll_create (2),
+>  .BR epoll_wait (2),
+>=20
+>=20
+>=20
+>=20
 
-Again, what's the issue?
 
-> I'd be willing to take a shot at this if there isn't any objection to this.
-> It's a lot of work/refactor -- so I don't want to spend a lot of time on it
-> if there's a strong case for removing these sysfs nodes.
+--Sig_/ryAieyiS4Xod5WCxzxhl62b
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-Sure, I fully understand this but still wanna understand the issue first.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-> P.S: I always find myself sending emails to the lists close to one holiday
-> or another. Sigh.
+iQIVAwUBU7p+JTnsnt1WYoG5AQIPtA/9GbZMfak5B9NJB4mApRHmZnHSMcQKokYo
+0Bx9HIK1Ub8owc0hKG/21BmvC6OXLoiEKlNsDF9KCOIzh+OPVdUOyrI0DDN9M8Gw
+/m62C1W2eR841HvHxojG1lb8aMms65GfQxgLy61EHe0JzCM1UYtdCS3pd8DRPLvl
+Xu1VtGlifsZW0ruFs8kpixb/99Gc5//s11fblOfmnWSqjef0BVmcjxtWI1zK+5Ta
+7tgg92xigRNQuZ/QEaV6IyW3JzrZNLeG5kSQdZhUeQjpkbt6vzjeLWUdaVIrcUKU
+WCteCvaU7spd7gYn7g7QlNsVjdIL0AoQGhop5wApzO1Fe5z9kg8/fp0stSMb35z2
+XeV4/wp69Mg6+WiF+95ZstO/tC+UEx/WF+qziZ2NZZx+223cO4hgvaLI4O/VS19l
+zIc/KO+EJdRNsf+yZWVDHvzyk0s2TyimbYh3oqrMq2Seypwt9wHN+d0YdulKK+wY
+6unrRPVMalxGoGEVS0UfOJu51I9rLp/yYRCBt4ENwqriru4Quh3+J/f7QTTM2kGb
+5hRz7UcYWtQfCDsJ3gH+zS+jlsa63prQnevuc+7R/VgClP+GCFG/tPSXtH/+VPDB
+PtAkNeKJ/tDZMyXbWZaJWm0dBqQlqBfSLKFEf9IdN6aZtt/oo+hZX2XYPh0cX0NW
+BJfXfurKIUg=
+=X3g/
+-----END PGP SIGNATURE-----
 
-Sorry for being late to reply to this. I saw it on friday, but couldn't reply
-whole day. Was following something with ticks core. :(
-
-> [1] -
-> https://kernel.googlesource.com/pub/scm/linux/kernel/git/rafael/linux-pm/+/955ef4833574636819cd269cfbae12f79cbde63a%5E!/
+--Sig_/ryAieyiS4Xod5WCxzxhl62b--
