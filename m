@@ -1,85 +1,83 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal Management updates for v3.16-rc5
-Date: Mon, 07 Jul 2014 22:56:14 +0800
-Message-ID: <1404744974.2291.67.camel@rzhang1-toshiba>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv2 PATCH 00/23] sched: Energy cost model for energy-aware
+ scheduling
+Date: Mon, 7 Jul 2014 17:42:30 +0200
+Message-ID: <20140707154230.GF19379@twins.programming.kicks-ass.net>
+References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
+ <20140704165552.GB30016@arm.com>
+ <20140707135915.GA4485@e103687>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:3499 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752941AbaGGO4R (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Jul 2014 10:56:17 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mfP1iJBimQeSOP+4"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140707135915.GA4485@e103687>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "pjt@google.com" <pjt@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-
-Please pull from the git repository at
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git for-rc
-
-to receive Thermal management updates for v3.16-rc5 with
-top-most commit 4adccf9fc84aaf5e4d18442e163d549e0b603075:
-
-  tmon: set umask to a reasonable value (2014-07-01 22:00:51 +0800)
-
-on top of commit a497c3ba1d97fc69c1e78e7b96435ba8c2cb42ee:
-
-  Linux 3.16-rc2 (2014-06-21 19:02:54 -1000)
-
-Specifics:
-
-- Update Email address of Thermal subsystem maintainer Eduardo Valentin.
-
-- Fix a problem that unloading thermal module results in kernel crash
-because a non-exist device file is removed on thermal unload.
-
-- Fix a problem that critical trip point is set wrongly on latest i.MX6
-SOC and results in system critical shutdown.
-
-- a couple of fixes to Tmon tool, of-thermal code and ti thermal driver.
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Aaron Lu (1):
-      thermal: hwmon: Make the check for critical temp valid consistent
-
-Anson Huang (1):
-      Thermal: imx: correct critical trip temperature setting
-
-Javi Merino (1):
-      tools/thermal: tmon: fix compilation errors when building
-statically
-
-Lee Jones (1):
-      MAINTAINERS: Update Eduardo Valentin's email address
-
-Neil Horman (2):
-      tmon: Check log file for common secuirty issues
-      tmon: set umask to a reasonable value
-
-Punit Agrawal (1):
-      thermal: Bind cooling devices with the correct arguments
-
-Rickard Strandqvist (1):
-      thermal: ti-soc-thermal: ti-bandgap.c: Cleaning up wrong address
-is checked
-
-Stephen Boyd (1):
-      thermal: Add braces around suspect code
-
- MAINTAINERS                                 |  4 ++--
- drivers/thermal/imx_thermal.c               | 18 +++++++-----------
- drivers/thermal/of-thermal.c                |  7 ++++---
- drivers/thermal/thermal_hwmon.c             | 33
-++++++++++++++++++---------------
- drivers/thermal/ti-soc-thermal/ti-bandgap.c |  2 +-
- tools/thermal/tmon/Makefile                 |  2 +-
- tools/thermal/tmon/tmon.c                   | 26
-+++++++++++++++++++++++++-
- 7 files changed, 58 insertions(+), 34 deletions(-)
 
 
+--mfP1iJBimQeSOP+4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Jul 07, 2014 at 03:00:18PM +0100, Morten Rasmussen wrote:
+> > Could this be addressed by making the scheduler more "proactive" and,
+> > rather than just looking at the current energy diff, guesstimate what it
+> > would be if not placing a task at all on the CPU? If for example there
+> > is no other task running on that CPU, could energy_diff_task() take into
+> > account the next deeper C-state rather than just the current one? This
+> > way we may be able to achieve more packing even on fully symmetric
+> > systems and allow CPUs to go into deeper sleep states.
+>=20
+> I think it would be possible to bias the choice of cpu either by
+> considering potential energy savings by letting some cpus get into a
+> deeper C-state, or applying a static bias towards some cpus (lower cpuid
+> for example). Since it is in the wakeup path it must not be too complex
+> to figure out though.
+>=20
+> I haven't seen the problem in reality yet. When I tried the short tasks
+> test with all cpus using the same energy model I got tasks consolidated
+> on either of the clusters. The consolidation cluster sometimes changed
+> during the test.
+>=20
+> There is a lot of tuning to be done, that is for sure. We will have to
+> make similar decisions for the periodic/idle balance path as well.
+
+So one of the things I mentioned previously (on IRC, to Morton) is that
+we can use the energy numbers (P and C state) to precompute whether or
+not race-to-idle makes sense for the platform. Or if it benefits from
+packing etc..
+
+So at topology setup time we can statically determine some of these
+policies (maybe with a few parameters) and take it from there.
+
+So if the platform benefits from packing, we can set the appropriate
+topology bits to do so. If it benefits from race-to-idle, it can select
+that, etc.
+
+
+--mfP1iJBimQeSOP+4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTur/mAAoJEHZH4aRLwOS6zOsQAJeoYjIh20uaTZ5T4tvVOS0m
+wfJuQ+1S+o+mu4O9whbs9kFJ5AolUhgtXyupcArDErpG6GLtNy9+kxniRsISK4Bb
++SbO9AoCms2lqNK8hLK1RgAHR+Orr6iLwDNeyLwW54TxOyL4Zv023HK/EHzLNFUI
+YcySCZHL9+87vCBuwK9mbDqwpagTQs5nP7+6EXjt4rYEZOGg8UCLcu/HR4+UnHXI
+UoK8DXcI0wj0zrKa9rmDItDUSIQ+zZT6RKrlpR7W824cQ9NgLBuhVEBnZWVWRsKy
+j2ozt+w9GMTCLWqCLntb3a4r9F9pfSVnAS0yn+xGEzOHvJFniyyBxSq28sogPkid
+se460U5oDGjYnQzZGN6+QEWRQhbi/QITDirS4GVhbNiwWVY6hnDNIKsYaN7Wc7bZ
+ikUI4Em70KPFYJnX+dXbCfdkd7sZpMhGSafHhzsMDuN0FTHlwuFPxvwwlWYlDDyN
+lB1ncHzBEvC4TCKnBINGkWW+F8Ff0JHlMBNU9OEyd1qbG263TPmgfthv0ASRGCf+
+Y0er3ERGortAA4GWkZYoKLNZ4cx7exy7N4pyDt9VakUQXIN+dfk6HN88tzxgIsrk
+fjxgDo58Rc+O1FoWPBhGEqhIh3BklfkKzj5h+tHoWsLMa01IAAURA97KUo6PBkKR
+Pz51LfWpgFFMovBUXs6x
+=h9Ae
+-----END PGP SIGNATURE-----
+
+--mfP1iJBimQeSOP+4--
