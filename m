@@ -1,225 +1,142 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [Xen-devel] [PATCH v1 1/2] genirq: Fix error path for resuming
- irqs
-Date: Mon, 7 Jul 2014 11:33:53 -0400
-Message-ID: <20140707153353.GA29197@laptop.dumpdata.com>
-References: <1403913865-31614-1-git-send-email-dbasehore@chromium.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: RFC: Leave sysfs nodes alone during hotplug
+Date: Mon, 07 Jul 2014 12:30:08 -0700
+Message-ID: <53BAF540.9080904@codeaurora.org>
+References: <53B5D22F.2070308@codeaurora.org> <CAKohpomuPshe4HpvWSzmZ3vvAjV-zHucfHBVbhB6dUBrrYH8pw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:31318 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbaGGTKe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 15:10:34 -0400
-Content-Disposition: inline
-In-Reply-To: <1403913865-31614-1-git-send-email-dbasehore@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomuPshe4HpvWSzmZ3vvAjV-zHucfHBVbhB6dUBrrYH8pw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa@mit.edu>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
-To: Derek Basehore <dbasehore@chromium.org>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, Laxman Dewangan <ldewangan@nvidia.com>, Ian Campbell <ian.campbell@citrix.com>, linux-pm@vger.kernel.org
 
-On Fri, Jun 27, 2014 at 05:04:24PM -0700, Derek Basehore wrote:
-> In the case of a late abort to suspend/hibernate, irqs marked with
-> IRQF_EARLY_RESUME will not be enabled. This is due to syscore_resume not getting
-> called on these paths.
-> 
-> This can happen with a pm test for platform, a late wakeup irq, and other
-> instances. This change removes the function from syscore and calls it explicitly
-> in suspend, hibernate, etc.
-> 
-> This regression was introduced in 9bab0b7f "genirq: Add IRQF_RESUME_EARLY"
-> 
-> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+Rafael's email is bounced. Looks like I used a stale ID. Fixing it in 
+this email.
 
-Tested-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+On 07/07/2014 04:01 AM, Viresh Kumar wrote:
+> Cc'ing Srivatsa and fixing Rafael's id.
+>
+> On 4 July 2014 03:29, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> The adding and removing of sysfs nodes in cpufreq causes a ton of pain.
+>> There's always some stability or deadlock issue every few weeks on our
+>> internal tree. We sync up our internal tree fairly often with the upstream
+>> cpufreq code. And more of these issues are popping up as we start exercising
+>> the cpufreq framework for b.L systems or HMP systems.
+>>
+>> It looks like we adding a lot of unnecessary complexity by adding and
+>> removing these sysfs nodes. The other per CPU sysfs nodes like:
+>> /sys/devices/system/cpu/cpu1/power or cpuidle are left alone during hotplug.
+>> So, why are we not doing the same for cpufreq too?
+>
+> This is how it had been since ever, don't know which method is correct.
 
-on the Xen side.
-> ---
->  drivers/base/power/main.c |  5 ++++-
->  drivers/xen/manage.c      |  5 ++++-
->  include/linux/interrupt.h |  1 +
->  include/linux/pm.h        |  2 +-
->  kernel/irq/pm.c           | 17 +++--------------
->  kernel/kexec.c            |  2 +-
->  kernel/power/hibernate.c  |  6 +++---
->  kernel/power/suspend.c    |  2 +-
->  8 files changed, 18 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index bf41296..a087473 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -712,8 +712,10 @@ static void dpm_resume_early(pm_message_t state)
->   * dpm_resume_start - Execute "noirq" and "early" device callbacks.
->   * @state: PM transition of the system being carried out.
->   */
-> -void dpm_resume_start(pm_message_t state)
-> +void dpm_resume_start(pm_message_t state, bool enable_early_irqs)
->  {
-> +	if (enable_early_irqs)
-> +		early_resume_device_irqs();
->  	dpm_resume_noirq(state);
->  	dpm_resume_early(state);
->  }
-> @@ -1132,6 +1134,7 @@ static int dpm_suspend_noirq(pm_message_t state)
->  	if (error) {
->  		suspend_stats.failed_suspend_noirq++;
->  		dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
-> +		early_resume_device_irqs();
->  		dpm_resume_noirq(resume_event(state));
->  	} else {
->  		dpm_show_time(starttime, state, "noirq");
-> diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
-> index c3667b2..d387cdf 100644
-> --- a/drivers/xen/manage.c
-> +++ b/drivers/xen/manage.c
-> @@ -68,6 +68,7 @@ static int xen_suspend(void *data)
->  	err = syscore_suspend();
->  	if (err) {
->  		pr_err("%s: system core suspend failed: %d\n", __func__, err);
-> +		early_resume_device_irqs();
->  		return err;
->  	}
->  
-> @@ -92,6 +93,8 @@ static int xen_suspend(void *data)
->  		xen_timer_resume();
->  	}
->  
-> +	early_resume_device_irqs();
-> +
->  	syscore_resume();
->  
->  	return 0;
-> @@ -137,7 +140,7 @@ static void do_suspend(void)
->  
->  	raw_notifier_call_chain(&xen_resume_notifier, 0, NULL);
->  
-> -	dpm_resume_start(si.cancelled ? PMSG_THAW : PMSG_RESTORE);
-> +	dpm_resume_start(si.cancelled ? PMSG_THAW : PMSG_RESTORE, false);
->  
->  	if (err) {
->  		pr_err("failed to start xen_suspend: %d\n", err);
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index 698ad05..7f390e3 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -193,6 +193,7 @@ extern void irq_wake_thread(unsigned int irq, void *dev_id);
->  /* The following three functions are for the core kernel use only. */
->  extern void suspend_device_irqs(void);
->  extern void resume_device_irqs(void);
-> +extern void early_resume_device_irqs(void);
->  #ifdef CONFIG_PM_SLEEP
->  extern int check_wakeup_irqs(void);
->  #else
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 72c0fe0..ae5b26a 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -677,7 +677,7 @@ struct dev_pm_domain {
->  
->  #ifdef CONFIG_PM_SLEEP
->  extern void device_pm_lock(void);
-> -extern void dpm_resume_start(pm_message_t state);
-> +extern void dpm_resume_start(pm_message_t state, bool enable_early_irqs);
->  extern void dpm_resume_end(pm_message_t state);
->  extern void dpm_resume(pm_message_t state);
->  extern void dpm_complete(pm_message_t state);
-> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-> index abcd6ca..b07dc9c 100644
-> --- a/kernel/irq/pm.c
-> +++ b/kernel/irq/pm.c
-> @@ -60,26 +60,15 @@ static void resume_irqs(bool want_early)
->  }
->  
->  /**
-> - * irq_pm_syscore_ops - enable interrupt lines early
-> + * early_resume_device_irqs - enable interrupt lines early
->   *
->   * Enable all interrupt lines with %IRQF_EARLY_RESUME set.
->   */
-> -static void irq_pm_syscore_resume(void)
-> +void early_resume_device_irqs(void)
->  {
->  	resume_irqs(true);
->  }
-> -
-> -static struct syscore_ops irq_pm_syscore_ops = {
-> -	.resume		= irq_pm_syscore_resume,
-> -};
-> -
-> -static int __init irq_pm_init_ops(void)
-> -{
-> -	register_syscore_ops(&irq_pm_syscore_ops);
-> -	return 0;
-> -}
-> -
-> -device_initcall(irq_pm_init_ops);
-> +EXPORT_SYMBOL_GPL(early_resume_device_irqs);
->  
->  /**
->   * resume_device_irqs - enable interrupt lines disabled by suspend_device_irqs()
-> diff --git a/kernel/kexec.c b/kernel/kexec.c
-> index 369f41a..272853b 100644
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -1700,7 +1700,7 @@ int kernel_kexec(void)
->  		local_irq_enable();
->   Enable_cpus:
->  		enable_nonboot_cpus();
-> -		dpm_resume_start(PMSG_RESTORE);
-> +		dpm_resume_start(PMSG_RESTORE, true);
->   Resume_devices:
->  		dpm_resume_end(PMSG_RESTORE);
->   Resume_console:
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index fcc2611..1d6dd56 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -325,7 +325,7 @@ static int create_image(int platform_mode)
->  	platform_finish(platform_mode);
->  
->  	dpm_resume_start(in_suspend ?
-> -		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-> +		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE, true);
->  
->  	return error;
->  }
-> @@ -482,7 +482,7 @@ static int resume_target_kernel(bool platform_mode)
->   Cleanup:
->  	platform_restore_cleanup(platform_mode);
->  
-> -	dpm_resume_start(PMSG_RECOVER);
-> +	dpm_resume_start(PMSG_RECOVER, true);
->  
->  	return error;
->  }
-> @@ -574,7 +574,7 @@ int hibernation_platform_enter(void)
->   Platform_finish:
->  	hibernation_ops->finish();
->  
-> -	dpm_resume_start(PMSG_RESTORE);
-> +	dpm_resume_start(PMSG_RESTORE, true);
->  
->   Resume_devices:
->  	entering_platform_hibernation = false;
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 4dd8822..3597c72 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -281,7 +281,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
->  	if (need_suspend_ops(state) && suspend_ops->wake)
->  		suspend_ops->wake();
->  
-> -	dpm_resume_start(PMSG_RESUME);
-> +	dpm_resume_start(PMSG_RESUME, true);
->  
->   Platform_finish:
->  	if (need_suspend_ops(state) && suspend_ops->finish)
-> -- 
-> 2.0.0.526.g5318336
-> 
-> 
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xen.org
-> http://lists.xen.org/xen-devel
+Rafael, If you don't have any objections, I would like to simplify it.
+
+> Though these are the requirements I have from them:
+> - On hotplug files values should get reset ..
+> - On suspend/resume values must be retained.
+
+Hmm... There's actually enough interest in NOT reseting across hotplug 
+because it's also used by thermal when a CPU gets too hot and then it's 
+plugged in later. So, userspace has no way to cleanly restore the 
+values. But that's a separate topic.
+
+>> Any objections to leaving them alone during hotplug? If those files are
+>> read/written to when the entire cluster is hotplugged off, we could just
+>> return an error. I'm not saying it would be impossible to fix all these
+>> deadlock and race issues in the current code -- but it seems like a lot of
+>> pointless effort to remove/add sysfs nodes.
+>
+> Lets understand the problem first and then can take the right decision.
+
+My point is more of a, do we even need to allow this problem to happen 
+instead of trying and fixing it. I see no benefit at all in 
+removing/adding the files during hotplug.
+
+>
+>> Examples of issues caused by this:
+>> 1. Race when changing governor really quickly from userspace. The governors
+>> end up getting 2 STOP or 2 START events. This was introduced by [1] when it
+>> tried to fix another deadlock issue.
+>
+> I was talking about [1] offline with Srivatsa, and one of us might look in
+> detail why [1] was actually required.
+
+I believe it has to do with a race that's something along these lines:
+1. Echo/store into a sysfs node grabbing a sysfs lock (inside sysfs 
+code) before trying to grab one of the cpufreq locks
+2. The hotplug path grabbing one of the cpufreq locks before trying to 
+remove the sysfs group.
+
+The two START/STOP happens because of [1]. It can happen when userspace 
+is quickly changes governors back to back. Or say, multiple threads 
+trying to store the same governor. The double START/STOP happens because 
+the 2nd request is able to slip in when you unlock the rwsem for sending 
+the policy INIT/EXIT.
+
+>
+> But I don't know how exactly can we get 2 STOP/START in latest mainline
+> code. As we have enough protection against that now.
+>
+> So, we would really like to see some reports against mainline for this.
+
+Is the above sufficient enough? It's really easy to trigger if you have 
+a b.L system. Just slam scaling_governor between performance and another 
+governor (or it might have been the same value). b.L is important 
+because if you don't have multi-cluster, you don't get POLICY_EXIT often.
+
+>> 2. Incorrect policy/sysfs handling during suspend/resume. Suspend takes out
+>> CPU in the order n, n+1, n+2, etc and resume adds them back in the same
+>> order. Both sysfs and policy ownership transfer aren't handled correctly in
+>> this case.
+>
+> I know few of these, but can you please tell what you have in mind?
+
+Not sure what you mean by "what you have in mind". Just simple 
+suspend/resume is broken. Again, easier to reproduce in b.L system since 
+you need to actually have POLICY_EXIT happen.
+
+>> This obviously applies even outside suspend/resume if the same
+>> sequence is repeated using just hotplug.
+>
+> Again, what's the issue?
+
+Just hotplug all CPUs in a cluster in one order and bring it up in 
+another. It should crash or panic about sysfs. Basically, the kobj of 
+the real sysfs stays with the last CPU that went down, but the first CPU 
+that comes up owns the policy without owning the real kobj.
+
+>> I'd be willing to take a shot at this if there isn't any objection to this.
+>> It's a lot of work/refactor -- so I don't want to spend a lot of time on it
+>> if there's a strong case for removing these sysfs nodes.
+>
+> Sure, I fully understand this but still wanna understand the issue first.
+
+We might be able to throw around more locks, etc to fix this. But again, 
+my main point is that all this seems pointless.
+
+We should just leave the sysfs nodes alone. We won't break any backward 
+compatibility since userspace can't be depending on these to be present 
+when a CPU was OFFLINE. Anything that depended on that would be broken 
+userspace code anyway.
+
+>> P.S: I always find myself sending emails to the lists close to one holiday
+>> or another. Sigh.
+>
+> Sorry for being late to reply to this. I saw it on friday, but couldn't reply
+> whole day. Was following something with ticks core. :(
+
+No worries. This was a fast enough :)
+
+>
+>> [1] -
+>> https://kernel.googlesource.com/pub/scm/linux/kernel/git/rafael/linux-pm/+/955ef4833574636819cd269cfbae12f79cbde63a%5E!/
+
+-Saravana
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
