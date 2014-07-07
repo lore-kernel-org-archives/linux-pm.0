@@ -1,51 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4] power: add an API to log wakeup reasons
-Date: Mon, 07 Jul 2014 22:09:28 +0200
-Message-ID: <1513900.gylJAouuZq@vostro.rjw.lan>
-References: <1394730340-3607-1-git-send-email-kandoiruchi@google.com> <CANcMJZAm+TfX5W_AMSECBTb8tAzts9_YtOjCXGhmy4SgPAjYqg@mail.gmail.com>
+From: Todd Poynor <toddpoynor@google.com>
+Subject: Re: RFC: Leave sysfs nodes alone during hotplug
+Date: Mon, 7 Jul 2014 15:40:54 -0700
+Message-ID: <CAAW3Ypa690EKmDzwx94CaHeR4j_F6_yFmFrn6xTYuLv=pH7B3g@mail.gmail.com>
+References: <53B5D22F.2070308@codeaurora.org>
+	<CAKohpomuPshe4HpvWSzmZ3vvAjV-zHucfHBVbhB6dUBrrYH8pw@mail.gmail.com>
+	<53BAF540.9080904@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60276 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750809AbaGGTvY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 15:51:24 -0400
-In-Reply-To: <CANcMJZAm+TfX5W_AMSECBTb8tAzts9_YtOjCXGhmy4SgPAjYqg@mail.gmail.com>
+Received: from mail-vc0-f170.google.com ([209.85.220.170]:36317 "EHLO
+	mail-vc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbaGGWkz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 18:40:55 -0400
+Received: by mail-vc0-f170.google.com with SMTP id hy10so4709218vcb.1
+        for <linux-pm@vger.kernel.org>; Mon, 07 Jul 2014 15:40:54 -0700 (PDT)
+In-Reply-To: <53BAF540.9080904@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: Ruchi Kandoi <kandoiruchi@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ghackmann@google.com, toddpoynor@google.com, Amit Kucheria <amit.kucheria@linaro.org>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Ruchi Kandoi <kandoiruchi@google.com>
 
-On Monday, July 07, 2014 03:02:18 PM John Stultz wrote:
-> On Thu, Mar 13, 2014 at 6:05 PM, Ruchi Kandoi <kandoiruchi@google.com> wrote:
-> > For power management diagnostic purposes, it is often useful to know
-> > what interrupts are frequently waking the system from low power
-> > suspend mode, especially on battery-powered consumer electronics
-> > devices that are expected to spend much of their time in low-power
-> > suspend while not in active use.  For example, reduced battery life on
-> > a mobile phone may be caused in part by frequent wakeups by broadcast
-> > traffic on a busy wireless LAN even while the screen is off and the
-> > phone not in active use.
-> >
-> > Add API log_wakeup_reason() exposes it to userspace via the sysfs path
-> > /sys/kernel/wakeup_reasons/last_resume_reason. This API would be called
-> > from the paltform specific, or from the driver for the interrupt controller,
-> > when the system resumes because of an IRQ. It logs the reasons which caused
-> > the system to wakeup from the low-power mode.
-> >
-> > This information can be collected by userspace as part of the accounting
-> > kept on power consumption.
-> 
-> Rafael,
->    I realize its been awhile here, but seeing as discussion on this
-> petered out somewhat ambiguously, I was curious if your thoughts on
-> using wakeup_sources for this was considered a prereq for further
-> discussion or if it was a softer thought experiment?
+On Mon, Jul 7, 2014 at 12:30 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
+...
+>> Though these are the requirements I have from them:
+>> - On hotplug files values should get reset ..
+>> - On suspend/resume values must be retained.
+>
+> Hmm... There's actually enough interest in NOT reseting across hotplug
+> because it's also used by thermal when a CPU gets too hot and then it's
+> plugged in later. So, userspace has no way to cleanly restore the values.
+> But that's a separate topic.
 
-It really was softer at that time, but today that we have the "freeze"
-sleep state where wakeup sources really are used for wakeup it would make
-more sense to used them here too.
+For Android's usage we're also interested in both:
 
-Rafael
+1. not removing and recreating the cpufreq sysfs files for a CPU on
+hotplug events (we currently use hotplug uevents to reset file
+ownership such that power policy can be controlled by non-root).
 
+2. not resetting the contents of policy files such as scaling_max_freq
+(also fixed up from uevents) or stats files (we currently keep a
+separate persistent time_in_state for battery accounting purposes).
+
+>>> Any objections to leaving them alone during hotplug? If those files are
+>>> read/written to when the entire cluster is hotplugged off, we could just
+>>> return an error. I'm not saying it would be impossible to fix all these
+>>> deadlock and race issues in the current code -- but it seems like a lot
+>>> of
+>>> pointless effort to remove/add sysfs nodes.
+
+No objections from our standpoint.
+
+
+Thanks -- Todd
