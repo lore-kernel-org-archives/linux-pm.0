@@ -1,40 +1,126 @@
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv2 8/8] ARM: configs: add cpufreq-generic in multi_v7_defconfig
-Date: Mon,  7 Jul 2014 16:51:42 +0200
-Message-ID: <1404744702-32010-9-git-send-email-thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv2 5/8] ARM: mvebu: update Armada XP DT for dynamic frequency scaling
+Date: Mon,  7 Jul 2014 16:51:39 +0200
+Message-ID: <1404744702-32010-6-git-send-email-thomas.petazzoni@free-electrons.com>
 References: <1404744702-32010-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:57823 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:57815 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753512AbaGGOvz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 10:51:55 -0400
+	with ESMTP id S1753457AbaGGOvw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 10:51:52 -0400
 In-Reply-To: <1404744702-32010-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
 Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-The cpufreq-generic driver is going to be used by more and more
-platforms to support dynamic frequency scaling of the CPU. This commit
-enables this driver by default in multi_v7_defconfig.
+In order to support dynamic frequency scaling:
+
+ * the cpuclk Device Tree node needs to be updated to describe a
+   second set of registers describing the PMU DFS registers.
+
+ * the clock-latency property of the CPUs must be filled, otherwise
+   the ondemand and conservative cpufreq governors refuse to work. The
+   latency is high because the cost of a frequency transition is quite
+   high on those CPUs.
 
 Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- arch/arm/configs/multi_v7_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/armada-xp-mv78230.dtsi | 2 ++
+ arch/arm/boot/dts/armada-xp-mv78260.dtsi | 2 ++
+ arch/arm/boot/dts/armada-xp-mv78460.dtsi | 4 ++++
+ arch/arm/boot/dts/armada-xp.dtsi         | 2 +-
+ 4 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index be1a345..80c1f60 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -82,6 +82,7 @@ CONFIG_KEXEC=y
- CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_STAT_DETAILS=y
- CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-+CONFIG_CPUFREQ_GENERIC=y
- CONFIG_CPU_IDLE=y
- CONFIG_NET=y
- CONFIG_PACKET=y
+diff --git a/arch/arm/boot/dts/armada-xp-mv78230.dtsi b/arch/arm/boot/dts/armada-xp-mv78230.dtsi
+index 1257ff1..2592e1c 100644
+--- a/arch/arm/boot/dts/armada-xp-mv78230.dtsi
++++ b/arch/arm/boot/dts/armada-xp-mv78230.dtsi
+@@ -34,6 +34,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <0>;
+ 			clocks = <&cpuclk 0>;
++			clock-latency = <1000000>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -41,6 +42,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <1>;
+ 			clocks = <&cpuclk 1>;
++			clock-latency = <1000000>;
+ 		};
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/armada-xp-mv78260.dtsi b/arch/arm/boot/dts/armada-xp-mv78260.dtsi
+index 3396b25..480e237 100644
+--- a/arch/arm/boot/dts/armada-xp-mv78260.dtsi
++++ b/arch/arm/boot/dts/armada-xp-mv78260.dtsi
+@@ -36,6 +36,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <0>;
+ 			clocks = <&cpuclk 0>;
++			clock-latency = <1000000>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -43,6 +44,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <1>;
+ 			clocks = <&cpuclk 1>;
++			clock-latency = <1000000>;
+ 		};
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/armada-xp-mv78460.dtsi b/arch/arm/boot/dts/armada-xp-mv78460.dtsi
+index 6da84bf..2c7b1fe 100644
+--- a/arch/arm/boot/dts/armada-xp-mv78460.dtsi
++++ b/arch/arm/boot/dts/armada-xp-mv78460.dtsi
+@@ -37,6 +37,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <0>;
+ 			clocks = <&cpuclk 0>;
++			clock-latency = <1000000>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -44,6 +45,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <1>;
+ 			clocks = <&cpuclk 1>;
++			clock-latency = <1000000>;
+ 		};
+ 
+ 		cpu@2 {
+@@ -51,6 +53,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <2>;
+ 			clocks = <&cpuclk 2>;
++			clock-latency = <1000000>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -58,6 +61,7 @@
+ 			compatible = "marvell,sheeva-v7";
+ 			reg = <3>;
+ 			clocks = <&cpuclk 3>;
++			clock-latency = <1000000>;
+ 		};
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/armada-xp.dtsi b/arch/arm/boot/dts/armada-xp.dtsi
+index 5902e83..bff9f6c 100644
+--- a/arch/arm/boot/dts/armada-xp.dtsi
++++ b/arch/arm/boot/dts/armada-xp.dtsi
+@@ -99,7 +99,7 @@
+ 			cpuclk: clock-complex@18700 {
+ 				#clock-cells = <1>;
+ 				compatible = "marvell,armada-xp-cpu-clock";
+-				reg = <0x18700 0xA0>;
++				reg = <0x18700 0xA0>, <0x1c054 0x10>;
+ 				clocks = <&coreclk 1>;
+ 			};
+ 
 -- 
 2.0.0
 
