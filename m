@@ -1,83 +1,45 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [patch[ epoll_ctl.2, epoll.7: document EPOLLWAKEUP
-Date: Mon, 07 Jul 2014 13:26:49 +0200
-Message-ID: <17155391.vo4GYroE0r@vostro.rjw.lan>
-References: <20140706190351.423e9a93@notabene.brown> <53BA4244.30502@gmail.com> <20140707210157.1aa38ed0@notabene.brown>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH v4] power: add an API to log wakeup reasons
+Date: Mon, 7 Jul 2014 15:02:18 +0200
+Message-ID: <CANcMJZAm+TfX5W_AMSECBTb8tAzts9_YtOjCXGhmy4SgPAjYqg@mail.gmail.com>
+References: <1394730340-3607-1-git-send-email-kandoiruchi@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-man-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20140707210157.1aa38ed0-wvvUuzkyo1EYVZTmpyfIwg@public.gmane.org>
-Sender: linux-man-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>
-Cc: "Michael Kerrisk (man-pages)" <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-man-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f177.google.com ([209.85.213.177]:37385 "EHLO
+	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752807AbaGGNCV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jul 2014 09:02:21 -0400
+In-Reply-To: <1394730340-3607-1-git-send-email-kandoiruchi@google.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ruchi Kandoi <kandoiruchi@google.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, rjw@rjwysocki.net, ghackmann@google.com, toddpoynor@google.com, Amit Kucheria <amit.kucheria@linaro.org>
 
-On Monday, July 07, 2014 09:01:57 PM NeilBrown wrote:
-> 
-> --Sig_/ryAieyiS4Xod5WCxzxhl62b
-> Content-Type: text/plain; charset=US-ASCII
-> Content-Transfer-Encoding: quoted-printable
-> 
-> 
-> (adding lkml and linux-pm and I probably should have done from the start).
+On Thu, Mar 13, 2014 at 6:05 PM, Ruchi Kandoi <kandoiruchi@google.com> wrote:
+> For power management diagnostic purposes, it is often useful to know
+> what interrupts are frequently waking the system from low power
+> suspend mode, especially on battery-powered consumer electronics
+> devices that are expected to spend much of their time in low-power
+> suspend while not in active use.  For example, reduced battery life on
+> a mobile phone may be caused in part by frequent wakeups by broadcast
+> traffic on a busy wireless LAN even while the screen is off and the
+> phone not in active use.
+>
+> Add API log_wakeup_reason() exposes it to userspace via the sysfs path
+> /sys/kernel/wakeup_reasons/last_resume_reason. This API would be called
+> from the paltform specific, or from the driver for the interrupt controller,
+> when the system resumes because of an IRQ. It logs the reasons which caused
+> the system to wakeup from the low-power mode.
+>
+> This information can be collected by userspace as part of the accounting
+> kept on power consumption.
 
-First off, thanks a lot for taking care of this!
+Rafael,
+   I realize its been awhile here, but seeing as discussion on this
+petered out somewhat ambiguously, I was curious if your thoughts on
+using wakeup_sources for this was considered a prereq for further
+discussion or if it was a softer thought experiment?
 
-> On Mon, 07 Jul 2014 08:46:28 +0200 "Michael Kerrisk (man-pages)"
-> <mtk.manpages-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> 
-> > Hi Neil,
-> >=20
-> > On 07/06/2014 11:03 AM, NeilBrown wrote:
-> > >=20
-> > >=20
-> > > Signed-off-by: NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>
-> > > --
-> > >=20
-> > > I noticed that this was missing so had a go at writing something.
-> >=20
-> > Thanks. I applied this, and also added the additional piece shown=20
-> > at the end of this mail.
-> >=20
-> > > Is there / Should there be a section 7 man page describing suspend and
-> > > autosuspend and wakelocks etc??
-> >=20
-> > Sounds like it might be useful, but I don't know for sure. On the=20
-> > assumption that it might be possible to convince you to write one,
-> > could you briefly list what you think should be covered in the page?
-> 
-> I was particularly thinking of "/sys/power/autosleep" because my change to
-> epoll.7 mentioned autosleep, but there was no man page to reference.
-> The interaction of /sys/power/wakeup_count" with suspend/resume is also wor=
-> th
-> documenting as is the use of wake_locks via /sys/power/wake_{,un}lock (which
-> could also usefully be referenced by epoll(7)).
-> 
-> Given the number of filenames here, maybe this belongs in section 5 rather
-> than section 7.  Similar to proc(5) we could have power(5) which
-> documents /sys/power ???
-> (OK, I can see this might be opening a can of worms - we'll be having
-> class(5) and bus(5) and devices(5) next... but maybe this is a good thing.
-> And seeing these are all part of the kernel API, maybe they should be in
-> section 2 with the systemcalls.  Or do with need a new section of API virtu=
-> al
-> files ....)
-> 
-> So I guess "ls /sys/power" is a brief list of what should be included in the
-> page :-)
-
-That probably is a good estimation.
-
-Please note that there is some documentation of these things in
-Documentation/ABI/testing/sysfs-power in the kernel tree that may be useful
-for creating that page.
-
-Also please let me know if I can help.
-
-Rafael
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-man" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+thanks
+-john
