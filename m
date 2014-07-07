@@ -1,73 +1,63 @@
-From: Paul Burton <paul.burton@imgtec.com>
-Subject: Re: [PATCH v4 3/6] drivers: cpuidle: implement OF based idle states
- infrastructure
-Date: Sun, 6 Jul 2014 11:01:08 +0100
-Message-ID: <20140706100108.GE804@pburton-laptop>
-References: <1402503520-8611-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1402503520-8611-4-git-send-email-lorenzo.pieralisi@arm.com>
- <CAJZ5v0gE2Jq709SXLpfrxXnHxmqcDV1FbrPPX1JYUUdHJFL_Dg@mail.gmail.com>
- <20140612090339.GB29295@e102568-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] intel_pstate: Set cpu number before accessing MSRs
+Date: Mon, 07 Jul 2014 02:07:47 +0200
+Message-ID: <25106545.Q549pKqXa7@vostro.rjw.lan>
+References: <1404517893-30272-1-git-send-email-vincent@vincent-minet.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20140612090339.GB29295@e102568-lin.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Tomasz Figa <t.figa@samsung.com>, Chander Kashyap <chander.kashyap@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Nicolas Pitre <nico@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Capella <sebcape@gmail.com>, Mark Brown <broonie@kernel.org>, Antti Miettinen <ananaza@iki.fi>, Paul Walmsley <paul@pwsan.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Boyd <sboyd@codeaurora.org>, Am
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57621 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751303AbaGFXtp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 6 Jul 2014 19:49:45 -0400
+In-Reply-To: <1404517893-30272-1-git-send-email-vincent@vincent-minet.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vincent Minet <vincent@vincent-minet.net>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, Jun 12, 2014 at 10:03:39AM +0100, Lorenzo Pieralisi wrote:
-> [CC'ing Preeti and Paul to check their opinions]
+On Saturday, July 05, 2014 01:51:33 AM Vincent Minet wrote:
+> Ensure that cpu->cpu is set before writing MSR_IA32_PERF_CTL during CPU
+> initialization. Otherwise only cpu0 has its P-state set and all other
+> cores are left with their values unchanged.
 > 
-> Hi Rafael,
-
-snip
-
-> > One question here.
-> > 
-> > Do you want this to be generally useful or is it just ARM-specific?
+> In most cases, this is not too serious because the P-states will be set
+> correctly when the timer function is run.
+> But when the default governor is set to performance, the per-cpu
+> current_pstate stays the same forever and no attempts are made to write
+> the MSRs again.
 > 
-> The first series was targeting ARM64, then I noticed that it might be
-> used for ARM too (Daniel is working on that). Actually, I discovered
-> that Power and MIPS can reuse at least the code that initializes the
-> states data too, but I have to point out three things:
-> 
-> 1) state enter function method: in my bindings it is common for all
->    idle states, need to check if it applies to Power and MIPS too.
-> 2) CPUIDLE_FLAG_TIMER_STOP and how to set it. It is non-trivial to
->    add code that detects what idle states lose the tick device context.
->    At the moment I am adding the flag by default to all idle states
->    apart from standbywfi on ARM, but that can be optimised. Unless we
->    resort to power domains (but that's not trivial), we can add a flag
->    to the idle states in DT (ie local-timer-stop or suchlike) to support
->    that. I think that it will be frowned upon but it is worth trying, would
->    like to know what other people think about this.
-> 3) idle states bindings should be reviewed, I expect them to be valid
->    on other architectures too, but I need acknowledgments.
-> 
-> I think this series is not far from being ready to be upstreamed, I
-> would be certainly happy if it can be reused for other archs too so
-> just let me know.
-> 
-> Thanks !
-> Lorenzo
+> Signed-off-by: Vincent Minet <vincent@vincent-minet.net>
 
-Sorry for the delayed reply, I'm still catching up with mail after some
-time off.
+I'm queing this up as a fix for -rc5.
 
-On the MIPS CPS systems I'm working with we are able to detect which
-states are supported by reading config registers, so there's no need
-for these systems to have available states described in DT.
+Dirk, please let me know if this is incorrect.
 
-Thanks,
-    Paul
+Rafael
+
+
+> ---
+>  drivers/cpufreq/intel_pstate.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 924bb2d..eff0f9a 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -696,9 +696,8 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+>  
+>  	cpu = all_cpu_data[cpunum];
+>  
+> -	intel_pstate_get_cpu_pstates(cpu);
+> -
+>  	cpu->cpu = cpunum;
+> +	intel_pstate_get_cpu_pstates(cpu);
+>  
+>  	init_timer_deferrable(&cpu->timer);
+>  	cpu->timer.function = intel_pstate_timer_func;
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
