@@ -1,67 +1,47 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv2 PATCH 00/23] sched: Energy cost model for energy-aware
- scheduling
-Date: Tue, 8 Jul 2014 10:28:07 +0100
-Message-ID: <20140708092807.GC4485@e103687>
-References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
- <20140703231950.GA4881@intel.com>
- <20140704110612.GA6120@e103034-lin>
- <20140706190523.GA12113@intel.com>
- <20140707141627.GB4485@e103687>
- <20140708002343.GC25653@intel.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH 00/13] Remove mach-kirkwood and mach-dove
+Date: Tue, 8 Jul 2014 08:13:01 -0400
+Message-ID: <20140708121301.GU23978@titan.lakedaemon.net>
+References: <1404075603-31838-1-git-send-email-andrew@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20140708002343.GC25653@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yuyang Du <yuyang.du@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "pjt@google.com" <pjt@google.com>
+In-Reply-To: <1404075603-31838-1-git-send-email-andrew@lunn.ch>
+Sender: linux-ide-owner@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Gregory Clement <gregory.clement@free-electrons.com>, rmk+kernel@arm.linux.org.uk, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Kishon Vijay Abraham I <kishon@ti.com>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com, Wim Van Sebroeck <wim@iguana.be>, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 08, 2014 at 01:23:43AM +0100, Yuyang Du wrote:
-> Hi Morten,
-> 
-> On Mon, Jul 07, 2014 at 03:16:27PM +0100, Morten Rasmussen wrote:
-> 
-> > Could you elaborate on what you mean by 'a general statement'?
-> 
-> The general statement is: higher freq, more cap, and more power. More specific
-> numbers are not needed, as they are just instances of this general statement.
+Andrew,
 
-I think I understand now. While that statement might be true for SMP
-systems, it doesn't tell you the cost of chosing a higher frequency. If
-you are optimizing for energy, you really care about energy per work (~
-energy/instruction). The additional cost of going to a higher capacity
-state very platform dependent. At least on typical modern ARM platforms,
-the highest states are significantly more expensive to use, so you don't
-want to use them unless you really have to.
-
-If we don't have any energy cost information, we can't make an informed
-decision whether it worth running faster (race-to-idle or consolidating
-tasks on fewer cpus) or using more cpus (if that is possible).
- 
-> > cpu_power doesn't tell you anything about energy-efficiency. There is no
-> > link with frequency scaling.
+On Sun, Jun 29, 2014 at 10:59:47PM +0200, Andrew Lunn wrote:
+> This patchset removes arch/arm/mach-kirkwood and arch/arm/mach-dove.
+> These SoCs are now supported in arch/arm/mach-mvebu using device tree.
 > 
-> In general, more cpu_power, more freq, less energy-efficiency, as you said sometime ago.
-
-Not in general :) For big.LITTLE it may be more energy efficient to run
-a little cpu at a high frequency instead of using a big cpu at a low
-frequency. For multi-cluster/package SMP it is not straight forward
-either as it is more expensive to run the first cpu in a large power
-domain than the additional cpus.
-
+> Change the dependencies for a number of drivers, either to use
+> ARCH_MVEBU where the drivers are generic, or MACH_KIRKWOOD and
+> MACH_DOVE where the drivers are specific to a SoC.
 > 
-> > No representation of power domains.
 > 
-> Represented by CPU topology?
+> Andrew Lunn (13):
+>   ARM: Kirkwood: Remove mach-kirkwood
+>   ARM: Dove: Remove mach-dove
+>   sound: ASoC: kirkwood: Remove unused drivers
+>   sound: ASoC: kirkwood: Remove ARCH_KIRKWOOD and ARCH_DOVE dependency
+>   cpuidle: kirkwood: Replace ARCH_KIRKWOOD dependency
+>   ata: Remove ARCH_KIRKWOOD and ARCH_DOVE dependency
+>   thermal: Replace ARCH_KIRKWOOD and ARCH_DOVE dependency
+>   leds: Replace ARCH_KIRKWOOD dependency
+>   PCI: Remove ARCH_KIRKWOOD and ARCH_DOVE dependency
+>   phy: Replace ARCH_KIRKWOOD and ARCH_DOVE dependency
+>   rtc: Remove ARCH_KIRKWOOD and ARCH_DOVE dependency
+>   watchdog: Remove ARCH_KIRKWOOD and ARCH_DOVE dependency
+>   Remove ARCH_DOVE dependency
 
-Not really. The sched_domain hierarchy represents the cache hierarhcy
-(and nodes for NUMA), but you don't necessarily have a power domains at
-the same levels. But yes, the sched_domain hierarchy can be used for
-this purpose as well if we attach the necessary power domain information
-to it. That is basically what we do in this patch set.
+Let's just do mach-kirkwood/ removal this time around and we'll
+re-address mach-dove next window.
 
-Morten
+thx,
+
+Jason.
