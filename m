@@ -1,67 +1,53 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCHv2 1/8] clk: add an APPLY_RATE_CHANGE notifier event
- during clk_set_rate()
-Date: Tue, 8 Jul 2014 22:25:16 +0200
-Message-ID: <20140708222516.6b0c0d66@free-electrons.com>
-References: <1404744702-32010-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1404744702-32010-2-git-send-email-thomas.petazzoni@free-electrons.com>
-	<53BB30D2.3010908@codeaurora.org>
-	<20140708091540.0f886cfc@free-electrons.com>
-	<53BC522E.8080302@codeaurora.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: A question about PCI suspend-resume functionallity
+Date: Tue, 8 Jul 2014 14:47:03 -0600
+Message-ID: <CAErSpo5p6qEL3=tcWTYMCQCF08oanc3KTUAOdY9P6=5rxZYNZg@mail.gmail.com>
+References: <1404833913010.27399@galilsoft.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:41311 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752223AbaGHUZT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jul 2014 16:25:19 -0400
-In-Reply-To: <53BC522E.8080302@codeaurora.org>
+Received: from mail-qg0-f54.google.com ([209.85.192.54]:33173 "EHLO
+	mail-qg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754392AbaGHUrY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jul 2014 16:47:24 -0400
+Received: by mail-qg0-f54.google.com with SMTP id q107so5531470qgd.27
+        for <linux-pm@vger.kernel.org>; Tue, 08 Jul 2014 13:47:23 -0700 (PDT)
+In-Reply-To: <1404833913010.27399@galilsoft.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>
+To: Igor Bezukh <Igor@galilsoft.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Dear Stephen Boyd,
+[+cc linux-pm]
 
-On Tue, 08 Jul 2014 13:18:54 -0700, Stephen Boyd wrote:
+On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
+> Hi,
+>
+>
+> We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
+>
+> (*) Adapter is connected to the PCIE slot
+> (*) We put the system under suspend by running pm-suspend from user-space
+> (*) Remove the adapter from the PCIE slot
+> (*) Wake up the system
+>
+> Currenlty, we got kernel panics and the system got stuck.
+>
+> My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
+>
+> Or should I implement the call to igb_remove from igb_resume in the Intel driver?
 
-> >>> In order to solve this problem, we propose to add an APPLY_RATE_CHANGE
-> >>> notifier event, which gets called right after ->set_rate(), but before
-> >>> ->recalc_rate(), and therefore regardless of whether there was an
-> >>> actualy frequency change or not.
-> >> Is there any reason why we can't call the pmsu code (part #3) directly
-> >> from the cpu clock driver? It seems like if we just called the
-> >> .set_rate() op we wouldn't actually have changed the clock's rate. That
-> >> doesn't seem very intuitive and it really makes the code flow hard to
-> >> follow.
-> > Right, but what solution would you propose to achieve that? These days,
-> > a direct call from drivers/ code to arch/arm/mach-<foo>/ code is
-> > frowned upon, no? (The code handling the PMSU is in
-> > arch/arm/mach-mvebu/pmsu.c).
-> 
-> I don't see a problem with having an include file in include/linux/ for
-> this, maybe others do though.
+I don't know what the best design is here.  I suspect that when we
+resume, we should re-enumerate the PCI topology to see if anything
+changed, but I don't think we do that.  I think there *is* something
+like that for ACPI -- the BIOS can send a Bus Check notification on
+resume if it knows something has changed.  But my guess is that if you
+remove an adapter below a switch that is powered down because the
+system is suspended, the interrupt we would normally get is lost
+forever.
 
-I'm fine with that as well, but I believe one of the policy was to
-avoid having too much drivers/ stuff call into arch/arm/ stuff.
+It doesn't seem like something that should be solved in the driver,
+because you could just as easily have *added* a device while
+suspended, and the core has to re-enumerate to find that.
 
-> If it actually is a problem then perhaps
-> moving the pmsu.c code into drivers/ is the right solution.
-
-Yes, but where would it belong? The PMSU hardware block is tightly
-linked to SMP initialization (which means it should be up and running
-very early), CPU hotplug, cpuidle, cpufreq and suspend/resume. It means
-that it interacts with a lot of different subsystems.
-
-Maybe the solution of adding a direct call from
-drivers/clk/mvebu/clk-cpu.c to arch/arm/mach-mvebu/pmsu.c is the
-easiest and most explicit solution.
-
-Thanks,
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Bjorn
