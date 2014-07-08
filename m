@@ -1,49 +1,40 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCHv2 1/8] clk: add an APPLY_RATE_CHANGE notifier event
- during clk_set_rate()
-Date: Tue, 8 Jul 2014 09:15:40 +0200
-Message-ID: <20140708091540.0f886cfc@free-electrons.com>
-References: <1404744702-32010-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<1404744702-32010-2-git-send-email-thomas.petazzoni@free-electrons.com>
-	<53BB30D2.3010908@codeaurora.org>
+From: Yuyang Du <yuyang.du@intel.com>
+Subject: Re: [RFCv2 PATCH 00/23] sched: Energy cost model for energy-aware
+ scheduling
+Date: Tue, 8 Jul 2014 08:23:43 +0800
+Message-ID: <20140708002343.GC25653@intel.com>
+References: <1404404770-323-1-git-send-email-morten.rasmussen@arm.com>
+ <20140703231950.GA4881@intel.com>
+ <20140704110612.GA6120@e103034-lin>
+ <20140706190523.GA12113@intel.com>
+ <20140707141627.GB4485@e103687>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:35019 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751834AbaGHHPo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jul 2014 03:15:44 -0400
-In-Reply-To: <53BB30D2.3010908@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20140707141627.GB4485@e103687>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "pjt@google.com" <pjt@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>
 
-Dear Stephen Boyd,
+Hi Morten,
 
-On Mon, 07 Jul 2014 16:44:18 -0700, Stephen Boyd wrote:
+On Mon, Jul 07, 2014 at 03:16:27PM +0100, Morten Rasmussen wrote:
 
-> > In order to solve this problem, we propose to add an APPLY_RATE_CHANGE
-> > notifier event, which gets called right after ->set_rate(), but before
-> > ->recalc_rate(), and therefore regardless of whether there was an
-> > actualy frequency change or not.
-> 
-> Is there any reason why we can't call the pmsu code (part #3) directly
-> from the cpu clock driver? It seems like if we just called the
-> .set_rate() op we wouldn't actually have changed the clock's rate. That
-> doesn't seem very intuitive and it really makes the code flow hard to
-> follow.
+> Could you elaborate on what you mean by 'a general statement'?
 
-Right, but what solution would you propose to achieve that? These days,
-a direct call from drivers/ code to arch/arm/mach-<foo>/ code is
-frowned upon, no? (The code handling the PMSU is in
-arch/arm/mach-mvebu/pmsu.c).
+The general statement is: higher freq, more cap, and more power. More specific
+numbers are not needed, as they are just instances of this general statement.
+
+> cpu_power doesn't tell you anything about energy-efficiency. There is no
+> link with frequency scaling.
+
+In general, more cpu_power, more freq, less energy-efficiency, as you said sometime ago.
+
+> No representation of power domains.
+
+Represented by CPU topology?
 
 Thanks,
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Yuyang
