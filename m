@@ -1,39 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/14] cpufreq: cpu0: Extend support beyond CPU0, V2
-Date: Tue, 8 Jul 2014 10:20:33 +0530
-Message-ID: <CAKohpo=Z5gEHOC5q40q8dfQfoNP5-WyhjG1arV99zJiG2c+6Xg@mail.gmail.com>
-References: <cover.1404231535.git.viresh.kumar@linaro.org>
-	<CAKohpomRttWnCBGEpR3cVsGYniJSnjWUnvtbg21AiYyrUnDjGw@mail.gmail.com>
-	<53B4B0B3.9080000@codeaurora.org>
-	<CAKohponRv6+rzJnO4cYFhXn6On1+4-KoxFSA2iU_nz130gvsug@mail.gmail.com>
-	<20140703221609.11380.6884@quantum>
-	<CAKohpomNv_xvcmx03pb8nj=3O33Qt-2Dj2B1q3U46mv5EBtUjA@mail.gmail.com>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCHv2 1/8] clk: add an APPLY_RATE_CHANGE notifier event
+ during clk_set_rate()
+Date: Tue, 8 Jul 2014 09:15:40 +0200
+Message-ID: <20140708091540.0f886cfc@free-electrons.com>
+References: <1404744702-32010-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<1404744702-32010-2-git-send-email-thomas.petazzoni@free-electrons.com>
+	<53BB30D2.3010908@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomNv_xvcmx03pb8nj=3O33Qt-2Dj2B1q3U46mv5EBtUjA@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arvind Chauhan <arvind.chauhan@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sachin Kamat <spk.linux@gmail.com>, Thomas P Abraham <thomas.ab@samsung.com>, Shawn Guo <shawn.guo@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Tomasz Figa <t.figa@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Rob Herring <rob.herring@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Simon Horman <horms@verge.net.au>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from top.free-electrons.com ([176.31.233.9]:35019 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751834AbaGHHPo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jul 2014 03:15:44 -0400
+In-Reply-To: <53BB30D2.3010908@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, linux-pm@vger.kernel.org, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>
 
-On 4 July 2014 09:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Yeah, having something like what you suggested from DT is the perfect
-> solution to get over this. The only reason why I am not touching that here
-> is to not delay other patches just because of that.
->
-> There are separate threads going on for that and probably somebody
-> else was trying to push for that.
->
-> That's it, nothing more. I would definitely like to use those bindings instead
->  of the crazy routines we are trying here, once that is finalized :)
+Dear Stephen Boyd,
 
-Do we have some kind of agreement for this temporary solution? Anyways
-I will kick the other thread again to resolve the bindings soon.
+On Mon, 07 Jul 2014 16:44:18 -0700, Stephen Boyd wrote:
 
-@Stephen: Do you still want find_rate_changer() stuff in this series only
-and or this can go into 3.17 without anymore changes and lets finalize
-the bindings Mike suggested and then update this code?
+> > In order to solve this problem, we propose to add an APPLY_RATE_CHANGE
+> > notifier event, which gets called right after ->set_rate(), but before
+> > ->recalc_rate(), and therefore regardless of whether there was an
+> > actualy frequency change or not.
+> 
+> Is there any reason why we can't call the pmsu code (part #3) directly
+> from the cpu clock driver? It seems like if we just called the
+> .set_rate() op we wouldn't actually have changed the clock's rate. That
+> doesn't seem very intuitive and it really makes the code flow hard to
+> follow.
 
---
-viresh
+Right, but what solution would you propose to achieve that? These days,
+a direct call from drivers/ code to arch/arm/mach-<foo>/ code is
+frowned upon, no? (The code handling the PMSU is in
+arch/arm/mach-mvebu/pmsu.c).
+
+Thanks,
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
