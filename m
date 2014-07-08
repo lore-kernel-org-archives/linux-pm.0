@@ -1,66 +1,121 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 0/2] cpuidle fixes and cleanup
-Date: Tue, 8 Jul 2014 15:17:31 +0100
-Message-ID: <20140708141731.GL21766@n2100.arm.linux.org.uk>
-References: <1404225158-8453-1-git-send-email-k.chander@samsung.com> <20140701145244.GX32514@n2100.arm.linux.org.uk> <CADWw7OgCgg8aE4W6LwmU3axDdmt-5uH=a+0fSSErfqDci3nNUA@mail.gmail.com> <53BBF8A0.1050005@samsung.com>
+From: "Javi Merino" <javi.merino@arm.com>
+Subject: Re: [PATCH RESEND] thermal: document struct thermal_zone_device and
+ thermal_governor
+Date: Tue, 8 Jul 2014 16:23:46 +0100
+Message-ID: <20140708152346.GG2796@e104805>
+References: <1403690412-10996-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:34993 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbaGHPXu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jul 2014 11:23:50 -0400
+In-Reply-To: <1403690412-10996-1-git-send-email-javi.merino@arm.com>
 Content-Disposition: inline
-In-Reply-To: <53BBF8A0.1050005@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Chander Kashyap <k.chander@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Will Deacon <will.deacon@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, Jul 08, 2014 at 03:56:48PM +0200, Tomasz Figa wrote:
-> On 02.07.2014 05:11, Chander Kashyap wrote:
-> > On Tue, Jul 1, 2014 at 8:22 PM, Russell King - ARM Linux
-> > <linux@arm.linux.org.uk> wrote:
-> >> On Tue, Jul 01, 2014 at 08:02:36PM +0530, Chander Kashyap wrote:
-> >>> This patch series fixes the cpuidle for different states. Also removes arm
-> >>> diagnostic and power register save/restore code as it is made generic.
-> >>>
-> >>> Based on:
-> >>> ARM: save/restore diagnostic register on Cortex-A9 suspend/resume
-> >>>  http://www.spinics.net/lists/arm-kernel/msg340506.html
+On Wed, Jun 25, 2014 at 11:00:12AM +0100, Javi Merino wrote:
+> Document struct thermal_zone_device and struct thermal_governor fields
+> and their use by the thermal framework code.
 > 
-> [Ccing people who participated in discussion in that thread]
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
 > 
-> >>
-> >> As there is an outstanding issue with this patch, we can't proceed with
-> >> this set of changes until we know what's going on there.
-> > 
-> > Sure, I will wait for the conclusion.
+> ---
 > 
-> So I believe the conclusion was that this can't be handled in generic
-> way, because on systems running in non-secure mode writing to those
-> registers faults.
+> Hi linux-pm,
+> 
+> I have some patches that add new fields to these structures but I
+> don't have a good place to describe those fields as these structs are
+> mostly undocumented so I thought I'd document them.
+> 
+> Changes since v1:
+>   * Clarified that some parameters are currently only used by the
+>     step-wise governor.
+>   * Clarified that forced_passive operates on ACPI processor cooling
+>     devices.
+> 
+>  include/linux/thermal.h | 46 ++++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 44 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index f7e11c7ea7d9..0305cde21a74 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -158,6 +158,42 @@ struct thermal_attr {
+>  	char name[THERMAL_NAME_LENGTH];
+>  };
+>  
+> +/**
+> + * struct thermal_zone_device - structure for a thermal zone
+> + * @id:		unique id number for each thermal zone
+> + * @type:	the thermal zone device type
+> + * @device:	&struct device for this thermal zone
+> + * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
+> + * @trip_type_attrs:	attributes for trip points for sysfs: trip type
+> + * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
+> + * @devdata:	private pointer for device private data
+> + * @trips:	number of trip points the thermal zone supports
+> + * @passive_delay:	number of milliseconds to wait between polls when
+> + *			performing passive cooling.  Currenty only used by the
+> + *			step-wise governor
+> + * @polling_delay:	number of milliseconds to wait between polls when
+> + *			checking whether trip points have been crossed (0 for
+> + *			interrupt driven systems)
+> + * @temperature:	current temperature.  This is only for core code,
+> + *			drivers should use thermal_zone_get_temp() to get the
+> + *			current temperature
+> + * @last_temperature:	previous temperature read
+> + * @emul_temperature:	emulated temperature when using CONFIG_THERMAL_EMULATION
+> + * @passive:		1 if you've crossed a passive trip point, 0 otherwise.
+> + *			Currenty only used by the step-wise governor.
+> + * @forced_passive:	If > 0, temperature at which to switch on all ACPI
+> + *			processor cooling devices.  Currently only used by the
+> + *			step-wise governor.
+> + * @ops:	operations this &thermal_zone_device supports
+> + * @tzp:	thermal zone parameters
+> + * @governor:	pointer to the governor for this thermal zone
+> + * @thermal_instances:	list of &struct thermal_instance of this thermal zone
+> + * @idr:	&struct idr to generate unique id for this zone's cooling
+> + *		devices
+> + * @lock:	lock to protect thermal_instances list
+> + * @node:	node in thermal_tz_list (in thermal_core.c)
+> + * @poll_queue:	delayed work for polling
+> + */
+>  struct thermal_zone_device {
+>  	int id;
+>  	char type[THERMAL_NAME_LENGTH];
+> @@ -179,12 +215,18 @@ struct thermal_zone_device {
+>  	struct thermal_governor *governor;
+>  	struct list_head thermal_instances;
+>  	struct idr idr;
+> -	struct mutex lock; /* protect thermal_instances list */
+> +	struct mutex lock;
+>  	struct list_head node;
+>  	struct delayed_work poll_queue;
+>  };
+>  
+> -/* Structure that holds thermal governor information */
+> +/**
+> + * struct thermal_governor - structure that holds thermal governor information
+> + * @name:	name of the governor
+> + * @throttle:	callback called for every trip point even if temperature is
+> + *		below the trip point temperature
+> + * @governor_list:	node in thermal_governor_list (in thermal_core.c)
+> + */
+>  struct thermal_governor {
+>  	char name[THERMAL_NAME_LENGTH];
+>  	int (*throttle)(struct thermal_zone_device *tz, int trip);
+> -- 
+> 1.9.1
+> 
 
-That is, unfortunately, correct.
+I think I've addressed all the comments in the previous version, any
+other objections?
 
-There is a way around this, but people aren't going to like it.  That
-is - we move it to the suspend and resume paths anyway.
-
-In the resume path, we read the register, compare it with the value
-which we would update it to, and if it's identical, we avoid the write.
-
-This gets secure-mode platforms working.
-
-For non-secure mode platforms, we have to require them to insert some
-assembly code into the early resume path which calls their secure
-monitor to restore these registers before continuing on to cpu_resume,
-thereby ensuring that the CPU specific code sees that the value in the
-register is identical with the saved value, and omitting the write.
-
-This isn't really a new principle - we already have this requirement
-for non-secure mode platforms when they're booting a kernel with
-various errata enabled.
-
-I can't see any other alternative which satisfies everyone (by
-everyone, I'm including the requirements from the hardware folk who
-expect these registers to be static once the MMU is enabled.)
-
--- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
