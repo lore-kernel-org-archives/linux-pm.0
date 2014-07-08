@@ -1,121 +1,46 @@
-From: "Javi Merino" <javi.merino@arm.com>
-Subject: Re: [PATCH RESEND] thermal: document struct thermal_zone_device and
- thermal_governor
-Date: Tue, 8 Jul 2014 16:23:46 +0100
-Message-ID: <20140708152346.GG2796@e104805>
-References: <1403690412-10996-1-git-send-email-javi.merino@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
+Subject: [PATCH] cpufreq: Makefile: fix compilation for davinci platform
+Date: Tue,  8 Jul 2014 16:25:38 +0100
+Message-ID: <1404833138-8244-1-git-send-email-prabhakar.csengg@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:34993 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbaGHPXu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jul 2014 11:23:50 -0400
-In-Reply-To: <1403690412-10996-1-git-send-email-javi.merino@arm.com>
-Content-Disposition: inline
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:57969 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbaGHP0F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jul 2014 11:26:05 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sekhar Nori <nsekhar@ti.com>, davinci-linux-open-source@linux.davincidsp.com, "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
 
-On Wed, Jun 25, 2014 at 11:00:12AM +0100, Javi Merino wrote:
-> Document struct thermal_zone_device and struct thermal_governor fields
-> and their use by the thermal framework code.
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> 
-> ---
-> 
-> Hi linux-pm,
-> 
-> I have some patches that add new fields to these structures but I
-> don't have a good place to describe those fields as these structs are
-> mostly undocumented so I thought I'd document them.
-> 
-> Changes since v1:
->   * Clarified that some parameters are currently only used by the
->     step-wise governor.
->   * Clarified that forced_passive operates on ACPI processor cooling
->     devices.
-> 
->  include/linux/thermal.h | 46 ++++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 44 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index f7e11c7ea7d9..0305cde21a74 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -158,6 +158,42 @@ struct thermal_attr {
->  	char name[THERMAL_NAME_LENGTH];
->  };
->  
-> +/**
-> + * struct thermal_zone_device - structure for a thermal zone
-> + * @id:		unique id number for each thermal zone
-> + * @type:	the thermal zone device type
-> + * @device:	&struct device for this thermal zone
-> + * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
-> + * @trip_type_attrs:	attributes for trip points for sysfs: trip type
-> + * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
-> + * @devdata:	private pointer for device private data
-> + * @trips:	number of trip points the thermal zone supports
-> + * @passive_delay:	number of milliseconds to wait between polls when
-> + *			performing passive cooling.  Currenty only used by the
-> + *			step-wise governor
-> + * @polling_delay:	number of milliseconds to wait between polls when
-> + *			checking whether trip points have been crossed (0 for
-> + *			interrupt driven systems)
-> + * @temperature:	current temperature.  This is only for core code,
-> + *			drivers should use thermal_zone_get_temp() to get the
-> + *			current temperature
-> + * @last_temperature:	previous temperature read
-> + * @emul_temperature:	emulated temperature when using CONFIG_THERMAL_EMULATION
-> + * @passive:		1 if you've crossed a passive trip point, 0 otherwise.
-> + *			Currenty only used by the step-wise governor.
-> + * @forced_passive:	If > 0, temperature at which to switch on all ACPI
-> + *			processor cooling devices.  Currently only used by the
-> + *			step-wise governor.
-> + * @ops:	operations this &thermal_zone_device supports
-> + * @tzp:	thermal zone parameters
-> + * @governor:	pointer to the governor for this thermal zone
-> + * @thermal_instances:	list of &struct thermal_instance of this thermal zone
-> + * @idr:	&struct idr to generate unique id for this zone's cooling
-> + *		devices
-> + * @lock:	lock to protect thermal_instances list
-> + * @node:	node in thermal_tz_list (in thermal_core.c)
-> + * @poll_queue:	delayed work for polling
-> + */
->  struct thermal_zone_device {
->  	int id;
->  	char type[THERMAL_NAME_LENGTH];
-> @@ -179,12 +215,18 @@ struct thermal_zone_device {
->  	struct thermal_governor *governor;
->  	struct list_head thermal_instances;
->  	struct idr idr;
-> -	struct mutex lock; /* protect thermal_instances list */
-> +	struct mutex lock;
->  	struct list_head node;
->  	struct delayed_work poll_queue;
->  };
->  
-> -/* Structure that holds thermal governor information */
-> +/**
-> + * struct thermal_governor - structure that holds thermal governor information
-> + * @name:	name of the governor
-> + * @throttle:	callback called for every trip point even if temperature is
-> + *		below the trip point temperature
-> + * @governor_list:	node in thermal_governor_list (in thermal_core.c)
-> + */
->  struct thermal_governor {
->  	char name[THERMAL_NAME_LENGTH];
->  	int (*throttle)(struct thermal_zone_device *tz, int trip);
-> -- 
-> 1.9.1
-> 
+>From patch with commt-id:8a7b1227e303d7e927214ee0f260041aef44bb58
+"cpufreq: davinci: move cpufreq driver to drivers/cpufreq"
+this added dependancy only for CONFIG_ARCH_DAVINCI_DA850 where as
+davinci_cpufreq_init() call is used by all davinci platform.
 
-I think I've addressed all the comments in the previous version, any
-other objections?
+This patch fixes following build error:
+
+arch/arm/mach-davinci/built-in.o: In function `davinci_init_late':
+:(.init.text+0x928): undefined reference to `davinci_cpufreq_init'
+make: *** [vmlinux] Error 1
+
+Signed-off-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
+---
+ drivers/cpufreq/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 738c8b7..db6d9a2 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -49,7 +49,7 @@ obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
+ # LITTLE drivers, so that it is probed last.
+ obj-$(CONFIG_ARM_DT_BL_CPUFREQ)		+= arm_big_little_dt.o
+ 
+-obj-$(CONFIG_ARCH_DAVINCI_DA850)	+= davinci-cpufreq.o
++obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
+ obj-$(CONFIG_UX500_SOC_DB8500)		+= dbx500-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= exynos-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
+-- 
+1.9.1
 
