@@ -1,40 +1,64 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv3 7/7] ARM: configs: add cpufreq-generic in multi_v7_defconfig
-Date: Wed,  9 Jul 2014 17:45:15 +0200
-Message-ID: <1404920715-19834-8-git-send-email-thomas.petazzoni@free-electrons.com>
-References: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:49295 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756245AbaGIPpc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 11:45:32 -0400
-In-Reply-To: <1404920715-19834-1-git-send-email-thomas.petazzoni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: A question about PCI suspend-resume functionallity
+Date: Wed, 9 Jul 2014 09:55:24 -0600
+Message-ID: <CAErSpo7_sWKCT6gdv-U=2miyT4+XGtGa-TBP8ueunS_fgvJr9Q@mail.gmail.com>
+References: <4712771.pPjooVqFXc@vostro.rjw.lan> <Pine.LNX.4.44L0.1407091008350.873-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1407091008350.873-100000@iolanthe.rowland.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-The cpufreq-generic driver is going to be used by more and more
-platforms to support dynamic frequency scaling of the CPU. This commit
-enables this driver by default in multi_v7_defconfig.
+On Wed, Jul 9, 2014 at 8:18 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Wed, 9 Jul 2014, Rafael J. Wysocki wrote:
+>
+>> On Tuesday, July 08, 2014 02:47:03 PM Bjorn Helgaas wrote:
+>> > [+cc linux-pm]
+>> >
+>> > On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
+>> > > Hi,
+>> > >
+>> > >
+>> > > We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
+>> > >
+>> > > (*) Adapter is connected to the PCIE slot
+>> > > (*) We put the system under suspend by running pm-suspend from user-space
+>> > > (*) Remove the adapter from the PCIE slot
+>> > > (*) Wake up the system
+>> > >
+>> > > Currenlty, we got kernel panics and the system got stuck.
+>> > >
+>> > > My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
+>> > >
+>> > > Or should I implement the call to igb_remove from igb_resume in the Intel driver?
 
-Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
----
- arch/arm/configs/multi_v7_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+>> ...
+>> The driver's system resume callbacks need to be able to cope with
+>> missing devices.
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index be1a345..80c1f60 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -82,6 +82,7 @@ CONFIG_KEXEC=y
- CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_STAT_DETAILS=y
- CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-+CONFIG_CPUFREQ_GENERIC=y
- CONFIG_CPU_IDLE=y
- CONFIG_NET=y
- CONFIG_PACKET=y
--- 
-2.0.0
+Based on this, it sounds like igb_resume() should call igb_remove()
+when it figures out the device is missing.
 
+That might be the best we can do right now, but it doesn't sound like
+a general-purpose solution.  Detecting device removal sounds like a
+core function, not a driver function.  It doesn't seem like drivers
+should have to implement ->resume just to deal with this case.
+Calling ->remove from ->resume is a little strange and may expose
+locking issues or races.  I suspect that most ->remove methods are not
+prepared to deal with missing devices (they may want to stop DMA,
+disable interrupts, etc.)
+
+> In the USB stack, the subsystem core resume code checks to see if a
+> device has been unplugged before the driver's ->resume callback is
+> invoked.  If a device is gone, the driver callback is skipped.  Thus
+> drivers don't have to worry about trying to resume a device that has
+> been unplugged.
+
+I assume that you do want to call the driver's ->remove method to free
+any per-device state.  Do USB drivers just have to be smart enough to
+do that without touching the device?
+
+Bjorn
