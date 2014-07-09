@@ -1,82 +1,37 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: A question about PCI suspend-resume functionallity
-Date: Wed, 9 Jul 2014 13:24:20 -0600
-Message-ID: <CAErSpo5+sGgYpYnF2GzO7Vu9hxJegS025DyYBTkXqgzBOKWE8w@mail.gmail.com>
-References: <4712771.pPjooVqFXc@vostro.rjw.lan> <Pine.LNX.4.44L0.1407091008350.873-100000@iolanthe.rowland.org>
- <CAErSpo7_sWKCT6gdv-U=2miyT4+XGtGa-TBP8ueunS_fgvJr9Q@mail.gmail.com> <2305679.jnRnK08iSm@vostro.rjw.lan>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH] powernow-k6: support 350MHz cpu
+Date: Wed, 9 Jul 2014 17:19:04 -0400 (EDT)
+Message-ID: <alpine.LRH.2.02.1407091717460.6236@file01.intranet.prod.int.rdu2.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <2305679.jnRnK08iSm@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Igor Bezukh <Igor@galilsoft.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:6232 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751431AbaGIVTJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Jul 2014 17:19:09 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
 
-On Wed, Jul 9, 2014 at 10:35 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, July 09, 2014 09:55:24 AM Bjorn Helgaas wrote:
->> On Wed, Jul 9, 2014 at 8:18 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
->> > On Wed, 9 Jul 2014, Rafael J. Wysocki wrote:
->> >
->> >> On Tuesday, July 08, 2014 02:47:03 PM Bjorn Helgaas wrote:
->> >> > [+cc linux-pm]
->> >> >
->> >> > On Tue, Jul 8, 2014 at 9:39 AM, Igor Bezukh <Igor@galilsoft.com> wrote:
->> >> > > Hi,
->> >> > >
->> >> > >
->> >> > > We are testing Intel Gigabit adapter driver (igb) under Fedora 20, kernel 3.14.4 for the following use-case:
->> >> > >
->> >> > > (*) Adapter is connected to the PCIE slot
->> >> > > (*) We put the system under suspend by running pm-suspend from user-space
->> >> > > (*) Remove the adapter from the PCIE slot
->> >> > > (*) Wake up the system
->> >> > >
->> >> > > Currenlty, we got kernel panics and the system got stuck.
->> >> > >
->> >> > > My question is - does the PCI subsystem logic calls the driver remove function when driver resume function returns with error code?
->> >> > >
->> >> > > Or should I implement the call to igb_remove from igb_resume in the Intel driver?
->>
->> >> ...
->> >> The driver's system resume callbacks need to be able to cope with
->> >> missing devices.
->>
->> Based on this, it sounds like igb_resume() should call igb_remove()
->> when it figures out the device is missing.
->
-> I wouldn't say so.  igb_resume() should not crash when the device is missing
-> and should just handle that situation cleanly.  Obviously it is not its role
-> to remove the device from the hierarchy.
+There exists 350MHz K6-2E+ cpu, so add it to the usual frequency table.
 
-OK, that makes sense.
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
 
-However, I don't know of anything in the PCI core that will notice
-that the device has disappeared, so I doubt it will be removed from
-the hierarchy.  I think that means the slot will become unusable until
-a reboot, because the original device is gone and we can't add a new
-one because the original one is still in the hierarchy.  That's not
-very good, but it is better than a panic.
+---
+ drivers/cpufreq/powernow-k6.c |    1 +
+ 1 file changed, 1 insertion(+)
 
->> That might be the best we can do right now, but it doesn't sound like
->> a general-purpose solution.  Detecting device removal sounds like a
->> core function, not a driver function.  It doesn't seem like drivers
->> should have to implement ->resume just to deal with this case.
->
-> No, they shouldn't.  They just need to be able to cope with missing devices
-> cleanly.
->
-> Devices (and PCI devices in particular) can go away at any time, including
-> during system resume, without notice anyway and drivers need to be able to
-> cope with that regardless.
->
-> The notification can actually come in *after* the device has gone in any
-> case and then whoever gets the notification should handle the device
-> removal. That is not the driver in particular, but in the meantime
-> the driver should still work without crashing.
-
-Yep.  So the panic Igor is seeing is probably an igb_resume() problem,
-but after that's fixed, we'll probably trip over the PCI bug about not
-handling the remove.
-
-Bjorn
+Index: linux-3.16-rc4/drivers/cpufreq/powernow-k6.c
+===================================================================
+--- linux-3.16-rc4.orig/drivers/cpufreq/powernow-k6.c	2014-07-09 15:15:29.000000000 +0200
++++ linux-3.16-rc4/drivers/cpufreq/powernow-k6.c	2014-07-09 15:15:44.000000000 +0200
+@@ -55,6 +55,7 @@ static const struct {
+ 	unsigned freq;
+ 	unsigned mult;
+ } usual_frequency_table[] = {
++	{ 350000, 35 },	// 100   * 3.5
+ 	{ 400000, 40 },	// 100   * 4
+ 	{ 450000, 45 }, // 100   * 4.5
+ 	{ 475000, 50 }, //  95   * 5
