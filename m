@@ -1,77 +1,83 @@
 From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: [PATCHv2 09/17] ARM: mvebu: export the SCU address
-Date: Wed,  9 Jul 2014 15:40:13 +0200
-Message-ID: <1404913221-17343-10-git-send-email-thomas.petazzoni@free-electrons.com>
+Subject: [PATCHv2 14/17] cpuidle: mvebu: add Armada 38x support
+Date: Wed,  9 Jul 2014 15:40:18 +0200
+Message-ID: <1404913221-17343-15-git-send-email-thomas.petazzoni@free-electrons.com>
 References: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from top.free-electrons.com ([176.31.233.9]:47356 "EHLO
+Received: from top.free-electrons.com ([176.31.233.9]:47389 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756050AbaGINkl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 09:40:41 -0400
+	with ESMTP id S1755676AbaGINkr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jul 2014 09:40:47 -0400
 In-Reply-To: <1404913221-17343-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
 Cc: Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+This commit adds the list of cpuidle states supported by the Armada
+38x SoC in the cpuidle-mvebu-v7 driver, as well as the necessary logic
+around it to support this SoC.
 
-The SCU address will be needed in other files than board-v7.c,
-especially in pmsu.c for cpuidle related activities. So this patch
-adds a function that allows to retrieve the virtual address at which
-the SCU has been mapped.
-
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 ---
- arch/arm/mach-mvebu/board-v7.c | 9 +++++++--
- arch/arm/mach-mvebu/common.h   | 2 ++
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ drivers/cpuidle/cpuidle-mvebu-v7.c | 19 ++++++++++++++++++-
+ include/linux/mvebu-v7-cpuidle.h   |  1 +
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-mvebu/board-v7.c b/arch/arm/mach-mvebu/board-v7.c
-index f244622..6478626 100644
---- a/arch/arm/mach-mvebu/board-v7.c
-+++ b/arch/arm/mach-mvebu/board-v7.c
-@@ -34,14 +34,14 @@
- #include "coherency.h"
- #include "mvebu-soc-id.h"
- 
-+static void __iomem *scu_base;
-+
+diff --git a/drivers/cpuidle/cpuidle-mvebu-v7.c b/drivers/cpuidle/cpuidle-mvebu-v7.c
+index 5de147f..8bfac4d 100644
+--- a/drivers/cpuidle/cpuidle-mvebu-v7.c
++++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
+@@ -1,5 +1,5 @@
  /*
-  * Enables the SCU when available. Obviously, this is only useful on
-  * Cortex-A based SOCs, not on PJ4B based ones.
-  */
- static void __init mvebu_scu_enable(void)
+- * Marvell Armada 370 and Armada XP SoC cpuidle driver
++ * Marvell Armada 370, 38x and XP SoC cpuidle driver
+  *
+  * Copyright (C) 2014 Marvell
+  *
+@@ -88,6 +88,21 @@ static struct cpuidle_driver armada370_cpuidle_driver = {
+ 	.state_count = 2,
+ };
+ 
++static struct cpuidle_driver armada38x_cpuidle_driver = {
++	.name			= "armada_38x_idle",
++	.states[0]		= ARM_CPUIDLE_WFI_STATE,
++	.states[1]		= {
++		.enter			= mvebu_v7_enter_idle,
++		.exit_latency		= 10,
++		.power_usage		= 5,
++		.target_residency	= 100,
++		.flags			= CPUIDLE_FLAG_TIME_VALID,
++		.name			= "Idle",
++		.desc			= "CPU and SCU power down",
++	},
++	.state_count = 2,
++};
++
+ static int mvebu_v7_cpuidle_probe(struct platform_device *pdev)
  {
--	void __iomem *scu_base;
--
- 	struct device_node *np =
- 		of_find_compatible_node(NULL, NULL, "arm,cortex-a9-scu");
- 	if (np) {
-@@ -51,6 +51,11 @@ static void __init mvebu_scu_enable(void)
- 	}
- }
+ 	struct cpuidle_driver *drv;
+@@ -98,6 +113,8 @@ static int mvebu_v7_cpuidle_probe(struct platform_device *pdev)
+ 		drv = &armadaxp_cpuidle_driver;
+ 	else if (pcpuidle->type == CPUIDLE_ARMADA_370)
+ 		drv = &armada370_cpuidle_driver;
++	else if (pcpuidle->type == CPUIDLE_ARMADA_38X)
++		drv = &armada38x_cpuidle_driver;
+ 	else
+ 		return -EINVAL;
  
-+void __iomem *mvebu_get_scu_base(void)
-+{
-+	return scu_base;
-+}
-+
- /*
-  * Early versions of Armada 375 SoC have a bug where the BootROM
-  * leaves an external data abort pending. The kernel is hit by this
-diff --git a/arch/arm/mach-mvebu/common.h b/arch/arm/mach-mvebu/common.h
-index a97778e..3ccb40c 100644
---- a/arch/arm/mach-mvebu/common.h
-+++ b/arch/arm/mach-mvebu/common.h
-@@ -23,4 +23,6 @@ void mvebu_pmsu_set_cpu_boot_addr(int hw_cpu, void *boot_addr);
- void mvebu_system_controller_set_cpu_boot_addr(void *boot_addr);
- int mvebu_system_controller_get_soc_id(u32 *dev, u32 *rev);
+diff --git a/include/linux/mvebu-v7-cpuidle.h b/include/linux/mvebu-v7-cpuidle.h
+index 6d54ae1..73f6d32 100644
+--- a/include/linux/mvebu-v7-cpuidle.h
++++ b/include/linux/mvebu-v7-cpuidle.h
+@@ -17,6 +17,7 @@
+ enum mvebu_v7_cpuidle_types {
+ 	CPUIDLE_ARMADA_XP,
+ 	CPUIDLE_ARMADA_370,
++	CPUIDLE_ARMADA_38X,
+ };
  
-+void __iomem *mvebu_get_scu_base(void);
-+
- #endif
+ struct mvebu_v7_cpuidle {
 -- 
 2.0.0
 
